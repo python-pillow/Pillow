@@ -85,7 +85,7 @@ Ubuntu 9.10 (karmic), use the following command:
 
 
 When you have everything you need, unpack the PIL distribution
-(the file Imaging-1.1.7.tar.gz) in a suitable work directory:
+(the file Imaging-1.1.7.tar.gz) in a suitable work directory::
 
      $ cd MyExtensions # example
      $ gunzip Imaging-1.1.7.tar.gz
@@ -93,7 +93,7 @@ When you have everything you need, unpack the PIL distribution
 
 
 Build the library.  We recommend that you do an in-place build,
-and run the self test before installing.
+and run the self test before installing.::
 
      $ cd Imaging-1.1.7
      $ python setup.py build_ext -i

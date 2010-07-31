@@ -104,7 +104,7 @@ def find_version(filename):
     return None
 
 #VERSION = find_version("PIL/Image.py")
-VERSION = "1.0"
+VERSION = "1.1"
 
 class pil_build_ext(build_ext):
 
