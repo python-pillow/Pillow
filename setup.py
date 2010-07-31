@@ -477,4 +477,5 @@ if __name__ == "__main__":
         scripts = glob.glob("Scripts/pil*.py"),
         url=HOMEPAGE,
         version=VERSION,
+        include_package_data=True,
         )
