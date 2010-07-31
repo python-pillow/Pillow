@@ -1,0 +1,149 @@
+====================================================================
+The PIL Bitmap Booster Patch
+====================================================================
+
+The pilbitmap booster patch greatly improves performance of the
+ImageTk.BitmapImage constructor.  Unfortunately, the design of Tk
+doesn't allow us to do this from the tkImaging interface module, so
+you have to patch the Tk sources.
+
+Once installed, the ImageTk module will automatically detect this
+patch.
+
+(Note: this patch has been tested with Tk 8.0 on Win32 only, but it
+should work just fine on other platforms as well).
+
+1. To the beginning of TkGetBitmapData (in generic/tkImgBmap.c), add
+   the following stuff:
+
+------------------------------------------------------------------------
+    int width, height, numBytes, hotX, hotY;
+    char *p, *end, *expandedFileName;
+    ParseInfo pi;
+    char *data = NULL;
+    Tcl_DString buffer;
+
+/* ==================================================================== */
+/* The pilbitmap booster patch -- patch section                         */
+/* ==================================================================== */
+
+    char *PILGetBitmapData();
+
+    if (string) {
+        /* Is this a PIL bitmap reference? */
+        data = PILGetBitmapData(string, widthPtr, heightPtr, hotXPtr, hotYPtr);
+        if (data)
+            return data;
+    }
+
+/* ==================================================================== */
+
+    pi.string = string;
+    if (string == NULL) {
+        if (Tcl_IsSafe(interp)) {
+------------------------------------------------------------------------
+
+
+2. Append the following to the same file (you may wish to include
+Imaging.h instead of copying the struct declaration...)
+
+------------------------------------------------------------------------
+
+/* ==================================================================== */
+/* The pilbitmap booster patch -- code section                          */
+/* ==================================================================== */
+
+/* Imaging declaration boldly copied from Imaging.h (!) */
+
+typedef struct ImagingInstance *Imaging; /* a.k.a. ImagingImage :-) */
+
+typedef unsigned char UINT8;
+typedef int INT32;
+
+struct ImagingInstance {
+
+    /* Format */
+    char mode[4+1];     /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK") */
+    int type;           /* Always 0 in this version */
+    int depth;          /* Always 8 in this version */
+    int bands;          /* Number of bands (1, 3, or 4) */
+    int xsize;          /* Image dimension. */
+    int ysize;
+
+    /* Colour palette (for "P" images only) */
+    void* palette;
+
+    /* Data pointers */
+    UINT8 **image8;     /* Set for 8-bit image (pixelsize=1). */
+    INT32 **image32;    /* Set for 32-bit image (pixelsize=4). */
+
+    /* Internals */
+    char **image;       /* Actual raster data. */
+    char *block;        /* Set if data is allocated in a single block. */
+
+    int pixelsize;      /* Size of a pixel, in bytes (1 or 4) */
+    int linesize;       /* Size of a line, in bytes (xsize * pixelsize) */
+
+    /* Virtual methods */
+    void (*im_delete)(Imaging *);
+
+};
+
+/* The pilbitmap booster patch allows you to pass PIL images to the
+   Tk bitmap decoder.  Passing images this way is much more efficient
+   than using the "tobitmap" method. */
+
+char *
+PILGetBitmapData(string, widthPtr, heightPtr, hotXPtr, hotYPtr)
+    char *string;
+    int *widthPtr, *heightPtr;
+    int *hotXPtr, *hotYPtr;
+{
+    char* data;
+    char* p;
+    int y;
+    Imaging im;
+
+    if (strncmp(string, "PIL:", 4) != 0)
+        return NULL;
+
+    im = (Imaging) atol(string + 4);
+
+    if (strcmp(im->mode, "1") != 0 && strcmp(im->mode, "L") != 0)
+        return NULL;
+
+    data = p = (char *) ckalloc((unsigned) ((im->xsize+7)/8) * im->ysize);
+
+    for (y = 0; y < im->ysize; y++) {
+        char* in = im->image8[y];
+        int i, m, b;
+        b = 0; m = 1;
+        for (i = 0; i < im->xsize; i++) {
+            if (in[i] != 0)
+                b |= m;
+            m <<= 1;
+            if (m == 256){
+                *p++ = b;
+                b = 0; m = 1;
+            }
+        }
+        if (m != 1)
+            *p++ = b;
+    }
+
+    *widthPtr = im->xsize;
+    *heightPtr = im->ysize;
+    *hotXPtr = -1;
+    *hotYPtr = -1;
+
+    return data;
+}
+
+/* ==================================================================== */
+
+------------------------------------------------------------------------
+
+3. Recompile Tk and relink the _tkinter module (where necessary).
+
+====================================================================
+Last updated: 97-05-17/fl

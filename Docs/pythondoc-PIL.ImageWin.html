@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.ImageWin Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.ImageWin Module</h1>
+<dl>
+<dt><b>Dib(image, size=None)</b> (class) [<a href='#PIL.ImageWin.Dib-class'>#</a>]</dt>
+<dd>
+<p>Create a Windows bitmap with the given mode and size.</p>
+<p>For more information about this class, see <a href='#PIL.ImageWin.Dib-class'><i>The Dib Class</i></a>.</p>
+</dd>
+<dt><b>HDC(dc)</b> (class) [<a href='#PIL.ImageWin.HDC-class'>#</a>]</dt>
+<dd>
+<p>The ImageWin module contains support to create and display
+images under Windows 95/98, NT, 2000 and later.</p>
+<p>For more information about this class, see <a href='#PIL.ImageWin.HDC-class'><i>The HDC Class</i></a>.</p>
+</dd>
+<dt><b>ImageWindow(image, title=&quot;PIL&quot;)</b> (class) [<a href='#PIL.ImageWin.ImageWindow-class'>#</a>]</dt>
+<dd>
+<p>Create an image window which displays the given image.</p>
+<p>For more information about this class, see <a href='#PIL.ImageWin.ImageWindow-class'><i>The ImageWindow Class</i></a>.</p>
+</dd>
+<dt><b>Window(title=&quot;PIL&quot;, width=None, height=None)</b> (class) [<a href='#PIL.ImageWin.Window-class'>#</a>]</dt>
+<dd>
+<p>Create a Window with the given title size.</p>
+<p>For more information about this class, see <a href='#PIL.ImageWin.Window-class'><i>The Window Class</i></a>.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageWin.Dib-class' name='PIL.ImageWin.Dib-class'>The Dib Class</a></h2>
+<dl>
+<dt><b>Dib(image, size=None)</b> (class) [<a href='#PIL.ImageWin.Dib-class'>#</a>]</dt>
+<dd>
+<p>Create a Windows bitmap with the given mode and size.  The mode can
+be one of "1", "L", "P", or "RGB".
+
+If the display requires a palette, this constructor creates a
+suitable palette and associates it with the image. For an "L" image,
+128 greylevels are allocated. For an "RGB" image, a 6x6x6 colour
+cube is used, together with 20 greylevels.
+
+To make sure that palettes work properly under Windows, you must
+call the <b>palette</b> method upon certain events from Windows.
+</p></dd>
+<dt><a id='PIL.ImageWin.Dib.__init__-method' name='PIL.ImageWin.Dib.__init__-method'><b>__init__(image, size=None)</b></a> [<a href='#PIL.ImageWin.Dib.__init__-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+</dd>
+<dt><i>size</i></dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageWin.Dib.expose-method' name='PIL.ImageWin.Dib.expose-method'><b>expose(handle)</b></a> [<a href='#PIL.ImageWin.Dib.expose-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt><i>handle</i></dt>
+<dd>
+Device context (HDC), cast to a Python integer,
+   or a HDC or HWND instance.  In PythonWin, you can use the
+   <b>GetHandleAttrib</b> method of the <b>CDC</b> class to get
+   a suitable handle.
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageWin.Dib.fromstring-method' name='PIL.ImageWin.Dib.fromstring-method'><b>fromstring(buffer)</b></a> [<a href='#PIL.ImageWin.Dib.fromstring-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt><i>buffer</i></dt>
+<dd>
+A string buffer containing display data (usually
+    data returned from <b>tostring</b>)
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageWin.Dib.paste-method' name='PIL.ImageWin.Dib.paste-method'><b>paste(im, box=None)</b></a> [<a href='#PIL.ImageWin.Dib.paste-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt><i>im</i></dt>
+<dd>
+</dd>
+<dt><i>box</i></dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageWin.Dib.query_palette-method' name='PIL.ImageWin.Dib.query_palette-method'><b>query_palette(handle)</b></a> [<a href='#PIL.ImageWin.Dib.query_palette-method'>#</a>]</dt>
+<dd>
+<p>Installs the palette associated with the image in the
+given device context.
+</p><p>
+This method should be called upon <b>QUERYNEWPALETTE</b>
+and <b>PALETTECHANGED</b> events from Windows. If this
+method returns a non-zero value, one or more display
+palette entries were changed, and the image should be
+redrawn.
+
+</p><dl>
+<dt><i>handle</i></dt>
+<dd>
+</dd>
+<dt>Returns:</dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageWin.Dib.tostring-method' name='PIL.ImageWin.Dib.tostring-method'><b>tostring()</b></a> [<a href='#PIL.ImageWin.Dib.tostring-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt>Returns:</dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageWin.HDC-class' name='PIL.ImageWin.HDC-class'>The HDC Class</a></h2>
+<dl>
+<dt><b>HDC(dc)</b> (class) [<a href='#PIL.ImageWin.HDC-class'>#</a>]</dt>
+<dd>
+<p>The <b>ImageWin</b> module contains support to create and display
+images under Windows 95/98, NT, 2000 and later.
+</p></dd>
+</dl>
+<h2><a id='PIL.ImageWin.ImageWindow-class' name='PIL.ImageWin.ImageWindow-class'>The ImageWindow Class</a></h2>
+<dl>
+<dt><b>ImageWindow(image, title=&quot;PIL&quot;)</b> (class) [<a href='#PIL.ImageWin.ImageWindow-class'>#</a>]</dt>
+<dd>
+</dd>
+</dl>
+<h2><a id='PIL.ImageWin.Window-class' name='PIL.ImageWin.Window-class'>The Window Class</a></h2>
+<dl>
+<dt><b>Window(title=&quot;PIL&quot;, width=None, height=None)</b> (class) [<a href='#PIL.ImageWin.Window-class'>#</a>]</dt>
+<dd>
+</dd>
+</dl>
+</body></html>

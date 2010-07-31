@@ -1,0 +1,71 @@
+#
+# The Python Imaging Library.
+# $Id$
+#
+# PIXAR raster support for PIL
+#
+# history:
+#       97-01-29 fl     Created
+#
+# notes:
+#       This is incomplete; it is based on a few samples created with
+#       Photoshop 2.5 and 3.0, and a summary description provided by
+#       Greg Coats <gcoats@labiris.er.usgs.gov>.  Hopefully, "L" and
+#       "RGBA" support will be added in future versions.
+#
+# Copyright (c) Secret Labs AB 1997.
+# Copyright (c) Fredrik Lundh 1997.
+#
+# See the README file for information on usage and redistribution.
+#
+
+__version__ = "0.1"
+
+import Image, ImageFile
+
+#
+# helpers
+
+def i16(c):
+    return ord(c[0]) + (ord(c[1])<<8)
+
+def i32(c):
+    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
+
+##
+# Image plugin for PIXAR raster images.
+
+class PixarImageFile(ImageFile.ImageFile):
+
+    format = "PIXAR"
+    format_description = "PIXAR raster image"
+
+    def _open(self):
+
+        # assuming a 4-byte magic label (FIXME: add "_accept" hook)
+        s = self.fp.read(4)
+        if s != "\200\350\000\000":
+            raise SyntaxError, "not a PIXAR file"
+
+        # read rest of header
+        s = s + self.fp.read(508)
+
+        self.size = i16(s[418:420]), i16(s[416:418])
+
+        # get channel/depth descriptions
+        mode = i16(s[424:426]), i16(s[426:428])
+
+        if mode == (14, 2):
+            self.mode = "RGB"
+        # FIXME: to be continued...
+
+        # create tile descriptor (assuming "dumped")
+        self.tile = [("raw", (0,0)+self.size, 1024, (self.mode, 0, 1))]
+
+#
+# --------------------------------------------------------------------
+
+Image.register_open("PIXAR", PixarImageFile)
+
+#
+# FIXME: what's the standard extension?

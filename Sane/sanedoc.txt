@@ -1,0 +1,294 @@
+The _sane_ module is an Python interface to the SANE (Scanning is Now
+Easy) library, which provides access to various raster scanning
+devices such as flatbed scanners and digital cameras.  For more
+information about SANE, consult the SANE Web site at
+http://www.mostang.com/sane/ .  Note that this
+documentation doesn't duplicate all the information in the SANE
+documentation, which you must also consult to get a complete
+understanding.
+
+This module has been originally developed by A.M. Kuchling (amk1@erols.com),
+now development has been taken over by Ralph Heinkel (rheinkel-at-email.de).
+If you write to me please make sure to have the word 'SANE' or 'sane' in 
+the subject of your mail, otherwise it might be classified as spam in the
+future.
+
+
+The module exports two object types, a bunch of constants, and two
+functions.  
+
+get_devices()
+  Return a list of 4-tuples containing the available scanning
+  devices.  Each tuple contains 4 strings: the device name, suitable for
+  passing to _open()_; the device's vendor; the model; and the type of
+  device, such as 'virtual device' or 'video camera'.
+
+  >>> import sane ; sane.get_devices()
+  [('epson:libusb:001:004', 'Epson', 'GT-8300', 'flatbed scanner')]
+
+open(devicename)
+  Open a device, given a string containing its name.  SANE
+  devices have names like 'epson:libusb:001:004'.  If the attempt
+  to open the device fails, a _sane.error_ exception will be raised.  If
+  there are no problems, a SaneDev object will be returned.
+  As an easy way to open the scanner (if only one is available) just type
+  >>> sane.open(sane.get_devices()[0][0])
+
+
+SaneDev objects
+===============
+
+The basic process of scanning an image consists of getting a SaneDev
+object for the device, setting various parameters, starting the scan,
+and then reading the image data.  Images are composed of one or more
+frames; greyscale and one-pass colour scanners return a single frame
+containing all the image data, but 3-pass scanners will usually return
+3 frames, one for each of the red, green, blue channels.
+
+Methods:
+--------
+fileno()
+  Returns a file descriptor for the scanning device.  This
+  method's existence means that SaneDev objects can be used by the
+  select module.
+
+get_parameters()
+  Return a tuple containing information about the current settings of
+  the device and the current frame: (format, last_frame,
+  pixels_per_line, lines, depth, bytes_per_line).
+
+	mode  -- 'gray' for greyscale image, 'color' for RGB image, or
+	          one of 'red', 'green', 'blue' if the image is a single
+                  channel of an RGB image (from PIL's point of view,
+                  this is equivalent to 'L').
+	last_frame -- A Boolean value, which is true if this is the
+                  last frame of the image, and false otherwise.
+	pixels_per_line -- Width of the frame.
+	lines -- Height of the frame.
+	depth -- Depth of the image, measured in bits.  SANE will only
+	         allow using 8, 16, or 24-bit depths.
+	bytes_per_line -- Bytes required to store a single line of
+                 data, as computed from pixels_per_line and depth.
+
+start()
+   Start a scan.  This function must be called before the
+   _snap()_ method can be used.
+	
+cancel()
+   Cancel a scan already in progress.
+
+snap(no_cancel=0)
+   Snap a single frame of data, returning a PIL Image object
+   containing the data. If no_cancel is false, the Sane library function
+   sane_cancel is called after the scan. This is reasonable in most cases,
+   but may cause backends for duplex ADF scanners to drop the backside image, 
+   when snap() is called for the front side image. If no_cancel is true,
+   cancel() should be called manually, after all scans are finished.
+
+scan()
+   This is just a shortcut for s.start(); s.snap()
+   Returns a PIL image
+
+multi_scan()
+   This method returns an iterator. It is intended to be used for 
+   scanning with an automatic document feeder. The next() method of the 
+   iterator tries to start a scan. If this is successful, it returns a
+   PIL Image object, like scan(); if the document feeder runs out of 
+   paper, it raises StopIteration, thereby signaling that the sequence
+   is ran out of items.
+   
+arr_snap(multipleOf=1)
+   same as snap, but the result is a NumArray object. (Not that
+   num_array must be installed already at compilation time, otherwise
+   this feature will not be activated).
+   By default the resulting array has the same number of pixels per
+   line as specified in self.get_parameters()[2][0]
+   However sometimes it is necessary to obtain arrays where
+   the number of pixels per line is e.g. a multiple of 4. This can then
+   be achieved with the option 'multipleOf=4'. So if the scanner
+   scanned 34 pixels per line, you will obtain an array with 32 pixels
+   per line.
+   Note that this only works with monochrome images (e.g. gray-scales)
+
+arr_scan(multipleOf=1)
+   This is just a shortcut for s.start(); s.arr_snap(multipleOf=1)
+   Returns a NumArray object
+
+close()
+   Closes the object.
+
+
+Attributes:
+-----------
+SaneDev objects have a few fixed attributes which are always
+available, and a larger collection of attributes which vary depending
+on the device. An Epson 1660 photo scanner has attributes like
+'mode', 'depth', etc. 
+Another (pseudo scanner), the _pnm:0_ device, takes a PNM file and
+simulates a scanner using the image data; a SaneDev object
+representing the _pnm:0_ device therefore has a _filename_ attribute
+which can be changed to specify the filename, _contrast_ and
+_brightness_ attributes to modify the returned image, and so forth.
+
+The values of the scanner options may be an integer, floating-point 
+value, or string, depending on the nature of the option.
+
+sane_signature
+  The tuple for this scandev that is returned by sane.get_devices()
+  e.g. ('epson:libusb:001:006', 'Epson', 'GT-8300', 'flatbed scanner')
+
+scanner_model
+  same as sane_signature[1:3], i.e. ('Epson', 'GT-8300') for the case above.
+
+optlist
+   A list containing the all the options supported by this device.
+
+   >>> import sane ; s=sane.open('epson:libusb:001:004') ; s.optlist
+   ['focus_position', 'color_correction', 'sharpness', ...., 'br_x']
+
+A closer look at all options listed in s.optlist can be obtained
+through the SaneOption objects.
+
+SaneOption objects
+==================
+
+SANE's option handling is its most elaborate subsystem, intended to
+allow automatically generating dialog boxes and prompts for user
+configuration of the scanning device.  The SaneOption object can be
+used to get a human-readable name and description for an option, the
+units to use, and what the legal values are.  No information about the
+current value of the option is available; for that, read the
+corresponding attribute of a SaneDev object.
+
+This documentation does not explain all the details of SANE's option
+handling; consult the SANE documentation for all the details.
+
+A scandevice option is accessed via __getitem__. For example
+s['mode'] returns the option descriptor for the mode-option which
+controls whether the scanner works in color, grayscale, or b/w mode.
+
+>>> s['mode']
+Name:      mode
+Cur value: Color
+Index:     2
+Title:     Scan mode
+Desc:      Selects the scan mode (e.g., lineart, monochrome, or color).
+Type:      TYPE_STRING
+Unit:      UNIT_NONE
+Constr:    ['Binary', 'Gray', 'Color']
+active:    yes
+settable:  yes
+
+In order to change 'mode' to 'gray', just type:
+>>> s.mode = 'gray'
+
+
+With the attributes and methods of sane-option objects it is possible 
+to access individual option values:
+
+is_active() 
+  Returns true if the option is active.
+
+is_settable() 
+  Returns true if the option can be set under software control.
+
+
+Attributes:
+
+cap
+  An integer containing various flags about the object's
+  capabilities; whether it's active, whether it's settable, etc.  Also
+  available as the _capability_ attribute.
+
+constraint
+  The constraint placed on the value of this option.  If it's
+  _None_, there are essentially no constraint of the value.  It may also
+  be a list of integers or strings, in which case the value *must* be
+  one of the possibilities in the list.  Numeric values may have a
+  3-tuple as the constraint; this 3-tuple contains _(minimum, maximum,
+  increment)_, and the value must be in the defined range.
+
+desc
+  A lengthy description of what the option does; it may be shown
+  to the user for clarification.
+
+index
+  An integer giving the option's index in the option list.
+
+name
+  A short name for the option, as it comes from the sane-backend. 
+
+py_name 
+  The option's name, as a legal Python identifier.  The name
+  attribute may contain the '-' character, so it will be converted to
+  '_' for the py_name attribute.
+
+size
+  For a string-valued option, this is the maximum length allowed. 
+
+title
+  A single-line string that can be used as a title string.
+	
+type
+  A constant giving the type of this option: will be one of the following 
+  constants found in the SANE module:
+	TYPE_BOOL
+	TYPE_INT
+	TYPE_FIXED
+	TYPE_STRING
+	TYPE_BUTTON
+	TYPE_GROUP
+
+unit
+  For numeric-valued options, this is a constant representing
+  the unit used for this option.  It will be one of the following
+  constants found in the SANE module:
+	UNIT_NONE
+	UNIT_PIXEL
+	UNIT_BIT
+	UNIT_MM
+	UNIT_DPI
+	UNIT_PERCENT
+
+
+
+Example us usage:
+=================
+>>> import sane
+>>> print 'SANE version:', sane.init()
+>>> print 'Available devices=', sane.get_devices()
+SANE version: (16777230, 1, 0, 14)
+>>> s = sane.open(sane.get_devices()[0][0])
+>>> print 'Device parameters:', s.get_parameters()
+Device parameters: ('L', 1, (424, 585), 1, 53)
+>>> print s.resolution
+50
+
+## In order to scan a color image into a PIL object:
+>>> s.mode = 'color'
+>>> s.start()
+>>> img = s.snap()
+>>> img.show()
+
+
+## In order to obtain a 16-bit grayscale image at 100DPI in a numarray object
+## with bottom-right coordinates set to (160, 120) [in millimeter] :
+>>> s.mode = 'gray'
+>>> s.br_x=160. ; s.br_y=120.    
+>>> s.resolution = 100
+>>> s.depth=16
+>>> s.start()
+>>> s.get_parameters()[2]   # just check the size
+(624, 472)
+>>> arr16 = s.arr_snap()
+>>> arr16
+array([[63957, 64721, 65067, ..., 65535, 65535, 65535],
+       [63892, 64342, 64236, ..., 65535, 65535, 65535],
+       [64286, 64248, 64705, ..., 65535, 65535, 65535],
+       ...,
+       [65518, 65249, 65058, ..., 65535, 65535, 65535],
+       [64435, 65047, 65081, ..., 65535, 65535, 65535],
+       [65309, 65438, 65535, ..., 65535, 65535, 65535]], type=UInt16)
+>>> arr16.shape   # inverse order of coordinates, first y, then x!
+(472, 624)
+

@@ -1,0 +1,41 @@
+====================================================================
+Using PIL With Tkinter 
+====================================================================
+
+Starting with 1.0 final (release candidate 2 and later, to be
+precise), PIL can attach itself to Tkinter in flight.  As a result,
+you no longer need to rebuild the Tkinter extension to be able to
+use PIL.
+
+However, if you cannot get the this to work on your platform, you
+can do it in the old way:
+
+* Adding Tkinter support
+
+1. Compile Python's _tkinter.c with the WITH_APPINIT and WITH_PIL
+   flags set, and link it with tkImaging.c and tkappinit.c.  To
+   do this, copy the former to the Modules directory, and edit
+   the _tkinter line in Setup (or Setup.in) according to the
+   instructions in that file.
+
+   NOTE: if you have an old Python version, the tkappinit.c
+   file is not included by default.  If this is the case, you
+   will have to add the following lines to tkappinit.c, after
+   the MOREBUTTONS stuff:
+
+	{
+	    extern void TkImaging_Init(Tcl_Interp* interp);
+	    TkImaging_Init(interp);
+	}
+
+   This registers a Tcl command called "PyImagingPhoto", which is
+   use to communicate between PIL and Tk's PhotoImage handler.
+
+   You must also change the _tkinter line in Setup (or Setup.in)
+   to something like:
+
+   _tkinter _tkinter.c tkImaging.c tkappinit.c -DWITH_APPINIT
+	-I/usr/local/include -L/usr/local/lib -ltk8.0 -ltcl8.0 -lX11
+
+
+

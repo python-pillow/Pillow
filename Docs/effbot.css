@@ -1,0 +1,118 @@
+/* effbot.css */
+
+BODY {
+    font: 100% Georgia, Times, serif;
+    color: black;
+    margin: 0px 20px 0px 20px;
+}
+
+#effbot-body {
+    background: white;
+    padding: 10px 40px 10px 40px;
+    max-width: 50em;
+}
+
+#effbot-menu {
+    display: none;
+}
+
+.adsense {
+    background: #f8fff8;
+    border: 1px solid #084; 
+    padding: 10px 4px 4px 4px;
+}
+
+.sidebar {
+    border: 1px solid #000; 
+    float: right; clear: right;
+    width: 200px;
+    background: white;
+    padding: 10px;
+    margin: 0px -25px 10px 0px;
+}
+
+/* visual style */
+
+P {
+    line-height: 1.3em;
+}
+
+CODE, PRE {
+    font: 100% "Courier New", Courier, Monaco, monospace;
+    color: #042; margin-left: 20px; 
+}
+
+H1, H2, H3 {
+    font-family: Georgia, Times, serif;
+    color: #084; margin-top: 30px;
+}
+
+H1, H2, { border-top: 1px solid #084; }
+
+H4, H5, H6 {
+    font-family: Georgia, Times, serif;
+    color: #084; margin-top: 15px;
+}
+
+A:link, A:hover { color: #084; }
+A:visited { color: #404040; }
+
+UL LI { list-style-type: square; }
+
+.title { margin-bottom: 2px; color: #084; }
+.info { font-size: 80%; color: #084; margin-top: 0px; }
+
+.bluebox { color: #084; margin-top: 10px; }
+
+.highlight { background: #cfc; }
+.mark { color: #084; }
+.small { font-size: 80%; }
+.display { background: #eee; padding: 20px; }
+
+.note { 
+    background: #efe;
+    border-top: 1px solid #084;
+    border-bottom: 1px solid #084;
+    padding: 2px 20px;
+}
+
+.example {
+    border-top: medium solid #084;
+    border-bottom: medium solid #084;
+    padding: 5px;
+}
+
+.figure {
+    border-top: medium solid #084;
+    border-bottom: medium solid #084;
+    padding: 5px;
+}
+
+.fixme {
+    background: #eee;
+    border: 1px solid #084;
+    padding: 2x 20px;
+}
+
+.simpletable {
+    border: 1px solid #084;
+    border-collapse: collapse;
+}
+
+.simpletable TH {
+    text-align: left;
+    background: #cfc;
+    border: 1px solid #084;
+    margin: 0px;
+    padding: 1px 5px;
+}
+
+.simpletable TD {
+    border: 1px solid #084;
+    margin: 0px;
+    padding: 5px;
+}
+
+/* xmldiff markup */
+.new { text-decoration: underline; color: red; background: #fff0f0; }
+.old { text-decoration: line-through; color: blue; background: #f0f0ff; }

@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.ImageTk Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.ImageTk Module</h1>
+<p>The <b>ImageTk</b> module contains support to create and modify
+Tkinter <b>BitmapImage</b> and <b>PhotoImage</b> objects.
+</p><p>
+For examples, see the demo programs in the <i>Scripts</i>
+directory.
+</p><h2>Module Contents</h2>
+<dl>
+<dt><b>BitmapImage(image=None, **options)</b> (class) [<a href='#PIL.ImageTk.BitmapImage-class'>#</a>]</dt>
+<dd>
+<p>Create a Tkinter-compatible bitmap image.</p>
+<p>For more information about this class, see <a href='#PIL.ImageTk.BitmapImage-class'><i>The BitmapImage Class</i></a>.</p>
+</dd>
+<dt><a id='PIL.ImageTk.getimage-function' name='PIL.ImageTk.getimage-function'><b>getimage(photo)</b></a> [<a href='#PIL.ImageTk.getimage-function'>#</a>]</dt>
+<dd>
+</dd>
+<dt><b>PhotoImage(image=None, size=None, **options)</b> (class) [<a href='#PIL.ImageTk.PhotoImage-class'>#</a>]</dt>
+<dd>
+<p>Creates a Tkinter-compatible photo image.</p>
+<p>For more information about this class, see <a href='#PIL.ImageTk.PhotoImage-class'><i>The PhotoImage Class</i></a>.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageTk.BitmapImage-class' name='PIL.ImageTk.BitmapImage-class'>The BitmapImage Class</a></h2>
+<dl>
+<dt><b>BitmapImage(image=None, **options)</b> (class) [<a href='#PIL.ImageTk.BitmapImage-class'>#</a>]</dt>
+<dd>
+</dd>
+<dt><a id='PIL.ImageTk.BitmapImage.__init__-method' name='PIL.ImageTk.BitmapImage.__init__-method'><b>__init__(image=None, **options)</b></a> [<a href='#PIL.ImageTk.BitmapImage.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create a Tkinter-compatible bitmap image.
+</p><p>
+The given image must have mode "1".  Pixels having value 0 are
+treated as transparent.  Options, if any, are passed on to
+Tkinter.  The most commonly used option is <b>foreground</b>,
+which is used to specify the colour for the non-transparent
+parts.  See the Tkinter documentation for information on how to
+specify colours.
+
+</p><dl>
+<dt><i>image</i></dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageTk.BitmapImage.__str__-method' name='PIL.ImageTk.BitmapImage.__str__-method'><b>__str__()</b></a> [<a href='#PIL.ImageTk.BitmapImage.__str__-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt>Returns:</dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageTk.BitmapImage.height-method' name='PIL.ImageTk.BitmapImage.height-method'><b>height()</b></a> [<a href='#PIL.ImageTk.BitmapImage.height-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt>Returns:</dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageTk.BitmapImage.width-method' name='PIL.ImageTk.BitmapImage.width-method'><b>width()</b></a> [<a href='#PIL.ImageTk.BitmapImage.width-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt>Returns:</dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageTk.PhotoImage-class' name='PIL.ImageTk.PhotoImage-class'>The PhotoImage Class</a></h2>
+<dl>
+<dt><b>PhotoImage(image=None, size=None, **options)</b> (class) [<a href='#PIL.ImageTk.PhotoImage-class'>#</a>]</dt>
+<dd>
+</dd>
+<dt><a id='PIL.ImageTk.PhotoImage.__init__-method' name='PIL.ImageTk.PhotoImage.__init__-method'><b>__init__(image=None, size=None, **options)</b></a> [<a href='#PIL.ImageTk.PhotoImage.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create a photo image object. The constructor takes either
+a PIL image, or a mode and a size.  Alternatively, you can
+use the <b>file</b> or <b>data</b> options to initialize
+the photo image object.
+</p><p>
+</p><dl>
+<dt><i>image</i></dt>
+<dd>
+</dd>
+<dt><i>size</i></dt>
+<dd>
+</dd>
+<dt><i>file=</i></dt>
+<dd>
+</dd>
+<dt><i>data=</i></dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageTk.PhotoImage.__str__-method' name='PIL.ImageTk.PhotoImage.__str__-method'><b>__str__()</b></a> [<a href='#PIL.ImageTk.PhotoImage.__str__-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt>Returns:</dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageTk.PhotoImage.height-method' name='PIL.ImageTk.PhotoImage.height-method'><b>height()</b></a> [<a href='#PIL.ImageTk.PhotoImage.height-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt>Returns:</dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageTk.PhotoImage.paste-method' name='PIL.ImageTk.PhotoImage.paste-method'><b>paste(im, box=None)</b></a> [<a href='#PIL.ImageTk.PhotoImage.paste-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt><i>im</i></dt>
+<dd>
+</dd>
+<dt><i>box</i></dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageTk.PhotoImage.width-method' name='PIL.ImageTk.PhotoImage.width-method'><b>width()</b></a> [<a href='#PIL.ImageTk.PhotoImage.width-method'>#</a>]</dt>
+<dd>
+<dl>
+<dt>Returns:</dt>
+<dd>
+</dd>
+</dl><br />
+</dd>
+</dl>
+</body></html>
