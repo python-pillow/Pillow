@@ -468,8 +468,8 @@ if __name__ == "__main__":
         license="Python (MIT style)",
 #        long_description=DESCRIPTION,
         long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("docs", "INSTALL.txt")).read() +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
+                       open(os.path.join("doc", "INSTALL.txt")).read() +
+                       open(os.path.join("doc", "HISTORY.txt")).read(),
         name=NAME,
         packages=find_packages(),
         setup_requires=["setuptools_hg"],
@@ -477,5 +477,4 @@ if __name__ == "__main__":
         scripts = glob.glob("Scripts/pil*.py"),
         url=HOMEPAGE,
         version=VERSION,
-        include_package_data=True,
         )
