@@ -1,3 +1,0 @@
-[setuptools.file_finders]
-hg = setuptools_hg:hg_file_finder
-
