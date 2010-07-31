@@ -472,7 +472,7 @@ if __name__ == "__main__":
                        open(os.path.join("doc", "HISTORY.txt")).read(),
         name=NAME,
         packages=find_packages(),
-        setup_requires=["setuptools_hg"],
+#        setup_requires=["setuptools_hg"],
         platforms="Python 1.5.2 and later.",
         scripts = glob.glob("Scripts/pil*.py"),
         url=HOMEPAGE,
