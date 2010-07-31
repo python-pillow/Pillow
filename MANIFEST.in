@@ -5,4 +5,4 @@ exclude make-manifest.py
 exclude SHIP
 exclude SHIP.bat
 recursive-exclude Tests *
-recursive-include *.txt
+recursive-include docs *.txt
