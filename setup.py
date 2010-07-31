@@ -466,7 +466,10 @@ if __name__ == "__main__":
         ext_modules = [Extension("_imaging", ["_imaging.c"])], # dummy
         extra_path = "PIL",
         license="Python (MIT style)",
-        long_description=DESCRIPTION,
+#        long_description=DESCRIPTION,
+        long_description=open("README.txt").read() + "\n" +
+                       open(os.path.join("docs", "INSTALL.txt")).read() +
+                       open(os.path.join("docs", "HISTORY.txt")).read(),
         name=NAME,
         packages=find_packages(),
         setup_requires=["setuptools_hg"],

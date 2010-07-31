@@ -1,0 +1,11 @@
+.hgtags
+LICENSE
+setup.cfg
+setup.py
+setuptools_hg.py
+setuptools_hg.egg-info/._PKG-INFO
+setuptools_hg.egg-info/PKG-INFO
+setuptools_hg.egg-info/SOURCES.txt
+setuptools_hg.egg-info/dependency_links.txt
+setuptools_hg.egg-info/entry_points.txt
+setuptools_hg.egg-info/top_level.txt
