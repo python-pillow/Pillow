@@ -2,7 +2,15 @@
 Changelog
 =========
 
+1.1 - Sat Jul 31 19:58:33 EDT 2010
+----------------------------------
+
+- Removed setuptools_hg requirement
+- Clarify the "PIL problem" in README
+
+
 1.0 - Fri Jul 30 23:12:21 EDT 2010
 ----------------------------------
 
 - Forked PIL [aclark]
+- Re-packaged PIL to prevent 'import Image' from working [Hanno Schlichting]
