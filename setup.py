@@ -104,7 +104,7 @@ def find_version(filename):
     return None
 
 #VERSION = find_version("PIL/Image.py")
-VERSION = "1.1"
+VERSION = "1.2"
 
 class pil_build_ext(build_ext):
 
@@ -370,7 +370,7 @@ class pil_build_ext(build_ext):
     def summary_report(self, feature, unsafe_zlib):
 
         print "-" * 68
-        print "PIL", VERSION, "SETUP SUMMARY"
+        print "Pillow", VERSION, "SETUP SUMMARY"
         print "-" * 68
         print "version      ", VERSION
         v = string.split(sys.version, "[")
@@ -468,8 +468,8 @@ if __name__ == "__main__":
         license="Python (MIT style)",
 #        long_description=DESCRIPTION,
         long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("doc", "INSTALL.txt")).read() +
-                       open(os.path.join("doc", "HISTORY.txt")).read(),
+                       open(os.path.join("docs", "INSTALL.txt")).read() +
+                       open(os.path.join("docs", "HISTORY.txt")).read(),
         name=NAME,
         packages=find_packages(),
 #        setup_requires=["setuptools_hg"],
