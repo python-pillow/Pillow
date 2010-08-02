@@ -2,11 +2,17 @@
 Changelog
 =========
 
+1.2 - Mon Aug  2 11:39:21 EDT 2010
+----------------------------------
+
+- On OS X also check for freetype2 in the X11 path. [jezdez]
+- Small change in setup.py to output 'Pillow (PIL fork)' text.
+
 1.1 - Sat Jul 31 19:58:33 EDT 2010
 ----------------------------------
 
-- Removed setuptools_hg requirement
-- Clarify the "PIL problem" in README
+- Removed setuptools_hg requirement [aclark]
+- Clarify the "PIL problem" in README [aclark]
 
 
 1.0 - Fri Jul 30 23:12:21 EDT 2010
