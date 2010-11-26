@@ -115,7 +115,7 @@ def find_version(filename):
     return None
 
 #VERSION = find_version("PIL/Image.py")
-VERSION = "1.2"
+VERSION = "1.2.1"
 
 
 class pil_build_ext(build_ext):
@@ -152,7 +152,7 @@ class pil_build_ext(build_ext):
             add_directory(library_dirs, "/usr/x11/lib")
             add_directory(library_dirs, "/usr/x11/include")
 
-        elif sys.platform == "Linux":
+        elif sys.platform == "linux2":
             if platform.processor == "x86_64":
                 add_directory(library_dirs, "/usr/lib64")
 
