@@ -45,7 +45,7 @@ DESCRIPTION = "Python Imaging Library (fork)"
 #AUTHOR = "Secret Labs AB (PythonWare)", "info@pythonware.com"
 AUTHOR = "Alex Clark (fork author)", "aclark@aclark.net"
 #HOMEPAGE = "http://www.pythonware.com/products/pil"
-HOMEPAGE = "http://github.com/Pillow"
+HOMEPAGE = "http://github.com/collective.pillow"
 #DOWNLOAD_URL = "http://effbot.org/downloads/%s-%s.tar.gz" # name, version
 
 # --------------------------------------------------------------------
