@@ -6,7 +6,14 @@
 # Usage: python setup.py install
 #
 
-import glob, os, re, struct, string, sys, platform
+import glob
+import os
+import platform
+import re
+import struct
+import string
+import sys
+
 
 def libinclude(root):
     # map root to (root/lib, root/include)
@@ -80,6 +87,7 @@ try:
 except ImportError:
     _tkinter = None
 
+
 def add_directory(path, dir, where=None):
     if dir and os.path.isdir(dir) and dir not in path:
         if where is None:
@@ -87,14 +95,17 @@ def add_directory(path, dir, where=None):
         else:
             path.insert(where, dir)
 
+
 def find_include_file(self, include):
     for directory in self.compiler.include_dirs:
         if os.path.isfile(os.path.join(directory, include)):
             return 1
     return 0
 
+
 def find_library_file(self, library):
     return self.compiler.find_library_file(self.compiler.library_dirs, library)
+
 
 def find_version(filename):
     for line in open(filename).readlines():
@@ -105,6 +116,7 @@ def find_version(filename):
 
 #VERSION = find_version("PIL/Image.py")
 VERSION = "1.2"
+
 
 class pil_build_ext(build_ext):
 
@@ -229,13 +241,14 @@ class pil_build_ext(build_ext):
             if find_library_file(self, "z"):
                 feature.zlib = "z"
             elif sys.platform == "win32" and find_library_file(self, "zlib"):
-                feature.zlib = "zlib" # alternative name
+                feature.zlib = "zlib"  # alternative name
 
         if find_include_file(self, "jpeglib.h"):
             if find_library_file(self, "jpeg"):
                 feature.jpeg = "jpeg"
-            elif sys.platform == "win32" and find_library_file(self, "libjpeg"):
-                feature.jpeg = "libjpeg" # alternative name
+            elif sys.platform == "win32" and find_library_file(self,
+                    "libjpeg"):
+                feature.jpeg = "libjpeg"  # alternative name
 
         if find_library_file(self, "tiff"):
             feature.tiff = "tiff"
@@ -350,7 +363,7 @@ class pil_build_ext(build_ext):
                     "_imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
                     extra_compile_args=frameworks, extra_link_args=frameworks
                     ))
-                feature.tcl = feature.tk = 1 # mark as present
+                feature.tcl = feature.tk = 1  # mark as present
         elif feature.tcl and feature.tk:
             exts.append(Extension(
                 "_imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
@@ -467,11 +480,11 @@ if __name__ == "__main__":
             "Topic :: Multimedia :: Graphics :: Graphics Conversion",
             "Topic :: Multimedia :: Graphics :: Viewers",
             ],
-        cmdclass = {"build_ext": pil_build_ext},
+        cmdclass={"build_ext": pil_build_ext},
         description=DESCRIPTION,
 #        download_url=DOWNLOAD_URL % (NAME, VERSION),
-        ext_modules = [Extension("_imaging", ["_imaging.c"])], # dummy
-        extra_path = "PIL",
+        ext_modules=[Extension("_imaging", ["_imaging.c"])],  # dummy
+        extra_path="PIL",
         license="Python (MIT style)",
 #        long_description=DESCRIPTION,
         long_description=open("README.txt").read() + "\n" +
@@ -481,7 +494,7 @@ if __name__ == "__main__":
         packages=find_packages(),
 #        setup_requires=["setuptools_hg"],
         platforms="Python 1.5.2 and later.",
-        scripts = glob.glob("Scripts/pil*.py"),
+        scripts=glob.glob("Scripts/pil*.py"),
         url=HOMEPAGE,
         version=VERSION,
         )
