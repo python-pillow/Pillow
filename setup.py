@@ -6,7 +6,7 @@
 # Usage: python setup.py install
 #
 
-import glob, os, re, struct, string, sys
+import glob, os, re, struct, string, sys, platform
 
 def libinclude(root):
     # map root to (root/lib, root/include)
@@ -139,6 +139,10 @@ class pil_build_ext(build_ext):
             # freetype2 ships with X11
             add_directory(library_dirs, "/usr/x11/lib")
             add_directory(library_dirs, "/usr/x11/include")
+
+        elif sys.platform == "Linux":
+            if platform.processor == "x86_64":
+                add_directory(library_dirs, "/usr/lib64")
 
         add_directory(library_dirs, "/usr/local/lib")
         # FIXME: check /opt/stuff directories here?
