@@ -2,21 +2,25 @@
 Changelog
 =========
 
-1.2 - Mon Aug  2 11:39:21 EDT 2010
-----------------------------------
+1.2.1 (11/26/2010)
+------------------
 
-- On OS X also check for freetype2 in the X11 path. [jezdez]
-- Small change in setup.py to output 'Pillow (PIL fork)' text.
+- Add support for /lib64 library directory on Linux
 
-1.1 - Sat Jul 31 19:58:33 EDT 2010
-----------------------------------
+1.2 (08/02/2010)
+----------------
 
-- Removed setuptools_hg requirement [aclark]
-- Clarify the "PIL problem" in README [aclark]
+- On OS X also check for freetype2 in the X11 path [jezdez]
+- Doc fixes [aclark]
 
+1.1 (07/31/2010)
+----------------
 
-1.0 - Fri Jul 30 23:12:21 EDT 2010
-----------------------------------
+- Removed setuptools_hg requirement
+- Doc fixes
 
-- Forked PIL [aclark]
-- Re-packaged PIL to prevent 'import Image' from working [Hanno Schlichting]
+1.0 (07/30/2010)
+----------------
+
+- Forked PIL based on Hanno Schlichting's re-packaging
+  (http://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz)
