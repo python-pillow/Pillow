@@ -153,7 +153,7 @@ class pil_build_ext(build_ext):
             add_directory(library_dirs, "/usr/x11/include")
 
         elif sys.platform == "linux2":
-            if platform.processor == "x86_64":
+            if platform.processor() == "x86_64":
                 add_directory(library_dirs, "/usr/lib64")
 
         add_directory(library_dirs, "/usr/local/lib")
