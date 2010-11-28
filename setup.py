@@ -1,11 +1,11 @@
 import os
+import platform
 import re
 import string
 import struct
 import sys
 
 from distutils.command.build_ext import build_ext
-#from distutils.core import Extension
 from distutils import sysconfig
 from setuptools import Extension, setup
 
@@ -54,6 +54,11 @@ def _find_version(filename):
         if m:
             return m.group(1)
     return None
+
+
+def _lib_include(root):
+    # map root to (root/lib, root/include)
+    return os.path.join(root, "lib"), os.path.join(root, "include")
 
 
 def _read(file):
@@ -148,7 +153,7 @@ class pil_build_ext(build_ext):
                     # FIXME: use distutils logging (?)
                     print "--- using Tcl/Tk libraries at", TCL_ROOT
                     print "--- using Tcl/Tk version", TCL_VERSION
-                    TCL_ROOT = libinclude(TCL_ROOT)
+                    TCL_ROOT = _lib_include(TCL_ROOT)
                     break
             else:
                 TCL_ROOT = None
