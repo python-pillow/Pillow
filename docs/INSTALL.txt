@@ -48,7 +48,7 @@ For a list of changes in this release, see the CHANGES document.
    operating system usually work just fine.  If some library is
    missing, installing a prebuilt version (jpeg-devel, zlib-devel,
    etc) is usually easier than building from source.  For example, for
-   Ubuntu 9.10 (karmic), you can install the following libraries:
+   Ubuntu 9.10 (karmic), you can install the following libraries::
 
        sudo apt-get install libjpeg62-dev
        sudo apt-get install zlib1g-dev
@@ -89,7 +89,7 @@ For a list of changes in this release, see the CHANGES document.
 
 
 4. When you have everything you need, unpack the PIL distribution
-   (the file Imaging-1.1.7.tar.gz) in a suitable work directory:
+   (the file Imaging-1.1.7.tar.gz) in a suitable work directory::
 
         $ cd MyExtensions # example
         $ gunzip Imaging-1.1.7.tar.gz
@@ -97,7 +97,7 @@ For a list of changes in this release, see the CHANGES document.
 
 
 5. Build the library.  We recommend that you do an in-place build,
-   and run the self test before installing.
+   and run the self test before installing::
 
         $ cd Imaging-1.1.7
         $ python setup.py build_ext -i
@@ -109,7 +109,7 @@ For a list of changes in this release, see the CHANGES document.
    the tests found in the actual build files::
 
         --------------------------------------------------------------------
-        pillow 1.3 ( PIL fork based on PIL 1.1.7 ) SETUP SUMMARY
+        Pillow 1.3 ( PIL fork based on PIL 1.1.7 ) SETUP SUMMARY
         --------------------------------------------------------------------
         platform  darwin 2.6.6 (r266:84292, Nov 26 2010, 16:24:16)
           [GCC 4.2.1 (Apple Inc. build 5664)]
@@ -128,14 +128,14 @@ For a list of changes in this release, see the CHANGES document.
    see instructions in the file.
 
    If the build script finds the component, but the tests cannot
-   identify it, try rebuilding *all* modules:
+   identify it, try rebuilding *all* modules::
 
         $ python setup.py clean
         $ python setup.py build_ext -i
 
 
 6. If the setup.py and selftest.py commands finish without any
-   errors, you're ready to install the library:
+   errors, you're ready to install the library::
 
         $ python setup.py install
 
