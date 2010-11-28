@@ -17,5 +17,14 @@ setup(
         read('docs/HISTORY.txt')),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
-    url='http://github.org/collective/pillow'
+    url='http://github.org/collective/pillow',
+    classifiers=[
+        "Development Status :: 6 - Mature",
+        "Topic :: Multimedia :: Graphics",
+        "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+        "Topic :: Multimedia :: Graphics :: Capture :: Scanners",
+        "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+        "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+        "Topic :: Multimedia :: Graphics :: Viewers",
+        ],
     )
