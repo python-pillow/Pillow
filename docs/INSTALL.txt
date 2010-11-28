@@ -108,14 +108,18 @@ For a list of changes in this release, see the CHANGES document.
    test will display a similar report, with what external components
    the tests found in the actual build files::
 
-        ----------------------------------------------------------------
-        PIL 1.1.7 SETUP SUMMARY
-        ----------------------------------------------------------------
-        *** TKINTER support not available (Tcl/Tk 8.5 libraries needed)
+        --------------------------------------------------------------------
+        pillow 1.3 ( PIL fork based on PIL 1.1.7 ) SETUP SUMMARY
+        --------------------------------------------------------------------
+        platform  darwin 2.6.6 (r266:84292, Nov 26 2010, 16:24:16)
+          [GCC 4.2.1 (Apple Inc. build 5664)]
+        --------------------------------------------------------------------
+        --- TKINTER support available
         --- JPEG support available
         --- ZLIB (PNG/ZIP) support available
-        --- FREETYPE support available
-        ----------------------------------------------------------------
+        *** FREETYPE2 support not available
+        *** LITTLECMS support not available
+        --------------------------------------------------------------------
 
    Make sure that the optional components you need are included.
 
