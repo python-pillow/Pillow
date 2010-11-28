@@ -17,4 +17,5 @@ setup(
         read('docs/HISTORY.txt')),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
+    url='http://github.org/collective/pillow'
     )
