@@ -154,6 +154,7 @@ class pil_build_ext(build_ext):
 
         elif sys.platform == "linux2":
             if platform.processor() == "x86_64":
+                add_directory(library_dirs, "/lib64")
                 add_directory(library_dirs, "/usr/lib64")
 
         add_directory(library_dirs, "/usr/local/lib")
