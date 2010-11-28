@@ -70,7 +70,7 @@ except ImportError:
     _tkinter = None
 
 
-NAME = 'pillow'
+NAME = 'Pillow'
 VERSION = '1.3'
 PIL_VERSION = '1.1.7'
 TCL_ROOT = None
@@ -353,7 +353,7 @@ class pil_build_ext(build_ext):
 
     def summary_report(self, feature, unsafe_zlib):
         print "-" * 68
-        print "pillow", VERSION, "( PIL fork based on", "PIL", PIL_VERSION, ")", "SETUP SUMMARY"
+        print "Pillow", VERSION, "( PIL fork based on", "PIL", PIL_VERSION, ")", "SETUP SUMMARY"
         print "-" * 68
         v = string.split(sys.version, "[")
         print "platform ", sys.platform, string.strip(v[0])
