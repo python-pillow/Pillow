@@ -47,12 +47,12 @@ LCMS_ROOT = None
 # --------------------------------------------------------------------
 # Identification
 
-NAME = "Pillow"
+NAME = "pillow"
 DESCRIPTION = "Python Imaging Library (fork)"
 #AUTHOR = "Secret Labs AB (PythonWare)", "info@pythonware.com"
 AUTHOR = "Alex Clark (fork author)", "aclark@aclark.net"
 #HOMEPAGE = "http://www.pythonware.com/products/pil"
-HOMEPAGE = "http://github.com/collective.pillow"
+HOMEPAGE = "http://github.com/collective/pillow"
 #DOWNLOAD_URL = "http://effbot.org/downloads/%s-%s.tar.gz" # name, version
 
 # --------------------------------------------------------------------
@@ -115,7 +115,7 @@ def find_version(filename):
     return None
 
 #VERSION = find_version("PIL/Image.py")
-VERSION = "1.2.1"
+VERSION = "1.3"
 
 
 class pil_build_ext(build_ext):
