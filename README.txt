@@ -1,13 +1,22 @@
 Pillow
 ======
 
-Pillow is a "friendly" fork of the Python Imaging Library. The goal is to see
-if any improvement can be made to the packaging situation(*) by opening up
-development to the "public" and exploring the problem within the fork.
+Pillow is a "friendly" PIL fork. PIL is the Python Imaging Library.
 
-Please email: aclark@aclark.net if you'd like to help, or complain.
+Introduction
+------------
 
-(*) PIL aims to support the 'import Image' statement which will fail whenever
-there is another 'Image' module in the top level namespace.
+The author's goal is to foster packaging improvements by publicizing
+development and exploring packaging problems within the fork.
 
-For PIL's README, check out PIL.txt
+Explanation
+-----------
+
+PIL is currently not setuptools compatible. See:
+http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a
+detailed explanation.
+
+Python Imaging Library
+----------------------
+
+For PIL's README, please see PIL.txt
