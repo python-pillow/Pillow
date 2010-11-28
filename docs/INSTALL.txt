@@ -109,7 +109,7 @@ For a list of changes in this release, see the CHANGES document.
    the tests found in the actual build files::
 
         --------------------------------------------------------------------
-        Pillow 1.3 ( PIL fork based on PIL 1.1.7 ) SETUP SUMMARY
+        Pillow 1.5 ( PIL fork based on PIL 1.1.7 ) SETUP SUMMARY
         --------------------------------------------------------------------
         platform  darwin 2.6.6 (r266:84292, Nov 26 2010, 16:24:16)
           [GCC 4.2.1 (Apple Inc. build 5664)]
