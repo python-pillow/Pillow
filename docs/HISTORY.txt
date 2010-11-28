@@ -6,6 +6,7 @@ Changelog
 ----------------
 
 - Add support for /lib64 and /usr/lib64 library directories on Linux
+- Doc fixes
 
 1.2 (08/02/2010)
 ----------------

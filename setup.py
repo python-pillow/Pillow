@@ -488,7 +488,7 @@ if __name__ == "__main__":
         extra_path="PIL",
         license="Python (MIT style)",
 #        long_description=DESCRIPTION,
-        long_description=open("README.txt").read() + "\n" +
+        long_description=open("README.txt").read() +
                        open(os.path.join("docs", "INSTALL.txt")).read() +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
         name=NAME,
