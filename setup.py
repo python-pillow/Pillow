@@ -1,3 +1,4 @@
+import glob
 import os
 import platform
 import re
@@ -7,7 +8,7 @@ import sys
 
 from distutils.command.build_ext import build_ext
 from distutils import sysconfig
-from setuptools import Extension, setup
+from setuptools import Extension, setup, find_packages
 
 
 _IMAGING = (
@@ -439,4 +440,6 @@ setup(
         ],
     cmdclass={"build_ext": pil_build_ext},
     ext_modules=[Extension("_imaging", ["_imaging.c"])],
+    packages=find_packages(),
+    scripts = glob.glob("Scripts/pil*.py"),
     )
