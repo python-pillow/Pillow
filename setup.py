@@ -2,8 +2,7 @@ from setuptools import setup
 
 
 def read(file):
-    f = open(file, 'rb')
-    return f.read()
+    return open(file, 'rb').read()
 
 NAME='pillow'
 VERSION='1.3'
