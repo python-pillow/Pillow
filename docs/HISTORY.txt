@@ -2,6 +2,13 @@
 Changelog
 =========
 
+1.6 (12/01/2010)
+----------------
+
+- Bug fix: /usr/x11/include should be added to include_dirs not library_dirs
+  (via Laurence Rowe).
+- Doc fixes
+
 1.5 (11/28/2010)
 ----------------
 
