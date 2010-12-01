@@ -6,7 +6,7 @@ Changelog
 ----------------
 
 - Bug fix: /usr/x11/include should be added to include_dirs not library_dirs
-  (via Laurence Rowe).
+  (via Laurence Rowe)
 - Doc fixes
 
 1.5 (11/28/2010)
