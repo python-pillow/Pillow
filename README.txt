@@ -3,12 +3,12 @@
 Pillow
 ======
 
-Pillow is a "friendly" PIL fork. PIL is the Python Imaging Library.
+Pillow is the "friendly" PIL fork. PIL is the Python Imaging Library.
 
 Introduction
 ------------
 
-The author's goal is to foster packaging improvements by publicizing
+The (fork) author's goal is to foster packaging improvements by publicizing
 development and exploring packaging problems within the fork.
 
 Justification
