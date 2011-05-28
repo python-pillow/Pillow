@@ -2,11 +2,18 @@
 Changelog
 =========
 
+1.7.0 (2011-05-27)
+------------------
+
+- Add support for multi-arch library directory /usr/lib/x86_64-linux-gnu
+  [aclark]
+
 1.6 (12/01/2010)
 ----------------
 
 - Bug fix: /usr/x11/include should be added to include_dirs not library_dirs
-  (via Laurence Rowe)
+  [elro]
+
 - Doc fixes
 
 1.5 (11/28/2010)

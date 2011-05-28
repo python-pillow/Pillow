@@ -3,13 +3,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.7: http://docutils.sourceforge.net/" />
 <title></title>
 <style type="text/css">
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 5951 2009-05-18 18:03:10Z milde $
+:Id: $Id: html4css1.css 6253 2010-03-02 00:24:53Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -157,15 +157,21 @@ h2.subtitle {
 hr.docutils {
   width: 75% }
 
-img.align-left, .figure.align-left{
+img.align-left, .figure.align-left, object.align-left {
   clear: left ;
   float: left ;
   margin-right: 1em }
 
-img.align-right, .figure.align-right {
+img.align-right, .figure.align-right, object.align-right {
   clear: right ;
   float: right ;
   margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
 
 .align-left {
   text-align: left }
@@ -307,53 +313,190 @@ ul.auto-toc {
 <div class="document">
 
 
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#pillow" id="id10">Pillow</a><ul>
+<li><a class="reference internal" href="#introduction" id="id11">Introduction</a></li>
+<li><a class="reference internal" href="#justification" id="id12">Justification</a></li>
+<li><a class="reference internal" href="#python-imaging-library" id="id13">Python Imaging Library</a><ul>
+<li><a class="reference internal" href="#id1" id="id14">Introduction</a></li>
+<li><a class="reference internal" href="#support-options" id="id15">Support Options</a><ul>
+<li><a class="reference internal" href="#commercial-support" id="id16">Commercial Support</a></li>
+<li><a class="reference internal" href="#free-support" id="id17">Free Support</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#software-license" id="id18">Software License</a></li>
+<li><a class="reference internal" href="#build-instructions-all-platforms" id="id19">Build instructions (all platforms)</a><ul>
+<li><a class="reference internal" href="#additional-notes-for-mac-os-x" id="id20">Additional notes for Mac OS X</a></li>
+<li><a class="reference internal" href="#additional-notes-for-windows" id="id21">Additional notes for Windows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#changelog" id="id22">Changelog</a><ul>
+<li><a class="reference internal" href="#id2" id="id23">1.7.0 (2011-05-27)</a></li>
+<li><a class="reference internal" href="#id3" id="id24">1.6 (12/01/2010)</a></li>
+<li><a class="reference internal" href="#id4" id="id25">1.5 (11/28/2010)</a></li>
+<li><a class="reference internal" href="#id5" id="id26">1.4 (11/28/2010)</a></li>
+<li><a class="reference internal" href="#id6" id="id27">1.3 (11/28/2010)</a></li>
+<li><a class="reference internal" href="#id7" id="id28">1.2 (08/02/2010)</a></li>
+<li><a class="reference internal" href="#id8" id="id29">1.1 (07/31/2010)</a></li>
+<li><a class="reference internal" href="#id9" id="id30">1.0 (07/30/2010)</a></li>
+</ul>
+</li>
+</ul>
+</div>
 <div class="section" id="pillow">
-<h1>Pillow</h1>
-<p>Pillow is a &quot;friendly&quot; fork of the Python Imaging Library. The goal is to see
-if any improvement can be made to the packaging situation(*) by opening up
-development to the &quot;public&quot;.</p>
-<p>Please email: <a class="reference external" href="mailto:aclark&#64;aclark.net">aclark&#64;aclark.net</a> if you'd like to help, or complain.</p>
-<p>(*)PIL has a bad reputation for not &quot;playing nice&quot; with other packages. It's
-kind of a long story, and you either know it by now or you don't. A better
-explanation may come later.</p>
-<p>For PIL's README, check out PIL.txt</p>
+<h1><a class="toc-backref" href="#id10">Pillow</a></h1>
+<p>Pillow is the &quot;friendly&quot; PIL fork. PIL is the Python Imaging Library.</p>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id11">Introduction</a></h2>
+<p>The (fork) author's goal is to foster packaging improvements by publicizing
+development and exploring packaging problems within the fork.</p>
+</div>
+<div class="section" id="justification">
+<h2><a class="toc-backref" href="#id12">Justification</a></h2>
+<p>PIL is currently not setuptools compatible. Please see
+<a class="reference external" href="http://mail.python.org/pipermail/image-sig/2010-August/006480.html">http://mail.python.org/pipermail/image-sig/2010-August/006480.html</a> for a
+more detailed explanation.</p>
+</div>
+<div class="section" id="python-imaging-library">
+<h2><a class="toc-backref" href="#id13">Python Imaging Library</a></h2>
+<p>What follows is (mostly) the original PIL documentation.</p>
+<div class="section" id="id1">
+<h3><a class="toc-backref" href="#id14">Introduction</a></h3>
+<p>The Python Imaging Library (PIL) adds image processing capabilities
+to your Python environment.  This library provides extensive file
+format support, an efficient internal representation, and powerful
+image processing capabilities.</p>
+<p>This source kit has been built and tested with Python 2.0 and newer,
+on Windows, Mac OS X, and major Unix platforms.  Large parts of the
+library also work on 1.5.2 and 1.6.</p>
+<p>The main distribution site for this software is:</p>
+<blockquote>
+<a class="reference external" href="http://www.pythonware.com/products/pil/">http://www.pythonware.com/products/pil/</a></blockquote>
+<p>That site also contains information about free and commercial support
+options, PIL add-ons, answers to frequently asked questions, and more.</p>
+<p>Development versions (alphas, betas) are available here:</p>
+<blockquote>
+<a class="reference external" href="http://effbot.org/downloads/">http://effbot.org/downloads/</a></blockquote>
+<p>The PIL handbook is not included in this distribution; to get the
+latest version, check:</p>
+<blockquote>
+<a class="reference external" href="http://www.pythonware.com/library/">http://www.pythonware.com/library/</a></blockquote>
+<p>For installation and licensing details, see below.</p>
+</div>
+<div class="section" id="support-options">
+<h3><a class="toc-backref" href="#id15">Support Options</a></h3>
+<div class="section" id="commercial-support">
+<h4><a class="toc-backref" href="#id16">Commercial Support</a></h4>
+<p>Secret Labs (PythonWare) offers support contracts for companies using
+the Python Imaging Library in commercial applications, and in mission-
+critical environments.  The support contract includes technical support,
+bug fixes, extensions to the PIL library, sample applications, and more.</p>
+<p>For the full story, check:</p>
+<blockquote>
+<a class="reference external" href="http://www.pythonware.com/products/pil/support.htm">http://www.pythonware.com/products/pil/support.htm</a></blockquote>
+</div>
+<div class="section" id="free-support">
+<h4><a class="toc-backref" href="#id17">Free Support</a></h4>
+<p>For support and general questions on the Python Imaging Library, send
+e-mail to the Image SIG mailing list:</p>
+<blockquote>
+<a class="reference external" href="mailto:image-sig&#64;python.org">image-sig&#64;python.org</a></blockquote>
+<p>You can join the Image SIG by sending a mail to:</p>
+<blockquote>
+<a class="reference external" href="mailto:image-sig-request&#64;python.org">image-sig-request&#64;python.org</a></blockquote>
+<p>Put &quot;subscribe&quot; in the message body to automatically subscribe to the
+list, or &quot;help&quot; to get additional information.  Alternatively, you can
+send your questions to the Python mailing list, <a class="reference external" href="mailto:python-list&#64;python.org">python-list&#64;python.org</a>,
+or post them to the newsgroup comp.lang.python.  DO NOT SEND SUPPORT
+QUESTIONS TO PYTHONWARE ADDRESSES.</p>
+</div>
+</div>
+<div class="section" id="software-license">
+<h3><a class="toc-backref" href="#id18">Software License</a></h3>
+<p>The Python Imaging Library is</p>
+<p>Copyright (c) 1997-2009 by Secret Labs AB
+Copyright (c) 1995-2009 by Fredrik Lundh</p>
+<p>By obtaining, using, and/or copying this software and/or its
+associated documentation, you agree that you have read, understood,
+and will comply with the following terms and conditions:</p>
+<p>Permission to use, copy, modify, and distribute this software and its
+associated documentation for any purpose and without fee is hereby
+granted, provided that the above copyright notice appears in all
+copies, and that both that copyright notice and this permission notice
+appear in supporting documentation, and that the name of Secret Labs
+AB or the author not be used in advertising or publicity pertaining to
+distribution of the software without specific, written prior
+permission.</p>
+<p>SECRET LABS AB AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO
+THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS.  IN NO EVENT SHALL SECRET LABS AB OR THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</p>
 </div>
 <div class="section" id="build-instructions-all-platforms">
-<h1>Build instructions (all platforms)</h1>
+<h3><a class="toc-backref" href="#id19">Build instructions (all platforms)</a></h3>
 <p>For a list of changes in this release, see the CHANGES document.</p>
-<p>If you're in a hurry, try this:</p>
+<ol class="arabic" start="0">
+<li><p class="first">If you're in a hurry, try this:</p>
 <pre class="literal-block">
 $ tar xvfz Imaging-1.1.7.tar.gz
 $ cd Imaging-1.1.7
 $ python setup.py install
 </pre>
 <p>If you prefer to know what you're doing, read on.</p>
-<div class="section" id="prerequisites">
-<h2>Prerequisites</h2>
+</li>
+<li><p class="first">Prerequisites.</p>
 <p>If you need any of the features described below, make sure you
-have the necessary libraries before building PIL:</p>
-<pre class="literal-block">
-feature              library
------------------------------------------------------------------
-JPEG support         libjpeg (6a or 6b)
-
-                     http://www.ijg.org
-                     http://www.ijg.org/files/jpegsrc.v6b.tar.gz
-                     ftp://ftp.uu.net/graphics/jpeg/
-
-PNG support          zlib (1.2.3 or later is recommended)
-
-                     http://www.gzip.org/zlib/
-
-OpenType/TrueType    freetype2 (2.3.9 or later is recommended)
-support
-                     http://www.freetype.org
-                     http://freetype.sourceforge.net
-
-CMS support          littleCMS (1.1.5 or later is recommended)
-support
-                     http://www.littlecms.com/
-</pre>
+have the necessary libraries before building PIL.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<tbody valign="top">
+<tr><td><p class="first last">feature</p>
+</td>
+<td><p class="first last">library</p>
+</td>
+</tr>
+<tr><td><p class="first last">JPEG support</p>
+</td>
+<td><p class="first">libjpeg (6a or 6b)</p>
+<p class="last"><a class="reference external" href="http://www.ijg.org">http://www.ijg.org</a>
+<a class="reference external" href="http://www.ijg.org/files/jpegsrc.v6b.tar.gz">http://www.ijg.org/files/jpegsrc.v6b.tar.gz</a>
+<a class="reference external" href="ftp://ftp.uu.net/graphics/jpeg/">ftp://ftp.uu.net/graphics/jpeg/</a></p>
+</td>
+</tr>
+<tr><td><p class="first last">PNG support</p>
+</td>
+<td><p class="first">zlib (1.2.3 or later is recommended)</p>
+<p class="last"><a class="reference external" href="http://www.gzip.org/zlib/">http://www.gzip.org/zlib/</a></p>
+</td>
+</tr>
+<tr><td><p class="first last">OpenType/TrueType
+support</p>
+</td>
+<td><p class="first">freetype2 (2.3.9 or later is recommended)</p>
+<p class="last"><a class="reference external" href="http://www.freetype.org">http://www.freetype.org</a>
+<a class="reference external" href="http://freetype.sourceforge.net">http://freetype.sourceforge.net</a></p>
+</td>
+</tr>
+<tr><td><p class="first last">CMS support</p>
+</td>
+<td><p class="first last">littleCMS (1.1.5 or later is recommended)
+<a class="reference external" href="http://www.littlecms.com/">http://www.littlecms.com/</a></p>
+</td>
+</tr>
+</tbody>
+</table>
 <p>If you have a recent Linux version, the libraries provided with the
 operating system usually work just fine.  If some library is
 missing, installing a prebuilt version (jpeg-devel, zlib-devel,
@@ -368,51 +511,64 @@ sudo apt-get install liblcms1-dev
 <p>If you're using Mac OS X, you can use the 'fink' tool to install
 missing libraries (also see the Mac OS X section below).</p>
 <p>Similar tools are available for many other platforms.</p>
-<p>To build under Python 1.5.2, you need to install the stand-alone
+</li>
+<li><p class="first">To build under Python 1.5.2, you need to install the stand-alone
 version of the distutils library:</p>
 <blockquote>
-<a class="reference external" href="http://www.python.org/sigs/distutils-sig/download.html">http://www.python.org/sigs/distutils-sig/download.html</a></blockquote>
+<p><a class="reference external" href="http://www.python.org/sigs/distutils-sig/download.html">http://www.python.org/sigs/distutils-sig/download.html</a></p>
+</blockquote>
 <p>You can fetch distutils 1.0.2 from the Python source repository:</p>
 <blockquote>
-svn export <a class="reference external" href="http://svn.python.org/projects/python/tags/Distutils-1_0_2/Lib/distutils/">http://svn.python.org/projects/python/tags/Distutils-1_0_2/Lib/distutils/</a></blockquote>
+<p>svn export <a class="reference external" href="http://svn.python.org/projects/python/tags/Distutils-1_0_2/Lib/distutils/">http://svn.python.org/projects/python/tags/Distutils-1_0_2/Lib/distutils/</a></p>
+</blockquote>
 <p>For newer releases, the distutils library is included in the
 Python standard library.</p>
 <p>NOTE: Version 1.1.7 is not fully compatible with 1.5.2.  Some
 more recent additions to the library may not work, but the core
 functionality is available.</p>
-<p>If you didn't build Python from sources, make sure you have
+</li>
+<li><p class="first">If you didn't build Python from sources, make sure you have
 Python's build support files on your machine.  If you've down-
 loaded a prebuilt package (e.g. a Linux RPM), you probably
 need additional developer packages.  Look for packages named
 &quot;python-dev&quot;, &quot;python-devel&quot;, or similar.  For example, for
 Ubuntu 9.10 (karmic), use the following command:</p>
 <blockquote>
-sudo apt-get install python-dev</blockquote>
-<p>When you have everything you need, unpack the PIL distribution
+<p>sudo apt-get install python-dev</p>
+</blockquote>
+</li>
+<li><p class="first">When you have everything you need, unpack the PIL distribution
 (the file Imaging-1.1.7.tar.gz) in a suitable work directory:</p>
-<blockquote>
+<pre class="literal-block">
 $ cd MyExtensions # example
 $ gunzip Imaging-1.1.7.tar.gz
-$ tar xvf Imaging-1.1.7.tar</blockquote>
-<p>Build the library.  We recommend that you do an in-place build,
-and run the self test before installing.</p>
-<blockquote>
+$ tar xvf Imaging-1.1.7.tar
+</pre>
+</li>
+<li><p class="first">Build the library.  We recommend that you do an in-place build,
+and run the self test before installing:</p>
+<pre class="literal-block">
 $ cd Imaging-1.1.7
 $ python setup.py build_ext -i
-$ python selftest.py</blockquote>
+$ python selftest.py
+</pre>
 <p>During the build process, the setup.py will display a summary
 report that lists what external components it found.  The self-
 test will display a similar report, with what external components
 the tests found in the actual build files:</p>
 <pre class="literal-block">
-----------------------------------------------------------------
-PIL 1.1.7 SETUP SUMMARY
-----------------------------------------------------------------
-*** TKINTER support not available (Tcl/Tk 8.5 libraries needed)
+--------------------------------------------------------------------
+Pillow 1.5 ( PIL fork based on PIL 1.1.7 ) SETUP SUMMARY
+--------------------------------------------------------------------
+platform  darwin 2.6.6 (r266:84292, Nov 26 2010, 16:24:16)
+  [GCC 4.2.1 (Apple Inc. build 5664)]
+--------------------------------------------------------------------
+--- TKINTER support available
 --- JPEG support available
 --- ZLIB (PNG/ZIP) support available
---- FREETYPE support available
-----------------------------------------------------------------
+*** FREETYPE2 support not available
+*** LITTLECMS support not available
+--------------------------------------------------------------------
 </pre>
 <p>Make sure that the optional components you need are included.</p>
 <p>If the build script won't find a given component, you can edit the
@@ -420,25 +576,30 @@ setup.py file and set the appropriate ROOT variable.  For details,
 see instructions in the file.</p>
 <p>If the build script finds the component, but the tests cannot
 identify it, try rebuilding <em>all</em> modules:</p>
-<blockquote>
+<pre class="literal-block">
 $ python setup.py clean
-$ python setup.py build_ext -i</blockquote>
-<p>If the setup.py and selftest.py commands finish without any
+$ python setup.py build_ext -i
+</pre>
+</li>
+<li><p class="first">If the setup.py and selftest.py commands finish without any
 errors, you're ready to install the library:</p>
-<blockquote>
-$ python setup.py install</blockquote>
+<pre class="literal-block">
+$ python setup.py install
+</pre>
 <p>(depending on how Python has been installed on your machine,
 you might have to log in as a superuser to run the 'install'
 command, or use the 'sudo' command to run 'install'.)</p>
+</li>
+</ol>
 <div class="section" id="additional-notes-for-mac-os-x">
-<h3>Additional notes for Mac OS X</h3>
+<h4><a class="toc-backref" href="#id20">Additional notes for Mac OS X</a></h4>
 <p>On Mac OS X you will usually install additional software such as
 libjpeg or freetype with the &quot;fink&quot; tool, and then it ends up in
 &quot;/sw&quot;.  If you have installed the libraries elsewhere, you may have
 to tweak the &quot;setup.py&quot; file before building.</p>
 </div>
 <div class="section" id="additional-notes-for-windows">
-<h3>Additional notes for Windows</h3>
+<h4><a class="toc-backref" href="#id21">Additional notes for Windows</a></h4>
 <p>On Windows, you need to tweak the ROOT settings in the &quot;setup.py&quot;
 file, to make it find the external libraries.  See comments in the
 file for details.</p>
@@ -463,12 +624,62 @@ popular MinGW compiler, see:</p>
 </div>
 </div>
 </div>
+</div>
 <div class="section" id="changelog">
-<h1>Changelog</h1>
-<div class="section" id="fri-jul-30-23-12-21-edt-2010">
-<h2>1.0 - Fri Jul 30 23:12:21 EDT 2010</h2>
+<h1><a class="toc-backref" href="#id22">Changelog</a></h1>
+<div class="section" id="id2">
+<h2><a class="toc-backref" href="#id23">1.7.0 (2011-05-27)</a></h2>
 <ul class="simple">
-<li>Forked PIL [aclark]</li>
+<li>Add support for multi-arch library directory /usr/lib/x86_64-linux-gnu
+[aclark]</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h2><a class="toc-backref" href="#id24">1.6 (12/01/2010)</a></h2>
+<ul class="simple">
+<li>Bug fix: /usr/x11/include should be added to include_dirs not library_dirs
+[elro]</li>
+<li>Doc fixes</li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h2><a class="toc-backref" href="#id25">1.5 (11/28/2010)</a></h2>
+<ul class="simple">
+<li>Module and package fixes</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h2><a class="toc-backref" href="#id26">1.4 (11/28/2010)</a></h2>
+<ul class="simple">
+<li>Doc fixes</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h2><a class="toc-backref" href="#id27">1.3 (11/28/2010)</a></h2>
+<ul class="simple">
+<li>Add support for /lib64 and /usr/lib64 library directories on Linux</li>
+<li>Doc fixes</li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h2><a class="toc-backref" href="#id28">1.2 (08/02/2010)</a></h2>
+<ul class="simple">
+<li>On OS X also check for freetype2 in the X11 path [jezdez]</li>
+<li>Doc fixes [aclark]</li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h2><a class="toc-backref" href="#id29">1.1 (07/31/2010)</a></h2>
+<ul class="simple">
+<li>Removed setuptools_hg requirement</li>
+<li>Doc fixes</li>
+</ul>
+</div>
+<div class="section" id="id9">
+<h2><a class="toc-backref" href="#id30">1.0 (07/30/2010)</a></h2>
+<ul class="simple">
+<li>Forked PIL based on Hanno Schlichting's re-packaging
+(<a class="reference external" href="http://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz">http://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz</a>)</li>
 </ul>
 </div>
 </div>

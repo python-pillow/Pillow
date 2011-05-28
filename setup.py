@@ -72,7 +72,7 @@ except ImportError:
 
 
 NAME = 'Pillow'
-VERSION = '1.6'
+VERSION = '1.7.0'
 PIL_VERSION = '1.1.7'
 TCL_ROOT = None
 JPEG_ROOT = None
@@ -120,6 +120,7 @@ class pil_build_ext(build_ext):
             if platform.processor() == "x86_64":
                 _add_directory(library_dirs, "/lib64")
                 _add_directory(library_dirs, "/usr/lib64")
+                _add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
 
         _add_directory(library_dirs, "/usr/local/lib")
         # FIXME: check /opt/stuff directories here?
