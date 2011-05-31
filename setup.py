@@ -121,6 +121,13 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/lib64")
                 _add_directory(library_dirs, "/usr/lib64")
                 _add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
+            else:
+                _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
+
+            # XXX Kludge. Above /\ we brute force support multiarch. Here we 
+            # try Barry's more general approach. Afterward, something should
+            # work ;-)
+            self.add_multiarch_paths()
 
         _add_directory(library_dirs, "/usr/local/lib")
         # FIXME: check /opt/stuff directories here?
@@ -418,6 +425,23 @@ class pil_build_ext(build_ext):
                 continue
             if m.group(1) < "1.2.3":
                 return m.group(1)
+
+    # http://hg.python.org/users/barry/rev/7e8deab93d5a
+    def add_multiarch_paths(self):
+        # Debian/Ubuntu multiarch support.
+        # https://wiki.ubuntu.com/MultiarchSpec
+        # self.build_temp 
+        tmpfile = os.path.join(self.build_temp, 'multiarch')
+        if not os.path.exists(self.build_temp):
+            os.makedirs(self.build_temp)
+        ret = os.system('dpkg-architecture -qDEB_HOST_MULTIARCH > %s' %
+                        tmpfile)
+        ret = os.system(
+            'dpkg-architecture -qDEB_HOST_MULTIARCH > %s 2> /dev/null' %
+            tmpfile)
+        try:
+            if ret >> 8 == 0:
+                with open(tmpfile) as fp:
 
 setup(
     name=NAME,
