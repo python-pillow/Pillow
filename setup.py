@@ -72,7 +72,7 @@ except ImportError:
 
 
 NAME = 'Pillow'
-VERSION = '1.7.0'
+VERSION = '1.7.1'
 PIL_VERSION = '1.1.7'
 TCL_ROOT = None
 JPEG_ROOT = None
@@ -442,6 +442,13 @@ class pil_build_ext(build_ext):
         try:
             if ret >> 8 == 0:
                 with open(tmpfile) as fp:
+                    multiarch_path_component = fp.readline().strip()
+                _add_directory(self.compiler.library_dirs,
+                    '/usr/lib/' + multiarch_path_component)
+                _add_directory(self.compiler.include_dirs,
+                    '/usr/include/' + multiarch_path_component)
+        finally:
+            os.unlink(tmpfile)
 
 setup(
     name=NAME,

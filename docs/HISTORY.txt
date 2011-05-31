@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.7.1 (2011-05-31)
+------------------
+
+- More multi-arch support
+  [SteveM, regebro, barry, aclark]
+
 1.7.0 (2011-05-27)
 ------------------
 
