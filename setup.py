@@ -72,7 +72,7 @@ except ImportError:
 
 
 NAME = 'Pillow'
-VERSION = '1.7.1'
+VERSION = '1.7.2'
 PIL_VERSION = '1.1.7'
 TCL_ROOT = None
 JPEG_ROOT = None
