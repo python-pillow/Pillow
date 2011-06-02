@@ -441,8 +441,8 @@ class pil_build_ext(build_ext):
             tmpfile)
         try:
             if ret >> 8 == 0:
-                with open(tmpfile) as fp:
-                    multiarch_path_component = fp.readline().strip()
+                fp = open(tmpfile, 'rb')
+                multiarch_path_component = fp.readline().strip()
                 _add_directory(self.compiler.library_dirs,
                     '/usr/lib/' + multiarch_path_component)
                 _add_directory(self.compiler.include_dirs,
