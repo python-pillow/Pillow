@@ -2,9 +2,17 @@
 Changelog
 =========
 
-1.7.2 (Unreleased)
+1.7.3 (2011-07-20)
 ------------------
 
+- Fix : resize need int values, append int conversion in thumbnail method 
+  [harobed]
+
+1.7.2 (2011-06-02)
+------------------
+
+- Bug fix: Python 2.4 compat
+  [aclark]
 
 1.7.1 (2011-05-31)
 ------------------
