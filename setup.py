@@ -26,8 +26,7 @@ _LIB_IMAGING = (
     "QuantHeap", "PcdDecode", "PcxDecode", "PcxEncode", "Point",
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
     "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
-    "XbmEncode", "ZipDecode", "ZipEncode"
-    )
+    "XbmEncode", "ZipDecode", "ZipEncode")
 
 
 def _add_directory(path, dir, where=None):
@@ -72,7 +71,7 @@ except ImportError:
 
 
 NAME = 'Pillow'
-VERSION = '1.7.4'
+VERSION = '1.7.5'
 PIL_VERSION = '1.1.7'
 TCL_ROOT = None
 JPEG_ROOT = None
@@ -99,8 +98,7 @@ class pil_build_ext(build_ext):
         if sys.platform == "cygwin":
             # pythonX.Y.dll.a is in the /usr/lib/pythonX.Y/config directory
             _add_directory(library_dirs, os.path.join(
-                "/usr/lib", "python%s" % sys.version[:3], "config"
-                ))
+                "/usr/lib", "python%s" % sys.version[:3], "config"))
 
         elif sys.platform == "darwin":
             # attempt to make sure we pick freetype2 over other versions
@@ -124,7 +122,7 @@ class pil_build_ext(build_ext):
             else:
                 _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
 
-            # XXX Kludge. Above /\ we brute force support multiarch. Here we 
+            # XXX Kludge. Above /\ we brute force support multiarch. Here we
             # try Barry's more general approach. Afterward, something should
             # work ;-)
             self.add_multiarch_paths()
@@ -286,8 +284,7 @@ class pil_build_ext(build_ext):
             defs.append(("WORDS_BIGENDIAN", None))
 
         exts = [(Extension(
-            "_imaging", files, libraries=libs, define_macros=defs
-            ))]
+            "_imaging", files, libraries=libs, define_macros=defs))]
 
         #
         # additional libraries
@@ -298,29 +295,25 @@ class pil_build_ext(build_ext):
                 defs.append(("USE_FREETYPE_2_0", None))
             exts.append(Extension(
                 "_imagingft", ["_imagingft.c"], libraries=["freetype"],
-                define_macros=defs
-                ))
+                define_macros=defs))
 
         if os.path.isfile("_imagingtiff.c") and feature.tiff:
             exts.append(Extension(
-                "_imagingtiff", ["_imagingtiff.c"], libraries=["tiff"]
-                ))
+                "_imagingtiff", ["_imagingtiff.c"], libraries=["tiff"]))
 
         if os.path.isfile("_imagingcms.c") and feature.lcms:
             extra = []
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
             exts.append(Extension(
-                "_imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra
-                ))
+                "_imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra))
 
         if sys.platform == "darwin":
             # locate Tcl/Tk frameworks
             frameworks = []
             framework_roots = [
                 "/Library/Frameworks",
-                "/System/Library/Frameworks"
-                ]
+                "/System/Library/Frameworks"]
             for root in framework_roots:
                 if (os.path.exists(os.path.join(root, "Tcl.framework")) and
                     os.path.exists(os.path.join(root, "Tk.framework"))):
@@ -334,14 +327,12 @@ class pil_build_ext(build_ext):
             if frameworks:
                 exts.append(Extension(
                     "_imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
-                    extra_compile_args=frameworks, extra_link_args=frameworks
-                    ))
+                    extra_compile_args=frameworks, extra_link_args=frameworks))
                 feature.tcl = feature.tk = 1  # mark as present
         elif feature.tcl and feature.tk:
             exts.append(Extension(
                 "_imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
-                libraries=[feature.tcl, feature.tk]
-                ))
+                libraries=[feature.tcl, feature.tk]))
 
         if os.path.isfile("_imagingmath.c"):
             exts.append(Extension("_imagingmath", ["_imagingmath.c"]))
@@ -362,7 +353,8 @@ class pil_build_ext(build_ext):
 
     def summary_report(self, feature, unsafe_zlib):
         print "-" * 68
-        print "Pillow", VERSION, "( PIL fork based on", "PIL", PIL_VERSION, ")", "SETUP SUMMARY"
+        print ("Pillow", VERSION, "( PIL fork based on", "PIL",
+            PIL_VERSION, ")", "SETUP SUMMARY")
         print "-" * 68
         v = string.split(sys.version, "[")
         print "platform ", sys.platform, string.strip(v[0])
@@ -430,7 +422,7 @@ class pil_build_ext(build_ext):
     def add_multiarch_paths(self):
         # Debian/Ubuntu multiarch support.
         # https://wiki.ubuntu.com/MultiarchSpec
-        # self.build_temp 
+        # self.build_temp
         tmpfile = os.path.join(self.build_temp, 'multiarch')
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
@@ -455,7 +447,7 @@ setup(
     version=VERSION,
     description='Python Imaging Library (fork)',
     long_description=(
-        _read('README.txt') +
+        _read('README.rst') +
         _read('docs/INSTALL.txt') +
         _read('docs/HISTORY.txt')),
     author='Alex Clark (fork author)',
@@ -473,5 +465,5 @@ setup(
     cmdclass={"build_ext": pil_build_ext},
     ext_modules=[Extension("_imaging", ["_imaging.c"])],
     packages=find_packages(),
-    scripts = glob.glob("Scripts/pil*.py"),
+    scripts=glob.glob("Scripts/pil*.py"),
     )

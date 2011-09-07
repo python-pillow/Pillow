@@ -2,6 +2,15 @@
 Changelog
 =========
 
+1.7.5 (2011-09-07)
+------------------
+
+- Fix for sys.platform = "linux3"
+  [blueyed]
+
+- Package cleanup
+  [aclark]
+
 1.7.4 (2011-07-21)
 ------------------
 
