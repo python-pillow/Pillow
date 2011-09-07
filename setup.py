@@ -352,14 +352,15 @@ class pil_build_ext(build_ext):
         self.summary_report(feature, unsafe_zlib)
 
     def summary_report(self, feature, unsafe_zlib):
+
         print "-" * 68
-        print ("Pillow", VERSION, "( PIL fork based on", "PIL",
-            PIL_VERSION, ")", "SETUP SUMMARY")
+        print "SETUP SUMMARY (Pillow", VERSION, "/ PIL %s)" % PIL_VERSION
         print "-" * 68
+        print "version      ", VERSION
         v = string.split(sys.version, "[")
-        print "platform ", sys.platform, string.strip(v[0])
+        print "platform     ", sys.platform, string.strip(v[0])
         for v in v[1:]:
-            print " ", string.strip("[" + v)
+            print "             ", string.strip("[" + v)
         print "-" * 68
 
         options = [
