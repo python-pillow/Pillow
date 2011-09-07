@@ -8,7 +8,7 @@ Changelog
 - Fix for sys.platform = "linux3"
   [blueyed]
 
-- Package cleanup
+- Package cleanup and additional documentation
   [aclark]
 
 1.7.4 (2011-07-21)
