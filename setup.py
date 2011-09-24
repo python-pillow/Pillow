@@ -453,7 +453,7 @@ setup(
         _read('docs/HISTORY.txt')),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
-    url='http://github.org/collective/Pillow',
+    url='http://github.com/collective/Pillow',
     classifiers=[
         "Development Status :: 6 - Mature",
         "Topic :: Multimedia :: Graphics",
