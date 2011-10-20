@@ -6,7 +6,7 @@ OleFileIO_PL:
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.20 2009-12-11 Philippe Lagadec - http://www.decalage.info
+version 0.21 2010-01-22 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -16,7 +16,7 @@ See: http://www.pythonware.com/products/pil/index.htm
 The Python Imaging Library (PIL) is
     Copyright (c) 1997-2005 by Secret Labs AB
     Copyright (c) 1995-2005 by Fredrik Lundh
-OleFileIO_PL changes are Copyright (c) 2005-2009 by Philippe Lagadec
+OleFileIO_PL changes are Copyright (c) 2005-2010 by Philippe Lagadec
 
 See source code and LICENSE.txt for information on usage and redistribution.
 
@@ -24,15 +24,15 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Fredrik Lundh (Secret Labs AB), Philippe Lagadec"
-__date__    = "2009-12-11"
-__version__ = '0.20'
+__date__    = "2010-01-22"
+__version__ = '0.21'
 
 #--- LICENSE ------------------------------------------------------------------
 
 # OleFileIO_PL is an improved version of the OleFileIO module from the
 # Python Imaging Library (PIL).
 
-# OleFileIO_PL changes are Copyright (c) 2005-2009 by Philippe Lagadec
+# OleFileIO_PL changes are Copyright (c) 2005-2010 by Philippe Lagadec
 #
 # The Python Imaging Library (PIL) is
 #    Copyright (c) 1997-2005 by Secret Labs AB
@@ -105,6 +105,7 @@ __version__ = '0.20'
 # 2009-12-10 v0.19 PL: - bugfix for 32 bit arrays on 64 bits platforms
 #                        (thanks to Ben G. and Martijn for reporting the bug)
 # 2009-12-11 v0.20 PL: - bugfix in OleFileIO.open when filename is not plain str
+# 2010-01-22 v0.21 PL: - added support for big-endian CPUs such as PowerPC Macs
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
@@ -191,7 +192,7 @@ __version__ = '0.20'
 
 #------------------------------------------------------------------------------
 
-import string, StringIO, struct, array, os.path
+import string, StringIO, struct, array, os.path, sys
 
 #[PL] Define explicitly the public API to avoid private objects in pydoc:
 __all__ = ['OleFileIO', 'isOleFile']
@@ -846,7 +847,7 @@ class OleFileIO:
         else:
             # string-like object
             self.fp = open(filename, "rb")
-        # old code fails if filename is not a plain string:
+        # old code fails if filename is not a plain string:   
         #if type(filename) == type(""):
         #    self.fp = open(filename, "rb")
         #else:
@@ -1086,6 +1087,16 @@ class OleFileIO:
                 print nom,
             print ""
 
+    def sect2array(self, sect):
+        """
+        convert a sector to an array of 32 bits unsigned integers,
+        swapping bytes on big endian CPUs such as PowerPC (old Macs)
+        """
+        a = array.array(UINT32, sect)
+        # if CPU is big endian, swap bytes:
+        if sys.byteorder == 'big':
+            a.byteswap()
+        return a        
 
 
     def loadfat_sect(self, sect):
@@ -1100,7 +1111,7 @@ class OleFileIO:
             fat1 = sect
         else:
             # if it's a raw sector, it is parsed in an array
-            fat1 = array.array(UINT32, sect)
+            fat1 = self.sect2array(sect)
             self.dumpsect(sect)
         # The FAT is a sector chain starting at the first index of itself.
         for isect in fat1:
@@ -1112,7 +1123,8 @@ class OleFileIO:
             s = self.getsect(isect)
             # parse it as an array of 32 bits integers, and add it to the
             # global FAT array
-            self.fat = self.fat + array.array(UINT32, s)
+            nextfat = self.sect2array(s)
+            self.fat = self.fat + nextfat
         return isect
 
 
@@ -1163,7 +1175,7 @@ class OleFileIO:
                 debug( "DIFAT block %d, sector %X" % (i, isect_difat) )
                 #TODO: check if corresponding FAT SID = DIFSECT
                 sector_difat = self.getsect(isect_difat)
-                difat = array.array(UINT32, sector_difat)
+                difat = self.sect2array(sector_difat)
                 self.dumpsect(sector_difat)
                 self.loadfat_sect(difat[:127])
                 # last DIFAT pointer is next DIFAT sector:
@@ -1213,7 +1225,7 @@ class OleFileIO:
         s = self._open(self.minifatsect, stream_size, force_FAT=True).read()
         #[PL] Old code replaced by an array:
         #self.minifat = map(lambda i, s=s: i32(s, i), range(0, len(s), 4))
-        self.minifat = array.array(UINT32, s)
+        self.minifat = self.sect2array(s)
         # Then shrink the array to used size, to avoid indexes out of MiniStream:
         debug('MiniFAT shrunk from %d to %d sectors' % (len(self.minifat), nb_minisectors))
         self.minifat = self.minifat[:nb_minisectors]
