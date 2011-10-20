@@ -6,7 +6,7 @@ OleFileIO_PL:
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.19 2009-12-10 Philippe Lagadec - http://www.decalage.info
+version 0.20 2009-12-11 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -24,8 +24,8 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Fredrik Lundh (Secret Labs AB), Philippe Lagadec"
-__date__    = "2009-12-10"
-__version__ = '0.19'
+__date__    = "2009-12-11"
+__version__ = '0.20'
 
 #--- LICENSE ------------------------------------------------------------------
 
@@ -104,6 +104,7 @@ __version__ = '0.19'
 #                      - added option '-c' in main to check all streams
 # 2009-12-10 v0.19 PL: - bugfix for 32 bit arrays on 64 bits platforms
 #                        (thanks to Ben G. and Martijn for reporting the bug)
+# 2009-12-11 v0.20 PL: - bugfix in OleFileIO.open when filename is not plain str
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
@@ -834,11 +835,22 @@ class OleFileIO:
         """
         Open an OLE2 file.
         Reads the header, FAT and directory.
+
+        filename: string-like or file-like object
         """
-        if type(filename) == type(""):
-            self.fp = open(filename, "rb")
-        else:
+        #[PL] check if filename is a string-like or file-like object:
+        # (it is better to check for a read() method)
+        if hasattr(filename, 'read'):
+            # file-like object
             self.fp = filename
+        else:
+            # string-like object
+            self.fp = open(filename, "rb")
+        # old code fails if filename is not a plain string:
+        #if type(filename) == type(""):
+        #    self.fp = open(filename, "rb")
+        #else:
+        #    self.fp = filename
 
         # lists of streams in FAT and MiniFAT, to detect duplicate references
         # (list of indexes of first sectors of each stream)
