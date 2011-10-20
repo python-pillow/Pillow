@@ -6,7 +6,9 @@ OleFileIO_PL:
     Microsoft Office documents, Image Composer and FlashPix files,
     Outlook messages, ...
 
-version 0.14 2007-11-19 Philippe Lagadec - http://lagasoft.free.fr
+version 0.15 2007-11-25 Philippe Lagadec - http://lagasoft.free.fr
+
+Project website: http://lagasoft.free.fr/python/olefileio
 
 Improved version of OleFileIO module from PIL library v1.1.6
 See: http://www.pythonware.com/products/pil/index.htm
@@ -22,8 +24,8 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Fredrik Lundh (Secret Labs AB), Philippe Lagadec"
-__date__    = "2007-11-19"
-__version__ = '0.14'
+__date__    = "2007-11-25"
+__version__ = '0.15'
 
 #-----------------------------------------------------------------------------
 # CHANGELOG: (OleFileIO_PL changes only)
@@ -44,10 +46,23 @@ __version__ = '0.14'
 # 2007-11-19 v0.14 PL: - added OleFileIO.raise_defect() to adapt sensitivity
 #                      - improved _unicode() to use Python 2.x unicode support
 #                      - fixed bug in _OleDirectoryEntry
+# 2007-11-25 v0.15 PL: - added safety checks to detect malformed documents
+#                      - fixed _OleStream which didn't check stream size
+#                      - added/improved many docstrings and comments
+#                      - moved helper functions _unicode and _clsid out of
+#                        OleFileIO class
+#                      - improved OleFileIO._find() to add Unix path syntax
+#                      - OleFileIO._find() is now case-insensitive
+#                      - added get_type() and get_rootentry_name()
+#                      - rewritten loaddirectory and _OleDirectoryEntry
 
 #-----------------------------------------------------------------------------
 # TODO:
+# - add underscore to each private method/constant, to avoid their display in
+#   pydoc/epydoc documentation
 # - replace all raised exceptions with raise_defect (at least in OleFileIO)
+# - add dictionary of directory entries indexed on filenames to avoid using
+#   _find() each time ?
 # - fix Unicode names handling (find some way to stay compatible with Py1.5.2)
 #   => if possible avoid converting names to Latin-1
 # - fix handling of DIFSECT blocks in FAT (not stop)
@@ -55,6 +70,7 @@ __version__ = '0.14'
 # - add (optional) checks on FAT block chains integrity to detect crossed
 #   sectors, loops, ...
 # - improve docstrings to show more sample uses
+# - fix docstrings to follow epydoc format
 # - see also original notes and FIXME below
 # - remove all obsolete FIXMEs
 #-----------------------------------------------------------------------------
@@ -142,27 +158,21 @@ else:
     def debug(msg):
         pass
 
-def i16(c, o = 0):
-    return ord(c[o])+(ord(c[o+1])<<8)
-
-def i32(c, o = 0):
-    return int(ord(c[o])+(ord(c[o+1])<<8)+(ord(c[o+2])<<16)+(ord(c[o+3])<<24))
-    # [PL]: added int() because "<<" gives long int since Python 2.4
-
-
 MAGIC = '\320\317\021\340\241\261\032\341'
 
-# [PL]: added constants (from AAF specifications)
+#[PL]: added constants for Sector IDs (from AAF specifications)
 MAXREGSECT = 0xFFFFFFFAL; # maximum SECT
 DIFSECT    = 0xFFFFFFFCL; # (-4) denotes a DIFAT sector in a FAT
 FATSECT    = 0xFFFFFFFDL; # (-3) denotes a FAT sector in a FAT
 ENDOFCHAIN = 0xFFFFFFFEL; # (-2) end of a virtual stream chain
 FREESECT   = 0xFFFFFFFFL; # (-1) unallocated sector
+
+#[PL]: added constants for Directory Entry IDs (from AAF specifications)
 MAXREGSID  = 0xFFFFFFFAL; # maximum directory entry ID
 NOSTREAM   = 0xFFFFFFFFL; # (-1) unallocated directory entry
 
 #[PL] object types in storage (from AAF specifications)
-STGTY_INVALID   = 0 # unknown storage type
+STGTY_EMPTY     = 0 # empty directory entry (according to OpenOffice.org doc)
 STGTY_STORAGE   = 1 # element is a storage object
 STGTY_STREAM    = 2 # element is a stream object
 STGTY_LOCKBYTES = 3 # element is an ILockBytes object
@@ -205,8 +215,79 @@ DEFECT_INCORRECT = 30    # an error according to specifications, but parsing
 DEFECT_FATAL =     40    # an error which cannot be ignored, parsing is
                          # impossible
 
-#
-# --------------------------------------------------------------------
+#--- FUNCTIONS ----------------------------------------------------------------
+
+#TODO: replace i16 and i32 with more readable struct.unpack equivalent
+def i16(c, o = 0):
+    """
+    Converts a 2-bytes (16 bits) string to an integer.
+
+    c: string containing bytes to convert
+    o: offset of bytes to convert in string
+    """
+    return ord(c[o])+(ord(c[o+1])<<8)
+
+
+def i32(c, o = 0):
+    """
+    Converts a 4-bytes (32 bits) string to an integer.
+
+    c: string containing bytes to convert
+    o: offset of bytes to convert in string
+    """
+    return int(ord(c[o])+(ord(c[o+1])<<8)+(ord(c[o+2])<<16)+(ord(c[o+3])<<24))
+    # [PL]: added int() because "<<" gives long int since Python 2.4
+
+
+def _clsid(clsid):
+    """
+    Converts a CLSID to a human-readable string.
+    clsid: string of length 16.
+    """
+    assert len(clsid) == 16
+    if clsid == "\0" * len(clsid):
+        return ""
+    return (("%08X-%04X-%04X-%02X%02X-" + "%02X" * 6) %
+            ((i32(clsid, 0), i16(clsid, 4), i16(clsid, 6)) +
+            tuple(map(ord, clsid[8:16]))))
+
+
+def _unicode(s):
+    """
+    Map unicode string to Latin 1.
+    """
+    #[PL]: use Python Unicode features when available (Python>=2.0):
+    #TODO: test this with old Python versions <2.0
+    #TODO: test if it OleFileIO works with Unicode strings, instead of
+    #      converting to Latin-1.
+    try:
+        # First the string is converted to plain Unicode:
+        # (assuming it is encoded as UTF-16 little-endian)
+        u = unicode(s, 'UTF-16LE')
+    except NameError:
+        # If the unicode function does not exist, we assume this is an old
+        # Python version without Unicode support.
+        # Null bytes are simply removed (this only works with usual Latin-1
+        # strings which do not contain unicode characters>256):
+        return filter(ord, s)
+    except ValueError:
+        # there was an error during UTF-16 to Unicode decoding:
+        self.raise_defect(DEFECT_INCORRECT, 'incorrect Unicode name')
+        # if no exception raised, fallback to foolproof version:
+        return filter(ord, s)
+    try:
+        # Second the unicode string is converted to Latin-1
+        return u.encode('latin_1')
+    except UnicodeError: # possible issue: this exception didn't exist before
+        # there was an error during Unicode to Latin-1 encoding:
+        self.raise_defect(DEFECT_INCORRECT, 'incorrect Unicode name')
+        # if no exception raised, fallback to foolproof version:
+        return filter(ord, s)
+
+
+#=== CLASSES ==================================================================
+
+#--- _OleStream ---------------------------------------------------------------
 
 class _OleStream(StringIO.StringIO):
     """
@@ -219,6 +300,9 @@ class _OleStream(StringIO.StringIO):
     This function can be used with either ordinary streams,
     or ministreams, depending on the offset, sectorsize, and
     fat table arguments.
+
+    Attributes:
+        - size: actual size of data stream, after it was opened.
     """
 
     # FIXME: should store the list of sects obtained by following
@@ -227,169 +311,267 @@ class _OleStream(StringIO.StringIO):
 
     def __init__(self, fp, sect, size, offset, sectorsize, fat):
         """
-        Constructor for _OleStream class
+        Constructor for _OleStream class.
+
+        fp        : file object, the OLE container
+        sect      : sector index of first sector in the stream
+        size      : total size of the stream
+        offset    : offset in bytes for the first FAT or MiniFAT sector
+        sectorsize: size of one sector
+        fat       : array/list of sector indexes (FAT or MiniFAT)
+        return    : a StringIO instance containing the OLE stream
         """
+        debug('_OleStream.__init__:')
+        debug('  size=%d, offset=%d, sectorsize=%d, len(fat)=%d'
+            %(size,offset,sectorsize,len(fat)))
+        #[PL] To detect malformed documents with FAT loops, we compute the
+        # expected number of sectors in the stream:
+        if size==0x7FFFFFFF:
+            # this is the case when called from OleFileIO._open(), and stream
+            # size is not known in advance (for example when reading the
+            # Directory stream). Then we can only guess maximum size:
+            size = len(fat)*sectorsize
+        nb_sectors = (size + (sectorsize-1)) / sectorsize
+        # This number should (at least) be less than the total number of
+        # sectors in the given FAT:
+        if nb_sectors > len(fat):
+            raise IOError, 'malformed OLE document, stream too large'
         # optimization(?): data is first a list of strings, and join() is called
         # at the end to concatenate all in one string.
         # (this may not be really useful with recent Python versions)
         data = []
-        # [PL]       while sect != -2: # 0xFFFFFFFEL:
-        while sect != ENDOFCHAIN:
+        #[PL] first sector index should be within FAT or ENDOFCHAIN:
+        if sect != ENDOFCHAIN and (sect<0 or sect>=len(fat)):
+            raise IOError, 'incorrect OLE FAT, sector index out of range'
+        #[PL] A fixed-length for loop is used instead of an undefined while
+        # loop to avoid DoS attacks:
+        for i in xrange(nb_sectors):
+            #TODO: check if this works with 4K sectors:
             fp.seek(offset + sectorsize * sect)
-            data.append(fp.read(sectorsize))
-            # [PL] if pointer is out of the FAT an exception is raised
-            if sect >= len(fat) :
-                raise IOError, 'incorrect FAT'
+            sector_data = fp.read(sectorsize)
+            # [PL] check if there was enough data:
+            if len(sector_data) != sectorsize:
+                raise IOError, 'incomplete OLE sector'
+            data.append(sector_data)
             # jump to next sector in the FAT:
-            sect = fat[sect]
+            try:
+                #[PL] sector index should not be negative, but Python allows it
+                if sect<0: raise IndexError
+                sect = fat[sect]
+                if sect == ENDOFCHAIN:
+                    # this may happen when size was not known:
+                    break
+            except IndexError:
+                # [PL] if pointer is out of the FAT an exception is raised
+                raise IOError, 'incorrect OLE FAT, sector index out of range'
+        #[PL] Last sector should be a "end of chain" marker:
+        if sect != ENDOFCHAIN:
+            raise IOError, 'incorrect last sector index in OLE stream'
         data = string.join(data, "")
+        # Data is truncated to the actual stream size:
+        if len(data) > size:
+            data = data[:size]
+            # actual stream size is stored for future use:
+            self.size = size
+        else:
+            # actual stream size was not known, now we know the size of read
+            # data:
+            self.size = len(data)
         # when all data is read in memory, StringIO constructor is called
-        StringIO.StringIO.__init__(self, data[:size])
+        StringIO.StringIO.__init__(self, data)
         # Then the _OleStream object can be used as a read-only file object.
 
-#
-# --------------------------------------------------------------------
+
+#--- _OleDirectoryEntry -------------------------------------------------------
 
 # FIXME: should add a counter in here to avoid looping forever
 # if the tree is broken.
 
 class _OleDirectoryEntry:
 
-    """OLE2 Directory Entry
-
-    Encapsulates a stream directory entry.  Note that the
-    constructor builds a tree of all subentries, so we only
-    have to call it with the root object.
+    """
+    OLE2 Directory Entry
     """
 
-    def __init__(self, sidlist, sid):
+    #[PL] parsing code moved from OleFileIO.loaddirectory
 
-        # store directory parameters.  the caller provides
-        # a complete list of directory entries, as read from
-        # the directory stream.
+    # struct to parse directory entries:
+    # <: little-endian byte order
+    # 64s: string containing entry name in unicode (max 31 chars) + null char
+    # H: uint16, number of bytes used in name buffer, including null = (len+1)*2
+    # B: uint8, dir entry type (between 0 and 5)
+    # B: uint8, color: 0=black, 1=red
+    # I: uint32, index of left child node in the red-black tree, NOSTREAM if none
+    # I: uint32, index of right child node in the red-black tree, NOSTREAM if none
+    # I: uint32, index of child root node if it is a storage, else NOSTREAM
+    # 16s: CLSID, unique identifier (only used if it is a storage)
+    # I: uint32, user flags
+    # 8s: uint64, creation timestamp or zero
+    # 8s: uint64, modification timestamp or zero
+    # I: uint32, SID of first sector if stream or ministream, SID of 1st sector
+    #    of stream containing ministreams if root entry, 0 otherwise
+    # I: uint32, total stream size in bytes if stream (low 32 bits), 0 otherwise
+    # I: uint32, total stream size in bytes if stream (high 32 bits), 0 otherwise
+    STRUCT_DIRENTRY = '<64sHBBIII16sI8s8sIII'
+    # size of a directory entry: 128 bytes
+    DIRENTRY_SIZE = 128
+    assert struct.calcsize(STRUCT_DIRENTRY) == DIRENTRY_SIZE
 
-        # [PL] conformity check
-        if sid >= len(sidlist) :
-            raise IOError, 'incorrect SID'
 
-        name, type, sect, size, sids, clsid = sidlist[sid]
-
-        self.sid  = sid
-        self.name = name
-        self.type = type # 1=storage 2=stream
-        self.sect = sect
-        self.size = size
-        self.clsid = clsid
-
-        # process child nodes, if any
-
+    def __init__(self, entry, sid, olefile):
+        """
+        Constructor for an _OleDirectoryEntry object.
+        Parses a 128-bytes entry from the OLE Directory stream.
+        
+        entry: string (must be 128 bytes long)
+        olefile: OleFileIO containing this directory entry
+        """
+        self.sid = sid
+        # ref to olefile is stored for future use
+        self.olefile = olefile
+        # kids is the list of children entries, if this entry is a storage:
+        # (list of _OleDirectoryEntry objects)
         self.kids = []
+        # flag used to detect if the entry is referenced more than once in
+        # directory:
+        self.used = False
+        # decode DirEntry
+        (
+            name,
+            namelength,
+            self.entry_type,
+            self.color,
+            self.sid_left,
+            self.sid_right,
+            self.sid_child,
+            clsid,
+            self.dwUserFlags,
+            self.createTime,
+            self.modifyTime,
+            self.isectStart,
+            sizeLow,
+            sizeHigh
+        ) = struct.unpack(_OleDirectoryEntry.STRUCT_DIRENTRY, entry)
+        if self.entry_type not in [STGTY_ROOT, STGTY_STORAGE, STGTY_STREAM, STGTY_EMPTY]:
+            olefile.raise_defect(DEFECT_INCORRECT, 'unhandled OLE storage type')
+        #debug (struct.unpack(fmt_entry, entry[:len_entry]))
+        # name should be at most 31 unicode characters + null character,
+        # so 64 bytes in total (31*2 + 2):
+        if namelength>64:
+            olefile.raise_defect(DEFECT_INCORRECT, 'incorrect DirEntry name length')
+            # if exception not raised, namelength is set to the maximum value:
+            namelength = 64
+        # only characters without ending null char are kept:
+        name = name[:(namelength-2)]
+        # name is converted from unicode to Latin-1:
+        self.name = _unicode(name)
+        # sizeHigh is only used for 4K sectors, it should be zero for 512 bytes
+        # sectors:
+        if olefile.sectorsize == 512 and sizeHigh != 0:
+            olefile.raise_defect(DEFECT_INCORRECT, 'incorrect OLE stream size')
+        self.size = sizeLow + (long(sizeHigh)<<32)
+        self.clsid = _clsid(clsid)
 
-        sid = sidlist[sid][4][2]
+        debug('DirEntry SID=%d: %s' % (self.sid, self.name))
+        debug(' - type: %d' % self.entry_type)
+        debug(' - sect: %d' % self.isectStart)
+        debug(' - size: %d (sizeLow=%d, sizeHigh=%d)' % (self.size, sizeLow, sizeHigh))
+        debug(' - SID left: %d, right: %d, child: %d' % (self.sid_left,
+            self.sid_right, self.sid_child))
 
-        # [PL]: original code from PIL 1.1.5
-        #if sid != -1
-        # [PL]: necessary fix for Python 2.4
-        if sid != NOSTREAM:
 
-            # the directory entries are organized as a red-black tree.
-            # the following piece of code does an ordered traversal of
-            # such a tree (at least that's what I hope ;-)
+    def build_storage_tree(self):
+        """
+        Read and build the red-black tree attached to this _OleDirectoryEntry
+        object, if it is a storage.
+        Note that this method builds a tree of all subentries, so it should
+        only be called for the root object once.
+        """
+        debug('build_storage_tree: SID=%d - %s - sid_child=%d'
+            % (self.sid, self.name, self.sid_child))
+        if self.sid_child != NOSTREAM:
+            # if child SID is not NOSTREAM, then this entry is a storage.
+            # Let's walk through the tree of children to fill the kids list:
+            self.append_kids(self.sid_child)
 
-            #[PL] Note from OpenOffice documentation: the safest way is to
+            # Note from OpenOffice documentation: the safest way is to
             # recreate the tree because some implementations may store broken
             # red-black trees...
 
-            stack = [self.sid]
-
-            # start at leftmost position
-
-            left, right, child = sidlist[sid][4]
-
-            #[PL] while left != -1 and left != 0xFFFFFFFFL:
-            while left != NOSTREAM:
-                stack.append(sid)
-                sid = left
-                left, right, child = sidlist[sid][4]
-
-            while sid != self.sid:
-
-                self.kids.append(_OleDirectoryEntry(sidlist, sid))
-
-                # try to move right
-
-                # [PL] conformity check
-                if sid >= len(sidlist) :
-                    raise IOError, 'incorrect SID'
-
-                left, right, child = sidlist[sid][4]
-                #[PL] if right != -1 and right != 0xFFFFFFFFL:
-                if right != NOSTREAM:
-                    # and then back to the left
-                    sid = right
-                    while 1:
-
-                        # [PL] conformity check
-                        if sid >= len(sidlist) :
-                            raise IOError, 'incorrect SID'
-
-                        left, right, child = sidlist[sid][4]
-                        #[PL] if left == -1 or left == 0xFFFFFFFFL:
-                        if left == NOSTREAM:
-                            break
-                        stack.append(sid)
-                        sid = left
-                else:
-                    # couldn't move right; move up instead
-                    while 1:
-                        ptr = stack[-1]
-                        del stack[-1]
-                        left, right, child = sidlist[ptr][4]
-                        if right != sid:
-                            break
-                        sid = right
-                    left, right, child = sidlist[sid][4]
-                    if right != ptr:
-                        sid = ptr
-
             # in the OLE file, entries are sorted on (length, name).
-            # for convenience, we sort them on name instead.
-
+            # for convenience, we sort them on name instead:
+            # (see __cmp__ method in this class)
             self.kids.sort()
+
+
+    def append_kids(self, child_sid):
+        """
+        Walk through red-black tree of children of this directory entry to add
+        all of them to the kids list. (recursive method)
+
+        child_sid : index of child directory entry to use, or None when called
+                    first time for the root. (only used during recursion)
+        """
+        #[PL] this method was added to use simple recursion instead of a complex
+        # algorithm.
+        # if this is not a storage or a leaf of the tree, nothing to do:
+        if child_sid == NOSTREAM:
+            return
+        # check if child SID is in the proper range:
+        if child_sid<0 or child_sid>=len(self.olefile.direntries):
+            self.olefile.raise_defect(DEFECT_FATAL, 'OLE DirEntry index out of range')
+        # get child direntry:
+        child = self.olefile.direntries[child_sid]
+        debug('append_kids: child_sid=%d - %s - sid_left=%d, sid_right=%d, sid_child=%d'
+            % (child.sid, child.name, child.sid_left, child.sid_right, child.sid_child))
+        # the directory entries are organized as a red-black tree.
+        # (cf. Wikipedia for details)
+        # First walk through left side of the tree:
+        self.append_kids(child.sid_left)
+        # Then the child_sid _OleDirectoryEntry object is appended to the
+        # kids list:
+        self.kids.append(child)
+        # Check if kid was not already referenced in a storage:
+        if child.used:
+            self.olefile.raise_defect(DEFECT_INCORRECT,
+                'OLE Entry referenced more than once')
+        child.used = True
+        # Finally walk through right side of the tree:
+        self.append_kids(child.sid_right)
+        # Afterwards build kid's own tree if it's also a storage:
+        child.build_storage_tree()
+
 
     def __cmp__(self, other):
         "Compare entries by name"
         return cmp(self.name, other.name)
+
 
     def dump(self, tab = 0):
         "Dump this entry, and all its subentries (for debug purposes only)"
         TYPES = ["(invalid)", "(storage)", "(stream)", "(lockbytes)",
                  "(property)", "(root)"]
 
-        print " "*tab + repr(self.name), TYPES[self.type],
-        if self.type in (2, 5):
+        print " "*tab + repr(self.name), TYPES[self.entry_type],
+        if self.entry_type in (STGTY_STREAM, STGTY_ROOT):
             print self.size, "bytes",
         print
-        if self.type in (1, 5) and self.clsid:
+        if self.entry_type in (STGTY_STORAGE, STGTY_ROOT) and self.clsid:
             print " "*tab + "{%s}" % self.clsid
 
         for kid in self.kids:
             kid.dump(tab + 2)
 
-#
-# --------------------------------------------------------------------
 
-##
-# This class encapsulates the interface to an OLE 2 structured
-# storage file.  Use the {@link listdir} and {@link openstream}
-# methods to access the contents of this file.
+#--- OleFileIO ----------------------------------------------------------------
 
 class OleFileIO:
-    """OLE container object
+    """
+    OLE container object
 
     This class encapsulates the interface to an OLE 2 structured
-    storage file.  Use the listdir and openstream methods to access
-    the contents of this file.
+    storage file.  Use the {@link listdir} and {@link openstream} methods to
+    access the contents of this file.
 
     Object names are given as a list of strings, one for each subentry
     level.  The root entry should be omitted.  For example, the following
@@ -415,6 +597,7 @@ class OleFileIO:
     def __init__(self, filename = None, raise_defects=DEFECT_FATAL):
         """
         Constructor for OleFileIO class.
+        
         filename: file to open.
         raise_defects: minimal level for defects to be raised as exceptions.
         (use DEFECT_FATAL for a typical application, DEFECT_INCORRECT for a
@@ -554,9 +737,7 @@ class OleFileIO:
         debug( "Number of sectors in the file: %d" % self.nb_sect )
 
         # file clsid (probably never used, so we don't store it)
-        clsid = self._clsid(header[8:24])
-
-        # FIXME: could check version and byte order fields
+        clsid = _clsid(header[8:24])
 
         self.sectorsize = 1 << i16(header, 30)
         self.minisectorsize = 1 << i16(header, 32)
@@ -566,12 +747,13 @@ class OleFileIO:
         # Load file allocation tables
         self.loadfat(header)
 
-        # Load direcory.  This sets both the sidlist (ordered by id)
+        # Load direcory.  This sets both the direntries list (ordered by sid)
         # and the root (ordered by hierarchy) members.
         self.loaddirectory(i32(header, 48))
 
         self.ministream = None
         self.minifatsect = i32(header, 60)
+
 
     def dumpfat(self, fat, firstindex=0):
         "Displays a part of FAT in human-readable form for debugging purpose"
@@ -609,6 +791,7 @@ class OleFileIO:
                 print nom,
             print ""
 
+
     def dumpsect(self, sector, firstindex=0):
         "Displays a sector in a human-readable form, for debugging purpose."
         if not DEBUG_MODE:
@@ -635,19 +818,29 @@ class OleFileIO:
 
 
     def loadfat_sect(self, sect):
-        "Adds the indexes of the given sector to the FAT"
+        """
+        Adds the indexes of the given sector to the FAT
+        sect: string containing the first FAT sector, or array of long integers
+        return: index of last FAT sector.
+        """
         # a FAT sector is an array of ulong integers.
         if isinstance(sect, array.array):
+            # if sect is already an array it is directly used
             fat1 = sect
         else:
+            # if it's a raw sector, it is parsed in an array
             fat1 = array.array('L', sect)
             self.dumpsect(sect)
-        # The FAT is a sector chain starting a the first index of itself.
+        # The FAT is a sector chain starting at the first index of itself.
         for isect in fat1:
             #print "isect = %X" % isect
             if isect == ENDOFCHAIN or isect == FREESECT:
+                # the end of the sector chain has been reached
                 break
+            # read the FAT sector
             s = self.getsect(isect)
+            # parse it as an array of 32 bits integers, and add it to the
+            # global FAT array
             self.fat = self.fat + array.array('L', s)
         return isect
 
@@ -715,6 +908,7 @@ class OleFileIO:
 ##              raise IOError, 'incorrect DIFAT'
         self.dumpfat(self.fat)
 
+
     def loadminifat(self):
         """
         Load the MiniFAT table.
@@ -747,35 +941,6 @@ class OleFileIO:
             self.raise_defect(DEFECT_FATAL, 'incomplete OLE sector')
         return sector
 
-    def _unicode(self, s):
-        """
-        Map unicode string to Latin 1.
-        """
-        # FIXME: some day, Python will provide an official way to handle
-        # Unicode strings, but until then, this will have to do...
-        
-        #[PL]: use Python Unicode when available (Python>=2.0):
-        try:
-            # First the string is converted to plain Unicode:
-            # (assuming it is encoded as UTF-16 little-endian)
-            u = unicode(s, 'UTF-16LE')
-            # Second the string is converted to Latin-1
-            return u.encode('latin_1')
-        except ValueError:
-            # there was an error during UTF-16 to Unicode decoding:
-            self.raise_defect(DEFECT_INCORRECT, 'incorrect Unicode name')
-            # if no exception raised, fallback to foolproof version:
-            return filter(ord, s)
-        except UnicodeError:
-            # there was an error during Unicode to Latin-1 encoding:
-            self.raise_defect(DEFECT_INCORRECT, 'incorrect Unicode name')
-            # if no exception raised, fallback to foolproof version:
-            return filter(ord, s)
-        except:
-            # we assume this is an old Python version without Unicode support.
-            # Null bytes are simply removed:
-            return filter(ord, s)
-
 
     def loaddirectory(self, sect):
         """
@@ -786,101 +951,41 @@ class OleFileIO:
         # substream, independent of its size.
 
         # open directory stream as a read-only file:
+        # (stream size is not known in advance)
         fp = self._open(sect)
 
-        # create list of sid entries
-        self.sidlist = []
-        while 1:
+        #[PL] to detect malformed documents and avoid DoS attacks, the maximum
+        # number of directory entries can be calculated:
+        max_entries = fp.size / 128
+        debug('loaddirectory: size=%d, max_entries=%d' % (fp.size, max_entries))
+
+        # Create list of directory entries
+        self.direntries = []
+        for sid in xrange(max_entries):
             entry = fp.read(128)
             if not entry:
                 break
-            #[PL] décodage DirEntry
-            fmt_entry = "<64sHBBLLL16sLQQLLH"
-            len_entry = struct.calcsize(fmt_entry)
-            #debug("taille DirEntry: %d" % len_entry)
-            (name, namelength, type, color, sid_left, sid_right, sid_child,
-            clsid, dwUserFlags, createTime, modifyTime, isectStart, sizeLow,
-            sizeHigh) = struct.unpack(fmt_entry, entry[:len_entry])
-            #debug("namelength = %d" % namelength)
-            if type == STGTY_INVALID:
-                break
-            if type not in [STGTY_ROOT, STGTY_STORAGE, STGTY_STREAM]:
-                raise IOError, 'unhandled storage type'
-            #debug (struct.unpack(fmt_entry, entry[:len_entry]))
-            # vérification et conversion du nom Unicode
-            # on a au maximum 31 caractères + le zéro terminal
-            if namelength>64:
-                raise IOError, 'incorrect DirEntry name length'
-            # on ne garde que les caractères sans le zéro terminal
-            name = name[:(namelength-2)]
-            # on convertit la chaîne d'octets en véritable chaîne Unicode
-            name = unicode(name, 'utf_16_le')
-            debug("DirEntry: '%s'" % name)
-            # Si cette chaîne contient un caractère nul c'est que le champ
-            # namelength est incorrect:
-            if unichr(0) in name:
-                debug(len(name))
-                debug(binascii.hexlify(name))
-                raise IOError, 'incorrect DirEntry name length'
-            debug("type:%d" % type)
+            self.direntries.append(_OleDirectoryEntry(entry, sid, self))
+        # Root entry is the first entry:
+        self.root = self.direntries[0]
+        # read and build all storage trees, starting from the root:
+        self.root.build_storage_tree()
 
-            type = ord(entry[66])
-            name = self._unicode(entry[0:0+i16(entry, 64)])
-            ptrs = i32(entry, 68), i32(entry, 72), i32(entry, 76)
-            sect, size = i32(entry, 116), i32(entry, 120)
-            clsid = self._clsid(entry[80:96])
-            self.sidlist.append((name, type, sect, size, ptrs, clsid))
-
-        # create hierarchical list of directory entries
-        self.root = _OleDirectoryEntry(self.sidlist, 0)
 
     def dumpdirectory(self):
-        # Dump directory (for debugging only)
+        """
+        Dump directory (for debugging only)
+        """
         self.root.dump()
 
-    def _clsid(self, clsid):
-        "Converts a CLSID to a human-readable string"
-        if clsid == "\0" * len(clsid):
-            return ""
-        return (("%08X-%04X-%04X-%02X%02X-" + "%02X" * 6) %
-                ((i32(clsid, 0), i16(clsid, 4), i16(clsid, 6)) +
-                tuple(map(ord, clsid[8:16]))))
-
-    def _list(self, files, prefix, node):
-        "listdir helper"
-
-        prefix = prefix + [node.name]
-        for entry in node.kids:
-            if entry.kids:
-                self._list(files, prefix, entry)
-            else:
-                files.append(prefix[1:] + [entry.name])
-
-    def _find(self, filename):
-        """
-        Returns directory entry of given filename.
-        filename: list of storage filenames, path to the desired stream/storage.
-        Example: ['Root Entry', 'storage_1', 'storage_1.2', 'stream']
-        (openstream helper)
-        """
-        #TODO: if filename is a string instead of a list, split it on slashes
-        # to allow a more common way of expressing paths ?
-        node = self.root
-        for name in filename:
-            for kid in node.kids:
-                if kid.name == name:
-                    break
-            else:
-                raise IOError, "file not found"
-            node = kid
-        return node.sid
 
     def _open(self, start, size = 0x7FFFFFFF):
         """
-        Opens a stream, either in FAT or MiniFAT according to its size.
+        Open a stream, either in FAT or MiniFAT according to its size.
         (openstream helper)
+        
         start: index of first sector
-        size: size of stream
+        size: size of stream (or nothing if size is unknown)
         """
         # stream size is compared to the MiniSectorCutoff threshold:
         if size < self.minisectorcutoff:
@@ -888,7 +993,9 @@ class OleFileIO:
             if not self.ministream:
                 # load MiniFAT if it wasn't already done:
                 self.loadminifat()
-                self.ministream = self._open(self.sidlist[0][2])
+                # The first sector index of the miniFAT stream is stored in the
+                # root directory entry:
+                self.ministream = self._open(self.root.isectStart)
             return _OleStream(self.ministream, start, size, 0,
                               self.minisectorsize, self.minifat)
         else:
@@ -896,8 +1003,21 @@ class OleFileIO:
             return _OleStream(self.fp, start, size, 512,
                               self.sectorsize, self.fat)
 
-    ##
-    # Returns a list of streams stored in this file.
+
+    def _list(self, files, prefix, node):
+        """
+        (listdir helper)
+        files: list of files to fill in
+        prefix: current location in storage tree (list of names)
+        node: current node (_OleDirectoryEntry object)
+        """
+        prefix = prefix + [node.name]
+        for entry in node.kids:
+            if entry.kids:
+                self._list(files, prefix, entry)
+            else:
+                files.append(prefix[1:] + [entry.name])
+
 
     def listdir(self):
         """
@@ -907,36 +1027,108 @@ class OleFileIO:
         self._list(files, [], self.root)
         return files
 
-    ##
-    # Opens a stream as a read-only file object.
+
+    def _find(self, filename):
+        """
+        Returns directory entry of given filename. (openstream helper)
+        Note: this method is case-insensitive.
+
+        filename: path of stream in storage tree (except root entry), either:
+            - a string using Unix path syntax, for example:
+              'storage_1/storage_1.2/stream'
+            - a list of storage filenames, path to the desired stream/storage.
+              Example: ['storage_1', 'storage_1.2', 'stream']
+        return: sid of requested filename
+        raise IOError if file not found
+        """
+
+        # if filename is a string instead of a list, split it on slashes to
+        # convert to a list:
+        if isinstance(filename, basestring):
+            filename = filename.split('/')
+        # walk across storage tree, following given path:
+        node = self.root
+        for name in filename:
+            for kid in node.kids:
+                if kid.name.lower() == name.lower():
+                    break
+            else:
+                raise IOError, "file not found"
+            node = kid
+        return node.sid
+
 
     def openstream(self, filename):
         """
-        Open a stream as a read-only file object
+        Open a stream as a read-only file object (StringIO).
+        
+        filename: path of stream in storage tree (except root entry), either:
+            - a string using Unix path syntax, for example:
+              'storage_1/storage_1.2/stream'
+            - a list of storage filenames, path to the desired stream/storage.
+              Example: ['storage_1', 'storage_1.2', 'stream']
+        return: file object (read-only)
+        raise IOError if filename not found, or if this is not a stream.
         """
-        slot = self._find(filename)
-        name, type, sect, size, sids, clsid = self.sidlist[slot]
-        if type != 2:
+        sid = self._find(filename)
+        entry = self.direntries[sid]
+        if entry.entry_type != STGTY_STREAM:
             raise IOError, "this file is not a stream"
-        return self._open(sect, size)
+        return self._open(entry.isectStart, entry.size)
 
-    ##
-    # Gets a list of properties described in substream.
+
+    def get_type(self, filename):
+        """
+        Test if given filename exists as a stream or a storage in the OLE
+        container, and return its type.
+
+        filename: path of stream in storage tree (except root entry), either:
+            - a string using Unix path syntax, for example:
+              'storage_1/storage_1.2/stream'
+            - a list of storage filenames, path to the desired stream/storage.
+              Example: ['storage_1', 'storage_1.2', 'stream']
+        return: False if object does not exist, its entry type (>0) otherwise:
+            - STGTY_STREAM: a stream
+            - STGTY_STORAGE: a storage
+            - STGTY_ROOT: the root entry
+        """
+        try:
+            sid = self._find(filename)
+            entry = self.direntries[sid]
+            return entry.entry_type
+        except:
+            return False
+
+
+    def get_rootentry_name(self):
+        """
+        Return root entry name. Should usually be 'Root Entry' or 'R' in most
+        implementations.
+        """
+        return self.root.name
+
 
     def getproperties(self, filename):
-        """Return properties described in substream"""
+        """
+        Return properties described in substream
 
+        filename: path of stream in storage tree (except root entry), either:
+            - a string using Unix path syntax, for example:
+              'storage_1/storage_1.2/stream'
+            - a list of storage filenames, path to the desired stream/storage.
+              Example: ['storage_1', 'storage_1.2', 'stream']
+        """
         fp = self.openstream(filename)
 
         data = {}
 
         # header
         s = fp.read(28)
-        clsid = self._clsid(s[8:24])
+        clsid = _clsid(s[8:24])
 
         # format id
         s = fp.read(20)
-        fmtid = self._clsid(s[:16])
+        fmtid = _clsid(s[:16])
         fp.seek(i32(s, 16))
 
         # get section
@@ -978,7 +1170,7 @@ class OleFileIO:
             elif type == VT_UI1:
                 value = ord(s[offset+4])
             elif type == VT_CLSID:
-                value = self._clsid(s[offset+4:offset+20])
+                value = _clsid(s[offset+4:offset+20])
             elif type == VT_CF:
                 count = i32(s, offset+4)
                 value = s[offset+8:offset+8+count]
@@ -1012,7 +1204,7 @@ if __name__ == "__main__":
 
     for filename in sys.argv[1:]:
 ##      try:
-            ole = OleFileIO(filename)
+            ole = OleFileIO(filename, raise_defects=DEFECT_INCORRECT)
             print "-" * 68
             print filename
             print "-" * 68
@@ -1025,5 +1217,9 @@ if __name__ == "__main__":
                     props.sort()
                     for k, v in props:
                         print "   ", k, v
+            root = ole.get_rootentry_name()
+            print 'Root entry name: "%s"' % root
+            if ole.get_type('macros/vba'):
+                print "This may be a Word document with VBA macros."
 ##      except IOError, v:
 ##          print "***", "cannot read", file, "-", v
