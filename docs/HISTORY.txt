@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.7.6 (Unreleased)
+------------------
+
+- Bug fix: freetype not found on Mac OS X with case-sensitive filesystem
+  [gjo]
+
 1.7.5 (2011-09-07)
 ------------------
 

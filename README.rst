@@ -26,6 +26,21 @@ more detailed explanation. Also, PIL's current release/maintenance schedule
 is not compatible with the various & frequent packaging issues that have
 occured.
 
+What about image code bugs?
+---------------------------
+
+Please report any non-packaging related issues here first:
+
+- https://bitbucket.org/effbot/pil-2009-raclette/issues 
+
+Then open a ticket here:
+
+- https://github.com/collective/Pillow/issues
+
+and provide a link to the first ticket so we can track the issue(s) upstream.
+This project does not aim to fix image code bugs, but if we can track them
+properly we may consider it. (And the image code could potentially be wholesale
+replaced when the next PIL release comes out.)
 
 Python Imaging Library
 ======================
