@@ -1494,11 +1494,11 @@ class Image:
     def split(self):
         "Split image into bands"
 
+        self.load()
         if self.im.bands == 1:
             ims = [self.copy()]
         else:
             ims = []
-            self.load()
             for i in range(self.im.bands):
                 ims.append(self._new(self.im.getband(i)))
         return tuple(ims)
