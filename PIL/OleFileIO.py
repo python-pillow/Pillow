@@ -6,7 +6,7 @@ OleFileIO_PL:
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.21 2010-01-22 Philippe Lagadec - http://www.decalage.info
+version 0.22 2012-02-16 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -16,7 +16,7 @@ See: http://www.pythonware.com/products/pil/index.htm
 The Python Imaging Library (PIL) is
     Copyright (c) 1997-2005 by Secret Labs AB
     Copyright (c) 1995-2005 by Fredrik Lundh
-OleFileIO_PL changes are Copyright (c) 2005-2010 by Philippe Lagadec
+OleFileIO_PL changes are Copyright (c) 2005-2012 by Philippe Lagadec
 
 See source code and LICENSE.txt for information on usage and redistribution.
 
@@ -24,15 +24,15 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Fredrik Lundh (Secret Labs AB), Philippe Lagadec"
-__date__    = "2010-01-22"
-__version__ = '0.21'
+__date__    = "2012-02-16"
+__version__ = '0.22'
 
 #--- LICENSE ------------------------------------------------------------------
 
 # OleFileIO_PL is an improved version of the OleFileIO module from the
 # Python Imaging Library (PIL).
 
-# OleFileIO_PL changes are Copyright (c) 2005-2010 by Philippe Lagadec
+# OleFileIO_PL changes are Copyright (c) 2005-2012 by Philippe Lagadec
 #
 # The Python Imaging Library (PIL) is
 #    Copyright (c) 1997-2005 by Secret Labs AB
@@ -106,6 +106,8 @@ __version__ = '0.21'
 #                        (thanks to Ben G. and Martijn for reporting the bug)
 # 2009-12-11 v0.20 PL: - bugfix in OleFileIO.open when filename is not plain str
 # 2010-01-22 v0.21 PL: - added support for big-endian CPUs such as PowerPC Macs
+# 2012-02-16 v0.22 PL: - fixed bug in getproperties, patch by chuckleberryfinn
+#                        (https://bitbucket.org/decalage/olefileio_pl/issue/7)
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
@@ -847,7 +849,7 @@ class OleFileIO:
         else:
             # string-like object
             self.fp = open(filename, "rb")
-        # old code fails if filename is not a plain string:   
+        # old code fails if filename is not a plain string:
         #if type(filename) == type(""):
         #    self.fp = open(filename, "rb")
         #else:
@@ -1096,7 +1098,7 @@ class OleFileIO:
         # if CPU is big endian, swap bytes:
         if sys.byteorder == 'big':
             a.byteswap()
-        return a        
+        return a
 
 
     def loadfat_sect(self, sect):
@@ -1540,7 +1542,7 @@ class OleFileIO:
                 value = s[offset+8:offset+8+count]
             elif type == VT_LPWSTR:
                 count = i32(s, offset+4)
-                value = self._unicode(s[offset+8:offset+8+count*2])
+                value = _unicode(s[offset+8:offset+8+count*2])
             elif type == VT_FILETIME:
                 value = long(i32(s, offset+4)) + (long(i32(s, offset+8))<<32)
                 # FIXME: this is a 64-bit int: "number of 100ns periods
