@@ -108,6 +108,7 @@ __version__ = '0.22'
 # 2010-01-22 v0.21 PL: - added support for big-endian CPUs such as PowerPC Macs
 # 2012-02-16 v0.22 PL: - fixed bug in getproperties, patch by chuckleberryfinn
 #                        (https://bitbucket.org/decalage/olefileio_pl/issue/7)
+#                      - added close method to OleFileIO (fixed issue #2)
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
@@ -1002,6 +1003,13 @@ class OleFileIO:
         self.loaddirectory(self.sectDirStart)#i32(header, 48))
         self.ministream = None
         self.minifatsect = self.MiniFatStart #i32(header, 60)
+
+
+    def close(self):
+        """
+        close the OLE file, to release the file object
+        """
+        self.fp.close()
 
 
     def _check_duplicate_stream(self, first_sect, minifat=False):
