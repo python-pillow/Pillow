@@ -45,15 +45,15 @@ replaced when the next PIL release comes out.)
 Documentation
 -------------
 
-The documentation included with PIL has been converted (from HTML) to
+The API documentation included with PIL has been converted (from HTML) to
 reStructured text (via pandoc) and is now `hosted by readthedocs.org`_.
 
 .. _`hosted by readthedocs.org`: http://pillow.readthedocs.org
 
+What follows is the original PIL README.
+
 Python Imaging Library
 ======================
-
-What follows is (mostly) the original PIL documentation.
 
 Introduction
 ------------
