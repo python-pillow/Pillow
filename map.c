@@ -29,6 +29,10 @@
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
+#undef INT8
+#undef UINT8
+#undef INT16
+#undef UINT16
 #undef INT32
 #undef INT64
 #undef UINT32

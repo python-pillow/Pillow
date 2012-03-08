@@ -14,6 +14,10 @@
 
 #if (defined(_MSC_VER) && _MSC_VER >= 1200) || (defined __GNUC__)
 /* already defined in basetsd.h */
+#undef INT8
+#undef UINT8
+#undef INT16
+#undef UINT16
 #undef INT32
 #undef INT64
 #undef UINT32
