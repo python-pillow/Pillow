@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.7.7 (2012-04-04)
+------------------
+
+- UNDEF more types before including windows headers
+  [mattip]
+
 1.7.6 (2012-01-20)
 ------------------
 
