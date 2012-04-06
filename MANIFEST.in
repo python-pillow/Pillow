@@ -6,3 +6,4 @@ exclude SHIP
 exclude SHIP.bat
 recursive-exclude Tests *
 recursive-include docs *.txt
+include *.rst
