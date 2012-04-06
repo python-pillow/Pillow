@@ -9,3 +9,5 @@ include *.c
 recursive-exclude Tests *
 recursive-include docs *.txt
 recursive-include libImaging *.c *.h
+recursive-include Tk *.c *.txt
+recursive-include Sane *.c *.txt
