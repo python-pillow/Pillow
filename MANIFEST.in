@@ -5,6 +5,7 @@ exclude make-manifest.py
 exclude SHIP
 exclude SHIP.bat
 include *.rst
+include *.c
 recursive-exclude Tests *
 recursive-include docs *.txt
 recursive-include libImaging *.c *.h
