@@ -8,3 +8,4 @@ dist/
 .idea/
 .project/
 Demos/ignores/
+Pillow.egg-info/

@@ -2,11 +2,15 @@
 from PIL import Image, ImageDraw, ImageFont
 import sys
 
-BLACK = 0
-WHITE = 255
+BLACK = "#ffffff"
+WHITE = "#000000"
 
-canvas_w, canvas_h = 100, 100
-im = Image.new(mode = "L", size = (canvas_w, canvas_h), color = WHITE)
+fg_color = WHITE
+bg_color = BLACK
+
+
+canvas_w, canvas_h = 180, 50
+im = Image.new(mode = "RGB", size = (canvas_w, canvas_h), color = bg_color)
 
 draw = ImageDraw.Draw(im = im)
 
@@ -14,7 +18,6 @@ left_top_x, left_top_y = 10, 10
 begin = left_top_x, left_top_y
 
 text = "hello world"
-fill = "#000"
 
 if sys.platform == "darwin":
     filename = "/Library/Fonts/Microsoft/Times New Roman Bold.ttf"
@@ -23,9 +26,9 @@ elif sys.platform == "win32":
     filename = "timesbd.ttf"
 else:
     raise Exception
-font_size = 14
+font_size = 26
 font = ImageFont.truetype(filename = filename, size = font_size)
 
-draw.text(xy = begin, text = text, fill = fill, font = font)
+draw.text(xy = begin, text = text, fill = fg_color, font = font)
 
 im.save("draw_text.bmp")
