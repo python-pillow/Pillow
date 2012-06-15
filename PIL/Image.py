@@ -51,9 +51,7 @@ try:
     # the "open" function to identify files, but you cannot load
     # them.  Note that other modules should not refer to _imaging
     # directly; import Image and use the Image.core variable instead.
-    import _imaging
-    core = _imaging
-    del _imaging
+    import _imaging as core
 except ImportError, v:
     core = _imaging_not_installed()
     if str(v)[:20] == "Module use of python" and warnings:
