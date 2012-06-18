@@ -1,13 +1,23 @@
-# Resources about PIL
+# Resources About PIL
 
 PIL Handbook
-http://www.pythonware.com/library/pil/handbook/index.htm
 
-python 简单图像处理 series, ￥lan￥
-http://www.cnblogs.com/xianglan/archive/2010/12/25/1916953.html
+ - http://www.pythonware.com/library/pil/handbook/index.htm
 
-PIL 学习笔记 series, Neil Chen
-http://www.cnblogs.com/RChen/archive/2007/03/31/pil_1.html
+
+PIL Tutorial
+
+ - http://www.pythonware.com/library/pil/handbook/introduction.htm
+ - http://nadiana.com/category/pil
+
+
+## Images used in These Demos
+
+
+http://www.cs.cmu.edu/~chuck/lennapg/
+
+    wget http://www.cs.cmu.edu/~chuck/lennapg/lena_std.tif -O image_resources/lena_std.tif
+    wget http://www.cs.cmu.edu/~chuck/lennapg/len_std.jpg -O image_resources/len_std.jpg
 
 
 ## Build it on Mac OS X 10.6.8
@@ -24,6 +34,7 @@ Build an egg for x86_64 with Python 2.7(install it via MacPorts)
 
     python setup.py bdist_egg
 
-## Install it via Package Mangement System
 
-HomeBrew is cool, you could use it instaed of MacPorts on OS X.
+## Install it via Package Management System
+
+HomeBrew is cool, you could use it instead of MacPorts on OS X.
