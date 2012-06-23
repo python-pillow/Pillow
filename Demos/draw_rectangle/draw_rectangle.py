@@ -2,11 +2,11 @@
 import Image
 import ImageDraw
 
-BLACK = "#ffffff"
-WHITE = "#000000"
+BLACK = "#000000"
+WHITE = "#ffffff"
 
-fg_color = WHITE
-bg_color = BLACK
+fg_color = BLACK
+bg_color = WHITE
 
 
 canvas_w, canvas_h = 100, 100
@@ -20,4 +20,4 @@ box = (left_top_x, left_top_y, right_bottom_x, right_bottom_y)
 
 draw.rectangle(xy = box, fill = fg_color, outline = None)
 
-im.save("draw_rectangle.bmp")
+im.save("draw_rectangle.jpeg")

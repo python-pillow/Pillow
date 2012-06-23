@@ -2,11 +2,12 @@
 import Image
 import ImageDraw
 
-BLACK = "#ffffff"
-WHITE = "#000000"
 
-fg_color = WHITE
-bg_color = BLACK
+BLACK = "#000000"
+WHITE = "#ffffff"
+
+fg_color = BLACK
+bg_color = WHITE
 
 
 canvas_w, canvas_h = 100, 100
@@ -18,9 +19,8 @@ draw = ImageDraw.Draw(im = im)
 #or
 #xy = (p1_x, p1_y, p2_x, p2_y, p3_x, p3_y)
 
-y = 10
-for x in range(5, 100):
-    point = (x, y)
-    draw.point(point, fg_color)
+points = ((10, 10), (40, 10), (55, 35), (40,50))
+for point in points:
+    draw.point(xy = point, fill = fg_color)
 
-im.save("draw_points.png")
+im.save("draw_points.jpeg")
