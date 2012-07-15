@@ -443,7 +443,7 @@ class _OleStream(StringIO.StringIO):
     # the fat chain, and load new sectors on demand instead of
     # loading it all in one go.
 
-    def __init__(self, fp, sect, size, offset, sectorsize, fat):
+    def __init__(self, fp, sect, size, offset, sectorsize, fat, filesize):
         """
         Constructor for _OleStream class.
 
@@ -458,11 +458,6 @@ class _OleStream(StringIO.StringIO):
         debug('_OleStream.__init__:')
         debug('  sect=%d (%X), size=%d, offset=%d, sectorsize=%d, len(fat)=%d, fp=%s'
             %(sect,sect,size,offset,sectorsize,len(fat), repr(fp)))
-        # for debugging messages, size of file where stream is read:
-        if isinstance(fp, StringIO.StringIO):
-            filesize = len(fp.getvalue())   # file in MiniFAT
-        else:
-            filesize = os.path.getsize(fp.name) # file on disk
         #[PL] To detect malformed documents with FAT loops, we compute the
         # expected number of sectors in the stream:
         unknown_size = False
@@ -855,6 +850,12 @@ class OleFileIO:
         #    self.fp = open(filename, "rb")
         #else:
         #    self.fp = filename
+        self.fp.seek(0, 2)
+        try:
+            filesize = self.fp.tell()
+        finally:
+            self.fp.seek(0)
+        self._filesize = filesize
 
         # lists of streams in FAT and MiniFAT, to detect duplicate references
         # (list of indexes of first sectors of each stream)
@@ -976,7 +977,6 @@ class OleFileIO:
 
         # calculate the number of sectors in the file
         # (-1 because header doesn't count)
-        filesize = os.path.getsize(filename)
         self.nb_sect = ( (filesize + self.SectorSize-1) / self.SectorSize) - 1
         debug( "Number of sectors in the file: %d" % self.nb_sect )
 
@@ -1258,7 +1258,7 @@ class OleFileIO:
             self.fp.seek(self.sectorsize * (sect+1))
         except:
             debug('getsect(): sect=%X, seek=%d, filesize=%d' %
-                (sect, self.sectorsize*(sect+1), os.path.getsize(self.fp.name)))
+                (sect, self.sectorsize*(sect+1), self._filesize))
             self._raise_defect(DEFECT_FATAL, 'OLE sector index out of range')
         sector = self.fp.read(self.sectorsize)
         if len(sector) != self.sectorsize:
@@ -1360,11 +1360,12 @@ class OleFileIO:
                 self.ministream = self._open(self.root.isectStart,
                     size_ministream, force_FAT=True)
             return _OleStream(self.ministream, start, size, 0,
-                              self.minisectorsize, self.minifat)
+                              self.minisectorsize, self.minifat,
+                              self.ministream.size)
         else:
             # standard stream
             return _OleStream(self.fp, start, size, 512,
-                              self.sectorsize, self.fat)
+                              self.sectorsize, self.fat, self._filesize)
 
 
     def _list(self, files, prefix, node):
