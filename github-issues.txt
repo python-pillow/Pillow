@@ -1,0 +1,122 @@
+[
+  {
+    "updated_at": "2012-07-09T19:16:49Z",
+    "assignee": null,
+    "number": 27,
+    "body": "The current Pillow repository is just a copy of the working directory of PIL from two years ago – there is no history available. To be fair, Pillow was only meant to be a temporary packaging fork, but I think the history is quite important when the project should move forward. There are also a lot of \"recent\" changes in PIL that are missing in Pillow. Getting all these changes back manually is a lot of work. I propose to convert the official BitBucket repository to Git with hg-git and to merge the relatively few Pillow changes back.\nThat way we would have a repository with history, all current changes (including first work on Python 3 support) plus the Pillow packaging changes. Of course, the downside of this is that all forks become invalid (2 with actual changes).\n\nI'm stepping forward to do this and I will start with it in my own repository. If it works well I'll come back to this issue.",
+    "milestone": null,
+    "user": {
+      "gravatar_id": "11b55b18f1f8312c7d917a0fce158162",
+      "login": "olt",
+      "url": "https://api.github.com/users/olt",
+      "avatar_url": "https://secure.gravatar.com/avatar/11b55b18f1f8312c7d917a0fce158162?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 235174
+    },
+    "pull_request": {
+      "diff_url": null,
+      "patch_url": null,
+      "html_url": null
+    },
+    "labels": [
+
+    ],
+    "comments": 1,
+    "title": "Restore history and catch up with last PIL changes",
+    "url": "https://api.github.com/repos/collective/Pillow/issues/27",
+    "closed_at": null,
+    "created_at": "2012-07-09T18:37:19Z",
+    "id": 5505474,
+    "html_url": "https://github.com/collective/Pillow/issues/27",
+    "state": "open"
+  },
+  {
+    "updated_at": "2012-07-08T09:55:58Z",
+    "assignee": null,
+    "number": 23,
+    "body": "",
+    "milestone": null,
+    "user": {
+      "gravatar_id": "31a7d46ff0ad06cfad350af2242d956b",
+      "login": "shuge",
+      "url": "https://api.github.com/users/shuge",
+      "avatar_url": "https://secure.gravatar.com/avatar/31a7d46ff0ad06cfad350af2242d956b?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 57847
+    },
+    "pull_request": {
+      "diff_url": "https://github.com/collective/Pillow/pull/23.diff",
+      "patch_url": "https://github.com/collective/Pillow/pull/23.patch",
+      "html_url": "https://github.com/collective/Pillow/pull/23"
+    },
+    "labels": [
+
+    ],
+    "comments": 2,
+    "title": "added Pythonic demos",
+    "url": "https://api.github.com/repos/collective/Pillow/issues/23",
+    "closed_at": null,
+    "created_at": "2012-05-12T08:35:36Z",
+    "id": 4545441,
+    "html_url": "https://github.com/collective/Pillow/issues/23",
+    "state": "open"
+  },
+  {
+    "updated_at": "2012-05-03T21:56:21Z",
+    "assignee": null,
+    "number": 21,
+    "body": "When I run this example script below, Pillow 1.7.7 cuts off the top of the text while PIL 1.1.7 does not. \r\n\r\n    from PIL import Image, ImageDraw, ImageFont\r\n\r\n    im = Image.new(mode='RGB', size=(400, 200))\r\n    draw = ImageDraw.Draw(im)\r\n    font = ImageFont.truetype('arial.ttf', 12)\r\n    draw.text((20, 100), 'EXAMPLE TEXT', font=font, fill='#ffffff')\r\n    f = open('example.png', 'wb')\r\n    im.save(f)\r\n\r\nOutput from Pillow: https://github.com/saltycrane/pillow-issue-example/blob/master/example_pillow_1.7.7.png\r\nOutput from PIL: https://github.com/saltycrane/pillow-issue-example/blob/master/example_pil_1.1.7.png\r\n\r\nThis might be the commit that affects this behavior: https://github.com/collective/Pillow/commit/501c5c47b6f76aa6900ee748087c8a237ce90c26",
+    "milestone": null,
+    "user": {
+      "gravatar_id": "506bc43cfe62a157c60874f847f72ca4",
+      "login": "saltycrane",
+      "url": "https://api.github.com/users/saltycrane",
+      "avatar_url": "https://secure.gravatar.com/avatar/506bc43cfe62a157c60874f847f72ca4?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 25131
+    },
+    "pull_request": {
+      "diff_url": null,
+      "patch_url": null,
+      "html_url": null
+    },
+    "labels": [
+
+    ],
+    "comments": 2,
+    "title": "Pillow cuts off top of text but PIL does not",
+    "url": "https://api.github.com/repos/collective/Pillow/issues/21",
+    "closed_at": null,
+    "created_at": "2012-05-03T20:44:18Z",
+    "id": 4413374,
+    "html_url": "https://github.com/collective/Pillow/issues/21",
+    "state": "open"
+  },
+  {
+    "updated_at": "2012-03-27T19:05:04Z",
+    "assignee": null,
+    "number": 18,
+    "body": "I needed to undef INT8, UINT8, INT16, UINT16 before doing any windows include in map.c libImageing/ImDib.h I downloaded the source from PILLOW-1.7.6\r\nI reported this on upstream\r\n\r\nhttps://bitbucket.org/effbot/pil-2009-raclette/issue/19/fail-to-build-on-windows-with-studio-9",
+    "milestone": null,
+    "user": {
+      "gravatar_id": "72f994ca072df3a3d2c3db8a137790fd",
+      "login": "mattip",
+      "url": "https://api.github.com/users/mattip",
+      "avatar_url": "https://secure.gravatar.com/avatar/72f994ca072df3a3d2c3db8a137790fd?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 823911
+    },
+    "pull_request": {
+      "diff_url": null,
+      "patch_url": null,
+      "html_url": null
+    },
+    "labels": [
+
+    ],
+    "comments": 8,
+    "title": "Build fails on windows with studio 9 cl.exe",
+    "url": "https://api.github.com/repos/collective/Pillow/issues/18",
+    "closed_at": null,
+    "created_at": "2012-03-08T18:14:51Z",
+    "id": 3568253,
+    "html_url": "https://github.com/collective/Pillow/issues/18",
+    "state": "open"
+  }
+]
