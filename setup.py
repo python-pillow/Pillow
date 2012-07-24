@@ -452,7 +452,7 @@ setup(
         _read('docs/HISTORY.txt')).decode('utf-8'),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
-    url='http://github.com/collective/Pillow',
+    url='http://github.com/python-imaging/Pillow',
     use_2to3=True,
     classifiers=[
         "Development Status :: 6 - Mature",
