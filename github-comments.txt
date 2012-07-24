@@ -1,0 +1,1164 @@
+[
+
+]
+[
+  {
+    "created_at": "2011-05-31T13:31:36Z",
+    "updated_at": "2011-05-31T13:31:36Z",
+    "body": "Yup, it's a bit of a mess I've not had time to look into or fix. In the meantime I've been cutting new releases with additional paths to check. So short term fix is to add: /usr/lib/i386-linux-gnu correct ? ",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1266947",
+    "id": 1266947
+  },
+  {
+    "created_at": "2011-05-31T13:44:54Z",
+    "updated_at": "2011-05-31T13:44:54Z",
+    "body": "Yeah, yeah I tried adding that under an an else-clause for the 64-bit platform test, and that worked.",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/9ff70f96fa67c2a3c80ecf0486138bc2?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "regebro",
+      "gravatar_id": "9ff70f96fa67c2a3c80ecf0486138bc2",
+      "url": "https://api.github.com/users/regebro",
+      "id": 820596
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1267020",
+    "id": 1267020
+  },
+  {
+    "created_at": "2011-05-31T13:58:39Z",
+    "updated_at": "2011-05-31T13:58:39Z",
+    "body": "Can you fork, make the change, and send a pull request? Else take a stab at it.",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1267129",
+    "id": 1267129
+  },
+  {
+    "created_at": "2011-05-31T15:19:30Z",
+    "updated_at": "2011-05-31T15:19:30Z",
+    "body": "Nevermind working on it now! Thanks",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1267711",
+    "id": 1267711
+  },
+  {
+    "created_at": "2011-05-31T16:02:17Z",
+    "updated_at": "2011-05-31T16:02:17Z",
+    "body": "Fixed in 1.7.1",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1268035",
+    "id": 1268035
+  }
+]
+[
+  {
+    "updated_at": "2011-07-12T17:50:04Z",
+    "body": "It may be possible. Can you send a pull request?",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1556245",
+    "created_at": "2011-07-12T17:50:04Z",
+    "id": 1556245
+  },
+  {
+    "updated_at": "2011-09-08T01:06:00Z",
+    "body": "I can't reproduce this, i.e. works for me w/XCode 4 (on Lion at least.) If you think there is still an issue, please re-open and send a pull request with the appropriate changes.",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035608",
+    "created_at": "2011-09-08T01:06:00Z",
+    "id": 2035608
+  },
+  {
+    "updated_at": "2011-09-08T01:16:35Z",
+    "body": "Sorry, I haven't had a chance to make a fix and I haven't upgraded to Lion yet (waiting to be between projects for that :). Honestly, I care more that this is documented with a workaround (such as this issue here) for future people.\r\n\r\n",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/a5061ac6baf0b57c941cedffb340563d?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "gravatar_id": "a5061ac6baf0b57c941cedffb340563d",
+      "login": "varikin",
+      "url": "https://api.github.com/users/varikin",
+      "id": 14263
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035670",
+    "created_at": "2011-09-08T01:16:35Z",
+    "id": 2035670
+  },
+  {
+    "updated_at": "2011-09-08T01:23:28Z",
+    "body": "Indeed it is. If you ever get around to preparing a fix, I'd love to add it. Thanks!",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035704",
+    "created_at": "2011-09-08T01:23:28Z",
+    "id": 2035704
+  }
+]
+[
+  {
+    "created_at": "2011-10-27T01:00:48Z",
+    "updated_at": "2011-10-27T01:00:48Z",
+    "body": "OOPS! Belated request: please report any non-packaging related issues here: https://bitbucket.org/effbot/pil-2009-raclette/issues and provide a link to your ticket so we can track this issue upstream.",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2538609",
+    "id": 2538609
+  },
+  {
+    "created_at": "2011-10-27T07:44:38Z",
+    "updated_at": "2011-10-27T07:44:38Z",
+    "body": "Ok, I understand that your repository contain only packaging changes.\r\n\r\nI think you need to specify this in Pillow bitbucket account introduction and append official pil repository url in this introduction.",
+    "user": {
+      "login": "harobed",
+      "gravatar_id": "770033d303c2eae009ff60783bff4118",
+      "url": "https://api.github.com/users/harobed",
+      "avatar_url": "https://secure.gravatar.com/avatar/770033d303c2eae009ff60783bff4118?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 230143
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2540639",
+    "id": 2540639
+  },
+  {
+    "created_at": "2011-10-27T08:00:54Z",
+    "updated_at": "2011-10-27T08:00:54Z",
+    "body": "Well, this but is already fixed in \"pil-2009-raclette\" repository : https://bitbucket.org/effbot/pil-2009-raclette/src/cd403356263f/PIL/Image.py#cl-1566\r\n\r\nThey use \"//\" divisor instead my int(… / …) patch. Their choice is better or mine.",
+    "user": {
+      "login": "harobed",
+      "gravatar_id": "770033d303c2eae009ff60783bff4118",
+      "url": "https://api.github.com/users/harobed",
+      "avatar_url": "https://secure.gravatar.com/avatar/770033d303c2eae009ff60783bff4118?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 230143
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2540751",
+    "id": 2540751
+  }
+]
+[
+  {
+    "updated_at": "2011-07-21T15:40:05Z",
+    "body": "Sorry, try 1.7.4 please. Reopen if it's still broken (which it shouldn't be)",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1624376",
+    "created_at": "2011-07-21T15:40:05Z",
+    "id": 1624376
+  },
+  {
+    "updated_at": "2011-07-22T13:07:10Z",
+    "body": "All work very well now.\r\n\r\nThanks,\r\nStephane",
+    "user": {
+      "gravatar_id": "770033d303c2eae009ff60783bff4118",
+      "login": "harobed",
+      "url": "https://api.github.com/users/harobed",
+      "avatar_url": "https://secure.gravatar.com/avatar/770033d303c2eae009ff60783bff4118?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 230143
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1631590",
+    "created_at": "2011-07-22T13:07:10Z",
+    "id": 1631590
+  }
+]
+[
+  {
+    "updated_at": "2011-07-21T14:47:08Z",
+    "body": "An errant tap of the \"Return\" key submitted this issue prematurely. My apologies.",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/f568b4411776569b2874d1785b378294?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "gravatar_id": "f568b4411776569b2874d1785b378294",
+      "login": "nutjob4life",
+      "url": "https://api.github.com/users/nutjob4life",
+      "id": 814813
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1624012",
+    "created_at": "2011-07-21T14:47:08Z",
+    "id": 1624012
+  }
+]
+[
+  {
+    "created_at": "2011-07-21T15:40:55Z",
+    "updated_at": "2011-07-21T15:40:55Z",
+    "body": "I believe jarn.mkrelease 3.1 caused this release to fail somehow, but I am not sure why. In the meantime, I reverted to jarn.mkrelease 3.0 and rereleased.",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1624380",
+    "id": 1624380
+  },
+  {
+    "created_at": "2011-08-04T15:38:30Z",
+    "updated_at": "2011-08-04T15:38:30Z",
+    "body": "Thanks aclark4life. When I finally start automating releases, I'll be sure to pin to jarn.mkrelease 3.0 as well.",
+    "user": {
+      "login": "nutjob4life",
+      "gravatar_id": "f568b4411776569b2874d1785b378294",
+      "url": "https://api.github.com/users/nutjob4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/f568b4411776569b2874d1785b378294?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 814813
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/1727945",
+    "id": 1727945
+  }
+]
+[
+  {
+    "created_at": "2011-09-07T18:40:23Z",
+    "updated_at": "2011-09-07T18:40:23Z",
+    "body": "Released in Pillow 1.7.5",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2032087",
+    "id": 2032087
+  },
+  {
+    "created_at": "2011-09-07T18:40:38Z",
+    "updated_at": "2011-09-07T18:40:38Z",
+    "body": "Thanks for the fix!",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2032091",
+    "id": 2032091
+  }
+]
+[
+  {
+    "created_at": "2011-09-08T00:47:16Z",
+    "updated_at": "2011-09-08T00:47:16Z",
+    "body": "+1 on this\r\n\r\n@shimizukawa: you think you could provide this builds for windows in the future? actually its @alex4life call but i assume he would appreciate help with windows.",
+    "user": {
+      "login": "garbas",
+      "gravatar_id": "9124210529f6eb59754932c413dd3c69",
+      "url": "https://api.github.com/users/garbas",
+      "avatar_url": "https://secure.gravatar.com/avatar/9124210529f6eb59754932c413dd3c69?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 20208
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035509",
+    "id": 2035509
+  },
+  {
+    "created_at": "2011-09-08T00:55:18Z",
+    "updated_at": "2011-09-08T00:55:18Z",
+    "body": "> you think you could provide this builds for windows in the future?\r\n\r\nYes. I am planning automation of checking-new-version, building eggs and uploading.",
+    "user": {
+      "login": "shimizukawa",
+      "gravatar_id": "0cae2878acf9f67e7cc6c06c55877ffd",
+      "url": "https://api.github.com/users/shimizukawa",
+      "avatar_url": "https://secure.gravatar.com/avatar/0cae2878acf9f67e7cc6c06c55877ffd?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 151623
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035548",
+    "id": 2035548
+  },
+  {
+    "created_at": "2011-09-08T00:55:27Z",
+    "updated_at": "2011-09-08T00:55:27Z",
+    "body": "This is awesome! Thank you. But what should I do with them i.e. how do I get them to PyPI? I guess I can just upload through-the-web.",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035550",
+    "id": 2035550
+  },
+  {
+    "created_at": "2011-09-08T01:00:28Z",
+    "updated_at": "2011-09-08T01:00:28Z",
+    "body": "> But what should I do with them i.e. how do I get them to PyPI? I guess I can just upload through-the-web.\r\n\r\nYes, if you give me maintainer authority, I will do. Otherwise, you need to download eggs from bitbucket and please upload to PyPI. ",
+    "user": {
+      "login": "shimizukawa",
+      "gravatar_id": "0cae2878acf9f67e7cc6c06c55877ffd",
+      "url": "https://api.github.com/users/shimizukawa",
+      "avatar_url": "https://secure.gravatar.com/avatar/0cae2878acf9f67e7cc6c06c55877ffd?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 151623
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035583",
+    "id": 2035583
+  },
+  {
+    "created_at": "2011-09-08T01:03:15Z",
+    "updated_at": "2011-09-08T01:03:15Z",
+    "body": "Can I add you to the PyPI project so you can release them?",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035594",
+    "id": 2035594
+  },
+  {
+    "created_at": "2011-09-08T01:05:16Z",
+    "updated_at": "2011-09-08T01:05:16Z",
+    "body": "Yes! my account is 'shimizukawa'.",
+    "user": {
+      "login": "shimizukawa",
+      "gravatar_id": "0cae2878acf9f67e7cc6c06c55877ffd",
+      "url": "https://api.github.com/users/shimizukawa",
+      "avatar_url": "https://secure.gravatar.com/avatar/0cae2878acf9f67e7cc6c06c55877ffd?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 151623
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035605",
+    "id": 2035605
+  },
+  {
+    "created_at": "2011-09-08T01:27:21Z",
+    "updated_at": "2011-09-08T01:27:21Z",
+    "body": "Done! Thanks.",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035727",
+    "id": 2035727
+  },
+  {
+    "created_at": "2011-09-08T01:46:58Z",
+    "updated_at": "2011-09-08T01:46:58Z",
+    "body": "Yeah! Pillow-1.7.5 now have win32 eggs!",
+    "user": {
+      "login": "shimizukawa",
+      "gravatar_id": "0cae2878acf9f67e7cc6c06c55877ffd",
+      "url": "https://api.github.com/users/shimizukawa",
+      "avatar_url": "https://secure.gravatar.com/avatar/0cae2878acf9f67e7cc6c06c55877ffd?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 151623
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035820",
+    "id": 2035820
+  },
+  {
+    "created_at": "2011-09-08T01:57:44Z",
+    "updated_at": "2011-09-08T01:57:44Z",
+    "body": "You rock! Many thanks",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2035884",
+    "id": 2035884
+  },
+  {
+    "created_at": "2011-09-09T00:27:19Z",
+    "updated_at": "2011-09-09T00:27:19Z",
+    "body": "Any chance you could provide amd64 as well? Alan Runyan just requested this on the Plone Installers list :-)",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2046766",
+    "id": 2046766
+  },
+  {
+    "created_at": "2011-09-09T06:53:41Z",
+    "updated_at": "2011-09-09T06:53:41Z",
+    "body": "OK, I'm trying.",
+    "user": {
+      "login": "shimizukawa",
+      "gravatar_id": "0cae2878acf9f67e7cc6c06c55877ffd",
+      "url": "https://api.github.com/users/shimizukawa",
+      "avatar_url": "https://secure.gravatar.com/avatar/0cae2878acf9f67e7cc6c06c55877ffd?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 151623
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2048694",
+    "id": 2048694
+  },
+  {
+    "created_at": "2011-09-10T02:28:51Z",
+    "updated_at": "2011-09-10T02:29:20Z",
+    "body": "I built Pillow egg for amd64 version but currently have below limitations::\r\n\r\n  --------------------------------------------------------------------\r\n  SETUP SUMMARY (Pillow 1.7.5 / PIL 1.1.7)\r\n  --------------------------------------------------------------------\r\n  version       1.7.5\r\n  platform      win32 2.6.5 (r265:79096, Mar 19 2010, 18:02:59)\r\n                [MSC v.1500 64 bit (AMD64)]\r\n  --------------------------------------------------------------------\r\n  --- TKINTER support available\r\n  --- JPEG support available\r\n  --- ZLIB (PNG/ZIP) support available\r\n  *** FREETYPE2 support not available\r\n  *** LITTLECMS support not available\r\n  --------------------------------------------------------------------\r\n\r\nhttps://bitbucket.org/shimizukawa/pillow/downloads/non-ft-lcms-Pillow-1.7.5-py2.6-win-amd64.egg\r\n\r\nAnyone, please check this egg on your 64bit python environment.\r\n(and I try to build freetype and lcms for x64...)",
+    "user": {
+      "login": "shimizukawa",
+      "gravatar_id": "0cae2878acf9f67e7cc6c06c55877ffd",
+      "url": "https://api.github.com/users/shimizukawa",
+      "avatar_url": "https://secure.gravatar.com/avatar/0cae2878acf9f67e7cc6c06c55877ffd?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 151623
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2057534",
+    "id": 2057534
+  },
+  {
+    "created_at": "2011-09-10T02:54:55Z",
+    "updated_at": "2011-09-10T02:54:55Z",
+    "body": "I suspect this will make most folks happy regardless of the limitations, but I'll ask on our installers list. Thanks!",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2057620",
+    "id": 2057620
+  }
+]
+[
+  {
+    "updated_at": "2011-10-27T00:47:03Z",
+    "body": "Please report any non-packaging related issues here: https://bitbucket.org/effbot/pil-2009-raclette/issues and provide a link to your ticket so we can track this issue upstream.",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2538534",
+    "created_at": "2011-10-27T00:47:03Z",
+    "id": 2538534
+  },
+  {
+    "updated_at": "2011-10-27T07:20:54Z",
+    "body": "https://bitbucket.org/effbot/pil-2009-raclette/issue/12/bug-in-pil-117-imagesplit (?)",
+    "user": {
+      "gravatar_id": "ef03f908c8cc869759b8a8a232987636",
+      "avatar_url": "https://secure.gravatar.com/avatar/ef03f908c8cc869759b8a8a232987636?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "espenmn",
+      "url": "https://api.github.com/users/espenmn",
+      "id": 1069235
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2540470",
+    "created_at": "2011-10-27T07:20:54Z",
+    "id": 2540470
+  },
+  {
+    "updated_at": "2012-01-21T04:03:11Z",
+    "body": "Fixed in 1.7.6",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/3594335",
+    "created_at": "2012-01-21T04:03:11Z",
+    "id": 3594335
+  }
+]
+[
+  {
+    "updated_at": "2011-09-29T12:02:49Z",
+    "body": "Can you send a pull request? And are you sure this won't break other operating systems? I suppose it shouldn't…",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2236960",
+    "created_at": "2011-09-29T12:02:49Z",
+    "id": 2236960
+  },
+  {
+    "updated_at": "2011-10-22T06:06:55Z",
+    "body": "This code block affects only darwin platform.\r\nAnd I tested that run `setup.py bdist_egg` and `setup.py install` on case-sensitive and case-in-sensitive file systems.\r\n",
+    "user": {
+      "gravatar_id": "960c79be63471d3a04c80799a76a7af3",
+      "avatar_url": "https://secure.gravatar.com/avatar/960c79be63471d3a04c80799a76a7af3?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "gjo",
+      "url": "https://api.github.com/users/gjo",
+      "id": 22487
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2488590",
+    "created_at": "2011-10-22T06:06:55Z",
+    "id": 2488590
+  },
+  {
+    "updated_at": "2011-11-15T02:45:46Z",
+    "body": "Thanks a lot! fixes in #13.",
+    "user": {
+      "gravatar_id": "960c79be63471d3a04c80799a76a7af3",
+      "avatar_url": "https://secure.gravatar.com/avatar/960c79be63471d3a04c80799a76a7af3?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "gjo",
+      "url": "https://api.github.com/users/gjo",
+      "id": 22487
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2740224",
+    "created_at": "2011-11-15T02:45:46Z",
+    "id": 2740224
+  }
+]
+[
+  {
+    "updated_at": "2011-10-27T00:49:47Z",
+    "body": "Please report any non-packaging related issues here: https://bitbucket.org/effbot/pil-2009-raclette/issues and provide a link to your ticket so we can track this issue upstream.",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2538547",
+    "created_at": "2011-10-27T00:49:47Z",
+    "id": 2538547
+  },
+  {
+    "updated_at": "2011-10-27T15:51:45Z",
+    "body": "Thanks, I reported at upstream: https://bitbucket.org/effbot/pil-2009-raclette/issue/13/chipped-characters-have-been-rendered",
+    "user": {
+      "gravatar_id": "dd4be1ffd9da4cfb164fa2948df1f47f",
+      "login": "tk0miya",
+      "url": "https://api.github.com/users/tk0miya",
+      "avatar_url": "https://secure.gravatar.com/avatar/dd4be1ffd9da4cfb164fa2948df1f47f?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 748828
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/2545272",
+    "created_at": "2011-10-27T15:51:45Z",
+    "id": 2545272
+  }
+]
+[
+
+]
+[
+  {
+    "created_at": "2012-01-21T00:47:42Z",
+    "updated_at": "2012-01-21T00:47:42Z",
+    "body": "Any chance you can open a ticket upstream and send a pull request for this?",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/3593311",
+    "id": 3593311
+  },
+  {
+    "created_at": "2012-01-21T01:42:00Z",
+    "updated_at": "2012-01-21T01:42:00Z",
+    "body": "Upstream as in PIL?  Not sure where that is.. At any rate, I'm not sure the best way to fix it...  I generally just remove the file when I need to run ipdb, but I know that's not a good end solution.",
+    "user": {
+      "login": "bendavis78",
+      "gravatar_id": "8b068f321c0447fb8c92a5e1b2a102c0",
+      "url": "https://api.github.com/users/bendavis78",
+      "avatar_url": "https://secure.gravatar.com/avatar/8b068f321c0447fb8c92a5e1b2a102c0?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 324392
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/3593687",
+    "id": 3593687
+  },
+  {
+    "created_at": "2012-01-21T04:05:12Z",
+    "updated_at": "2012-01-21T04:05:12Z",
+    "body": "Yes, you can report PIL issues here: https://bitbucket.org/effbot/pil-2009-raclette/issues\r\n\r\nOK well I'll close for now; please reopen if you come up with a patch.",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/3594347",
+    "id": 3594347
+  }
+]
+[
+  {
+    "created_at": "2012-01-19T21:09:14Z",
+    "updated_at": "2012-01-19T21:09:14Z",
+    "body": "Related to case #10.",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/e52fe06d1f9d949a10b05fab08b59c3f?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "sfllaw",
+      "gravatar_id": "e52fe06d1f9d949a10b05fab08b59c3f",
+      "url": "https://api.github.com/users/sfllaw",
+      "id": 155692
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/3574277",
+    "id": 3574277
+  }
+]
+[
+
+]
+[
+  {
+    "updated_at": "2012-02-17T07:31:38Z",
+    "body": "A bit odd, but clicking on the links below brings med to https://github.com/collective/pillow:\n\nDen 17. feb. 2012 kl. 07.30 skrev Andreas Jung:\n\n> Using eggs=Pillow in a standard Plone 4.2 buildout gives me a lot of the following error\n> (causing an unnecessary slow down of the buildout process).\n> \n> Download error on http://github.org/collective/Pillow: [Errno -3] Temporary failure in name resolution -- Some packages may not be found!\n> Download error on http://github.org/collective/pillow: [Errno -3] Temporary failure in name resolution -- Some packages may not be found!\n> Download error on http://github.org/collective/pillow: [Errno -3] Temporary failure in name resolution -- Some packages may not be found!\n> Download error on http://github.org/collective/pillow: [Errno -3] Temporary failure in name resolution -- Some packages may not be found!\n> Download error on http://github.org/collective/pillow: [Errno -3] Temporary failure in name resolution -- Some packages may not be found!\n> Download error on http://github.org/collective/pillow: [Errno -3] Temporary failure in name resolution -- Some packages may not be found!\n> Download error on http://github.org/collective/pillow: [Errno -3] Temporary failure in name resolution -- Some packages may not be found!\n> Download error on http://github.org/collective/pillow: [Errno -3] Temporary failure in name resolution -- Some packages may not be found!\n> Download error on http://github.org/collective/pillow: [Errno -3] Temporary failure in name resolution -- Some packages may not be found!\n> Download error on http://github.org/collective/pillow: [Errno -3] Temporary failure in name resolution -- Some packages may not be found!\n> Generated script '/home/ajung/sandboxes/vik.monitoring/bin/email2lastgang-import'.\n> \n> --- \n> Reply to this email directly or view it on GitHub:\n> https://github.com/collective/Pillow/issues/17",
+    "user": {
+      "gravatar_id": "ef03f908c8cc869759b8a8a232987636",
+      "avatar_url": "https://secure.gravatar.com/avatar/ef03f908c8cc869759b8a8a232987636?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "espenmn",
+      "url": "https://api.github.com/users/espenmn",
+      "id": 1069235
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4016351",
+    "created_at": "2012-02-17T07:31:38Z",
+    "id": 4016351
+  },
+  {
+    "updated_at": "2012-02-17T09:19:14Z",
+    "body": "I can confirm this issue.",
+    "user": {
+      "gravatar_id": "27dcfabaf38d4b87c036252767a4aa92",
+      "avatar_url": "https://secure.gravatar.com/avatar/27dcfabaf38d4b87c036252767a4aa92?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "miohtama",
+      "url": "https://api.github.com/users/miohtama",
+      "id": 49922
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4017343",
+    "created_at": "2012-02-17T09:19:14Z",
+    "id": 4017343
+  },
+  {
+    "updated_at": "2012-02-17T13:59:56Z",
+    "body": "I don't consider this a Pillow issue, but I'm open to \"fixing it\" if someone knows how (I don't) In the meantime, you can do:\r\n\r\n```\r\n[buildout]\r\nallow-hosts = pypi.python.org\r\n```\r\n\r\nto avoid it.",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4020485",
+    "created_at": "2012-02-17T13:59:56Z",
+    "id": 4020485
+  },
+  {
+    "updated_at": "2012-02-17T14:21:53Z",
+    "body": "It seems this is happening in all Plone versions (I'm using 4.1.3).",
+    "user": {
+      "gravatar_id": "fa7dfe4bfd50c2468a80e619dc8fce51",
+      "avatar_url": "https://secure.gravatar.com/avatar/fa7dfe4bfd50c2468a80e619dc8fce51?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "hvelarde",
+      "url": "https://api.github.com/users/hvelarde",
+      "id": 341393
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4020786",
+    "created_at": "2012-02-17T14:21:53Z",
+    "id": 4020786
+  },
+  {
+    "updated_at": "2012-02-17T14:27:41Z",
+    "body": "I consider this to be a setuptools issue.",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4020864",
+    "created_at": "2012-02-17T14:27:41Z",
+    "id": 4020864
+  },
+  {
+    "updated_at": "2012-02-17T16:52:39Z",
+    "body": "it should be github.com there is no github.org\r\n\r\nCheers,\r\nReed\r\n",
+    "user": {
+      "gravatar_id": "41cecb02e1e02d6b8cac94c9bb45922f",
+      "avatar_url": "https://secure.gravatar.com/avatar/41cecb02e1e02d6b8cac94c9bb45922f?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "reedobrien",
+      "url": "https://api.github.com/users/reedobrien",
+      "id": 45174
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4023432",
+    "created_at": "2012-02-17T16:52:39Z",
+    "id": 4023432
+  },
+  {
+    "updated_at": "2012-02-17T16:55:49Z",
+    "body": "Good point :-)\r\n",
+    "user": {
+      "gravatar_id": "302db24de03cf31217361bff44b3f168",
+      "avatar_url": "https://secure.gravatar.com/avatar/302db24de03cf31217361bff44b3f168?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "zopyx",
+      "url": "https://api.github.com/users/zopyx",
+      "id": 594239
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4023475",
+    "created_at": "2012-02-17T16:55:49Z",
+    "id": 4023475
+  },
+  {
+    "updated_at": "2012-02-17T16:57:16Z",
+    "body": "Sure but how do I fix it? That erroneous URL probably came from a previous release and is now in some metadata on PyPI somewhere. I'm trying to understand the setuptools piece i.e. what do I need to look for/fix on PyPI to resolve this. If the fix is to delete a particular release on PyPI, now we have two problems.",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4023500",
+    "created_at": "2012-02-17T16:57:16Z",
+    "id": 4023500
+  },
+  {
+    "updated_at": "2012-02-17T17:08:31Z",
+    "body": "Can't you edit home page/metadata information on pypi itself:\r\n\r\nhttp://pypi.python.org/pypi?:action=submit_form&name=Pillow&version=1.7.0\r\n\r\nor something if you are logged in?",
+    "user": {
+      "gravatar_id": "41cecb02e1e02d6b8cac94c9bb45922f",
+      "avatar_url": "https://secure.gravatar.com/avatar/41cecb02e1e02d6b8cac94c9bb45922f?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "reedobrien",
+      "url": "https://api.github.com/users/reedobrien",
+      "id": 45174
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4023705",
+    "created_at": "2012-02-17T17:08:31Z",
+    "id": 4023705
+  },
+  {
+    "updated_at": "2012-02-17T17:30:10Z",
+    "body": "OK yeah, I just edited all the release metadata (1.0 - 1.7.6) to include home page URL: http://github.com/collective/Pillow. Thanks. Really I shouldn't have to do this, but that's a separate issue. Please re-open if that doesn't resolve the issue.",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4024132",
+    "created_at": "2012-02-17T17:30:10Z",
+    "id": 4024132
+  }
+]
+[
+  {
+    "updated_at": "2012-03-08T18:37:32Z",
+    "body": "Can you fork, fix, and send a pull request? If so, I can probably cut a release with these fixes (assuming your changes are non-invasive, otherwise)",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4399053",
+    "created_at": "2012-03-08T18:37:32Z",
+    "id": 4399053
+  },
+  {
+    "updated_at": "2012-03-10T20:27:26Z",
+    "body": "body p { margin-bottom: 0cm; margin-top: 0pt; } \n    On 8/03/2012 8:37 PM, Alex Clark wrote:\n    \n      Can you fork, fix, and send a pull request? If so, I can probably cut a release with these fixes (assuming your changes are non-invasive, otherwise)\n\n--- \nReply to this email directly or view it on GitHub:\nhttps://github.com/collective/Pillow/issues/18#issuecomment-4399053\n\n    \n    I did as you requested. With this fork and latest nightly, Pillow\n      should install in pypy on win32.\n    Would you like a binary exe build for win32 pypy?\n    Matti",
+    "user": {
+      "gravatar_id": "72f994ca072df3a3d2c3db8a137790fd",
+      "avatar_url": "https://secure.gravatar.com/avatar/72f994ca072df3a3d2c3db8a137790fd?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "mattip",
+      "url": "https://api.github.com/users/mattip",
+      "id": 823911
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4434068",
+    "created_at": "2012-03-10T20:27:26Z",
+    "id": 4434068
+  },
+  {
+    "updated_at": "2012-03-12T06:59:32Z",
+    "body": "I merged it. Will do a release soon (this week sometime). Probably don't need binary assuming our normal guy (shimizukawa on pypi) creates them.",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4446499",
+    "created_at": "2012-03-12T06:59:32Z",
+    "id": 4446499
+  },
+  {
+    "updated_at": "2012-03-12T17:38:52Z",
+    "body": "Cool. I didn't know you had pypy binaries as well as cpytohn ones.\n\nOn Mon, Mar 12, 2012 at 8:59 AM, Alex Clark <\nreply@reply.github.com\n> wrote:\n\n> I merged it. Will do a release soon (this week sometime). Probably don't\n> need binary assuming our normal guy (shimizukawa on pypi) creates them.\n>\n> ---\n> Reply to this email directly or view it on GitHub:\n> https://github.com/collective/Pillow/issues/18#issuecomment-4446499\n>",
+    "user": {
+      "gravatar_id": "72f994ca072df3a3d2c3db8a137790fd",
+      "avatar_url": "https://secure.gravatar.com/avatar/72f994ca072df3a3d2c3db8a137790fd?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "mattip",
+      "url": "https://api.github.com/users/mattip",
+      "id": 823911
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4457230",
+    "created_at": "2012-03-12T17:38:52Z",
+    "id": 4457230
+  },
+  {
+    "updated_at": "2012-03-15T16:19:25Z",
+    "body": "OOPS, we don't. But I'll see if we can produce them, else I'll get back to you.",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4523067",
+    "created_at": "2012-03-15T16:19:25Z",
+    "id": 4523067
+  },
+  {
+    "updated_at": "2012-03-22T16:06:50Z",
+    "body": "body p { margin-bottom: 0cm; margin-top: 0pt; } \n    On 12/03/2012 8:59 AM, Alex Clark wrote:\n    \n      I merged it. Will do a release soon (this week sometime). Probably don't need binary assuming our normal guy (shimizukawa on pypi) creates them.\n\n--- \nReply to this email directly or view it on GitHub:\nhttps://github.com/collective/Pillow/issues/18#issuecomment-4446499\n\n    \n    Strange. I don't see the commit on https://github.com/collective/Pillow/commits/master\n      , you must have gone to pycon ;).\n    Matti",
+    "user": {
+      "gravatar_id": "72f994ca072df3a3d2c3db8a137790fd",
+      "avatar_url": "https://secure.gravatar.com/avatar/72f994ca072df3a3d2c3db8a137790fd?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "mattip",
+      "url": "https://api.github.com/users/mattip",
+      "id": 823911
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4641635",
+    "created_at": "2012-03-22T16:06:50Z",
+    "id": 4641635
+  },
+  {
+    "updated_at": "2012-03-26T23:48:48Z",
+    "body": "Pillow installes without JPEG support. Windows 7. MVS Express 9. Help please.\r\nsetup.py build output http://pastebin.com/RwHXUzdj\r\nsetup.py build_ext output  http://pastebin.com/UpwuSAtN",
+    "user": {
+      "gravatar_id": "220ef471ad3001239e1e7a85774c7fed",
+      "avatar_url": "https://secure.gravatar.com/avatar/220ef471ad3001239e1e7a85774c7fed?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "dimka665",
+      "url": "https://api.github.com/users/dimka665",
+      "id": 1578066
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4706966",
+    "created_at": "2012-03-26T23:47:28Z",
+    "id": 4706966
+  },
+  {
+    "updated_at": "2012-03-27T19:05:24Z",
+    "body": "2 day of attempts behind. I tryed many versions of PIL, many versions of Pillow, with/without virtualenv, pip install, setup.py install.\r\nIt works only after \"easy_install pillow\" =)\r\n\r\n```bat\r\nC:\\testenv\\Scripts>activate\r\n(testenv) C:\\testenv\\Scripts>easy_install pillow\r\nSearching for pillow\r\nReading http://pypi.python.org/simple/pillow/\r\nReading http://github.com/collective/Pillow\r\nReading http://github.com/collective/pillow\r\nReading http://github.com/Pillow\r\nBest match: Pillow 1.7.6\r\nDownloading http://pypi.python.org/packages/2.7/P/Pillow/Pillow-1.7.6-py2.7-win3\r\n2.egg#md5=9070a146d04368d8105734ca4453cd0d\r\nProcessing Pillow-1.7.6-py2.7-win32.egg\r\ncreating c:\\testenv\\lib\\site-packages\\Pillow-1.7.6-py2.7-win32.egg\r\nExtracting Pillow-1.7.6-py2.7-win32.egg to c:\\testenv\\lib\\site-packages\r\nAdding Pillow 1.7.6 to easy-install.pth file\r\nInstalling pilconvert.py script to c:\\testenv\\Scripts\r\nInstalling pildriver.py script to c:\\testenv\\Scripts\r\nInstalling pilfile.py script to c:\\testenv\\Scripts\r\nInstalling pilfont.py script to c:\\testenv\\Scripts\r\nInstalling pilprint.py script to c:\\testenv\\Scripts\r\nInstalled c:\\testenv\\lib\\site-packages\\pillow-1.7.6-py2.7-win32.egg\r\nProcessing dependencies for pillow\r\nFinished processing dependencies for pillow\r\n```",
+    "user": {
+      "gravatar_id": "220ef471ad3001239e1e7a85774c7fed",
+      "avatar_url": "https://secure.gravatar.com/avatar/220ef471ad3001239e1e7a85774c7fed?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "dimka665",
+      "url": "https://api.github.com/users/dimka665",
+      "id": 1578066
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4723927",
+    "created_at": "2012-03-27T19:05:03Z",
+    "id": 4723927
+  }
+]
+[
+  {
+    "updated_at": "2012-04-05T01:08:30Z",
+    "body": "Thanks and sorry for the delay!",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4966723",
+    "created_at": "2012-04-05T01:08:30Z",
+    "id": 4966723
+  },
+  {
+    "updated_at": "2012-04-05T02:24:13Z",
+    "body": "1.7.7 released",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/4967371",
+    "created_at": "2012-04-05T02:24:13Z",
+    "id": 4967371
+  }
+]
+[
+
+]
+[
+  {
+    "created_at": "2012-05-03T20:47:24Z",
+    "updated_at": "2012-05-03T20:47:24Z",
+    "body": "Can you revert (or otherwise fix) 501c5c47b6f76aa6900ee748087c8a237ce90c26 and send a pull request?",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/5497975",
+    "id": 5497975
+  },
+  {
+    "created_at": "2012-05-03T21:56:21Z",
+    "updated_at": "2012-05-03T21:56:21Z",
+    "body": "It looks like this change was made in this pull request: https://github.com/collective/Pillow/pull/12 I guess the fix for one case breaks another case. I am running Ubuntu 10.10.",
+    "user": {
+      "avatar_url": "https://secure.gravatar.com/avatar/506bc43cfe62a157c60874f847f72ca4?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "login": "saltycrane",
+      "gravatar_id": "506bc43cfe62a157c60874f847f72ca4",
+      "url": "https://api.github.com/users/saltycrane",
+      "id": 25131
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/5499532",
+    "id": 5499532
+  }
+]
+[
+  {
+    "created_at": "2012-05-03T23:07:32Z",
+    "updated_at": "2012-05-03T23:07:32Z",
+    "body": "Thanks, maybe the author of https://github.com/collective/Pillow/commit/501c5c47b6f76aa6900ee748087c8a237ce90c26  can resubmit a working patch?",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/5500776",
+    "id": 5500776
+  }
+]
+[
+  {
+    "created_at": "2012-06-12T19:52:58Z",
+    "updated_at": "2012-06-12T22:18:20Z",
+    "body": "Hmmm, looks good. Any chance you'd be willing to resubmit with a cropped Miss November? E.g. http://www.cs.cmu.edu/~chuck/lennapg/lena_std.tif",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6280750",
+    "id": 6280750
+  },
+  {
+    "created_at": "2012-07-08T09:55:58Z",
+    "updated_at": "2012-07-08T09:55:58Z",
+    "body": "A few remarks:\n\n- The code should follow PEP-8 to be \"pythonic\". One example: ``foo(bar = 42)`` -> ``foo(bar=42)``.\n- I would call it examples and not demo.\n- It's pixels and not pixsels.",
+    "user": {
+      "login": "olt",
+      "gravatar_id": "11b55b18f1f8312c7d917a0fce158162",
+      "url": "https://api.github.com/users/olt",
+      "avatar_url": "https://secure.gravatar.com/avatar/11b55b18f1f8312c7d917a0fce158162?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 235174
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6830099",
+    "id": 6830099
+  }
+]
+[
+  {
+    "updated_at": "2012-06-12T19:58:32Z",
+    "body": "Cool now we just need Travis to support GitHub organizations",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6280896",
+    "created_at": "2012-06-12T19:58:32Z",
+    "id": 6280896
+  },
+  {
+    "updated_at": "2012-06-28T16:12:46Z",
+    "body": "You can set Travis up even with an org, if you do it manually:\n\nhttp://about.travis-ci.org/docs/user/how-to-setup-and-trigger-the-hook-manually/",
+    "user": {
+      "gravatar_id": "3d91a2f54a0ad7f3044458a064ea7a84",
+      "login": "msabramo",
+      "url": "https://api.github.com/users/msabramo",
+      "avatar_url": "https://secure.gravatar.com/avatar/3d91a2f54a0ad7f3044458a064ea7a84?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 305268
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6634051",
+    "created_at": "2012-06-28T16:12:46Z",
+    "id": 6634051
+  },
+  {
+    "updated_at": "2012-07-11T16:26:31Z",
+    "body": "Hmmm, I followed the steps and sent a \"Test hook\", not working AFAICT",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6911735",
+    "created_at": "2012-07-11T16:26:31Z",
+    "id": 6911735
+  },
+  {
+    "updated_at": "2012-07-11T16:46:55Z",
+    "body": "Actually, I think it worked. What happened is that right now the \"PHP, Perl and Python\" queue is very long so your job appears to be waiting in a long queue. It's easy to miss but if you go to Travis CI and look in the right sidebar for \"Queue: PHP, Perl and Python\" and scroll down, you will see 3 \"collective/Pillow\" jobs (one for each Python version probably) and then a bunch of stuff and then 3 more \"collective/Pillow\" jobs (probably because you didn't see anything happen and then submitted it again? :-)) Been there, done that.\n\nMost of the time, jobs run very quickly after they're triggered, but I think sometimes the queue gets broken for a few hours (known issue in Travis; they need to improve their monitoring) and then a lot of jobs pile up. So sometimes you have to wait a while. The good news is that Travis should send you an email when the job finally executes.",
+    "user": {
+      "gravatar_id": "3d91a2f54a0ad7f3044458a064ea7a84",
+      "login": "msabramo",
+      "url": "https://api.github.com/users/msabramo",
+      "avatar_url": "https://secure.gravatar.com/avatar/3d91a2f54a0ad7f3044458a064ea7a84?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 305268
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6912193",
+    "created_at": "2012-07-11T16:41:40Z",
+    "id": 6912193
+  },
+  {
+    "updated_at": "2012-07-11T16:46:21Z",
+    "body": "Cool! Thanks",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6912335",
+    "created_at": "2012-07-11T16:46:21Z",
+    "id": 6912335
+  }
+]
+[
+  {
+    "created_at": "2012-06-12T20:01:21Z",
+    "updated_at": "2012-06-12T20:01:21Z",
+    "body": "\"This pull request cannot be automatically merged. \" for some reason. Also what about backwards compat? How far back will this work? I think we still need to support old Python versions (e.g. Python 2.4)",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6280974",
+    "id": 6280974
+  },
+  {
+    "created_at": "2012-06-12T21:17:16Z",
+    "updated_at": "2012-06-12T21:17:16Z",
+    "body": "I rebased my branch (and had to resolve some conflicts -- probably the reason why it couldn't automatically be merged) -- try again with 01917a4.\n\nAs far as backwards compat, here's the results of me running tox across all of the 2.x versions I have on my OS X 10.6.8 MBP:\n\n```\n~/dev/git-repos/Pillow$ CC=gcc-4.0 tox -e py24,py25,py26,py27\n...\n________________________________________ [tox summary] ________________________________________\n[TOX] py24: commands succeeded\n[TOX] py25: commands succeeded\n[TOX] py26: commands succeeded\n[TOX] py27: commands succeeded\n[TOX] congratulations :)\n```\n\nYou can see the Travis CI results for my fork at http://travis-ci.org/#!/msabramo/Pillow/builds/1598604 -- this has 2.5, 2.6, and 2.7 -- Travis CI doesn't support Python 2.4; at least not officially -- I've seen some ugly hacks like https://github.com/charlton/charlton/blob/master/.travis.yml -- I don't think I'd use that on my own projects, but maybe for Pillow it's more important to have that assurance of backward compatibility... I'll leave it up to you to decide.",
+    "user": {
+      "login": "msabramo",
+      "gravatar_id": "3d91a2f54a0ad7f3044458a064ea7a84",
+      "url": "https://api.github.com/users/msabramo",
+      "avatar_url": "https://secure.gravatar.com/avatar/3d91a2f54a0ad7f3044458a064ea7a84?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 305268
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6283226",
+    "id": 6283226
+  },
+  {
+    "created_at": "2012-06-12T21:19:45Z",
+    "updated_at": "2012-06-12T21:19:45Z",
+    "body": "Sweet, thanks",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6283282",
+    "id": 6283282
+  }
+]
+[
+  {
+    "created_at": "2012-06-15T20:52:49Z",
+    "updated_at": "2012-06-15T20:52:49Z",
+    "body": "Thanks",
+    "user": {
+      "login": "aclark4life",
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6366311",
+    "id": 6366311
+  }
+]
+[
+  {
+    "updated_at": "2012-07-09T19:16:49Z",
+    "body": "Works for me as long as you are willing to take responsibility for it. I don't want to release a new Pillow that breaks a bunch of builds. Other than that, sounds like a reasonable idea.",
+    "user": {
+      "gravatar_id": "6170000a01c67c6ba1e2d4bd87701bae",
+      "login": "aclark4life",
+      "url": "https://api.github.com/users/aclark4life",
+      "avatar_url": "https://secure.gravatar.com/avatar/6170000a01c67c6ba1e2d4bd87701bae?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png",
+      "id": 72164
+    },
+    "url": "https://api.github.com/repos/collective/Pillow/issues/comments/6856589",
+    "created_at": "2012-07-09T19:16:49Z",
+    "id": 6856589
+  }
+]
