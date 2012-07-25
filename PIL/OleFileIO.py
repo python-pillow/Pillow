@@ -6,7 +6,7 @@ OleFileIO_PL:
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.22 2012-02-16 Philippe Lagadec - http://www.decalage.info
+version 0.23 2012-07-25 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -24,8 +24,8 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Fredrik Lundh (Secret Labs AB), Philippe Lagadec"
-__date__    = "2012-02-16"
-__version__ = '0.22'
+__date__    = "2012-07-25"
+__version__ = '0.23'
 
 #--- LICENSE ------------------------------------------------------------------
 
@@ -109,6 +109,8 @@ __version__ = '0.22'
 # 2012-02-16 v0.22 PL: - fixed bug in getproperties, patch by chuckleberryfinn
 #                        (https://bitbucket.org/decalage/olefileio_pl/issue/7)
 #                      - added close method to OleFileIO (fixed issue #2)
+# 2012-07-25 v0.23 PL: - added support for file-like objects (patch by mete0r_kr)
+
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
@@ -453,6 +455,7 @@ class _OleStream(StringIO.StringIO):
         offset    : offset in bytes for the first FAT or MiniFAT sector
         sectorsize: size of one sector
         fat       : array/list of sector indexes (FAT or MiniFAT)
+        filesize  : size of OLE file (for debugging)
         return    : a StringIO instance containing the OLE stream
         """
         debug('_OleStream.__init__:')
@@ -843,14 +846,19 @@ class OleFileIO:
             # file-like object
             self.fp = filename
         else:
-            # string-like object
+            # string-like object: filename of file on disk
+            #TODO: if larger than 1024 bytes, this could be the actual data => StringIO
             self.fp = open(filename, "rb")
         # old code fails if filename is not a plain string:
         #if type(filename) == type(""):
         #    self.fp = open(filename, "rb")
         #else:
         #    self.fp = filename
-        self.fp.seek(0, 2)
+        # obtain the filesize by using seek and tell, which should work on most
+        # file-like objects:
+        #TODO: do it above, using getsize with filename when possible?
+        #TODO: fix code to fail with clear exception when filesize cannot be obtained
+        self.fp.seek(0, os.SEEK_END)
         try:
             filesize = self.fp.tell()
         finally:
