@@ -28,7 +28,6 @@ MODES = {
     (2, 8): ("P", 1),
     (3, 8): ("RGB", 3),
     (4, 8): ("CMYK", 4),
-    (4, 16): ("CMYK", 4),
     (7, 8): ("L", 1), # FIXME: multilayer
     (8, 8): ("L", 1), # duotone
     (9, 8): ("LAB", 3)
@@ -58,7 +57,7 @@ class PsdImageFile(ImageFile.ImageFile):
     format_description = "Adobe Photoshop"
 
     def _open(self):
-
+        
         read = self.fp.read
 
         #
