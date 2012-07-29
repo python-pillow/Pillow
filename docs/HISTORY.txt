@@ -5,9 +5,15 @@ Changelog
 1.7.8 (Unreleased)
 ------------------
 
-- Fix opening psd files with RGBA layers when A mode is not of type 65535 but 3.
-  Fixes issue https://github.com/python-imaging/Pillow/issues/3
-  [thomasdesvenain]
+- Manage more psd files:
+
+    - Added a psd mode (mode 4, 16 bits).
+      [thomasdesvenain]
+
+    - Fix opening psd files with RGBA layers when A mode is not of type 65535 but 3.
+      Fixes issue https://github.com/python-imaging/Pillow/issues/3
+      [thomasdesvenain]
+
 
 1.7.7 (2012-04-04)
 ------------------
