@@ -35,7 +35,7 @@ Please report any non-packaging related issues here first:
 
 Then open a ticket here:
 
-- https://github.com/collective/Pillow/issues
+- https://github.com/python-imaging/Pillow/issues
 
 and provide a link to the first ticket so we can track the issue(s) upstream.
 This project does not aim to fix image code bugs, but if we can track them
