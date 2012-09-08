@@ -914,7 +914,7 @@ map_image_pixels_from_median_box(
    unsigned long bestdist,bestmatch,dist;
    unsigned long initialdist;
    HashTable h2;
-   int pixelVal;
+   unsigned long pixelVal;
 
    h2=hashtable_new(unshifted_pixel_hash,unshifted_pixel_cmp);
    for (i=0;i<nPixels;i++) {
