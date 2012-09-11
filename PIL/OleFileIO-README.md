@@ -21,6 +21,7 @@ Main improvements over PIL version:
 News
 ----
 
+- 2012-09-11 v0.23: added support for file-like objects, fixed [issue #8](https://bitbucket.org/decalage/olefileio_pl/issue/8/bug-with-file-object)
 - 2012-02-17 v0.22: fixed issues #7 (bug in getproperties) and #2 (added close method)
 - 2011-10-20: code hosted on bitbucket to ease contributions and bug tracking
 - 2010-01-24 v0.21: fixed support for big-endian CPUs, such as PowerPC Macs.
@@ -47,7 +48,7 @@ Here are a few examples:
 		# Test if a file is an OLE container:
 		assert OleFileIO_PL.isOleFile('myfile.doc')
 		
-		# Open an OLE file:
+		# Open an OLE file from disk:
 		ole = OleFileIO_PL.OleFileIO('myfile.doc')
 		
 		# Get list of streams:
@@ -67,6 +68,16 @@ Here are a few examples:
 		    f = open('Pictures.bin', 'w')
 		    f.write(data)
 		    f.close()
+
+		# Close the OLE file:
+		ole.close()
+		
+		# Work with a file-like object (e.g. StringIO) instead of a file on disk:
+		data = open('myfile.doc', 'rb').read()
+		f = StringIO.StringIO(data)
+		ole = OleFileIO_PL.OleFileIO(f)
+		print ole.listdir()
+		ole.close()
 		
 		
 It can also be used as a script from the command-line to display the structure of an OLE file, for example:
