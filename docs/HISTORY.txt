@@ -5,6 +5,9 @@ Changelog
 1.7.8 (Unreleased)
 ------------------
 
+- Removed doctests.py that made tests of other packages fail.
+  [thomasdesvenain]
+
 - Fix opening psd files with RGBA layers when A mode is not of type 65535 but 3.
   Fixes issue https://github.com/python-imaging/Pillow/issues/3
   [thomasdesvenain]
