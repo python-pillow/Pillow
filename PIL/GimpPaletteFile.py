@@ -14,7 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import re, string
+import re
 
 ##
 # File handler for GIMP's palette format.
@@ -44,7 +44,7 @@ class GimpPaletteFile:
             if len(s) > 100:
                 raise SyntaxError, "bad palette file"
 
-            v = tuple(map(int, string.split(s)[:3]))
+            v = tuple(map(int, s.split()[:3]))
             if len(v) != 3:
                 raise ValueError, "bad palette entry"
 
@@ -53,7 +53,7 @@ class GimpPaletteFile:
 
             i = i + 1
 
-        self.palette = string.join(self.palette, "")
+        self.palette = "".join(self.palette)
 
 
     def getpalette(self):

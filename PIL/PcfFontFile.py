@@ -19,8 +19,6 @@
 import Image
 import FontFile
 
-import string
-
 # --------------------------------------------------------------------
 # declarations
 
@@ -55,7 +53,7 @@ def b32(c):
     return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
 
 def sz(s, o):
-    return s[o:string.index(s, "\0", o)]
+    return s[o:s.index("\0", o)]
 
 ##
 # Font file plugin for the X11 PCF format.

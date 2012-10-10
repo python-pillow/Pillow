@@ -18,15 +18,8 @@
 #
 
 import Image
-import re, string
+import re
 
-try:
-    x = int("a", 16)
-except TypeError:
-    # python 1.5.2 doesn't support int(x,b)
-    str2int = string.atoi
-else:
-    str2int = int
 
 ##
 # Convert color string to RGB tuple.
@@ -43,7 +36,7 @@ def getrgb(color):
     except KeyError:
         try:
             # fall back on case-insensitive lookup
-            rgb = colormap[string.lower(color)]
+            rgb = colormap[color.lower()]
         except KeyError:
             rgb = None
     # found color in cache
@@ -56,30 +49,30 @@ def getrgb(color):
     m = re.match("#\w\w\w$", color)
     if m:
         return (
-            str2int(color[1]*2, 16),
-            str2int(color[2]*2, 16),
-            str2int(color[3]*2, 16)
+            int(color[1]*2, 16),
+            int(color[2]*2, 16),
+            int(color[3]*2, 16)
             )
     m = re.match("#\w\w\w\w\w\w$", color)
     if m:
         return (
-            str2int(color[1:3], 16),
-            str2int(color[3:5], 16),
-            str2int(color[5:7], 16)
+            int(color[1:3], 16),
+            int(color[3:5], 16),
+            int(color[5:7], 16)
             )
     m = re.match("rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
         return (
-            str2int(m.group(1)),
-            str2int(m.group(2)),
-            str2int(m.group(3))
+            int(m.group(1)),
+            int(m.group(2)),
+            int(m.group(3))
             )
     m = re.match("rgb\(\s*(\d+)%\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
     if m:
         return (
-            int((str2int(m.group(1)) * 255) / 100.0 + 0.5),
-            int((str2int(m.group(2)) * 255) / 100.0 + 0.5),
-            int((str2int(m.group(3)) * 255) / 100.0 + 0.5)
+            int((int(m.group(1)) * 255) / 100.0 + 0.5),
+            int((int(m.group(2)) * 255) / 100.0 + 0.5),
+            int((int(m.group(3)) * 255) / 100.0 + 0.5)
             )
     m = re.match("hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
     if m:

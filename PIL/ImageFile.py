@@ -28,7 +28,7 @@
 #
 
 import Image
-import traceback, string, os
+import traceback, os
 
 MAXBLOCK = 65536
 
@@ -525,4 +525,4 @@ def _safe_read(fp, size):
             break
         data.append(block)
         size = size - len(block)
-    return string.join(data, "")
+    return "".join(data)

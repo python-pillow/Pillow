@@ -46,7 +46,6 @@ class Option:
     """
 
     def __init__(self, args, scanDev):
-        import string
         self.scanDev = scanDev # needed to get current value of this option
         self.index, self.name = args[0], args[1]
         self.title, self.desc = args[2], args[3]
@@ -57,7 +56,7 @@ class Option:
             if x=='-': return '_'
             else: return x
         if type(self.name)!=type(''): self.py_name=str(self.name)
-        else: self.py_name=string.join(map(f, self.name), '')
+        else: self.py_name=''.join(map(f, self.name))
 
     def is_active(self):
         return _sane.OPTION_IS_ACTIVE(self.cap)
