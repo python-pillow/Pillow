@@ -18,7 +18,7 @@
 __version__ = "0.2"
 
 
-import re, string
+import re
 import Image, ImageFile, ImagePalette
 
 # XPM header
@@ -72,7 +72,7 @@ class XpmImageFile(ImageFile.ImageFile):
                 s = s[:-1]
 
             c = ord(s[1])
-            s = string.split(s[2:-2])
+            s = s[2:-2].split()
 
             for i in range(0, len(s), 2):
 
@@ -84,7 +84,7 @@ class XpmImageFile(ImageFile.ImageFile):
                         self.info["transparency"] = c
                     elif rgb[0] == "#":
                         # FIXME: handle colour names (see ImagePalette.py)
-                        rgb = string.atoi(rgb[1:], 16)
+                        rgb = int(rgb[1:], 16)
                         palette[c] = chr((rgb >> 16) & 255) +\
                                      chr((rgb >> 8) & 255) +\
                                      chr(rgb & 255)
@@ -99,7 +99,7 @@ class XpmImageFile(ImageFile.ImageFile):
                 raise ValueError, "cannot read this XPM file"
 
         self.mode = "P"
-        self.palette = ImagePalette.raw("RGB", string.join(palette, ""))
+        self.palette = ImagePalette.raw("RGB", "".join(palette))
 
         self.tile = [("raw", (0, 0)+self.size, self.fp.tell(), ("P", 0, 1))]
 
@@ -113,11 +113,11 @@ class XpmImageFile(ImageFile.ImageFile):
         s = [None] * ysize
 
         for i in range(ysize):
-            s[i] = string.ljust(self.fp.readline()[1:xsize+1], xsize)
+            s[i] = self.fp.readline()[1:xsize+1].ljust(xsize)
 
         self.fp = None
 
-        return string.join(s, "")
+        return "".join(s)
 
 #
 # Registry

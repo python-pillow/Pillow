@@ -15,7 +15,7 @@
 #
 
 import Image, ImageFile
-import string, struct
+import struct
 
 HEADERSIZE = 8
 
@@ -68,7 +68,7 @@ def read_32(fobj, (start, length), size):
                     "Error reading channel [%r left]" % bytesleft
                     )
             band = Image.frombuffer(
-                "L", size, string.join(data, ""), "raw", "L", 0, 1
+                "L", size, "".join(data), "raw", "L", 0, 1
                 )
             im.im.putband(band.im, band_ix)
     return {"RGB": im}

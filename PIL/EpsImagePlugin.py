@@ -20,7 +20,7 @@
 
 __version__ = "0.5"
 
-import re, string
+import re
 import Image, ImageFile
 
 #
@@ -55,7 +55,7 @@ def Ghostscript(tile, size, fp):
                "-sOutputFile=%s" % file,# output file
                "- >/dev/null 2>/dev/null"]
 
-    command = string.join(command)
+    command = " ".join(command)
 
     # push data through ghostscript
     try:
@@ -183,7 +183,7 @@ class EpsImageFile(ImageFile.ImageFile):
                         # Note: The DSC spec says that BoundingBox
                         # fields should be integers, but some drivers
                         # put floating point values there anyway.
-                        box = map(int, map(float, string.split(v)))
+                        box = map(int, map(float, v.split()))
                         self.size = box[2] - box[0], box[3] - box[1]
                         self.tile = [("eps", (0,0) + self.size, offset,
                                       (length, box))]
@@ -231,7 +231,7 @@ class EpsImageFile(ImageFile.ImageFile):
             if s[:11] == "%ImageData:":
 
                 [x, y, bi, mo, z3, z4, en, id] =\
-                    string.split(s[11:], maxsplit=7)
+                    s[11:].split(maxsplit=7)
 
                 x = int(x); y = int(y)
 

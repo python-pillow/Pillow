@@ -19,7 +19,6 @@
 __version__ = "0.2"
 
 import Image, ImageFile, ImagePalette
-import string
 
 
 def i16(c):
@@ -82,7 +81,7 @@ class FliImageFile(ImageFile.ImageFile):
                 self._palette(palette, 0)
 
         palette = map(lambda (r,g,b): chr(r)+chr(g)+chr(b), palette)
-        self.palette = ImagePalette.raw("RGB", string.join(palette, ""))
+        self.palette = ImagePalette.raw("RGB", "".join(palette))
 
         # set things up to decode first frame
         self.frame = -1
