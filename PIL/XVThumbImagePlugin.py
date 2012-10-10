@@ -19,7 +19,6 @@
 
 __version__ = "0.1"
 
-import string
 import Image, ImageFile, ImagePalette
 
 # standard color palette for thumbnails (RGB332)
@@ -56,7 +55,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
                 break
 
         # parse header line (already read)
-        s = string.split(s.strip())
+        s = s.strip().split()
 
         self.mode = "P"
         self.size = int(s[0]), int(s[1])

@@ -49,7 +49,6 @@ of its upper-left-hand corner and displays the cropped portion.
 #
 
 from PIL import Image
-import string
 
 class PILDriver:
 
@@ -206,7 +205,7 @@ class PILDriver:
         Process the top image with the given filter.
         """
         import ImageFilter
-        filter = eval("ImageFilter." + string.upper(self.do_pop()))
+        filter = eval("ImageFilter." + self.do_pop().upper())
         image = self.do_pop()
         self.push(image.filter(filter))
 
@@ -314,7 +313,7 @@ class PILDriver:
 
         Transpose the top image.
         """
-        transpose = string.upper(self.do_pop())
+        transpose = self.do_pop().upper()
         image = self.do_pop()
         self.push(image.transpose(transpose))
 
@@ -515,7 +514,7 @@ if __name__ == '__main__':
             except EOFError:
                 print "\nPILDriver says goodbye."
                 break
-            driver.execute(string.split(line))
+            driver.execute(line.split())
             print driver.stack
 
 # The following sets edit modes for GNU EMACS

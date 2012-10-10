@@ -28,7 +28,7 @@
 
 __version__ = "0.7"
 
-import re, string
+import re
 import Image, ImageFile, ImagePalette
 
 
@@ -158,8 +158,8 @@ class ImImageFile(ImageFile.ImageFile):
 
                 # Convert value as appropriate
                 if k in [FRAMES, SCALE, SIZE]:
-                    v = string.replace(v, "*", ",")
-                    v = tuple(map(number, string.split(v, ",")))
+                    v = v.replace("*", ",")
+                    v = tuple(map(number, v.split(",")))
                     if len(v) == 1:
                         v = v[0]
                 elif k == MODE and OPEN.has_key(v):

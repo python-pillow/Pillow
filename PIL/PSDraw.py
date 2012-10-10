@@ -16,7 +16,6 @@
 #
 
 import EpsImagePlugin
-import string
 
 ##
 # Simple Postscript graphics interface.
@@ -71,8 +70,8 @@ class PSDraw:
         self.fp.write("%d %d M %d %d 0 Vr\n" % box)
 
     def text(self, xy, text):
-        text = string.joinfields(string.splitfields(text, "("), "\\(")
-        text = string.joinfields(string.splitfields(text, ")"), "\\)")
+        text = "\\(".join(text.split("("))
+        text = "\\)".join(text.split(")"))
         xy = xy + (text,)
         self.fp.write("%d %d M (%s) S\n" % xy)
 
