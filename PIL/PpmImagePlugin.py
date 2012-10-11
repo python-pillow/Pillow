@@ -61,7 +61,7 @@ class PpmImageFile(ImageFile.ImageFile):
         # check magic
         s = self.fp.read(1)
         if s != "P":
-            raise SyntaxError, "not a PPM file"
+            raise SyntaxError("not a PPM file")
         mode = MODES[self._token(s)]
 
         if mode == "1":
@@ -111,7 +111,7 @@ def _save(im, fp, filename):
     elif im.mode == "RGBA":
         rawmode, head = "RGB", "P6"
     else:
-        raise IOError, "cannot write mode %s as PPM" % im.mode
+        raise IOError("cannot write mode %s as PPM" % im.mode)
     fp.write(head + "\n%d %d\n" % im.size)
     if head != "P4":
         fp.write("255\n")

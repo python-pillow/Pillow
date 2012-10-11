@@ -36,12 +36,12 @@ class TarIO(ContainerIO.ContainerIO):
 
             s = fh.read(512)
             if len(s) != 512:
-                raise IOError, "unexpected end of tar file"
+                raise IOError("unexpected end of tar file")
 
             name = s[:100]
             i = name.find(chr(0))
             if i == 0:
-                raise IOError, "cannot find subfile"
+                raise IOError("cannot find subfile")
             if i > 0:
                 name = name[:i]
 

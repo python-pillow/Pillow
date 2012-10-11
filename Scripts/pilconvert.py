@@ -41,7 +41,7 @@ if len(sys.argv) == 1:
 
 try:
     opt, argv = getopt.getopt(sys.argv[1:], "c:dfgopq:r")
-except getopt.error, v:
+except getopt.error as v:
     print v
     sys.exit(1)
 
@@ -93,4 +93,4 @@ try:
         apply(im.save, (argv[1],), options)
 except:
     print "cannot convert image",
-    print "(%s:%s)" % (sys.exc_type, sys.exc_value)
+    print "(%s:%s)" % (sys.exc_info()[0], sys.exc_info()[1])

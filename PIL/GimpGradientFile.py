@@ -96,7 +96,7 @@ class GimpGradientFile(GradientFile):
     def __init__(self, fp):
 
         if fp.readline()[:13] != "GIMP Gradient":
-            raise SyntaxError, "not a GIMP gradient file"
+            raise SyntaxError("not a GIMP gradient file")
 
         count = int(fp.readline())
 
@@ -116,7 +116,7 @@ class GimpGradientFile(GradientFile):
             cspace  = int(s[12])
 
             if cspace != 0:
-                raise IOError, "cannot handle HSV colour space"
+                raise IOError("cannot handle HSV colour space")
 
             gradient.append((x0, x1, xm, rgb0, rgb1, segment))
 

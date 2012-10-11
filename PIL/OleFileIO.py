@@ -273,7 +273,7 @@ class OleFileIO:
         header = self.fp.read(512)
 
         if len(header) != 512 or header[:8] != MAGIC:
-            raise IOError, "not an OLE2 structured storage file"
+            raise IOError("not an OLE2 structured storage file")
 
         # file clsid (probably never used, so we don't store it)
         clsid = self._clsid(header[8:24])
@@ -385,7 +385,7 @@ class OleFileIO:
                 if kid.name == name:
                     break
             else:
-                raise IOError, "file not found"
+                raise IOError("file not found")
             node = kid
         return node.sid
 
@@ -423,7 +423,7 @@ class OleFileIO:
         slot = self._find(filename)
         name, type, sect, size, sids, clsid = self.sidlist[slot]
         if type != 2:
-            raise IOError, "this file is not a stream"
+            raise IOError("this file is not a stream")
         return self._open(sect, size)
 
     ##
@@ -524,5 +524,5 @@ if __name__ == "__main__":
                     props.sort()
                     for k, v in props:
                         print "   ", k, v
-        except IOError, v:
+        except IOError as v:
             print "***", "cannot read", file, "-", v

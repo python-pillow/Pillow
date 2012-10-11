@@ -46,7 +46,7 @@ class SunImageFile(ImageFile.ImageFile):
         # HEAD
         s = self.fp.read(32)
         if i32(s) != 0x59a66a95:
-            raise SyntaxError, "not an SUN raster file"
+            raise SyntaxError("not an SUN raster file")
 
         offset = 32
 
@@ -60,7 +60,7 @@ class SunImageFile(ImageFile.ImageFile):
         elif depth == 24:
             self.mode, rawmode = "RGB", "BGR"
         else:
-            raise SyntaxError, "unsupported mode"
+            raise SyntaxError("unsupported mode")
 
         compression = i32(s[20:24])
 

@@ -45,7 +45,7 @@ class PixarImageFile(ImageFile.ImageFile):
         # assuming a 4-byte magic label (FIXME: add "_accept" hook)
         s = self.fp.read(4)
         if s != "\200\350\000\000":
-            raise SyntaxError, "not a PIXAR file"
+            raise SyntaxError("not a PIXAR file")
 
         # read rest of header
         s = s + self.fp.read(508)

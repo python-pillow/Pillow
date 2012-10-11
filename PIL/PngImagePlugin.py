@@ -96,7 +96,7 @@ class ChunkStream:
             len = i32(s)
 
         if not is_cid(cid):
-            raise SyntaxError, "broken PNG file (chunk %s)" % repr(cid)
+            raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
 
         return cid, pos, len
 
@@ -120,8 +120,8 @@ class ChunkStream:
         crc1 = Image.core.crc32(data, Image.core.crc32(cid))
         crc2 = i16(self.fp.read(2)), i16(self.fp.read(2))
         if crc1 != crc2:
-            raise SyntaxError, "broken PNG file"\
-                "(bad header checksum in %s)" % cid
+            raise SyntaxError("broken PNG file"\
+                "(bad header checksum in %s)" % cid)
 
     def crc_skip(self, cid, data):
         "Read checksum.  Used if the C module is not present"
@@ -215,7 +215,7 @@ class PngStream(ChunkStream):
         if ord(s[12]):
             self.im_info["interlace"] = 1
         if ord(s[11]):
-            raise SyntaxError, "unknown filter category"
+            raise SyntaxError("unknown filter category")
         return s
 
     def chunk_IDAT(self, pos, len):
@@ -313,7 +313,7 @@ class PngImageFile(ImageFile.ImageFile):
     def _open(self):
 
         if self.fp.read(8) != _MAGIC:
-            raise SyntaxError, "not a PNG file"
+            raise SyntaxError("not a PNG file")
 
         #
         # Parse headers up to the first IDAT chunk
@@ -503,7 +503,7 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
     try:
         rawmode, mode = _OUTMODES[mode]
     except KeyError:
-        raise IOError, "cannot write mode %s as PNG" % mode
+        raise IOError("cannot write mode %s as PNG" % mode)
 
     if check:
         return check

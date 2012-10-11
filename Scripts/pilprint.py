@@ -39,7 +39,7 @@ if len(sys.argv) == 1:
 
 try:
     opt, argv = getopt.getopt(sys.argv[1:], "cdpP:")
-except getopt.error, v:
+except getopt.error as v:
     print v
     sys.exit(1)
 
@@ -90,4 +90,4 @@ for file in argv:
 
     except:
         print "cannot print image",
-        print "(%s:%s)" % (sys.exc_type, sys.exc_value)
+        print "(%s:%s)" % (sys.exc_info()[0], sys.exc_info()[1])

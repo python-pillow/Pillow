@@ -89,25 +89,25 @@ class ImageFile(Image.Image):
 
         try:
             self._open()
-        except IndexError, v: # end of data
+        except IndexError as v: # end of data
             if Image.DEBUG > 1:
                 traceback.print_exc()
-            raise SyntaxError, v
-        except TypeError, v: # end of data (ord)
+            raise SyntaxError(v)
+        except TypeError as v: # end of data (ord)
             if Image.DEBUG > 1:
                 traceback.print_exc()
-            raise SyntaxError, v
-        except KeyError, v: # unsupported mode
+            raise SyntaxError(v)
+        except KeyError as v: # unsupported mode
             if Image.DEBUG > 1:
                 traceback.print_exc()
-            raise SyntaxError, v
-        except EOFError, v: # got header but not the first frame
+            raise SyntaxError(v)
+        except EOFError as v: # got header but not the first frame
             if Image.DEBUG > 1:
                 traceback.print_exc()
-            raise SyntaxError, v
+            raise SyntaxError(v)
 
         if not self.mode or self.size[0] <= 0:
-            raise SyntaxError, "not identified by this driver"
+            raise SyntaxError("not identified by this driver")
 
     def draft(self, mode, size):
         "Set draft mode"

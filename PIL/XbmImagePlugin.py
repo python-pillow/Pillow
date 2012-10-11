@@ -69,7 +69,7 @@ class XbmImageFile(ImageFile.ImageFile):
 def _save(im, fp, filename):
 
     if im.mode != "1":
-        raise IOError, "cannot write mode %s as XBM" % im.mode
+        raise IOError("cannot write mode %s as XBM" % im.mode)
 
     fp.write("#define im_width %d\n" % im.size[0])
     fp.write("#define im_height %d\n" % im.size[1])
