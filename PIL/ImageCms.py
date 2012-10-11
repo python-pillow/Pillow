@@ -307,7 +307,7 @@ def profileToProfile(im, inputProfile, outputProfile, renderingIntent=INTENT_PER
             imOut = None
         else:
             imOut = transform.apply(im)
-    except (IOError, TypeError, ValueError), v:
+    except (IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
     return imOut
@@ -334,7 +334,7 @@ def getOpenProfile(profileFilename):
 
     try:
         return ImageCmsProfile(profileFilename)
-    except (IOError, TypeError, ValueError), v:
+    except (IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 ##
@@ -408,7 +408,7 @@ def buildTransform(inputProfile, outputProfile, inMode, outMode, renderingIntent
         if not isinstance(outputProfile, ImageCmsProfile):
             outputProfile = ImageCmsProfile(outputProfile)
         return ImageCmsTransform(inputProfile, outputProfile, inMode, outMode, renderingIntent, flags=flags)
-    except (IOError, TypeError, ValueError), v:
+    except (IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 ##
@@ -501,7 +501,7 @@ def buildProofTransform(inputProfile, outputProfile, proofProfile, inMode, outMo
         if not isinstance(proofProfile, ImageCmsProfile):
             proofProfile = ImageCmsProfile(proofProfile)
         return ImageCmsTransform(inputProfile, outputProfile, inMode, outMode, renderingIntent, proofProfile, proofRenderingIntent, flags)
-    except (IOError, TypeError, ValueError), v:
+    except (IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 buildTransformFromOpenProfiles = buildTransform
@@ -557,7 +557,7 @@ def applyTransform(im, transform, inPlace=0):
             imOut = None
         else:
             imOut = transform.apply(im)
-    except (TypeError, ValueError), v:
+    except (TypeError, ValueError) as v:
         raise PyCMSError(v)
 
     return imOut
@@ -602,7 +602,7 @@ def createProfile(colorSpace, colorTemp=-1):
 
     try:
         return core.createProfile(colorSpace, colorTemp)
-    except (TypeError, ValueError), v:
+    except (TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 ##
@@ -633,7 +633,7 @@ def getProfileName(profile):
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
         return profile.profile.product_name + "\n"
-    except (AttributeError, IOError, TypeError, ValueError), v:
+    except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 ##
@@ -665,7 +665,7 @@ def getProfileInfo(profile):
             profile = ImageCmsProfile(profile)
         # add an extra newline to preserve pyCMS compatibility
         return profile.product_info + "\n"
-    except (AttributeError, IOError, TypeError, ValueError), v:
+    except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 ##
@@ -703,7 +703,7 @@ def getDefaultIntent(profile):
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
         return profile.profile.rendering_intent
-    except (AttributeError, IOError, TypeError, ValueError), v:
+    except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 ##
@@ -752,7 +752,7 @@ def isIntentSupported(profile, intent, direction):
             return 1
         else:
             return -1
-    except (AttributeError, IOError, TypeError, ValueError), v:
+    except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 ##

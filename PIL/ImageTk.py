@@ -175,7 +175,7 @@ class PhotoImage:
 
         try:
             tk.call("PyImagingPhoto", self.__photo, block.id)
-        except Tkinter.TclError, v:
+        except Tkinter.TclError as v:
             # activate Tkinter hook
             try:
                 import _imagingtk
@@ -289,7 +289,7 @@ def _show(image, title):
                 bg="black", bd=0)
 
     if not Tkinter._default_root:
-        raise IOError, "tkinter not initialized"
+        raise IOError("tkinter not initialized")
     top = Tkinter.Toplevel()
     if title:
         top.title(title)

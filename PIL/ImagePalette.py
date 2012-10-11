@@ -32,7 +32,7 @@ class ImagePalette:
         self.colors = {}
         self.dirty = None
         if len(self.mode)*256 != len(self.palette):
-            raise ValueError, "wrong palette size"
+            raise ValueError("wrong palette size")
 
     def getdata(self):
         # experimental: get palette contents in format suitable
@@ -176,7 +176,7 @@ def load(filename):
             pass
 
     if not lut:
-        raise IOError, "cannot load palette"
+        raise IOError("cannot load palette")
 
     return lut # data, rawmode
 

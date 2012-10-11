@@ -33,7 +33,7 @@ class PaletteFile:
             if s[0] == "#":
                 continue
             if len(s) > 100:
-                raise SyntaxError, "bad palette file"
+                raise SyntaxError("bad palette file")
 
             v = map(int, s.split())
             try:

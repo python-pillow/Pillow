@@ -40,7 +40,7 @@ class ImtImageFile(ImageFile.ImageFile):
         # 100 bytes, this is (probably) not a text header.
 
         if not "\n" in self.fp.read(100):
-            raise SyntaxError, "not an IM file"
+            raise SyntaxError("not an IM file")
         self.fp.seek(0)
 
         xsize = ysize = 0

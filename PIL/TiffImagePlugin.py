@@ -265,7 +265,7 @@ class ImageFileDirectory:
                     # work around broken (?) matrox library
                     # (from Ted Wright, via Bob Klimek)
                     raise KeyError # use default
-                raise ValueError, "not a scalar"
+                raise ValueError("not a scalar")
             return value[0]
         except KeyError:
             if default is None:
@@ -379,7 +379,7 @@ class ImageFileDirectory:
                 data = ifd[8:8+size]
 
             if len(data) != size:
-                raise IOError, "not enough data"
+                raise IOError("not enough data")
 
             self.tagdata[tag] = typ, data
             self.tagtype[tag] = typ
@@ -513,7 +513,7 @@ class TiffImageFile(ImageFile.ImageFile):
         ifh = self.fp.read(8)
 
         if ifh[:4] not in PREFIXES:
-            raise SyntaxError, "not a TIFF file"
+            raise SyntaxError("not a TIFF file")
 
         # image file directory (tag dictionary)
         self.tag = self.ifd = ImageFileDirectory(ifh[:2])
@@ -547,7 +547,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__next = self.__first
         while self.__frame < frame:
             if not self.__next:
-                raise EOFError, "no more images in TIFF file"
+                raise EOFError("no more images in TIFF file")
             self.fp.seek(self.__next)
             self.tag.load(self.fp)
             self.__next = self.tag.next
@@ -589,7 +589,7 @@ class TiffImageFile(ImageFile.ImageFile):
         "Setup this image object based on current tags"
 
         if self.tag.has_key(0xBC01):
-            raise IOError, "Windows Media Photo files not yet supported"
+            raise IOError("Windows Media Photo files not yet supported")
 
         getscalar = self.tag.getscalar
 
@@ -633,7 +633,7 @@ class TiffImageFile(ImageFile.ImageFile):
         except KeyError:
             if Image.DEBUG:
                 print "- unsupported format"
-            raise SyntaxError, "unknown pixel mode"
+            raise SyntaxError("unknown pixel mode")
 
         if Image.DEBUG:
             print "- raw mode:", rawmode
@@ -751,7 +751,7 @@ def _save(im, fp, filename):
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError:
-        raise IOError, "cannot write mode %s as TIFF" % im.mode
+        raise IOError("cannot write mode %s as TIFF" % im.mode)
 
     ifd = ImageFileDirectory(prefix)
 

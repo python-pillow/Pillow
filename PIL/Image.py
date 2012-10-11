@@ -52,7 +52,7 @@ try:
     # them.  Note that other modules should not refer to _imaging
     # directly; import Image and use the Image.core variable instead.
     import _imaging as core
-except ImportError, v:
+except ImportError as v:
     core = _imaging_not_installed()
     if str(v)[:20] == "Module use of python" and warnings:
         # The _imaging C module is present, but not compiled for
@@ -356,7 +356,7 @@ def init():
                 except ImportError:
                     if DEBUG:
                         print "Image: failed to import",
-                        print f, ":", sys.exc_value
+                        print f, ":", sys.exc_info()[1]
         visited[fullpath] = None
 
     if OPEN or SAVE:

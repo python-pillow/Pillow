@@ -56,7 +56,7 @@ def _lut(image, lut):
             lut = lut + lut + lut
         return image.point(lut)
     else:
-        raise IOError, "not supported for this image mode"
+        raise IOError("not supported for this image mode")
 
 #
 # actions
