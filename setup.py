@@ -1,3 +1,4 @@
+from __future__ import print_function
 import glob
 import os
 import platform
@@ -433,7 +434,7 @@ class pil_build_ext(build_ext):
             tmpfile)
         try:
             if ret >> 8 == 0:
-                fp = open(tmpfile, 'rb')
+                fp = open(tmpfile, 'r')
                 multiarch_path_component = fp.readline().strip()
                 _add_directory(self.compiler.library_dirs,
                     '/usr/lib/' + multiarch_path_component)
