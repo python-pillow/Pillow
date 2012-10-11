@@ -93,7 +93,7 @@ class BdfFontFile(FontFile.FontFile):
 
         s = fp.readline()
         if s[:13] != "STARTFONT 2.1":
-            raise SyntaxError, "not a valid BDF file"
+            raise SyntaxError("not a valid BDF file")
 
         props = {}
         comments = []

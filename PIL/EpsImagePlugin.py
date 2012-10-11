@@ -146,7 +146,7 @@ class EpsImageFile(ImageFile.ImageFile):
             length = i32(s[8:])
             fp.seek(offset)
         else:
-            raise SyntaxError, "not an EPS file"
+            raise SyntaxError("not an EPS file")
 
         fp.seek(offset)
 
@@ -163,7 +163,7 @@ class EpsImageFile(ImageFile.ImageFile):
         while s:
 
             if len(s) > 255:
-                raise SyntaxError, "not an EPS file"
+                raise SyntaxError("not an EPS file")
 
             if s[-2:] == '\r\n':
                 s = s[:-2]
@@ -172,8 +172,8 @@ class EpsImageFile(ImageFile.ImageFile):
 
             try:
                 m = split.match(s)
-            except re.error, v:
-                raise SyntaxError, "not an EPS file"
+            except re.error as v:
+                raise SyntaxError("not an EPS file")
 
             if m:
                 k, v = m.group(1, 2)
@@ -207,7 +207,7 @@ class EpsImageFile(ImageFile.ImageFile):
                     # tools mistakenly put in the Comments section
                     pass
                 else:
-                    raise IOError, "bad EPS header"
+                    raise IOError("bad EPS header")
 
             s = fp.readline()
 
@@ -221,7 +221,7 @@ class EpsImageFile(ImageFile.ImageFile):
         while s[0] == "%":
 
             if len(s) > 255:
-                raise SyntaxError, "not an EPS file"
+                raise SyntaxError("not an EPS file")
 
             if s[-2:] == '\r\n':
                 s = s[:-2]
@@ -278,7 +278,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 break
 
         if not box:
-            raise IOError, "cannot determine EPS bounding box"
+            raise IOError("cannot determine EPS bounding box")
 
     def load(self):
         # Load EPS via Ghostscript
@@ -308,7 +308,7 @@ def _save(im, fp, filename, eps=1):
     elif im.mode == "CMYK":
         operator = (8, 4, "false 4 colorimage")
     else:
-        raise ValueError, "image mode is not supported"
+        raise ValueError("image mode is not supported")
 
     if eps:
         #

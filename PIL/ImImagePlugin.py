@@ -113,7 +113,7 @@ class ImImageFile(ImageFile.ImageFile):
         # 100 bytes, this is (probably) not a text header.
 
         if not "\n" in self.fp.read(100):
-            raise SyntaxError, "not an IM file"
+            raise SyntaxError("not an IM file")
         self.fp.seek(0)
 
         n = 0
@@ -140,7 +140,7 @@ class ImImageFile(ImageFile.ImageFile):
             s = s + self.fp.readline()
 
             if len(s) > 100:
-                raise SyntaxError, "not an IM file"
+                raise SyntaxError("not an IM file")
 
             if s[-2:] == '\r\n':
                 s = s[:-2]
@@ -149,8 +149,8 @@ class ImImageFile(ImageFile.ImageFile):
 
             try:
                 m = split.match(s)
-            except re.error, v:
-                raise SyntaxError, "not an IM file"
+            except re.error as v:
+                raise SyntaxError("not an IM file")
 
             if m:
 
@@ -180,10 +180,10 @@ class ImImageFile(ImageFile.ImageFile):
 
             else:
 
-                raise SyntaxError, "Syntax error in IM header: " + s
+                raise SyntaxError("Syntax error in IM header: " + s)
 
         if not n:
-            raise SyntaxError, "Not an IM file"
+            raise SyntaxError("Not an IM file")
 
         # Basic attributes
         self.size = self.info[SIZE]
@@ -193,7 +193,7 @@ class ImImageFile(ImageFile.ImageFile):
         while s and s[0] != chr(26):
             s = self.fp.read(1)
         if not s:
-            raise SyntaxError, "File truncated"
+            raise SyntaxError("File truncated")
 
         if self.info.has_key(LUT):
             # convert lookup table to palette or lut attribute
@@ -253,7 +253,7 @@ class ImImageFile(ImageFile.ImageFile):
     def seek(self, frame):
 
         if frame < 0 or frame >= self.info[FRAMES]:
-            raise EOFError, "seek outside sequence"
+            raise EOFError("seek outside sequence")
 
         if self.frame == frame:
             return
@@ -304,7 +304,7 @@ def _save(im, fp, filename, check=0):
     try:
         type, rawmode = SAVE[im.mode]
     except KeyError:
-        raise ValueError, "Cannot save %s images as IM" % im.mode
+        raise ValueError("Cannot save %s images as IM" % im.mode)
 
     try:
         frames = im.encoderinfo["frames"]

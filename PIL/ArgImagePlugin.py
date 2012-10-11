@@ -60,14 +60,14 @@ class ArgStream(ChunkStream):
 
         # assertions
         if self.count != 0:
-            raise SyntaxError, "misplaced AHDR chunk"
+            raise SyntaxError("misplaced AHDR chunk")
 
         s = self.fp.read(bytes)
         self.size = i32(s), i32(s[4:])
         try:
             self.mode, self.rawmode = _MODES[(ord(s[8]), ord(s[9]))]
         except:
-            raise SyntaxError, "unknown ARG mode"
+            raise SyntaxError("unknown ARG mode")
 
         if Image.DEBUG:
             print "AHDR size", self.size
@@ -80,7 +80,7 @@ class ArgStream(ChunkStream):
 
         # assertions
         if self.count != 0:
-            raise SyntaxError, "misplaced AFRM chunk"
+            raise SyntaxError("misplaced AFRM chunk")
 
         self.show = 1
         self.id = 0
@@ -107,7 +107,7 @@ class ArgStream(ChunkStream):
 
         # assertions
         if self.count != 0:
-            raise SyntaxError, "misplaced ADEF chunk"
+            raise SyntaxError("misplaced ADEF chunk")
 
         self.show = 0
         self.id = 0
@@ -130,7 +130,7 @@ class ArgStream(ChunkStream):
 
         # assertions
         if self.count == 0:
-            raise SyntaxError, "misplaced NAME chunk"
+            raise SyntaxError("misplaced NAME chunk")
 
         name = self.fp.read(bytes)
         self.names[self.id] = name
@@ -145,7 +145,7 @@ class ArgStream(ChunkStream):
 
         self.eof = 1
 
-        raise EOFError, "end of ARG file"
+        raise EOFError("end of ARG file")
 
     def __getmodesize(self, s, full=1):
 
@@ -154,13 +154,13 @@ class ArgStream(ChunkStream):
         try:
             mode, rawmode = _MODES[(ord(s[8]), ord(s[9]))]
         except:
-            raise SyntaxError, "unknown image mode"
+            raise SyntaxError("unknown image mode")
 
         if full:
             if ord(s[12]):
                 pass # interlace not yet supported
             if ord(s[11]):
-                raise SyntaxError, "unknown filter category"
+                raise SyntaxError("unknown filter category")
 
         return size, mode, rawmode
 
@@ -169,7 +169,7 @@ class ArgStream(ChunkStream):
 
         # assertions
         if self.count == 0:
-            raise SyntaxError, "misplaced PAST chunk"
+            raise SyntaxError("misplaced PAST chunk")
 
         if self.repair is not None:
             # we must repair the target image before we
@@ -206,7 +206,7 @@ class ArgStream(ChunkStream):
 
         # assertions
         if self.count == 0:
-            raise SyntaxError, "misplaced BLNK chunk"
+            raise SyntaxError("misplaced BLNK chunk")
 
         s = self.fp.read(bytes)
         size, mode, rawmode = self.__getmodesize(s, 0)
@@ -223,7 +223,7 @@ class ArgStream(ChunkStream):
 
         # assertions
         if self.count == 0:
-            raise SyntaxError, "misplaced IHDR chunk"
+            raise SyntaxError("misplaced IHDR chunk")
 
         # image header
         s = self.fp.read(bytes)
@@ -243,7 +243,7 @@ class ArgStream(ChunkStream):
 
         # assertions
         if self.count == 0:
-            raise SyntaxError, "misplaced DHDR chunk"
+            raise SyntaxError("misplaced DHDR chunk")
 
         s = self.fp.read(bytes)
 
@@ -276,7 +276,7 @@ class ArgStream(ChunkStream):
 
         # assertions
         if self.count == 0:
-            raise SyntaxError, "misplaced JHDR chunk"
+            raise SyntaxError("misplaced JHDR chunk")
 
         # image header
         s = self.fp.read(bytes)
@@ -296,7 +296,7 @@ class ArgStream(ChunkStream):
 
         # assertions
         if self.count == 0:
-            raise SyntaxError, "misplaced UHDR chunk"
+            raise SyntaxError("misplaced UHDR chunk")
 
         # image header
         s = self.fp.read(bytes)
@@ -321,7 +321,7 @@ class ArgStream(ChunkStream):
         if n < 0:
             # end of image
             if e < 0:
-                raise IOError, "decoder error %d" % e
+                raise IOError("decoder error %d" % e)
         else:
             self.data = self.data[n:]
 
@@ -386,7 +386,7 @@ class ArgStream(ChunkStream):
         "SYNC -- reset decoder"
 
         if self.count != 0:
-            raise SyntaxError, "misplaced sYNC chunk"
+            raise SyntaxError("misplaced sYNC chunk")
 
         s = self.fp.read(bytes)
         self.__reset()
@@ -418,7 +418,7 @@ class ArgImageFile(ImageFile.ImageFile):
                 )
 
         if self.fp.read(8) != MAGIC:
-            raise SyntaxError, "not an ARG file"
+            raise SyntaxError("not an ARG file")
 
         self.arg = ArgStream(self.fp)
 
@@ -427,7 +427,7 @@ class ArgImageFile(ImageFile.ImageFile):
         cid, offset, bytes = self.arg.read()
 
         if cid != "AHDR":
-            raise SyntaxError, "expected an AHDR chunk"
+            raise SyntaxError("expected an AHDR chunk")
 
         s = self.arg.call(cid, offset, bytes)
 
@@ -452,7 +452,7 @@ class ArgImageFile(ImageFile.ImageFile):
     def seek(self, frame):
 
         if self.arg.eof:
-            raise EOFError, "end of animation"
+            raise EOFError("end of animation")
 
         self.fp = self.arg.fp
 
@@ -464,7 +464,7 @@ class ArgImageFile(ImageFile.ImageFile):
             cid, offset, bytes = self.arg.read()
 
             if self.arg.eof:
-                raise EOFError, "end of animation"
+                raise EOFError("end of animation")
 
             try:
                 s = self.arg.call(cid, offset, bytes)

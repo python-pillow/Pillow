@@ -48,7 +48,7 @@ class FliImageFile(ImageFile.ImageFile):
         s = self.fp.read(128)
         magic = i16(s[4:6])
         if magic not in [0xAF11, 0xAF12]:
-            raise SyntaxError, "not an FLI/FLC file"
+            raise SyntaxError("not an FLI/FLC file")
 
         # image characteristics
         self.mode = "P"
@@ -110,7 +110,7 @@ class FliImageFile(ImageFile.ImageFile):
     def seek(self, frame):
 
         if frame != self.frame + 1:
-            raise ValueError, "cannot seek to frame %d" % frame
+            raise ValueError("cannot seek to frame %d" % frame)
         self.frame = frame
 
         # move to next frame

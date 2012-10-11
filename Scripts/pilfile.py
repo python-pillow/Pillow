@@ -34,7 +34,7 @@ if len(sys.argv) == 1:
 
 try:
     opt, args = getopt.getopt(sys.argv[1:], "fqivD")
-except getopt.error, v:
+except getopt.error as v:
     print v
     sys.exit(1)
 
@@ -83,8 +83,8 @@ for file in globfix(args):
             except:
                 if not quiet:
                     print "failed to verify image",
-                    print "(%s:%s)" % (sys.exc_type, sys.exc_value)
-    except IOError, v:
+                    print "(%s:%s)" % (sys.exc_info()[0], sys.exc_info()[1])
+    except IOError as v:
         if not quiet:
             print file, "failed:", v
     except:

@@ -41,7 +41,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
         # check magic
         s = self.fp.read(6)
         if s != "P7 332":
-            raise SyntaxError, "not an XV thumbnail file"
+            raise SyntaxError("not an XV thumbnail file")
 
         # Skip to beginning of next line
         self.fp.readline()
@@ -50,7 +50,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
         while 1:
             s = self.fp.readline()
             if not s:
-                raise SyntaxError, "Unexpected EOF reading XV thumbnail file"
+                raise SyntaxError("Unexpected EOF reading XV thumbnail file")
             if s[0] != '#':
                 break
 

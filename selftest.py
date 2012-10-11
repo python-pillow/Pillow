@@ -12,7 +12,7 @@ from PIL import ImageMath
 
 try:
     Image.core.ping
-except ImportError, v:
+except ImportError as v:
     print "***", v
     sys.exit()
 except AttributeError:
