@@ -59,7 +59,7 @@ typedef struct {
     int index; /* temporary use, e.g. in decimate */
 } PyPathObject;
 
-staticforward PyTypeObject PyPathType;
+static PyTypeObject PyPathType;
 
 static double*
 alloc_array(int count)
@@ -89,6 +89,9 @@ path_new(Py_ssize_t count, double* xy, int duplicate)
         xy = p;
     }
 
+    if (PyType_Ready(&PyPathType) < 0)
+        return NULL;
+
     path = PyObject_New(PyPathObject, &PyPathType);
     if (path == NULL)
 	return NULL;
@@ -110,7 +113,7 @@ path_dealloc(PyPathObject* path)
 /* Helpers								*/
 /* -------------------------------------------------------------------- */
 
-#define PyPath_Check(op) ((op)->ob_type == &PyPathType)
+#define PyPath_Check(op) (Py_TYPE(op) == &PyPathType)
 
 int
 PyPath_Flatten(PyObject* data, double **pxy)
@@ -539,23 +542,16 @@ static struct PyMethodDef methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-path_getattr(PyPathObject* self, char* name)
+static PyObject*
+path_getattr_id(PyPathObject* self, void* closure)
 {
-    PyObject* res;
-
-    res = Py_FindMethod(methods, (PyObject*) self, name);
-    if (res)
-	return res;
-
-    PyErr_Clear();
-
-    if (strcmp(name, "id") == 0)
 	return Py_BuildValue("l", (long) self->xy);
-
-    PyErr_SetString(PyExc_AttributeError, name);
-    return NULL;
 }
+
+static struct PyGetSetDef getsetters[] = {
+    { "id", (getter) path_getattr_id },
+    { NULL }
+};
 
 static PySequenceMethods path_as_sequence = {
 	(lenfunc)path_len, /*sq_length*/
@@ -567,21 +563,37 @@ static PySequenceMethods path_as_sequence = {
 	(ssizessizeobjargproc)0, /*sq_ass_slice*/
 };
 
-statichere PyTypeObject PyPathType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
+static PyTypeObject PyPathType = {
+	PyVarObject_HEAD_INIT(NULL, 0)
 	"Path",				/*tp_name*/
 	sizeof(PyPathObject),		/*tp_size*/
 	0,				/*tp_itemsize*/
 	/* methods */
 	(destructor)path_dealloc,	/*tp_dealloc*/
 	0,				/*tp_print*/
-	(getattrfunc)path_getattr,	/*tp_getattr*/
+	0,	                            /*tp_getattr*/
 	0,				/*tp_setattr*/
 	0,				/*tp_compare*/
 	0,				/*tp_repr*/
 	0,                              /*tp_as_number */
 	&path_as_sequence,              /*tp_as_sequence */
-	0,                              /*tp_as_mapping */
-	0,                              /*tp_hash*/
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    methods,                    /*tp_methods*/
+    0,                          /*tp_members*/
+    getsetters,                 /*tp_getset*/
 };
+

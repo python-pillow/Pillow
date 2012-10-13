@@ -227,7 +227,7 @@ install(PyObject *d, char* name, void* value)
     Py_XDECREF(v);
 }
 
-DL_EXPORT(void)
+PyMODINIT_FUNC
 init_imagingmath(void)
 {
     PyObject* m;

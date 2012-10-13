@@ -126,7 +126,7 @@ typedef struct {
     ImagingAccess access;
 } ImagingObject;
 
-staticforward PyTypeObject Imaging_Type;
+static PyTypeObject Imaging_Type;
 
 #ifdef WITH_IMAGEDRAW
 
@@ -148,7 +148,7 @@ typedef struct {
     Glyph glyphs[256];
 } ImagingFontObject;
 
-staticforward PyTypeObject ImagingFont_Type;
+static PyTypeObject ImagingFont_Type;
 
 typedef struct {
     PyObject_HEAD
@@ -157,7 +157,7 @@ typedef struct {
     int blend;
 } ImagingDrawObject;
 
-staticforward PyTypeObject ImagingDraw_Type;
+static PyTypeObject ImagingDraw_Type;
 
 #endif
 
@@ -167,7 +167,7 @@ typedef struct {
     int readonly;
 } PixelAccessObject;
 
-staticforward PyTypeObject PixelAccess_Type;
+static PyTypeObject PixelAccess_Type;
 
 PyObject* 
 PyImagingNew(Imaging imOut)
@@ -207,7 +207,7 @@ _dealloc(ImagingObject* imagep)
     PyObject_Del(imagep);
 }
 
-#define PyImaging_Check(op) ((op)->ob_type == &Imaging_Type)
+#define PyImaging_Check(op) (Py_TYPE(op) == &Imaging_Type)
 
 Imaging PyImaging_AsImaging(PyObject *op)
 {
@@ -2218,12 +2218,6 @@ static struct PyMethodDef _font_methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-_font_getattr(ImagingFontObject* self, char* name)
-{
-    return Py_FindMethod(_font_methods, (PyObject*) self, name);
-}
-
 /* -------------------------------------------------------------------- */
 
 static PyObject*
@@ -2656,12 +2650,6 @@ static struct PyMethodDef _draw_methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-_draw_getattr(ImagingDrawObject* self, char* name)
-{
-    return Py_FindMethod(_draw_methods, (PyObject*) self, name);
-}
-
 #endif
 
 
@@ -2964,29 +2952,44 @@ static struct PyMethodDef methods[] = {
 
 /* attributes */
 
-static PyObject*  
-_getattr(ImagingObject* self, char* name)
+static PyObject*
+_getattr_mode(ImagingObject* self, void* closure)
 {
-    PyObject* res;
-
-    res = Py_FindMethod(methods, (PyObject*) self, name);
-    if (res)
-	return res;
-    PyErr_Clear();
-    if (strcmp(name, "mode") == 0)
-	return PyString_FromString(self->image->mode);
-    if (strcmp(name, "size") == 0)
-	return Py_BuildValue("ii", self->image->xsize, self->image->ysize);
-    if (strcmp(name, "bands") == 0)
-	return PyInt_FromLong(self->image->bands);
-    if (strcmp(name, "id") == 0)
-	return PyInt_FromLong((long) self->image);
-    if (strcmp(name, "ptr") == 0)
-        return PyCObject_FromVoidPtrAndDesc(self->image, IMAGING_MAGIC, NULL);
-    PyErr_SetString(PyExc_AttributeError, name);
-    return NULL;
+    return PyString_FromString(self->image->mode);
 }
 
+static PyObject*
+_getattr_size(ImagingObject* self, void* closure)
+{
+	return Py_BuildValue("ii", self->image->xsize, self->image->ysize);
+}
+
+static PyObject*
+_getattr_bands(ImagingObject* self, void* closure)
+{
+	return PyInt_FromLong(self->image->bands);
+}
+
+static PyObject*
+_getattr_id(ImagingObject* self, void* closure)
+{
+	return PyInt_FromLong((long) self->image);
+}
+
+static PyObject*
+_getattr_ptr(ImagingObject* self, void* closure)
+{
+    return PyCObject_FromVoidPtrAndDesc(self->image, IMAGING_MAGIC, NULL);
+}
+
+static struct PyGetSetDef getsetters[] = {
+    { "mode",   (getter) _getattr_mode },
+    { "size",   (getter) _getattr_size },
+    { "bands",  (getter) _getattr_bands },
+    { "id",     (getter) _getattr_id },
+    { "ptr",    (getter) _getattr_ptr },
+    { NULL }
+};
 
 /* basic sequence semantics */
 
@@ -3026,49 +3029,108 @@ static PySequenceMethods image_as_sequence = {
 
 /* type description */
 
-statichere PyTypeObject Imaging_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+static PyTypeObject Imaging_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
     "ImagingCore",		/*tp_name*/
     sizeof(ImagingObject),	/*tp_size*/
     0,				/*tp_itemsize*/
     /* methods */
     (destructor)_dealloc,	/*tp_dealloc*/
     0,				/*tp_print*/
-    (getattrfunc)_getattr,	/*tp_getattr*/
-    0,				/*tp_setattr*/
-    0,				/*tp_compare*/
-    0,				/*tp_repr*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
     0,                          /*tp_as_number */
     &image_as_sequence,         /*tp_as_sequence */
     0,                          /*tp_as_mapping */
-    0                           /*tp_hash*/
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    methods,                    /*tp_methods*/
+    0,                          /*tp_members*/
+    getsetters,                 /*tp_getset*/
 };
 
 #ifdef WITH_IMAGEDRAW
 
-statichere PyTypeObject ImagingFont_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+static PyTypeObject ImagingFont_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
     "ImagingFont",		/*tp_name*/
     sizeof(ImagingFontObject),	/*tp_size*/
     0,				/*tp_itemsize*/
     /* methods */
     (destructor)_font_dealloc,	/*tp_dealloc*/
     0,				/*tp_print*/
-    (getattrfunc)_font_getattr,	/*tp_getattr*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
+    0,                          /*tp_as_number */
+    0,                          /*tp_as_sequence */
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    _font_methods,              /*tp_methods*/
+    0,                          /*tp_members*/
+    0,                          /*tp_getset*/
 };
 
-statichere PyTypeObject ImagingDraw_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+static PyTypeObject ImagingDraw_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
     "ImagingDraw",		/*tp_name*/
     sizeof(ImagingDrawObject),	/*tp_size*/
     0,				/*tp_itemsize*/
     /* methods */
     (destructor)_draw_dealloc,	/*tp_dealloc*/
     0,				/*tp_print*/
-    (getattrfunc)_draw_getattr,	/*tp_getattr*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
+    0,                          /*tp_as_number */
+    0,                          /*tp_as_sequence */
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    _draw_methods,              /*tp_methods*/
+    0,                          /*tp_members*/
+    0,                          /*tp_getset*/
 };
 
 #endif
@@ -3081,9 +3143,9 @@ static PyMappingMethods pixel_access_as_mapping = {
 
 /* type description */
 
-statichere PyTypeObject PixelAccess_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0, "PixelAccess", sizeof(PixelAccessObject), 0,
+static PyTypeObject PixelAccess_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "PixelAccess", sizeof(PixelAccessObject), 0,
     /* methods */
     (destructor)pixel_access_dealloc, /*tp_dealloc*/
     0, /*tp_print*/
@@ -3246,19 +3308,19 @@ static PyMethodDef functions[] = {
     {NULL, NULL} /* sentinel */
 };
 
-DL_EXPORT(void)
+PyMODINIT_FUNC
 init_imaging(void)
 {
     PyObject* m;
     PyObject* d;
 
-    /* Patch object type */
-    Imaging_Type.ob_type = &PyType_Type;
+    /* Ready object types */
+    PyType_Ready(&Imaging_Type);
 #ifdef WITH_IMAGEDRAW
-    ImagingFont_Type.ob_type = &PyType_Type;
-    ImagingDraw_Type.ob_type = &PyType_Type;
+    PyType_Ready(&ImagingFont_Type);
+    PyType_Ready(&ImagingDraw_Type);
 #endif
-    PixelAccess_Type.ob_type = &PyType_Type;
+    PyType_Ready(&PixelAccess_Type);
 
     ImagingAccessInit();
 
