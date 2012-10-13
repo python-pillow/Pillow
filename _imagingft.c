@@ -40,13 +40,6 @@
 #define PyObject_Del PyMem_DEL
 #endif
 
-#if PY_VERSION_HEX >= 0x01060000
-#if PY_VERSION_HEX  < 0x02020000 || defined(Py_USING_UNICODE)
-/* defining this enables unicode support (default under 1.6a1 and later) */
-#define HAVE_UNICODE
-#endif
-#endif
-
 #if !defined(Py_RETURN_NONE)
 #define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
 #endif
@@ -118,16 +111,10 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         "filename", "size", "index", "encoding", NULL
     };
 
-#if defined(HAVE_UNICODE) && PY_VERSION_HEX >= 0x02020000
     if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is", kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
                                      &size, &index, &encoding))
         return NULL;
-#else
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "si|is", kwlist,
-                                     &filename, &size, &index, &encoding))
-        return NULL;
-#endif
 
     if (!library) {
         PyErr_SetString(
@@ -164,7 +151,6 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 static int
 font_getchar(PyObject* string, int index, FT_ULong* char_out)
 {
-#if defined(HAVE_UNICODE)
     if (PyUnicode_Check(string)) {
         Py_UNICODE* p = PyUnicode_AS_UNICODE(string);
         int size = PyUnicode_GET_SIZE(string);
@@ -173,7 +159,8 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
         *char_out = p[index];
         return 1;
     }
-#endif
+
+#if PY_VERSION_HEX < 0x03000000
     if (PyString_Check(string)) {
         unsigned char* p = (unsigned char*) PyString_AS_STRING(string);
         int size = PyString_GET_SIZE(string);
@@ -182,6 +169,8 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
         *char_out = (unsigned char) p[index];
         return 1;
     }
+#endif
+
     return 0;
 }
 
@@ -201,10 +190,10 @@ font_getsize(FontObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "O:getsize", &string))
         return NULL;
 
-#if defined(HAVE_UNICODE)
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
+#if PY_VERSION_HEX >= 0x03000000
+    if (!PyUnicode_Check(string)) {
 #else
-    if (!PyString_Check(string)) {
+    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
 #endif
         PyErr_SetString(PyExc_TypeError, "expected string");
         return NULL;
@@ -267,10 +256,10 @@ font_getabc(FontObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "O:getabc", &string))
         return NULL;
 
-#if defined(HAVE_UNICODE)
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
+#if PY_VERSION_HEX >= 0x03000000
+    if (!PyUnicode_Check(string)) {
 #else
-    if (!PyString_Check(string)) {
+    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
 #endif
         PyErr_SetString(PyExc_TypeError, "expected string");
         return NULL;
@@ -315,10 +304,10 @@ font_render(FontObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "Ol|i:render", &string, &id, &mask))
         return NULL;
 
-#if defined(HAVE_UNICODE)
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
+#if PY_VERSION_HEX >= 0x03000000
+    if (!PyUnicode_Check(string)) {
 #else
-    if (!PyString_Check(string)) {
+    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
 #endif
         PyErr_SetString(PyExc_TypeError, "expected string");
         return NULL;
