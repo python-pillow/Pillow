@@ -44,12 +44,15 @@ typedef struct {
     ImagingDIB dib;
 } ImagingDisplayObject;
 
-staticforward PyTypeObject ImagingDisplayType;
+static PyTypeObject ImagingDisplayType;
 
 static ImagingDisplayObject*
 _new(const char* mode, int xsize, int ysize)
 {
     ImagingDisplayObject *display;
+
+    if (PyType_Ready(&ImagingDisplayType) < 0)
+        return NULL;
 
     display = PyObject_New(ImagingDisplayObject, &ImagingDisplayType);
     if (display == NULL)
@@ -217,37 +220,56 @@ static struct PyMethodDef methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-_getattr(ImagingDisplayObject* self, char* name)
+static PyObject*
+_getattr_mode(ImagingDisplayObject* self, void* closure)
 {
-    PyObject* res;
-
-    res = Py_FindMethod(methods, (PyObject*) self, name);
-    if (res)
-	return res;
-    PyErr_Clear();
-    if (!strcmp(name, "mode"))
 	return Py_BuildValue("s", self->dib->mode);
-    if (!strcmp(name, "size"))
-	return Py_BuildValue("ii", self->dib->xsize, self->dib->ysize);
-    PyErr_SetString(PyExc_AttributeError, name);
-    return NULL;
 }
 
-statichere PyTypeObject ImagingDisplayType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
+static PyObject*
+_getattr_size(ImagingDisplayObject* self, void* closure)
+{
+	return Py_BuildValue("ii", self->dib->xsize, self->dib->ysize);
+}
+
+static struct PyGetSetDef getsetters[] = {
+    { "mode",   (getter) _getattr_mode },
+    { "size",   (getter) _getattr_size },
+    { NULL }
+};
+
+static PyTypeObject ImagingDisplayType = {
+	PyVarObject_HEAD_INIT(NULL, 0)
 	"ImagingDisplay",		/*tp_name*/
 	sizeof(ImagingDisplayObject),	/*tp_size*/
 	0,				/*tp_itemsize*/
 	/* methods */
 	(destructor)_delete,		/*tp_dealloc*/
 	0,				/*tp_print*/
-	(getattrfunc)_getattr,		/*tp_getattr*/
-	0,				/*tp_setattr*/
-	0,				/*tp_compare*/
-	0,				/*tp_repr*/
-	0,                              /*tp_hash*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
+    0,                          /*tp_as_number */
+    0,                          /*tp_as_sequence */
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    methods,                    /*tp_methods*/
+    0,                          /*tp_members*/
+    getsetters,                 /*tp_getset*/
 };
 
 PyObject*
