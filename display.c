@@ -31,6 +31,7 @@
 #endif
 
 #include "Imaging.h"
+#include "py3.h"
 
 /* -------------------------------------------------------------------- */
 /* Windows DIB support	*/
@@ -183,8 +184,14 @@ _fromstring(ImagingDisplayObject* display, PyObject* args)
 {
     char* ptr;
     int bytes;
+
+#if PY_VERSION_HEX >= 0x03000000
+    if (!PyArg_ParseTuple(args, "y#:frombytes", &ptr, &bytes))
+        return NULL;
+#else
     if (!PyArg_ParseTuple(args, "s#:fromstring", &ptr, &bytes))
-	return NULL;
+        return NULL;
+#endif
 
     if (display->dib->ysize * display->dib->linesize != bytes) {
         PyErr_SetString(PyExc_ValueError, "wrong size");
@@ -200,10 +207,15 @@ _fromstring(ImagingDisplayObject* display, PyObject* args)
 static PyObject*
 _tostring(ImagingDisplayObject* display, PyObject* args)
 {
+#if PY_VERSION_HEX >= 0x03000000
+    if (!PyArg_ParseTuple(args, ":tobytes"))
+        return NULL;
+#else
     if (!PyArg_ParseTuple(args, ":tostring"))
-	return NULL;
+        return NULL;
+#endif
 
-    return PyString_FromStringAndSize(
+    return PyBytes_FromStringAndSize(
         display->dib->bits, display->dib->ysize * display->dib->linesize
         );
 }
@@ -215,8 +227,13 @@ static struct PyMethodDef methods[] = {
     {"query_palette", (PyCFunction)_query_palette, 1},
     {"getdc", (PyCFunction)_getdc, 1},
     {"releasedc", (PyCFunction)_releasedc, 1},
+#if PY_VERSION_HEX >= 0x03000000
+    {"frombytes", (PyCFunction)_fromstring, 1},
+    {"tobytes", (PyCFunction)_tostring, 1},
+#else
     {"fromstring", (PyCFunction)_fromstring, 1},
     {"tostring", (PyCFunction)_tostring, 1},
+#endif
     {NULL, NULL} /* sentinel */
 };
 
@@ -771,7 +788,7 @@ PyImaging_DrawWmf(PyObject* self, PyObject* args)
     int datasize;
     int width, height;
     int x0, y0, x1, y1;
-    if (!PyArg_ParseTuple(args, "s#(ii)(iiii):_load", &data, &datasize,
+    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH"(ii)(iiii):_load", &data, &datasize,
                           &width, &height, &x0, &x1, &y0, &y1))
         return NULL;
 
