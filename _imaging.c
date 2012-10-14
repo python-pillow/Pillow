@@ -76,6 +76,7 @@
 
 #include "Imaging.h"
 
+#include "py3.h"
 
 /* Configuration stuff. Feel free to undef things you don't need. */
 #define WITH_IMAGECHOPS /* ImageChops support */
@@ -882,11 +883,11 @@ _getpalette(ImagingObject* self, PyObject* args)
 	return NULL;
     }
 
-    palette = PyString_FromStringAndSize(NULL, palettesize * bits / 8);
+    palette = PyBytes_FromStringAndSize(NULL, palettesize * bits / 8);
     if (!palette)
 	return NULL;
 
-    pack((UINT8*) PyString_AsString(palette),
+    pack((UINT8*) PyBytes_AsString(palette),
 	 self->image->palette->palette, palettesize);
 
     return palette;
@@ -1207,9 +1208,9 @@ _putdata(ImagingObject* self, PyObject* args)
     }
 
     if (image->image8) {
-        if (PyString_Check(data)) {
+        if (PyBytes_Check(data)) {
             unsigned char* p;
-            p = (unsigned char*) PyString_AS_STRING((PyStringObject*) data);
+            p = (unsigned char*) PyBytes_AS_STRING(data);
             if (scale == 1.0 && offset == 0.0)
                 /* Plain string data */
                 for (i = y = 0; i < n; i += image->xsize, y++) {
@@ -2803,11 +2804,10 @@ _getcodecstatus(PyObject* self, PyObject* args)
     case IMAGING_CODEC_MEMORY:
 	msg = "out of memory"; break;
     default:
-	Py_INCREF(Py_None);
-	return Py_None;
+        Py_RETURN_NONE;
     }
 
-    return PyString_FromString(msg);
+    return PyUnicode_FromString(msg);
 }
 
 /* -------------------------------------------------------------------- */
@@ -2941,7 +2941,7 @@ static struct PyMethodDef methods[] = {
 static PyObject*
 _getattr_mode(ImagingObject* self, void* closure)
 {
-    return PyString_FromString(self->image->mode);
+    return PyUnicode_FromString(self->image->mode);
 }
 
 static PyObject*
@@ -2965,7 +2965,11 @@ _getattr_id(ImagingObject* self, void* closure)
 static PyObject*
 _getattr_ptr(ImagingObject* self, void* closure)
 {
+#if PY_VERSION_HEX >= 0x03020000
+    return PyCapsule_New(self->image, IMAGING_MAGIC, NULL);
+#else
     return PyCObject_FromVoidPtrAndDesc(self->image, IMAGING_MAGIC, NULL);
+#endif
 }
 
 static struct PyGetSetDef getsetters[] = {
@@ -3294,36 +3298,69 @@ static PyMethodDef functions[] = {
     {NULL, NULL} /* sentinel */
 };
 
-PyMODINIT_FUNC
-init_imaging(void)
-{
-    PyObject* m;
-    PyObject* d;
+static int
+setup_module(PyObject* m) {
+    PyObject* d = PyModule_GetDict(m);
 
     /* Ready object types */
-    PyType_Ready(&Imaging_Type);
+    if (PyType_Ready(&Imaging_Type) < 0)
+        return -1;
+
 #ifdef WITH_IMAGEDRAW
-    PyType_Ready(&ImagingFont_Type);
-    PyType_Ready(&ImagingDraw_Type);
+    if (PyType_Ready(&ImagingFont_Type) < 0)
+        return -1;
+
+    if (PyType_Ready(&ImagingDraw_Type) < 0)
+        return -1;
 #endif
-    PyType_Ready(&PixelAccess_Type);
+    if (PyType_Ready(&PixelAccess_Type) < 0)
+        return -1;
 
     ImagingAccessInit();
-
-    m = Py_InitModule("_imaging", functions);
-    d = PyModule_GetDict(m);
 
 #ifdef HAVE_LIBJPEG
   {
     extern const char* ImagingJpegVersion(void);
-    PyDict_SetItemString(d, "jpeglib_version", PyString_FromString(ImagingJpegVersion()));
+    PyDict_SetItemString(d, "jpeglib_version", PyUnicode_FromString(ImagingJpegVersion()));
   }
 #endif
 
 #ifdef HAVE_LIBZ
   {
     extern const char* ImagingZipVersion(void);
-    PyDict_SetItemString(d, "zlib_version", PyString_FromString(ImagingZipVersion()));
+    PyDict_SetItemString(d, "zlib_version", PyUnicode_FromString(ImagingZipVersion()));
   }
 #endif
+
+    return 0;
 }
+
+#if PY_VERSION_HEX >= 0x03000000
+PyMODINIT_FUNC
+PyInit__imaging(void) {
+    PyObject* m;
+
+    static PyModuleDef module_def = {
+        PyModuleDef_HEAD_INIT,
+        "_imaging",         /* m_name */
+        NULL,               /* m_doc */
+        -1,                 /* m_size */
+        functions,          /* m_methods */
+    };
+
+    m = PyModule_Create(&module_def);
+
+    if (setup_module(m) < 0)
+        return NULL;
+
+    return m;
+}
+#else
+PyMODINIT_FUNC
+init_imaging(void)
+{
+    PyObject* m = Py_InitModule("_imaging", functions);
+    setup_module(m);
+}
+#endif
+

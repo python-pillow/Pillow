@@ -26,6 +26,7 @@ http://www.cazabon.com\n\
 #include "Python.h"
 #include "lcms.h"
 #include "Imaging.h"
+#include "py3.h"
 
 #if PY_VERSION_HEX < 0x01060000
 #define PyObject_New PyObject_NEW
@@ -516,19 +517,19 @@ static struct PyMethodDef cms_profile_methods[] = {
 static PyObject*
 cms_profile_getattr_product_name(CmsProfileObject* self, void* closure)
 {
-    return PyString_FromString(cmsTakeProductName(self->profile));
+    return PyUnicode_FromString(cmsTakeProductName(self->profile));
 }
 
 static PyObject*
 cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
 {
-    return PyString_FromString(cmsTakeProductDesc(self->profile));
+    return PyUnicode_FromString(cmsTakeProductDesc(self->profile));
 }
 
 static PyObject*
 cms_profile_getattr_product_info(CmsProfileObject* self, void* closure)
 {
-    return PyString_FromString(cmsTakeProductInfo(self->profile));
+    return PyUnicode_FromString(cmsTakeProductInfo(self->profile));
 }
 
 static PyObject*
@@ -540,13 +541,13 @@ cms_profile_getattr_rendering_intent(CmsProfileObject* self, void* closure)
 static PyObject*
 cms_profile_getattr_pcs(CmsProfileObject* self, void* closure)
 {
-    return PyString_FromString(findICmode(cmsGetPCS(self->profile)));
+    return PyUnicode_FromString(findICmode(cmsGetPCS(self->profile)));
 }
 
 static PyObject*
 cms_profile_getattr_color_space(CmsProfileObject* self, void* closure)
 {
-    return PyString_FromString(findICmode(cmsGetColorSpace(self->profile)));
+    return PyUnicode_FromString(findICmode(cmsGetColorSpace(self->profile)));
 }
 
 /* FIXME: add more properties (creation_datetime etc) */
@@ -600,13 +601,13 @@ static struct PyMethodDef cms_transform_methods[] = {
 static PyObject*
 cms_transform_getattr_inputMode(CmsTransformObject* self, void* closure)
 {
-    return PyString_FromString(self->mode_in);
+    return PyUnicode_FromString(self->mode_in);
 }
 
 static PyObject*
 cms_transform_getattr_outputMode(CmsTransformObject* self, void* closure)
 {
-    return PyString_FromString(self->mode_out);
+    return PyUnicode_FromString(self->mode_out);
 }
 
 static struct PyGetSetDef cms_transform_getsetters[] = {
@@ -647,28 +648,51 @@ static PyTypeObject CmsTransform_Type = {
     cms_transform_getsetters,   /*tp_getset*/
 };
 
-PyMODINIT_FUNC
-init_imagingcms(void)
-{
-    PyObject *m;
+static int
+setup_module(PyObject* m) {
     PyObject *d;
     PyObject *v;
+
+    d = PyModule_GetDict(m);
 
     /* Ready object types */
     PyType_Ready(&CmsProfile_Type);
     PyType_Ready(&CmsTransform_Type);
 
-    m = Py_InitModule("_imagingcms", pyCMSdll_methods);
     d = PyModule_GetDict(m);
 
-#if PY_VERSION_HEX >= 0x02020000
-    v = PyString_FromFormat("%d.%d", LCMS_VERSION / 100, LCMS_VERSION % 100);
-#else
-    {
-        char buffer[100];
-        sprintf(buffer, "%d.%d", LCMS_VERSION / 100, LCMS_VERSION % 100);
-        v = PyString_FromString(buffer);
-    }
-#endif
+    v = PyUnicode_FromFormat("%d.%d", LCMS_VERSION / 100, LCMS_VERSION % 100);
     PyDict_SetItemString(d, "littlecms_version", v);
+
+    return 0;
 }
+
+#if PY_VERSION_HEX >= 0x03000000
+PyMODINIT_FUNC
+PyInit__imagingcms(void) {
+    PyObject* m;
+
+    static PyModuleDef module_def = {
+        PyModuleDef_HEAD_INIT,
+        "_imagingcms",      /* m_name */
+        NULL,               /* m_doc */
+        -1,                 /* m_size */
+        pyCMSdll_methods,   /* m_methods */
+    };
+
+    m = PyModule_Create(&module_def);
+
+    if (setup_module(m) < 0)
+        return NULL;
+
+    return m;
+}
+#else
+PyMODINIT_FUNC
+init_imagingcms(void)
+{
+    PyObject *m = Py_InitModule("_imagingcms", pyCMSdll_methods);
+    setup_module(m);
+}
+#endif
+

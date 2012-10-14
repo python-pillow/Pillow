@@ -907,12 +907,12 @@ class Image:
         return self.im.getextrema()
 
     ##
-    # Returns a PyCObject that points to the internal image memory.
+    # Returns a capsule that points to the internal image memory.
     #
-    # @return A PyCObject object.
+    # @return A capsule object.
 
     def getim(self):
-        "Get PyCObject pointer to internal image memory"
+        "Get capsule pointer to internal image memory"
 
         self.load()
         return self.im.ptr

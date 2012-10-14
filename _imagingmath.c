@@ -16,6 +16,7 @@
 #include "Python.h"
 
 #include "Imaging.h"
+#include "py3.h"
 
 #include "math.h"
 #include "float.h"
@@ -227,14 +228,9 @@ install(PyObject *d, char* name, void* value)
     Py_XDECREF(v);
 }
 
-PyMODINIT_FUNC
-init_imagingmath(void)
-{
-    PyObject* m;
-    PyObject* d;
-
-    m = Py_InitModule("_imagingmath", _functions);
-    d = PyModule_GetDict(m);
+static int
+setup_module(PyObject* m) {
+    PyObject* d = PyModule_GetDict(m);
 
     install(d, "abs_I", abs_I);
     install(d, "neg_I", neg_I);
@@ -281,4 +277,35 @@ init_imagingmath(void)
     install(d, "gt_F", gt_F);
     install(d, "ge_F", ge_F);
 
+    return 0;
 }
+
+#if PY_VERSION_HEX >= 0x03000000
+PyMODINIT_FUNC
+PyInit__imagingmath(void) {
+    PyObject* m;
+
+    static PyModuleDef module_def = {
+        PyModuleDef_HEAD_INIT,
+        "_imagingmath",     /* m_name */
+        NULL,               /* m_doc */
+        -1,                 /* m_size */
+        _functions,         /* m_methods */
+    };
+
+    m = PyModule_Create(&module_def);
+
+    if (setup_module(m) < 0)
+        return NULL;
+
+    return m;
+}
+#else
+PyMODINIT_FUNC
+init_imagingmath(void)
+{
+    PyObject* m = Py_InitModule("_imagingmath", _functions);
+    setup_module(m);
+}
+#endif
+

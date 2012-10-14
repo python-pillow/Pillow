@@ -111,15 +111,15 @@ _encode(ImagingEncoderObject* encoder, PyObject* args)
     if (!PyArg_ParseTuple(args, "|i", &bufsize))
 	return NULL;
 
-    buf = PyString_FromStringAndSize(NULL, bufsize);
+    buf = PyBytes_FromStringAndSize(NULL, bufsize);
     if (!buf)
 	return NULL;
 
     status = encoder->encode(encoder->im, &encoder->state,
-			     (UINT8*) PyString_AsString(buf), bufsize);
+			     (UINT8*) PyBytes_AsString(buf), bufsize);
 
     /* adjust string length to avoid slicing in encoder */
-    if (_PyString_Resize(&buf, (status > 0) ? status : 0) < 0)
+    if (_PyBytes_Resize(&buf, (status > 0) ? status : 0) < 0)
         return NULL;
 
     result = Py_BuildValue("iiO", status, encoder->state.errcode, buf);

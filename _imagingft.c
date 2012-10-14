@@ -44,6 +44,9 @@
 #define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
 #endif
 
+#define KEEP_PY_UNICODE
+#include "py3.h"
+
 #if !defined(FT_LOAD_TARGET_MONO)
 #define FT_LOAD_TARGET_MONO  FT_LOAD_MONOCHROME
 #endif
@@ -412,16 +415,26 @@ static PyMethodDef font_methods[] = {
 static PyObject*
 font_getattr_family(FontObject* self, void* closure)
 {
+#if PY_VERSION_HEX >= 0x03000000
+    if (self->face->family_name)
+        return PyUnicode_FromString(self->face->family_name);
+#else
     if (self->face->family_name)
         return PyString_FromString(self->face->family_name);
+#endif
     Py_RETURN_NONE;
 }
 
 static PyObject*
 font_getattr_style(FontObject* self, void* closure)
 {
+#if PY_VERSION_HEX >= 0x03000000
+    if (self->face->style_name)
+        return PyUnicode_FromString(self->face->style_name);
+#else
     if (self->face->style_name)
         return PyString_FromString(self->face->style_name);
+#endif
     Py_RETURN_NONE;
 }
 
@@ -489,33 +502,58 @@ static PyMethodDef _functions[] = {
     {NULL, NULL}
 };
 
-PyMODINIT_FUNC
-init_imagingft(void)
-{
-    PyObject* m;
+static int
+setup_module(PyObject* m) {
     PyObject* d;
     PyObject* v;
     int major, minor, patch;
 
+    d = PyModule_GetDict(m);
+
     /* Ready object type */
     PyType_Ready(&Font_Type);
 
-    m = Py_InitModule("_imagingft", _functions);
-    d = PyModule_GetDict(m);
-
     if (FT_Init_FreeType(&library))
-        return; /* leave it uninitalized */
+        return 0; /* leave it uninitalized */
 
     FT_Library_Version(library, &major, &minor, &patch);
 
-#if PY_VERSION_HEX >= 0x02020000
-    v = PyString_FromFormat("%d.%d.%d", major, minor, patch);
+#if PY_VERSION_HEX >= 0x03000000
+    v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
 #else
-    {
-        char buffer[100];
-        sprintf(buffer, "%d.%d.%d", major, minor, patch);
-        v = PyString_FromString(buffer);
-    }
+    v = PyString_FromFormat("%d.%d.%d", major, minor, patch);
 #endif
     PyDict_SetItemString(d, "freetype2_version", v);
+
+    return 0;
 }
+
+#if PY_VERSION_HEX >= 0x03000000
+PyMODINIT_FUNC
+PyInit__imagingft(void) {
+    PyObject* m;
+
+    static PyModuleDef module_def = {
+        PyModuleDef_HEAD_INIT,
+        "_imagingft",       /* m_name */
+        NULL,               /* m_doc */
+        -1,                 /* m_size */
+        _functions,         /* m_methods */
+    };
+
+    m = PyModule_Create(&module_def);
+
+    if (setup_module(m) < 0)
+        return NULL;
+
+    return m;
+}
+#else
+PyMODINIT_FUNC
+init_imagingft(void)
+{
+    PyObject* m = Py_InitModule("_imagingft", _functions);
+    setup_module(m);
+}
+#endif
+
