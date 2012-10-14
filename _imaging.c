@@ -1294,14 +1294,18 @@ _putdata(ImagingObject* self, PyObject* args)
             break;
         default:
             for (i = x = y = 0; i < n; i++) {
-                char ink[4];
+                union {
+                    char ink[4];
+                    INT32 inkint;
+                } u;
+
                 PyObject *op = PySequence_GetItem(data, i);
-                if (!op || !getink(op, image, ink)) {
+                if (!op || !getink(op, image, u.ink)) {
                     Py_DECREF(op);
                     return NULL;
                 }
                 /* FIXME: what about scale and offset? */
-                image->image32[y][x] = *((INT32*) ink);
+                image->image32[y][x] = u.inkint;
                 Py_XDECREF(op);
                 if (++x >= (int) image->xsize)
                     x = 0, y++;
