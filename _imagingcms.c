@@ -129,8 +129,13 @@ cms_profile_fromstring(PyObject* self, PyObject* args)
 
     char* pProfile;
     int nProfile;
+#if PY_VERSION_HEX >= 0x03000000
+    if (!PyArg_ParseTuple(args, "y#:profile_frombytes", &pProfile, &nProfile))
+        return NULL;
+#else
     if (!PyArg_ParseTuple(args, "s#:profile_fromstring", &pProfile, &nProfile))
         return NULL;
+#endif
 
     cmsErrorAction(LCMS_ERROR_IGNORE);
 
@@ -494,7 +499,11 @@ cms_get_display_profile_win32(PyObject* self, PyObject* args)
 static PyMethodDef pyCMSdll_methods[] = {
 
     {"profile_open", cms_profile_open, 1},
+#if PY_VERSION_HEX >= 0x03000000
+    {"profile_frombytes", cms_profile_fromstring, 1},
+#else
     {"profile_fromstring", cms_profile_fromstring, 1},
+#endif
 
     /* profile and transform functions */
     {"buildTransform", buildTransform, 1},

@@ -1352,7 +1352,7 @@ _putpalette(ImagingObject* self, PyObject* args)
     char* rawmode;
     UINT8* palette;
     int palettesize;
-    if (!PyArg_ParseTuple(args, "ss#", &rawmode, &palette, &palettesize))
+    if (!PyArg_ParseTuple(args, "s"PY_ARG_BYTES_LENGTH, &rawmode, &palette, &palettesize))
 	return NULL;
 
     if (strcmp(self->image->mode, "L") != 0 && strcmp(self->image->mode, "P")) {
@@ -1847,8 +1847,9 @@ _getprojection(ImagingObject* self, PyObject* args)
 
     ImagingGetProjection(self->image, (unsigned char *)xprofile, (unsigned char *)yprofile);
 
-    result = Py_BuildValue("s#s#", xprofile, self->image->xsize,
-			   yprofile, self->image->ysize);
+    result = Py_BuildValue(PY_ARG_BYTES_LENGTH PY_ARG_BYTES_LENGTH,
+                           xprofile, self->image->xsize,
+                           yprofile, self->image->ysize);
 
     free(xprofile);
     free(yprofile);
@@ -2075,7 +2076,7 @@ _font_new(PyObject* self_, PyObject* args)
     ImagingObject* imagep;
     unsigned char* glyphdata;
     int glyphdata_length;
-    if (!PyArg_ParseTuple(args, "O!s#",
+    if (!PyArg_ParseTuple(args, "O!"PY_ARG_BYTES_LENGTH,
 			  &Imaging_Type, &imagep,
 			  &glyphdata, &glyphdata_length))
         return NULL;
@@ -2773,7 +2774,8 @@ _crc32(PyObject* self, PyObject* args)
 
     hi = lo = 0;
 
-    if (!PyArg_ParseTuple(args, "s#|(ii)", &buffer, &bytes, &hi, &lo))
+    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH"|(ii)",
+                          &buffer, &bytes, &hi, &lo))
 	return NULL;
 
     crc = ((UINT32) (hi & 0xFFFF) << 16) + (lo & 0xFFFF);
