@@ -37,6 +37,7 @@
 #endif
 
 #include "Imaging.h"
+#include "py3.h"
 
 #include "Gif.h"
 #include "Lzw.h"
@@ -111,7 +112,7 @@ _decode(ImagingDecoderObject* decoder, PyObject* args)
     UINT8* buffer;
     int bufsize, status;
 
-    if (!PyArg_ParseTuple(args, "s#", &buffer, &bufsize))
+    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH, &buffer, &bufsize))
 	return NULL;
 
     status = decoder->decode(decoder->im, &decoder->state, buffer, bufsize);

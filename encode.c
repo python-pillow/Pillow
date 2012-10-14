@@ -30,6 +30,7 @@
 #endif
 
 #include "Imaging.h"
+#include "py3.h"
 #include "Gif.h"
 
 #ifdef HAVE_UNISTD_H
@@ -451,9 +452,21 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
     int optimize = 0;
     char* dictionary = NULL;
     int dictionary_size = 0;
-    if (!PyArg_ParseTuple(args, "ss|is#", &mode, &rawmode, &optimize,
-			  &dictionary, &dictionary_size))
-	return NULL;
+    if (!PyArg_ParseTuple(args, "ss|i"PY_ARG_BYTES_LENGTH, &mode, &rawmode,
+                          &optimize, &dictionary, &dictionary_size))
+        return NULL;
+
+    /* Copy to avoid referencing Python's memory, but there's no mechanism to
+       free this memory later, so this function (and several others here)
+       leaks. */
+    if (dictionary && dictionary_size > 0) {
+        char* p = malloc(dictionary_size);
+        if (!p)
+            return PyErr_NoMemory();
+        memcpy(p, dictionary, dictionary_size);
+        dictionary = p;
+    } else
+        dictionary = NULL;
 
     encoder = PyImaging_EncoderNew(sizeof(ZIPSTATE));
     if (encoder == NULL)
@@ -513,8 +526,9 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     int xdpi = 0, ydpi = 0;
     int subsampling = -1; /* -1=default, 0=none, 1=medium, 2=high */
     char* extra = NULL; int extra_size;
-    if (!PyArg_ParseTuple(args, "ss|iiiiiiiis#", &mode, &rawmode, &quality,
-			  &progressive, &smooth, &optimize, &streamtype,
+    if (!PyArg_ParseTuple(args, "ss|iiiiiiii"PY_ARG_BYTES_LENGTH,
+                          &mode, &rawmode, &quality,
+                          &progressive, &smooth, &optimize, &streamtype,
                           &xdpi, &ydpi, &subsampling, &extra, &extra_size))
 	return NULL;
 
