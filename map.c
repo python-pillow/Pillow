@@ -39,6 +39,8 @@
 #include "windows.h"
 #endif
 
+#include "py3.h"
+
 /* compatibility wrappers (defined in _imaging.c) */
 extern int PyImaging_CheckBuffer(PyObject* buffer);
 extern int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view);
@@ -148,12 +150,12 @@ mapping_read(ImagingMapperObject* mapper, PyObject* args)
     if (size < 0)
         size = 0;
 
-    buf = PyString_FromStringAndSize(NULL, size);
+    buf = PyBytes_FromStringAndSize(NULL, size);
     if (!buf)
 	return NULL;
 
     if (size > 0) {
-        memcpy(PyString_AsString(buf), mapper->base + mapper->offset, size);
+        memcpy(PyBytes_AsString(buf), mapper->base + mapper->offset, size);
         mapper->offset += size;
     }
 
