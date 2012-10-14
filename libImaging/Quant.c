@@ -151,7 +151,7 @@ rehash_collide(HashTable h,
                void *newkey,
                void *newval)
 {
-   *valp=(void *)((*(int *)valp)+(*(int *)&newval));
+    *valp = (void *)(((int) *valp) + ((int) newval));
 }
 
 /* %% */
@@ -244,7 +244,7 @@ hash_to_list(HashTable h, const void *key, const void *val, void *u)
    Pixel *pixel=(Pixel *)&key;
    int i;
    Pixel q;
-   int count=*(int *)&val;
+   int count=(int) val;
 
    PIXEL_SCALE(pixel,&q,d->scale);
 
