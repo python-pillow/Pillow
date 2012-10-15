@@ -224,7 +224,7 @@ def _conv_type_shape(im):
         return shape+(extra,), typ
 
 
-MODES = _MODEINFO.keys()
+MODES = list(_MODEINFO.keys())
 MODES.sort()
 
 # raw modes that may be memory mapped.  NOTE: if you change this, you
@@ -343,7 +343,7 @@ def init():
     # only check directories (including current, if present in the path)
     for directory in filter(isDirectory, directories):
         fullpath = os.path.abspath(directory)
-        if visited.has_key(fullpath):
+        if fullpath in visited:
             continue
         for file in os.listdir(directory):
             if file[-14:] == "ImagePlugin.py":
@@ -610,7 +610,7 @@ class Image:
             self.palette.dirty = 0
             self.palette.mode = "RGB"
             self.palette.rawmode = None
-            if self.info.has_key("transparency"):
+            if "transparency" in self.info:
                 self.im.putpalettealpha(self.info["transparency"], 0)
                 self.palette.mode = "RGBA"
         if self.im:

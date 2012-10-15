@@ -174,7 +174,7 @@ def _layerinfo(file):
         # image info
         info = []
         mode = []
-        types = range(i16(read(2)))
+        types = list(range(i16(read(2))))
         if len(types) > 4:
             continue
 

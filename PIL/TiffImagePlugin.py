@@ -402,7 +402,7 @@ class ImageFileDirectory:
         fp.write(o16(len(self.tags)))
 
         # always write in ascending tag order
-        tags = self.tags.items()
+        tags = list(self.tags.items())
         tags.sort()
 
         directory = []
@@ -417,7 +417,7 @@ class ImageFileDirectory:
 
             typ = None
 
-            if self.tagtype.has_key(tag):
+            if tag in self.tagtype:
                 typ = self.tagtype[tag]
 
             if typ == 1:
@@ -569,18 +569,18 @@ class TiffImageFile(ImageFile.ImageFile):
             args = (rawmode, 0, 1)
         elif compression == "jpeg":
             args = rawmode, ""
-            if self.tag.has_key(JPEGTABLES):
+            if JPEGTABLES in self.tag:
                 # Hack to handle abbreviated JPEG headers
                 self.tile_prefix = self.tag[JPEGTABLES]
         elif compression == "packbits":
             args = rawmode
         elif compression == "tiff_lzw":
             args = rawmode
-            if self.tag.has_key(317):
+            if 317 in self.tag:
                 # Section 14: Differencing Predictor
                 self.decoderconfig = (self.tag[PREDICTOR][0],)
 
-        if self.tag.has_key(ICCPROFILE):
+        if ICCPROFILE in self.tag:
             self.info['icc_profile'] = self.tag[ICCPROFILE]
 
         return args
@@ -588,7 +588,7 @@ class TiffImageFile(ImageFile.ImageFile):
     def _setup(self):
         "Setup this image object based on current tags"
 
-        if self.tag.has_key(0xBC01):
+        if 0xBC01 in self.tag:
             raise IOError("Windows Media Photo files not yet supported")
 
         getscalar = self.tag.getscalar
@@ -658,7 +658,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # build tile descriptors
         x = y = l = 0
         self.tile = []
-        if self.tag.has_key(STRIPOFFSETS):
+        if STRIPOFFSETS in self.tag:
             # striped image
             h = getscalar(ROWSPERSTRIP, ysize)
             w = self.size[0]
@@ -675,7 +675,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     x = y = 0
                     l = l + 1
                     a = None
-        elif self.tag.has_key(TILEOFFSETS):
+        elif TILEOFFSETS in self.tag:
             # tiled image
             w = getscalar(322)
             h = getscalar(323)
@@ -769,28 +769,28 @@ def _save(im, fp, filename):
     if hasattr(im, 'tag'):
         # preserve tags from original TIFF image file
         for key in (RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION):
-            if im.tag.tagdata.has_key(key):
+            if key in im.tag.tagdata:
                 ifd[key] = im.tag.tagdata.get(key)
         # preserve some more tags from original TIFF image file
         # -- 2008-06-06 Florian Hoech
         ifd.tagtype = im.tag.tagtype
         for key in (IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK, XMP):
-            if im.tag.has_key(key):
+            if key in im.tag:
                 ifd[key] = im.tag[key]
         # preserve ICC profile (should also work when saving other formats
         # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
-        if im.info.has_key("icc_profile"):
+        if "icc_profile" in im.info:
             ifd[ICCPROFILE] = im.info["icc_profile"]
-    if im.encoderinfo.has_key("description"):
+    if "description" in im.encoderinfo:
         ifd[IMAGEDESCRIPTION] = im.encoderinfo["description"]
-    if im.encoderinfo.has_key("resolution"):
+    if "resolution" in im.encoderinfo:
         ifd[X_RESOLUTION] = ifd[Y_RESOLUTION] \
                                 = _cvt_res(im.encoderinfo["resolution"])
-    if im.encoderinfo.has_key("x resolution"):
+    if "x resolution" in im.encoderinfo:
         ifd[X_RESOLUTION] = _cvt_res(im.encoderinfo["x resolution"])
-    if im.encoderinfo.has_key("y resolution"):
+    if "y resolution" in im.encoderinfo:
         ifd[Y_RESOLUTION] = _cvt_res(im.encoderinfo["y resolution"])
-    if im.encoderinfo.has_key("resolution unit"):
+    if "resolution unit" in im.encoderinfo:
         unit = im.encoderinfo["resolution unit"]
         if unit == "inch":
             ifd[RESOLUTION_UNIT] = 2
@@ -798,13 +798,13 @@ def _save(im, fp, filename):
             ifd[RESOLUTION_UNIT] = 3
         else:
             ifd[RESOLUTION_UNIT] = 1
-    if im.encoderinfo.has_key("software"):
+    if "software" in im.encoderinfo:
         ifd[SOFTWARE] = im.encoderinfo["software"]
-    if im.encoderinfo.has_key("date time"):
+    if "date time" in im.encoderinfo:
         ifd[DATE_TIME] = im.encoderinfo["date time"]
-    if im.encoderinfo.has_key("artist"):
+    if "artist" in im.encoderinfo:
         ifd[ARTIST] = im.encoderinfo["artist"]
-    if im.encoderinfo.has_key("copyright"):
+    if "copyright" in im.encoderinfo:
         ifd[COPYRIGHT] = im.encoderinfo["copyright"]
 
     dpi = im.encoderinfo.get("dpi")
@@ -843,7 +843,7 @@ def _save(im, fp, filename):
 
 
     # -- helper for multi-page save --
-    if im.encoderinfo.has_key("_debug_multipage"):
+    if "_debug_multipage" in im.encoderinfo:
         #just to access o32 and o16 (using correct byte order)
         im._debug_multipage = ifd
 

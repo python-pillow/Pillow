@@ -58,7 +58,7 @@ for o, a in opt:
         id.sort()
         print "Supported formats (* indicates output format):"
         for i in id:
-            if Image.SAVE.has_key(i):
+            if i in Image.SAVE:
                 print i+"*",
             else:
                 print i,
