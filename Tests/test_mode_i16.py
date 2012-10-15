@@ -82,7 +82,10 @@ def test_basic():
 def test_tostring():
 
     def tostring(mode):
-        return Image.new(mode, (1, 1), 1).tobytes()
+        if py3:
+            return Image.new(mode, (1, 1), 1).tobytes()
+        else:
+            return Image.new(mode, (1, 1), 1).tostring()
 
     assert_equal(tostring("L"), b"\x01")
     assert_equal(tostring("I;16"), b"\x01\x00")

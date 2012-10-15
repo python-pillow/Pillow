@@ -29,6 +29,7 @@
 
 import Image
 import traceback, os
+import io
 
 MAXBLOCK = 65536
 
@@ -475,7 +476,7 @@ def _save(im, fp, tile):
     try:
         fh = fp.fileno()
         fp.flush()
-    except AttributeError:
+    except (AttributeError, io.UnsupportedOperation):
         # compress to Python file-compatible object
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
