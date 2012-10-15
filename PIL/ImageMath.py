@@ -175,7 +175,7 @@ def imagemath_convert(self, mode):
     return _Operand(self.im.convert(mode))
 
 ops = {}
-for k, v in globals().items():
+for k, v in list(globals().items()):
     if k[:10] == "imagemath_":
         ops[k[10:]] = v
 
@@ -195,7 +195,7 @@ def eval(expression, _dict={}, **kw):
     args = ops.copy()
     args.update(_dict)
     args.update(kw)
-    for k, v in args.items():
+    for k, v in list(args.items()):
         if hasattr(v, "im"):
             args[k] = _Operand(v)
 

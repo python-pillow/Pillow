@@ -51,7 +51,7 @@ class PSDraw:
             self.fp.flush()
 
     def setfont(self, font, size):
-        if not self.isofont.has_key(font):
+        if font not in self.isofont:
             # reencode font
             self.fp.write("/PSDraw-%s ISOLatin1Encoding /%s E\n" %\
                           (font, font))

@@ -131,7 +131,7 @@ class BmpImageFile(ImageFile.ImageFile):
             if colors == 2:
                 indices = (0, 255)
             else:
-                indices = range(colors)
+                indices = list(range(colors))
             for i in indices:
                 rgb = read(lutsize)[:3]
                 if rgb != chr(i)*3:
