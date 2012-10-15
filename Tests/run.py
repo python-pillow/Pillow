@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 # minimal test runner
 
 import glob, os, sys
