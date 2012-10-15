@@ -45,6 +45,8 @@ import Image, ImageFile
 import ImagePalette
 
 import array, sys
+import collections
+import itertools
 
 II = "II" # little-endian (intel-style)
 MM = "MM" # big-endian (motorola-style)
@@ -204,7 +206,7 @@ def _accept(prefix):
 ##
 # Wrapper for TIFF IFDs.
 
-class ImageFileDirectory:
+class ImageFileDirectory(collections.MutableMapping):
 
     # represents a TIFF tag directory.  to speed things up,
     # we don't decode tags unless they're asked for.
@@ -227,16 +229,7 @@ class ImageFileDirectory:
         self.tagtype = {} # added 2008-06-05 by Florian Hoech
         self.next = None
 
-    # dictionary API (sort of)
-
-    def keys(self):
-        return self.tagdata.keys() + self.tags.keys()
-
-    def items(self):
-        items = self.tags.items()
-        for tag in self.tagdata.keys():
-            items.append((tag, self[tag]))
-        return items
+    # dictionary API
 
     def __len__(self):
         return len(self.tagdata) + len(self.tags)
@@ -250,12 +243,6 @@ class ImageFileDirectory:
             self.tags[tag] = data = handler(self, data)
             del self.tagdata[tag]
             return data
-
-    def get(self, tag, default=None):
-        try:
-            return self[tag]
-        except KeyError:
-            return default
 
     def getscalar(self, tag, default=None):
         try:
@@ -272,13 +259,23 @@ class ImageFileDirectory:
                 raise
             return default
 
-    def has_key(self, tag):
-        return self.tags.has_key(tag) or self.tagdata.has_key(tag)
+    def __contains__(self, tag):
+        return tag in self.tags or tag in self.tagdata
+
+    if sys.version_info < (3,0):
+        def has_key(self, tag):
+            return tag in self
 
     def __setitem__(self, tag, value):
-        if type(value) is not type(()):
+        if not isinstance(value, tuple):
             value = (value,)
         self.tags[tag] = value
+
+    def __delitem__(self, tag):
+        self.tags.pop(tag, self.tagdata.pop(tag, None))
+
+    def __iter__(self):
+        return itertools.chain(self.tags.__iter__(), self.tagdata.__iter__())
 
     # load primitives
 
