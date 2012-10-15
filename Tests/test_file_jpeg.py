@@ -166,7 +166,7 @@ def test_truncated_jpeg():
     def test(junk):
         if junk:
             # replace "junk" bytes at the end with junk
-            file = BytesIO(data[:-junk] + bytes(junk*[0]))
+            file = BytesIO(data[:-junk] + b'\0'*junk)
         else:
             file = BytesIO(data)
         im = Image.open(file)

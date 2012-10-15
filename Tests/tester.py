@@ -1,3 +1,8 @@
+from __future__ import print_function
+
+import sys
+py3 = (sys.version_info >= (3,0))
+
 # some test helpers
 
 _target = None
@@ -139,9 +144,12 @@ def assert_image_equal(a, b, msg=None):
         failure(msg or "got mode %r, expected %r" % (a.mode, b.mode))
     elif a.size != b.size:
         failure(msg or "got size %r, expected %r" % (a.size, b.size))
-    elif a.tobytes() != b.tobytes():
+    elif py3 and a.tobytes() != b.tobytes():
         failure(msg or "got different content")
         # generate better diff?
+    elif not py3 and a.tostring() != b.tostring():
+        failure(msg or "got different content")
+        # same complaint?
     else:
         success()
 

@@ -12,7 +12,11 @@ def test_pack():
             im = Image.new(mode, (1, 1), 1)
         else:
             im = Image.new(mode, (1, 1), (1, 2, 3, 4)[:len(mode)])
-        return list(im.tobytes("raw", rawmode))
+
+        if py3:
+            return list(im.tobytes("raw", rawmode))
+        else:
+            return [ord(c) for c in im.tostring("raw", rawmode)]
 
     assert_equal(pack("1", "1"), [128])
     assert_equal(pack("1", "1;I"), [0])
@@ -45,13 +49,26 @@ def test_pack():
 def test_unpack():
 
     def unpack(mode, rawmode, bytes_):
-        data = bytes(range(1,bytes_+1))
-        im = Image.frombytes(mode, (1, 1), data, "raw", rawmode, 0, 1)
+        im = None
+
+        if py3:
+            data = bytes(range(1,bytes_+1))
+            im = Image.frombytes(mode, (1, 1), data, "raw", rawmode, 0, 1)
+        else:
+            data = ''.join(chr(i) for i in range(1,bytes_+1))
+            im = Image.fromstring(mode, (1, 1), data, "raw", rawmode, 0, 1)
+
         return im.getpixel((0, 0))
 
     def unpack_1(mode, rawmode, value):
         assert mode == "1"
-        im = Image.frombytes(mode, (8, 1), bytes([value]), "raw", rawmode, 0, 1)
+        im = None
+
+        if py3:
+            im = Image.frombytes(mode, (8, 1), bytes([value]), "raw", rawmode, 0, 1)
+        else:
+            im = Image.fromstring(mode, (8, 1), chr(value), "raw", rawmode, 0, 1)
+
         return tuple(im.getdata())
 
     X = 255

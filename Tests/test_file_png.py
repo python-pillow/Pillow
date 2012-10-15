@@ -24,7 +24,7 @@ def chunk(cid, *data):
 
 o32 = PngImagePlugin.o32
 
-IHDR = chunk(b"IHDR", o32(1), o32(1), bytes((8,2)), bytes((0,0,0)))
+IHDR = chunk(b"IHDR", o32(1), o32(1), b'\x08\x02', b'\0\0\0')
 IDAT = chunk(b"IDAT")
 IEND = chunk(b"IEND")
 
@@ -154,7 +154,13 @@ def test_scary():
 
     import base64
     file = "Tests/images/pngtest_bad.png.base64"
-    data = base64.decodebytes(open(file, 'rb').read())
+    data = None
+
+    if py3:
+        data = base64.decodebytes(open(file, 'rb').read())
+    else:
+        data = base64.decodestring(open(file, 'rb').read())
+
     file = BytesIO(data)
     assert_exception(IOError, lambda: Image.open(file))
 
