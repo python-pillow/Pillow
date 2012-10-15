@@ -510,8 +510,17 @@ getink(PyObject* color, Imaging im, char* ink)
             ink[1] = ink[2] = ink[3] = 0;
         } else {
             a = 255;
-            if (PyInt_Check(color)) {
-                r = PyInt_AS_LONG(color);
+#if PY_VERSION_HEX >= 0x03000000
+            if (PyLong_Check(color)) {
+                r = (int) PyLong_AsLong(color);
+#else
+            if (PyInt_Check(color) || PyLong_Check(color)) {
+                if (PyInt_Check(color))
+                    r = PyInt_AS_LONG(color);
+                else
+                    r = (int) PyLong_AsLong(color);
+#endif
+
                 /* compatibility: ABGR */
                 a = (UINT8) (r >> 24);
                 b = (UINT8) (r >> 16);
@@ -1191,8 +1200,9 @@ _putdata(ImagingObject* self, PyObject* args)
     PyObject* data;
     double scale = 1.0;
     double offset = 0.0;
+
     if (!PyArg_ParseTuple(args, "O|dd", &data, &scale, &offset))
-	return NULL;
+        return NULL;
 
     if (!PySequence_Check(data)) {
 	PyErr_SetString(PyExc_TypeError, must_be_sequence);
