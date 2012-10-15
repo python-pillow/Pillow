@@ -71,6 +71,7 @@ import os, sys
 
 # type stuff
 from types import IntType, StringType, TupleType
+import collections
 
 try:
     UnicodeStringType = type(unicode(""))
@@ -802,7 +803,7 @@ class Image:
 
         self.load()
 
-        if callable(filter):
+        if isinstance(filter, collections.Callable):
             filter = filter()
         if not hasattr(filter, "filter"):
             raise TypeError("filter argument should be ImageFilter.Filter instance or class")
