@@ -162,20 +162,20 @@ class ImImageFile(ImageFile.ImageFile):
                     v = tuple(map(number, v.split(",")))
                     if len(v) == 1:
                         v = v[0]
-                elif k == MODE and OPEN.has_key(v):
+                elif k == MODE and v in OPEN:
                     v, self.rawmode = OPEN[v]
 
                 # Add to dictionary. Note that COMMENT tags are
                 # combined into a list of strings.
                 if k == COMMENT:
-                    if self.info.has_key(k):
+                    if k in self.info:
                         self.info[k].append(v)
                     else:
                         self.info[k] = [v]
                 else:
                     self.info[k] = v
 
-                if TAGS.has_key(k):
+                if k in TAGS:
                     n = n + 1
 
             else:
@@ -195,7 +195,7 @@ class ImImageFile(ImageFile.ImageFile):
         if not s:
             raise SyntaxError("File truncated")
 
-        if self.info.has_key(LUT):
+        if LUT in self.info:
             # convert lookup table to palette or lut attribute
             palette = self.fp.read(768)
             greyscale = 1 # greyscale palette

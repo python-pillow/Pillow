@@ -165,7 +165,7 @@ class SaneDev:
     def __setattr__(self, key, value):
         dev=self.__dict__['dev']
         optdict=self.__dict__['opt']
-        if not optdict.has_key(key):
+        if key not in optdict:
             self.__dict__[key]=value ; return
         opt=optdict[key]
         if opt.type==TYPE_GROUP:
@@ -186,10 +186,10 @@ class SaneDev:
         dev=self.__dict__['dev']
         optdict=self.__dict__['opt']
         if key=='optlist':
-            return self.opt.keys()
+            return list(self.opt.keys())
         if key=='area':
             return (self.tl_x, self.tl_y),(self.br_x, self.br_y)
-        if not optdict.has_key(key):
+        if key not in optdict:
             raise AttributeError('No such attribute: '+key)
         opt=optdict[key]
         if opt.type==TYPE_BUTTON:

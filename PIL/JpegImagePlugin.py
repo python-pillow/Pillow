@@ -293,7 +293,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
             i = i16(s)
 
-            if MARKER.has_key(i):
+            if i in MARKER:
                 name, description, handler = MARKER[i]
                 # print hex(i), name, description
                 if handler is not None:
@@ -458,9 +458,9 @@ def _save(im, fp, filename):
         # "progressive" is the official name, but older documentation
         # says "progression"
         # FIXME: issue a warning if the wrong form is used (post-1.1.7)
-        info.has_key("progressive") or info.has_key("progression"),
+        "progressive" in info or "progression" in info,
         info.get("smooth", 0),
-        info.has_key("optimize"),
+        "optimize" in info,
         info.get("streamtype", 0),
         dpi[0], dpi[1],
         subsampling,

@@ -65,7 +65,7 @@ VT_VECTOR=0x1000;
 # map property id to name (for debugging purposes)
 
 VT = {}
-for k, v in vars().items():
+for k, v in list(vars().items()):
     if k[:3] == "VT_":
         VT[v] = k
 
@@ -520,7 +520,7 @@ if __name__ == "__main__":
                 if file[-1][0] == "\005":
                     print file
                     props = ole.getproperties(file)
-                    props = props.items()
+                    props = list(props.items())
                     props.sort()
                     for k, v in props:
                         print "   ", k, v

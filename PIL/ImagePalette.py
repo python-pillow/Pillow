@@ -28,7 +28,7 @@ class ImagePalette:
     def __init__(self, mode = "RGB", palette = None):
         self.mode = mode
         self.rawmode = None # if set, palette contains raw data
-        self.palette = palette or range(256)*len(self.mode)
+        self.palette = palette or list(range(256))*len(self.mode)
         self.colors = {}
         self.dirty = None
         if len(self.mode)*256 != len(self.palette):
@@ -119,7 +119,7 @@ def new(mode, data):
     return Image.core.new_palette(mode, data)
 
 def negative(mode="RGB"):
-    palette = range(256)
+    palette = list(range(256))
     palette.reverse()
     return ImagePalette(mode, palette * len(mode))
 
@@ -138,7 +138,7 @@ def sepia(white="#fff0c0"):
     return ImagePalette("RGB", r + g + b)
 
 def wedge(mode="RGB"):
-    return ImagePalette(mode, range(256) * len(mode))
+    return ImagePalette(mode, list(range(256)) * len(mode))
 
 def load(filename):
 

@@ -108,7 +108,7 @@ class FpxImageFile(ImageFile.ImageFile):
         self.jpeg = {}
         for i in range(256):
             id = 0x3000001|(i << 16)
-            if prop.has_key(id):
+            if id in prop:
                 self.jpeg[i] = prop[id]
 
         # print len(self.jpeg), "tables loaded"
