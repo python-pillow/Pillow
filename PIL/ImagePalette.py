@@ -59,7 +59,7 @@ class ImagePalette:
             except KeyError:
                 # allocate new color slot
                 if Image.isStringType(self.palette):
-                    self.palette = map(int, self.palette)
+                    self.palette = [int(x) for x in self.palette]
                 index = len(self.colors)
                 if index >= 256:
                     raise ValueError("cannot allocate more than 256 colors")
