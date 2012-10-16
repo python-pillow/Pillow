@@ -15,6 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
 
 __version__ = "0.3"
 
@@ -44,8 +45,8 @@ def i(c):
 
 def dump(c):
     for i in c:
-        print "%02x" % ord(i),
-    print
+        print("%02x" % ord(i), end=' ')
+    print()
 
 ##
 # Image plugin for IPTC/NAA datastreams.  To read IPTC/NAA fields

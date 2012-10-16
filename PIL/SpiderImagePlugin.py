@@ -33,6 +33,8 @@
 # http://www.wadsworth.org/spider_doc/spider/docs/image_doc.html
 #
 
+from __future__ import print_function
+
 import Image, ImageFile
 import os, struct, sys
 
@@ -186,13 +188,13 @@ def loadImageSeries(filelist=None):
     imglist = []
     for img in filelist:
         if not os.path.exists(img):
-            print "unable to find %s" % img
+            print("unable to find %s" % img)
             continue
         try:
             im = Image.open(img).convert2byte()
         except:
             if not isSpiderImage(img):
-                print img + " is not a Spider image file"
+                print(img + " is not a Spider image file")
             continue
         im.info['filename'] = img
         imglist.append(im)
@@ -267,12 +269,12 @@ Image.register_save("SPIDER", _save_spider)
 if __name__ == "__main__":
 
     if not sys.argv[1:]:
-        print "Syntax: python SpiderImagePlugin.py Spiderimage [outfile]"
+        print("Syntax: python SpiderImagePlugin.py Spiderimage [outfile]")
         sys.exit()
 
     filename = sys.argv[1]
     if not isSpiderImage(filename):
-        print "input image must be in Spider format"
+        print("input image must be in Spider format")
         sys.exit()
 
     outfile = ""
@@ -280,15 +282,15 @@ if __name__ == "__main__":
         outfile = sys.argv[2]
 
     im = Image.open(filename)
-    print "image: " + str(im)
-    print "format: " + str(im.format)
-    print "size: " + str(im.size)
-    print "mode: " + str(im.mode)
-    print "max, min: ",
-    print im.getextrema()
+    print("image: " + str(im))
+    print("format: " + str(im.format))
+    print("size: " + str(im.size))
+    print("mode: " + str(im.mode))
+    print("max, min: ", end=' ')
+    print(im.getextrema())
 
     if outfile != "":
         # perform some image operation
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
-        print "saving a flipped version of %s as %s " % (os.path.basename(filename), outfile)
+        print("saving a flipped version of %s as %s " % (os.path.basename(filename), outfile))
         im.save(outfile, "SPIDER")
