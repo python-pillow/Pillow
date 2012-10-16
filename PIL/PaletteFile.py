@@ -22,7 +22,7 @@ class PaletteFile:
 
     def __init__(self, fp):
 
-        self.palette = map(lambda i: (i, i, i), range(256))
+        self.palette = [(i, i, i) for i in range(256)]
 
         while 1:
 
@@ -35,7 +35,7 @@ class PaletteFile:
             if len(s) > 100:
                 raise SyntaxError("bad palette file")
 
-            v = map(int, s.split())
+            v = [int(x) for x in s.split()]
             try:
                 [i, r, g, b] = v
             except ValueError:

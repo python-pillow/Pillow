@@ -209,7 +209,7 @@ def equalize(image, mask=None):
     h = image.histogram(mask)
     lut = []
     for b in range(0, len(h), 256):
-        histo = filter(None, h[b:b+256])
+        histo = [_f for _f in h[b:b+256] if _f]
         if len(histo) <= 1:
             lut.extend(range(256))
         else:

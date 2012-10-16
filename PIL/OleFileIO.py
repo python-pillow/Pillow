@@ -307,7 +307,7 @@ class OleFileIO:
             if ix == -2 or ix == -1: # ix == 0xFFFFFFFEL or ix == 0xFFFFFFFFL:
                 break
             s = self.getsect(ix)
-            fat = fat + map(lambda i, s=s: i32(s, i), range(0, len(s), 4))
+            fat = fat + [i32(s, i) for i in range(0, len(s), 4)]
         self.fat = fat
 
     def loadminifat(self):
@@ -316,7 +316,7 @@ class OleFileIO:
 
         s = self._open(self.minifatsect).read()
 
-        self.minifat = map(lambda i, s=s: i32(s, i), range(0, len(s), 4))
+        self.minifat = [i32(s, i) for i in range(0, len(s), 4)]
 
     def getsect(self, sect):
         # Read given sector

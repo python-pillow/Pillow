@@ -105,7 +105,7 @@ class GimpGradientFile(GradientFile):
         for i in range(count):
 
             s = fp.readline().split()
-            w = map(float, s[:11])
+            w = [float(x) for x in s[:11]]
 
             x0, x1  = w[0], w[2]
             xm      = w[1]
