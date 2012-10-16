@@ -17,6 +17,7 @@
 
 import Image
 import _imagingmath
+import sys
 
 VERBOSE = 0
 
@@ -84,9 +85,15 @@ class _Operand:
         return _Operand(out)
 
     # unary operators
-    def __nonzero__(self):
-        # an image is "true" if it contains at least one non-zero pixel
-        return self.im.getbbox() is not None
+    if sys.version_info >= (3,0):
+        def __bool__(self):
+            # an image is "true" if it contains at least one non-zero pixel
+            return self.im.getbbox() is not None
+    else:
+        def __nonzero__(self):
+            # an image is "true" if it contains at least one non-zero pixel
+            return self.im.getbbox() is not None
+
     def __abs__(self):
         return self.apply("abs", self)
     def __pos__(self):
