@@ -15,6 +15,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from functools import reduce
+
 class Filter:
     pass
 

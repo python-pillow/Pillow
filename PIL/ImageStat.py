@@ -23,6 +23,7 @@
 
 import Image
 import operator, math
+from functools import reduce
 
 ##
 # The <b>ImageStat</b> module calculates global statistics for an
