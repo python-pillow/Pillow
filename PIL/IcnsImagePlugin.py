@@ -14,7 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image, ImageFile
+from . import Image, ImageFile
 import struct
 
 HEADERSIZE = 8

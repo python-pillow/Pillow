@@ -14,7 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import ContainerIO
+from . import ContainerIO
 
 ##
 # A file object that provides read access to a given member of a TAR

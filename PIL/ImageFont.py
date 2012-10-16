@@ -27,7 +27,7 @@
 
 from __future__ import print_function
 
-import Image
+from . import Image
 import os, sys
 
 class _imagingft_not_installed:

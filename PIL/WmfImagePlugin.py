@@ -17,7 +17,7 @@
 
 __version__ = "0.2"
 
-import Image, ImageFile
+from . import Image, ImageFile
 
 _handler = None
 

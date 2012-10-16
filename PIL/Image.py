@@ -66,8 +66,7 @@ except ImportError as v:
             RuntimeWarning
             )
 
-import ImageMode
-import ImagePalette
+from . import ImageMode
 
 import os, sys
 
@@ -295,23 +294,23 @@ def preinit():
         return
 
     try:
-        import BmpImagePlugin
+        from . import BmpImagePlugin
     except ImportError:
         pass
     try:
-        import GifImagePlugin
+        from . import GifImagePlugin
     except ImportError:
         pass
     try:
-        import JpegImagePlugin
+        from . import JpegImagePlugin
     except ImportError:
         pass
     try:
-        import PpmImagePlugin
+        from . import PpmImagePlugin
     except ImportError:
         pass
     try:
-        import PngImagePlugin
+        from . import PngImagePlugin
     except ImportError:
         pass
 #   try:
@@ -464,6 +463,7 @@ class Image:
         new.size = im.size
         new.palette = self.palette
         if im.mode == "P":
+            from . import ImagePalette
             new.palette = ImagePalette.ImagePalette()
         try:
             new.info = self.info.copy()
@@ -1014,7 +1014,7 @@ class Image:
                 "'offset' is deprecated; use 'ImageChops.offset' instead",
                 DeprecationWarning, stacklevel=2
                 )
-        import ImageChops
+        from . import ImageChops
         return ImageChops.offset(self, xoffset, yoffset)
 
     ##
@@ -1081,7 +1081,7 @@ class Image:
             box = box + (box[0]+size[0], box[1]+size[1])
 
         if isStringType(im):
-            import ImageColor
+            from . import ImageColor
             im = ImageColor.getcolor(im, self.mode)
 
         elif isImageType(im):
@@ -1227,6 +1227,7 @@ class Image:
 
     def putpalette(self, data, rawmode="RGB"):
         "Put palette data into an image."
+        from . import ImagePalette
 
         if self.mode not in ("L", "P"):
             raise ValueError("illegal image mode")
@@ -1758,7 +1759,7 @@ def new(mode, size, color=0):
     if isStringType(color):
         # css3-style specifier
 
-        import ImageColor
+        from . import ImageColor
         color = ImageColor.getcolor(color, mode)
 
     return Image()._new(core.fill(mode, size, color))
@@ -2124,5 +2125,5 @@ def _show(image, **options):
     apply(_showxv, (image,), options)
 
 def _showxv(image, title=None, **options):
-    import ImageShow
+    from . import ImageShow
     apply(ImageShow.show, (image, title), options)

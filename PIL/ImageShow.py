@@ -14,7 +14,7 @@
 
 from __future__ import print_function
 
-import Image
+from . import Image
 import os, sys
 
 _viewers = []
