@@ -53,7 +53,7 @@ class ImagePalette:
         # experimental: given an rgb tuple, allocate palette entry
         if self.rawmode:
             raise ValueError("palette contains raw palette data")
-        if Image.isTupleType(color):
+        if isinstance(color, tuple):
             try:
                 return self.colors[color]
             except KeyError:
