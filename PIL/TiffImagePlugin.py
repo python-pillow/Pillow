@@ -43,8 +43,8 @@ from __future__ import print_function
 
 __version__ = "1.3.5"
 
-import Image, ImageFile
-import ImagePalette
+from . import Image, ImageFile
+from . import ImagePalette
 
 import array, sys
 import collections
@@ -351,7 +351,7 @@ class ImageFileDirectory(collections.MutableMapping):
             tag, typ = i16(ifd), i16(ifd, 2)
 
             if Image.DEBUG:
-                import TiffTags
+                from . import TiffTags
                 tagname = TiffTags.TAGS.get(tag, "unknown")
                 typname = TiffTags.TYPES.get(typ, "unknown")
                 print("tag: %s (%d)" % (tagname, tag), end=' ')
@@ -448,7 +448,7 @@ class ImageFileDirectory(collections.MutableMapping):
                     data = "".join(map(o32, value))
 
             if Image.DEBUG:
-                import TiffTags
+                from . import TiffTags
                 tagname = TiffTags.TAGS.get(tag, "unknown")
                 typname = TiffTags.TYPES.get(typ, "unknown")
                 print("save: %s (%d)" % (tagname, tag), end=' ')

@@ -17,7 +17,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 
 ##
 # The <b>ImageWin</b> module contains support to create and display

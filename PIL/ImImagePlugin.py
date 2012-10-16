@@ -29,7 +29,7 @@
 __version__ = "0.7"
 
 import re
-import Image, ImageFile, ImagePalette
+from . import Image, ImageFile, ImagePalette
 
 
 # --------------------------------------------------------------------

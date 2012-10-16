@@ -28,7 +28,7 @@
 __version__ = "0.9"
 
 
-import Image, ImageFile, ImagePalette
+from . import Image, ImageFile, ImagePalette
 
 
 # --------------------------------------------------------------------

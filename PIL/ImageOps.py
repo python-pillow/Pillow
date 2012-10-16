@@ -17,7 +17,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 import operator
 from functools import reduce
 
@@ -44,7 +44,7 @@ def _border(border):
 
 def _color(color, mode):
     if Image.isStringType(color):
-        import ImageColor
+        from . import ImageColor
         color = ImageColor.getcolor(color, mode)
     return color
 

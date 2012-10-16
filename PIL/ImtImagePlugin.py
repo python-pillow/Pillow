@@ -19,7 +19,7 @@ __version__ = "0.2"
 
 import re
 
-import Image, ImageFile
+from . import Image, ImageFile
 
 #
 # --------------------------------------------------------------------

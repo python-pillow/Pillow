@@ -23,7 +23,7 @@
 
 from __future__ import print_function
 
-import Image
+from . import Image
 
 def i32(c, o=0):
     return ord(c[o])+(ord(c[o+1])<<8)+(ord(c[o+2])<<16)+(ord(c[o+3])<<24)

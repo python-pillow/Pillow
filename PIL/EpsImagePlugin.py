@@ -21,7 +21,7 @@
 __version__ = "0.5"
 
 import re
-import Image, ImageFile
+from . import Image, ImageFile
 
 #
 # --------------------------------------------------------------------
