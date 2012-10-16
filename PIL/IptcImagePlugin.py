@@ -20,7 +20,7 @@ from __future__ import print_function
 __version__ = "0.3"
 
 
-import Image, ImageFile
+from . import Image, ImageFile
 import os, tempfile
 
 
@@ -219,7 +219,7 @@ Image.register_extension("IPTC", ".iim")
 
 def getiptcinfo(im):
 
-    import TiffImagePlugin, JpegImagePlugin
+    from . import TiffImagePlugin, JpegImagePlugin
     import StringIO
 
     data = None

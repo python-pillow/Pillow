@@ -37,7 +37,8 @@ __version__ = "0.9"
 
 import re
 
-import Image, ImageFile, ImagePalette, zlib
+from . import Image, ImageFile, ImagePalette
+import zlib
 
 
 def i16(c):

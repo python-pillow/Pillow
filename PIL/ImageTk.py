@@ -25,7 +25,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Tkinter, Image
+import Tkinter
+from . import Image
 
 ##
 # The <b>ImageTk</b> module contains support to create and modify

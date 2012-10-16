@@ -15,7 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 
 ##
 # (New in 1.1.3)  The <b>ImageGrab</b> module can be used to copy
@@ -66,6 +66,7 @@ def grabclipboard():
     debug = 0 # temporary interface
     data = Image.core.grabclipboard(debug)
     if Image.isStringType(data):
-        import BmpImagePlugin, StringIO
+        from . import BmpImagePlugin
+        import StringIO
         return BmpImagePlugin.DibImageFile(StringIO.StringIO(data))
     return data

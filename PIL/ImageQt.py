@@ -15,7 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 
 from PyQt4.QtGui import QImage, qRgb
 

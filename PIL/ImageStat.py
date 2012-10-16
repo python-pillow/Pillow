@@ -21,7 +21,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 import operator, math
 from functools import reduce
 

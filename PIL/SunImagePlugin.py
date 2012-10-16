@@ -20,7 +20,7 @@
 __version__ = "0.3"
 
 
-import Image, ImageFile, ImagePalette
+from . import Image, ImageFile, ImagePalette
 
 
 def i16(c):

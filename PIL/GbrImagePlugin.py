@@ -13,7 +13,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image, ImageFile
+from . import Image, ImageFile
 
 def i32(c):
     return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24L)
