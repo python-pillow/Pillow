@@ -61,7 +61,7 @@ class FliImageFile(ImageFile.ImageFile):
         self.info["duration"] = duration
 
         # look for palette
-        palette = map(lambda a: (a,a,a), range(256))
+        palette = [(a,a,a) for a in range(256)]
 
         s = self.fp.read(16)
 
@@ -80,7 +80,7 @@ class FliImageFile(ImageFile.ImageFile):
             elif i16(s[4:6]) == 4:
                 self._palette(palette, 0)
 
-        palette = map(lambda (r,g,b): chr(r)+chr(g)+chr(b), palette)
+        palette = [chr(r)+chr(g)+chr(b) for (r,g,b) in palette]
         self.palette = ImagePalette.raw("RGB", "".join(palette))
 
         # set things up to decode first frame

@@ -209,7 +209,7 @@ class ImImageFile(ImageFile.ImageFile):
             if self.mode == "L" or self.mode == "LA":
                 if greyscale:
                     if not linear:
-                        self.lut = map(ord, palette[:256])
+                        self.lut = [ord(c) for c in palette[:256]]
                 else:
                     if self.mode == "L":
                         self.mode = self.rawmode = "P"
@@ -218,7 +218,7 @@ class ImImageFile(ImageFile.ImageFile):
                     self.palette = ImagePalette.raw("RGB;L", palette)
             elif self.mode == "RGB":
                 if not greyscale or not linear:
-                    self.lut = map(ord, palette)
+                    self.lut = [ord(c) for c in palette]
 
         self.frame = 0
 

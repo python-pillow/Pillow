@@ -930,7 +930,7 @@ class Image:
 
         self.load()
         try:
-            return map(ord, self.im.getpalette())
+            return [ord(c) for c in self.im.getpalette()]
         except ValueError:
             return None # no palette
 
@@ -959,7 +959,7 @@ class Image:
 
         self.load()
         x, y = self.im.getprojection()
-        return map(ord, x), map(ord, y)
+        return [ord(c) for c in x], [ord(c) for c in y]
 
     ##
     # Returns a histogram for the image. The histogram is returned as
@@ -1129,7 +1129,7 @@ class Image:
                 scale, offset = _getscaleoffset(lut)
                 return self._new(self.im.point_transform(scale, offset))
             # for other modes, convert the function to a table
-            lut = map(lut, range(256)) * self.im.bands
+            lut = [lut(i) for i in range(256)] * self.im.bands
 
         if self.mode == "F":
             # FIXME: _imaging returns a confusing error message for this case
