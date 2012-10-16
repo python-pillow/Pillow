@@ -483,7 +483,7 @@ class PILDriver:
             self.push(list[0])
             list = list[1:]
             if self.verbose:
-                print("Stack: " + `self.stack`)
+                print("Stack: " + repr(self.stack))
             top = self.top()
             if type(top) != type(""):
                 continue;
