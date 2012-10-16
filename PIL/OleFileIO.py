@@ -36,6 +36,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 import StringIO
 import sys
 
@@ -208,12 +210,12 @@ class _OleDirectoryEntry:
         TYPES = ["(invalid)", "(storage)", "(stream)", "(lockbytes)",
                  "(property)", "(root)"]
 
-        print " "*tab + repr(self.name), TYPES[self.type],
+        print(" "*tab + repr(self.name), TYPES[self.type], end=' ')
         if self.type in (2, 5):
-            print self.size, "bytes",
-        print
+            print(self.size, "bytes", end=' ')
+        print()
         if self.type in (1, 5) and self.clsid:
-            print " "*tab + "{%s}" % self.clsid
+            print(" "*tab + "{%s}" % self.clsid)
 
         for kid in self.kids:
             kid.dump(tab + 2)
@@ -515,17 +517,17 @@ if __name__ == "__main__":
     for file in sys.argv[1:]:
         try:
             ole = OleFileIO(file)
-            print "-" * 68
-            print file
-            print "-" * 68
+            print("-" * 68)
+            print(file)
+            print("-" * 68)
             ole.dumpdirectory()
             for file in ole.listdir():
                 if file[-1][0] == "\005":
-                    print file
+                    print(file)
                     props = ole.getproperties(file)
                     props = list(props.items())
                     props.sort()
                     for k, v in props:
-                        print "   ", k, v
+                        print("   ", k, v)
         except IOError as v:
-            print "***", "cannot read", file, "-", v
+            print("***", "cannot read", file, "-", v)

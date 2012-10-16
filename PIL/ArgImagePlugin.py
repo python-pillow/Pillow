@@ -18,6 +18,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 __version__ = "0.4"
 
 import Image, ImageFile, ImagePalette
@@ -70,8 +72,8 @@ class ArgStream(ChunkStream):
             raise SyntaxError("unknown ARG mode")
 
         if Image.DEBUG:
-            print "AHDR size", self.size
-            print "AHDR mode", self.mode, self.rawmode
+            print("AHDR size", self.size)
+            print("AHDR mode", self.mode, self.rawmode)
 
         return s
 
@@ -98,7 +100,7 @@ class ArgStream(ChunkStream):
                     self.repair = None
 
         if Image.DEBUG:
-            print "AFRM", self.id, self.count
+            print("AFRM", self.id, self.count)
 
         return s
 
@@ -121,7 +123,7 @@ class ArgStream(ChunkStream):
                 self.count = i16(s[2:4])
 
         if Image.DEBUG:
-            print "ADEF", self.id, self.count
+            print("ADEF", self.id, self.count)
 
         return s
 
@@ -141,7 +143,7 @@ class ArgStream(ChunkStream):
         "AEND -- end of animation"
 
         if Image.DEBUG:
-            print "AEND"
+            print("AEND")
 
         self.eof = 1
 
@@ -256,7 +258,7 @@ class ArgStream(ChunkStream):
         bbox = offs + (offs[0]+size[0], offs[1]+size[1])
 
         if Image.DEBUG:
-            print "DHDR", diff, bbox
+            print("DHDR", diff, bbox)
 
         # FIXME: decode and apply image
         self.action = ("DHDR", diff, bbox)
@@ -473,7 +475,7 @@ class ArgImageFile(ImageFile.ImageFile):
 
             except "glurk": # AttributeError
                 if Image.DEBUG:
-                    print cid, bytes, "(unknown)"
+                    print(cid, bytes, "(unknown)")
                 s = self.fp.read(bytes)
 
             self.arg.crc(cid, s)

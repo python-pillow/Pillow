@@ -39,6 +39,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 __version__ = "1.3.5"
 
 import Image, ImageFile
@@ -352,14 +354,14 @@ class ImageFileDirectory(collections.MutableMapping):
                 import TiffTags
                 tagname = TiffTags.TAGS.get(tag, "unknown")
                 typname = TiffTags.TYPES.get(typ, "unknown")
-                print "tag: %s (%d)" % (tagname, tag),
-                print "- type: %s (%d)" % (typname, typ),
+                print("tag: %s (%d)" % (tagname, tag), end=' ')
+                print("- type: %s (%d)" % (typname, typ), end=' ')
 
             try:
                 dispatch = self.load_dispatch[typ]
             except KeyError:
                 if Image.DEBUG:
-                    print "- unsupported type", typ
+                    print("- unsupported type", typ)
                 continue # ignore unsupported type
 
             size, handler = dispatch
@@ -383,9 +385,9 @@ class ImageFileDirectory(collections.MutableMapping):
 
             if Image.DEBUG:
                 if tag in (COLORMAP, IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK, ICCPROFILE, XMP):
-                    print "- value: <table: %d bytes>" % size
+                    print("- value: <table: %d bytes>" % size)
                 else:
-                    print "- value:", self[tag]
+                    print("- value:", self[tag])
 
         self.next = i32(fp.read(4))
 
@@ -449,13 +451,13 @@ class ImageFileDirectory(collections.MutableMapping):
                 import TiffTags
                 tagname = TiffTags.TAGS.get(tag, "unknown")
                 typname = TiffTags.TYPES.get(typ, "unknown")
-                print "save: %s (%d)" % (tagname, tag),
-                print "- type: %s (%d)" % (typname, typ),
+                print("save: %s (%d)" % (tagname, tag), end=' ')
+                print("- type: %s (%d)" % (typname, typ), end=' ')
                 if tag in (COLORMAP, IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK, ICCPROFILE, XMP):
                     size = len(data)
-                    print "- value: <table: %d bytes>" % size
+                    print("- value: <table: %d bytes>" % size)
                 else:
-                    print "- value:", value
+                    print("- value:", value)
 
             # figure out if data fits into the directory
             if len(data) == 4:
@@ -481,7 +483,7 @@ class ImageFileDirectory(collections.MutableMapping):
         # pass 2: write directory to file
         for tag, typ, count, value, data in directory:
             if Image.DEBUG > 1:
-                print tag, typ, count, repr(value), repr(data)
+                print(tag, typ, count, repr(value), repr(data))
             fp.write(o16(tag) + o16(typ) + o32(count) + value)
 
         # -- overwrite here for multi-page --
@@ -601,11 +603,11 @@ class TiffImageFile(ImageFile.ImageFile):
         fillorder = getscalar(FILLORDER, 1)
 
         if Image.DEBUG:
-            print "*** Summary ***"
-            print "- compression:", self._compression
-            print "- photometric_interpretation:", photo
-            print "- planar_configuration:", self._planar_configuration
-            print "- fill_order:", fillorder
+            print("*** Summary ***")
+            print("- compression:", self._compression)
+            print("- photometric_interpretation:", photo)
+            print("- planar_configuration:", self._planar_configuration)
+            print("- fill_order:", fillorder)
 
         # size
         xsize = getscalar(IMAGEWIDTH)
@@ -613,7 +615,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.size = xsize, ysize
 
         if Image.DEBUG:
-            print "- size:", self.size
+            print("- size:", self.size)
 
         format = getscalar(SAMPLEFORMAT, 1)
 
@@ -624,17 +626,17 @@ class TiffImageFile(ImageFile.ImageFile):
             self.tag.get(EXTRASAMPLES, ())
             )
         if Image.DEBUG:
-            print "format key:", key
+            print("format key:", key)
         try:
             self.mode, rawmode = OPEN_INFO[key]
         except KeyError:
             if Image.DEBUG:
-                print "- unsupported format"
+                print("- unsupported format")
             raise SyntaxError("unknown pixel mode")
 
         if Image.DEBUG:
-            print "- raw mode:", rawmode
-            print "- pil mode:", self.mode
+            print("- raw mode:", rawmode)
+            print("- pil mode:", self.mode)
 
         self.info["compression"] = self._compression
 
@@ -695,7 +697,7 @@ class TiffImageFile(ImageFile.ImageFile):
                         a = None
         else:
             if Image.DEBUG:
-                print "- unsupported data organization"
+                print("- unsupported data organization")
             raise SyntaxError("unknown data organization")
 
         # fixup palette descriptor

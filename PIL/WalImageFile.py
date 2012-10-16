@@ -21,6 +21,8 @@
 #    http://www.flipcode.com/tutorials/tut_q2levels.shtml
 # and has been tested with a few sample files found using google.
 
+from __future__ import print_function
+
 import Image
 
 def i32(c, o=0):
@@ -122,5 +124,5 @@ quake2palette = (
 
 if __name__ == "__main__":
     im = open("../hacks/sample.wal")
-    print im.info, im.mode, im.size
+    print(im.info, im.mode, im.size)
     im.save("../out.png")
