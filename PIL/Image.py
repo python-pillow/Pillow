@@ -72,6 +72,7 @@ import os, sys
 # type stuff
 from types import IntType, StringType, TupleType
 import collections
+import numbers
 
 try:
     UnicodeStringType = type(unicode(""))
@@ -103,8 +104,6 @@ def isImageType(t):
 
 def isDirectory(f):
     return isStringType(f) and os.path.isdir(f)
-
-from operator import isNumberType, isSequenceType
 
 #
 # Debug level
@@ -414,15 +413,15 @@ def _getscaleoffset(expr):
     data = expr(_E(stub)).data
     try:
         (a, b, c) = data # simplified syntax
-        if (a is stub and b == "__mul__" and isNumberType(c)):
+        if (a is stub and b == "__mul__" and isinstance(c, numbers.Number)):
             return c, 0.0
-        if (a is stub and b == "__add__" and isNumberType(c)):
+        if (a is stub and b == "__add__" and isinstance(c, numbers.Number)):
             return 1.0, c
     except TypeError: pass
     try:
         ((a, b, c), d, e) = data # full syntax
-        if (a is stub and b == "__mul__" and isNumberType(c) and
-            d == "__add__" and isNumberType(e)):
+        if (a is stub and b == "__mul__" and isinstance(c, numbers.Number) and
+            d == "__add__" and isinstance(e, numbers.Number)):
             return c, e
     except TypeError: pass
     raise ValueError("illegal expression")
@@ -1122,7 +1121,7 @@ class Image:
         if isinstance(lut, ImagePointHandler):
             return lut.point(self)
 
-        if not isSequenceType(lut):
+        if not isinstance(lut, collections.Sequence):
             # if it isn't a list, it should be a function
             if self.mode in ("I", "I;16", "F"):
                 # check if the function can be used with point_transform
