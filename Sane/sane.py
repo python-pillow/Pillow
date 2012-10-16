@@ -85,7 +85,7 @@ active:    %s
 settable:  %s\n""" % (self.py_name, curValue,
                       self.index, self.title, self.desc,
                       TYPE_STR[self.type], UNIT_STR[self.unit],
-                      `self.constraint`, active, settable)
+                      repr(self.constraint), active, settable)
         return s
 
 
