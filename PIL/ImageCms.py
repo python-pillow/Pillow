@@ -15,6 +15,8 @@
 # below for the original description.
 #
 
+from __future__ import print_function
+
 DESCRIPTION = """
 pyCMS
 
@@ -770,16 +772,16 @@ if __name__ == "__main__":
     # create a cheap manual from the __doc__ strings for the functions above
 
     import ImageCms
-    print __doc__
+    print(__doc__)
 
     for f in dir(pyCMS):
-        print "="*80
-        print "%s" %f
+        print("="*80)
+        print("%s" %f)
 
         try:
             exec ("doc = ImageCms.%s.__doc__" %(f))
             if "pyCMS" in doc:
                 # so we don't get the __doc__ string for imported modules
-                print doc
+                print(doc)
         except AttributeError:
             pass

@@ -31,6 +31,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 __version__ = "0.9"
 
 import re
@@ -111,7 +113,7 @@ class ChunkStream:
         "Call the appropriate chunk handler"
 
         if Image.DEBUG:
-            print "STREAM", cid, pos, len
+            print("STREAM", cid, pos, len)
         return getattr(self, "chunk_" + cid)(pos, len)
 
     def crc(self, cid, data):
@@ -191,8 +193,8 @@ class PngStream(ChunkStream):
         # Compressed profile    n bytes (zlib with deflate compression)
         i = s.find(chr(0))
         if Image.DEBUG:
-            print "iCCP profile name", s[:i]
-            print "Compression method", ord(s[i])
+            print("iCCP profile name", s[:i])
+            print("Compression method", ord(s[i]))
         comp_method = ord(s[i])
         if comp_method != 0:
             raise SyntaxError("Unknown compression method %s in iCCP chunk" % comp_method)
@@ -333,7 +335,7 @@ class PngImageFile(ImageFile.ImageFile):
                 break
             except AttributeError:
                 if Image.DEBUG:
-                    print cid, pos, len, "(unknown)"
+                    print(cid, pos, len, "(unknown)")
                 s = ImageFile._safe_read(self.fp, len)
 
             self.png.crc(cid, s)

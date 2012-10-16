@@ -3,6 +3,8 @@
 # $Id$
 #
 
+from __future__ import print_function
+
 from Tkinter import *
 from PIL import Image, ImageTk
 
@@ -31,7 +33,7 @@ if __name__ == "__main__":
     import sys
 
     if not sys.argv[1:]:
-        print "Syntax: python viewer.py imagefile"
+        print("Syntax: python viewer.py imagefile")
         sys.exit(1)
 
     filename = sys.argv[1]

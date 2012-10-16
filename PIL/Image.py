@@ -24,6 +24,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 VERSION = "1.1.7"
 
 try:
@@ -355,8 +357,8 @@ def init():
                         del sys.path[0]
                 except ImportError:
                     if DEBUG:
-                        print "Image: failed to import",
-                        print f, ":", sys.exc_info()[1]
+                        print("Image: failed to import", end=' ')
+                        print(f, ":", sys.exc_info()[1])
         visited[fullpath] = None
 
     if OPEN or SAVE:

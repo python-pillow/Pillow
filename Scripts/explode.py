@@ -5,6 +5,8 @@
 # split an animation into a number of frame files
 #
 
+from __future__ import print_function
+
 from PIL import Image
 import os, sys
 
@@ -53,17 +55,17 @@ if sys.argv[1:2] == ["-h"]:
     del sys.argv[1]
 
 if not sys.argv[2:]:
-    print
-    print "Syntax: python explode.py infile template [range]"
-    print
-    print "The template argument is used to construct the names of the"
-    print "individual frame files.  The frames are numbered file001.ext,"
-    print "file002.ext, etc.  You can insert %d to control the placement"
-    print "and syntax of the frame number."
-    print
-    print "The optional range argument specifies which frames to extract."
-    print "You can give one or more ranges like 1-10, 5, -15 etc.  If"
-    print "omitted, all frames are extracted."
+    print()
+    print("Syntax: python explode.py infile template [range]")
+    print()
+    print("The template argument is used to construct the names of the")
+    print("individual frame files.  The frames are numbered file001.ext,")
+    print("file002.ext, etc.  You can insert %d to control the placement")
+    print("and syntax of the frame number.")
+    print()
+    print("The optional range argument specifies which frames to extract.")
+    print("You can give one or more ranges like 1-10, 5, -15 etc.  If")
+    print("omitted, all frames are extracted.")
     sys.exit(1)
 
 infile = sys.argv[1]
@@ -91,7 +93,7 @@ while 1:
 
     if frames[ix]:
         im.save(outfile % ix)
-        print outfile % ix
+        print(outfile % ix)
 
         if html:
             html.write("<img src='%s'><br>\n" % outfile % ix)
