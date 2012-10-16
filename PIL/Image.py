@@ -1332,7 +1332,8 @@ class Image:
                  math.cos(angle), math.sin(angle), 0.0,
                 -math.sin(angle), math.cos(angle), 0.0
                  ]
-            def transform(x, y, (a, b, c, d, e, f)=matrix):
+            def transform(x, y, matrix=matrix):
+                (a, b, c, d, e, f) = matrix
                 return a*x + b*y + c, d*x + e*y + f
 
             # calculate output size
