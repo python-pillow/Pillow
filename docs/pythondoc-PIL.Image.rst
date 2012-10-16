@@ -116,7 +116,6 @@ The PIL.Image Module
 **isDirectory(f)** [`# <#PIL.Image.isDirectory-function>`_]
 **isImageType(t)** [`# <#PIL.Image.isImageType-function>`_]
 **isStringType(t)** [`# <#PIL.Image.isStringType-function>`_]
-**isTupleType(t)** [`# <#PIL.Image.isTupleType-function>`_]
 **merge(mode, bands)** [`# <#PIL.Image.merge-function>`_]
 
     *mode*

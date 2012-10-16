@@ -71,27 +71,15 @@ from . import ImageMode
 import os, sys
 
 # type stuff
-from types import IntType, StringType, TupleType
 import collections
 import numbers
 
-try:
-    UnicodeStringType = type(unicode(""))
-    ##
-    # (Internal) Checks if an object is a string.  If the current
-    # Python version supports Unicode, this checks for both 8-bit
-    # and Unicode strings.
+if sys.version_info >= (3,0):
     def isStringType(t):
-        return isinstance(t, StringType) or isinstance(t, UnicodeStringType)
-except NameError:
+        return isinstance(t, str)
+else:
     def isStringType(t):
-        return isinstance(t, StringType)
-
-##
-# (Internal) Checks if an object is a tuple.
-
-def isTupleType(t):
-    return isinstance(t, TupleType)
+        return isinstance(t, basestring)
 
 ##
 # (Internal) Checks if an object is an image object.
@@ -372,7 +360,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
     # tweak arguments
     if args is None:
         args = ()
-    elif not isTupleType(args):
+    elif not isinstance(args, tuple):
         args = (args,)
 
     try:
@@ -388,7 +376,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
     # tweak arguments
     if args is None:
         args = ()
-    elif not isTupleType(args):
+    elif not isinstance(args, tuple):
         args = (args,)
 
     try:
@@ -523,7 +511,7 @@ class Image:
         "Return image as a binary string"
 
         # may pass tuple instead of argument list
-        if len(args) == 1 and isTupleType(args[0]):
+        if len(args) == 1 and isinstance(args[0], tuple):
             args = args[0]
 
         if encoder_name == "raw" and args == ():
@@ -578,7 +566,7 @@ class Image:
         "Load data to image from binary string"
 
         # may pass tuple instead of argument list
-        if len(args) == 1 and isTupleType(args[0]):
+        if len(args) == 1 and isinstance(args[0], tuple):
             args = args[0]
 
         # default format
@@ -1789,7 +1777,7 @@ def fromstring(mode, size, data, decoder_name="raw", *args):
     "Load image from string"
 
     # may pass tuple instead of argument list
-    if len(args) == 1 and isTupleType(args[0]):
+    if len(args) == 1 and isinstance(args[0], tuple):
         args = args[0]
 
     if decoder_name == "raw" and args == ():
@@ -1836,7 +1824,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     "Load image from string or buffer"
 
     # may pass tuple instead of argument list
-    if len(args) == 1 and isTupleType(args[0]):
+    if len(args) == 1 and isinstance(args[0], tuple):
         args = args[0]
 
     if decoder_name == "raw":
