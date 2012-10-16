@@ -36,7 +36,7 @@ class Interval:
             self.hilo.append((hi, lo))
 
         if not self.hilo:
-            self.hilo = [(sys.maxint, 0)]
+            self.hilo = [(sys.maxsize, 0)]
 
     def __getitem__(self, index):
 
