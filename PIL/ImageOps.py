@@ -19,6 +19,7 @@
 
 import Image
 import operator
+from functools import reduce
 
 ##
 # (New in 1.1.3) The <b>ImageOps</b> module contains a number of
