@@ -37,7 +37,7 @@
 #
 
 import StringIO
-
+import sys
 
 def i16(c, o = 0):
     return ord(c[o])+(ord(c[o+1])<<8)
@@ -327,9 +327,12 @@ class OleFileIO:
     def _unicode(self, s):
         # Map unicode string to Latin 1
 
-        # FIXME: some day, Python will provide an official way to handle
-        # Unicode strings, but until then, this will have to do...
-        return filter(ord, s)
+        if sys.version_info >= (3,0):
+            # Provide actual Unicode string
+            return s.decode('utf-16')
+        else:
+            # Old version tried to produce a Latin-1 str
+            return s.decode('utf-16').encode('latin-1', 'replace')
 
     def loaddirectory(self, sect):
         # Load the directory.  The directory is stored in a standard
