@@ -19,6 +19,12 @@ from . import Image
 import _imagingmath
 import sys
 
+try:
+    import builtins
+except ImportError:
+    import __builtin__
+    builtins = __builtin__
+
 VERBOSE = 0
 
 def _isconstant(v):
@@ -206,8 +212,7 @@ def eval(expression, _dict={}, **kw):
         if hasattr(v, "im"):
             args[k] = _Operand(v)
 
-    import __builtin__
-    out =__builtin__.eval(expression, args)
+    out = builtins.eval(expression, args)
     try:
         return out.im
     except AttributeError:

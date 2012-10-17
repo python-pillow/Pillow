@@ -25,6 +25,12 @@ from __future__ import print_function
 
 from . import Image
 
+try:
+    import builtins
+except ImportError:
+    import __builtin__
+    builtins = __builtin__
+
 def i32(c, o=0):
     return ord(c[o])+(ord(c[o+1])<<8)+(ord(c[o+2])<<16)+(ord(c[o+3])<<24)
 
@@ -44,8 +50,7 @@ def open(filename):
     if hasattr(filename, "read"):
         fp = filename
     else:
-        import __builtin__
-        fp = __builtin__.open(filename, "rb")
+        fp = builtins.open(filename, "rb")
 
     # read header fields
     header = fp.read(32+24+32+12)
