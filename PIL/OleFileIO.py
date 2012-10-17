@@ -41,6 +41,9 @@ from __future__ import print_function
 import io
 import sys
 
+if str != bytes:
+    long = int
+
 def i16(c, o = 0):
     return ord(c[o])+(ord(c[o+1])<<8)
 
