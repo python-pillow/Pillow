@@ -255,12 +255,12 @@ def load_path(filename):
 
 def load_default():
     "Load a default font."
-    from StringIO import StringIO
+    from io import BytesIO
     import base64
     f = ImageFont()
     f._load_pilfont_data(
          # courB08
-         StringIO(base64.decodestring('''
+         BytesIO(base64.decodestring(b'''
 UElMZm9udAo7Ozs7OzsxMDsKREFUQQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -352,7 +352,7 @@ AJsAEQAGAAAAAP/6AAX//wCbAAoAoAAPAAYAAAAA//oABQABAKAACgClABEABgAA////+AAGAAAA
 pQAKAKwAEgAGAAD////4AAYAAACsAAoAswASAAYAAP////gABgAAALMACgC6ABIABgAA////+QAG
 AAAAugAKAMEAEQAGAAD////4AAYAAgDBAAoAyAAUAAYAAP////kABQACAMgACgDOABMABgAA////
 +QAGAAIAzgAKANUAEw==
-''')), Image.open(StringIO(base64.decodestring('''
+''')), Image.open(BytesIO(base64.decodestring(b'''
 iVBORw0KGgoAAAANSUhEUgAAAx4AAAAUAQAAAAArMtZoAAAEwElEQVR4nABlAJr/AHVE4czCI/4u
 Mc4b7vuds/xzjz5/3/7u/n9vMe7vnfH/9++vPn/xyf5zhxzjt8GHw8+2d83u8x27199/nxuQ6Od9
 M43/5z2I+9n9ZtmDBwMQECDRQw/eQIQohJXxpBCNVE6QCCAAAAD//wBlAJr/AgALyj1t/wINwq0g
@@ -385,8 +385,8 @@ if __name__ == "__main__":
     font = "../Images/courB08"
     print("    f._load_pilfont_data(")
     print("         # %s" % os.path.basename(font))
-    print("         StringIO(base64.decodestring('''")
+    print("         BytesIO(base64.decodestring(b'''")
     base64.encode(open(font + ".pil", "rb"), sys.stdout)
-    print("''')), Image.open(StringIO(base64.decodestring('''")
+    print("''')), Image.open(BytesIO(base64.decodestring(b'''")
     base64.encode(open(font + ".pbm", "rb"), sys.stdout)
     print("'''))))")

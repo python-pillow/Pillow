@@ -67,6 +67,6 @@ def grabclipboard():
     data = Image.core.grabclipboard(debug)
     if Image.isStringType(data):
         from . import BmpImagePlugin
-        import StringIO
-        return BmpImagePlugin.DibImageFile(StringIO.StringIO(data))
+        import io
+        return BmpImagePlugin.DibImageFile(io.BytesIO(data))
     return data

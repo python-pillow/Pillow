@@ -362,7 +362,7 @@ class JpegImageFile(ImageFile.ImageFile):
         # and is likely to be replaced with something better in a future
         # version.
         from . import TiffImagePlugin
-        import StringIO
+        import io
         def fixup(value):
             if len(value) == 1:
                 return value[0]
@@ -373,7 +373,7 @@ class JpegImageFile(ImageFile.ImageFile):
             data = self.info["exif"]
         except KeyError:
             return None
-        file = StringIO.StringIO(data[6:])
+        file = io.BytesIO(data[6:])
         head = file.read(8)
         exif = {}
         # process dictionary
