@@ -5,7 +5,11 @@
 
 from __future__ import print_function
 
-from Tkinter import *
+try:
+    from tkinter import *
+except ImportError:
+    from Tkinter import *
+
 from PIL import Image, ImageTk
 import sys
 
