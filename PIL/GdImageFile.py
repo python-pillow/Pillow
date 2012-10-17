@@ -78,7 +78,7 @@ def open(fp, mode = "r"):
     if mode != "r":
         raise ValueError("bad mode")
 
-    if type(fp) == type(""):
+    if isinstance(fp, str):
         filename = fp
         fp = builtins.open(fp, "rb")
     else:

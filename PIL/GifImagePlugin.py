@@ -125,7 +125,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         self.palette = self.global_palette
 
-        while 1:
+        while True:
 
             s = self.fp.read(1)
             if not s or s == ";":

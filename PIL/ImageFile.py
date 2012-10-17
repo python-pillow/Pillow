@@ -195,7 +195,7 @@ class ImageFile(Image.Image):
                     continue
                 b = prefix
                 t = len(b)
-                while 1:
+                while True:
                     s = read(self.decodermaxblock)
                     if not s:
                         self.tile = []
@@ -315,7 +315,7 @@ class _ParserFile:
     def readline(self):
         # FIXME: this is slow!
         s = ""
-        while 1:
+        while True:
             c = self.read(1)
             if not c:
                 break
@@ -483,7 +483,7 @@ def _save(im, fp, tile):
             if o > 0:
                 fp.seek(o, 0)
             e.setimage(im.im, b)
-            while 1:
+            while True:
                 l, s, d = e.encode(bufsize)
                 fp.write(d)
                 if s:

@@ -42,7 +42,7 @@ class XpmImageFile(ImageFile.ImageFile):
             raise SyntaxError("not an XPM file")
 
         # skip forward to next string
-        while 1:
+        while True:
             s = self.fp.readline()
             if not s:
                 raise SyntaxError("broken XPM file")

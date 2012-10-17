@@ -124,7 +124,7 @@ FLAGS = {
 
 _MAX_FLAG = 0
 for flag in FLAGS.values():
-    if isinstance(flag, type(0)):
+    if isinstance(flag, int):
         _MAX_FLAG = _MAX_FLAG | flag
 
 # --------------------------------------------------------------------.
@@ -290,10 +290,10 @@ def profileToProfile(im, inputProfile, outputProfile, renderingIntent=INTENT_PER
     if outputMode is None:
         outputMode = im.mode
 
-    if type(renderingIntent) != type(1) or not (0 <= renderingIntent <=3):
+    if not isinstance(renderingIntent, int) or not (0 <= renderingIntent <=3):
         raise PyCMSError("renderingIntent must be an integer between 0 and 3")
 
-    if type(flags) != type(1) or not (0 <= flags <= _MAX_FLAG):
+    if not isinstance(flags, int) or not (0 <= flags <= _MAX_FLAG):
         raise PyCMSError("flags must be an integer between 0 and %s" + _MAX_FLAG)
 
     try:
@@ -398,10 +398,10 @@ def buildTransform(inputProfile, outputProfile, inMode, outMode, renderingIntent
 
     """
 
-    if type(renderingIntent) != type(1) or not (0 <= renderingIntent <=3):
+    if not isinstance(renderingIntent, int) or not (0 <= renderingIntent <=3):
         raise PyCMSError("renderingIntent must be an integer between 0 and 3")
 
-    if type(flags) != type(1) or not (0 <= flags <= _MAX_FLAG):
+    if not isinstance(flags, int) or not (0 <= flags <= _MAX_FLAG):
         raise PyCMSError("flags must be an integer between 0 and %s" + _MAX_FLAG)
 
     try:
@@ -489,10 +489,10 @@ def buildProofTransform(inputProfile, outputProfile, proofProfile, inMode, outMo
 
     """
 
-    if type(renderingIntent) != type(1) or not (0 <= renderingIntent <=3):
+    if not isinstance(renderingIntent, int) or not (0 <= renderingIntent <=3):
         raise PyCMSError("renderingIntent must be an integer between 0 and 3")
 
-    if type(flags) != type(1) or not (0 <= flags <= _MAX_FLAG):
+    if not isinstance(flags, int) or not (0 <= flags <= _MAX_FLAG):
         raise PyCMSError("flags must be an integer between 0 and %s" + _MAX_FLAG)
 
     try:
@@ -597,9 +597,9 @@ def createProfile(colorSpace, colorTemp=-1):
         raise PyCMSError("Color space not supported for on-the-fly profile creation (%s)" % colorSpace)
 
     if colorSpace == "LAB":
-        if type(colorTemp) == type(5000.0):
+        if isinstance(colorTemp, float):
             colorTemp = int(colorTemp + 0.5)
-        if type (colorTemp) != type (5000):
+        if not isinstance(colorTemp, int):
             raise PyCMSError("Color temperature must be a positive integer, \"%s\" not valid" % colorTemp)
 
     try:

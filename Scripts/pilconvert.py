@@ -56,8 +56,7 @@ for o, a in opt:
 
     if o == "-f":
         Image.init()
-        id = Image.ID[:]
-        id.sort()
+        id = sorted(Image.ID)
         print("Supported formats (* indicates output format):")
         for i in id:
             if i in Image.SAVE:

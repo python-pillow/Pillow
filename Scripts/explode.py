@@ -89,7 +89,7 @@ if html:
     html = open(file+".html", "w")
     html.write("<html>\n<body>\n")
 
-while 1:
+while True:
 
     if frames[ix]:
         im.save(outfile % ix)
