@@ -66,6 +66,12 @@ except ImportError as v:
             RuntimeWarning
             )
 
+try:
+    import builtins
+except ImportError:
+    import __builtin__
+    builtins = __builtin__
+
 from . import ImageMode
 
 import os, sys
@@ -1419,8 +1425,7 @@ class Image:
             save_handler = SAVE[format.upper()] # unknown format
 
         if isStringType(fp):
-            import __builtin__
-            fp = __builtin__.open(fp, "wb")
+            fp = builtins.open(fp, "wb")
             close = 1
         else:
             close = 0
@@ -1937,9 +1942,8 @@ def open(fp, mode="r"):
         raise ValueError("bad mode")
 
     if isStringType(fp):
-        import __builtin__
         filename = fp
-        fp = __builtin__.open(fp, "rb")
+        fp = builtins.open(fp, "rb")
     else:
         filename = ""
 
