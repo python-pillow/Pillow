@@ -25,7 +25,13 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Tkinter
+try:
+    import tkinter
+except ImportError:
+    import Tkinter
+    tkinter = Tkinter
+    del Tkinter
+
 from . import Image
 
 ##
@@ -46,9 +52,9 @@ def _pilbitmap_check():
     if _pilbitmap_ok is None:
         try:
             im = Image.new("1", (1,1))
-            Tkinter.BitmapImage(data="PIL:%d" % im.im.id)
+            tkinter.BitmapImage(data="PIL:%d" % im.im.id)
             _pilbitmap_ok = 1
-        except Tkinter.TclError:
+        except tkinter.TclError:
             _pilbitmap_ok = 0
     return _pilbitmap_ok
 
@@ -111,7 +117,7 @@ class PhotoImage:
 
         self.__mode = mode
         self.__size = size
-        self.__photo = apply(Tkinter.PhotoImage, (), kw)
+        self.__photo = apply(tkinter.PhotoImage, (), kw)
         self.tk = self.__photo.tk
         if image:
             self.paste(image)
@@ -176,7 +182,7 @@ class PhotoImage:
 
         try:
             tk.call("PyImagingPhoto", self.__photo, block.id)
-        except Tkinter.TclError as v:
+        except tkinter.TclError as v:
             # activate Tkinter hook
             try:
                 import _imagingtk
@@ -185,7 +191,7 @@ class PhotoImage:
                 except AttributeError:
                     _imagingtk.tkinit(id(tk), 0)
                 tk.call("PyImagingPhoto", self.__photo, block.id)
-            except (ImportError, AttributeError, Tkinter.TclError):
+            except (ImportError, AttributeError, tkinter.TclError):
                 raise # configuration problem; cannot attach to Tkinter
 
 # --------------------------------------------------------------------
@@ -233,7 +239,7 @@ class BitmapImage:
         else:
             # slow but safe way
             kw["data"] = image.tobitmap()
-        self.__photo = apply(Tkinter.BitmapImage, (), kw)
+        self.__photo = apply(tkinter.BitmapImage, (), kw)
 
     def __del__(self):
         name = self.__photo.name
@@ -280,18 +286,18 @@ def getimage(photo):
 
 def _show(image, title):
 
-    class UI(Tkinter.Label):
+    class UI(tkinter.Label):
         def __init__(self, master, im):
             if im.mode == "1":
                 self.image = BitmapImage(im, foreground="white", master=master)
             else:
                 self.image = PhotoImage(im, master=master)
-            Tkinter.Label.__init__(self, master, image=self.image,
+            tkinter.Label.__init__(self, master, image=self.image,
                 bg="black", bd=0)
 
-    if not Tkinter._default_root:
+    if not tkinter._default_root:
         raise IOError("tkinter not initialized")
-    top = Tkinter.Toplevel()
+    top = tkinter.Toplevel()
     if title:
         top.title(title)
     UI(top, image).pack()
