@@ -12,7 +12,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from StringIO import StringIO
+from io import BytesIO
 
 ##
 # The <b>ImageFileIO</b> module can be used to read an image from a
@@ -23,7 +23,7 @@ from StringIO import StringIO
 #
 # @see ImageFile#Parser
 
-class ImageFileIO(StringIO):
+class ImageFileIO(BytesIO):
 
     ##
     # Adds buffering to a stream file object, in order to
@@ -36,4 +36,4 @@ class ImageFileIO(StringIO):
 
     def __init__(self, fp):
         data = fp.read()
-        StringIO.__init__(self, data)
+        BytesIO.__init__(self, data)
