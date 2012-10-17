@@ -38,7 +38,7 @@ class BitStream:
                 continue
             self.bitbuffer = (self.bitbuffer << 8) + c
             self.bits = self.bits + 8
-        return self.bitbuffer >> (self.bits - bits) & (1L << bits) - 1
+        return self.bitbuffer >> (self.bits - bits) & (1 << bits) - 1
 
     def skip(self, bits):
         while self.bits < bits:
