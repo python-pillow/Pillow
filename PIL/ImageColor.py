@@ -41,7 +41,7 @@ def getrgb(color):
             rgb = None
     # found color in cache
     if rgb:
-        if isinstance(rgb, type(())):
+        if isinstance(rgb, tuple):
             return rgb
         colormap[color] = rgb = getrgb(rgb)
         return rgb

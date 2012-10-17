@@ -98,7 +98,7 @@ class IptcImageFile(ImageFile.ImageFile):
         if sz != size[0]:
             return 0
         y = 1
-        while 1:
+        while True:
             self.fp.seek(sz, 1)
             t, s = self.field()
             if t != (8, 10):
@@ -111,7 +111,7 @@ class IptcImageFile(ImageFile.ImageFile):
     def _open(self):
 
         # load descriptive fields
-        while 1:
+        while True:
             offset = self.fp.tell()
             tag, size = self.field()
             if not tag or tag == (8,10):
@@ -180,7 +180,7 @@ class IptcImageFile(ImageFile.ImageFile):
             # To simplify access to the extracted file,
             # prepend a PPM header
             o.write("P5\n%d %d\n255\n" % self.size)
-        while 1:
+        while True:
             type, size = self.field()
             if type != (8, 10):
                 break

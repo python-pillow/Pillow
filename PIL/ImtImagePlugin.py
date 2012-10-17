@@ -45,7 +45,7 @@ class ImtImageFile(ImageFile.ImageFile):
 
         xsize = ysize = 0
 
-        while 1:
+        while True:
 
             s = self.fp.read(1)
             if not s:

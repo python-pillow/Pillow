@@ -53,7 +53,7 @@ class Stat:
                 self.h = image_or_list.histogram()
         except AttributeError:
             self.h = image_or_list # assume it to be a histogram list
-        if type(self.h) != type([]):
+        if not isinstance(self.h, list):
             raise TypeError("first argument must be image or list")
         self.bands = list(range(len(self.h) // 256))
 

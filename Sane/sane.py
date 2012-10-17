@@ -55,7 +55,7 @@ class Option:
         def f(x):
             if x=='-': return '_'
             else: return x
-        if type(self.name)!=type(''): self.py_name=str(self.name)
+        if not isinstance(self.name, str): self.py_name=str(self.name)
         else: self.py_name=''.join(map(f, self.name))
 
     def is_active(self):
@@ -174,7 +174,7 @@ class SaneDev:
             raise AttributeError('Inactive option: '+key)
         if not _sane.OPTION_IS_SETTABLE(opt.cap):
             raise AttributeError("Option can't be set by software: "+key)
-        if type(value) == int and opt.type == TYPE_FIXED:
+        if isinstance(value, int) and opt.type == TYPE_FIXED:
             # avoid annoying errors of backend if int is given instead float:
             value = float(value)
         self.last_opt = dev.set_option(opt.index, value)

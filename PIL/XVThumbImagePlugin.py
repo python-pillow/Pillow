@@ -47,7 +47,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
         self.fp.readline()
 
         # skip info comments
-        while 1:
+        while True:
             s = self.fp.readline()
             if not s:
                 raise SyntaxError("Unexpected EOF reading XV thumbnail file")

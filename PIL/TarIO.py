@@ -32,7 +32,7 @@ class TarIO(ContainerIO.ContainerIO):
 
         fh = open(tarfile, "rb")
 
-        while 1:
+        while True:
 
             s = fh.read(512)
             if len(s) != 512:

@@ -76,7 +76,7 @@ class ImagePalette:
         # (experimental) save palette to text file
         if self.rawmode:
             raise ValueError("palette contains raw palette data")
-        if type(fp) == type(""):
+        if isinstance(fp, str):
             fp = open(fp, "w")
         fp.write("# Palette\n")
         fp.write("# Mode: %s\n" % self.mode)
