@@ -21,6 +21,9 @@ from . import Image, ImageFile
 
 _handler = None
 
+if str != bytes:
+    long = int
+
 ##
 # Install application-specific WMF image handler.
 #
