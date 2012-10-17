@@ -56,9 +56,9 @@ def raise_ioerror(error):
 # --------------------------------------------------------------------
 # Helpers
 
-def _tilesort(t1, t2):
+def _tilesort(t):
     # sort on offset
-    return cmp(t1[2], t2[2])
+    return t[2]
 
 #
 # --------------------------------------------------------------------
@@ -178,7 +178,7 @@ class ImageFile(Image.Image):
         if not self.map:
 
             # sort tiles in file order
-            self.tile.sort(_tilesort)
+            self.tile.sort(key=_tilesort)
 
             try:
                 # FIXME: This is a hack to handle TIFF's JpegTables tag.
@@ -470,7 +470,7 @@ def _save(im, fp, tile):
     im.load()
     if not hasattr(im, "encoderconfig"):
         im.encoderconfig = ()
-    tile.sort(_tilesort)
+    tile.sort(key=_tilesort)
     # FIXME: make MAXBLOCK a configuration parameter
     bufsize = max(MAXBLOCK, im.size[0] * 4) # see RawEncode.c
     try:
