@@ -43,7 +43,7 @@ bdf_spacing = {
 def bdf_char(f):
 
     # skip to STARTCHAR
-    while 1:
+    while True:
         s = f.readline()
         if not s:
             return None
@@ -53,7 +53,7 @@ def bdf_char(f):
 
     # load symbol properties
     props = {}
-    while 1:
+    while True:
         s = f.readline()
         if not s or s[:6] == "BITMAP":
             break
@@ -62,7 +62,7 @@ def bdf_char(f):
 
     # load bitmap
     bitmap = []
-    while 1:
+    while True:
         s = f.readline()
         if not s or s[:7] == "ENDCHAR":
             break
@@ -98,7 +98,7 @@ class BdfFontFile(FontFile.FontFile):
         props = {}
         comments = []
 
-        while 1:
+        while True:
             s = fp.readline()
             if not s or s[:13] == "ENDPROPERTIES":
                 break
@@ -123,7 +123,7 @@ class BdfFontFile(FontFile.FontFile):
         #       print "#", i
 
         font = []
-        while 1:
+        while True:
             c = bdf_char(fp)
             if not c:
                 break

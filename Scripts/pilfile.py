@@ -45,8 +45,7 @@ verbose = quiet = verify = 0
 for o, a in opt:
     if o == "-f":
         Image.init()
-        id = Image.ID[:]
-        id.sort()
+        id = sorted(Image.ID)
         print("Supported formats:")
         for i in id:
             print(i, end=' ')

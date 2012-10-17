@@ -458,7 +458,7 @@ class ArgImageFile(ImageFile.ImageFile):
 
         self.fp = self.arg.fp
 
-        while 1:
+        while True:
 
             #
             # process chunks

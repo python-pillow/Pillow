@@ -28,7 +28,7 @@ except ImportError:
 VERBOSE = 0
 
 def _isconstant(v):
-    return isinstance(v, type(0)) or isinstance(v, type(0.0))
+    return isinstance(v, int) or isinstance(v, float)
 
 class _Operand:
     # wraps an image operand, providing standard operators

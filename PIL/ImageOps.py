@@ -33,7 +33,7 @@ from functools import reduce
 # helpers
 
 def _border(border):
-    if type(border) is type(()):
+    if isinstance(border, tuple):
         if len(border) == 2:
             left, top = right, bottom = border
         elif len(border) == 4:
@@ -275,7 +275,7 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     # http://www.cazabon.com
 
     # ensure inputs are valid
-    if type(centering) != type([]):
+    if not isinstance(centering, list):
         centering = [centering[0], centering[1]]
 
     if centering[0] > 1.0 or centering[0] < 0.0:

@@ -125,7 +125,7 @@ class ImImageFile(ImageFile.ImageFile):
 
         self.rawmode = "L"
 
-        while 1:
+        while True:
 
             s = self.fp.read(1)
 

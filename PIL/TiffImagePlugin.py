@@ -401,8 +401,7 @@ class ImageFileDirectory(collections.MutableMapping):
         fp.write(o16(len(self.tags)))
 
         # always write in ascending tag order
-        tags = list(self.tags.items())
-        tags.sort()
+        tags = sorted(self.tags.items())
 
         directory = []
         append = directory.append
@@ -425,7 +424,7 @@ class ImageFileDirectory(collections.MutableMapping):
             elif typ == 7:
                 # untyped data
                 data = value = "".join(value)
-            elif type(value[0]) is type(""):
+            elif isinstance(value[0], str):
                 # string data
                 typ = 2
                 data = value = "\0".join(value) + "\0"
@@ -737,10 +736,10 @@ SAVE_INFO = {
 
 def _cvt_res(value):
     # convert value to TIFF rational number -- (numerator, denominator)
-    if type(value) in (type([]), type(())):
+    if isinstance(value, collections.Sequence):
         assert(len(value) % 2 == 0)
         return value
-    if type(value) == type(1):
+    if isinstance(value, int):
         return (value, 1)
     value = float(value)
     return (int(value * 65536), 65536)

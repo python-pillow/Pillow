@@ -261,7 +261,7 @@ class EpsImageFile(ImageFile.ImageFile):
                     id = id[1:-1]
 
                 # Scan forward to the actual image data
-                while 1:
+                while True:
                     s = fp.readline()
                     if not s:
                         break
