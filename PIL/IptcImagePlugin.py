@@ -220,7 +220,7 @@ Image.register_extension("IPTC", ".iim")
 def getiptcinfo(im):
 
     from . import TiffImagePlugin, JpegImagePlugin
-    import StringIO
+    import io
 
     data = None
 
@@ -279,7 +279,7 @@ def getiptcinfo(im):
 
     # parse the IPTC information chunk
     im.info = {}
-    im.fp = StringIO.StringIO(data)
+    im.fp = io.BytesIO(data)
 
     try:
         im._open()

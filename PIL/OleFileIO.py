@@ -38,7 +38,7 @@
 
 from __future__ import print_function
 
-import StringIO
+import io
 import sys
 
 def i16(c, o = 0):
@@ -81,7 +81,7 @@ WORD_CLSID = "00020900-0000-0000-C000-000000000046"
 #
 # --------------------------------------------------------------------
 
-class _OleStream(StringIO.StringIO):
+class _OleStream(io.BytesIO):
 
     """OLE2 Stream
 
@@ -107,11 +107,11 @@ class _OleStream(StringIO.StringIO):
             data.append(fp.read(sectorsize))
             sect = fat[sect]
 
-        data = "".join(data)
+        data = b"".join(data)
 
         # print len(data), size
 
-        StringIO.StringIO.__init__(self, data[:size])
+        io.BytesIO.__init__(self, data[:size])
 
 #
 # --------------------------------------------------------------------
