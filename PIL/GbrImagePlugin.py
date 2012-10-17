@@ -16,7 +16,7 @@
 from . import Image, ImageFile
 
 def i32(c):
-    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24L)
+    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
 
 def _accept(prefix):
     return i32(prefix) >= 20 and i32(prefix[4:8]) == 1
