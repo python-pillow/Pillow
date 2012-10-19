@@ -396,11 +396,16 @@ def _getencoder(mode, encoder_name, args, extra=()):
 # --------------------------------------------------------------------
 # Simple expression analyzer
 
+def coerce_e(value):
+    return value if isinstance(value, _E) else _E(value)
+
 class _E:
-    def __init__(self, data): self.data = data
-    def __coerce__(self, other): return self, _E(other)
-    def __add__(self, other): return _E((self.data, "__add__", other.data))
-    def __mul__(self, other): return _E((self.data, "__mul__", other.data))
+    def __init__(self, data):
+        self.data = data
+    def __add__(self, other):
+        return _E((self.data, "__add__", coerce_e(other).data))
+    def __mul__(self, other):
+        return _E((self.data, "__mul__", coerce_e(other).data))
 
 def _getscaleoffset(expr):
     stub = ["stub"]
