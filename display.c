@@ -180,7 +180,7 @@ _releasedc(ImagingDisplayObject* display, PyObject* args)
 }
 
 static PyObject*
-_fromstring(ImagingDisplayObject* display, PyObject* args)
+_frombytes(ImagingDisplayObject* display, PyObject* args)
 {
     char* ptr;
     int bytes;
@@ -205,7 +205,7 @@ _fromstring(ImagingDisplayObject* display, PyObject* args)
 }
 
 static PyObject*
-_tostring(ImagingDisplayObject* display, PyObject* args)
+_tobytes(ImagingDisplayObject* display, PyObject* args)
 {
 #if PY_VERSION_HEX >= 0x03000000
     if (!PyArg_ParseTuple(args, ":tobytes"))
@@ -227,12 +227,11 @@ static struct PyMethodDef methods[] = {
     {"query_palette", (PyCFunction)_query_palette, 1},
     {"getdc", (PyCFunction)_getdc, 1},
     {"releasedc", (PyCFunction)_releasedc, 1},
-#if PY_VERSION_HEX >= 0x03000000
-    {"frombytes", (PyCFunction)_fromstring, 1},
-    {"tobytes", (PyCFunction)_tostring, 1},
-#else
-    {"fromstring", (PyCFunction)_fromstring, 1},
-    {"tostring", (PyCFunction)_tostring, 1},
+    {"frombytes", (PyCFunction)_frombytes, 1},
+    {"tobytes", (PyCFunction)_tobytes, 1},
+#if PY_VERSION_HEX < 0x03000000
+    {"fromstring", (PyCFunction)_frombytes, 1},
+    {"tostring", (PyCFunction)_tobytes, 1},
 #endif
     {NULL, NULL} /* sentinel */
 };
