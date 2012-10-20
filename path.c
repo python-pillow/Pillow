@@ -46,7 +46,7 @@
 
 /* compatibility wrappers (defined in _imaging.c) */
 extern int PyImaging_CheckBuffer(PyObject* buffer);
-extern int PyImaging_ReadBuffer(PyObject* buffer, const void** ptr);
+extern int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view);
 
 /* -------------------------------------------------------------------- */
 /* Class								*/
@@ -134,16 +134,20 @@ PyPath_Flatten(PyObject* data, double **pxy)
 	
     if (PyImaging_CheckBuffer(data)) {
         /* Assume the buffer contains floats */
-        float* ptr;
-        int n = PyImaging_ReadBuffer(data, (const void**) &ptr);
-        n /= 2 * sizeof(float);
-        xy = alloc_array(n);
-        if (!xy)
-            return -1;
-        for (i = 0; i < n+n; i++)
-            xy[i] = ptr[i];
-        *pxy = xy;
-        return n;
+        Py_buffer buffer;
+        if (PyImaging_GetBuffer(data, &buffer) == 0) {
+            int n = buffer.len / (2 * sizeof(float));
+            float *ptr = (float*) buffer.buf;
+            xy = alloc_array(n);
+            if (!xy)
+                return -1;
+            for (i = 0; i < n+n; i++)
+                xy[i] = ptr[i];
+            *pxy = xy;
+            PyBuffer_Release(&buffer);
+            return n;
+        }
+        PyErr_Clear();
     }
 
     if (!PySequence_Check(data)) {
