@@ -45,46 +45,36 @@ __version__ = "1.3.5"
 
 from . import Image, ImageFile
 from . import ImagePalette
+from . import _binary
 
 import array, sys
 import collections
 import itertools
 
-II = "II" # little-endian (intel-style)
-MM = "MM" # big-endian (motorola-style)
+II = b"II" # little-endian (intel-style)
+MM = b"MM" # big-endian (motorola-style)
 
-try:
-    if sys.byteorder == "little":
-        native_prefix = II
-    else:
-        native_prefix = MM
-except AttributeError:
-    if ord(array.array("i",[1]).tostring()[0]):
-        native_prefix = II
-    else:
-        native_prefix = MM
+i8 = _binary.i8
+o8 = _binary.o8
+
+if sys.byteorder == "little":
+    native_prefix = II
+else:
+    native_prefix = MM
 
 #
 # --------------------------------------------------------------------
 # Read TIFF files
 
-def il16(c,o=0):
-    return ord(c[o]) + (ord(c[o+1])<<8)
-def il32(c,o=0):
-    return ord(c[o]) + (ord(c[o+1])<<8) + (ord(c[o+2])<<16) + (ord(c[o+3])<<24)
-def ol16(i):
-    return chr(i&255) + chr(i>>8&255)
-def ol32(i):
-    return chr(i&255) + chr(i>>8&255) + chr(i>>16&255) + chr(i>>24&255)
+il16 = _binary.i16le
+il32 = _binary.i32le
+ol16 = _binary.o16le
+ol32 = _binary.o32le
 
-def ib16(c,o=0):
-    return ord(c[o+1]) + (ord(c[o])<<8)
-def ib32(c,o=0):
-    return ord(c[o+3]) + (ord(c[o+2])<<8) + (ord(c[o+1])<<16) + (ord(c[o])<<24)
-def ob16(i):
-    return chr(i>>8&255) + chr(i&255)
-def ob32(i):
-    return chr(i>>24&255) + chr(i>>16&255) + chr(i>>8&255) + chr(i&255)
+ib16 = _binary.i16be
+ib32 = _binary.i32be
+ob16 = _binary.o16be
+ob32 = _binary.o32be
 
 # a few tag names, just to make the code below a bit more readable
 IMAGEWIDTH = 256
@@ -200,7 +190,7 @@ OPEN_INFO = {
 
 }
 
-PREFIXES = ["MM\000\052", "II\052\000", "II\xBC\000"]
+PREFIXES = [b"MM\000\052", b"II\052\000", b"II\xBC\000"]
 
 def _accept(prefix):
     return prefix[:4] in PREFIXES
@@ -264,7 +254,7 @@ class ImageFileDirectory(collections.MutableMapping):
     def __contains__(self, tag):
         return tag in self.tags or tag in self.tagdata
 
-    if sys.version_info < (3,0):
+    if bytes is str:
         def has_key(self, tag):
             return tag in self
 
@@ -284,16 +274,13 @@ class ImageFileDirectory(collections.MutableMapping):
     load_dispatch = {}
 
     def load_byte(self, data):
-        l = []
-        for i in range(len(data)):
-            l.append(ord(data[i]))
-        return tuple(l)
+        return data
     load_dispatch[1] = (1, load_byte)
 
     def load_string(self, data):
-        if data[-1:] == '\0':
+        if data[-1:] == b'\0':
             data = data[:-1]
-        return data
+        return data.decode('latin-1', 'replace')
     load_dispatch[2] = (1, load_string)
 
     def load_short(self, data):
@@ -420,14 +407,14 @@ class ImageFileDirectory(collections.MutableMapping):
 
             if typ == 1:
                 # byte data
-                data = value = "".join(map(chr, value))
+                data = value
             elif typ == 7:
                 # untyped data
-                data = value = "".join(value)
+                data = value = b"".join(value)
             elif isinstance(value[0], str):
                 # string data
                 typ = 2
-                data = value = "\0".join(value) + "\0"
+                data = value = b"\0".join(value.encode('ascii', 'replace')) + b"\0"
             else:
                 # integer data
                 if tag == STRIPOFFSETS:
@@ -442,9 +429,9 @@ class ImageFileDirectory(collections.MutableMapping):
                         if v >= 65536:
                             typ = 4
                 if typ == 3:
-                    data = "".join(map(o16, value))
+                    data = b"".join(map(o16, value))
                 else:
-                    data = "".join(map(o32, value))
+                    data = b"".join(map(o32, value))
 
             if Image.DEBUG:
                 from . import TiffTags
@@ -460,13 +447,13 @@ class ImageFileDirectory(collections.MutableMapping):
 
             # figure out if data fits into the directory
             if len(data) == 4:
-                append((tag, typ, len(value), data, ""))
+                append((tag, typ, len(value), data, b""))
             elif len(data) < 4:
-                append((tag, typ, len(value), data + (4-len(data))*"\0", ""))
+                append((tag, typ, len(value), data + (4-len(data))*b"\0", b""))
             else:
                 count = len(value)
                 if typ == 5:
-                    count = count / 2        # adjust for rational data field
+                    count = count // 2        # adjust for rational data field
                 append((tag, typ, count, o32(offset), data))
                 offset = offset + len(data)
                 if offset & 1:
@@ -486,13 +473,13 @@ class ImageFileDirectory(collections.MutableMapping):
             fp.write(o16(tag) + o16(typ) + o32(count) + value)
 
         # -- overwrite here for multi-page --
-        fp.write("\0\0\0\0") # end of directory
+        fp.write(b"\0\0\0\0") # end of directory
 
         # pass 3: write auxiliary data to file
         for tag, typ, count, value, data in directory:
             fp.write(data)
             if len(data) & 1:
-                fp.write("\0")
+                fp.write(b"\0")
 
         return offset
 
@@ -702,8 +689,8 @@ class TiffImageFile(ImageFile.ImageFile):
         # fixup palette descriptor
 
         if self.mode == "P":
-            palette = [chr(a / 256) for a in self.tag[COLORMAP]]
-            self.palette = ImagePalette.raw("RGB;L", "".join(palette))
+            palette = [o8(a // 256) for a in self.tag[COLORMAP]]
+            self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
 #
 # --------------------------------------------------------------------
 # Write TIFF files
@@ -824,10 +811,10 @@ def _save(im, fp, filename):
 
     if im.mode == "P":
         lut = im.im.getpalette("RGB", "RGB;L")
-        ifd[COLORMAP] = tuple(ord(v) * 256 for v in lut)
+        ifd[COLORMAP] = tuple(i8(v) * 256 for v in lut)
 
     # data orientation
-    stride = len(bits) * ((im.size[0]*bits[0]+7)/8)
+    stride = len(bits) * ((im.size[0]*bits[0]+7)//8)
     ifd[ROWSPERSTRIP] = im.size[1]
     ifd[STRIPBYTECOUNTS] = stride * im.size[1]
     ifd[STRIPOFFSETS] = 0 # this is adjusted by IFD writer

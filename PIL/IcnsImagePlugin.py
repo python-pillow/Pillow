@@ -14,8 +14,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, ImageFile
+from . import Image, ImageFile, _binary
 import struct
+
+i8 = _binary.i8
 
 HEADERSIZE = 8
 
@@ -27,7 +29,7 @@ def read_32t(fobj, start_length, size):
     (start, length) = start_length
     fobj.seek(start)
     sig = fobj.read(4)
-    if sig != '\x00\x00\x00\x00':
+    if sig != b'\x00\x00\x00\x00':
         raise SyntaxError('Unknown signature, expecting 0x00000000')
     return read_32(fobj, (start + 4, length - 4), size)
 
@@ -53,7 +55,7 @@ def read_32(fobj, start_length, size):
                 byte = fobj.read(1)
                 if not byte:
                     break
-                byte = ord(byte)
+                byte = i8(byte)
                 if byte & 0x80:
                     blocksize = byte - 125
                     byte = fobj.read(1)
@@ -70,7 +72,7 @@ def read_32(fobj, start_length, size):
                     "Error reading channel [%r left]" % bytesleft
                     )
             band = Image.frombuffer(
-                "L", size, "".join(data), "raw", "L", 0, 1
+                "L", size, b"".join(data), "raw", "L", 0, 1
                 )
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
@@ -88,20 +90,20 @@ class IcnsFile:
 
     SIZES = {
         (128, 128): [
-            ('it32', read_32t),
-            ('t8mk', read_mk),
+            (b'it32', read_32t),
+            (b't8mk', read_mk),
         ],
         (48, 48): [
-            ('ih32', read_32),
-            ('h8mk', read_mk),
+            (b'ih32', read_32),
+            (b'h8mk', read_mk),
         ],
         (32, 32): [
-            ('il32', read_32),
-            ('l8mk', read_mk),
+            (b'il32', read_32),
+            (b'l8mk', read_mk),
         ],
         (16, 16): [
-            ('is32', read_32),
-            ('s8mk', read_mk),
+            (b'is32', read_32),
+            (b's8mk', read_mk),
         ],
     }
 
@@ -204,7 +206,7 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.load_end()
 
 
-Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == 'icns')
+Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == b'icns')
 Image.register_extension("ICNS", '.icns')
 
 if __name__ == '__main__':

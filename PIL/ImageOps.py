@@ -95,7 +95,7 @@ def autocontrast(image, cutoff=0, ignore=None):
             for ix in range(256):
                 n = n + h[ix]
             # remove cutoff% pixels from the low end
-            cut = n * cutoff / 100
+            cut = n * cutoff // 100
             for lo in range(256):
                 if cut > h[lo]:
                     cut = cut - h[lo]
@@ -106,7 +106,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                 if cut <= 0:
                     break
             # remove cutoff% samples from the hi end
-            cut = n * cutoff / 100
+            cut = n * cutoff // 100
             for hi in range(255, -1, -1):
                 if cut > h[hi]:
                     cut = cut - h[hi]
@@ -125,7 +125,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                 break
         if hi <= lo:
             # don't bother
-            lut.extend(range(256))
+            lut.extend(list(range(256)))
         else:
             scale = 255.0 / (hi - lo)
             offset = -lo * scale
@@ -156,9 +156,9 @@ def colorize(image, black, white):
     white = _color(white, "RGB")
     red = []; green = []; blue = []
     for i in range(256):
-        red.append(black[0]+i*(white[0]-black[0])/255)
-        green.append(black[1]+i*(white[1]-black[1])/255)
-        blue.append(black[2]+i*(white[2]-black[2])/255)
+        red.append(black[0]+i*(white[0]-black[0])//255)
+        green.append(black[1]+i*(white[1]-black[1])//255)
+        blue.append(black[2]+i*(white[2]-black[2])//255)
     image = image.convert("RGB")
     return _lut(image, red + green + blue)
 
@@ -212,15 +212,15 @@ def equalize(image, mask=None):
     for b in range(0, len(h), 256):
         histo = [_f for _f in h[b:b+256] if _f]
         if len(histo) <= 1:
-            lut.extend(range(256))
+            lut.extend(list(range(256)))
         else:
-            step = (reduce(operator.add, histo) - histo[-1]) / 255
+            step = (reduce(operator.add, histo) - histo[-1]) // 255
             if not step:
-                lut.extend(range(256))
+                lut.extend(list(range(256)))
             else:
-                n = step / 2
+                n = step // 2
                 for i in range(256):
-                    lut.append(n / step)
+                    lut.append(n // step)
                     n = n + h[i+b]
     return _lut(image, lut)
 

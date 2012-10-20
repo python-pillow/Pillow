@@ -16,6 +16,7 @@
 __version__ = "0.1"
 
 from . import Image, ImageFile
+from ._binary import i8
 
 #
 # Bitstream parser
@@ -28,7 +29,7 @@ class BitStream:
         self.bitbuffer = 0
 
     def next(self):
-        return ord(self.fp.read(1))
+        return i8(self.fp.read(1))
 
     def peek(self, bits):
         while self.bits < bits:
@@ -42,7 +43,7 @@ class BitStream:
 
     def skip(self, bits):
         while self.bits < bits:
-            self.bitbuffer = (self.bitbuffer << 8) + ord(self.fp.read(1))
+            self.bitbuffer = (self.bitbuffer << 8) + i8(self.fp.read(1))
             self.bits = self.bits + 8
         self.bits = self.bits - bits
 

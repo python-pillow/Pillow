@@ -13,10 +13,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, ImageFile
+from . import Image, ImageFile, _binary
 
-def i32(c):
-    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
+i32 = _binary.i32be
 
 def _accept(prefix):
     return i32(prefix) >= 20 and i32(prefix[4:8]) == 1
@@ -59,8 +58,8 @@ class GbrImageFile(ImageFile.ImageFile):
 
         # create an image out of the brush data block
         self.im = Image.core.new(self.mode, self.size)
-        self.im.fromstring(self.data)
-        self.data = ""
+        self.im.frombytes(self.data)
+        self.data = b""
 
 #
 # registry

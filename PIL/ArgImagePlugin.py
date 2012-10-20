@@ -24,9 +24,9 @@ __version__ = "0.4"
 
 from . import Image, ImageFile, ImagePalette
 
-from .PngImagePlugin import i16, i32, ChunkStream, _MODES
+from .PngImagePlugin import i8, i16, i32, ChunkStream, _MODES
 
-MAGIC = "\212ARG\r\n\032\n"
+MAGIC = b"\212ARG\r\n\032\n"
 
 # --------------------------------------------------------------------
 # ARG parser
@@ -67,7 +67,7 @@ class ArgStream(ChunkStream):
         s = self.fp.read(bytes)
         self.size = i32(s), i32(s[4:])
         try:
-            self.mode, self.rawmode = _MODES[(ord(s[8]), ord(s[9]))]
+            self.mode, self.rawmode = _MODES[(i8(s[8]), i8(s[9]))]
         except:
             raise SyntaxError("unknown ARG mode")
 
@@ -154,14 +154,14 @@ class ArgStream(ChunkStream):
         size = i32(s), i32(s[4:])
 
         try:
-            mode, rawmode = _MODES[(ord(s[8]), ord(s[9]))]
+            mode, rawmode = _MODES[(i8(s[8]), i8(s[9]))]
         except:
             raise SyntaxError("unknown image mode")
 
         if full:
-            if ord(s[12]):
+            if i8(s[12]):
                 pass # interlace not yet supported
-            if ord(s[11]):
+            if i8(s[11]):
                 raise SyntaxError("unknown filter category")
 
         return size, mode, rawmode
@@ -236,7 +236,7 @@ class ArgStream(ChunkStream):
         self.im = Image.core.new(mode, size)
         self.decoder = Image.core.zip_decoder(rawmode)
         self.decoder.setimage(self.im, (0,0) + size)
-        self.data = ""
+        self.data = b""
 
         return s
 
@@ -252,7 +252,7 @@ class ArgStream(ChunkStream):
         size, mode, rawmode = self.__getmodesize(s)
 
         # delta header
-        diff = ord(s[13])
+        diff = i8(s[13])
         offs = i32(s[14:18]), i32(s[18:22])
 
         bbox = offs + (offs[0]+size[0], offs[1]+size[1])
@@ -269,7 +269,7 @@ class ArgStream(ChunkStream):
         self.decoder = Image.core.zip_decoder(rawmode)
         self.decoder.setimage(self.im, (0,0) + size)
 
-        self.data = ""
+        self.data = b""
 
         return s
 
@@ -289,7 +289,7 @@ class ArgStream(ChunkStream):
         self.im = Image.core.new(mode, size)
         self.decoder = Image.core.jpeg_decoder(rawmode)
         self.decoder.setimage(self.im, (0,0) + size)
-        self.data = ""
+        self.data = b""
 
         return s
 
@@ -309,7 +309,7 @@ class ArgStream(ChunkStream):
         self.im = Image.core.new(mode, size)
         self.decoder = Image.core.raw_decoder(rawmode)
         self.decoder.setimage(self.im, (0,0) + size)
-        self.data = ""
+        self.data = b""
 
         return s
 

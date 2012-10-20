@@ -21,16 +21,13 @@
 __version__ = "0.5"
 
 import re
-from . import Image, ImageFile
+from . import Image, ImageFile, _binary
 
 #
 # --------------------------------------------------------------------
 
-def i32(c):
-    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
-
-def o32(i):
-    return chr(i&255) + chr(i>>8&255) + chr(i>>16&255) + chr(i>>24&255)
+i32 = _binary.i32le
+o32 = _binary.o32le
 
 split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
@@ -99,24 +96,24 @@ class PSFile:
             pos = pos - 1
         return pos
     def readline(self):
-        s = ""
+        s = b""
         if self.char:
             c = self.char
             self.char = None
         else:
             c = self.fp.read(1)
-        while c not in "\r\n":
+        while c not in b"\r\n":
             s = s + c
             c = self.fp.read(1)
-        if c == "\r":
+        if c == b"\r":
             self.char = self.fp.read(1)
-            if self.char == "\n":
+            if self.char == b"\n":
                 self.char = None
-        return s + "\n"
+        return s + b"\n"
 
 
 def _accept(prefix):
-    return prefix[:4] == "%!PS" or i32(prefix) == 0xC6D3D0C5
+    return prefix[:4] == b"%!PS" or i32(prefix) == 0xC6D3D0C5
 
 ##
 # Image plugin for Encapsulated Postscript.  This plugin supports only
@@ -302,42 +299,42 @@ def _save(im, fp, filename, eps=1):
     #
     # determine postscript image mode
     if im.mode == "L":
-        operator = (8, 1, "image")
+        operator = (8, 1, b"image")
     elif im.mode == "RGB":
-        operator = (8, 3, "false 3 colorimage")
+        operator = (8, 3, b"false 3 colorimage")
     elif im.mode == "CMYK":
-        operator = (8, 4, "false 4 colorimage")
+        operator = (8, 4, b"false 4 colorimage")
     else:
         raise ValueError("image mode is not supported")
 
     if eps:
         #
         # write EPS header
-        fp.write("%!PS-Adobe-3.0 EPSF-3.0\n")
-        fp.write("%%Creator: PIL 0.1 EpsEncode\n")
+        fp.write(b"%!PS-Adobe-3.0 EPSF-3.0\n")
+        fp.write(b"%%Creator: PIL 0.1 EpsEncode\n")
         #fp.write("%%CreationDate: %s"...)
-        fp.write("%%%%BoundingBox: 0 0 %d %d\n" % im.size)
-        fp.write("%%Pages: 1\n")
-        fp.write("%%EndComments\n")
-        fp.write("%%Page: 1 1\n")
-        fp.write("%%ImageData: %d %d " % im.size)
-        fp.write("%d %d 0 1 1 \"%s\"\n" % operator)
+        fp.write(("%%%%BoundingBox: 0 0 %d %d\n" % im.size).encode('ascii'))
+        fp.write(b"%%Pages: 1\n")
+        fp.write(b"%%EndComments\n")
+        fp.write(b"%%Page: 1 1\n")
+        fp.write(("%%ImageData: %d %d " % im.size).encode('ascii'))
+        fp.write(("%d %d 0 1 1 \"%s\"\n" % operator).encode('ascii'))
 
     #
     # image header
-    fp.write("gsave\n")
-    fp.write("10 dict begin\n")
-    fp.write("/buf %d string def\n" % (im.size[0] * operator[1]))
-    fp.write("%d %d scale\n" % im.size)
-    fp.write("%d %d 8\n" % im.size) # <= bits
-    fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
-    fp.write("{ currentfile buf readhexstring pop } bind\n")
-    fp.write("%s\n" % operator[2])
+    fp.write(b"gsave\n")
+    fp.write(b"10 dict begin\n")
+    fp.write(("/buf %d string def\n" % (im.size[0] * operator[1])).encode('ascii'))
+    fp.write(("%d %d scale\n" % im.size).encode('ascii'))
+    fp.write(("%d %d 8\n" % im.size).encode('ascii')) # <= bits
+    fp.write(("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1])).encode('ascii'))
+    fp.write(b"{ currentfile buf readhexstring pop } bind\n")
+    fp.write(operator[2] + b"\n")
 
     ImageFile._save(im, fp, [("eps", (0,0)+im.size, 0, None)])
 
-    fp.write("\n%%%%EndBinary\n")
-    fp.write("grestore end\n")
+    fp.write(b"\n%%%%EndBinary\n")
+    fp.write(b"grestore end\n")
     fp.flush()
 
 #

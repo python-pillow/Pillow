@@ -14,6 +14,7 @@
 #
 
 from math import pi, log, sin, sqrt
+from ._binary import o8
 
 # --------------------------------------------------------------------
 # Stuff to translate curve segments to palette values (derived from
@@ -78,15 +79,15 @@ class GradientFile:
                 scale = segment((xm - x0) / w, (x - x0) / w)
 
             # expand to RGBA
-            r = chr(int(255 * ((rgb1[0] - rgb0[0]) * scale + rgb0[0]) + 0.5))
-            g = chr(int(255 * ((rgb1[1] - rgb0[1]) * scale + rgb0[1]) + 0.5))
-            b = chr(int(255 * ((rgb1[2] - rgb0[2]) * scale + rgb0[2]) + 0.5))
-            a = chr(int(255 * ((rgb1[3] - rgb0[3]) * scale + rgb0[3]) + 0.5))
+            r = o8(int(255 * ((rgb1[0] - rgb0[0]) * scale + rgb0[0]) + 0.5))
+            g = o8(int(255 * ((rgb1[1] - rgb0[1]) * scale + rgb0[1]) + 0.5))
+            b = o8(int(255 * ((rgb1[2] - rgb0[2]) * scale + rgb0[2]) + 0.5))
+            a = o8(int(255 * ((rgb1[3] - rgb0[3]) * scale + rgb0[3]) + 0.5))
 
             # add to palette
             palette.append(r + g + b + a)
 
-        return "".join(palette), "RGBA"
+        return b"".join(palette), "RGBA"
 
 ##
 # File handler for GIMP's gradient format.
@@ -95,7 +96,7 @@ class GimpGradientFile(GradientFile):
 
     def __init__(self, fp):
 
-        if fp.readline()[:13] != "GIMP Gradient":
+        if fp.readline()[:13] != b"GIMP Gradient":
             raise SyntaxError("not a GIMP gradient file")
 
         count = int(fp.readline())

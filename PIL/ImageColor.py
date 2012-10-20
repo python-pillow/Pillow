@@ -99,7 +99,7 @@ def getcolor(color, mode):
         return r, g, b, 255
     if Image.getmodebase(mode) == "L":
         r, g, b = color
-        return (r*299 + g*587 + b*114)/1000
+        return (r*299 + g*587 + b*114)//1000
     return color
 
 colormap = {

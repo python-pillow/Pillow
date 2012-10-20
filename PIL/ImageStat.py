@@ -127,7 +127,7 @@ class Stat:
         v = []
         for i in self.bands:
             s = 0
-            l = self.count[i]/2
+            l = self.count[i]//2
             b = i * 256
             for j in range(256):
                 s = s + self.h[b+j]

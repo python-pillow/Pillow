@@ -15,6 +15,7 @@
 #
 
 import re
+from ._binary import o8
 
 ##
 # File handler for GIMP's palette format.
@@ -25,9 +26,9 @@ class GimpPaletteFile:
 
     def __init__(self, fp):
 
-        self.palette = [chr(i)*3 for i in range(256)]
+        self.palette = [o8(i)*3 for i in range(256)]
 
-        if fp.readline()[:12] != "GIMP Palette":
+        if fp.readline()[:12] != b"GIMP Palette":
             raise SyntaxError("not a GIMP palette file")
 
         i = 0
@@ -39,7 +40,7 @@ class GimpPaletteFile:
             if not s:
                 break
             # skip fields and comment lines
-            if re.match("\w+:|#", s):
+            if re.match(b"\w+:|#", s):
                 continue
             if len(s) > 100:
                 raise SyntaxError("bad palette file")
@@ -49,11 +50,11 @@ class GimpPaletteFile:
                 raise ValueError("bad palette entry")
 
             if 0 <= i <= 255:
-                self.palette[i] = chr(v[0]) + chr(v[1]) + chr(v[2])
+                self.palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
 
             i = i + 1
 
-        self.palette = "".join(self.palette)
+        self.palette = b"".join(self.palette)
 
 
     def getpalette(self):

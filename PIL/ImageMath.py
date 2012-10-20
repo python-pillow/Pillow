@@ -91,14 +91,14 @@ class _Operand:
         return _Operand(out)
 
     # unary operators
-    if sys.version_info >= (3,0):
-        def __bool__(self):
-            # an image is "true" if it contains at least one non-zero pixel
-            return self.im.getbbox() is not None
-    else:
-        def __nonzero__(self):
-            # an image is "true" if it contains at least one non-zero pixel
-            return self.im.getbbox() is not None
+    def __bool__(self):
+        # an image is "true" if it contains at least one non-zero pixel
+        return self.im.getbbox() is not None
+
+    if bytes is str:
+        # Provide __nonzero__ for pre-Py3k
+        __nonzero__ = __bool__
+        del __bool__
 
     def __abs__(self):
         return self.apply("abs", self)
@@ -120,9 +120,9 @@ class _Operand:
         return self.apply("mul", self, other)
     def __rmul__(self, other):
         return self.apply("mul", other, self)
-    def __div__(self, other):
+    def __truediv__(self, other):
         return self.apply("div", self, other)
-    def __rdiv__(self, other):
+    def __rtruediv__(self, other):
         return self.apply("div", other, self)
     def __mod__(self, other):
         return self.apply("mod", self, other)
@@ -132,6 +132,13 @@ class _Operand:
         return self.apply("pow", self, other)
     def __rpow__(self, other):
         return self.apply("pow", other, self)
+
+    if bytes is str:
+        # Provide __div__ and __rdiv__ for pre-Py3k
+        __div__ = __truediv__
+        __rdiv__ = __rtruediv__
+        del __truediv__
+        del __rtruediv__
 
     # bitwise
     def __invert__(self):
