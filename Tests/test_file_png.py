@@ -88,16 +88,16 @@ def test_bad_text():
     assert_equal(im.info, {})
 
     im = load(HEAD + chunk(b'tEXt', b'spam') + TAIL)
-    assert_equal(im.info, {b'spam': b''})
+    assert_equal(im.info, {'spam': ''})
 
     im = load(HEAD + chunk(b'tEXt', b'spam\0') + TAIL)
-    assert_equal(im.info, {b'spam': b''})
+    assert_equal(im.info, {'spam': ''})
 
     im = load(HEAD + chunk(b'tEXt', b'spam\0egg') + TAIL)
-    assert_equal(im.info, {b'spam': b'egg'})
+    assert_equal(im.info, {'spam': 'egg'})
 
     im = load(HEAD + chunk(b'tEXt', b'spam\0egg\0') + TAIL)
-    assert_equal(im.info,  {b'spam': b'egg\x00'})
+    assert_equal(im.info,  {'spam': 'egg\x00'})
 
 def test_interlace():
 
@@ -141,12 +141,12 @@ def test_roundtrip_text():
     im = Image.open(file)
 
     info = PngImagePlugin.PngInfo()
-    info.add_text(b"TXT", b"VALUE")
-    info.add_text(b"ZIP", b"VALUE", 1)
+    info.add_text("TXT", "VALUE")
+    info.add_text("ZIP", "VALUE", 1)
 
     im = roundtrip(im, pnginfo=info)
-    assert_equal(im.info, {b'TXT': b'VALUE', b'ZIP': b'VALUE'})
-    assert_equal(im.text, {b'TXT': b'VALUE', b'ZIP': b'VALUE'})
+    assert_equal(im.info, {'TXT': 'VALUE', 'ZIP': 'VALUE'})
+    assert_equal(im.text, {'TXT': 'VALUE', 'ZIP': 'VALUE'})
 
 def test_scary():
     # Check reading of evil PNG file.  For information, see:

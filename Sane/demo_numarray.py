@@ -16,13 +16,13 @@ import Image
 def toImage(arr):
     if arr.type().bytes == 1:
         # need to swap coordinates btw array and image (with [::-1])
-        im = Image.fromstring('L', arr.shape[::-1], arr.tostring())
+        im = Image.frombytes('L', arr.shape[::-1], arr.tostring())
     else:
         arr_c = arr - arr.min()
         arr_c *= (255./arr_c.max())
         arr = arr_c.astype(UInt8)
         # need to swap coordinates btw array and image (with [::-1])
-        im = Image.fromstring('L', arr.shape[::-1], arr.tostring())
+        im = Image.frombytes('L', arr.shape[::-1], arr.tostring())
     return im
 
 print('SANE version:', sane.init())

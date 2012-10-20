@@ -30,6 +30,7 @@ __version__ = "0.7"
 
 import re
 from . import Image, ImageFile, ImagePalette
+from ._binary import i8, o8
 
 
 # --------------------------------------------------------------------
@@ -91,7 +92,7 @@ for i in range(2, 33):
 # --------------------------------------------------------------------
 # Read IM directory
 
-split = re.compile(r"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
+split = re.compile(br"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
 
 def number(s):
     try:
@@ -112,7 +113,7 @@ class ImImageFile(ImageFile.ImageFile):
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 
-        if not "\n" in self.fp.read(100):
+        if not b"\n" in self.fp.read(100):
             raise SyntaxError("not an IM file")
         self.fp.seek(0)
 
@@ -130,10 +131,10 @@ class ImImageFile(ImageFile.ImageFile):
             s = self.fp.read(1)
 
             # Some versions of IFUNC uses \n\r instead of \r\n...
-            if s == "\r":
+            if s == b"\r":
                 continue
 
-            if not s or s[0] == chr(0) or s[0] == chr(26):
+            if not s or s == b'\0' or s == b'\x1A':
                 break
 
             # FIXME: this may read whole file if not a text file
@@ -142,9 +143,9 @@ class ImImageFile(ImageFile.ImageFile):
             if len(s) > 100:
                 raise SyntaxError("not an IM file")
 
-            if s[-2:] == '\r\n':
+            if s[-2:] == b'\r\n':
                 s = s[:-2]
-            elif s[-1:] == '\n':
+            elif s[-1:] == b'\n':
                 s = s[:-1]
 
             try:
@@ -155,6 +156,11 @@ class ImImageFile(ImageFile.ImageFile):
             if m:
 
                 k, v = m.group(1,2)
+
+                # Don't know if this is the correct encoding, but a decent guess
+                # (I guess)
+                k = k.decode('latin-1', 'replace')
+                v = v.decode('latin-1', 'replace')
 
                 # Convert value as appropriate
                 if k in [FRAMES, SCALE, SIZE]:
@@ -180,7 +186,7 @@ class ImImageFile(ImageFile.ImageFile):
 
             else:
 
-                raise SyntaxError("Syntax error in IM header: " + s)
+                raise SyntaxError("Syntax error in IM header: " + s.decode('ascii', 'replace'))
 
         if not n:
             raise SyntaxError("Not an IM file")
@@ -190,7 +196,7 @@ class ImImageFile(ImageFile.ImageFile):
         self.mode = self.info[MODE]
 
         # Skip forward to start of image data
-        while s and s[0] != chr(26):
+        while s and s[0:1] != b'\x1A':
             s = self.fp.read(1)
         if not s:
             raise SyntaxError("File truncated")
@@ -202,14 +208,14 @@ class ImImageFile(ImageFile.ImageFile):
             linear = 1 # linear greyscale palette
             for i in range(256):
                 if palette[i] == palette[i+256] == palette[i+512]:
-                    if palette[i] != chr(i):
+                    if i8(palette[i]) != i:
                         linear = 0
                 else:
                     greyscale = 0
             if self.mode == "L" or self.mode == "LA":
                 if greyscale:
                     if not linear:
-                        self.lut = [ord(c) for c in palette[:256]]
+                        self.lut = [i8(c) for c in palette[:256]]
                 else:
                     if self.mode == "L":
                         self.mode = self.rawmode = "P"
@@ -218,7 +224,7 @@ class ImImageFile(ImageFile.ImageFile):
                     self.palette = ImagePalette.raw("RGB;L", palette)
             elif self.mode == "RGB":
                 if not greyscale or not linear:
-                    self.lut = [ord(c) for c in palette]
+                    self.lut = [i8(c) for c in palette]
 
         self.frame = 0
 
@@ -265,7 +271,7 @@ class ImImageFile(ImageFile.ImageFile):
         else:
             bits = 8 * len(self.mode)
 
-        size = ((self.size[0] * bits + 7) / 8) * self.size[1]
+        size = ((self.size[0] * bits + 7) // 8) * self.size[1]
         offs = self.__offset + frame * size
 
         self.fp = self.__fp
@@ -314,14 +320,14 @@ def _save(im, fp, filename, check=0):
     if check:
         return check
 
-    fp.write("Image type: %s image\r\n" % type)
+    fp.write(("Image type: %s image\r\n" % type).encode('ascii'))
     if filename:
-        fp.write("Name: %s\r\n" % filename)
-    fp.write("Image size (x*y): %d*%d\r\n" % im.size)
-    fp.write("File size (no of images): %d\r\n" % frames)
+        fp.write(("Name: %s\r\n" % filename).encode('ascii'))
+    fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode('ascii'))
+    fp.write(("File size (no of images): %d\r\n" % frames).encode('ascii'))
     if im.mode == "P":
-        fp.write("Lut: 1\r\n")
-    fp.write("\000" * (511-fp.tell()) + "\032")
+        fp.write(b"Lut: 1\r\n")
+    fp.write(b"\000" * (511-fp.tell()) + b"\032")
     if im.mode == "P":
         fp.write(im.im.getpalette("RGB", "RGB;L")) # 768 bytes
     ImageFile._save(im, fp, [("raw", (0,0)+im.size, 0, (rawmode, 0, -1))])

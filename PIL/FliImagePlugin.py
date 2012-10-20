@@ -18,14 +18,12 @@
 
 __version__ = "0.2"
 
-from . import Image, ImageFile, ImagePalette
+from . import Image, ImageFile, ImagePalette, _binary
 
-
-def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
-
-def i32(c):
-    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
+i8 = _binary.i8
+i16 = _binary.i16le
+i32 = _binary.i32le
+o8 = _binary.o8
 
 #
 # decoder
@@ -80,7 +78,7 @@ class FliImageFile(ImageFile.ImageFile):
             elif i16(s[4:6]) == 4:
                 self._palette(palette, 0)
 
-        palette = [chr(r)+chr(g)+chr(b) for (r,g,b) in palette]
+        palette = [o8(r)+o8(g)+o8(b) for (r,g,b) in palette]
         self.palette = ImagePalette.raw("RGB", "".join(palette))
 
         # set things up to decode first frame
@@ -95,15 +93,15 @@ class FliImageFile(ImageFile.ImageFile):
         i = 0
         for e in range(i16(self.fp.read(2))):
             s = self.fp.read(2)
-            i = i + ord(s[0])
-            n = ord(s[1])
+            i = i + i8(s[0])
+            n = i8(s[1])
             if n == 0:
                 n = 256
             s = self.fp.read(n * 3)
             for n in range(0, len(s), 3):
-                r = ord(s[n]) << shift
-                g = ord(s[n+1]) << shift
-                b = ord(s[n+2]) << shift
+                r = i8(s[n]) << shift
+                g = i8(s[n+1]) << shift
+                b = i8(s[n+2]) << shift
                 palette[i] = (r, g, b)
                 i = i + 1
 

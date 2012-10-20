@@ -27,19 +27,18 @@
 __version__ = "0.7"
 
 
-from . import Image, ImageFile, ImagePalette
+from . import Image, ImageFile, ImagePalette, _binary
 
+i8 = _binary.i8
+i16 = _binary.i16le
+i32 = _binary.i32le
+o8 = _binary.o8
+o16 = _binary.o16le
+o32 = _binary.o32le
 
 #
 # --------------------------------------------------------------------
 # Read BMP file
-
-def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
-
-def i32(c):
-    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
-
 
 BIT2MODE = {
     # bits => mode, rawmode
@@ -52,7 +51,7 @@ BIT2MODE = {
 }
 
 def _accept(prefix):
-    return prefix[:2] == "BM"
+    return prefix[:2] == b"BM"
 
 ##
 # Image plugin for the Windows BMP format.
@@ -134,7 +133,7 @@ class BmpImageFile(ImageFile.ImageFile):
                 indices = list(range(colors))
             for i in indices:
                 rgb = read(lutsize)[:3]
-                if rgb != chr(i)*3:
+                if rgb != o8(i)*3:
                     greyscale = 0
                 palette.append(rgb)
             if greyscale:
@@ -145,7 +144,7 @@ class BmpImageFile(ImageFile.ImageFile):
             else:
                 self.mode = "P"
                 self.palette = ImagePalette.raw(
-                    "BGR", "".join(palette)
+                    "BGR", b"".join(palette)
                     )
 
         if not offset:
@@ -162,7 +161,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # HEAD
         s = self.fp.read(14)
-        if s[:2] != "BM":
+        if s[:2] != b"BM":
             raise SyntaxError("Not a BMP file")
         offset = i32(s[10:])
 
@@ -181,12 +180,6 @@ class DibImageFile(BmpImageFile):
 # --------------------------------------------------------------------
 # Write BMP file
 
-def o16(i):
-    return chr(i&255) + chr(i>>8&255)
-
-def o32(i):
-    return chr(i&255) + chr(i>>8&255) + chr(i>>16&255) + chr(i>>24&255)
-
 SAVE = {
     "1": ("1", 1, 2),
     "L": ("L", 8, 256),
@@ -204,13 +197,13 @@ def _save(im, fp, filename, check=0):
     if check:
         return check
 
-    stride = ((im.size[0]*bits+7)/8+3)&(~3)
+    stride = ((im.size[0]*bits+7)//8+3)&(~3)
     header = 40 # or 64 for OS/2 version 2
     offset = 14 + header + colors * 4
     image  = stride * im.size[1]
 
     # bitmap header
-    fp.write("BM" +                     # file type (magic)
+    fp.write(b"BM" +                    # file type (magic)
              o32(offset+image) +        # file size
              o32(0) +                   # reserved
              o32(offset))               # image data offset
@@ -227,14 +220,14 @@ def _save(im, fp, filename, check=0):
              o32(colors) +              # colors used
              o32(colors))               # colors important
 
-    fp.write("\000" * (header - 40))    # padding (for OS/2 format)
+    fp.write(b"\0" * (header - 40))    # padding (for OS/2 format)
 
     if im.mode == "1":
         for i in (0, 255):
-            fp.write(chr(i) * 4)
+            fp.write(o8(i) * 4)
     elif im.mode == "L":
         for i in range(256):
-            fp.write(chr(i) * 4)
+            fp.write(o8(i) * 4)
     elif im.mode == "P":
         fp.write(im.im.getpalette("RGB", "BGRX"))
 

@@ -47,27 +47,27 @@ def bdf_char(f):
         s = f.readline()
         if not s:
             return None
-        if s[:9] == "STARTCHAR":
+        if s[:9] == b"STARTCHAR":
             break
-    id = s[9:].strip()
+    id = s[9:].strip().decode('ascii')
 
     # load symbol properties
     props = {}
     while True:
         s = f.readline()
-        if not s or s[:6] == "BITMAP":
+        if not s or s[:6] == b"BITMAP":
             break
-        i = s.find(" ")
-        props[s[:i]] = s[i+1:-1]
+        i = s.find(b" ")
+        props[s[:i].decode('ascii')] = s[i+1:-1].decode('ascii')
 
     # load bitmap
     bitmap = []
     while True:
         s = f.readline()
-        if not s or s[:7] == "ENDCHAR":
+        if not s or s[:7] == b"ENDCHAR":
             break
         bitmap.append(s[:-1])
-    bitmap = "".join(bitmap)
+    bitmap = b"".join(bitmap)
 
     [x, y, l, d] = [int(s) for s in props["BBX"].split()]
     [dx, dy] = [int(s) for s in props["DWIDTH"].split()]
@@ -75,7 +75,7 @@ def bdf_char(f):
     bbox = (dx, dy), (l, -d-y, x+l, -d), (0, 0, x, y)
 
     try:
-        im = Image.fromstring("1", (x, y), bitmap, "hex", "1")
+        im = Image.frombytes("1", (x, y), bitmap, "hex", "1")
     except ValueError:
         # deal with zero-width characters
         im = Image.new("1", (x, y))
@@ -92,7 +92,7 @@ class BdfFontFile(FontFile.FontFile):
         FontFile.FontFile.__init__(self)
 
         s = fp.readline()
-        if s[:13] != "STARTFONT 2.1":
+        if s[:13] != b"STARTFONT 2.1":
             raise SyntaxError("not a valid BDF file")
 
         props = {}
@@ -100,13 +100,13 @@ class BdfFontFile(FontFile.FontFile):
 
         while True:
             s = fp.readline()
-            if not s or s[:13] == "ENDPROPERTIES":
+            if not s or s[:13] == b"ENDPROPERTIES":
                 break
-            i = s.find(" ")
-            props[s[:i]] = s[i+1:-1]
-            if s[:i] in ["COMMENT", "COPYRIGHT"]:
-                if s.find("LogicalFontDescription") < 0:
-                    comments.append(s[i+1:-1])
+            i = s.find(b" ")
+            props[s[:i].decode('ascii')] = s[i+1:-1].decode('ascii')
+            if s[:i] in [b"COMMENT", b"COPYRIGHT"]:
+                if s.find(b"LogicalFontDescription") < 0:
+                    comments.append(s[i+1:-1].decode('ascii'))
 
         font = props["FONT"].split("-")
 

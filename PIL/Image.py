@@ -73,6 +73,7 @@ except ImportError:
     builtins = __builtin__
 
 from . import ImageMode
+from ._binary import i8, o8
 
 import os, sys
 
@@ -80,12 +81,12 @@ import os, sys
 import collections
 import numbers
 
-if sys.version_info >= (3,0):
-    def isStringType(t):
-        return isinstance(t, str)
-else:
+if bytes is str:
     def isStringType(t):
         return isinstance(t, basestring)
+else:
+    def isStringType(t):
+        return isinstance(t, str)
 
 ##
 # (Internal) Checks if an object is an image object.
@@ -181,16 +182,7 @@ _MODEINFO = {
 
 }
 
-try:
-    byteorder = sys.byteorder
-except AttributeError:
-    import struct
-    if struct.unpack("h", "\0\1")[0] == 1:
-        byteorder = "big"
-    else:
-        byteorder = "little"
-
-if byteorder == 'little':
+if sys.byteorder == 'little':
     _ENDIAN = '<'
 else:
     _ENDIAN = '>'
@@ -358,7 +350,7 @@ def init():
         return 1
 
 # --------------------------------------------------------------------
-# Codec factories (used by tostring/fromstring and ImageFile.load)
+# Codec factories (used by tobytes/frombytes and ImageFile.load)
 
 def _getdecoder(mode, decoder_name, args, extra=()):
 
@@ -436,7 +428,7 @@ def _getscaleoffset(expr):
 #
 # @see #open
 # @see #new
-# @see #fromstring
+# @see #frombytes
 
 class Image:
 
@@ -505,7 +497,7 @@ class Image:
             shape, typestr = _conv_type_shape(self)
             new['shape'] = shape
             new['typestr'] = typestr
-            new['data'] = self.tostring()
+            new['data'] = self.tobytes()
             return new
         raise AttributeError(name)
 
@@ -515,10 +507,10 @@ class Image:
     # @param encoder_name What encoder to use.  The default is to
     #    use the standard "raw" encoder.
     # @param *args Extra arguments to the encoder.
-    # @return An 8-bit string.
+    # @return A bytes object.
 
-    def tostring(self, encoder_name="raw", *args):
-        "Return image as a binary string"
+    def tobytes(self, encoder_name="raw", *args):
+        "Return image as a bytes object"
 
         # may pass tuple instead of argument list
         if len(args) == 1 and isinstance(args[0], tuple):
@@ -542,9 +534,13 @@ class Image:
             if s:
                 break
         if s < 0:
-            raise RuntimeError("encoder error %d in tostring" % s)
+            raise RuntimeError("encoder error %d in tobytes" % s)
 
-        return "".join(data)
+        return b"".join(data)
+
+    if bytes is str:
+        # Declare tostring as alias to tobytes
+        tostring = tobytes
 
     ##
     # Returns the image converted to an X11 bitmap.  This method
@@ -560,20 +556,20 @@ class Image:
         self.load()
         if self.mode != "1":
             raise ValueError("not a bitmap")
-        data = self.tostring("xbm")
-        return "".join(["#define %s_width %d\n" % (name, self.size[0]),
-                "#define %s_height %d\n"% (name, self.size[1]),
-                "static char %s_bits[] = {\n" % name, data, "};"])
+        data = self.tobytes("xbm")
+        return b"".join([("#define %s_width %d\n" % (name, self.size[0])).encode('ascii'),
+                ("#define %s_height %d\n"% (name, self.size[1])).encode('ascii'),
+                ("static char %s_bits[] = {\n" % name).encode('ascii'), data, b"};"])
 
     ##
-    # Loads this image with pixel data from a string.
+    # Loads this image with pixel data from a bytes object.
     # <p>
-    # This method is similar to the {@link #fromstring} function, but
+    # This method is similar to the {@link #frombytes} function, but
     # loads data into this image instead of creating a new image
     # object.
 
-    def fromstring(self, data, decoder_name="raw", *args):
-        "Load data to image from binary string"
+    def frombytes(self, data, decoder_name="raw", *args):
+        "Load data to image from a bytes object"
 
         # may pass tuple instead of argument list
         if len(args) == 1 and isinstance(args[0], tuple):
@@ -592,6 +588,10 @@ class Image:
             raise ValueError("not enough image data")
         if s[1] != 0:
             raise ValueError("cannot decode image data")
+
+    if bytes is str:
+        # Declare fromstring as alias to frombytes
+        fromstring = frombytes
 
     ##
     # Allocates storage for the image and loads the pixel data.  In
@@ -929,7 +929,10 @@ class Image:
 
         self.load()
         try:
-            return [ord(c) for c in self.im.getpalette()]
+            if bytes is str:
+                return [i8(c) for c in self.im.getpalette()]
+            else:
+                return list(self.im.getpalette())
         except ValueError:
             return None # no palette
 
@@ -958,7 +961,7 @@ class Image:
 
         self.load()
         x, y = self.im.getprojection()
-        return [ord(c) for c in x], [ord(c) for c in y]
+        return [i8(c) for c in x], [i8(c) for c in y]
 
     ##
     # Returns a histogram for the image. The histogram is returned as
@@ -1233,8 +1236,11 @@ class Image:
         if isinstance(data, ImagePalette.ImagePalette):
             palette = ImagePalette.raw(data.rawmode, data.palette)
         else:
-            if not isStringType(data):
-                data = "".join(map(chr, data))
+            if not isinstance(data, bytes):
+                if bytes is str:
+                    data = "".join(chr(x) for x in data)
+                else:
+                    data = bytes(data)
             palette = ImagePalette.raw(rawmode, data)
         self.mode = "P"
         self.palette = palette
@@ -1762,7 +1768,7 @@ def new(mode, size, color=0):
     return Image()._new(core.fill(mode, size, color))
 
 ##
-# Creates an image memory from pixel data in a string.
+# Creates a copy of an image memory from pixel data in a buffer.
 # <p>
 # In its simplest form, this function takes three arguments
 # (mode, size, and unpacked pixel data).
@@ -1773,17 +1779,17 @@ def new(mode, size, color=0):
 # <p>
 # Note that this function decodes pixel data only, not entire images.
 # If you have an entire image in a string, wrap it in a
-# <b>StringIO</b> object, and use {@link #open} to load it.
+# <b>BytesIO</b> object, and use {@link #open} to load it.
 #
 # @param mode The image mode.
 # @param size The image size.
-# @param data An 8-bit string containing raw data for the given mode.
+# @param data A byte buffer containing raw data for the given mode.
 # @param decoder_name What decoder to use.
 # @param *args Additional parameters for the given decoder.
 # @return An Image object.
 
-def fromstring(mode, size, data, decoder_name="raw", *args):
-    "Load image from string"
+def frombytes(mode, size, data, decoder_name="raw", *args):
+    "Load image from byte buffer"
 
     # may pass tuple instead of argument list
     if len(args) == 1 and isinstance(args[0], tuple):
@@ -1793,14 +1799,18 @@ def fromstring(mode, size, data, decoder_name="raw", *args):
         args = mode
 
     im = new(mode, size)
-    im.fromstring(data, decoder_name, args)
+    im.frombytes(data, decoder_name, args)
     return im
 
+if bytes is str:
+    # Declare fromstring as an alias for frombytes
+    fromstring = frombytes
+
 ##
-# (New in 1.1.4) Creates an image memory from pixel data in a string
-# or byte buffer.
+# (New in 1.1.4) Creates an image memory referencing pixel data in a
+# byte buffer.
 # <p>
-# This function is similar to {@link #fromstring}, but uses data in
+# This function is similar to {@link #frombytes}, but uses data in
 # the byte buffer, where possible.  This means that changes to the
 # original buffer object are reflected in this image).  Not all modes
 # can share memory; supported modes include "L", "RGBX", "RGBA", and
@@ -1808,7 +1818,7 @@ def fromstring(mode, size, data, decoder_name="raw", *args):
 # <p>
 # Note that this function decodes pixel data only, not entire images.
 # If you have an entire image file in a string, wrap it in a
-# <b>StringIO</b> object, and use {@link #open} to load it.
+# <b>BytesIO</b> object, and use {@link #open} to load it.
 # <p>
 # In the current version, the default parameters used for the "raw"
 # decoder differs from that used for {@link fromstring}.  This is a
@@ -1819,7 +1829,7 @@ def fromstring(mode, size, data, decoder_name="raw", *args):
 #
 # @param mode The image mode.
 # @param size The image size.
-# @param data An 8-bit string or other buffer object containing raw
+# @param data A bytes or other buffer object containing raw
 #     data for the given mode.
 # @param decoder_name What decoder to use.
 # @param *args Additional parameters for the given decoder.  For the
@@ -1830,7 +1840,7 @@ def fromstring(mode, size, data, decoder_name="raw", *args):
 # @since 1.1.4
 
 def frombuffer(mode, size, data, decoder_name="raw", *args):
-    "Load image from string or buffer"
+    "Load image from bytes or buffer"
 
     # may pass tuple instead of argument list
     if len(args) == 1 and isinstance(args[0], tuple):
@@ -1854,14 +1864,14 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
             im.readonly = 1
             return im
 
-    return fromstring(mode, size, data, decoder_name, args)
+    return frombytes(mode, size, data, decoder_name, args)
 
 
 ##
 # (New in 1.1.6) Creates an image memory from an object exporting
 # the array interface (using the buffer protocol).
 #
-# If obj is not contiguous, then the tostring method is called
+# If obj is not contiguous, then the tobytes method is called
 # and {@link frombuffer} is used.
 #
 # @param obj Object with array interface
@@ -1896,7 +1906,7 @@ def fromarray(obj, mode=None):
 
     size = shape[1], shape[0]
     if strides is not None:
-        obj = obj.tostring()
+        obj = obj.tobytes()
 
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
@@ -1962,6 +1972,8 @@ def open(fp, mode="r"):
                 fp.seek(0)
                 return factory(fp, filename)
         except (SyntaxError, IndexError, TypeError):
+            #import traceback
+            #traceback.print_exc()
             pass
 
     if init():
@@ -1973,6 +1985,8 @@ def open(fp, mode="r"):
                     fp.seek(0)
                     return factory(fp, filename)
             except (SyntaxError, IndexError, TypeError):
+                #import traceback
+                #traceback.print_exc()
                 pass
 
     raise IOError("cannot identify image file")

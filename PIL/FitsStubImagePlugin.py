@@ -26,7 +26,7 @@ def register_handler(handler):
 # Image adapter
 
 def _accept(prefix):
-    return prefix[:6] == "SIMPLE"
+    return prefix[:6] == b"SIMPLE"
 
 class FITSStubImageFile(ImageFile.StubImageFile):
 

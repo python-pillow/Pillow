@@ -142,7 +142,7 @@ class ImageCmsProfile:
         if Image.isStringType(profile):
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
-            self._set(core.profile_fromstring(profile.read()))
+            self._set(core.profile_frombytes(profile.read()))
         else:
             self._set(profile) # assume it's already a profile
 
