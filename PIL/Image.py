@@ -372,8 +372,8 @@ def _getdecoder(mode, decoder_name, args, extra=()):
     try:
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
-        # print decoder, (mode,) + args + extra
-        return apply(decoder, (mode,) + args + extra)
+        # print(decoder, mode, args + extra)
+        return decoder(mode, *args + extra)
     except AttributeError:
         raise IOError("decoder %s not available" % decoder_name)
 
@@ -388,8 +388,8 @@ def _getencoder(mode, encoder_name, args, extra=()):
     try:
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
-        # print encoder, (mode,) + args + extra
-        return apply(encoder, (mode,) + args + extra)
+        # print(encoder, mode, args + extra)
+        return encoder(mode, *args + extra)
     except AttributeError:
         raise IOError("encoder %s not available" % encoder_name)
 
@@ -601,7 +601,7 @@ class Image:
         "Explicitly load pixel data."
         if self.im and self.palette and self.palette.dirty:
             # realize palette
-            apply(self.im.putpalette, self.palette.getdata())
+            self.im.putpalette(*self.palette.getdata())
             self.palette.dirty = 0
             self.palette.mode = "RGB"
             self.palette.rawmode = None
@@ -2114,8 +2114,8 @@ def register_extension(id, extension):
 
 def _show(image, **options):
     # override me, as necessary
-    apply(_showxv, (image,), options)
+    _showxv(image, **options)
 
 def _showxv(image, title=None, **options):
     from . import ImageShow
-    apply(ImageShow.show, (image, title), options)
+    ImageShow.show(image, title, **options)

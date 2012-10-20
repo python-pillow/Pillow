@@ -90,9 +90,9 @@ try:
         im.draft(convert, im.size)
         im = im.convert(convert)
     if format:
-        apply(im.save, (argv[1], format), options)
+        im.save(argv[1], format, **options)
     else:
-        apply(im.save, (argv[1],), options)
+        im.save(argv[1], **options)
 except:
     print("cannot convert image", end=' ')
     print("(%s:%s)" % (sys.exc_info()[0], sys.exc_info()[1]))
