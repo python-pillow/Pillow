@@ -41,7 +41,7 @@
 
 /* compatibility wrappers (defined in _imaging.c) */
 extern int PyImaging_CheckBuffer(PyObject* buffer);
-extern int PyImaging_ReadBuffer(PyObject* buffer, const void** ptr);
+extern int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view);
 
 /* -------------------------------------------------------------------- */
 /* Standard mapper */
@@ -311,6 +311,7 @@ PyImaging_Mapper(PyObject* self, PyObject* args)
 typedef struct ImagingBufferInstance {
     struct ImagingMemoryInstance im;
     PyObject* target;
+    Py_buffer view;
 } ImagingBufferInstance;
 
 static void
@@ -318,6 +319,7 @@ mapping_destroy_buffer(Imaging im)
 {
     ImagingBufferInstance* buffer = (ImagingBufferInstance*) im;
     
+    PyBuffer_Release(&buffer->view);
     Py_XDECREF(buffer->target);
 }
 
@@ -326,10 +328,9 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
 {
     int y, size;
     Imaging im;
-    char* ptr;
-    int bytes;
 
     PyObject* target;
+    Py_buffer view;
     char* mode;
     char* codec;
     PyObject* bbox;
@@ -359,12 +360,14 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     size = ysize * stride;
 
     /* check buffer size */
-    bytes = PyImaging_ReadBuffer(target, (const void**) &ptr);
-    if (bytes < 0) {
+    if (PyImaging_GetBuffer(target, &view) < 0)
+        return NULL;
+
+    if (view.len < 0) {
         PyErr_SetString(PyExc_ValueError, "buffer has negative size");
         return NULL;
     }
-    if (offset + size > bytes) {
+    if (offset + size > view.len) {
         PyErr_SetString(PyExc_ValueError, "buffer is not large enough");
         return NULL;
     }
@@ -378,15 +381,16 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     /* setup file pointers */
     if (ystep > 0)
         for (y = 0; y < ysize; y++)
-            im->image[y] = ptr + offset + y * stride;
+            im->image[y] = view.buf + offset + y * stride;
     else
         for (y = 0; y < ysize; y++)
-            im->image[ysize-y-1] = ptr + offset + y * stride;
+            im->image[ysize-y-1] = view.buf + offset + y * stride;
 
     im->destroy = mapping_destroy_buffer;
 
     Py_INCREF(target);
     ((ImagingBufferInstance*) im)->target = target;
+    ((ImagingBufferInstance*) im)->view = view;
 
     if (!ImagingNewEpilogue(im))
         return NULL;

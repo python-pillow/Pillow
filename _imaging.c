@@ -103,19 +103,6 @@
 #define L16(p, i) ((((int)p[(i)+1]) << 8) + p[(i)])
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
 
-#if PY_VERSION_HEX < 0x01060000
-#define PyObject_New PyObject_NEW
-#define PyObject_Del PyMem_DEL
-#endif
-
-#if PY_VERSION_HEX < 0x02050000
-#define Py_ssize_t int
-#define ssizeargfunc intargfunc
-#define ssizessizeargfunc intintargfunc
-#define ssizeobjargproc intobjargproc
-#define ssizessizeobjargproc intintobjargproc
-#endif
-
 /* -------------------------------------------------------------------- */
 /* OBJECT ADMINISTRATION						*/
 /* -------------------------------------------------------------------- */
@@ -243,43 +230,38 @@ void ImagingSectionLeave(ImagingSectionCookie* cookie)
 /* -------------------------------------------------------------------- */
 /* Python compatibility API */
 
-#if PY_VERSION_HEX < 0x02020000
-
-int PyImaging_CheckBuffer(PyObject *buffer)
-{
-    PyBufferProcs *procs = buffer->ob_type->tp_as_buffer;
-    if (procs && procs->bf_getreadbuffer && procs->bf_getsegcount &&
-        procs->bf_getsegcount(buffer, NULL) == 1)
-        return 1;
-    return 0;
-}
-
-int PyImaging_ReadBuffer(PyObject* buffer, const void** ptr)
-{
-    PyBufferProcs *procs = buffer->ob_type->tp_as_buffer;
-    return procs->bf_getreadbuffer(buffer, 0, ptr);
-}
-
-#else
-
 int PyImaging_CheckBuffer(PyObject* buffer)
 {
-    return PyObject_CheckReadBuffer(buffer);
+#if PY_VERSION_HEX >= 0x03000000
+    return PyObject_CheckBuffer(buffer);
+#else
+    return PyObject_CheckBuffer(buffer) || PyObject_CheckReadBuffer(buffer);
+#endif
 }
 
-int PyImaging_ReadBuffer(PyObject* buffer, const void** ptr)
+int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view)
 {
     /* must call check_buffer first! */
-#if PY_VERSION_HEX < 0x02050000
-    int n = 0;
+#if PY_VERSION_HEX >= 0x03000000
+    return PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
 #else
-    Py_ssize_t n = 0;
-#endif
-    PyObject_AsReadBuffer(buffer, ptr, &n);
-    return (int) n;
-}
+    /* Use new buffer protocol if available
+       (mmap doesn't support this in 2.7, go figure) */
+    if (PyObject_CheckBuffer(buffer)) {
+        return PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
+    }
 
+    /* Pretend we support the new protocol; PyBuffer_Release happily ignores
+       calling bf_releasebuffer on objects that don't support it */
+    *view = (Py_buffer) {0};
+    view->readonly = 1;
+
+    Py_INCREF(buffer);
+    view->obj = buffer;
+
+    return PyObject_AsReadBuffer(buffer, (void *) &view->buf, &view->len);
 #endif
+}
 
 /* -------------------------------------------------------------------- */
 /* EXCEPTION REROUTING                                                  */
