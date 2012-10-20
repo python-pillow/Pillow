@@ -40,18 +40,17 @@ from __future__ import print_function
 
 import io
 import sys
+from . import _binary
 
-if str != bytes:
+if str is not bytes:
     long = int
 
-def i16(c, o = 0):
-    return ord(c[o])+(ord(c[o+1])<<8)
-
-def i32(c, o = 0):
-    return ord(c[o])+(ord(c[o+1])<<8)+(ord(c[o+2])<<16)+(ord(c[o+3])<<24)
+i8 = _binary.i8
+i16 = _binary.i16le
+i32 = _binary.i32le
 
 
-MAGIC = '\320\317\021\340\241\261\032\341'
+MAGIC = b'\320\317\021\340\241\261\032\341'
 
 #
 # --------------------------------------------------------------------
@@ -332,12 +331,12 @@ class OleFileIO:
     def _unicode(self, s):
         # Map unicode string to Latin 1
 
-        if sys.version_info >= (3,0):
-            # Provide actual Unicode string
-            return s.decode('utf-16')
-        else:
+        if bytes is str:
             # Old version tried to produce a Latin-1 str
             return s.decode('utf-16').encode('latin-1', 'replace')
+        else:
+            # Provide actual Unicode string
+            return s.decode('utf-16')
 
     def loaddirectory(self, sect):
         # Load the directory.  The directory is stored in a standard
@@ -352,7 +351,7 @@ class OleFileIO:
             entry = fp.read(128)
             if not entry:
                 break
-            type = ord(entry[66])
+            type = i8(entry[66])
             name = self._unicode(entry[0:0+i16(entry, 64)])
             ptrs = i32(entry, 68), i32(entry, 72), i32(entry, 76)
             sect, size = i32(entry, 116), i32(entry, 120)
@@ -372,7 +371,7 @@ class OleFileIO:
             return ""
         return (("%08X-%04X-%04X-%02X%02X-" + "%02X" * 6) %
                 ((i32(clsid, 0), i16(clsid, 4), i16(clsid, 6)) +
-                tuple(map(ord, clsid[8:16]))))
+                tuple(map(i8, clsid[8:16]))))
 
     def _list(self, files, prefix, node):
         # listdir helper
@@ -488,9 +487,9 @@ class OleFileIO:
                 value = long(i32(s, offset+4)) + (long(i32(s, offset+8))<<32)
                 # FIXME: this is a 64-bit int: "number of 100ns periods
                 # since Jan 1,1601".  Should map this to Python time
-                value = value / 10000000 # seconds
+                value = value // 10000000 # seconds
             elif type == VT_UI1:
-                value = ord(s[offset+4])
+                value = i8(s[offset+4])
             elif type == VT_CLSID:
                 value = self._clsid(s[offset+4:offset+20])
             elif type == VT_CF:

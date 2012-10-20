@@ -18,7 +18,7 @@
 
 __version__ = "0.4"
 
-from . import Image, ImageFile, ImagePalette
+from . import Image, ImageFile, ImagePalette, _binary
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -36,17 +36,15 @@ MODES = {
 #
 # helpers
 
-def i16(c):
-    return ord(c[1]) + (ord(c[0])<<8)
-
-def i32(c):
-    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
+i8 = _binary.i8
+i16 = _binary.i16be
+i32 = _binary.i32be
 
 # --------------------------------------------------------------------.
 # read PSD images
 
 def _accept(prefix):
-    return prefix[:4] == "8BPS"
+    return prefix[:4] == b"8BPS"
 
 ##
 # Image plugin for Photoshop images.
@@ -64,7 +62,7 @@ class PsdImageFile(ImageFile.ImageFile):
         # header
 
         s = read(26)
-        if s[:4] != "8BPS" or i16(s[4:]) != 1:
+        if s[:4] != b"8BPS" or i16(s[4:]) != 1:
             raise SyntaxError("not a PSD file")
 
         psd_bits = i16(s[22:])
@@ -100,7 +98,7 @@ class PsdImageFile(ImageFile.ImageFile):
             while self.fp.tell() < end:
                 signature = read(4)
                 id = i16(read(2))
-                name = read(ord(read(1)))
+                name = read(i8(read(1)))
                 if not (len(name) & 1):
                     read(1) # padding
                 data = read(i32(read(4)))
@@ -219,9 +217,10 @@ def _layerinfo(file):
                 file.seek(length, 1)
             combined += length + 4
 
-            length = ord(read(1))
+            length = i8(read(1))
             if length:
-                name = read(length)
+                # Don't know the proper encoding, Latin-1 should be a good guess
+                name = read(length).decode('latin-1', 'replace')
             combined += length + 1
 
         file.seek(size - combined, 1)

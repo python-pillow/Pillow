@@ -22,7 +22,7 @@ import struct
 from . import Image, ImageFile
 
 def _accept(s):
-    return s[:8] == "\x00\x00\x00\x00\x00\x00\x00\x04"
+    return s[:8] == b"\x00\x00\x00\x00\x00\x00\x00\x04"
 
 ##
 # Image plugin for McIdas area images.

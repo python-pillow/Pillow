@@ -151,22 +151,25 @@ class Dib:
             self.image.paste(im.im)
 
     ##
-    # Load display memory contents from string buffer.
+    # Load display memory contents from byte data.
     #
-    # @param buffer A string buffer containing display data (usually
-    #     data returned from <b>tostring</b>)
+    # @param buffer A buffer containing display data (usually
+    #     data returned from <b>tobytes</b>)
 
-    def fromstring(self, buffer):
-        return self.image.fromstring(buffer)
+    def frombytes(self, buffer):
+        return self.image.frombytes(buffer)
 
     ##
-    # Copy display memory contents to string buffer.
+    # Copy display memory contents to bytes object.
     #
-    # @return A string buffer containing display data.
+    # @return A bytes object containing display data.
 
-    def tostring(self):
-        return self.image.tostring()
+    def tobytes(self):
+        return self.image.tobytes()
 
+    if bytes is str:
+        tostring = tobytes
+        fromstring = frombytes
 
 ##
 # Create a Window with the given title size.

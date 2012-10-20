@@ -13,6 +13,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from ._binary import o8
+
 ##
 # File handler for Teragon-style palette files.
 
@@ -30,7 +32,7 @@ class PaletteFile:
 
             if not s:
                 break
-            if s[0] == "#":
+            if s[0:1] == b"#":
                 continue
             if len(s) > 100:
                 raise SyntaxError("bad palette file")
@@ -43,9 +45,9 @@ class PaletteFile:
                 g = b = r
 
             if 0 <= i <= 255:
-                self.palette[i] = chr(r) + chr(g) + chr(b)
+                self.palette[i] = o8(r) + o8(g) + o8(b)
 
-        self.palette = "".join(self.palette)
+        self.palette = b"".join(self.palette)
 
 
     def getpalette(self):

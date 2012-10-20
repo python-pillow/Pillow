@@ -26,7 +26,7 @@ def register_handler(handler):
 # Image adapter
 
 def _accept(prefix):
-    return prefix[:8] == "\x89HDF\r\n\x1a\n"
+    return prefix[:8] == b"\x89HDF\r\n\x1a\n"
 
 class HDF5StubImageFile(ImageFile.StubImageFile):
 

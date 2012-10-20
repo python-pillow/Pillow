@@ -58,11 +58,12 @@ The Dib Class
         instance. In PythonWin, you can use the **GetHandleAttrib**
         method of the **CDC** class to get a suitable handle.
 
-**fromstring(buffer)** [`# <#PIL.ImageWin.Dib.fromstring-method>`_]
+**frombytes(buffer)** [`# <#PIL.ImageWin.Dib.frombytes-method>`_]
+    (For Python 2.6/2.7, this is also available as fromstring(buffer).)
 
     *buffer*
-        A string buffer containing display data (usually data returned
-        from **tostring**)
+        A byte buffer containing display data (usually data returned
+        from **tobytes**)
 
 **paste(im, box=None)** [`# <#PIL.ImageWin.Dib.paste-method>`_]
 
@@ -82,7 +83,7 @@ The Dib Class
     *handle*
     Returns:
 
-**tostring()** [`# <#PIL.ImageWin.Dib.tostring-method>`_]
+**tobytes()** [`# <#PIL.ImageWin.Dib.tobytes-method>`_]
 
     Returns:
 

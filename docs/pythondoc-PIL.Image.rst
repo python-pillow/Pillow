@@ -33,11 +33,11 @@ The PIL.Image Module
 
 **frombuffer(mode, size, data, decoder\_name="raw", \*args)**
 [`# <#PIL.Image.frombuffer-function>`_]
-    (New in 1.1.4) Creates an image memory from pixel data in a string
-    or byte buffer.
+    (New in 1.1.4) Creates an image memory referencing pixel data in a
+    byte buffer.
 
     This function is similar to
-    `**fromstring** <#PIL.Image.fromstring-function>`_, but uses data in
+    `**frombytes** <#PIL.Image.frombytes-function>`_, but uses data in
     the byte buffer, where possible. This means that changes to the
     original buffer object are reflected in this image). Not all modes
     can share memory; support modes include "L", "RGBX", "RGBA", and
@@ -56,9 +56,9 @@ The PIL.Image Module
     *\*args*
     Returns:
 
-**fromstring(mode, size, data, decoder\_name="raw", \*args)**
-[`# <#PIL.Image.fromstring-function>`_]
-    Creates an image memory from pixel data in a string.
+**frombytes(mode, size, data, decoder\_name="raw", \*args)**
+[`# <#PIL.Image.frombytes-function>`_]
+    Creates a copy of an image memory from pixel data in a buffer.
 
     In its simplest form, this function takes three arguments (mode,
     size, and unpacked pixel data).
@@ -233,13 +233,15 @@ The Image Class
     *filter*
     Returns:
 
-**fromstring(data, decoder\_name="raw", \*args)**
-[`# <#PIL.Image.Image.fromstring-method>`_]
-    Loads this image with pixel data from a string.
+**frombytes(data, decoder\_name="raw", \*args)**
+[`# <#PIL.Image.Image.frombytes-method>`_]
+    Loads this image with pixel data from a byte uffer.
 
     This method is similar to the
-    `**fromstring** <#PIL.Image.fromstring-function>`_ function, but
+    `**frombytes** <#PIL.Image.frombytes-function>`_ function, but
     loads data into this image instead of creating a new image object.
+
+    (In Python 2.6 and 2.7, this is also available as fromstring().)
 
 **getbands()** [`# <#PIL.Image.Image.getbands-method>`_]
     Returns a tuple containing the name of each band in this image. For
@@ -516,8 +518,9 @@ The Image Class
     Returns:
     Raises **ValueError**:
 
-**tostring(encoder\_name="raw", \*args)**
-[`# <#PIL.Image.Image.tostring-method>`_]
+**tobytes(encoder\_name="raw", \*args)**
+[`# <#PIL.Image.Image.tobytes-method>`_]
+    (In Python 2.6 and 2.7, this is also available as tostring().)
 
     *encoder\_name*
     *\*args*

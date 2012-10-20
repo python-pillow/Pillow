@@ -23,6 +23,7 @@
 __version__ = "0.4"
 
 from . import Image, ImageFile
+from ._binary import i8
 import io
 
 
@@ -37,12 +38,15 @@ import io
 #  5. page contents
 
 def _obj(fp, obj, **dict):
-    fp.write(b"%d 0 obj\n" % obj)
+    fp.write(("%d 0 obj\n" % obj).encode('ascii'))
     if dict:
         fp.write(b"<<\n")
         for k, v in dict.items():
             if v is not None:
-                fp.write(b"/%s %s\n" % (k, v))
+                if not isinstance(v, bytes):
+                    v = str(v).encode('ascii')
+
+                fp.write(b"/" + k.encode('ascii') + b" " + v + b"\n")
         fp.write(b">>\n")
 
 def _endobj(fp):
@@ -61,7 +65,7 @@ def _save(im, fp, filename):
     xref = [0]*(5+1) # placeholders
 
     fp.write(b"%PDF-1.2\n")
-    fp.write(b"% created by PIL PDF driver " + __version__ + "\n")
+    fp.write(b"% created by PIL PDF driver " + __version__.encode('ascii') + b"\n")
 
     #
     # Get image characteristics
@@ -78,32 +82,32 @@ def _save(im, fp, filename):
     if im.mode == "1":
         filter = b"/ASCIIHexDecode"
         colorspace = b"/DeviceGray"
-        procset = b"/ImageB" # grayscale
+        procset = "/ImageB" # grayscale
         bits = 1
     elif im.mode == "L":
         filter = b"/DCTDecode"
         # params = "<< /Predictor 15 /Columns %d >>" % (width-2)
         colorspace = b"/DeviceGray"
-        procset = b"/ImageB" # grayscale
+        procset = "/ImageB" # grayscale
     elif im.mode == "P":
         filter = b"/ASCIIHexDecode"
         colorspace = b"[ /Indexed /DeviceRGB 255 <"
         palette = im.im.getpalette("RGB")
         for i in range(256):
-            r = ord(palette[i*3])
-            g = ord(palette[i*3+1])
-            b = ord(palette[i*3+2])
-            colorspace = colorspace + b"%02x%02x%02x " % (r, g, b)
+            r = i8(palette[i*3])
+            g = i8(palette[i*3+1])
+            b = i8(palette[i*3+2])
+            colorspace = colorspace + ("%02x%02x%02x " % (r, g, b)).encode('ascii')
         colorspace = colorspace + b"> ]"
-        procset = b"/ImageI" # indexed color
+        procset = "/ImageI" # indexed color
     elif im.mode == "RGB":
         filter = b"/DCTDecode"
         colorspace = b"/DeviceRGB"
-        procset = b"/ImageC" # color images
+        procset = "/ImageC" # color images
     elif im.mode == "CMYK":
         filter = b"/DCTDecode"
         colorspace = b"/DeviceCMYK"
-        procset = b"/ImageC" # color images
+        procset = "/ImageC" # color images
     else:
         raise ValueError("cannot save mode %s" % im.mode)
 
@@ -168,11 +172,11 @@ def _save(im, fp, filename):
 
     xref[4] = fp.tell()
     _obj(fp, 4)
-    fp.write(b"<<\n/Type /Page\n/Parent 2 0 R\n"\
-             b"/Resources <<\n/ProcSet [ /PDF %s ]\n"\
-             b"/XObject << /image 3 0 R >>\n>>\n"\
-             b"/MediaBox [ 0 0 %d %d ]\n/Contents 5 0 R\n>>\n" %\
-             (procset, int(width * 72.0 /resolution) , int(height * 72.0 / resolution)))
+    fp.write(("<<\n/Type /Page\n/Parent 2 0 R\n"\
+             "/Resources <<\n/ProcSet [ /PDF %s ]\n"\
+             "/XObject << /image 3 0 R >>\n>>\n"\
+             "/MediaBox [ 0 0 %d %d ]\n/Contents 5 0 R\n>>\n" %\
+             (procset, int(width * 72.0 /resolution) , int(height * 72.0 / resolution))).encode('ascii'))
     _endobj(fp)
 
     #
@@ -180,7 +184,7 @@ def _save(im, fp, filename):
 
     op = io.BytesIO()
 
-    op.write(b"q %d 0 0 %d 0 0 cm /image Do Q\n" % (int(width * 72.0 / resolution), int(height * 72.0 / resolution)))
+    op.write(("q %d 0 0 %d 0 0 cm /image Do Q\n" % (int(width * 72.0 / resolution), int(height * 72.0 / resolution))).encode('ascii'))
 
     xref[5] = fp.tell()
     _obj(fp, 5, Length = len(op.getvalue()))
@@ -194,11 +198,11 @@ def _save(im, fp, filename):
     #
     # trailer
     startxref = fp.tell()
-    fp.write(b"xref\n0 %d\n0000000000 65535 f \n" % len(xref))
+    fp.write(("xref\n0 %d\n0000000000 65535 f \n" % len(xref)).encode('ascii'))
     for x in xref[1:]:
-        fp.write(b"%010d 00000 n \n" % x)
-    fp.write(b"trailer\n<<\n/Size %d\n/Root 1 0 R\n>>\n" % len(xref))
-    fp.write(b"startxref\n%d\n%%%%EOF\n" % startxref)
+        fp.write(("%010d 00000 n \n" % x).encode('ascii'))
+    fp.write(("trailer\n<<\n/Size %d\n/Root 1 0 R\n>>\n" % len(xref)).encode('ascii'))
+    fp.write(("startxref\n%d\n%%%%EOF\n" % startxref).encode('ascii'))
     fp.flush()
 
 #

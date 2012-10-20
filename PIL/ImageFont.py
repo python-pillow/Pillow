@@ -99,13 +99,13 @@ class ImageFont:
     def _load_pilfont_data(self, file, image):
 
         # read PILfont header
-        if file.readline() != "PILfont\n":
+        if file.readline() != b"PILfont\n":
             raise SyntaxError("Not a PILfont file")
-        d = file.readline().split(";")
+        d = file.readline().split(b";")
         self.info = [] # FIXME: should be a dictionary
         while True:
             s = file.readline()
-            if not s or s == "DATA\n":
+            if not s or s == b"DATA\n":
                 break
             self.info.append(s)
 

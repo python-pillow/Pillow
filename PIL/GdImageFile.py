@@ -25,7 +25,7 @@
 
 __version__ = "0.1"
 
-from . import ImageFile, ImagePalette
+from . import ImageFile, ImagePalette, _binary
 
 try:
     import builtins
@@ -33,8 +33,7 @@ except ImportError:
     import __builtin__
     builtins = __builtin__
 
-def i16(c):
-    return ord(c[1]) + (ord(c[0])<<8)
+i16 = _binary.i16be
 
 ##
 # Image plugin for the GD uncompressed format.  Note that this format

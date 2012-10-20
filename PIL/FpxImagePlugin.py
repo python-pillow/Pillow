@@ -170,8 +170,8 @@ class FpxImageFile(ImageFile.ImageFile):
 
             elif compression == 2:
 
-                internal_color_conversion = ord(s[14])
-                jpeg_tables = ord(s[15])
+                internal_color_conversion = i8(s[14])
+                jpeg_tables = i8(s[15])
                 rawmode = self.rawmode
 
                 if internal_color_conversion:

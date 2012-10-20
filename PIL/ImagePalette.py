@@ -39,15 +39,19 @@ class ImagePalette:
         # for the low-level im.putpalette primitive
         if self.rawmode:
             return self.rawmode, self.palette
-        return self.mode + ";L", self.tostring()
+        return self.mode + ";L", self.tobytes()
 
-    def tostring(self):
-        # experimental: convert palette to string
+    def tobytes(self):
+        # experimental: convert palette to bytes
         if self.rawmode:
             raise ValueError("palette contains raw palette data")
-        if Image.isStringType(self.palette):
+        if isinstance(self.palette, bytes):
             return self.palette
         return array.array("B", self.palette).tostring()
+
+    if bytes is str:
+        # Declare tostring as an alias for tobytes
+        tostring = tobytes
 
     def getcolor(self, color):
         # experimental: given an rgb tuple, allocate palette entry
@@ -58,7 +62,7 @@ class ImagePalette:
                 return self.colors[color]
             except KeyError:
                 # allocate new color slot
-                if Image.isStringType(self.palette):
+                if isinstance(self.palette, bytes):
                     self.palette = [int(x) for x in self.palette]
                 index = len(self.colors)
                 if index >= 256:
@@ -104,7 +108,7 @@ def _make_linear_lut(black, white):
     lut = []
     if black == 0:
         for i in range(256):
-            lut.append(white*i/255)
+            lut.append(white*i//255)
     else:
         raise NotImplementedError # FIXME
     return lut
@@ -155,6 +159,8 @@ def load(filename):
             p = GimpPaletteFile.GimpPaletteFile(fp)
             lut = p.getpalette()
         except (SyntaxError, ValueError):
+            #import traceback
+            #traceback.print_exc()
             pass
 
     if not lut:
@@ -164,6 +170,8 @@ def load(filename):
             p = GimpGradientFile.GimpGradientFile(fp)
             lut = p.getpalette()
         except (SyntaxError, ValueError):
+            #import traceback
+            #traceback.print_exc()
             pass
 
     if not lut:
@@ -173,6 +181,8 @@ def load(filename):
             p = PaletteFile.PaletteFile(fp)
             lut = p.getpalette()
         except (SyntaxError, ValueError):
+            import traceback
+            traceback.print_exc()
             pass
 
     if not lut:
