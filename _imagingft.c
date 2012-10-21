@@ -35,15 +35,6 @@
 #include <freetype/freetype.h>
 #endif
 
-#if PY_VERSION_HEX < 0x01060000
-#define PyObject_New PyObject_NEW
-#define PyObject_Del PyMem_DEL
-#endif
-
-#if !defined(Py_RETURN_NONE)
-#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
-#endif
-
 #define KEEP_PY_UNICODE
 #include "py3.h"
 
