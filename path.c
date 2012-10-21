@@ -370,6 +370,8 @@ path_getbbox(PyPathObject* self, PyObject* args)
 static PyObject*
 path_getitem(PyPathObject* self, int i)
 {
+    if (i < 0)
+        i = self->count + i;
     if (i < 0 || i >= self->count) {
 	PyErr_SetString(PyExc_IndexError, "path index out of range");
 	return NULL;
@@ -559,6 +561,47 @@ static struct PyGetSetDef getsetters[] = {
     { NULL }
 };
 
+static PyObject*
+path_subscript(PyPathObject* self, PyObject* item) {
+    if (PyIndex_Check(item)) {
+        Py_ssize_t i;
+        i = PyNumber_AsSsize_t(item, PyExc_IndexError);
+        if (i == -1 && PyErr_Occurred())
+            return NULL;
+        return path_getitem(self, i);
+    }
+    if (PySlice_Check(item)) {
+        int len = 4;
+        Py_ssize_t start, stop, step, slicelength;
+
+#if PY_VERSION_HEX >= 0x03000000
+        if (PySlice_GetIndicesEx(item, len, &start, &stop, &step, &slicelength) < 0)
+            return NULL;
+#else
+        if (PySlice_GetIndicesEx((PySliceObject*)item, len, &start, &stop, &step, &slicelength) < 0)
+            return NULL;
+#endif
+
+        if (slicelength <= 0) {
+            double *xy = alloc_array(0);
+            return (PyObject*) path_new(0, xy, 0);
+        }
+        else if (step == 1) {
+            return path_getslice(self, start, stop);
+        }
+        else {
+            PyErr_SetString(PyExc_TypeError, "slice steps not supported");
+            return NULL;
+        }
+    }
+    else {
+        PyErr_Format(PyExc_TypeError,
+                     "Path indices must be integers, not %.200s",
+                     Py_TYPE(&item)->tp_name);
+        return NULL;
+    }
+}
+
 static PySequenceMethods path_as_sequence = {
 	(lenfunc)path_len, /*sq_length*/
 	(binaryfunc)0, /*sq_concat*/
@@ -567,6 +610,12 @@ static PySequenceMethods path_as_sequence = {
 	(ssizessizeargfunc)path_getslice, /*sq_slice*/
 	(ssizeobjargproc)path_setitem, /*sq_ass_item*/
 	(ssizessizeobjargproc)0, /*sq_ass_slice*/
+};
+
+static PyMappingMethods path_as_mapping = {
+    (lenfunc)path_len,
+    (binaryfunc)path_subscript,
+    NULL
 };
 
 static PyTypeObject PyPathType = {
@@ -583,7 +632,7 @@ static PyTypeObject PyPathType = {
 	0,				/*tp_repr*/
 	0,                              /*tp_as_number */
 	&path_as_sequence,              /*tp_as_sequence */
-    0,                          /*tp_as_mapping */
+    &path_as_mapping,           /*tp_as_mapping */
     0,                          /*tp_hash*/
     0,                          /*tp_call*/
     0,                          /*tp_str*/
