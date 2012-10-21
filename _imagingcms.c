@@ -28,11 +28,6 @@ http://www.cazabon.com\n\
 #include "Imaging.h"
 #include "py3.h"
 
-#if PY_VERSION_HEX < 0x01060000
-#define PyObject_New PyObject_NEW
-#define PyObject_Del PyMem_DEL
-#endif
-
 #if LCMS_VERSION < 117
 #define LCMSBOOL BOOL
 #endif
