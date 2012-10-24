@@ -279,52 +279,6 @@ class StubImageFile(ImageFile):
             )
 
 ##
-# (Internal) Support class for the <b>Parser</b> file.
-
-class _ParserFile:
-    # parser support class.
-
-    def __init__(self, data):
-        self.data = data
-        self.offset = 0
-
-    def close(self):
-        self.data = self.offset = None
-
-    def tell(self):
-        return self.offset
-
-    def seek(self, offset, whence=0):
-        if whence == 0:
-            self.offset = offset
-        elif whence == 1:
-            self.offset = self.offset + offset
-        else:
-            # force error in Image.open
-            raise IOError("illegal argument to seek")
-
-    def read(self, bytes=0):
-        pos = self.offset
-        if bytes:
-            data = self.data[pos:pos+bytes]
-        else:
-            data = self.data[pos:]
-        self.offset = pos + len(data)
-        return data
-
-    def readline(self):
-        # FIXME: this is slow!
-        s = b""
-        while True:
-            c = self.read(1)
-            if not c:
-                break
-            s = s + c
-            if c == b"\n":
-                break
-        return s
-
-##
 # Incremental image parser.  This class implements the standard
 # feed/close consumer interface.
 
@@ -399,7 +353,7 @@ class Parser:
             # attempt to open this file
             try:
                 try:
-                    fp = _ParserFile(self.data)
+                    fp = io.BytesIO(self.data)
                     im = Image.open(fp)
                 finally:
                     fp.close() # explicitly close the virtual file
@@ -449,7 +403,7 @@ class Parser:
             # incremental parsing not possible; reopen the file
             # not that we have all data
             try:
-                fp = _ParserFile(self.data)
+                fp = io.BytesIO(self.data)
                 self.image = Image.open(fp)
             finally:
                 self.image.load()
