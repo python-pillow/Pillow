@@ -38,19 +38,16 @@ import io
 #  5. page contents
 
 def _obj(fp, obj, **dict):
-    fp.write(("%d 0 obj\n" % obj).encode('ascii'))
+    fp.write("%d 0 obj\n" % obj)
     if dict:
-        fp.write(b"<<\n")
+        fp.write("<<\n")
         for k, v in dict.items():
             if v is not None:
-                if not isinstance(v, bytes):
-                    v = str(v).encode('ascii')
-
-                fp.write(b"/" + k.encode('ascii') + b" " + v + b"\n")
-        fp.write(b">>\n")
+                fp.write("/%s %s\n" % (k, v))
+        fp.write(">>\n")
 
 def _endobj(fp):
-    fp.write(b"endobj\n")
+    fp.write("endobj\n")
 
 ##
 # (Internal) Image save plugin for the PDF format.
@@ -64,8 +61,18 @@ def _save(im, fp, filename):
 
     xref = [0]*(5+1) # placeholders
 
-    fp.write(b"%PDF-1.2\n")
-    fp.write(b"% created by PIL PDF driver " + __version__.encode('ascii') + b"\n")
+    class TextWriter:
+        def __init__(self, fp):
+            self.fp = fp
+        def __getattr__(self, name):
+            return getattr(self.fp, name)
+        def write(self, value):
+            self.fp.write(value.encode('latin-1'))
+
+    fp = TextWriter(fp)
+
+    fp.write("%PDF-1.2\n")
+    fp.write("% created by PIL PDF driver " + __version__ + "\n")
 
     #
     # Get image characteristics
@@ -80,33 +87,33 @@ def _save(im, fp, filename):
     params = None
 
     if im.mode == "1":
-        filter = b"/ASCIIHexDecode"
-        colorspace = b"/DeviceGray"
+        filter = "/ASCIIHexDecode"
+        colorspace = "/DeviceGray"
         procset = "/ImageB" # grayscale
         bits = 1
     elif im.mode == "L":
-        filter = b"/DCTDecode"
+        filter = "/DCTDecode"
         # params = "<< /Predictor 15 /Columns %d >>" % (width-2)
-        colorspace = b"/DeviceGray"
+        colorspace = "/DeviceGray"
         procset = "/ImageB" # grayscale
     elif im.mode == "P":
-        filter = b"/ASCIIHexDecode"
-        colorspace = b"[ /Indexed /DeviceRGB 255 <"
+        filter = "/ASCIIHexDecode"
+        colorspace = "[ /Indexed /DeviceRGB 255 <"
         palette = im.im.getpalette("RGB")
         for i in range(256):
             r = i8(palette[i*3])
             g = i8(palette[i*3+1])
             b = i8(palette[i*3+2])
-            colorspace = colorspace + ("%02x%02x%02x " % (r, g, b)).encode('ascii')
+            colorspace = colorspace + "%02x%02x%02x " % (r, g, b)
         colorspace = colorspace + b"> ]"
         procset = "/ImageI" # indexed color
     elif im.mode == "RGB":
-        filter = b"/DCTDecode"
-        colorspace = b"/DeviceRGB"
+        filter = "/DCTDecode"
+        colorspace = "/DeviceRGB"
         procset = "/ImageC" # color images
     elif im.mode == "CMYK":
-        filter = b"/DCTDecode"
-        colorspace = b"/DeviceCMYK"
+        filter = "/DCTDecode"
+        colorspace = "/DeviceCMYK"
         procset = "/ImageC" # color images
     else:
         raise ValueError("cannot save mode %s" % im.mode)
@@ -115,17 +122,17 @@ def _save(im, fp, filename):
     # catalogue
 
     xref[1] = fp.tell()
-    _obj(fp, 1, Type = b"/Catalog",
-                Pages = b"2 0 R")
+    _obj(fp, 1, Type = "/Catalog",
+                Pages = "2 0 R")
     _endobj(fp)
 
     #
     # pages
 
     xref[2] = fp.tell()
-    _obj(fp, 2, Type = b"/Pages",
+    _obj(fp, 2, Type = "/Pages",
                 Count = 1,
-                Kids = b"[4 0 R]")
+                Kids = "[4 0 R]")
     _endobj(fp)
 
     #
@@ -133,7 +140,7 @@ def _save(im, fp, filename):
 
     op = io.BytesIO()
 
-    if filter == b"/ASCIIHexDecode":
+    if filter == "/ASCIIHexDecode":
         if bits == 1:
             # FIXME: the hex encoder doesn't support packed 1-bit
             # images; do things the hard way...
@@ -141,18 +148,18 @@ def _save(im, fp, filename):
             im = Image.new("L", (len(data), 1), None)
             im.putdata(data)
         ImageFile._save(im, op, [("hex", (0,0)+im.size, 0, im.mode)])
-    elif filter == b"/DCTDecode":
+    elif filter == "/DCTDecode":
         ImageFile._save(im, op, [("jpeg", (0,0)+im.size, 0, im.mode)])
-    elif filter == b"/FlateDecode":
+    elif filter == "/FlateDecode":
         ImageFile._save(im, op, [("zip", (0,0)+im.size, 0, im.mode)])
-    elif filter == b"/RunLengthDecode":
+    elif filter == "/RunLengthDecode":
         ImageFile._save(im, op, [("packbits", (0,0)+im.size, 0, im.mode)])
     else:
         raise ValueError("unsupported PDF filter (%s)" % filter)
 
     xref[3] = fp.tell()
-    _obj(fp, 3, Type = b"/XObject",
-                Subtype = b"/Image",
+    _obj(fp, 3, Type = "/XObject",
+                Subtype = "/Image",
                 Width = width, # * 72.0 / resolution,
                 Height = height, # * 72.0 / resolution,
                 Length = len(op.getvalue()),
@@ -161,9 +168,9 @@ def _save(im, fp, filename):
                 DecodeParams = params,
                 ColorSpace = colorspace)
 
-    fp.write(b"stream\n")
-    fp.write(op.getvalue())
-    fp.write(b"\nendstream\n")
+    fp.write("stream\n")
+    fp.fp.write(op.getvalue())
+    fp.write("\nendstream\n")
 
     _endobj(fp)
 
@@ -172,37 +179,37 @@ def _save(im, fp, filename):
 
     xref[4] = fp.tell()
     _obj(fp, 4)
-    fp.write(("<<\n/Type /Page\n/Parent 2 0 R\n"\
+    fp.write("<<\n/Type /Page\n/Parent 2 0 R\n"\
              "/Resources <<\n/ProcSet [ /PDF %s ]\n"\
              "/XObject << /image 3 0 R >>\n>>\n"\
              "/MediaBox [ 0 0 %d %d ]\n/Contents 5 0 R\n>>\n" %\
-             (procset, int(width * 72.0 /resolution) , int(height * 72.0 / resolution))).encode('ascii'))
+             (procset, int(width * 72.0 /resolution) , int(height * 72.0 / resolution)))
     _endobj(fp)
 
     #
     # page contents
 
-    op = io.BytesIO()
+    op = TextWriter(io.BytesIO())
 
-    op.write(("q %d 0 0 %d 0 0 cm /image Do Q\n" % (int(width * 72.0 / resolution), int(height * 72.0 / resolution))).encode('ascii'))
+    op.write("q %d 0 0 %d 0 0 cm /image Do Q\n" % (int(width * 72.0 / resolution), int(height * 72.0 / resolution)))
 
     xref[5] = fp.tell()
-    _obj(fp, 5, Length = len(op.getvalue()))
+    _obj(fp, 5, Length = len(op.fp.getvalue()))
 
-    fp.write(b"stream\n")
-    fp.write(op.getvalue())
-    fp.write(b"\nendstream\n")
+    fp.write("stream\n")
+    fp.fp.write(op.fp.getvalue())
+    fp.write("\nendstream\n")
 
     _endobj(fp)
 
     #
     # trailer
     startxref = fp.tell()
-    fp.write(("xref\n0 %d\n0000000000 65535 f \n" % len(xref)).encode('ascii'))
+    fp.write("xref\n0 %d\n0000000000 65535 f \n" % len(xref))
     for x in xref[1:]:
-        fp.write(("%010d 00000 n \n" % x).encode('ascii'))
-    fp.write(("trailer\n<<\n/Size %d\n/Root 1 0 R\n>>\n" % len(xref)).encode('ascii'))
-    fp.write(("startxref\n%d\n%%%%EOF\n" % startxref).encode('ascii'))
+        fp.write("%010d 00000 n \n" % x)
+    fp.write("trailer\n<<\n/Size %d\n/Root 1 0 R\n>>\n" % len(xref))
+    fp.write("startxref\n%d\n%%%%EOF\n" % startxref)
     fp.flush()
 
 #
