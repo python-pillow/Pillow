@@ -79,7 +79,7 @@ class FliImageFile(ImageFile.ImageFile):
                 self._palette(palette, 0)
 
         palette = [o8(r)+o8(g)+o8(b) for (r,g,b) in palette]
-        self.palette = ImagePalette.raw("RGB", "".join(palette))
+        self.palette = ImagePalette.raw("RGB", b"".join(palette))
 
         # set things up to decode first frame
         self.frame = -1
