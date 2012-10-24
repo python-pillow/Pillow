@@ -91,7 +91,7 @@ class BmpImageFile(ImageFile.ImageFile):
             lutsize = 4
             colors = i32(s[32:])
             direction = -1
-            if s[11] == '\xff':
+            if i8(s[11]) == 0xff:
                 # upside-down storage
                 self.size = self.size[0], 2**32 - self.size[1]
                 direction = 0
