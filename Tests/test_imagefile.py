@@ -42,11 +42,11 @@ def test_parser():
     assert_image_equal(*roundtrip("XBM"))
     #assert_image_equal(*roundtrip("EPS"))      #no eps_decoder
     assert_image_equal(*roundtrip("TGA"))
+    assert_image_equal(*roundtrip("PCX"))
 
     im1, im2 = roundtrip("JPEG") # lossy compression
     assert_image(im1, im2.mode, im2.size)
 
-    assert_exception(IOError, lambda: roundtrip("PCX"))
     assert_exception(IOError, lambda: roundtrip("PDF"))
 
 
