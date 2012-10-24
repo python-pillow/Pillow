@@ -133,6 +133,7 @@ class TgaImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # Write TGA file
 
+o8 = _binary.o8
 o16 = _binary.o16le
 o32 = _binary.o32le
 
