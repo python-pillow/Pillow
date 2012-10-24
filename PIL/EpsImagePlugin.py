@@ -21,6 +21,7 @@
 __version__ = "0.5"
 
 import re
+import io
 from . import Image, ImageFile, _binary
 
 #
@@ -90,6 +91,8 @@ class PSFile:
     def seek(self, offset, whence=0):
         self.char = None
         self.fp.seek(offset, whence)
+    def read(self, count):
+        return self.fp.read(count).decode('latin-1')
     def tell(self):
         pos = self.fp.tell()
         if self.char:
@@ -109,7 +112,7 @@ class PSFile:
             self.char = self.fp.read(1)
             if self.char == b"\n":
                 self.char = None
-        return s + b"\n"
+        return s.decode('latin-1') + "\n"
 
 
 def _accept(prefix):
@@ -193,13 +196,14 @@ class EpsImageFile(ImageFile.ImageFile):
 
                 if m:
                     k = m.group(1)
+
                     if k == "EndComments":
                         break
                     if k[:8] == "PS-Adobe":
                         self.info[k[:8]] = k[9:]
                     else:
                         self.info[k] = ""
-                elif s[0] == '%':
+                elif s[0:1] == '%':
                     # handle non-DSC Postscript comments that some
                     # tools mistakenly put in the Comments section
                     pass
@@ -228,7 +232,7 @@ class EpsImageFile(ImageFile.ImageFile):
             if s[:11] == "%ImageData:":
 
                 [x, y, bi, mo, z3, z4, en, id] =\
-                    s[11:].split(maxsplit=7)
+                    s[11:].split(None, 7)
 
                 x = int(x); y = int(y)
 
@@ -299,42 +303,54 @@ def _save(im, fp, filename, eps=1):
     #
     # determine postscript image mode
     if im.mode == "L":
-        operator = (8, 1, b"image")
+        operator = (8, 1, "image")
     elif im.mode == "RGB":
-        operator = (8, 3, b"false 3 colorimage")
+        operator = (8, 3, "false 3 colorimage")
     elif im.mode == "CMYK":
-        operator = (8, 4, b"false 4 colorimage")
+        operator = (8, 4, "false 4 colorimage")
     else:
         raise ValueError("image mode is not supported")
+
+    class NoCloseStream:
+        def __init__(self, fp):
+            self.fp = fp
+        def __getattr__(self, name):
+            return getattr(self.fp, name)
+        def close(self):
+            pass
+
+    base_fp = fp
+    fp = io.TextIOWrapper(NoCloseStream(fp), encoding='latin-1')
 
     if eps:
         #
         # write EPS header
-        fp.write(b"%!PS-Adobe-3.0 EPSF-3.0\n")
-        fp.write(b"%%Creator: PIL 0.1 EpsEncode\n")
+        fp.write("%!PS-Adobe-3.0 EPSF-3.0\n")
+        fp.write("%%Creator: PIL 0.1 EpsEncode\n")
         #fp.write("%%CreationDate: %s"...)
-        fp.write(("%%%%BoundingBox: 0 0 %d %d\n" % im.size).encode('ascii'))
-        fp.write(b"%%Pages: 1\n")
-        fp.write(b"%%EndComments\n")
-        fp.write(b"%%Page: 1 1\n")
-        fp.write(("%%ImageData: %d %d " % im.size).encode('ascii'))
-        fp.write(("%d %d 0 1 1 \"%s\"\n" % operator).encode('ascii'))
+        fp.write("%%%%BoundingBox: 0 0 %d %d\n" % im.size)
+        fp.write("%%Pages: 1\n")
+        fp.write("%%EndComments\n")
+        fp.write("%%Page: 1 1\n")
+        fp.write("%%ImageData: %d %d " % im.size)
+        fp.write("%d %d 0 1 1 \"%s\"\n" % operator)
 
     #
     # image header
-    fp.write(b"gsave\n")
-    fp.write(b"10 dict begin\n")
-    fp.write(("/buf %d string def\n" % (im.size[0] * operator[1])).encode('ascii'))
-    fp.write(("%d %d scale\n" % im.size).encode('ascii'))
-    fp.write(("%d %d 8\n" % im.size).encode('ascii')) # <= bits
-    fp.write(("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1])).encode('ascii'))
-    fp.write(b"{ currentfile buf readhexstring pop } bind\n")
-    fp.write(operator[2] + b"\n")
+    fp.write("gsave\n")
+    fp.write("10 dict begin\n")
+    fp.write("/buf %d string def\n" % (im.size[0] * operator[1]))
+    fp.write("%d %d scale\n" % im.size)
+    fp.write("%d %d 8\n" % im.size) # <= bits
+    fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
+    fp.write("{ currentfile buf readhexstring pop } bind\n")
+    fp.write(operator[2] + "\n")
+    fp.flush()
 
-    ImageFile._save(im, fp, [("eps", (0,0)+im.size, 0, None)])
+    ImageFile._save(im, base_fp, [("eps", (0,0)+im.size, 0, None)])
 
-    fp.write(b"\n%%%%EndBinary\n")
-    fp.write(b"grestore end\n")
+    fp.write("\n%%%%EndBinary\n")
+    fp.write("grestore end\n")
     fp.flush()
 
 #

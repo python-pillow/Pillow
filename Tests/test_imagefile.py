@@ -40,6 +40,7 @@ def test_parser():
     assert_image_equal(*roundtrip("PPM"))
     assert_image_equal(*roundtrip("TIFF"))
     assert_image_equal(*roundtrip("XBM"))
+    #assert_image_equal(*roundtrip("EPS"))      #no eps_decoder
     assert_image_equal(*roundtrip("TGA"))
 
     im1, im2 = roundtrip("JPEG") # lossy compression
