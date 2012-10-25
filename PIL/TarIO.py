@@ -39,13 +39,13 @@ class TarIO(ContainerIO.ContainerIO):
                 raise IOError("unexpected end of tar file")
 
             name = s[:100].decode('utf-8')
-            i = name.find(b'\0')
+            i = name.find('\0')
             if i == 0:
                 raise IOError("cannot find subfile")
             if i > 0:
                 name = name[:i]
 
-            size = int(s[124:136], 8)
+            size = int(s[124:135], 8)
 
             if file == name:
                 break
