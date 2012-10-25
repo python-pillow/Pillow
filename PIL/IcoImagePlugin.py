@@ -49,7 +49,7 @@ class IcoImageFile(BmpImagePlugin.BmpImageFile):
             raise SyntaxError("not an ICO file")
 
         # pick the largest icon in the file
-        m = ""
+        m = b""
         for i in range(i16(s[4:])):
             s = self.fp.read(16)
             if not m:
