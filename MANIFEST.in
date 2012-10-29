@@ -6,6 +6,7 @@ exclude SHIP
 exclude SHIP.bat
 include *.rst
 include *.c
+include *.h
 recursive-exclude Tests *
 recursive-include docs *.txt
 recursive-include libImaging *.c *.h
