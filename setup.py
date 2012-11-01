@@ -316,7 +316,7 @@ class pil_build_ext(build_ext):
             for root in framework_roots:
                 if (os.path.exists(os.path.join(root, "Tcl.framework")) and
                     os.path.exists(os.path.join(root, "Tk.framework"))):
-                    print("--- using frameworks at", root)
+                    print("--- using frameworks at %s" % root)
                     frameworks = ["-framework", "Tcl", "-framework", "Tk"]
                     dir = os.path.join(root, "Tcl.framework", "Headers")
                     _add_directory(self.compiler.include_dirs, dir, 0)
@@ -353,13 +353,13 @@ class pil_build_ext(build_ext):
     def summary_report(self, feature, unsafe_zlib):
 
         print("-" * 68)
-        print("SETUP SUMMARY (Pillow", VERSION, "/ PIL %s)" % PIL_VERSION)
+        print("SETUP SUMMARY (Pillow %s / PIL %s)" % (VERSION, PIL_VERSION))
         print("-" * 68)
-        print("version      ", VERSION)
+        print("version      %s" % VERSION)
         v = sys.version.split("[")
-        print("platform     ", sys.platform, v[0].strip())
+        print("platform     %s %s" % (sys.platform, v[0].strip()))
         for v in v[1:]:
-            print("             ", ("[" + v).strip())
+            print("             [%s" % v.strip())
         print("-" * 68)
 
         options = [
@@ -374,24 +374,24 @@ class pil_build_ext(build_ext):
         all = 1
         for option in options:
             if option[0]:
-                print("---", option[1], "support available")
+                print("--- %s support available" % option[1])
             else:
-                print("***", option[1], "support not available")
+                print("*** %s support not available" % option[1])
                 if option[1] == "TKINTER" and _tkinter:
                     version = _tkinter.TCL_VERSION
                     print("(Tcl/Tk %s libraries needed)" % version)
-                print()
+                print("")
                 all = 0
 
         if feature.zlib and unsafe_zlib:
-            print()
+            print("")
             print("*** Warning: zlib", unsafe_zlib)
             print("may contain a security vulnerability.")
             print("*** Consider upgrading to zlib 1.2.3 or newer.")
             print("*** See: http://www.kb.cert.org/vuls/id/238678")
             print(" http://www.kb.cert.org/vuls/id/680620")
             print(" http://www.gzip.org/zlib/advisory-2002-03-11.txt")
-            print()
+            print("")
 
         print("-" * 68)
 
@@ -399,7 +399,7 @@ class pil_build_ext(build_ext):
             print("To add a missing option, make sure you have the required")
             print("library, and set the corresponding ROOT variable in the")
             print("setup.py script.")
-            print()
+            print("\n")
 
         print("To check the build, run the selftest.py script.")
 
