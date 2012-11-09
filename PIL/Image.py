@@ -540,7 +540,9 @@ class Image:
 
     if bytes is str:
         # Declare tostring as alias to tobytes
-        tostring = tobytes
+        def tostring(self, *args, **kw):
+            warnings.warn('tostring() is deprecated. Please call tobytes() instead.', DeprecationWarning)
+            return self.tobytes(*args, **kw)
 
     ##
     # Returns the image converted to an X11 bitmap.  This method
@@ -591,7 +593,9 @@ class Image:
 
     if bytes is str:
         # Declare fromstring as alias to frombytes
-        fromstring = frombytes
+        def fromstring(self, *args, **kw):
+            warnings.warn('fromstring() is deprecated. Please call frombytes() instead.', DeprecationWarning)
+            return self.frombytes(*args, **kw)
 
     ##
     # Allocates storage for the image and loads the pixel data.  In
@@ -1804,7 +1808,9 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
 if bytes is str:
     # Declare fromstring as an alias for frombytes
-    fromstring = frombytes
+    def fromstring(*args, **kw):
+        warnings.warn('fromstring() is deprecated. Please call frombytes() instead.', DeprecationWarning)
+        return frombytes(*args, **kw)
 
 ##
 # (New in 1.1.4) Creates an image memory referencing pixel data in a
