@@ -8,6 +8,10 @@ include *.rst
 include *.c
 include *.h
 include selftest.py tox.ini
+recursive-include Tests *.py *.txt
+graft Tests/fonts
+graft Tests/icc
+graft Tests/images
 recursive-include Scripts *.py README
 graft Images
 recursive-include docs *.txt *.html *.rst *.css *.py README CHANGES CONTENTS Makefile make.bat
