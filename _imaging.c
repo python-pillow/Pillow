@@ -694,6 +694,20 @@ _open_ppm(PyObject* self, PyObject* args)
     return PyImagingNew(ImagingOpenPPM(filename));
 }
 
+static PyObject*
+_alpha_composite(ImagingObject* self, PyObject* args)
+{
+    ImagingObject* imagep1;
+    ImagingObject* imagep2;
+
+    if (!PyArg_ParseTuple(args, "O!O!",
+			  &Imaging_Type, &imagep1,
+			  &Imaging_Type, &imagep2))
+	return NULL;
+
+    return PyImagingNew(ImagingAlphaComposite(imagep1->image, imagep2->image));
+}
+
 static PyObject* 
 _blend(ImagingObject* self, PyObject* args)
 {
@@ -3152,6 +3166,7 @@ extern PyObject* PyImaging_MapBuffer(PyObject* self, PyObject* args);
 static PyMethodDef functions[] = {
 
     /* Object factories */
+    {"alpha_composite", (PyCFunction)_alpha_composite, 1},
     {"blend", (PyCFunction)_blend, 1},
     {"fill", (PyCFunction)_fill, 1},
     {"new", (PyCFunction)_new, 1},

@@ -15,8 +15,8 @@ _IMAGING = (
     )
 
 _LIB_IMAGING = (
-    "Access", "Antialias", "Bands", "BitDecode", "Blend", "Chops",
-    "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop", "Dib", "Draw",
+    "Access", "AlphaComposite", "Antialias", "Bands", "BitDecode", "Blend",
+    "Chops", "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop", "Dib", "Draw",
     "Effects", "EpsEncode", "File", "Fill", "Filter", "FliDecode",
     "Geometry", "GetBBox", "GifDecode", "GifEncode", "HexDecode",
     "Histo", "JpegDecode", "JpegEncode", "LzwDecode", "Matrix",
