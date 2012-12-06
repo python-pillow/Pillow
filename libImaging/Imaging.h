@@ -239,6 +239,7 @@ typedef int (*ImagingTransformFilter)(void* out, Imaging im,
 /* Image Manipulation Methods */
 /* -------------------------- */
 
+extern Imaging ImagingAlphaComposite(Imaging imIn1, Imaging imIn2);
 extern Imaging ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging ImagingCopy(Imaging im);
 extern Imaging ImagingConvert(Imaging im, const char* mode, ImagingPalette palette, int dither);
