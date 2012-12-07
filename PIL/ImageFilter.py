@@ -157,7 +157,7 @@ class GaussianBlur(Filter):
     name = "GaussianBlur"
 
     def __init__(self, radius=2):
-        self.radius = 2
+        self.radius = radius
     def filter(self, image):
         return image.gaussian_blur(self.radius)
 
@@ -168,7 +168,7 @@ class UnsharpMask(Filter):
     name = "UnsharpMask"
 
     def __init__(self, radius=2, percent=150, threshold=3):
-        self.radius = 2
+        self.radius = radius
         self.percent = percent
         self.threshold = threshold
     def filter(self, image):
