@@ -48,7 +48,9 @@ class FliImageFile(ImageFile.ImageFile):
         # HEAD
         s = self.fp.read(128)
         magic = i16(s[4:6])
-        if magic not in [0xAF11, 0xAF12]:
+        if not (magic in [0xAF11, 0xAF12] and
+                i16(s[14:16]) in [0, 3] and  # flags
+                s[20:22] == '\x00\x00'):  # reserved
             raise SyntaxError, "not an FLI/FLC file"
 
         # image characteristics
