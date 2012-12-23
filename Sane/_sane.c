@@ -28,6 +28,12 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #include <sys/time.h>
 
+#if PY_MAJOR_VERSION >= 3
+  #define PyInt_AsLong PyLong_AsLong
+  #define PyInt_FromLong PyLong_FromLong
+  #define PyInt_Check PyLong_Check
+#endif
+
 static PyObject *ErrorObject;
 
 typedef struct {
@@ -237,7 +243,7 @@ SaneDev_get_options(SaneDevObject *self, PyObject *args)
 	      constraint=PyList_New(0);
 	      for(j=0; d->constraint.string_list[j]!=NULL; j++)
 		PyList_Append(constraint, 
-			      PyString_FromString(d->constraint.string_list[j]));
+			      PyBytes_FromString(d->constraint.string_list[j]));
 	      break;
 	    }
 	  value=Py_BuildValue("isssiiiiO", i, d->name, d->title, d->desc, 
@@ -349,13 +355,13 @@ SaneDev_set_option(SaneDevObject *self, PyObject *args)
       *( (SANE_Fixed*)v) = SANE_FIX(PyFloat_AsDouble(value));
       break;
     case(SANE_TYPE_STRING):
-      if (!PyString_Check(value)) 
+      if (!PyBytes_Check(value))
 	{
 	  PyErr_SetString(PyExc_TypeError, "SANE_STRING requires a string");
 	  free(v);
 	  return NULL;
 	}
-      strncpy(v, PyString_AsString(value), d->size-1);
+      strncpy(v, PyBytes_AsString(value), d->size-1);
       ((char*)v)[d->size-1] = 0;
       break;
     case(SANE_TYPE_BUTTON): 
@@ -1165,8 +1171,8 @@ PySane_exit(PyObject *self, PyObject *args)
 static PyObject *
 PySane_get_devices(PyObject *self, PyObject *args)
 {
-  SANE_Device **devlist;
-  SANE_Device *dev;
+  const SANE_Device **devlist;
+  const SANE_Device *dev;
   SANE_Status st;
   PyObject *list;
   int local_only, i;
@@ -1176,7 +1182,9 @@ PySane_get_devices(PyObject *self, PyObject *args)
       return NULL;
     }
   
+  Py_BEGIN_ALLOW_THREADS
   st=sane_get_devices(&devlist, local_only);
+  Py_END_ALLOW_THREADS
   if (st) return PySane_Error(st);
   if (!(list = PyList_New(0)))
 	    return NULL;
@@ -1204,7 +1212,9 @@ PySane_open(PyObject *self, PyObject *args)
 	rv = newSaneDevObject();
 	if ( rv == NULL )
 	    return NULL;
+	Py_BEGIN_ALLOW_THREADS
 	st = sane_open(name, &(rv->h));
+	Py_END_ALLOW_THREADS
 	if (st) 
 	  {
 	    Py_DECREF(rv);
@@ -1261,17 +1271,40 @@ insint(PyObject *d, char *name, int value)
 	Py_DECREF(v);
 }
 
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef PySane_moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "_sane",
+        NULL,
+        0,
+        PySane_methods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+PyMODINIT_FUNC
+PyInit__sane(void)
+{
+    /* Create the module and add the functions */
+    PyObject *m = PyModule_Create(&PySane_moduledef);
+    if(!m)
+        return NULL;
+#else /* if PY_MAJOR_VERSION < 3 */
+
 PyMODINIT_FUNC
 init_sane(void)
 {
-	PyObject *m, *d;
-
-	/* Create the module and add the functions */
-	m = Py_InitModule("_sane", PySane_methods);
+    /* Create the module and add the functions */
+    PyObject *m = Py_InitModule("_sane", PySane_methods);
+    if(!m)
+        return;
+#endif
 
 	/* Add some symbolic constants to the module */
-	d = PyModule_GetDict(m);
-	ErrorObject = PyString_FromString("_sane.error");
+	PyObject *d = PyModule_GetDict(m);
+	ErrorObject = PyBytes_FromString("_sane.error");
 	PyDict_SetItemString(d, "error", ErrorObject);
 
 	insint(d, "INFO_INEXACT", SANE_INFO_INEXACT);
@@ -1335,4 +1368,7 @@ init_sane(void)
 	  NUMARRAY_IMPORTED = 1;
 
 #endif /* WITH_NUMARRAY */
+#if PY_MAJOR_VERSION >= 3
+    return m;
+#endif
 }
