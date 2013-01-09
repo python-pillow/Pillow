@@ -92,6 +92,18 @@ class pil_build_ext(build_ext):
         _add_directory(include_dirs, "libImaging")
 
         #
+        # add configured kits
+
+        for root in (TCL_ROOT, JPEG_ROOT, TCL_ROOT, TIFF_ROOT, ZLIB_ROOT,
+                     FREETYPE_ROOT, LCMS_ROOT):
+            if isinstance(root, type(())):
+                lib_root, include_root = root
+            else:
+                lib_root = include_root = root
+            _add_directory(library_dirs, lib_root)
+            _add_directory(include_dirs, include_root)
+
+        #
         # add platform directories
 
         if sys.platform == "cygwin":
@@ -164,18 +176,6 @@ class pil_build_ext(build_ext):
                     break
             else:
                 TCL_ROOT = None
-
-        #
-        # add configured kits
-
-        for root in (TCL_ROOT, JPEG_ROOT, TCL_ROOT, TIFF_ROOT, ZLIB_ROOT,
-                     FREETYPE_ROOT, LCMS_ROOT):
-            if isinstance(root, type(())):
-                lib_root, include_root = root
-            else:
-                lib_root = include_root = root
-            _add_directory(library_dirs, lib_root)
-            _add_directory(include_dirs, include_root)
 
         #
         # add standard directories
