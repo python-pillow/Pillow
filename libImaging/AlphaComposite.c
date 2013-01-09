@@ -81,10 +81,10 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
 		}
 	    }
 
-	    out[x + 0] = (UINT8) (255.0 * outR);
-	    out[x + 1] = (UINT8) (255.0 * outG);
-	    out[x + 2] = (UINT8) (255.0 * outB);
-	    out[x + 3] = (UINT8) (255.0 * outA);
+	    out[x + 0] = (UINT8) (255.0 * outR + 0.5);
+	    out[x + 1] = (UINT8) (255.0 * outG + 0.5);
+	    out[x + 2] = (UINT8) (255.0 * outB + 0.5);
+	    out[x + 3] = (UINT8) (255.0 * outA + 0.5);
 
 	}
 
