@@ -134,8 +134,10 @@ cms_profile_fromstring(PyObject* self, PyObject* args)
     cmsErrorAction(LCMS_ERROR_IGNORE);
 
     hProfile = cmsOpenProfileFromMem(pProfile, nProfile);
-    if (!hProfile)
+    if (!hProfile) {
         PyErr_SetString(PyExc_IOError, "cannot open profile from string");
+        return NULL;
+    }
 
     return cms_profile_new(hProfile);
 }
