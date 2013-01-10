@@ -15,7 +15,7 @@
  * 1999-02-07 fl   Added PCX encoder
  *
  * Copyright (c) 1997-2001 by Secret Labs AB
- * Copyright (c) 1996-1997 by Fredrik Lundh 
+ * Copyright (c) 1996-1997 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -93,7 +93,7 @@ _dealloc(ImagingEncoderObject* encoder)
     PyObject_Del(encoder);
 }
 
-static PyObject* 
+static PyObject*
 _encode(ImagingEncoderObject* encoder, PyObject* args)
 {
     PyObject* buf;
@@ -125,7 +125,7 @@ _encode(ImagingEncoderObject* encoder, PyObject* args)
     return result;
 }
 
-static PyObject* 
+static PyObject*
 _encode_to_file(ImagingEncoderObject* encoder, PyObject* args)
 {
     UINT8* buf;
@@ -520,11 +520,16 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     int streamtype = 0; /* 0=interchange, 1=tables only, 2=image only */
     int xdpi = 0, ydpi = 0;
     int subsampling = -1; /* -1=default, 0=none, 1=medium, 2=high */
-    char* extra = NULL; int extra_size;
+    char* extra = NULL;
+    int extra_size;
+    char* rawExif = NULL;
+    int rawExifLen = 0;
+
     if (!PyArg_ParseTuple(args, "ss|iiiiiiii"PY_ARG_BYTES_LENGTH,
                           &mode, &rawmode, &quality,
                           &progressive, &smooth, &optimize, &streamtype,
-                          &xdpi, &ydpi, &subsampling, &extra, &extra_size))
+                          &xdpi, &ydpi, &subsampling, &extra, &extra_size,
+                          &rawExif, &rawExifLen))
 	return NULL;
 
     encoder = PyImaging_EncoderNew(sizeof(JPEGENCODERSTATE));
@@ -543,6 +548,15 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     } else
         extra = NULL;
 
+    if (rawExif && rawExifLen > 0) {
+        char* pp = malloc(rawExifLen);
+        if (!pp)
+            return PyErr_NoMemory();
+        memcpy(pp, rawExif, rawExifLen);
+        rawExif = pp;
+    } else
+        rawExif = NULL;
+
     encoder->encode = ImagingJpegEncode;
 
     ((JPEGENCODERSTATE*)encoder->state.context)->quality = quality;
@@ -555,6 +569,8 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     ((JPEGENCODERSTATE*)encoder->state.context)->ydpi = ydpi;
     ((JPEGENCODERSTATE*)encoder->state.context)->extra = extra;
     ((JPEGENCODERSTATE*)encoder->state.context)->extra_size = extra_size;
+    ((JPEGENCODERSTATE*)encoder->state.context)->rawExif = rawExif;
+    ((JPEGENCODERSTATE*)encoder->state.context)->rawExifLen = rawExifLen;
 
     return (PyObject*) encoder;
 }

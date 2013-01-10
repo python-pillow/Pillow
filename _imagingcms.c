@@ -522,19 +522,19 @@ static struct PyMethodDef cms_profile_methods[] = {
 static PyObject*
 cms_profile_getattr_product_name(CmsProfileObject* self, void* closure)
 {
-    return PyUnicode_FromString(cmsTakeProductName(self->profile));
+    return PyUnicode_DecodeFSDefault(cmsTakeProductName(self->profile));
 }
 
 static PyObject*
 cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
 {
-    return PyUnicode_FromString(cmsTakeProductDesc(self->profile));
+    return PyUnicode_DecodeFSDefault(cmsTakeProductDesc(self->profile));
 }
 
 static PyObject*
 cms_profile_getattr_product_info(CmsProfileObject* self, void* closure)
 {
-    return PyUnicode_FromString(cmsTakeProductInfo(self->profile));
+    return PyUnicode_DecodeFSDefault(cmsTakeProductInfo(self->profile));
 }
 
 static PyObject*
@@ -546,13 +546,13 @@ cms_profile_getattr_rendering_intent(CmsProfileObject* self, void* closure)
 static PyObject*
 cms_profile_getattr_pcs(CmsProfileObject* self, void* closure)
 {
-    return PyUnicode_FromString(findICmode(cmsGetPCS(self->profile)));
+    return PyUnicode_DecodeFSDefault(findICmode(cmsGetPCS(self->profile)));
 }
 
 static PyObject*
 cms_profile_getattr_color_space(CmsProfileObject* self, void* closure)
 {
-    return PyUnicode_FromString(findICmode(cmsGetColorSpace(self->profile)));
+    return PyUnicode_DecodeFSDefault(findICmode(cmsGetColorSpace(self->profile)));
 }
 
 /* FIXME: add more properties (creation_datetime etc) */

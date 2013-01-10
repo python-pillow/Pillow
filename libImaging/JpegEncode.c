@@ -24,9 +24,9 @@
 
 #ifdef	HAVE_LIBJPEG
 
-#undef HAVE_PROTOTYPES 
-#undef HAVE_STDLIB_H 
-#undef HAVE_STDDEF_H 
+#undef HAVE_PROTOTYPES
+#undef HAVE_STDLIB_H
+#undef HAVE_STDDEF_H
 #undef UINT8
 #undef UINT16
 #undef UINT32
@@ -145,7 +145,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	jpeg_set_defaults(&context->cinfo);
 	if (context->quality > 0)
 	    jpeg_set_quality(&context->cinfo, context->quality, 1);
-	
+
 	/* Set subsampling options */
 	switch (context->subsampling)
 	{
@@ -205,11 +205,19 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    jpeg_start_compress(&context->cinfo, FALSE);
             /* suppress extra section */
             context->extra_offset = context->extra_size;
+        //add exif header
+        if (context->rawExifLen > 0)
+            jpeg_write_marker(&context->cinfo, JPEG_APP0+1, context->rawExif, context->rawExifLen);
+
 	    break;
 	default:
 	    /* interchange stream */
 	    jpeg_start_compress(&context->cinfo, TRUE);
-	    break;
+        //add exif header
+        if (context->rawExifLen > 0)
+            jpeg_write_marker(&context->cinfo, JPEG_APP0+1, context->rawExif, context->rawExifLen);
+
+        break;
 	}
 	state->state++;
 	/* fall through */
