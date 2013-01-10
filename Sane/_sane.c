@@ -1304,7 +1304,7 @@ init_sane(void)
 
 	/* Add some symbolic constants to the module */
 	PyObject *d = PyModule_GetDict(m);
-	ErrorObject = PyBytes_FromString("_sane.error");
+	ErrorObject = PyErr_NewException("_sane.error", NULL, NULL);
 	PyDict_SetItemString(d, "error", ErrorObject);
 
 	insint(d, "INFO_INEXACT", SANE_INFO_INEXACT);
