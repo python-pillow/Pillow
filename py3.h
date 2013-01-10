@@ -30,6 +30,7 @@
 #undef PyUnicode_FromStringAndSize
 #undef PyUnicode_FromString
 #undef PyUnicode_FromFormat
+#undef PyUnicode_DecodeFSDefault
 
 #define PyUnicode_AsString          PyString_AsString
 #define PyUnicode_AS_STRING         PyString_AS_STRING
@@ -37,6 +38,7 @@
 #define PyUnicode_FromStringAndSize PyString_FromStringAndSize
 #define PyUnicode_FromString        PyString_FromString
 #define PyUnicode_FromFormat        PyString_FromFormat
+#define PyUnicode_DecodeFSDefault   PyString_FromString
 #endif
 
 /* Map PyBytes -> PyString */
