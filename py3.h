@@ -11,7 +11,7 @@
 */
 
 #if PY_VERSION_HEX >= 0x03000000
-#define PY_ARG_BYTES_LENGTH             "y#"
+#define PY_ARG_BYTES_LENGTH             "y#y#"
 
 /* Map PyInt -> PyLong */
 #define PyInt_AsLong                PyLong_AsLong
@@ -20,7 +20,7 @@
 #define PyInt_AS_LONG               PyLong_AS_LONG
 
 #else   /* PY_VERSION_HEX < 0x03000000 */
-#define PY_ARG_BYTES_LENGTH             "s#"
+#define PY_ARG_BYTES_LENGTH             "s#s#"
 
 #if !defined(KEEP_PY_UNICODE)
 /* Map PyUnicode -> PyString */
