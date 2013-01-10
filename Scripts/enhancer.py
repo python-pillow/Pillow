@@ -6,7 +6,11 @@
 # drag the slider to modify the image.
 #
 
-from Tkinter import *
+try:
+    from tkinter import *
+except ImportError:
+    from Tkinter import *
+
 from PIL import Image, ImageTk, ImageEnhance
 import sys
 

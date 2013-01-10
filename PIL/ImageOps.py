@@ -17,8 +17,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 import operator
+from functools import reduce
 
 ##
 # (New in 1.1.3) The <b>ImageOps</b> module contains a number of
@@ -32,7 +33,7 @@ import operator
 # helpers
 
 def _border(border):
-    if type(border) is type(()):
+    if isinstance(border, tuple):
         if len(border) == 2:
             left, top = right, bottom = border
         elif len(border) == 4:
@@ -43,7 +44,7 @@ def _border(border):
 
 def _color(color, mode):
     if Image.isStringType(color):
-        import ImageColor
+        from . import ImageColor
         color = ImageColor.getcolor(color, mode)
     return color
 
@@ -56,7 +57,7 @@ def _lut(image, lut):
             lut = lut + lut + lut
         return image.point(lut)
     else:
-        raise IOError, "not supported for this image mode"
+        raise IOError("not supported for this image mode")
 
 #
 # actions
@@ -94,7 +95,7 @@ def autocontrast(image, cutoff=0, ignore=None):
             for ix in range(256):
                 n = n + h[ix]
             # remove cutoff% pixels from the low end
-            cut = n * cutoff / 100
+            cut = n * cutoff // 100
             for lo in range(256):
                 if cut > h[lo]:
                     cut = cut - h[lo]
@@ -105,7 +106,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                 if cut <= 0:
                     break
             # remove cutoff% samples from the hi end
-            cut = n * cutoff / 100
+            cut = n * cutoff // 100
             for hi in range(255, -1, -1):
                 if cut > h[hi]:
                     cut = cut - h[hi]
@@ -124,7 +125,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                 break
         if hi <= lo:
             # don't bother
-            lut.extend(range(256))
+            lut.extend(list(range(256)))
         else:
             scale = 255.0 / (hi - lo)
             offset = -lo * scale
@@ -155,9 +156,9 @@ def colorize(image, black, white):
     white = _color(white, "RGB")
     red = []; green = []; blue = []
     for i in range(256):
-        red.append(black[0]+i*(white[0]-black[0])/255)
-        green.append(black[1]+i*(white[1]-black[1])/255)
-        blue.append(black[2]+i*(white[2]-black[2])/255)
+        red.append(black[0]+i*(white[0]-black[0])//255)
+        green.append(black[1]+i*(white[1]-black[1])//255)
+        blue.append(black[2]+i*(white[2]-black[2])//255)
     image = image.convert("RGB")
     return _lut(image, red + green + blue)
 
@@ -209,17 +210,17 @@ def equalize(image, mask=None):
     h = image.histogram(mask)
     lut = []
     for b in range(0, len(h), 256):
-        histo = filter(None, h[b:b+256])
+        histo = [_f for _f in h[b:b+256] if _f]
         if len(histo) <= 1:
-            lut.extend(range(256))
+            lut.extend(list(range(256)))
         else:
-            step = (reduce(operator.add, histo) - histo[-1]) / 255
+            step = (reduce(operator.add, histo) - histo[-1]) // 255
             if not step:
-                lut.extend(range(256))
+                lut.extend(list(range(256)))
             else:
-                n = step / 2
+                n = step // 2
                 for i in range(256):
-                    lut.append(n / step)
+                    lut.append(n // step)
                     n = n + h[i+b]
     return _lut(image, lut)
 
@@ -274,7 +275,7 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     # http://www.cazabon.com
 
     # ensure inputs are valid
-    if type(centering) != type([]):
+    if not isinstance(centering, list):
         centering = [centering[0], centering[1]]
 
     if centering[0] > 1.0 or centering[0] < 0.0:

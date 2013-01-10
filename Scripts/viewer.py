@@ -3,7 +3,13 @@
 # $Id$
 #
 
-from Tkinter import *
+from __future__ import print_function
+
+try:
+    from tkinter import *
+except ImportError:
+    from Tkinter import *
+
 from PIL import Image, ImageTk
 
 #
@@ -31,7 +37,7 @@ if __name__ == "__main__":
     import sys
 
     if not sys.argv[1:]:
-        print "Syntax: python viewer.py imagefile"
+        print("Syntax: python viewer.py imagefile")
         sys.exit(1)
 
     filename = sys.argv[1]

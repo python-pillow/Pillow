@@ -15,8 +15,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-import EpsImagePlugin
-import string
+from __future__ import print_function
+
+from . import EpsImagePlugin
 
 ##
 # Simple Postscript graphics interface.
@@ -52,7 +53,7 @@ class PSDraw:
             self.fp.flush()
 
     def setfont(self, font, size):
-        if not self.isofont.has_key(font):
+        if font not in self.isofont:
             # reencode font
             self.fp.write("/PSDraw-%s ISOLatin1Encoding /%s E\n" %\
                           (font, font))
@@ -61,7 +62,7 @@ class PSDraw:
         self.fp.write("/F0 %d /PSDraw-%s F\n" % (size, font))
 
     def setink(self, ink):
-        print "*** NOT YET IMPLEMENTED ***"
+        print("*** NOT YET IMPLEMENTED ***")
 
     def line(self, xy0, xy1):
         xy = xy0 + xy1
@@ -71,8 +72,8 @@ class PSDraw:
         self.fp.write("%d %d M %d %d 0 Vr\n" % box)
 
     def text(self, xy, text):
-        text = string.joinfields(string.splitfields(text, "("), "\\(")
-        text = string.joinfields(string.splitfields(text, ")"), "\\)")
+        text = "\\(".join(text.split("("))
+        text = "\\)".join(text.split(")"))
         xy = xy + (text,)
         self.fp.write("%d %d M (%s) S\n" % xy)
 

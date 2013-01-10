@@ -31,12 +31,8 @@
 
 #include "Python.h"
 
-#if PY_VERSION_HEX < 0x01060000
-#define PyObject_New PyObject_NEW
-#define PyObject_Del PyMem_DEL
-#endif
-
 #include "Imaging.h"
+#include "py3.h"
 
 #include "Gif.h"
 #include "Lzw.h"
@@ -57,7 +53,7 @@ typedef struct {
     PyObject* lock;
 } ImagingDecoderObject;
 
-staticforward PyTypeObject ImagingDecoderType;
+static PyTypeObject ImagingDecoderType;
 
 static ImagingDecoderObject*
 PyImaging_DecoderNew(int contextsize)
@@ -65,7 +61,8 @@ PyImaging_DecoderNew(int contextsize)
     ImagingDecoderObject *decoder;
     void *context;
 
-    ImagingDecoderType.ob_type = &PyType_Type;
+    if(PyType_Ready(&ImagingDecoderType) < 0)
+        return NULL;
 
     decoder = PyObject_New(ImagingDecoderObject, &ImagingDecoderType);
     if (decoder == NULL)
@@ -110,7 +107,7 @@ _decode(ImagingDecoderObject* decoder, PyObject* args)
     UINT8* buffer;
     int bufsize, status;
 
-    if (!PyArg_ParseTuple(args, "s#", &buffer, &bufsize))
+    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH, &buffer, &bufsize))
 	return NULL;
 
     status = decoder->decode(decoder->im, &decoder->state, buffer, bufsize);
@@ -185,26 +182,38 @@ static struct PyMethodDef methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-_getattr(ImagingDecoderObject* self, char* name)
-{
-    return Py_FindMethod(methods, (PyObject*) self, name);
-}
-
-statichere PyTypeObject ImagingDecoderType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
+static PyTypeObject ImagingDecoderType = {
+	PyVarObject_HEAD_INIT(NULL, 0)
 	"ImagingDecoder",		/*tp_name*/
 	sizeof(ImagingDecoderObject),	/*tp_size*/
 	0,				/*tp_itemsize*/
 	/* methods */
 	(destructor)_dealloc,		/*tp_dealloc*/
 	0,				/*tp_print*/
-	(getattrfunc)_getattr,		/*tp_getattr*/
-	0,				/*tp_setattr*/
-	0,				/*tp_compare*/
-	0,				/*tp_repr*/
-	0,                              /*tp_hash*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
+    0,                          /*tp_as_number */
+    0,                          /*tp_as_sequence */
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    methods,                    /*tp_methods*/
+    0,                          /*tp_members*/
+    0,                          /*tp_getset*/
 };
 
 /* -------------------------------------------------------------------- */
