@@ -483,7 +483,7 @@ cms_get_display_profile_win32(PyObject* self, PyObject* args)
     }
 
     if (ok)
-        return PyString_FromStringAndSize(filename, filename_size-1);
+        return PyUnicode_FromStringAndSize(filename, filename_size-1);
 
     Py_INCREF(Py_None);
     return Py_None;
