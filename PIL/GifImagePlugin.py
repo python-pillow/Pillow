@@ -248,7 +248,12 @@ def _save(im, fp, filename):
             rawmode = "L"
 
     # header
-    for s in getheader(imOut, im.encoderinfo):
+    try:
+        palette = im.encoderinfo["palette"]
+    except KeyError:
+        palette = None
+    
+    for s in getheader(imOut, palette, im.encoderinfo):
         fp.write(s)
 
     flags = 0
@@ -319,7 +324,7 @@ def _save_netpbm(im, fp, filename):
 # --------------------------------------------------------------------
 # GIF utilities
 
-def getheader(im, info=None):
+def getheader(im, palette, info=None):
     """Return a list of strings representing a GIF header"""
 
     optimize = info and info.get("optimize", 0)
@@ -347,7 +352,13 @@ def getheader(im, info=None):
     # global palette
     if im.mode == "P":
         # colour palette
-        s.append(im.im.getpalette("RGB")[:maxcolor*3])
+        if palette is not None and Image.isBytesType(palette):
+            paletteBytes = palette
+        else:
+            paletteBytes =im.im.getpalette("RGB")[:maxcolor*3]
+            
+        s.append(paletteBytes)
+
     else:
         # greyscale
         for i in range(maxcolor):
