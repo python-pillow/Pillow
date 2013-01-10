@@ -35,6 +35,8 @@ MAXBLOCK = 65536
 
 SAFEBLOCK = 1024*1024
 
+LOAD_TRUNCATED_IMAGES = False
+
 ERRORS = {
     -1: "image buffer overrun error",
     -2: "decoding error",
@@ -196,10 +198,22 @@ class ImageFile(Image.Image):
                 b = prefix
                 t = len(b)
                 while True:
-                    s = read(self.decodermaxblock)
-                    if not s:
+                    try:
+                        s = read(self.decodermaxblock)
+                    except IndexError as ie: # truncated png/gif
+                        if LOAD_TRUNCATED_IMAGES:
+                            break
+                        else:
+                            raise IndexError(ie)
+                            
+                    if not s: # truncated jpeg
                         self.tile = []
-                        raise IOError("image file is truncated (%d bytes not processed)" % len(b))
+                        
+                        if LOAD_TRUNCATED_IMAGES:
+                            break
+                        else:
+                            raise IOError("image file is truncated (%d bytes not processed)" % len(b))
+
                     b = b + s
                     n, e = d.decode(b)
                     if n < 0:
@@ -212,7 +226,9 @@ class ImageFile(Image.Image):
 
         self.fp = None # might be shared
 
-        if not self.map and e < 0:
+        if not LOAD_TRUNCATED_IMAGES and not self.map and e < 0:
+            # Note: If loading a truncated image results in an all black Image,
+            # the decoder wasn't able to decode anything.
             raise_ioerror(e)
 
         # post processing
