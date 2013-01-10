@@ -243,7 +243,11 @@ SaneDev_get_options(SaneDevObject *self, PyObject *args)
 	      constraint=PyList_New(0);
 	      for(j=0; d->constraint.string_list[j]!=NULL; j++)
 		PyList_Append(constraint, 
-			      PyBytes_FromString(d->constraint.string_list[j]));
+#if PY_MAJOR_VERSION >= 3
+			      PyUnicode_DecodeLatin1(d->constraint.string_list[j], strlen(d->constraint.string_list[j]), NULL));
+#else
+			      PyString_FromString(d->constraint.string_list[j]));
+#endif
 	      break;
 	    }
 	  value=Py_BuildValue("isssiiiiO", i, d->name, d->title, d->desc, 
@@ -294,7 +298,11 @@ SaneDev_get_option(SaneDevObject *self, PyObject *args)
       value=Py_BuildValue("d", SANE_UNFIX((*((SANE_Fixed*)v))) );
       break;
     case(SANE_TYPE_STRING):
+#if PY_MAJOR_VERSION >= 3
+      value=PyUnicode_DecodeLatin1((const char *) v, strlen((const char *) v), NULL);
+#else
       value=Py_BuildValue("s", v);
+#endif
       break;
     case(SANE_TYPE_BUTTON):
     case(SANE_TYPE_GROUP):
@@ -355,14 +363,33 @@ SaneDev_set_option(SaneDevObject *self, PyObject *args)
       *( (SANE_Fixed*)v) = SANE_FIX(PyFloat_AsDouble(value));
       break;
     case(SANE_TYPE_STRING):
-      if (!PyBytes_Check(value))
+#if PY_MAJOR_VERSION >= 3
+      if (!PyUnicode_Check(value))
 	{
 	  PyErr_SetString(PyExc_TypeError, "SANE_STRING requires a string");
 	  free(v);
 	  return NULL;
 	}
-      strncpy(v, PyBytes_AsString(value), d->size-1);
+      {
+	PyObject *encoded = PyUnicode_AsLatin1String(value);
+
+	if (!encoded)
+	  return NULL;
+
+	strncpy(v, PyBytes_AsString(encoded), d->size-1);
+	((char*)v)[d->size-1] = 0;
+	Py_DECREF(encoded);
+      }
+#else
+      if (!PyString_Check(value))
+	{
+	  PyErr_SetString(PyExc_TypeError, "SANE_STRING requires a string");
+	  free(v);
+	  return NULL;
+	}
+      strncpy(v, PyString_AsString(value), d->size-1);
       ((char*)v)[d->size-1] = 0;
+#endif
       break;
     case(SANE_TYPE_BUTTON): 
     case(SANE_TYPE_GROUP):
