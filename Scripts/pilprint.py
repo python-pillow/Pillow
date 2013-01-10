@@ -11,6 +11,8 @@
 # 0.3   2003-05-06 fl   Fixed a typo or two.
 #
 
+from __future__ import print_function
+
 VERSION = "pilprint 0.3/2003-05-05"
 
 from PIL import Image
@@ -29,18 +31,18 @@ def description(file, image):
 import getopt, os, sys
 
 if len(sys.argv) == 1:
-    print "PIL Print 0.2a1/96-10-04 -- print image files"
-    print "Usage: pilprint files..."
-    print "Options:"
-    print "  -c            colour printer (default is monochrome)"
-    print "  -p            print via lpr (default is stdout)"
-    print "  -P <printer>  same as -p but use given printer"
+    print("PIL Print 0.2a1/96-10-04 -- print image files")
+    print("Usage: pilprint files...")
+    print("Options:")
+    print("  -c            colour printer (default is monochrome)")
+    print("  -p            print via lpr (default is stdout)")
+    print("  -P <printer>  same as -p but use given printer")
     sys.exit(1)
 
 try:
     opt, argv = getopt.getopt(sys.argv[1:], "cdpP:")
-except getopt.error, v:
-    print v
+except getopt.error as v:
+    print(v)
     sys.exit(1)
 
 printer = None # print to stdout
@@ -50,7 +52,7 @@ for o, a in opt:
     if o == "-d":
         # debug: show available drivers
         Image.init()
-        print Image.ID
+        print(Image.ID)
         sys.exit(1)
     elif o == "-c":
         # colour printer
@@ -89,5 +91,5 @@ for file in argv:
         ps.end_document()
 
     except:
-        print "cannot print image",
-        print "(%s:%s)" % (sys.exc_type, sys.exc_value)
+        print("cannot print image", end=' ')
+        print("(%s:%s)" % (sys.exc_info()[0], sys.exc_info()[1]))

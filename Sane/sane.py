@@ -46,7 +46,6 @@ class Option:
     """
 
     def __init__(self, args, scanDev):
-        import string
         self.scanDev = scanDev # needed to get current value of this option
         self.index, self.name = args[0], args[1]
         self.title, self.desc = args[2], args[3]
@@ -56,8 +55,8 @@ class Option:
         def f(x):
             if x=='-': return '_'
             else: return x
-        if type(self.name)!=type(''): self.py_name=str(self.name)
-        else: self.py_name=string.join(map(f, self.name), '')
+        if not isinstance(self.name, str): self.py_name=str(self.name)
+        else: self.py_name=''.join(map(f, self.name))
 
     def is_active(self):
         return _sane.OPTION_IS_ACTIVE(self.cap)
@@ -86,7 +85,7 @@ active:    %s
 settable:  %s\n""" % (self.py_name, curValue,
                       self.index, self.title, self.desc,
                       TYPE_STR[self.type], UNIT_STR[self.unit],
-                      `self.constraint`, active, settable)
+                      repr(self.constraint), active, settable)
         return s
 
 
@@ -106,7 +105,7 @@ class _SaneIterator:
     def next(self):
         try:
             self.device.start()
-        except error, v:
+        except error as v:
             if v == 'Document feeder out of documents':
                 raise StopIteration
             else:
@@ -166,16 +165,16 @@ class SaneDev:
     def __setattr__(self, key, value):
         dev=self.__dict__['dev']
         optdict=self.__dict__['opt']
-        if not optdict.has_key(key):
+        if key not in optdict:
             self.__dict__[key]=value ; return
         opt=optdict[key]
         if opt.type==TYPE_GROUP:
-            raise AttributeError, "Groups can't be set: "+key
+            raise AttributeError("Groups can't be set: "+key)
         if not _sane.OPTION_IS_ACTIVE(opt.cap):
-            raise AttributeError, 'Inactive option: '+key
+            raise AttributeError('Inactive option: '+key)
         if not _sane.OPTION_IS_SETTABLE(opt.cap):
-            raise AttributeError, "Option can't be set by software: "+key
-        if type(value) == int and opt.type == TYPE_FIXED:
+            raise AttributeError("Option can't be set by software: "+key)
+        if isinstance(value, int) and opt.type == TYPE_FIXED:
             # avoid annoying errors of backend if int is given instead float:
             value = float(value)
         self.last_opt = dev.set_option(opt.index, value)
@@ -187,18 +186,18 @@ class SaneDev:
         dev=self.__dict__['dev']
         optdict=self.__dict__['opt']
         if key=='optlist':
-            return self.opt.keys()
+            return list(self.opt.keys())
         if key=='area':
             return (self.tl_x, self.tl_y),(self.br_x, self.br_y)
-        if not optdict.has_key(key):
-            raise AttributeError, 'No such attribute: '+key
+        if key not in optdict:
+            raise AttributeError('No such attribute: '+key)
         opt=optdict[key]
         if opt.type==TYPE_BUTTON:
-            raise AttributeError, "Buttons don't have values: "+key
+            raise AttributeError("Buttons don't have values: "+key)
         if opt.type==TYPE_GROUP:
-            raise AttributeError, "Groups don't have values: "+key
+            raise AttributeError("Groups don't have values: "+key)
         if not _sane.OPTION_IS_ACTIVE(opt.cap):
-            raise AttributeError, 'Inactive option: '+key
+            raise AttributeError('Inactive option: '+key)
         value = dev.get_option(opt.index)
         return value
 

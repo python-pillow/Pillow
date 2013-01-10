@@ -30,23 +30,11 @@
 
 #include <math.h>
 
-#if PY_VERSION_HEX < 0x01060000
-#define PyObject_New PyObject_NEW
-#define PyObject_Del PyMem_DEL
-#endif
-
-#if PY_VERSION_HEX < 0x02050000
-#define Py_ssize_t int
-#define lenfunc inquiry
-#define ssizeargfunc intargfunc
-#define ssizessizeargfunc intintargfunc
-#define ssizeobjargproc intobjargproc
-#define ssizessizeobjargproc intintobjargproc
-#endif
+#include "py3.h"
 
 /* compatibility wrappers (defined in _imaging.c) */
 extern int PyImaging_CheckBuffer(PyObject* buffer);
-extern int PyImaging_ReadBuffer(PyObject* buffer, const void** ptr);
+extern int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view);
 
 /* -------------------------------------------------------------------- */
 /* Class								*/
@@ -59,7 +47,7 @@ typedef struct {
     int index; /* temporary use, e.g. in decimate */
 } PyPathObject;
 
-staticforward PyTypeObject PyPathType;
+static PyTypeObject PyPathType;
 
 static double*
 alloc_array(int count)
@@ -89,6 +77,9 @@ path_new(Py_ssize_t count, double* xy, int duplicate)
         xy = p;
     }
 
+    if (PyType_Ready(&PyPathType) < 0)
+        return NULL;
+
     path = PyObject_New(PyPathObject, &PyPathType);
     if (path == NULL)
 	return NULL;
@@ -110,7 +101,7 @@ path_dealloc(PyPathObject* path)
 /* Helpers								*/
 /* -------------------------------------------------------------------- */
 
-#define PyPath_Check(op) ((op)->ob_type == &PyPathType)
+#define PyPath_Check(op) (Py_TYPE(op) == &PyPathType)
 
 int
 PyPath_Flatten(PyObject* data, double **pxy)
@@ -131,16 +122,20 @@ PyPath_Flatten(PyObject* data, double **pxy)
 	
     if (PyImaging_CheckBuffer(data)) {
         /* Assume the buffer contains floats */
-        float* ptr;
-        int n = PyImaging_ReadBuffer(data, (const void**) &ptr);
-        n /= 2 * sizeof(float);
-        xy = alloc_array(n);
-        if (!xy)
-            return -1;
-        for (i = 0; i < n+n; i++)
-            xy[i] = ptr[i];
-        *pxy = xy;
-        return n;
+        Py_buffer buffer;
+        if (PyImaging_GetBuffer(data, &buffer) == 0) {
+            int n = buffer.len / (2 * sizeof(float));
+            float *ptr = (float*) buffer.buf;
+            xy = alloc_array(n);
+            if (!xy)
+                return -1;
+            for (i = 0; i < n+n; i++)
+                xy[i] = ptr[i];
+            *pxy = xy;
+            PyBuffer_Release(&buffer);
+            return n;
+        }
+        PyErr_Clear();
     }
 
     if (!PySequence_Check(data)) {
@@ -361,6 +356,8 @@ path_getbbox(PyPathObject* self, PyObject* args)
 static PyObject*
 path_getitem(PyPathObject* self, int i)
 {
+    if (i < 0)
+        i = self->count + i;
     if (i < 0 || i >= self->count) {
 	PyErr_SetString(PyExc_IndexError, "path index out of range");
 	return NULL;
@@ -539,22 +536,56 @@ static struct PyMethodDef methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-path_getattr(PyPathObject* self, char* name)
+static PyObject*
+path_getattr_id(PyPathObject* self, void* closure)
 {
-    PyObject* res;
-
-    res = Py_FindMethod(methods, (PyObject*) self, name);
-    if (res)
-	return res;
-
-    PyErr_Clear();
-
-    if (strcmp(name, "id") == 0)
 	return Py_BuildValue("l", (long) self->xy);
+}
 
-    PyErr_SetString(PyExc_AttributeError, name);
-    return NULL;
+static struct PyGetSetDef getsetters[] = {
+    { "id", (getter) path_getattr_id },
+    { NULL }
+};
+
+static PyObject*
+path_subscript(PyPathObject* self, PyObject* item) {
+    if (PyIndex_Check(item)) {
+        Py_ssize_t i;
+        i = PyNumber_AsSsize_t(item, PyExc_IndexError);
+        if (i == -1 && PyErr_Occurred())
+            return NULL;
+        return path_getitem(self, i);
+    }
+    if (PySlice_Check(item)) {
+        int len = 4;
+        Py_ssize_t start, stop, step, slicelength;
+
+#if PY_VERSION_HEX >= 0x03000000
+        if (PySlice_GetIndicesEx(item, len, &start, &stop, &step, &slicelength) < 0)
+            return NULL;
+#else
+        if (PySlice_GetIndicesEx((PySliceObject*)item, len, &start, &stop, &step, &slicelength) < 0)
+            return NULL;
+#endif
+
+        if (slicelength <= 0) {
+            double *xy = alloc_array(0);
+            return (PyObject*) path_new(0, xy, 0);
+        }
+        else if (step == 1) {
+            return path_getslice(self, start, stop);
+        }
+        else {
+            PyErr_SetString(PyExc_TypeError, "slice steps not supported");
+            return NULL;
+        }
+    }
+    else {
+        PyErr_Format(PyExc_TypeError,
+                     "Path indices must be integers, not %.200s",
+                     Py_TYPE(&item)->tp_name);
+        return NULL;
+    }
 }
 
 static PySequenceMethods path_as_sequence = {
@@ -567,21 +598,43 @@ static PySequenceMethods path_as_sequence = {
 	(ssizessizeobjargproc)0, /*sq_ass_slice*/
 };
 
-statichere PyTypeObject PyPathType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
+static PyMappingMethods path_as_mapping = {
+    (lenfunc)path_len,
+    (binaryfunc)path_subscript,
+    NULL
+};
+
+static PyTypeObject PyPathType = {
+	PyVarObject_HEAD_INIT(NULL, 0)
 	"Path",				/*tp_name*/
 	sizeof(PyPathObject),		/*tp_size*/
 	0,				/*tp_itemsize*/
 	/* methods */
 	(destructor)path_dealloc,	/*tp_dealloc*/
 	0,				/*tp_print*/
-	(getattrfunc)path_getattr,	/*tp_getattr*/
+	0,	                            /*tp_getattr*/
 	0,				/*tp_setattr*/
 	0,				/*tp_compare*/
 	0,				/*tp_repr*/
 	0,                              /*tp_as_number */
 	&path_as_sequence,              /*tp_as_sequence */
-	0,                              /*tp_as_mapping */
-	0,                              /*tp_hash*/
+    &path_as_mapping,           /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    methods,                    /*tp_methods*/
+    0,                          /*tp_members*/
+    getsetters,                 /*tp_getset*/
 };
+

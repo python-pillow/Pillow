@@ -28,6 +28,12 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #include <sys/time.h>
 
+#if PY_MAJOR_VERSION >= 3
+  #define PyInt_AsLong PyLong_AsLong
+  #define PyInt_FromLong PyLong_FromLong
+  #define PyInt_Check PyLong_Check
+#endif
+
 static PyObject *ErrorObject;
 
 typedef struct {
@@ -51,14 +57,18 @@ PySane_Error(SANE_Status st)
   return NULL;
 }
 
-staticforward PyTypeObject SaneDev_Type;
+static PyTypeObject SaneDev_Type;
 
-#define SaneDevObject_Check(v)	((v)->ob_type == &SaneDev_Type)
+#define SaneDevObject_Check(v)	(Py_TYPE(v) == &SaneDev_Type)
 
 static SaneDevObject *
 newSaneDevObject(void)
 {
 	SaneDevObject *self;
+
+    if (PyType_Ready(&SaneDev_Type) < 0)
+        return NULL;
+
 	self = PyObject_NEW(SaneDevObject, &SaneDev_Type);
 	if (self == NULL)
 		return NULL;
@@ -233,7 +243,11 @@ SaneDev_get_options(SaneDevObject *self, PyObject *args)
 	      constraint=PyList_New(0);
 	      for(j=0; d->constraint.string_list[j]!=NULL; j++)
 		PyList_Append(constraint, 
+#if PY_MAJOR_VERSION >= 3
+			      PyUnicode_DecodeLatin1(d->constraint.string_list[j], strlen(d->constraint.string_list[j]), NULL));
+#else
 			      PyString_FromString(d->constraint.string_list[j]));
+#endif
 	      break;
 	    }
 	  value=Py_BuildValue("isssiiiiO", i, d->name, d->title, d->desc, 
@@ -284,7 +298,11 @@ SaneDev_get_option(SaneDevObject *self, PyObject *args)
       value=Py_BuildValue("d", SANE_UNFIX((*((SANE_Fixed*)v))) );
       break;
     case(SANE_TYPE_STRING):
+#if PY_MAJOR_VERSION >= 3
+      value=PyUnicode_DecodeLatin1((const char *) v, strlen((const char *) v), NULL);
+#else
       value=Py_BuildValue("s", v);
+#endif
       break;
     case(SANE_TYPE_BUTTON):
     case(SANE_TYPE_GROUP):
@@ -345,7 +363,25 @@ SaneDev_set_option(SaneDevObject *self, PyObject *args)
       *( (SANE_Fixed*)v) = SANE_FIX(PyFloat_AsDouble(value));
       break;
     case(SANE_TYPE_STRING):
-      if (!PyString_Check(value)) 
+#if PY_MAJOR_VERSION >= 3
+      if (!PyUnicode_Check(value))
+	{
+	  PyErr_SetString(PyExc_TypeError, "SANE_STRING requires a string");
+	  free(v);
+	  return NULL;
+	}
+      {
+	PyObject *encoded = PyUnicode_AsLatin1String(value);
+
+	if (!encoded)
+	  return NULL;
+
+	strncpy(v, PyBytes_AsString(encoded), d->size-1);
+	((char*)v)[d->size-1] = 0;
+	Py_DECREF(encoded);
+      }
+#else
+      if (!PyString_Check(value))
 	{
 	  PyErr_SetString(PyExc_TypeError, "SANE_STRING requires a string");
 	  free(v);
@@ -353,6 +389,7 @@ SaneDev_set_option(SaneDevObject *self, PyObject *args)
 	}
       strncpy(v, PyString_AsString(value), d->size-1);
       ((char*)v)[d->size-1] = 0;
+#endif
       break;
     case(SANE_TYPE_BUTTON): 
     case(SANE_TYPE_GROUP):
@@ -1095,29 +1132,38 @@ static PyMethodDef SaneDev_methods[] = {
 	{NULL,		NULL}		/* sentinel */
 };
 
-static PyObject *
-SaneDev_getattr(SaneDevObject *self, char *name)
-{
-	return Py_FindMethod(SaneDev_methods, (PyObject *)self, name);
-}
-
-staticforward PyTypeObject SaneDev_Type = {
-	PyObject_HEAD_INIT(&PyType_Type)
-	0,			/*ob_size*/
+static PyTypeObject SaneDev_Type = {
+	PyVarObject_HEAD_INIT(NULL, 0)
 	"SaneDev",			/*tp_name*/
 	sizeof(SaneDevObject),	/*tp_basicsize*/
 	0,			/*tp_itemsize*/
 	/* methods */
 	(destructor)SaneDev_dealloc, /*tp_dealloc*/
 	0,			/*tp_print*/
-	(getattrfunc)SaneDev_getattr, /*tp_getattr*/
-	0, /*tp_setattr*/
-	0,			/*tp_compare*/
-	0,			/*tp_repr*/
-	0,			/*tp_as_number*/
-	0,			/*tp_as_sequence*/
-	0,			/*tp_as_mapping*/
-	0,			/*tp_hash*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
+    0,                          /*tp_as_number */
+    0,                          /*tp_as_sequence */
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    SaneDev_methods,            /*tp_methods*/
+    0,                          /*tp_members*/
+    0,                          /*tp_getset*/
 };
 
 /* --------------------------------------------------------------------- */
@@ -1152,8 +1198,8 @@ PySane_exit(PyObject *self, PyObject *args)
 static PyObject *
 PySane_get_devices(PyObject *self, PyObject *args)
 {
-  SANE_Device **devlist;
-  SANE_Device *dev;
+  const SANE_Device **devlist;
+  const SANE_Device *dev;
   SANE_Status st;
   PyObject *list;
   int local_only, i;
@@ -1163,7 +1209,9 @@ PySane_get_devices(PyObject *self, PyObject *args)
       return NULL;
     }
   
+  Py_BEGIN_ALLOW_THREADS
   st=sane_get_devices(&devlist, local_only);
+  Py_END_ALLOW_THREADS
   if (st) return PySane_Error(st);
   if (!(list = PyList_New(0)))
 	    return NULL;
@@ -1191,7 +1239,9 @@ PySane_open(PyObject *self, PyObject *args)
 	rv = newSaneDevObject();
 	if ( rv == NULL )
 	    return NULL;
+	Py_BEGIN_ALLOW_THREADS
 	st = sane_open(name, &(rv->h));
+	Py_END_ALLOW_THREADS
 	if (st) 
 	  {
 	    Py_DECREF(rv);
@@ -1248,17 +1298,40 @@ insint(PyObject *d, char *name, int value)
 	Py_DECREF(v);
 }
 
-void
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef PySane_moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "_sane",
+        NULL,
+        0,
+        PySane_methods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+PyMODINIT_FUNC
+PyInit__sane(void)
+{
+    /* Create the module and add the functions */
+    PyObject *m = PyModule_Create(&PySane_moduledef);
+    if(!m)
+        return NULL;
+#else /* if PY_MAJOR_VERSION < 3 */
+
+PyMODINIT_FUNC
 init_sane(void)
 {
-	PyObject *m, *d;
-
-	/* Create the module and add the functions */
-	m = Py_InitModule("_sane", PySane_methods);
+    /* Create the module and add the functions */
+    PyObject *m = Py_InitModule("_sane", PySane_methods);
+    if(!m)
+        return;
+#endif
 
 	/* Add some symbolic constants to the module */
-	d = PyModule_GetDict(m);
-	ErrorObject = PyString_FromString("_sane.error");
+	PyObject *d = PyModule_GetDict(m);
+	ErrorObject = PyErr_NewException("_sane.error", NULL, NULL);
 	PyDict_SetItemString(d, "error", ErrorObject);
 
 	insint(d, "INFO_INEXACT", SANE_INFO_INEXACT);
@@ -1322,4 +1395,7 @@ init_sane(void)
 	  NUMARRAY_IMPORTED = 1;
 
 #endif /* WITH_NUMARRAY */
+#if PY_MAJOR_VERSION >= 3
+    return m;
+#endif
 }

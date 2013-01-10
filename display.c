@@ -25,12 +25,8 @@
 
 #include "Python.h"
 
-#if PY_VERSION_HEX < 0x01060000
-#define PyObject_New PyObject_NEW
-#define PyObject_Del PyMem_DEL
-#endif
-
 #include "Imaging.h"
+#include "py3.h"
 
 /* -------------------------------------------------------------------- */
 /* Windows DIB support	*/
@@ -44,12 +40,15 @@ typedef struct {
     ImagingDIB dib;
 } ImagingDisplayObject;
 
-staticforward PyTypeObject ImagingDisplayType;
+static PyTypeObject ImagingDisplayType;
 
 static ImagingDisplayObject*
 _new(const char* mode, int xsize, int ysize)
 {
     ImagingDisplayObject *display;
+
+    if (PyType_Ready(&ImagingDisplayType) < 0)
+        return NULL;
 
     display = PyObject_New(ImagingDisplayObject, &ImagingDisplayType);
     if (display == NULL)
@@ -176,12 +175,18 @@ _releasedc(ImagingDisplayObject* display, PyObject* args)
 }
 
 static PyObject*
-_fromstring(ImagingDisplayObject* display, PyObject* args)
+_frombytes(ImagingDisplayObject* display, PyObject* args)
 {
     char* ptr;
     int bytes;
+
+#if PY_VERSION_HEX >= 0x03000000
+    if (!PyArg_ParseTuple(args, "y#:frombytes", &ptr, &bytes))
+        return NULL;
+#else
     if (!PyArg_ParseTuple(args, "s#:fromstring", &ptr, &bytes))
-	return NULL;
+        return NULL;
+#endif
 
     if (display->dib->ysize * display->dib->linesize != bytes) {
         PyErr_SetString(PyExc_ValueError, "wrong size");
@@ -195,12 +200,17 @@ _fromstring(ImagingDisplayObject* display, PyObject* args)
 }
 
 static PyObject*
-_tostring(ImagingDisplayObject* display, PyObject* args)
+_tobytes(ImagingDisplayObject* display, PyObject* args)
 {
+#if PY_VERSION_HEX >= 0x03000000
+    if (!PyArg_ParseTuple(args, ":tobytes"))
+        return NULL;
+#else
     if (!PyArg_ParseTuple(args, ":tostring"))
-	return NULL;
+        return NULL;
+#endif
 
-    return PyString_FromStringAndSize(
+    return PyBytes_FromStringAndSize(
         display->dib->bits, display->dib->ysize * display->dib->linesize
         );
 }
@@ -212,42 +222,65 @@ static struct PyMethodDef methods[] = {
     {"query_palette", (PyCFunction)_query_palette, 1},
     {"getdc", (PyCFunction)_getdc, 1},
     {"releasedc", (PyCFunction)_releasedc, 1},
-    {"fromstring", (PyCFunction)_fromstring, 1},
-    {"tostring", (PyCFunction)_tostring, 1},
+    {"frombytes", (PyCFunction)_frombytes, 1},
+    {"tobytes", (PyCFunction)_tobytes, 1},
+#if PY_VERSION_HEX < 0x03000000
+    {"fromstring", (PyCFunction)_frombytes, 1},
+    {"tostring", (PyCFunction)_tobytes, 1},
+#endif
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-_getattr(ImagingDisplayObject* self, char* name)
+static PyObject*
+_getattr_mode(ImagingDisplayObject* self, void* closure)
 {
-    PyObject* res;
-
-    res = Py_FindMethod(methods, (PyObject*) self, name);
-    if (res)
-	return res;
-    PyErr_Clear();
-    if (!strcmp(name, "mode"))
 	return Py_BuildValue("s", self->dib->mode);
-    if (!strcmp(name, "size"))
-	return Py_BuildValue("ii", self->dib->xsize, self->dib->ysize);
-    PyErr_SetString(PyExc_AttributeError, name);
-    return NULL;
 }
 
-statichere PyTypeObject ImagingDisplayType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
+static PyObject*
+_getattr_size(ImagingDisplayObject* self, void* closure)
+{
+	return Py_BuildValue("ii", self->dib->xsize, self->dib->ysize);
+}
+
+static struct PyGetSetDef getsetters[] = {
+    { "mode",   (getter) _getattr_mode },
+    { "size",   (getter) _getattr_size },
+    { NULL }
+};
+
+static PyTypeObject ImagingDisplayType = {
+	PyVarObject_HEAD_INIT(NULL, 0)
 	"ImagingDisplay",		/*tp_name*/
 	sizeof(ImagingDisplayObject),	/*tp_size*/
 	0,				/*tp_itemsize*/
 	/* methods */
 	(destructor)_delete,		/*tp_dealloc*/
 	0,				/*tp_print*/
-	(getattrfunc)_getattr,		/*tp_getattr*/
-	0,				/*tp_setattr*/
-	0,				/*tp_compare*/
-	0,				/*tp_repr*/
-	0,                              /*tp_hash*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
+    0,                          /*tp_as_number */
+    0,                          /*tp_as_sequence */
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    methods,                    /*tp_methods*/
+    0,                          /*tp_members*/
+    getsetters,                 /*tp_getset*/
 };
 
 PyObject*
@@ -749,7 +782,7 @@ PyImaging_DrawWmf(PyObject* self, PyObject* args)
     int datasize;
     int width, height;
     int x0, y0, x1, y1;
-    if (!PyArg_ParseTuple(args, "s#(ii)(iiii):_load", &data, &datasize,
+    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH"(ii)(iiii):_load", &data, &datasize,
                           &width, &height, &x0, &x1, &y0, &y1))
         return NULL;
 

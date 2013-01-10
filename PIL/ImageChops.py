@@ -15,7 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 
 ##
 # The <b>ImageChops</b> module contains a number of arithmetical image

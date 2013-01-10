@@ -19,11 +19,6 @@
 
 #include "Python.h"
 
-#if PY_VERSION_HEX < 0x01060000
-#define PyObject_New PyObject_NEW
-#define PyObject_Del PyMem_DEL
-#endif
-
 #include "Imaging.h"
 
 
@@ -35,14 +30,17 @@ typedef struct {
     ImagingOutline outline;
 } OutlineObject;
 
-staticforward PyTypeObject OutlineType;
+static PyTypeObject OutlineType;
 
-#define PyOutline_Check(op) ((op)->ob_type == &OutlineType)
+#define PyOutline_Check(op) (Py_TYPE(op) == &OutlineType)
 
 static OutlineObject*
 _outline_new(void)
 {
     OutlineObject *self;
+
+    if (PyType_Ready(&OutlineType) < 0)
+        return NULL;
 
     self = PyObject_New(OutlineObject, &OutlineType);
     if (self == NULL)
@@ -159,21 +157,36 @@ static struct PyMethodDef _outline_methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-_outline_getattr(OutlineObject* self, char* name)
-{
-    return Py_FindMethod(_outline_methods, (PyObject*) self, name);
-}
-
-statichere PyTypeObject OutlineType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
+static PyTypeObject OutlineType = {
+	PyVarObject_HEAD_INIT(NULL, 0)
 	"Outline",			/*tp_name*/
 	sizeof(OutlineObject),		/*tp_size*/
 	0,				/*tp_itemsize*/
 	/* methods */
 	(destructor)_outline_dealloc,	/*tp_dealloc*/
 	0,				/*tp_print*/
-	(getattrfunc)_outline_getattr,	/*tp_getattr*/
-	0				/*tp_setattr*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
+    0,                          /*tp_as_number */
+    0,                          /*tp_as_sequence */
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    _outline_methods,           /*tp_methods*/
+    0,                          /*tp_members*/
+    0,                          /*tp_getset*/
 };

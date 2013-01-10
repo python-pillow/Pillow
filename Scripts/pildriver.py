@@ -48,8 +48,9 @@ of its upper-left-hand corner and displays the cropped portion.
 # 3. Add support for composing and decomposing multiple-image files.
 #
 
+from __future__ import print_function
+
 from PIL import Image
-import string
 
 class PILDriver:
 
@@ -206,7 +207,7 @@ class PILDriver:
         Process the top image with the given filter.
         """
         import ImageFilter
-        filter = eval("ImageFilter." + string.upper(self.do_pop()))
+        filter = eval("ImageFilter." + self.do_pop().upper())
         image = self.do_pop()
         self.push(image.filter(filter))
 
@@ -314,7 +315,7 @@ class PILDriver:
 
         Transpose the top image.
         """
-        transpose = string.upper(self.do_pop())
+        transpose = self.do_pop().upper()
         image = self.do_pop()
         self.push(image.transpose(transpose))
 
@@ -482,9 +483,9 @@ class PILDriver:
             self.push(list[0])
             list = list[1:]
             if self.verbose:
-                print "Stack: " + `self.stack`
+                print("Stack: " + repr(self.stack))
             top = self.top()
-            if type(top) != type(""):
+            if not isinstance(top, str):
                 continue;
             funcname = "do_" + top
             if not hasattr(self, funcname):
@@ -508,15 +509,15 @@ if __name__ == '__main__':
     if len(sys.argv[1:]) > 0:
         driver.execute(sys.argv[1:])
     else:
-        print "PILDriver says hello."
-        while 1:
+        print("PILDriver says hello.")
+        while True:
             try:
                 line = raw_input('pildriver> ');
             except EOFError:
-                print "\nPILDriver says goodbye."
+                print("\nPILDriver says goodbye.")
                 break
-            driver.execute(string.split(line))
-            print driver.stack
+            driver.execute(line.split())
+            print(driver.stack)
 
 # The following sets edit modes for GNU EMACS
 # Local Variables:

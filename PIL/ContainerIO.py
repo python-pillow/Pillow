@@ -92,7 +92,7 @@ class ContainerIO:
 
     def readline(self):
         s = ""
-        while 1:
+        while True:
             c = self.read(1)
             if not c:
                 break
@@ -108,7 +108,7 @@ class ContainerIO:
 
     def readlines(self):
         l = []
-        while 1:
+        while True:
             s = self.readline()
             if not s:
                 break

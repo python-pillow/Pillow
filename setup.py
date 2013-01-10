@@ -1,3 +1,4 @@
+from __future__ import print_function
 import glob
 import os
 import platform
@@ -433,7 +434,7 @@ class pil_build_ext(build_ext):
             tmpfile)
         try:
             if ret >> 8 == 0:
-                fp = open(tmpfile, 'rb')
+                fp = open(tmpfile, 'r')
                 multiarch_path_component = fp.readline().strip()
                 _add_directory(self.compiler.library_dirs,
                     '/usr/lib/' + multiarch_path_component)
@@ -453,7 +454,6 @@ setup(
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
     url='http://github.com/python-imaging/Pillow',
-    use_2to3=True,
     classifiers=[
         "Development Status :: 6 - Mature",
         "Topic :: Multimedia :: Graphics",
@@ -462,6 +462,12 @@ setup(
         "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
         "Topic :: Multimedia :: Graphics :: Graphics Conversion",
         "Topic :: Multimedia :: Graphics :: Viewers",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.2",
+        "Programming Language :: Python :: 3.3",
         ],
     cmdclass={"build_ext": pil_build_ext},
     ext_modules=[Extension("_imaging", ["_imaging.c"])],
