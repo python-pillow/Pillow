@@ -378,10 +378,10 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     /* setup file pointers */
     if (ystep > 0)
         for (y = 0; y < ysize; y++)
-            im->image[y] = view.buf + offset + y * stride;
+            im->image[y] = (char*)view.buf + offset + y * stride;
     else
         for (y = 0; y < ysize; y++)
-            im->image[ysize-y-1] = view.buf + offset + y * stride;
+            im->image[ysize-y-1] = (char*)view.buf + offset + y * stride;
 
     im->destroy = mapping_destroy_buffer;
 
