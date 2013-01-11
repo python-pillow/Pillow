@@ -465,7 +465,7 @@ def _save(im, fp, filename):
         dpi[0], dpi[1],
         subsampling,
         extra,
-        info.get("exif", "")
+        info.get("exif", b"")
         )
 
     ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)])
