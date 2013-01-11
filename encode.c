@@ -525,7 +525,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     char* rawExif = NULL;
     int rawExifLen = 0;
 
-    if (!PyArg_ParseTuple(args, "ss|iiiiiiii"PY_ARG_BYTES_LENGTH,
+    if (!PyArg_ParseTuple(args, "ss|iiiiiiii"PY_ARG_BYTES_LENGTH""PY_ARG_BYTES_LENGTH,
                           &mode, &rawmode, &quality,
                           &progressive, &smooth, &optimize, &streamtype,
                           &xdpi, &ydpi, &subsampling, &extra, &extra_size,
