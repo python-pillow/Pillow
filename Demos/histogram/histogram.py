@@ -39,7 +39,7 @@ for x in xrange(w):
     counts.append(count)
 
 
-hist_im = Image.new(mode = "L", size = (w, h), color = WHITE)
+hist_im = Image.new(mode="L", size=(w, h), color=WHITE)
 draw = ImageDraw.Draw(hist_im)
 h_step = h / max(counts)
 
@@ -47,7 +47,7 @@ for x in xrange(w):
     left_top_x, left_top_y = x, h - counts[x] * h_step
     right_bottom_x, right_bottom_y = x + 1, h
     box = (left_top_x, left_top_y, right_bottom_x, right_bottom_y)
-    draw.rectangle(xy = box, fill = BLACK)
+    draw.rectangle(xy=box, fill=BLACK)
 
 new_file_name = os.path.splitext(os.path.basename(file_path))[0]
 new_file_name = new_file_name + '-' + 'histogram' + '.bmp'

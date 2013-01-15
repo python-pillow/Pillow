@@ -10,9 +10,9 @@ bg_color = BLACK
 
 
 canvas_w, canvas_h = 180, 50
-im = Image.new(mode = "RGB", size = (canvas_w, canvas_h), color = bg_color)
+im = Image.new(mode="RGB", size=(canvas_w, canvas_h), color=bg_color)
 
-draw = ImageDraw.Draw(im = im)
+draw = ImageDraw.Draw(im=im)
 
 left_top_x, left_top_y = 10, 10
 begin = left_top_x, left_top_y
@@ -27,8 +27,8 @@ elif sys.platform == "win32":
 else:
     raise Exception
 font_size = 26
-font = ImageFont.truetype(filename = filename, size = font_size)
+font = ImageFont.truetype(filename=filename, size=font_size)
 
-draw.text(xy = begin, text = text, fill = fg_color, font = font)
+draw.text(xy=begin, text=text, fill=fg_color, font=font)
 
 im.save("draw_text.bmp")

@@ -6,7 +6,7 @@ parent_path = os.path.dirname(PWD)
 import Image
 
 file_path = os.path.join(parent_path, "image_resources", "captcha.jpg")
-im = Image.open(fp = file_path)
+im = Image.open(fp=file_path)
 
 #new_im = im.transpose(Image.FLIP_LEFT_RIGHT)
 #new_filename = os.path.splitext(filepath)[0] + "flip_left_right" + ".jpg"

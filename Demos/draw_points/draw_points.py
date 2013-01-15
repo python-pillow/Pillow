@@ -11,9 +11,9 @@ bg_color = WHITE
 
 
 canvas_w, canvas_h = 100, 100
-im = Image.new(mode = "RGB", size = (canvas_w, canvas_h), color = bg_color)
+im = Image.new(mode="RGB", size=(canvas_w, canvas_h), color=bg_color)
 
-draw = ImageDraw.Draw(im = im)
+draw = ImageDraw.Draw(im=im)
 
 #xy = (p1_x, p1_y)
 #or
@@ -21,6 +21,6 @@ draw = ImageDraw.Draw(im = im)
 
 points = ((10, 10), (40, 10), (55, 35), (40,50))
 for point in points:
-    draw.point(xy = point, fill = fg_color)
+    draw.point(xy=point, fill=fg_color)
 
 im.save("draw_points.jpeg")

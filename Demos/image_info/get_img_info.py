@@ -7,7 +7,7 @@ import Image
 
 file_path = os.path.join(parent_path, "image_resources", "captcha.jpg")
 
-im = Image.open(fp = file_path)
+im = Image.open(fp=file_path)
 w, h = im.size[0], im.size[1]
 
 print "format:", type(im.format), im.format

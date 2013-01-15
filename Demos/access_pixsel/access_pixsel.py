@@ -16,7 +16,7 @@ print "width:", w
 print "high:", h
 print "white(255) ~ black(0):", pixsels[0, 0]
 
-def print_im(im, w = None, h = None):
+def print_im(im, w=None, h=None):
     if isinstance(im, Image.Image):
         w, h = im.size[0], im.size[1]
         pixsels = im.load()

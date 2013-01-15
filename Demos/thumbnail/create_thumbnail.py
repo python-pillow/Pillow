@@ -6,7 +6,7 @@ parent_path = os.path.dirname(PWD)
 import Image
 
 file_path = os.path.join(parent_path, "image_resources", 'l_hires.jpg')
-im = Image.open(fp = file_path)
+im = Image.open(fp=file_path)
 
 width, height = im.size[0], im.size[1]
 new_size = (width/8, height/8)

@@ -7,7 +7,7 @@ import Image
 
 file_path = os.path.join(parent_path, "image_resources", "l_hires.jpg")
 
-im = Image.open(fp = file_path)
+im = Image.open(fp=file_path)
 
 # "L" (8-bit pixels, black and white)
 # http://www.pythonware.com/library/pil/handbook/concepts.htm

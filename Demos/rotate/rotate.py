@@ -7,7 +7,7 @@ import Image
 
 file_path = os.path.join(parent_path, "image_resources", "captcha.jpg")
 
-im = Image.open(fp = file_path)
+im = Image.open(fp=file_path)
 degress = 90
 new_im = im.rotate(degress)
 
