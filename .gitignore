@@ -1,11 +1,5 @@
-*.o
 *.pyc
-build/
-dist/
-.DS_Store
-.hg/
-.hgignore
-.idea/
-.project/
-Demos/ignores/
-Pillow.egg-info/
+*.egg-info
+build
+dist
+.tox
