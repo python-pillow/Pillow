@@ -6,7 +6,7 @@ how to run
 
     [ -d image_resources ] || mkdir image_resources
     wget http://upload.wikimedia.org/wikipedia/commons/6/69/Captcha.jpg -O image_resources/captcha.jpg
-    python crop/croip.py
+    python crop/crop.py
 
 ## Build it on Mac OS X 10.6.*
 

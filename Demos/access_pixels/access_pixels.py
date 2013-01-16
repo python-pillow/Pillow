@@ -22,8 +22,8 @@ def print_im(im, w=None, h=None):
     else:
         pixels = im
 
-    for x in xrange(w):
-        for y in xrange(h):
+    for x in range(w):
+        for y in range(h):
 
             if pixels[x, y] > 128:
                 print " ",

@@ -23,8 +23,8 @@ im = im.draft("L", im.size)
 pixsels = im.load()
 
 
-for x in xrange(w):
-    for y in xrange(h):
+for x in range(w):
+    for y in range(h):
         if pixsels[x, y] > 128:
             pixsels[x, y] = WHITE
         else:
@@ -32,8 +32,8 @@ for x in xrange(w):
 
 
 counts = []
-for x in xrange(w):
-    count = len([1 for y in xrange(h)
+for x in range(w):
+    count = len([1 for y in range(h)
                 if pixsels[x, y] is BLACK])
 
     counts.append(count)
