@@ -324,7 +324,7 @@ def _save_netpbm(im, fp, filename):
 # --------------------------------------------------------------------
 # GIF utilities
 
-def getheader(im, palette, info=None):
+def getheader(im, palette=None, info=None):
     """Return a list of strings representing a GIF header"""
 
     optimize = info and info.get("optimize", 0)
@@ -352,7 +352,7 @@ def getheader(im, palette, info=None):
     # global palette
     if im.mode == "P":
         # colour palette
-        if palette is not None and Image.isBytesType(palette):
+        if palette is not None and isinstance(palette, bytes):
             paletteBytes = palette
         else:
             paletteBytes =im.im.getpalette("RGB")[:maxcolor*3]
