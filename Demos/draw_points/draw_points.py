@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
-import Image
-import ImageDraw
+from PIL import Image
+from PIL import ImageDraw
 
 
 PWD = os.path.dirname(os.path.realpath(__file__))

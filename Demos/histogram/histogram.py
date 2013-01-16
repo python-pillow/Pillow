@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
-import Image, ImageDraw
+from PIL import Image
+from PIL import ImageDraw
 
 
 PWD = os.path.dirname(os.path.realpath(__file__))
@@ -13,15 +14,9 @@ WHITE = 255
 
 im = Image.open(fp = file_path)
 w, h = im.size[0], im.size[1]
-
-print "width:", w
-print "high:", h
-
-
 im = im.draft("L", im.size)
 
 pixsels = im.load()
-
 
 for x in range(w):
     for y in range(h):

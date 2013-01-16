@@ -8,6 +8,7 @@ how to run
     wget http://upload.wikimedia.org/wikipedia/commons/6/69/Captcha.jpg -O image_resources/captcha.jpg
     python crop/crop.py
 
+
 ## Build it on Mac OS X 10.6.*
 
 Build an egg for i386 with Python 2.5/Python 2.6

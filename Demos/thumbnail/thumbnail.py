@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-import Image
+from PIL import Image
 
 
 PWD = os.path.dirname(os.path.realpath(__file__))
