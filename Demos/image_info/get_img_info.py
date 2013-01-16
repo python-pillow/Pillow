@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import os
+import Image
+
+
 PWD = os.path.dirname(os.path.realpath(__file__))
 parent_path = os.path.dirname(PWD)
-
-import Image
 
 file_path = os.path.join(parent_path, "image_resources", "captcha.jpg")
 

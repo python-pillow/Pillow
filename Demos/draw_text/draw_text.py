@@ -1,6 +1,12 @@
 #!/usr/bin/env python
-from PIL import Image, ImageDraw, ImageFont
+import os
 import sys
+
+from PIL import Image, ImageDraw, ImageFont
+
+
+PWD = os.path.dirname(os.path.realpath(__file__))
+parent_path = os.path.dirname(PWD)
 
 BLACK = "#ffffff"
 WHITE = "#000000"
@@ -10,7 +16,7 @@ bg_color = BLACK
 
 
 canvas_w, canvas_h = 180, 50
-im = Image.new(mode="RGB", size=(canvas_w, canvas_h), color=bg_color)
+im = Image.new(mode="RGB", size=(canvas_w, canvas_h), color=WHITE)
 
 draw = ImageDraw.Draw(im=im)
 
@@ -29,6 +35,6 @@ else:
 font_size = 26
 font = ImageFont.truetype(filename=filename, size=font_size)
 
-draw.text(xy=begin, text=text, fill=fg_color, font=font)
+draw.text(xy=begin, text=text, fill=BLACK, font=font)
 
-im.save("draw_text.bmp")
+im.save(os.path.join(PWD, "draw_text.bmp"))

@@ -1,15 +1,18 @@
 #!/usr/bin/env python
+import os
 import Image
 import ImageDraw
+
+
+PWD = os.path.dirname(os.path.realpath(__file__))
+parent_path = os.path.dirname(PWD)
 
 BLACK = "#000000"
 WHITE = "#ffffff"
 RED = "#ff0000"
-bg_color = WHITE
-
 
 canvas_w, canvas_h = 100, 100
-im = Image.new(mode="RGB", size=(canvas_w, canvas_h), color=bg_color)
+im = Image.new(mode="RGB", size=(canvas_w, canvas_h), color=WHITE)
 
 draw = ImageDraw.Draw(im=im)
 
@@ -19,4 +22,4 @@ draw = ImageDraw.Draw(im=im)
 
 xy = ((10, 10), (40, 10), (55, 35), (40,50))
 draw.polygon(xy=xy, fill=RED, outline=BLACK)
-im.save("draw_polygon.jpeg")
+im.save(os.path.join(PWD, "draw_polygon.jpg"))

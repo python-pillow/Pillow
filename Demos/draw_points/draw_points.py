@@ -1,17 +1,17 @@
 #!/usr/bin/env python
+import os
 import Image
 import ImageDraw
 
 
+PWD = os.path.dirname(os.path.realpath(__file__))
+parent_path = os.path.dirname(PWD)
+
 BLACK = "#000000"
 WHITE = "#ffffff"
 
-fg_color = BLACK
-bg_color = WHITE
-
-
 canvas_w, canvas_h = 100, 100
-im = Image.new(mode="RGB", size=(canvas_w, canvas_h), color=bg_color)
+im = Image.new(mode="RGB", size=(canvas_w, canvas_h), color=WHITE)
 
 draw = ImageDraw.Draw(im=im)
 
@@ -21,6 +21,6 @@ draw = ImageDraw.Draw(im=im)
 
 points = ((10, 10), (40, 10), (55, 35), (40,50))
 for point in points:
-    draw.point(xy=point, fill=fg_color)
+    draw.point(xy=point, fill=BLACK)
 
-im.save("draw_points.jpeg")
+im.save(os.path.join(PWD, "draw_points.jpg"))

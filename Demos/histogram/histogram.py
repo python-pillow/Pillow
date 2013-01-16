@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import os
-PWD = os.path.dirname(os.path.realpath(__file__))
-parent_path = os.path.dirname(PWD)
-
 import Image, ImageDraw
 
+
+PWD = os.path.dirname(os.path.realpath(__file__))
+parent_path = os.path.dirname(PWD)
 file_path = os.path.join(parent_path, "image_resources", "captcha.jpg")
 
 BLACK = 0
@@ -52,4 +52,4 @@ for x in xrange(w):
 new_file_name = os.path.splitext(os.path.basename(file_path))[0]
 new_file_name = new_file_name + '-' + 'histogram' + '.bmp'
 
-hist_im.save(new_file_name)
+hist_im.save(os.path.join(PWD, new_file_name))

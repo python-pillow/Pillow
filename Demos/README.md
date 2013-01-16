@@ -11,16 +11,12 @@ PIL Tutorial
  - http://nadiana.com/category/pil
 
 
-## Images used in These Demos
+## Image used in these demos
+
+    wget http://upload.wikimedia.org/wikipedia/commons/6/69/Captcha.jpg -O image_resources/captcha.jpg
 
 
-http://www.cs.cmu.edu/~chuck/lennapg/
-
-    wget http://www.cs.cmu.edu/~chuck/lennapg/lena_std.tif -O image_resources/lena_std.tif
-    wget http://www.cs.cmu.edu/~chuck/lennapg/len_std.jpg -O image_resources/len_std.jpg
-
-
-## Build it on Mac OS X 10.6.8
+## Build it on Mac OS X 10.6.*
 
 Build an egg for i386 with Python 2.5/Python 2.6
 
@@ -35,6 +31,6 @@ Build an egg for x86_64 with Python 2.7(install it via MacPorts)
     python setup.py bdist_egg
 
 
-## Install it via Package Management System
+## Install it via package management system
 
 HomeBrew is cool, you could use it instead of MacPorts on OS X.
