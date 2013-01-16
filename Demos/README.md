@@ -1,20 +1,12 @@
-# Resources About PIL
+# About
 
-PIL Handbook
+Some simple Pillow demos
 
- - http://www.pythonware.com/library/pil/handbook/index.htm
+how to run
 
-
-PIL Tutorial
-
- - http://www.pythonware.com/library/pil/handbook/introduction.htm
- - http://nadiana.com/category/pil
-
-
-## Image used in these demos
-
+    [ -d image_resources ] || mkdir image_resources
     wget http://upload.wikimedia.org/wikipedia/commons/6/69/Captcha.jpg -O image_resources/captcha.jpg
-
+    python crop/croip.py
 
 ## Build it on Mac OS X 10.6.*
 
@@ -34,3 +26,16 @@ Build an egg for x86_64 with Python 2.7(install it via MacPorts)
 ## Install it via package management system
 
 HomeBrew is cool, you could use it instead of MacPorts on OS X.
+
+
+## See also
+
+PIL Handbook
+
+ - http://www.pythonware.com/library/pil/handbook/index.htm
+
+
+PIL Tutorial
+
+ - http://www.pythonware.com/library/pil/handbook/introduction.htm
+ - http://nadiana.com/category/pil

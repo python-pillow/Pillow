@@ -9,23 +9,23 @@ file_path = os.path.join(parent_path, "image_resources", "captcha.jpg")
 im = Image.open(fp = file_path)
 im = im.draft("L", im.size)
 w, h = im.size[0], im.size[1]
-pixsels = im.load()
+pixels = im.load()
 
 print "width:", w
 print "high:", h
-print "white(255) ~ black(0):", pixsels[0, 0]
+print "white(255) ~ black(0):", pixels[0, 0]
 
 def print_im(im, w=None, h=None):
     if isinstance(im, Image.Image):
         w, h = im.size[0], im.size[1]
-        pixsels = im.load()
+        pixels = im.load()
     else:
-        pixsels = im
+        pixels = im
 
     for x in xrange(w):
         for y in xrange(h):
 
-            if pixsels[x, y] > 128:
+            if pixels[x, y] > 128:
                 print " ",
             else:
                 print "1",
