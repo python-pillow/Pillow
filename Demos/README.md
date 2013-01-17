@@ -9,6 +9,17 @@ how to run
     python crop/crop.py
 
 
+## Build pillow on Ubuntu 12.04
+
+    sudo apt-get install zlib1g-dev
+    sudo apt-get install libjpeg8-dev
+    sudo apt-get install libpng12-dev
+    sudo apt-get install libfreetype6-dev
+    sudo apt-get install liblcms1-dev
+    sudo apt-get install python-setuptools
+    python setup.py build
+
+
 ## Build it on Mac OS X 10.6.*
 
 Build an egg for i386 with Python 2.5/Python 2.6

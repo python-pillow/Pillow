@@ -16,20 +16,20 @@ im = Image.open(fp = file_path)
 w, h = im.size[0], im.size[1]
 im = im.draft("L", im.size)
 
-pixsels = im.load()
+pixels = im.load()
 
 for x in range(w):
     for y in range(h):
-        if pixsels[x, y] > 128:
-            pixsels[x, y] = WHITE
+        if pixels[x, y] > 128:
+            pixels[x, y] = WHITE
         else:
-            pixsels[x, y] = BLACK
+            pixels[x, y] = BLACK
 
 
 counts = []
 for x in range(w):
     count = len([1 for y in range(h)
-                if pixsels[x, y] is BLACK])
+                if pixels[x, y] is BLACK])
 
     counts.append(count)
 
@@ -38,7 +38,7 @@ hist_im = Image.new(mode="L", size=(w, h), color=WHITE)
 draw = ImageDraw.Draw(hist_im)
 h_step = h / max(counts)
 
-for x in xrange(w):
+for x in range(w):
     left_top_x, left_top_y = x, h - counts[x] * h_step
     right_bottom_x, right_bottom_y = x + 1, h
     box = (left_top_x, left_top_y, right_bottom_x, right_bottom_y)
