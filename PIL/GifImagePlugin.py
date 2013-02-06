@@ -364,11 +364,6 @@ def getheader(im, palette=None, info=None):
         for i in range(maxcolor):
             s.append(o8(i) * 3)
 
-    if im.info.has_key('transparency'):
-        transparentIndex = im.info['transparency']
-        s.append('!' + o8(0xf9) + o8(4) + o8(1) + o8(0) + o8(0) +
-                 o8(transparentIndex) + o8(0))
-
     return s
 
 def getdata(im, offset = (0, 0), **params):
