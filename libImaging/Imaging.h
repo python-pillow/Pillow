@@ -75,7 +75,7 @@ typedef struct ImagingPaletteInstance* ImagingPalette;
 struct ImagingMemoryInstance {
 
     /* Format */
-    char mode[4+1];	/* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK") */
+    char mode[6+1];	/* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
     int type;		/* Data type (IMAGING_TYPE_*) */
     int depth;		/* Depth (ignored in this version) */
     int bands;		/* Number of bands (1, 2, 3, or 4) */
