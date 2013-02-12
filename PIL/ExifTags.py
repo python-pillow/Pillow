@@ -124,7 +124,7 @@ TAGS = {
 }
 
 ##
-# Maps EXIF GSP tags to tag names.
+# Maps EXIF GPS tags to tag names.
 
 GPSTAGS = {
     0: "GPSVersionID",
@@ -153,5 +153,10 @@ GPSTAGS = {
     23: "GPSDestBearingRef",
     24: "GPSDestBearing",
     25: "GPSDestDistanceRef",
-    26: "GPSDestDistance"
+    26: "GPSDestDistance",
+    27: "GPSProcessingMethod",
+    28: "GPSAreaInformation",
+    29: "GPSDateStamp",
+    30: "GPSDifferential",
+    31: "GPSHPositioningError",
 }
