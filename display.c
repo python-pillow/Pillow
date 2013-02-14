@@ -735,8 +735,8 @@ PyImaging_CreateWindowWin32(PyObject* self, PyObject* args)
 
     /* register window callback */
     Py_INCREF(callback);
-    SetWindowLong(wnd, 0, (LONG) callback);
-    SetWindowLong(wnd, sizeof(callback), (LONG) PyThreadState_Get());
+    SetWindowLongPtr(wnd, 0, (LONG_PTR) callback);
+    SetWindowLongPtr(wnd, sizeof(callback), (LONG_PTR) PyThreadState_Get());
 
     Py_BEGIN_ALLOW_THREADS
     ShowWindow(wnd, SW_SHOWNORMAL);
