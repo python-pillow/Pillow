@@ -198,7 +198,7 @@ _MODE_CONV = {
     "RGBX": ('|u1', 4),
     "RGBA": ('|u1', 4),
     "CMYK": ('|u1', 4),
-    "YCbCr": ('|u1', 4),
+    "YCbCr": ('|u1', 3),
 }
 
 def _conv_type_shape(im):
