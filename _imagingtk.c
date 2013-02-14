@@ -35,9 +35,9 @@ _tkinit(PyObject* self, PyObject* args)
 {
     Tcl_Interp* interp;
 
-    long arg;
+    Py_ssize_t arg;
     int is_interp;
-    if (!PyArg_ParseTuple(args, "li", &arg, &is_interp))
+    if (!PyArg_ParseTuple(args, "ni", &arg, &is_interp))
         return NULL;
 
     if (is_interp)
