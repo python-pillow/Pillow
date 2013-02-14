@@ -293,9 +293,9 @@ font_render(FontObject* self, PyObject* args)
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
     PyObject* string;
-    long id;
+    Py_ssize_t id;
     int mask = 0;
-    if (!PyArg_ParseTuple(args, "Ol|i:render", &string, &id, &mask))
+    if (!PyArg_ParseTuple(args, "On|i:render", &string, &id, &mask))
         return NULL;
 
 #if PY_VERSION_HEX >= 0x03000000
