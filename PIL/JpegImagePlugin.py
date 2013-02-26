@@ -378,7 +378,7 @@ class JpegImageFile(ImageFile.ImageFile):
         # process dictionary
         info = TiffImagePlugin.ImageFileDirectory(head)
         info.load(file)
-        for key, value in list(info.items()):
+        for key, value in info.items():
             exif[key] = fixup(value)
         # get exif extension
         try:
@@ -388,7 +388,7 @@ class JpegImageFile(ImageFile.ImageFile):
         else:
             info = TiffImagePlugin.ImageFileDirectory(head)
             info.load(file)
-            for key, value in list(info.items()):
+            for key, value in info.items():
                 exif[key] = fixup(value)
         # get gpsinfo extension
         try:
@@ -399,7 +399,7 @@ class JpegImageFile(ImageFile.ImageFile):
             info = TiffImagePlugin.ImageFileDirectory(head)
             info.load(file)
             exif[0x8825] = gps = {}
-            for key, value in list(info.items()):
+            for key, value in info.items():
                 gps[key] = fixup(value)
         return exif
 
