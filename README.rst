@@ -37,7 +37,7 @@ Documentation
 The API documentation included with PIL has been converted (from HTML) to
 reStructured text (via pandoc) and is now `hosted by readthedocs.org <http://pillow.readthedocs.org>`_.
 
-**What follows is the PIL 1.1.7 README contents.**
+*What follows is the PIL 1.1.7 README contents.*
 
 Python Imaging Library
 ======================
