@@ -4,6 +4,9 @@ Pillow
 
 Pillow is the "friendly" PIL fork, created by Alex Clark. PIL is the Python Imaging Library, created by Fredrik Lundh.
 
+.. image:: img48.png
+  align: right
+
 Introduction
 ------------
 
@@ -37,7 +40,7 @@ Documentation
 The API documentation included with PIL has been converted (from HTML) to
 reStructured text (via pandoc) and is now `hosted by readthedocs.org <http://pillow.readthedocs.org>`_.
 
-*What follows is the PIL 1.1.7 README contents.*
+What follows is the PIL 1.1.7 README contents.
 
 Python Imaging Library
 ======================
