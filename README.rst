@@ -16,7 +16,7 @@ The fork author's goal is to foster active development of PIL through:
 Why a fork?
 -----------
 
-PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too slow to address the large number of issues regularly reported.
+PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too slow to address the large number of issues reported.
 
 What about image code bugs?
 ---------------------------
@@ -37,7 +37,7 @@ Documentation
 The API documentation included with PIL has been converted (from HTML) to
 reStructured text (via pandoc) and is now `hosted by readthedocs.org <http://pillow.readthedocs.org>`_.
 
-What follows is the PIL 1.1.7 README contents.
+What follows is the original PIL 1.1.7 README contents.
 
 Python Imaging Library
 ======================
