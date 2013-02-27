@@ -3,28 +3,21 @@
 Pillow
 ======
 
-Pillow is the "friendly" PIL fork. PIL is the Python Imaging Library. Pillow was
-started for and is currently maintained by the Plone community. But it is used by
-many other folks in the Python web community, and probably elsewhere too.
+Pillow is the "friendly" PIL fork, created by Alex Clark. PIL is the Python Imaging Library, created by Fredrik Lundh.
 
 Introduction
 ------------
 
-The fork author's goal is to foster packaging improvements via:
+The fork author's goal is to foster active development of PIL through:
 
-- Publicized development and solicitation of community support.
-- Exploration of packaging problems within the fork, most noticably
-  via adding setuptools support but also via clean up & refactoring
-  of packaging code.
+- Publicized development activity
+- Solicitation for community contributions
+- Regular releases to the Python Packaging Index
 
 Why a fork?
 -----------
 
-PIL is currently not setuptools compatible. Please see
-http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a
-more detailed explanation. Also, PIL's current release/maintenance schedule
-is not compatible with the various & frequent packaging issues that have
-occured.
+PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too slow to address the large number of issues regularly reported.
 
 What about image code bugs?
 ---------------------------
@@ -38,9 +31,6 @@ Then open a ticket here:
 - https://github.com/python-imaging/Pillow/issues
 
 and provide a link to the first ticket so we can track the issue(s) upstream.
-This project does not aim to fix image code bugs, but if we can track them
-properly we may consider it. (And the image code could potentially be wholesale
-replaced when the next PIL release comes out.)
 
 Documentation
 -------------
@@ -50,7 +40,7 @@ reStructured text (via pandoc) and is now `hosted by readthedocs.org`_.
 
 .. _`hosted by readthedocs.org`: http://pillow.readthedocs.org
 
-What follows is the original PIL README.
+What follows is the PIL 1.1.7 README contents.
 
 Python Imaging Library
 ======================
