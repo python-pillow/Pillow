@@ -346,7 +346,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 
     /* step 3: extract bits from bitmap */
 
-    buffer = PyString_FromStringAndSize(NULL, height * ((width*3 + 3) & -4));
+    buffer = PyBytes_FromStringAndSize(NULL, height * ((width*3 + 3) & -4));
     if (!buffer)
         return NULL;
 
@@ -355,7 +355,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     core.bcHeight = height;
     core.bcPlanes = 1;
     core.bcBitCount = 24;
-    if (!GetDIBits(screen_copy, bitmap, 0, height, PyString_AS_STRING(buffer),
+    if (!GetDIBits(screen_copy, bitmap, 0, height, PyBytes_AS_STRING(buffer),
                    (BITMAPINFO*) &core, DIB_RGB_COLORS))
         goto error;
 
@@ -386,11 +386,11 @@ static BOOL CALLBACK list_windows_callback(HWND hwnd, LPARAM lParam)
     /* get window title */
     title_size = GetWindowTextLength(hwnd);
     if (title_size > 0) {
-        title = PyString_FromStringAndSize(NULL, title_size);
+        title = PyUnicode_FromStringAndSize(NULL, title_size);
         if (title)
-            GetWindowText(hwnd, PyString_AS_STRING(title), title_size+1);
+            GetWindowText(hwnd, PyUnicode_AS_UNICODE(title), title_size+1);
     } else
-        title = PyString_FromString("");
+        title = PyUnicode_FromString("");
     if (!title)
         return 0;
 
@@ -545,7 +545,7 @@ PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
         size = wcslen(data) * 2;
 #endif
 
-    result = PyString_FromStringAndSize(data, size);
+    result = PyBytes_FromStringAndSize(data, size);
 
     GlobalUnlock(handle);
 
@@ -853,7 +853,7 @@ PyImaging_DrawWmf(PyObject* self, PyObject* args)
 
     GdiFlush();
 
-    buffer = PyString_FromStringAndSize(ptr, height * ((width*3 + 3) & -4));
+    buffer = PyBytes_FromStringAndSize(ptr, height * ((width*3 + 3) & -4));
 
 error:
     DeleteEnhMetaFile(meta);

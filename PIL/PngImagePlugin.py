@@ -254,6 +254,7 @@ class PngStream(ChunkStream):
             i = s.find(b"\0")
             if i >= 0:
                 self.im_info["transparency"] = i
+                self.im_info["transparency_palette"] = s
         elif self.im_mode == "L":
             self.im_info["transparency"] = i16(s)
         elif self.im_mode == "RGB":
