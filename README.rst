@@ -2,7 +2,8 @@
 Pillow
 ======
 
-Pillow is the "friendly" PIL fork, created by Alex Clark. PIL is the Python Imaging Library, created by Fredrik Lundh.
+Pillow is the "friendly" PIL fork, by Alex Clark.
+PIL is the Python Imaging Library, by Fredrik Lundh.
 
 Introduction
 ------------
@@ -16,7 +17,7 @@ The fork author's goal is to foster active development of PIL through:
 Why a fork?
 -----------
 
-PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too slow to address the large number of issues reported.
+PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is unable to accomodate the number and frequency of issues reported.
 
 What about image code bugs?
 ---------------------------
