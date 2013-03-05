@@ -91,5 +91,6 @@ if skipped:
     print(skipped)
 if failure:
     print("***", tests(failure), "of", (success + failure), "failed.")
+    sys.exit(1)
 else:
     print(tests(success), "passed.")

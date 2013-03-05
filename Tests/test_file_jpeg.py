@@ -177,3 +177,8 @@ def test_truncated_jpeg():
     assert_no_exception(lambda: test(4))
     assert_no_exception(lambda: test(8))
     assert_exception(IOError, lambda: test(10))
+
+def test_exif():
+    im = Image.open("Tests/images/pil_sample_rgb.jpg")
+    info = im._getexif()
+    assert_equal(info[305], 'Adobe Photoshop CS Macintosh')

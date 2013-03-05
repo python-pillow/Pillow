@@ -16,7 +16,7 @@ def test_pack():
         if py3:
             return list(im.tobytes("raw", rawmode))
         else:
-            return [ord(c) for c in im.tostring("raw", rawmode)]
+            return [ord(c) for c in im.tobytes("raw", rawmode)]
 
     assert_equal(pack("1", "1"), [128])
     assert_equal(pack("1", "1;I"), [0])
@@ -53,10 +53,10 @@ def test_unpack():
 
         if py3:
             data = bytes(range(1,bytes_+1))
-            im = Image.frombytes(mode, (1, 1), data, "raw", rawmode, 0, 1)
         else:
             data = ''.join(chr(i) for i in range(1,bytes_+1))
-            im = Image.fromstring(mode, (1, 1), data, "raw", rawmode, 0, 1)
+
+        im = Image.frombytes(mode, (1, 1), data, "raw", rawmode, 0, 1)
 
         return im.getpixel((0, 0))
 
@@ -67,7 +67,7 @@ def test_unpack():
         if py3:
             im = Image.frombytes(mode, (8, 1), bytes([value]), "raw", rawmode, 0, 1)
         else:
-            im = Image.fromstring(mode, (8, 1), chr(value), "raw", rawmode, 0, 1)
+            im = Image.frombytes(mode, (8, 1), chr(value), "raw", rawmode, 0, 1)
 
         return tuple(im.getdata())
 

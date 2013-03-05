@@ -541,7 +541,11 @@ class Image:
     if bytes is str:
         # Declare tostring as alias to tobytes
         def tostring(self, *args, **kw):
-            warnings.warn('tostring() is deprecated. Please call tobytes() instead.', DeprecationWarning)
+            warnings.warn(
+                'tostring() is deprecated. Please call tobytes() instead.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
             return self.tobytes(*args, **kw)
 
     ##
@@ -1813,7 +1817,11 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 if bytes is str:
     # Declare fromstring as an alias for frombytes
     def fromstring(*args, **kw):
-        warnings.warn('fromstring() is deprecated. Please call frombytes() instead.', DeprecationWarning)
+        warnings.warn(
+            'fromstring() is deprecated. Please call frombytes() instead.',
+            DeprecationWarning,
+            stacklevel=2
+        )
         return frombytes(*args, **kw)
 
 ##
