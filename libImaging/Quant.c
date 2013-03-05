@@ -135,13 +135,13 @@ pixel_cmp(const HashTable h,const void *a,const void *b)
 static void
 exists_count_func(const HashTable h, const void *key, void **val)
 {
-    (*(int *)val)+=1;
+    *(unsigned long*)val+=1;
 }
 
 static void
 new_count_func(const HashTable h, const void *key, void **val)
 {
-    (*(int *)val)=1;
+    *(unsigned long*)val=1;
 }
 
 static void
@@ -151,7 +151,7 @@ rehash_collide(HashTable h,
                void *newkey,
                void *newval)
 {
-    *valp = (void *)(((int) *valp) + ((int) newval));
+    *valp = (void *)(((unsigned long) *valp) + ((unsigned long) newval));
 }
 
 /* %% */
@@ -244,7 +244,7 @@ hash_to_list(HashTable h, const void *key, const void *val, void *u)
    Pixel *pixel=(Pixel *)&key;
    int i;
    Pixel q;
-   int count=(int) val;
+   int count=(unsigned long) val;
 
    PIXEL_SCALE(pixel,&q,d->scale);
 
