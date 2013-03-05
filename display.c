@@ -399,7 +399,7 @@ static BOOL CALLBACK list_windows_callback(HWND hwnd, LPARAM lParam)
     GetWindowRect(hwnd, &outer);
 
     item = Py_BuildValue(
-        "lN(iiii)(iiii)", (long) hwnd, title,
+        "nN(iiii)(iiii)", (Py_ssize_t) hwnd, title,
         inner.left, inner.top, inner.right, inner.bottom,
         outer.left, outer.top, outer.right, outer.bottom
         );
@@ -735,15 +735,15 @@ PyImaging_CreateWindowWin32(PyObject* self, PyObject* args)
 
     /* register window callback */
     Py_INCREF(callback);
-    SetWindowLong(wnd, 0, (LONG) callback);
-    SetWindowLong(wnd, sizeof(callback), (LONG) PyThreadState_Get());
+    SetWindowLongPtr(wnd, 0, (LONG_PTR) callback);
+    SetWindowLongPtr(wnd, sizeof(callback), (LONG_PTR) PyThreadState_Get());
 
     Py_BEGIN_ALLOW_THREADS
     ShowWindow(wnd, SW_SHOWNORMAL);
     SetForegroundWindow(wnd); /* to make sure it's visible */
     Py_END_ALLOW_THREADS
 
-    return Py_BuildValue("l", (long) wnd);
+    return Py_BuildValue("n", (Py_ssize_t) wnd);
 }
 
 PyObject*
