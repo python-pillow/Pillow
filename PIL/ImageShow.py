@@ -98,7 +98,8 @@ if sys.platform == "win32":
     class WindowsViewer(Viewer):
         format = "BMP"
         def get_command(self, file, **options):
-            return "start /wait %s && del /f %s" % (file, file)
+            return ("start /wait %s && ping -n 2 127.0.0.1 >NUL "
+                    "&& del /f %s" % (file, file))
 
     register(WindowsViewer)
 
