@@ -174,8 +174,8 @@ _unop(PyObject* self, PyObject* args)
     Imaging im1;
     void (*unop)(Imaging, Imaging);
 
-    long op, i0, i1;
-    if (!PyArg_ParseTuple(args, "lll", &op, &i0, &i1))
+    Py_ssize_t op, i0, i1;
+    if (!PyArg_ParseTuple(args, "nnn", &op, &i0, &i1))
         return NULL;
 
     out = (Imaging) i0;
@@ -197,8 +197,8 @@ _binop(PyObject* self, PyObject* args)
     Imaging im2;
     void (*binop)(Imaging, Imaging, Imaging);
 
-    long op, i0, i1, i2;
-    if (!PyArg_ParseTuple(args, "llll", &op, &i0, &i1, &i2))
+    Py_ssize_t op, i0, i1, i2;
+    if (!PyArg_ParseTuple(args, "nnnn", &op, &i0, &i1, &i2))
         return NULL;
 
     out = (Imaging) i0;

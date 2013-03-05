@@ -2995,7 +2995,7 @@ _getattr_bands(ImagingObject* self, void* closure)
 static PyObject*
 _getattr_id(ImagingObject* self, void* closure)
 {
-	return PyInt_FromLong((long) self->image);
+	return PyInt_FromSsize_t((Py_ssize_t) self->image);
 }
 
 static PyObject*

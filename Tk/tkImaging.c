@@ -58,7 +58,7 @@
 static Imaging
 ImagingFind(const char* name)
 {
-    long id;
+    Py_ssize_t id;
 
     /* FIXME: use CObject instead? */
     id = atol(name);
