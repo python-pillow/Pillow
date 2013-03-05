@@ -120,11 +120,31 @@ TAGS = {
     0xa300: "FileSource",
     0xa301: "SceneType",
     0xa302: "CFAPattern",
+    0xa401: "CustomRendered",
+    0xa402: "ExposureMode",
+    0xa403: "WhiteBalance",
+    0xa404: "DigitalZoomRatio",
+    0xa405: "FocalLengthIn35mmFilm",
+    0xa406: "SceneCaptureType",
+    0xa407: "GainControl",
+    0xa408: "Contrast",
+    0xa409: "Saturation",
+    0xa40a: "Sharpness",
+    0xa40b: "DeviceSettingDescription",
+    0xa40c: "SubjectDistanceRange",
+    0xa420: "ImageUniqueID",
+    0xa430: "CameraOwnerName",
+    0xa431: "BodySerialNumber",
+    0xa432: "LensSpecification",
+    0xa433: "LensMake",
+    0xa434: "LensModel",
+    0xa435: "LensSerialNumber",
+    0xa500: "Gamma",
 
 }
 
 ##
-# Maps EXIF GSP tags to tag names.
+# Maps EXIF GPS tags to tag names.
 
 GPSTAGS = {
     0: "GPSVersionID",
@@ -153,5 +173,10 @@ GPSTAGS = {
     23: "GPSDestBearingRef",
     24: "GPSDestBearing",
     25: "GPSDestDistanceRef",
-    26: "GPSDestDistance"
+    26: "GPSDestDistance",
+    27: "GPSProcessingMethod",
+    28: "GPSAreaInformation",
+    29: "GPSDateStamp",
+    30: "GPSDifferential",
+    31: "GPSHPositioningError",
 }
