@@ -269,6 +269,11 @@ class ImageFileDirectory(collections.MutableMapping):
     def __iter__(self):
         return itertools.chain(self.tags.__iter__(), self.tagdata.__iter__())
 
+    def items(self):
+        keys = list(self.__iter__())
+        values = [self[key] for key in keys]
+        return zip(keys, values)
+
     # load primitives
 
     load_dispatch = {}

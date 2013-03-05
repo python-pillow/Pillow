@@ -79,18 +79,15 @@ def test_basic():
     basic("I")
 
 
-def test_tostring():
+def test_tobytes():
 
-    def tostring(mode):
-        if py3:
-            return Image.new(mode, (1, 1), 1).tobytes()
-        else:
-            return Image.new(mode, (1, 1), 1).tostring()
+    def tobytes(mode):
+        return Image.new(mode, (1, 1), 1).tobytes()
 
-    assert_equal(tostring("L"), b"\x01")
-    assert_equal(tostring("I;16"), b"\x01\x00")
-    assert_equal(tostring("I;16B"), b"\x00\x01")
-    assert_equal(tostring("I"), b"\x01\x00\x00\x00")
+    assert_equal(tobytes("L"), b"\x01")
+    assert_equal(tobytes("I;16"), b"\x01\x00")
+    assert_equal(tobytes("I;16B"), b"\x00\x01")
+    assert_equal(tobytes("I"), b"\x01\x00\x00\x00")
 
 
 def test_convert():
