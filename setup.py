@@ -127,12 +127,18 @@ class pil_build_ext(build_ext):
             _add_directory(include_dirs, "/usr/X11/include")
 
         elif sys.platform.startswith("linux"):
-            if platform.processor() == "x86_64":
+            platform_ = platform.processor()
+            if not platform_:
+                platform_ = platform.architecture()[0]
+                
+            if platform_ in ["x86_64", "64bit"]:
                 _add_directory(library_dirs, "/lib64")
                 _add_directory(library_dirs, "/usr/lib64")
                 _add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
-            else:
+            elif platform_ in ["i386", "i686", "32bit"]:
                 _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
+            else:
+                raise ValueError("Unable to identify Linux platform: `%s`" % platform_)
 
             # XXX Kludge. Above /\ we brute force support multiarch. Here we
             # try Barry's more general approach. Afterward, something should
