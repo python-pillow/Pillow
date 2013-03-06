@@ -18,6 +18,7 @@
 #define PyInt_Check                 PyLong_Check
 #define PyInt_FromLong              PyLong_FromLong
 #define PyInt_AS_LONG               PyLong_AS_LONG
+#define PyInt_FromSsize_t           PyLong_FromSsize_t
 
 #else   /* PY_VERSION_HEX < 0x03000000 */
 #define PY_ARG_BYTES_LENGTH             "s#"
