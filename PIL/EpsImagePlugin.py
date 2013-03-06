@@ -33,8 +33,25 @@ o32 = _binary.o32le
 split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
 
+gs_windows_binary = None
+import sys
+if sys.platform[:3].lower() == 'win':
+    import shutil
+    if hasattr(shutil, 'which'):
+        which = shutil.which
+    else:
+        # Python < 3.3
+        import distutils
+        which = distutils.spawn.find_executable
+    for binary in ('gswin32c', 'gswin64c', 'gs'):
+        if which(binary) is not None:
+            gs_windows_binary = binary
+            break
+    else:
+        gs_windows_binary = False
+
 def Ghostscript(tile, size, fp):
-    """Render an image using Ghostscript (Unix only)"""
+    """Render an image using Ghostscript"""
 
     # Unpack decoder tile
     decoder, tile, offset, data = tile[0]
@@ -52,6 +69,12 @@ def Ghostscript(tile, size, fp):
                "-sDEVICE=ppmraw",       # ppm driver
                "-sOutputFile=%s" % file,# output file
                "- >/dev/null 2>/dev/null"]
+
+    if gs_windows_binary is not None:
+        if gs_windows_binary is False:
+            raise WindowsError('Unable to locate Ghostscript on paths')
+        command[0] = gs_windows_binary
+        command[-1] = '- >nul 2>nul'
 
     command = " ".join(command)
 
