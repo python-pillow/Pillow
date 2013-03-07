@@ -616,7 +616,13 @@ class Image:
             self.palette.mode = "RGB"
             self.palette.rawmode = None
             if "transparency" in self.info:
-                if self.info["transparency_palette"]:
+
+# XXX Not sure how this ever worked:
+#                if self.info["transparency_palette"]:
+# Should probably be:
+                if "transparency_palette" in self.info:
+# amirite?
+
                     self.im.putpalettealpha(0, 0, self.info["transparency_palette"])
                 else:
                     self.im.putpalettealpha(self.info["transparency"], 0)
