@@ -216,10 +216,29 @@ class ImageFileDirectory(collections.MutableMapping):
         self.reset()
 
     def reset(self):
+        #: Tags is an incomplete dictionary of the tags of the image.
+        #: For a complete dictionary, use teh as_dict method.
         self.tags = {}
         self.tagdata = {}
         self.tagtype = {} # added 2008-06-05 by Florian Hoech
         self.next = None
+
+    def __str__(self):
+        return str(self.as_dict())
+
+    def as_dict(self):
+        """Return a dictionary of the image's tags."""
+        return dict(self.items())
+
+    def named(self):
+        """Returns the complete tag dictionary, with named tags where posible."""
+        from . import TiffTags
+        result = {}
+        for tag_code, value in self.items():
+            tag_name = TiffTags.TAGS.get(tag_code, tag_code)
+            result[tag_name] = value
+        return result
+
 
     # dictionary API
 
