@@ -11,3 +11,4 @@ script:
   - python setup.py clean
   - python setup.py install
   - python selftest.py
+  - python Tests/run.py --installed
