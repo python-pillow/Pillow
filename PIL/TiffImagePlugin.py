@@ -217,7 +217,7 @@ class ImageFileDirectory(collections.MutableMapping):
 
     def reset(self):
         #: Tags is an incomplete dictionary of the tags of the image.
-        #: For a complete dictionary, use teh as_dict method.
+        #: For a complete dictionary, use the as_dict method.
         self.tags = {}
         self.tagdata = {}
         self.tagtype = {} # added 2008-06-05 by Florian Hoech
