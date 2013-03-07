@@ -4,22 +4,22 @@ Pillow
 
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
 
-Pillow is the "friendly" PIL fork, by Alex Clark.
-PIL is the Python Imaging Library, by Fredrik Lundh.
+Pillow is the "friendly" PIL fork by Alex Clark and Contributors. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 
 Introduction
 ------------
 
 The fork author's goal is to foster active development of PIL through:
 
-- Publicized development activity
-- Solicitation for community contributions
+- Continuous integration testing via Travis-CI
+- Publicized development activity on GitHub
 - Regular releases to the Python Packaging Index
+- Solicitation for community contributions and involvement on Imaging-SIG
 
 Why a fork?
 -----------
 
-PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is unable to accomodate the number and frequency of issues reported.
+PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too infrequent to accomodate the large number and frequency of issues reported.
 
 What about image code bugs?
 ---------------------------
@@ -32,7 +32,7 @@ Then open a ticket here:
 
 - https://github.com/python-imaging/Pillow/issues
 
-and provide a link to the first ticket so we can track the issue(s) upstream.
+and provide a link to the first ticket so we can track the issue(s) upstream. Prior to Pillow 2.0.0, very few (if any) image code changes were made. Pillow 2.0.0 and later includes Python 3 support and many bug fixes gathered from across the internet.
 
 Documentation
 -------------
