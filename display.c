@@ -224,10 +224,8 @@ static struct PyMethodDef methods[] = {
     {"releasedc", (PyCFunction)_releasedc, 1},
     {"frombytes", (PyCFunction)_frombytes, 1},
     {"tobytes", (PyCFunction)_tobytes, 1},
-#if PY_VERSION_HEX < 0x03000000
     {"fromstring", (PyCFunction)_frombytes, 1},
     {"tostring", (PyCFunction)_tobytes, 1},
-#endif
     {NULL, NULL} /* sentinel */
 };
 

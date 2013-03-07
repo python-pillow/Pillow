@@ -17,6 +17,7 @@
 # See the README file for information on usage and redistribution.
 #
 
+import warnings
 from . import Image
 
 ##
@@ -167,9 +168,24 @@ class Dib:
     def tobytes(self):
         return self.image.tobytes()
 
-    if bytes is str:
-        tostring = tobytes
-        fromstring = frombytes
+    ##
+    # Deprecated aliases to frombytes & tobytes.
+
+    def fromstring(self, *args, **kw):
+        warnings.warn(
+            'fromstring() is deprecated. Please call frombytes() instead.',
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return self.frombytes(*args, **kw)
+
+    def tostring(self):
+        warnings.warn(
+            'tostring() is deprecated. Please call tobytes() instead.',
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return self.tobytes()
 
 ##
 # Create a Window with the given title size.
