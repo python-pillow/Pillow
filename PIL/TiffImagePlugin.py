@@ -43,9 +43,9 @@ from __future__ import print_function
 
 __version__ = "1.3.5"
 
-from . import Image, ImageFile
-from . import ImagePalette
-from . import _binary
+from PIL import Image, ImageFile
+from PIL import ImagePalette
+from PIL import _binary
 
 import array, sys
 import collections
@@ -232,7 +232,7 @@ class ImageFileDirectory(collections.MutableMapping):
 
     def named(self):
         """Returns the complete tag dictionary, with named tags where posible."""
-        from . import TiffTags
+        from PIL import TiffTags
         result = {}
         for tag_code, value in self.items():
             tag_name = TiffTags.TAGS.get(tag_code, tag_code)
@@ -362,7 +362,7 @@ class ImageFileDirectory(collections.MutableMapping):
             tag, typ = i16(ifd), i16(ifd, 2)
 
             if Image.DEBUG:
-                from . import TiffTags
+                from PIL import TiffTags
                 tagname = TiffTags.TAGS.get(tag, "unknown")
                 typname = TiffTags.TYPES.get(typ, "unknown")
                 print("tag: %s (%d)" % (tagname, tag), end=' ')
@@ -458,7 +458,7 @@ class ImageFileDirectory(collections.MutableMapping):
                     data = b"".join(map(o32, value))
 
             if Image.DEBUG:
-                from . import TiffTags
+                from PIL import TiffTags
                 tagname = TiffTags.TAGS.get(tag, "unknown")
                 typname = TiffTags.TYPES.get(typ, "unknown")
                 print("save: %s (%d)" % (tagname, tag), end=' ')

@@ -23,7 +23,7 @@
 
 from __future__ import print_function
 
-from . import Image, _binary
+from PIL import Image, _binary
 
 try:
     import builtins

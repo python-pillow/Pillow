@@ -19,7 +19,7 @@
 
 __version__ = "0.1"
 
-from . import Image, ImageFile, ImagePalette, _binary
+from PIL import Image, ImageFile, ImagePalette, _binary
 
 o8 = _binary.o8
 

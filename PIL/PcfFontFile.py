@@ -16,9 +16,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
-from . import FontFile
-from . import _binary
+from PIL import Image
+from PIL import FontFile
+from PIL import _binary
 
 # --------------------------------------------------------------------
 # declarations

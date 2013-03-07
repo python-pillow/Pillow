@@ -18,7 +18,7 @@
 #
 
 import warnings
-from . import Image
+from PIL import Image
 
 ##
 # The <b>ImageWin</b> module contains support to create and display

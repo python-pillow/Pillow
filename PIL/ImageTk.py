@@ -32,7 +32,7 @@ except ImportError:
     tkinter = Tkinter
     del Tkinter
 
-from . import Image
+from PIL import Image
 
 ##
 # The <b>ImageTk</b> module contains support to create and modify

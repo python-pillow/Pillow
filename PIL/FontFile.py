@@ -15,7 +15,7 @@
 #
 
 import os
-from . import Image, _binary
+from PIL import Image, _binary
 
 import marshal
 

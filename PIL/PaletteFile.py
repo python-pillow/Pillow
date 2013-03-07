@@ -13,7 +13,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from ._binary import o8
+from PIL._binary import o8
 
 ##
 # File handler for Teragon-style palette files.

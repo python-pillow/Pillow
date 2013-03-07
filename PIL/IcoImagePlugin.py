@@ -19,7 +19,7 @@
 
 __version__ = "0.1"
 
-from . import Image, BmpImagePlugin, _binary
+from PIL import Image, BmpImagePlugin, _binary
 
 
 #

@@ -19,8 +19,8 @@
 __version__ = "0.1"
 
 
-from . import Image, ImageFile
-from .OleFileIO import *
+from PIL import Image, ImageFile
+from PIL.OleFileIO import *
 
 
 # we map from colour field tuples to (mode, rawmode) descriptors

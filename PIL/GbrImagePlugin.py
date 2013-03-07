@@ -13,7 +13,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, ImageFile, _binary
+from PIL import Image, ImageFile, _binary
 
 i32 = _binary.i32be
 

@@ -17,7 +17,7 @@
 
 __version__ = "0.2"
 
-from . import Image, ImageFile, _binary
+from PIL import Image, ImageFile, _binary
 
 _handler = None
 

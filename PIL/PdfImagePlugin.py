@@ -22,8 +22,8 @@
 
 __version__ = "0.4"
 
-from . import Image, ImageFile
-from ._binary import i8
+from PIL import Image, ImageFile
+from PIL._binary import i8
 import io
 
 

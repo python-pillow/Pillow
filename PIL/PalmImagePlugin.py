@@ -9,7 +9,7 @@
 
 __version__ = "1.0"
 
-from . import Image, ImageFile, _binary
+from PIL import Image, ImageFile, _binary
 
 _Palm8BitColormapValues = (
     ( 255, 255, 255 ), ( 255, 204, 255 ), ( 255, 153, 255 ), ( 255, 102, 255 ),

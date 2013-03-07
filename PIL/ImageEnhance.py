@@ -18,7 +18,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, ImageFilter, ImageStat
+from PIL import Image, ImageFilter, ImageStat
 
 class _Enhance:
 

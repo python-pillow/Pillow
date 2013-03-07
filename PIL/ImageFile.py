@@ -27,7 +27,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
+from PIL import Image
 import traceback, os
 import io
 

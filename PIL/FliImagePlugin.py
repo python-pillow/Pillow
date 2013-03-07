@@ -18,7 +18,7 @@
 
 __version__ = "0.2"
 
-from . import Image, ImageFile, ImagePalette, _binary
+from PIL import Image, ImageFile, ImagePalette, _binary
 
 i8 = _binary.i8
 i16 = _binary.i16le

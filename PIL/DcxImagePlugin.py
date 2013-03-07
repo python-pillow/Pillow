@@ -23,9 +23,9 @@
 
 __version__ = "0.2"
 
-from . import Image, _binary
+from PIL import Image, _binary
 
-from .PcxImagePlugin import PcxImageFile
+from PIL.PcxImagePlugin import PcxImageFile
 
 MAGIC = 0x3ADE68B1 # QUIZ: what's this value, then?
 

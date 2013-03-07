@@ -37,7 +37,7 @@ __version__ = "0.9"
 
 import re
 
-from . import Image, ImageFile, ImagePalette, _binary
+from PIL import Image, ImageFile, ImagePalette, _binary
 import zlib
 
 i8 = _binary.i8

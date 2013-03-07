@@ -15,7 +15,7 @@
 #
 
 import re
-from ._binary import o8
+from PIL._binary import o8
 
 ##
 # File handler for GIMP's palette format.

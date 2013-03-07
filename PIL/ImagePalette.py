@@ -17,7 +17,7 @@
 #
 
 import array
-from . import Image, ImageColor
+from PIL import Image, ImageColor
 
 ##
 # Colour palette wrapper for palette mapped images.
@@ -153,7 +153,7 @@ def load(filename):
 
     if not lut:
         try:
-            from . import GimpPaletteFile
+            from PIL import GimpPaletteFile
             fp.seek(0)
             p = GimpPaletteFile.GimpPaletteFile(fp)
             lut = p.getpalette()
@@ -164,7 +164,7 @@ def load(filename):
 
     if not lut:
         try:
-            from . import GimpGradientFile
+            from PIL import GimpGradientFile
             fp.seek(0)
             p = GimpGradientFile.GimpGradientFile(fp)
             lut = p.getpalette()
@@ -175,7 +175,7 @@ def load(filename):
 
     if not lut:
         try:
-            from . import PaletteFile
+            from PIL import PaletteFile
             fp.seek(0)
             p = PaletteFile.PaletteFile(fp)
             lut = p.getpalette()

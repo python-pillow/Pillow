@@ -19,7 +19,7 @@
 
 __version__ = "0.1"
 
-from . import Image, ImageFile, _binary
+from PIL import Image, ImageFile, _binary
 
 
 #

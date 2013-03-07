@@ -20,8 +20,8 @@
 __version__ = "0.1"
 
 
-from . import Image, TiffImagePlugin
-from .OleFileIO import *
+from PIL import Image, TiffImagePlugin
+from PIL.OleFileIO import *
 
 
 #

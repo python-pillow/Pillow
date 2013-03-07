@@ -20,7 +20,7 @@ from __future__ import print_function
 __version__ = "0.3"
 
 
-from . import Image, ImageFile, _binary
+from PIL import Image, ImageFile, _binary
 import os, tempfile
 
 i8 = _binary.i8
@@ -217,7 +217,7 @@ Image.register_extension("IPTC", ".iim")
 
 def getiptcinfo(im):
 
-    from . import TiffImagePlugin, JpegImagePlugin
+    from PIL import TiffImagePlugin, JpegImagePlugin
     import io
 
     data = None

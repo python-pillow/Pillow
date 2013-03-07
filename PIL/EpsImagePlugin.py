@@ -22,7 +22,7 @@ __version__ = "0.5"
 
 import re
 import io
-from . import Image, ImageFile, _binary
+from PIL import Image, ImageFile, _binary
 
 #
 # --------------------------------------------------------------------

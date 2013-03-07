@@ -35,7 +35,7 @@
 __version__ = "0.6"
 
 import array, struct
-from . import Image, ImageFile, _binary
+from PIL import Image, ImageFile, _binary
 
 i8 = _binary.i8
 o8 = _binary.o8
@@ -360,7 +360,7 @@ class JpegImageFile(ImageFile.ImageFile):
         # Extract EXIF information.  This method is highly experimental,
         # and is likely to be replaced with something better in a future
         # version.
-        from . import TiffImagePlugin
+        from PIL import TiffImagePlugin
         import io
         def fixup(value):
             if len(value) == 1:

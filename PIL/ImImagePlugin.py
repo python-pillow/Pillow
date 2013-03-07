@@ -29,8 +29,8 @@
 __version__ = "0.7"
 
 import re
-from . import Image, ImageFile, ImagePalette
-from ._binary import i8, o8
+from PIL import Image, ImageFile, ImagePalette
+from PIL._binary import i8, o8
 
 
 # --------------------------------------------------------------------

@@ -25,7 +25,7 @@
 
 __version__ = "0.1"
 
-from . import ImageFile, ImagePalette, _binary
+from PIL import ImageFile, ImagePalette, _binary
 
 try:
     import builtins

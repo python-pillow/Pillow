@@ -19,8 +19,8 @@ __version__ = "0.2"
 
 
 import re
-from . import Image, ImageFile, ImagePalette
-from ._binary import i8, o8
+from PIL import Image, ImageFile, ImagePalette
+from PIL._binary import i8, o8
 
 # XPM header
 xpm_head = re.compile(b"\"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)")

@@ -15,7 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
+from PIL import Image
 
 ##
 # (New in 1.1.3)  The <b>ImageGrab</b> module can be used to copy
@@ -66,7 +66,7 @@ def grabclipboard():
     debug = 0 # temporary interface
     data = Image.core.grabclipboard(debug)
     if isinstance(data, bytes):
-        from . import BmpImagePlugin
+        from PIL import BmpImagePlugin
         import io
         return BmpImagePlugin.DibImageFile(io.BytesIO(data))
     return data

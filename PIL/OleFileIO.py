@@ -40,7 +40,7 @@ from __future__ import print_function
 
 import io
 import sys
-from . import _binary
+from PIL import _binary
 
 if str is not bytes:
     long = int

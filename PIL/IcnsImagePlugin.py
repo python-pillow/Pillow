@@ -14,7 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, ImageFile, _binary
+from PIL import Image, ImageFile, _binary
 import struct
 
 i8 = _binary.i8

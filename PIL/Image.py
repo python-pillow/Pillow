@@ -72,8 +72,8 @@ except ImportError:
     import __builtin__
     builtins = __builtin__
 
-from . import ImageMode
-from ._binary import i8, o8
+from PIL import ImageMode
+from PIL._binary import i8, o8
 
 import os, sys
 
@@ -279,23 +279,23 @@ def preinit():
         return
 
     try:
-        from . import BmpImagePlugin
+        from PIL import BmpImagePlugin
     except ImportError:
         pass
     try:
-        from . import GifImagePlugin
+        from PIL import GifImagePlugin
     except ImportError:
         pass
     try:
-        from . import JpegImagePlugin
+        from PIL import JpegImagePlugin
     except ImportError:
         pass
     try:
-        from . import PpmImagePlugin
+        from PIL import PpmImagePlugin
     except ImportError:
         pass
     try:
-        from . import PngImagePlugin
+        from PIL import PngImagePlugin
     except ImportError:
         pass
 #   try:
@@ -453,7 +453,7 @@ class Image:
         new.size = im.size
         new.palette = self.palette
         if im.mode == "P":
-            from . import ImagePalette
+            from PIL import ImagePalette
             new.palette = ImagePalette.ImagePalette()
         try:
             new.info = self.info.copy()
@@ -1025,7 +1025,7 @@ class Image:
                 "'offset' is deprecated; use 'ImageChops.offset' instead",
                 DeprecationWarning, stacklevel=2
                 )
-        from . import ImageChops
+        from PIL import ImageChops
         return ImageChops.offset(self, xoffset, yoffset)
 
     ##
@@ -1092,7 +1092,7 @@ class Image:
             box = box + (box[0]+size[0], box[1]+size[1])
 
         if isStringType(im):
-            from . import ImageColor
+            from PIL import ImageColor
             im = ImageColor.getcolor(im, self.mode)
 
         elif isImageType(im):
@@ -1238,7 +1238,7 @@ class Image:
 
     def putpalette(self, data, rawmode="RGB"):
         "Put palette data into an image."
-        from . import ImagePalette
+        from PIL import ImagePalette
 
         if self.mode not in ("L", "P"):
             raise ValueError("illegal image mode")
@@ -1772,7 +1772,7 @@ def new(mode, size, color=0):
     if isStringType(color):
         # css3-style specifier
 
-        from . import ImageColor
+        from PIL import ImageColor
         color = ImageColor.getcolor(color, mode)
 
     return Image()._new(core.fill(mode, size, color))
@@ -2165,5 +2165,5 @@ def _show(image, **options):
     _showxv(image, **options)
 
 def _showxv(image, title=None, **options):
-    from . import ImageShow
+    from PIL import ImageShow
     ImageShow.show(image, title, **options)

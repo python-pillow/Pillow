@@ -17,7 +17,7 @@
 
 from __future__ import print_function
 
-from . import EpsImagePlugin
+from PIL import EpsImagePlugin
 
 ##
 # Simple Postscript graphics interface.

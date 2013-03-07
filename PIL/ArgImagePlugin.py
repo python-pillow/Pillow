@@ -22,9 +22,9 @@ from __future__ import print_function
 
 __version__ = "0.4"
 
-from . import Image, ImageFile, ImagePalette
+from PIL import Image, ImageFile, ImagePalette
 
-from .PngImagePlugin import i8, i16, i32, ChunkStream, _MODES
+from PIL.PngImagePlugin import i8, i16, i32, ChunkStream, _MODES
 
 MAGIC = b"\212ARG\r\n\032\n"
 

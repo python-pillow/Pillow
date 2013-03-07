@@ -18,7 +18,7 @@
 
 __version__ = "0.4"
 
-from . import Image, ImageFile, ImagePalette, _binary
+from PIL import Image, ImageFile, ImagePalette, _binary
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
