@@ -538,15 +538,14 @@ class Image:
 
         return b"".join(data)
 
-    if bytes is str:
-        # Declare tostring as alias to tobytes
-        def tostring(self, *args, **kw):
-            warnings.warn(
-                'tostring() is deprecated. Please call tobytes() instead.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.tobytes(*args, **kw)
+    # Declare tostring as alias to tobytes
+    def tostring(self, *args, **kw):
+        warnings.warn(
+            'tostring() is deprecated. Please call tobytes() instead.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.tobytes(*args, **kw)
 
     ##
     # Returns the image converted to an X11 bitmap.  This method
@@ -595,11 +594,10 @@ class Image:
         if s[1] != 0:
             raise ValueError("cannot decode image data")
 
-    if bytes is str:
-        # Declare fromstring as alias to frombytes
-        def fromstring(self, *args, **kw):
-            warnings.warn('fromstring() is deprecated. Please call frombytes() instead.', DeprecationWarning)
-            return self.frombytes(*args, **kw)
+    def fromstring(self, *args, **kw):
+        """ Deprecated alias to frombytes """
+        warnings.warn('fromstring() is deprecated. Please call frombytes() instead.', DeprecationWarning)
+        return self.frombytes(*args, **kw)
 
     ##
     # Allocates storage for the image and loads the pixel data.  In
@@ -1814,15 +1812,14 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
     im.frombytes(data, decoder_name, args)
     return im
 
-if bytes is str:
-    # Declare fromstring as an alias for frombytes
-    def fromstring(*args, **kw):
-        warnings.warn(
-            'fromstring() is deprecated. Please call frombytes() instead.',
-            DeprecationWarning,
-            stacklevel=2
-        )
-        return frombytes(*args, **kw)
+def fromstring(*args, **kw):
+    " Deprecated alias to frombytes "
+    warnings.warn(
+        'fromstring() is deprecated. Please call frombytes() instead.',
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return frombytes(*args, **kw)
 
 ##
 # (New in 1.1.4) Creates an image memory referencing pixel data in a
