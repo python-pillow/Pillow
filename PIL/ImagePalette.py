@@ -49,9 +49,8 @@ class ImagePalette:
             return self.palette
         return array.array("B", self.palette).tostring()
 
-    if bytes is str:
-        # Declare tostring as an alias for tobytes
-        tostring = tobytes
+    # Declare tostring as an alias for tobytes
+    tostring = tobytes
 
     def getcolor(self, color):
         # experimental: given an rgb tuple, allocate palette entry

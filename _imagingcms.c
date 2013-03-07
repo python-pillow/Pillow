@@ -497,9 +497,7 @@ static PyMethodDef pyCMSdll_methods[] = {
 
     {"profile_open", cms_profile_open, 1},
     {"profile_frombytes", cms_profile_fromstring, 1},
-#if PY_VERSION_HEX < 0x03000000
     {"profile_fromstring", cms_profile_fromstring, 1},
-#endif
 
     /* profile and transform functions */
     {"buildTransform", buildTransform, 1},
