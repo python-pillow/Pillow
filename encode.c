@@ -506,6 +506,69 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
 
 #include "Jpeg.h"
 
+static unsigned int** get_qtables_arrays(PyObject* qtables) {
+    PyObject* tables;
+    PyObject* table;
+    PyObject* table_data;
+    int i, j, num_tables;
+    unsigned int **qarrays;
+    
+    if (qtables == Py_None) {
+        return NULL;
+    }
+    
+    if (!PySequence_Check(qtables)) {
+        PyErr_SetString(PyExc_ValueError, "Invalid quantization tables");
+        return NULL;
+    }
+    
+    tables = PySequence_Fast(qtables, "expected a sequence");
+    num_tables = PySequence_Size(qtables);
+    if (num_tables < 2 || num_tables > NUM_QUANT_TBLS) {
+        PyErr_SetString(PyExc_ValueError, "Not a valid numbers of quantization tables. Should be between 2 and 4.");
+        return NULL;
+    }
+    qarrays = (unsigned int**) PyMem_Malloc(num_tables * sizeof(unsigned int));
+    if (!qarrays) {
+        Py_DECREF(tables);
+        PyErr_NoMemory();
+        return NULL;
+    }
+    for (i = 0; i < num_tables; i++) {
+        table = PySequence_Fast_GET_ITEM(tables, i);
+        if (!PySequence_Check(table)) {
+            Py_DECREF(tables);
+            PyErr_SetString(PyExc_ValueError, "Invalid quantization tables");
+            return NULL;
+        }
+        if (PySequence_Size(table) != DCTSIZE2) {
+            Py_DECREF(tables);
+            PyErr_SetString(PyExc_ValueError, "Invalid quantization tables");
+            return NULL;
+        }
+        table_data = PySequence_Fast(table, "expected a sequence");
+        qarrays[i] = (unsigned int*) PyMem_Malloc(DCTSIZE2 * sizeof(unsigned int));
+        if (!qarrays[i]) {
+            Py_DECREF(tables);
+            PyErr_NoMemory();
+            return NULL;
+        }
+        for (j = 0; j < DCTSIZE2; j++) {
+            qarrays[i][j] = PyInt_AS_LONG(PySequence_Fast_GET_ITEM(table_data, j));
+        }
+    }
+
+    Py_DECREF(tables);
+
+    if (PyErr_Occurred()) {
+        PyMem_Free(qarrays);
+        qarrays = NULL;
+    }
+
+    return qarrays;
+}
+
+
 PyObject*
 PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 {
@@ -520,15 +583,17 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     int streamtype = 0; /* 0=interchange, 1=tables only, 2=image only */
     int xdpi = 0, ydpi = 0;
     int subsampling = -1; /* -1=default, 0=none, 1=medium, 2=high */
+    PyObject* qtables;
+    unsigned int **qarrays = NULL;
     char* extra = NULL;
     int extra_size;
     char* rawExif = NULL;
     int rawExifLen = 0;
 
-    if (!PyArg_ParseTuple(args, "ss|iiiiiiii"PY_ARG_BYTES_LENGTH""PY_ARG_BYTES_LENGTH,
+    if (!PyArg_ParseTuple(args, "ss|iiiiiiiiO"PY_ARG_BYTES_LENGTH""PY_ARG_BYTES_LENGTH,
                           &mode, &rawmode, &quality,
                           &progressive, &smooth, &optimize, &streamtype,
-                          &xdpi, &ydpi, &subsampling, &extra, &extra_size,
+                          &xdpi, &ydpi, &subsampling, &qtables, &extra, &extra_size,
                           &rawExif, &rawExifLen))
 	return NULL;
 
@@ -538,6 +603,8 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 
     if (get_packer(encoder, mode, rawmode) < 0)
 	return NULL;
+
+    qarrays = get_qtables_arrays(qtables);
 
     if (extra && extra_size > 0) {
         char* p = malloc(extra_size);
@@ -560,6 +627,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     encoder->encode = ImagingJpegEncode;
 
     ((JPEGENCODERSTATE*)encoder->state.context)->quality = quality;
+    ((JPEGENCODERSTATE*)encoder->state.context)->qtables = qarrays;
     ((JPEGENCODERSTATE*)encoder->state.context)->subsampling = subsampling;
     ((JPEGENCODERSTATE*)encoder->state.context)->progressive = progressive;
     ((JPEGENCODERSTATE*)encoder->state.context)->smooth = smooth;

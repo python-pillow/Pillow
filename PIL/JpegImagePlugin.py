@@ -36,6 +36,7 @@ __version__ = "0.6"
 
 import array, struct
 from . import Image, ImageFile, _binary
+from JpegPresets import presets
 
 i8 = _binary.i8
 o8 = _binary.o8
@@ -416,6 +417,31 @@ RAWMODE = {
     "YCbCr": "YCbCr",
 }
 
+zigzag_index = ( 0,  1,  5,  6, 14, 15, 27, 28,
+                 2,  4,  7, 13, 16, 26, 29, 42,
+                 3,  8, 12, 17, 25, 30, 41, 43,
+                 9, 11, 18, 24, 31, 40, 44, 53,
+                10, 19, 23, 32, 39, 45, 52, 54,
+                20, 22, 33, 38, 46, 51, 55, 60,
+                21, 34, 37, 47, 50, 56, 59, 61,
+                35, 36, 48, 49, 57, 58, 62, 63)
+
+samplings = {
+             (1, 1, 1, 1, 1, 1): 0,
+             (2, 1, 1, 1, 1, 1): 1,
+             (2, 2, 1, 1, 1, 1): 2,
+            }
+
+def convert_dict_qtables(qtables):
+    qtables = [qtables[key] for key in xrange(len(qtables)) if qtables.has_key(key)]
+    for idx, table in enumerate(qtables):
+        qtables[idx] = [table[i] for i in zigzag_index]
+    return qtables
+
+def get_sampling(im):
+    sampling = im.layer[0][1:3] + im.layer[1][1:3] + im.layer[2][1:3]
+    return samplings.get(sampling, -1)
+
 def _save(im, fp, filename):
 
     try:
@@ -427,13 +453,72 @@ def _save(im, fp, filename):
 
     dpi = info.get("dpi", (0, 0))
 
+    quality = info.get("quality", 0)
     subsampling = info.get("subsampling", -1)
+    qtables = info.get("qtables")
+
+    if quality == "keep":
+        quality = 0
+        subsampling = "keep"
+        qtables = "keep"
+    elif quality in presets:
+        preset = presets[quality]
+        quality = 0
+        subsampling = preset.get('subsampling', -1)
+        qtables = preset.get('quantization')
+    elif not isinstance(quality, int):
+        raise ValueError("Invalid quality setting")
+    else:
+        if subsampling in presets:
+            subsampling = presets[subsampling].get('subsampling', -1)
+        if qtables in presets:
+            qtables = presets[qtables].get('quantization')
+
     if subsampling == "4:4:4":
         subsampling = 0
     elif subsampling == "4:2:2":
         subsampling = 1
     elif subsampling == "4:1:1":
         subsampling = 2
+    elif subsampling == "keep":
+        if im.format != "JPEG":
+            raise ValueError("Cannot use 'keep' when original image is not a JPEG")
+        subsampling = get_sampling(im)    
+
+    def validate_qtables(qtables):
+        if qtables is None:
+            return qtables
+        if isinstance(qtables, basestring):
+            try:
+                lines = [int(num) for line in qtables.splitlines()
+                         for num in line.split('#', 1)[0].split()]
+            except ValueError:
+                raise ValueError("Invalid quantization table")
+            else:
+                qtables = [lines[s:s+64] for s in xrange(0, len(lines), 64)]
+        if isinstance(qtables, (tuple, list, dict)):
+            if isinstance(qtables, dict):
+                qtables = convert_dict_qtables(qtables)
+            elif isinstance(qtables, tuple):
+                qtables = list(qtables)
+            if not (0 < len(qtables) < 5):
+                raise ValueError("None or too many quantization tables")
+            for idx, table in enumerate(qtables):
+                try:
+                    if len(table) != 64:
+                        raise
+                    table = array.array('b', table)
+                except TypeError:
+                    raise ValueError("Invalid quantization table")
+                else:
+                    qtables[idx] = list(table)
+            return qtables
+                
+    if qtables == "keep":
+        if im.format != "JPEG":
+            raise ValueError("Cannot use 'keep' when original image is not a JPEG")
+        qtables = getattr(im, "quantization", None)
+    qtables = validate_qtables(qtables)
 
     extra = b""
 
@@ -454,7 +539,7 @@ def _save(im, fp, filename):
 
     # get keyword arguments
     im.encoderconfig = (
-        info.get("quality", 0),
+        quality,
         # "progressive" is the official name, but older documentation
         # says "progression"
         # FIXME: issue a warning if the wrong form is used (post-1.1.7)
@@ -464,6 +549,7 @@ def _save(im, fp, filename):
         info.get("streamtype", 0),
         dpi[0], dpi[1],
         subsampling,
+        qtables,
         extra,
         info.get("exif", b"")
         )

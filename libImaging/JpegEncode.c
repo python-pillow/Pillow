@@ -143,8 +143,22 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
 	/* Compressor configuration */
 	jpeg_set_defaults(&context->cinfo);
-	if (context->quality > 0)
+
+	/* Use custom quantization tables */
+	if (context->qtables) {
+        int i;
+        int quality = 100;
+        if (context->quality > 0) {
+            quality = context->quality;
+        }
+        for (i = 0; i < sizeof(context->qtables)/sizeof(unsigned int); i++) {
+             // TODO: Should add support for none baseline
+            jpeg_add_quant_table(&context->cinfo, i, context->qtables[i],
+                quality, TRUE);
+        }
+	} else if (context->quality > 0) {
 	    jpeg_set_quality(&context->cinfo, context->quality, 1);
+	}
 
 	/* Set subsampling options */
 	switch (context->subsampling)
