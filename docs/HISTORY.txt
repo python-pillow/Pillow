@@ -2,6 +2,12 @@
 Changelog
 =========
 
+2.0.0 (2013-03-14)
+------------------
+
+- Add Python 3 support. As of 2.0.0 Pillow support Python 2.6 - 3.3. Use Pillow < 2.0.0 for Python 2.5 and lower.
+  [fluggo]
+
 1.7.8 (2012-11-01)
 ------------------
 
