@@ -82,7 +82,7 @@ VERSION = "0.1.0 pil"
 # --------------------------------------------------------------------.
 
 from PIL import Image
-from PIL import _imagingcms
+import _imagingcms
 
 core = _imagingcms
 
