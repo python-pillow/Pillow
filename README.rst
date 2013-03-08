@@ -1,6 +1,8 @@
 Pillow
 ======
 
+.. Note:: Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3. Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7.
+
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
 
 Pillow is the "friendly" PIL fork by Alex Clark and Contributors. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
