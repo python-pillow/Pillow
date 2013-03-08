@@ -455,7 +455,6 @@ setup(
     description='Python Imaging Library (fork)',
     long_description=(
         _read('README.rst') + '\n' +
-        _read('docs/INSTALL.txt') + '\n' +
         _read('docs/HISTORY.txt') + '\n' +
         _read('docs/CONTRIBUTORS.rst')).decode('utf-8'),
     author='Alex Clark (fork author)',
