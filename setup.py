@@ -454,9 +454,10 @@ setup(
     version=VERSION,
     description='Python Imaging Library (fork)',
     long_description=(
-        _read('README.rst') +
-        _read('docs/INSTALL.txt') +
-        _read('docs/HISTORY.txt')).decode('utf-8'),
+        _read('README.rst') + '\n' +
+        _read('docs/INSTALL.txt') + '\n' +
+        _read('docs/HISTORY.txt') + '\n' +
+        _read('docs/CONTRIBUTORS.rst')).decode('utf-8'),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
     url='http://github.com/python-imaging/Pillow',
