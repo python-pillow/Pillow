@@ -28,9 +28,7 @@
 try:
     import tkinter
 except ImportError:
-    import Tkinter
-    tkinter = Tkinter
-    del Tkinter
+    import Tkinter as tkinter
 
 from PIL import Image
 
@@ -185,7 +183,7 @@ class PhotoImage:
         except tkinter.TclError as v:
             # activate Tkinter hook
             try:
-                import _imagingtk
+                from . import _imagingtk
                 try:
                     _imagingtk.tkinit(tk.interpaddr(), 1)
                 except AttributeError:
