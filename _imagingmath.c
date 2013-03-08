@@ -222,7 +222,7 @@ static PyMethodDef _functions[] = {
 static void
 install(PyObject *d, char* name, void* value)
 {
-    PyObject *v = PyInt_FromLong((long) value);
+    PyObject *v = PyInt_FromSsize_t((Py_ssize_t) value);
     if (!v || PyDict_SetItemString(d, name, v))
         PyErr_Clear();
     Py_XDECREF(v);
