@@ -32,7 +32,9 @@ Then open a ticket here:
 
 - https://github.com/python-imaging/Pillow/issues
 
-and provide a link to the first ticket so we can track the issue(s) upstream. Prior to Pillow 2.0.0, very few (if any) image code changes were made. Pillow 2.0.0 and later includes Python 3 support and many bug fixes gathered from across the internet.
+and provide a link to the first ticket so we can track the issue(s) upstream.
+
+.. Note:: Prior to Pillow 2.0.0, very few (if any) image code changes were made. Pillow 2.0.0 and later includes Python 3 support and many bug fixes gathered from across the internet.
 
 Documentation
 -------------
@@ -40,7 +42,7 @@ Documentation
 The API documentation included with PIL has been converted (from HTML) to
 reStructured text (via pandoc) and is now `hosted by readthedocs.org <http://pillow.readthedocs.org>`_.
 
-What follows is the original PIL 1.1.7 README contents.
+.. Note:: What follows is the original PIL 1.1.7 README contents.
 
 Python Imaging Library
 ======================
