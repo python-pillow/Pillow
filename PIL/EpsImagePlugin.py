@@ -35,13 +35,13 @@ field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
 
 gs_windows_binary = None
 import sys
-if sys.platform[:3].lower() == 'win':
+if sys.platform.startswith('win'):
     import shutil
     if hasattr(shutil, 'which'):
         which = shutil.which
     else:
         # Python < 3.3
-        import distutils
+        import distutils.spawn
         which = distutils.spawn.find_executable
     for binary in ('gswin32c', 'gswin64c', 'gs'):
         if which(binary) is not None:
