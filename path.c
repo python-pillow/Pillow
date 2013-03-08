@@ -50,7 +50,7 @@ typedef struct {
 static PyTypeObject PyPathType;
 
 static double*
-alloc_array(int count)
+alloc_array(Py_ssize_t count)
 {
     double* xy;
     if (count < 0) {
