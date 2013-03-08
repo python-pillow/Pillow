@@ -254,8 +254,16 @@ int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view)
 
     /* Pretend we support the new protocol; PyBuffer_Release happily ignores
        calling bf_releasebuffer on objects that don't support it */
-    *view = (Py_buffer) {0};
+    view->buf = NULL;
+    view->len = 0;
     view->readonly = 1;
+    view->format = NULL;
+    view->ndim = 0;
+    view->shape = NULL;
+    view->strides = NULL;
+    view->suboffsets = NULL;
+    view->itemsize = 0;
+    view->internal = NULL;
 
     Py_INCREF(buffer);
     view->obj = buffer;
