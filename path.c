@@ -246,7 +246,7 @@ PyPath_Create(PyObject* self, PyObject* args)
     Py_ssize_t count;
     double *xy;
 
-    if (PyArg_ParseTuple(args, "i:Path", &count)) {
+    if (PyArg_ParseTuple(args, "n:Path", &count)) {
 
         /* number of vertices */
         xy = alloc_array(count);
