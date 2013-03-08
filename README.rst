@@ -1,7 +1,11 @@
 Pillow
 ======
 
-.. Note:: Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3. Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7.
+.. Note:: 
+    Pillow >= 2.0.0 supports Python versions: 2.6, 2.7, 3.2, 3.3.
+
+.. Note::
+    Pillow < 2.0.0 supports Python versions: 2.4, 2.5, 2.6, 2.7.
 
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
 
@@ -35,7 +39,7 @@ Then open a ticket here:
 
 and provide a link to the first ticket so we can track the issue(s) upstream.
 
-.. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 and later includes Python 3 support and many bug fixes gathered from across the internet.
+.. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 adds Python 3 support and includes many bug fixes from around the internet.
 
 Documentation
 -------------
