@@ -467,11 +467,11 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
       case 1:
         return PyInt_FromLong(pixel.b[0]);
       case 2:
-        return Py_BuildValue("ii", pixel.b[0], pixel.b[1]);
+        return Py_BuildValue("BB", pixel.b[0], pixel.b[1]);
       case 3:
-        return Py_BuildValue("iii", pixel.b[0], pixel.b[1], pixel.b[2]);
+        return Py_BuildValue("BBB", pixel.b[0], pixel.b[1], pixel.b[2]);
       case 4:
-        return Py_BuildValue("iiii", pixel.b[0], pixel.b[1], pixel.b[2], pixel.b[3]);
+        return Py_BuildValue("BBBB", pixel.b[0], pixel.b[1], pixel.b[2], pixel.b[3]);
       }
       break;
     case IMAGING_TYPE_INT32:
@@ -1852,7 +1852,7 @@ _getextrema(ImagingObject* self, PyObject* args)
     if (status)
         switch (self->image->type) {
         case IMAGING_TYPE_UINT8:
-            return Py_BuildValue("ii", extrema.u[0], extrema.u[1]);
+            return Py_BuildValue("BB", extrema.u[0], extrema.u[1]);
         case IMAGING_TYPE_INT32:
             return Py_BuildValue("ii", extrema.i[0], extrema.i[1]);
         case IMAGING_TYPE_FLOAT32:
