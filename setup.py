@@ -454,8 +454,8 @@ setup(
     version=VERSION,
     description='Python Imaging Library (fork)',
     long_description=(
-        _read('README.rst') + '\n' +
-        _read('docs/HISTORY.txt') + '\n' +
+        _read('README.rst') + b'\n' +
+        _read('docs/HISTORY.txt') + b'\n' +
         _read('docs/CONTRIBUTORS.rst')).decode('utf-8'),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
