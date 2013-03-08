@@ -539,7 +539,7 @@ static struct PyMethodDef methods[] = {
 static PyObject*
 path_getattr_id(PyPathObject* self, void* closure)
 {
-	return Py_BuildValue("l", (long) self->xy);
+	return Py_BuildValue("n", (Py_ssize_t) self->xy);
 }
 
 static struct PyGetSetDef getsetters[] = {
