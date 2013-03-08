@@ -290,7 +290,7 @@ class pil_build_ext(build_ext):
             defs.append(("WORDS_BIGENDIAN", None))
 
         exts = [(Extension(
-            "PIL._imaging", files, libraries=libs, define_macros=defs))]
+            "_imaging", files, libraries=libs, define_macros=defs))]
 
         #
         # additional libraries
@@ -300,19 +300,19 @@ class pil_build_ext(build_ext):
             if feature.freetype_version == 20:
                 defs.append(("USE_FREETYPE_2_0", None))
             exts.append(Extension(
-                "PIL._imagingft", ["_imagingft.c"], libraries=["freetype"],
+                "_imagingft", ["_imagingft.c"], libraries=["freetype"],
                 define_macros=defs))
 
         if os.path.isfile("_imagingtiff.c") and feature.tiff:
             exts.append(Extension(
-                "PIL._imagingtiff", ["_imagingtiff.c"], libraries=["tiff"]))
+                "_imagingtiff", ["_imagingtiff.c"], libraries=["tiff"]))
 
         if os.path.isfile("_imagingcms.c") and feature.lcms:
             extra = []
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
             exts.append(Extension(
-                "PIL._imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra))
+                "_imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra))
 
         if sys.platform == "darwin":
             # locate Tcl/Tk frameworks
@@ -332,16 +332,16 @@ class pil_build_ext(build_ext):
                     break
             if frameworks:
                 exts.append(Extension(
-                    "PIL._imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
+                    "_imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
                     extra_compile_args=frameworks, extra_link_args=frameworks))
                 feature.tcl = feature.tk = 1  # mark as present
         elif feature.tcl and feature.tk:
             exts.append(Extension(
-                "PIL._imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
+                "_imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
                 libraries=[feature.tcl, feature.tk]))
 
         if os.path.isfile("_imagingmath.c"):
-            exts.append(Extension("PIL._imagingmath", ["_imagingmath.c"]))
+            exts.append(Extension("_imagingmath", ["_imagingmath.c"]))
 
         self.extensions[:] = exts
 
@@ -476,7 +476,7 @@ setup(
         "Programming Language :: Python :: 3.3",
         ],
     cmdclass={"build_ext": pil_build_ext},
-    ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
+    ext_modules=[Extension("_imaging", ["_imaging.c"])],
     packages=find_packages(),
     scripts=glob.glob("Scripts/pil*.py"),
     keywords=("Imaging",),
