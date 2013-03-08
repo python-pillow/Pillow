@@ -183,7 +183,7 @@ class PhotoImage:
         except tkinter.TclError as v:
             # activate Tkinter hook
             try:
-                from . import _imagingtk
+                from PIL import _imagingtk
                 try:
                     _imagingtk.tkinit(tk.interpaddr(), 1)
                 except AttributeError:

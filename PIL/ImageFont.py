@@ -36,7 +36,7 @@ class _imagingft_not_installed:
         raise ImportError("The _imagingft C module is not installed")
 
 try:
-    from . import _imagingft as core
+    from PIL import _imagingft as core
 except ImportError:
     core = _imagingft_not_installed()
 
