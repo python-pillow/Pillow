@@ -536,9 +536,9 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
 
         if Image.DEBUG:
-            print "*** TiffImageFile._open ***"
-            print "- __first:", self.__first
-            print "- ifh: ", ifh
+            print ("*** TiffImageFile._open ***")
+            print ("- __first:", self.__first)
+            print ("- ifh: ", ifh)
 
        # and load the first frame
         self._seek(0)
@@ -628,7 +628,7 @@ class TiffImageFile(ImageFile.ImageFile):
         if hasattr(self.fp, "fileno"):
             # we've got a actual file on disk, pass in the fp.
             if Image.DEBUG:
-                print "have fileno, calling fileno version of the decoder."
+                print ("have fileno, calling fileno version of the decoder.")
             self.fp.seek(0)
             n,e = d.decode("fpfp") # 4 bytes, otherwise the trace might error out
         elif hasattr(self.fp, "getvalue"):
@@ -638,12 +638,12 @@ class TiffImageFile(ImageFile.ImageFile):
             # unless we could do something like get the address of the underlying
             # string for stringio.
             if Image.DEBUG:
-                print "have getvalue. just sending in a string from getvalue"
+                print ("have getvalue. just sending in a string from getvalue")
             n,e = d.decode(self.fp.getvalue())
         else:
             # we have something else.
             if Image.DEBUG:
-                print "don't have fileno or getvalue. just reading"
+                print ("don't have fileno or getvalue. just reading")
             # UNDONE -- so much for that buffer size thing. 
             n, e = d.decode(self.fp.read())
 
@@ -739,8 +739,8 @@ class TiffImageFile(ImageFile.ImageFile):
             w = self.size[0]
             if self._compression in ["tiff_ccitt", "group3",
                                      "group4", "tiff_raw_16"]:
-                if Image.DEBUG:
-                    print "Activating g4 compression for whole file"
+                ## if Image.DEBUG:
+                ##     print "Activating g4 compression for whole file"
 
                 # Decoder expects entire file as one tile.
                 # There's a buffer size limit in load (64k)
@@ -776,7 +776,8 @@ class TiffImageFile(ImageFile.ImageFile):
                         (self._compression,
                         (0, min(y, ysize), w, min(y+h, ysize)),
                         offsets[i], a))
-                    print "tiles: %s" % self.tile
+                    if Image.DEBUG:
+                        print ("tiles: ", self.tile)
                     y = y + h
                     if y >= self.size[1]:
                         x = y = 0
@@ -948,8 +949,8 @@ def _save(im, fp, filename):
 
     if libtiff:
         if Image.DEBUG:
-            print "Saving using libtiff encoder"
-            print ifd.items()
+            print ("Saving using libtiff encoder")
+            print (ifd.items())
         _fp = 0
         if hasattr(fp, "fileno"):
             fp.seek(0)
@@ -984,7 +985,7 @@ def _save(im, fp, filename):
             # if we don't have an ifd here, just punt.
             pass
         if Image.DEBUG:
-            print atts
+            print (atts)
         a = (rawmode, compression, _fp, filename, atts)
         e = Image._getencoder(im.mode, compression, a, im.encoderconfig)
         e.setimage(im.im, (0,0)+im.size)
