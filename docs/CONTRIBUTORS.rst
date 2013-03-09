@@ -1,7 +1,7 @@
 Contributors (Pillow)
 =====================
 
-.. Note:: New contributors please add your name here and send pull request
+.. Note:: New contributors: please add your name here and send a pull request
 
 - Alex Clark <aclark@aclark.net>, developer, fork author and maintainer
 - Alex Po <alex-86p@yandex.ru>, developer

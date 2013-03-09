@@ -58,7 +58,7 @@ Pillow needs you! Please help us maintain PIL via:
 Python Imaging Library
 ======================
 
-.. Note:: What follows is the original PIL 1.1.7 README contents.
+.. Note:: What follows is the original PIL 1.1.7 README file contents.
 
 ::
 
