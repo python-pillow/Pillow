@@ -50,6 +50,7 @@ from PIL import _binary
 import array, sys
 import collections
 import itertools
+import os
 
 II = b"II" # little-endian (intel-style)
 MM = b"MM" # big-endian (motorola-style)
@@ -120,6 +121,8 @@ COMPRESSION_INFO = {
     32771: "tiff_raw_16", # 16-bit padding
     32773: "packbits"
 }
+
+COMPRESSION_INFO_REV = dict([(v,k) for (k,v) in COMPRESSION_INFO.items()])
 
 OPEN_INFO = {
     # (ByteOrder, PhotoInterpretation, SampleFormat, FillOrder, BitsPerSample,
@@ -532,7 +535,12 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__frame = -1
         self.__fp = self.fp
 
-        # and load the first frame
+        if Image.DEBUG:
+            print "*** TiffImageFile._open ***"
+            print "- __first:", self.__first
+            print "- ifh: ", ifh
+
+       # and load the first frame
         self._seek(0)
 
     def seek(self, frame):
@@ -567,7 +575,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         return self.__frame
 
-    def _decoder(self, rawmode, layer):
+    def _decoder(self, rawmode, layer, tile=None):
         "Setup decoder contexts"
 
         args = None
@@ -593,6 +601,63 @@ class TiffImageFile(ImageFile.ImageFile):
             self.info['icc_profile'] = self.tag[ICCPROFILE]
 
         return args
+
+    def _load_libtiff(self):
+        """ Overload method triggered when we detect a g3/g4 tiff
+            Calls out to lib tiff """
+
+        pixel = Image.Image.load(self)
+
+        if self.tile is None:
+            raise IOError("cannot load this image")
+        if not self.tile:
+            return pixel
+
+        self.load_prepare()
+        
+        if not len(self.tile) == 1:
+            raise IOError("Not exactly one tile")
+
+        d, e, o, a = self.tile[0]
+        d = Image._getdecoder(self.mode, d, a, self.decoderconfig)
+        try:
+            d.setimage(self.im, e)
+        except ValueError:
+            raise IOError("Couldn't set the image")
+
+        if hasattr(self.fp, "fileno"):
+            # we've got a actual file on disk, pass in the fp.
+            if Image.DEBUG:
+                print "have fileno, calling fileno version of the decoder."
+            self.fp.seek(0)
+            n,e = d.decode("fpfp") # 4 bytes, otherwise the trace might error out
+        elif hasattr(self.fp, "getvalue"):
+            # We've got a stringio like thing passed in. Yay for all in memory.
+            # The decoder needs the entire file in one shot, so there's not
+            # a lot we can do here other than give it the entire file.
+            # unless we could do something like get the address of the underlying
+            # string for stringio.
+            if Image.DEBUG:
+                print "have getvalue. just sending in a string from getvalue"
+            n,e = d.decode(self.fp.getvalue())
+        else:
+            # we have something else.
+            if Image.DEBUG:
+                print "don't have fileno or getvalue. just reading"
+            # UNDONE -- so much for that buffer size thing. 
+            n, e = d.decode(self.fp.read())
+
+        
+        self.tile = []
+        self.readonly = 0
+        self.fp = None # might be shared
+
+        if e < 0:
+            raise_ioerror(e)
+
+        self.load_end()
+
+        return Image.Image.load(self)
 
     def _setup(self):
         "Setup this image object based on current tags"
@@ -669,20 +734,53 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tile = []
         if STRIPOFFSETS in self.tag:
             # striped image
+            offsets = self.tag[STRIPOFFSETS]
             h = getscalar(ROWSPERSTRIP, ysize)
             w = self.size[0]
-            a = None
-            for o in self.tag[STRIPOFFSETS]:
-                if not a:
-                    a = self._decoder(rawmode, l)
+            if self._compression in ["tiff_ccitt", "group3",
+                                     "group4", "tiff_raw_16"]:
+                if Image.DEBUG:
+                    print "Activating g4 compression for whole file"
+
+                # Decoder expects entire file as one tile.
+                # There's a buffer size limit in load (64k)
+                # so large g4 images will fail if we use that
+                # function. 
+                #
+                # Setup the one tile for the whole image, then
+                # replace the existing load function with our
+                # _load_libtiff function.
+                
+                self.load = self._load_libtiff
+                
+                # To be nice on memory footprint, if there's a
+                # file descriptor, use that instead of reading
+                # into a string in python.
+
+                # libtiff closes the file descriptor, so pass in a dup. 
+                fp = hasattr(self.fp, "fileno") and os.dup(self.fp.fileno())
+
+                # Offset in the tile tuple is 0, we go from 0,0 to
+                # w,h, and we only do this once -- eds
+                a = (rawmode, self._compression, fp )
                 self.tile.append(
                     (self._compression,
-                    (0, min(y, ysize), w, min(y+h, ysize)),
-                    o, a))
-                y = y + h
-                if y >= self.size[1]:
-                    x = y = 0
-                    l = l + 1
+                     (0, 0, w, ysize),
+                     0, a))
+                a = None
+
+            else:
+                for i in range(len(offsets)):
+                    a = self._decoder(rawmode, l, i)
+                    self.tile.append(
+                        (self._compression,
+                        (0, min(y, ysize), w, min(y+h, ysize)),
+                        offsets[i], a))
+                    print "tiles: %s" % self.tile
+                    y = y + h
+                    if y >= self.size[1]:
+                        x = y = 0
+                        l = l + 1
                     a = None
         elif TILEOFFSETS in self.tag:
             # tiled image
@@ -764,8 +862,12 @@ def _save(im, fp, filename):
 
     ifd = ImageFileDirectory(prefix)
 
+    compression = im.info.get('compression','raw')
+    libtiff = compression in ["tiff_ccitt", "group3",
+                              "group4", "tiff_raw_16"]
+
     # -- multi-page -- skip TIFF header on subsequent pages
-    if fp.tell() == 0:
+    if not libtiff and fp.tell() == 0:
         # tiff header (write via IFD to get everything right)
         # PIL always starts the first IFD at offset 8
         fp.write(ifd.prefix + ifd.o16(42) + ifd.o32(8))
@@ -842,13 +944,65 @@ def _save(im, fp, filename):
     ifd[ROWSPERSTRIP] = im.size[1]
     ifd[STRIPBYTECOUNTS] = stride * im.size[1]
     ifd[STRIPOFFSETS] = 0 # this is adjusted by IFD writer
-    ifd[COMPRESSION] = 1 # no compression
+    ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression,1) # no compression by default
 
-    offset = ifd.save(fp)
+    if libtiff:
+        if Image.DEBUG:
+            print "Saving using libtiff encoder"
+            print ifd.items()
+        _fp = 0
+        if hasattr(fp, "fileno"):
+            fp.seek(0)
+            _fp = os.dup(fp.fileno())
 
-    ImageFile._save(im, fp, [
-        ("raw", (0,0)+im.size, offset, (rawmode, stride, 1))
-        ])
+        blocklist =  [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
+        atts = dict([(k,v) for (k,(v,)) in ifd.items() if k not in blocklist])
+        try:
+            # pull in more bits from the original file, e.g x,y resolution
+            # so that we can save(load('')) == original file.
+            for k,v in im.ifd.items():
+                if k not in atts and k not in blocklist:
+                    if type(v[0]) == tuple and len(v) > 1:
+                       # A tuple of more than one rational tuples
+                        # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
+                        atts[k] = [float(elt[0])/float(elt[1]) for elt in v]
+                        continue
+                    if type(v[0]) == tuple and len(v) == 1:
+                       # A tuple of one rational tuples
+                        # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
+                        atts[k] = float(v[0][0])/float(v[0][1])
+                        continue
+                    if type(v) == tuple and len(v) == 1:
+                        # int or similar
+                        atts[k] = v[0]
+                        continue
+                    if type(v) == str:
+                        atts[k] = v
+                        continue
+                    
+        except:
+            # if we don't have an ifd here, just punt.
+            pass
+        if Image.DEBUG:
+            print atts
+        a = (rawmode, compression, _fp, filename, atts)
+        e = Image._getencoder(im.mode, compression, a, im.encoderconfig)
+        e.setimage(im.im, (0,0)+im.size)
+        while 1:
+            l, s, d = e.encode(16*1024) # undone, change to self.decodermaxblock
+            if not _fp:
+                fp.write(d)
+            if s:
+                break
+        if s < 0:
+            raise IOError("encoder error %d when writing image file" % s)
+        
+    else:
+        offset = ifd.save(fp)
+
+        ImageFile._save(im, fp, [
+            ("raw", (0,0)+im.size, offset, (rawmode, stride, 1))
+            ])
 
 
     # -- helper for multi-page save --
