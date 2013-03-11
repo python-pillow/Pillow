@@ -65,7 +65,7 @@
  * 2005-10-02 fl   Added access proxy
  * 2006-06-18 fl   Always draw last point in polyline
  *
- * Copyright (c) 1997-2006 by Secret Labs AB 
+ * Copyright (c) 1997-2006 by Secret Labs AB
  * Copyright (c) 1995-2006 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
@@ -157,7 +157,7 @@ typedef struct {
 
 static PyTypeObject PixelAccess_Type;
 
-PyObject* 
+PyObject*
 PyImagingNew(Imaging imOut)
 {
     ImagingObject* imagep;
@@ -584,7 +584,7 @@ getink(PyObject* color, Imaging im, char* ink)
 /* FACTORIES								*/
 /* -------------------------------------------------------------------- */
 
-static PyObject* 
+static PyObject*
 _fill(PyObject* self, PyObject* args)
 {
     char* mode;
@@ -592,7 +592,7 @@ _fill(PyObject* self, PyObject* args)
     PyObject* color;
     char buffer[4];
     Imaging im;
-    
+
     xsize = ysize = 256;
     color = NULL;
 
@@ -616,7 +616,7 @@ _fill(PyObject* self, PyObject* args)
     return PyImagingNew(im);
 }
 
-static PyObject* 
+static PyObject*
 _new(PyObject* self, PyObject* args)
 {
     char* mode;
@@ -628,7 +628,7 @@ _new(PyObject* self, PyObject* args)
     return PyImagingNew(ImagingNew(mode, xsize, ysize));
 }
 
-static PyObject* 
+static PyObject*
 _new_array(PyObject* self, PyObject* args)
 {
     char* mode;
@@ -640,7 +640,7 @@ _new_array(PyObject* self, PyObject* args)
     return PyImagingNew(ImagingNewArray(mode, xsize, ysize));
 }
 
-static PyObject* 
+static PyObject*
 _new_block(PyObject* self, PyObject* args)
 {
     char* mode;
@@ -652,7 +652,7 @@ _new_block(PyObject* self, PyObject* args)
     return PyImagingNew(ImagingNewBlock(mode, xsize, ysize));
 }
 
-static PyObject* 
+static PyObject*
 _getcount(PyObject* self, PyObject* args)
 {
     if (!PyArg_ParseTuple(args, ":getcount"))
@@ -661,7 +661,7 @@ _getcount(PyObject* self, PyObject* args)
     return PyInt_FromLong(ImagingNewCount);
 }
 
-static PyObject* 
+static PyObject*
 _linear_gradient(PyObject* self, PyObject* args)
 {
     char* mode;
@@ -672,7 +672,7 @@ _linear_gradient(PyObject* self, PyObject* args)
     return PyImagingNew(ImagingFillLinearGradient(mode));
 }
 
-static PyObject* 
+static PyObject*
 _radial_gradient(PyObject* self, PyObject* args)
 {
     char* mode;
@@ -683,7 +683,7 @@ _radial_gradient(PyObject* self, PyObject* args)
     return PyImagingNew(ImagingFillRadialGradient(mode));
 }
 
-static PyObject* 
+static PyObject*
 _open_ppm(PyObject* self, PyObject* args)
 {
     char* filename;
@@ -708,13 +708,13 @@ _alpha_composite(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingAlphaComposite(imagep1->image, imagep2->image));
 }
 
-static PyObject* 
+static PyObject*
 _blend(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep1;
     ImagingObject* imagep2;
     double alpha;
-    
+
     alpha = 0.5;
     if (!PyArg_ParseTuple(args, "O!O!|d",
 			  &Imaging_Type, &imagep1,
@@ -730,7 +730,7 @@ _blend(ImagingObject* self, PyObject* args)
 /* METHODS								*/
 /* -------------------------------------------------------------------- */
 
-static PyObject* 
+static PyObject*
 _convert(ImagingObject* self, PyObject* args)
 {
     char* mode;
@@ -754,7 +754,7 @@ _convert(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingConvert(self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither));
 }
 
-static PyObject* 
+static PyObject*
 _convert2(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep1;
@@ -771,7 +771,7 @@ _convert2(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _convert_matrix(ImagingObject* self, PyObject* args)
 {
     char* mode;
@@ -788,7 +788,7 @@ _convert_matrix(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingConvertMatrix(self->image, mode, m));
 }
 
-static PyObject* 
+static PyObject*
 _copy(ImagingObject* self, PyObject* args)
 {
     if (!PyArg_ParseTuple(args, ""))
@@ -797,7 +797,7 @@ _copy(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingCopy(self->image));
 }
 
-static PyObject* 
+static PyObject*
 _copy2(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep1;
@@ -814,7 +814,7 @@ _copy2(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _crop(ImagingObject* self, PyObject* args)
 {
     int x0, y0, x1, y1;
@@ -824,7 +824,7 @@ _crop(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingCrop(self->image, x0, y0, x1, y1));
 }
 
-static PyObject* 
+static PyObject*
 _expand(ImagingObject* self, PyObject* args)
 {
     int x, y;
@@ -835,7 +835,7 @@ _expand(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingExpand(self->image, x, y, mode));
 }
 
-static PyObject* 
+static PyObject*
 _filter(ImagingObject* self, PyObject* args)
 {
     PyObject* imOut;
@@ -848,7 +848,7 @@ _filter(ImagingObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "(ii)ffO", &xsize, &ysize,
                          &divisor, &offset, &kernel))
         return NULL;
-    
+
     /* get user-defined kernel */
     kerneldata = getlist(kernel, &kernelsize, NULL, TYPE_FLOAT32);
     if (!kerneldata)
@@ -868,7 +868,7 @@ _filter(ImagingObject* self, PyObject* args)
 }
 
 #ifdef WITH_UNSHARPMASK
-static PyObject* 
+static PyObject*
 _gaussian_blur(ImagingObject* self, PyObject* args)
 {
     Imaging imIn;
@@ -890,7 +890,7 @@ _gaussian_blur(ImagingObject* self, PyObject* args)
 }
 #endif
 
-static PyObject* 
+static PyObject*
 _getpalette(ImagingObject* self, PyObject* args)
 {
     PyObject* palette;
@@ -924,6 +924,17 @@ _getpalette(ImagingObject* self, PyObject* args)
     return palette;
 }
 
+static PyObject*
+_getpalettemode(ImagingObject* self, PyObject* args)
+{
+    if (!self->image->palette) {
+	PyErr_SetString(PyExc_ValueError, no_palette);
+	return NULL;
+    }
+
+    return PyString_FromString(self->image->palette->mode);
+}
+
 static inline int
 _getxy(PyObject* xy, int* x, int *y)
 {
@@ -931,7 +942,7 @@ _getxy(PyObject* xy, int* x, int *y)
 
     if (!PyTuple_Check(xy) || PyTuple_GET_SIZE(xy) != 2)
         goto badarg;
-        
+
     value = PyTuple_GET_ITEM(xy, 0);
     if (PyInt_Check(value))
         *x = PyInt_AS_LONG(value);
@@ -965,7 +976,7 @@ _getxy(PyObject* xy, int* x, int *y)
     return -1;
 }
 
-static PyObject* 
+static PyObject*
 _getpixel(ImagingObject* self, PyObject* args)
 {
     PyObject* xy;
@@ -1065,7 +1076,7 @@ _histogram(ImagingObject* self, PyObject* args)
 }
 
 #ifdef WITH_MODEFILTER
-static PyObject* 
+static PyObject*
 _modefilter(ImagingObject* self, PyObject* args)
 {
     int size;
@@ -1076,7 +1087,7 @@ _modefilter(ImagingObject* self, PyObject* args)
 }
 #endif
 
-static PyObject* 
+static PyObject*
 _offset(ImagingObject* self, PyObject* args)
 {
     int xoffset, yoffset;
@@ -1086,7 +1097,7 @@ _offset(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingOffset(self->image, xoffset, yoffset));
 }
 
-static PyObject* 
+static PyObject*
 _paste(ImagingObject* self, PyObject* args)
 {
     int status;
@@ -1251,7 +1262,7 @@ _putdata(ImagingObject* self, PyObject* args)
                         x = image->xsize;
                     memcpy(image->image8[y], p+i, x);
                 }
-            else 
+            else
                 /* Scaled and clipped string data */
                 for (i = x = y = 0; i < n; i++) {
                     image->image8[y][x] = CLIP((int) (p[i] * scale + offset));
@@ -1355,7 +1366,7 @@ _putdata(ImagingObject* self, PyObject* args)
 #ifdef WITH_QUANTIZE
 
 #include "Quant.h"
-static PyObject* 
+static PyObject*
 _quantize(ImagingObject* self, PyObject* args)
 {
     int colours = 256;
@@ -1375,7 +1386,7 @@ _quantize(ImagingObject* self, PyObject* args)
 }
 #endif
 
-static PyObject* 
+static PyObject*
 _putpalette(ImagingObject* self, PyObject* args)
 {
     ImagingShuffler unpack;
@@ -1410,7 +1421,7 @@ _putpalette(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _putpalettealpha(ImagingObject* self, PyObject* args)
 {
     int index;
@@ -1435,7 +1446,35 @@ _putpalettealpha(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
+_putpalettealphas(ImagingObject* self, PyObject* args)
+{
+    int i;
+    UINT8 *values;
+    int length;
+    if (!PyArg_ParseTuple(args, "s#", &values, &length))
+	return NULL;
+
+    if (!self->image->palette) {
+	PyErr_SetString(PyExc_ValueError, no_palette);
+	return NULL;
+    }
+
+    if (length  > 256) {
+	PyErr_SetString(PyExc_ValueError, outside_palette);
+	return NULL;
+    }
+
+    strcpy(self->image->palette->mode, "RGBA");
+    for (i=0; i<length; i++) {
+	self->image->palette->palette[i*4+3] = (UINT8) values[i];
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject*
 _putpixel(ImagingObject* self, PyObject* args)
 {
     Imaging im;
@@ -1447,7 +1486,7 @@ _putpixel(ImagingObject* self, PyObject* args)
 	return NULL;
 
     im = self->image;
-    
+
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
 	PyErr_SetString(PyExc_IndexError, outside_image);
 	return NULL;
@@ -1464,7 +1503,7 @@ _putpixel(ImagingObject* self, PyObject* args)
 }
 
 #ifdef WITH_RANKFILTER
-static PyObject* 
+static PyObject*
 _rankfilter(ImagingObject* self, PyObject* args)
 {
     int size, rank;
@@ -1475,7 +1514,7 @@ _rankfilter(ImagingObject* self, PyObject* args)
 }
 #endif
 
-static PyObject* 
+static PyObject*
 _resize(ImagingObject* self, PyObject* args)
 {
     Imaging imIn;
@@ -1491,16 +1530,16 @@ _resize(ImagingObject* self, PyObject* args)
     imOut = ImagingNew(imIn->mode, xsize, ysize);
     if (imOut)
 	(void) ImagingResize(imOut, imIn, filter);
-    
+
     return PyImagingNew(imOut);
 }
 
-static PyObject* 
+static PyObject*
 _rotate(ImagingObject* self, PyObject* args)
 {
     Imaging imOut;
     Imaging imIn;
-    
+
     double theta;
     int filter = IMAGING_TRANSFORM_NEAREST;
     if (!PyArg_ParseTuple(args, "d|i", &theta, &filter))
@@ -1546,7 +1585,7 @@ _rotate(ImagingObject* self, PyObject* args)
 #define IS_RGB(mode)\
     (!strcmp(mode, "RGB") || !strcmp(mode, "RGBA") || !strcmp(mode, "RGBX"))
 
-static PyObject* 
+static PyObject*
 im_setmode(ImagingObject* self, PyObject* args)
 {
     /* attempt to modify the mode of an image in place */
@@ -1584,7 +1623,7 @@ im_setmode(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _stretch(ImagingObject* self, PyObject* args)
 {
     Imaging imIn;
@@ -1601,7 +1640,7 @@ _stretch(ImagingObject* self, PyObject* args)
     /* two-pass resize: minimize size of intermediate image */
     if (imIn->xsize * ysize < xsize * imIn->ysize)
         imTemp = ImagingNew(imIn->mode, imIn->xsize, ysize);
-    else 
+    else
         imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
     if (!imTemp)
         return NULL;
@@ -1626,11 +1665,11 @@ _stretch(ImagingObject* self, PyObject* args)
     }
 
     ImagingDelete(imTemp);
-    
+
     return PyImagingNew(imOut);
 }
 
-static PyObject* 
+static PyObject*
 _transform2(ImagingObject* self, PyObject* args)
 {
     static const char* wrong_number = "wrong number of matrix entries";
@@ -1705,7 +1744,7 @@ _transform2(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _transpose(ImagingObject* self, PyObject* args)
 {
     Imaging imIn;
@@ -1716,7 +1755,7 @@ _transpose(ImagingObject* self, PyObject* args)
 	return NULL;
 
     imIn = self->image;
-    
+
     switch (op) {
     case 0: /* flip left right */
     case 1: /* flip top bottom */
@@ -1755,7 +1794,7 @@ _transpose(ImagingObject* self, PyObject* args)
 }
 
 #ifdef WITH_UNSHARPMASK
-static PyObject* 
+static PyObject*
 _unsharp_mask(ImagingObject* self, PyObject* args)
 {
     Imaging imIn;
@@ -1781,13 +1820,13 @@ _unsharp_mask(ImagingObject* self, PyObject* args)
 
 /* -------------------------------------------------------------------- */
 
-static PyObject* 
+static PyObject*
 _isblock(ImagingObject* self, PyObject* args)
 {
     return PyInt_FromLong((long) self->image->block);
 }
 
-static PyObject* 
+static PyObject*
 _getbbox(ImagingObject* self, PyObject* args)
 {
     int bbox[4];
@@ -1799,7 +1838,7 @@ _getbbox(ImagingObject* self, PyObject* args)
     return Py_BuildValue("iiii", bbox[0], bbox[1], bbox[2], bbox[3]);
 }
 
-static PyObject* 
+static PyObject*
 _getcolors(ImagingObject* self, PyObject* args)
 {
     ImagingColorItem* items;
@@ -1833,7 +1872,7 @@ _getcolors(ImagingObject* self, PyObject* args)
     return out;
 }
 
-static PyObject* 
+static PyObject*
 _getextrema(ImagingObject* self, PyObject* args)
 {
     union {
@@ -1842,7 +1881,7 @@ _getextrema(ImagingObject* self, PyObject* args)
         FLOAT32 f[2];
     } extrema;
     int status;
-    
+
     status = ImagingGetExtrema(self->image, &extrema);
     if (status < 0)
         return NULL;
@@ -1861,7 +1900,7 @@ _getextrema(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _getprojection(ImagingObject* self, PyObject* args)
 {
     unsigned char* xprofile;
@@ -1891,7 +1930,7 @@ _getprojection(ImagingObject* self, PyObject* args)
 
 /* -------------------------------------------------------------------- */
 
-static PyObject* 
+static PyObject*
 _getband(ImagingObject* self, PyObject* args)
 {
     int band;
@@ -1902,7 +1941,7 @@ _getband(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingGetBand(self->image, band));
 }
 
-static PyObject* 
+static PyObject*
 _fillband(ImagingObject* self, PyObject* args)
 {
     int band;
@@ -1913,12 +1952,12 @@ _fillband(ImagingObject* self, PyObject* args)
 
     if (!ImagingFillBand(self->image, band, color))
         return NULL;
-    
+
     Py_INCREF(Py_None);
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _putband(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -1939,13 +1978,13 @@ _putband(ImagingObject* self, PyObject* args)
 
 #ifdef WITH_IMAGECHOPS
 
-static PyObject* 
+static PyObject*
 _chop_invert(ImagingObject* self, PyObject* args)
 {
     return PyImagingNew(ImagingNegative(self->image));
 }
 
-static PyObject* 
+static PyObject*
 _chop_lighter(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -1956,7 +1995,7 @@ _chop_lighter(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingChopLighter(self->image, imagep->image));
 }
 
-static PyObject* 
+static PyObject*
 _chop_darker(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -1967,7 +2006,7 @@ _chop_darker(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingChopDarker(self->image, imagep->image));
 }
 
-static PyObject* 
+static PyObject*
 _chop_difference(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -1978,7 +2017,7 @@ _chop_difference(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingChopDifference(self->image, imagep->image));
 }
 
-static PyObject* 
+static PyObject*
 _chop_multiply(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -1989,7 +2028,7 @@ _chop_multiply(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingChopMultiply(self->image, imagep->image));
 }
 
-static PyObject* 
+static PyObject*
 _chop_screen(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -2000,7 +2039,7 @@ _chop_screen(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingChopScreen(self->image, imagep->image));
 }
 
-static PyObject* 
+static PyObject*
 _chop_add(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -2018,7 +2057,7 @@ _chop_add(ImagingObject* self, PyObject* args)
 				       scale, offset));
 }
 
-static PyObject* 
+static PyObject*
 _chop_subtract(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -2036,7 +2075,7 @@ _chop_subtract(ImagingObject* self, PyObject* args)
 					    scale, offset));
 }
 
-static PyObject* 
+static PyObject*
 _chop_and(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -2047,7 +2086,7 @@ _chop_and(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingChopAnd(self->image, imagep->image));
 }
 
-static PyObject* 
+static PyObject*
 _chop_or(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -2058,7 +2097,7 @@ _chop_or(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingChopOr(self->image, imagep->image));
 }
 
-static PyObject* 
+static PyObject*
 _chop_xor(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -2069,7 +2108,7 @@ _chop_xor(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingChopXor(self->image, imagep->image));
 }
 
-static PyObject* 
+static PyObject*
 _chop_add_modulo(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -2080,7 +2119,7 @@ _chop_add_modulo(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingChopAddModulo(self->image, imagep->image));
 }
 
-static PyObject* 
+static PyObject*
 _chop_subtract_modulo(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
@@ -2274,7 +2313,7 @@ _draw_dealloc(ImagingDrawObject* self)
 
 extern int PyPath_Flatten(PyObject* data, double **xy);
 
-static PyObject* 
+static PyObject*
 _draw_ink(ImagingDrawObject* self, PyObject* args)
 {
     INT32 ink = 0;
@@ -2289,7 +2328,7 @@ _draw_ink(ImagingDrawObject* self, PyObject* args)
     return PyInt_FromLong((int) ink);
 }
 
-static PyObject* 
+static PyObject*
 _draw_arc(ImagingDrawObject* self, PyObject* args)
 {
     int x0, y0, x1, y1;
@@ -2309,7 +2348,7 @@ _draw_arc(ImagingDrawObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _draw_bitmap(ImagingDrawObject* self, PyObject* args)
 {
     double *xy;
@@ -2346,7 +2385,7 @@ _draw_bitmap(ImagingDrawObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _draw_chord(ImagingDrawObject* self, PyObject* args)
 {
     int x0, y0, x1, y1;
@@ -2364,7 +2403,7 @@ _draw_chord(ImagingDrawObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _draw_ellipse(ImagingDrawObject* self, PyObject* args)
 {
     double* xy;
@@ -2391,7 +2430,7 @@ _draw_ellipse(ImagingDrawObject* self, PyObject* args)
         self->image->image, (int) xy[0], (int) xy[1], (int) xy[2], (int) xy[3],
         &ink, fill, self->blend
         );
-    
+
     free(xy);
 
     if (n < 0)
@@ -2401,7 +2440,7 @@ _draw_ellipse(ImagingDrawObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _draw_line(ImagingDrawObject* self, PyObject* args)
 {
     int x0, y0, x1, y1;
@@ -2417,7 +2456,7 @@ _draw_line(ImagingDrawObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _draw_lines(ImagingDrawObject* self, PyObject* args)
 {
     double *xy;
@@ -2470,7 +2509,7 @@ _draw_lines(ImagingDrawObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _draw_point(ImagingDrawObject* self, PyObject* args)
 {
     int x, y;
@@ -2485,7 +2524,7 @@ _draw_point(ImagingDrawObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _draw_points(ImagingDrawObject* self, PyObject* args)
 {
     double *xy;
@@ -2520,7 +2559,7 @@ _draw_points(ImagingDrawObject* self, PyObject* args)
 /* from outline.c */
 extern ImagingOutline PyOutline_AsOutline(PyObject* outline);
 
-static PyObject* 
+static PyObject*
 _draw_outline(ImagingDrawObject* self, PyObject* args)
 {
     ImagingOutline outline;
@@ -2547,7 +2586,7 @@ _draw_outline(ImagingDrawObject* self, PyObject* args)
 
 #endif
 
-static PyObject* 
+static PyObject*
 _draw_pieslice(ImagingDrawObject* self, PyObject* args)
 {
     int x0, y0, x1, y1;
@@ -2565,7 +2604,7 @@ _draw_pieslice(ImagingDrawObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _draw_polygon(ImagingDrawObject* self, PyObject* args)
 {
     double *xy;
@@ -2611,7 +2650,7 @@ _draw_polygon(ImagingDrawObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _draw_rectangle(ImagingDrawObject* self, PyObject* args)
 {
     double* xy;
@@ -2638,7 +2677,7 @@ _draw_rectangle(ImagingDrawObject* self, PyObject* args)
         self->image->image, (int) xy[0], (int) xy[1],
         (int) xy[2], (int) xy[3], &ink, fill, self->blend
         );
-    
+
     free(xy);
 
     if (n < 0)
@@ -2749,7 +2788,7 @@ pixel_access_setitem(PixelAccessObject *self, PyObject *xy, PyObject *color)
 
 #ifdef WITH_EFFECTS
 
-static PyObject* 
+static PyObject*
 _effect_mandelbrot(ImagingObject* self, PyObject* args)
 {
     int xsize = 512;
@@ -2768,7 +2807,7 @@ _effect_mandelbrot(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingEffectMandelbrot(xsize, ysize, extent, quality));
 }
 
-static PyObject* 
+static PyObject*
 _effect_noise(ImagingObject* self, PyObject* args)
 {
     int xsize, ysize;
@@ -2779,7 +2818,7 @@ _effect_noise(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingEffectNoise(xsize, ysize, sigma));
 }
 
-static PyObject* 
+static PyObject*
 _effect_spread(ImagingObject* self, PyObject* args)
 {
     int dist;
@@ -2796,7 +2835,7 @@ _effect_spread(ImagingObject* self, PyObject* args)
 /* UTILITIES								*/
 /* -------------------------------------------------------------------- */
 
-static PyObject* 
+static PyObject*
 _crc32(PyObject* self, PyObject* args)
 {
     unsigned char* buffer;
@@ -2817,7 +2856,7 @@ _crc32(PyObject* self, PyObject* args)
     return Py_BuildValue("ii", (crc >> 16) & 0xFFFF, crc & 0xFFFF);
 }
 
-static PyObject* 
+static PyObject*
 _getcodecstatus(PyObject* self, PyObject* args)
 {
     int status;
@@ -2851,7 +2890,7 @@ _getcodecstatus(PyObject* self, PyObject* args)
 
 #ifdef WITH_DEBUG
 
-static PyObject* 
+static PyObject*
 _save_ppm(ImagingObject* self, PyObject* args)
 {
     char* filename;
@@ -2925,10 +2964,12 @@ static struct PyMethodDef methods[] = {
     {"fillband", (PyCFunction)_fillband, 1},
 
     {"setmode", (PyCFunction)im_setmode, 1},
-    
+
     {"getpalette", (PyCFunction)_getpalette, 1},
+    {"getpalettemode", (PyCFunction)_getpalettemode, 1},
     {"putpalette", (PyCFunction)_putpalette, 1},
     {"putpalettealpha", (PyCFunction)_putpalettealpha, 1},
+    {"putpalettealphas", (PyCFunction)_putpalettealphas, 1},
 
 #ifdef WITH_IMAGECHOPS
     /* Channel operations (ImageChops) */
@@ -3324,7 +3365,7 @@ static PyMethodDef functions[] = {
 #ifdef WITH_IMAGEPATH
     {"path", (PyCFunction)PyPath_Create, 1},
 #endif
-    
+
     /* Experimental arrow graphics stuff */
 #ifdef WITH_ARROW
     {"outline", (PyCFunction)PyOutline_Create, 1},
@@ -3361,6 +3402,13 @@ setup_module(PyObject* m) {
 #endif
 
 #ifdef HAVE_LIBZ
+#include "zlib.h"
+  /* zip encoding strategies */
+  PyModule_AddIntConstant(m, "DEFAULT_STRATEGY", Z_DEFAULT_STRATEGY);
+  PyModule_AddIntConstant(m, "FILTERED", Z_FILTERED);
+  PyModule_AddIntConstant(m, "HUFFMAN_ONLY", Z_HUFFMAN_ONLY);
+  PyModule_AddIntConstant(m, "RLE", Z_RLE);
+  PyModule_AddIntConstant(m, "FIXED", Z_FIXED);
   {
     extern const char* ImagingZipVersion(void);
     PyDict_SetItemString(d, "zlib_version", PyUnicode_FromString(ImagingZipVersion()));
