@@ -616,11 +616,7 @@ class Image:
             self.palette.mode = "RGB"
             self.palette.rawmode = None
             if "transparency" in self.info:
-                if self.info["transparency_palette"]:
-                    self.im.putpalettealpha(0, 0, self.info["transparency_palette"])
-                else:
-                    self.im.putpalettealpha(self.info["transparency"], 0)
-
+                self.im.putpalettealpha(self.info["transparency"], 0)
                 self.palette.mode = "RGBA"
         if self.im:
             return self.im.pixel_access(self.readonly)

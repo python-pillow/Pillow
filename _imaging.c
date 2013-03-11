@@ -741,13 +741,13 @@ _convert(ImagingObject* self, PyObject* args)
 	return NULL;
     if (paletteimage != NULL) {
       if (!PyImaging_Check(paletteimage)) {
-        PyObject_Print((PyObject *)paletteimage, stderr, 0);
-        PyErr_SetString(PyExc_ValueError, "palette argument must be image with mode 'P'");
-        return NULL;
+	PyObject_Print((PyObject *)paletteimage, stderr, 0);
+	PyErr_SetString(PyExc_ValueError, "palette argument must be image with mode 'P'");
+	return NULL;
       }
       if (paletteimage->image->palette == NULL) {
-        PyErr_SetString(PyExc_ValueError, "null palette");
-        return NULL;
+	PyErr_SetString(PyExc_ValueError, "null palette");
+	return NULL;
       }
     }
 
@@ -1415,9 +1415,7 @@ _putpalettealpha(ImagingObject* self, PyObject* args)
 {
     int index;
     int alpha = 0;
-    char* tpalette = NULL;
-    int tpaletteSize = 0;
-    if (!PyArg_ParseTuple(args, "i|i"PY_ARG_BYTES_LENGTH, &index, &alpha, &tpalette, &tpaletteSize))
+    if (!PyArg_ParseTuple(args, "i|i", &index, &alpha))
 	return NULL;
 
     if (!self->image->palette) {
@@ -1429,17 +1427,9 @@ _putpalettealpha(ImagingObject* self, PyObject* args)
 	PyErr_SetString(PyExc_ValueError, outside_palette);
 	return NULL;
     }
-    
-    strcpy(self->image->palette->mode, "RGBA");
 
-    if (tpaletteSize > 0) {
-        for (index = 0; index < tpaletteSize; index++) {
-            self->image->palette->palette[index*4+3] = (UINT8) tpalette[index];
-        }
-    }
-    else {
-        self->image->palette->palette[index*4+3] = (UINT8) alpha;
-    }
+    strcpy(self->image->palette->mode, "RGBA");
+    self->image->palette->palette[index*4+3] = (UINT8) alpha;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -3408,5 +3398,4 @@ init_imaging(void)
     setup_module(m);
 }
 #endif
-
 
