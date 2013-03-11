@@ -545,12 +545,16 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
           b'\0')                                # 12: interlace flag
 
     if im.mode == "P":
-        chunk(fp, b"PLTE", im.im.getpalette("RGB"))
+        palette_bytes = (2 ** bits) * 3
+        chunk(fp, b"PLTE", im.im.getpalette("RGB")[:palette_bytes])
 
     if "transparency" in im.encoderinfo:
         if im.mode == "P":
             transparency = max(0, min(255, im.encoderinfo["transparency"]))
-            chunk(fp, b"tRNS", b'\xFF' * transparency + b'\0')
+            alpha = b'\xFF' * transparency + b'\0'
+            # limit to actual palette size
+            alpha_bytes = 2**bits
+            chunk(fp, b"tRNS", alpha[:alpha_bytes])
         elif im.mode == "L":
             transparency = max(0, min(65535, im.encoderinfo["transparency"]))
             chunk(fp, b"tRNS", o16(transparency))
@@ -562,7 +566,8 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
     else:
         if im.mode == "P" and im.im.getpalettemode() == "RGBA":
             alpha = im.im.getpalette("RGBA", "A")
-            chunk(fp, "tRNS", alpha)
+            alpha_bytes = 2**bits
+            chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
     if 0:
         # FIXME: to be supported some day
