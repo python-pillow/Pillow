@@ -653,7 +653,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.fp = None # might be shared
 
         if e < 0:
-            raise_ioerror(e)
+            raise IOError(e)
 
         self.load_end()
 
