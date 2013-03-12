@@ -2,6 +2,9 @@ from tester import *
 
 from PIL import Image
 
+import StringIO
+import random
+
 def test_sanity():
 
     file = tempfile("temp.tif")
@@ -55,3 +58,94 @@ def test_gimp_tiff():
             ('jpeg', (0, 192, 256, 256), 3890, ('RGB', '')),
             ])
     assert_no_exception(lambda: im.load())
+
+def _assert_noerr(im):
+    """Helper tests that assert basic sanity about the g4 tiff reading"""
+    #1 bit
+    assert_equal(im.mode, "1")
+    # Does the data actually load
+    assert_no_exception(lambda: im.load())
+    assert_no_exception(lambda: im.getdata())
+
+    # can we write it back out, in a different form. 
+    out = tempfile("temp.png")
+    assert_no_exception(lambda: im.save(out))
+
+def _compare_images(img, ref):
+    """Compares the image to the reference, using 1000 sampled points"""
+    
+    imgdata = img.getdata()
+    refdata = ref.getdata()
+    assert_equal(len(imgdata), len(refdata))
+    randitems = random.sample(range(len(imgdata)), 1000)
+    assert_equal([imgdata[i] for i in randitems],
+				 [refdata[i] for i in randitems])
+
+def test_g4_tiff():
+    """Test the ordinary file path load path"""
+
+    file = "Tests/images/lena_g4_500.tif"
+    im = Image.open(file)
+
+    assert_equal(im.size, (500,500))
+    _assert_noerr(im)
+
+def test_g4_large():
+    file = "Tests/images/pport_g4.tif"
+    im = Image.open(file)
+    _assert_noerr(im)
+
+def test_g4_tiff_string():
+    """Testing the string load path"""
+
+    file = "Tests/images/lena_g4_500.tif"
+    with open(file,'rb') as f:
+        im = Image.open(f)
+
+        assert_equal(im.size, (500,500))
+        _assert_noerr(im)
+
+def test_g4_tiff_stringio():
+    """Testing the stringio loading code path"""
+
+    file = "Tests/images/lena_g4_500.tif"
+    s = StringIO.StringIO()
+    with open(file,'rb') as f:
+        s.write(f.read())
+        s.seek(0)
+    im = Image.open(s)
+
+    assert_equal(im.size, (500,500))
+    _assert_noerr(im)
+    	
+def xtest_g4_tiff_fail(): # UNDONE fails badly, unknown reason
+    """The 128x128 lena image fails for some reason. Investigating"""
+
+    Image.DEBUG = True
+    file = "Tests/images/lena_g4.tif"
+    im = Image.open(file)
+
+    assert_equal(im.size, (128,128))
+    _assert_noerr(im)
+    Image.DEBUG = False
+        
+def test_g4_eq_png():
+    """ Checking that we're actually getting the data that we expect"""
+    png = Image.open('Tests/images/lena_bw_500.png')
+    g4 = Image.open('Tests/images/lena_g4_500.tif')
+
+    assert_image_equal(g4, png)
+
+def test_g4_write():
+    """Checking to see that the saved image is the same as what we wrote"""
+    file = "Tests/images/lena_g4_500.tif"
+    orig = Image.open(file)
+
+    out = "temp.tif"
+    rot = orig.transpose(Image.ROTATE_90)
+    rot.save(out)
+
+    reread = Image.open(out)
+    assert_image_equal(reread, rot)
+
+    assert_false(orig.tobytes() == reread.tobytes())
