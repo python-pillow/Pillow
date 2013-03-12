@@ -27,6 +27,11 @@ typedef struct {
 
     /* Optimize (max compression) SLOW!!! */
     int optimize;
+    
+    /* 0 no compression, 9 best compression, -1 default compression */
+    int compress_level;
+    /* compression strategy Z_XXX */
+    int compress_type;
 
     /* Predefined dictionary (experimental) */
     char* dictionary;

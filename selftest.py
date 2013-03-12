@@ -157,7 +157,7 @@ def testimage():
 
 def check_module(feature, module):
     try:
-        __import__(module)
+        __import__("PIL." + module)
     except ImportError:
         print("***", feature, "support not installed")
     else:

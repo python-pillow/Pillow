@@ -70,6 +70,8 @@ _MODES = {
 }
 
 
+_simple_palette = re.compile(b'^\xff+\x00+$')
+
 # --------------------------------------------------------------------
 # Support classes.  Suitable for PNG and related formats like MNG etc.
 
@@ -251,10 +253,12 @@ class PngStream(ChunkStream):
         # transparency
         s = ImageFile._safe_read(self.fp, len)
         if self.im_mode == "P":
-            i = s.find(b"\0")
-            if i >= 0:
-                self.im_info["transparency"] = i
-                self.im_info["transparency_palette"] = s
+            if _simple_palette.match(s):
+                i = s.find(b"\0")
+                if i >= 0:
+                    self.im_info["transparency"] = i
+            else:
+                self.im_info["transparency"] = s
         elif self.im_mode == "L":
             self.im_info["transparency"] = i16(s)
         elif self.im_mode == "RGB":
@@ -514,7 +518,10 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
     else:
         dictionary = b""
 
-    im.encoderconfig = ("optimize" in im.encoderinfo, dictionary)
+    im.encoderconfig = ("optimize" in im.encoderinfo,
+        im.encoderinfo.get("compress_level", -1),
+        im.encoderinfo.get("compress_type", -1),
+        dictionary)
 
     # get the corresponding PNG mode
     try:
@@ -538,12 +545,16 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
           b'\0')                                # 12: interlace flag
 
     if im.mode == "P":
-        chunk(fp, b"PLTE", im.im.getpalette("RGB"))
+        palette_bytes = (2 ** bits) * 3
+        chunk(fp, b"PLTE", im.im.getpalette("RGB")[:palette_bytes])
 
     if "transparency" in im.encoderinfo:
         if im.mode == "P":
             transparency = max(0, min(255, im.encoderinfo["transparency"]))
-            chunk(fp, b"tRNS", b'\xFF' * transparency + b'\0')
+            alpha = b'\xFF' * transparency + b'\0'
+            # limit to actual palette size
+            alpha_bytes = 2**bits
+            chunk(fp, b"tRNS", alpha[:alpha_bytes])
         elif im.mode == "L":
             transparency = max(0, min(65535, im.encoderinfo["transparency"]))
             chunk(fp, b"tRNS", o16(transparency))
@@ -552,6 +563,11 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
             chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
         else:
             raise IOError("cannot use transparency for this mode")
+    else:
+        if im.mode == "P" and im.im.getpalettemode() == "RGBA":
+            alpha = im.im.getpalette("RGBA", "A")
+            alpha_bytes = 2**bits
+            chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
     if 0:
         # FIXME: to be supported some day
