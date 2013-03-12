@@ -628,10 +628,10 @@ class Image:
             self.palette.mode = "RGB"
             self.palette.rawmode = None
             if "transparency" in self.info:
-                if isinstance(self.info["transparency"], str):
-                    self.im.putpalettealphas(self.info["transparency"])
-                else:
+                if isinstance(self.info["transparency"], int):
                     self.im.putpalettealpha(self.info["transparency"], 0)
+                else:
+                    self.im.putpalettealphas(self.info["transparency"])
                 self.palette.mode = "RGBA"
 
         if self.im:

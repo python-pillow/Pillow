@@ -932,7 +932,7 @@ _getpalettemode(ImagingObject* self, PyObject* args)
 	return NULL;
     }
 
-    return PyString_FromString(self->image->palette->mode);
+    return PyUnicode_FromString(self->image->palette->mode);
 }
 
 static inline int
