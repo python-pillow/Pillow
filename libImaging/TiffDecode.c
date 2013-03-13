@@ -14,13 +14,6 @@
 
 #ifdef HAVE_LIBTIFF
 
-#undef INT32
-#undef UINT32
-
-#ifndef uint64
-#define uint64 uint64_t
-#endif
-
 #ifndef uint
 #define uint uint32
 #endif

@@ -21,12 +21,6 @@
 #ifndef _PIL_LIBTIFF_
 #define _PIL_LIBTIFF_
 
-#ifndef Py_ssize_t
-/* Py_ssize_t is not included in py2.4 */
-#define Py_ssize_t int
-#endif
-
-
 typedef struct {
 	tdata_t data; /* tdata_t == void* */
 	toff_t loc;   /* toff_t == uint32 */
