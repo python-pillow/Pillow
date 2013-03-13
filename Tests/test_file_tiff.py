@@ -63,23 +63,20 @@ def _assert_noerr(im):
     """Helper tests that assert basic sanity about the g4 tiff reading"""
     #1 bit
     assert_equal(im.mode, "1")
+
     # Does the data actually load
     assert_no_exception(lambda: im.load())
     assert_no_exception(lambda: im.getdata())
 
+    try:
+        assert_equal(im._compression, 'group4')
+    except:
+        print "No _compression"
+        print (dir(im))
+
     # can we write it back out, in a different form. 
     out = tempfile("temp.png")
     assert_no_exception(lambda: im.save(out))
-
-def _compare_images(img, ref):
-    """Compares the image to the reference, using 1000 sampled points"""
-    
-    imgdata = img.getdata()
-    refdata = ref.getdata()
-    assert_equal(len(imgdata), len(refdata))
-    randitems = random.sample(range(len(imgdata)), 1000)
-    assert_equal([imgdata[i] for i in randitems],
-				 [refdata[i] for i in randitems])
 
 def test_g4_tiff():
     """Test the ordinary file path load path"""
@@ -95,7 +92,7 @@ def test_g4_large():
     im = Image.open(file)
     _assert_noerr(im)
 
-def test_g4_tiff_string():
+def test_g4_tiff_file():
     """Testing the string load path"""
 
     file = "Tests/images/lena_g4_500.tif"
@@ -118,7 +115,7 @@ def test_g4_tiff_stringio():
     assert_equal(im.size, (500,500))
     _assert_noerr(im)
     	
-def xtest_g4_tiff_fail(): # UNDONE fails badly, unknown reason
+def test_g4_tiff_fail(): # UNDONE fails badly, unknown reason
     """The 128x128 lena image fails for some reason. Investigating"""
 
     Image.DEBUG = True
@@ -138,14 +135,21 @@ def test_g4_eq_png():
 
 def test_g4_write():
     """Checking to see that the saved image is the same as what we wrote"""
+    Image.DEBUG = True
+
     file = "Tests/images/lena_g4_500.tif"
     orig = Image.open(file)
 
     out = "temp.tif"
     rot = orig.transpose(Image.ROTATE_90)
+    assert_equal(rot.size,(500,500))
     rot.save(out)
 
     reread = Image.open(out)
+    assert_equal(reread.size,(500,500))
+    _assert_noerr(reread)
     assert_image_equal(reread, rot)
 
     assert_false(orig.tobytes() == reread.tobytes())
+
+    Image.DEBUG = False
