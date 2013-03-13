@@ -672,7 +672,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 	
 	PyObject *dir;
 	PyObject *key, *value;
-	Py_ssize_t pos = 0;
+	int pos = 0;
 	int status;
 
     if (! PyArg_ParseTuple(args, "sssisO", &mode, &rawmode, &compname, &fp, &filename, &dir)) {
@@ -707,6 +707,8 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
         return NULL;
     }
 
+	TRACE(("Found compression: %d\n", compression));
+
     encoder = PyImaging_EncoderNew(sizeof(TIFFSTATE));
     if (encoder == NULL)
         return NULL;
@@ -727,11 +729,11 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 			status = ImagingLibTiffSetField(&encoder->state, 
 											(ttag_t) PyInt_AsLong(key),
 											PyInt_AsLong(value));
-		} else if(PyString_Check(value)) {
-			TRACE(("Setting from String: %d, %s \n", (int)PyInt_AsLong(key),PyString_AsString(value)));
+		} else if(PyBytes_Check(value)) {
+			TRACE(("Setting from String: %d, %s \n", (int)PyInt_AsLong(key),PyBytes_AsString(value)));
 			status = ImagingLibTiffSetField(&encoder->state, 
 											(ttag_t) PyInt_AsLong(key),
-											PyString_AsString(value));
+											PyBytes_AsString(value));
 
 		} else if(PyList_Check(value)) {
 			int len,i;
@@ -757,7 +759,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 		} else {
 			TRACE(("Unhandled type for key %d : %s ",  
 				   (int)PyInt_AsLong(key),
-				   PyString_AsString(PyObject_Str(value))));
+				   PyBytes_AsString(PyObject_Str(value))));
 		}
 		if (!status) {
 			TRACE(("Error setting Field\n"));
