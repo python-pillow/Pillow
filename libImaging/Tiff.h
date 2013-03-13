@@ -49,13 +49,13 @@ extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 #define TRACE(args)
 #else 
 
-/*
+
 #define VA_ARGS(...)	__VA_ARGS__
 #define TRACE(args)    fprintf(stderr, VA_ARGS args)
-*/
- 
-#define TRACE(args)
 
+/* 
+#define TRACE(args)
+*/
 #endif
 
 
