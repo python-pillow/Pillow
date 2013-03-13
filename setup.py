@@ -26,7 +26,7 @@ _LIB_IMAGING = (
     "QuantHeap", "PcdDecode", "PcxDecode", "PcxEncode", "Point",
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
     "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
-    "XbmEncode", "ZipDecode", "ZipEncode")
+    "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode")
 
 
 def _add_directory(path, dir, where=None):
@@ -76,7 +76,7 @@ PIL_VERSION = '1.1.7'
 TCL_ROOT = None
 JPEG_ROOT = None
 ZLIB_ROOT = None
-TIFF_ROOT = None
+TIFF_ROOT = None 
 FREETYPE_ROOT = None
 LCMS_ROOT = None
 
@@ -156,6 +156,7 @@ class pil_build_ext(build_ext):
         #
         # locate tkinter libraries
 
+        
         if _tkinter:
             TCL_VERSION = _tkinter.TCL_VERSION[:3]
 
@@ -183,6 +184,7 @@ class pil_build_ext(build_ext):
                     break
             else:
                 TCL_ROOT = None
+            
 
         #
         # add standard directories
@@ -229,6 +231,10 @@ class pil_build_ext(build_ext):
 
         if _find_library_file(self, "tiff"):
             feature.tiff = "tiff"
+        if sys.platform == "win32" and _find_library_file(self, "libtiff"):
+            feature.tiff = "libtiff"
+        if sys.platform == "darwin" and _find_library_file(self, "libtiff"):
+            feature.tiff = "libtiff"
 
         if _find_library_file(self, "freetype"):
             # look for freetype2 include files
@@ -288,6 +294,9 @@ class pil_build_ext(build_ext):
         if feature.zlib:
             libs.append(feature.zlib)
             defs.append(("HAVE_LIBZ", None))
+        if feature.tiff:
+            libs.append(feature.tiff)
+            defs.append(("HAVE_LIBTIFF", None))
         if sys.platform == "win32":
             libs.extend(["kernel32", "user32", "gdi32"])
         if struct.unpack("h", "\0\1".encode('ascii'))[0] == 1:
@@ -382,7 +391,7 @@ class pil_build_ext(build_ext):
             (feature.tcl and feature.tk, "TKINTER"),
             (feature.jpeg, "JPEG"),
             (feature.zlib, "ZLIB (PNG/ZIP)"),
-            # (feature.tiff, "experimental TIFF G3/G4 read"),
+            (feature.tiff, "experimental TIFF G3/G4 read"),
             (feature.freetype, "FREETYPE2"),
             (feature.lcms, "LITTLECMS"),
             (feature.webp, "WEBP"),
