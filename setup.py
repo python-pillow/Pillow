@@ -231,9 +231,9 @@ class pil_build_ext(build_ext):
 
         if _find_library_file(self, "tiff"):
             feature.tiff = "tiff"
-        if sys.platform == "win32" and find_library_file(self, "libtiff"):
+        if sys.platform == "win32" and _find_library_file(self, "libtiff"):
             feature.tiff = "libtiff"
-        if sys.platform == "darwin" and find_library_file(self, "libtiff"):
+        if sys.platform == "darwin" and _find_library_file(self, "libtiff"):
             feature.tiff = "libtiff"
 
         if _find_library_file(self, "freetype"):
