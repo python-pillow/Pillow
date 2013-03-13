@@ -211,7 +211,7 @@ class pil_build_ext(build_ext):
         # look for available libraries
 
         class feature:
-            zlib = jpeg = tiff = freetype = tcl = tk = lcms = None
+            zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = None
         feature = feature()
 
         if _find_include_file(self, "zlib.h"):
@@ -267,6 +267,10 @@ class pil_build_ext(build_ext):
             elif _find_library_file(self, "tk" + TCL_VERSION):
                 feature.tk = "tk" + TCL_VERSION
 
+        if _find_include_file(self, "webp/encode.h") and _find_include_file(self, "webp/decode.h"):
+            if _find_library_file(self, "webp"):
+                feature.webp = "webp"
+
         #
         # core library
 
@@ -313,6 +317,11 @@ class pil_build_ext(build_ext):
                 extra.extend(["user32", "gdi32"])
             exts.append(Extension(
                 "_imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra))
+
+        if os.path.isfile("_webp.c") and feature.webp:
+            exts.append(Extension(
+                "_webp", ["_webp.c"], libraries=["webp"]))
+
 
         if sys.platform == "darwin":
             # locate Tcl/Tk frameworks
@@ -376,6 +385,7 @@ class pil_build_ext(build_ext):
             # (feature.tiff, "experimental TIFF G3/G4 read"),
             (feature.freetype, "FREETYPE2"),
             (feature.lcms, "LITTLECMS"),
+            (feature.webp, "WEBP"),
             ]
 
         all = 1
