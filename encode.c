@@ -748,7 +748,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 		key = PyList_GetItem(keys,pos);
 		value = PyList_GetItem(values,pos);
         status = 0;
-        TRACE(("Attempting to set key: %d", (int)PyInt_AsLong(key)));
+        TRACE(("Attempting to set key: %d\n", (int)PyInt_AsLong(key)));
         if (PyInt_Check(value)) {
             TRACE(("Setting from Int: %d %ld \n", (int)PyInt_AsLong(key),PyInt_AsLong(value)));
             status = ImagingLibTiffSetField(&encoder->state, 
