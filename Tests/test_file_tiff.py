@@ -71,7 +71,7 @@ def _assert_noerr(im):
     try:
         assert_equal(im._compression, 'group4')
     except:
-        print "No _compression"
+        print("No _compression")
         print (dir(im))
 
     # can we write it back out, in a different form. 
