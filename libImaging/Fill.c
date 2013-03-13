@@ -24,6 +24,7 @@ Imaging
 ImagingFill(Imaging im, const void* colour)
 {
     int x, y;
+    ImagingSectionCookie cookie;
 
     if (im->type == IMAGING_TYPE_SPECIAL) {
         /* use generic API */
@@ -39,6 +40,7 @@ ImagingFill(Imaging im, const void* colour)
                 memset(im->image[y], 0, im->linesize);
         }
     } else {
+        ImagingSectionEnter(&cookie);
         INT32 c = 0L;
         memcpy(&c, colour, im->pixelsize);
         if (im->image32 && c != 0L) {
@@ -50,6 +52,7 @@ ImagingFill(Imaging im, const void* colour)
             for (y = 0; y < im->ysize; y++)
                 memset(im->image[y], cc, im->linesize);
         }
+        ImagingSectionLeave(&cookie);
     }
 
     return im;

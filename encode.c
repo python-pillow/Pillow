@@ -445,10 +445,14 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
     char* mode;
     char* rawmode;
     int optimize = 0;
+    int compress_level = -1;
+    int compress_type = -1;
     char* dictionary = NULL;
     int dictionary_size = 0;
-    if (!PyArg_ParseTuple(args, "ss|i"PY_ARG_BYTES_LENGTH, &mode, &rawmode,
-                          &optimize, &dictionary, &dictionary_size))
+    if (!PyArg_ParseTuple(args, "ss|iii"PY_ARG_BYTES_LENGTH, &mode, &rawmode,
+                          &optimize,
+                          &compress_level, &compress_type,
+                          &dictionary, &dictionary_size))
         return NULL;
 
     /* Copy to avoid referencing Python's memory, but there's no mechanism to
@@ -477,6 +481,8 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
 	((ZIPSTATE*)encoder->state.context)->mode = ZIP_PNG_PALETTE;
 
     ((ZIPSTATE*)encoder->state.context)->optimize = optimize;
+    ((ZIPSTATE*)encoder->state.context)->compress_level = compress_level;
+    ((ZIPSTATE*)encoder->state.context)->compress_type = compress_type;
     ((ZIPSTATE*)encoder->state.context)->dictionary = dictionary;
     ((ZIPSTATE*)encoder->state.context)->dictionary_size = dictionary_size;
 
@@ -512,16 +518,16 @@ static unsigned int** get_qtables_arrays(PyObject* qtables) {
     PyObject* table_data;
     int i, j, num_tables;
     unsigned int **qarrays;
-    
+
     if (qtables == Py_None) {
         return NULL;
     }
-    
+
     if (!PySequence_Check(qtables)) {
         PyErr_SetString(PyExc_ValueError, "Invalid quantization tables");
         return NULL;
     }
-    
+
     tables = PySequence_Fast(qtables, "expected a sequence");
     num_tables = PySequence_Size(qtables);
     if (num_tables < 2 || num_tables > NUM_QUANT_TBLS) {

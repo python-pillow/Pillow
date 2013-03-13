@@ -26,6 +26,7 @@
 #include <time.h>
 
 #include "Quant.h"
+#include "QuantOctree.h"
 
 #include "QuantDefines.h"
 #include "QuantHash.h"
@@ -1485,6 +1486,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
     int result;
     unsigned long* newData;
     Imaging imOut;
+    int withAlpha = 0;
+    ImagingSectionCookie cookie;
 
     if (!im)
 	return ImagingError_ModeError();
@@ -1494,8 +1497,12 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         return (Imaging) ImagingError_ValueError("bad number of colors");
 
     if (strcmp(im->mode, "L") != 0 && strcmp(im->mode, "P") != 0 &&
-        strcmp(im->mode, "RGB"))
+        strcmp(im->mode, "RGB") != 0 && strcmp(im->mode, "RGBA") !=0)
         return ImagingError_ModeError();
+
+    /* only octree supports RGBA */
+    if (!strcmp(im->mode, "RGBA") && mode != 2)
+       return ImagingError_ModeError();
 
     p = malloc(sizeof(Pixel) * im->xsize * im->ysize);
     if (!p)
@@ -1529,7 +1536,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
                 p[i].c.b = pp[v*4+2];
             }
 
-    } else if (!strcmp(im->mode, "RGB")) {
+    } else if (!strcmp(im->mode, "RGB") || !strcmp(im->mode, "RGBA")) {
         /* true colour */
 
         for (i = y = 0; y < im->ysize; y++)
@@ -1540,6 +1547,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         free(p);
         return (Imaging) ImagingError_ValueError("internal error");
     }
+
+    ImagingSectionEnter(&cookie);
 
     switch (mode) {
     case 0:
@@ -1566,16 +1575,31 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
             kmeans
             );
         break;
+    case 2:
+        if (!strcmp(im->mode, "RGBA")) {
+            withAlpha = 1; 
+        }
+        result = quantize_octree(
+            p,
+            im->xsize*im->ysize,
+            colors,
+            &palette,
+            &paletteLength,
+            &newData,
+            withAlpha
+            );
+        break;
     default:
         result = 0;
         break;
     }
 
     free(p);
+    ImagingSectionLeave(&cookie);
 
     if (result) {
-
         imOut = ImagingNew("P", im->xsize, im->ysize);
+        ImagingSectionEnter(&cookie);
 
         for (i = y = 0; y < im->ysize; y++)
             for (x=0; x < im->xsize; x++)
@@ -1589,7 +1613,11 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
             *pp++ = palette[i].c.r;
             *pp++ = palette[i].c.g;
             *pp++ = palette[i].c.b;
-            *pp++ = 255;
+            if (withAlpha) {
+               *pp++ = palette[i].c.a;
+            } else {
+               *pp++ = 255;
+            }
         }
         for (; i < 256; i++) {
             *pp++ = 0;
@@ -1598,7 +1626,12 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
             *pp++ = 255;
         }
 
+        if (withAlpha) {
+            strcpy(imOut->palette->mode, "RGBA");
+        }
+
         free(palette);
+        ImagingSectionLeave(&cookie);
 
         return imOut;
 

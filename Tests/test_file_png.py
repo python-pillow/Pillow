@@ -117,6 +117,17 @@ def test_interlace():
 
     assert_no_exception(lambda: im.load())
 
+def test_load_transparent_p():
+    file = "Tests/images/pil123p.png"
+    im = Image.open(file)
+
+    assert_image(im, "P", (162, 150))
+    im = im.convert("RGBA")
+    assert_image(im, "RGBA", (162, 150))
+
+    # image has 124 uniqe qlpha values
+    assert_equal(len(im.split()[3].getcolors()), 124)
+
 def test_load_verify():
     # Check open/load/verify exception (@PIL150)
 
