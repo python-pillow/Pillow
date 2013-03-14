@@ -13,6 +13,9 @@ Changelog (Pillow)
 - Add experimental Tiff G3/G4 support.
   [wiredfool]
 
+- Backport PIL's PNG/Zip improvements: add new FASTOCTREE quantizer with alpha support, make ZIP compress level and type configurable, support reading/writing PNGs with paletted alpha.
+  [olt]
+
 - Many other bug fixes and enhancements by many other people (see docs/CONTRIBUTORS.txt).
 
 1.7.8 (2012-11-01)
