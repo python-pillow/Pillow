@@ -114,17 +114,6 @@ def test_g4_tiff_bytesio():
     assert_equal(im.size, (500,500))
     _assert_noerr(im)
     	
-def xtest_g4_tiff_fail(): # UNDONE fails badly, unknown reason
-    """The 128x128 lena image fails for some reason. Investigating"""
-
-    Image.DEBUG = 0
-    file = "Tests/images/lena_g4.tif"
-    im = Image.open(file)
-
-    assert_equal(im.size, (128,128))
-    _assert_noerr(im)
-    Image.DEBUG = 0
-        
 def test_g4_eq_png():
     """ Checking that we're actually getting the data that we expect"""
     png = Image.open('Tests/images/lena_bw_500.png')
@@ -134,8 +123,6 @@ def test_g4_eq_png():
 
 def test_g4_write():
     """Checking to see that the saved image is the same as what we wrote"""
-    Image.DEBUG = 0
-
     file = "Tests/images/lena_g4_500.tif"
     orig = Image.open(file)
 
@@ -151,4 +138,3 @@ def test_g4_write():
 
     assert_false(orig.tobytes() == reread.tobytes())
 
-    Image.DEBUG = 0
