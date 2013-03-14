@@ -19,6 +19,9 @@ Changelog (Pillow)
 - Various 64 bit and Windows fixes.
   [cgohlke]
 
+- Add testing suite.
+  [cgohlke, fluggo]
+
 - Many other bug fixes and enhancements by many other people (see commit log and/or docs/CONTRIBUTORS.txt).
 
 1.7.8 (2012-11-01)
