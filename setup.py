@@ -378,9 +378,9 @@ class pil_build_ext(build_ext):
     def summary_report(self, feature, unsafe_zlib):
 
         print("-" * 68)
-        print("SETUP SUMMARY (Pillow %s / PIL %s)" % (VERSION, PIL_VERSION))
+        print("SETUP SUMMARY (Pillow %s fork, originally based on PIL %s)" % (VERSION, PIL_VERSION))
         print("-" * 68)
-        print("version      %s" % VERSION)
+        print("version      %s (Pillow)" % VERSION)
         v = sys.version.split("[")
         print("platform     %s %s" % (sys.platform, v[0].strip()))
         for v in v[1:]:
@@ -406,7 +406,6 @@ class pil_build_ext(build_ext):
                 if option[1] == "TKINTER" and _tkinter:
                     version = _tkinter.TCL_VERSION
                     print("(Tcl/Tk %s libraries needed)" % version)
-                print("")
                 all = 0
 
         if feature.zlib and unsafe_zlib:
