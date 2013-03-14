@@ -52,6 +52,23 @@ Pillow needs you! Please help us maintain PIL via:
 - Freenode Chat (irc://irc.freenode.net#pil)
 - Image-SIG Discussion (http://mail.python.org/mailman/listinfo/image-sig)
 
+Platform support
+----------------
+
+Current platform support for Pillow. Binary distributions are contributed for each release on a volunteer basis. But source should compile everywhere platform support is listed.
+
+.. Note:: Contributors please test on your platform, edit this document and send a pull request
+
++----------------------------------+-------------+----------------------+-----------------------+
+|**Operating system**              |**Supported**|**Tested Py versions**|**Tested processors**  |
++----------------------------------+-------------+----------------------+-----------------------+
+| Windows Server 2008 R2 Enterprise|Yes          | 3.3                  |AMD 64-bit             |
++----------------------------------+-------------+----------------------+-----------------------+
+| Mac OS X 10.8                    |Yes          | 2.6,2.7,3.2,3.3      |Intel 64-bit           |
++----------------------------------+-------------+----------------------+-----------------------+
+| Ubuntu Linux 12.04               |Yes          | 2.7                  |AMD 64-bit             |
++----------------------------------+-------------+----------------------+-----------------------+
+
 Python Imaging Library
 ======================
 
