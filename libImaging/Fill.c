@@ -40,8 +40,8 @@ ImagingFill(Imaging im, const void* colour)
                 memset(im->image[y], 0, im->linesize);
         }
     } else {
-        ImagingSectionEnter(&cookie);
         INT32 c = 0L;
+        ImagingSectionEnter(&cookie);
         memcpy(&c, colour, im->pixelsize);
         if (im->image32 && c != 0L) {
             for (y = 0; y < im->ysize; y++)
