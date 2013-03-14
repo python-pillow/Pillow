@@ -36,10 +36,6 @@ success = failure = 0
 include = [x for x in sys.argv[1:] if x[:2] != "--"]
 skipped = []
 
-# XXX Skip test, is there a better way?
-files.remove(os.path.join('Tests', 'test_file_tiff.py'))
-skipped.append('test_file_tiff')
-
 python_options = " ".join(python_options)
 tester_options = " ".join(tester_options)
 
