@@ -4,7 +4,7 @@ from io import BytesIO
 import _webp
 
 def _accept(prefix):
-    return prefix[:4] == "RIFF" and prefix[8:16] == "WEBPVP8 "
+    return prefix[:4] == b"RIFF" and prefix[8:16] == b"WEBPVP8 "
 
 class WebPImageFile(ImageFile.ImageFile):
 
