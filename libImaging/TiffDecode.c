@@ -199,6 +199,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 	dump_state(clientstate);
 	if (clientstate->fp) {
 		TRACE(("Opening using fd: %d\n",clientstate->fp));
+		lseek(clientstate->fp,0,SEEK_SET); // Sometimes, I get it set to the end.
 		tiff = TIFFFdOpen(clientstate->fp, filename, mode);
 	} else {  
 		TRACE(("Opening from string\n"));
