@@ -189,6 +189,7 @@ if __name__ == "__main__":
     check_codec("G4 TIFF", "group4")
     check_module("FREETYPE2", "_imagingft")
     check_module("LITTLECMS", "_imagingcms")
+    check_module("WEBP", "_webp")
     print("-"*68)
 
     # use doctest to make sure the test program behaves as documented!
