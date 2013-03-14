@@ -424,9 +424,10 @@ class pil_build_ext(build_ext):
             print("To add a missing option, make sure you have the required")
             print("library, and set the corresponding ROOT variable in the")
             print("setup.py script.")
-            print("\n")
+            print("")
 
         print("To check the build, run the selftest.py script.")
+        print("")
 
     def check_zlib_version(self, include_dirs):
         # look for unsafe versions of zlib
