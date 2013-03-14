@@ -37,7 +37,7 @@ ImagingPaletteNew(const char* mode)
     if (!palette)
 	return (ImagingPalette) ImagingError_MemoryError();
 
-    strcpy(palette->mode, mode);
+    strncpy(palette->mode, mode, IMAGING_MODE_LENGTH);
 
     /* Initialize to ramp */
     for (i = 0; i < 256; i++) {
