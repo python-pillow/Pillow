@@ -13,6 +13,11 @@
 #include <tiff.h>
 #endif
 
+#ifndef _UNISTD_H
+#include <unistd.h>
+#endif
+
+
 #ifndef min
 #define min(x,y) (( x > y ) ? y : x )
 #define max(x,y) (( x < y ) ? y : x )
@@ -50,8 +55,8 @@ extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 /* 
 #define TRACE(args)
 */
-#endif
+#endif /* _MSC_VER */
 
 
 
-#endif
+#endif 
