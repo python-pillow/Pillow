@@ -475,7 +475,7 @@ setup(
     long_description=(
         _read('README.rst') + b'\n' +
         _read('docs/HISTORY.txt') + b'\n' +
-        _read('docs/CONTRIBUTORS.rst')).decode('utf-8'),
+        _read('docs/CONTRIBUTORS.txt')).decode('utf-8'),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
     url='http://github.com/python-imaging/Pillow',
