@@ -313,13 +313,11 @@ def getdraw(im=None, hints=None):
     handler = None
     if not hints or "nicest" in hints:
         try:
-            import _imagingagg
-            handler = _imagingagg
+            import _imagingagg as handler
         except ImportError:
             pass
     if handler is None:
-        from PIL import ImageDraw2
-        handler = ImageDraw2
+        from PIL import ImageDraw2 as handler
     if im:
         im = handler.Draw(im)
     return im, handler
