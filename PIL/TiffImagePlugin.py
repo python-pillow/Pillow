@@ -626,21 +626,25 @@ class TiffImageFile(ImageFile.ImageFile):
         except ValueError:
             raise IOError("Couldn't set the image")
 
-        if hasattr(self.fp, "fileno"):
-            # we've got a actual file on disk, pass in the fp.
-            if Image.DEBUG:
-                print ("have fileno, calling fileno version of the decoder.")
-            self.fp.seek(0)
-            n,e = d.decode(b"fpfp") # 4 bytes, otherwise the trace might error out
-        elif hasattr(self.fp, "getvalue"):
+        if hasattr(self.fp, "getvalue"):
             # We've got a stringio like thing passed in. Yay for all in memory.
             # The decoder needs the entire file in one shot, so there's not
             # a lot we can do here other than give it the entire file.
             # unless we could do something like get the address of the underlying
             # string for stringio.
+            #
+            # Rearranging for supporting byteio items, since they have a fileno
+            # that returns an IOError if there's no underlying fp. Easier to deal
+            # with here by reordering. 
             if Image.DEBUG:
                 print ("have getvalue. just sending in a string from getvalue")
             n,e = d.decode(self.fp.getvalue())
+        elif hasattr(self.fp, "fileno"):
+            # we've got a actual file on disk, pass in the fp.
+            if Image.DEBUG:
+                print ("have fileno, calling fileno version of the decoder.")
+            self.fp.seek(0)
+            n,e = d.decode(b"fpfp") # 4 bytes, otherwise the trace might error out
         else:
             # we have something else.
             if Image.DEBUG:
@@ -759,7 +763,12 @@ class TiffImageFile(ImageFile.ImageFile):
                 # into a string in python.
 
                 # libtiff closes the file descriptor, so pass in a dup. 
-                fp = hasattr(self.fp, "fileno") and os.dup(self.fp.fileno())
+                try:
+                    fp = hasattr(self.fp, "fileno") and os.dup(self.fp.fileno())
+                except IOError:
+                    # io.BytesIO have a fileno, but returns an IOError if
+                    # it doesn't use a file descriptor.
+                    fp = False
 
                 # Offset in the tile tuple is 0, we go from 0,0 to
                 # w,h, and we only do this once -- eds
