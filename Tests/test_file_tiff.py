@@ -2,7 +2,7 @@ from tester import *
 
 from PIL import Image
 
-import StringIO
+from io import BytesIO
 import random
 
 def test_sanity():
@@ -106,7 +106,7 @@ def test_g4_tiff_stringio():
     """Testing the stringio loading code path"""
 
     file = "Tests/images/lena_g4_500.tif"
-    s = StringIO.StringIO()
+    s = BytesIO()
     with open(file,'rb') as f:
         s.write(f.read())
         s.seek(0)
