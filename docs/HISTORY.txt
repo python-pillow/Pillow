@@ -22,6 +22,9 @@ Changelog (Pillow)
 - Add testing suite.
   [cgohlke, fluggo]
 
+- Added support for PNG images with transparency palette.
+  [d-schmidt]
+
 - Many other bug fixes and enhancements by many other people (see commit log and/or docs/CONTRIBUTORS.txt).
 
 1.7.8 (2012-11-01)
