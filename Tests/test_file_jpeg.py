@@ -162,22 +162,6 @@ def test_subsampling():
 
     assert_exception(TypeError, lambda: roundtrip(lena(), subsampling="1:1:1"))
 
-def test_truncated_jpeg():
-    def test(junk):
-        if junk:
-            # replace "junk" bytes at the end with junk
-            file = BytesIO(data[:-junk] + b'\0'*junk)
-        else:
-            file = BytesIO(data)
-        im = Image.open(file)
-        im.load()
-    assert_no_exception(lambda: test(0))
-    assert_exception(IOError, lambda: test(1))
-    assert_no_exception(lambda: test(2))
-    assert_no_exception(lambda: test(4))
-    assert_no_exception(lambda: test(8))
-    assert_exception(IOError, lambda: test(10))
-
 def test_exif():
     im = Image.open("Tests/images/pil_sample_rgb.jpg")
     info = im._getexif()
