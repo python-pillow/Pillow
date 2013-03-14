@@ -55,7 +55,7 @@ Pillow needs you! Please help us maintain PIL via:
 Platform support
 ----------------
 
-Current platform support for Pillow. Binary distributions are contributed for each release on a volunteer basis. But source should compile everywhere platform support is listed.
+Current platform support for Pillow. Binary distributions are contributed for each release on a volunteer basis. But the source should compile everywhere platform support is listed.
 
 .. Note:: Contributors please test on your platform, edit this document and send a pull request
 
