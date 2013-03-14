@@ -7,8 +7,11 @@ Changelog (Pillow)
 - Add Python 3 support. (Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3. Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7.)
   [fluggo]
 
-- Add WebP support
+- Add WebP support.
   [lqs]
+
+- Add experimental Tiff G3/G4 support.
+  [wiredfool]
 
 - Many other bug fixes and enhancements by many other people (see docs/CONTRIBUTORS.txt).
 
