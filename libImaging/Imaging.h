@@ -141,7 +141,7 @@ struct ImagingHistogramInstance {
 struct ImagingPaletteInstance {
 
     /* Format */
-    char mode[4+1];	/* Band names */
+    char mode[IMAGING_MODE_LENGTH];	/* Band names */
 
     /* Data */
     UINT8 palette[1024];/* Palette data (same format as image data) */
