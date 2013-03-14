@@ -43,12 +43,13 @@
 #endif
 
 /* Map PyBytes -> PyString */
+#define PyBytesObject               PyStringObject
 #define PyBytes_AsString            PyString_AsString
 #define PyBytes_AS_STRING           PyString_AS_STRING
 #define PyBytes_Check               PyString_Check
+#define PyBytes_AsStringAndSize     PyString_AsStringAndSize
 #define PyBytes_FromStringAndSize   PyString_FromStringAndSize
 #define PyBytes_FromString          PyString_FromString
 #define _PyBytes_Resize             _PyString_Resize
 
 #endif  /* PY_VERSION_HEX < 0x03000000 */
-
