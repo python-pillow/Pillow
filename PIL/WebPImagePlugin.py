@@ -1,6 +1,6 @@
 from PIL import Image
 from PIL import ImageFile
-import StringIO
+from io import BytesIO
 import _webp
 
 def _accept(prefix):
@@ -15,7 +15,7 @@ class WebPImageFile(ImageFile.ImageFile):
         self.mode = "RGB"
         data, width, height = _webp.WebPDecodeRGB(self.fp.read())
         self.size = width, height
-        self.fp = StringIO.StringIO(data)
+        self.fp = BytesIO(data)
         self.tile = [("raw", (0, 0) + self.size, 0, 'RGB')]
 
 def _save(im, fp, filename):
