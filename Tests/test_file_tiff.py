@@ -123,7 +123,6 @@ def test_g4_eq_png():
 
 def test_g4_write():
     """Checking to see that the saved image is the same as what we wrote"""
-
     file = "Tests/images/lena_g4_500.tif"
     orig = Image.open(file)
 
