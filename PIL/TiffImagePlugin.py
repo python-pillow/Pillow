@@ -630,7 +630,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if Image.DEBUG:
                 print ("have fileno, calling fileno version of the decoder.")
             self.fp.seek(0)
-            n,e = d.decode("fpfp") # 4 bytes, otherwise the trace might error out
+            n,e = d.decode(b"fpfp") # 4 bytes, otherwise the trace might error out
         elif hasattr(self.fp, "getvalue"):
             # We've got a stringio like thing passed in. Yay for all in memory.
             # The decoder needs the entire file in one shot, so there's not
