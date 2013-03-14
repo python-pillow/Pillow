@@ -394,7 +394,7 @@ PyImaging_TiffLzwDecoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_LIBTIFF
 
-#include "Tiff.h"
+#include "TiffDecode.h"
 
 #include <string.h>
 #ifdef __WIN32__

@@ -657,7 +657,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_LIBTIFF
 
-#include "Tiff.h"
+#include "TiffDecode.h"
 
 #include <string.h>
 #ifdef __WIN32__

@@ -31,3 +31,5 @@ Contributors (Pillow)
 - Tyler Garner <garnertb __at__ gmail.com>, developer
 - etienne <etienne.desautels __at__ gmail.com>, developer
 - tdesvenain <thomas.desvenain __at__ gmail.com>, developer
+- Liu Qishuai <lqs __at__ lqs.me>, developer
+- wiredfool <eric-github __at__ soroos.net>, developer

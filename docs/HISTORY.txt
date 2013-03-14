@@ -7,6 +7,9 @@ Changelog (Pillow)
 - Add Python 3 support. (Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3. Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7.)
   [fluggo]
 
+- Add WebP support
+  [lqs]
+
 - Many other bug fixes and enhancements by many other people (see docs/CONTRIBUTORS.txt).
 
 1.7.8 (2012-11-01)

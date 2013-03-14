@@ -18,7 +18,7 @@
 #define uint uint32
 #endif
 
-#include "Tiff.h"
+#include "TiffDecode.h"
 
 void dump_state(const TIFFSTATE *state){
 	TRACE(("State: Location %u size %d eof %d data: %p \n", (uint)state->loc, 
