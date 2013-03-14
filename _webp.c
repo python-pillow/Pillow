@@ -1,10 +1,11 @@
 #include <Python.h>
+#include "py3.h"
 #include <webp/encode.h>
 #include <webp/decode.h>
 
 PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
 {
-    PyStringObject *rgb_string;
+    PyBytesObject *rgb_string;
     int width;
     int height;
     int stride;
@@ -19,7 +20,7 @@ PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
         return Py_None;
     }
 
-    PyString_AsStringAndSize((struct PyObject *) rgb_string, &rgb, &size);
+    PyBytes_AsStringAndSize((PyObject *) rgb_string, &rgb, &size);
 
     if (stride * height > size) {
         Py_INCREF(Py_None);
@@ -28,7 +29,7 @@ PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
 
     ret_size = WebPEncodeRGB(rgb, width, height, stride, quality_factor, &output);
     if (ret_size > 0) {
-        PyObject *ret = PyString_FromStringAndSize(output, ret_size);
+        PyObject *ret = PyBytes_FromStringAndSize(output, ret_size);
         free(output);
         return ret;
     }
@@ -39,7 +40,7 @@ PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
 
 PyObject* WebPDecodeRGB_wrapper(PyObject* self, PyObject* args)
 {
-    PyStringObject *webp_string;
+    PyBytesObject *webp_string;
     float quality_factor;
     int width;
     int height;
@@ -53,11 +54,11 @@ PyObject* WebPDecodeRGB_wrapper(PyObject* self, PyObject* args)
         return Py_None;
     }
 
-    PyString_AsStringAndSize((struct PyObject *) webp_string, &webp, &size);
+    PyBytes_AsStringAndSize((PyObject *) webp_string, &webp, &size);
 
     output = WebPDecodeRGB(webp, size, &width, &height);
 
-    ret = PyString_FromStringAndSize(output, width * height * 3);
+    ret = PyBytes_FromStringAndSize(output, width * height * 3);
     free(output);
     return Py_BuildValue("Sii", ret, width, height);
 }
@@ -69,8 +70,27 @@ static PyMethodDef webpMethods[] =
     {NULL, NULL}
 };
 
-void init_webp()
+#if PY_VERSION_HEX >= 0x03000000
+PyMODINIT_FUNC
+PyInit__webp(void) {
+    PyObject* m;
+
+    static PyModuleDef module_def = {
+        PyModuleDef_HEAD_INIT,
+        "_webp",            /* m_name */
+        NULL,               /* m_doc */
+        -1,                 /* m_size */
+        webpMethods,        /* m_methods */
+    };
+
+    m = PyModule_Create(&module_def);
+    return m;
+}
+#else
+PyMODINIT_FUNC
+init_webp()
 {
     PyObject* m;
     m = Py_InitModule("_webp", webpMethods);
 }
+#endif
