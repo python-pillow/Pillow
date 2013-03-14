@@ -1,5 +1,5 @@
-import Image
-import ImageFile
+from PIL import Image
+from PIL import ImageFile
 import StringIO
 import _webp
 
