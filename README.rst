@@ -59,7 +59,7 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 .. Note:: Contributors please test on your platform, edit this document and send a pull request
 
 +----------------------------------+-------------+------------------------------+-----------------------+
-|**Operating system**              |**Supported**|**Tested Py versions**        |**Tested processors**  |
+|**Operating system**              |**Supported**|**Tested Python versions**    |**Tested processors**  |
 +----------------------------------+-------------+------------------------------+-----------------------+
 | Mac OS X 10.8 Mountain Lion      |Yes          | 2.6,2.7,3.2,3.3              |x86-64                 |
 +----------------------------------+-------------+------------------------------+-----------------------+
@@ -69,10 +69,11 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 +----------------------------------+-------------+------------------------------+-----------------------+
 | Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+-----------------------+
-| Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,PyPy1.9 [1]_ |x86,x86-64             |
+| Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,PyPy1.9 [1]_ |x86 [2]_,x86-64        |
 +----------------------------------+-------------+------------------------------+-----------------------+
 
 .. [1] x86 only
+.. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
 Python Imaging Library
 ======================
