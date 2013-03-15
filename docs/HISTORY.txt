@@ -7,7 +7,12 @@ Changelog (Pillow)
 - Add Python 3 support. (Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3. Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7.)
   [fluggo]
 
-- Add experimental Tiff G3/G4 support.
+- Add PyPy support (experimental, please see: https://github.com/python-imaging/Pillow/issues/67)
+
+- Add WebP support.
+  [lqs]
+
+- Add Tiff G3/G4 support (experimental)
   [wiredfool]
 
 - Backport PIL's PNG/Zip improvements.
@@ -21,9 +26,6 @@ Changelog (Pillow)
 
 - Added support for PNG images with transparency palette.
   [d-schmidt]
-
-- Add WebP support (Python 2.x only, see: https://github.com/python-imaging/Pillow/issues/109)
-  [lqs]
 
 - Many other bug fixes and enhancements by many other people (see commit log and/or docs/CONTRIBUTORS.txt).
 

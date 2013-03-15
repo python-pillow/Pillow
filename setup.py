@@ -392,7 +392,7 @@ class pil_build_ext(build_ext):
             (feature.tcl and feature.tk, "TKINTER"),
             (feature.jpeg, "JPEG"),
             (feature.zlib, "ZLIB (PNG/ZIP)"),
-            (feature.tiff, "TIFF G3/G4 read (experimental)"),
+            (feature.tiff, "TIFF G3/G4 (experimental)"),
             (feature.freetype, "FREETYPE2"),
             (feature.lcms, "LITTLECMS"),
             (feature.webp, "WEBP"),
