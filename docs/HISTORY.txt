@@ -29,6 +29,8 @@ Changelog (Pillow)
 
 - Many other bug fixes and enhancements by many other people (see commit log and/or docs/CONTRIBUTORS.txt).
 
+- Special thanks to Christoph Gohlke and Eric Soroos for rallying around the effort to get a release out for PyCon 2013.
+
 1.7.8 (2012-11-01)
 ------------------
 
