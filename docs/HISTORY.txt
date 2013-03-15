@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.0.0 (2013-03-14)
+2.0.0 (2013-03-15)
 ------------------
 
 - Add Python 3 support. (Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3. Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7.)
