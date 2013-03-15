@@ -16,4 +16,6 @@ def test_histogram():
     assert_equal(histogram("RGB"), (768, 0, 285))
     assert_equal(histogram("RGBA"), (1024, 0, 16384))
     assert_equal(histogram("CMYK"), (1024, 0, 16384))
+    print ("YCbCr")
     assert_equal(histogram("YCbCr"), (768, 0, 741))
+    print ("YCbCr Done")
