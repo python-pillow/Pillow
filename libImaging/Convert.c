@@ -790,6 +790,9 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
     return imOut;
 }
 
+#if defined(_MSC_VER) && (_MSC_VER == 1600)
+#pragma optimize("", off)
+#endif
 static Imaging
 topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
 {
@@ -1022,7 +1025,9 @@ tobilevel(Imaging imOut, Imaging imIn, int dither)
 
     return imOut;
 }
-
+#if defined(_MSC_VER) && (_MSC_VER == 1600)
+#pragma optimize("", on)
+#endif
 
 static Imaging
 convert(Imaging imOut, Imaging imIn, const char *mode,
