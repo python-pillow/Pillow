@@ -76,7 +76,7 @@ PIL_VERSION = '1.1.7'
 TCL_ROOT = None
 JPEG_ROOT = None
 ZLIB_ROOT = None
-TIFF_ROOT = None 
+TIFF_ROOT = None
 FREETYPE_ROOT = None
 LCMS_ROOT = None
 
@@ -127,16 +127,17 @@ class pil_build_ext(build_ext):
             _add_directory(include_dirs, "/usr/X11/include")
 
         elif sys.platform.startswith("linux"):
-            platform_ = platform.processor()
-            if not platform_:
-                platform_ = platform.architecture()[0]
-                
-            if platform_ in ["x86_64", "64bit"]:
-                _add_directory(library_dirs, "/lib64")
-                _add_directory(library_dirs, "/usr/lib64")
-                _add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
-            elif platform_ in ["i386", "i686", "32bit"]:
-                _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
+            for platform_ in (platform.processor(),platform.architecture()[0]):
+                if not platform_: continue
+
+                if platform_ in ["x86_64", "64bit"]:
+                    _add_directory(library_dirs, "/lib64")
+                    _add_directory(library_dirs, "/usr/lib64")
+                    _add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
+                    break
+                elif platform_ in ["i386", "i686", "32bit"]:
+                    _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
+                    break
             else:
                 raise ValueError("Unable to identify Linux platform: `%s`" % platform_)
 
@@ -156,7 +157,7 @@ class pil_build_ext(build_ext):
         #
         # locate tkinter libraries
 
-        
+
         if _tkinter:
             TCL_VERSION = _tkinter.TCL_VERSION[:3]
 
@@ -184,7 +185,7 @@ class pil_build_ext(build_ext):
                     break
             else:
                 TCL_ROOT = None
-            
+
 
         #
         # add standard directories
