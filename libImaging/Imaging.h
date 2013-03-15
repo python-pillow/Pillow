@@ -72,10 +72,12 @@ typedef struct ImagingPaletteInstance* ImagingPalette;
 #define IMAGING_TYPE_FLOAT32 2
 #define IMAGING_TYPE_SPECIAL 3 /* check mode for details */
 
+#define IMAGING_MODE_LENGTH 6+1 /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
+
 struct ImagingMemoryInstance {
 
     /* Format */
-    char mode[6+1];	/* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
+    char mode[IMAGING_MODE_LENGTH];	/* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
     int type;		/* Data type (IMAGING_TYPE_*) */
     int depth;		/* Depth (ignored in this version) */
     int bands;		/* Number of bands (1, 2, 3, or 4) */
@@ -127,7 +129,7 @@ struct ImagingAccessInstance {
 struct ImagingHistogramInstance {
 
     /* Format */
-    char mode[4+1];	/* Band names (of corresponding source image) */
+    char mode[IMAGING_MODE_LENGTH];	/* Band names (of corresponding source image) */
     int bands;		/* Number of bands (1, 3, or 4) */
 
     /* Data */
@@ -139,7 +141,7 @@ struct ImagingHistogramInstance {
 struct ImagingPaletteInstance {
 
     /* Format */
-    char mode[4+1];	/* Band names */
+    char mode[IMAGING_MODE_LENGTH];	/* Band names */
 
     /* Data */
     UINT8 palette[1024];/* Palette data (same format as image data) */
