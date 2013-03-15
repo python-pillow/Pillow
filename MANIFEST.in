@@ -15,7 +15,7 @@ graft Tests/icc
 graft Tests/images
 recursive-include Scripts *.py README
 graft Images
-recursive-include docs *.txt *.html *.rst *.css *.py README CHANGES CONTENTS Makefile make.bat BUILDME
+recursive-include docs *.txt *.html *.rst *.css *.py README CHANGES CONTENTS Makefile make.bat BUILDME LICENSE
 recursive-include libImaging *.c *.h
 recursive-include Tk *.c *.txt
 recursive-include Sane *.c *.txt CHANGES README *.py
