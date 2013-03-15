@@ -1,8 +1,7 @@
 Pillow
 ======
 
-.. Note:: 
-    Pillow >= 2.0.0 supports Python versions: 2.6, 2.7, 3.2, 3.3; Pillow < 2.0.0 supports Python versions: 2.4, 2.5, 2.6, 2.7.
+.. Note:: Pillow >= 2.0.0 supports Python versions: 2.6, 2.7, 3.2, 3.3; Pillow < 2.0.0 supports Python versions: 2.4, 2.5, 2.6, 2.7.
 
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
 
@@ -55,25 +54,25 @@ Pillow needs you! Please help us maintain PIL via:
 Platform support
 ----------------
 
-Current platform support for Pillow. Binary distributions are contributed for each release on a volunteer basis, but the source should compile everywhere platform support is listed. In general, we aim to support all current versions of Linux, OS X, and Windows.
+Current platform support for Pillow. Binary distributions are contributed for each release on a volunteer basis, but the source should compile and run everywhere platform support is listed. In general, we aim to support all current versions of Linux, OS X, and Windows.
 
 .. Note:: Contributors please test on your platform, edit this document and send a pull request
 
 +----------------------------------+-------------+------------------------------+-----------------------+
 |**Operating system**              |**Supported**|**Tested Py versions**        |**Tested processors**  |
 +----------------------------------+-------------+------------------------------+-----------------------+
-| Mac OS X 10.8                    |Yes          | 2.6,2.7,3.2,3.3              |x86-64                 |
+| Mac OS X 10.8 Mountain Lion      |Yes          | 2.6,2.7,3.2,3.3              |x86-64                 |
 +----------------------------------+-------------+------------------------------+-----------------------+
-| Ubuntu Linux 10.04 LTS           |Yes          | 2.6                          |x86, x86-64            |
+| Ubuntu Linux 10.04 LTS           |Yes          | 2.6                          |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+-----------------------+
-| Ubuntu Linux 12.04 LTS           |Yes          | 2.6,2.7,3.2,3.3              |x86, x86-64            |
+| Ubuntu Linux 12.04 LTS           |Yes          | 2.6,2.7,3.2,3.3              |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+-----------------------+
 | Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+-----------------------+
-| Windows 8 Pro 64 bit             |Yes          | 2.6,2.7,3.2,3.3 (32 & 64 bit)|x86-64                 |
+| Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,PyPy1.9 [1]_ |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+-----------------------+
-| Windows 8 Pro 64 bit             |Yes          | PyPy 1.9 (32 bit)            |x86-64                 |
-+----------------------------------+-------------+------------------------------+-----------------------+
+
+.. [1] x86 only
 
 Python Imaging Library
 ======================
