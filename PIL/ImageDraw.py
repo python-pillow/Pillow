@@ -30,6 +30,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+import numbers
+
 from PIL import Image, ImageColor
 
 try:
@@ -98,7 +100,7 @@ class ImageDraw:
                 )
         if Image.isStringType(ink):
             ink = ImageColor.getcolor(ink, self.mode)
-        if self.palette and not Image.isNumberType(ink):
+        if self.palette and not isinstance(ink, numbers.Number):
             ink = self.palette.getcolor(ink)
         self.ink = self.draw.draw_ink(ink, self.mode)
 
@@ -141,13 +143,13 @@ class ImageDraw:
             if ink is not None:
                 if Image.isStringType(ink):
                     ink = ImageColor.getcolor(ink, self.mode)
-                if self.palette and not Image.isNumberType(ink):
+                if self.palette and not isinstance(ink, numbers.Number):
                     ink = self.palette.getcolor(ink)
                 ink = self.draw.draw_ink(ink, self.mode)
             if fill is not None:
                 if Image.isStringType(fill):
                     fill = ImageColor.getcolor(fill, self.mode)
-                if self.palette and not Image.isNumberType(fill):
+                if self.palette and not isinstance(fill, numbers.Number):
                     fill = self.palette.getcolor(fill)
                 fill = self.draw.draw_ink(fill, self.mode)
         return ink, fill
