@@ -81,6 +81,7 @@ ImagingRankFilter(Imaging im, int size, int rank)
                        size * sizeof(type));\
             IMAGING_PIXEL_##type(imOut, x, y) = Rank##type(buf, size2, rank);\
         }\
+    free(buf); \
 } while (0)
 
     if (im->image8)
