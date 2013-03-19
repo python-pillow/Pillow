@@ -23,7 +23,7 @@ def _save(im, fp, filename):
         raise IOError("cannot write mode %s as WEBP" % im.mode)
     quality = im.encoderinfo.get("quality", 80)
     
-    data = _webp.WebPEncodeRGB(im.tostring(), im.size[0], im.size[1], im.size[0] * 3, float(quality))
+    data = _webp.WebPEncodeRGB(im.tobytes(), im.size[0], im.size[1], im.size[0] * 3, float(quality))
     fp.write(data)
 
 Image.register_open("WEBP", WebPImageFile, _accept)
