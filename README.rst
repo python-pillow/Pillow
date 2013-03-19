@@ -79,6 +79,70 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 .. [1] x86 only
 .. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
+Installation
+============
+
+If there is a binary package for your system, that is the preferred way of obtaining Pillow. 
+
+Building from Source
+--------------------
+
+Some of Pillow's features require external libraries. 
+
+* libjpeg provides JPEG functionality. Pillow has been tested with libjpev versions 6b and 8
+* zlib provides access to compressed PNGs
+* libtiff provides group4 tiff functionality. Pillow has been tested with versions 3.x and 4.0
+* libfreetype provides type related services
+* littlecms provides color management 
+* libwebp provides the Webp format. 
+
+If the prerequisites are installed in the standard library locations for your machine, no configuration shoule be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations. See [[url here]] for more information. 
+
+Once you have assembed the prerequisites, run: 
+
+<pre><code>
+    $ pip install pillow
+</code></pre>
+
+Platform Specific Instructions
+------------------------------  
+
+** Ubuntu **
+
+If you didn't build Python from sources, make sure you have Python's build support files on your machine.
+
+<pre><code>
+sudo apt-get install python-dev python-setuptools
+# or for python 3
+sudo apt-get install python3-dev python3-setuptools
+</code></pre>
+
+The library prerequisites are installed with:
+
+<pre><code>
+# Ubuntu 10.04 LTS
+sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev
+# Ubuntu 12.04 LTS
+sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
+</code></pre>
+
+
+Porting
+=======
+
+Pillow is a functional dropin for the Python Imaging Library. To run under Pillow, existing code needs to be modified to import the Imaging modules from the PIL namespace instead of the global namespace.
+
+Change:
+<pre><code>
+import Image
+</code></pre>
+to
+<pre><code>
+from PIL import Image
+</code></pre>
+
+
+
 Python Imaging Library
 ======================
 
