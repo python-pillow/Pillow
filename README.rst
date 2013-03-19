@@ -110,6 +110,7 @@ If the prerequisites are installed in the standard library locations for your ma
 Once you have assembed the prerequisites, run: 
 
 ::
+
     $ pip install pillow
 
 Platform Specific Instructions
@@ -123,12 +124,14 @@ Ubuntu or Debian
 If you didn't build Python from sources, make sure you have Python's build support files on your machine.
 
 ::
+
     sudo apt-get install python-dev python-setuptools
     # or for python 3
     sudo apt-get install python3-dev python3-setuptools
 
 
 The library prerequisites are installed with::
+
     # Ubuntu 10.04 LTS
     sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev
     # Ubuntu 12.04 LTS
@@ -144,9 +147,11 @@ Porting
 Pillow is a functional dropin for the Python Imaging Library. To run under Pillow, existing code needs to be modified to import the Imaging modules from the PIL namespace instead of the global namespace.
 
 Change::
+
     import Image
 
 to::
+
 	from PIL import Image
 
 
