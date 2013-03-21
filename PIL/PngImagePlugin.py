@@ -550,7 +550,7 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 
     if "transparency" in im.encoderinfo:
         if im.mode == "P":
-             # limit to actual palette size
+            # limit to actual palette size
             alpha_bytes = 2**bits
             if isinstance(im.encoderinfo["transparency"], bytes):
                 chunk(fp, b"tRNS", im.encoderinfo["transparency"][:alpha_bytes])
