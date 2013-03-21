@@ -70,7 +70,7 @@ _MODES = {
 }
 
 
-_simple_palette = re.compile(b'^\xff+\x00+$')
+_simple_palette = re.compile(b'^\xff+\x00\xff*$')
 
 # --------------------------------------------------------------------
 # Support classes.  Suitable for PNG and related formats like MNG etc.
