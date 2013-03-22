@@ -126,7 +126,7 @@ def test_g4_write():
     file = "Tests/images/lena_g4_500.tif"
     orig = Image.open(file)
 
-    out = "temp.tif"
+    out = tempfile("temp.tif")
     rot = orig.transpose(Image.ROTATE_90)
     assert_equal(rot.size,(500,500))
     rot.save(out)
