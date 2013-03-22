@@ -1202,7 +1202,7 @@ PySane_get_devices(PyObject *self, PyObject *args)
   const SANE_Device *dev;
   SANE_Status st;
   PyObject *list;
-  int local_only, i;
+  int local_only = 0, i;
   
   if (!PyArg_ParseTuple(args, "|i", &local_only))
     {
