@@ -157,8 +157,13 @@ def assert_image_similar(a, b, epsilon, msg=None):
     elif a.size != b.size:
         return failure(msg or "got size %r, expected %r" % (a.size, b.size))
     diff = 0
-    for abyte,bbyte in zip(a.tobytes(),b.tobytes()):
-        diff += abs(ord(abyte)-ord(bbyte))
+    try:
+        ord(b'0')
+        for abyte,bbyte in zip(a.tobytes(),b.tobytes()):
+            diff += abs(ord(abyte)-ord(bbyte))
+    except:
+        for abyte,bbyte in zip(a.tobytes(),b.tobytes()):
+            diff += abs(abyte-bbyte)
     ave_diff = float(diff)/(a.size[0]*a.size[1])
     if epsilon < ave_diff:
         failure(msg or "average pixel value difference %.4f > epsilon %.4f" %(ave_diff, epsilon))
