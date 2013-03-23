@@ -50,35 +50,32 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
 
     for (y = 0; y < imDst->ysize; y++) {
 
-        rgba8* pdst = (rgba8*) imDst->image[y];
-        rgba8* psrc = (rgba8*) imSrc->image[y];
-        rgba8* pout = (rgba8*) imOut->image[y];
+        rgba8* dst = (rgba8*) imDst->image[y];
+        rgba8* src = (rgba8*) imSrc->image[y];
+        rgba8* out = (rgba8*) imOut->image[y];
 
         for (x = 0; x < imDst->xsize; x ++) {
-            rgba8 src = psrc[x];
 
-            if (src.a == 0) {
+            if (src->a == 0) {
                 // Copy 4 bytes at once.
-                pout[x] = pdst[x];
+                *out = *dst;
             } else {
-                rgba8 dst = pdst[x];
-                rgba8* out = &pout[x];
-
                 // Integer implementation with increased precision.
                 // Each variable has extra meaningful bits.
                 // Divisions are rounded.
 
-                UINT16 blend = dst.a * (255 - src.a);  // 16 bit max
-                UINT16 outa = (src.a << 4) + ((blend + 0x8) >> 4);  // 12
-                UINT16 coef1 = (src.a << 16) / outa;  // 12
+                UINT16 blend = dst->a * (255 - src->a);  // 16 bit max
+                UINT16 outa = (src->a << 4) + ((blend << 4) + 127) / 255;  // 12
+                UINT16 coef1 = ((src->a * 255) << 8)  / outa;  // 12
                 UINT16 coef2 = (blend << 8) / outa;  // 12
 
-                out->r = (src.r * coef1 + dst.r * coef2 + 0x800) >> 12;
-                out->g = (src.g * coef1 + dst.g * coef2 + 0x800) >> 12;
-                out->b = (src.b * coef1 + dst.b * coef2 + 0x800) >> 12;
-                out->a = (outa + 0x8) >> 4;
+                out->r = ((src->r * coef1 + dst->r * coef2 + 0x7ff) / 255) >> 4;
+                out->g = ((src->g * coef1 + dst->g * coef2 + 0x7ff) / 255) >> 4;
+                out->b = ((src->b * coef1 + dst->b * coef2 + 0x7ff) / 255) >> 4;
+                out->a = (outa + 0x7) >> 4;
             }
 
+            dst++; src++; out++;
         }
 
     }
