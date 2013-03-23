@@ -554,7 +554,15 @@ def _save(im, fp, filename):
         info.get("exif", b"")
         )
 
-    ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)])
+    # if we optimize, libjpeg needs a buffer big enough to hold the whole image in a shot.
+    # Guessing on the size, at im.size bytes. (raw pizel size is channels*size, this
+    # is a value that's been used in a django patch.
+    # https://github.com/jdriscoll/django-imagekit/issues/50
+    bufsize=0
+    if "optimize" in info:
+        bufsize = im.size[0]*im.size[1]    
+
+    ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)], bufsize)
 
 def _save_cjpeg(im, fp, filename):
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
