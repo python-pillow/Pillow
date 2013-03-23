@@ -64,14 +64,25 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
                 // Each variable has extra meaningful bits.
                 // Divisions are rounded.
 
-                UINT16 blend = dst->a * (255 - src->a);  // 16 bit max
-                UINT16 outa = (src->a << 4) + ((blend << 4) + 127) / 255;  // 12
-                UINT16 coef1 = ((src->a * 255) << 8)  / outa;  // 12
+                // This code uses trick from Paste.c:
+                // (a + (2 << (n-1)) - 1) / ((2 << n)-1)
+                // almost equivalent to:
+                // tmp = a + (2 << (n-1)), ((tmp >> n) + tmp) >> n
+
+                // 0xff * 0xff = 16 meaningful bits.
+                UINT16 blend = dst->a * (255 - src->a);
+                // Shift 4 bits up, to don't loose blend precision
+                // on very transparent pixels.
+                UINT16 outa = (src->a << 4) + (((blend << 4) + (blend >> 4) + 0x80) >> 8);
+                UINT16 coef1 = (((src->a << 8) - src->a) << 8) / outa;  // 12
                 UINT16 coef2 = (blend << 8) / outa;  // 12
 
-                out->r = ((src->r * coef1 + dst->r * coef2 + 0x7ff) / 255) >> 4;
-                out->g = ((src->g * coef1 + dst->g * coef2 + 0x7ff) / 255) >> 4;
-                out->b = ((src->b * coef1 + dst->b * coef2 + 0x7ff) / 255) >> 4;
+                UINT32 tmpr = src->r * coef1 + dst->r * coef2 + 0x800;
+                out->r = ((tmpr >> 8) + tmpr) >> 12;
+                UINT32 tmpg = src->g * coef1 + dst->g * coef2 + 0x800;
+                out->g = ((tmpg >> 8) + tmpg) >> 12;
+                UINT32 tmpb = src->b * coef1 + dst->b * coef2 + 0x800;
+                out->b = ((tmpb >> 8) + tmpb) >> 12;
                 out->a = (outa + 0x7) >> 4;
             }
 
