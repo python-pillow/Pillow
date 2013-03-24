@@ -69,21 +69,23 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
                 // almost equivalent to:
                 // tmp = a + (2 << (n-1)), ((tmp >> n) + tmp) >> n
 
-                // 0xff * 0xff = 16 meaningful bits.
                 UINT16 blend = dst->a * (255 - src->a);
-                // Shift 4 bits up, to don't loose blend precision
-                // on very transparent pixels.
-                UINT16 outa = (src->a << 4) + (((blend << 4) + (blend >> 4) + 0x80) >> 8);
-                UINT16 coef1 = (((src->a << 8) - src->a) << 8) / outa;  // 12
-                UINT16 coef2 = (blend << 8) / outa;  // 12
+                UINT16 outa255 = src->a * 255 + blend;
+                // There we use 7 bits for precision.
+                // We could use more, but we go beyond 32 bits.
+                UINT16 coef1 = src->a * 255 * 255 * 128 / outa255;
+                UINT16 coef2 = blend * 255 * 128 / outa255;
 
-                UINT32 tmpr = src->r * coef1 + dst->r * coef2 + 0x800;
-                out->r = ((tmpr >> 8) + tmpr) >> 12;
-                UINT32 tmpg = src->g * coef1 + dst->g * coef2 + 0x800;
-                out->g = ((tmpg >> 8) + tmpg) >> 12;
-                UINT32 tmpb = src->b * coef1 + dst->b * coef2 + 0x800;
-                out->b = ((tmpb >> 8) + tmpb) >> 12;
-                out->a = (outa + 0x7) >> 4;
+                #define SHIFTFORDIV255(a)\
+                    ((a >> 8) + a >> 8)
+
+                UINT32 tmpr = src->r * coef1 + dst->r * coef2 + (0x80 << 7);
+                out->r = SHIFTFORDIV255(tmpr) >> 7;
+                UINT32 tmpg = src->g * coef1 + dst->g * coef2 + (0x80 << 7);
+                out->g = SHIFTFORDIV255(tmpg) >> 7;
+                UINT32 tmpb = src->b * coef1 + dst->b * coef2 + (0x80 << 7);
+                out->b = SHIFTFORDIV255(tmpb) >> 7;
+                out->a = SHIFTFORDIV255(outa255 + 0x80);
             }
 
             dst++; src++; out++;
