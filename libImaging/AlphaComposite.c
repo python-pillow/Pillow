@@ -74,7 +74,7 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
                 // There we use 7 bits for precision.
                 // We could use more, but we go beyond 32 bits.
                 UINT16 coef1 = src->a * 255 * 255 * 128 / outa255;
-                UINT16 coef2 = blend * 255 * 128 / outa255;
+                UINT16 coef2 = 255 * 128 - coef1;
 
                 #define SHIFTFORDIV255(a)\
                     ((a >> 8) + a >> 8)
