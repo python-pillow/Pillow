@@ -36,7 +36,7 @@ __version__ = "0.6"
 
 import array, struct
 from PIL import Image, ImageFile, _binary
-from JpegPresets import presets
+from PIL.JpegPresets import presets
 
 i8 = _binary.i8
 o8 = _binary.o8
@@ -483,7 +483,7 @@ def _save(im, fp, filename):
     elif subsampling == "keep":
         if im.format != "JPEG":
             raise ValueError("Cannot use 'keep' when original image is not a JPEG")
-        subsampling = get_sampling(im)    
+        subsampling = get_sampling(im)
 
     def validate_qtables(qtables):
         if qtables is None:
@@ -513,7 +513,7 @@ def _save(im, fp, filename):
                 else:
                     qtables[idx] = list(table)
             return qtables
-                
+
     if qtables == "keep":
         if im.format != "JPEG":
             raise ValueError("Cannot use 'keep' when original image is not a JPEG")
@@ -560,7 +560,7 @@ def _save(im, fp, filename):
     # https://github.com/jdriscoll/django-imagekit/issues/50
     bufsize=0
     if "optimize" in info:
-        bufsize = im.size[0]*im.size[1]    
+        bufsize = im.size[0]*im.size[1]
 
     ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)], bufsize)
 
