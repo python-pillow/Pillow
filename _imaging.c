@@ -742,16 +742,16 @@ _convert(ImagingObject* self, PyObject* args)
     ImagingObject *paletteimage = NULL;
 
     if (!PyArg_ParseTuple(args, "s|iO", &mode, &dither, &paletteimage))
-    return NULL;
+      return NULL;
     if (paletteimage != NULL) {
       if (!PyImaging_Check(paletteimage)) {
-    PyObject_Print((PyObject *)paletteimage, stderr, 0);
-    PyErr_SetString(PyExc_ValueError, "palette argument must be image with mode 'P'");
-    return NULL;
+        PyObject_Print((PyObject *)paletteimage, stderr, 0);
+        PyErr_SetString(PyExc_ValueError, "palette argument must be image with mode 'P'");
+        return NULL;
       }
       if (paletteimage->image->palette == NULL) {
-    PyErr_SetString(PyExc_ValueError, "null palette");
-    return NULL;
+        PyErr_SetString(PyExc_ValueError, "null palette");
+        return NULL;
       }
     }
 
@@ -1431,16 +1431,16 @@ _putpalettealpha(ImagingObject* self, PyObject* args)
     int index;
     int alpha = 0;
     if (!PyArg_ParseTuple(args, "i|i", &index, &alpha))
-    return NULL;
+        return NULL;
 
     if (!self->image->palette) {
-    PyErr_SetString(PyExc_ValueError, no_palette);
-    return NULL;
+        PyErr_SetString(PyExc_ValueError, no_palette);
+        return NULL;
     }
 
     if (index < 0 || index >= 256) {
-    PyErr_SetString(PyExc_ValueError, outside_palette);
-    return NULL;
+        PyErr_SetString(PyExc_ValueError, outside_palette);
+        return NULL;
     }
 
     strcpy(self->image->palette->mode, "RGBA");
