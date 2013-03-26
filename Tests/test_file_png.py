@@ -128,6 +128,34 @@ def test_load_transparent_p():
     # image has 124 uniqe qlpha values
     assert_equal(len(im.split()[3].getcolors()), 124)
 
+def test_save_p_transparent_palette():
+    in_file = "Tests/images/pil123p.png"
+    im = Image.open(in_file)
+
+    file = tempfile("temp.png")
+    assert_no_exception(lambda: im.save(file))
+
+def test_save_p_single_transparency():
+    in_file = "Tests/images/p_trns_single.png"
+    im = Image.open(in_file)
+
+    file = tempfile("temp.png")
+    assert_no_exception(lambda: im.save(file))
+
+def test_save_l_transparency():
+    in_file = "Tests/images/l_trns.png"
+    im = Image.open(in_file)
+
+    file = tempfile("temp.png")
+    assert_no_exception(lambda: im.save(file))
+
+def test_save_rgb_single_transparency():
+    in_file = "Tests/images/caption_6_33_22.png"
+    im = Image.open(in_file)
+
+    file = tempfile("temp.png")
+    assert_no_exception(lambda: im.save(file))
+
 def test_load_verify():
     # Check open/load/verify exception (@PIL150)
 
