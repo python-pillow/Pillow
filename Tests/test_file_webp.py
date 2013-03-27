@@ -2,10 +2,10 @@ from tester import *
 
 from PIL import Image
 
-codecs = dir(Image.core)
-		
-if "webp_encoder" not in codecs or "webp_decoder" not in codecs:
-	    skip("webp support not available")
+try:
+    import _webp
+except:
+    skip('webp support not installed')
 		
 def test_read():
     """ Can we write a webp without error. Does it have the bits we expect?"""
