@@ -78,7 +78,7 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
                 UINT16 coef2 = 255 * 128 - coef1;
 
                 #define SHIFTFORDIV255(a)\
-                    ((a >> 8) + a >> 8)
+                    ((((a) >> 8) + a) >> 8)
 
                 tmpr = src->r * coef1 + dst->r * coef2 + (0x80 << 7);
                 out->r = SHIFTFORDIV255(tmpr) >> 7;
