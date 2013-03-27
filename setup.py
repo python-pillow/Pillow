@@ -453,8 +453,6 @@ class pil_build_ext(build_ext):
         tmpfile = os.path.join(self.build_temp, 'multiarch')
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
-        ret = os.system('dpkg-architecture -qDEB_HOST_MULTIARCH > %s' %
-                        tmpfile)
         ret = os.system(
             'dpkg-architecture -qDEB_HOST_MULTIARCH > %s 2> /dev/null' %
             tmpfile)
