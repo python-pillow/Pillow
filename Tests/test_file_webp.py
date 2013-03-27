@@ -2,7 +2,12 @@ from tester import *
 
 from PIL import Image
 
-def xtest_read():
+codecs = dir(Image.core)
+		
+if "webp_encoder" not in codecs or "webp_decoder" not in codecs:
+	    skip("webp support not available")
+		
+def test_read():
     """ Can we write a webp without error. Does it have the bits we expect?"""
     
     file = "Images/lena.webp"
