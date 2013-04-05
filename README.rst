@@ -80,6 +80,21 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 .. [1] x86 only
 .. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
+Donations
+---------
+
+You can help fund Pillow development!
+
+.. Note:: New contributors: please add your name (and donation preference) here and send a pull request.
+
+Pillow is a volunteer effort led by Alex Clark. Any contributor interested in receiving donations may add their name (and donation preference) here.
+
++--------------------------------------+---------------------------------------+
+| **Developer**                        | **Preference**                        |
++--------------------------------------+---------------------------------------+
+| Alex Clark (fork author)             | http://gittip.com/aclark4life         |
++--------------------------------------+---------------------------------------+
+
 Python Imaging Library
 ======================
 
@@ -386,4 +401,3 @@ Python Imaging Library
         http://mingw.org (compiler)
         http://sebsauvage.net/python/mingw.html (build instructions)
         http://sourceforge.net/projects/gnuwin32 (prebuilt libraries)
-
