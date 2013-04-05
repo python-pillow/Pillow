@@ -561,10 +561,10 @@ def _save(im, fp, filename):
     bufsize=0
     if "optimize" in info:
         bufsize = im.size[0]*im.size[1]
-		
-	# The exif info needs to be written as one block. Ensure that our buffer is big enough
-	if len(info.get("exif",b"")) > max(ImageFile.MAXBLOCK, bufsize):
-		bufsize = 2*len(info.get("exif",b""))
+        
+    # The exif info needs to be written as one block. Ensure that our buffer is big enough
+    if len(info.get("exif",b"")) > max(ImageFile.MAXBLOCK, bufsize):
+        bufsize = 2*len(info.get("exif",b""))
 
     ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)], bufsize)
 
