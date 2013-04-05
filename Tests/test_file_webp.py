@@ -2,7 +2,12 @@ from tester import *
 
 from PIL import Image
 
-def xtest_read():
+try:
+    import _webp
+except:
+    skip('webp support not installed')
+		
+def test_read():
     """ Can we write a webp without error. Does it have the bits we expect?"""
     
     file = "Images/lena.webp"
