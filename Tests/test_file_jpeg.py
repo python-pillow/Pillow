@@ -113,6 +113,13 @@ def test_optimize():
     assert_image_equal(im1, im2)
     assert_true(im1.bytes >= im2.bytes)
 
+def test_optimize_large_buffer():
+	#https://github.com/python-imaging/Pillow/issues/148
+	f = tempfile('temp.jpg')
+	# this requires ~ 1.5x Image.MAXBLOCK
+	im = Image.new("RGB", (4096,4096), 0xff3333)
+	im.save(f, format="JPEG", optimize=True)
+
 def test_progressive():
     im1 = roundtrip(lena())
     im2 = roundtrip(lena(), progressive=1)

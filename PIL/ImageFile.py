@@ -433,8 +433,9 @@ class Parser:
 # @param im Image object.
 # @param fp File object.
 # @param tile Tile list.
+# @param bufsize Optional buffer size
 
-def _save(im, fp, tile):
+def _save(im, fp, tile, bufsize=0):
     "Helper to save image based on tile list"
 
     im.load()
@@ -442,7 +443,10 @@ def _save(im, fp, tile):
         im.encoderconfig = ()
     tile.sort(key=_tilesort)
     # FIXME: make MAXBLOCK a configuration parameter
-    bufsize = max(MAXBLOCK, im.size[0] * 4) # see RawEncode.c
+	# It would be great if we could have the encoder specifiy what it needs
+	# But, it would need at least the image size in most cases. RawEncode is
+	# a tricky case. 
+    bufsize = max(MAXBLOCK, bufsize, im.size[0] * 4) # see RawEncode.c
     try:
         fh = fp.fileno()
         fp.flush()

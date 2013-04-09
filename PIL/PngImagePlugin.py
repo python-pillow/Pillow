@@ -70,7 +70,7 @@ _MODES = {
 }
 
 
-_simple_palette = re.compile(b'^\xff+\x00+$')
+_simple_palette = re.compile(b'^\xff+\x00\xff*$')
 
 # --------------------------------------------------------------------
 # Support classes.  Suitable for PNG and related formats like MNG etc.
@@ -550,11 +550,14 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 
     if "transparency" in im.encoderinfo:
         if im.mode == "P":
-            transparency = max(0, min(255, im.encoderinfo["transparency"]))
-            alpha = b'\xFF' * transparency + b'\0'
             # limit to actual palette size
             alpha_bytes = 2**bits
-            chunk(fp, b"tRNS", alpha[:alpha_bytes])
+            if isinstance(im.encoderinfo["transparency"], bytes):
+                chunk(fp, b"tRNS", im.encoderinfo["transparency"][:alpha_bytes])
+            else:
+                transparency = max(0, min(255, im.encoderinfo["transparency"]))
+                alpha = b'\xFF' * transparency + b'\0'
+                chunk(fp, b"tRNS", alpha[:alpha_bytes])
         elif im.mode == "L":
             transparency = max(0, min(65535, im.encoderinfo["transparency"]))
             chunk(fp, b"tRNS", o16(transparency))

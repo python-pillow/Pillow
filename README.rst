@@ -4,6 +4,7 @@ Pillow
 .. Note:: Pillow >= 2.0.0 supports Python versions: 2.6, 2.7, 3.2, 3.3; Pillow < 2.0.0 supports Python versions: 2.4, 2.5, 2.6, 2.7.
 
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
+   :target: https://travis-ci.org/python-imaging/Pillow
 
 Pillow is the "friendly" PIL fork by Alex Clark and Contributors. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 
@@ -21,6 +22,26 @@ Why a fork?
 -----------
 
 PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too infrequent to accomodate the large number and frequency of issues reported.
+
+Porting
+-------
+
+Pillow is a functional dropin for the Python Imaging Library. To run
+under Pillow, existing code needs to be modified to import the Imaging
+modules from the PIL namespace instead of the global namespace.
+
+Change::
+
+    import Image
+
+to::
+
+	from PIL import Image
+
+Note that if your code imports _imaging, that will also be hosted in the PIL namespace. The preferred method of importing _imaging is::
+
+    from PIL import Image
+	_imaging = Image.core
 
 What about image code bugs?
 ---------------------------
@@ -80,18 +101,18 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 .. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
 Installation
-============
+------------
 
 If there is a binary package for your system, that is the preferred way of obtaining Pillow. 
 
 Building from Source
---------------------
++++++++++
 
 Some of Pillow's features require external libraries. 
 
 * libjpeg provides JPEG functionality. 
 
-  * Pillow has been tested with libjpev versions 6b and 8
+  * Pillow has been tested with libjpev versions 6b, 8, and 9
 
 * zlib provides access to compressed PNGs
 
@@ -105,7 +126,7 @@ Some of Pillow's features require external libraries.
 
 * libwebp provides the Webp format. 
 
-If the prerequisites are installed in the standard library locations for your machine, no configuration shoule be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations. See [[url here]] for more information. 
+If the prerequisites are installed in the standard library locations for your machine, no configuration shoule be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations.  
 
 Once you have assembed the prerequisites, run: 
 
@@ -114,7 +135,7 @@ Once you have assembed the prerequisites, run:
     $ pip install pillow
 
 Platform Specific Instructions
-------------------------------  
++++++++++
 
 Mac OSX
 *******
@@ -137,23 +158,23 @@ The library prerequisites are installed with::
     # Ubuntu 12.04 LTS
     sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
 
-##Undone## Debian library versions. 
+Windows
+*******
 
+Donations
+---------
 
+You can help fund Pillow development!
 
-Porting
-=======
+.. Note:: New contributors: please add your name (and donation preference) here and send a pull request.
 
-Pillow is a functional dropin for the Python Imaging Library. To run under Pillow, existing code needs to be modified to import the Imaging modules from the PIL namespace instead of the global namespace.
+Pillow is a volunteer effort led by Alex Clark. Any contributor interested in receiving donations may add their name (and donation preference) here.
 
-Change::
-
-    import Image
-
-to::
-
-	from PIL import Image
-
++--------------------------------------+---------------------------------------+
+| **Developer**                        | **Preference**                        |
++--------------------------------------+---------------------------------------+
+| Alex Clark (fork author)             | http://gittip.com/aclark4life         |
++--------------------------------------+---------------------------------------+
 
 
 
@@ -463,4 +484,3 @@ Python Imaging Library
         http://mingw.org (compiler)
         http://sebsauvage.net/python/mingw.html (build instructions)
         http://sourceforge.net/projects/gnuwin32 (prebuilt libraries)
-

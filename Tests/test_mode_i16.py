@@ -84,10 +84,12 @@ def test_tobytes():
     def tobytes(mode):
         return Image.new(mode, (1, 1), 1).tobytes()
 
+    order = 1 if Image._ENDIAN == '<' else -1
+
     assert_equal(tobytes("L"), b"\x01")
     assert_equal(tobytes("I;16"), b"\x01\x00")
     assert_equal(tobytes("I;16B"), b"\x00\x01")
-    assert_equal(tobytes("I"), b"\x01\x00\x00\x00")
+    assert_equal(tobytes("I"), b"\x01\x00\x00\x00"[::order])
 
 
 def test_convert():

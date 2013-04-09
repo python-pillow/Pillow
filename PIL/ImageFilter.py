@@ -17,7 +17,7 @@
 
 from functools import reduce
 
-class Filter:
+class Filter(object):
     pass
 
 ##

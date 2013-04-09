@@ -36,7 +36,7 @@ __version__ = "0.6"
 
 import array, struct
 from PIL import Image, ImageFile, _binary
-from JpegPresets import presets
+from PIL.JpegPresets import presets
 
 i8 = _binary.i8
 o8 = _binary.o8
@@ -483,7 +483,7 @@ def _save(im, fp, filename):
     elif subsampling == "keep":
         if im.format != "JPEG":
             raise ValueError("Cannot use 'keep' when original image is not a JPEG")
-        subsampling = get_sampling(im)    
+        subsampling = get_sampling(im)
 
     def validate_qtables(qtables):
         if qtables is None:
@@ -513,7 +513,7 @@ def _save(im, fp, filename):
                 else:
                     qtables[idx] = list(table)
             return qtables
-                
+
     if qtables == "keep":
         if im.format != "JPEG":
             raise ValueError("Cannot use 'keep' when original image is not a JPEG")
@@ -554,7 +554,15 @@ def _save(im, fp, filename):
         info.get("exif", b"")
         )
 
-    ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)])
+    # if we optimize, libjpeg needs a buffer big enough to hold the whole image in a shot.
+    # Guessing on the size, at im.size bytes. (raw pizel size is channels*size, this
+    # is a value that's been used in a django patch.
+    # https://github.com/jdriscoll/django-imagekit/issues/50
+    bufsize=0
+    if "optimize" in info:
+        bufsize = im.size[0]*im.size[1]
+
+    ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)], bufsize)
 
 def _save_cjpeg(im, fp, filename):
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
