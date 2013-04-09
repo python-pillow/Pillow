@@ -1369,7 +1369,6 @@ _putdata(ImagingObject* self, PyObject* args)
 
 #ifdef WITH_QUANTIZE
 
-#include "Quant.h"
 static PyObject*
 _quantize(ImagingObject* self, PyObject* args)
 {
