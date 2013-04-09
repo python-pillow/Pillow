@@ -3,12 +3,23 @@ from __future__ import print_function
 ROOT = "."
 
 import os, sys
-sys.path.insert(0, ROOT)
+
+# Path silliness.  This selftest needs to be able to import itself, so
+#it needs . in the path.  However, since the compiled versions of the
+#PIL bits are not in PIL, they're in dist, or build, or actually
+#installed. In fact, importing from ./PIL is going to fail on any
+#.c/so item.  So. We remove it from the path, import all the PIL stuff
+#from elsewhere, then pop the current directory back on the path so
+#that we can import this and run the doctest
+
+del(sys.path[0])
 
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFilter
 from PIL import ImageMath
+
+sys.path.insert(0,ROOT)
 
 try:
     Image.core.ping
