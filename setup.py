@@ -304,7 +304,7 @@ class pil_build_ext(build_ext):
             defs.append(("WORDS_BIGENDIAN", None))
 
         exts = [(Extension(
-            "_imaging", files, libraries=libs, define_macros=defs))]
+            "PIL._imaging", files, libraries=libs, define_macros=defs))]
 
         #
         # additional libraries
@@ -314,19 +314,19 @@ class pil_build_ext(build_ext):
             if feature.freetype_version == 20:
                 defs.append(("USE_FREETYPE_2_0", None))
             exts.append(Extension(
-                "_imagingft", ["_imagingft.c"], libraries=["freetype"],
+                "PIL._imagingft", ["_imagingft.c"], libraries=["freetype"],
                 define_macros=defs))
 
         if os.path.isfile("_imagingtiff.c") and feature.tiff:
             exts.append(Extension(
-                "_imagingtiff", ["_imagingtiff.c"], libraries=["tiff"]))
+                "PIL._imagingtiff", ["_imagingtiff.c"], libraries=["tiff"]))
 
         if os.path.isfile("_imagingcms.c") and feature.lcms:
             extra = []
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
             exts.append(Extension(
-                "_imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra))
+                "PIL._imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra))
 
         if os.path.isfile("_webp.c") and feature.webp:
             exts.append(Extension(
@@ -351,16 +351,16 @@ class pil_build_ext(build_ext):
                     break
             if frameworks:
                 exts.append(Extension(
-                    "_imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
+                    "PIL._imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
                     extra_compile_args=frameworks, extra_link_args=frameworks))
                 feature.tcl = feature.tk = 1  # mark as present
         elif feature.tcl and feature.tk:
             exts.append(Extension(
-                "_imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
+                "PIL._imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
                 libraries=[feature.tcl, feature.tk]))
 
         if os.path.isfile("_imagingmath.c"):
-            exts.append(Extension("_imagingmath", ["_imagingmath.c"]))
+            exts.append(Extension("PIL._imagingmath", ["_imagingmath.c"]))
 
         self.extensions[:] = exts
 
@@ -494,7 +494,7 @@ setup(
         "Programming Language :: Python :: 3.3",
         ],
     cmdclass={"build_ext": pil_build_ext},
-    ext_modules=[Extension("_imaging", ["_imaging.c"])],
+    ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
     packages=find_packages(),
     scripts=glob.glob("Scripts/pil*.py"),
     keywords=["Imaging",],
