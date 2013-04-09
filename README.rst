@@ -24,7 +24,7 @@ Why a fork?
 PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too infrequent to accomodate the large number and frequency of issues reported.
 
 Porting
-=======
+-------
 
 Pillow is a functional dropin for the Python Imaging Library. To run
 under Pillow, existing code needs to be modified to import the Imaging
@@ -101,12 +101,12 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 .. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
 Installation
-============
+------------
 
 If there is a binary package for your system, that is the preferred way of obtaining Pillow. 
 
 Building from Source
---------------------
++++++++++
 
 Some of Pillow's features require external libraries. 
 
@@ -135,7 +135,7 @@ Once you have assembed the prerequisites, run:
     $ pip install pillow
 
 Platform Specific Instructions
-------------------------------  
++++++++++
 
 Mac OSX
 *******
@@ -158,6 +158,8 @@ The library prerequisites are installed with::
     # Ubuntu 12.04 LTS
     sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
 
+Windows
+*******
 
 Donations
 ---------
