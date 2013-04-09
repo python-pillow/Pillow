@@ -27,6 +27,7 @@
 from __future__ import print_function
 
 VERSION = "1.1.7"
+PILLOW_VERSION = "2.0.0"
 
 try:
     import warnings
@@ -54,6 +55,11 @@ try:
     # them.  Note that other modules should not refer to _imaging
     # directly; import Image and use the Image.core variable instead.
     from PIL import _imaging as core
+    if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
+         raise ImportError("The _imaging extension was built for another "
+                            " version of Pillow or PIL. Most PIL functions "
+                             " will be disabled ")
+			  
 except ImportError as v:
     core = _imaging_not_installed()
     if str(v)[:20] == "Module use of python" and warnings:
@@ -65,6 +71,8 @@ except ImportError as v:
             "of Python; most PIL functions will be disabled",
             RuntimeWarning
             )
+    if str(v).startswith("The _imaging extension") and warnings:
+        warnings.warn(str(v), RuntimeWarning)
 
 try:
     import builtins
