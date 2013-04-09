@@ -16,7 +16,7 @@
 #
 
 from PIL import Image
-from . import _imagingmath
+from PIL import _imagingmath
 import sys
 
 try:

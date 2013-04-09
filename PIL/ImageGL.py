@@ -17,7 +17,7 @@
 # extensions.)
 ##
 
-from . import _imaginggl
+from PIL import _imaginggl
 
 ##
 # Texture factory.
@@ -25,4 +25,4 @@ from . import _imaginggl
 class TextureFactory:
     pass # overwritten by the _imaginggl module
 
-from ._imaginggl import *
+from _imaginggl import *
