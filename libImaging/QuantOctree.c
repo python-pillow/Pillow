@@ -27,15 +27,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Quant.h"
+#include "QuantOctree.h"
 
 typedef struct _ColorBucket{
    /* contains palette index when used for look up cube */
-   unsigned long count;
-   unsigned long r;
-   unsigned long g;
-   unsigned long b;
-   unsigned long a;
+   uint32_t count;
+   uint32_t r;
+   uint32_t g;
+   uint32_t b;
+   uint32_t a;
 } *ColorBucket;
 
 typedef struct _ColorCube{
@@ -262,7 +262,7 @@ set_lookup_value(const ColorCube cube, const Pixel *p, long value) {
    bucket->count = value;
 }
 
-unsigned long
+uint32_t
 lookup_color(const ColorCube cube, const Pixel *p) {
    ColorBucket bucket = color_bucket_from_cube(cube, p);
    return bucket->count;
@@ -302,9 +302,9 @@ create_palette_array(const ColorBucket palette, unsigned int paletteLength) {
 
 static void
 map_image_pixels(const Pixel *pixelData,
-                 unsigned long nPixels,
+                 uint32_t nPixels,
                  const ColorCube lookupCube,
-                 unsigned long *pixelArray)
+                 uint32_t *pixelArray)
 {
    long i;
    for (i=0; i<nPixels; i++) {
@@ -316,11 +316,11 @@ const int CUBE_LEVELS[8]       = {4, 4, 4, 0, 2, 2, 2, 0};
 const int CUBE_LEVELS_ALPHA[8] = {3, 4, 3, 3, 2, 2, 2, 2};
 
 int quantize_octree(Pixel *pixelData,
-          unsigned long nPixels,
-          unsigned long nQuantPixels,
+          uint32_t nPixels,
+          uint32_t nQuantPixels,
           Pixel **palette,
-          unsigned long *paletteLength,
-          unsigned long **quantizedPixels,
+          uint32_t *paletteLength,
+          uint32_t **quantizedPixels,
           int withAlpha)
 {
    ColorCube fineCube = NULL;
@@ -330,7 +330,7 @@ int quantize_octree(Pixel *pixelData,
    ColorBucket paletteBucketsCoarse = NULL;
    ColorBucket paletteBucketsFine = NULL;
    ColorBucket paletteBuckets = NULL;
-   unsigned long *qp = NULL;
+   uint32_t *qp = NULL;
    long i;
    long nCoarseColors, nFineColors, nAlreadySubtracted;
    const int *cubeBits;
