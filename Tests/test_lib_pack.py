@@ -18,6 +18,8 @@ def test_pack():
         else:
             return [ord(c) for c in im.tobytes("raw", rawmode)]
 
+    order = 1 if Image._ENDIAN == '<' else -1
+
     assert_equal(pack("1", "1"), [128])
     assert_equal(pack("1", "1;I"), [0])
     assert_equal(pack("1", "1;R"), [1])
@@ -25,9 +27,9 @@ def test_pack():
 
     assert_equal(pack("L", "L"), [1])
 
-    assert_equal(pack("I", "I"), [1, 0, 0, 0])
+    assert_equal(pack("I", "I"), [1, 0, 0, 0][::order])
 
-    assert_equal(pack("F", "F"), [0, 0, 128, 63])
+    assert_equal(pack("F", "F"), [0, 0, 128, 63][::order])
 
     assert_equal(pack("LA", "LA"), [1, 2])
 
