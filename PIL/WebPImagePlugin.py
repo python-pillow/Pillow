@@ -1,7 +1,7 @@
 from PIL import Image
 from PIL import ImageFile
 from io import BytesIO
-import _webp
+from PIL import _webp
 
 def _accept(prefix):
     return prefix[:4] == b"RIFF" and prefix[8:16] == b"WEBPVP8 "

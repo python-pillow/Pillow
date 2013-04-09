@@ -330,7 +330,7 @@ class pil_build_ext(build_ext):
 
         if os.path.isfile("_webp.c") and feature.webp:
             exts.append(Extension(
-                "_webp", ["_webp.c"], libraries=["webp"]))
+                "PIL._webp", ["_webp.c"], libraries=["webp"]))
 
 
         if sys.platform == "darwin":
