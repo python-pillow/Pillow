@@ -38,7 +38,9 @@ to::
 
 	from PIL import Image
 
-Note that if your code imports _imaging, that will also be hosted in the PIL namespace. The preferred method of importing _imaging is::
+Note that if your code imports _imaging, that will also be hosted in
+the PIL namespace. The preferred, future proof method of importing the
+private _imaging module is::
 
     from PIL import Image
 	_imaging = Image.core
@@ -103,7 +105,7 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 Installation
 ------------
 
-If there is a binary package for your system, that is the preferred way of obtaining Pillow. 
+If there is a binary package for your system, that is the preferred way of obtaining Pillow. [[UNDONE: Binary links]]
 
 Building from Source
 +++++++++
