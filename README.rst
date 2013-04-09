@@ -139,6 +139,19 @@ Platform Specific Instructions
 
 Mac OSX
 *******
+We don't currently have official binary builds for OSX. You'll need Xcode to build the package. Xcode 4.2 on 10.6 will work for the Official Python binary distribution, otherwise, use whatever Xcode compiled your python. 
+
+The easiest way to install the prerequisites is to use homebrew: http://mxcl.github.com/homebrew/ . Then run:
+
+::
+
+$ brew install libtiff lbjpeg webp littlecms
+
+If you've built your own python, then you should be able to install Pillow using 
+
+::
+
+$ pip install pillow
 
 Ubuntu or Debian
 ******
