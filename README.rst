@@ -23,6 +23,28 @@ Why a fork?
 
 PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too infrequent to accomodate the large number and frequency of issues reported.
 
+Porting
+-------
+
+Pillow is a functional dropin for the Python Imaging Library. To run
+under Pillow, existing code needs to be modified to import the Imaging
+modules from the PIL namespace instead of the global namespace.
+
+Change::
+
+    import Image
+
+to::
+
+	from PIL import Image
+
+Note that if your code imports _imaging, that will also be hosted in
+the PIL namespace. The preferred, future proof method of importing the
+private _imaging module is::
+
+    from PIL import Image
+	_imaging = Image.core
+
 What about image code bugs?
 ---------------------------
 
@@ -80,6 +102,80 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 .. [1] x86 only
 .. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
+Installation
+------------
+
+If there is a binary package for your system, that is the preferred way of obtaining Pillow. [[UNDONE: Binary links]]
+
+Building from Source
++++++++++
+
+Some of Pillow's features require external libraries. 
+
+* libjpeg provides JPEG functionality. 
+
+  * Pillow has been tested with libjpev versions 6b, 8, and 9
+
+* zlib provides access to compressed PNGs
+
+* libtiff provides group4 tiff functionality. 
+
+  * Pillow has been tested with versions 3.x and 4.0
+
+* libfreetype provides type related services
+
+* littlecms provides color management 
+
+* libwebp provides the Webp format. 
+
+If the prerequisites are installed in the standard library locations for your machine, no configuration shoule be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations.  
+
+Once you have assembed the prerequisites, run: 
+
+::
+
+    $ pip install pillow
+
+Platform Specific Instructions
++++++++++
+
+Mac OSX
+*******
+We don't currently have official binary builds for OSX. You'll need Xcode to build the package. Xcode 4.2 on 10.6 will work for the Official Python binary distribution, otherwise, use whatever Xcode compiled your python. 
+
+The easiest way to install the prerequisites is to use homebrew: http://mxcl.github.com/homebrew/ . Then run:
+
+::
+
+$ brew install libtiff lbjpeg webp littlecms
+
+If you've built your own python, then you should be able to install Pillow using 
+
+::
+
+$ pip install pillow
+
+Ubuntu or Debian
+******
+If you didn't build Python from sources, make sure you have Python's build support files on your machine.
+
+::
+
+    sudo apt-get install python-dev python-setuptools
+    # or for python 3
+    sudo apt-get install python3-dev python3-setuptools
+
+
+The library prerequisites are installed with::
+
+    # Ubuntu 10.04 LTS
+    sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev
+    # Ubuntu 12.04 LTS
+    sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
+
+Windows
+*******
+
 Donations
 ---------
 
@@ -94,6 +190,8 @@ Pillow is a volunteer effort led by Alex Clark. Any contributor interested in re
 +--------------------------------------+---------------------------------------+
 | Alex Clark (fork author)             | http://gittip.com/aclark4life         |
 +--------------------------------------+---------------------------------------+
+
+
 
 Python Imaging Library
 ======================
