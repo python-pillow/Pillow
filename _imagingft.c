@@ -282,7 +282,7 @@ font_render(FontObject* self, PyObject* args)
 {
     int i, x, y;
     Imaging im;
-    int index, error, ascender, descender;
+    int index, error, ascender;
     int load_flags;
     unsigned char *source;
     FT_ULong ch;
@@ -332,7 +332,6 @@ font_render(FontObject* self, PyObject* args)
             int xx, x0, x1;
             source = (unsigned char*) glyph->bitmap.buffer;
             ascender = PIXEL(self->face->size->metrics.ascender);
-            descender = PIXEL(self->face->size->metrics.descender);
             xx = x + glyph->bitmap_left;
             x0 = 0;
             x1 = glyph->bitmap.width;
@@ -341,7 +340,7 @@ font_render(FontObject* self, PyObject* args)
             if (xx + x1 > im->xsize)
                 x1 = im->xsize - xx;
             for (y = 0; y < glyph->bitmap.rows; y++) {
-                int yy = y + ascender + descender - glyph->bitmap_top;
+                int yy = y + ascender - glyph->bitmap_top;
                 if (yy >= 0 && yy < im->ysize) {
                     /* blend this glyph into the buffer */
                     unsigned char *target = im->image8[yy] + xx;
@@ -362,7 +361,6 @@ font_render(FontObject* self, PyObject* args)
             int xx, x0, x1;
             source = (unsigned char*) glyph->bitmap.buffer;
             ascender = PIXEL(self->face->size->metrics.ascender);
-            descender = PIXEL(self->face->size->metrics.descender);
             xx = x + glyph->bitmap_left;
             x0 = 0;
             x1 = glyph->bitmap.width;
@@ -371,7 +369,7 @@ font_render(FontObject* self, PyObject* args)
             if (xx + x1 > im->xsize)
                 x1 = im->xsize - xx;
             for (y = 0; y < glyph->bitmap.rows; y++) {
-                int yy = y + ascender + descender - glyph->bitmap_top;
+                int yy = y + ascender - glyph->bitmap_top;
                 if (yy >= 0 && yy < im->ysize) {
                     /* blend this glyph into the buffer */
                     int i;
