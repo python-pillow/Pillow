@@ -281,22 +281,6 @@ PIL Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageGL` Module
----------------------
-
-.. automodule:: PIL.ImageGL
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageGrab` Module
------------------------
-
-.. automodule:: PIL.ImageGrab
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageMath` Module
 -----------------------
 
