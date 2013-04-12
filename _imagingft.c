@@ -349,21 +349,25 @@ font_render(FontObject* self, PyObject* args)
                            &delta);
             x += delta.x >> 6;
         }
+
         error = FT_Load_Glyph(self->face, index, load_flags);
         if (error)
             return geterror(error);
+
         glyph = self->face->glyph;
+
+        int xx, x0, x1;
+        source = (unsigned char*) glyph->bitmap.buffer;
+        xx = x + glyph->bitmap_left;
+        x0 = 0;
+        x1 = glyph->bitmap.width;
+        if (xx < 0)
+            x0 = -xx;
+        if (xx + x1 > im->xsize)
+            x1 = im->xsize - xx;
+
         if (mask) {
             /* use monochrome mask (on palette images, etc) */
-            int xx, x0, x1;
-            source = (unsigned char*) glyph->bitmap.buffer;
-            xx = x + glyph->bitmap_left;
-            x0 = 0;
-            x1 = glyph->bitmap.width;
-            if (xx < 0)
-                x0 = -xx;
-            if (xx + x1 > im->xsize)
-                x1 = im->xsize - xx;
             for (y = 0; y < glyph->bitmap.rows; y++) {
                 int yy = y + im->ysize - (PIXEL(glyph->metrics.horiBearingY) + ascender);
                 if (yy >= 0 && yy < im->ysize) {
@@ -383,15 +387,6 @@ font_render(FontObject* self, PyObject* args)
             }
         } else {
             /* use antialiased rendering */
-            int xx, x0, x1;
-            source = (unsigned char*) glyph->bitmap.buffer;
-            xx = x + glyph->bitmap_left;
-            x0 = 0;
-            x1 = glyph->bitmap.width;
-            if (xx < 0)
-                x0 = -xx;
-            if (xx + x1 > im->xsize)
-                x1 = im->xsize - xx;
             for (y = 0; y < glyph->bitmap.rows; y++) {
                 int yy = y + im->ysize - (PIXEL(glyph->metrics.horiBearingY) + ascender);
                 if (yy >= 0 && yy < im->ysize) {
