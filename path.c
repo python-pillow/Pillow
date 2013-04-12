@@ -560,7 +560,7 @@ path_subscript(PyPathObject* self, PyObject* item) {
         int len = 4;
         Py_ssize_t start, stop, step, slicelength;
 
-#if PY_VERSION_HEX >= 0x03000000
+#if PY_VERSION_HEX >= 0x03020000
         if (PySlice_GetIndicesEx(item, len, &start, &stop, &step, &slicelength) < 0)
             return NULL;
 #else
