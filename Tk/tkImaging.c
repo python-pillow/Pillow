@@ -48,9 +48,8 @@
    for the Tcl_CreateCommand command. */
 #define USE_COMPAT_CONST
 
-#include "tk.h"
-
 #include "Imaging.h"
+#include "tk.h"
 
 #include <stdlib.h>
 

@@ -221,7 +221,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             context->extra_offset = context->extra_size;
         //add exif header
         if (context->rawExifLen > 0)
-            jpeg_write_marker(&context->cinfo, JPEG_APP0+1, context->rawExif, context->rawExifLen);
+            jpeg_write_marker(&context->cinfo, JPEG_APP0+1, (unsigned char*)context->rawExif, context->rawExifLen);
 
 	    break;
 	default:
@@ -229,7 +229,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    jpeg_start_compress(&context->cinfo, TRUE);
         //add exif header
         if (context->rawExifLen > 0)
-            jpeg_write_marker(&context->cinfo, JPEG_APP0+1, context->rawExif, context->rawExifLen);
+            jpeg_write_marker(&context->cinfo, JPEG_APP0+1, (unsigned char*)context->rawExif, context->rawExifLen);
 
         break;
 	}
