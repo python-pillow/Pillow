@@ -87,7 +87,7 @@ PyInit__webp(void) {
 }
 #else
 PyMODINIT_FUNC
-init_webp()
+init_webp(void)
 {
     Py_InitModule("_webp", webpMethods);
 }
