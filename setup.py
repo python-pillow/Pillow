@@ -499,4 +499,5 @@ setup(
     scripts=glob.glob("Scripts/pil*.py"),
     keywords=["Imaging",],
     license='Standard PIL License',
+    zip_safe=True,
     )

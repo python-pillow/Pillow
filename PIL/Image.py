@@ -26,8 +26,7 @@
 
 from __future__ import print_function
 
-VERSION = "1.1.7"
-PILLOW_VERSION = "2.0.0"
+from PIL import VERSION, PILLOW_VERSION, _plugins
 
 try:
     import warnings
@@ -336,34 +335,15 @@ def init():
     if _initialized >= 2:
         return 0
 
-    visited = {}
-
-    directories = sys.path
-
-    try:
-        directories = directories + [os.path.dirname(__file__)]
-    except NameError:
-        pass
-
-    # only check directories (including current, if present in the path)
-    for directory in filter(isDirectory, directories):
-        fullpath = os.path.abspath(directory)
-        if fullpath in visited:
-            continue
-        for file in os.listdir(directory):
-            if file[-14:] == "ImagePlugin.py":
-                f, e = os.path.splitext(file)
-                try:
-                    sys.path.insert(0, directory)
-                    try:
-                        __import__(f, globals(), locals(), [])
-                    finally:
-                        del sys.path[0]
-                except ImportError:
-                    if DEBUG:
-                        print("Image: failed to import", end=' ')
-                        print(f, ":", sys.exc_info()[1])
-        visited[fullpath] = None
+    for plugin in _plugins:
+        try:
+            if DEBUG:
+                print ("Importing %s"%plugin)
+            __import__("PIL.%s"%plugin, globals(), locals(), [])
+        except ImportError:
+            if DEBUG:
+                print("Image: failed to import", end=' ')
+                print(plugin, ":", sys.exc_info()[1])
 
     if OPEN or SAVE:
         _initialized = 2
