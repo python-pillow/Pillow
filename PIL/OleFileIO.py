@@ -239,7 +239,7 @@ class OleFileIO:
 
     Object names are given as a list of strings, one for each subentry
     level.  The root entry should be omitted.  For example, the following
-    code extracts all image streams from a Microsoft Image Composer file:
+    code extracts all image streams from a Microsoft Image Composer file::
 
         ole = OleFileIO("fan.mic")
 
