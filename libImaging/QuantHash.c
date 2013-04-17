@@ -29,7 +29,7 @@ typedef struct _HashNode {
    HashVal_t value;
 } HashNode;
 
-typedef struct _HashTable {
+struct _HashTable {
    HashNode **table;
    uint32_t length;
    uint32_t count;
@@ -38,7 +38,7 @@ typedef struct _HashTable {
    KeyDestroyFunc keyDestroyFunc;
    ValDestroyFunc valDestroyFunc;
    void *userData;
-} HashTable;
+};
 
 #define MIN_LENGTH 11
 #define RESIZE_FACTOR 3
