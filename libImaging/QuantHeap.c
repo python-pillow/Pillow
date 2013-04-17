@@ -23,12 +23,12 @@
 
 #include "QuantHeap.h"
 
-typedef struct _Heap {
+struct _Heap {
    void **heap;
    int heapsize;
    int heapcount;
    HeapCmpFunc cf;
-} Heap;
+};
 
 #define INITIAL_SIZE 256
 
