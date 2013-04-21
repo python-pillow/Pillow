@@ -30,7 +30,13 @@ def test_split_merge():
     assert_image_equal(lena("YCbCr"), split_merge("YCbCr"))
 
 def test_split_open():
-    file = tempfile("temp.png")
+    codecs = dir(Image.core)
+
+    if 'zip_encoder' in codecs:
+        file = tempfile("temp.png")
+    else:
+        file = tempfile("temp.pcx")
+
     def split_open(mode):
         lena(mode).save(file)
         im = Image.open(file)
@@ -39,4 +45,5 @@ def test_split_open():
     assert_equal(split_open("L"), 1)
     assert_equal(split_open("P"), 1)
     assert_equal(split_open("RGB"), 3)
-    assert_equal(split_open("RGBA"), 4)
+    if 'zip_encoder' in codecs:
+        assert_equal(split_open("RGBA"), 4)

@@ -2,8 +2,13 @@ from tester import *
 
 from PIL import Image
 
-from test_file_tiff import _assert_noerr
+from test_file_libtiff import _assert_noerr
 
+codecs = dir(Image.core)
+
+if "group4_encoder" not in codecs or "group4_decoder" not in codecs:
+    skip("tiff support not available")
+	
 """ The small lena image was failing on open in the libtiff
     decoder because the file pointer was set to the wrong place
     by a spurious seek. It wasn't failing with the byteio method.
