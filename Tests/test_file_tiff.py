@@ -4,6 +4,11 @@ from PIL import Image
 
 import random
 
+codecs = dir(Image.core)
+
+if "group4_encoder" not in codecs or "group4_decoder" not in codecs:
+    skip("tiff support not available")
+
 def test_sanity():
 
     file = tempfile("temp.tif")
