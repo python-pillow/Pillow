@@ -3,6 +3,11 @@ from tester import *
 from PIL import Image, FontFile, PcfFontFile
 from PIL import ImageFont, ImageDraw
 
+codecs = dir(Image.core)
+
+if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
+    skip("zlib support not available")
+
 fontname = "Tests/fonts/helvO18.pcf"
 tempname = tempfile("temp.pil", "temp.pbm")
 

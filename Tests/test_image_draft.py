@@ -2,6 +2,11 @@ from tester import *
 
 from PIL import Image
 
+codecs = dir(Image.core)
+
+if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
+    skip("jpeg support not available")
+
 filename = "Images/lena.jpg"
 
 data = tostring(Image.open(filename).resize((512, 512)), "JPEG")
