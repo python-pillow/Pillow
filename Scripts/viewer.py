@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # The Python Imaging Library
 # $Id$
