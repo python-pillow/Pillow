@@ -2,7 +2,7 @@ from tester import *
 
 from PIL import Image
 
-from test_file_tiff import _assert_noerr
+from test_file_libtiff import _assert_noerr
 
 """ The small lena image was failing on open in the libtiff
     decoder because the file pointer was set to the wrong place
