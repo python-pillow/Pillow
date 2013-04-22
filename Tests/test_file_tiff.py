@@ -43,6 +43,10 @@ def test_mac_tiff():
 def test_gimp_tiff():
     # Read TIFF JPEG images from GIMP [@PIL168]
 
+    codecs = dir(Image.core)
+    if "jpeg_decoder" not in codecs:
+        skip("jpeg support not available")
+
     file = "Tests/images/pil168.tif"
     im = Image.open(file)
 
