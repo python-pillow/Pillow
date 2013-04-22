@@ -129,9 +129,9 @@ class ImageFont:
 class FreeTypeFont:
     "FreeType font wrapper (requires _imagingft service)"
 
-    def __init__(self, file, size, index=0, encoding=""):
+    def __init__(self, file=None, size=10, index=0, encoding="", file_like=None):
         # FIXME: use service provider instead
-        self.font = core.getfont(file, size, index, encoding)
+        self.font = core.getfont(file, size, index, encoding, file_like)
 
     def getname(self):
         return self.font.family, self.font.style
@@ -212,10 +212,10 @@ def load(filename):
 # @return A font object.
 # @exception IOError If the file could not be read.
 
-def truetype(filename, size, index=0, encoding=""):
+def truetype(filename=None, size=10, index=0, encoding="", file_like=None):
     "Load a truetype font file."
     try:
-        return FreeTypeFont(filename, size, index, encoding)
+        return FreeTypeFont(filename, size, index, encoding, file_like)
     except IOError:
         if sys.platform == "win32":
             # check the windows font repository
@@ -224,7 +224,7 @@ def truetype(filename, size, index=0, encoding=""):
             windir = os.environ.get("WINDIR")
             if windir:
                 filename = os.path.join(windir, "fonts", filename)
-                return FreeTypeFont(filename, size, index, encoding)
+                return FreeTypeFont(filename, size, index, encoding, file_like)
         raise
 
 ##
