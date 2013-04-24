@@ -45,8 +45,18 @@ def _find_include_file(self, include):
 
 
 def _find_library_file(self, library):
-    return self.compiler.find_library_file(self.compiler.library_dirs, library)
-
+    # Fix for 3.2.x <3.2.4, 3.3.0, shared lib extension is the python shared lib
+    # extension, not the system shared lib extension: e.g. .cpython-33.so vs .so
+    # See Python bug http://bugs.python.org/16754
+    if 'cpython' in self.compiler.shared_lib_extension:
+        existing = self.compiler.shared_lib_extension
+        self.compiler.shared_lib_extension = "." + existing.split('.')[-1]
+        ret = self.compiler.find_library_file(self.compiler.library_dirs, library)
+        self.compiler.shared_lib_extension = existing
+        return ret
+    else:
+        return self.compiler.find_library_file(self.compiler.library_dirs, library)
+    																
 
 def _find_version(filename):
     for line in open(filename).readlines():
