@@ -149,7 +149,7 @@ The easiest way to install the prerequisites is to use homebrew: http://mxcl.git
 
 ::
 
-$ brew install libtiff lbjpeg webp littlecms
+$ brew install libtiff libjpeg webp littlecms
 
 If you've built your own python, then you should be able to install Pillow using 
 
