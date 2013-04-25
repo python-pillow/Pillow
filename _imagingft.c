@@ -103,7 +103,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     int size;
     int index = 0;
     unsigned char* encoding;
-    unsigned char** file_like;
+    unsigned char* file_like;
     int file_like_size = 0;
     static char* kwlist[] = {
         "filename", "size", "index", "encoding", "file_like", "file_like_size", NULL
@@ -111,7 +111,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 
     if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|isz*i", kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
-                                     &size, &index, &encoding, file_like,
+                                     &size, &index, &encoding, &file_like,
                                      &file_like_size))
         return NULL;
 
