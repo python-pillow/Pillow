@@ -41,6 +41,15 @@ try:
 except ImportError:
     core = _imagingft_not_installed()
 
+# Python3 compatibility for basestring
+try:
+    basestring  # attempt to evaluate basestring
+    def isstr(s):
+        return isinstance(s, basestring) # Python2.x
+except NameError:
+    def isstr(s):
+        return isinstance(s, str) # Python3.x
+
 # FIXME: add support for pilfont2 format (see FontFile.py)
 
 # --------------------------------------------------------------------
@@ -136,7 +145,7 @@ class FreeTypeFont:
             warnings.warn('file parameter deprecated, please use font parameter instead.', DeprecationWarning)
             font = file
 
-        if isinstance(font, basestring):
+        if isstr(font):
             self.font = core.getfont(font, size, index, encoding)
         else:
             bytes = font.read()
