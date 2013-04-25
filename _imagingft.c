@@ -106,10 +106,10 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     unsigned char* file_like;
     int file_like_size = 0;
     static char* kwlist[] = {
-        "filename", "size", "index", "encoding", "file_like", "file_like_size", NULL
+        "filename", "size", "index", "encoding", "file_like", NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|isz*i", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|iss#", kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
                                      &size, &index, &encoding, &file_like,
                                      &file_like_size))
@@ -147,8 +147,6 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         PyObject_Del(self);
         return geterror(error);
     }
-
-    fprintf(stderr, "> %d %d %s\n", error, file_like_size, self);
 
     return (PyObject*) self;
 }

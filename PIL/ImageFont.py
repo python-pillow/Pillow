@@ -140,9 +140,7 @@ class FreeTypeFont:
             self.font = core.getfont(font, size, index, encoding)
         else:
             bytes = font.read()
-            font.seek(0, 2)
-            size = font.tell()
-            self.font = core.getfont("", size, index, encoding, bytes, size)
+            self.font = core.getfont("", size, index, encoding, bytes)
 
     def getname(self):
         return self.font.family, self.font.style
