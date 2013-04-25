@@ -29,7 +29,11 @@ from __future__ import print_function
 
 from PIL import Image
 import os, sys
-import warnings
+
+try:
+    import warnings
+except ImportError:
+    warnings = None
 
 class _imagingft_not_installed:
     # module placeholder
@@ -41,14 +45,12 @@ try:
 except ImportError:
     core = _imagingft_not_installed()
 
-# Python3 compatibility for basestring
-try:
-    basestring  # attempt to evaluate basestring
-    def isstr(s):
-        return isinstance(s, basestring) # Python2.x
-except NameError:
-    def isstr(s):
-        return isinstance(s, str) # Python3.x
+if bytes is str:
+    def isStringType(t):
+        return isinstance(t, basestring)
+else:
+    def isStringType(t):
+        return isinstance(t, str)
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
 
@@ -142,10 +144,11 @@ class FreeTypeFont:
     def __init__(self, font=None, size=10, index=0, encoding="", file=None):
         # FIXME: use service provider instead
         if file:
-            warnings.warn('file parameter deprecated, please use font parameter instead.', DeprecationWarning)
+            if warnings:
+                warnings.warn('file parameter deprecated, please use font parameter instead.', DeprecationWarning)
             font = file
 
-        if isstr(font):
+        if isStringType(font):
             self.font = core.getfont(font, size, index, encoding)
         else:
             bytes = font.read()
@@ -234,7 +237,8 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
     "Load a truetype font file."
 
     if filename:
-        warnings.warn('filename parameter deprecated, please use font parameter instead.', DeprecationWarning)
+        if warnings:
+            warnings.warn('filename parameter deprecated, please use font parameter instead.', DeprecationWarning)
         font = filename
 
     try:
