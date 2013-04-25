@@ -102,15 +102,17 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     char* filename = NULL;
     int size;
     int index = 0;
-    unsigned char* encoding = NULL;
-    Py_buffer file_like;
+    unsigned char* encoding;
+    unsigned char** file_like;
+    int file_like_size = 0;
     static char* kwlist[] = {
-        "filename", "size", "index", "encoding", "file_like", NULL
+        "filename", "size", "index", "encoding", "file_like", "file_like_size", NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|isz*", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|isz*i", kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
-                                     &size, &index, &encoding, &file_like))
+                                     &size, &index, &encoding, file_like,
+                                     &file_like_size))
         return NULL;
 
     if (!library) {
@@ -125,10 +127,10 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     if (!self)
         return NULL;
 
-    if (filename && file_like.len<0) {
+    if (filename && file_like_size <= 0) {
         error = FT_New_Face(library, filename, index, &self->face);
     } else {
-        error = FT_New_Memory_Face(library, (FT_Byte*)file_like.buf, file_like.len, index, &self->face);
+        error = FT_New_Memory_Face(library, (FT_Byte*)file_like, file_like_size, index, &self->face);
     }
  
     if (!error)
@@ -142,12 +144,11 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     }
 
     if (error) {
-        if(file_like.len < 0) {
-            PyBuffer_Release(&file_like);
-        }
         PyObject_Del(self);
         return geterror(error);
     }
+
+    fprintf(stderr, "> %d %d %s\n", error, file_like_size, self);
 
     return (PyObject*) self;
 }

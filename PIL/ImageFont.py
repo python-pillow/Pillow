@@ -29,6 +29,7 @@ from __future__ import print_function
 
 from PIL import Image
 import os, sys
+import warnings
 
 class _imagingft_not_installed:
     # module placeholder
@@ -129,9 +130,19 @@ class ImageFont:
 class FreeTypeFont:
     "FreeType font wrapper (requires _imagingft service)"
 
-    def __init__(self, file=None, size=10, index=0, encoding="", file_like=None):
+    def __init__(self, font=None, size=10, index=0, encoding="", file=None):
         # FIXME: use service provider instead
-        self.font = core.getfont(file, size, index, encoding, file_like)
+        if file:
+            warnings.warn('`file` parameter deprecated, please use `font` instead.', DeprecationWarning)
+            font = file
+
+        if isinstance(font, basestring):
+            self.font = core.getfont(font, size, index, encoding)
+        else:
+            bytes = font.read()
+            font.seek(0, 2)
+            size = font.tell()
+            self.font = core.getfont("", size, index, encoding, bytes, size)
 
     def getname(self):
         return self.font.family, self.font.style
@@ -212,10 +223,15 @@ def load(filename):
 # @return A font object.
 # @exception IOError If the file could not be read.
 
-def truetype(filename=None, size=10, index=0, encoding="", file_like=None):
+def truetype(font=None, size=10, index=0, encoding="", filename=None):
     "Load a truetype font file."
+
+    if filename:
+        warnings.warn('`file` parameter deprecated, please use `font` instead.', DeprecationWarning)
+        font = filename
+
     try:
-        return FreeTypeFont(filename, size, index, encoding, file_like)
+        return FreeTypeFont(font, size, index, encoding)
     except IOError:
         if sys.platform == "win32":
             # check the windows font repository
@@ -223,8 +239,8 @@ def truetype(filename=None, size=10, index=0, encoding="", file_like=None):
             # 1.5.2's os.environ.get()
             windir = os.environ.get("WINDIR")
             if windir:
-                filename = os.path.join(windir, "fonts", filename)
-                return FreeTypeFont(filename, size, index, encoding, file_like)
+                filename = os.path.join(windir, "fonts", font)
+                return FreeTypeFont(font, size, index, encoding)
         raise
 
 ##
