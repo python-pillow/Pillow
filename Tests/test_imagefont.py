@@ -1,10 +1,7 @@
 from tester import *
 
 from PIL import Image
-try:
-    from io import StringIO # python 3
-except ImportError:
-    from StringIO import StringIO # python 2
+from io import BytesIO
 
 try:
     from PIL import ImageFont
@@ -22,7 +19,7 @@ def test_font_with_name():
 
 def test_font_with_filelike():
     font_name = "Tests/fonts/FreeMono.ttf"
-    font_filelike = StringIO.StringIO(open(font_name, 'rb').read())
+    font_filelike = BytesIO(open(font_name, 'rb').read())
     font_size = 10
     assert_no_exception(lambda: ImageFont.truetype(font_filelike, font_size))
 
