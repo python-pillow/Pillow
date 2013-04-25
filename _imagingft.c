@@ -99,17 +99,20 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     FontObject* self;
     int error;
 
-    char* filename;
+    char* filename = NULL;
     int size;
     int index = 0;
-    unsigned char* encoding = NULL;
+    unsigned char* encoding;
+    unsigned char* file_like;
+    int file_like_size = 0;
     static char* kwlist[] = {
-        "filename", "size", "index", "encoding", NULL
+        "filename", "size", "index", "encoding", "file_like", NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|iss#", kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
-                                     &size, &index, &encoding))
+                                     &size, &index, &encoding, &file_like,
+                                     &file_like_size))
         return NULL;
 
     if (!library) {
@@ -124,8 +127,12 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     if (!self)
         return NULL;
 
-    error = FT_New_Face(library, filename, index, &self->face);
-
+    if (filename && file_like_size <= 0) {
+        error = FT_New_Face(library, filename, index, &self->face);
+    } else {
+        error = FT_New_Memory_Face(library, (FT_Byte*)file_like, file_like_size, index, &self->face);
+    }
+ 
     if (!error)
         error = FT_Set_Pixel_Sizes(self->face, 0, size);
 
