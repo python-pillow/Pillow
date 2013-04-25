@@ -133,7 +133,7 @@ class FreeTypeFont:
     def __init__(self, font=None, size=10, index=0, encoding="", file=None):
         # FIXME: use service provider instead
         if file:
-            warnings.warn('`file` parameter deprecated, please use `font` instead.', DeprecationWarning)
+            warnings.warn('file parameter deprecated, please use font parameter instead.', DeprecationWarning)
             font = file
 
         if isinstance(font, basestring):
@@ -225,7 +225,7 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
     "Load a truetype font file."
 
     if filename:
-        warnings.warn('`file` parameter deprecated, please use `font` instead.', DeprecationWarning)
+        warnings.warn('filename parameter deprecated, please use font parameter instead.', DeprecationWarning)
         font = filename
 
     try:
