@@ -1,7 +1,11 @@
 from tester import *
 
 from PIL import Image
-import StringIO
+try:
+    from io import StringIO # python 3
+except ImportError:
+    from StringIO import StringIO # python 2
+
 try:
     from PIL import ImageFont
     ImageFont.core.getfont # check if freetype is available
