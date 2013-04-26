@@ -9,22 +9,53 @@ try:
 except ImportError:
     skip()
 
+from PIL import ImageDraw
+
+font_path = "Tests/fonts/FreeMono.ttf"
+font_size=20
+
 def test_sanity():
     assert_match(ImageFont.core.freetype2_version, "\d+\.\d+\.\d+$")
 
 def test_font_with_name():
-    font_name = "Tests/fonts/FreeMono.ttf"
-    font_size = 10
-    assert_no_exception(lambda: ImageFont.truetype(font_name, font_size))
+    assert_no_exception(lambda: ImageFont.truetype(font_path, font_size))
+    assert_no_exception(lambda: _render(font_path))
 
+def _font_as_bytes():
+    with open(font_path, 'rb') as f:
+        font_bytes = BytesIO(f.read())
+    return font_bytes
+                        
 def test_font_with_filelike():
-    font_name = "Tests/fonts/FreeMono.ttf"
-    font_filelike = BytesIO(open(font_name, 'rb').read())
-    font_size = 10
-    assert_no_exception(lambda: ImageFont.truetype(font_filelike, font_size))
+    assert_no_exception(lambda: ImageFont.truetype(_font_as_bytes(), font_size))
+    assert_no_exception(lambda: _render(_font_as_bytes()))
+    # Usage note:  making two fonts from the same buffer fails.
+    #shared_bytes = _font_as_bytes()
+    #assert_no_exception(lambda: _render(shared_bytes))
+    #assert_exception(Exception, lambda: _render(shared_bytes))
 
+def test_font_with_open_file():
+    with open(font_path, 'rb') as f:
+        assert_no_exception(lambda: _render(f))
+    
 def test_font_old_parameters():
-    font_name = "Tests/fonts/FreeMono.ttf"
-    font_size = 10
-    assert_warning(DeprecationWarning, lambda: ImageFont.truetype(filename=font_name, size=font_size))
+    assert_warning(DeprecationWarning, lambda: ImageFont.truetype(filename=font_path, size=font_size))
 
+def _render(font):
+    txt = "Hello World!"
+    ttf = ImageFont.truetype(font, font_size)
+    w, h = ttf.getsize(txt)
+    img = Image.new("RGB", (256, 64), "white")
+    d = ImageDraw.Draw(img)
+    d.text((10, 10), txt, font=ttf, fill='black')
+
+    img.save('font.png')
+    return img
+
+def test_render_equal():
+    img_path = _render(font_path)
+    with open(font_path, 'rb') as f:
+        font_filelike = BytesIO(f.read())
+    img_filelike = _render(font_filelike)
+
+    assert_image_equal(img_path, img_filelike)
