@@ -26,9 +26,7 @@ PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/im
 Porting
 -------
 
-Pillow is a functional dropin for the Python Imaging Library. To run
-under Pillow, existing code needs to be modified to import the Imaging
-modules from the PIL namespace instead of the global namespace.
+Pillow is a functional drop-in for the Python Imaging Library. To run under Pillow, existing code needs to be modified to import the Imaging modules from the PIL namespace instead of the global namespace.
 
 Change::
 
@@ -38,9 +36,7 @@ to::
 
 	from PIL import Image
 
-Note that if your code imports _imaging, that will also be hosted in
-the PIL namespace. The preferred, future proof method of importing the
-private _imaging module is::
+Note that if your code imports _imaging, that will also be hosted in the PIL namespace. The preferred, future proof method of importing the private _imaging module is::
 
     from PIL import Image
 	_imaging = Image.core
