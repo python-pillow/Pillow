@@ -21,11 +21,9 @@ The fork author's goal is to foster active development of PIL through:
 Porting your Python code from PIL to Pillow
 -------------------------------------------
 
-.. Note:: PIL and Pillow currently cannot co-existent. If you want to use Pillow, please remove PIL first.
+.. Note:: PIL and Pillow currently cannot co-exist. If you want to use Pillow, please remove PIL first.
 
-Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL-compatible code with Pillow, it needs to be modified to import the ``Imaging`` module from the **PIL namespace instead of the global namespace**.
-
-Change::
+Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL-compatible code with Pillow, it needs to be modified to import the ``Imaging`` module from the **PIL namespace instead of the global namespace**. I.e. change::
 
     import Image
 
@@ -95,7 +93,7 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 +----------------------------------+-------------+------------------------------+-----------------------+
 | Ubuntu Linux 12.04 LTS           |Yes          | 2.6,2.7,3.2,3.3              |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+-----------------------+
-| Gentoo Linux                     |Soon         | 2.7,3.2.4                    |x86-64                 |
+| Gentoo Linux                     |Soon         | 2.7,3.2                      |x86-64                 |
 +----------------------------------+-------------+------------------------------+-----------------------+
 | Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+-----------------------+
@@ -108,7 +106,9 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 Installation
 ------------
 
-If there is a binary package for your system, that is the preferred way of installing Pillow. [[UNDONE: Binary links]]
+.. Note:: XXX Why are we recommending binaries when we only provide Windows eggs?
+
+If there is a binary package for your system, that is the easiest way to install Pillow. [[UNDONE: Binary links]]
 
 Building from Source
 ++++++++++++++++++++
@@ -145,9 +145,9 @@ Platform Specific Instructions
 Mac OS X
 ********
 
-We don't currently have official binary builds for OS X. You'll need Xcode to build the package. Xcode 4.2 on 10.6 will work for the Official Python binary distribution, otherwise, use whatever Xcode compiled your Python. 
+We don't currently have official binary builds for OS X. You'll need XCode to build the package. XCode 4.2 on 10.6 will work for the Official Python binary distribution, otherwise, use whatever XCode compiled your Python. The easiest way to install the prerequisites is via homebrew: http://mxcl.github.com/homebrew/ .
 
-The easiest way to install the prerequisites is to use homebrew: http://mxcl.github.com/homebrew/ . Then run:
+After you install homebrew, run:
 
 ::
 
@@ -159,17 +159,16 @@ If you've built your own Python, then you should be able to install Pillow using
 
     $ pip install pillow
 
-Ubuntu or Debian
-****************
+Debian/Ubuntu
+*************
 
-If you didn't build Python from sources, make sure you have Python's build support files on your machine.
-
-::
+If you didn't build Python from source, make sure you have Python's build support files on your machine::
 
     sudo apt-get install python-dev python-setuptools
-    # or for python 3
-    sudo apt-get install python3-dev python3-setuptools
 
+Or for python 3::
+
+    sudo apt-get install python3-dev python3-setuptools
 
 The library prerequisites are installed with::
 
