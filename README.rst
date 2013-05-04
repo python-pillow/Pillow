@@ -18,15 +18,12 @@ The fork author's goal is to foster active development of PIL through:
 - Regular releases to the Python Packaging Index
 - Solicitation for community contributions and involvement on Imaging-SIG
 
-Why a fork?
------------
+Porting your Python code from PIL to Pillow
+-------------------------------------------
 
-PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too infrequent to accomodate the large number and frequency of issues reported.
+.. Note:: PIL and Pillow currently cannot co-existent. If you want to use Pillow, please remove PIL first.
 
-Porting
--------
-
-Pillow is a functional drop-in for the Python Imaging Library. To run under Pillow, existing code needs to be modified to import the Imaging modules from the PIL namespace instead of the global namespace.
+Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL code with Pillow, it needs to be modified to import the Imaging modules from the **PIL namespace instead of the global namespace**.
 
 Change::
 
@@ -36,10 +33,18 @@ to::
 
 	from PIL import Image
 
-Note that if your code imports _imaging, that will also be hosted in the PIL namespace. The preferred, future proof method of importing the private _imaging module is::
+.. Note:: If your code imports _imaging, it will no longer work.
+
+The preferred, future proof method of importing the private _imaging module is::
 
     from PIL import Image
 	_imaging = Image.core
+
+Why a fork?
+-----------
+
+PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too infrequent to accomodate the large number and frequency of issues reported.
+
 
 What about image code bugs?
 ---------------------------
