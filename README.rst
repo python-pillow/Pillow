@@ -57,7 +57,7 @@ Then open a ticket here:
 
 and provide a link to the first ticket so we can track the issue(s) upstream.
 
-.. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 adds Python 3 support and includes many bug fixes from around the internet.
+.. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 adds Python 3 support and includes many bug fixes from many contributors.
 
 Documentation
 -------------
