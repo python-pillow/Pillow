@@ -31,14 +31,14 @@ Change::
 
 to::
 
-	from PIL import Image
+    from PIL import Image
 
 .. Note:: If your code imports _imaging, it will no longer work.
 
 The preferred, future proof method of importing the private _imaging module is::
 
     from PIL import Image
-	_imaging = Image.core
+    _imaging = Image.core
 
 Why a fork?
 -----------
