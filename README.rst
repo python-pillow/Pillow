@@ -23,7 +23,7 @@ Porting your Python code from PIL to Pillow
 
 .. Note:: PIL and Pillow currently cannot co-existent. If you want to use Pillow, please remove PIL first.
 
-Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL code with Pillow, it needs to be modified to import the Imaging modules from the **PIL namespace instead of the global namespace**.
+Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL-compatible code with Pillow, it needs to be modified to import the ``Imaging`` module from the **PIL namespace instead of the global namespace**.
 
 Change::
 
@@ -33,9 +33,9 @@ to::
 
     from PIL import Image
 
-.. Note:: If your code imports _imaging, it will no longer work.
+.. Note:: If your code imports ``_imaging``, it will no longer work.
 
-The preferred, future proof method of importing the private _imaging module is::
+The preferred, future proof method of importing the private ``_imaging`` module is::
 
     from PIL import Image
     _imaging = Image.core
@@ -108,20 +108,20 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 Installation
 ------------
 
-If there is a binary package for your system, that is the preferred way of obtaining Pillow. [[UNDONE: Binary links]]
+If there is a binary package for your system, that is the preferred way of installing Pillow. [[UNDONE: Binary links]]
 
 Building from Source
 ++++++++++++++++++++
 
-Some of Pillow's features require external libraries. 
+Some of Pillow's features require external libraries.
 
-* libjpeg provides JPEG functionality. 
+* libjpeg provides JPEG functionality.
 
-  * Pillow has been tested with libjpev versions 6b, 8, and 9
+  * Pillow has been tested with libjpeg versions 6b, 8, and 9
 
 * zlib provides access to compressed PNGs
 
-* libtiff provides group4 tiff functionality. 
+* libtiff provides group4 tiff functionality
 
   * Pillow has been tested with versions 3.x and 4.0
 
@@ -131,13 +131,13 @@ Some of Pillow's features require external libraries.
 
 * libwebp provides the Webp format. 
 
-If the prerequisites are installed in the standard library locations for your machine, no configuration shoule be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations.  
+If the prerequisites are installed in the standard library locations for your machine, no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg)
 
-Once you have assembed the prerequisites, run: 
+Once you have installed the prerequisites, run: 
 
 ::
 
-    $ pip install pillow
+    $ pip install Pillow
 
 Platform Specific Instructions
 ++++++++++++++++++++++++++++++
