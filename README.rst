@@ -118,13 +118,13 @@ Some of Pillow's features require external libraries.
 
 * **libjpeg** provides JPEG functionality.
 
-  * Pillow has been tested with libjpeg versions 6b, 8, and 9
+  * Pillow has been tested with libjpeg versions **6b**, **8**, and **9**
 
 * **zlib** provides access to compressed PNGs
 
 * **libtiff** provides group4 tiff functionality
 
-  * Pillow has been tested with versions 3.x and 4.0
+  * Pillow has been tested with libtiff versions **3.x** and **4.0**
 
 * **libfreetype** provides type related services
 
@@ -166,6 +166,8 @@ Mac OS X
 ++++++++
 
 **We don't currently provide binaries for OS X.** So you'll need XCode to install Pillow. (XCode 4.2 on 10.6 will work with the Official Python binary distribution. Otherwise, use whatever XCode you used to compile Python.)
+
+.. Note:: XXX I'm not sure we need to mention the bit about XCode
 
 
 The easiest way to install the prerequisites is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run:
