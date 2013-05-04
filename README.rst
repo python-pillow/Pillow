@@ -140,8 +140,8 @@ Once you have installed the prerequisites, run:
 
     $ pip install Pillow
 
-Platform instructions
-~~~~~~~~~~~~~~~~~~~~~
+Platform-specific instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Mac OS X
 ++++++++
@@ -165,18 +165,19 @@ Debian/Ubuntu
 
 If you didn't build Python from source, make sure you have Python's build support files on your machine::
 
-    sudo apt-get install python-dev python-setuptools
+    $ sudo apt-get install python-dev python-setuptools
 
-Or for python 3::
+Or for Python 3::
 
-    sudo apt-get install python3-dev python3-setuptools
+    $ sudo apt-get install python3-dev python3-setuptools
 
-The library prerequisites are installed with::
+The library prerequisites are installed on **Ubuntu 10.04 LTS** with::
 
-    # Ubuntu 10.04 LTS
-    sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev
-    # Ubuntu 12.04 LTS
-    sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
+    $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev
+
+The library prerequisites are installed with on **Ubuntu 10.04 LTS** with ::
+
+    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
 
 Windows
 +++++++
