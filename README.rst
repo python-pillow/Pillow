@@ -143,6 +143,25 @@ Once you have installed the prerequisites, run:
 Platform-specific instructions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Linux
++++++
+
+**We don't currently provide binaries for Linux.** If you didn't build Python from source, make sure you have Python's development libraries installed::
+
+    $ sudo apt-get install python-dev python-setuptools
+
+Or for Python 3::
+
+    $ sudo apt-get install python3-dev python3-setuptools
+
+Prerequisites are installed on **Ubuntu 10.04 LTS** with::
+
+    $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev
+
+Prerequisites are installed with on **Ubuntu 12.04 LTS** with ::
+
+    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
+
 Mac OS X
 ++++++++
 
@@ -161,27 +180,11 @@ If you've built your own Python, then you should be able to install Pillow using
 
     $ pip install Pillow
 
-Debian/Ubuntu
-+++++++++++++
-
-If you didn't build Python from source, make sure you have Python's development libraries installed::
-
-    $ sudo apt-get install python-dev python-setuptools
-
-Or for Python 3::
-
-    $ sudo apt-get install python3-dev python3-setuptools
-
-Prerequisites are installed on **Ubuntu 10.04 LTS** with::
-
-    $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev
-
-Prerequisites are installed with on **Ubuntu 12.04 LTS** with ::
-
-    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
 
 Windows
 +++++++
+
+**We currently provide Python eggs for Windows.**
 
 .. Note:: XXX Mention easy_install Pillow (which should install the right egg)?
 
