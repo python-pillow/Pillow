@@ -160,7 +160,7 @@ If you've built your own Python, then you should be able to install Pillow using
 $ pip install pillow
 
 Ubuntu or Debian
-******
+****************
 If you didn't build Python from sources, make sure you have Python's build support files on your machine.
 
 ::
