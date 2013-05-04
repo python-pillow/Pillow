@@ -109,12 +109,16 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 
 .. Note:: XXX Why are we recommending binaries when we only provide Windows eggs?
 
-If there is a binary package for your system, that is the easiest way to install Pillow. [[UNDONE: Binary links]]
+If there is a binary package for your system, that is the easiest way to install Pillow. Currently we only provide binaries for Windows.
+
+.. Note:: UNDONE: Binary links
+
+.. Note:: XXX Do we really need to provide binary links? At least in the case of eggs… probably not IMHO.
 
 Build from source
 ~~~~~~~~~~~~~~~~~
 
-Some of Pillow's features require external libraries.
+Some (most?) of Pillow's features require external libraries.
 
 * **libjpeg** provides JPEG functionality.
 
@@ -132,7 +136,7 @@ Some of Pillow's features require external libraries.
 
 * **libwebp** provides the Webp format. 
 
-If the prerequisites are installed in the standard library locations for your machine, no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg)
+If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg)
 
 Once you have installed the prerequisites, run: 
 
