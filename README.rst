@@ -73,8 +73,11 @@ Pillow needs you! Please help us maintain PIL via:
 - Freenode Chat (irc://irc.freenode.net#pil)
 - Image-SIG Discussion (http://mail.python.org/mailman/listinfo/image-sig)
 
+Installation
+------------
+
 Platform support
-----------------
+~~~~~~~~~~~~~~~~
 
 Current platform support for Pillow. Binary distributions are contributed for each release on a volunteer basis, but the source should compile and run everywhere platform support is listed. In general, we aim to support all current versions of Linux, OS X, and Windows.
 
@@ -103,15 +106,13 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 .. [1] x86 only
 .. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
-Installation
-------------
 
 .. Note:: XXX Why are we recommending binaries when we only provide Windows eggs?
 
 If there is a binary package for your system, that is the easiest way to install Pillow. [[UNDONE: Binary links]]
 
-Building from Source
-++++++++++++++++++++
+Build from source
+~~~~~~~~~~~~~~~~~
 
 Some of Pillow's features require external libraries.
 
@@ -139,11 +140,11 @@ Once you have installed the prerequisites, run:
 
     $ pip install Pillow
 
-Platform Specific Instructions
-++++++++++++++++++++++++++++++
+Platform instructions
+~~~~~~~~~~~~~~~~~~~~~
 
 Mac OS X
-********
+++++++++
 
 We don't currently have official binary builds for OS X. You'll need XCode to build the package. XCode 4.2 on 10.6 will work for the Official Python binary distribution, otherwise, use whatever XCode compiled your Python. The easiest way to install the prerequisites is via homebrew: http://mxcl.github.com/homebrew/ .
 
@@ -160,7 +161,7 @@ If you've built your own Python, then you should be able to install Pillow using
     $ pip install pillow
 
 Debian/Ubuntu
-*************
++++++++++++++
 
 If you didn't build Python from source, make sure you have Python's build support files on your machine::
 
@@ -178,9 +179,9 @@ The library prerequisites are installed with::
     sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
 
 Windows
-*******
++++++++
 
-XXX
+.. Note:: XXX Mention easy_install Pillow (which should install the right egg)?
 
 Donations
 ---------
