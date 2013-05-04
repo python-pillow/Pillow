@@ -1,7 +1,7 @@
 Pillow
 ======
 
-.. Note:: Pillow >= 2.0.0 supports Python versions: **2.6, 2.7, 3.2, 3.3**; Pillow < 2.0.0 supports Python versions: **2.4, 2.5, 2.6, 2.7**.
+.. Note:: **Pillow >= 2.0.0** supports Python versions: **2.6, 2.7, 3.2, 3.3**; **Pillow < 2.0.0** supports Python versions: **2.4, 2.5, 2.6, 2.7**.
 
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
    :target: https://travis-ci.org/python-imaging/Pillow
