@@ -159,7 +159,7 @@ If you've built your own Python, then you should be able to install Pillow using
 
 ::
 
-    $ pip install pillow
+    $ pip install Pillow
 
 Debian/Ubuntu
 +++++++++++++
