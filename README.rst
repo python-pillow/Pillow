@@ -150,7 +150,7 @@ Platform-specific instructions
 Linux
 +++++
 
-**We don't currently provide binaries for Linux.** If you didn't build Python from source, make sure you have Python's development libraries installed::
+**We don't currently provide binaries for Linux.** If you didn't build Python from source, make sure you have Python's development libraries installed. In Debian or Ubuntu::
 
     $ sudo apt-get install python-dev python-setuptools
 
