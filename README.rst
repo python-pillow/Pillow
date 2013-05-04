@@ -111,7 +111,7 @@ Installation
 If there is a binary package for your system, that is the preferred way of obtaining Pillow. [[UNDONE: Binary links]]
 
 Building from Source
-+++++++++
+++++++++++++++++++++
 
 Some of Pillow's features require external libraries. 
 
@@ -140,11 +140,12 @@ Once you have assembed the prerequisites, run:
     $ pip install pillow
 
 Platform Specific Instructions
-+++++++++
+++++++++++++++++++++++++++++++
 
-Mac OSX
-*******
-We don't currently have official binary builds for OSX. You'll need Xcode to build the package. Xcode 4.2 on 10.6 will work for the Official Python binary distribution, otherwise, use whatever Xcode compiled your python. 
+Mac OS X
+********
+
+We don't currently have official binary builds for OS X. You'll need Xcode to build the package. Xcode 4.2 on 10.6 will work for the Official Python binary distribution, otherwise, use whatever Xcode compiled your Python. 
 
 The easiest way to install the prerequisites is to use homebrew: http://mxcl.github.com/homebrew/ . Then run:
 
@@ -152,7 +153,7 @@ The easiest way to install the prerequisites is to use homebrew: http://mxcl.git
 
 $ brew install libtiff libjpeg webp littlecms
 
-If you've built your own python, then you should be able to install Pillow using 
+If you've built your own Python, then you should be able to install Pillow using 
 
 ::
 
@@ -178,6 +179,8 @@ The library prerequisites are installed with::
 
 Windows
 *******
+
+XXX
 
 Donations
 ---------
