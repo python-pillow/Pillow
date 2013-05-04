@@ -146,9 +146,10 @@ Platform-specific instructions
 Mac OS X
 ++++++++
 
-We don't currently have official binary builds for OS X. You'll need XCode to build the package. XCode 4.2 on 10.6 will work for the Official Python binary distribution, otherwise, use whatever XCode compiled your Python. The easiest way to install the prerequisites is via homebrew: http://mxcl.github.com/homebrew/ .
+**We don't currently provide binaries for OS X.** So you'll need XCode to install Pillow. (XCode 4.2 on 10.6 will work with the Official Python binary distribution, otherwise, use whatever XCode compiled your Python.)
 
-After you install homebrew, run:
+
+The easiest way to install the prerequisites is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run:
 
 ::
 
@@ -175,7 +176,7 @@ The library prerequisites are installed on **Ubuntu 10.04 LTS** with::
 
     $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev
 
-The library prerequisites are installed with on **Ubuntu 10.04 LTS** with ::
+The library prerequisites are installed with on **Ubuntu 12.04 LTS** with ::
 
     $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
 
