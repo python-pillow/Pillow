@@ -116,21 +116,21 @@ Build from source
 
 Some of Pillow's features require external libraries.
 
-* libjpeg provides JPEG functionality.
+* **libjpeg** provides JPEG functionality.
 
   * Pillow has been tested with libjpeg versions 6b, 8, and 9
 
-* zlib provides access to compressed PNGs
+* **zlib** provides access to compressed PNGs
 
-* libtiff provides group4 tiff functionality
+* **libtiff** provides group4 tiff functionality
 
   * Pillow has been tested with versions 3.x and 4.0
 
-* libfreetype provides type related services
+* **libfreetype** provides type related services
 
-* littlecms provides color management 
+* **littlecms** provides color management 
 
-* libwebp provides the Webp format. 
+* **libwebp** provides the Webp format. 
 
 If the prerequisites are installed in the standard library locations for your machine, no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg)
 
