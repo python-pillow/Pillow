@@ -151,16 +151,17 @@ The easiest way to install the prerequisites is to use homebrew: http://mxcl.git
 
 ::
 
-$ brew install libtiff libjpeg webp littlecms
+    $ brew install libtiff libjpeg webp littlecms
 
 If you've built your own Python, then you should be able to install Pillow using 
 
 ::
 
-$ pip install pillow
+    $ pip install pillow
 
 Ubuntu or Debian
 ****************
+
 If you didn't build Python from sources, make sure you have Python's build support files on your machine.
 
 ::
@@ -196,8 +197,6 @@ Pillow is a volunteer effort led by Alex Clark. Any contributor interested in re
 +--------------------------------------+---------------------------------------+
 | Alex Clark (fork author)             | http://gittip.com/aclark4life         |
 +--------------------------------------+---------------------------------------+
-
-
 
 Python Imaging Library
 ======================
