@@ -6,7 +6,7 @@ OleFileIO_PL:
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.24 2013-05-03 Philippe Lagadec - http://www.decalage.info
+version 0.24 2013-05-05 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -24,7 +24,7 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Philippe Lagadec, Fredrik Lundh (Secret Labs AB)"
-__date__    = "2013-05-03"
+__date__    = "2013-05-05"
 __version__ = '0.24'
 
 #--- LICENSE ------------------------------------------------------------------
@@ -110,9 +110,11 @@ __version__ = '0.24'
 #                        (https://bitbucket.org/decalage/olefileio_pl/issue/7)
 #                      - added close method to OleFileIO (fixed issue #2)
 # 2012-07-25 v0.23 PL: - added support for file-like objects (patch by mete0r_kr)
-# 2013-05-03 v0.24 PL: - getproperties: added conversion from filetime to python
+# 2013-05-05 v0.24 PL: - getproperties: added conversion from filetime to python
 #                        datetime
 #                      - main: displays properties with date format
+#                      - new class OleMetadata to parse standard properties
+#                      - added get_metadata method
 
 
 #-----------------------------------------------------------------------------
@@ -427,6 +429,107 @@ except NameError:
 
 
 #=== CLASSES ==================================================================
+
+class OleMetadata:
+    """
+    class to parse and store metadata from standard properties of OLE files.
+
+    References for SummaryInformation stream:
+    - http://msdn.microsoft.com/en-us/library/dd942545.aspx
+    - http://msdn.microsoft.com/en-us/library/dd925819%28v=office.12%29.aspx
+    - http://msdn.microsoft.com/en-us/library/windows/desktop/aa380376%28v=vs.85%29.aspx
+    - http://msdn.microsoft.com/en-us/library/aa372045.aspx
+    - http://sedna-soft.de/summary-information-stream/
+    - http://poi.apache.org/apidocs/org/apache/poi/hpsf/SummaryInformation.html
+
+    References for DocumentSummaryInformation stream:
+    - http://msdn.microsoft.com/en-us/library/dd945671%28v=office.12%29.aspx
+    - http://msdn.microsoft.com/en-us/library/windows/desktop/aa380374%28v=vs.85%29.aspx
+    - http://poi.apache.org/apidocs/org/apache/poi/hpsf/DocumentSummaryInformation.html
+    """
+
+    # attribute names for SummaryInformation stream properties:
+    SUMMARY_ATTRIBS = ['codepage', 'title', 'subject', 'author', 'keywords', 'comments',
+        'template', 'last_saved_by', 'revision_number', 'total_edit_time',
+        'last_printed', 'create_time', 'last_saved_time', 'num_pages',
+        'num_words', 'num_chars', 'thumbnail', 'creating_application',
+        'security']
+
+    # attribute names for DocumentSummaryInformation stream properties:
+    DOCSUM_ATTRIBS = ['codepage_doc', 'category', 'presentation_target', 'bytes', 'lines', 'paragraphs',
+        'slides', 'notes', 'hidden_slides', 'mm_clips',
+        'scale_crop', 'heading_pairs', 'titles_of_parts', 'manager',
+        'company', 'links_dirty', 'chars_with_spaces', 'unused', 'shared_doc',
+        'link_base', 'hlinks', 'hlinks_changed', 'version', 'dig_sig',
+        'content_type', 'content_status', 'language', 'doc_version']
+
+    def __init__(self):
+        self.codepage = None
+        self.title = None
+        self.subject = None
+        self.author = None
+        self.keywords = None
+        self.comments = None
+        self.template = None
+        self.last_saved_by = None
+        self.revision_number = None
+        self.total_edit_time = None
+        self.last_printed = None
+        self.create_time = None
+        self.last_saved_time = None
+        self.num_pages = None
+        self.num_words = None
+        self.num_chars = None
+        self.thumbnail = None
+        self.creating_application = None
+        self.security = None
+##        self. = None
+##        self. = None
+##        self. = None
+##        self. = None
+##        self. = None
+##        self. = None
+##        self. = None
+##        self. = None
+##        self. = None
+##        self. = None
+##        self. = None
+##        self. = None
+
+
+    def parse_properties(self, olefile):
+        """
+        Parse standard properties of an OLE file
+        """
+        if olefile.exists("\x05SummaryInformation"):
+            # get properties from the stream:
+            props = olefile.getproperties("\x05SummaryInformation",
+                convert_time=True)
+            # store them into this object's attributes:
+            for i in range(len(self.SUMMARY_ATTRIBS)):
+                # ids for standards properties start at 0x01, until 0x13
+                value = props.get(i+1, None)
+                setattr(self, self.SUMMARY_ATTRIBS[i], value)
+        if olefile.exists("\x05DocumentSummaryInformation"):
+            # get properties from the stream:
+            props = olefile.getproperties("\x05DocumentSummaryInformation",
+                convert_time=True)
+            # store them into this object's attributes:
+            for i in range(len(self.DOCSUM_ATTRIBS)):
+                # ids for standards properties start at 0x01, until 0x13
+                value = props.get(i+1, None)
+                setattr(self, self.DOCSUM_ATTRIBS[i], value)
+
+    def dump(self):
+        print 'Properties from SummaryInformation stream:'
+        for prop in self.SUMMARY_ATTRIBS:
+            value = getattr(self, prop)
+            print '- %s: %s' % (prop, value)
+        print 'Properties from DocumentSummaryInformation stream:'
+        for prop in self.DOCSUM_ATTRIBS:
+            value = getattr(self, prop)
+            print '- %s: %s' % (prop, value)
+
 
 #--- _OleStream ---------------------------------------------------------------
 
@@ -1598,6 +1701,16 @@ class OleFileIO:
 
         return data
 
+    def get_metadata(self):
+        """
+        Parse standard properties streams, return an OleMetadata object
+        containing all the available metadata.
+        (also stored in the metadata attribute of the OleFileIO object)
+        """
+        self.metadata = OleMetadata()
+        self.metadata.parse_properties(self)
+        return self.metadata
+
 #
 # --------------------------------------------------------------------
 # This script can be used to dump the directory of any OLE2 structured
@@ -1673,6 +1786,10 @@ Options:
                         print 'NOT a stream : type=%d' % st_type
                 print ''
 
+            # parse and display metadata:
+            meta = ole.get_metadata()
+            meta.dump()
+            print ''
             #[PL] Test a few new methods:
             root = ole.get_rootentry_name()
             print 'Root entry name: "%s"' % root
