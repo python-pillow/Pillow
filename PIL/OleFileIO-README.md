@@ -21,6 +21,7 @@ Main improvements over PIL version:
 News
 ----
 
+- 2013-05-03 v0.24: improved get_properties to convert timestamps to Python datetime
 - 2012-09-11 v0.23: added support for file-like objects, fixed [issue #8](https://bitbucket.org/decalage/olefileio_pl/issue/8/bug-with-file-object)
 - 2012-02-17 v0.22: fixed issues #7 (bug in getproperties) and #2 (added close method)
 - 2011-10-20: code hosted on bitbucket to ease contributions and bug tracking

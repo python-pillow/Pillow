@@ -6,7 +6,7 @@ OleFileIO_PL:
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.23 2012-07-25 Philippe Lagadec - http://www.decalage.info
+version 0.24 2013-05-03 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -16,23 +16,23 @@ See: http://www.pythonware.com/products/pil/index.htm
 The Python Imaging Library (PIL) is
     Copyright (c) 1997-2005 by Secret Labs AB
     Copyright (c) 1995-2005 by Fredrik Lundh
-OleFileIO_PL changes are Copyright (c) 2005-2012 by Philippe Lagadec
+OleFileIO_PL changes are Copyright (c) 2005-2013 by Philippe Lagadec
 
 See source code and LICENSE.txt for information on usage and redistribution.
 
 WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
-__author__  = "Fredrik Lundh (Secret Labs AB), Philippe Lagadec"
-__date__    = "2012-07-25"
-__version__ = '0.23'
+__author__  = "Philippe Lagadec, Fredrik Lundh (Secret Labs AB)"
+__date__    = "2013-05-03"
+__version__ = '0.24'
 
 #--- LICENSE ------------------------------------------------------------------
 
 # OleFileIO_PL is an improved version of the OleFileIO module from the
 # Python Imaging Library (PIL).
 
-# OleFileIO_PL changes are Copyright (c) 2005-2012 by Philippe Lagadec
+# OleFileIO_PL changes are Copyright (c) 2005-2013 by Philippe Lagadec
 #
 # The Python Imaging Library (PIL) is
 #    Copyright (c) 1997-2005 by Secret Labs AB
@@ -110,13 +110,18 @@ __version__ = '0.23'
 #                        (https://bitbucket.org/decalage/olefileio_pl/issue/7)
 #                      - added close method to OleFileIO (fixed issue #2)
 # 2012-07-25 v0.23 PL: - added support for file-like objects (patch by mete0r_kr)
+# 2013-05-03 v0.24 PL: - getproperties: added conversion from filetime to python
+#                        datetime
+#                      - main: displays properties with date format
 
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
+# + add path attrib to _OleDirEntry, set it once and for all in init or
+#   append_kids (then listdir/_list can be simplified)
 # - TESTS with Linux, MacOSX, Python 1.5.2, various files, PIL, ...
 # - add underscore to each private method, to avoid their display in
-#   pydoc/epydoc documentation
+#   pydoc/epydoc documentation - Remove it for classes to be documented
 # - replace all raised exceptions with _raise_defect (at least in OleFileIO)
 # - merge code from _OleStream and OleFileIO.getsect to read sectors
 #   (maybe add a class for FAT and MiniFAT ?)
@@ -197,7 +202,7 @@ __version__ = '0.23'
 
 #------------------------------------------------------------------------------
 
-import string, StringIO, struct, array, os.path, sys
+import string, StringIO, struct, array, os.path, sys, datetime
 
 #[PL] Define explicitly the public API to avoid private objects in pydoc:
 __all__ = ['OleFileIO', 'isOleFile']
@@ -1507,11 +1512,12 @@ class OleFileIO:
         return self.root.name
 
 
-    def getproperties(self, filename):
+    def getproperties(self, filename, convert_time=False):
         """
         Return properties described in substream.
 
         filename: path of stream in storage tree (see openstream for syntax)
+        convert_time: bool, if True timestamps will be converted to Python datetime
         return: a dictionary of values indexed by id (integer)
         """
         fp = self.openstream(filename)
@@ -1562,9 +1568,17 @@ class OleFileIO:
                 value = _unicode(s[offset+8:offset+8+count*2])
             elif type == VT_FILETIME:
                 value = long(i32(s, offset+4)) + (long(i32(s, offset+8))<<32)
-                # FIXME: this is a 64-bit int: "number of 100ns periods
-                # since Jan 1,1601".  Should map this to Python time
-                value = value / 10000000L # seconds
+                # FILETIME is a 64-bit int: "number of 100ns periods
+                # since Jan 1,1601".
+                if convert_time:
+                    # convert FILETIME to Python datetime.datetime
+                    # inspired from http://code.activestate.com/recipes/511425-filetime-to-datetime/
+                    _FILETIME_null_date = datetime.datetime(1601, 1, 1, 0, 0, 0)
+                    value = _FILETIME_null_date + datetime.timedelta(microseconds=value/10)
+                else:
+                    # legacy code kept for backward compatibility: returns a
+                    # number of seconds since Jan 1,1601
+                    value = value / 10000000L # seconds
             elif type == VT_UI1:
                 value = ord(s[offset+4])
             elif type == VT_CLSID:
@@ -1628,7 +1642,7 @@ Options:
             for streamname in ole.listdir():
                 if streamname[-1][0] == "\005":
                     print streamname, ": properties"
-                    props = ole.getproperties(streamname)
+                    props = ole.getproperties(streamname, convert_time=True)
                     props = props.items()
                     props.sort()
                     for k, v in props:
