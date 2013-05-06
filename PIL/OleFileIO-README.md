@@ -3,25 +3,26 @@ OleFileIO_PL
 
 [OleFileIO_PL](http://www.decalage.info/python/olefileio) is a Python module to read [Microsoft OLE2 files (also called Structured Storage, Compound File Binary Format or Compound Document File Format)](http://en.wikipedia.org/wiki/Compound_File_Binary_Format), such as Microsoft Office documents, Image Composer and FlashPix files, Outlook messages, ... 
 
-This is an improved version of the OleFileIO module from [PIL](http://www.pythonware.com/products/pil/index.htm), the excellent Python Imaging Library, created and maintained by Fredrik Lundh. The API is still compatible with PIL, but I have improved the internal implementation significantly, with bugfixes and a more robust design.
+This is an improved version of the OleFileIO module from [PIL](http://www.pythonware.com/products/pil/index.htm), the excellent Python Imaging Library, created and maintained by Fredrik Lundh. The API is still compatible with PIL, but I have improved the internal implementation significantly, with new features, bugfixes and a more robust design.
 
 As far as I know, this module is now the most complete and robust Python implementation to read MS OLE2 files, portable on several operating systems. (please tell me if you know other similar Python modules)
 
 WARNING: THIS IS (STILL) WORK IN PROGRESS.
 
-Main improvements over PIL version:
------------------------------------
+Main improvements over PIL version of OleFileIO:
+------------------------------------------------
 
 - Better compatibility with Python 2.4 up to 2.7
 - Support for files larger than 6.8MB
 - Robust: many checks to detect malformed files
 - Improved API
+- New features: metadata extraction
 - Added setup.py and install.bat to ease installation
 
 News
 ----
 
-- 2013-05-03 v0.24: improved get_properties to convert timestamps to Python datetime
+- 2013-05-05 v0.24: new features to extract metadata (get\_metadata method and OleMetadata class), improved getproperties to convert timestamps to Python datetime
 - 2012-09-11 v0.23: added support for file-like objects, fixed [issue #8](https://bitbucket.org/decalage/olefileio_pl/issue/8/bug-with-file-object)
 - 2012-02-17 v0.22: fixed issues #7 (bug in getproperties) and #2 (added close method)
 - 2011-10-20: code hosted on bitbucket to ease contributions and bug tracking
@@ -70,6 +71,14 @@ Here are a few examples:
 		    f.write(data)
 		    f.close()
 
+		# Extract metadata (new in v0.24):
+		meta = ole.get_metadata()
+		print 'Author:', meta.author
+		print 'Title:', meta.title
+		print 'Creation date:', meta.create_time
+		# print all metadata:
+		meta.dump()
+
 		# Close the OLE file:
 		ole.close()
 		
@@ -114,7 +123,7 @@ License
 
 OleFileIO_PL is open-source.
 
-OleFileIO_PL changes are Copyright (c) 2005-2012 by Philippe Lagadec.
+OleFileIO_PL changes are Copyright (c) 2005-2013 by Philippe Lagadec.
 
 The Python Imaging Library (PIL) is
 
