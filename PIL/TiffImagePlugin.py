@@ -615,7 +615,7 @@ class TiffImageFile(ImageFile.ImageFile):
             return pixel
 
         self.load_prepare()
-        
+
         if not len(self.tile) == 1:
             raise IOError("Not exactly one tile")
 
@@ -635,7 +635,7 @@ class TiffImageFile(ImageFile.ImageFile):
             #
             # Rearranging for supporting byteio items, since they have a fileno
             # that returns an IOError if there's no underlying fp. Easier to deal
-            # with here by reordering. 
+            # with here by reordering.
             if Image.DEBUG:
                 print ("have getvalue. just sending in a string from getvalue")
             n,e = d.decode(self.fp.getvalue())
@@ -649,10 +649,10 @@ class TiffImageFile(ImageFile.ImageFile):
             # we have something else.
             if Image.DEBUG:
                 print ("don't have fileno or getvalue. just reading")
-            # UNDONE -- so much for that buffer size thing. 
+            # UNDONE -- so much for that buffer size thing.
             n, e = d.decode(self.fp.read())
 
-        
+
         self.tile = []
         self.readonly = 0
         self.fp = None # might be shared
@@ -750,19 +750,19 @@ class TiffImageFile(ImageFile.ImageFile):
                 # Decoder expects entire file as one tile.
                 # There's a buffer size limit in load (64k)
                 # so large g4 images will fail if we use that
-                # function. 
+                # function.
                 #
                 # Setup the one tile for the whole image, then
                 # replace the existing load function with our
                 # _load_libtiff function.
-                
+
                 self.load = self._load_libtiff
-                
+
                 # To be nice on memory footprint, if there's a
                 # file descriptor, use that instead of reading
                 # into a string in python.
 
-                # libtiff closes the file descriptor, so pass in a dup. 
+                # libtiff closes the file descriptor, so pass in a dup.
                 try:
                     fp = hasattr(self.fp, "fileno") and os.dup(self.fp.fileno())
                 except IOError:
@@ -990,7 +990,7 @@ def _save(im, fp, filename):
                     if type(v) == str:
                         atts[k] = v
                         continue
-                    
+
         except:
             # if we don't have an ifd here, just punt.
             pass
@@ -1007,7 +1007,7 @@ def _save(im, fp, filename):
                 break
         if s < 0:
             raise IOError("encoder error %d when writing image file" % s)
-        
+
     else:
         offset = ifd.save(fp)
 

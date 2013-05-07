@@ -60,4 +60,13 @@ def test_gimp_tiff():
             ])
     assert_no_exception(lambda: im.load())
 
-
+def test_xyres_tiff():
+    from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
+    file = "Tests/images/pil168.tif"
+    im = Image.open(file)
+    assert isinstance(im.tag.tags[X_RESOLUTION][0], tuple)
+    assert isinstance(im.tag.tags[Y_RESOLUTION][0], tuple)
+    #Try to read a file where X,Y_RESOLUTION are ints
+    im.tag.tags[X_RESOLUTION] = (72,)
+    im.tag.tags[Y_RESOLUTION] = (72,)
+    im._setup()
