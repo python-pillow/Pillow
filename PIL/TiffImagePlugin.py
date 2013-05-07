@@ -723,6 +723,10 @@ class TiffImageFile(ImageFile.ImageFile):
         xres = getscalar(X_RESOLUTION, (1, 1))
         yres = getscalar(Y_RESOLUTION, (1, 1))
 
+        if xres and not isinstance(xres, tuple):
+            xres = (xres, 1.)
+        if yres and not isinstance(yres, tuple):
+            yres = (yres, 1.)
         if xres and yres:
             xres = xres[0] / (xres[1] or 1)
             yres = yres[0] / (yres[1] or 1)
