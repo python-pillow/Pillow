@@ -23,6 +23,7 @@ News
 ----
 
 - 2013-05-07 v0.24: new features to extract metadata (get\_metadata method and OleMetadata class), improved getproperties to convert timestamps to Python datetime
+- 2012-10-09: published [python-oletools](http://www.decalage.info/python/oletools), a package of analysis tools based on OleFileIO_PL
 - 2012-09-11 v0.23: added support for file-like objects, fixed [issue #8](https://bitbucket.org/decalage/olefileio_pl/issue/8/bug-with-file-object)
 - 2012-02-17 v0.22: fixed issues #7 (bug in getproperties) and #2 (added close method)
 - 2011-10-20: code hosted on bitbucket to ease contributions and bug tracking
