@@ -70,4 +70,4 @@ def test_xyres_tiff():
     im.tag.tags[X_RESOLUTION] = (72,)
     im.tag.tags[Y_RESOLUTION] = (72,)
     im._setup()
-    im.info['dpi'] == (72., 72.)
+    assert_equal(im.info['dpi'], (72., 72.))
