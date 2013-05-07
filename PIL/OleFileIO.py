@@ -6,7 +6,7 @@ OleFileIO_PL:
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.24 2013-05-05 Philippe Lagadec - http://www.decalage.info
+version 0.24 2013-05-07 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -24,7 +24,7 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Philippe Lagadec, Fredrik Lundh (Secret Labs AB)"
-__date__    = "2013-05-05"
+__date__    = "2013-05-07"
 __version__ = '0.24'
 
 #--- LICENSE ------------------------------------------------------------------
@@ -115,6 +115,7 @@ __version__ = '0.24'
 #                      - main: displays properties with date format
 #                      - new class OleMetadata to parse standard properties
 #                      - added get_metadata method
+# 2013-05-07 v0.24 PL: - a few improvements in OleMetadata
 
 
 #-----------------------------------------------------------------------------
@@ -434,6 +435,19 @@ class OleMetadata:
     """
     class to parse and store metadata from standard properties of OLE files.
 
+    Available attributes:
+    codepage, title, subject, author, keywords, comments, template,
+    last_saved_by, revision_number, total_edit_time, last_printed, create_time,
+    last_saved_time, num_pages, num_words, num_chars, thumbnail,
+    creating_application, security, codepage_doc, category, presentation_target,
+    bytes, lines, paragraphs, slides, notes, hidden_slides, mm_clips,
+    scale_crop, heading_pairs, titles_of_parts, manager, company, links_dirty,
+    chars_with_spaces, unused, shared_doc, link_base, hlinks, hlinks_changed,
+    version, dig_sig, content_type, content_status, language, doc_version
+
+    Note: an attribute is set to None when not present in the properties of the
+    OLE file.
+
     References for SummaryInformation stream:
     - http://msdn.microsoft.com/en-us/library/dd942545.aspx
     - http://msdn.microsoft.com/en-us/library/dd925819%28v=office.12%29.aspx
@@ -449,6 +463,7 @@ class OleMetadata:
     """
 
     # attribute names for SummaryInformation stream properties:
+    # (ordered by property id, starting at 1)
     SUMMARY_ATTRIBS = ['codepage', 'title', 'subject', 'author', 'keywords', 'comments',
         'template', 'last_saved_by', 'revision_number', 'total_edit_time',
         'last_printed', 'create_time', 'last_saved_time', 'num_pages',
@@ -456,6 +471,7 @@ class OleMetadata:
         'security']
 
     # attribute names for DocumentSummaryInformation stream properties:
+    # (ordered by property id, starting at 1)
     DOCSUM_ATTRIBS = ['codepage_doc', 'category', 'presentation_target', 'bytes', 'lines', 'paragraphs',
         'slides', 'notes', 'hidden_slides', 'mm_clips',
         'scale_crop', 'heading_pairs', 'titles_of_parts', 'manager',
@@ -464,6 +480,11 @@ class OleMetadata:
         'content_type', 'content_status', 'language', 'doc_version']
 
     def __init__(self):
+        """
+        Constructor for OleMetadata
+        All attributes are set to None by default
+        """
+        # properties from SummaryInformation stream
         self.codepage = None
         self.title = None
         self.subject = None
@@ -483,24 +504,48 @@ class OleMetadata:
         self.thumbnail = None
         self.creating_application = None
         self.security = None
-##        self. = None
-##        self. = None
-##        self. = None
-##        self. = None
-##        self. = None
-##        self. = None
-##        self. = None
-##        self. = None
-##        self. = None
-##        self. = None
-##        self. = None
-##        self. = None
+        # properties from DocumentSummaryInformation stream
+        self.codepage_doc = None
+        self.category = None
+        self.presentation_target = None
+        self.bytes = None
+        self.lines = None
+        self.paragraphs = None
+        self.slides = None
+        self.notes = None
+        self.hidden_slides = None
+        self.mm_clips = None
+        self.scale_crop = None
+        self.heading_pairs = None
+        self.titles_of_parts = None
+        self.manager = None
+        self.company = None
+        self.links_dirty = None
+        self.chars_with_spaces = None
+        self.unused = None
+        self.shared_doc = None
+        self.link_base = None
+        self.hlinks = None
+        self.hlinks_changed = None
+        self.version = None
+        self.dig_sig = None
+        self.content_type = None
+        self.content_status = None
+        self.language = None
+        self.doc_version = None
 
 
     def parse_properties(self, olefile):
         """
-        Parse standard properties of an OLE file
+        Parse standard properties of an OLE file, from the streams
+        "\x05SummaryInformation" and "\x05DocumentSummaryInformation",
+        if present.
+        Properties are converted to strings, integers or python datetime objects.
+        If a property is not present, its value is set to None.
         """
+        # first set all attributes to None:
+        for attrib in (self.SUMMARY_ATTRIBS + self.DOCSUM_ATTRIBS):
+            setattr(self, attrib, None)
         if olefile.exists("\x05SummaryInformation"):
             # get properties from the stream:
             props = olefile.getproperties("\x05SummaryInformation",
@@ -521,6 +566,9 @@ class OleMetadata:
                 setattr(self, self.DOCSUM_ATTRIBS[i], value)
 
     def dump(self):
+        """
+        Dump all metadata, for debugging purposes.
+        """
         print 'Properties from SummaryInformation stream:'
         for prop in self.SUMMARY_ATTRIBS:
             value = getattr(self, prop)
