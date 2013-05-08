@@ -389,7 +389,7 @@ class pil_build_ext(build_ext):
     def summary_report(self, feature, unsafe_zlib):
 
         print("-" * 68)
-        print("SETUP SUMMARY (Pillow %s fork, originally based on PIL %s)" % (VERSION, PIL_VERSION))
+        print("SETUP SUMMARY (Pillow %s PIL fork, originally based on PIL %s)" % (VERSION, PIL_VERSION))
         print("-" * 68)
         print("version      %s (Pillow)" % VERSION)
         v = sys.version.split("[")
