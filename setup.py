@@ -1,7 +1,7 @@
 from __future__ import print_function
 import glob
 import os
-import platform
+import platform as plat
 import re
 import struct
 import sys
@@ -12,8 +12,7 @@ from setuptools import Extension, setup, find_packages
 
 
 _IMAGING = (
-    "decode", "encode", "map", "display", "outline", "path",
-    )
+    "decode", "encode", "map", "display", "outline", "path")
 
 _LIB_IMAGING = (
     "Access", "AlphaComposite", "Antialias", "Bands", "BitDecode", "Blend",
@@ -45,18 +44,20 @@ def _find_include_file(self, include):
 
 
 def _find_library_file(self, library):
-    # Fix for 3.2.x <3.2.4, 3.3.0, shared lib extension is the python shared lib
-    # extension, not the system shared lib extension: e.g. .cpython-33.so vs .so
-    # See Python bug http://bugs.python.org/16754
+    # Fix for 3.2.x <3.2.4, 3.3.0, shared lib extension is the python shared
+    # lib extension, not the system shared lib extension: e.g. .cpython-33.so
+    # vs .so. See Python bug http://bugs.python.org/16754
     if 'cpython' in self.compiler.shared_lib_extension:
         existing = self.compiler.shared_lib_extension
         self.compiler.shared_lib_extension = "." + existing.split('.')[-1]
-        ret = self.compiler.find_library_file(self.compiler.library_dirs, library)
+        ret = self.compiler.find_library_file(
+            self.compiler.library_dirs, library)
         self.compiler.shared_lib_extension = existing
         return ret
     else:
-        return self.compiler.find_library_file(self.compiler.library_dirs, library)
-    																
+        return self.compiler.find_library_file(
+            self.compiler.library_dirs, library)
+
 
 def _find_version(filename):
     for line in open(filename).readlines():
@@ -137,8 +138,10 @@ class pil_build_ext(build_ext):
             _add_directory(include_dirs, "/usr/X11/include")
 
         elif sys.platform.startswith("linux"):
-            for platform_ in (platform.processor(),platform.architecture()[0]):
-                if not platform_: continue
+            for platform_ in (plat.processor(), plat.architecture()[0]):
+
+                if not platform_:
+                    continue
 
                 if platform_ in ["x86_64", "64bit"]:
                     _add_directory(library_dirs, "/lib64")
@@ -149,7 +152,8 @@ class pil_build_ext(build_ext):
                     _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
                     break
             else:
-                raise ValueError("Unable to identify Linux platform: `%s`" % platform_)
+                raise ValueError(
+                    "Unable to identify Linux platform: `%s`" % platform_)
 
             # XXX Kludge. Above /\ we brute force support multiarch. Here we
             # try Barry's more general approach. Afterward, something should
@@ -167,7 +171,6 @@ class pil_build_ext(build_ext):
         #
         # locate tkinter libraries
 
-
         if _tkinter:
             TCL_VERSION = _tkinter.TCL_VERSION[:3]
 
@@ -183,8 +186,7 @@ class pil_build_ext(build_ext):
                 os.path.join("/py" + PYVERSION, "Tcl"),
                 os.path.join("/python" + PYVERSION, "Tcl"),
                 "/Tcl", "/Tcl" + TCLVERSION, "/Tcl" + TCL_VERSION,
-                os.path.join(os.environ.get("ProgramFiles", ""), "Tcl"),
-                ]
+                os.path.join(os.environ.get("ProgramFiles", ""), "Tcl"), ]
             for TCL_ROOT in roots:
                 TCL_ROOT = os.path.abspath(TCL_ROOT)
                 if os.path.isfile(os.path.join(TCL_ROOT, "include", "tk.h")):
@@ -196,8 +198,6 @@ class pil_build_ext(build_ext):
             else:
                 TCL_ROOT = None
 
-
-        #
         # add standard directories
 
         # look for tcl specific subdirectory (e.g debian)
@@ -236,8 +236,9 @@ class pil_build_ext(build_ext):
         if _find_include_file(self, "jpeglib.h"):
             if _find_library_file(self, "jpeg"):
                 feature.jpeg = "jpeg"
-            elif sys.platform == "win32" and _find_library_file(self,
-                    "libjpeg"):
+            elif (
+                    sys.platform == "win32" and
+                    _find_library_file(self, "libjpeg")):
                 feature.jpeg = "libjpeg"  # alternative name
 
         if _find_library_file(self, "tiff"):
@@ -284,7 +285,9 @@ class pil_build_ext(build_ext):
             elif _find_library_file(self, "tk" + TCL_VERSION):
                 feature.tk = "tk" + TCL_VERSION
 
-        if _find_include_file(self, "webp/encode.h") and _find_include_file(self, "webp/decode.h"):
+        if (
+                _find_include_file(self, "webp/encode.h") and
+                _find_include_file(self, "webp/decode.h")):
             if _find_library_file(self, "webp"):
                 feature.webp = "webp"
 
@@ -342,7 +345,6 @@ class pil_build_ext(build_ext):
             exts.append(Extension(
                 "_webp", ["_webp.c"], libraries=["webp"]))
 
-
         if sys.platform == "darwin":
             # locate Tcl/Tk frameworks
             frameworks = []
@@ -350,8 +352,9 @@ class pil_build_ext(build_ext):
                 "/Library/Frameworks",
                 "/System/Library/Frameworks"]
             for root in framework_roots:
-                if (os.path.exists(os.path.join(root, "Tcl.framework")) and
-                    os.path.exists(os.path.join(root, "Tk.framework"))):
+                if (
+                        os.path.exists(os.path.join(root, "Tcl.framework")) and
+                        os.path.exists(os.path.join(root, "Tk.framework"))):
                     print("--- using frameworks at %s" % root)
                     frameworks = ["-framework", "Tcl", "-framework", "Tk"]
                     dir = os.path.join(root, "Tcl.framework", "Headers")
@@ -405,8 +408,7 @@ class pil_build_ext(build_ext):
             (feature.tiff, "TIFF G3/G4 (experimental)"),
             (feature.freetype, "FREETYPE2"),
             (feature.lcms, "LITTLECMS"),
-            (feature.webp, "WEBP"),
-            ]
+            (feature.webp, "WEBP"), ]
 
         all = 1
         for option in options:
@@ -470,9 +472,11 @@ class pil_build_ext(build_ext):
             if ret >> 8 == 0:
                 fp = open(tmpfile, 'r')
                 multiarch_path_component = fp.readline().strip()
-                _add_directory(self.compiler.library_dirs,
+                _add_directory(
+                    self.compiler.library_dirs,
                     '/usr/lib/' + multiarch_path_component)
-                _add_directory(self.compiler.include_dirs,
+                _add_directory(
+                    self.compiler.include_dirs,
                     '/usr/include/' + multiarch_path_component)
         finally:
             os.unlink(tmpfile)
@@ -501,12 +505,10 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
-        "Programming Language :: Python :: 3.3",
-        ],
+        "Programming Language :: Python :: 3.3", ],
     cmdclass={"build_ext": pil_build_ext},
     ext_modules=[Extension("_imaging", ["_imaging.c"])],
     packages=find_packages(),
     scripts=glob.glob("Scripts/pil*.py"),
-    keywords=["Imaging",],
-    license='Standard PIL License',
-    )
+    keywords=["Imaging", ],
+    license='Standard PIL License',)
