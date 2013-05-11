@@ -491,7 +491,7 @@ setup(
         _read('docs/CONTRIBUTORS.txt')).decode('utf-8'),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
-    url='http://python-imaging.github.com/',
+    url='http://python-imaging.github.io/',
     classifiers=[
         "Development Status :: 6 - Mature",
         "Topic :: Multimedia :: Graphics",
