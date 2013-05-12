@@ -18,8 +18,8 @@ The fork author's goal is to foster active development of PIL through:
 - Regular releases to the Python Packaging Index
 - Solicitation for community contributions and involvement on Imaging-SIG
 
-Porting your Python code from PIL to Pillow
--------------------------------------------
+Porting your PIL code to Pillow
+-------------------------------
 
 .. Note:: PIL and Pillow currently cannot co-exist in the same environment. If you want to use Pillow, please remove PIL first.
 
