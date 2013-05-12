@@ -84,7 +84,6 @@ except ImportError:
 
 NAME = 'Pillow'
 VERSION = '2.0.0'
-PIL_VERSION = '1.1.7'
 TCL_ROOT = None
 JPEG_ROOT = None
 ZLIB_ROOT = None
@@ -393,9 +392,9 @@ class pil_build_ext(build_ext):
     def summary_report(self, feature, unsafe_zlib):
 
         print("-" * 68)
-        print("SETUP SUMMARY (Pillow %s PIL fork, originally based on PIL %s)" % (VERSION, PIL_VERSION))
+        print("PIL SETUP SUMMARY")
         print("-" * 68)
-        print("version      %s (Pillow)" % VERSION)
+        print("version      Pillow %s" % VERSION)
         v = sys.version.split("[")
         print("platform     %s %s" % (sys.platform, v[0].strip()))
         for v in v[1:]:
