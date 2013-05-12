@@ -13,10 +13,10 @@ Introduction
 
 The fork author's goal is to foster active development of PIL through:
 
-- Continuous integration testing via **Travis-CI**
-- Publicized development activity on **GitHub**
-- Regular releases to the **Python Packaging Index**
-- Solicitation for community contributions and involvement on **Image-SIG**
+- Continuous integration testing via `Travis CI <https://travis-ci.org/python-imaging/Pillow>`_
+- Publicized development activity on `GitHub <https://github.com/python-imaging/Pillow>`_
+- Regular releases to the `Python Package Index <https://pypi.python.org/pypi/Pillow>`_
+- Solicitation for community contributions and involvement on `Image-SIG <http://mail.python.org/mailman/listinfo/image-sig>`_
 
 Porting your PIL code to Pillow
 -------------------------------
