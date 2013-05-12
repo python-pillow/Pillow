@@ -83,7 +83,7 @@ except ImportError:
 
 
 NAME = 'Pillow'
-VERSION = '2.0.0'
+VERSION = '2.1.0'
 TCL_ROOT = None
 JPEG_ROOT = None
 ZLIB_ROOT = None
