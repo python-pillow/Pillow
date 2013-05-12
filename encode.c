@@ -519,7 +519,7 @@ static unsigned int** get_qtables_arrays(PyObject* qtables) {
     int i, j, num_tables;
     unsigned int **qarrays;
 
-    if (qtables == Py_None) {
+    if ((qtables ==  NULL) || (qtables == Py_None)) {
         return NULL;
     }
 
@@ -589,7 +589,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     int streamtype = 0; /* 0=interchange, 1=tables only, 2=image only */
     int xdpi = 0, ydpi = 0;
     int subsampling = -1; /* -1=default, 0=none, 1=medium, 2=high */
-    PyObject* qtables;
+    PyObject* qtables=NULL;
     unsigned int **qarrays = NULL;
     char* extra = NULL;
     int extra_size;
