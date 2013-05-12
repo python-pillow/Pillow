@@ -67,11 +67,11 @@ The API documentation included with PIL has been converted (from HTML generated 
 Community
 ---------
 
-Pillow needs you! Please help us maintain PIL via:
+PIL needs you! Please help us maintain the Python Imaging Library here:
 
-- GitHub Code (https://github.com/python-imaging/Pillow)
-- Freenode Chat (irc://irc.freenode.net#pil)
-- Image-SIG Discussion (http://mail.python.org/mailman/listinfo/image-sig)
+- GitHub (https://github.com/python-imaging/Pillow)
+- Freenode (irc://irc.freenode.net#pil)
+- Image-SIG (http://mail.python.org/mailman/listinfo/image-sig)
 
 Installation
 ------------
