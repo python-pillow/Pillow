@@ -21,7 +21,7 @@ The fork author's goal is to foster active development of PIL through:
 Porting your Python code from PIL to Pillow
 -------------------------------------------
 
-.. Note:: PIL and Pillow currently cannot co-exist. If you want to use Pillow, please remove PIL first.
+.. Note:: PIL and Pillow currently cannot co-exist in the same environment. If you want to use Pillow, please remove PIL first.
 
 Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL-compatible code with Pillow, it needs to be modified to import the ``Imaging`` module from the **PIL namespace instead of the global namespace**. I.e. change::
 
