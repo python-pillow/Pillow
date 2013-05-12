@@ -31,7 +31,7 @@ to::
 
     from PIL import Image
 
-.. Note:: If your code imports ``_imaging``, it will no longer work.
+.. Note:: If your code imports from ``_imaging``, it will no longer work.
 
 The preferred, future proof method of importing the private ``_imaging`` module is::
 
