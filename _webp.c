@@ -8,10 +8,10 @@
 PyObject* WebPGetFeatures_wrapper(PyObject* self, PyObject* args)
 {
     PyBytesObject *webp_string;
-    const uint8_t* webp = NULL;
+    uint8_t* webp = NULL;
     VP8StatusCode vp8_status_code = VP8_STATUS_OK;
     Py_ssize_t size;
-    WebPBitstreamFeatures* const features;
+    WebPBitstreamFeatures features;
 
 
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
@@ -21,10 +21,10 @@ PyObject* WebPGetFeatures_wrapper(PyObject* self, PyObject* args)
 
     PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
 
-    vp8_status_code = WebPGetFeatures(webp, size, features);
+    vp8_status_code = WebPGetFeatures(webp, size, (WebPBitstreamFeatures *)&features);
 
     if (vp8_status_code == VP8_STATUS_OK) {
-        printf("%i", features->has_alpha);
+        printf("%i", features.has_alpha);
 
     } else {
         // TODO: raise some sort of error
@@ -33,8 +33,7 @@ PyObject* WebPGetFeatures_wrapper(PyObject* self, PyObject* args)
         return Py_None;
     }
 
-    free((void*)webp);
-    return Py_BuildValue("b", features->has_alpha);
+    return Py_BuildValue("b", features.has_alpha);
 }
 
 
