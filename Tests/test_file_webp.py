@@ -6,54 +6,95 @@ try:
     import _webp
 except:
     skip('webp support not installed')
-		
-def test_read():
-    """ Can we write a webp without error. Does it have the bits we expect?"""
-    
-    file = "Images/lena.webp"
-    im = Image.open(file)
 
-    assert_equal(im.mode, "RGB")
-    assert_equal(im.size, (128, 128))
-    assert_equal(im.format, "WEBP")
-    assert_no_exception(lambda: im.load())
-    assert_no_exception(lambda: im.getdata())
 
-    orig_bytes  = im.tobytes()
-
+def test_read_rgb():
+     
+    file_path = "Images/lena.webp"
+    image = Image.open(file_path)
+ 
+    assert_equal(image.mode, "RGB")
+    assert_equal(image.size, (128, 128))
+    assert_equal(image.format, "WEBP")
+    assert_no_exception(lambda: image.load())
+    assert_no_exception(lambda: image.getdata())
+ 
     # generated with: dwebp -ppm ../../Images/lena.webp -o lena_webp_bits.ppm
     target = Image.open('Tests/images/lena_webp_bits.ppm')
-    assert_image_equal(im, target)
+    assert_image_equal(image, target)
     
 
-def test_write():
-    """ Can we write a webp without error. Does it have the bits we expect?"""
+def test_read_rgba():
+    # Generated with `cwebp transparent.png -o transparent.webp`
+    file_path = "Images/transparent.webp"
+    image = Image.open(file_path)
 
-    file = tempfile("temp.webp")
+    assert_equal(image.mode, "RGBA")
+    assert_equal(image.size, (200, 150))
+    assert_equal(image.format, "WEBP")
+    assert_no_exception(lambda: image.load())
+    assert_no_exception(lambda: image.getdata())
 
-    lena("RGB").save(file)
+    orig_bytes  = image.tobytes()
 
-    im= Image.open(file)
-    im.load()
+    target = Image.open('Images/transparent.png')
+    assert_image_similar(image, target, 20.0)
+    
 
-    assert_equal(im.mode, "RGB")
-    assert_equal(im.size, (128, 128))
-    assert_equal(im.format, "WEBP")
-    assert_no_exception(lambda: im.load())
-    assert_no_exception(lambda: im.getdata())
-
+def test_write_rgb():
+    """
+    Can we write a RGB mode file to webp without error. Does it have the bits we
+    expect?
+      
+    """
+  
+    temp_file = tempfile("temp.webp")
+  
+    lena("RGB").save(temp_file)
+  
+    image = Image.open(temp_file)
+    image.load()
+  
+    assert_equal(image.mode, "RGB")
+    assert_equal(image.size, (128, 128))
+    assert_equal(image.format, "WEBP")
+    assert_no_exception(lambda: image.load())
+    assert_no_exception(lambda: image.getdata())
+  
     # If we're using the exact same version of webp, this test should pass.
     # but it doesn't if the webp is generated on Ubuntu and tested on Fedora.
-    
+      
     # generated with: dwebp -ppm temp.webp -o lena_webp_write.ppm
     #target = Image.open('Tests/images/lena_webp_write.ppm')
-    #assert_image_equal(im, target)
-
+    #assert_image_equal(image, target)
+  
     # This test asserts that the images are similar. If the average pixel difference
     # between the two images is less than the epsilon value, then we're going to
     # accept that it's a reasonable lossy version of the image. The included lena images
     # for webp are showing ~16 on Ubuntu, the jpegs are showing ~18. 
-    target = lena('RGB')
-    assert_image_similar(im, target, 20.0)
-
-
+    target = lena("RGB")
+    assert_image_similar(image, target, 20.0)
+ 
+ 
+def test_write_rgba():
+    """
+    Can we write a RGBA mode file to webp without error. Does it have the bits we
+    expect?
+     
+    """
+ 
+    temp_file = tempfile("temp.webp")
+ 
+    pil_image = Image.new("RGBA", (10, 10), (255, 0, 0, 20))
+    pil_image.save(temp_file)
+ 
+    image = Image.open(temp_file)
+    image.load()
+ 
+    assert_equal(image.mode, "RGBA")
+    assert_equal(image.size, (10, 10))
+    assert_equal(image.format, "WEBP")
+    assert_no_exception(image.load)
+    assert_no_exception(image.getdata)
+ 
+    assert_image_similar(image, pil_image, 1.0)
