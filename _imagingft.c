@@ -35,6 +35,8 @@
 #include <freetype/freetype.h>
 #endif
 
+#include FT_GLYPH_H
+
 #define KEEP_PY_UNICODE
 #include "py3.h"
 
@@ -97,17 +99,20 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     FontObject* self;
     int error;
 
-    char* filename;
+    char* filename = NULL;
     int size;
     int index = 0;
-    unsigned char* encoding = NULL;
+    unsigned char* encoding;
+    unsigned char* font_bytes;
+    int font_bytes_size = 0;
     static char* kwlist[] = {
-        "filename", "size", "index", "encoding", NULL
+        "filename", "size", "index", "encoding", "font_bytes", NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|iss#", kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
-                                     &size, &index, &encoding))
+                                     &size, &index, &encoding, &font_bytes,
+                                     &font_bytes_size))
         return NULL;
 
     if (!library) {
@@ -122,8 +127,12 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     if (!self)
         return NULL;
 
-    error = FT_New_Face(library, filename, index, &self->face);
-
+    if (filename && font_bytes_size <= 0) {
+        error = FT_New_Face(library, filename, index, &self->face);
+    } else {
+        error = FT_New_Memory_Face(library, (FT_Byte*)font_bytes, font_bytes_size, index, &self->face);
+    }
+ 
     if (!error)
         error = FT_Set_Pixel_Sizes(self->face, 0, size);
 
@@ -141,7 +150,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 
     return (PyObject*) self;
 }
-    
+
 static int
 font_getchar(PyObject* string, int index, FT_ULong* char_out)
 {
@@ -171,7 +180,7 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
 static PyObject*
 font_getsize(FontObject* self, PyObject* args)
 {
-    int i, x;
+    int i, x, y_max, y_min;
     FT_ULong ch;
     FT_Face face;
     int xoffset;
@@ -195,6 +204,7 @@ font_getsize(FontObject* self, PyObject* args)
 
     face = NULL;
     xoffset = 0;
+    y_max = y_min = 0;
 
     for (x = i = 0; font_getchar(string, i, &ch); i++) {
         int index, error;
@@ -212,6 +222,16 @@ font_getsize(FontObject* self, PyObject* args)
         if (i == 0)
             xoffset = face->glyph->metrics.horiBearingX;
         x += face->glyph->metrics.horiAdvance;
+
+        FT_BBox bbox;
+        FT_Glyph glyph;
+        FT_Get_Glyph(face->glyph, &glyph);
+        FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_SUBPIXELS, &bbox);
+        if (bbox.yMax > y_max)
+            y_max = bbox.yMax;
+        if (bbox.yMin < y_min)
+            y_min = bbox.yMin;
+
         last_index = index;
     }
 
@@ -232,7 +252,7 @@ font_getsize(FontObject* self, PyObject* args)
 
     return Py_BuildValue(
         "(ii)(ii)",
-        PIXEL(x), PIXEL(self->face->size->metrics.height),
+        PIXEL(x), PIXEL(y_max - y_min),
         PIXEL(xoffset), 0
         );
 }
@@ -282,7 +302,7 @@ font_render(FontObject* self, PyObject* args)
 {
     int i, x, y;
     Imaging im;
-    int index, error, ascender, descender;
+    int index, error, ascender;
     int load_flags;
     unsigned char *source;
     FT_ULong ch;
@@ -313,6 +333,19 @@ font_render(FontObject* self, PyObject* args)
     if (mask)
         load_flags |= FT_LOAD_TARGET_MONO;
 
+    int temp;
+    ascender = 0;
+    for (i = 0; font_getchar(string, i, &ch); i++) {
+        index = FT_Get_Char_Index(self->face, ch);
+        error = FT_Load_Glyph(self->face, index, load_flags);
+        if (error)
+            return geterror(error);
+        glyph = self->face->glyph;
+        temp = (glyph->bitmap.rows - glyph->bitmap_top);
+        if (temp > ascender)
+            ascender = temp;
+    }
+
     for (x = i = 0; font_getchar(string, i, &ch); i++) {
         if (i == 0 && self->face->glyph->metrics.horiBearingX < 0)
             x = -PIXEL(self->face->glyph->metrics.horiBearingX);
@@ -323,25 +356,27 @@ font_render(FontObject* self, PyObject* args)
                            &delta);
             x += delta.x >> 6;
         }
+
         error = FT_Load_Glyph(self->face, index, load_flags);
         if (error)
             return geterror(error);
+
         glyph = self->face->glyph;
+
+        int xx, x0, x1;
+        source = (unsigned char*) glyph->bitmap.buffer;
+        xx = x + glyph->bitmap_left;
+        x0 = 0;
+        x1 = glyph->bitmap.width;
+        if (xx < 0)
+            x0 = -xx;
+        if (xx + x1 > im->xsize)
+            x1 = im->xsize - xx;
+
         if (mask) {
             /* use monochrome mask (on palette images, etc) */
-            int xx, x0, x1;
-            source = (unsigned char*) glyph->bitmap.buffer;
-            ascender = PIXEL(self->face->size->metrics.ascender);
-            descender = PIXEL(self->face->size->metrics.descender);
-            xx = x + glyph->bitmap_left;
-            x0 = 0;
-            x1 = glyph->bitmap.width;
-            if (xx < 0)
-                x0 = -xx;
-            if (xx + x1 > im->xsize)
-                x1 = im->xsize - xx;
             for (y = 0; y < glyph->bitmap.rows; y++) {
-                int yy = y + ascender + descender - glyph->bitmap_top;
+                int yy = y + im->ysize - (PIXEL(glyph->metrics.horiBearingY) + ascender);
                 if (yy >= 0 && yy < im->ysize) {
                     /* blend this glyph into the buffer */
                     unsigned char *target = im->image8[yy] + xx;
@@ -359,19 +394,8 @@ font_render(FontObject* self, PyObject* args)
             }
         } else {
             /* use antialiased rendering */
-            int xx, x0, x1;
-            source = (unsigned char*) glyph->bitmap.buffer;
-            ascender = PIXEL(self->face->size->metrics.ascender);
-            descender = PIXEL(self->face->size->metrics.descender);
-            xx = x + glyph->bitmap_left;
-            x0 = 0;
-            x1 = glyph->bitmap.width;
-            if (xx < 0)
-                x0 = -xx;
-            if (xx + x1 > im->xsize)
-                x1 = im->xsize - xx;
             for (y = 0; y < glyph->bitmap.rows; y++) {
-                int yy = y + ascender + descender - glyph->bitmap_top;
+                int yy = y + im->ysize - (PIXEL(glyph->metrics.horiBearingY) + ascender);
                 if (yy >= 0 && yy < im->ysize) {
                     /* blend this glyph into the buffer */
                     int i;

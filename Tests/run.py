@@ -2,7 +2,7 @@ from __future__ import print_function
 
 # minimal test runner
 
-import glob, os, sys
+import glob, os, os.path, sys, tempfile
 
 try:
     root = os.path.dirname(__file__)
@@ -73,7 +73,8 @@ for file in files:
 
 print("-"*68)
 
-tempfiles = glob.glob(os.path.join(root, "temp_*"))
+temp_root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
+tempfiles = glob.glob(os.path.join(temp_root, "temp_*"))
 if tempfiles:
     print("===", "remaining temporary files")
     for file in tempfiles:

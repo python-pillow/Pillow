@@ -149,7 +149,7 @@ def _save(im, fp, filename):
             im.putdata(data)
         ImageFile._save(im, op, [("hex", (0,0)+im.size, 0, im.mode)])
     elif filter == "/DCTDecode":
-        ImageFile._save(im, op, [("jpeg", (0,0)+im.size, 0, im.mode)])
+        Image.SAVE["JPEG"](im, op, filename)
     elif filter == "/FlateDecode":
         ImageFile._save(im, op, [("zip", (0,0)+im.size, 0, im.mode)])
     elif filter == "/RunLengthDecode":

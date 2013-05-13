@@ -5,21 +5,21 @@ More presets can be added to the presets dict if needed.
 
 Can be use when saving JPEG file.
 
-To apply the preset, specify:
+To apply the preset, specify::
 
- - quality=preset name
- 
-To apply only the quantization table:
+  quality="preset_name"
 
-- qtables=preset name
+To apply only the quantization table::
 
-To apply only the subsampling setting:
+  qtables="preset_name"
 
-- subsampling=preset name
+To apply only the subsampling setting::
 
-Example:
+  subsampling="preset_name"
 
-    im.save("image_name.jpg", quality="web_high")
+Example::
+
+  im.save("image_name.jpg", quality="web_high")
 
 
 Subsampling
@@ -28,7 +28,7 @@ Subsampling
 Subsampling is the practice of encoding images by implementing less resolution
 for chroma information than for luma information.
 (ref.: http://en.wikipedia.org/wiki/Chroma_subsampling)
-    
+
 Possible subsampling values are 0, 1 and 2 that correspond to 4:4:4, 4:2:2 and
 4:1:1 (or 4:2:0?).
 
@@ -42,25 +42,23 @@ Quantization tables
 They are values use by the DCT (Discrete cosine transform) to remove
 *unnecessary* information from the image (the lossy part of the compression).
 (ref.: http://en.wikipedia.org/wiki/Quantization_matrix#Quantization_matrices,
-       http://en.wikipedia.org/wiki/JPEG#Quantization)
+http://en.wikipedia.org/wiki/JPEG#Quantization)
 
-You can get the quantization tables of a JPEG with:
+You can get the quantization tables of a JPEG with::
 
-    im.quantization
-    
+  im.quantization
+
 This will return a dict with a number of arrays. You can pass this dict directly
 as the qtables argument when saving a JPEG.
 
 The tables format between im.quantization and quantization in presets differ in
 3 ways:
 
- 1. The base container of the preset is a list with sublists instead of dict.
-    dict[0] -> list[0], dict[1] -> list[1], ...
-    
- 2. Each table in a preset is a list instead of an array.
- 
- 3. The zigzag order is remove in the preset (needed by libjpeg >= 6a).
- 
+1. The base container of the preset is a list with sublists instead of dict.
+   dict[0] -> list[0], dict[1] -> list[1], ...
+2. Each table in a preset is a list instead of an array.
+3. The zigzag order is remove in the preset (needed by libjpeg >= 6a).
+
 You can convert the dict format to the preset format with the
 `JpegImagePlugin.convert_dict_qtables(dict_qtables)` function.
 
@@ -68,7 +66,7 @@ Libjpeg ref.: http://www.jpegcameras.com/libjpeg/libjpeg-3.html
 
 """
 
-presets = { 
+presets = {
             'web_low':      {'subsampling':  2, # "4:1:1"
                             'quantization': [
                                [20, 16, 25, 39, 50, 46, 62, 68,
@@ -88,7 +86,6 @@ presets = {
                                 68, 68, 68, 68, 68, 68, 68, 68,
                                 68, 68, 68, 68, 68, 68, 68, 68]
                             ]},
-                            
             'web_medium':   {'subsampling':  2, # "4:1:1"
                             'quantization': [
                                [16, 11, 11, 16, 23, 27, 31, 30,
@@ -108,7 +105,6 @@ presets = {
                                 38, 35, 46, 53, 64, 64, 64, 64,
                                 48, 43, 53, 64, 64, 64, 64, 64]
                             ]},
-                            
             'web_high':     {'subsampling':  0, # "4:4:4"
                             'quantization': [
                                [ 6,  4,  4,  6,  9, 11, 12, 16,
@@ -128,7 +124,6 @@ presets = {
                                 31, 31, 31, 31, 31, 31, 31, 31,
                                 31, 31, 31, 31, 31, 31, 31, 31]
                             ]},
-                            
             'web_very_high': {'subsampling':  0, # "4:4:4"
                             'quantization': [
                                [ 2,  2,  2,  2,  3,  4,  5,  6,
@@ -148,7 +143,6 @@ presets = {
                                 15, 12, 12, 12, 12, 12, 12, 12,
                                 15, 12, 12, 12, 12, 12, 12, 12]
                             ]},
-                            
             'web_maximum':  {'subsampling':  0, # "4:4:4"
                             'quantization': [
                                [ 1,  1,  1,  1,  1,  1,  1,  1, 
@@ -168,7 +162,6 @@ presets = {
                                  3,  3,  3,  3,  3,  3,  3,  3, 
                                  3,  3,  3,  3,  3,  3,  3,  3]
                             ]},
-                            
             'low':          {'subsampling':  2, # "4:1:1"
                             'quantization': [
                                [18, 14, 14, 21, 30, 35, 34, 17,
@@ -207,7 +200,6 @@ presets = {
                                 17, 12, 12, 12, 12, 12, 12, 12,
                                 17, 12, 12, 12, 12, 12, 12, 12]
                             ]},
-                            
             'high':         {'subsampling':  0, # "4:4:4"
                             'quantization': [
                                [ 6,  4,  4,  6,  9, 11, 12, 16,
@@ -227,7 +219,6 @@ presets = {
                                 17, 12, 12, 12, 12, 12, 12, 12,
                                 17, 12, 12, 12, 12, 12, 12, 12]
                             ]},
-                            
             'maximum':      {'subsampling':  0, # "4:4:4"
                             'quantization': [
                                [ 2,  2,  2,  2,  3,  4,  5,  6,
@@ -247,4 +238,4 @@ presets = {
                                 15, 12, 12, 12, 12, 12, 12, 12,
                                 15, 12, 12, 12, 12, 12, 12, 12]
                             ]},
-            }
+}

@@ -20,7 +20,7 @@ PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
         return Py_None;
     }
 
-    PyBytes_AsStringAndSize((PyObject *) rgb_string, &rgb, &size);
+    PyBytes_AsStringAndSize((PyObject *) rgb_string, (char**)&rgb, &size);
 
     if (stride * height > size) {
         Py_INCREF(Py_None);
@@ -29,7 +29,7 @@ PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
 
     ret_size = WebPEncodeRGB(rgb, width, height, stride, quality_factor, &output);
     if (ret_size > 0) {
-        PyObject *ret = PyBytes_FromStringAndSize(output, ret_size);
+        PyObject *ret = PyBytes_FromStringAndSize((char*)output, ret_size);
         free(output);
         return ret;
     }
@@ -41,7 +41,6 @@ PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
 PyObject* WebPDecodeRGB_wrapper(PyObject* self, PyObject* args)
 {
     PyBytesObject *webp_string;
-    float quality_factor;
     int width;
     int height;
     uint8_t *webp;
@@ -54,11 +53,11 @@ PyObject* WebPDecodeRGB_wrapper(PyObject* self, PyObject* args)
         return Py_None;
     }
 
-    PyBytes_AsStringAndSize((PyObject *) webp_string, &webp, &size);
+    PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
 
     output = WebPDecodeRGB(webp, size, &width, &height);
 
-    ret = PyBytes_FromStringAndSize(output, width * height * 3);
+    ret = PyBytes_FromStringAndSize((char*)output, width * height * 3);
     free(output);
     return Py_BuildValue("Sii", ret, width, height);
 }
@@ -88,9 +87,8 @@ PyInit__webp(void) {
 }
 #else
 PyMODINIT_FUNC
-init_webp()
+init_webp(void)
 {
-    PyObject* m;
-    m = Py_InitModule("_webp", webpMethods);
+    Py_InitModule("_webp", webpMethods);
 }
 #endif

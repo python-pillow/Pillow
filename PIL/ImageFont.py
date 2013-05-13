@@ -30,6 +30,11 @@ from __future__ import print_function
 from PIL import Image
 import os, sys
 
+try:
+    import warnings
+except ImportError:
+    warnings = None
+
 class _imagingft_not_installed:
     # module placeholder
     def __getattr__(self, id):
@@ -39,6 +44,13 @@ try:
     from PIL import _imagingft as core
 except ImportError:
     core = _imagingft_not_installed()
+
+if bytes is str:
+    def isStringType(t):
+        return isinstance(t, basestring)
+else:
+    def isStringType(t):
+        return isinstance(t, str)
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
 
@@ -129,9 +141,18 @@ class ImageFont:
 class FreeTypeFont:
     "FreeType font wrapper (requires _imagingft service)"
 
-    def __init__(self, file, size, index=0, encoding=""):
+    def __init__(self, font=None, size=10, index=0, encoding="", file=None):
         # FIXME: use service provider instead
-        self.font = core.getfont(file, size, index, encoding)
+        if file:
+            if warnings:
+                warnings.warn('file parameter deprecated, please use font parameter instead.', DeprecationWarning)
+            font = file
+
+        if isStringType(font):
+            self.font = core.getfont(font, size, index, encoding)
+        else:
+            self.font_bytes = font.read()
+            self.font = core.getfont("", size, index, encoding, self.font_bytes)
 
     def getname(self):
         return self.font.family, self.font.style
@@ -212,10 +233,16 @@ def load(filename):
 # @return A font object.
 # @exception IOError If the file could not be read.
 
-def truetype(filename, size, index=0, encoding=""):
+def truetype(font=None, size=10, index=0, encoding="", filename=None):
     "Load a truetype font file."
+
+    if filename:
+        if warnings:
+            warnings.warn('filename parameter deprecated, please use font parameter instead.', DeprecationWarning)
+        font = filename
+
     try:
-        return FreeTypeFont(filename, size, index, encoding)
+        return FreeTypeFont(font, size, index, encoding)
     except IOError:
         if sys.platform == "win32":
             # check the windows font repository
@@ -223,8 +250,8 @@ def truetype(filename, size, index=0, encoding=""):
             # 1.5.2's os.environ.get()
             windir = os.environ.get("WINDIR")
             if windir:
-                filename = os.path.join(windir, "fonts", filename)
-                return FreeTypeFont(filename, size, index, encoding)
+                filename = os.path.join(windir, "fonts", font)
+                return FreeTypeFont(font, size, index, encoding)
         raise
 
 ##

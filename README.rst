@@ -1,7 +1,7 @@
 Pillow
 ======
 
-.. Note:: Pillow >= 2.0.0 supports Python versions: 2.6, 2.7, 3.2, 3.3; Pillow < 2.0.0 supports Python versions: 2.4, 2.5, 2.6, 2.7.
+.. Note:: Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7; Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3.
 
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
    :target: https://travis-ci.org/python-imaging/Pillow
@@ -13,15 +13,36 @@ Introduction
 
 The fork author's goal is to foster active development of PIL through:
 
-- Continuous integration testing via Travis-CI
-- Publicized development activity on GitHub
-- Regular releases to the Python Packaging Index
-- Solicitation for community contributions and involvement on Imaging-SIG
+- Continuous integration testing via `Travis CI <https://travis-ci.org/python-imaging/Pillow>`_
+- Publicized development activity on `GitHub <https://github.com/python-imaging/Pillow>`_
+- Regular releases to the `Python Package Index <https://pypi.python.org/pypi/Pillow>`_
+- Solicitation for community contributions and involvement on `Image-SIG <http://mail.python.org/mailman/listinfo/image-sig>`_
+
+Porting your PIL code to Pillow
+-------------------------------
+
+.. Note:: PIL and Pillow currently cannot co-exist in the same environment. If you want to use Pillow, please remove PIL first.
+
+Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL-compatible code with Pillow, it needs to be modified to import the ``Imaging`` module from the ``PIL`` namespace *instead* of the global namespace. I.e. change::
+
+    import Image
+
+to::
+
+    from PIL import Image
+
+.. Note:: If your code imports from ``_imaging``, it will no longer work.
+
+The preferred, future proof method of importing the private ``_imaging`` module is::
+
+    from PIL import Image
+    _imaging = Image.core
 
 Why a fork?
 -----------
 
 PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too infrequent to accomodate the large number and frequency of issues reported.
+
 
 What about image code bugs?
 ---------------------------
@@ -36,7 +57,7 @@ Then open a ticket here:
 
 and provide a link to the first ticket so we can track the issue(s) upstream.
 
-.. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 adds Python 3 support and includes many bug fixes from around the internet.
+.. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 adds Python 3 support and includes many bug fixes from many contributors.
 
 Documentation
 -------------
@@ -46,14 +67,17 @@ The API documentation included with PIL has been converted (from HTML generated 
 Community
 ---------
 
-Pillow needs you! Please help us maintain PIL via:
+PIL needs you! Please help us maintain the Python Imaging Library here:
 
-- GitHub Code (https://github.com/python-imaging/Pillow)
-- Freenode Chat (irc://irc.freenode.net#pil)
-- Image-SIG Discussion (http://mail.python.org/mailman/listinfo/image-sig)
+- GitHub (https://github.com/python-imaging/Pillow)
+- Freenode (irc://irc.freenode.net#pil)
+- Image-SIG (http://mail.python.org/mailman/listinfo/image-sig)
+
+Installation
+------------
 
 Platform support
-----------------
+~~~~~~~~~~~~~~~~
 
 Current platform support for Pillow. Binary distributions are contributed for each release on a volunteer basis, but the source should compile and run everywhere platform support is listed. In general, we aim to support all current versions of Linux, OS X, and Windows.
 
@@ -72,6 +96,8 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 +----------------------------------+-------------+------------------------------+-----------------------+
 | Ubuntu Linux 12.04 LTS           |Yes          | 2.6,2.7,3.2,3.3              |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+-----------------------+
+| Gentoo Linux                     |Soon         | 2.7,3.2                      |x86-64                 |
++----------------------------------+-------------+------------------------------+-----------------------+
 | Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+-----------------------+
 | Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,PyPy1.9 [1]_ |x86 [2]_,x86-64        |
@@ -79,6 +105,94 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 
 .. [1] x86 only
 .. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
+
+
+.. Note:: XXX Why are we recommending binaries when we only provide Windows eggs?
+
+If there is a binary package for your system, that is the easiest way to install Pillow. Currently we only provide binaries for Windows.
+
+.. Note:: UNDONE: Binary links
+
+.. Note:: XXX Do we really need to provide binary links? At least in the case of eggs… probably not IMHO.
+
+Build from source
+~~~~~~~~~~~~~~~~~
+
+Some (most?) of Pillow's features require external libraries.
+
+* **libjpeg** provides JPEG functionality.
+
+  * Pillow has been tested with libjpeg versions **6b**, **8**, and **9**
+
+* **zlib** provides access to compressed PNGs
+
+* **libtiff** provides group4 tiff functionality
+
+  * Pillow has been tested with libtiff versions **3.x** and **4.0**
+
+* **libfreetype** provides type related services
+
+* **littlecms** provides color management 
+
+* **libwebp** provides the Webp format. 
+
+If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg)
+
+Once you have installed the prerequisites, run: 
+
+::
+
+    $ pip install Pillow
+
+Platform-specific instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Linux
++++++
+
+**We don't currently provide binaries for Linux.** If you didn't build Python from source, make sure you have Python's development libraries installed. In Debian or Ubuntu::
+
+    $ sudo apt-get install python-dev python-setuptools
+
+Or for Python 3::
+
+    $ sudo apt-get install python3-dev python3-setuptools
+
+Prerequisites are installed on **Ubuntu 10.04 LTS** with::
+
+    $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev
+
+Prerequisites are installed with on **Ubuntu 12.04 LTS** with ::
+
+    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
+
+Mac OS X
+++++++++
+
+**We don't currently provide binaries for OS X.** So you'll need XCode to install Pillow. (XCode 4.2 on 10.6 will work with the Official Python binary distribution. Otherwise, use whatever XCode you used to compile Python.)
+
+.. Note:: XXX I'm not sure we need to mention the bit about XCode
+
+
+The easiest way to install the prerequisites is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run:
+
+::
+
+    $ brew install libtiff libjpeg webp littlecms
+
+If you've built your own Python, then you should be able to install Pillow using 
+
+::
+
+    $ pip install Pillow
+
+
+Windows
++++++++
+
+**We currently provide Python eggs for Windows.**
+
+.. Note:: XXX Mention easy_install Pillow (which should install the right egg)?
 
 Donations
 ---------
