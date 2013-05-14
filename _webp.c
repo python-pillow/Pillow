@@ -114,7 +114,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
     PyBytesObject *webp_string;
     uint8_t *webp;
     Py_ssize_t size;
-    PyObject *ret, *bytes;
+    PyObject *ret, *bytes, *pymode;
 	WebPDecoderConfig config;
     VP8StatusCode vp8_status_code = VP8_STATUS_OK;
 	char* mode = "RGB";
@@ -157,8 +157,13 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 										  config.output.u.YUVA.y_size);
 	}
 
+#if PY_VERSION_HEX >= 0x03000000
+    pymode = PyUnicode_FromString(mode);
+#else
+    pymode = PyString_FromString(mode);
+#endif
 	ret = Py_BuildValue("SiiS", bytes, config.output.width, 
-						config.output.height, PyBytes_FromString(mode));
+						config.output.height, pymode);
 	WebPFreeDecBuffer(&config.output);
 	return ret;
 }
