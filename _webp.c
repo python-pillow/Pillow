@@ -112,15 +112,12 @@ PyObject* WebPEncodeRGBA_wrapper(PyObject* self, PyObject* args)
 PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 {
     PyBytesObject *webp_string;
-	int width;
-    int height;
     uint8_t *webp;
-    uint8_t *output;
     Py_ssize_t size;
     PyObject *ret, *bytes;
 	WebPDecoderConfig config;
     VP8StatusCode vp8_status_code = VP8_STATUS_OK;
-	char* mode = NULL;
+	char* mode = "RGB";
 
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
         Py_INCREF(Py_None);
@@ -136,6 +133,12 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 
     vp8_status_code = WebPGetFeatures(webp, size, &config.input);
 	if (vp8_status_code == VP8_STATUS_OK) {
+		// If we don't set it, we don't get alpha. 
+		// Initialized to MODE_RGB
+		if (config.input.has_alpha) {
+			config.output.colorspace = MODE_RGBA;
+			mode = "RGBA";
+		}
 		vp8_status_code = WebPDecode(webp, size, &config);
 	}	
 	
