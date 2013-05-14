@@ -148,34 +148,34 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 	}	
 	
 	if (config.output.colorspace < MODE_YUV) {
-		bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba, config.output.u.RGBA.size);
+		bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba, 
+										  config.output.u.RGBA.size);
 	} else {
-		// Skipping YUV for now. 
-		bytes = PyBytes_FromStringAndSize((char *)config.output.u.YUVA.y, config.output.u.YUVA.y_size);
-	}
-	switch(config.output.colorspace) {
-		// UNDONE, alternate orderings
-	case MODE_RGB:
-		mode = "RGB";
-		break;
-	case MODE_RGBA:
-		mode = "RGBA";
-		break;
-	default:
-		mode = "ERR";
+		// Skipping YUV for now. Need Test Images.
+		// UNDONE -- unclear if we'll ever get here if we set mode_rgb*
+		bytes = PyBytes_FromStringAndSize((char *)config.output.u.YUVA.y, 
+										  config.output.u.YUVA.y_size);
 	}
 
-	height = config.output.height;
-	width = config.output.width;
-
-
-	ret = Py_BuildValue("SiiS", bytes, width, height, PyBytes_FromString(mode));
+	ret = Py_BuildValue("SiiS", bytes, config.output.width, 
+						config.output.height, PyBytes_FromString(mode));
 	WebPFreeDecBuffer(&config.output);
 	return ret;
 }
 
+// Return the decoder's version number, packed in hexadecimal using 8bits for
+// each of major/minor/revision. E.g: v2.5.7 is 0x020507.
+PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
+	return Py_BuildValue("i", WebPGetDecoderVersion());
+}
 
-
+/*
+ * The version of webp that ships with (0.1.2) Ubuntu 12.04 doesn't handle alpha well.
+ * Files that are valid with 0.3 are reported as being invalid. 
+ */
+PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
+	return Py_BuildValue("i", WebPGetDecoderVersion()==0x0102);
+}
 
 static PyMethodDef webpMethods[] =
 {
@@ -183,6 +183,8 @@ static PyMethodDef webpMethods[] =
     {"WebPEncodeRGB", WebPEncodeRGB_wrapper, METH_VARARGS, "WebPEncodeRGB"},
     {"WebPEncodeRGBA", WebPEncodeRGBA_wrapper, METH_VARARGS, "WebPEncodeRGBA"},
     {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
+    {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_VARARGS, "WebPVersion"},
+    {"WebPDecoderBuggyAlpha", WebPDecoderBuggyAlpha_wrapper, METH_VARARGS, "WebPDecoderBuggyAlpha"},
     {NULL, NULL}
 };
 
