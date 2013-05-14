@@ -15,8 +15,7 @@ PyObject* WebPGetFeatures_wrapper(PyObject* self, PyObject* args)
 
 
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+		Py_RETURN_NONE;
     }
 
     PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
@@ -29,9 +28,8 @@ PyObject* WebPGetFeatures_wrapper(PyObject* self, PyObject* args)
     } else {
         // TODO: raise some sort of error
         printf("Error occured checking webp file with code: %d\n", vp8_status_code);
-        Py_INCREF(Py_None);
-        return Py_None;
-    }
+ 		Py_RETURN_NONE;
+   }
 
     return Py_BuildValue("b", features.has_alpha);
 }
@@ -50,15 +48,13 @@ PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
     size_t ret_size;
 
     if (!PyArg_ParseTuple(args, "Siiif", &rgb_string, &width, &height, &stride, &quality_factor)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+		Py_RETURN_NONE;
     }
 
     PyBytes_AsStringAndSize((PyObject *) rgb_string, (char**)&rgb, &size);
 
     if (stride * height > size) {
-        Py_INCREF(Py_None);
-        return Py_None;
+		Py_RETURN_NONE;
     }
 
     ret_size = WebPEncodeRGB(rgb, width, height, stride, quality_factor, &output);
@@ -67,9 +63,7 @@ PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
         free(output);
         return ret;
     }
-    Py_INCREF(Py_None);
-    return Py_None;
-
+	Py_RETURN_NONE;
 }
 
 
@@ -86,15 +80,13 @@ PyObject* WebPEncodeRGBA_wrapper(PyObject* self, PyObject* args)
     size_t ret_size;
 
     if (!PyArg_ParseTuple(args, "Siiif", &rgba_string, &width, &height, &stride, &quality_factor)) {
-        Py_INCREF(Py_None);
-        return Py_None;
-    }
+ 		Py_RETURN_NONE;
+   }
 
     PyBytes_AsStringAndSize((PyObject *) rgba_string, (char**)&rgba, &size);
 
     if (stride * height > size) {
-        Py_INCREF(Py_None);
-        return Py_None;
+		Py_RETURN_NONE;
     }
 
     ret_size = WebPEncodeRGBA(rgba, width, height, stride, quality_factor, &output);
@@ -103,9 +95,7 @@ PyObject* WebPEncodeRGBA_wrapper(PyObject* self, PyObject* args)
         free(output);
         return ret;
     }
-    Py_INCREF(Py_None);
-    return Py_None;
-
+	Py_RETURN_NONE;
 }
 
 
@@ -120,13 +110,11 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 	char* mode = "RGB";
 
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+		Py_RETURN_NONE;
     }
 
 	if (!WebPInitDecoderConfig(&config)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+		Py_RETURN_NONE;
     }		
 
     PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
@@ -143,8 +131,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 	}	
 	
 	if (vp8_status_code != VP8_STATUS_OK) {
-        Py_INCREF(Py_None);
-        return Py_None;
+		Py_RETURN_NONE;
 	}	
 	
 	if (config.output.colorspace < MODE_YUV) {
