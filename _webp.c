@@ -15,7 +15,7 @@ PyObject* WebPGetFeatures_wrapper(PyObject* self, PyObject* args)
 
 
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
-		Py_RETURN_NONE;
+        Py_RETURN_NONE;
     }
 
     PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
@@ -28,7 +28,7 @@ PyObject* WebPGetFeatures_wrapper(PyObject* self, PyObject* args)
     } else {
         // TODO: raise some sort of error
         printf("Error occured checking webp file with code: %d\n", vp8_status_code);
- 		Py_RETURN_NONE;
+        Py_RETURN_NONE;
    }
 
     return Py_BuildValue("b", features.has_alpha);
@@ -48,13 +48,13 @@ PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
     size_t ret_size;
 
     if (!PyArg_ParseTuple(args, "Siiif", &rgb_string, &width, &height, &stride, &quality_factor)) {
-		Py_RETURN_NONE;
+        Py_RETURN_NONE;
     }
 
     PyBytes_AsStringAndSize((PyObject *) rgb_string, (char**)&rgb, &size);
 
     if (stride * height > size) {
-		Py_RETURN_NONE;
+        Py_RETURN_NONE;
     }
 
     ret_size = WebPEncodeRGB(rgb, width, height, stride, quality_factor, &output);
@@ -63,7 +63,7 @@ PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
         free(output);
         return ret;
     }
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
 
 
@@ -80,13 +80,13 @@ PyObject* WebPEncodeRGBA_wrapper(PyObject* self, PyObject* args)
     size_t ret_size;
 
     if (!PyArg_ParseTuple(args, "Siiif", &rgba_string, &width, &height, &stride, &quality_factor)) {
- 		Py_RETURN_NONE;
+        Py_RETURN_NONE;
    }
 
     PyBytes_AsStringAndSize((PyObject *) rgba_string, (char**)&rgba, &size);
 
     if (stride * height > size) {
-		Py_RETURN_NONE;
+        Py_RETURN_NONE;
     }
 
     ret_size = WebPEncodeRGBA(rgba, width, height, stride, quality_factor, &output);
@@ -95,7 +95,7 @@ PyObject* WebPEncodeRGBA_wrapper(PyObject* self, PyObject* args)
         free(output);
         return ret;
     }
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
 
 
@@ -105,60 +105,60 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
     uint8_t *webp;
     Py_ssize_t size;
     PyObject *ret, *bytes, *pymode;
-	WebPDecoderConfig config;
+    WebPDecoderConfig config;
     VP8StatusCode vp8_status_code = VP8_STATUS_OK;
-	char* mode = "RGB";
+    char* mode = "RGB";
 
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
-		Py_RETURN_NONE;
+        Py_RETURN_NONE;
     }
 
-	if (!WebPInitDecoderConfig(&config)) {
-		Py_RETURN_NONE;
-    }		
+    if (!WebPInitDecoderConfig(&config)) {
+        Py_RETURN_NONE;
+    }       
 
     PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
 
     vp8_status_code = WebPGetFeatures(webp, size, &config.input);
-	if (vp8_status_code == VP8_STATUS_OK) {
-		// If we don't set it, we don't get alpha. 
-		// Initialized to MODE_RGB
-		if (config.input.has_alpha) {
-			config.output.colorspace = MODE_RGBA;
-			mode = "RGBA";
-		}
-		vp8_status_code = WebPDecode(webp, size, &config);
-	}	
-	
-	if (vp8_status_code != VP8_STATUS_OK) {
-		Py_RETURN_NONE;
-	}	
-	
-	if (config.output.colorspace < MODE_YUV) {
-		bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba, 
-										  config.output.u.RGBA.size);
-	} else {
-		// Skipping YUV for now. Need Test Images.
-		// UNDONE -- unclear if we'll ever get here if we set mode_rgb*
-		bytes = PyBytes_FromStringAndSize((char *)config.output.u.YUVA.y, 
-										  config.output.u.YUVA.y_size);
-	}
+    if (vp8_status_code == VP8_STATUS_OK) {
+        // If we don't set it, we don't get alpha. 
+        // Initialized to MODE_RGB
+        if (config.input.has_alpha) {
+            config.output.colorspace = MODE_RGBA;
+            mode = "RGBA";
+        }
+        vp8_status_code = WebPDecode(webp, size, &config);
+    }   
+    
+    if (vp8_status_code != VP8_STATUS_OK) {
+        Py_RETURN_NONE;
+    }   
+    
+    if (config.output.colorspace < MODE_YUV) {
+        bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba, 
+                                          config.output.u.RGBA.size);
+    } else {
+        // Skipping YUV for now. Need Test Images.
+        // UNDONE -- unclear if we'll ever get here if we set mode_rgb*
+        bytes = PyBytes_FromStringAndSize((char *)config.output.u.YUVA.y, 
+                                          config.output.u.YUVA.y_size);
+    }
 
 #if PY_VERSION_HEX >= 0x03000000
     pymode = PyUnicode_FromString(mode);
 #else
     pymode = PyString_FromString(mode);
 #endif
-	ret = Py_BuildValue("SiiS", bytes, config.output.width, 
-						config.output.height, pymode);
-	WebPFreeDecBuffer(&config.output);
-	return ret;
+    ret = Py_BuildValue("SiiS", bytes, config.output.width, 
+                        config.output.height, pymode);
+    WebPFreeDecBuffer(&config.output);
+    return ret;
 }
 
 // Return the decoder's version number, packed in hexadecimal using 8bits for
 // each of major/minor/revision. E.g: v2.5.7 is 0x020507.
 PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
-	return Py_BuildValue("i", WebPGetDecoderVersion());
+    return Py_BuildValue("i", WebPGetDecoderVersion());
 }
 
 /*
@@ -166,7 +166,7 @@ PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
  * Files that are valid with 0.3 are reported as being invalid. 
  */
 PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
-	return Py_BuildValue("i", WebPGetDecoderVersion()==0x0102);
+    return Py_BuildValue("i", WebPGetDecoderVersion()==0x0102);
 }
 
 static PyMethodDef webpMethods[] =
