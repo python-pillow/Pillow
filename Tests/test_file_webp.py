@@ -9,11 +9,11 @@ except:
 
 
 def test_version():
-	assert_no_exception(lambda: _webp.WebPDecoderVersion())
+    assert_no_exception(lambda: _webp.WebPDecoderVersion())
 
 def test_good_alpha():
-	assert_equal(_webp.WebPDecoderBuggyAlpha(), 0)
-	
+    assert_equal(_webp.WebPDecoderBuggyAlpha(), 0)
+    
 
 def test_read_rgb():
      
@@ -77,7 +77,10 @@ def test_write_rgba():
  
     pil_image = Image.new("RGBA", (10, 10), (255, 0, 0, 20))
     pil_image.save(temp_file)
- 
+
+    if _webp.WebPDecoderBuggyAlpha():
+        return
+
     image = Image.open(temp_file)
     image.load()
  
@@ -90,21 +93,21 @@ def test_write_rgba():
     assert_image_similar(image, pil_image, 1.0)
 
 if _webp.WebPDecoderBuggyAlpha():
-	skip("Buggy early version of webp installed, not testing transparency")
+    skip("Buggy early version of webp installed, not testing transparency")
 
 def test_read_rgba():
-	# Generated with `cwebp transparent.png -o transparent.webp`
-	file_path = "Images/transparent.webp"
-	image = Image.open(file_path)
-	
-	assert_equal(image.mode, "RGBA")
-	assert_equal(image.size, (200, 150))
-	assert_equal(image.format, "WEBP")
-	assert_no_exception(lambda: image.load())
-	assert_no_exception(lambda: image.getdata())
-	
-	orig_bytes  = image.tobytes()
-	
-	target = Image.open('Images/transparent.png')
-	assert_image_similar(image, target, 20.0)
+    # Generated with `cwebp transparent.png -o transparent.webp`
+    file_path = "Images/transparent.webp"
+    image = Image.open(file_path)
+    
+    assert_equal(image.mode, "RGBA")
+    assert_equal(image.size, (200, 150))
+    assert_equal(image.format, "WEBP")
+    assert_no_exception(lambda: image.load())
+    assert_no_exception(lambda: image.getdata())
+    
+    orig_bytes  = image.tobytes()
+    
+    target = Image.open('Images/transparent.png')
+    assert_image_similar(image, target, 20.0)
     
