@@ -11,8 +11,8 @@ _VALID_WEBP_ENCODERS_BY_MODE = {
 
 
 _VALID_WEBP_DECODERS_BY_MODE = {
-    "RGB": _webp.WebPDecodeRGB,
-    "RGBA": _webp.WebPDecodeRGBA,
+    "RGB": _webp.WebPDecode,
+    "RGBA": _webp.WebPDecode,
     }
 
 
@@ -41,23 +41,11 @@ class WebPImageFile(ImageFile.ImageFile):
     format = "WEBP"
     format_description = "WebP image"
 
-    def _open(self):
-        file_header = self.fp.read(16)
-        vp8_header = file_header[12:16]
-        try:
-            webp_file_mode = _VP8_MODES_BY_IDENTIFIER[vp8_header]
-        except KeyError:
-            raise IOError("Unknown webp file mode")
-        finally:
-            self.fp.seek(0)
-        
-        self.mode = webp_file_mode
-        webp_decoder = _VALID_WEBP_DECODERS_BY_MODE[webp_file_mode]
-        
-        data, width, height = webp_decoder(self.fp.read())
+    def _open(self):                
+        data, width, height, self.mode = _webp.WebPDecode(self.fp.read())
         self.size = width, height
         self.fp = BytesIO(data)
-        self.tile = [("raw", (0, 0) + self.size, 0, webp_file_mode)]
+        self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
 
 
 def _save(im, fp, filename):

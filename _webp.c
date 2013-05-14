@@ -21,7 +21,7 @@ PyObject* WebPGetFeatures_wrapper(PyObject* self, PyObject* args)
 
     PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
 
-    vp8_status_code = WebPGetFeatures(webp, size, (WebPBitstreamFeatures *)&features);
+    vp8_status_code = WebPGetFeatures(webp, size, &features);
 
     if (vp8_status_code == VP8_STATUS_OK) {
         printf("%i", features.has_alpha);
@@ -109,54 +109,69 @@ PyObject* WebPEncodeRGBA_wrapper(PyObject* self, PyObject* args)
 }
 
 
-PyObject* WebPDecodeRGB_wrapper(PyObject* self, PyObject* args)
+PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 {
     PyBytesObject *webp_string;
-    int width;
+	int width;
     int height;
     uint8_t *webp;
     uint8_t *output;
     Py_ssize_t size;
-    PyObject *ret;
+    PyObject *ret, *bytes;
+	WebPDecoderConfig config;
+    VP8StatusCode vp8_status_code = VP8_STATUS_OK;
+	char* mode = NULL;
 
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
         Py_INCREF(Py_None);
         return Py_None;
     }
 
-    PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
-
-    output = WebPDecodeRGB(webp, size, &width, &height);
-
-    ret = PyBytes_FromStringAndSize((char*)output, width * height * 3);
-    free(output);
-    return Py_BuildValue("Sii", ret, width, height);
-}
-
-
-PyObject* WebPDecodeRGBA_wrapper(PyObject* self, PyObject* args)
-{
-    PyBytesObject *webp_string;
-    int width;
-    int height;
-    uint8_t *webp;
-    uint8_t *output;
-    Py_ssize_t size;
-    PyObject *ret;
-
-    if (!PyArg_ParseTuple(args, "S", &webp_string)) {
+	if (!WebPInitDecoderConfig(&config)) {
         Py_INCREF(Py_None);
         return Py_None;
-    }
+    }		
 
     PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
 
-    output = WebPDecodeRGBA(webp, size, &width, &height);
+    vp8_status_code = WebPGetFeatures(webp, size, &config.input);
+	if (vp8_status_code == VP8_STATUS_OK) {
+		vp8_status_code = WebPDecode(webp, size, &config);
+	}	
+	
+	if (vp8_status_code != VP8_STATUS_OK) {
+        Py_INCREF(Py_None);
+        return Py_None;
+	}	
+	
+	if (config.output.colorspace < MODE_YUV) {
+		bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba, config.output.u.RGBA.size);
+	} else {
+		// Skipping YUV for now. 
+		bytes = PyBytes_FromStringAndSize((char *)config.output.u.YUVA.y, config.output.u.YUVA.y_size);
+	}
+	switch(config.output.colorspace) {
+		// UNDONE, alternate orderings
+	case MODE_RGB:
+		mode = "RGB";
+		break;
+	case MODE_RGBA:
+		mode = "RGBA";
+		break;
+	default:
+		mode = "ERR";
+	}
 
-    ret = PyBytes_FromStringAndSize((char*)output, width * height * 4);
-    free(output);
-    return Py_BuildValue("Sii", ret, width, height);
+	height = config.output.height;
+	width = config.output.width;
+
+
+	ret = Py_BuildValue("SiiS", bytes, width, height, PyBytes_FromString(mode));
+	WebPFreeDecBuffer(&config.output);
+	return ret;
 }
+
+
 
 
 static PyMethodDef webpMethods[] =
@@ -164,8 +179,7 @@ static PyMethodDef webpMethods[] =
     {"WebPGetFeatures", WebPGetFeatures_wrapper, METH_VARARGS, "WebPGetFeatures"},
     {"WebPEncodeRGB", WebPEncodeRGB_wrapper, METH_VARARGS, "WebPEncodeRGB"},
     {"WebPEncodeRGBA", WebPEncodeRGBA_wrapper, METH_VARARGS, "WebPEncodeRGBA"},
-    {"WebPDecodeRGB", WebPDecodeRGB_wrapper, METH_VARARGS, "WebPDecodeRGB"},
-    {"WebPDecodeRGBA", WebPDecodeRGBA_wrapper, METH_VARARGS, "WebPDecodeRGBA"},
+    {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
     {NULL, NULL}
 };
 
