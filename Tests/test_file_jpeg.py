@@ -120,6 +120,12 @@ def test_optimize_large_buffer():
 	im = Image.new("RGB", (4096,4096), 0xff3333)
 	im.save(f, format="JPEG", optimize=True)
 
+def test_large_exif():
+	#https://github.com/python-imaging/Pillow/issues/148
+	f = tempfile('temp.jpg')
+	im = lena()
+	im.save(f,'JPEG', quality=90, exif=b"1"*65532)
+
 def test_progressive():
     im1 = roundtrip(lena())
     im2 = roundtrip(lena(), progressive=1)

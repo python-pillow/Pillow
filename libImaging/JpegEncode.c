@@ -219,24 +219,29 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    jpeg_start_compress(&context->cinfo, FALSE);
             /* suppress extra section */
             context->extra_offset = context->extra_size;
-	    //add exif header
-	    if (context->rawExifLen > 0)
-		jpeg_write_marker(&context->cinfo, JPEG_APP0+1, (unsigned char*)context->rawExif, context->rawExifLen);
-
 	    break;
 	default:
 	    /* interchange stream */
 	    jpeg_start_compress(&context->cinfo, TRUE);
-	    //add exif header
-	    if (context->rawExifLen > 0)
-		jpeg_write_marker(&context->cinfo, JPEG_APP0+1, (unsigned char*)context->rawExif, context->rawExifLen);
-
 	    break;
 	}
 	state->state++;
 	/* fall through */
 
     case 2:
+        // check for exif len + 'APP1' header bytes 
+        if (context->rawExifLen + 5 >  context->destination.pub.free_in_buffer){
+            break;
+        }
+        //add exif header
+        if (context->rawExifLen > 0){
+            jpeg_write_marker(&context->cinfo, JPEG_APP0+1, 
+                              (unsigned char*)context->rawExif, context->rawExifLen);
+        }
+
+	state->state++;
+	/* fall through */
+    case 3:
 
         if (context->extra) {
             /* copy extra buffer to output buffer */
@@ -255,7 +260,10 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         } else
 	    state->state++;
 
-    case 3:
+    case 4:
+        if (1024 > context->destination.pub.free_in_buffer){
+            break;
+        }
 
 	ok = 1;
 	while (state->y < state->ysize) {
@@ -273,7 +281,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	state->state++;
 	/* fall through */
 
-    case 4:
+    case 5:
 
 	/* Finish compression */
 	if (context->destination.pub.free_in_buffer < 100)
