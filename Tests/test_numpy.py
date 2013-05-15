@@ -41,7 +41,10 @@ def test_numpy_to_image():
     assert_exception(TypeError, lambda: to_image(numpy.uint64))
 
     assert_image(to_image(numpy.int8), "I", (10, 10))
-    assert_image(to_image(numpy.int16), "I;16", (10, 10))
+    if Image._ENDIAN == '<': # Little endian
+        assert_image(to_image(numpy.int16), "I;16", (10, 10))
+    else:
+        assert_image(to_image(numpy.int16), "I;16B", (10, 10))
     assert_image(to_image(numpy.int32), "I", (10, 10))
     assert_exception(TypeError, lambda: to_image(numpy.int64))
 

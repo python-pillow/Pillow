@@ -408,7 +408,6 @@ static PyObject *
 SaneDev_set_auto_option(SaneDevObject *self, PyObject *args)
 {
   SANE_Status st;
-  const SANE_Option_Descriptor *d;
   SANE_Int i;
   int n;
   
@@ -419,7 +418,6 @@ SaneDev_set_auto_option(SaneDevObject *self, PyObject *args)
       PyErr_SetString(ErrorObject, "SaneDev object is closed");
       return NULL;
     }
-  d=sane_get_option_descriptor(self->h, n);
   st=sane_control_option(self->h, n, SANE_ACTION_SET_AUTO,
 			 NULL, &i);
   if (st) {return PySane_Error(st);}

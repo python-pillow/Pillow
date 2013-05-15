@@ -10,8 +10,8 @@ def test_toarray():
         return ai["shape"], ai["typestr"], len(ai["data"])
     # assert_equal(test("1"), ((100, 128), '|b1', 1600))
     assert_equal(test("L"), ((100, 128), '|u1', 12800))
-    assert_equal(test("I"), ((100, 128), '<i4', 51200)) # FIXME: wrong?
-    assert_equal(test("F"), ((100, 128), '<f4', 51200)) # FIXME: wrong?
+    assert_equal(test("I"), ((100, 128), Image._ENDIAN + 'i4', 51200)) # FIXME: wrong?
+    assert_equal(test("F"), ((100, 128), Image._ENDIAN + 'f4', 51200)) # FIXME: wrong?
     assert_equal(test("RGB"), ((100, 128, 3), '|u1', 38400))
     assert_equal(test("RGBA"), ((100, 128, 4), '|u1', 51200))
     assert_equal(test("RGBX"), ((100, 128, 4), '|u1', 51200))

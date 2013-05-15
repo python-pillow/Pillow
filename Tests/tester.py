@@ -171,11 +171,16 @@ def assert_image_similar(a, b, epsilon, msg=None):
         success()
 
 def tempfile(template, *extra):
-    import os, sys
+    import os, os.path, sys, tempfile
     files = []
+    root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
+    try:
+        os.mkdir(root)
+    except OSError:
+        pass
     for temp in (template,) + extra:
         assert temp[:5] in ("temp.", "temp_")
-        root, name = os.path.split(sys.argv[0])
+        name = os.path.basename(sys.argv[0])
         name = temp[:4] + os.path.splitext(name)[0][4:]
         name = name + "_%d" % len(_tempfiles) + temp[4:]
         name = os.path.join(root, name)
@@ -229,12 +234,18 @@ def _setup():
         if success.count and not failure.count:
             print("ok")
             # only clean out tempfiles if test passed
-            import os
+            import os, os.path, tempfile
             for file in _tempfiles:
                 try:
                     os.remove(file)
                 except OSError:
                     pass # report?
+            temp_root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
+            try:
+                os.rmdir(temp_root)
+            except OSError:
+                pass
+
         if "--coverage" in sys.argv:
             import coverage
             coverage.stop()
