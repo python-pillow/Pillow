@@ -5,61 +5,32 @@
 #include <webp/types.h>
 
 
-PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
+PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 {
     PyBytesObject *rgb_string;
     int width;
     int height;
-    int stride;
     float quality_factor;
     uint8_t *rgb;
     uint8_t *output;
+	char *mode;
     Py_ssize_t size;
     size_t ret_size;
 
-    if (!PyArg_ParseTuple(args, "Siiif", &rgb_string, &width, &height, &stride, &quality_factor)) {
+    if (!PyArg_ParseTuple(args, "Siifs", &rgb_string, &width, &height, &quality_factor, &mode)) {
         Py_RETURN_NONE;
     }
 
     PyBytes_AsStringAndSize((PyObject *) rgb_string, (char**)&rgb, &size);
 
-    if (stride * height > size) {
-        Py_RETURN_NONE;
-    }
+	if (strcmp(mode, "RGBA")==0){
+		ret_size = WebPEncodeRGBA(rgb, width, height, 4* width, quality_factor, &output);
+	} else if (strcmp(mode, "RGB")==0){
+		ret_size = WebPEncodeRGB(rgb, width, height, 3* width, quality_factor, &output);
+	} else {
+		Py_RETURN_NONE;
+	}
 
-    ret_size = WebPEncodeRGB(rgb, width, height, stride, quality_factor, &output);
-    if (ret_size > 0) {
-        PyObject *ret = PyBytes_FromStringAndSize((char*)output, ret_size);
-        free(output);
-        return ret;
-    }
-    Py_RETURN_NONE;
-}
-
-
-PyObject* WebPEncodeRGBA_wrapper(PyObject* self, PyObject* args)
-{
-    PyBytesObject *rgba_string;
-    int width;
-    int height;
-    int stride;
-    float quality_factor;
-    uint8_t *rgba;
-    uint8_t *output;
-    Py_ssize_t size;
-    size_t ret_size;
-
-    if (!PyArg_ParseTuple(args, "Siiif", &rgba_string, &width, &height, &stride, &quality_factor)) {
-        Py_RETURN_NONE;
-   }
-
-    PyBytes_AsStringAndSize((PyObject *) rgba_string, (char**)&rgba, &size);
-
-    if (stride * height > size) {
-        Py_RETURN_NONE;
-    }
-
-    ret_size = WebPEncodeRGBA(rgba, width, height, stride, quality_factor, &output);
     if (ret_size > 0) {
         PyObject *ret = PyBytes_FromStringAndSize((char*)output, ret_size);
         free(output);
@@ -141,8 +112,7 @@ PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
 
 static PyMethodDef webpMethods[] =
 {
-    {"WebPEncodeRGB", WebPEncodeRGB_wrapper, METH_VARARGS, "WebPEncodeRGB"},
-    {"WebPEncodeRGBA", WebPEncodeRGBA_wrapper, METH_VARARGS, "WebPEncodeRGBA"},
+    {"WebPEncode", WebPEncode_wrapper, METH_VARARGS, "WebPEncode"},
     {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
     {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_VARARGS, "WebPVersion"},
     {"WebPDecoderBuggyAlpha", WebPDecoderBuggyAlpha_wrapper, METH_VARARGS, "WebPDecoderBuggyAlpha"},

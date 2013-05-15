@@ -5,8 +5,8 @@ import _webp
 
 
 _VALID_WEBP_ENCODERS_BY_MODE = {
-    "RGB": _webp.WebPEncodeRGB,
-    "RGBA": _webp.WebPEncodeRGBA,
+    "RGB": _webp.WebPEncode,
+    "RGBA": _webp.WebPEncode,
     }
 
 
@@ -50,20 +50,17 @@ class WebPImageFile(ImageFile.ImageFile):
 
 def _save(im, fp, filename):
     image_mode = im.mode
-    if image_mode not in _VALID_WEBP_ENCODERS_BY_MODE:
+    if im.mode not in _VALID_WEBP_ENCODERS_BY_MODE:
         raise IOError("cannot write mode %s as WEBP" % image_mode)
-
-    webp_encoder = _VALID_WEBP_ENCODERS_BY_MODE[image_mode]
     
-    stride = im.size[0] * _STRIDE_MULTIPLIERS_BY_MODE[image_mode]
     quality = im.encoderinfo.get("quality", 80)
     
-    data = webp_encoder(
+    data = _webp.WebPEncode(
         im.tobytes(),
         im.size[0],
         im.size[1],
-        stride,
         float(quality),
+		im.mode
         )
     fp.write(data)
 
