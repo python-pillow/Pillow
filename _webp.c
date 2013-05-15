@@ -5,36 +5,6 @@
 #include <webp/types.h>
 
 
-PyObject* WebPGetFeatures_wrapper(PyObject* self, PyObject* args)
-{
-    PyBytesObject *webp_string;
-    uint8_t* webp = NULL;
-    VP8StatusCode vp8_status_code = VP8_STATUS_OK;
-    Py_ssize_t size;
-    WebPBitstreamFeatures features;
-
-
-    if (!PyArg_ParseTuple(args, "S", &webp_string)) {
-        Py_RETURN_NONE;
-    }
-
-    PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
-
-    vp8_status_code = WebPGetFeatures(webp, size, &features);
-
-    if (vp8_status_code == VP8_STATUS_OK) {
-        printf("%i", features.has_alpha);
-
-    } else {
-        // TODO: raise some sort of error
-        printf("Error occured checking webp file with code: %d\n", vp8_status_code);
-        Py_RETURN_NONE;
-   }
-
-    return Py_BuildValue("b", features.has_alpha);
-}
-
-
 PyObject* WebPEncodeRGB_wrapper(PyObject* self, PyObject* args)
 {
     PyBytesObject *rgb_string;
@@ -171,7 +141,6 @@ PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
 
 static PyMethodDef webpMethods[] =
 {
-    {"WebPGetFeatures", WebPGetFeatures_wrapper, METH_VARARGS, "WebPGetFeatures"},
     {"WebPEncodeRGB", WebPEncodeRGB_wrapper, METH_VARARGS, "WebPEncodeRGB"},
     {"WebPEncodeRGBA", WebPEncodeRGBA_wrapper, METH_VARARGS, "WebPEncodeRGBA"},
     {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
