@@ -41,7 +41,7 @@
 
 
 /* -------------------------------------------------------------------- */
-/* Common								*/
+/* Common                                                               */
 /* -------------------------------------------------------------------- */
 
 typedef struct {
@@ -108,7 +108,7 @@ _decode(ImagingDecoderObject* decoder, PyObject* args)
     int bufsize, status;
 
     if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH, &buffer, &bufsize))
-	return NULL;
+        return NULL;
 
     status = decoder->decode(decoder->im, &decoder->state, buffer, bufsize);
 
