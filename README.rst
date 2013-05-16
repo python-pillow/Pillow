@@ -134,7 +134,9 @@ Some (most?) of Pillow's features require external libraries.
 
 * **littlecms** provides color management 
 
-* **libwebp** provides the Webp format. 
+* **libwebp** provides the Webp format.
+
+  * Pillow has been tested with version **0.1.3**, which does not read transparent webp files. Version **0.3.0** supports transparency.  
 
 If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg)
 
