@@ -190,6 +190,14 @@ if __name__ == "__main__":
     check_module("FREETYPE2", "_imagingft")
     check_module("LITTLECMS", "_imagingcms")
     check_module("WEBP", "_webp")
+    try:
+        import _webp
+        if _webp.WebPDecoderBuggyAlpha():
+            print("***", "Transparent WEBP", "support not installed")
+        else:
+            print("---", "Transparent WEBP", "support ok")
+    except Exception:
+        pass
     print("-"*68)
 
     # use doctest to make sure the test program behaves as documented!
