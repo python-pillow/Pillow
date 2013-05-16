@@ -7,7 +7,6 @@
 
 PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 {
-    PyBytesObject *rgb_string;
     int width;
     int height;
     float quality_factor;
@@ -17,15 +16,19 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     Py_ssize_t size;
     size_t ret_size;
 
-    if (!PyArg_ParseTuple(args, "Siifs", &rgb_string, &width, &height, &quality_factor, &mode)) {
+    if (!PyArg_ParseTuple(args, "s#iifs",(char**)&rgb, &size, &width, &height, &quality_factor, &mode)) {
         Py_RETURN_NONE;
     }
 
-    PyBytes_AsStringAndSize((PyObject *) rgb_string, (char**)&rgb, &size);
-
 	if (strcmp(mode, "RGBA")==0){
+		if (size < width * height * 4){
+			Py_RETURN_NONE;
+		}
 		ret_size = WebPEncodeRGBA(rgb, width, height, 4* width, quality_factor, &output);
 	} else if (strcmp(mode, "RGB")==0){
+		if (size < width * height * 3){
+			Py_RETURN_NONE;
+		}
 		ret_size = WebPEncodeRGB(rgb, width, height, 3* width, quality_factor, &output);
 	} else {
 		Py_RETURN_NONE;

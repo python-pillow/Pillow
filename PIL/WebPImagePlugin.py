@@ -4,23 +4,10 @@ from io import BytesIO
 import _webp
 
 
-_VALID_WEBP_ENCODERS_BY_MODE = {
-    "RGB": _webp.WebPEncode,
-    "RGBA": _webp.WebPEncode,
+_VALID_WEBP_MODES = {
+    "RGB": True,
+    "RGBA": True,
     }
-
-
-_VALID_WEBP_DECODERS_BY_MODE = {
-    "RGB": _webp.WebPDecode,
-    "RGBA": _webp.WebPDecode,
-    }
-
-
-_STRIDE_MULTIPLIERS_BY_MODE = {
-    "RGB": 3,
-    "RGBA": 4,
-    }
-
 
 _VP8_MODES_BY_IDENTIFIER = {
     b"VP8 ": "RGB",
@@ -50,7 +37,7 @@ class WebPImageFile(ImageFile.ImageFile):
 
 def _save(im, fp, filename):
     image_mode = im.mode
-    if im.mode not in _VALID_WEBP_ENCODERS_BY_MODE:
+    if im.mode not in _VALID_WEBP_MODES:
         raise IOError("cannot write mode %s as WEBP" % image_mode)
     
     quality = im.encoderinfo.get("quality", 80)
