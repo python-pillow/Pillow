@@ -554,6 +554,7 @@ def _save(im, fp, filename):
         info.get("exif", b"")
         )
 
+
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image in a shot.
     # Guessing on the size, at im.size bytes. (raw pizel size is channels*size, this
     # is a value that's been used in a django patch.
@@ -561,6 +562,10 @@ def _save(im, fp, filename):
     bufsize=0
     if "optimize" in info:
         bufsize = im.size[0]*im.size[1]
+        
+    # The exif info needs to be written as one block, + APP1, + one spare byte.
+	# Ensure that our buffer is big enough
+    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(info.get("exif",b"")) + 5 )
 
     ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)], bufsize)
 
