@@ -211,7 +211,7 @@ class ImageFile(Image.Image):
 
                         # JpegDecode needs to clean things up here either way
                         # If we don't destroy the decompressor, we have a memory leak.
-                        #d.cleanup()
+                        d.cleanup()
                         
                         if LOAD_TRUNCATED_IMAGES:
                             break
