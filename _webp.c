@@ -75,6 +75,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
     }   
     
     if (vp8_status_code != VP8_STATUS_OK) {
+        WebPFreeDecBuffer(&config.output);
         Py_RETURN_NONE;
     }   
     
