@@ -47,7 +47,8 @@
 typedef struct {
     PyObject_HEAD
     int (*decode)(Imaging im, ImagingCodecState state,
-		  UINT8* buffer, int bytes);
+                  UINT8* buffer, int bytes);
+    int (*cleanup)(ImagingCodecState state);
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject* lock;
@@ -88,6 +89,9 @@ PyImaging_DecoderNew(int contextsize)
     /* Target image */
     decoder->lock = NULL;
     decoder->im = NULL;
+    
+    /* Initialize the cleanup function pointer */
+    decoder->cleanup = NULL;
 
     return decoder;
 }
@@ -114,6 +118,20 @@ _decode(ImagingDecoderObject* decoder, PyObject* args)
 
     return Py_BuildValue("ii", status, decoder->state.errcode);
 }
+
+static PyObject* 
+_decode_cleanup(ImagingDecoderObject* decoder, PyObject* args)
+{
+    int status = 0;
+
+    if (decoder->cleanup){
+        status = decoder->cleanup(&decoder->state);
+    }
+
+    return Py_BuildValue("i", status);
+}
+
+
 
 extern Imaging PyImaging_AsImaging(PyObject *op);
 
@@ -756,6 +774,7 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
         return NULL;
 
     decoder->decode = ImagingJpegDecode;
+    decoder->cleanup = ImagingJpegDecodeCleanup;
 
     strncpy(((JPEGSTATE*)decoder->state.context)->rawmode, rawmode, 8);
     strncpy(((JPEGSTATE*)decoder->state.context)->jpegmode, jpegmode, 8);
