@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
     print("-"*68)
     #print("PIL", Image.VERSION, "TEST SUMMARY ")
-    print("PIL (Pillow) TEST SUMMARY ")
+    print("PIL TEST SUMMARY ")
     print("-"*68)
     print("Python modules loaded from", os.path.dirname(Image.__file__))
     print("Binary modules loaded from", os.path.dirname(Image.core.__file__))
