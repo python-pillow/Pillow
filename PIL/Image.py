@@ -1944,7 +1944,7 @@ def fromarray(obj, mode=None):
 
     size = shape[1], shape[0]
     if strides is not None:
-        obj = obj.tobytes()
+        obj = obj.tostring()
 
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
