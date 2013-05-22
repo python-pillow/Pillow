@@ -1,5 +1,9 @@
 from __future__ import print_function
 
+# require that deprecation warnings are triggered 
+import warnings
+warnings.simplefilter('default')
+
 import sys
 py3 = (sys.version_info >= (3,0))
 
