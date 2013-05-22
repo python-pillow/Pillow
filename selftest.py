@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
     print("-"*68)
     #print("PIL", Image.VERSION, "TEST SUMMARY ")
-    print("PIL (Pillow) TEST SUMMARY ")
+    print("PIL TEST SUMMARY ")
     print("-"*68)
     print("Python modules loaded from", os.path.dirname(Image.__file__))
     print("Binary modules loaded from", os.path.dirname(Image.core.__file__))
@@ -201,6 +201,14 @@ if __name__ == "__main__":
     check_module("FREETYPE2", "PIL._imagingft")
     check_module("LITTLECMS", "PIL._imagingcms")
     check_module("WEBP", "PIL._webp")
+    try:
+        from PIL import _webp
+        if _webp.WebPDecoderBuggyAlpha():
+            print("***", "Transparent WEBP", "support not installed")
+        else:
+            print("---", "Transparent WEBP", "support ok")
+    except Exception:
+        pass
     print("-"*68)
 
     # use doctest to make sure the test program behaves as documented!

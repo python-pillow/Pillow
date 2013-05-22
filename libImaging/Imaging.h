@@ -417,6 +417,8 @@ extern int ImagingHexDecode(Imaging im, ImagingCodecState state,
 #ifdef	HAVE_LIBJPEG
 extern int ImagingJpegDecode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);
+extern int ImagingJpegDecodeCleanup(ImagingCodecState state);
+
 extern int ImagingJpegEncode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);
 #endif

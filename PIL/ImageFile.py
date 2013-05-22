@@ -209,6 +209,10 @@ class ImageFile(Image.Image):
                     if not s: # truncated jpeg
                         self.tile = []
 
+                        # JpegDecode needs to clean things up here either way
+                        # If we don't destroy the decompressor, we have a memory leak.
+                        d.cleanup()
+                        
                         if LOAD_TRUNCATED_IMAGES:
                             break
                         else:
