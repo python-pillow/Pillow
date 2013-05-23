@@ -17,7 +17,7 @@
 # extensions.)
 ##
 
-import _imaginggl
+from PIL import _imaginggl
 
 ##
 # Texture factory.

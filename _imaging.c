@@ -71,6 +71,7 @@
  * See the README file for information on usage and redistribution.
  */
 
+#define PILLOW_VERSION "2.1.0"
 
 #include "Python.h"
 
@@ -3429,6 +3430,8 @@ setup_module(PyObject* m) {
     PyDict_SetItemString(d, "zlib_version", PyUnicode_FromString(ImagingZipVersion()));
   }
 #endif
+
+    PyDict_SetItemString(d, "PILLOW_VERSION", PyUnicode_FromString(PILLOW_VERSION));
 
     return 0;
 }
