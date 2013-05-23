@@ -3,7 +3,7 @@ from tester import *
 from PIL import Image
 
 try:
-    import _webp
+    from PIL import _webp
 except:
     skip('webp support not installed')
 
