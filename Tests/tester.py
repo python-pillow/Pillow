@@ -3,6 +3,15 @@ from __future__ import print_function
 # require that deprecation warnings are triggered 
 import warnings
 warnings.simplefilter('default')
+# temporarily turn off resource warnings that warn about unclosed
+# files in the test scripts. 
+try:
+	warnings.filterwarnings("ignore", category=ResourceWarning)
+except NameError:
+	# we expect a NameError on py2.x, since it doesn't have ResourceWarnings.
+	pass
+
+
 
 import sys
 py3 = (sys.version_info >= (3,0))
