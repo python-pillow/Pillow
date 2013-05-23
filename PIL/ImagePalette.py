@@ -47,7 +47,11 @@ class ImagePalette:
             raise ValueError("palette contains raw palette data")
         if isinstance(self.palette, bytes):
             return self.palette
-        return array.array("B", self.palette).tostring()
+        arr = array.array("B", self.palette)
+        if hasattr(arr, 'tobytes'):
+            #py3k has a tobytes, tostring is deprecated.
+            return arr.tobytes()
+        return arr.tostring()
 
     # Declare tostring as an alias for tobytes
     tostring = tobytes
