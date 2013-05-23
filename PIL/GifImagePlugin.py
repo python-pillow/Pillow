@@ -293,7 +293,6 @@ def _save(im, fp, filename):
              o8(8))                     # bits
 
     imOut.encoderconfig = (8, interlace)
-
     ImageFile._save(imOut, fp, [("gif", (0,0)+im.size, 0, rawmode)])
 
     fp.write(b"\0") # end of image data
@@ -303,6 +302,7 @@ def _save(im, fp, filename):
     try:
         fp.flush()
     except: pass
+    
 
 def _save_netpbm(im, fp, filename):
 
@@ -329,42 +329,77 @@ def getheader(im, palette=None, info=None):
 
     optimize = info and info.get("optimize", 0)
 
+    # start of header
     s = [
         b"GIF87a" +             # magic
         o16(im.size[0]) +       # size
-        o16(im.size[1]) +
-        o8(7 + 128) +           # flags: bits + palette
-        o8(0) +                 # background
-        o8(0)                   # reserved/aspect
+        o16(im.size[1])
     ]
-
-    if optimize:
-        # minimize color palette
-        i = 0
-        maxcolor = 0
-        for count in im.histogram():
-            if count:
-                maxcolor = i
-            i = i + 1
+    
+    # if the user adds a palette, use it
+    if palette is not None and isinstance(palette, bytes):
+        paletteBytes = palette
     else:
-        maxcolor = 256
-
-    # global palette
-    if im.mode == "P":
-        # colour palette
-        if palette is not None and isinstance(palette, bytes):
-            paletteBytes = palette
+        usedPaletteColors = []
+        
+        if optimize:
+            # minimize color palette if wanted
+            i = 0
+            for count in im.histogram():
+                if count:
+                    usedPaletteColors.append(i)
+                i += 1
+    
+        countUsedPaletteColors = len(usedPaletteColors)
+        
+        # create the global palette
+        if im.mode == "P":
+            # colour palette
+            if countUsedPaletteColors > 0:
+                paletteBytes = b"";
+                # pick only the used colors from the palette
+                for i in usedPaletteColors:
+                    paletteBytes += im.im.getpalette("RGB")[i*3:i*3+3]
+            else :
+                paletteBytes = im.im.getpalette("RGB")[:768]
         else:
-            paletteBytes =im.im.getpalette("RGB")[:maxcolor*3]
-            
-        s.append(paletteBytes)
-
-    else:
-        # greyscale
-        for i in range(maxcolor):
-            s.append(o8(i) * 3)
-
+            # greyscale
+            if countUsedPaletteColors > 0:
+                paletteBytes = b"";
+                # add only the used grayscales to the palette
+                for i in usedPaletteColors:
+                    paletteBytes += o8(i)*3
+            else :
+                paletteBytes = bytes([i//3 for i in range(768)])
+        
+        # TODO improve this, maybe add numpy support
+        # replace the palette color id of all pixel with the new id
+        if countUsedPaletteColors > 0 and countUsedPaletteColors < 256:
+            imageBytes = bytearray(im.tobytes())
+            for i in range(len(imageBytes)):
+                for newI in range(countUsedPaletteColors):
+                    if imageBytes[i] == usedPaletteColors[newI]: 
+                        imageBytes[i] = newI
+                    
+            im.frombytes(bytes(imageBytes))
+                
+    # calculate the palette size for the header
+    import math
+    colorTableSize = math.ceil(math.log(len(paletteBytes)//3, 2))-1
+    s.append(o8(colorTableSize + 128)) # size of global color table + global color table flag
+    s.append(o8(0) + o8(0)) # background + reserved/aspect
+    # end of screen descriptor header
+    
+    # add the missing amount of bytes
+    # the palette can only be 2<<n in size
+    actualTargetSizeDiff = (2<<colorTableSize) - len(paletteBytes)//3
+    if actualTargetSizeDiff > 0:
+        paletteBytes += o8(0) * 3 * actualTargetSizeDiff
+        
+    # global color palette
+    s.append(paletteBytes)
     return s
+    
 
 def getdata(im, offset = (0, 0), **params):
     """Return a list of strings representing this image.
