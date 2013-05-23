@@ -252,7 +252,7 @@ def _save(im, fp, filename):
         palette = im.encoderinfo["palette"]
     except KeyError:
         palette = None
-    
+
     for s in getheader(imOut, palette, im.encoderinfo):
         fp.write(s)
 
@@ -302,7 +302,7 @@ def _save(im, fp, filename):
     try:
         fp.flush()
     except: pass
-    
+
 
 def _save_netpbm(im, fp, filename):
 
@@ -335,13 +335,13 @@ def getheader(im, palette=None, info=None):
         o16(im.size[0]) +       # size
         o16(im.size[1])
     ]
-    
+
     # if the user adds a palette, use it
     if palette is not None and isinstance(palette, bytes):
         paletteBytes = palette
     else:
         usedPaletteColors = []
-        
+
         if optimize:
             # minimize color palette if wanted
             i = 0
@@ -349,9 +349,9 @@ def getheader(im, palette=None, info=None):
                 if count:
                     usedPaletteColors.append(i)
                 i += 1
-    
+
         countUsedPaletteColors = len(usedPaletteColors)
-        
+
         # create the global palette
         if im.mode == "P":
             # colour palette
@@ -371,18 +371,19 @@ def getheader(im, palette=None, info=None):
                     paletteBytes += o8(i)*3
             else :
                 paletteBytes = bytes([i//3 for i in range(768)])
-        
+
         # TODO improve this, maybe add numpy support
         # replace the palette color id of all pixel with the new id
         if countUsedPaletteColors > 0 and countUsedPaletteColors < 256:
             imageBytes = bytearray(im.tobytes())
             for i in range(len(imageBytes)):
                 for newI in range(countUsedPaletteColors):
-                    if imageBytes[i] == usedPaletteColors[newI]: 
+                    if imageBytes[i] == usedPaletteColors[newI]:
                         imageBytes[i] = newI
-                    
+                        break
+
             im.frombytes(bytes(imageBytes))
-                
+
     # calculate the palette size for the header
     import math
     colorTableSize = math.ceil(math.log(len(paletteBytes)//3, 2))-1
@@ -390,17 +391,17 @@ def getheader(im, palette=None, info=None):
     s.append(o8(colorTableSize + 128)) # size of global color table + global color table flag
     s.append(o8(0) + o8(0)) # background + reserved/aspect
     # end of screen descriptor header
-    
+
     # add the missing amount of bytes
     # the palette has to be 2<<n in size
     actualTargetSizeDiff = (2<<colorTableSize) - len(paletteBytes)//3
     if actualTargetSizeDiff > 0:
         paletteBytes += o8(0) * 3 * actualTargetSizeDiff
-        
+
     # global color palette
     s.append(paletteBytes)
     return s
-    
+
 
 def getdata(im, offset = (0, 0), **params):
     """Return a list of strings representing this image.
