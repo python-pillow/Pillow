@@ -355,7 +355,7 @@ def getheader(im, palette=None, info=None):
         # create the global palette
         if im.mode == "P":
             # colour palette
-            if countUsedPaletteColors > 0:
+            if countUsedPaletteColors > 0 and countUsedPaletteColors < 256:
                 paletteBytes = b"";
                 # pick only the used colors from the palette
                 for i in usedPaletteColors:
@@ -364,7 +364,7 @@ def getheader(im, palette=None, info=None):
                 paletteBytes = im.im.getpalette("RGB")[:768]
         else:
             # greyscale
-            if countUsedPaletteColors > 0:
+            if countUsedPaletteColors > 0 and countUsedPaletteColors < 256:
                 paletteBytes = b"";
                 # add only the used grayscales to the palette
                 for i in usedPaletteColors:
@@ -391,7 +391,7 @@ def getheader(im, palette=None, info=None):
     # end of screen descriptor header
     
     # add the missing amount of bytes
-    # the palette can only be 2<<n in size
+    # the palette has to be 2<<n in size
     actualTargetSizeDiff = (2<<colorTableSize) - len(paletteBytes)//3
     if actualTargetSizeDiff > 0:
         paletteBytes += o8(0) * 3 * actualTargetSizeDiff
