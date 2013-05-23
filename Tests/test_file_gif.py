@@ -9,7 +9,8 @@ if "gif_encoder" not in codecs or "gif_decoder" not in codecs:
 
 # sample gif stream
 file = "Images/lena.gif"
-data = open(file, "rb").read()
+with open(file, "rb") as f:
+    data = f.read()
 
 def test_sanity():
     im = Image.open(file)
