@@ -386,6 +386,7 @@ def getheader(im, palette=None, info=None):
     # calculate the palette size for the header
     import math
     colorTableSize = math.ceil(math.log(len(paletteBytes)//3, 2))-1
+    if colorTableSize < 0: colorTableSize = 0
     s.append(o8(colorTableSize + 128)) # size of global color table + global color table flag
     s.append(o8(0) + o8(0)) # background + reserved/aspect
     # end of screen descriptor header

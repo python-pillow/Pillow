@@ -25,4 +25,4 @@ def test_optimize():
         im.save(file, "GIF", optimize=optimize)
         return len(file.getvalue())
     assert_equal(test(0), 800)
-    assert_equal(test(1), 32)
+    assert_equal(test(1), 38)
