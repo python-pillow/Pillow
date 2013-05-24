@@ -9,7 +9,8 @@ if "gif_encoder" not in codecs or "gif_decoder" not in codecs:
 
 # sample gif stream
 file = "Images/lena.gif"
-data = open(file, "rb").read()
+with open(file, "rb") as f:
+    data = f.read()
 
 def test_sanity():
     im = Image.open(file)
@@ -25,4 +26,4 @@ def test_optimize():
         im.save(file, "GIF", optimize=optimize)
         return len(file.getvalue())
     assert_equal(test(0), 800)
-    assert_equal(test(1), 32)
+    assert_equal(test(1), 38)

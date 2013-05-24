@@ -285,10 +285,9 @@ class pil_build_ext(build_ext):
             elif _find_library_file(self, "tk" + TCL_VERSION):
                 feature.tk = "tk" + TCL_VERSION
 
-        if (
-                _find_include_file(self, "webp/encode.h") and
+        if (_find_include_file(self, "webp/encode.h") and
                 _find_include_file(self, "webp/decode.h")):
-            if _find_library_file(self, "webp"):
+            if _find_library_file(self, "webp"): # in googles precompiled zip it is call "libwebp"
                 feature.webp = "webp"
 
         #
