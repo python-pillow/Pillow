@@ -45,5 +45,10 @@ def test_path():
     assert_equal(list(p), [(0.0, 1.0)])
     p = ImagePath.Path(array.array("f", [0, 1]))
     assert_equal(list(p), [(0.0, 1.0)])
-    p = ImagePath.Path(array.array("f", [0, 1]).tostring())
+
+    arr = array.array("f", [0, 1])
+    if hasattr(arr, 'tobytes'):
+        p = ImagePath.Path(arr.tobytes())
+    else:
+        p = ImagePath.Path(arr.tostring())
     assert_equal(list(p), [(0.0, 1.0)])
