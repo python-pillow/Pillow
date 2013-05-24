@@ -208,6 +208,8 @@ font_getsize(FontObject* self, PyObject* args)
 
     for (x = i = 0; font_getchar(string, i, &ch); i++) {
         int index, error;
+        FT_BBox bbox;
+        FT_Glyph glyph;
         face = self->face;
         index = FT_Get_Char_Index(face, ch);
         if (kerning && last_index && index) {
@@ -223,8 +225,6 @@ font_getsize(FontObject* self, PyObject* args)
             xoffset = face->glyph->metrics.horiBearingX;
         x += face->glyph->metrics.horiAdvance;
 
-        FT_BBox bbox;
-        FT_Glyph glyph;
         FT_Get_Glyph(face->glyph, &glyph);
         FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_SUBPIXELS, &bbox);
         if (bbox.yMax > y_max)
@@ -315,6 +315,8 @@ font_render(FontObject* self, PyObject* args)
     PyObject* string;
     Py_ssize_t id;
     int mask = 0;
+    int temp;
+    int xx, x0, x1;
     if (!PyArg_ParseTuple(args, "On|i:render", &string, &id, &mask))
         return NULL;
 
@@ -333,7 +335,6 @@ font_render(FontObject* self, PyObject* args)
     if (mask)
         load_flags |= FT_LOAD_TARGET_MONO;
 
-    int temp;
     ascender = 0;
     for (i = 0; font_getchar(string, i, &ch); i++) {
         index = FT_Get_Char_Index(self->face, ch);
@@ -363,7 +364,6 @@ font_render(FontObject* self, PyObject* args)
 
         glyph = self->face->glyph;
 
-        int xx, x0, x1;
         source = (unsigned char*) glyph->bitmap.buffer;
         xx = x + glyph->bitmap_left;
         x0 = 0;
