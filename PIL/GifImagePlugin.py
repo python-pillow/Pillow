@@ -253,7 +253,8 @@ def _save(im, fp, filename):
     except KeyError:
         palette = None
 
-    for s in getheader(imOut, palette, im.encoderinfo):
+    header, usedPaletteColors = getheader(imOut, palette, im.encoderinfo)
+    for s in header:
         fp.write(s)
 
     flags = 0
@@ -275,14 +276,28 @@ def _save(im, fp, filename):
     except KeyError:
         pass
     else:
+        transparency = int(transparency)
+        # optimize the block away if transparent color is not used
+        transparentColorExists = True
+        # adjust the transparency index after optimize
+        if usedPaletteColors is not None and len(usedPaletteColors) < 256:
+            for i in range(len(usedPaletteColors)):
+                if usedPaletteColors[i] == transparency:
+                    transparency = i
+                    transparentColorExists = True
+                    break
+                else:
+                    transparentColorExists = False
+        
         # transparency extension block
-        fp.write(b"!" +
-                 o8(249) +              # extension intro
-                 o8(4) +                # length
-                 o8(1) +                # transparency info present
-                 o16(0) +               # duration
-                 o8(int(transparency))  # transparency index
-                 + o8(0))
+        if transparentColorExists:
+            fp.write(b"!" +
+                     o8(249) +              # extension intro
+                     o8(4) +                # length
+                     o8(1) +                # transparency info present
+                     o16(0) +               # duration
+                     o8(transparency)       # transparency index
+                     + o8(0))
 
     # local image header
     fp.write(b"," +
@@ -330,13 +345,15 @@ def getheader(im, palette=None, info=None):
     optimize = info and info.get("optimize", 0)
 
     # start of header
-    s = [
+    header = [
         b"GIF87a" +             # magic
         o16(im.size[0]) +       # size
         o16(im.size[1])
     ]
 
     # if the user adds a palette, use it
+    usedPaletteColors = None
+    
     if palette is not None and isinstance(palette, bytes):
         paletteBytes = palette[:768]
     else:
@@ -388,8 +405,8 @@ def getheader(im, palette=None, info=None):
     import math
     colorTableSize = int(math.ceil(math.log(len(paletteBytes)//3, 2)))-1
     if colorTableSize < 0: colorTableSize = 0
-    s.append(o8(colorTableSize + 128)) # size of global color table + global color table flag
-    s.append(o8(0) + o8(0)) # background + reserved/aspect
+    header.append(o8(colorTableSize + 128)) # size of global color table + global color table flag
+    header.append(o8(0) + o8(0)) # background + reserved/aspect
     # end of screen descriptor header
 
     # add the missing amount of bytes
@@ -399,8 +416,8 @@ def getheader(im, palette=None, info=None):
         paletteBytes += o8(0) * 3 * actualTargetSizeDiff
 
     # global color palette
-    s.append(paletteBytes)
-    return s
+    header.append(paletteBytes)
+    return header, usedPaletteColors
 
 
 def getdata(im, offset = (0, 0), **params):
