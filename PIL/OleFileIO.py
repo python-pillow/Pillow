@@ -6,7 +6,7 @@ OleFileIO_PL:
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.24 2013-05-07 Philippe Lagadec - http://www.decalage.info
+version 0.25 2013-05-24 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -24,8 +24,8 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Philippe Lagadec, Fredrik Lundh (Secret Labs AB)"
-__date__    = "2013-05-07"
-__version__ = '0.24'
+__date__    = "2013-05-24"
+__version__ = '0.25'
 
 #--- LICENSE ------------------------------------------------------------------
 
@@ -116,10 +116,19 @@ __version__ = '0.24'
 #                      - new class OleMetadata to parse standard properties
 #                      - added get_metadata method
 # 2013-05-07 v0.24 PL: - a few improvements in OleMetadata
+# 2013-05-24 v0.25 PL: - getproperties: option to not convert some timestamps
+#                      - OleMetaData: total_edit_time is now a number of seconds,
+#                        not a timestamp
+#                      - getproperties: added support for VT_BOOL, VT_INT, V_UINT
+#                      - getproperties: filter out null chars from strings
+#                      - getproperties: raise non-fatal defects instead of
+#                        exceptions when properties cannot be parsed properly
 
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
+# + _raise_defect: store all defects that are not raised as exceptions, and
+#   display them in main for information.
 # + add path attrib to _OleDirEntry, set it once and for all in init or
 #   append_kids (then listdir/_list can be simplified)
 # - TESTS with Linux, MacOSX, Python 1.5.2, various files, PIL, ...
@@ -138,6 +147,8 @@ __version__ = '0.24'
 # - improve docstrings to show more sample uses
 # - see also original notes and FIXME below
 # - remove all obsolete FIXMEs
+# - OleMetadata: fix version attrib according to
+#   http://msdn.microsoft.com/en-us/library/dd945671%28v=office.12%29.aspx
 
 # IDEAS:
 # - allow _raise_defect to raise different exceptions, not only IOError
@@ -548,8 +559,10 @@ class OleMetadata:
             setattr(self, attrib, None)
         if olefile.exists("\x05SummaryInformation"):
             # get properties from the stream:
+            # (converting timestamps to python datetime, except total_edit_time,
+            # which is property #10)
             props = olefile.getproperties("\x05SummaryInformation",
-                convert_time=True)
+                convert_time=True, no_conversion=[10])
             # store them into this object's attributes:
             for i in range(len(self.SUMMARY_ATTRIBS)):
                 # ids for standards properties start at 0x01, until 0x13
@@ -572,11 +585,11 @@ class OleMetadata:
         print 'Properties from SummaryInformation stream:'
         for prop in self.SUMMARY_ATTRIBS:
             value = getattr(self, prop)
-            print '- %s: %s' % (prop, value)
+            print '- %s: %s' % (prop, repr(value))
         print 'Properties from DocumentSummaryInformation stream:'
         for prop in self.DOCSUM_ATTRIBS:
             value = getattr(self, prop)
-            print '- %s: %s' % (prop, value)
+            print '- %s: %s' % (prop, repr(value))
 
 
 #--- _OleStream ---------------------------------------------------------------
@@ -1663,89 +1676,140 @@ class OleFileIO:
         return self.root.name
 
 
-    def getproperties(self, filename, convert_time=False):
+    def getproperties(self, filename, convert_time=False, no_conversion=None):
         """
         Return properties described in substream.
 
         filename: path of stream in storage tree (see openstream for syntax)
         convert_time: bool, if True timestamps will be converted to Python datetime
+        no_conversion: None or list of int, timestamps not to be converted
+                       (for example total editing time is not a real timestamp)
         return: a dictionary of values indexed by id (integer)
         """
+        # make sure no_conversion is a list, just to simplify code below:
+        if no_conversion == None:
+            no_conversion = []
         fp = self.openstream(filename)
 
         data = {}
 
-        # header
-        s = fp.read(28)
-        clsid = _clsid(s[8:24])
+        try:
+            # header
+            s = fp.read(28)
+            clsid = _clsid(s[8:24])
 
-        # format id
-        s = fp.read(20)
-        fmtid = _clsid(s[:16])
-        fp.seek(i32(s, 16))
+            # format id
+            s = fp.read(20)
+            fmtid = _clsid(s[:16])
+            fp.seek(i32(s, 16))
 
-        # get section
-        s = "****" + fp.read(i32(fp.read(4))-4)
+            # get section
+            s = "****" + fp.read(i32(fp.read(4))-4)
+        except:
+            # catch exception while parsing property header, and only raise
+            # a DEFECT_INCORRECT then return an empty dict, because this is not
+            # a fatal error when parsing the whole file
+            exctype, excvalue = sys.exc_info()[:2]
+            self._raise_defect(DEFECT_INCORRECT, excvalue)
+            return data
 
         for i in range(i32(s, 4)):
+            try:
+                id = i32(s, 8+i*8)
+                offset = i32(s, 12+i*8)
+                type = i32(s, offset)
 
-            id = i32(s, 8+i*8)
-            offset = i32(s, 12+i*8)
-            type = i32(s, offset)
+                debug ('property id=%d: type=%d offset=%X' % (id, type, offset))
 
-            debug ('property id=%d: type=%d offset=%X' % (id, type, offset))
+                # test for common types first (should perhaps use
+                # a dictionary instead?)
 
-            # test for common types first (should perhaps use
-            # a dictionary instead?)
-
-            if type == VT_I2:
-                value = i16(s, offset+4)
-                if value >= 32768:
-                    value = value - 65536
-            elif type == VT_UI2:
-                value = i16(s, offset+4)
-            elif type in (VT_I4, VT_ERROR):
-                value = i32(s, offset+4)
-            elif type == VT_UI4:
-                value = i32(s, offset+4) # FIXME
-            elif type in (VT_BSTR, VT_LPSTR):
-                count = i32(s, offset+4)
-                value = s[offset+8:offset+8+count-1]
-            elif type == VT_BLOB:
-                count = i32(s, offset+4)
-                value = s[offset+8:offset+8+count]
-            elif type == VT_LPWSTR:
-                count = i32(s, offset+4)
-                value = _unicode(s[offset+8:offset+8+count*2])
-            elif type == VT_FILETIME:
-                value = long(i32(s, offset+4)) + (long(i32(s, offset+8))<<32)
-                # FILETIME is a 64-bit int: "number of 100ns periods
-                # since Jan 1,1601".
-                if convert_time:
-                    # convert FILETIME to Python datetime.datetime
-                    # inspired from http://code.activestate.com/recipes/511425-filetime-to-datetime/
-                    _FILETIME_null_date = datetime.datetime(1601, 1, 1, 0, 0, 0)
-                    value = _FILETIME_null_date + datetime.timedelta(microseconds=value/10)
+                if type == VT_I2: # 16-bit signed integer
+                    value = i16(s, offset+4)
+                    if value >= 32768:
+                        value = value - 65536
+                elif type == VT_UI2: # 2-byte unsigned integer
+                    value = i16(s, offset+4)
+                elif type in (VT_I4, VT_INT, VT_ERROR):
+                    # VT_I4: 32-bit signed integer
+                    # VT_ERROR: HRESULT, similar to 32-bit signed integer,
+                    # see http://msdn.microsoft.com/en-us/library/cc230330.aspx
+                    value = i32(s, offset+4)
+                elif type in (VT_UI4, VT_UINT): # 4-byte unsigned integer
+                    value = i32(s, offset+4) # FIXME
+                elif type in (VT_BSTR, VT_LPSTR):
+                    # CodePageString, see http://msdn.microsoft.com/en-us/library/dd942354.aspx
+                    # size is a 32 bits integer, including the null terminator, and
+                    # possibly trailing or embedded null chars
+                    #TODO: if codepage is unicode, the string should be converted as such
+                    count = i32(s, offset+4)
+                    value = s[offset+8:offset+8+count-1]
+                    # remove all null chars:
+                    value = value.replace('\x00', '')
+                elif type == VT_BLOB:
+                    # binary large object (BLOB)
+                    # see http://msdn.microsoft.com/en-us/library/dd942282.aspx
+                    count = i32(s, offset+4)
+                    value = s[offset+8:offset+8+count]
+                elif type == VT_LPWSTR:
+                    # UnicodeString
+                    # see http://msdn.microsoft.com/en-us/library/dd942313.aspx
+                    # "the string should NOT contain embedded or additional trailing
+                    # null characters."
+                    count = i32(s, offset+4)
+                    value = _unicode(s[offset+8:offset+8+count*2])
+                elif type == VT_FILETIME:
+                    value = long(i32(s, offset+4)) + (long(i32(s, offset+8))<<32)
+                    # FILETIME is a 64-bit int: "number of 100ns periods
+                    # since Jan 1,1601".
+                    if convert_time and id not in no_conversion:
+                        debug('Converting property #%d to python datetime, value=%d=%fs'
+                                %(id, value, float(value)/10000000L))
+                        # convert FILETIME to Python datetime.datetime
+                        # inspired from http://code.activestate.com/recipes/511425-filetime-to-datetime/
+                        _FILETIME_null_date = datetime.datetime(1601, 1, 1, 0, 0, 0)
+                        debug('timedelta days=%d' % (value/(10*1000000*3600*24)))
+                        value = _FILETIME_null_date + datetime.timedelta(microseconds=value/10)
+                    else:
+                        # legacy code kept for backward compatibility: returns a
+                        # number of seconds since Jan 1,1601
+                        value = value / 10000000L # seconds
+                elif type == VT_UI1: # 1-byte unsigned integer
+                    value = ord(s[offset+4])
+                elif type == VT_CLSID:
+                    value = _clsid(s[offset+4:offset+20])
+                elif type == VT_CF:
+                    # PropertyIdentifier or ClipboardData??
+                    # see http://msdn.microsoft.com/en-us/library/dd941945.aspx
+                    count = i32(s, offset+4)
+                    value = s[offset+8:offset+8+count]
+                elif type == VT_BOOL:
+                    # VARIANT_BOOL, 16 bits bool, 0x0000=Fals, 0xFFFF=True
+                    # see http://msdn.microsoft.com/en-us/library/cc237864.aspx
+                    value = bool(i16(s, offset+4))
                 else:
-                    # legacy code kept for backward compatibility: returns a
-                    # number of seconds since Jan 1,1601
-                    value = value / 10000000L # seconds
-            elif type == VT_UI1:
-                value = ord(s[offset+4])
-            elif type == VT_CLSID:
-                value = _clsid(s[offset+4:offset+20])
-            elif type == VT_CF:
-                count = i32(s, offset+4)
-                value = s[offset+8:offset+8+count]
-            else:
-                value = None # everything else yields "None"
+                    value = None # everything else yields "None"
+                    debug ('property id=%d: type=%d not implemented in parser yet' % (id, type))
 
-            # FIXME: add support for VT_VECTOR
+                # missing: VT_EMPTY, VT_NULL, VT_R4, VT_R8, VT_CY, VT_DATE,
+                # VT_DECIMAL, VT_I1, VT_I8, VT_UI8,
+                # see http://msdn.microsoft.com/en-us/library/dd942033.aspx
 
-            #print "%08x" % id, repr(value),
-            #print "(%s)" % VT[i32(s, offset) & 0xFFF]
+                # FIXME: add support for VT_VECTOR
+                # VT_VECTOR is a 32 uint giving the number of items, followed by
+                # the items in sequence. The VT_VECTOR value is combined with the
+                # type of items, e.g. VT_VECTOR|VT_BSTR
+                # see http://msdn.microsoft.com/en-us/library/dd942011.aspx
 
-            data[id] = value
+                #print "%08x" % id, repr(value),
+                #print "(%s)" % VT[i32(s, offset) & 0xFFF]
+
+                data[id] = value
+            except:
+                # catch exception while parsing each property, and only raise
+                # a DEFECT_INCORRECT, because parsing can go on
+                exctype, excvalue = sys.exc_info()[:2]
+                self._raise_defect(DEFECT_INCORRECT, excvalue)
 
         return data
 
@@ -1795,7 +1859,7 @@ Options:
                 check_streams = True
                 continue
 
-            ole = OleFileIO(filename, raise_defects=DEFECT_INCORRECT)
+            ole = OleFileIO(filename)#, raise_defects=DEFECT_INCORRECT)
             print "-" * 68
             print filename
             print "-" * 68
