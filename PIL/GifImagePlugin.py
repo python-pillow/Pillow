@@ -370,7 +370,7 @@ def getheader(im, palette=None, info=None):
                 for i in usedPaletteColors:
                     paletteBytes += o8(i)*3
             else :
-                paletteBytes = bytes([i//3 for i in range(768)])
+                paletteBytes = bytearray([i//3 for i in range(768)])
 
         # TODO improve this, maybe add numpy support
         # replace the palette color id of all pixel with the new id
@@ -386,7 +386,7 @@ def getheader(im, palette=None, info=None):
 
     # calculate the palette size for the header
     import math
-    colorTableSize = math.ceil(math.log(len(paletteBytes)//3, 2))-1
+    colorTableSize = int(math.ceil(math.log(len(paletteBytes)//3, 2)))-1
     if colorTableSize < 0: colorTableSize = 0
     s.append(o8(colorTableSize + 128)) # size of global color table + global color table flag
     s.append(o8(0) + o8(0)) # background + reserved/aspect
