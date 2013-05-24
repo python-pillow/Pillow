@@ -338,7 +338,7 @@ def getheader(im, palette=None, info=None):
 
     # if the user adds a palette, use it
     if palette is not None and isinstance(palette, bytes):
-        paletteBytes = palette
+        paletteBytes = palette[:768]
     else:
         usedPaletteColors = []
 
