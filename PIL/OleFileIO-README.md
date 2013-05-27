@@ -22,6 +22,7 @@ Main improvements over PIL version of OleFileIO:
 News
 ----
 
+- 2013-05-27 v0.25: improved metadata extraction, properties parsing and exception handling, fixed [issue #12](https://bitbucket.org/decalage/olefileio_pl/issue/12/error-when-converting-timestamps-in-ole)
 - 2013-05-07 v0.24: new features to extract metadata (get\_metadata method and OleMetadata class), improved getproperties to convert timestamps to Python datetime
 - 2012-10-09: published [python-oletools](http://www.decalage.info/python/oletools), a package of analysis tools based on OleFileIO_PL
 - 2012-09-11 v0.23: added support for file-like objects, fixed [issue #8](https://bitbucket.org/decalage/olefileio_pl/issue/8/bug-with-file-object)
