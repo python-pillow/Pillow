@@ -6,7 +6,7 @@ OleFileIO_PL:
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.25 2013-05-24 Philippe Lagadec - http://www.decalage.info
+version 0.25 2013-05-27 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -24,7 +24,7 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Philippe Lagadec, Fredrik Lundh (Secret Labs AB)"
-__date__    = "2013-05-24"
+__date__    = "2013-05-27"
 __version__ = '0.25'
 
 #--- LICENSE ------------------------------------------------------------------
@@ -123,12 +123,14 @@ __version__ = '0.25'
 #                      - getproperties: filter out null chars from strings
 #                      - getproperties: raise non-fatal defects instead of
 #                        exceptions when properties cannot be parsed properly
+# 2013-05-27       PL: - getproperties: improved exception handling
+#                      - _raise_defect: added option to set exception type
+#                      - all non-fatal issues are now recorded, and displayed
+#                        when run as a script
 
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
-# + _raise_defect: store all defects that are not raised as exceptions, and
-#   display them in main for information.
 # + add path attrib to _OleDirEntry, set it once and for all in init or
 #   append_kids (then listdir/_list can be simplified)
 # - TESTS with Linux, MacOSX, Python 1.5.2, various files, PIL, ...
@@ -151,9 +153,6 @@ __version__ = '0.25'
 #   http://msdn.microsoft.com/en-us/library/dd945671%28v=office.12%29.aspx
 
 # IDEAS:
-# - allow _raise_defect to raise different exceptions, not only IOError
-# - provide a class with named attributes to get well-known properties of
-#   MS Office documents (title, author, ...) ?
 # - in OleFileIO._open and _OleStream, use size=None instead of 0x7FFFFFFF for
 #   streams with unknown size
 # - use arrays of int instead of long integers for FAT/MiniFAT, to improve
@@ -979,12 +978,16 @@ class OleFileIO:
         (use DEFECT_FATAL for a typical application, DEFECT_INCORRECT for a
         security-oriented application, see source code for details)
         """
+        # minimal level for defects to be raised as exceptions:
         self._raise_defects_level = raise_defects
+        # list of defects/issues not raised as exceptions:
+        # tuples of (exception type, message)
+        self.parsing_issues = []
         if filename:
             self.open(filename)
 
 
-    def _raise_defect(self, defect_level, message):
+    def _raise_defect(self, defect_level, message, exception_type=IOError):
         """
         This method should be called for any defect found during file parsing.
         It may raise an IOError exception according to the minimal level chosen
@@ -996,10 +999,14 @@ class OleFileIO:
             DEFECT_INCORRECT : an error according to specifications, but parsing can go on
             DEFECT_FATAL     : an error which cannot be ignored, parsing is impossible
         message: string describing the defect, used with raised exception.
+        exception_type: exception class to be raised, IOError by default
         """
         # added by [PL]
         if defect_level >= self._raise_defects_level:
-            raise IOError, message
+            raise exception_type, message
+        else:
+            # just record the issue, no exception raised:
+            self.parsing_issues.append((exception_type, message))
 
 
     def open(self, filename):
@@ -1689,6 +1696,11 @@ class OleFileIO:
         # make sure no_conversion is a list, just to simplify code below:
         if no_conversion == None:
             no_conversion = []
+        # stream path as a string to report exceptions:
+        streampath = filename
+        if not isinstance(streampath, str):
+            streampath = '/'.join(streampath)
+
         fp = self.openstream(filename)
 
         data = {}
@@ -1705,16 +1717,21 @@ class OleFileIO:
 
             # get section
             s = "****" + fp.read(i32(fp.read(4))-4)
+            # number of properties:
+            num_props = i32(s, 4)
         except:
             # catch exception while parsing property header, and only raise
             # a DEFECT_INCORRECT then return an empty dict, because this is not
             # a fatal error when parsing the whole file
             exctype, excvalue = sys.exc_info()[:2]
-            self._raise_defect(DEFECT_INCORRECT, excvalue)
+            msg = 'Error while parsing properties header in stream %s: %s' % (
+                repr(streampath), excvalue)
+            self._raise_defect(DEFECT_INCORRECT, msg, exctype)
             return data
 
-        for i in range(i32(s, 4)):
+        for i in range(num_props):
             try:
+                id = 0 # just in case of an exception
                 id = i32(s, 8+i*8)
                 offset = i32(s, 12+i*8)
                 type = i32(s, offset)
@@ -1809,7 +1826,9 @@ class OleFileIO:
                 # catch exception while parsing each property, and only raise
                 # a DEFECT_INCORRECT, because parsing can go on
                 exctype, excvalue = sys.exc_info()[:2]
-                self._raise_defect(DEFECT_INCORRECT, excvalue)
+                msg = 'Error while parsing property id %d in stream %s: %s' % (
+                    id, repr(streampath), excvalue)
+                self._raise_defect(DEFECT_INCORRECT, msg, exctype)
 
         return data
 
@@ -1911,5 +1930,13 @@ Options:
                 print "size :", ole.get_size('worddocument')
                 if ole.exists('macros/vba'):
                     print "This document may contain VBA macros."
+
+            # print parsing issues:
+            print '\nNon-fatal issues raised during parsing:'
+            if ole.parsing_issues:
+                for exctype, msg in ole.parsing_issues:
+                    print '- %s: %s' % (exctype.__name__, msg)
+            else:
+                print 'None'
 ##      except IOError, v:
 ##          print "***", "cannot read", file, "-", v
