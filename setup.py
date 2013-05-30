@@ -96,7 +96,10 @@ class pil_build_ext(build_ext):
 
     class feature:
         zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = None
+        required = []
 
+        def require(self, feat):
+            return feat in self.required
         def want(self, feat):
             return getattr(self, feat) is None
 
@@ -110,18 +113,28 @@ class pil_build_ext(build_ext):
     user_options = build_ext.user_options + [
         ('disable-%s' % x, None, 'Disable support for %s' % x)
         for x in feature
+    ] + [
+        ('enable-%s' % x, None, 'Enable support for %s' % x)
+        for x in feature
     ]
 
     def initialize_options(self):
         build_ext.initialize_options(self)
         for x in self.feature:
             setattr(self, 'disable_%s' % x, None)
+            setattr(self, 'enable_%s' % x, None)
 
     def finalize_options(self):
         build_ext.finalize_options(self)
         for x in self.feature:
             if getattr(self, 'disable_%s' % x):
                 setattr(self.feature, x, False)
+                if getattr(self, 'enable_%s' % x):
+                    raise ValueError(
+                            'Conflicting options: --enable-%s and --disable-%s'
+                            % (x, x))
+            if getattr(self, 'enable_%s' % x):
+                self.feature.required.append(x)
 
     def build_extensions(self):
 
@@ -324,6 +337,12 @@ class pil_build_ext(build_ext):
                     _find_include_file(self, "webp/decode.h")):
                 if _find_library_file(self, "webp"): # in googles precompiled zip it is call "libwebp"
                     feature.webp = "webp"
+
+        for f in feature:
+            if not getattr(feature, f) and feature.require(f):
+                raise ValueError(
+                        '--enable-%s requested but %s not found, aborting.'
+                        % (f, f))
 
         #
         # core library
