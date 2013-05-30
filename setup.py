@@ -94,6 +94,32 @@ LCMS_ROOT = None
 
 class pil_build_ext(build_ext):
 
+    class feature:
+        zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = None
+
+        def __iter__(self):
+            for x in dir(self):
+                if x[1] != '_':
+                    yield x
+
+    feature = feature()
+
+    user_options = build_ext.user_options + [
+        ('disable-%s' % x, None, 'Disable support for %s' % x)
+        for x in feature
+    ]
+
+    def initialize_options(self):
+        build_ext.initialize_options(self)
+        for x in self.feature:
+            setattr(self, 'disable_%s' % x, None)
+
+    def finalize_options(self):
+        build_ext.finalize_options(self)
+        for x in self.feature:
+            if getattr(self, 'disable_%s' % x):
+                setattr(self.feature, x, False)
+
     def build_extensions(self):
 
         global TCL_ROOT
@@ -223,72 +249,78 @@ class pil_build_ext(build_ext):
         #
         # look for available libraries
 
-        class feature:
-            zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = None
-        feature = feature()
+        feature = self.feature
 
-        if _find_include_file(self, "zlib.h"):
-            if _find_library_file(self, "z"):
-                feature.zlib = "z"
-            elif sys.platform == "win32" and _find_library_file(self, "zlib"):
-                feature.zlib = "zlib"  # alternative name
+        if feature.zlib is None:
+            if _find_include_file(self, "zlib.h"):
+                if _find_library_file(self, "z"):
+                    feature.zlib = "z"
+                elif sys.platform == "win32" and _find_library_file(self, "zlib"):
+                    feature.zlib = "zlib"  # alternative name
 
-        if _find_include_file(self, "jpeglib.h"):
-            if _find_library_file(self, "jpeg"):
-                feature.jpeg = "jpeg"
-            elif (
-                    sys.platform == "win32" and
-                    _find_library_file(self, "libjpeg")):
-                feature.jpeg = "libjpeg"  # alternative name
+        if feature.jpeg is None:
+            if _find_include_file(self, "jpeglib.h"):
+                if _find_library_file(self, "jpeg"):
+                    feature.jpeg = "jpeg"
+                elif (
+                        sys.platform == "win32" and
+                        _find_library_file(self, "libjpeg")):
+                    feature.jpeg = "libjpeg"  # alternative name
 
-        if _find_library_file(self, "tiff"):
-            feature.tiff = "tiff"
-        if sys.platform == "win32" and _find_library_file(self, "libtiff"):
-            feature.tiff = "libtiff"
-        if sys.platform == "darwin" and _find_library_file(self, "libtiff"):
-            feature.tiff = "libtiff"
+        if feature.tiff is None:
+            if _find_library_file(self, "tiff"):
+                feature.tiff = "tiff"
+            if sys.platform == "win32" and _find_library_file(self, "libtiff"):
+                feature.tiff = "libtiff"
+            if sys.platform == "darwin" and _find_library_file(self, "libtiff"):
+                feature.tiff = "libtiff"
 
-        if _find_library_file(self, "freetype"):
-            # look for freetype2 include files
-            freetype_version = 0
-            for dir in self.compiler.include_dirs:
-                if os.path.isfile(os.path.join(dir, "ft2build.h")):
-                    freetype_version = 21
+        if feature.freetype is None:
+            if _find_library_file(self, "freetype"):
+                # look for freetype2 include files
+                freetype_version = 0
+                for dir in self.compiler.include_dirs:
+                    if os.path.isfile(os.path.join(dir, "ft2build.h")):
+                        freetype_version = 21
+                        dir = os.path.join(dir, "freetype2")
+                        break
                     dir = os.path.join(dir, "freetype2")
-                    break
-                dir = os.path.join(dir, "freetype2")
-                if os.path.isfile(os.path.join(dir, "ft2build.h")):
-                    freetype_version = 21
-                    break
-                if os.path.isdir(os.path.join(dir, "freetype")):
-                    freetype_version = 20
-                    break
-            if freetype_version:
-                feature.freetype = "freetype"
-                feature.freetype_version = freetype_version
-                if dir:
-                    _add_directory(self.compiler.include_dirs, dir, 0)
+                    if os.path.isfile(os.path.join(dir, "ft2build.h")):
+                        freetype_version = 21
+                        break
+                    if os.path.isdir(os.path.join(dir, "freetype")):
+                        freetype_version = 20
+                        break
+                if freetype_version:
+                    feature.freetype = "freetype"
+                    feature.freetype_version = freetype_version
+                    if dir:
+                        _add_directory(self.compiler.include_dirs, dir, 0)
 
-        if _find_include_file(self, "lcms.h"):
-            if _find_library_file(self, "lcms"):
-                feature.lcms = "lcms"
+        if feature.lcms is None:
+            if _find_include_file(self, "lcms.h"):
+                if _find_library_file(self, "lcms"):
+                    feature.lcms = "lcms"
 
         if _tkinter and _find_include_file(self, "tk.h"):
             # the library names may vary somewhat (e.g. tcl84 or tcl8.4)
             version = TCL_VERSION[0] + TCL_VERSION[2]
-            if _find_library_file(self, "tcl" + version):
-                feature.tcl = "tcl" + version
-            elif _find_library_file(self, "tcl" + TCL_VERSION):
-                feature.tcl = "tcl" + TCL_VERSION
-            if _find_library_file(self, "tk" + version):
-                feature.tk = "tk" + version
-            elif _find_library_file(self, "tk" + TCL_VERSION):
-                feature.tk = "tk" + TCL_VERSION
+            if feature.tcl is None:
+                if _find_library_file(self, "tcl" + version):
+                    feature.tcl = "tcl" + version
+                elif _find_library_file(self, "tcl" + TCL_VERSION):
+                    feature.tcl = "tcl" + TCL_VERSION
+            if feature.tk is None:
+                if _find_library_file(self, "tk" + version):
+                    feature.tk = "tk" + version
+                elif _find_library_file(self, "tk" + TCL_VERSION):
+                    feature.tk = "tk" + TCL_VERSION
 
-        if (_find_include_file(self, "webp/encode.h") and
-                _find_include_file(self, "webp/decode.h")):
-            if _find_library_file(self, "webp"): # in googles precompiled zip it is call "libwebp"
-                feature.webp = "webp"
+        if feature.webp is None:
+            if (_find_include_file(self, "webp/encode.h") and
+                    _find_include_file(self, "webp/decode.h")):
+                if _find_library_file(self, "webp"): # in googles precompiled zip it is call "libwebp"
+                    feature.webp = "webp"
 
         #
         # core library
