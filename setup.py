@@ -97,6 +97,9 @@ class pil_build_ext(build_ext):
     class feature:
         zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = None
 
+        def want(self, feat):
+            return getattr(self, feat) is None
+
         def __iter__(self):
             for x in dir(self):
                 if x[1] != '_':
@@ -251,14 +254,14 @@ class pil_build_ext(build_ext):
 
         feature = self.feature
 
-        if feature.zlib is None:
+        if feature.want('zlib'):
             if _find_include_file(self, "zlib.h"):
                 if _find_library_file(self, "z"):
                     feature.zlib = "z"
                 elif sys.platform == "win32" and _find_library_file(self, "zlib"):
                     feature.zlib = "zlib"  # alternative name
 
-        if feature.jpeg is None:
+        if feature.want('jpeg'):
             if _find_include_file(self, "jpeglib.h"):
                 if _find_library_file(self, "jpeg"):
                     feature.jpeg = "jpeg"
@@ -267,7 +270,7 @@ class pil_build_ext(build_ext):
                         _find_library_file(self, "libjpeg")):
                     feature.jpeg = "libjpeg"  # alternative name
 
-        if feature.tiff is None:
+        if feature.want('tiff'):
             if _find_library_file(self, "tiff"):
                 feature.tiff = "tiff"
             if sys.platform == "win32" and _find_library_file(self, "libtiff"):
@@ -275,7 +278,7 @@ class pil_build_ext(build_ext):
             if sys.platform == "darwin" and _find_library_file(self, "libtiff"):
                 feature.tiff = "libtiff"
 
-        if feature.freetype is None:
+        if feature.want('freetype'):
             if _find_library_file(self, "freetype"):
                 # look for freetype2 include files
                 freetype_version = 0
@@ -297,7 +300,7 @@ class pil_build_ext(build_ext):
                     if dir:
                         _add_directory(self.compiler.include_dirs, dir, 0)
 
-        if feature.lcms is None:
+        if feature.want('lcms'):
             if _find_include_file(self, "lcms.h"):
                 if _find_library_file(self, "lcms"):
                     feature.lcms = "lcms"
@@ -305,18 +308,18 @@ class pil_build_ext(build_ext):
         if _tkinter and _find_include_file(self, "tk.h"):
             # the library names may vary somewhat (e.g. tcl84 or tcl8.4)
             version = TCL_VERSION[0] + TCL_VERSION[2]
-            if feature.tcl is None:
+            if feature.want('tcl'):
                 if _find_library_file(self, "tcl" + version):
                     feature.tcl = "tcl" + version
                 elif _find_library_file(self, "tcl" + TCL_VERSION):
                     feature.tcl = "tcl" + TCL_VERSION
-            if feature.tk is None:
+            if feature.want('tk'):
                 if _find_library_file(self, "tk" + version):
                     feature.tk = "tk" + version
                 elif _find_library_file(self, "tk" + TCL_VERSION):
                     feature.tk = "tk" + TCL_VERSION
 
-        if feature.webp is None:
+        if feature.want('webp'):
             if (_find_include_file(self, "webp/encode.h") and
                     _find_include_file(self, "webp/decode.h")):
                 if _find_library_file(self, "webp"): # in googles precompiled zip it is call "libwebp"
