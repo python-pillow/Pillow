@@ -1,4 +1,4 @@
-1;2cPillow
+Pillow
 ======
 
 .. Note:: Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7; Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3.
