@@ -37,6 +37,7 @@ def test_sanity():
 
     ImageOps.fit(lena("L"), (128, 128))
     ImageOps.fit(lena("RGB"), (128, 128))
+    ImageOps.fit(lena("RGB").resize((1,1)), (35,35))
 
     ImageOps.flip(lena("L"))
     ImageOps.flip(lena("RGB"))

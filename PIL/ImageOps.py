@@ -274,7 +274,7 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     # kevin@cazabon.com
     # http://www.cazabon.com
 
-    # No cropping/fit possible
+    # No cropping/fit possible. Prevents ZeroDivisionError @ liveAreaAspectRatio
     if image.size == (1,1):
         return image
 
