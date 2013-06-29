@@ -90,6 +90,8 @@ Platform support
 
 Current platform support for Pillow. Binary distributions are contributed for each release on a volunteer basis, but the source should compile and run everywhere platform support is listed. In general, we aim to support all current versions of Linux, OS X, and Windows.
 
+.. Note:: If there is a binary package for your system, that is the easiest way to install Pillow. But we currently only provide binaries for Windows (via Python eggs).
+
 .. Note:: Contributors please test on your platform, edit this document and send a pull request
 
 +----------------------------------+-------------+------------------------------+-----------------------+
@@ -119,15 +121,6 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 .. [1] x86 only
 .. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
-
-.. Note:: XXX Why are we recommending binaries when we only provide Windows eggs?
-
-If there is a binary package for your system, that is the easiest way to install Pillow. Currently we only provide binaries for Windows.
-
-.. Note:: UNDONE: Binary links
-
-.. Note:: XXX Do we really need to provide binary links? At least in the case of eggs… probably not IMHO.
-
 Build from source
 ~~~~~~~~~~~~~~~~~
 
@@ -151,11 +144,7 @@ Some (most?) of Pillow's features require external libraries.
 
   * Pillow has been tested with version **0.1.3**, which does not read transparent webp files. Version **0.3.0** supports transparency.  
 
-If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg)
-
-Once you have installed the prerequisites, run: 
-
-::
+If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg). Once you have installed the prerequisites, run:: 
 
     $ pip install Pillow
 
@@ -186,28 +175,22 @@ Mac OS X
 
 **We don't currently provide binaries for OS X.** So you'll need XCode to install Pillow. (XCode 4.2 on 10.6 will work with the Official Python binary distribution. Otherwise, use whatever XCode you used to compile Python.)
 
-.. Note:: XXX I'm not sure we need to mention the bit about XCode
-
-
-The easiest way to install the prerequisites is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run:
-
-::
+The easiest way to install the prerequisites is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run::
 
     $ brew install libtiff libjpeg webp littlecms
 
-If you've built your own Python, then you should be able to install Pillow using 
-
-::
+If you've built your own Python, then you should be able to install Pillow using::
 
     $ pip install Pillow
-
 
 Windows
 +++++++
 
-**We currently provide Python eggs for Windows.**
+.. Note:: If Windows eggs have been released to PyPI, the following should work.
 
-.. Note:: XXX Mention easy_install Pillow (which should install the right egg)?
+::
+
+    $ easy_install Pillow
 
 Port existing PIL-based code to Pillow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
