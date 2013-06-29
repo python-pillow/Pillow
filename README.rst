@@ -152,7 +152,7 @@ If you've built your own Python, then you should be able to install Pillow using
 Windows
 +++++++
 
-.. Note:: Since pip does not support eggs, we use easy_install instead.
+.. Note:: Since pip does not support eggs we use easy_install instead.
 
 ::
 
