@@ -85,6 +85,8 @@ Pillow is a (labor of love) volunteer effort led by Alex Clark. Any contributor 
 Developer 
 ---------
 
+.. Note:: If there is a binary package for your system, that is the easiest way to install Pillow. Currently we only provide binaries for Windows (via Python eggs).
+
 Build from source
 ~~~~~~~~~~~~~~~~~
 
@@ -111,42 +113,6 @@ Some (most?) of Pillow's features require external libraries.
 If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg). Once you have installed the prerequisites, run:: 
 
     $ pip install Pillow
-
-Platform support
-~~~~~~~~~~~~~~~~
-
-Current platform support for Pillow. Binary distributions are contributed for each release on a volunteer basis, but the source should compile and run everywhere platform support is listed. In general, we aim to support all current versions of Linux, OS X, and Windows.
-
-.. Note:: If there is a binary package for your system, that is the easiest way to install Pillow. But we currently only provide binaries for Windows (via Python eggs).
-
-.. Note:: Contributors please test on your platform, edit this document and send a pull request
-
-+----------------------------------+-------------+------------------------------+-----------------------+
-|**Operating system**              |**Supported**|**Tested Python versions**    |**Tested processors**  |
-+----------------------------------+-------------+------------------------------+-----------------------+
-| Mac OS X 10.8 Mountain Lion      |Yes          | 2.6,2.7,3.2,3.3              |x86-64                 |
-+----------------------------------+-------------+------------------------------+-----------------------+
-| Mac OS X 10.7 Lion               |Yes          | 2.7                          |x86-64                 |
-+----------------------------------+-------------+------------------------------+-----------------------+
-| Redhat Linux 6                   |Yes          | 2.6                          |x86                    |
-+----------------------------------+-------------+------------------------------+-----------------------+
-| Ubuntu Linux 10.04 LTS           |Yes          | 2.6                          |x86,x86-64             |
-+----------------------------------+-------------+------------------------------+-----------------------+
-| Ubuntu Linux 12.04 LTS           |Yes          | 2.6,2.7,3.2,3.3              |x86,x86-64             |
-+----------------------------------+-------------+------------------------------+-----------------------+
-| Raspian Wheezy                   |Yes          | 2.7,3.2                      |arm                    |
-+----------------------------------+-------------+------------------------------+-----------------------+
-| Gentoo Linux                     |Yes          | 2.7,3.2                      |x86-64                 |
-+----------------------------------+-------------+------------------------------+-----------------------+
-| Windows 7 Pro                    |Yes          | 2.7,3.2                      |x86                    |
-+----------------------------------+-------------+------------------------------+-----------------------+
-| Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |x86-64                 |
-+----------------------------------+-------------+------------------------------+-----------------------+
-| Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,PyPy1.9 [1]_ |x86 [2]_,x86-64        |
-+----------------------------------+-------------+------------------------------+-----------------------+
-
-.. [1] x86 only
-.. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
 Platform-specific instructions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -186,11 +152,45 @@ If you've built your own Python, then you should be able to install Pillow using
 Windows
 +++++++
 
-.. Note:: If Windows eggs have been released to PyPI, the following should work.
+.. Note:: Since pip does not support eggs, we use easy_install instead.
 
 ::
 
     $ easy_install Pillow
+
+Platform support
+~~~~~~~~~~~~~~~~
+
+Current platform support for Pillow. Binary distributions are contributed for each release on a volunteer basis, but the source should compile and run everywhere platform support is listed. In general, we aim to support all current versions of Linux, OS X, and Windows.
+
+.. Note:: Contributors please test on your platform, edit this document and send a pull request
+
++----------------------------------+-------------+------------------------------+-----------------------+
+|**Operating system**              |**Supported**|**Tested Python versions**    |**Tested processors**  |
++----------------------------------+-------------+------------------------------+-----------------------+
+| Mac OS X 10.8 Mountain Lion      |Yes          | 2.6,2.7,3.2,3.3              |x86-64                 |
++----------------------------------+-------------+------------------------------+-----------------------+
+| Mac OS X 10.7 Lion               |Yes          | 2.7                          |x86-64                 |
++----------------------------------+-------------+------------------------------+-----------------------+
+| Redhat Linux 6                   |Yes          | 2.6                          |x86                    |
++----------------------------------+-------------+------------------------------+-----------------------+
+| Ubuntu Linux 10.04 LTS           |Yes          | 2.6                          |x86,x86-64             |
++----------------------------------+-------------+------------------------------+-----------------------+
+| Ubuntu Linux 12.04 LTS           |Yes          | 2.6,2.7,3.2,3.3              |x86,x86-64             |
++----------------------------------+-------------+------------------------------+-----------------------+
+| Raspian Wheezy                   |Yes          | 2.7,3.2                      |arm                    |
++----------------------------------+-------------+------------------------------+-----------------------+
+| Gentoo Linux                     |Yes          | 2.7,3.2                      |x86-64                 |
++----------------------------------+-------------+------------------------------+-----------------------+
+| Windows 7 Pro                    |Yes          | 2.7,3.2                      |x86                    |
++----------------------------------+-------------+------------------------------+-----------------------+
+| Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |x86-64                 |
++----------------------------------+-------------+------------------------------+-----------------------+
+| Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,PyPy1.9 [1]_ |x86 [2]_,x86-64        |
++----------------------------------+-------------+------------------------------+-----------------------+
+
+.. [1] x86 only
+.. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
 Port existing PIL-based code to Pillow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
