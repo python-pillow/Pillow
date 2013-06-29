@@ -3,6 +3,10 @@ Pillow
 
 .. Note:: Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7; Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3.
 
+.. Note:: Pillow 2.1.0 no longer supports "import _imaging". Please use "from PIL import Image.core as _imaging" instead.
+
+.. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 added Python 3 support and includes many bug fixes from many contributors.
+
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
    :target: https://travis-ci.org/python-imaging/Pillow
 
@@ -18,32 +22,13 @@ The fork author's goal is to foster active development of PIL through:
 - Regular releases to the `Python Package Index <https://pypi.python.org/pypi/Pillow>`_
 - Solicitation for community contributions and involvement on `Image-SIG <http://mail.python.org/mailman/listinfo/image-sig>`_
 
-Port existing PIL-based code to Pillow
---------------------------------------
-
-Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL-compatible code with Pillow, it needs to be modified to import the ``Imaging`` module from the ``PIL`` namespace *instead* of the global namespace. I.e. change::
-
-    import Image
-
-to::
-
-    from PIL import Image
-
-.. Note:: If your code imports from ``_imaging``, it will no longer work.
-
-The preferred, future proof method of importing the private ``_imaging`` module is::
-
-    from PIL import Image
-    _imaging = Image.core
-
 Why a fork?
------------
+~~~~~~~~~~~
 
 PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too infrequent to accomodate the large number and frequency of issues reported.
 
-
 What about image code bugs?
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Please report any non-packaging related issues here first:
 
@@ -55,7 +40,18 @@ Then open a ticket here:
 
 and provide a link to the first ticket so we can track the issue(s) upstream.
 
-.. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 adds Python 3 support and includes many bug fixes from many contributors.
+Installation
+------------
+
+.. Note:: PIL and Pillow currently cannot co-exist in the same environment. If you want to use Pillow, please remove PIL first.
+
+TL;DR:
+
+::
+
+    $ pip install Pillow
+
+For more information, please see http://python-imaging.github.io/ or below.
 
 Documentation
 -------------
@@ -71,10 +67,23 @@ PIL needs you! Please help us maintain the Python Imaging Library here:
 - Freenode (irc://irc.freenode.net#pil)
 - Image-SIG (http://mail.python.org/mailman/listinfo/image-sig)
 
-Installation
-------------
+Donations
+~~~~~~~~~
 
-.. Note:: PIL and Pillow currently cannot co-exist in the same environment. If you want to use Pillow, please remove PIL first.
+You can help fund Pillow development!
+
+.. Note:: New contributors: please add your name (and donation preference) here and send a pull request.
+
+Pillow is a volunteer effort led by Alex Clark. Any contributor interested in receiving donations may add their name (and donation preference) here.
+
++--------------------------------------+---------------------------------------+
+| **Developer**                        | **Preference**                        |
++--------------------------------------+---------------------------------------+
+| Alex Clark (fork author)             | http://gittip.com/aclark4life         |
++--------------------------------------+---------------------------------------+
+
+Developer 
+---------
 
 Platform support
 ~~~~~~~~~~~~~~~~
@@ -200,20 +209,24 @@ Windows
 
 .. Note:: XXX Mention easy_install Pillow (which should install the right egg)?
 
-Donations
----------
+Port existing PIL-based code to Pillow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can help fund Pillow development!
+Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL-compatible code with Pillow, it needs to be modified to import the ``Imaging`` module from the ``PIL`` namespace *instead* of the global namespace. I.e. change::
 
-.. Note:: New contributors: please add your name (and donation preference) here and send a pull request.
+    import Image
 
-Pillow is a volunteer effort led by Alex Clark. Any contributor interested in receiving donations may add their name (and donation preference) here.
+to::
 
-+--------------------------------------+---------------------------------------+
-| **Developer**                        | **Preference**                        |
-+--------------------------------------+---------------------------------------+
-| Alex Clark (fork author)             | http://gittip.com/aclark4life         |
-+--------------------------------------+---------------------------------------+
+    from PIL import Image
+
+.. Note:: If your code imports from ``_imaging``, it will no longer work.
+
+The preferred, future proof method of importing the private ``_imaging`` module is::
+
+    from PIL import Image
+    _imaging = Image.core
+
 
 Python Imaging Library
 ======================
