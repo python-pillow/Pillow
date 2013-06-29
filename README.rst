@@ -70,11 +70,11 @@ PIL needs you! Please help us maintain the Python Imaging Library here:
 Support
 ~~~~~~~
 
-Or if you don't want to help with development, you can help us financially: your donation will be very much appreciated (Pillow is a labor of love).
+If you don't want to help with development, you can help us financially. Your donation will be very much appreciated. 
 
 .. Note:: New contributors: please add your name (and donation preference) here and send a pull request.
 
-Pillow is a volunteer effort led by Alex Clark. Any contributor interested in receiving donations may add their name (and donation preference) here.
+Pillow is a (labor of love) volunteer effort led by Alex Clark. Any contributor interested in receiving donations may add their name (and donation preference) here.
 
 +--------------------------------------+---------------------------------------+
 | **Developer**                        | **Preference**                        |
