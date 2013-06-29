@@ -18,8 +18,8 @@ The fork author's goal is to foster active development of PIL through:
 - Regular releases to the `Python Package Index <https://pypi.python.org/pypi/Pillow>`_
 - Solicitation for community contributions and involvement on `Image-SIG <http://mail.python.org/mailman/listinfo/image-sig>`_
 
-Porting your PIL code to Pillow
--------------------------------
+Port code that uses PIL to Pillow
+---------------------------------
 
 Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL-compatible code with Pillow, it needs to be modified to import the ``Imaging`` module from the ``PIL`` namespace *instead* of the global namespace. I.e. change::
 
