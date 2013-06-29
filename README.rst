@@ -85,6 +85,33 @@ Pillow is a (labor of love) volunteer effort led by Alex Clark. Any contributor 
 Developer 
 ---------
 
+Build from source
+~~~~~~~~~~~~~~~~~
+
+Some (most?) of Pillow's features require external libraries.
+
+* **libjpeg** provides JPEG functionality.
+
+  * Pillow has been tested with libjpeg versions **6b**, **8**, and **9**
+
+* **zlib** provides access to compressed PNGs
+
+* **libtiff** provides group4 tiff functionality
+
+  * Pillow has been tested with libtiff versions **3.x** and **4.0**
+
+* **libfreetype** provides type related services
+
+* **littlecms** provides color management 
+
+* **libwebp** provides the Webp format.
+
+  * Pillow has been tested with version **0.1.3**, which does not read transparent webp files. Version **0.3.0** supports transparency.  
+
+If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg). Once you have installed the prerequisites, run:: 
+
+    $ pip install Pillow
+
 Platform support
 ~~~~~~~~~~~~~~~~
 
@@ -120,33 +147,6 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 
 .. [1] x86 only
 .. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
-
-Build from source
-~~~~~~~~~~~~~~~~~
-
-Some (most?) of Pillow's features require external libraries.
-
-* **libjpeg** provides JPEG functionality.
-
-  * Pillow has been tested with libjpeg versions **6b**, **8**, and **9**
-
-* **zlib** provides access to compressed PNGs
-
-* **libtiff** provides group4 tiff functionality
-
-  * Pillow has been tested with libtiff versions **3.x** and **4.0**
-
-* **libfreetype** provides type related services
-
-* **littlecms** provides color management 
-
-* **libwebp** provides the Webp format.
-
-  * Pillow has been tested with version **0.1.3**, which does not read transparent webp files. Version **0.3.0** supports transparency.  
-
-If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg). Once you have installed the prerequisites, run:: 
-
-    $ pip install Pillow
 
 Platform-specific instructions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -209,7 +209,6 @@ The preferred, future proof method of importing the private ``_imaging`` module 
 
     from PIL import Image
     _imaging = Image.core
-
 
 Python Imaging Library
 ======================
