@@ -3,9 +3,7 @@ Pillow
 
 .. Note:: Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7; Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3.
 
-.. Note:: Pillow 2.1.0 no longer supports "import _imaging". Please use "from PIL import Image.core as _imaging" instead.
-
-.. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 added Python 3 support and includes many bug fixes from many contributors.
+.. Note:: Pillow >= 2.1.0 no longer supports "import _imaging". Please use "from PIL import Image.core as _imaging" instead.
 
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
    :target: https://travis-ci.org/python-imaging/Pillow
@@ -29,6 +27,8 @@ PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/im
 
 What about image code bugs?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 added Python 3 support and includes many bug fixes from many contributors.
 
 Please report any non-packaging related issues here first:
 
@@ -67,10 +67,10 @@ PIL needs you! Please help us maintain the Python Imaging Library here:
 - Freenode (irc://irc.freenode.net#pil)
 - Image-SIG (http://mail.python.org/mailman/listinfo/image-sig)
 
-Donations
-~~~~~~~~~
+Support
+~~~~~~~
 
-You can help fund Pillow development!
+Or if you don't want to do the work, you can help fund Pillow development!
 
 .. Note:: New contributors: please add your name (and donation preference) here and send a pull request.
 
