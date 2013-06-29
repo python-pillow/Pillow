@@ -70,7 +70,7 @@ PIL needs you! Please help us maintain the Python Imaging Library here:
 Support
 ~~~~~~~
 
-Or if you don't want to help with development, you can help us financially; your donation will be very much appreciated. (Pillow is a labor of love.)
+Or if you don't want to help with development, you can help us financially: your donation will be very much appreciated (Pillow is a labor of love).
 
 .. Note:: New contributors: please add your name (and donation preference) here and send a pull request.
 
