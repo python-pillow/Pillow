@@ -1,3 +1,4 @@
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include "py3.h"
 #include <webp/encode.h>
@@ -16,7 +17,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     Py_ssize_t size;
     size_t ret_size;
 
-    if (!PyArg_ParseTuple(args, "s#iifs",(char**)&rgb, &size, &width, &height, &quality_factor, &mode)) {
+    if (!PyArg_ParseTuple(args, "s#nifs",(char**)&rgb, &size, &width, &height, &quality_factor, &mode)) {
         Py_RETURN_NONE;
     }
 
