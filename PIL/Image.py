@@ -81,6 +81,7 @@ except ImportError:
 
 from PIL import ImageMode
 from PIL._binary import i8, o8
+from PIL._util import isPath, isStringType
 
 import os, sys
 
@@ -88,25 +89,11 @@ import os, sys
 import collections
 import numbers
 
-if bytes is str:
-    def isStringType(t):
-        return isinstance(t, basestring)
-else:
-    def isStringType(t):
-        return isinstance(t, str)
-
 ##
 # (Internal) Checks if an object is an image object.
 
 def isImageType(t):
     return hasattr(t, "im")
-
-##
-# (Internal) Checks if an object is a string, and that it points to a
-# directory.
-
-def isDirectory(f):
-    return isStringType(f) and os.path.isdir(f)
 
 #
 # Debug level
@@ -1421,10 +1408,10 @@ class Image:
     def save(self, fp, format=None, **params):
         "Save image to file or stream"
 
-        if isStringType(fp):
+        if isPath(fp):
             filename = fp
         else:
-            if hasattr(fp, "name") and isStringType(fp.name):
+            if hasattr(fp, "name") and isPath(fp.name):
                 filename = fp.name
             else:
                 filename = ""
@@ -1455,7 +1442,7 @@ class Image:
             init()
             save_handler = SAVE[format.upper()] # unknown format
 
-        if isStringType(fp):
+        if isPath(fp):
             fp = builtins.open(fp, "wb")
             close = 1
         else:
@@ -1984,7 +1971,7 @@ def open(fp, mode="r"):
     if mode != "r":
         raise ValueError("bad mode")
 
-    if isStringType(fp):
+    if isPath(fp):
         filename = fp
         fp = builtins.open(fp, "rb")
     else:

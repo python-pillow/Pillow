@@ -37,6 +37,7 @@ __version__ = "0.6"
 import array, struct
 from PIL import Image, ImageFile, _binary
 from PIL.JpegPresets import presets
+from PIL._util import isStringType
 
 i8 = _binary.i8
 o8 = _binary.o8
@@ -488,7 +489,7 @@ def _save(im, fp, filename):
     def validate_qtables(qtables):
         if qtables is None:
             return qtables
-        if isinstance(qtables, basestring):
+        if isStringType(qtables):
             try:
                 lines = [int(num) for line in qtables.splitlines()
                          for num in line.split('#', 1)[0].split()]

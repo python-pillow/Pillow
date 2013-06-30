@@ -83,6 +83,7 @@ VERSION = "0.1.0 pil"
 
 from PIL import Image
 from PIL import _imagingcms
+from PIL._util import isStringType
 
 core = _imagingcms
 
@@ -139,7 +140,7 @@ class ImageCmsProfile:
     def __init__(self, profile):
         # accepts a string (filename), a file-like object, or a low-level
         # profile object
-        if Image.isStringType(profile):
+        if isStringType(profile):
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
             self._set(core.profile_frombytes(profile.read()))

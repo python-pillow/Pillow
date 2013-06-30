@@ -26,6 +26,7 @@
 __version__ = "0.1"
 
 from PIL import ImageFile, ImagePalette, _binary
+from PIL._util import isPath
 
 try:
     import builtins
@@ -77,7 +78,7 @@ def open(fp, mode = "r"):
     if mode != "r":
         raise ValueError("bad mode")
 
-    if isinstance(fp, str):
+    if isPath(fp):
         filename = fp
         fp = builtins.open(fp, "rb")
     else:

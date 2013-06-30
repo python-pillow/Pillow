@@ -41,6 +41,7 @@ from __future__ import print_function
 import io
 import sys
 from PIL import _binary
+from PIL._util import isPath
 
 if str is not bytes:
     long = int
@@ -269,7 +270,7 @@ class OleFileIO:
     def open(self, filename):
         """Open an OLE2 file"""
 
-        if isinstance(filename, str):
+        if isPath(filename):
             self.fp = open(filename, "rb")
         else:
             self.fp = filename

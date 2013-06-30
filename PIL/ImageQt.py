@@ -16,6 +16,7 @@
 #
 
 from PIL import Image
+from PIL._util import isPath
 
 from PyQt4.QtGui import QImage, qRgb
 
@@ -45,7 +46,7 @@ class ImageQt(QImage):
         if hasattr(im, "toUtf8"):
             # FIXME - is this really the best way to do this?
             im = unicode(im.toUtf8(), "utf-8")
-        if Image.isStringType(im):
+        if isPath(im):
             im = Image.open(im)
 
         if im.mode == "1":

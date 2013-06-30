@@ -28,6 +28,7 @@
 #
 
 from PIL import Image
+from PIL._util import isPath
 import traceback, os
 import io
 
@@ -81,7 +82,7 @@ class ImageFile(Image.Image):
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
 
-        if Image.isStringType(fp):
+        if isPath(fp):
             # filename
             self.fp = open(fp, "rb")
             self.filename = fp

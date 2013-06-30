@@ -33,6 +33,7 @@
 import numbers
 
 from PIL import Image, ImageColor
+from PIL._util import isStringType
 
 try:
     import warnings
@@ -98,7 +99,7 @@ class ImageDraw:
                 "'setink' is deprecated; use keyword arguments instead",
                 DeprecationWarning, stacklevel=2
                 )
-        if Image.isStringType(ink):
+        if isStringType(ink):
             ink = ImageColor.getcolor(ink, self.mode)
         if self.palette and not isinstance(ink, numbers.Number):
             ink = self.palette.getcolor(ink)
@@ -141,13 +142,13 @@ class ImageDraw:
                 ink = self.ink
         else:
             if ink is not None:
-                if Image.isStringType(ink):
+                if isStringType(ink):
                     ink = ImageColor.getcolor(ink, self.mode)
                 if self.palette and not isinstance(ink, numbers.Number):
                     ink = self.palette.getcolor(ink)
                 ink = self.draw.draw_ink(ink, self.mode)
             if fill is not None:
-                if Image.isStringType(fill):
+                if isStringType(fill):
                     fill = ImageColor.getcolor(fill, self.mode)
                 if self.palette and not isinstance(fill, numbers.Number):
                     fill = self.palette.getcolor(fill)

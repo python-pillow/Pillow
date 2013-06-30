@@ -18,6 +18,7 @@
 #
 
 from PIL import Image
+from PIL._util import isStringType
 import operator
 from functools import reduce
 
@@ -43,7 +44,7 @@ def _border(border):
     return left, top, right, bottom
 
 def _color(color, mode):
-    if Image.isStringType(color):
+    if isStringType(color):
         from PIL import ImageColor
         color = ImageColor.getcolor(color, mode)
     return color

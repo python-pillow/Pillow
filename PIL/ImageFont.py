@@ -28,6 +28,7 @@
 from __future__ import print_function
 
 from PIL import Image
+from PIL._util import isDirectory, isPath
 import os, sys
 
 try:
@@ -44,13 +45,6 @@ try:
     from PIL import _imagingft as core
 except ImportError:
     core = _imagingft_not_installed()
-
-if bytes is str:
-    def isStringType(t):
-        return isinstance(t, basestring)
-else:
-    def isStringType(t):
-        return isinstance(t, str)
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
 
@@ -148,7 +142,7 @@ class FreeTypeFont:
                 warnings.warn('file parameter deprecated, please use font parameter instead.', DeprecationWarning)
             font = file
 
-        if isStringType(font):
+        if isPath(font):
             self.font = core.getfont(font, size, index, encoding)
         else:
             self.font_bytes = font.read()
@@ -266,7 +260,12 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
 def load_path(filename):
     "Load a font file, searching along the Python path."
     for dir in sys.path:
-        if Image.isDirectory(dir):
+        if isDirectory(dir):
+            if not isinstance(filename, "utf-8"):
+                if bytes is str:
+                    filename = filename.encode("utf-8")
+                else:
+                    filename = filename.decode("utf-8")
             try:
                 return load(os.path.join(dir, filename))
             except IOError:
