@@ -4,7 +4,14 @@ from __future__ import print_function
 import sys
 import os
 
+if "--installed" in sys.argv:
+    sys_path_0 = sys.path[0]
+    del sys.path[0]
+
 from PIL import Image, ImageDraw, ImageFilter, ImageMath
+
+if "--installed" in sys.argv:
+    sys.path.insert(0, sys_path_0)
 
 ROOT = "."
 
