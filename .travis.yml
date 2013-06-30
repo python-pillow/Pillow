@@ -6,7 +6,7 @@ python:
   - 3.2
   - 3.3
 
-install: "sudo apt-get -qq install libfreetype6-dev liblcms1-dev libwebp-dev python-imaging"
+install: "sudo apt-get -qq install libfreetype6-dev liblcms1-dev libwebp-dev"
 
 script:
   - python setup.py clean
