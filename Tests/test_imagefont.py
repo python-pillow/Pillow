@@ -2,6 +2,7 @@ from tester import *
 
 from PIL import Image
 from io import BytesIO
+import os
 
 try:
     from PIL import ImageFont
@@ -20,6 +21,7 @@ def test_sanity():
 def test_font_with_name():
     assert_no_exception(lambda: ImageFont.truetype(font_path, font_size))
     assert_no_exception(lambda: _render(font_path))
+    _clean()
 
 def _font_as_bytes():
     with open(font_path, 'rb') as f:
@@ -33,10 +35,12 @@ def test_font_with_filelike():
     #shared_bytes = _font_as_bytes()
     #assert_no_exception(lambda: _render(shared_bytes))
     #assert_exception(Exception, lambda: _render(shared_bytes))
+    _clean
 
 def test_font_with_open_file():
     with open(font_path, 'rb') as f:
         assert_no_exception(lambda: _render(f))
+    _clean()
 
 def test_font_old_parameters():
     assert_warning(DeprecationWarning, lambda: ImageFont.truetype(filename=font_path, size=font_size))
@@ -52,6 +56,9 @@ def _render(font):
     img.save('font.png')
     return img
 
+def _clean():
+    os.unlink('font.png')
+
 def test_render_equal():
     img_path = _render(font_path)
     with open(font_path, 'rb') as f:
@@ -59,3 +66,4 @@ def test_render_equal():
     img_filelike = _render(font_filelike)
 
     assert_image_equal(img_path, img_filelike)
+    _clean()
