@@ -3,7 +3,7 @@ Pillow
 
 .. Note:: Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7; Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3.
 
-.. Note:: Pillow >= 2.1.0 no longer supports "import _imaging". Please use "from PIL import Image.core as _imaging" instead.
+.. Note:: Pillow >= 2.1.0 no longer supports "import _imaging". Please use "from PIL.Image import core as _imaging" instead.
 
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
    :target: https://travis-ci.org/python-imaging/Pillow
