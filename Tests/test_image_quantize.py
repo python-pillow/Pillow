@@ -12,7 +12,7 @@ def test_sanity():
     im = lena()
     im = im.quantize(palette=lena("P"))
     assert_image(im, "P", im.size)
-    
+
 def test_octree_quantize():
     im = lena()
 

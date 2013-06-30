@@ -30,7 +30,7 @@ def test_internals():
     im.readonly = 1
     im._copy()
     assert_false(im.readonly)
-    
+
     im.readonly = 1
     im.paste(0, (0, 0, 100, 100))
     assert_false(im.readonly)

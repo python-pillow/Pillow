@@ -31,4 +31,4 @@ def test_roundtrip():
 
     assert_image_equal(im, transpose(ROTATE_90, ROTATE_270))
     assert_image_equal(im, transpose(ROTATE_180, ROTATE_180))
-    
+

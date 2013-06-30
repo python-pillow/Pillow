@@ -583,7 +583,7 @@ getfilter(Imaging im, int filterid)
 
 Imaging
 ImagingTransform(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     ImagingTransformMap transform, void* transform_data,
     ImagingTransformFilter filter, void* filter_data,
     int fill)

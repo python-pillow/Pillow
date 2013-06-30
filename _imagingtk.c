@@ -30,7 +30,7 @@ typedef struct {
     Tcl_Interp* interp;
 } TkappObject;
 
-static PyObject* 
+static PyObject*
 _tkinit(PyObject* self, PyObject* args)
 {
     Tcl_Interp* interp;

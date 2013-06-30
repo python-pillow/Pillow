@@ -32,7 +32,7 @@ What about image code bugs?
 
 Please report any non-packaging related issues here first:
 
-- https://bitbucket.org/effbot/pil-2009-raclette/issues 
+- https://bitbucket.org/effbot/pil-2009-raclette/issues
 
 Then open a ticket here:
 
@@ -70,7 +70,7 @@ PIL needs you! Please help us maintain the Python Imaging Library here:
 Support
 ~~~~~~~
 
-If you don't want to help with development, you can help us financially. Your donation will be very much appreciated. 
+If you don't want to help with development, you can help us financially. Your donation will be very much appreciated.
 
 .. Note:: New contributors: please add your name (and donation preference) here and send a pull request.
 
@@ -82,7 +82,7 @@ Pillow is a (labor of love) volunteer effort led by Alex Clark. Any contributor 
 | Alex Clark (fork author)             | http://gittip.com/aclark4life         |
 +--------------------------------------+---------------------------------------+
 
-Developer 
+Developer
 ---------
 
 .. Note:: If there is a binary package for your system, that is the easiest way to install Pillow. Currently we only provide binaries for Windows (via Python eggs).
@@ -104,13 +104,13 @@ Some (most?) of Pillow's features require external libraries.
 
 * **libfreetype** provides type related services
 
-* **littlecms** provides color management 
+* **littlecms** provides color management
 
 * **libwebp** provides the Webp format.
 
-  * Pillow has been tested with version **0.1.3**, which does not read transparent webp files. Version **0.3.0** supports transparency.  
+  * Pillow has been tested with version **0.1.3**, which does not read transparent webp files. Version **0.3.0** supports transparency.
 
-If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg). Once you have installed the prerequisites, run:: 
+If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg). Once you have installed the prerequisites, run::
 
     $ pip install Pillow
 
@@ -372,12 +372,12 @@ Python Imaging Library
                             http://www.gzip.org/zlib/
 
        OpenType/TrueType    freetype2 (2.3.9 or later is recommended)
-       support              
+       support
                             http://www.freetype.org
-                            http://freetype.sourceforge.net  
+                            http://freetype.sourceforge.net
 
        CMS support          littleCMS (1.1.5 or later is recommended)
-       support              
+       support
                             http://www.littlecms.com/
 
        If you have a recent Linux version, the libraries provided with the
@@ -403,7 +403,7 @@ Python Imaging Library
            http://www.python.org/sigs/distutils-sig/download.html
 
        You can fetch distutils 1.0.2 from the Python source repository:
-       
+
            svn export http://svn.python.org/projects/python/tags/Distutils-1_0_2/Lib/distutils/
 
        For newer releases, the distutils library is included in the
@@ -412,7 +412,7 @@ Python Imaging Library
        NOTE: Version 1.1.7 is not fully compatible with 1.5.2.  Some
        more recent additions to the library may not work, but the core
        functionality is available.
-       
+
 
     3. If you didn't build Python from sources, make sure you have
        Python's build support files on your machine.  If you've down-

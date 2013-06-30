@@ -95,7 +95,7 @@ ImagingRankFilter(Imaging im, int size, int rank)
         ImagingDelete(imOut);
         return (Imaging) ImagingError_ModeError();
     }
-    
+
     ImagingCopyInfo(imOut, im);
 
     return imOut;

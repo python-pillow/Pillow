@@ -480,8 +480,8 @@ Changelog (Pillow)
       values, using ordinary [x, y] notation:
 
         pixel = im.load()
-        v = pixel[x, y]	
-        pixel[x, y] = v	
+        v = pixel[x, y]
+        pixel[x, y] = v
 
       If you're accessing more than a few pixels, this is a lot
       faster than using getpixel/putpixel.
@@ -959,7 +959,7 @@ Changelog (Pillow)
     + Change "ImageFont" to reject image files if they don't have the
       right mode.  Older versions could leak memory for "P" images.
       (Bug reported by Markus Gritsch).
-      
+
     + Renamed some internal functions to avoid potential build
       problem on Mac OS X.
 
@@ -1039,14 +1039,14 @@ Changelog (Pillow)
       This should speed up things like "putdata" and drawing operations.
 
     + The Image.offset method is deprecated.  Use the ImageChops.offset
-      function instead. 
+      function instead.
 
     + Changed ImageChops operators to copy palette and info dictionary
       from the first image argument.
 
     (1.1.1 released)
 
-    + Additional fixes for Python 1.6/2.0, including TIFF "save" bug. 
+    + Additional fixes for Python 1.6/2.0, including TIFF "save" bug.
 
     + Changed "init" to properly load plugins when PIL is used as a
       package.
@@ -1242,7 +1242,7 @@ Changelog (Pillow)
     + The ImageDraw "rectangle" method now includes both the right
       and the bottom edges when drawing filled rectangles.
 
-    + The TGA decoder now works properly for runlength encoded images 
+    + The TGA decoder now works properly for runlength encoded images
       which have more than one byte per pixel.
 
     + "getbands" on an YCbCr image now returns ("Y", "Cb", "Cr")
@@ -1691,7 +1691,7 @@ Changelog (Pillow)
       is a proposed animation standard, based on the PNG file format.
 
       You can use the "player" sample script to display some flavours
-      of this format.  The MNG standard is still under development, 
+      of this format.  The MNG standard is still under development,
       as is this driver.  More information, including sample files,
       can be found at <ftp://swrinde.nde.swri.edu/pub/mng>
 

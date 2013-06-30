@@ -7,7 +7,7 @@
  * history:
  * 96-03-27 fl	Created
  * 96-07-16 fl	Support "1", "L" and "RGBA" masks
- * 96-08-16 fl	Merged with opaque paste	
+ * 96-08-16 fl	Merged with opaque paste
  * 97-01-17 fl	Faster blending, added support for RGBa images
  * 97-08-27 fl	Faster masking for 32-bit images
  * 98-02-02 fl	Fixed MULDIV255 macro for gcc
@@ -209,7 +209,7 @@ paste_mask_RGBa(Imaging imOut, Imaging imIn, Imaging imMask,
         }
     }
 }
-    
+
 int
 ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
 	     int dx0, int dy0, int dx1, int dy1)
@@ -310,7 +310,7 @@ fill(Imaging imOut, const void* ink_, int dx, int dy,
         xsize *= pixelsize;
 	for (y = 0; y < ysize; y++)
 	    memset(imOut->image[y+dy]+dx, ink8, xsize);
-        
+
     } else {
 
 	for (y = 0; y < ysize; y++) {

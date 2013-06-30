@@ -67,5 +67,5 @@ def test_safeblock():
         im2 = fromstring(tostring(im1, "PNG"))
     finally:
         ImageFile.SAFEBLOCK = SAFEBLOCK
-    
+
     assert_image_equal(im1, im2)

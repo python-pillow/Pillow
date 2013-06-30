@@ -10,7 +10,7 @@ def color(mode):
         return tuple(range(1, bands+1))
 
 def test_pixel():
-    
+
     def pixel(mode):
         c = color(mode)
         im = Image.new(mode, (1, 1), None)
@@ -33,7 +33,7 @@ def test_pixel():
     assert_equal(pixel("YCbCr"), (1, 2, 3))
 
 def test_image():
-    
+
     def pixel(mode):
         im = Image.new(mode, (1, 1), color(mode))
         return im.getpixel((0, 0))
@@ -54,4 +54,4 @@ def test_image():
     assert_equal(pixel("YCbCr"), (1, 2, 3))
 
 
-        
+

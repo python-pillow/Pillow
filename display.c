@@ -71,7 +71,7 @@ _delete(ImagingDisplayObject* display)
     PyObject_Del(display);
 }
 
-static PyObject* 
+static PyObject*
 _expose(ImagingDisplayObject* display, PyObject* args)
 {
     int hdc;
@@ -84,7 +84,7 @@ _expose(ImagingDisplayObject* display, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _draw(ImagingDisplayObject* display, PyObject* args)
 {
     int hdc;
@@ -128,7 +128,7 @@ _paste(ImagingDisplayObject* display, PyObject* args)
     return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 _query_palette(ImagingDisplayObject* display, PyObject* args)
 {
     int hdc;
@@ -320,20 +320,20 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     BITMAPCOREHEADER core;
     HDC screen, screen_copy;
     PyObject* buffer;
-    
+
     /* step 1: create a memory DC large enough to hold the
        entire screen */
 
-    screen = CreateDC("DISPLAY", NULL, NULL, NULL); 
-    screen_copy = CreateCompatibleDC(screen); 
+    screen = CreateDC("DISPLAY", NULL, NULL, NULL);
+    screen_copy = CreateCompatibleDC(screen);
 
     width = GetDeviceCaps(screen, HORZRES);
     height = GetDeviceCaps(screen, VERTRES);
- 
+
     bitmap = CreateCompatibleBitmap(screen, width, height);
     if (!bitmap)
         goto error;
-        
+
     if (!SelectObject(screen_copy, bitmap))
         goto error;
 
@@ -380,7 +380,7 @@ static BOOL CALLBACK list_windows_callback(HWND hwnd, LPARAM lParam)
     RECT inner, outer;
     int title_size;
     int status;
-    
+
     /* get window title */
     title_size = GetWindowTextLength(hwnd);
     if (title_size > 0) {
@@ -410,7 +410,7 @@ static BOOL CALLBACK list_windows_callback(HWND hwnd, LPARAM lParam)
 
     if (status < 0)
         return 0;
-    
+
     return 1;
 }
 
@@ -418,7 +418,7 @@ PyObject*
 PyImaging_ListWindowsWin32(PyObject* self, PyObject* args)
 {
     PyObject* window_list;
-    
+
     window_list = PyList_New(0);
     if (!window_list)
         return NULL;
@@ -444,7 +444,7 @@ PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
     int size;
     void* data;
     PyObject* result;
-    
+
     int verbose = 0; /* debugging; will be removed in future versions */
     if (!PyArg_ParseTuple(args, "|i", &verbose))
 	return NULL;
@@ -452,7 +452,7 @@ PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
 
     clip = OpenClipboard(NULL);
     /* FIXME: check error status */
-    
+
     if (verbose) {
         UINT format = EnumClipboardFormats(0);
         char buffer[200];
@@ -565,7 +565,7 @@ static void
 callback_error(const char* handler)
 {
     PyObject* sys_stderr;
-    
+
     sys_stderr = PySys_GetObject("stderr");
 
     if (sys_stderr) {
@@ -722,7 +722,7 @@ PyImaging_CreateWindowWin32(PyObject* self, PyObject* args)
     wnd = CreateWindowEx(
         0, windowClass.lpszClassName, title,
         WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, width, height, 
+        CW_USEDEFAULT, CW_USEDEFAULT, width, height,
         HWND_DESKTOP, NULL, NULL, NULL
         );
 

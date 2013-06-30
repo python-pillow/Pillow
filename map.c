@@ -130,7 +130,7 @@ mapping_dealloc(ImagingMapperObject* mapper)
 /* -------------------------------------------------------------------- */
 /* standard file operations */
 
-static PyObject* 
+static PyObject*
 mapping_read(ImagingMapperObject* mapper, PyObject* args)
 {
     PyObject* buf;
@@ -157,7 +157,7 @@ mapping_read(ImagingMapperObject* mapper, PyObject* args)
     return buf;
 }
 
-static PyObject* 
+static PyObject*
 mapping_seek(ImagingMapperObject* mapper, PyObject* args)
 {
     int offset;
@@ -195,7 +195,7 @@ ImagingDestroyMap(Imaging im)
     return; /* nothing to do! */
 }
 
-static PyObject* 
+static PyObject*
 mapping_readimage(ImagingMapperObject* mapper, PyObject* args)
 {
     int y, size;
@@ -244,7 +244,7 @@ mapping_readimage(ImagingMapperObject* mapper, PyObject* args)
     if (!ImagingNewEpilogue(im))
         return NULL;
 
-    mapper->offset += size;         
+    mapper->offset += size;
 
     return PyImagingNew(im);
 }
@@ -292,7 +292,7 @@ static PyTypeObject ImagingMapperType = {
     0,                          /*tp_getset*/
 };
 
-PyObject* 
+PyObject*
 PyImaging_Mapper(PyObject* self, PyObject* args)
 {
     char* filename;
@@ -315,12 +315,12 @@ static void
 mapping_destroy_buffer(Imaging im)
 {
     ImagingBufferInstance* buffer = (ImagingBufferInstance*) im;
-    
+
     PyBuffer_Release(&buffer->view);
     Py_XDECREF(buffer->target);
 }
 
-PyObject* 
+PyObject*
 PyImaging_MapBuffer(PyObject* self, PyObject* args)
 {
     int y, size;

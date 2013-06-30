@@ -82,7 +82,7 @@ void name(Imaging out, Imaging im1, Imaging im2)\
 /* --------------------------------------------------------------------
  * some day, we should add FPE protection mechanisms.  see pyfpe.h for
  * details.
- *   
+ *
  * PyFPE_START_PROTECT("Error in foobar", return 0)
  * PyFPE_END_PROTECT(result)
  */
@@ -182,7 +182,7 @@ _unop(PyObject* self, PyObject* args)
     im1 = (Imaging) i1;
 
     unop = (void*) op;
-    
+
     unop(out, im1);
 
     Py_INCREF(Py_None);
@@ -206,7 +206,7 @@ _binop(PyObject* self, PyObject* args)
     im2 = (Imaging) i2;
 
     binop = (void*) op;
-    
+
     binop(out, im1, im2);
 
     Py_INCREF(Py_None);

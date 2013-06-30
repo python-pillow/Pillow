@@ -46,7 +46,7 @@ for i0 in range(65556):
                 min_size = size
                 min_start = i0
 
-print() 
+print()
 
 # print check(min_size, min_start)
 

@@ -213,7 +213,7 @@ class ImageFile(Image.Image):
                         # JpegDecode needs to clean things up here either way
                         # If we don't destroy the decompressor, we have a memory leak.
                         d.cleanup()
-                        
+
                         if LOAD_TRUNCATED_IMAGES:
                             break
                         else:
@@ -450,7 +450,7 @@ def _save(im, fp, tile, bufsize=0):
     # FIXME: make MAXBLOCK a configuration parameter
 	# It would be great if we could have the encoder specifiy what it needs
 	# But, it would need at least the image size in most cases. RawEncode is
-	# a tricky case. 
+	# a tricky case.
     bufsize = max(MAXBLOCK, bufsize, im.size[0] * 4) # see RawEncode.c
     try:
         fh = fp.fileno()

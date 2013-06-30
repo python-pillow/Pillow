@@ -15,8 +15,8 @@
  * 2000-10-12 fl   Suppress warnings
  * 2000-12-04 fl   Suppress errors beyond end of image data
  *
- * Copyright (c) 1998-2000 Secret Labs AB 
- * Copyright (c) 1996-2000 Fredrik Lundh 
+ * Copyright (c) 1998-2000 Secret Labs AB
+ * Copyright (c) 1996-2000 Fredrik Lundh
  *
  * See the README file for details on usage and redistribution.
  */
@@ -26,9 +26,9 @@
 
 #ifdef  HAVE_LIBJPEG
 
-#undef HAVE_PROTOTYPES 
-#undef HAVE_STDLIB_H 
-#undef HAVE_STDDEF_H 
+#undef HAVE_PROTOTYPES
+#undef HAVE_STDLIB_H
+#undef HAVE_STDDEF_H
 #undef UINT8
 #undef UINT16
 #undef UINT32
@@ -148,7 +148,7 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     if (context->source.skip > 0) {
         skip_input_data(&context->cinfo, context->source.skip);
         if (context->source.skip > 0)
-            return context->source.pub.next_input_byte - buf; 
+            return context->source.pub.next_input_byte - buf;
     }
 
     switch (state->state) {
@@ -157,7 +157,7 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
         /* Read JPEG header, until we find an image body. */
         do {
-            
+
             /* Note that we cannot return unless we have decoded
                as much data as possible. */
             ok = jpeg_read_header(&context->cinfo, FALSE);
@@ -220,7 +220,7 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
            file if necessary to return data line by line) */
         if (!jpeg_start_decompress(&context->cinfo))
             break;
-        
+
         state->state++;
         /* fall through */
 
@@ -259,7 +259,7 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     }
 
     /* Return number of bytes consumed */
-    return context->source.pub.next_input_byte - buf; 
+    return context->source.pub.next_input_byte - buf;
 
 }
 
@@ -268,8 +268,8 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 /* -------------------------------------------------------------------- */
 
 int ImagingJpegDecodeCleanup(ImagingCodecState state){
-	/* called to fee the decompression engine when the decode terminates 
-	   due to a corrupt or truncated image 
+	/* called to fee the decompression engine when the decode terminates
+	   due to a corrupt or truncated image
 	*/
     JPEGSTATE* context = (JPEGSTATE*) state->context;
 

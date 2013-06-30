@@ -229,13 +229,13 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	/* fall through */
 
     case 2:
-        // check for exif len + 'APP1' header bytes 
+        // check for exif len + 'APP1' header bytes
         if (context->rawExifLen + 5 >  context->destination.pub.free_in_buffer){
             break;
         }
         //add exif header
         if (context->rawExifLen > 0){
-            jpeg_write_marker(&context->cinfo, JPEG_APP0+1, 
+            jpeg_write_marker(&context->cinfo, JPEG_APP0+1,
                               (unsigned char*)context->rawExif, context->rawExifLen);
         }
 

@@ -75,7 +75,7 @@ ImagingBitDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             bitstate->bitbuffer = (bitstate->bitbuffer << 8) | byte;
 
         bitstate->bitcount += 8;
-        
+
         while (bitstate->bitcount >= bitstate->bits) {
 
             /* get a pixel from the bit buffer */
@@ -127,7 +127,7 @@ ImagingBitDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     return -1;
                 }
                 state->x = 0;
-                /* reset bit buffer */ 
+                /* reset bit buffer */
                 if (bitstate->pad > 0)
                     bitstate->bitcount = 0;
             }

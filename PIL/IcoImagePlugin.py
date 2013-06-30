@@ -44,12 +44,12 @@ class IcoFile:
         """
         Parse image from file-like object containing ico file data
         """
-        
+
         # check magic
         s = buf.read(6)
         if not _accept(s):
             raise SyntaxError("not an ICO file")
-        
+
         self.buf = buf
         self.entry = []
 
@@ -59,7 +59,7 @@ class IcoFile:
         # Get headers for each item
         for i in range(self.nb_items):
             s = buf.read(16)
-            
+
             icon_header = {
                 'width': i8(s[0]),
                 'height': i8(s[1]),
@@ -70,33 +70,33 @@ class IcoFile:
                 'size': i32(s[8:]),
                 'offset': i32(s[12:])
             }
-            
+
             # See Wikipedia
             for j in ('width', 'height'):
                 if not icon_header[j]:
                     icon_header[j] = 256
-            
+
             # See Wikipedia notes about color depth.
             # We need this just to differ images with equal sizes
             icon_header['color_depth'] = (icon_header['bpp'] or (icon_header['nb_color'] != 0 and ceil(log(icon_header['nb_color'],2))) or 256)
-            
+
             icon_header['dim'] = (icon_header['width'], icon_header['height'])
             icon_header['square'] = icon_header['width'] * icon_header['height']
-            
+
             self.entry.append(icon_header)
-        
+
         self.entry = sorted(self.entry, key=lambda x: x['color_depth'])
         # ICO images are usually squares
         # self.entry = sorted(self.entry, key=lambda x: x['width'])
         self.entry = sorted(self.entry, key=lambda x: x['square'])
         self.entry.reverse()
-        
+
     def sizes(self):
         """
         Get a list of all available icon sizes and color depths.
         """
         return set((h['width'], h['height']) for h in self.entry)
-    
+
     def getimage(self, size, bpp=False):
         """
         Get an image from the icon
@@ -105,30 +105,30 @@ class IcoFile:
             if size == h['dim'] and (bpp == False or bpp == h['color_depth']):
                 return self.frame(i)
         return self.frame(0)
-    
+
     def frame(self, idx):
         """
         Get an image from frame idx
         """
-        
+
         header = self.entry[idx]
-        
+
         self.buf.seek(header['offset'])
         data = self.buf.read(8)
         self.buf.seek(header['offset'])
-        
+
         if data[:8] == PngImagePlugin._MAGIC:
             # png frame
             im = PngImagePlugin.PngImageFile(self.buf)
         else:
             # XOR + AND mask bmp frame
             im = BmpImagePlugin.DibImageFile(self.buf)
-            
+
             # change tile dimension to only encompass XOR image
             im.size = (im.size[0], int(im.size[1] / 2))
             d, e, o, a = im.tile[0]
             im.tile[0] = d, (0,0) + im.size, o, a
-            
+
             # figure out where AND mask image starts
             mode = a[0]
             bpp = 8
@@ -136,7 +136,7 @@ class IcoFile:
                 if mode == BmpImagePlugin.BIT2MODE[k][1]:
                     bpp = k
                     break
-            
+
             if 32 == bpp:
                 # 32-bit color depth icon image allows semitransparent areas
                 # PIL's DIB format ignores transparency bits, recover them
@@ -161,7 +161,7 @@ class IcoFile:
                 if (w % 32) > 0:
                     # bitmap row data is aligned to word boundaries
                     w += 32 - (im.size[0] % 32)
-                    
+
                 # the total mask data is padded row size * height / bits per char
 
                 and_mask_offset = o + int(im.size[0] * im.size[1] * (bpp / 8.0))
@@ -178,15 +178,15 @@ class IcoFile:
                     'raw',          # raw decoder
                     ('1;I', int(w/8), -1)  # 1bpp inverted, padded, reversed
                 )
-                
+
                 # now we have two images, im is XOR image and mask is AND image
 
             # apply mask image as alpha channel
             im = im.convert('RGBA')
             im.putalpha(mask)
-            
+
         return im
-    
+
 ##
 # Image plugin for Windows Icon files.
 
@@ -194,14 +194,14 @@ class IcoImageFile(ImageFile.ImageFile):
     """
     PIL read-only image support for Microsoft Windows .ico files.
 
-    By default the largest resolution image in the file will be loaded. This can 
+    By default the largest resolution image in the file will be loaded. This can
     be changed by altering the 'size' attribute before calling 'load'.
 
-    The info dictionary has a key 'sizes' that is a list of the sizes available 
+    The info dictionary has a key 'sizes' that is a list of the sizes available
     in the icon file.
 
     Handles classic, XP and Vista icon formats.
-    
+
     This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis <casadebender@gmail.com>.
     https://code.google.com/p/casadebender/wiki/Win32IconImagePlugin
     """

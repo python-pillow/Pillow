@@ -11,7 +11,7 @@
  * 2005-02-07 fl   Limit number of colors to 256
  *
  * Written by Toby J Sargeant <tjs@longford.cs.monash.edu.au>.
- * 
+ *
  * Copyright (c) 1998 by Toby J Sargeant
  * Copyright (c) 1998-2004 by Secret Labs AB.  All rights reserved.
  *
@@ -235,7 +235,7 @@ hash_to_list(const HashTable *h, const Pixel pixel, const uint32_t count, void *
 
    p=malloc(sizeof(PixelList));
    if (!p) return;
-   
+
    p->flag=0;
    p->p=q;
    p->count=count;
@@ -484,7 +484,7 @@ split(BoxNode *node)
 #ifdef TEST_SPLIT
    printf ("along axis %d\n",axis+1);
 #endif
-   
+
 #ifdef TEST_SPLIT
    {
       PixelList *_prevTest,*_nextTest;
@@ -951,7 +951,7 @@ compute_palette_from_median_cut(
    Pixel *p;
    uint32_t *avg[3];
    uint32_t *count;
-   
+
    *palette=NULL;
    if (!(count=malloc(sizeof(uint32_t)*nPaletteEntries))) {
       return 0;
@@ -1088,7 +1088,7 @@ k_means(Pixel *pixelData,
    uint32_t **avgDistSortKey;
    int changes;
    int built=0;
-   
+
    if (!(count=malloc(sizeof(uint32_t)*nPaletteEntries))) {
       return 0;
    }
@@ -1169,11 +1169,11 @@ quantize(Pixel *pixelData,
    uint32_t i;
    uint32_t *qp;
    uint32_t nPaletteEntries;
-   
+
    uint32_t *avgDist;
    uint32_t **avgDistSortKey;
    Pixel *p;
-   
+
 #ifndef NO_OUTPUT
    uint32_t timer,timer2;
 #endif
@@ -1560,7 +1560,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         break;
     case 2:
         if (!strcmp(im->mode, "RGBA")) {
-            withAlpha = 1; 
+            withAlpha = 1;
         }
         result = quantize_octree(
             p,

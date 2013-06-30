@@ -1,4 +1,4 @@
-/* 
+/*
  * pyCMS
  * a Python / PIL interface to the littleCMS ICC Color Management System
  * Copyright (C) 2002-2003 Kevin Cazabon
@@ -6,11 +6,11 @@
  * http://www.cazabon.com
  * Adapted/reworked for PIL by Fredrik Lundh
  * Copyright (c) 2009 Fredrik Lundh
- * 
+ *
  * pyCMS home page:  http://www.cazabon.com/pyCMS
  * littleCMS home page:  http://www.littlecms.com
  * (littleCMS is Copyright (C) 1998-2001 Marti Maria)
- * 
+ *
  * Originally released under LGPL.  Graciously donated to PIL in
  * March 2009, for distribution under the standard PIL license
  */
@@ -55,7 +55,7 @@ http://www.cazabon.com\n\
 /* known to-do list with current version:
 
    Verify that PILmode->littleCMStype conversion in findLCMStype is correct for all PIL modes (it probably isn't for the more obscure ones)
-  
+
    Add support for creating custom RGB profiles on the fly
    Add support for checking presence of a specific tag in a profile
    Add support for other littleCMS features as required
@@ -209,7 +209,7 @@ findICmode(icColorSpaceSignature cs)
     }
 }
 
-static DWORD 
+static DWORD
 findLCMStype(char* PILmode)
 {
     if (strcmp(PILmode, "RGB") == 0) {
@@ -365,7 +365,7 @@ buildProofTransform(PyObject *self, PyObject *args)
     cmsErrorAction(LCMS_ERROR_IGNORE);
 
     transform = _buildProofTransform(pInputProfile->profile, pOutputProfile->profile, pProofProfile->profile, sInMode, sOutMode, iRenderingIntent, iProofIntent, cmsFLAGS);
-  
+
     if (!transform)
         return NULL;
 

@@ -1,7 +1,7 @@
-/* 
+/*
  * The Python Imaging Library
  * $Id$
- * 
+ *
  * convert images
  *
  * history:
@@ -1055,7 +1055,7 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
 
     if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "PA") == 0)
 	return frompalette(imOut, imIn, mode);
-    
+
     if (strcmp(mode, "P") == 0)
 	return topalette(imOut, imIn, palette, dither);
 
@@ -1126,7 +1126,7 @@ ImagingConvertInPlace(Imaging imIn, const char* mode)
         convert = bit2l;
     else
         return ImagingError_ModeError();
-    
+
     ImagingSectionEnter(&cookie);
     for (y = 0; y < imIn->ysize; y++)
 	(*convert)((UINT8*) imIn->image[y], (UINT8*) imIn->image[y],

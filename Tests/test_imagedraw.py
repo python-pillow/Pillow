@@ -18,7 +18,7 @@ def test_sanity():
     success()
 
 def test_deprecated():
-    
+
     im = lena().copy()
 
     draw = ImageDraw.Draw(im)

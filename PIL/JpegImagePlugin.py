@@ -563,7 +563,7 @@ def _save(im, fp, filename):
     bufsize=0
     if "optimize" in info:
         bufsize = im.size[0]*im.size[1]
-        
+
     # The exif info needs to be written as one block, + APP1, + one spare byte.
 	# Ensure that our buffer is big enough
     bufsize = max(ImageFile.MAXBLOCK, bufsize, len(info.get("exif",b"")) + 5 )

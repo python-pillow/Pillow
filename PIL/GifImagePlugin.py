@@ -288,7 +288,7 @@ def _save(im, fp, filename):
                     break
                 else:
                     transparentColorExists = False
-        
+
         # transparency extension block
         if transparentColorExists:
             fp.write(b"!" +
@@ -353,7 +353,7 @@ def getheader(im, palette=None, info=None):
 
     # if the user adds a palette, use it
     usedPaletteColors = None
-    
+
     if palette is not None and isinstance(palette, bytes):
         paletteBytes = palette[:768]
     else:

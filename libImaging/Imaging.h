@@ -1,7 +1,7 @@
 /*
  * The Python Imaging Library
  * $Id$
- * 
+ *
  * declarations for the imaging core library
  *
  * Copyright (c) 1997-2005 by Secret Labs AB
@@ -291,16 +291,16 @@ extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
 extern Imaging ImagingStretch(Imaging imOut, Imaging imIn, int filter);
 extern Imaging ImagingTransformPerspective(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     double a[8], int filter, int fill);
 extern Imaging ImagingTransformAffine(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     double a[6], int filter, int fill);
 extern Imaging ImagingTransformQuad(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     double a[8], int filter, int fill);
 extern Imaging ImagingTransform(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     ImagingTransformMap transform, void* transform_data,
     ImagingTransformFilter filter, void* filter_data,
     int fill);
@@ -373,7 +373,7 @@ extern int ImagingOutlineLine(ImagingOutline outline, float x, float y);
 extern int ImagingOutlineCurve(ImagingOutline outline, float x1, float y1,
                                 float x2, float y2, float x3, float y3);
 extern int ImagingOutlineTransform(ImagingOutline outline, double a[6]);
-                                   
+
 extern int ImagingOutlineClose(ImagingOutline outline);
 
 /* Special effects */

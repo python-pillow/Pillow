@@ -28,7 +28,7 @@
  * 2003-09-26 fl   Added "LA" and "PA" modes (experimental)
  * 2005-10-02 fl   Added image counter
  *
- * Copyright (c) 1998-2005 by Secret Labs AB 
+ * Copyright (c) 1998-2005 by Secret Labs AB
  * Copyright (c) 1995-2005 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.

@@ -3,7 +3,7 @@ from tester import *
 from PIL import Image
 
 def test_sanity():
-    
+
     im = lena()
 
     assert_exception(ValueError, lambda: im.point(list(range(256))))

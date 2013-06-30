@@ -31,7 +31,7 @@ def test_sanity():
 
 def test_crash():
 
-    # crashes on small images    
+    # crashes on small images
     im = Image.new("RGB", (1, 1))
     assert_no_exception(lambda: im.filter(ImageFilter.SMOOTH))
 

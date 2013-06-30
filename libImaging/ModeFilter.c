@@ -69,7 +69,7 @@ ImagingModeFilter(Imaging im, int size)
                 out[x] = IMAGING_PIXEL_L(im, x, y);
 
         }
-        
+
     }
 
     ImagingCopyInfo(imOut, im);

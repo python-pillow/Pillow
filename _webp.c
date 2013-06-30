@@ -60,33 +60,33 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 
     if (!WebPInitDecoderConfig(&config)) {
         Py_RETURN_NONE;
-    }       
+    }
 
     PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
 
     vp8_status_code = WebPGetFeatures(webp, size, &config.input);
     if (vp8_status_code == VP8_STATUS_OK) {
-        // If we don't set it, we don't get alpha. 
+        // If we don't set it, we don't get alpha.
         // Initialized to MODE_RGB
         if (config.input.has_alpha) {
             config.output.colorspace = MODE_RGBA;
             mode = "RGBA";
         }
         vp8_status_code = WebPDecode(webp, size, &config);
-    }   
-    
+    }
+
     if (vp8_status_code != VP8_STATUS_OK) {
         WebPFreeDecBuffer(&config.output);
         Py_RETURN_NONE;
-    }   
-    
+    }
+
     if (config.output.colorspace < MODE_YUV) {
-        bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba, 
+        bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba,
                                           config.output.u.RGBA.size);
     } else {
         // Skipping YUV for now. Need Test Images.
         // UNDONE -- unclear if we'll ever get here if we set mode_rgb*
-        bytes = PyBytes_FromStringAndSize((char *)config.output.u.YUVA.y, 
+        bytes = PyBytes_FromStringAndSize((char *)config.output.u.YUVA.y,
                                           config.output.u.YUVA.y_size);
     }
 
@@ -95,7 +95,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 #else
     pymode = PyString_FromString(mode);
 #endif
-    ret = Py_BuildValue("SiiS", bytes, config.output.width, 
+    ret = Py_BuildValue("SiiS", bytes, config.output.width,
                         config.output.height, pymode);
     WebPFreeDecBuffer(&config.output);
     return ret;
@@ -109,7 +109,7 @@ PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
 
 /*
  * The version of webp that ships with (0.1.3) Ubuntu 12.04 doesn't handle alpha well.
- * Files that are valid with 0.3 are reported as being invalid. 
+ * Files that are valid with 0.3 are reported as being invalid.
  */
 PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
     return Py_BuildValue("i", WebPGetDecoderVersion()==0x0103);

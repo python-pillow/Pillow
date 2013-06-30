@@ -21,4 +21,4 @@ def test_fileio():
     im2 = Image.open(io)
     assert_image_equal(im1, im2)
 
-                
+

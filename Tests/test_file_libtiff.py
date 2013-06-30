@@ -22,7 +22,7 @@ def _assert_noerr(im):
         print("No _compression")
         print (dir(im))
 
-    # can we write it back out, in a different form. 
+    # can we write it back out, in a different form.
     out = tempfile("temp.png")
     assert_no_exception(lambda: im.save(out))
 
@@ -62,7 +62,7 @@ def test_g4_tiff_bytesio():
 
     assert_equal(im.size, (500,500))
     _assert_noerr(im)
-    	
+
 def test_g4_eq_png():
     """ Checking that we're actually getting the data that we expect"""
     png = Image.open('Tests/images/lena_bw_500.png')

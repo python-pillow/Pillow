@@ -1,4 +1,4 @@
-/* 
+/*
  * The Python Imaging Library
  * $Id$
  *
@@ -224,7 +224,7 @@ getcolors32(Imaging im, int maxcolors, int* size)
         33554432,9, 67108864,71, 134217728,39, 268435456,9, 536870912,5,
         1073741824,83, 0
     };
-    
+
     code_size = code_poly = code_mask = 0;
 
     for (i = 0; SIZES[i]; i += 2) {

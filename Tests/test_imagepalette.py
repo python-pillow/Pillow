@@ -28,7 +28,7 @@ def test_file():
     file = tempfile("temp.lut")
 
     palette.save(file)
-    
+
     from PIL.ImagePalette import load, raw
 
     p = load(file)
@@ -40,5 +40,5 @@ def test_file():
     p = raw(p[1], p[0])
     assert_true(isinstance(p, ImagePalette))
 
-    
-    
+
+

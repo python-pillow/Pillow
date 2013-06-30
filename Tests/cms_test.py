@@ -30,7 +30,7 @@ OUTMODE = "RGB"
 PROOF_PROFILE = "c:\\temp\\profiles\\monitor.icm"
 
 # set to True to show() images, False to save them into OUTPUT_DIRECTORY
-SHOW = False                
+SHOW = False
 
 # Tests you can enable/disable
 TEST_error_catching                 = True
@@ -63,9 +63,9 @@ if TEST_error_catching == True:
         #neither of these proifles exists (unless you make them), so we should
         # get an error
         imOut = ImageCms.profileToProfile(im, "missingProfile.icm", "cmyk.icm")
-        
+
     except PyCMSError as reason:
-        print("We caught a PyCMSError: %s\n\n" %reason)        
+        print("We caught a PyCMSError: %s\n\n" %reason)
 
     print("error catching test completed successfully (if you see the message \
     above that we caught the error).")
@@ -75,21 +75,21 @@ if TEST_profileToProfile == True:
     im = Image.open(IMAGE)
 
     # send the image, input/output profiles, and rendering intent to
-    # ImageCms.profileToProfile()    
+    # ImageCms.profileToProfile()
     imOut = ImageCms.profileToProfile(im, INPUT_PROFILE, OUTPUT_PROFILE, \
                 outputMode = OUTMODE)
 
     # now that the image is converted, save or display it
     outputImage(imOut, "profileToProfile")
-    
+
     print("profileToProfile test completed successfully.")
 
-if TEST_profileToProfile_inPlace == True:    
+if TEST_profileToProfile_inPlace == True:
     # we'll do the same test as profileToProfile, but modify im in place
     # instead of getting a new image returned to us
     im = Image.open(IMAGE)
 
-    # send the image to ImageCms.profileToProfile(), specifying inPlace = True    
+    # send the image to ImageCms.profileToProfile(), specifying inPlace = True
     result = ImageCms.profileToProfile(im, INPUT_PROFILE, OUTPUT_PROFILE, \
                 outputMode = OUTMODE, inPlace = True)
 
@@ -117,7 +117,7 @@ if TEST_buildTransform == True:
 
     # then transform it again using the same transform, this time in-place.
     result = ImageCms.applyTransform(im, transform, inPlace = True)
-    outputImage(im, "buildTransform_inPlace")  
+    outputImage(im, "buildTransform_inPlace")
 
     print("buildTransform test completed successfully.")
 
@@ -149,10 +149,10 @@ if TEST_buildTransformFromOpenProfiles == True:
 
     # then do it again using the same transform, this time in-place.
     result = ImageCms.applyTransform(im, transform, inPlace = True)
-    outputImage(im, "buildTransformFromOpenProfiles_inPlace")    
+    outputImage(im, "buildTransformFromOpenProfiles_inPlace")
 
     print("buildTransformFromOpenProfiles test completed successfully.")
-    
+
     # and, to clean up a bit, delete the transform
     # this should call the C destructor for the each item.
     # Python should also do this automatically when it goes out of scope.
@@ -179,7 +179,7 @@ if TEST_buildProofTransform == True:
 
     # then transform it again using the same transform, this time in-place.
     result = ImageCms.applyTransform(im, transform, inPlace = True)
-    outputImage(im, "buildProofTransform_inPlace")  
+    outputImage(im, "buildProofTransform_inPlace")
 
     print("buildProofTransform test completed successfully.")
 
@@ -187,11 +187,11 @@ if TEST_buildProofTransform == True:
     # this should call the C destructor for the transform structure.
     # Python should also do this automatically when it goes out of scope.
     del(transform)
-    
+
 if TEST_getProfileInfo == True:
     # get a profile handle
     profile = ImageCms.getOpenProfile(INPUT_PROFILE)
-    
+
     # lets print some info about our input profile:
     print("Profile name (retrieved from profile string path name): %s" %ImageCms.getProfileName(INPUT_PROFILE))
 
@@ -208,7 +208,7 @@ if TEST_getProfileInfo == True:
     # Hmmmm... but does this profile support INTENT_ABSOLUTE_COLORIMETRIC?
     print("Does it support INTENT_ABSOLUTE_COLORIMETRIC?: (1 is yes, -1 is no): %s" \
             %ImageCms.isIntentSupported(profile, ImageCms.INTENT_ABSOLUTE_COLORIMETRIC, \
-            ImageCms.DIRECTION_INPUT))    
+            ImageCms.DIRECTION_INPUT))
 
     print("getProfileInfo test completed successfully.")
 
@@ -219,4 +219,4 @@ if TEST_misc == True:
     print("Copyright:\n\n%s" %ImageCms.copyright())
 
     print("misc test completed successfully.")
-    
+

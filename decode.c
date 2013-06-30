@@ -1,4 +1,4 @@
-/* 
+/*
  * The Python Imaging Library.
  *
  * standard decoder interfaces for the Imaging library
@@ -89,7 +89,7 @@ PyImaging_DecoderNew(int contextsize)
     /* Target image */
     decoder->lock = NULL;
     decoder->im = NULL;
-    
+
     /* Initialize the cleanup function pointer */
     decoder->cleanup = NULL;
 
@@ -105,7 +105,7 @@ _dealloc(ImagingDecoderObject* decoder)
     PyObject_Del(decoder);
 }
 
-static PyObject* 
+static PyObject*
 _decode(ImagingDecoderObject* decoder, PyObject* args)
 {
     UINT8* buffer;
@@ -119,7 +119,7 @@ _decode(ImagingDecoderObject* decoder, PyObject* args)
     return Py_BuildValue("ii", status, decoder->state.errcode);
 }
 
-static PyObject* 
+static PyObject*
 _decode_cleanup(ImagingDecoderObject* decoder, PyObject* args)
 {
     int status = 0;
@@ -434,15 +434,15 @@ PyImaging_LibTiffDecoderNew(PyObject* self, PyObject* args)
         return NULL;
 
     TRACE(("new tiff decoder %s\n", compname));
-        
-    /* UNDONE -- we can probably do almost any arbitrary compression here, 
+
+    /* UNDONE -- we can probably do almost any arbitrary compression here,
      * since we're effective passing in the whole file in one shot and
-     * getting back the data row by row. V2 maybe 
+     * getting back the data row by row. V2 maybe
      */
 
     if (strcasecmp(compname, "tiff_ccitt") == 0) {
         compression = COMPRESSION_CCITTRLE;
-    
+
     } else if (strcasecmp(compname, "group3") == 0) {
         compression = COMPRESSION_CCITTFAX3;
 

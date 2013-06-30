@@ -3,7 +3,7 @@ from tester import *
 from PIL import Image
 
 def test_offset():
-    
+
     im1 = lena()
 
     im2 = assert_warning(DeprecationWarning, lambda: im1.offset(10))

@@ -675,7 +675,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     char* filename;
     int compression;
     int fp;
-    
+
     PyObject *dir;
     PyObject *key, *value;
     Py_ssize_t pos = 0;
@@ -683,7 +683,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 
     Py_ssize_t d_size;
     PyObject *keys, *values;
-	
+
 
     if (! PyArg_ParseTuple(args, "sssisO", &mode, &rawmode, &compname, &fp, &filename, &dir)) {
         return NULL;
@@ -705,14 +705,14 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 
 
     TRACE(("new tiff encoder %s fp: %d, filename: %s \n", compname, fp, filename));
-    
-    /* UNDONE -- we can probably do almost any arbitrary compression here, 
-     *  so long as we're doing row/stripe based actions and not tiles. 
+
+    /* UNDONE -- we can probably do almost any arbitrary compression here,
+     *  so long as we're doing row/stripe based actions and not tiles.
      */
 
     if (strcasecmp(compname, "tiff_ccitt") == 0) {
         compression = COMPRESSION_CCITTRLE;
-    
+
     } else if (strcasecmp(compname, "group3") == 0) {
         compression = COMPRESSION_CCITTFAX3;
 
@@ -751,12 +751,12 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
         TRACE(("Attempting to set key: %d\n", (int)PyInt_AsLong(key)));
         if (PyInt_Check(value)) {
             TRACE(("Setting from Int: %d %ld \n", (int)PyInt_AsLong(key),PyInt_AsLong(value)));
-            status = ImagingLibTiffSetField(&encoder->state, 
+            status = ImagingLibTiffSetField(&encoder->state,
                                             (ttag_t) PyInt_AsLong(key),
                                             PyInt_AsLong(value));
         } else if(PyBytes_Check(value)) {
             TRACE(("Setting from String: %d, %s \n", (int)PyInt_AsLong(key),PyBytes_AsString(value)));
-            status = ImagingLibTiffSetField(&encoder->state, 
+            status = ImagingLibTiffSetField(&encoder->state,
                                             (ttag_t) PyInt_AsLong(key),
                                             PyBytes_AsString(value));
 
@@ -771,18 +771,18 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                 for (i=0;i<len;i++) {
                     floatav[i] = (float)PyFloat_AsDouble(PyList_GetItem(value,i));
                 }
-                status = ImagingLibTiffSetField(&encoder->state, 
+                status = ImagingLibTiffSetField(&encoder->state,
                                                 (ttag_t) PyInt_AsLong(key),
                                                 floatav);
                 free(floatav);
             }
         } else if (PyFloat_Check(value)) {
             TRACE(("Setting from String: %d, %f \n", (int)PyInt_AsLong(key),PyFloat_AsDouble(value)));
-            status = ImagingLibTiffSetField(&encoder->state, 
+            status = ImagingLibTiffSetField(&encoder->state,
                                             (ttag_t) PyInt_AsLong(key),
-                                            (float)PyFloat_AsDouble(value));         
+                                            (float)PyFloat_AsDouble(value));
         } else {
-            TRACE(("Unhandled type for key %d : %s ",  
+            TRACE(("Unhandled type for key %d : %s ",
                    (int)PyInt_AsLong(key),
                    PyBytes_AsString(PyObject_Str(value))));
         }
@@ -793,7 +793,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
             return NULL;
         }
     }
-        
+
     encoder->encode  = ImagingLibTiffEncode;
 
     return (PyObject*) encoder;

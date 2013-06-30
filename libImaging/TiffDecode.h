@@ -46,7 +46,7 @@ extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 #if defined(_MSC_VER) && (_MSC_VER == 1310)
 /* VS2003/py2.4 can't use varargs. Skipping trace for now.*/
 #define TRACE(args)
-#else 
+#else
 
 
 /*
@@ -60,4 +60,4 @@ extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 
 
 
-#endif 
+#endif

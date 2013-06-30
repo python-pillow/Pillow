@@ -25,7 +25,7 @@ def _font_as_bytes():
     with open(font_path, 'rb') as f:
         font_bytes = BytesIO(f.read())
     return font_bytes
-                        
+
 def test_font_with_filelike():
     assert_no_exception(lambda: ImageFont.truetype(_font_as_bytes(), font_size))
     assert_no_exception(lambda: _render(_font_as_bytes()))
@@ -37,7 +37,7 @@ def test_font_with_filelike():
 def test_font_with_open_file():
     with open(font_path, 'rb') as f:
         assert_no_exception(lambda: _render(f))
-    
+
 def test_font_old_parameters():
     assert_warning(DeprecationWarning, lambda: ImageFont.truetype(filename=font_path, size=font_size))
 

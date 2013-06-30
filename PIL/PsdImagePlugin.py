@@ -55,7 +55,7 @@ class PsdImageFile(ImageFile.ImageFile):
     format_description = "Adobe Photoshop"
 
     def _open(self):
-        
+
         read = self.fp.read
 
         #

@@ -1,4 +1,4 @@
-/* 
+/*
  * The Python Imaging Library.
  * $Id$
  *
@@ -76,5 +76,5 @@ ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     }
 
     return ptr - buf;
-    
+
 }

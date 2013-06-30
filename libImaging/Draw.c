@@ -436,7 +436,7 @@ polygon8(Imaging im, int n, Edge *e, int ink, int eofill)
 
     for (;ymin <= ymax; ymin++) {
         y = ymin+0.5F;
-        for (i = j = 0; i < n; i++) 
+        for (i = j = 0; i < n; i++)
             if (y >= e[i].ymin && y <= e[i].ymax) {
                 if (e[i].d == 0)
                     hline8(im, e[i].xmin, ymin, e[i].xmax, ink);
@@ -590,7 +590,7 @@ add_edge(Edge *e, int x0, int y0, int x1, int y1)
         e->ymin = y0, e->ymax = y1;
     else
         e->ymin = y1, e->ymax = y0;
-    
+
     if (y0 == y1) {
         e->d = 0;
         e->dx = 0.0;
@@ -777,7 +777,7 @@ ImagingDrawPolygon(Imaging im, int count, int* xy, const void* ink_,
         draw->line(im, xy[i+i], xy[i+i+1], xy[0], xy[1], ink);
 
     }
-        
+
     return 0;
 }
 
@@ -861,7 +861,7 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
         }
 
         free(e);
-        
+
     } else {
 
         for (i = start; i <= end; i++) {
@@ -1017,7 +1017,7 @@ ImagingOutlineLine(ImagingOutline outline, float x1, float y1)
 
     outline->x = x1;
     outline->y = y1;
-    
+
     return 0;
 }
 
@@ -1061,13 +1061,13 @@ ImagingOutlineCurve(ImagingOutline outline, float x1, float y1,
 
     outline->x = xo;
     outline->y = yo;
-    
+
     return 0;
 }
 
 int
 ImagingOutlineCurve2(ImagingOutline outline, float cx, float cy,
-                     float x3, float y3) 
+                     float x3, float y3)
 {
     /* add bezier curve based on three control points (as
        in the Flash file format) */
@@ -1095,13 +1095,13 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6])
     int i, n;
     int x0, y0, x1, y1;
     int X0, Y0, X1, Y1;
-    
+
     double a0 = a[0]; double a1 = a[1]; double a2 = a[2];
     double a3 = a[3]; double a4 = a[4]; double a5 = a[5];
 
     eIn = outline->edges;
     n = outline->count;
-    
+
     /* FIXME: ugly! */
     outline->edges = NULL;
     outline->count = outline->size = 0;
@@ -1113,12 +1113,12 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6])
         ImagingError_MemoryError();
         return -1;
     }
-    
+
     for (i = 0; i < n; i++) {
-        
+
         x0 = eIn->x0;
         y0 = eIn->y0;
-        
+
         /* FIXME: ouch! */
         if (eIn->x0 == eIn->xmin)
             x1 = eIn->xmax;

@@ -3,7 +3,7 @@ from tester import *
 from PIL import Image
 
 def test_sanity():
-    
+
     assert_exception(ValueError, lambda: lena().tobitmap())
     assert_no_exception(lambda: lena().convert("1").tobitmap())
 

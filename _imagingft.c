@@ -132,7 +132,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     } else {
         error = FT_New_Memory_Face(library, (FT_Byte*)font_bytes, font_bytes_size, index, &self->face);
     }
- 
+
     if (!error)
         error = FT_Set_Pixel_Sizes(self->face, 0, size);
 
@@ -288,7 +288,7 @@ font_getabc(FontObject* self, PyObject* args)
             return geterror(error);
         a = face->glyph->metrics.horiBearingX / 64.0;
         b = face->glyph->metrics.width / 64.0;
-        c = (face->glyph->metrics.horiAdvance - 
+        c = (face->glyph->metrics.horiAdvance -
              face->glyph->metrics.horiBearingX -
              face->glyph->metrics.width) / 64.0;
     } else

@@ -119,7 +119,7 @@ PyPath_Flatten(PyObject* data, double **pxy)
 	*pxy = xy;
 	return path->count;
     }
-	
+
     if (PyImaging_CheckBuffer(data)) {
         /* Assume the buffer contains floats */
         Py_buffer buffer;
@@ -380,7 +380,7 @@ path_getslice(PyPathObject* self, Py_ssize_t ilow, Py_ssize_t ihigh)
         ihigh = ilow;
     else if (ihigh > self->count)
         ihigh = self->count;
-    
+
     return (PyObject*) path_new(ihigh - ilow, self->xy + ilow * 2, 1);
 }
 

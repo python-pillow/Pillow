@@ -194,7 +194,7 @@ static int _hashtable_insert(HashTable *h,HashKey_t key,HashVal_t val,int resize
    HashNode *t;
    int i;
    uint32_t hash=h->hashFunc(h,key)%h->length;
-   
+
    for (n=&(h->table[hash]);*n;n=&((*n)->next)) {
       nv=*n;
       i=h->cmpFunc(h,nv->key,key);
@@ -226,7 +226,7 @@ static int _hashtable_lookup_or_insert(HashTable *h,HashKey_t key,HashVal_t *ret
    HashNode *t;
    int i;
    uint32_t hash=h->hashFunc(h,key)%h->length;
-   
+
    for (n=&(h->table[hash]);*n;n=&((*n)->next)) {
       nv=*n;
       i=h->cmpFunc(h,nv->key,key);
@@ -257,7 +257,7 @@ int hashtable_insert_or_update_computed(HashTable *h,
    HashNode *t;
    int i;
    uint32_t hash=h->hashFunc(h,key)%h->length;
-   
+
    for (n=&(h->table[hash]);*n;n=&((*n)->next)) {
       nv=*n;
       i=h->cmpFunc(h,nv->key,key);
@@ -367,7 +367,7 @@ static int _hashtable_remove(HashTable *h,
    uint32_t hash=h->hashFunc(h,key)%h->length;
    HashNode *n,*p;
    int i;
-   
+
    for (p=NULL,n=h->table[hash];n;p=n,n=n->next) {
       i=h->cmpFunc(h,n->key,key);
       if (!i) {
@@ -388,7 +388,7 @@ static int _hashtable_delete(HashTable *h,const HashKey_t key,int resize) {
    uint32_t hash=h->hashFunc(h,key)%h->length;
    HashNode *n,*p;
    int i;
-   
+
    for (p=NULL,n=h->table[hash];n;p=n,n=n->next) {
       i=h->cmpFunc(h,n->key,key);
       if (!i) {
@@ -429,7 +429,7 @@ int hashtable_lookup(const HashTable *h,const HashKey_t key,HashVal_t *valp) {
    uint32_t hash=h->hashFunc(h,key)%h->length;
    HashNode *n;
    int i;
-   
+
    for (n=h->table[hash];n;n=n->next) {
       i=h->cmpFunc(h,n->key,key);
       if (!i) {

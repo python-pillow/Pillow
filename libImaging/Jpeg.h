@@ -103,7 +103,7 @@ typedef struct {
     JPEGDESTINATION destination;
 
     int extra_offset;
-    
+
     int rawExifLen;   /* EXIF data length */
     char* rawExif;  /* EXIF buffer pointer */
 
