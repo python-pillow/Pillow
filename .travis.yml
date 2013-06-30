@@ -10,6 +10,6 @@ install: "sudo apt-get -qq install libfreetype6-dev liblcms1-dev libwebp-dev pyt
 
 script:
   - python setup.py clean
-  - python setup.py build_ext -i
+  - python setup.py build_ext --inplace
   - python selftest.py
   - python Tests/run.py
