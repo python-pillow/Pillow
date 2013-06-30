@@ -1,25 +1,12 @@
 # minimal sanity check
 from __future__ import print_function
+
+import sys
+import os
+
+from PIL import Image, ImageDraw, ImageFilter, ImageMath
+
 ROOT = "."
-
-import os, sys
-
-# Path silliness.  This selftest needs to be able to import itself, so
-#it needs . in the path.  However, since the compiled versions of the
-#PIL bits are not in PIL, they're in dist, or build, or actually
-#installed. In fact, importing from ./PIL is going to fail on any
-#.c/so item.  So. We remove it from the path, import all the PIL stuff
-#from elsewhere, then pop the current directory back on the path so
-#that we can import this and run the doctest
-
-del(sys.path[0])
-
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFilter
-from PIL import ImageMath
-
-sys.path.insert(0,ROOT)
 
 try:
     Image.core.ping
@@ -29,9 +16,11 @@ except ImportError as v:
 except AttributeError:
     pass
 
+
 def _info(im):
     im.load()
     return im.format, im.mode, im.size
+
 
 def testimage():
     """
@@ -174,6 +163,7 @@ def check_module(feature, module):
     else:
         print("---", feature, "support ok")
 
+
 def check_codec(feature, codec):
     if codec + "_encoder" not in dir(Image.core):
         print("***", feature, "support not installed")
@@ -187,8 +177,7 @@ if __name__ == "__main__":
     exit_status = 0
 
     print("-"*68)
-    #print("PIL", Image.VERSION, "TEST SUMMARY ")
-    print("PIL TEST SUMMARY ")
+    print("Pillow", Image.PILLOW_VERSION, "TEST SUMMARY ")
     print("-"*68)
     print("Python modules loaded from", os.path.dirname(Image.__file__))
     print("Binary modules loaded from", os.path.dirname(Image.core.__file__))
@@ -212,7 +201,8 @@ if __name__ == "__main__":
     print("-"*68)
 
     # use doctest to make sure the test program behaves as documented!
-    import doctest, selftest
+    import doctest
+    import selftest
     print("Running selftest:")
     status = doctest.testmod(selftest)
     if status[0]:
@@ -222,4 +212,3 @@ if __name__ == "__main__":
         print("--- %s tests passed." % status[1])
 
     sys.exit(exit_status)
-
