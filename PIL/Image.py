@@ -58,7 +58,7 @@ try:
          raise ImportError("The _imaging extension was built for another "
                             " version of Pillow or PIL. Most PIL functions "
                              " will be disabled ")
-			  
+
 except ImportError as v:
     core = _imaging_not_installed()
     if str(v)[:20] == "Module use of python" and warnings:
