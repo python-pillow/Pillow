@@ -59,15 +59,6 @@ def _find_library_file(self, library):
             self.compiler.library_dirs, library)
 
 
-# XXX Who or what still uses this?
-#def _find_version(filename):
-#    for line in open(filename).readlines():
-#        m = re.search("VERSION\s*=\s*\"([^\"]+)\"", line)
-#        if m:
-#            return m.group(1)
-#    return None
-
-
 def _lib_include(root):
     # map root to (root/lib, root/include)
     return os.path.join(root, "lib"), os.path.join(root, "include")
