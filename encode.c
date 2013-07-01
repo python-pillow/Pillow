@@ -719,6 +719,24 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     } else if (strcasecmp(compname, "group4") == 0) {
         compression = COMPRESSION_CCITTFAX4;
 
+    } else if (strcasecmp(compname, "tiff_jpeg") == 0) {
+        compression = COMPRESSION_OJPEG;
+
+    } else if (strcasecmp(compname, "tiff_adobe_deflate") == 0) {
+        compression = COMPRESSION_ADOBE_DEFLATE;
+
+    } else if (strcasecmp(compname, "tiff_thunderscan") == 0) {
+        compression = COMPRESSION_THUNDERSCAN;
+
+    } else if (strcasecmp(compname, "tiff_deflate") == 0) {
+        compression = COMPRESSION_DEFLATE;
+
+    } else if (strcasecmp(compname, "tiff_sgilog") == 0) {
+        compression = COMPRESSION_SGILOG;
+
+    } else if (strcasecmp(compname, "tiff_sgilog24") == 0) {
+        compression = COMPRESSION_SGILOG24;
+
     } else if (strcasecmp(compname, "tiff_raw_16") == 0) {
         compression = COMPRESSION_CCITTRLEW;
 
