@@ -197,6 +197,10 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 	clientstate->flrealloc = 0;
 
 	dump_state(clientstate);
+
+    TIFFSetWarningHandler(NULL);
+    TIFFSetWarningHandlerExt(NULL);
+
 	if (clientstate->fp) {
 		TRACE(("Opening using fd: %d\n",clientstate->fp));
 		lseek(clientstate->fp,0,SEEK_SET); // Sometimes, I get it set to the end.
