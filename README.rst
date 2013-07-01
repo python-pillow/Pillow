@@ -25,20 +25,20 @@ Why a fork?
 
 PIL is not setuptools compatible. Please see http://mail.python.org/pipermail/image-sig/2010-August/006480.html for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too infrequent to accomodate the large number and frequency of issues reported.
 
-What about image code bugs?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+What about the official PIL?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. Note:: Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0 added Python 3 support and includes many bug fixes from many contributors.
 
-Please report any non-packaging related issues here first:
+As more time passes since the last PIL release, the likelyhood of a new PIL release decreases. However, we've yet to hear an official "PIL is dead" announcement. So if you still want to support PIL, please report issues here first:
 
 - https://bitbucket.org/effbot/pil-2009-raclette/issues
 
-Then open a ticket here:
+Then open a Pillow ticket here:
 
 - https://github.com/python-imaging/Pillow/issues
 
-and provide a link to the first ticket so we can track the issue(s) upstream.
+Please provide a link to the PIL ticket so we can track the issue(s) upstream.
 
 Installation
 ------------
