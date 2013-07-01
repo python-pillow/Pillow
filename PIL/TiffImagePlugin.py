@@ -118,8 +118,13 @@ COMPRESSION_INFO = {
     5: "tiff_lzw",
     6: "tiff_jpeg", # obsolete
     7: "jpeg",
+    8: "tiff_adobe_deflate",
     32771: "tiff_raw_16", # 16-bit padding
-    32773: "packbits"
+    32773: "packbits",
+    32809: "tiff_thunderscan",
+    32946: "tiff_deflate",
+    34676: "tiff_sgilog",
+    34677: "tiff_sgilog24",
 }
 
 COMPRESSION_INFO_REV = dict([(v,k) for (k,v) in COMPRESSION_INFO.items()])
@@ -746,8 +751,11 @@ class TiffImageFile(ImageFile.ImageFile):
             offsets = self.tag[STRIPOFFSETS]
             h = getscalar(ROWSPERSTRIP, ysize)
             w = self.size[0]
-            if self._compression in ["tiff_ccitt", "group3",
-                                     "group4", "tiff_raw_16"]:
+            if self._compression in ["tiff_ccitt", "group3", "group4",
+                                     "tiff_jpeg", "tiff_adobe_deflate",
+                                     "tiff_thunderscan", "tiff_deflate",
+                                     "tiff_sgilog", "tiff_sgilog24",
+                                     "tiff_raw_16"]:
                 ## if Image.DEBUG:
                 ##     print "Activating g4 compression for whole file"
 
@@ -878,8 +886,11 @@ def _save(im, fp, filename):
     ifd = ImageFileDirectory(prefix)
 
     compression = im.info.get('compression','raw')
-    libtiff = compression in ["tiff_ccitt", "group3",
-                              "group4", "tiff_raw_16"]
+    libtiff = compression in ["tiff_ccitt", "group3", "group4",
+                              "tiff_jpeg", "tiff_adobe_deflate",
+                              "tiff_thunderscan", "tiff_deflate",
+                              "tiff_sgilog", "tiff_sgilog24",
+                              "tiff_raw_16"]
 
     # -- multi-page -- skip TIFF header on subsequent pages
     if not libtiff and fp.tell() == 0:
