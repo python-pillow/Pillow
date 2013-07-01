@@ -275,10 +275,6 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     # kevin@cazabon.com
     # http://www.cazabon.com
 
-    # No cropping/fit possible. Prevents ZeroDivisionError @ liveAreaAspectRatio
-    if image.size == (1,1):
-        return image
-
     # ensure inputs are valid
     if not isinstance(centering, list):
         centering = [centering[0], centering[1]]
@@ -300,10 +296,12 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
         int((float(bleed) * float(image.size[1])) + 0.5)
         )
 
-    liveArea = (
-        bleedPixels[0], bleedPixels[1], image.size[0] - bleedPixels[0] - 1,
-        image.size[1] - bleedPixels[1] - 1
-        )
+    liveArea = (0, 0, image.size[0], image.size[1])
+    if bleed > 0.0:
+        liveArea = (
+            bleedPixels[0], bleedPixels[1], image.size[0] - bleedPixels[0] - 1,
+            image.size[1] - bleedPixels[1] - 1
+            )
 
     liveSize = (liveArea[2] - liveArea[0], liveArea[3] - liveArea[1])
 
