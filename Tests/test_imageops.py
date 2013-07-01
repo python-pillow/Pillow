@@ -37,7 +37,6 @@ def test_sanity():
 
     ImageOps.fit(lena("L"), (128, 128))
     ImageOps.fit(lena("RGB"), (128, 128))
-    ImageOps.fit(lena("RGB").resize((1,1)), (35,35))
 
     ImageOps.flip(lena("L"))
     ImageOps.flip(lena("RGB"))
@@ -58,6 +57,17 @@ def test_sanity():
     ImageOps.solarize(lena("RGB"))
 
     success()
+
+def test_1pxfit():
+    # Division by zero in equalize if image is 1 pixel high
+    newimg = ImageOps.fit(lena("RGB").resize((1,1)), (35,35))
+    assert_equal(newimg.size,(35,35))
+    
+    newimg = ImageOps.fit(lena("RGB").resize((1,100)), (35,35))
+    assert_equal(newimg.size,(35,35))
+
+    newimg = ImageOps.fit(lena("RGB").resize((100,1)), (35,35))
+    assert_equal(newimg.size,(35,35))
 
 def test_pil163():
     # Division by zero in equalize if < 255 pixels in image (@PIL163)
