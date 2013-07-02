@@ -87,3 +87,11 @@ def test_g4_write():
 
     assert_false(orig.tobytes() == reread.tobytes())
 
+def test_adobe_deflate_tiff():
+    file = "Tests/images/tiff_adobe_deflate.tif"
+    im = Image.open(file)
+
+    assert_equal(im.mode, "RGB")
+    assert_equal(im.size, (278, 374))
+    assert_equal(im.tile[0][:3], ('tiff_adobe_deflate', (0, 0, 278, 374), 0))
+    assert_no_exception(lambda: im.load())
