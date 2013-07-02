@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.1.0 (2013-07-01)
+2.1.0 (2013-07-02)
 ------------------
 
 - Add /usr/bin/env python shebangs to all scripts in /Scripts.
