@@ -86,7 +86,7 @@ LCMS_ROOT = None
 class pil_build_ext(build_ext):
 
     class feature:
-        zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = None
+        zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = webpmux = None
         required = []
 
         def require(self, feat):
@@ -329,6 +329,12 @@ class pil_build_ext(build_ext):
                 if _find_library_file(self, "webp"): # in googles precompiled zip it is call "libwebp"
                     feature.webp = "webp"
 
+        if feature.want('webpmux'):
+            if (_find_include_file(self, "webp/mux.h") and
+                    _find_include_file(self, "webp/demux.h")):
+                if _find_library_file(self, "webpmux") and _find_library_file(self, "webpdemux"):
+                    feature.webpmux = "webpmux"
+
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
                 raise ValueError(
@@ -386,8 +392,16 @@ class pil_build_ext(build_ext):
                 "PIL._imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra))
 
         if os.path.isfile("_webp.c") and feature.webp:
+            libs = ["webp"]
+            defs = []
+
+            if feature.webpmux:
+                defs.append(("HAVE_WEBPMUX", None))
+                libs.append("webpmux")
+                libs.append("webpdemux")
+
             exts.append(Extension(
-                "PIL._webp", ["_webp.c"], libraries=["webp"]))
+                "PIL._webp", ["_webp.c"], libraries=libs, define_macros=defs))
 
         if sys.platform == "darwin":
             # locate Tcl/Tk frameworks
@@ -452,7 +466,8 @@ class pil_build_ext(build_ext):
             (feature.tiff, "TIFF G3/G4 (experimental)"),
             (feature.freetype, "FREETYPE2"),
             (feature.lcms, "LITTLECMS"),
-            (feature.webp, "WEBP"), ]
+            (feature.webp, "WEBP"),
+            (feature.webpmux, "WEBPMUX"), ]
 
         all = 1
         for option in options:
