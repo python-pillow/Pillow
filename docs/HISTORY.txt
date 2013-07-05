@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+2.2.0 (2013-10-01)
+------------------
+
+- Adding support for metadata in webp images.
+  [heynemann]
+
 2.1.0 (2013-07-02)
 ------------------
 
