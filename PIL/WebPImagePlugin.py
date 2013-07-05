@@ -29,10 +29,18 @@ class WebPImageFile(ImageFile.ImageFile):
     format_description = "WebP image"
 
     def _open(self):
-        data, width, height, self.mode = _webp.WebPDecode(self.fp.read())
+        data, width, height, self.mode, icc_profile, exif = _webp.WebPDecode(self.fp.read())
+
+        self.info["icc_profile"] = icc_profile
+        self.info["exif"] = exif
+
         self.size = width, height
         self.fp = BytesIO(data)
         self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
+
+    def _getexif(self):
+        from PIL.JpegImagePlugin import JpegImageFile
+        return JpegImageFile._getexif.im_func(self)
 
 
 def _save(im, fp, filename):
@@ -41,14 +49,21 @@ def _save(im, fp, filename):
         raise IOError("cannot write mode %s as WEBP" % image_mode)
 
     quality = im.encoderinfo.get("quality", 80)
+    icc_profile = im.encoderinfo.get("icc_profile", "")
+    exif = im.encoderinfo.get("exif", "")
 
     data = _webp.WebPEncode(
         im.tobytes(),
         im.size[0],
         im.size[1],
         float(quality),
-		im.mode
-        )
+        im.mode,
+        icc_profile,
+        exif
+    )
+    if data is None:
+        raise IOError("cannot write file as WEBP (encoder returned None)")
+
     fp.write(data)
 
 

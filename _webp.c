@@ -5,6 +5,9 @@
 #include <webp/decode.h>
 #include <webp/types.h>
 
+#ifdef HAVE_WEBPMUX
+#include <webp/mux.h>
+#endif
 
 PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 {
@@ -12,12 +15,18 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     int height;
     float quality_factor;
     uint8_t *rgb;
+    uint8_t *icc_bytes;
+    uint8_t *exif_bytes;
     uint8_t *output;
-	char *mode;
+    char *mode;
     Py_ssize_t size;
+    Py_ssize_t icc_size;
+    Py_ssize_t exif_size;
     size_t ret_size;
 
-    if (!PyArg_ParseTuple(args, "s#nifs",(char**)&rgb, &size, &width, &height, &quality_factor, &mode)) {
+    if (!PyArg_ParseTuple(args, "s#nifss#s#",
+                (char**)&rgb, &size, &width, &height, &quality_factor, &mode,
+                &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
         Py_RETURN_NONE;
     }
 
@@ -35,9 +44,42 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 		Py_RETURN_NONE;
 	}
 
+#ifdef HAVE_WEBPMUX
+    WebPData output_data = {0};
+    WebPData image = { output, ret_size };
+
+    int copy_data = 0;  // value 1 indicates given data WILL be copied to the mux
+                        // and value 0 indicates data will NOT be copied.
+
+    WebPMux* mux = WebPMuxNew();
+    WebPMuxSetImage(mux, &image, copy_data);
+
+    if (icc_size > 0) {
+        WebPData icc_profile = { icc_bytes, icc_size };
+        WebPMuxSetChunk(mux, "ICCP", &icc_profile, copy_data);
+    }
+
+    if (exif_size > 0) {
+        WebPData exif = { exif_bytes, exif_size };
+        WebPMuxSetChunk(mux, "EXIF", &exif, copy_data);
+    }
+
+    WebPMuxAssemble(mux, &output_data);
+    WebPMuxDelete(mux);
+
+    output = (uint8_t*)output_data.bytes;
+    ret_size = output_data.size;
+#endif
+
     if (ret_size > 0) {
         PyObject *ret = PyBytes_FromStringAndSize((char*)output, ret_size);
+
+#ifdef HAVE_WEBPMUX
+        WebPDataClear(&output_data);
+#else
         free(output);
+#endif
+
         return ret;
     }
     Py_RETURN_NONE;
@@ -49,7 +91,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
     PyBytesObject *webp_string;
     uint8_t *webp;
     Py_ssize_t size;
-    PyObject *ret, *bytes, *pymode;
+    PyObject *ret, *bytes, *pymode, *icc_profile = Py_None, *exif = Py_None;
     WebPDecoderConfig config;
     VP8StatusCode vp8_status_code = VP8_STATUS_OK;
     char* mode = "RGB";
@@ -72,7 +114,35 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
             config.output.colorspace = MODE_RGBA;
             mode = "RGBA";
         }
+
+#ifdef HAVE_WEBPMUX
+        int copy_data = 0;
+        WebPData data = { webp, size };
+        WebPMuxFrameInfo image;
+
+        WebPMux* mux = WebPMuxCreate(&data, copy_data);
+        WebPMuxGetFrame(mux, 1, &image);
+        webp = (uint8_t*)image.bitstream.bytes;
+        size = image.bitstream.size;
+#endif
+
         vp8_status_code = WebPDecode(webp, size, &config);
+
+#ifdef HAVE_WEBPMUX
+        WebPData icc_profile_data = {0};
+        WebPMuxGetChunk(mux, "ICCP", &icc_profile_data);
+        if (icc_profile_data.size > 0) {
+            icc_profile = PyBytes_FromStringAndSize((const char*)icc_profile_data.bytes, icc_profile_data.size);
+        }
+
+        WebPData exif_data = {0};
+        WebPMuxGetChunk(mux, "EXIF", &exif_data);
+        if (exif_data.size > 0) {
+            exif = PyBytes_FromStringAndSize((const char*)exif_data.bytes, exif_data.size);
+        }
+
+        WebPMuxDelete(mux);
+#endif
     }
 
     if (vp8_status_code != VP8_STATUS_OK) {
@@ -95,8 +165,8 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 #else
     pymode = PyString_FromString(mode);
 #endif
-    ret = Py_BuildValue("SiiS", bytes, config.output.width,
-                        config.output.height, pymode);
+    ret = Py_BuildValue("SiiSSS", bytes, config.output.width,
+                        config.output.height, pymode, icc_profile, exif);
     WebPFreeDecBuffer(&config.output);
     return ret;
 }
@@ -124,6 +194,14 @@ static PyMethodDef webpMethods[] =
     {NULL, NULL}
 };
 
+void addMuxFlagToModule(PyObject* m) {
+#ifdef HAVE_WEBPMUX
+    PyModule_AddObject(m, "HAVE_WEBPMUX", Py_True);
+#else
+    PyModule_AddObject(m, "HAVE_WEBPMUX", Py_False);
+#endif
+}
+
 
 #if PY_VERSION_HEX >= 0x03000000
 PyMODINIT_FUNC
@@ -139,12 +217,14 @@ PyInit__webp(void) {
     };
 
     m = PyModule_Create(&module_def);
+    addMuxFlagToModule(m);
     return m;
 }
 #else
 PyMODINIT_FUNC
 init_webp(void)
 {
-    Py_InitModule("_webp", webpMethods);
+    PyObject* m = Py_InitModule("_webp", webpMethods);
+    addMuxFlagToModule(m);
 }
 #endif
