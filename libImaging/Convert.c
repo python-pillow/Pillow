@@ -39,8 +39,8 @@
 #define CLIP16(v) ((v) <= -32768 ? -32768 : (v) >= 32767 ? 32767 : (v))
 
 /* like (a * b + 127) / 255), but much faster on most platforms */
-#define	MULDIV255(a, b, tmp)\
-     	(tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
+#define MULDIV255(a, b, tmp)\
+        (tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
 
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
 #define L(rgb)\
@@ -55,7 +55,7 @@ bit2l(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++)
-	*out++ = (*in++ != 0) ? 255 : 0;
+        *out++ = (*in++ != 0) ? 255 : 0;
 }
 
 static void
@@ -64,10 +64,10 @@ bit2rgb(UINT8* out, const UINT8* in, int xsize)
     int x;
     for (x = 0; x < xsize; x++) {
         UINT8 v = (*in++ != 0) ? 255 : 0;
-	*out++ = v;
-	*out++ = v;
-	*out++ = v;
-	*out++ = 255;
+        *out++ = v;
+        *out++ = v;
+        *out++ = v;
+        *out++ = 255;
     }
 }
 
@@ -76,10 +76,10 @@ bit2cmyk(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++) {
-	*out++ = 0;
-	*out++ = 0;
-	*out++ = 0;
-	*out++ = (*in++ != 0) ? 0 : 255;
+        *out++ = 0;
+        *out++ = 0;
+        *out++ = 0;
+        *out++ = (*in++ != 0) ? 0 : 255;
     }
 }
 
@@ -88,7 +88,7 @@ bit2ycbcr(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++) {
-	*out++ = (*in++ != 0) ? 255 : 0;
+        *out++ = (*in++ != 0) ? 255 : 0;
         *out++ = 128;
         *out++ = 128;
         *out++ = 255;
@@ -104,7 +104,7 @@ l2bit(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++)
-	*out++ = (*in++ >= 128) ? 255 : 0;
+        *out++ = (*in++ >= 128) ? 255 : 0;
 }
 
 static void
@@ -113,10 +113,10 @@ l2la(UINT8* out, const UINT8* in, int xsize)
     int x;
     for (x = 0; x < xsize; x++) {
         UINT8 v = *in++;
-	*out++ = v;
-	*out++ = v;
-	*out++ = v;
-	*out++ = 255;
+        *out++ = v;
+        *out++ = v;
+        *out++ = v;
+        *out++ = 255;
     }
 }
 
@@ -126,10 +126,10 @@ l2rgb(UINT8* out, const UINT8* in, int xsize)
     int x;
     for (x = 0; x < xsize; x++) {
         UINT8 v = *in++;
-	*out++ = v;
-	*out++ = v;
-	*out++ = v;
-	*out++ = 255;
+        *out++ = v;
+        *out++ = v;
+        *out++ = v;
+        *out++ = 255;
     }
 }
 
@@ -138,7 +138,7 @@ la2l(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 4)
-	*out++ = in[0];
+        *out++ = in[0];
 }
 
 static void
@@ -147,10 +147,10 @@ la2rgb(UINT8* out, const UINT8* in, int xsize)
     int x;
     for (x = 0; x < xsize; x++, in += 4) {
         UINT8 v = in[0];
-	*out++ = v;
-	*out++ = v;
-	*out++ = v;
-	*out++ = in[3];
+        *out++ = v;
+        *out++ = v;
+        *out++ = v;
+        *out++ = in[3];
     }
 }
 
@@ -159,8 +159,8 @@ rgb2bit(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 4)
-	/* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
-	*out++ = (L(in) >= 128000) ? 255 : 0;
+        /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
+        *out++ = (L(in) >= 128000) ? 255 : 0;
 }
 
 static void
@@ -168,8 +168,8 @@ rgb2l(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 4)
-	/* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
-	*out++ = L(in) / 1000;
+        /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
+        *out++ = L(in) / 1000;
 }
 
 static void
@@ -177,8 +177,8 @@ rgb2la(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
-	/* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
-	out[0] = out[1] = out[2] = L(in) / 1000;
+        /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
+        out[0] = out[1] = out[2] = L(in) / 1000;
         out[3] = 255;
     }
 }
@@ -189,7 +189,7 @@ rgb2i(UINT8* out_, const UINT8* in, int xsize)
     int x;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++, in += 4)
-	*out++ = L(in) / 1000;
+        *out++ = L(in) / 1000;
 }
 
 static void
@@ -198,7 +198,7 @@ rgb2f(UINT8* out_, const UINT8* in, int xsize)
     int x;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++, in += 4)
-	*out++ = (float) L(in) / 1000.0F;
+        *out++ = (float) L(in) / 1000.0F;
 }
 
 static void
@@ -207,7 +207,7 @@ rgb2bgr15(UINT8* out_, const UINT8* in, int xsize)
     int x;
     UINT16* out = (UINT16*) out_;
     for (x = 0; x < xsize; x++, in += 4)
-	*out++ =
+        *out++ =
             ((((UINT16)in[0])<<7)&0x7c00) +
             ((((UINT16)in[1])<<2)&0x03e0) +
             ((((UINT16)in[2])>>3)&0x001f);
@@ -219,7 +219,7 @@ rgb2bgr16(UINT8* out_, const UINT8* in, int xsize)
     int x;
     UINT16* out = (UINT16*) out_;
     for (x = 0; x < xsize; x++, in += 4)
-	*out++ =
+        *out++ =
             ((((UINT16)in[0])<<8)&0xf800) +
             ((((UINT16)in[1])<<3)&0x07e0) +
             ((((UINT16)in[2])>>3)&0x001f);
@@ -230,9 +230,9 @@ rgb2bgr24(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 4) {
-	*out++ = in[2];
-	*out++ = in[1];
-	*out++ = in[0];
+        *out++ = in[2];
+        *out++ = in[1];
+        *out++ = in[0];
     }
 }
 
@@ -257,8 +257,8 @@ rgba2la(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
-	/* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
-	out[0] = out[1] = out[2] = L(in) / 1000;
+        /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
+        out[0] = out[1] = out[2] = L(in) / 1000;
         out[3] = in[3];
     }
 }
@@ -310,7 +310,7 @@ rgb2cmyk(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++) {
-	/* Note: no undercolour removal */
+        /* Note: no undercolour removal */
         *out++ = ~(*in++);
         *out++ = ~(*in++);
         *out++ = ~(*in++);
@@ -324,9 +324,9 @@ cmyk2rgb(UINT8* out, const UINT8* in, int xsize)
     int x;
     for (x = 0; x < xsize; x++, in += 4) {
         *out++ = CLIP(255 - (in[0] + in[3]));
-	*out++ = CLIP(255 - (in[1] + in[3]));
-	*out++ = CLIP(255 - (in[2] + in[3]));
-	*out++ = 255;
+        *out++ = CLIP(255 - (in[1] + in[3]));
+        *out++ = CLIP(255 - (in[2] + in[3]));
+        *out++ = 255;
     }
 }
 
@@ -340,7 +340,7 @@ bit2i(UINT8* out_, const UINT8* in, int xsize)
     int x;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++)
-	*out++ = (*in++ != 0) ? 255 : 0;
+        *out++ = (*in++ != 0) ? 255 : 0;
 }
 
 static void
@@ -349,7 +349,7 @@ l2i(UINT8* out_, const UINT8* in, int xsize)
     int x;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++)
-	*out++ = (INT32) *in++;
+        *out++ = (INT32) *in++;
 }
 
 static void
@@ -374,7 +374,7 @@ i2f(UINT8* out_, const UINT8* in_, int xsize)
     INT32* in = (INT32*) in_;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++)
-	*out++ = (FLOAT32) *in++;
+        *out++ = (FLOAT32) *in++;
 }
 
 /* ------------- */
@@ -387,7 +387,7 @@ bit2f(UINT8* out_, const UINT8* in, int xsize)
     int x;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++)
-	*out++ = (*in++ != 0) ? 255.0F : 0.0F;
+        *out++ = (*in++ != 0) ? 255.0F : 0.0F;
 }
 
 static void
@@ -396,7 +396,7 @@ l2f(UINT8* out_, const UINT8* in, int xsize)
     int x;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++)
-	*out++ = (FLOAT32) *in++;
+        *out++ = (FLOAT32) *in++;
 }
 
 static void
@@ -421,7 +421,7 @@ f2i(UINT8* out_, const UINT8* in_, int xsize)
     FLOAT32* in = (FLOAT32*) in_;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++)
-	*out++ = (INT32) *in++;
+        *out++ = (INT32) *in++;
 }
 
 /* ----------------- */
@@ -435,10 +435,10 @@ l2ycbcr(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++) {
-	*out++ = *in++;
-	*out++ = 128;
-	*out++ = 128;
-	*out++ = 255;
+        *out++ = *in++;
+        *out++ = 128;
+        *out++ = 128;
+        *out++ = 255;
     }
 }
 
@@ -447,7 +447,7 @@ ycbcr2l(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 4)
-	*out++ = in[0];
+        *out++ = in[0];
 }
 
 /* ------------------------- */
@@ -496,6 +496,25 @@ I16B_I(UINT8* out_, const UINT8* in, int xsize)
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++, in += 2)
         *out++ = in[1] + ((int) in[0] << 8);
+}
+
+static void
+I16L_F(UINT8* out_, const UINT8* in, int xsize)
+{
+    int x;
+    FLOAT32* out = (FLOAT32*) out_;
+    for (x = 0; x < xsize; x++, in += 2)
+        *out++ = (FLOAT32) (in[0] + ((int) in[1] << 8));
+}
+
+
+static void
+I16B_F(UINT8* out_, const UINT8* in, int xsize)
+{
+    int x;
+    FLOAT32* out = (FLOAT32*) out_;
+    for (x = 0; x < xsize; x++, in += 2)
+        *out++ = (FLOAT32) (in[1] + ((int) in[0] << 8));
 }
 
 static void
@@ -630,6 +649,10 @@ static struct {
     { "L", "I;16B", L_I16B },
     { "I;16B", "L", I16B_L },
 
+    { "I;16", "F", I16L_F },
+    { "I;16L", "F", I16L_F },
+    { "I;16B", "F", I16B_F },
+
     { NULL }
 };
 
@@ -645,7 +668,7 @@ p2bit(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++)
-	*out++ = (L(&palette[in[x]*4]) >= 128000) ? 255 : 0;
+        *out++ = (L(&palette[in[x]*4]) >= 128000) ? 255 : 0;
 }
 
 static void
@@ -654,7 +677,7 @@ p2l(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++)
-	*out++ = L(&palette[in[x]*4]) / 1000;
+        *out++ = L(&palette[in[x]*4]) / 1000;
 }
 
 static void
@@ -663,7 +686,7 @@ pa2la(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++, in += 2) {
-	*out++ = L(&palette[in[0]*4]) / 1000;
+        *out++ = L(&palette[in[0]*4]) / 1000;
         *out++ = in[1];
     }
 }
@@ -674,7 +697,7 @@ p2i(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
     int x;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++)
-	*out++ = L(&palette[in[x]*4]) / 1000;
+        *out++ = L(&palette[in[x]*4]) / 1000;
 }
 
 static void
@@ -683,7 +706,7 @@ p2f(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
     int x;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++)
-	*out++ = (float) L(&palette[in[x]*4]) / 1000.0F;
+        *out++ = (float) L(&palette[in[x]*4]) / 1000.0F;
 }
 
 static void
@@ -691,11 +714,11 @@ p2rgb(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     for (x = 0; x < xsize; x++) {
-	const UINT8* rgb = &palette[*in++ * 4];
-	*out++ = rgb[0];
-	*out++ = rgb[1];
-	*out++ = rgb[2];
-	*out++ = 255;
+        const UINT8* rgb = &palette[*in++ * 4];
+        *out++ = rgb[0];
+        *out++ = rgb[1];
+        *out++ = rgb[2];
+        *out++ = 255;
     }
 }
 
@@ -704,11 +727,11 @@ p2rgba(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     for (x = 0; x < xsize; x++) {
-	const UINT8* rgba = &palette[*in++ * 4];
-	*out++ = rgba[0];
-	*out++ = rgba[1];
-	*out++ = rgba[2];
-	*out++ = rgba[3];
+        const UINT8* rgba = &palette[*in++ * 4];
+        *out++ = rgba[0];
+        *out++ = rgba[1];
+        *out++ = rgba[2];
+        *out++ = rgba[3];
     }
 }
 
@@ -717,11 +740,11 @@ pa2rgba(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 4) {
-	const UINT8* rgb = &palette[in[0] * 4];
-	*out++ = rgb[0];
-	*out++ = rgb[1];
-	*out++ = rgb[2];
-	*out++ = in[3];
+        const UINT8* rgb = &palette[in[0] * 4];
+        *out++ = rgb[0];
+        *out++ = rgb[1];
+        *out++ = rgb[2];
+        *out++ = in[3];
     }
 }
 
@@ -750,32 +773,32 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
     /* Map palette image to L, RGB, RGBA, or CMYK */
 
     if (!imIn->palette)
-	return (Imaging) ImagingError_ValueError("no palette");
+        return (Imaging) ImagingError_ValueError("no palette");
 
     alpha = !strcmp(imIn->mode, "PA");
 
     if (strcmp(mode, "1") == 0)
-	convert = p2bit;
+        convert = p2bit;
     else if (strcmp(mode, "L") == 0)
-	convert = p2l;
+        convert = p2l;
     else if (strcmp(mode, "LA") == 0)
-	convert = (alpha) ? pa2la : p2l;
+        convert = (alpha) ? pa2la : p2l;
     else if (strcmp(mode, "I") == 0)
-	convert = p2i;
+        convert = p2i;
     else if (strcmp(mode, "F") == 0)
-	convert = p2f;
+        convert = p2f;
     else if (strcmp(mode, "RGB") == 0)
-	convert = p2rgb;
+        convert = p2rgb;
     else if (strcmp(mode, "RGBA") == 0)
-	convert = (alpha) ? pa2rgba : p2rgba;
+        convert = (alpha) ? pa2rgba : p2rgba;
     else if (strcmp(mode, "RGBX") == 0)
-	convert = p2rgba;
+        convert = p2rgba;
     else if (strcmp(mode, "CMYK") == 0)
-	convert = p2cmyk;
+        convert = p2cmyk;
     else if (strcmp(mode, "YCbCr") == 0)
-	convert = p2ycbcr;
+        convert = p2ycbcr;
     else
-	return (Imaging) ImagingError_ValueError("conversion not supported");
+        return (Imaging) ImagingError_ValueError("conversion not supported");
 
     imOut = ImagingNew2(mode, imOut, imIn);
     if (!imOut)
@@ -783,8 +806,8 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
 
     ImagingSectionEnter(&cookie);
     for (y = 0; y < imIn->ysize; y++)
-	(*convert)((UINT8*) imOut->image[y], (UINT8*) imIn->image[y],
-		   imIn->xsize, imIn->palette->palette);
+        (*convert)((UINT8*) imOut->image[y], (UINT8*) imIn->image[y],
+                   imIn->xsize, imIn->palette->palette);
     ImagingSectionLeave(&cookie);
 
     return imOut;
@@ -802,23 +825,23 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
 
     /* Map L or RGB/RGBX/RGBA to palette image */
     if (strcmp(imIn->mode, "L") != 0 && strncmp(imIn->mode, "RGB", 3) != 0)
-	return (Imaging) ImagingError_ValueError("conversion not supported");
+        return (Imaging) ImagingError_ValueError("conversion not supported");
 
     if (palette == NULL) {
       /* FIXME: make user configurable */
       if (imIn->bands == 1)
-	palette = ImagingPaletteNew("RGB"); /* Initialised to grey ramp */
+        palette = ImagingPaletteNew("RGB"); /* Initialised to grey ramp */
       else
-	palette = ImagingPaletteNewBrowser(); /* Standard colour cube */
+        palette = ImagingPaletteNewBrowser(); /* Standard colour cube */
     }
 
     if (!palette)
-	return (Imaging) ImagingError_ValueError("no palette");
+        return (Imaging) ImagingError_ValueError("no palette");
 
     imOut = ImagingNew2("P", imOut, imIn);
     if (!imOut) {
       if (palette != inpalette)
-	ImagingPaletteDelete(palette);
+        ImagingPaletteDelete(palette);
       return NULL;
     }
 
@@ -826,24 +849,24 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
     imOut->palette = ImagingPaletteDuplicate(palette);
 
     if (imIn->bands == 1) {
-	/* greyscale image */
+        /* greyscale image */
 
-	/* Greyscale palette: copy data as is */
+        /* Greyscale palette: copy data as is */
         ImagingSectionEnter(&cookie);
-	for (y = 0; y < imIn->ysize; y++)
-	    memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
+        for (y = 0; y < imIn->ysize; y++)
+            memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
         ImagingSectionLeave(&cookie);
 
     } else {
-	/* colour image */
+        /* colour image */
 
-	/* Create mapping cache */
-	if (ImagingPaletteCachePrepare(palette) < 0) {
-	    ImagingDelete(imOut);
-	    if (palette != inpalette)
-	      ImagingPaletteDelete(palette);
-	    return NULL;
-	}
+        /* Create mapping cache */
+        if (ImagingPaletteCachePrepare(palette) < 0) {
+            ImagingDelete(imOut);
+            if (palette != inpalette)
+              ImagingPaletteDelete(palette);
+            return NULL;
+        }
 
         if (dither) {
             /* floyd-steinberg dither */
@@ -932,8 +955,8 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
             ImagingSectionLeave(&cookie);
 
         }
-	if (inpalette != palette)
-	  ImagingPaletteCacheDelete(palette);
+        if (inpalette != palette)
+          ImagingPaletteCacheDelete(palette);
     }
 
     if (inpalette != palette)
@@ -951,7 +974,7 @@ tobilevel(Imaging imOut, Imaging imIn, int dither)
 
     /* Map L or RGB to dithered 1 image */
     if (strcmp(imIn->mode, "L") != 0 && strcmp(imIn->mode, "RGB") != 0)
-	return (Imaging) ImagingError_ValueError("conversion not supported");
+        return (Imaging) ImagingError_ValueError("conversion not supported");
 
     imOut = ImagingNew2("1", imOut, imIn);
     if (!imOut)
@@ -1038,29 +1061,29 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
     int y;
 
     if (!imIn)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     if (!mode) {
-	/* Map palette image to full depth */
-	if (!imIn->palette)
-	    return (Imaging) ImagingError_ModeError();
-	mode = imIn->palette->mode;
+        /* Map palette image to full depth */
+        if (!imIn->palette)
+            return (Imaging) ImagingError_ModeError();
+        mode = imIn->palette->mode;
     } else
-	/* Same mode? */
-	if (!strcmp(imIn->mode, mode))
-	    return ImagingCopy2(imOut, imIn);
+        /* Same mode? */
+        if (!strcmp(imIn->mode, mode))
+            return ImagingCopy2(imOut, imIn);
 
 
     /* test for special conversions */
 
     if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "PA") == 0)
-	return frompalette(imOut, imIn, mode);
+        return frompalette(imOut, imIn, mode);
 
     if (strcmp(mode, "P") == 0)
-	return topalette(imOut, imIn, palette, dither);
+        return topalette(imOut, imIn, palette, dither);
 
     if (dither && strcmp(mode, "1") == 0)
-	return tobilevel(imOut, imIn, dither);
+        return tobilevel(imOut, imIn, dither);
 
 
     /* standard conversion machinery */
@@ -1068,15 +1091,15 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
     convert = NULL;
 
     for (y = 0; converters[y].from; y++)
-	if (!strcmp(imIn->mode, converters[y].from) &&
-	    !strcmp(mode, converters[y].to)) {
-	    convert = converters[y].convert;
-	    break;
-	}
+        if (!strcmp(imIn->mode, converters[y].from) &&
+            !strcmp(mode, converters[y].to)) {
+            convert = converters[y].convert;
+            break;
+        }
 
     if (!convert)
 #ifdef notdef
-	return (Imaging) ImagingError_ValueError("conversion not supported");
+        return (Imaging) ImagingError_ValueError("conversion not supported");
 #else
     {
       static char buf[256];
@@ -1092,8 +1115,8 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
 
     ImagingSectionEnter(&cookie);
     for (y = 0; y < imIn->ysize; y++)
-	(*convert)((UINT8*) imOut->image[y], (UINT8*) imIn->image[y],
-		   imIn->xsize);
+        (*convert)((UINT8*) imOut->image[y], (UINT8*) imIn->image[y],
+                   imIn->xsize);
     ImagingSectionLeave(&cookie);
 
     return imOut;
@@ -1129,7 +1152,7 @@ ImagingConvertInPlace(Imaging imIn, const char* mode)
 
     ImagingSectionEnter(&cookie);
     for (y = 0; y < imIn->ysize; y++)
-	(*convert)((UINT8*) imIn->image[y], (UINT8*) imIn->image[y],
+        (*convert)((UINT8*) imIn->image[y], (UINT8*) imIn->image[y],
                    imIn->xsize);
     ImagingSectionLeave(&cookie);
 
