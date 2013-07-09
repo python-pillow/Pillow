@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Moved Image module docs from comments to docstrings
+  [freyes]
+
 - Add 16-bit TIFF support, fixes #274
   [wiredfool]
 
