@@ -408,17 +408,16 @@ def _getscaleoffset(expr):
 # --------------------------------------------------------------------
 # Implementation wrapper
 
-##
-# This class represents an image object.  To create Image objects, use
-# the appropriate factory functions.  There's hardly ever any reason
-# to call the Image constructor directly.
-#
-# @see #open
-# @see #new
-# @see #frombytes
-
 class Image:
+    """
+    This class represents an image object.  To create Image objects, use
+    the appropriate factory functions.  There's hardly ever any reason
+    to call the Image constructor directly.
 
+    * :func:`PIL.Image.open`
+    * :func:`PIL.Image.new`
+    * :func:`PIL.Image.frombytes`
+    """
     format = None
     format_description = None
 
@@ -488,16 +487,15 @@ class Image:
             return new
         raise AttributeError(name)
 
-    ##
-    # Returns a string containing pixel data.
-    #
-    # @param encoder_name What encoder to use.  The default is to
-    #    use the standard "raw" encoder.
-    # @param *args Extra arguments to the encoder.
-    # @return A bytes object.
-
     def tobytes(self, encoder_name="raw", *args):
-        "Return image as a bytes object"
+        """
+        Return image as a bytes object
+
+        :param encoder_name: What encoder to use.  The default is to
+                             use the standard "raw" encoder.
+        :param *args: Extra arguments to the encoder.
+        :rtype: A bytes object.
+        """
 
         # may pass tuple instead of argument list
         if len(args) == 1 and isinstance(args[0], tuple):
@@ -534,16 +532,16 @@ class Image:
         )
         return self.tobytes(*args, **kw)
 
-    ##
-    # Returns the image converted to an X11 bitmap.  This method
-    # only works for mode "1" images.
-    #
-    # @param name The name prefix to use for the bitmap variables.
-    # @return A string containing an X11 bitmap.
-    # @exception ValueError If the mode is not "1"
-
     def tobitmap(self, name="image"):
-        "Return image as an XBM bitmap"
+        """
+        Returns the image converted to an X11 bitmap.
+
+        .. note:: This method only works for mode "1" images.
+
+        :param name: The name prefix to use for the bitmap variables.
+        :returns: A string containing an X11 bitmap.
+        :raises ValueError: If the mode is not "1"
+        """
 
         self.load()
         if self.mode != "1":
@@ -553,15 +551,13 @@ class Image:
                 ("#define %s_height %d\n"% (name, self.size[1])).encode('ascii'),
                 ("static char %s_bits[] = {\n" % name).encode('ascii'), data, b"};"])
 
-    ##
-    # Loads this image with pixel data from a bytes object.
-    # <p>
-    # This method is similar to the {@link #frombytes} function, but
-    # loads data into this image instead of creating a new image
-    # object.
-
     def frombytes(self, data, decoder_name="raw", *args):
-        "Load data to image from a bytes object"
+        """
+        Loads this image with pixel data from a bytes object.
+
+        This method is similar to the :func:`PIL.Image.frombytes` function, but
+        loads data into this image instead of creating a new image object.
+        """
 
         # may pass tuple instead of argument list
         if len(args) == 1 and isinstance(args[0], tuple):
@@ -586,16 +582,15 @@ class Image:
         warnings.warn('fromstring() is deprecated. Please call frombytes() instead.', DeprecationWarning)
         return self.frombytes(*args, **kw)
 
-    ##
-    # Allocates storage for the image and loads the pixel data.  In
-    # normal cases, you don't need to call this method, since the
-    # Image class automatically loads an opened image when it is
-    # accessed for the first time.
-    #
-    # @return An image access object.
-
     def load(self):
-        "Explicitly load pixel data."
+        """
+        Allocates storage for the image and loads the pixel data.  In
+        normal cases, you don't need to call this method, since the
+        Image class automatically loads an opened image when it is
+        accessed for the first time.
+
+        :returns: An image access object.
+        """
         if self.im and self.palette and self.palette.dirty:
             # realize palette
             self.im.putpalette(*self.palette.getdata())
@@ -612,53 +607,50 @@ class Image:
         if self.im:
             return self.im.pixel_access(self.readonly)
 
-    ##
-    # Verifies the contents of a file. For data read from a file, this
-    # method attempts to determine if the file is broken, without
-    # actually decoding the image data.  If this method finds any
-    # problems, it raises suitable exceptions.  If you need to load
-    # the image after using this method, you must reopen the image
-    # file.
-
     def verify(self):
-        "Verify file contents."
+        """
+        Verifies the contents of a file. For data read from a file, this
+        method attempts to determine if the file is broken, without
+        actually decoding the image data.  If this method finds any
+        problems, it raises suitable exceptions.  If you need to load
+        the image after using this method, you must reopen the image
+        file.
+        """
         pass
-
-    ##
-    # Returns a converted copy of this image. For the "P" mode, this
-    # method translates pixels through the palette.  If mode is
-    # omitted, a mode is chosen so that all information in the image
-    # and the palette can be represented without a palette.
-    # <p>
-    # The current version supports all possible conversions between
-    # "L", "RGB" and "CMYK."
-    # <p>
-    # When translating a colour image to black and white (mode "L"),
-    # the library uses the ITU-R 601-2 luma transform:
-    # <p>
-    # <b>L = R * 299/1000 + G * 587/1000 + B * 114/1000</b>
-    # <p>
-    # When translating a greyscale image into a bilevel image (mode
-    # "1"), all non-zero values are set to 255 (white). To use other
-    # thresholds, use the {@link #Image.point} method.
-    #
-    # @def convert(mode, matrix=None, **options)
-    # @param mode The requested mode.
-    # @param matrix An optional conversion matrix.  If given, this
-    #    should be 4- or 16-tuple containing floating point values.
-    # @param options Additional options, given as keyword arguments.
-    # @keyparam dither Dithering method, used when converting from
-    #    mode "RGB" to "P".
-    #    Available methods are NONE or FLOYDSTEINBERG (default).
-    # @keyparam palette Palette to use when converting from mode "RGB"
-    #    to "P".  Available palettes are WEB or ADAPTIVE.
-    # @keyparam colors Number of colors to use for the ADAPTIVE palette.
-    #    Defaults to 256.
-    # @return An Image object.
 
     def convert(self, mode=None, data=None, dither=None,
                 palette=WEB, colors=256):
-        "Convert to other pixel format"
+        """
+        Returns a converted copy of this image. For the "P" mode, this
+        method translates pixels through the palette.  If mode is
+        omitted, a mode is chosen so that all information in the image
+        and the palette can be represented without a palette.
+
+        The current version supports all possible conversions between
+        "L", "RGB" and "CMYK."
+
+        When translating a colour image to black and white (mode "L"),
+        the library uses the ITU-R 601-2 luma transform:
+
+            L = R * 299/1000 + G * 587/1000 + B * 114/1000
+
+        When translating a greyscale image into a bilevel image (mode
+        "1"), all non-zero values are set to 255 (white). To use other
+        thresholds, use the :func:`PIL.Image.Image.point` method.
+
+        :param mode: The requested mode.
+        :param matrix: An optional conversion matrix.  If given, this
+           should be 4- or 16-tuple containing floating point values.
+        :param dither: Dithering method, used when converting from
+           mode "RGB" to "P".
+           Available methods are NONE or FLOYDSTEINBERG (default).
+        :param palette: Palette to use when converting from mode "RGB"
+           to "P".  Available palettes are WEB or ADAPTIVE.
+        :param colors: Number of colors to use for the ADAPTIVE palette.
+           Defaults to 256.
+        :rtype: :class:`PIL.Image.Image`
+        :returns: An Image object.
+        """
 
         if not mode:
             # determine default mode
@@ -737,34 +729,33 @@ class Image:
         im = self.im.quantize(colors, method, kmeans)
         return self._new(im)
 
-    ##
-    # Copies this image. Use this method if you wish to paste things
-    # into an image, but still retain the original.
-    #
-    # @return An Image object.
-
     def copy(self):
-        "Copy raster data"
+        """
+        Copies this image. Use this method if you wish to paste things
+        into an image, but still retain the original.
 
+        :rtype: :class:`PIL.Image.Image`
+        :returns: An Image object.
+        """
         self.load()
         im = self.im.copy()
         return self._new(im)
 
-    ##
-    # Returns a rectangular region from this image. The box is a
-    # 4-tuple defining the left, upper, right, and lower pixel
-    # coordinate.
-    # <p>
-    # This is a lazy operation.  Changes to the source image may or
-    # may not be reflected in the cropped image.  To break the
-    # connection, call the {@link #Image.load} method on the cropped
-    # copy.
-    #
-    # @param The crop rectangle, as a (left, upper, right, lower)-tuple.
-    # @return An Image object.
-
     def crop(self, box=None):
-        "Crop region from image"
+        """
+        Returns a rectangular region from this image. The box is a
+        4-tuple defining the left, upper, right, and lower pixel
+        coordinate.
+
+        This is a lazy operation.  Changes to the source image may or
+        may not be reflected in the cropped image.  To break the
+        connection, call the {@link #Image.load} method on the cropped
+        copy.
+
+        :param box: The crop rectangle, as a (left, upper, right, lower)-tuple.
+        :rtype: :class:`PIL.Image.Image`
+        :returns: An Image object.
+        """
 
         self.load()
         if box is None:
@@ -773,22 +764,20 @@ class Image:
         # lazy operation
         return _ImageCrop(self, box)
 
-    ##
-    # Configures the image file loader so it returns a version of the
-    # image that as closely as possible matches the given mode and
-    # size.  For example, you can use this method to convert a colour
-    # JPEG to greyscale while loading it, or to extract a 128x192
-    # version from a PCD file.
-    # <p>
-    # Note that this method modifies the Image object in place.  If
-    # the image has already been loaded, this method has no effect.
-    #
-    # @param mode The requested mode.
-    # @param size The requested size.
-
     def draft(self, mode, size):
-        "Configure image decoder"
+        """
+        Configures the image file loader so it returns a version of the
+        image that as closely as possible matches the given mode and
+        size.  For example, you can use this method to convert a colour
+        JPEG to greyscale while loading it, or to extract a 128x192
+        version from a PCD file.
 
+        Note that this method modifies the Image object in place.  If
+        the image has already been loaded, this method has no effect.
+
+        :param mode: The requested mode.
+        :param size: The requested size.
+        """
         pass
 
     def _expand(self, xmargin, ymargin=None):
@@ -797,16 +786,14 @@ class Image:
         self.load()
         return self._new(self.im.expand(xmargin, ymargin, 0))
 
-    ##
-    # Filters this image using the given filter.  For a list of
-    # available filters, see the <b>ImageFilter</b> module.
-    #
-    # @param filter Filter kernel.
-    # @return An Image object.
-    # @see ImageFilter
-
     def filter(self, filter):
-        "Apply environment filter to image"
+        """
+        Filters this image using the given filter.  For a list of
+        available filters, see the :mod:`PIL.ImageFilter` module.
+
+        :param filter: Filter kernel.
+        :returns: An Image object.
+        """
 
         self.load()
 
@@ -823,41 +810,39 @@ class Image:
             ims.append(self._new(filter.filter(self.im.getband(c))))
         return merge(self.mode, ims)
 
-    ##
-    # Returns a tuple containing the name of each band in this image.
-    # For example, <b>getbands</b> on an RGB image returns ("R", "G", "B").
-    #
-    # @return A tuple containing band names.
-
     def getbands(self):
-        "Get band names"
+        """
+        Returns a tuple containing the name of each band in this image.
+        For example, **getbands** on an RGB image returns ("R", "G", "B").
 
+        :returns: A tuple containing band names.
+        :rtype: tuple
+        """
         return ImageMode.getmode(self.mode).bands
 
-    ##
-    # Calculates the bounding box of the non-zero regions in the
-    # image.
-    #
-    # @return The bounding box is returned as a 4-tuple defining the
-    #    left, upper, right, and lower pixel coordinate. If the image
-    #    is completely empty, this method returns None.
-
     def getbbox(self):
-        "Get bounding box of actual data (non-zero pixels) in image"
+        """
+        Calculates the bounding box of the non-zero regions in the
+        image.
+
+        :returns: The bounding box is returned as a 4-tuple defining the
+           left, upper, right, and lower pixel coordinate. If the image
+           is completely empty, this method returns None.
+
+        """
 
         self.load()
         return self.im.getbbox()
 
-    ##
-    # Returns a list of colors used in this image.
-    #
-    # @param maxcolors Maximum number of colors.  If this number is
-    #    exceeded, this method returns None.  The default limit is
-    #    256 colors.
-    # @return An unsorted list of (count, pixel) values.
-
     def getcolors(self, maxcolors=256):
-        "Get colors from image, up to given limit"
+        """
+        Returns a list of colors used in this image.
+
+        :param maxcolors: Maximum number of colors.  If this number is
+           exceeded, this method returns None.  The default limit is
+           256 colors.
+        :returns: An unsorted list of (count, pixel) values.
+        """
 
         self.load()
         if self.mode in ("1", "L", "P"):
@@ -871,40 +856,38 @@ class Image:
             return out
         return self.im.getcolors(maxcolors)
 
-    ##
-    # Returns the contents of this image as a sequence object
-    # containing pixel values.  The sequence object is flattened, so
-    # that values for line one follow directly after the values of
-    # line zero, and so on.
-    # <p>
-    # Note that the sequence object returned by this method is an
-    # internal PIL data type, which only supports certain sequence
-    # operations.  To convert it to an ordinary sequence (e.g. for
-    # printing), use <b>list(im.getdata())</b>.
-    #
-    # @param band What band to return.  The default is to return
-    #    all bands.  To return a single band, pass in the index
-    #    value (e.g. 0 to get the "R" band from an "RGB" image).
-    # @return A sequence-like object.
-
     def getdata(self, band = None):
-        "Get image data as sequence object."
+        """
+        Returns the contents of this image as a sequence object
+        containing pixel values.  The sequence object is flattened, so
+        that values for line one follow directly after the values of
+        line zero, and so on.
+
+        Note that the sequence object returned by this method is an
+        internal PIL data type, which only supports certain sequence
+        operations.  To convert it to an ordinary sequence (e.g. for
+        printing), use **list(im.getdata())**.
+
+        :param band: What band to return.  The default is to return
+           all bands.  To return a single band, pass in the index
+           value (e.g. 0 to get the "R" band from an "RGB" image).
+        :returns: A sequence-like object.
+        """
 
         self.load()
         if band is not None:
             return self.im.getband(band)
         return self.im # could be abused
 
-    ##
-    # Gets the the minimum and maximum pixel values for each band in
-    # the image.
-    #
-    # @return For a single-band image, a 2-tuple containing the
-    #    minimum and maximum pixel value.  For a multi-band image,
-    #    a tuple containing one 2-tuple for each band.
-
     def getextrema(self):
-        "Get min/max value"
+        """
+        Gets the the minimum and maximum pixel values for each band in
+        the image.
+
+        :returns: For a single-band image, a 2-tuple containing the
+           minimum and maximum pixel value.  For a multi-band image,
+           a tuple containing one 2-tuple for each band.
+        """
 
         self.load()
         if self.im.bands > 1:
@@ -914,26 +897,24 @@ class Image:
             return tuple(extrema)
         return self.im.getextrema()
 
-    ##
-    # Returns a capsule that points to the internal image memory.
-    #
-    # @return A capsule object.
-
     def getim(self):
-        "Get capsule pointer to internal image memory"
+        """
+        Returns a capsule that points to the internal image memory.
+
+        :returns: A capsule object.
+        """
 
         self.load()
         return self.im.ptr
 
 
-    ##
-    # Returns the image palette as a list.
-    #
-    # @return A list of color values [r, g, b, ...], or None if the
-    #    image has no palette.
-
     def getpalette(self):
-        "Get palette contents."
+        """
+        Returns the image palette as a list.
+
+        :returns: A list of color values [r, g, b, ...], or None if the
+           image has no palette.
+        """
 
         self.load()
         try:
@@ -945,54 +926,49 @@ class Image:
             return None # no palette
 
 
-    ##
-    # Returns the pixel value at a given position.
-    #
-    # @param xy The coordinate, given as (x, y).
-    # @return The pixel value.  If the image is a multi-layer image,
-    #    this method returns a tuple.
-
     def getpixel(self, xy):
-        "Get pixel value"
+        """
+        Returns the pixel value at a given position.
+
+        :param xy: The coordinate, given as (x, y).
+        :returns: The pixel value.  If the image is a multi-layer image,
+           this method returns a tuple.
+        """
 
         self.load()
         return self.im.getpixel(xy)
 
-    ##
-    # Returns the horizontal and vertical projection.
-    #
-    # @return Two sequences, indicating where there are non-zero
-    #     pixels along the X-axis and the Y-axis, respectively.
-
     def getprojection(self):
-        "Get projection to x and y axes"
+        """
+        Get projection to x and y axes
+
+        :returns: Two sequences, indicating where there are non-zero
+            pixels along the X-axis and the Y-axis, respectively.
+        """
 
         self.load()
         x, y = self.im.getprojection()
         return [i8(c) for c in x], [i8(c) for c in y]
 
-    ##
-    # Returns a histogram for the image. The histogram is returned as
-    # a list of pixel counts, one for each pixel value in the source
-    # image. If the image has more than one band, the histograms for
-    # all bands are concatenated (for example, the histogram for an
-    # "RGB" image contains 768 values).
-    # <p>
-    # A bilevel image (mode "1") is treated as a greyscale ("L") image
-    # by this method.
-    # <p>
-    # If a mask is provided, the method returns a histogram for those
-    # parts of the image where the mask image is non-zero. The mask
-    # image must have the same size as the image, and be either a
-    # bi-level image (mode "1") or a greyscale image ("L").
-    #
-    # @def histogram(mask=None)
-    # @param mask An optional mask.
-    # @return A list containing pixel counts.
-
     def histogram(self, mask=None, extrema=None):
-        "Take histogram of image"
+        """
+        Returns a histogram for the image. The histogram is returned as
+        a list of pixel counts, one for each pixel value in the source
+        image. If the image has more than one band, the histograms for
+        all bands are concatenated (for example, the histogram for an
+        "RGB" image contains 768 values).
 
+        A bilevel image (mode "1") is treated as a greyscale ("L") image
+        by this method.
+
+        If a mask is provided, the method returns a histogram for those
+        parts of the image where the mask image is non-zero. The mask
+        image must have the same size as the image, and be either a
+        bi-level image (mode "1") or a greyscale image ("L").
+
+        :param mask: An optional mask.
+        :returns: A list containing pixel counts.
+        """
         self.load()
         if mask:
             mask.load()
@@ -1003,21 +979,21 @@ class Image:
             return self.im.histogram(extrema)
         return self.im.histogram()
 
-    ##
-    # (Deprecated) Returns a copy of the image where the data has been
-    # offset by the given distances. Data wraps around the edges. If
-    # yoffset is omitted, it is assumed to be equal to xoffset.
-    # <p>
-    # This method is deprecated. New code should use the <b>offset</b>
-    # function in the <b>ImageChops</b> module.
-    #
-    # @param xoffset The horizontal distance.
-    # @param yoffset The vertical distance.  If omitted, both
-    #    distances are set to the same value.
-    # @return An Image object.
-
     def offset(self, xoffset, yoffset=None):
-        "(deprecated) Offset image in horizontal and/or vertical direction"
+        """
+        (Deprecated) Returns a copy of the image where the data has been
+        offset by the given distances. Data wraps around the edges. If
+        yoffset is omitted, it is assumed to be equal to xoffset.
+
+        This method is deprecated. New code should use the
+        :func:`PIL.ImageChops.offset` function in the
+        :mod:`PIL.ImageChops` module.
+
+        :param xoffset: The horizontal distance.
+        :param yoffset: The vertical distance.  If omitted, both
+           distances are set to the same value.
+        :returns: An Image object.
+        """
         if warnings:
             warnings.warn(
                 "'offset' is deprecated; use 'ImageChops.offset' instead",
@@ -1026,47 +1002,46 @@ class Image:
         from PIL import ImageChops
         return ImageChops.offset(self, xoffset, yoffset)
 
-    ##
-    # Pastes another image into this image. The box argument is either
-    # a 2-tuple giving the upper left corner, a 4-tuple defining the
-    # left, upper, right, and lower pixel coordinate, or None (same as
-    # (0, 0)).  If a 4-tuple is given, the size of the pasted image
-    # must match the size of the region.
-    # <p>
-    # If the modes don't match, the pasted image is converted to the
-    # mode of this image (see the {@link #Image.convert} method for
-    # details).
-    # <p>
-    # Instead of an image, the source can be a integer or tuple
-    # containing pixel values.  The method then fills the region
-    # with the given colour.  When creating RGB images, you can
-    # also use colour strings as supported by the ImageColor module.
-    # <p>
-    # If a mask is given, this method updates only the regions
-    # indicated by the mask.  You can use either "1", "L" or "RGBA"
-    # images (in the latter case, the alpha band is used as mask).
-    # Where the mask is 255, the given image is copied as is.  Where
-    # the mask is 0, the current value is preserved.  Intermediate
-    # values can be used for transparency effects.
-    # <p>
-    # Note that if you paste an "RGBA" image, the alpha band is
-    # ignored.  You can work around this by using the same image as
-    # both source image and mask.
-    #
-    # @param im Source image or pixel value (integer or tuple).
-    # @param box An optional 4-tuple giving the region to paste into.
-    #    If a 2-tuple is used instead, it's treated as the upper left
-    #    corner.  If omitted or None, the source is pasted into the
-    #    upper left corner.
-    #    <p>
-    #    If an image is given as the second argument and there is no
-    #    third, the box defaults to (0, 0), and the second argument
-    #    is interpreted as a mask image.
-    # @param mask An optional mask image.
-    # @return An Image object.
-
     def paste(self, im, box=None, mask=None):
-        "Paste other image into region"
+        """
+        Pastes another image into this image. The box argument is either
+        a 2-tuple giving the upper left corner, a 4-tuple defining the
+        left, upper, right, and lower pixel coordinate, or None (same as
+        (0, 0)).  If a 4-tuple is given, the size of the pasted image
+        must match the size of the region.
+
+        If the modes don't match, the pasted image is converted to the
+        mode of this image (see the :func:`PIL.Image.Image.convert` method for
+        details).
+
+        Instead of an image, the source can be a integer or tuple
+        containing pixel values.  The method then fills the region
+        with the given colour.  When creating RGB images, you can
+        also use colour strings as supported by the ImageColor module.
+
+        If a mask is given, this method updates only the regions
+        indicated by the mask.  You can use either "1", "L" or "RGBA"
+        images (in the latter case, the alpha band is used as mask).
+        Where the mask is 255, the given image is copied as is.  Where
+        the mask is 0, the current value is preserved.  Intermediate
+        values can be used for transparency effects.
+
+        Note that if you paste an "RGBA" image, the alpha band is
+        ignored.  You can work around this by using the same image as
+        both source image and mask.
+
+        :param im: Source image or pixel value (integer or tuple).
+        :param box: An optional 4-tuple giving the region to paste into.
+           If a 2-tuple is used instead, it's treated as the upper left
+           corner.  If omitted or None, the source is pasted into the
+           upper left corner.
+
+           If an image is given as the second argument and there is no
+           third, the box defaults to (0, 0), and the second argument
+           is interpreted as a mask image.
+        :param mask: An optional mask image.
+        :returns: An Image object.
+        """
 
         if isImageType(box) and mask is None:
             # abbreviated paste(im, mask) syntax
@@ -1111,21 +1086,20 @@ class Image:
         else:
             self.im.paste(im, box)
 
-    ##
-    # Maps this image through a lookup table or function.
-    #
-    # @param lut A lookup table, containing 256 values per band in the
-    #    image. A function can be used instead, it should take a single
-    #    argument. The function is called once for each possible pixel
-    #    value, and the resulting table is applied to all bands of the
-    #    image.
-    # @param mode Output mode (default is same as input).  In the
-    #    current version, this can only be used if the source image
-    #    has mode "L" or "P", and the output has mode "1".
-    # @return An Image object.
-
     def point(self, lut, mode=None):
-        "Map image through lookup table"
+        """
+        Maps this image through a lookup table or function.
+
+        :param lut: A lookup table, containing 256 values per band in the
+           image. A function can be used instead, it should take a single
+           argument. The function is called once for each possible pixel
+           value, and the resulting table is applied to all bands of the
+           image.
+        :param mode: Output mode (default is same as input).  In the
+           current version, this can only be used if the source image
+           has mode "L" or "P", and the output has mode "1".
+        :returns: An Image object.
+        """
 
         self.load()
 
@@ -1147,17 +1121,16 @@ class Image:
 
         return self._new(self.im.point(lut, mode))
 
-    ##
-    # Adds or replaces the alpha layer in this image.  If the image
-    # does not have an alpha layer, it's converted to "LA" or "RGBA".
-    # The new layer must be either "L" or "1".
-    #
-    # @param im The new alpha layer.  This can either be an "L" or "1"
-    #    image having the same size as this image, or an integer or
-    #    other color value.
-
     def putalpha(self, alpha):
-        "Set alpha layer"
+        """
+        Adds or replaces the alpha layer in this image.  If the image
+        does not have an alpha layer, it's converted to "LA" or "RGBA".
+        The new layer must be either "L" or "1".
+
+        :param alpha: The new alpha layer.  This can either be an "L" or "1"
+           image having the same size as this image, or an integer or
+           other color value.
+        """
 
         self.load()
         if self.readonly:
@@ -1203,19 +1176,18 @@ class Image:
 
         self.im.putband(alpha.im, band)
 
-    ##
-    # Copies pixel data to this image.  This method copies data from a
-    # sequence object into the image, starting at the upper left
-    # corner (0, 0), and continuing until either the image or the
-    # sequence ends.  The scale and offset values are used to adjust
-    # the sequence values: <b>pixel = value*scale + offset</b>.
-    #
-    # @param data A sequence object.
-    # @param scale An optional scale value.  The default is 1.0.
-    # @param offset An optional offset value.  The default is 0.0.
-
     def putdata(self, data, scale=1.0, offset=0.0):
-        "Put data from a sequence object into an image."
+        """
+        Copies pixel data to this image.  This method copies data from a
+        sequence object into the image, starting at the upper left
+        corner (0, 0), and continuing until either the image or the
+        sequence ends.  The scale and offset values are used to adjust
+        the sequence values: **pixel = value*scale + offset**.
+
+        :param data: A sequence object.
+        :param scale: An optional scale value.  The default is 1.0.
+        :param offset: An optional offset value.  The default is 0.0.
+        """
 
         self.load()
         if self.readonly:
@@ -1223,19 +1195,17 @@ class Image:
 
         self.im.putdata(data, scale, offset)
 
-    ##
-    # Attaches a palette to this image.  The image must be a "P" or
-    # "L" image, and the palette sequence must contain 768 integer
-    # values, where each group of three values represent the red,
-    # green, and blue values for the corresponding pixel
-    # index. Instead of an integer sequence, you can use an 8-bit
-    # string.
-    #
-    # @def putpalette(data)
-    # @param data A palette sequence (either a list or a string).
-
     def putpalette(self, data, rawmode="RGB"):
-        "Put palette data into an image."
+        """
+        Attaches a palette to this image.  The image must be a "P" or
+        "L" image, and the palette sequence must contain 768 integer
+        values, where each group of three values represent the red,
+        green, and blue values for the corresponding pixel
+        index. Instead of an integer sequence, you can use an 8-bit
+        string.
+
+        :param data: A palette sequence (either a list or a string).
+        """
         from PIL import ImagePalette
 
         if self.mode not in ("L", "P"):
@@ -1255,23 +1225,25 @@ class Image:
         self.palette.mode = "RGB"
         self.load() # install new palette
 
-    ##
-    # Modifies the pixel at the given position. The colour is given as
-    # a single numerical value for single-band images, and a tuple for
-    # multi-band images.
-    # <p>
-    # Note that this method is relatively slow.  For more extensive
-    # changes, use {@link #Image.paste} or the <b>ImageDraw</b> module
-    # instead.
-    #
-    # @param xy The pixel coordinate, given as (x, y).
-    # @param value The pixel value.
-    # @see #Image.paste
-    # @see #Image.putdata
-    # @see ImageDraw
-
     def putpixel(self, xy, value):
-        "Set pixel value"
+        """
+        Modifies the pixel at the given position. The colour is given as
+        a single numerical value for single-band images, and a tuple for
+        multi-band images.
+
+        Note that this method is relatively slow.  For more extensive
+        changes, use :func:`PIL.Image.Image.paste` or the :mod:`PIL.ImageDraw`
+        module instead.
+
+        See:
+
+        * :func:`PIL.Image.Image.paste`
+        * :func:`PIL.Image.Image.putdata`
+        * :mod:`PIL.ImageDraw`
+
+        :param xy: The pixel coordinate, given as (x, y).
+        :param value: The pixel value.
+        """
 
         self.load()
         if self.readonly:
@@ -1279,23 +1251,22 @@ class Image:
 
         return self.im.putpixel(xy, value)
 
-    ##
-    # Returns a resized copy of this image.
-    #
-    # @def resize(size, filter=NEAREST)
-    # @param size The requested size in pixels, as a 2-tuple:
-    #    (width, height).
-    # @param filter An optional resampling filter.  This can be
-    #    one of <b>NEAREST</b> (use nearest neighbour), <b>BILINEAR</b>
-    #    (linear interpolation in a 2x2 environment), <b>BICUBIC</b>
-    #    (cubic spline interpolation in a 4x4 environment), or
-    #    <b>ANTIALIAS</b> (a high-quality downsampling filter).
-    #    If omitted, or if the image has mode "1" or "P", it is
-    #    set <b>NEAREST</b>.
-    # @return An Image object.
-
     def resize(self, size, resample=NEAREST):
-        "Resize image"
+        """
+        Returns a resized copy of this image.
+
+        :param size: The requested size in pixels, as a 2-tuple:
+           (width, height).
+        :param filter: An optional resampling filter.  This can be
+           one of :attr:`PIL.Image.NEAREST` (use nearest neighbour),
+           :attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
+           environment), :attr:`PIL.Image.BICUBIC` (cubic spline
+           interpolation in a 4x4 environment), or
+           :attr:`PIL.Image.ANTIALIAS` (a high-quality downsampling filter).
+           If omitted, or if the image has mode "1" or "P", it is
+           set :attr:`PIL.Image.NEAREST`.
+        :returns: An Image object.
+        """
 
         if resample not in (NEAREST, BILINEAR, BICUBIC, ANTIALIAS):
             raise ValueError("unknown resampling filter")
@@ -1316,27 +1287,26 @@ class Image:
 
         return self._new(im)
 
-    ##
-    # Returns a rotated copy of this image.  This method returns a
-    # copy of this image, rotated the given number of degrees counter
-    # clockwise around its centre.
-    #
-    # @def rotate(angle, filter=NEAREST)
-    # @param angle In degrees counter clockwise.
-    # @param filter An optional resampling filter.  This can be
-    #    one of <b>NEAREST</b> (use nearest neighbour), <b>BILINEAR</b>
-    #    (linear interpolation in a 2x2 environment), or <b>BICUBIC</b>
-    #    (cubic spline interpolation in a 4x4 environment).
-    #    If omitted, or if the image has mode "1" or "P", it is
-    #    set <b>NEAREST</b>.
-    # @param expand Optional expansion flag.  If true, expands the output
-    #    image to make it large enough to hold the entire rotated image.
-    #    If false or omitted, make the output image the same size as the
-    #    input image.
-    # @return An Image object.
-
     def rotate(self, angle, resample=NEAREST, expand=0):
-        "Rotate image.  Angle given as degrees counter-clockwise."
+        """
+        Returns a rotated copy of this image.  This method returns a
+        copy of this image, rotated the given number of degrees counter
+        clockwise around its centre.
+
+        :param angle: In degrees counter clockwise.
+        :param filter: An optional resampling filter.  This can be
+           one of :attr:`PIL.Image.NEAREST` (use nearest neighbour),
+           :attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
+           environment), or :attr:`PIL.Image.BICUBIC`
+           (cubic spline interpolation in a 4x4 environment).
+           If omitted, or if the image has mode "1" or "P", it is
+           set :attr:`PIL.Image.NEAREST`.
+        :param expand: Optional expansion flag.  If true, expands the output
+           image to make it large enough to hold the entire rotated image.
+           If false or omitted, make the output image the same size as the
+           input image.
+        :returns: An Image object.
+        """
 
         if expand:
             import math
@@ -1377,36 +1347,34 @@ class Image:
 
         return self._new(self.im.rotate(angle, resample))
 
-    ##
-    # Saves this image under the given filename.  If no format is
-    # specified, the format to use is determined from the filename
-    # extension, if possible.
-    # <p>
-    # Keyword options can be used to provide additional instructions
-    # to the writer. If a writer doesn't recognise an option, it is
-    # silently ignored. The available options are described later in
-    # this handbook.
-    # <p>
-    # You can use a file object instead of a filename. In this case,
-    # you must always specify the format. The file object must
-    # implement the <b>seek</b>, <b>tell</b>, and <b>write</b>
-    # methods, and be opened in binary mode.
-    #
-    # @def save(file, format=None, **options)
-    # @param file File name or file object.
-    # @param format Optional format override.  If omitted, the
-    #    format to use is determined from the filename extension.
-    #    If a file object was used instead of a filename, this
-    #    parameter should always be used.
-    # @param **options Extra parameters to the image writer.
-    # @return None
-    # @exception KeyError If the output format could not be determined
-    #    from the file name.  Use the format option to solve this.
-    # @exception IOError If the file could not be written.  The file
-    #    may have been created, and may contain partial data.
-
     def save(self, fp, format=None, **params):
-        "Save image to file or stream"
+        """
+        Saves this image under the given filename.  If no format is
+        specified, the format to use is determined from the filename
+        extension, if possible.
+
+        Keyword options can be used to provide additional instructions
+        to the writer. If a writer doesn't recognise an option, it is
+        silently ignored. The available options are described later in
+        this handbook.
+
+        You can use a file object instead of a filename. In this case,
+        you must always specify the format. The file object must
+        implement the **seek**, **tell**, and **write**
+        methods, and be opened in binary mode.
+
+        :param file: File name or file object.
+        :param format: Optional format override.  If omitted, the
+           format to use is determined from the filename extension.
+           If a file object was used instead of a filename, this
+           parameter should always be used.
+        :param **options: Extra parameters to the image writer.
+        :returns: None
+        :exception KeyError: If the output format could not be determined
+           from the file name.  Use the format option to solve this.
+        :exception IOError: If the file could not be written.  The file
+           may have been created, and may contain partial data.
+        """
 
         if isPath(fp):
             filename = fp
@@ -1455,57 +1423,55 @@ class Image:
             if close:
                 fp.close()
 
-    ##
-    # Seeks to the given frame in this sequence file. If you seek
-    # beyond the end of the sequence, the method raises an
-    # <b>EOFError</b> exception. When a sequence file is opened, the
-    # library automatically seeks to frame 0.
-    # <p>
-    # Note that in the current version of the library, most sequence
-    # formats only allows you to seek to the next frame.
-    #
-    # @param frame Frame number, starting at 0.
-    # @exception EOFError If the call attempts to seek beyond the end
-    #     of the sequence.
-    # @see #Image.tell
-
     def seek(self, frame):
-        "Seek to given frame in sequence file"
+        """
+        Seeks to the given frame in this sequence file. If you seek
+        beyond the end of the sequence, the method raises an
+        **EOFError** exception. When a sequence file is opened, the
+        library automatically seeks to frame 0.
+
+        Note that in the current version of the library, most sequence
+        formats only allows you to seek to the next frame.
+
+        See :func:`PIL.Image.Image.tell`.
+
+        :param frame: Frame number, starting at 0.
+        :exception EOFError: If the call attempts to seek beyond the end
+            of the sequence.
+        """
 
         # overridden by file handlers
         if frame != 0:
             raise EOFError
 
-    ##
-    # Displays this image. This method is mainly intended for
-    # debugging purposes.
-    # <p>
-    # On Unix platforms, this method saves the image to a temporary
-    # PPM file, and calls the <b>xv</b> utility.
-    # <p>
-    # On Windows, it saves the image to a temporary BMP file, and uses
-    # the standard BMP display utility to show it (usually Paint).
-    #
-    # @def show(title=None)
-    # @param title Optional title to use for the image window,
-    #    where possible.
-
     def show(self, title=None, command=None):
-        "Display image (for debug purposes only)"
+        """
+        Displays this image. This method is mainly intended for
+        debugging purposes.
+
+        On Unix platforms, this method saves the image to a temporary
+        PPM file, and calls the **xv** utility.
+
+        On Windows, it saves the image to a temporary BMP file, and uses
+        the standard BMP display utility to show it (usually Paint).
+
+        :param title: Optional title to use for the image window,
+           where possible.
+        :param command: command used to show the image
+        """
 
         _show(self, title=title, command=command)
 
-    ##
-    # Split this image into individual bands. This method returns a
-    # tuple of individual image bands from an image. For example,
-    # splitting an "RGB" image creates three new images each
-    # containing a copy of one of the original bands (red, green,
-    # blue).
-    #
-    # @return A tuple containing bands.
-
     def split(self):
-        "Split image into bands"
+        """
+        Split this image into individual bands. This method returns a
+        tuple of individual image bands from an image. For example,
+        splitting an "RGB" image creates three new images each
+        containing a copy of one of the original bands (red, green,
+        blue).
+
+        :returns: A tuple containing bands.
+        """
 
         self.load()
         if self.im.bands == 1:
@@ -1516,44 +1482,41 @@ class Image:
                 ims.append(self._new(self.im.getband(i)))
         return tuple(ims)
 
-    ##
-    # Returns the current frame number.
-    #
-    # @return Frame number, starting with 0.
-    # @see #Image.seek
-
     def tell(self):
-        "Return current frame number"
+        """
+        Returns the current frame number. See :func:`PIL.Image.Image.seek`.
 
+        :returns: Frame number, starting with 0.
+        """
         return 0
 
-    ##
-    # Make this image into a thumbnail.  This method modifies the
-    # image to contain a thumbnail version of itself, no larger than
-    # the given size.  This method calculates an appropriate thumbnail
-    # size to preserve the aspect of the image, calls the {@link
-    # #Image.draft} method to configure the file reader (where
-    # applicable), and finally resizes the image.
-    # <p>
-    # Note that the bilinear and bicubic filters in the current
-    # version of PIL are not well-suited for thumbnail generation.
-    # You should use <b>ANTIALIAS</b> unless speed is much more
-    # important than quality.
-    # <p>
-    # Also note that this function modifies the Image object in place.
-    # If you need to use the full resolution image as well, apply this
-    # method to a {@link #Image.copy} of the original image.
-    #
-    # @param size Requested size.
-    # @param resample Optional resampling filter.  This can be one
-    #    of <b>NEAREST</b>, <b>BILINEAR</b>, <b>BICUBIC</b>, or
-    #    <b>ANTIALIAS</b> (best quality).  If omitted, it defaults
-    #    to <b>NEAREST</b> (this will be changed to ANTIALIAS in a
-    #    future version).
-    # @return None
-
     def thumbnail(self, size, resample=NEAREST):
-        "Create thumbnail representation (modifies image in place)"
+        """
+        Make this image into a thumbnail.  This method modifies the
+        image to contain a thumbnail version of itself, no larger than
+        the given size.  This method calculates an appropriate thumbnail
+        size to preserve the aspect of the image, calls the
+        :func:`PIL.Image.Image.draft` method to configure the file reader
+        (where applicable), and finally resizes the image.
+
+        Note that the bilinear and bicubic filters in the current
+        version of PIL are not well-suited for thumbnail generation.
+        You should use :attr:`PIL.Image.ANTIALIAS` unless speed is much more
+        important than quality.
+
+        Also note that this function modifies the Image object in place.
+        If you need to use the full resolution image as well, apply this
+        method to a :func:`PIL.Image.Image.copy` of the original image.
+
+        :param size: Requested size.
+        :param resample: Optional resampling filter.  This can be one
+           of :attr:`PIL.Image.NEAREST`, :attr:`PIL.Image.BILINEAR`,
+           :attr:`PIL.Image.BICUBIC`, or :attr:`PIL.Image.ANTIALIAS`
+           (best quality).  If omitted, it defaults to
+           :attr:`PIL.Image.NEAREST` (this will be changed to ANTIALIAS in a
+           future version).
+        :returns: None
+        """
 
         # FIXME: the default resampling filter will be changed
         # to ANTIALIAS in future versions
@@ -1586,31 +1549,29 @@ class Image:
 
     # FIXME: the different tranform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
-
-    ##
-    # Transforms this image.  This method creates a new image with the
-    # given size, and the same mode as the original, and copies data
-    # to the new image using the given transform.
-    # <p>
-    # @def transform(size, method, data, resample=NEAREST)
-    # @param size The output size.
-    # @param method The transformation method.  This is one of
-    #   <b>EXTENT</b> (cut out a rectangular subregion), <b>AFFINE</b>
-    #   (affine transform), <b>PERSPECTIVE</b> (perspective
-    #   transform), <b>QUAD</b> (map a quadrilateral to a
-    #   rectangle), or <b>MESH</b> (map a number of source quadrilaterals
-    #   in one operation).
-    # @param data Extra data to the transformation method.
-    # @param resample Optional resampling filter.  It can be one of
-    #    <b>NEAREST</b> (use nearest neighbour), <b>BILINEAR</b>
-    #    (linear interpolation in a 2x2 environment), or
-    #    <b>BICUBIC</b> (cubic spline interpolation in a 4x4
-    #    environment). If omitted, or if the image has mode
-    #    "1" or "P", it is set to <b>NEAREST</b>.
-    # @return An Image object.
-
     def transform(self, size, method, data=None, resample=NEAREST, fill=1):
-        "Transform image"
+        """
+        Transforms this image.  This method creates a new image with the
+        given size, and the same mode as the original, and copies data
+        to the new image using the given transform.
+
+        :param size: The output size.
+        :param method: The transformation method.  This is one of
+          :attr:`PIL.Image.EXTENT` (cut out a rectangular subregion),
+          :attr:`PIL.Image.AFFINE` (affine transform),
+          :attr:`PIL.Image.PERSPECTIVE` (perspective transform),
+          :attr:`PIL.Image.QUAD` (map a quadrilateral to a rectangle), or
+          :attr:`PIL.Image.MESH` (map a number of source quadrilaterals
+          in one operation).
+        :param data: Extra data to the transformation method.
+        :param resample: Optional resampling filter.  It can be one of
+           :attr:`PIL.Image.NEAREST` (use nearest neighbour),
+           :attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
+           environment), or :attr:`PIL.Image.BICUBIC` (cubic spline
+           interpolation in a 4x4 environment). If omitted, or if the image
+           has mode "1" or "P", it is set to :attr:`PIL.Image.NEAREST`.
+        :returns: An Image object.
+        """
 
         if isinstance(method, ImageTransformHandler):
             return method.transform(size, self, resample=resample, fill=fill)
@@ -1677,14 +1638,15 @@ class Image:
 
         self.im.transform2(box, image.im, method, data, resample, fill)
 
-    ##
-    # Returns a flipped or rotated copy of this image.
-    #
-    # @param method One of <b>FLIP_LEFT_RIGHT</b>, <b>FLIP_TOP_BOTTOM</b>,
-    # <b>ROTATE_90</b>, <b>ROTATE_180</b>, or <b>ROTATE_270</b>.
-
     def transpose(self, method):
-        "Transpose image (flip or rotate in 90 degree steps)"
+        """
+        Transpose image (flip or rotate in 90 degree steps)
+
+        :param method: One of :attr:`PIL.Image.FLIP_LEFT_RIGHT`,
+          :attr:`PIL.Image.FLIP_TOP_BOTTOM`, :attr:`PIL.Image.ROTATE_90`,
+          :attr:`PIL.Image.ROTATE_180`, or :attr:`PIL.Image.ROTATE_270`.
+        :returns: Returns a flipped or rotated copy of this image.
+        """
 
         self.load()
         im = self.im.transpose(method)
