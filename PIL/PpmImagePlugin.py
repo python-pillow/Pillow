@@ -24,7 +24,7 @@ from PIL import Image, ImageFile
 #
 # --------------------------------------------------------------------
 
-b_whitespace = string.whitespace.encode()
+b_whitespace = string.whitespace.encode('ascii','ignore')
 
 MODES = {
     # standard
