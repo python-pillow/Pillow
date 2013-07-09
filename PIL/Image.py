@@ -89,10 +89,18 @@ import os, sys
 import collections
 import numbers
 
-##
-# (Internal) Checks if an object is an image object.
 
 def isImageType(t):
+    """
+    Checks if an object is an image object.
+
+    .. warning::
+
+       This function is for internal use only.
+
+    :param t: object to check if it's an image
+    :returns: True if the object is an image
+    """
     return hasattr(t, "im")
 
 #
@@ -222,51 +230,55 @@ MODES = sorted(_MODEINFO.keys())
 # may have to modify the stride calculation in map.c too!
 _MAPMODES = ("L", "P", "RGBX", "RGBA", "CMYK", "I;16", "I;16L", "I;16B")
 
-##
-# Gets the "base" mode for given mode.  This function returns "L" for
-# images that contain grayscale data, and "RGB" for images that
-# contain color data.
-#
-# @param mode Input mode.
-# @return "L" or "RGB".
-# @exception KeyError If the input mode was not a standard mode.
 
 def getmodebase(mode):
+    """
+    Gets the "base" mode for given mode.  This function returns "L" for
+    images that contain grayscale data, and "RGB" for images that
+    contain color data.
+
+    :param mode: Input mode.
+    :returns: "L" or "RGB".
+    :exception KeyError: If the input mode was not a standard mode.
+    """
     return ImageMode.getmode(mode).basemode
 
-##
-# Gets the storage type mode.  Given a mode, this function returns a
-# single-layer mode suitable for storing individual bands.
-#
-# @param mode Input mode.
-# @return "L", "I", or "F".
-# @exception KeyError If the input mode was not a standard mode.
 
 def getmodetype(mode):
+    """
+    Gets the storage type mode.  Given a mode, this function returns a
+    single-layer mode suitable for storing individual bands.
+
+    :param mode: Input mode.
+    :returns: "L", "I", or "F".
+    :exception KeyError: If the input mode was not a standard mode.
+    """
     return ImageMode.getmode(mode).basetype
 
-##
-# Gets a list of individual band names.  Given a mode, this function
-# returns a tuple containing the names of individual bands (use
-# {@link #getmodetype} to get the mode used to store each individual
-# band.
-#
-# @param mode Input mode.
-# @return A tuple containing band names.  The length of the tuple
-#     gives the number of bands in an image of the given mode.
-# @exception KeyError If the input mode was not a standard mode.
 
 def getmodebandnames(mode):
+    """
+    Gets a list of individual band names.  Given a mode, this function
+    returns a tuple containing the names of individual bands (use
+    :func:`PIL.Image.getmodetype` to get the mode used to store each individual
+    band.
+
+    :param mode: Input mode.
+    :returns: A tuple containing band names.  The length of the tuple
+        gives the number of bands in an image of the given mode.
+    :exception KeyError: If the input mode was not a standard mode.
+    """
     return ImageMode.getmode(mode).bands
 
-##
-# Gets the number of individual bands for this mode.
-#
-# @param mode Input mode.
-# @return The number of bands in this mode.
-# @exception KeyError If the input mode was not a standard mode.
 
 def getmodebands(mode):
+    """
+    Gets the number of individual bands for this mode.
+
+    :param mode: Input mode.
+    :returns: The number of bands in this mode.
+    :exception KeyError: If the input mode was not a standard mode.
+    """
     return len(ImageMode.getmode(mode).bands)
 
 # --------------------------------------------------------------------
@@ -274,11 +286,9 @@ def getmodebands(mode):
 
 _initialized = 0
 
-##
-# Explicitly loads standard file format drivers.
 
 def preinit():
-    "Load standard file format drivers."
+    "Explicitly load standard file format drivers."
 
     global _initialized
     if _initialized >= 1:
@@ -311,12 +321,12 @@ def preinit():
 
     _initialized = 1
 
-##
-# Explicitly initializes the Python Imaging Library.  This function
-# loads all available file format drivers.
 
 def init():
-    "Load all file format drivers."
+    """
+    Explicitly initializes the Python Imaging Library. This function
+    loads all available file format drivers.
+    """
 
     global _initialized
     if _initialized >= 2:
@@ -493,7 +503,7 @@ class Image:
 
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
-        :param *args: Extra arguments to the encoder.
+        :param args: Extra arguments to the encoder.
         :rtype: A bytes object.
         """
 
@@ -1368,7 +1378,7 @@ class Image:
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
            parameter should always be used.
-        :param **options: Extra parameters to the image writer.
+        :param options: Extra parameters to the image writer.
         :returns: None
         :exception KeyError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
@@ -1709,21 +1719,21 @@ def _wedge():
 
     return Image()._new(core.wedge("L"))
 
-##
-# Creates a new image with the given mode and size.
-#
-# @param mode The mode to use for the new image.
-# @param size A 2-tuple, containing (width, height) in pixels.
-# @param color What colour to use for the image.  Default is black.
-#    If given, this should be a single integer or floating point value
-#    for single-band modes, and a tuple for multi-band modes (one value
-#    per band).  When creating RGB images, you can also use colour
-#    strings as supported by the ImageColor module.  If the colour is
-#    None, the image is not initialised.
-# @return An Image object.
 
 def new(mode, size, color=0):
-    "Create a new image"
+    """
+    Creates a new image with the given mode and size.
+
+    :param mode: The mode to use for the new image.
+    :param size: A 2-tuple, containing (width, height) in pixels.
+    :param color: What colour to use for the image.  Default is black.
+       If given, this should be a single integer or floating point value
+       for single-band modes, and a tuple for multi-band modes (one value
+       per band).  When creating RGB images, you can also use colour
+       strings as supported by the ImageColor module.  If the colour is
+       None, the image is not initialised.
+    :returns: An Image object.
+    """
 
     if color is None:
         # don't initialize
@@ -1737,29 +1747,29 @@ def new(mode, size, color=0):
 
     return Image()._new(core.fill(mode, size, color))
 
-##
-# Creates a copy of an image memory from pixel data in a buffer.
-# <p>
-# In its simplest form, this function takes three arguments
-# (mode, size, and unpacked pixel data).
-# <p>
-# You can also use any pixel decoder supported by PIL.  For more
-# information on available decoders, see the section <a
-# href="pil-decoder.htm"><i>Writing Your Own File Decoder</i></a>.
-# <p>
-# Note that this function decodes pixel data only, not entire images.
-# If you have an entire image in a string, wrap it in a
-# <b>BytesIO</b> object, and use {@link #open} to load it.
-#
-# @param mode The image mode.
-# @param size The image size.
-# @param data A byte buffer containing raw data for the given mode.
-# @param decoder_name What decoder to use.
-# @param *args Additional parameters for the given decoder.
-# @return An Image object.
 
 def frombytes(mode, size, data, decoder_name="raw", *args):
-    "Load image from byte buffer"
+    """
+    Creates a copy of an image memory from pixel data in a buffer.
+
+    In its simplest form, this function takes three arguments
+    (mode, size, and unpacked pixel data).
+
+    You can also use any pixel decoder supported by PIL.  For more
+    information on available decoders, see the section
+    **Writing Your Own File Decoder**.
+
+    Note that this function decodes pixel data only, not entire images.
+    If you have an entire image in a string, wrap it in a
+    **BytesIO** object, and use :func:`PIL.Image.open` to load it.
+
+    :param mode: The image mode.
+    :param size: The image size.
+    :param data: A byte buffer containing raw data for the given mode.
+    :param decoder_name: What decoder to use.
+    :param args: Additional parameters for the given decoder.
+    :returns: An Image object.
+    """
 
     # may pass tuple instead of argument list
     if len(args) == 1 and isinstance(args[0], tuple):
@@ -1781,40 +1791,42 @@ def fromstring(*args, **kw):
     )
     return frombytes(*args, **kw)
 
-##
-# (New in 1.1.4) Creates an image memory referencing pixel data in a
-# byte buffer.
-# <p>
-# This function is similar to {@link #frombytes}, but uses data in
-# the byte buffer, where possible.  This means that changes to the
-# original buffer object are reflected in this image).  Not all modes
-# can share memory; supported modes include "L", "RGBX", "RGBA", and
-# "CMYK".
-# <p>
-# Note that this function decodes pixel data only, not entire images.
-# If you have an entire image file in a string, wrap it in a
-# <b>BytesIO</b> object, and use {@link #open} to load it.
-# <p>
-# In the current version, the default parameters used for the "raw"
-# decoder differs from that used for {@link fromstring}.  This is a
-# bug, and will probably be fixed in a future release.  The current
-# release issues a warning if you do this; to disable the warning,
-# you should provide the full set of parameters.  See below for
-# details.
-#
-# @param mode The image mode.
-# @param size The image size.
-# @param data A bytes or other buffer object containing raw
-#     data for the given mode.
-# @param decoder_name What decoder to use.
-# @param *args Additional parameters for the given decoder.  For the
-#     default encoder ("raw"), it's recommended that you provide the
-#     full set of parameters:
-#     <b>frombuffer(mode, size, data, "raw", mode, 0, 1)</b>.
-# @return An Image object.
-# @since 1.1.4
 
 def frombuffer(mode, size, data, decoder_name="raw", *args):
+    """
+    Creates an image memory referencing pixel data in a byte buffer.
+
+    This function is similar to :func:`PIL.Image.frombytes`, but uses data in
+    the byte buffer, where possible.  This means that changes to the
+    original buffer object are reflected in this image).  Not all modes
+    can share memory; supported modes include "L", "RGBX", "RGBA", and
+    "CMYK".
+
+    Note that this function decodes pixel data only, not entire images.
+    If you have an entire image file in a string, wrap it in a
+    **BytesIO** object, and use :func:`PIL.Image.open` to load it.
+
+    In the current version, the default parameters used for the "raw" decoder
+    differs from that used for :func:`PIL.Image.fromstring`.  This is a bug,
+    and will probably be fixed in a future release.  The current release issues
+    a warning if you do this; to disable the warning, you should provide the
+    full set of parameters.  See below for details.
+
+    :param mode: The image mode.
+    :param size: The image size.
+    :param data: A bytes or other buffer object containing raw
+        data for the given mode.
+    :param decoder_name: What decoder to use.
+    :param args: Additional parameters for the given decoder.  For the
+        default encoder ("raw"), it's recommended that you provide the
+        full set of parameters::
+
+            frombuffer(mode, size, data, "raw", mode, 0, 1)
+
+    :returns: An Image object.
+
+    .. versionadded:: 1.1.4
+    """
     "Load image from bytes or buffer"
 
     # may pass tuple instead of argument list
@@ -1842,18 +1854,20 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     return frombytes(mode, size, data, decoder_name, args)
 
 
-##
-# (New in 1.1.6) Creates an image memory from an object exporting
-# the array interface (using the buffer protocol).
-#
-# If obj is not contiguous, then the tobytes method is called
-# and {@link frombuffer} is used.
-#
-# @param obj Object with array interface
-# @param mode Mode to use (will be determined from type if None)
-# @return An image memory.
-
 def fromarray(obj, mode=None):
+    """
+    Creates an image memory from an object exporting the array interface
+    (using the buffer protocol).
+
+    If obj is not contiguous, then the tobytes method is called
+    and :func:`PIL.Image.frombuffer` is used.
+
+    :param obj: Object with array interface
+    :param mode: Mode to use (will be determined from type if None)
+    :returns: An image memory.
+
+    .. versionadded:: 1.1.6
+    """
     arr = obj.__array_interface__
     shape = arr['shape']
     ndim = len(shape)
@@ -1910,25 +1924,24 @@ _fromarray_typemap = {
 _fromarray_typemap[((1, 1), _ENDIAN + "i4")] = ("I", "I")
 _fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
 
-##
-# Opens and identifies the given image file.
-# <p>
-# This is a lazy operation; this function identifies the file, but the
-# actual image data is not read from the file until you try to process
-# the data (or call the {@link #Image.load} method).
-#
-# @def open(file, mode="r")
-# @param file A filename (string) or a file object.  The file object
-#    must implement <b>read</b>, <b>seek</b>, and <b>tell</b> methods,
-#    and be opened in binary mode.
-# @param mode The mode.  If given, this argument must be "r".
-# @return An Image object.
-# @exception IOError If the file cannot be found, or the image cannot be
-#    opened and identified.
-# @see #new
 
 def open(fp, mode="r"):
-    "Open an image file, without loading the raster data"
+    """
+    Opens and identifies the given image file.
+
+    This is a lazy operation; this function identifies the file, but the
+    actual image data is not read from the file until you try to process
+    the data (or call the :func:`PIL.Image.Image.load` method).
+    See :func:`PIL.Image.new`
+
+    :param file: A filename (string) or a file object.  The file object
+       must implement **read**, **seek**, and **tell** methods,
+       and be opened in binary mode.
+    :param mode: The mode.  If given, this argument must be "r".
+    :returns: An Image object.
+    :exception IOError: If the file cannot be found, or the image cannot be
+       opened and identified.
+    """
 
     if mode != "r":
         raise ValueError("bad mode")
@@ -1972,92 +1985,87 @@ def open(fp, mode="r"):
 #
 # Image processing.
 
-##
-# Alpha composites im2 over im1.
-#
-# @param im1 The first image.
-# @param im2 The second image.  Must have the same mode and size as
-#    the first image.
-# @return An Image object.
-
 def alpha_composite(im1, im2):
-    "Alpha composite im2 over im1."
+    """
+    Alpha composite im2 over im1.
+
+    :param im1: The first image.
+    :param im2: The second image.  Must have the same mode and size as
+       the first image.
+    :returns: An Image object.
+    """
 
     im1.load()
     im2.load()
     return im1._new(core.alpha_composite(im1.im, im2.im))
 
-##
-# Creates a new image by interpolating between two input images, using
-# a constant alpha.
-#
-# <pre>
-#    out = image1 * (1.0 - alpha) + image2 * alpha
-# </pre>
-#
-# @param im1 The first image.
-# @param im2 The second image.  Must have the same mode and size as
-#    the first image.
-# @param alpha The interpolation alpha factor.  If alpha is 0.0, a
-#    copy of the first image is returned. If alpha is 1.0, a copy of
-#    the second image is returned. There are no restrictions on the
-#    alpha value. If necessary, the result is clipped to fit into
-#    the allowed output range.
-# @return An Image object.
 
 def blend(im1, im2, alpha):
-    "Interpolate between images."
+    """
+    Creates a new image by interpolating between two input images, using
+    a constant alpha.::
+
+        out = image1 * (1.0 - alpha) + image2 * alpha
+
+    :param im1: The first image.
+    :param im2: The second image.  Must have the same mode and size as
+       the first image.
+    :param alpha: The interpolation alpha factor.  If alpha is 0.0, a
+       copy of the first image is returned. If alpha is 1.0, a copy of
+       the second image is returned. There are no restrictions on the
+       alpha value. If necessary, the result is clipped to fit into
+       the allowed output range.
+    :returns: An Image object.
+    """
 
     im1.load()
     im2.load()
     return im1._new(core.blend(im1.im, im2.im, alpha))
 
-##
-# Creates a new image by interpolating between two input images,
-# using the mask as alpha.
-#
-# @param image1 The first image.
-# @param image2 The second image.  Must have the same mode and
-#    size as the first image.
-# @param mask A mask image.  This image can can have mode
-#    "1", "L", or "RGBA", and must have the same size as the
-#    other two images.
 
 def composite(image1, image2, mask):
-    "Create composite image by blending images using a transparency mask"
+    """
+    Create composite image by blending images using a transparency mask.
+
+    :param image1: The first image.
+    :param image2: The second image.  Must have the same mode and
+       size as the first image.
+    :param mask: A mask image.  This image can can have mode
+       "1", "L", or "RGBA", and must have the same size as the
+       other two images.
+    """
 
     image = image2.copy()
     image.paste(image1, None, mask)
     return image
 
-##
-# Applies the function (which should take one argument) to each pixel
-# in the given image. If the image has more than one band, the same
-# function is applied to each band. Note that the function is
-# evaluated once for each possible pixel value, so you cannot use
-# random components or other generators.
-#
-# @def eval(image, function)
-# @param image The input image.
-# @param function A function object, taking one integer argument.
-# @return An Image object.
 
 def eval(image, *args):
-    "Evaluate image expression"
+    """
+    Applies the function (which should take one argument) to each pixel
+    in the given image. If the image has more than one band, the same
+    function is applied to each band. Note that the function is
+    evaluated once for each possible pixel value, so you cannot use
+    random components or other generators.
+
+    :param image: The input image.
+    :param function: A function object, taking one integer argument.
+    :returns: An Image object.
+    """
 
     return image.point(args[0])
 
-##
-# Creates a new image from a number of single-band images.
-#
-# @param mode The mode to use for the output image.
-# @param bands A sequence containing one single-band image for
-#     each band in the output image.  All bands must have the
-#     same size.
-# @return An Image object.
 
 def merge(mode, bands):
-    "Merge a set of single band images into a new multiband image."
+    """
+    Merge a set of single band images into a new multiband image.
+
+    :param mode: The mode to use for the output image.
+    :param bands: A sequence containing one single-band image for
+        each band in the output image.  All bands must have the
+        same size.
+    :returns: An Image object.
+    """
 
     if getmodebands(mode) != len(bands) or "*" in mode:
         raise ValueError("wrong number of bands")
@@ -2075,48 +2083,51 @@ def merge(mode, bands):
 # --------------------------------------------------------------------
 # Plugin registry
 
-##
-# Register an image file plugin.  This function should not be used
-# in application code.
-#
-# @param id An image format identifier.
-# @param factory An image file factory method.
-# @param accept An optional function that can be used to quickly
-#    reject images having another format.
-
 def register_open(id, factory, accept=None):
+    """
+    Register an image file plugin.  This function should not be used
+    in application code.
+
+    :param id: An image format identifier.
+    :param factory: An image file factory method.
+    :param accept: An optional function that can be used to quickly
+       reject images having another format.
+    """
     id = id.upper()
     ID.append(id)
     OPEN[id] = factory, accept
 
-##
-# Registers an image MIME type.  This function should not be used
-# in application code.
-#
-# @param id An image format identifier.
-# @param mimetype The image MIME type for this format.
 
 def register_mime(id, mimetype):
+    """
+    Registers an image MIME type.  This function should not be used
+    in application code.
+
+    :param id: An image format identifier.
+    :param mimetype: The image MIME type for this format.
+    """
     MIME[id.upper()] = mimetype
 
-##
-# Registers an image save function.  This function should not be
-# used in application code.
-#
-# @param id An image format identifier.
-# @param driver A function to save images in this format.
 
 def register_save(id, driver):
+    """
+    Registers an image save function.  This function should not be
+    used in application code.
+
+    :param id: An image format identifier.
+    :param driver: A function to save images in this format.
+    """
     SAVE[id.upper()] = driver
 
-##
-# Registers an image extension.  This function should not be
-# used in application code.
-#
-# @param id An image format identifier.
-# @param extension An extension used for this format.
 
 def register_extension(id, extension):
+    """
+    Registers an image extension.  This function should not be
+    used in application code.
+
+    :param id: An image format identifier.
+    :param extension: An extension used for this format.
+    """
     EXTENSION[extension.lower()] = id.upper()
 
 
