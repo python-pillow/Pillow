@@ -24,3 +24,27 @@ def test_default():
     assert_image(im, "RGB", im.size)
     im = im.convert()
     assert_image(im, "RGB", im.size)
+
+
+
+# ref https://github.com/python-imaging/Pillow/issues/274
+
+def _test_float_conversion(im):
+    orig = im.getpixel((5,5))
+    converted = im.convert('F').getpixel((5,5))
+    assert_equal(orig, converted)
+
+def test_8bit():
+    im = Image.open('Images/lena.jpg')
+    _test_float_conversion(im.convert('L'))
+
+def test_12bit():
+    im = Image.open('Tests/images/12bit.cropped.tif')
+    _test_float_conversion(im)
+
+def test_12bit_workaround():
+    im = Image.open('Tests/images/12bit.cropped.tif')
+    _test_float_conversion(im.convert('I'))
+    
+
+    
