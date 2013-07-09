@@ -499,6 +499,25 @@ I16B_I(UINT8* out_, const UINT8* in, int xsize)
 }
 
 static void
+I16L_F(UINT8* out_, const UINT8* in, int xsize)
+{
+    int x;
+    FLOAT32* out = (FLOAT32*) out_;
+    for (x = 0; x < xsize; x++, in += 2)
+        *out++ = (FLOAT32) (in[0] + ((int) in[1] << 8));
+}
+
+
+static void
+I16B_F(UINT8* out_, const UINT8* in, int xsize)
+{
+    int x;
+    FLOAT32* out = (FLOAT32*) out_;
+    for (x = 0; x < xsize; x++, in += 2)
+        *out++ = (FLOAT32) (in[1] + ((int) in[0] << 8));
+}
+
+static void
 L_I16L(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
@@ -629,6 +648,10 @@ static struct {
     { "I;16L", "L", I16L_L },
     { "L", "I;16B", L_I16B },
     { "I;16B", "L", I16B_L },
+
+    { "I;16", "F", I16L_F },
+    { "I;16L", "F", I16L_F },
+    { "I;16B", "F", I16B_F },
 
     { NULL }
 };
