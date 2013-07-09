@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Add 16-bit TIFF support, fixes #274
+  [wiredfool]
+
 - Ignore high ascii characters in string.whitespace, fixes #272
   [wiredfool]
 
