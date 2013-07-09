@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Ignore high ascii characters in string.whitespace, fixes #272
+  [wiredfool]
+
 - Added clean/build to tox to make it behave like travis 
   [freyes]
 
