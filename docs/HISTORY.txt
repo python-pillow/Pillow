@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Added clean/build to tox to make it behave like travis 
+  [freyes]
+
 - Adding support for metadata in webp images.
   [heynemann]
 
