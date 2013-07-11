@@ -782,6 +782,23 @@ class TiffImageFile(ImageFile.ImageFile):
                     # it doesn't use a file descriptor.
                     fp = False
 
+                # libtiff handles the fillmode for us, so 1;IR should
+                # actually be 1;I. Including the R double reverses the
+                # bits, so stripes of the image are reversed.  See
+                # https://github.com/python-imaging/Pillow/issues/279
+                if fillorder == 2:
+                    key = (
+                        self.tag.prefix, photo, format, 1,
+                        self.tag.get(BITSPERSAMPLE, (1,)),
+                        self.tag.get(EXTRASAMPLES, ())
+                        )
+                    if Image.DEBUG:
+                        print("format key:", key)
+                    # this should always work, since all the
+                    # fillorder==2 modes have a corresponding
+                    # fillorder=1 mode
+                    self.mode, rawmode = OPEN_INFO[key]
+
                 # Offset in the tile tuple is 0, we go from 0,0 to
                 # w,h, and we only do this once -- eds
                 a = (rawmode, self._compression, fp )
