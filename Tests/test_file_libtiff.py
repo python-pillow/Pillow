@@ -70,6 +70,14 @@ def test_g4_eq_png():
 
     assert_image_equal(g4, png)
 
+# see https://github.com/python-imaging/Pillow/issues/279
+def test_g4_fillorder_eq_png():
+    """ Checking that we're actually getting the data that we expect"""
+    png = Image.open('Tests/images/g4-fillorder-test.png')
+    g4 = Image.open('Tests/images/g4-fillorder-test.tif')
+
+    assert_image_equal(g4, png)
+
 def test_g4_write():
     """Checking to see that the saved image is the same as what we wrote"""
     file = "Tests/images/lena_g4_500.tif"
@@ -95,3 +103,5 @@ def test_adobe_deflate_tiff():
     assert_equal(im.size, (278, 374))
     assert_equal(im.tile[0][:3], ('tiff_adobe_deflate', (0, 0, 278, 374), 0))
     assert_no_exception(lambda: im.load())
+
+
