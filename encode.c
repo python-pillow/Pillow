@@ -534,7 +534,7 @@ static unsigned int** get_qtables_arrays(PyObject* qtables) {
         PyErr_SetString(PyExc_ValueError, "Not a valid numbers of quantization tables. Should be between 2 and 4.");
         return NULL;
     }
-    qarrays = (unsigned int**) PyMem_Malloc(num_tables * sizeof(unsigned int));
+    qarrays = (unsigned int**) PyMem_Malloc(num_tables * sizeof(unsigned int*));
     if (!qarrays) {
         Py_DECREF(tables);
         PyErr_NoMemory();
