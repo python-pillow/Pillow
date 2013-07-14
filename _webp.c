@@ -24,7 +24,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     Py_ssize_t exif_size;
     size_t ret_size;
 
-    if (!PyArg_ParseTuple(args, "s#nifss#s#",
+    if (!PyArg_ParseTuple(args, "s#iifss#s#",
                 (char**)&rgb, &size, &width, &height, &quality_factor, &mode,
                 &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
         Py_RETURN_NONE;
