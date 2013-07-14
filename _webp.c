@@ -44,7 +44,14 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 		Py_RETURN_NONE;
 	}
 
-#ifdef HAVE_WEBPMUX
+#ifndef HAVE_WEBPMUX
+    if (ret_size > 0) {
+        PyObject *ret = PyBytes_FromStringAndSize((char*)output, ret_size);
+        free(output);
+        return ret;
+    }
+#else
+   {
     WebPData output_data = {0};
     WebPData image = { output, ret_size };
 
@@ -69,19 +76,13 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 
     output = (uint8_t*)output_data.bytes;
     ret_size = output_data.size;
-#endif
-
     if (ret_size > 0) {
         PyObject *ret = PyBytes_FromStringAndSize((char*)output, ret_size);
-
-#ifdef HAVE_WEBPMUX
         WebPDataClear(&output_data);
-#else
-        free(output);
-#endif
-
         return ret;
     }
+    }
+#endif
     Py_RETURN_NONE;
 }
 
@@ -115,33 +116,35 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
             mode = "RGBA";
         }
 
-#ifdef HAVE_WEBPMUX
+#ifndef HAVE_WEBPMUX
+        vp8_status_code = WebPDecode(webp, size, &config);
+#else
+       {
         int copy_data = 0;
         WebPData data = { webp, size };
         WebPMuxFrameInfo image;
+        WebPData icc_profile_data = {0};
+        WebPData exif_data = {0};
 
         WebPMux* mux = WebPMuxCreate(&data, copy_data);
         WebPMuxGetFrame(mux, 1, &image);
         webp = (uint8_t*)image.bitstream.bytes;
         size = image.bitstream.size;
-#endif
 
         vp8_status_code = WebPDecode(webp, size, &config);
 
-#ifdef HAVE_WEBPMUX
-        WebPData icc_profile_data = {0};
         WebPMuxGetChunk(mux, "ICCP", &icc_profile_data);
         if (icc_profile_data.size > 0) {
             icc_profile = PyBytes_FromStringAndSize((const char*)icc_profile_data.bytes, icc_profile_data.size);
         }
 
-        WebPData exif_data = {0};
         WebPMuxGetChunk(mux, "EXIF", &exif_data);
         if (exif_data.size > 0) {
             exif = PyBytes_FromStringAndSize((const char*)exif_data.bytes, exif_data.size);
         }
 
         WebPMuxDelete(mux);
+        }
 #endif
     }
 
