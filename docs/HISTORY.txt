@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Restore compatibility with ISO C
+  [cgohlke]
+
 - Use correct format character for C int type
   [cgohlke]
 
