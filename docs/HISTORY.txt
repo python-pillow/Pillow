@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Allocate enough memory to hold pointers in encode.c
+  [cgohlke]
+
 - Fix #279, fillorder double shuffling bug when FillOrder ==2 and decoding using libtiff.
   [wiredfool]
 
