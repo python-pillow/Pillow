@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Moved ImageFile and ImageFileIO comments to docstrings
+  [freyes]
+
 - Restore compatibility with ISO C
   [cgohlke]
 
@@ -16,7 +19,7 @@ Changelog (Pillow)
 - Fix #279, fillorder double shuffling bug when FillOrder ==2 and decoding using libtiff.
   [wiredfool]
 
-- Moved Image module docs from comments to docstrings
+- Moved Image module comments to docstrings
   [freyes]
 
 - Add 16-bit TIFF support, fixes #274
