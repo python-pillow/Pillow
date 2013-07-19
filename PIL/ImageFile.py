@@ -67,9 +67,6 @@ def _tilesort(t):
 # --------------------------------------------------------------------
 # ImageFile base class
 
-##
-# Base class for image file handlers.
-
 class ImageFile(Image.Image):
     "Base class for image file format handlers."
 
@@ -266,14 +263,14 @@ class ImageFile(Image.Image):
     # def load_read(self, bytes):
     #     pass
 
-##
-# Base class for stub image loaders.
-# <p>
-# A stub loader is an image loader that can identify files of a
-# certain format, but relies on external code to load the file.
 
 class StubImageFile(ImageFile):
-    "Base class for stub image loaders."
+    """
+    Base class for stub image loaders.
+
+    A stub loader is an image loader that can identify files of a
+    certain format, but relies on external code to load the file.
+    """
 
     def _open(self):
         raise NotImplementedError(
@@ -290,41 +287,39 @@ class StubImageFile(ImageFile):
         self.__class__ = image.__class__
         self.__dict__ = image.__dict__
 
-    ##
-    # (Hook) Find actual image loader.
-
     def _load(self):
+        "(Hook) Find actual image loader."
         raise NotImplementedError(
             "StubImageFile subclass must implement _load"
             )
 
-##
-# Incremental image parser.  This class implements the standard
-# feed/close consumer interface.
 
 class Parser:
-
+    """
+    Incremental image parser.  This class implements the standard
+    feed/close consumer interface.
+    """
     incremental = None
     image = None
     data = None
     decoder = None
     finished = 0
 
-    ##
-    # (Consumer) Reset the parser.  Note that you can only call this
-    # method immediately after you've created a parser; parser
-    # instances cannot be reused.
-
     def reset(self):
+        """
+        (Consumer) Reset the parser.  Note that you can only call this
+        method immediately after you've created a parser; parser
+        instances cannot be reused.
+        """
         assert self.data is None, "cannot reuse parsers"
 
-    ##
-    # (Consumer) Feed data to the parser.
-    #
-    # @param data A string buffer.
-    # @exception IOError If the parser failed to parse the image file.
-
     def feed(self, data):
+        """
+        (Consumer) Feed data to the parser.
+
+        :param data" A string buffer.
+        :exception IOError: If the parser failed to parse the image file.
+        """
         # collect data
 
         if self.finished:
@@ -403,13 +398,13 @@ class Parser:
 
                 self.image = im
 
-    ##
-    # (Consumer) Close the stream.
-    #
-    # @return An image object.
-    # @exception IOError If the parser failed to parse the image file.
-
     def close(self):
+        """
+        (Consumer) Close the stream.
+
+        :returns: An image object.
+        :exception IOError: If the parser failed to parse the image file.
+        """
         # finish decoding
         if self.decoder:
             # get rid of what's left in the buffers
@@ -432,25 +427,23 @@ class Parser:
 
 # --------------------------------------------------------------------
 
-##
-# (Helper) Save image body to file.
-#
-# @param im Image object.
-# @param fp File object.
-# @param tile Tile list.
-# @param bufsize Optional buffer size
-
 def _save(im, fp, tile, bufsize=0):
-    "Helper to save image based on tile list"
+    """Helper to save image based on tile list
+
+    :param im: Image object.
+    :param fp: File object.
+    :param tile: Tile list.
+    :param bufsize: Optional buffer size
+    """
 
     im.load()
     if not hasattr(im, "encoderconfig"):
         im.encoderconfig = ()
     tile.sort(key=_tilesort)
     # FIXME: make MAXBLOCK a configuration parameter
-	# It would be great if we could have the encoder specifiy what it needs
-	# But, it would need at least the image size in most cases. RawEncode is
-	# a tricky case.
+    # It would be great if we could have the encoder specifiy what it needs
+    # But, it would need at least the image size in most cases. RawEncode is
+    # a tricky case.
     bufsize = max(MAXBLOCK, bufsize, im.size[0] * 4) # see RawEncode.c
     try:
         fh = fp.fileno()
@@ -484,16 +477,16 @@ def _save(im, fp, tile, bufsize=0):
     except: pass
 
 
-##
-# Reads large blocks in a safe way.  Unlike fp.read(n), this function
-# doesn't trust the user.  If the requested size is larger than
-# SAFEBLOCK, the file is read block by block.
-#
-# @param fp File handle.  Must implement a <b>read</b> method.
-# @param size Number of bytes to read.
-# @return A string containing up to <i>size</i> bytes of data.
-
 def _safe_read(fp, size):
+    """
+    Reads large blocks in a safe way.  Unlike fp.read(n), this function
+    doesn't trust the user.  If the requested size is larger than
+    SAFEBLOCK, the file is read block by block.
+
+    :param fp: File handle.  Must implement a <b>read</b> method.
+    :param size: Number of bytes to read.
+    :returns: A string containing up to <i>size</i> bytes of data.
+    """
     if size <= 0:
         return b""
     if size <= SAFEBLOCK:
