@@ -245,7 +245,7 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
             windir = os.environ.get("WINDIR")
             if windir:
                 filename = os.path.join(windir, "fonts", font)
-                return FreeTypeFont(font, size, index, encoding)
+                return FreeTypeFont(filename, size, index, encoding)
         raise
 
 ##
