@@ -6,7 +6,7 @@ OleFileIO_PL:
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.25 2013-05-27 Philippe Lagadec - http://www.decalage.info
+version 0.26 2013-07-24 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -24,8 +24,8 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Philippe Lagadec, Fredrik Lundh (Secret Labs AB)"
-__date__    = "2013-05-27"
-__version__ = '0.25'
+__date__    = "2013-07-24"
+__version__ = '0.26'
 
 #--- LICENSE ------------------------------------------------------------------
 
@@ -127,7 +127,10 @@ __version__ = '0.25'
 #                      - _raise_defect: added option to set exception type
 #                      - all non-fatal issues are now recorded, and displayed
 #                        when run as a script
-
+# 2013-07-11 v0.26 PL: - added methods to get modification and creation times
+#                        of a directory entry or a storage/stream
+#                      - fixed parsing of direntry timestamps
+# 2013-07-24       PL: - new options in listdir to list storages and/or streams
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
@@ -437,6 +440,16 @@ except NameError:
         return filter(ord, s)
 
 
+def filetime2datetime(filetime):
+        """
+        convert FILETIME (64 bits int) to Python datetime.datetime
+        """
+        # TODO: manage exception when microseconds is too large
+        # inspired from http://code.activestate.com/recipes/511425-filetime-to-datetime/
+        _FILETIME_null_date = datetime.datetime(1601, 1, 1, 0, 0, 0)
+        #debug('timedelta days=%d' % (filetime/(10*1000000*3600*24)))
+        return _FILETIME_null_date + datetime.timedelta(microseconds=filetime/10)
+
 
 
 #=== CLASSES ==================================================================
@@ -470,6 +483,8 @@ class OleMetadata:
     - http://msdn.microsoft.com/en-us/library/dd945671%28v=office.12%29.aspx
     - http://msdn.microsoft.com/en-us/library/windows/desktop/aa380374%28v=vs.85%29.aspx
     - http://poi.apache.org/apidocs/org/apache/poi/hpsf/DocumentSummaryInformation.html
+
+    new in version 0.25
     """
 
     # attribute names for SummaryInformation stream properties:
@@ -732,7 +747,8 @@ class _OleDirectoryEntry:
     #[PL] parsing code moved from OleFileIO.loaddirectory
 
     # struct to parse directory entries:
-    # <: little-endian byte order
+    # <: little-endian byte order, standard sizes
+    #    (note: this should guarantee that Q returns a 64 bits int)
     # 64s: string containing entry name in unicode (max 31 chars) + null char
     # H: uint16, number of bytes used in name buffer, including null = (len+1)*2
     # B: uint8, dir entry type (between 0 and 5)
@@ -742,13 +758,13 @@ class _OleDirectoryEntry:
     # I: uint32, index of child root node if it is a storage, else NOSTREAM
     # 16s: CLSID, unique identifier (only used if it is a storage)
     # I: uint32, user flags
-    # 8s: uint64, creation timestamp or zero
-    # 8s: uint64, modification timestamp or zero
+    # Q (was 8s): uint64, creation timestamp or zero
+    # Q (was 8s): uint64, modification timestamp or zero
     # I: uint32, SID of first sector if stream or ministream, SID of 1st sector
     #    of stream containing ministreams if root entry, 0 otherwise
     # I: uint32, total stream size in bytes if stream (low 32 bits), 0 otherwise
     # I: uint32, total stream size in bytes if stream (high 32 bits), 0 otherwise
-    STRUCT_DIRENTRY = '<64sHBBIII16sI8s8sIII'
+    STRUCT_DIRENTRY = '<64sHBBIII16sIQQIII'
     # size of a directory entry: 128 bytes
     DIRENTRY_SIZE = 128
     assert struct.calcsize(STRUCT_DIRENTRY) == DIRENTRY_SIZE
@@ -936,6 +952,34 @@ class _OleDirectoryEntry:
 
         for kid in self.kids:
             kid.dump(tab + 2)
+
+
+    def getmtime(self):
+        """
+        Return modification time of a directory entry.
+
+        return: None if modification time is null, a python datetime object
+        otherwise (UTC timezone)
+
+        new in version 0.26
+        """
+        if self.modifyTime == 0:
+            return None
+        return filetime2datetime(self.modifyTime)
+
+
+    def getctime(self):
+        """
+        Return creation time of a directory entry.
+
+        return: None if modification time is null, a python datetime object
+        otherwise (UTC timezone)
+
+        new in version 0.26
+        """
+        if self.createTime == 0:
+            return None
+        return filetime2datetime(self.createTime)
 
 
 #--- OleFileIO ----------------------------------------------------------------
@@ -1552,27 +1596,42 @@ class OleFileIO:
                               self.sectorsize, self.fat, self._filesize)
 
 
-    def _list(self, files, prefix, node):
+    def _list(self, files, prefix, node, streams=True, storages=False):
         """
         (listdir helper)
         files: list of files to fill in
         prefix: current location in storage tree (list of names)
         node: current node (_OleDirectoryEntry object)
+        streams: bool, include streams if True (True by default) - new in v0.26
+        storages: bool, include storages if True (False by default) - new in v0.26
+        (note: the root storage is never included)
         """
         prefix = prefix + [node.name]
         for entry in node.kids:
             if entry.kids:
-                self._list(files, prefix, entry)
+                # this is a storage
+                if storages:
+                    # add it to the list
+                    files.append(prefix[1:] + [entry.name])
+                # check its kids
+                self._list(files, prefix, entry, streams, storages)
             else:
-                files.append(prefix[1:] + [entry.name])
+                # this is a stream
+                if streams:
+                    # add it to the list
+                    files.append(prefix[1:] + [entry.name])
 
 
-    def listdir(self):
+    def listdir(self, streams=True, storages=False):
         """
         Return a list of streams stored in this file
+
+        streams: bool, include streams if True (True by default) - new in v0.26
+        storages: bool, include storages if True (False by default) - new in v0.26
+        (note: the root storage is never included)
         """
         files = []
-        self._list(files, [], self.root)
+        self._list(files, [], self.root, streams, storages)
         return files
 
 
@@ -1642,6 +1701,38 @@ class OleFileIO:
             return entry.entry_type
         except:
             return False
+
+
+    def getmtime(self, filename):
+        """
+        Return modification time of a stream/storage.
+
+        filename: path of stream/storage in storage tree. (see openstream for
+        syntax)
+        return: None if modification time is null, a python datetime object
+        otherwise (UTC timezone)
+
+        new in version 0.26
+        """
+        sid = self._find(filename)
+        entry = self.direntries[sid]
+        return entry.getmtime()
+
+
+    def getctime(self, filename):
+        """
+        Return creation time of a stream/storage.
+
+        filename: path of stream/storage in storage tree. (see openstream for
+        syntax)
+        return: None if creation time is null, a python datetime object
+        otherwise (UTC timezone)
+
+        new in version 0.26
+        """
+        sid = self._find(filename)
+        entry = self.direntries[sid]
+        return entry.getctime()
 
 
     def exists(self, filename):
@@ -1837,6 +1928,8 @@ class OleFileIO:
         Parse standard properties streams, return an OleMetadata object
         containing all the available metadata.
         (also stored in the metadata attribute of the OleFileIO object)
+
+        new in version 0.25
         """
         self.metadata = OleMetadata()
         self.metadata.parse_properties(self)
@@ -1916,6 +2009,19 @@ Options:
                     else:
                         print 'NOT a stream : type=%d' % st_type
                 print ''
+
+##            for streamname in ole.listdir():
+##                # print name using repr() to convert binary chars to \xNN:
+##                print '-', repr('/'.join(streamname)),'-',
+##                print ole.getmtime(streamname)
+##            print ''
+
+            print 'Modification/Creation times of all directory entries:'
+            for entry in ole.direntries:
+                if entry is not None:
+                    print '- %s: mtime=%s ctime=%s' % (entry.name,
+                        entry.getmtime(), entry.getctime())
+            print ''
 
             # parse and display metadata:
             meta = ole.get_metadata()
