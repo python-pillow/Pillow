@@ -61,7 +61,9 @@ try:
 
 except ImportError as v:
     core = _imaging_not_installed()
-    if str(v)[:20] == "Module use of python" and warnings:
+    if not warnings: # the warnings module is available since Python 2.1
+        raise # raise the original ImportError.
+    elif str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
         # the right version (windows only).  Print a warning, if
         # possible.
@@ -70,8 +72,25 @@ except ImportError as v:
             "of Python; most PIL functions will be disabled",
             RuntimeWarning
             )
-    if str(v).startswith("The _imaging extension") and warnings:
+    elif str(v).startswith("The _imaging extension"):
         warnings.warn(str(v), RuntimeWarning)
+    elif "Symbol not found: _PyUnicodeUCS2_FromString" in str(v):
+        warnings.warn(
+            "The _imaging extension was build for Python with UCS2 support; "
+            "recompile PIL or build Python --without-wide-unicode. "
+            "Most PIL functions will be disabled",
+            RuntimeWarning
+            )
+    elif "Symbol not found: _PyUnicodeUCS4_FromString" in str(v):
+        warnings.warn(
+            "The _imaging extension was build for Python with UCS4 support; "
+            "recompile PIL or build Python --with-wide-unicode. "
+            "Most PIL functions will be disabled",
+            RuntimeWarning
+            )
+    else:
+        # unknown problem. Raise the original exception.
+        raise
 
 try:
     import builtins
