@@ -22,7 +22,7 @@ Main improvements over PIL version of OleFileIO:
 News
 ----
 
-- 2013-07-24 v0.26: added methods to parse stream/storage timestamps, improved listdir to include storages
+- 2013-07-24 v0.26: added methods to parse stream/storage timestamps, improved listdir to include storages, fixed parsing of direntry timestamps
 - 2013-05-27 v0.25: improved metadata extraction, properties parsing and exception handling, fixed [issue #12](https://bitbucket.org/decalage/olefileio_pl/issue/12/error-when-converting-timestamps-in-ole)
 - 2013-05-07 v0.24: new features to extract metadata (get\_metadata method and OleMetadata class), improved getproperties to convert timestamps to Python datetime
 - 2012-10-09: published [python-oletools](http://www.decalage.info/python/oletools), a package of analysis tools based on OleFileIO_PL
