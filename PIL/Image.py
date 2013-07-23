@@ -28,10 +28,7 @@ from __future__ import print_function
 
 from PIL import VERSION, PILLOW_VERSION, _plugins
 
-try:
-    import warnings
-except ImportError:
-    warnings = None
+import warnings
 
 class _imaging_not_installed:
     # module placeholder
@@ -56,22 +53,36 @@ try:
     from PIL import _imaging as core
     if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
          raise ImportError("The _imaging extension was built for another "
-                            " version of Pillow or PIL. Most PIL functions "
-                             " will be disabled ")
+                            " version of Pillow or PIL")
 
 except ImportError as v:
     core = _imaging_not_installed()
-    if str(v)[:20] == "Module use of python" and warnings:
+    # Explanations for ways that we know we might have an import error 
+    if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
         # the right version (windows only).  Print a warning, if
         # possible.
         warnings.warn(
             "The _imaging extension was built for another version "
-            "of Python; most PIL functions will be disabled",
+            "of Python.",
             RuntimeWarning
             )
-    if str(v).startswith("The _imaging extension") and warnings:
+    elif str(v).startswith("The _imaging extension"):
         warnings.warn(str(v), RuntimeWarning)
+    elif "Symbol not found: _PyUnicodeUCS2_FromString" in str(v):
+        warnings.warn(
+            "The _imaging extension was built for Python with UCS2 support; "
+            "recompile PIL or build Python --without-wide-unicode. ",
+            RuntimeWarning
+            )
+    elif "Symbol not found: _PyUnicodeUCS4_FromString" in str(v):
+        warnings.warn(
+            "The _imaging extension was built for Python with UCS4 support; "
+            "recompile PIL or build Python --with-wide-unicode. ",
+            RuntimeWarning
+            )
+    # Fail here anyway. Don't let people run with a mostly broken Pillow.     
+    raise 
 
 try:
     import builtins
