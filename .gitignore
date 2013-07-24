@@ -3,3 +3,5 @@
 build
 dist
 .tox
+*.so
+docs/_build
