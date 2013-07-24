@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Added missing exif tags
+  [freyes]
+
 - Fail on all import errors, fixes #298
   [macfreek, wiredfool]
 
