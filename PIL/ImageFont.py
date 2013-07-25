@@ -261,7 +261,7 @@ def load_path(filename):
     "Load a font file, searching along the Python path."
     for dir in sys.path:
         if isDirectory(dir):
-            if not isinstance(filename, "utf-8"):
+            if not isinstance(filename, str):
                 if bytes is str:
                     filename = filename.encode("utf-8")
                 else:
