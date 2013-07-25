@@ -4,43 +4,46 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
-- Fix missing import os in _util.py
+- Fix for #304: test for `str`, not `"utf-8"`.
+  [mjpieters]
+
+- Fix missing import os in _util.py.
   [mnowotka]
 
-- Added missing exif tags
+- Added missing exif tags.
   [freyes]
 
-- Fail on all import errors, fixes #298
+- Fail on all import errors, fixes #298.
   [macfreek, wiredfool]
 
-- Fixed Windows fallback (wasn't using correct file in Windows fonts)
+- Fixed Windows fallback (wasn't using correct file in Windows fonts).
   [lmollea]
 
-- Moved ImageFile and ImageFileIO comments to docstrings
+- Moved ImageFile and ImageFileIO comments to docstrings.
   [freyes]
 
-- Restore compatibility with ISO C
+- Restore compatibility with ISO C.
   [cgohlke]
 
-- Use correct format character for C int type
+- Use correct format character for C int type.
   [cgohlke]
 
-- Allocate enough memory to hold pointers in encode.c
+- Allocate enough memory to hold pointers in encode.c.
   [cgohlke]
 
 - Fix #279, fillorder double shuffling bug when FillOrder ==2 and decoding using libtiff.
   [wiredfool]
 
-- Moved Image module comments to docstrings
+- Moved Image module comments to docstrings.
   [freyes]
 
-- Add 16-bit TIFF support, fixes #274
+- Add 16-bit TIFF support, fixes #274.
   [wiredfool]
 
-- Ignore high ascii characters in string.whitespace, fixes #272
+- Ignore high ascii characters in string.whitespace, fixes #272.
   [wiredfool]
 
-- Added clean/build to tox to make it behave like travis 
+- Added clean/build to tox to make it behave like travis.
   [freyes]
 
 - Adding support for metadata in webp images.
