@@ -1,3 +1,5 @@
+import os
+
 if bytes is str:
     def isStringType(t):
         return isinstance(t, basestring)
