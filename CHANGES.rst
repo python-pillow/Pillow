@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Fix missing import os in _util.py
+  [mnowotka]
+
 - Added missing exif tags
   [freyes]
 
