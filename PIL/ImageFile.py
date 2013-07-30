@@ -37,6 +37,7 @@ MAXBLOCK = 65536
 SAFEBLOCK = 1024*1024
 
 LOAD_TRUNCATED_IMAGES = False
+IGNORE_DECODING_ERRORS = False
 
 ERRORS = {
     -1: "image buffer overrun error",
@@ -228,7 +229,7 @@ class ImageFile(Image.Image):
 
         self.fp = None # might be shared
 
-        if (not LOAD_TRUNCATED_IMAGES or t == 0) and not self.map and e < 0:
+        if not IGNORE_DECODING_ERRORS and (not LOAD_TRUNCATED_IMAGES or t == 0) and not self.map and e < 0:
             # still raised if decoder fails to return anything
             raise_ioerror(e)
 
