@@ -30,7 +30,6 @@ import re
 #    as an RGB value.
 
 def getrgb(color):
-    # FIXME: add RGBA support
     try:
         rgb = colormap[color]
     except KeyError:
@@ -87,6 +86,14 @@ def getrgb(color):
             int(rgb[1] * 255 + 0.5),
             int(rgb[2] * 255 + 0.5)
             )
+    m = re.match("rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
+    if m:
+        return (
+            int(m.group(1)),
+            int(m.group(2)),
+            int(m.group(3)),
+            int(m.group(4))
+            )
     raise ValueError("unknown color specifier: %r" % color)
 
 def getcolor(color, mode):
@@ -95,8 +102,8 @@ def getcolor(color, mode):
     if mode == "RGB":
         return color
     if mode == "RGBA":
-        r, g, b = color
-        return r, g, b, 255
+        r, g, b, a = color
+        return r, g, b, a
     if Image.getmodebase(mode) == "L":
         r, g, b = color
         return (r*299 + g*587 + b*114)//1000
