@@ -9,8 +9,11 @@ from PIL import ImageColor
 assert_equal((255, 0, 0), ImageColor.getrgb("#f00"))
 assert_equal((255, 0, 0), ImageColor.getrgb("#ff0000"))
 assert_equal((255, 0, 0), ImageColor.getrgb("rgb(255,0,0)"))
+assert_equal((255, 0, 0), ImageColor.getrgb("rgb(255, 0, 0)"))
 assert_equal((255, 0, 0), ImageColor.getrgb("rgb(100%,0%,0%)"))
 assert_equal((255, 0, 0), ImageColor.getrgb("hsl(0, 100%, 50%)"))
+assert_equal((255, 0, 0, 0), ImageColor.getrgb("rgba(255,0,0,0)"))
+assert_equal((255, 0, 0, 0), ImageColor.getrgb("rgba(255, 0, 0, 0)"))
 assert_equal((255, 0, 0), ImageColor.getrgb("red"))
 
 # --------------------------------------------------------------------
