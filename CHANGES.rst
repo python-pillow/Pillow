@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Add RGBA support to ImageColor
+  [yoavweiss]
+
 - Fix for #304: test for `str`, not `"utf-8"`.
   [mjpieters]
 
