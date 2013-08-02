@@ -54,7 +54,6 @@ class GifImageFile(ImageFile.ImageFile):
 
     format = "GIF"
     format_description = "Compuserve GIF"
-
     global_palette = None
 
     def data(self):
@@ -71,13 +70,9 @@ class GifImageFile(ImageFile.ImageFile):
             raise SyntaxError("not a GIF file")
 
         self.info["version"] = s[:6]
-
         self.size = i16(s[6:]), i16(s[8:])
-
         self.tile = []
-
         flags = i8(s[10])
-
         bits = (flags & 7) + 1
 
         if flags & 128:
@@ -122,7 +117,8 @@ class GifImageFile(ImageFile.ImageFile):
             self.im = self.dispose
             self.dispose = None
 
-        self.palette = self.global_palette
+        from copy import copy
+        self.palette = copy(self.global_palette)
 
         while True:
 
@@ -252,6 +248,9 @@ def _save(im, fp, filename):
         palette = im.encoderinfo["palette"]
     except KeyError:
         palette = None
+        if im.palette:
+            # use existing if possible
+            palette = im.palette.getdata()[1]
 
     header, usedPaletteColors = getheader(imOut, palette, im.encoderinfo)
     for s in header:
