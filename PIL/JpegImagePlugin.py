@@ -561,11 +561,11 @@ def _save(im, fp, filename):
     # is a value that's been used in a django patch.
     # https://github.com/jdriscoll/django-imagekit/issues/50
     bufsize=0
-    if "optimize" in info:
+    if "optimize" in info or "progressive" in info or "progression" in info:
         bufsize = im.size[0]*im.size[1]
 
     # The exif info needs to be written as one block, + APP1, + one spare byte.
-	# Ensure that our buffer is big enough
+    # Ensure that our buffer is big enough
     bufsize = max(ImageFile.MAXBLOCK, bufsize, len(info.get("exif",b"")) + 5 )
 
     ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)], bufsize)
