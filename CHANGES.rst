@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Fix IOError when saving progressive JPEGs.
+  [e98cuenc]
+
 - Add RGBA support to ImageColor
   [yoavweiss]
 
