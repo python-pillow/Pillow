@@ -211,7 +211,6 @@ class pil_build_ext(build_ext):
                 platinclude_path =\
                     platinclude_path.replace(prefix, sys.real_prefix)
 
-            # from IPython import embed; embed()
             _add_directory(include_dirs, platinclude_path)
 
         #
