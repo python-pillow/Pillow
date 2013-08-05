@@ -211,7 +211,7 @@ class pil_build_ext(build_ext):
                 platinclude_path =\
                     platinclude_path.replace(prefix, sys.real_prefix)
 
-            _add_directory(include_dirs, platinclude_path)
+                _add_directory(include_dirs, platinclude_path)
 
         #
         # locate tkinter libraries
