@@ -199,7 +199,20 @@ class pil_build_ext(build_ext):
         prefix = sysconfig.get_config_var("prefix")
         if prefix:
             _add_directory(library_dirs, os.path.join(prefix, "lib"))
-            _add_directory(include_dirs, os.path.join(prefix, "include"))
+
+            include_path = sysconfig.get_python_inc()
+            _add_directory(include_dirs, include_path)
+
+            platinclude_path = sysconfig.get_python_inc(plat_specific=1)
+            if platinclude_path != include_path \
+                and not platinclude_path.startswith(sys.real_prefix):
+                # bug in virtualenv prevents automatic determination of the
+                # correct platinclude directory. Do it manually.
+                platinclude_path =\
+                    platinclude_path.replace(prefix, sys.real_prefix)
+
+            # from IPython import embed; embed()
+            _add_directory(include_dirs, platinclude_path)
 
         #
         # locate tkinter libraries
