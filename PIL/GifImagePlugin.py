@@ -357,7 +357,10 @@ def getheader(im, palette=None, info=None):
         else:
             sourcePalette = im.im.getpalette("RGB")[:768]
     else: # L-mode
-        sourcePalette = bytearray([i//3 for i in range(768)])
+        if palette and isinstance(palette, bytes):
+            sourcePalette = palette[:768]
+        else:
+            sourcePalette = bytearray([i//3 for i in range(768)])
 
     usedPaletteColors = paletteBytes = None
 
@@ -373,26 +376,20 @@ def getheader(im, palette=None, info=None):
 
         # create the new palette if not every color is used
         if len(usedPaletteColors) < 256:
-            paletteBytes = b"";
+            paletteBytes = b""
+            newPositions = {}
 
-            if im.mode == "P":
-                # pick only the used colors from the palette
-                for i in usedPaletteColors:
-                    paletteBytes += sourcePalette[i*3:i*3+3]
-            else:
-                # add only the used grayscales to the palette
-                for i in usedPaletteColors:
-                    paletteBytes += o8(i)*3
+            i = 0
+            # pick only the used colors from the palette
+            for oldPosition in usedPaletteColors:
+                paletteBytes += sourcePalette[oldPosition*3:oldPosition*3+3]
+                newPositions[oldPosition] = i
+                i += 1
 
-            # TODO improve this, maybe add numpy support
             # replace the palette color id of all pixel with the new id
             imageBytes = bytearray(im.tobytes())
             for i in range(len(imageBytes)):
-                for newI in range(len(usedPaletteColors)):
-                    if imageBytes[i] == usedPaletteColors[newI]:
-                        imageBytes[i] = newI
-                        break
-
+                imageBytes[i] = newPositions[imageBytes[i]]
             im.frombytes(bytes(imageBytes))
 
     if not paletteBytes:
