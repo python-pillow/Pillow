@@ -398,7 +398,9 @@ class ImageFileDirectory(collections.MutableMapping):
                 data = ifd[8:8+size]
 
             if len(data) != size:
-                raise IOError("not enough data")
+                if Image.DEBUG:
+                    print("- expecting to read %d bytes but only got %d. skipping tag %s" % (size, len(data), tag))
+                continue
 
             self.tagdata[tag] = typ, data
             self.tagtype[tag] = typ
