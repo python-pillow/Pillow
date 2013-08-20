@@ -305,18 +305,28 @@ class PngStream(ChunkStream):
 
         # compressed text
         s = ImageFile._safe_read(self.fp, len)
-        k, v = s.split(b"\0", 1)
-        comp_method = i8(v[0])
+        try:
+            k, v = s.split(b"\0", 1)
+        except ValueError:
+            k = s; v = b""
+        if v:
+            comp_method = i8(v[0])
+        else:
+            comp_method = 0
         if comp_method != 0:
             raise SyntaxError("Unknown compression method %s in zTXt chunk" % comp_method)
         import zlib
-        v = zlib.decompress(v[1:])
+        try:
+            v = zlib.decompress(v[1:])
+        except zlib.error:
+            v = b""
 
-        if bytes is not str:
-            k = k.decode('latin-1', 'strict')
-            v = v.decode('latin-1', 'replace')
+        if k:
+            if bytes is not str:
+                k = k.decode('latin-1', 'strict')
+                v = v.decode('latin-1', 'replace')
 
-        self.im_info[k] = self.im_text[k] = v
+            self.im_info[k] = self.im_text[k] = v
         return s
 
 # --------------------------------------------------------------------

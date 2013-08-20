@@ -2,6 +2,7 @@ from tester import *
 
 from PIL import Image
 from PIL import PngImagePlugin
+import zlib
 
 codecs = dir(Image.core)
 
@@ -98,6 +99,27 @@ def test_bad_text():
 
     im = load(HEAD + chunk(b'tEXt', b'spam\0egg\0') + TAIL)
     assert_equal(im.info,  {'spam': 'egg\x00'})
+
+def test_bad_ztxt():
+    # Test reading malformed zTXt chunks (python-imaging/Pillow#318)
+
+    im = load(HEAD + chunk(b'zTXt') + TAIL)
+    assert_equal(im.info, {})
+
+    im = load(HEAD + chunk(b'zTXt', b'spam') + TAIL)
+    assert_equal(im.info, {'spam': ''})
+
+    im = load(HEAD + chunk(b'zTXt', b'spam\0') + TAIL)
+    assert_equal(im.info, {'spam': ''})
+
+    im = load(HEAD + chunk(b'zTXt', b'spam\0\0') + TAIL)
+    assert_equal(im.info, {'spam': ''})
+
+    im = load(HEAD + chunk(b'zTXt', b'spam\0\0' + zlib.compress(b'egg')[0]) + TAIL)
+    assert_equal(im.info, {'spam': ''})
+
+    im = load(HEAD + chunk(b'zTXt', b'spam\0\0' + zlib.compress(b'egg')) + TAIL)
+    assert_equal(im.info,  {'spam': 'egg'})
 
 def test_interlace():
 
