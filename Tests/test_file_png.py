@@ -115,7 +115,7 @@ def test_bad_ztxt():
     im = load(HEAD + chunk(b'zTXt', b'spam\0\0') + TAIL)
     assert_equal(im.info, {'spam': ''})
 
-    im = load(HEAD + chunk(b'zTXt', b'spam\0\0' + zlib.compress(b'egg')[0]) + TAIL)
+    im = load(HEAD + chunk(b'zTXt', b'spam\0\0' + zlib.compress(b'egg')[:1]) + TAIL)
     assert_equal(im.info, {'spam': ''})
 
     im = load(HEAD + chunk(b'zTXt', b'spam\0\0' + zlib.compress(b'egg')) + TAIL)
