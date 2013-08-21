@@ -47,6 +47,7 @@ from PIL import Image, ImageFile
 from PIL import ImagePalette
 from PIL import _binary
 
+import warnings
 import array, sys
 import collections
 import itertools
@@ -398,7 +399,8 @@ class ImageFileDirectory(collections.MutableMapping):
                 data = ifd[8:8+size]
 
             if len(data) != size:
-                raise IOError("not enough data")
+                warnings.warn("Possibly corrupt EXIF data.  Expecting to read %d bytes but only got %d. Skipping tag %s" % (size, len(data), tag))
+                continue
 
             self.tagdata[tag] = typ, data
             self.tagtype[tag] = typ
