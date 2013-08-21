@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Be more tolerant of tag read failures
+  [ericbuehl]
+
 - Fix for #318: Catch truncated zTXt errors.
   [vytisb]
 
