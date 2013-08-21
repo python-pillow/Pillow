@@ -567,6 +567,7 @@ setup(
         "Programming Language :: Python :: 3.3", ],
     cmdclass={"build_ext": pil_build_ext},
     ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
+    include_package_data=True,
     packages=find_packages(),
     scripts=glob.glob("Scripts/pil*.py"),
     keywords=["Imaging",],

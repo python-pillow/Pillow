@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Fix for #318: Catch truncated zTXt errors.
+  [vytisb]
+
 - Fix IOError when saving progressive JPEGs.
   [e98cuenc]
 
