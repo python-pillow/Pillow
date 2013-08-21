@@ -110,6 +110,8 @@ Some (most?) of Pillow's features require external libraries.
 
   * Pillow has been tested with version **0.1.3**, which does not read transparent webp files. Version **0.3.0** supports transparency.
 
+* **tcl/tk** provides support for tkinter bitmap and photo images. 
+
 If the prerequisites are installed in the standard library locations for your machine (e.g. /usr or /usr/local), no additional configuration should be required. If they are installed in a non-standard location, you may need to configure setuptools to use those locations (i.e. by editing setup.py and/or setup.cfg). Once you have installed the prerequisites, run::
 
     $ pip install Pillow
@@ -130,11 +132,11 @@ Or for Python 3::
 
 Prerequisites are installed on **Ubuntu 10.04 LTS** with::
 
-    $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev
+    $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev tcl8.5-dev tk8.5-dev
 
 Prerequisites are installed with on **Ubuntu 12.04 LTS** with ::
 
-    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev
+    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev tcl8.5-dev tk8.5-dev
 
 Mac OS X
 ++++++++
