@@ -134,7 +134,7 @@ Prerequisites are installed on **Ubuntu 10.04 LTS** with::
 
     $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev libfreetype6-dev liblcms1-dev tcl8.5-dev tk8.5-dev
 
-Prerequisites are installed with on **Ubuntu 12.04 LTS** with ::
+Prerequisites are installed with on **Ubuntu 12.04 LTS** or **Raspian Wheezy 7.0** with::
 
     $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev tcl8.5-dev tk8.5-dev
 
