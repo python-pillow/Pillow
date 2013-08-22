@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Fix Issue #312 + gif optimize improvement
+  [d-schmidt]
+
 - Be more tolerant of tag read failures
   [ericbuehl]
 
