@@ -499,26 +499,24 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 
         #
         # attempt to minimize storage requirements for palette images
-
         if "bits" in im.encoderinfo:
-
             # number of bits specified by user
-            n = 1 << im.encoderinfo["bits"]
-
+            colors = 1 << im.encoderinfo["bits"]
         else:
-
             # check palette contents
-            n = 256 # FIXME
+            if im.palette:
+                colors = len(im.palette.getdata()[1])//3
+            else:
+                colors = 256
 
-        if n <= 2:
+        if colors <= 2:
             bits = 1
-        elif n <= 4:
+        elif colors <= 4:
             bits = 2
-        elif n <= 16:
+        elif colors <= 16:
             bits = 4
         else:
             bits = 8
-
         if bits != 8:
             mode = "%s;%d" % (mode, bits)
 
@@ -555,8 +553,11 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
           b'\0')                                # 12: interlace flag
 
     if im.mode == "P":
-        palette_bytes = (2 ** bits) * 3
-        chunk(fp, b"PLTE", im.im.getpalette("RGB")[:palette_bytes])
+        palette_byte_number = (2 ** bits) * 3
+        palette_bytes = im.im.getpalette("RGB")[:palette_byte_number]
+        while len(palette_bytes) < palette_byte_number:
+            palette_bytes += b'\0'
+        chunk(fp, b"PLTE", palette_bytes)
 
     if "transparency" in im.encoderinfo:
         if im.mode == "P":
