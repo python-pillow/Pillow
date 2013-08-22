@@ -54,7 +54,6 @@ class GifImageFile(ImageFile.ImageFile):
 
     format = "GIF"
     format_description = "Compuserve GIF"
-
     global_palette = None
 
     def data(self):
@@ -71,13 +70,9 @@ class GifImageFile(ImageFile.ImageFile):
             raise SyntaxError("not a GIF file")
 
         self.info["version"] = s[:6]
-
         self.size = i16(s[6:]), i16(s[8:])
-
         self.tile = []
-
         flags = i8(s[10])
-
         bits = (flags & 7) + 1
 
         if flags & 128:
@@ -122,7 +117,8 @@ class GifImageFile(ImageFile.ImageFile):
             self.im = self.dispose
             self.dispose = None
 
-        self.palette = self.global_palette
+        from copy import copy
+        self.palette = copy(self.global_palette)
 
         while True:
 
@@ -252,6 +248,9 @@ def _save(im, fp, filename):
         palette = im.encoderinfo["palette"]
     except KeyError:
         palette = None
+        if im.palette:
+            # use existing if possible
+            palette = im.palette.getdata()[1]
 
     header, usedPaletteColors = getheader(imOut, palette, im.encoderinfo)
     for s in header:
@@ -344,70 +343,68 @@ def getheader(im, palette=None, info=None):
 
     optimize = info and info.get("optimize", 0)
 
-    # start of header
+    # Header Block
+    # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
     header = [
-        b"GIF87a" +             # magic
-        o16(im.size[0]) +       # size
-        o16(im.size[1])
+        b"GIF87a" +             # signature + version
+        o16(im.size[0]) +       # canvas width
+        o16(im.size[1])         # canvas height
     ]
 
-    # if the user adds a palette, use it
-    usedPaletteColors = None
+    if im.mode == "P":
+        if palette and isinstance(palette, bytes):
+            sourcePalette = palette[:768]
+        else:
+            sourcePalette = im.im.getpalette("RGB")[:768]
+    else: # L-mode
+        if palette and isinstance(palette, bytes):
+            sourcePalette = palette[:768]
+        else:
+            sourcePalette = bytearray([i//3 for i in range(768)])
 
-    if palette is not None and isinstance(palette, bytes):
-        paletteBytes = palette[:768]
-    else:
+    usedPaletteColors = paletteBytes = None
+
+    if optimize:
         usedPaletteColors = []
 
-        if optimize:
-            # minimize color palette if wanted
+        # check which colors are used
+        i = 0
+        for count in im.histogram():
+            if count:
+                usedPaletteColors.append(i)
+            i += 1
+
+        # create the new palette if not every color is used
+        if len(usedPaletteColors) < 256:
+            paletteBytes = b""
+            newPositions = {}
+
             i = 0
-            for count in im.histogram():
-                if count:
-                    usedPaletteColors.append(i)
+            # pick only the used colors from the palette
+            for oldPosition in usedPaletteColors:
+                paletteBytes += sourcePalette[oldPosition*3:oldPosition*3+3]
+                newPositions[oldPosition] = i
                 i += 1
 
-        countUsedPaletteColors = len(usedPaletteColors)
-
-        # create the global palette
-        if im.mode == "P":
-            # colour palette
-            if countUsedPaletteColors > 0 and countUsedPaletteColors < 256:
-                paletteBytes = b"";
-                # pick only the used colors from the palette
-                for i in usedPaletteColors:
-                    paletteBytes += im.im.getpalette("RGB")[i*3:i*3+3]
-            else :
-                paletteBytes = im.im.getpalette("RGB")[:768]
-        else:
-            # greyscale
-            if countUsedPaletteColors > 0 and countUsedPaletteColors < 256:
-                paletteBytes = b"";
-                # add only the used grayscales to the palette
-                for i in usedPaletteColors:
-                    paletteBytes += o8(i)*3
-            else :
-                paletteBytes = bytearray([i//3 for i in range(768)])
-
-        # TODO improve this, maybe add numpy support
-        # replace the palette color id of all pixel with the new id
-        if countUsedPaletteColors > 0 and countUsedPaletteColors < 256:
+            # replace the palette color id of all pixel with the new id
             imageBytes = bytearray(im.tobytes())
             for i in range(len(imageBytes)):
-                for newI in range(countUsedPaletteColors):
-                    if imageBytes[i] == usedPaletteColors[newI]:
-                        imageBytes[i] = newI
-                        break
-
+                imageBytes[i] = newPositions[imageBytes[i]]
             im.frombytes(bytes(imageBytes))
 
+    if not paletteBytes:
+        paletteBytes = sourcePalette
+
+    # Logical Screen Descriptor
     # calculate the palette size for the header
     import math
     colorTableSize = int(math.ceil(math.log(len(paletteBytes)//3, 2)))-1
     if colorTableSize < 0: colorTableSize = 0
-    header.append(o8(colorTableSize + 128)) # size of global color table + global color table flag
-    header.append(o8(0) + o8(0)) # background + reserved/aspect
-    # end of screen descriptor header
+    # size of global color table + global color table flag
+    header.append(o8(colorTableSize + 128))
+    # background + reserved/aspect
+    header.append(o8(0) + o8(0))
+    # end of Logical Screen Descriptor
 
     # add the missing amount of bytes
     # the palette has to be 2<<n in size
@@ -415,7 +412,7 @@ def getheader(im, palette=None, info=None):
     if actualTargetSizeDiff > 0:
         paletteBytes += o8(0) * 3 * actualTargetSizeDiff
 
-    # global color palette
+    # Header + Logical Screen Descriptor + Global Color Table
     header.append(paletteBytes)
     return header, usedPaletteColors
 
