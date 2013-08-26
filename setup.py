@@ -196,6 +196,12 @@ class pil_build_ext(build_ext):
         _add_directory(library_dirs, "/usr/local/lib")
         # FIXME: check /opt/stuff directories here?
 
+        # include, rpath, if set as environment variables:
+        if os.environ.get('C_INCLUDE_PATH'):
+            _add_directory(include_dirs, os.environ.get('C_INCLUDE_PATH'))
+        if os.environ.get('LD_RUN_PATH'):
+            _add_directory(library_dirs, os.environ.get('LD_RUN_PATH'))
+
         prefix = sysconfig.get_config_var("prefix")
         if prefix:
             _add_directory(library_dirs, os.path.join(prefix, "lib"))

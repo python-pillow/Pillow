@@ -4,6 +4,10 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Add respective paths for C_INCLUDE_PATH, LD_RUN_PATH (rpath) to build
+  if specified as environment variables.
+  [seanupton]
+
 - Fix Issue #312 + gif optimize improvement
   [d-schmidt]
 
