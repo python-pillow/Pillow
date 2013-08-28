@@ -287,6 +287,7 @@ static const char* wrong_mode = "unrecognized image mode";
 static const char* wrong_raw_mode = "unrecognized raw mode";
 static const char* outside_image = "image index out of range";
 static const char* outside_palette = "palette index out of range";
+static const char* wrong_palette_size = "invalid palette size";
 static const char* no_palette = "image has no palette";
 static const char* readonly = "image is readonly";
 /* static const char* no_content = "image has no content"; */
@@ -1410,6 +1411,11 @@ _putpalette(ImagingObject* self, PyObject* args)
     unpack = ImagingFindUnpacker("RGB", rawmode, &bits);
     if (!unpack) {
     PyErr_SetString(PyExc_ValueError, wrong_raw_mode);
+    return NULL;
+    }
+
+    if ( palettesize * 8 / bits > 256) {
+    PyErr_SetString(PyExc_ValueError, wrong_palette_size);
     return NULL;
     }
 

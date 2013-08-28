@@ -706,7 +706,7 @@ class Image:
         if self.mode == "L" and mode == "RGBA" and "transparency" in self.info:
             from PIL import ImagePalette
             self.mode = "P"
-            bytePalette = bytes([i//3 for i in range(768)])
+            bytePalette = bytes(bytearray([i//3 for i in range(768)]))
             self.palette = ImagePalette.raw("RGB", bytePalette)
             self.palette.dirty = 1
             self.load()
