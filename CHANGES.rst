@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Fix bytes which should be bytearray
+  [manisandro]
+
 - Add respective paths for C_INCLUDE_PATH, LD_RUN_PATH (rpath) to build
   if specified as environment variables.
   [seanupton]
