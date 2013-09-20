@@ -157,6 +157,9 @@ class FreeTypeFont:
     def getsize(self, text):
         return self.font.getsize(text)[0]
 
+    def getoffset(self, text):
+        return self.font.getsize(text)[1]
+
     def getmask(self, text, mode=""):
         return self.getmask2(text, mode)[0]
 
@@ -183,7 +186,7 @@ class TransposedFont:
         self.orientation = orientation # any 'transpose' argument, or None
 
     def getsize(self, text):
-        w, h = self.font.getsize(text)
+        w, h = self.font.getsize(text)[0]
         if self.orientation in (Image.ROTATE_90, Image.ROTATE_270):
             return h, w
         return w, h
