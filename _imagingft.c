@@ -183,7 +183,7 @@ font_getsize(FontObject* self, PyObject* args)
     int i, x, y_max, y_min;
     FT_ULong ch;
     FT_Face face;
-    int xoffset;
+    int xoffset, yoffset;
     FT_Bool kerning = FT_HAS_KERNING(self->face);
     FT_UInt last_index = 0;
 
@@ -203,7 +203,7 @@ font_getsize(FontObject* self, PyObject* args)
     }
 
     face = NULL;
-    xoffset = 0;
+    xoffset = yoffset = 0;
     y_max = y_min = 0;
 
     for (x = i = 0; font_getchar(string, i, &ch); i++) {
@@ -231,7 +231,11 @@ font_getsize(FontObject* self, PyObject* args)
             y_max = bbox.yMax;
         if (bbox.yMin < y_min)
             y_min = bbox.yMin;
-
+            
+        /* find max distance of baseline from top */
+        if (face->glyph->metrics.horiBearingY > yoffset)
+            yoffset = face->glyph->metrics.horiBearingY;
+            
         last_index = index;
     }
 
@@ -248,12 +252,15 @@ font_getsize(FontObject* self, PyObject* args)
             face->glyph->metrics.horiBearingX;
         if (offset < 0)
             x -= offset;
+        /* difference between the font ascender and the distance of
+         * the baseline from the top */
+        yoffset = PIXEL(self->face->size->metrics.ascender - yoffset);
     }
 
     return Py_BuildValue(
         "(ii)(ii)",
         PIXEL(x), PIXEL(y_max - y_min),
-        PIXEL(xoffset), 0
+        PIXEL(xoffset), yoffset
         );
 }
 
