@@ -35,7 +35,7 @@ def test_font_with_filelike():
     #shared_bytes = _font_as_bytes()
     #assert_no_exception(lambda: _render(shared_bytes))
     #assert_exception(Exception, lambda: _render(shared_bytes))
-    _clean
+    _clean()
 
 def test_font_with_open_file():
     with open(font_path, 'rb') as f:
@@ -67,3 +67,21 @@ def test_render_equal():
 
     assert_image_equal(img_path, img_filelike)
     _clean()
+
+
+def test_render_multiline():
+    im = Image.new(mode='RGB', size=(300,100))
+    ttf = ImageFont.truetype(font_path, font_size)
+    draw = ImageDraw.Draw(im)
+    line_spacing = draw.textsize('A', font=ttf)[1] + 8
+    lines = ['hey you', 'you are awesome', 'this looks awkward']
+    y = 0
+    for line in lines:
+        draw.text((0, y), line, font=ttf)
+        y += line_spacing
+
+    target = 'Tests/images/multiline_text.png'
+    target_img = Image.open(target)
+
+    assert_image_equal(im, target_img)
+    

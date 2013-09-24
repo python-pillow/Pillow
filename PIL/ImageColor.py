@@ -102,6 +102,8 @@ def getcolor(color, mode):
     if mode == "RGB":
         return color
     if mode == "RGBA":
+        if len(color) == 3:
+          color = (color + (255,))
         r, g, b, a = color
         return r, g, b, a
     if Image.getmodebase(mode) == "L":
