@@ -35,7 +35,7 @@ def test_font_with_filelike():
     #shared_bytes = _font_as_bytes()
     #assert_no_exception(lambda: _render(shared_bytes))
     #assert_exception(Exception, lambda: _render(shared_bytes))
-    _clean
+    _clean()
 
 def test_font_with_open_file():
     with open(font_path, 'rb') as f:
