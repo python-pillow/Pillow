@@ -32,10 +32,10 @@
 typedef struct _ColorBucket{
    /* contains palette index when used for look up cube */
    uint32_t count;
-   uint32_t r;
-   uint32_t g;
-   uint32_t b;
-   uint32_t a;
+   uint64_t r;
+   uint64_t g;
+   uint64_t b;
+   uint64_t a;
 } *ColorBucket;
 
 typedef struct _ColorCube{
@@ -262,7 +262,7 @@ set_lookup_value(const ColorCube cube, const Pixel *p, long value) {
    bucket->count = value;
 }
 
-uint32_t
+uint64_t
 lookup_color(const ColorCube cube, const Pixel *p) {
    ColorBucket bucket = color_bucket_from_cube(cube, p);
    return bucket->count;
