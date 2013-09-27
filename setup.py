@@ -559,7 +559,7 @@ setup(
     long_description=(
         _read('README.rst') + b'\n' +
         _read('CHANGES.rst') + b'\n' +
-        _read('docs/CONTRIBUTORS.txt')).decode('utf-8'),
+        _read('CONTRIBUTORS.rst')).decode('utf-8'),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
     url='http://python-imaging.github.io/',
