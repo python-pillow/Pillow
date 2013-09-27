@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Automatically discover homebrew include/ and lib/ paths on OSX
+  [donspaulding]
+
 - Fix bytes which should be bytearray
   [manisandro]
 
