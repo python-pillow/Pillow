@@ -169,6 +169,12 @@ class pil_build_ext(build_ext):
             # freetype2 ships with X11
             _add_directory(library_dirs, "/usr/X11/lib")
             _add_directory(include_dirs, "/usr/X11/include")
+            # if brew is installed, use its lib and include directories
+            import commands
+            status, homebrew = commands.getstatusoutput('brew --prefix')
+            if status == 0:
+                _add_directory(library_dirs, os.path.join(homebrew, 'lib'))
+                _add_directory(include_dirs, os.path.join(homebrew, 'include'))
 
         elif sys.platform.startswith("linux"):
             for platform_ in (plat.processor(), plat.architecture()[0]):
