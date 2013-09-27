@@ -4,10 +4,10 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
-- Fix issue #329: setup.py: better support for C_INCLUDE_PATH, LD_RUN_PATH, etc.
+- Fix #329: setup.py: better support for C_INCLUDE_PATH, LD_RUN_PATH, etc.
   [nu774]
 
-- Fix issue #328: _imagingcms.c: include windef.h to fix build issue on MSVC
+- Fix #328: _imagingcms.c: include windef.h to fix build issue on MSVC
   [nu774]
 
 - Automatically discover homebrew include/ and lib/ paths on OSX
@@ -118,9 +118,9 @@ Changelog (Pillow)
 
 - Fix for if isinstance(filter, collections.Callable) crash. Python bug #7624 on <2.6.6
 
-- Fix issue #193: remove double typedef declaration.
+- Fix #193: remove double typedef declaration.
 
-- Fix msvc compile errors (issue #230).
+- Fix msvc compile errors (#230).
 
 - Fix rendered characters have been chipped for some TrueType fonts.
 
@@ -181,7 +181,7 @@ Changelog (Pillow)
   [thomasdesvenain]
 
 - Fix opening psd files with RGBA layers when A mode is not of type 65535 but 3.
-  Fixes issue https://github.com/python-imaging/Pillow/issues/3
+  Fixes #3
   [thomasdesvenain]
 
 
