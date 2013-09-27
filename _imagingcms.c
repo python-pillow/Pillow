@@ -33,6 +33,7 @@ http://www.cazabon.com\n\
 #endif
 
 #ifdef WIN32
+#include <windef.h>
 #include <wingdi.h>
 #endif
 
