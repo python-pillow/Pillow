@@ -20,13 +20,13 @@ Changelog (Pillow)
   if specified as environment variables.
   [seanupton]
 
-- Fix Issue #312 + gif optimize improvement
+- Fix #312 + gif optimize improvement
   [d-schmidt]
 
 - Be more tolerant of tag read failures
   [ericbuehl]
 
-- Fix for #318: Catch truncated zTXt errors.
+- Fix #318: Catch truncated zTXt errors.
   [vytisb]
 
 - Fix IOError when saving progressive JPEGs.
@@ -35,7 +35,7 @@ Changelog (Pillow)
 - Add RGBA support to ImageColor
   [yoavweiss]
 
-- Fix for #304: test for `str`, not `"utf-8"`.
+- Fix #304: test for `str`, not `"utf-8"`.
   [mjpieters]
 
 - Fix missing import os in _util.py.
