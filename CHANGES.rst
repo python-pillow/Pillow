@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Add typedef uint64_t for MSVC.
+  [cgohlke]
+
 - Fix #329: setup.py: better support for C_INCLUDE_PATH, LD_RUN_PATH, etc.
   [nu774]
 
