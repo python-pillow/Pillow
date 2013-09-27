@@ -4,7 +4,10 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
-- Fix Issue #328: _imagingcms.c: include windef.h to fix build issue on MSVC
+- Fix issue #329: setup.py: better support for C_INCLUDE_PATH, LD_RUN_PATH, etc.
+  [nu774]
+
+- Fix issue #328: _imagingcms.c: include windef.h to fix build issue on MSVC
   [nu774]
 
 - Automatically discover homebrew include/ and lib/ paths on OSX
