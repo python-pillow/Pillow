@@ -9,10 +9,6 @@ try:
 except:
     skip('webp support not installed')
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 
 def test_read_exif_metadata():
@@ -40,7 +36,7 @@ def test_write_exif_metadata():
     image = Image.open(file_path)
     expected_exif = image.info['exif']
 
-    buffer = StringIO()
+    buffer = BytesIO()
 
     image.save(buffer, "webp", exif=expected_exif)
 
@@ -73,7 +69,7 @@ def test_write_icc_metadata():
     image = Image.open(file_path)
     expected_icc_profile = image.info['icc_profile']
 
-    buffer = StringIO()
+    buffer = BytesIO()
 
     image.save(buffer, "webp", icc_profile=expected_icc_profile)
 
