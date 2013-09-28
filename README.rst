@@ -49,7 +49,7 @@ You can install Pillow with ``pip``::
 
     $ pip install Pillow
 
-Or ``easy_install`` (for installing eggs, as pip does not support them)::
+Or ``easy_install`` (for installing `Python Eggs <http://peak.telecommunity.com/DevCenter/PythonEggs>`_, as pip does not support them)::
 
     $ easy_install Pillow
 
