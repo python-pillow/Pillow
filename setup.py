@@ -1,3 +1,11 @@
+# > pyroma .
+# ------------------------------
+# Checking .
+# Found Pillow
+# ------------------------------
+# Final rating: 10/10
+# Your cheese is so fresh most people think it's a cream: Mascarpone
+# ------------------------------
 from __future__ import print_function
 import glob
 import os
