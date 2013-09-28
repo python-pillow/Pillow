@@ -45,13 +45,19 @@ Installation
 
 .. Note:: PIL and Pillow currently cannot co-exist in the same environment. If you want to use Pillow, please remove PIL first.
 
-TL;DR:
-
-::
+You can install Pillow with ``pip``::
 
     $ pip install Pillow
 
-For more information, please see http://python-imaging.github.io/ or below.
+Or ``easy_install`` (for installing eggs, as pip does not support them)::
+
+    $ easy_install Pillow
+
+Or download the compressed archive from PyPI, extract it, and inside it run::
+
+    $ python setup.py install
+
+For more information, please see http://pillow.readthedocs.org/en/latest/ or below.
 
 Documentation
 -------------
