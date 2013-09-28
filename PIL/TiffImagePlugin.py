@@ -110,6 +110,10 @@ ICCPROFILE = 34675
 EXIFIFD = 34665
 XMP = 700
 
+# https://github.com/fiji/ImageJA/blob/master/src/main/java/ij/io/TiffDecoder.java
+IMAGEJ_META_DATA_BYTE_COUNTS = 50838
+IMAGEJ_META_DATA = 50839
+
 COMPRESSION_INFO = {
     # Compression => pil compression name
     1: "raw",
@@ -178,7 +182,7 @@ OPEN_INFO = {
     (MM, 1, 1, 1, (16,), ()): ("I;16B", "I;16B"),
     (MM, 1, 2, 1, (16,), ()): ("I;16BS", "I;16BS"),
     (MM, 1, 2, 1, (32,), ()): ("I;32BS", "I;32BS"),
-    (MM, 1, 3, 1, (32,), ()): ("F;32BF", "F;32BF"),
+    (MM, 1, 3, 1, (32,), ()): ("F", "F;32BF"),
     (MM, 2, 1, 1, (8,8,8), ()): ("RGB", "RGB"),
     (MM, 2, 1, 2, (8,8,8), ()): ("RGB", "RGB;R"),
     (MM, 2, 1, 1, (8,8,8,8), (0,)): ("RGBX", "RGBX"),
