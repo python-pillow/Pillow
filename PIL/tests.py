@@ -6,7 +6,7 @@ class PillowTests(unittest.TestCase):
     Can we start moving the test suite here?
     """
 
-    def move_test_suite_here(self):
+    def test_suite_should_move_here(self):
         """
         Great idea!
         """
