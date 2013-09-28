@@ -83,8 +83,8 @@ Pillow is a volunteer effort led by Alex Clark. If you can't help with developme
 | Alex Clark (fork author)             | http://gittip.com/aclark4life         |
 +--------------------------------------+---------------------------------------+
 
-Developer
----------
+Developer Notes
+---------------
 
 .. Note:: If there is a binary package for your system, that is the easiest way to install Pillow. Currently we only provide binaries for Windows (via Python eggs).
 
