@@ -587,9 +587,6 @@ setup(
     ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
     include_package_data=True,
     packages=find_packages(),
-    provides=[
-        'PIL'
-    ],
     scripts=glob.glob("Scripts/pil*.py"),
     keywords=["Imaging",],
     license='Standard PIL License',
