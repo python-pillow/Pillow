@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Fix #251 and #326: circumvent classification of pngtest_bad.png as malware
+  [cgohlke]
+
 - Add typedef uint64_t for MSVC.
   [cgohlke]
 
