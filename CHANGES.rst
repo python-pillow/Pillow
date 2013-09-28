@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Partial fix for #290: Add preliminary support for TIFF tags.
+  [wiredfool]
+
 - Fix #251 and #326: circumvent classification of pngtest_bad.png as malware
   [cgohlke]
 
