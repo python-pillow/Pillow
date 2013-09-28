@@ -74,7 +74,7 @@ If you don't want to help with development, you can help us financially. Your do
 
 .. Note:: New contributors: please add your name (and donation preference) here and send a pull request.
 
-Pillow is a (labor of love) volunteer effort led by Alex Clark. Any contributor interested in receiving donations for their Pillow contributions may add their name (and donation preference) here.
+Pillow is a volunteer effort led by Alex Clark. Any contributor interested in receiving donations for their Pillow contributions may add their name and donation preference here.
 
 +--------------------------------------+---------------------------------------+
 | **Developer**                        | **Preference**                        |
