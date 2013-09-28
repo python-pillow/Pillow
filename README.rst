@@ -79,7 +79,7 @@ PIL needs you! Please help us maintain the Python Imaging Library here:
 Financial
 ~~~~~~~~~
 
-Pillow is a volunteer effort led by Alex Clark. If you can't help with development, you can help us financially; your assistance is very much appreciated!
+Pillow is a volunteer effort led by Alex Clark. If you can't help with development, please help us financially; your assistance is very much needed and appreciated!
 
 .. Note:: Contributors: please add your name and donation preference here. 
 
