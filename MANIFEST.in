@@ -19,3 +19,6 @@ recursive-include docs *.txt *.html *.rst *.css *.py README CHANGES CONTENTS Mak
 recursive-include libImaging *.c *.h
 recursive-include Tk *.c *.txt
 recursive-include Sane *.c *.txt CHANGES README *.py
+include .travis.yml
+recursive-include docs *.gitignore
+include .gitattributes
