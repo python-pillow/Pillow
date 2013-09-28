@@ -1,24 +1,24 @@
 exclude .hgignore
 exclude .hgtags
 exclude BUILDME.bat
-exclude make-manifest.py
 exclude SHIP
 exclude SHIP.bat
-include *.rst
-include *.c
-include *.h
-include selftest.py tox.ini
-include COPYING
-recursive-include Tests *.py *.txt
+exclude make-manifest.py
+graft Images
 graft Tests/fonts
 graft Tests/icc
 graft Tests/images
+include *.c
+include *.h
+include *.rst
+include .gitattributes
+include .travis.yml
+include COPYING
+include selftest.py tox.ini
+recursive-include Sane *.c *.txt CHANGES README *.py
 recursive-include Scripts *.py README
-graft Images
+recursive-include Tests *.py *.txt
+recursive-include Tk *.c *.txt
+recursive-include docs *.gitignore
 recursive-include docs *.txt *.html *.rst *.css *.py README CHANGES CONTENTS Makefile make.bat BUILDME LICENSE COPYING
 recursive-include libImaging *.c *.h
-recursive-include Tk *.c *.txt
-recursive-include Sane *.c *.txt CHANGES README *.py
-include .travis.yml
-recursive-include docs *.gitignore
-include .gitattributes
