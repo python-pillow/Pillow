@@ -24,7 +24,10 @@ from PIL import Image, ImageFile
 #
 # --------------------------------------------------------------------
 
-b_whitespace = string.whitespace.encode('ascii','ignore')
+import locale
+locale_name,locale_id = locale.getlocale()
+b_whitespace = string.whitespace.decode(locale_id)
+b_whitespace = b_whitespace.encode('ascii','ignore')
 
 MODES = {
     # standard
