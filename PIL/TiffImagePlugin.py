@@ -293,6 +293,7 @@ class ImageFileDirectory(collections.MutableMapping):
 
     def __setitem__(self, tag, value):
         if not isinstance(value, tuple):
+            # UNDONE -- this should probably be type, value
             value = (value,)
         self.tags[tag] = value
 
@@ -446,7 +447,10 @@ class ImageFileDirectory(collections.MutableMapping):
 
             if typ == 1:
                 # byte data
-                data = value
+                if isinstance(value, tuple):
+                    data = value = value[-1]
+                else:
+                    data = value
             elif typ == 7:
                 # untyped data
                 data = value = b"".join(value)
@@ -493,6 +497,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 count = len(value)
                 if typ == 5:
                     count = count // 2        # adjust for rational data field
+
                 append((tag, typ, count, o32(offset), data))
                 offset = offset + len(data)
                 if offset & 1:
@@ -931,6 +936,13 @@ def _save(im, fp, filename):
         for key in (RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION):
             if key in im.tag.tagdata:
                 ifd[key] = im.tag.tagdata.get(key)
+
+        info = im.encoderinfo.get("tiffinfo",[])
+        print("info %s "% info)
+        for key in info:
+            if key in im.tag:
+                ifd[key] = im.tag.get(key)
+                print ("added %s" %key)
         # preserve some more tags from original TIFF image file
         # -- 2008-06-06 Florian Hoech
         ifd.tagtype = im.tag.tagtype
@@ -941,6 +953,7 @@ def _save(im, fp, filename):
         # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
         if "icc_profile" in im.info:
             ifd[ICCPROFILE] = im.info["icc_profile"]
+            
     if "description" in im.encoderinfo:
         ifd[IMAGEDESCRIPTION] = im.encoderinfo["description"]
     if "resolution" in im.encoderinfo:
