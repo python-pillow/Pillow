@@ -40,7 +40,10 @@ class WebPImageFile(ImageFile.ImageFile):
 
     def _getexif(self):
         from PIL.JpegImagePlugin import JpegImageFile
-        return JpegImageFile._getexif.im_func(self)
+        try:
+            return JpegImageFile._getexif.im_func(self)
+        except AttributeError:
+            return JpegImageFile._getexif(self)
 
 
 def _save(im, fp, filename):
