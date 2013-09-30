@@ -56,9 +56,19 @@ def test_numpy_to_image():
     assert_image(to_image(numpy.uint8, 4), "RGBA", (10, 10))
 
 
-# based on an erring example at http://is.gd/6F0esS
+# based on an erring example at http://is.gd/6F0esS  (which resolves to)
+# http://stackoverflow.com/questions/10854903/what-is-causing-dimension-dependent-attributeerror-in-pil-fromarray-function
 def test_3d_array():
     a = numpy.ones((10, 10, 10), dtype=numpy.uint8)
     assert_image(Image.fromarray(a[1, :, :]), "L", (10, 10))
     assert_image(Image.fromarray(a[:, 1, :]), "L", (10, 10))
     assert_image(Image.fromarray(a[:, :, 1]), "L", (10, 10))
+
+
+def test_16bit():
+    img = Image.open('Tests/images/12bit.cropped.tif')
+    px = img.load()
+    np_img = numpy.array(img)
+    assert_equal(np_img.shape, (64,64))
+    assert_equal(px[1,1],np_img[1,1])
+    
