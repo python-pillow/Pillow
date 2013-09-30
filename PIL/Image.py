@@ -224,6 +224,18 @@ _MODE_CONV = {
     "RGBA": ('|u1', 4),
     "CMYK": ('|u1', 4),
     "YCbCr": ('|u1', 3),
+    "I;16": ('=u2', None),
+    "I;16B": ('>u2', None),
+    "I;16L": ('<u2', None),
+    "I;16S": ('=i2', None),
+    "I;16BS": ('>i2', None),
+    "I;16LS": ('<i2', None),
+    "I;32": ('=u4', None),
+    "I;32B": ('>u4', None),
+    "I;32L": ('<u4', None),
+    "I;32S": ('=i4', None),
+    "I;32BS": ('>i4', None),
+    "I;32LS": ('<i4', None),
 }
 
 def _conv_type_shape(im):
