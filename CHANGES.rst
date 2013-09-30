@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Fix #254: Bug in image transformations resulting from uninitialized memory
+  [nikmolnar]
+
 - Fix for encoding of b_whitespace, similar to closed issue #272
   [mhogg] 
 
