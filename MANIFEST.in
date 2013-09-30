@@ -14,6 +14,7 @@ include *.rst
 include .gitattributes
 include .travis.yml
 include COPYING
+include Makefile
 include selftest.py tox.ini
 recursive-include Sane *.c *.txt CHANGES README *.py
 recursive-include Scripts *.py README
