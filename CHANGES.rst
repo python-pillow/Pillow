@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.2.0 (2013-10-01)
 ------------------
 
+- Fix #273: Add numpy array interface support for 16 and 32 bit integer modes
+  [cgohlke]
+
 - Partial fix for #290: Add preliminary support for TIFF tags.
   [wiredfool]
 
