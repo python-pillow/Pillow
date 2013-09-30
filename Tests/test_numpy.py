@@ -62,3 +62,12 @@ def test_3d_array():
     assert_image(Image.fromarray(a[1, :, :]), "L", (10, 10))
     assert_image(Image.fromarray(a[:, 1, :]), "L", (10, 10))
     assert_image(Image.fromarray(a[:, :, 1]), "L", (10, 10))
+
+
+def test_16bit():
+    img = Image.open('Tests/images/12bit.cropped.tif')
+    px = img.load()
+    np_img = numpy.array(img)
+    assert_equal(np_img.shape, (64,64))
+    assert_equal(px[1,1],np_img[1,1])
+    
