@@ -36,6 +36,7 @@
 
 
 #include "Imaging.h"
+#include <string.h>
 
 
 int ImagingNewCount = 0;
@@ -333,6 +334,7 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
     im->block = (char *) malloc(bytes);
 
     if (im->block) {
+        memset(im->block, 0, bytes);
 
 	for (y = i = 0; y < im->ysize; y++) {
 	    im->image[y] = im->block + i;
