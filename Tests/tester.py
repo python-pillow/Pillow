@@ -67,6 +67,19 @@ def assert_equal(a, b, msg=None):
     else:
         failure(msg or "got %r, expected %r" % (a, b))
 
+def assert_deep_equal(a, b, msg=None):
+    try:
+        if len(a) == len(b):
+            if all([x==y for x,y in zip(a,b)]):
+                success()
+            else:
+                failure(msg or "got %s, expected %s" % (a,b))
+        else:
+            failure(msg or "got length %s, expected %s" % (len(a), len(b)))                 
+    except:
+        assert_equal(a,b,msg)
+
+
 def assert_match(v, pattern, msg=None):
     import re
     if re.match(pattern, v):
