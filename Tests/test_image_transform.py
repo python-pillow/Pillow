@@ -41,7 +41,7 @@ def test_mesh():
                                  w,h,w,0))], # ul -> ccw around quad
                                Image.BILINEAR)
 
-    transformed.save('transformed.png')
+    #transformed.save('transformed.png')
 
     scaled = im.resize((w//2, h//2), Image.BILINEAR)
 
