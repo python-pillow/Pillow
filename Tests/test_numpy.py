@@ -2,6 +2,7 @@ from tester import *
 
 from PIL import Image
 import struct
+import math
 
 try:
     import site
@@ -69,8 +70,8 @@ def test_3d_array():
 def _test_img_equals_nparray(img, np):
     assert_equal(img.size, np.shape[0:2])
     px = img.load()
-    for x in xrange(0, img.size[0], img.size[0]/10):
-        for y in xrange(0, img.size[1],  img.size[1]/10):
+    for x in range(0, img.size[0], math.floor(img.size[0]/10)):
+        for y in range(0, img.size[1], math.floor(img.size[1]/10)):
             assert_deep_equal(px[x,y], np[y,x])
 
 
