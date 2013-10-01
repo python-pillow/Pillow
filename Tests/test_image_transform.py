@@ -41,6 +41,8 @@ def test_mesh():
                                  w,h,w,0))], # ul -> ccw around quad
                                Image.BILINEAR)
 
+    transformed.save('transformed.png')
+
     scaled = im.resize((w/2, h/2), Image.BILINEAR)
 
     checker = Image.new('RGBA', im.size)
@@ -51,8 +53,30 @@ def test_mesh():
 
     # now, check to see that the extra area is (0,0,0,0)
     blank = Image.new('RGBA', (w/2,h/2), (0,0,0,0))
-    
+
     assert_image_equal(blank, transformed.crop((w/2,0,w,h/2)))
     assert_image_equal(blank, transformed.crop((0,h/2,w/2,h)))
 
 
+def test_blank_fill():
+    # attempting to hit
+    # https://github.com/python-imaging/Pillow/issues/254 reported
+    #
+    # issue is that transforms with transparent overflow area
+    # contained junk from previous images, especially on systems with
+    # constrained memory. So, attempt to fill up memory with a
+    # pattern, free it, and then run the mesh test again. Using a 1Mp
+    # image with 4 bands, for 4 megs of data allocated, x 64. OMM (64
+    # bit 12.04 VM with 512 megs available, this fails with Pillow <
+    # a0eaf06cc5f62a6fb6de556989ac1014ff3348ea
+    #
+    # Running by default, but I'd totally understand not doing it in
+    # the future
+    
+    foo = [Image.new('RGBA',(1024,1024), (a,a,a,a))
+             for a in range(1,65)]   
+
+    # Yeah. Watch some JIT optimize this out. 
+    foo = None
+
+    test_mesh()
