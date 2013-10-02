@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+2.2.1 (2013-10-02)
+------------------
+
+- Fix #356: Error installing Pillow 2.2.0 on Mac OS X (due to hard dep on brew)
+  [wiredfool]
+
 2.2.0 (2013-10-02)
 ------------------
 
