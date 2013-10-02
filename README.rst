@@ -129,7 +129,7 @@ Platform-specific instructions
 Linux
 +++++
 
-**We don't currently provide binaries for Linux.** If you didn't build Python from source, make sure you have Python's development libraries installed. In Debian or Ubuntu::
+**We do not provide binaries for Linux.** If you didn't build Python from source, make sure you have Python's development libraries installed. In Debian or Ubuntu::
 
     $ sudo apt-get install python-dev python-setuptools
 
@@ -148,7 +148,7 @@ Prerequisites are installed with on **Ubuntu 12.04 LTS** or **Raspian Wheezy 7.0
 Mac OS X
 ++++++++
 
-**We don't currently provide binaries for OS X.** So you'll need XCode to install Pillow. (XCode 4.2 on 10.6 will work with the Official Python binary distribution. Otherwise, use whatever XCode you used to compile Python.)
+**We do not provide binaries for OS X.** So you'll need XCode to install Pillow. (XCode 4.2 on 10.6 will work with the Official Python binary distribution. Otherwise, use whatever XCode you used to compile Python.)
 
 The easiest way to install the prerequisites is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run::
 
@@ -161,11 +161,25 @@ If you've built your own Python, then you should be able to install Pillow using
 Windows
 +++++++
 
-.. Note:: Since pip does not support eggs we use easy_install instead.
+We provide binaries for Windows in the form of Python Eggs and Python Wheels.
+
+Python Eggs
+^^^^^^^^^^^
+
+.. Note:: Pip does not support Python Eggs; use easy_install instead.
 
 ::
 
     $ easy_install Pillow
+
+Python Wheels
+^^^^^^^^^^^^^
+
+.. Warning:: Experimental. Requires Setuptools >=0.8 and Pip >=1.4.1
+
+::
+
+    $ pip install --use-wheel Pillow
 
 Platform support
 ~~~~~~~~~~~~~~~~
