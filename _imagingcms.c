@@ -508,27 +508,46 @@ static struct PyMethodDef cms_profile_methods[] = {
 };
 
 static PyObject*
+_profile_getattr(CmsProfileObject* self, cmsInfoType field)
+{
+    // UNDONE -- check that I'm getting the right fields on these.
+    // return PyUnicode_DecodeFSDefault(cmsTakeProductName(self->profile));
+    wchar_t buf[256];
+    cmsUInt32Number written;
+    written =  cmsGetProfileInfo(self->profile, 
+                                 field,
+                                 "en",
+                                 "us",
+                                 buf,
+                                 256);
+    if (written) {
+        return PyUnicode_DecodeFSDefault(buf);
+    }
+    return NULL;
+}
+
+static PyObject*
 cms_profile_getattr_product_name(CmsProfileObject* self, void* closure)
 {
-    return PyUnicode_DecodeFSDefault(cmsTakeProductName(self->profile));
+    return _profile_getattr(self, cmsInfoModel);
 }
 
 static PyObject*
 cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
-{
-    return PyUnicode_DecodeFSDefault(cmsTakeProductDesc(self->profile));
+{    
+    return _profile_getattr(self, cmsInfoDescription);
 }
 
 static PyObject*
 cms_profile_getattr_product_info(CmsProfileObject* self, void* closure)
 {
-    return PyUnicode_DecodeFSDefault(cmsTakeProductInfo(self->profile));
+    return _profile_getattr(self, cmsInfoManufacturer);
 }
 
 static PyObject*
 cms_profile_getattr_rendering_intent(CmsProfileObject* self, void* closure)
 {
-    return PyInt_FromLong(cmsTakeRenderingIntent(self->profile));
+    return PyInt_FromLong(cmsGetHeaderRenderingIntent(self->profile));
 }
 
 static PyObject*
