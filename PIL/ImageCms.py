@@ -42,6 +42,8 @@ pyCMS
 
     Version History:
 
+        1.0.0 pil       Oct 2013 Port to LCMS 2.
+
         0.1.0 pil mod   March 10, 2009
 
                         Renamed display profile to proof profile. The proof
@@ -77,7 +79,7 @@ pyCMS
 
 """
 
-VERSION = "0.1.0 pil"
+VERSION = "1.0.0 pil"
 
 # --------------------------------------------------------------------.
 

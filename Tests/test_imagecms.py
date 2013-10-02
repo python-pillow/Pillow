@@ -14,7 +14,7 @@ def test_sanity():
     # this mostly follows the cms_test outline.
 
     v = ImageCms.versions() # should return four strings
-    assert_equal(v[0], '0.1.0 pil')
+    assert_equal(v[0], '1.0.0 pil')
     assert_equal(list(map(type, v)), [str, str, str, str])
 
     # internal version number
