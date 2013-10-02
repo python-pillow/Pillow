@@ -527,19 +527,88 @@ _profile_getattr(CmsProfileObject* self, cmsInfoType field)
 static PyObject*
 cms_profile_getattr_product_name(CmsProfileObject* self, void* closure)
 {
-    return _profile_getattr(self, cmsInfoModel);
+    // name was "%s - %s" (model, manufacturer) || Description , 
+    // but if the Model and Manufacturer were the same or the model 
+    // was long, Just the model,  in 1.x
+    PyObject *model = _profile_getattr(self, cmsInfoModel);
+    PyObject *manufacturer = _profile_getattr(self, cmsInfoManufacturer);
+
+    if (!PyString_Size(model) && !PyString_Size(manufacturer)){
+        return _profile_getattr(self, cmsInfoDescription);
+    }
+    if (!PyString_Size(manufacturer)){
+        return model;
+    }
+    PyString_Concat(&model,
+                    PyString_FromString(" - "));
+    PyString_Concat(&model,_profile_getattr(self, cmsInfoManufacturer));
+    return model;
 }
 
 static PyObject*
 cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
 {    
+    // description was Description != 'Copyright' || or  "%s - %s" (manufacturer, model) in 1.x
     return _profile_getattr(self, cmsInfoDescription);
+}
+
+void _info_concat(PyObject **ret, PyObject *elt){
+    if (PyString_Size(elt)){
+        PyString_Concat(ret, elt);
+        PyString_Concat(ret, PyString_FromString("\r\n\r\n"));
+    }
 }
 
 static PyObject*
 cms_profile_getattr_product_info(CmsProfileObject* self, void* closure)
-{
+{   
+    // info was description \r\n\r\n copyright \r\n\r\n K007 tag \r\n\r\n whitepoint
+    PyObject *description = _profile_getattr(self, cmsInfoDescription);
+    PyObject *copyright = _profile_getattr(self, cmsInfoCopyright);
+    PyObject *ret = PyString_FromString("");
+
+    _info_concat(&ret, description);
+    _info_concat(&ret, copyright);
+ 
+#define K007         (icTagSignature)0x4B303037
+    if (cmsIsTag(self->profile, cmsSigMediaWhitePointTag)){
+        cmsCIExyY *WhitePt;
+        cmsFloat64Number tempK;
+
+        WhitePt = (cmsCIExyY *) cmsReadTag(self->profile, cmsSigMediaWhitePointTag);
+        if (cmsTempFromWhitePoint(&tempK, WhitePt)){
+            char tempstr[10];
+            snprintf(tempstr, 10, "%5.0f", tempK);
+            _info_concat(&ret, PyString_FromFormat("White Point: %sK", tempstr));
+        } 
+    }
+    return ret;
+}
+
+/* use these four for the individual fields. 
+ */
+static PyObject*
+cms_profile_getattr_product_description(CmsProfileObject* self, void* closure)
+{    
+    return _profile_getattr(self, cmsInfoDescription);
+}
+
+static PyObject*
+cms_profile_getattr_product_model(CmsProfileObject* self, void* closure)
+{    
+    return _profile_getattr(self, cmsInfoModel);
+}
+
+static PyObject*
+cms_profile_getattr_product_manufacturer(CmsProfileObject* self, void* closure)
+{    
     return _profile_getattr(self, cmsInfoManufacturer);
+}
+
+static PyObject*
+cms_profile_getattr_product_copyright(CmsProfileObject* self, void* closure)
+{    
+    return _profile_getattr(self, cmsInfoCopyright);
 }
 
 static PyObject*
@@ -565,6 +634,10 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
     { "product_name",       (getter) cms_profile_getattr_product_name },
     { "product_desc",       (getter) cms_profile_getattr_product_desc },
     { "product_info",       (getter) cms_profile_getattr_product_info },
+    { "product_description", (getter) cms_profile_getattr_product_description },
+    { "product_manufacturer", (getter) cms_profile_getattr_product_manufacturer },
+    { "product_model",      (getter) cms_profile_getattr_product_model },
+    { "product_copyright",  (getter) cms_profile_getattr_product_copyright },
     { "rendering_intent",   (getter) cms_profile_getattr_rendering_intent },
     { "pcs",                (getter) cms_profile_getattr_pcs },
     { "color_space",        (getter) cms_profile_getattr_color_space },
