@@ -331,8 +331,8 @@ class pil_build_ext(build_ext):
                         _add_directory(self.compiler.include_dirs, dir, 0)
 
         if feature.want('lcms'):
-            if _find_include_file(self, "lcms.h"):
-                if _find_library_file(self, "lcms"):
+            if _find_include_file(self, "lcms2.h"):
+                if _find_library_file(self, "lcms2"):
                     feature.lcms = "lcms"
 
         if _tkinter and _find_include_file(self, "tk.h"):
@@ -415,7 +415,7 @@ class pil_build_ext(build_ext):
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
             exts.append(Extension(
-                "PIL._imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra))
+                "PIL._imagingcms", ["_imagingcms.c"], libraries=["lcms2"] + extra))
 
         if os.path.isfile("_webp.c") and feature.webp:
             libs = ["webp"]
@@ -491,7 +491,7 @@ class pil_build_ext(build_ext):
             (feature.zlib, "ZLIB (PNG/ZIP)"),
             (feature.tiff, "TIFF G3/G4 (experimental)"),
             (feature.freetype, "FREETYPE2"),
-            (feature.lcms, "LITTLECMS"),
+            (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"), ]
 
