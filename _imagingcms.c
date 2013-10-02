@@ -392,30 +392,34 @@ createProfile(PyObject *self, PyObject *args)
 {
     char *sColorSpace;
     cmsHPROFILE hProfile;
-    int iColorTemp = 0;
-    LPcmsCIExyY whitePoint = NULL;
-    LCMSBOOL result;
+    cmsFloat64Number dColorTemp = 0.0;
+    cmsCIExyY *whitePoint = NULL;
+    cmsBool result;
 
-    if (!PyArg_ParseTuple(args, "s|i:createProfile", &sColorSpace, &iColorTemp))
+    if (!PyArg_ParseTuple(args, "s|d:createProfile", &sColorSpace, &dColorTemp))
         return NULL;
 
     if (strcmp(sColorSpace, "LAB") == 0) {
-        if (iColorTemp > 0) {
-            result = cmsWhitePointFromTemp(iColorTemp, whitePoint);
+        if (dColorTemp > 0.0) {
+            result = cmsWhitePointFromTemp(whitePoint, dColorTemp);
             if (!result) {
-                PyErr_SetString(PyExc_ValueError, "ERROR: Could not calculate white point from color temperature provided, must be integer in degrees Kelvin");
+                PyErr_SetString(PyExc_ValueError, "ERROR: Could not calculate white point from color temperature provided, must be float in degrees Kelvin");
                 return NULL;
             }
             hProfile = cmsCreateLabProfile(whitePoint);
-        } else
+        } else {
             hProfile = cmsCreateLabProfile(NULL);
+        }
     }
-    else if (strcmp(sColorSpace, "XYZ") == 0)
+    else if (strcmp(sColorSpace, "XYZ") == 0) {
         hProfile = cmsCreateXYZProfile();
-    else if (strcmp(sColorSpace, "sRGB") == 0)
+    } 
+    else if (strcmp(sColorSpace, "sRGB") == 0) {
         hProfile = cmsCreate_sRGBProfile();
-    else
+    }
+    else {
         hProfile = NULL;
+    }
 
     if (!hProfile) {
         PyErr_SetString(PyExc_ValueError, "failed to create requested color space");
