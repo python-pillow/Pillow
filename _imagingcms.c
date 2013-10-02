@@ -406,9 +406,9 @@ createProfile(PyObject *self, PyObject *args)
                 PyErr_SetString(PyExc_ValueError, "ERROR: Could not calculate white point from color temperature provided, must be float in degrees Kelvin");
                 return NULL;
             }
-            hProfile = cmsCreateLabProfile(whitePoint);
+            hProfile = cmsCreateLab2Profile(whitePoint);
         } else {
-            hProfile = cmsCreateLabProfile(NULL);
+            hProfile = cmsCreateLab2Profile(NULL);
         }
     }
     else if (strcmp(sColorSpace, "XYZ") == 0) {
