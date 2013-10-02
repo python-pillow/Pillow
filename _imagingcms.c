@@ -435,7 +435,7 @@ createProfile(PyObject *self, PyObject *args)
 static PyObject *
 cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args)
 {
-    LCMSBOOL result;
+    cmsBool result;
 
     int intent;
     int direction;
