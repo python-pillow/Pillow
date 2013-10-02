@@ -570,13 +570,14 @@ cms_profile_getattr_product_info(CmsProfileObject* self, void* closure)
     _info_concat(&ret, description);
     _info_concat(&ret, copyright);
  
-#define K007         (icTagSignature)0x4B303037
     if (cmsIsTag(self->profile, cmsSigMediaWhitePointTag)){
-        cmsCIExyY *WhitePt;
+        cmsCIEXYZ *WhitePt;
+        cmsCIExyY xyyWhitePt;
         cmsFloat64Number tempK;
 
-        WhitePt = (cmsCIExyY *) cmsReadTag(self->profile, cmsSigMediaWhitePointTag);
-        if (cmsTempFromWhitePoint(&tempK, WhitePt)){
+        WhitePt = (cmsCIEXYZ *) cmsReadTag(self->profile, cmsSigMediaWhitePointTag);
+        cmsXYZ2xyY(&xyyWhitePt, WhitePt);
+        if (cmsTempFromWhitePoint(&tempK, &xyyWhitePt)){
             char tempstr[10];
             snprintf(tempstr, 10, "%5.0f", tempK);
             _info_concat(&ret, PyString_FromFormat("White Point: %sK", tempstr));
