@@ -207,7 +207,7 @@ findICmode(cmsColorSpaceSignature cs)
     }
 }
 
-static DWORD
+static cmsUInt32Number
 findLCMStype(char* PILmode)
 {
     if (strcmp(PILmode, "RGB") == 0) {
@@ -266,7 +266,7 @@ pyCMSdoTransform(Imaging im, Imaging imOut, cmsHTRANSFORM hTransform)
 }
 
 static cmsHTRANSFORM
-_buildTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, char *sInMode, char *sOutMode, int iRenderingIntent, DWORD cmsFLAGS)
+_buildTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, char *sInMode, char *sOutMode, int iRenderingIntent, cmsUInt32Number cmsFLAGS)
 {
     cmsHTRANSFORM hTransform;
 
@@ -288,7 +288,7 @@ _buildTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, char *sIn
 }
 
 static cmsHTRANSFORM
-_buildProofTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, cmsHPROFILE hProofProfile, char *sInMode, char *sOutMode, int iRenderingIntent, int iProofIntent, DWORD cmsFLAGS)
+_buildProofTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, cmsHPROFILE hProofProfile, char *sInMode, char *sOutMode, int iRenderingIntent, int iProofIntent, cmsUInt32Number cmsFLAGS)
 {
     cmsHTRANSFORM hTransform;
 
@@ -450,7 +450,7 @@ static PyObject *
 cms_get_display_profile_win32(PyObject* self, PyObject* args)
 {
     char filename[MAX_PATH];
-    DWORD filename_size;
+    cmsUInt32Number filename_size;
     BOOL ok;
 
     int handle = 0;
