@@ -163,7 +163,7 @@ If you've built your own Python, then you should be able to install Pillow using
 Windows
 +++++++
 
-We provide binaries for Windows in the form of Python Eggs and Python Wheels:
+We provide binaries for Windows in the form of Python Eggs and `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_:
 
 Python Eggs
 ^^^^^^^^^^^
