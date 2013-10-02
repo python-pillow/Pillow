@@ -28,10 +28,6 @@ http://www.cazabon.com\n\
 #include "Imaging.h"
 #include "py3.h"
 
-#if LCMS_VERSION < 117
-#define LCMSBOOL BOOL
-#endif
-
 #ifdef WIN32
 #include <windef.h>
 #include <wingdi.h>
