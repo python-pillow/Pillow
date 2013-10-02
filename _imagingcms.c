@@ -536,7 +536,7 @@ cms_profile_getattr_product_name(CmsProfileObject* self, void* closure)
     if (!PyString_Size(model) && !PyString_Size(manufacturer)){
         return _profile_getattr(self, cmsInfoDescription);
     }
-    if (!PyString_Size(manufacturer)){
+    if (!PyString_Size(manufacturer) || PyString_Size(model)> 30){
         return model;
     }
     PyString_Concat(&model,
