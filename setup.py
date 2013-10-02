@@ -572,7 +572,7 @@ class pil_build_ext(build_ext):
 setup(
     name=NAME,
     version=VERSION,
-    description='Python Imaging Library (fork)',
+    description='Python Imaging Library (Fork)',
     long_description=(
         _read('README.rst') + b'\n' +
         _read('CHANGES.rst') + b'\n' +
