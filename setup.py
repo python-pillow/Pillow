@@ -179,12 +179,15 @@ class pil_build_ext(build_ext):
             _add_directory(include_dirs, "/usr/X11/include")
             # if homebrew is installed, use its lib and include directories
             import subprocess
-            prefix = subprocess.check_output(['brew', '--prefix'])
-            if prefix:
-                prefix = prefix.strip()
-                _add_directory(library_dirs, os.path.join(prefix, 'lib'))
-                _add_directory(include_dirs, os.path.join(prefix, 'include'))
-
+            try:
+                prefix = subprocess.check_output(['brew', '--prefix'])
+                if prefix:
+                    prefix = prefix.strip()
+                    _add_directory(library_dirs, os.path.join(prefix, 'lib'))
+                    _add_directory(include_dirs, os.path.join(prefix, 'include'))
+            except:
+                pass # homebrew not installed
+                    
         elif sys.platform.startswith("linux"):
             for platform_ in (plat.processor(), plat.architecture()[0]):
 
