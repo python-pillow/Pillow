@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.2.0 (2013-10-01)
+2.2.0 (2013-10-02)
 ------------------
 
 - Fix #254: Bug in image transformations resulting from uninitialized memory
