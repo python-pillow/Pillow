@@ -24,7 +24,7 @@ http://www.cazabon.com\n\
 "
 
 #include "Python.h"
-#include "lcms.h"
+#include "lcms2.h"
 #include "Imaging.h"
 #include "py3.h"
 
@@ -37,11 +37,12 @@ http://www.cazabon.com\n\
 #include <wingdi.h>
 #endif
 
-#define PYCMSVERSION "0.1.0 pil"
+#define PYCMSVERSION "1.0.0 pil"
 
 /* version history */
 
 /*
+  1.0.0 pil Integrating littleCMS2
   0.1.0 pil integration & refactoring
   0.0.2 alpha:  Minor updates, added interfaces to littleCMS features, Jan 6, 2003
   - fixed some memory holes in how transforms/profiles were created and passed back to Python
@@ -107,8 +108,6 @@ cms_profile_open(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "s:profile_open", &sProfile))
         return NULL;
 
-    cmsErrorAction(LCMS_ERROR_IGNORE);
-
     hProfile = cmsOpenProfileFromFile(sProfile, "r");
     if (!hProfile) {
         PyErr_SetString(PyExc_IOError, "cannot open profile file");
@@ -132,8 +131,6 @@ cms_profile_fromstring(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "s#:profile_fromstring", &pProfile, &nProfile))
         return NULL;
 #endif
-
-    cmsErrorAction(LCMS_ERROR_IGNORE);
 
     hProfile = cmsOpenProfileFromMem(pProfile, nProfile);
     if (!hProfile) {
@@ -273,8 +270,6 @@ _buildTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, char *sIn
 {
     cmsHTRANSFORM hTransform;
 
-    cmsErrorAction(LCMS_ERROR_IGNORE);
-
     Py_BEGIN_ALLOW_THREADS
 
     /* create the transform */
@@ -296,8 +291,6 @@ static cmsHTRANSFORM
 _buildProofTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, cmsHPROFILE hProofProfile, char *sInMode, char *sOutMode, int iRenderingIntent, int iProofIntent, DWORD cmsFLAGS)
 {
     cmsHTRANSFORM hTransform;
-
-    cmsErrorAction(LCMS_ERROR_IGNORE);
 
     Py_BEGIN_ALLOW_THREADS
 
@@ -336,8 +329,6 @@ buildTransform(PyObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "O!O!ss|ii:buildTransform", &CmsProfile_Type, &pInputProfile, &CmsProfile_Type, &pOutputProfile, &sInMode, &sOutMode, &iRenderingIntent, &cmsFLAGS))
         return NULL;
 
-    cmsErrorAction(LCMS_ERROR_IGNORE);
-
     transform = _buildTransform(pInputProfile->profile, pOutputProfile->profile, sInMode, sOutMode, iRenderingIntent, cmsFLAGS);
 
     if (!transform)
@@ -362,8 +353,6 @@ buildProofTransform(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "O!O!O!ss|iii:buildProofTransform", &CmsProfile_Type, &pInputProfile, &CmsProfile_Type, &pOutputProfile, &CmsProfile_Type, &pProofProfile, &sInMode, &sOutMode, &iRenderingIntent, &iProofIntent, &cmsFLAGS))
         return NULL;
-
-    cmsErrorAction(LCMS_ERROR_IGNORE);
 
     transform = _buildProofTransform(pInputProfile->profile, pOutputProfile->profile, pProofProfile->profile, sInMode, sOutMode, iRenderingIntent, iProofIntent, cmsFLAGS);
 
@@ -390,8 +379,6 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args)
     im = (Imaging) idIn;
     imOut = (Imaging) idOut;
 
-    cmsErrorAction(LCMS_ERROR_IGNORE);
-
     result = pyCMSdoTransform(im, imOut, self->transform);
 
     return Py_BuildValue("i", result);
@@ -411,8 +398,6 @@ createProfile(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "s|i:createProfile", &sColorSpace, &iColorTemp))
         return NULL;
-
-    cmsErrorAction(LCMS_ERROR_IGNORE);
 
     if (strcmp(sColorSpace, "LAB") == 0) {
         if (iColorTemp > 0) {
