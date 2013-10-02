@@ -97,7 +97,7 @@ Developer Notes
 Build from source
 ~~~~~~~~~~~~~~~~~
 
-Some (most?) of Pillow's features require external libraries.
+Many of Pillow's features require external libraries:
 
 * **libjpeg** provides JPEG functionality.
 
