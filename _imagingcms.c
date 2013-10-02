@@ -512,18 +512,20 @@ _profile_getattr(CmsProfileObject* self, cmsInfoType field)
 {
     // UNDONE -- check that I'm getting the right fields on these.
     // return PyUnicode_DecodeFSDefault(cmsTakeProductName(self->profile));
-    wchar_t buf[256];
+    //wchar_t buf[256]; -- UNDONE need wchar_t for unicode version. 
+    char buf[256];
     cmsUInt32Number written;
-    written =  cmsGetProfileInfo(self->profile, 
-                                 field,
-                                 "en",
-                                 "us",
-                                 buf,
-                                 256);
+    written =  cmsGetProfileInfoASCII(self->profile, 
+                                      field,
+                                      "en",
+                                      "us",
+                                      buf,
+                                      256);
     if (written) {
         return PyUnicode_DecodeFSDefault(buf);
     }
-    return NULL;
+    // UNDONE suppressing error here by sending back blank string. 
+    return PyUnicode_DecodeFSDefault("");
 }
 
 static PyObject*
