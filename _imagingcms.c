@@ -189,20 +189,20 @@ cms_transform_dealloc(CmsTransformObject* self)
 /* internal functions */
 
 static const char*
-findICmode(icColorSpaceSignature cs)
+findICmode(cmsColorSpaceSignature cs)
 {
     switch (cs) {
-    case icSigXYZData: return "XYZ";
-    case icSigLabData: return "LAB";
-    case icSigLuvData: return "LUV";
-    case icSigYCbCrData: return "YCbCr";
-    case icSigYxyData: return "YXY";
-    case icSigRgbData: return "RGB";
-    case icSigGrayData: return "L";
-    case icSigHsvData: return "HSV";
-    case icSigHlsData: return "HLS";
-    case icSigCmykData: return "CMYK";
-    case icSigCmyData: return "CMY";
+    case cmsSigXYZData: return "XYZ";
+    case cmsSigLabData: return "LAB";
+    case cmsSigLuvData: return "LUV";
+    case cmsSigYCbCrData: return "YCbCr";
+    case cmsSigYxyData: return "YXY";
+    case cmsSigRgbData: return "RGB";
+    case cmsSigGrayData: return "L";
+    case cmsSigHsvData: return "HSV";
+    case cmsSigHlsData: return "HLS";
+    case cmsSigCmykData: return "CMYK";
+    case cmsSigCmyData: return "CMY";
     default: return ""; /* other TBA */
     }
 }
