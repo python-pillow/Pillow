@@ -518,10 +518,10 @@ _profile_getattr(CmsProfileObject* self, cmsInfoType field)
                                       buf,
                                       256);
     if (written) {
-        return PyUnicode_DecodeFSDefault(buf);
+        return PyUnicode_FromString(buf);
     }
     // UNDONE suppressing error here by sending back blank string. 
-    return PyUnicode_DecodeFSDefault("");
+    return PyUnicode_FromString("");
 }
 
 static PyObject*
@@ -532,17 +532,18 @@ cms_profile_getattr_product_name(CmsProfileObject* self, void* closure)
     // was long, Just the model,  in 1.x
     PyObject *model = _profile_getattr(self, cmsInfoModel);
     PyObject *manufacturer = _profile_getattr(self, cmsInfoManufacturer);
+    PyObject *result;
 
-    if (!PyString_Size(model) && !PyString_Size(manufacturer)){
+    if (!PyUnicode_GetSize(model) && !PyUnicode_GetSize(manufacturer)){
         return _profile_getattr(self, cmsInfoDescription);
     }
-    if (!PyString_Size(manufacturer) || PyString_Size(model)> 30){
+    if (!PyUnicode_GetSize(manufacturer) || PyUnicode_GetSize(model)> 30){
         return model;
     }
-    PyString_Concat(&model,
-                    PyString_FromString(" - "));
-    PyString_Concat(&model,_profile_getattr(self, cmsInfoManufacturer));
-    return model;
+    result = PyUnicode_Concat(model,
+                    PyUnicode_FromString(" - "));
+    result = PyUnicode_Concat(result,_profile_getattr(self, cmsInfoManufacturer));
+    return result;
 }
 
 static PyObject*
@@ -553,9 +554,9 @@ cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
 }
 
 void _info_concat(PyObject **ret, PyObject *elt){
-    if (PyString_Size(elt)){
-        PyString_Concat(ret, elt);
-        PyString_Concat(ret, PyString_FromString("\r\n\r\n"));
+    if (PyUnicode_GetSize(elt)){
+        *ret = PyUnicode_Concat(*ret, elt);
+        *ret = PyUnicode_Concat(*ret, PyUnicode_FromString("\r\n\r\n"));
     }
 }
 
@@ -565,7 +566,7 @@ cms_profile_getattr_product_info(CmsProfileObject* self, void* closure)
     // info was description \r\n\r\n copyright \r\n\r\n K007 tag \r\n\r\n whitepoint
     PyObject *description = _profile_getattr(self, cmsInfoDescription);
     PyObject *copyright = _profile_getattr(self, cmsInfoCopyright);
-    PyObject *ret = PyString_FromString("");
+    PyObject *ret = PyUnicode_FromString("");
 
     _info_concat(&ret, description);
     _info_concat(&ret, copyright);
@@ -580,7 +581,7 @@ cms_profile_getattr_product_info(CmsProfileObject* self, void* closure)
         if (cmsTempFromWhitePoint(&tempK, &xyyWhitePt)){
             char tempstr[10];
             snprintf(tempstr, 10, "%5.0f", tempK);
-            _info_concat(&ret, PyString_FromFormat("White Point: %sK", tempstr));
+            _info_concat(&ret, PyUnicode_FromFormat("White Point: %sK", tempstr));
         } 
     }
     return ret;
