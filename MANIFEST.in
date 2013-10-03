@@ -1,21 +1,52 @@
-exclude .hgignore
-exclude .hgtags
-exclude BUILDME.bat
-exclude make-manifest.py
-exclude SHIP
-exclude SHIP.bat
-include *.rst
 include *.c
 include *.h
-include selftest.py tox.ini
-include COPYING
-recursive-include Tests *.py *.txt
-graft Tests/fonts
-graft Tests/icc
-graft Tests/images
-recursive-include Scripts *.py README
-graft Images
-recursive-include docs *.txt *.html *.rst *.css *.py README CHANGES CONTENTS Makefile make.bat BUILDME LICENSE COPYING
-recursive-include libImaging *.c *.h
-recursive-include Tk *.c *.txt
-recursive-include Sane *.c *.txt CHANGES README *.py
+include *.py
+include *.rst
+include .gitattributes
+include .travis.yml
+include Makefile
+include tox.ini
+recursive-include Images *.bdf
+recursive-include Images *.fli
+recursive-include Images *.gif
+recursive-include Images *.ico
+recursive-include Images *.jpg
+recursive-include Images *.pbm
+recursive-include Images *.pil
+recursive-include Images *.png
+recursive-include Images *.ppm
+recursive-include Images *.psd
+recursive-include Images *.tar
+recursive-include Images *.webp
+recursive-include Images *.xpm
+recursive-include Sane *.c
+recursive-include Sane *.py
+recursive-include Sane *.txt
+recursive-include Sane CHANGES
+recursive-include Sane README
+recursive-include Scripts *.py
+recursive-include Scripts README
+recursive-include Tests *.bin
+recursive-include Tests *.icm
+recursive-include Tests *.jpg
+recursive-include Tests *.pcf
+recursive-include Tests *.pcx
+recursive-include Tests *.png
+recursive-include Tests *.ppm
+recursive-include Tests *.py
+recursive-include Tests *.tif
+recursive-include Tests *.tiff
+recursive-include Tests *.ttf
+recursive-include Tests *.txt
+recursive-include Tk *.c
+recursive-include Tk *.txt
+recursive-include docs *.bat
+recursive-include docs *.gitignore
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include docs Makefile
+recursive-include docs BUILDME
+recursive-include docs COPYING
+recursive-include docs LICENSE
+recursive-include libImaging *.c
+recursive-include libImaging *.h

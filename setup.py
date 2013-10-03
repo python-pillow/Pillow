@@ -1,3 +1,11 @@
+# > pyroma .
+# ------------------------------
+# Checking .
+# Found Pillow
+# ------------------------------
+# Final rating: 10/10
+# Your cheese is so fresh most people think it's a cream: Mascarpone
+# ------------------------------
 from __future__ import print_function
 import glob
 import os
@@ -74,7 +82,7 @@ except ImportError:
 
 
 NAME = 'Pillow'
-VERSION = '2.1.0'
+VERSION = '2.2.1'
 TCL_ROOT = None
 JPEG_ROOT = None
 ZLIB_ROOT = None
@@ -169,13 +177,17 @@ class pil_build_ext(build_ext):
             # freetype2 ships with X11
             _add_directory(library_dirs, "/usr/X11/lib")
             _add_directory(include_dirs, "/usr/X11/include")
-            # if brew is installed, use its lib and include directories
-            import commands
-            status, homebrew = commands.getstatusoutput('brew --prefix')
-            if status == 0:
-                _add_directory(library_dirs, os.path.join(homebrew, 'lib'))
-                _add_directory(include_dirs, os.path.join(homebrew, 'include'))
-
+            # if homebrew is installed, use its lib and include directories
+            import subprocess
+            try:
+                prefix = subprocess.check_output(['brew', '--prefix'])
+                if prefix:
+                    prefix = prefix.strip()
+                    _add_directory(library_dirs, os.path.join(prefix, 'lib'))
+                    _add_directory(include_dirs, os.path.join(prefix, 'include'))
+            except:
+                pass # homebrew not installed
+                    
         elif sys.platform.startswith("linux"):
             for platform_ in (plat.processor(), plat.architecture()[0]):
 
@@ -560,7 +572,7 @@ class pil_build_ext(build_ext):
 setup(
     name=NAME,
     version=VERSION,
-    description='Python Imaging Library (fork)',
+    description='Python Imaging Library (Fork)',
     long_description=(
         _read('README.rst') + b'\n' +
         _read('CHANGES.rst') + b'\n' +
@@ -586,10 +598,8 @@ setup(
     ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
     include_package_data=True,
     packages=find_packages(),
-    provides=[
-        'PIL'
-    ],
     scripts=glob.glob("Scripts/pil*.py"),
+    test_suite='PIL.tests',
     keywords=["Imaging",],
     license='Standard PIL License',
     zip_safe=True,

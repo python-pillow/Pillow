@@ -1,6 +1,7 @@
 from tester import *
 
 from PIL import Image
+import struct
 
 try:
     import site
@@ -56,9 +57,52 @@ def test_numpy_to_image():
     assert_image(to_image(numpy.uint8, 4), "RGBA", (10, 10))
 
 
-# based on an erring example at http://is.gd/6F0esS
+# based on an erring example at http://is.gd/6F0esS  (which resolves to)
+# http://stackoverflow.com/questions/10854903/what-is-causing-dimension-dependent-attributeerror-in-pil-fromarray-function
 def test_3d_array():
     a = numpy.ones((10, 10, 10), dtype=numpy.uint8)
     assert_image(Image.fromarray(a[1, :, :]), "L", (10, 10))
     assert_image(Image.fromarray(a[:, 1, :]), "L", (10, 10))
     assert_image(Image.fromarray(a[:, :, 1]), "L", (10, 10))
+
+
+def _test_img_equals_nparray(img, np):
+    assert_equal(img.size, np.shape[0:2])
+    px = img.load()
+    for x in range(0, img.size[0], int(img.size[0]/10)):
+        for y in range(0, img.size[1], int(img.size[1]/10)):
+            assert_deep_equal(px[x,y], np[y,x])
+
+
+def test_16bit():
+    img = Image.open('Tests/images/12bit.cropped.tif')
+    np_img = numpy.array(img)
+    _test_img_equals_nparray(img, np_img)
+    assert_equal(np_img.dtype, numpy.dtype('uint16'))
+
+def test_to_array():
+
+    def _to_array(mode, dtype):
+        img = lena(mode)            
+        np_img = numpy.array(img)
+        _test_img_equals_nparray(img, np_img)
+        assert_equal(np_img.dtype, numpy.dtype(dtype))
+    
+     
+    modes = [("L", 'uint8'),
+             ("I", 'int32'),
+             ("F", 'float32'),
+             ("RGB", 'uint8'),
+             ("RGBA", 'uint8'),
+             ("RGBX", 'uint8'),
+             ("CMYK", 'uint8'),
+             ("YCbCr", 'uint8'),
+             ("I;16", 'uint16'),
+             ("I;16B", '>u2'),
+             ("I;16L", 'uint16'),
+             ]
+    
+
+    for mode in modes:
+        assert_no_exception(lambda: _to_array(*mode))
+

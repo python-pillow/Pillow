@@ -1,8 +1,32 @@
 Changelog (Pillow)
 ==================
 
-2.2.0 (2013-10-01)
+2.2.1 (2013-10-02)
 ------------------
+
+- Fix #356: Error installing Pillow 2.2.0 on Mac OS X (due to hard dep on brew)
+  [wiredfool]
+
+2.2.0 (2013-10-02)
+------------------
+
+- Fix #254: Bug in image transformations resulting from uninitialized memory
+  [nikmolnar]
+
+- Fix for encoding of b_whitespace, similar to closed issue #272
+  [mhogg] 
+
+- Fix #273: Add numpy array interface support for 16 and 32 bit integer modes
+  [cgohlke]
+
+- Partial fix for #290: Add preliminary support for TIFF tags.
+  [wiredfool]
+
+- Fix #251 and #326: circumvent classification of pngtest_bad.png as malware
+  [cgohlke]
+
+- Add typedef uint64_t for MSVC.
+  [cgohlke]
 
 - Fix #329: setup.py: better support for C_INCLUDE_PATH, LD_RUN_PATH, etc.
   [nu774]

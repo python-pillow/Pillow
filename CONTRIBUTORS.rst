@@ -1,7 +1,7 @@
 Contributors (Pillow)
 =====================
 
-.. Note:: New contributors: please add your name here and send a pull request
+.. Note:: Contributors: please add your name here
 
 - Alex Po <alex-86p __at__ yandex.ru>
 - Anton Vlasenko <antares.spica __at__ gmail.com>

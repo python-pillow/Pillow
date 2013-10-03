@@ -212,18 +212,14 @@ def test_roundtrip_text():
 def test_scary():
     # Check reading of evil PNG file.  For information, see:
     # http://scary.beasts.org/security/CESA-2004-001.txt
+    # The first byte is removed from pngtest_bad.png
+    # to avoid classification as malware.
 
-    import base64
-    file = "Tests/images/pngtest_bad.png.base64"
-    data = None
+    with open("Tests/images/pngtest_bad.png.bin", 'rb') as fd:
+        data = b'\x89' + fd.read()
 
-    if py3:
-        data = base64.decodebytes(open(file, 'rb').read())
-    else:
-        data = base64.decodestring(open(file, 'rb').read())
-
-    file = BytesIO(data)
-    assert_exception(IOError, lambda: Image.open(file))
+    pngfile = BytesIO(data)
+    assert_exception(IOError, lambda: Image.open(pngfile))
 
 def test_trns_rgb():
     # Check writing and reading of tRNS chunks for RGB images.

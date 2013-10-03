@@ -359,51 +359,55 @@ class JpegImageFile(ImageFile.ImageFile):
         self.tile = []
 
     def _getexif(self):
-        # Extract EXIF information.  This method is highly experimental,
-        # and is likely to be replaced with something better in a future
-        # version.
-        from PIL import TiffImagePlugin
-        import io
-        def fixup(value):
-            if len(value) == 1:
-                return value[0]
-            return value
-        # The EXIF record consists of a TIFF file embedded in a JPEG
-        # application marker (!).
-        try:
-            data = self.info["exif"]
-        except KeyError:
-            return None
-        file = io.BytesIO(data[6:])
-        head = file.read(8)
-        exif = {}
-        # process dictionary
+        return _getexif(self)
+
+
+def _getexif(self):
+    # Extract EXIF information.  This method is highly experimental,
+    # and is likely to be replaced with something better in a future
+    # version.
+    from PIL import TiffImagePlugin
+    import io
+    def fixup(value):
+        if len(value) == 1:
+            return value[0]
+        return value
+    # The EXIF record consists of a TIFF file embedded in a JPEG
+    # application marker (!).
+    try:
+        data = self.info["exif"]
+    except KeyError:
+        return None
+    file = io.BytesIO(data[6:])
+    head = file.read(8)
+    exif = {}
+    # process dictionary
+    info = TiffImagePlugin.ImageFileDirectory(head)
+    info.load(file)
+    for key, value in info.items():
+        exif[key] = fixup(value)
+    # get exif extension
+    try:
+        file.seek(exif[0x8769])
+    except KeyError:
+        pass
+    else:
         info = TiffImagePlugin.ImageFileDirectory(head)
         info.load(file)
         for key, value in info.items():
             exif[key] = fixup(value)
-        # get exif extension
-        try:
-            file.seek(exif[0x8769])
-        except KeyError:
-            pass
-        else:
-            info = TiffImagePlugin.ImageFileDirectory(head)
-            info.load(file)
-            for key, value in info.items():
-                exif[key] = fixup(value)
-        # get gpsinfo extension
-        try:
-            file.seek(exif[0x8825])
-        except KeyError:
-            pass
-        else:
-            info = TiffImagePlugin.ImageFileDirectory(head)
-            info.load(file)
-            exif[0x8825] = gps = {}
-            for key, value in info.items():
-                gps[key] = fixup(value)
-        return exif
+    # get gpsinfo extension
+    try:
+        file.seek(exif[0x8825])
+    except KeyError:
+        pass
+    else:
+        info = TiffImagePlugin.ImageFileDirectory(head)
+        info.load(file)
+        exif[0x8825] = gps = {}
+        for key, value in info.items():
+            gps[key] = fixup(value)
+    return exif
 
 # --------------------------------------------------------------------
 # stuff to save JPEG files

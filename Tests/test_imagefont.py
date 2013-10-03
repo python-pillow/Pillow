@@ -71,8 +71,8 @@ def test_render_equal():
 
 def test_render_multiline():
     im = Image.new(mode='RGB', size=(300,100))
-    ttf = ImageFont.truetype(font_path, font_size)
     draw = ImageDraw.Draw(im)
+    ttf = ImageFont.truetype(font_path, font_size)
     line_spacing = draw.textsize('A', font=ttf)[1] + 8
     lines = ['hey you', 'you are awesome', 'this looks awkward']
     y = 0
@@ -80,8 +80,13 @@ def test_render_multiline():
         draw.text((0, y), line, font=ttf)
         y += line_spacing
 
+
     target = 'Tests/images/multiline_text.png'
     target_img = Image.open(target)
-
-    assert_image_equal(im, target_img)
+	
+	# some versions of freetype have different horizontal spacing.
+	# setting a tight epsilon, I'm showing the original test failure
+	# at epsilon = ~38.
+    assert_image_similar(im, target_img,.5)
     
+ 
