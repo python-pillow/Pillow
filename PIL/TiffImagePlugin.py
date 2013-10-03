@@ -463,8 +463,9 @@ class ImageFileDirectory(collections.MutableMapping):
                 # of strings which I don't see in in the wild tiffs
                 # and doesn't match the tiff spec: 8-bit byte that
                 # contains a 7-bit ASCII code; the last byte must be
-                # NUL (binary zero).
-                data = value = b"".join(value.encode('ascii', 'replace')) + b"\0"
+                # NUL (binary zero). Also, I don't think this was well
+                # excersized before. 
+                data = value = b"" + value.encode('ascii', 'replace') + b"\0"
             else:
                 # integer data
                 if tag == STRIPOFFSETS:
