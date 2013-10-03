@@ -213,11 +213,9 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |                              |x86-64                 |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
-| Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,PyPy1.9 [1]_ | 2.2.0                        |x86 [2]_,x86-64        |
+| Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,3.4a3        | 2.2.0                        |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 
-.. [1] x86 only, 2.1.0 tested
-.. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
 Port existing PIL-based code to Pillow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
