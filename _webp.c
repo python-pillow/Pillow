@@ -20,8 +20,8 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     uint8_t *output;
     char *mode;
     Py_ssize_t size;
-    Py_ssize_t icc_size;
-    Py_ssize_t exif_size;
+    int icc_size;  /* see comment below */
+    int exif_size;
     size_t ret_size;
 
     if (!PyArg_ParseTuple(args, "s#iifss#s#",
@@ -29,7 +29,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
                 &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
         Py_RETURN_NONE;
     }
-
+    
 	if (strcmp(mode, "RGBA")==0){
 		if (size < width * height * 4){
 			Py_RETURN_NONE;
@@ -54,6 +54,8 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
    {
     WebPData output_data = {0};
     WebPData image = { output, ret_size };
+    WebPMuxError err;
+    int dbg = 0;
 
     int copy_data = 0;  // value 1 indicates given data WILL be copied to the mux
                         // and value 0 indicates data will NOT be copied.
@@ -61,14 +63,43 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     WebPMux* mux = WebPMuxNew();
     WebPMuxSetImage(mux, &image, copy_data);
 
+    if (dbg) {
+        fprintf(stderr, "icc size %d, %d \n", icc_size, icc_size > 0);
+    }
+    /* icc_size and exif size used to be Py_ssize_t, now they're int.
+       PyPy2.1 was having trouble with these, as they were getting
+       cast badly. Since WebP can't take a 64 bit value, They were
+       ending up as null PyArg_ParseTuple can kick out ints, we're
+       going to use those instead so that we don't have 32/64 bit
+       problems here.
+    */
     if (icc_size > 0) {
+        if (dbg) {
+            fprintf (stderr, "Adding ICC Profile\n");
+        }
         WebPData icc_profile = { icc_bytes, icc_size };
-        WebPMuxSetChunk(mux, "ICCP", &icc_profile, copy_data);
+        err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, copy_data);
+        if (dbg && err == WEBP_MUX_INVALID_ARGUMENT) {
+            fprintf(stderr, "Invalid ICC Argument\n");
+        } else if (dbg && err == WEBP_MUX_MEMORY_ERROR) {
+            fprintf(stderr, "ICC Memory Error\n");
+        }
     }
 
+    if (dbg) {
+        fprintf(stderr, "exif size %d \n", exif_size);
+    }
     if (exif_size > 0) {
+        if (dbg){
+            fprintf (stderr, "Adding Exif Data\n");
+        }
         WebPData exif = { exif_bytes, exif_size };
-        WebPMuxSetChunk(mux, "EXIF", &exif, copy_data);
+        err = WebPMuxSetChunk(mux, "EXIF", &exif, copy_data);
+        if (dbg && err == WEBP_MUX_INVALID_ARGUMENT) {
+            fprintf(stderr, "Invalid Exif Argument\n");
+        } else if (dbg && err == WEBP_MUX_MEMORY_ERROR) {
+            fprintf(stderr, "Exif Memory Error\n");
+        }
     }
 
     WebPMuxAssemble(mux, &output_data);

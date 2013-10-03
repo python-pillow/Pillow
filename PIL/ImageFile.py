@@ -29,7 +29,7 @@
 
 from PIL import Image
 from PIL._util import isPath
-import traceback, os
+import traceback, os, sys
 import io
 
 MAXBLOCK = 65536
@@ -136,7 +136,8 @@ class ImageFile(Image.Image):
 
         readonly = 0
 
-        if self.filename and len(self.tile) == 1:
+        if self.filename and len(self.tile) == 1 and not hasattr(sys, 'pypy_version_info'):
+            # As of pypy 2.1.0, memory mapping was failing here. 
             # try memory mapping
             d, e, o, a = self.tile[0]
             if d == "raw" and a[0] == self.mode and a[0] in Image._MAPMODES:
