@@ -217,7 +217,7 @@ class ImageFileDirectory(collections.MutableMapping):
     # represents a TIFF tag directory.  to speed things up,
     # we don't decode tags unless they're asked for.
 
-    def __init__(self, prefix):
+    def __init__(self, prefix=II):
         self.prefix = prefix[:2]
         if self.prefix == MM:
             self.i16, self.i32 = ib16, ib32
@@ -456,8 +456,15 @@ class ImageFileDirectory(collections.MutableMapping):
                 data = value = b"".join(value)
             elif isinstance(value[0], str):
                 # string data
+                if isinstance(value, tuple):
+                    value = value[-1]
                 typ = 2
-                data = value = b"\0".join(value.encode('ascii', 'replace')) + b"\0"
+                # was b'\0'.join(str), which led to \x00a\x00b sorts
+                # of strings which I don't see in in the wild tiffs
+                # and doesn't match the tiff spec: 8-bit byte that
+                # contains a 7-bit ASCII code; the last byte must be
+                # NUL (binary zero).
+                data = value = b"".join(value.encode('ascii', 'replace')) + b"\0"
             else:
                 # integer data
                 if tag == STRIPOFFSETS:
@@ -929,6 +936,18 @@ def _save(im, fp, filename):
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]
 
+    # write any arbitrary tags passed in as an ImageFileDirectory
+    info = im.encoderinfo.get("tiffinfo",{})
+    if Image.DEBUG:
+        print ("Tiffinfo Keys: %s"% info.keys)
+    for key in info.keys():
+        ifd[key] = info.get(key)
+        try:
+            ifd.tagtype[key] = info.tagtype[key]
+        except:
+            pass # might not be an IFD, Might not have populated type
+
+
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
     if hasattr(im, 'tag'):
@@ -937,12 +956,6 @@ def _save(im, fp, filename):
             if key in im.tag.tagdata:
                 ifd[key] = im.tag.tagdata.get(key)
 
-        info = im.encoderinfo.get("tiffinfo",[])
-        print("info %s "% info)
-        for key in info:
-            if key in im.tag:
-                ifd[key] = im.tag.get(key)
-                print ("added %s" %key)
         # preserve some more tags from original TIFF image file
         # -- 2008-06-06 Florian Hoech
         ifd.tagtype = im.tag.tagtype
