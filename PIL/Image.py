@@ -1309,6 +1309,9 @@ class Image:
         if self.mode in ("1", "P"):
             resample = NEAREST
 
+        if self.mode == 'RGBA':
+            return self.convert('RGBa').resize(size, resample).convert('RGBA')
+
         if resample == ANTIALIAS:
             # requires stretch support (imToolkit & PIL 1.1.3)
             try:
@@ -1606,6 +1609,9 @@ class Image:
         :returns: An Image object.
         """
 
+        if self.mode == 'RGBA':
+            return self.convert('RGBa').transform(size, method, data, resample, fill).convert('RGBA')
+
         if isinstance(method, ImageTransformHandler):
             return method.transform(size, self, resample=resample, fill=fill)
         if hasattr(method, "getdata"):
@@ -1613,6 +1619,7 @@ class Image:
             method, data = method.getdata()
         if data is None:
             raise ValueError("missing method data")
+            
         im = new(self.mode, size, None)
         if method == MESH:
             # list of quads
@@ -1620,7 +1627,7 @@ class Image:
                 im.__transformer(box, self, QUAD, quad, resample, fill)
         else:
             im.__transformer((0, 0)+size, self, method, data, resample, fill)
-
+            
         return im
 
     def __transformer(self, box, image, method, data,
