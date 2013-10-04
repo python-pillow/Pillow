@@ -82,7 +82,7 @@ except ImportError:
 
 
 NAME = 'Pillow'
-VERSION = '2.2.0'
+VERSION = '2.2.1'
 TCL_ROOT = None
 JPEG_ROOT = None
 ZLIB_ROOT = None
@@ -179,12 +179,15 @@ class pil_build_ext(build_ext):
             _add_directory(include_dirs, "/usr/X11/include")
             # if homebrew is installed, use its lib and include directories
             import subprocess
-            prefix = subprocess.check_output(['brew', '--prefix'])
-            if prefix:
-                prefix = prefix.strip()
-                _add_directory(library_dirs, os.path.join(prefix, 'lib'))
-                _add_directory(include_dirs, os.path.join(prefix, 'include'))
-
+            try:
+                prefix = subprocess.check_output(['brew', '--prefix'])
+                if prefix:
+                    prefix = prefix.strip()
+                    _add_directory(library_dirs, os.path.join(prefix, 'lib'))
+                    _add_directory(include_dirs, os.path.join(prefix, 'include'))
+            except:
+                pass # homebrew not installed
+                    
         elif sys.platform.startswith("linux"):
             for platform_ in (plat.processor(), plat.architecture()[0]):
 
@@ -569,7 +572,7 @@ class pil_build_ext(build_ext):
 setup(
     name=NAME,
     version=VERSION,
-    description='Python Imaging Library (fork)',
+    description='Python Imaging Library (Fork)',
     long_description=(
         _read('README.rst') + b'\n' +
         _read('CHANGES.rst') + b'\n' +

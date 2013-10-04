@@ -1,7 +1,7 @@
 Pillow
 ======
 
-**Python Imaging Library (Fork)**
+*Python Imaging Library (Fork)*
 
 Pillow is the "friendly" PIL fork by Alex Clark and Contributors. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 

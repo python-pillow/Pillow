@@ -2,6 +2,7 @@ include *.c
 include *.h
 include *.py
 include *.rst
+include .gitattributes
 include .travis.yml
 include Makefile
 include tox.ini
@@ -21,7 +22,10 @@ recursive-include Images *.xpm
 recursive-include Sane *.c
 recursive-include Sane *.py
 recursive-include Sane *.txt
+recursive-include Sane CHANGES
+recursive-include Sane README
 recursive-include Scripts *.py
+recursive-include Scripts README
 recursive-include Tests *.bin
 recursive-include Tests *.icm
 recursive-include Tests *.jpg
@@ -41,5 +45,8 @@ recursive-include docs *.gitignore
 recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include docs Makefile
+recursive-include docs BUILDME
+recursive-include docs COPYING
+recursive-include docs LICENSE
 recursive-include libImaging *.c
 recursive-include libImaging *.h

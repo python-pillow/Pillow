@@ -12,7 +12,7 @@
 # ;-)
 
 VERSION = '1.1.7'  # PIL version
-PILLOW_VERSION = '2.2.0' # Pillow
+PILLOW_VERSION = '2.2.1' # Pillow
 
 _plugins = ['ArgImagePlugin',
             'BmpImagePlugin',
