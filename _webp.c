@@ -54,6 +54,8 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
    {
     WebPData output_data = {0};
     WebPData image = { output, ret_size };
+    WebPData icc_profile = { icc_bytes, icc_size };
+    WebPData exif = { exif_bytes, exif_size };
     WebPMuxError err;
     int dbg = 0;
 
@@ -77,7 +79,6 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         if (dbg) {
             fprintf (stderr, "Adding ICC Profile\n");
         }
-        WebPData icc_profile = { icc_bytes, icc_size };
         err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, copy_data);
         if (dbg && err == WEBP_MUX_INVALID_ARGUMENT) {
             fprintf(stderr, "Invalid ICC Argument\n");
@@ -93,7 +94,6 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         if (dbg){
             fprintf (stderr, "Adding Exif Data\n");
         }
-        WebPData exif = { exif_bytes, exif_size };
         err = WebPMuxSetChunk(mux, "EXIF", &exif, copy_data);
         if (dbg && err == WEBP_MUX_INVALID_ARGUMENT) {
             fprintf(stderr, "Invalid Exif Argument\n");
