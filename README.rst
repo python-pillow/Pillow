@@ -147,6 +147,17 @@ Prerequisites are installed with on **Ubuntu 12.04 LTS** or **Raspian Wheezy 7.0
 
     $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev tcl8.5-dev tk8.5-dev
 
+Distributions
+^^^^^^^^^^^^^
+
+.. Note:: XXX Provide links
+
+Additionally, many Linux distributions now include Pillow (instead of PIL) with their distribution:
+
+- Fedora
+- Debian/Ubuntu
+- ArchLinux
+
 Mac OS X
 ++++++++
 
