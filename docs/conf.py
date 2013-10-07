@@ -107,6 +107,7 @@ html_theme_options = {}
 
 html_sidebars = {
     '**': ['localtoc.html', 'sourcelink.html', 'searchbox.html'],
+    'index': ['searchbox.html'],
 }
 
 # The name for this set of Sphinx documents.  If None, it defaults to
