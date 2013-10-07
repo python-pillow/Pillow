@@ -243,4 +243,4 @@ def setup(app):
 skip_api_docs = False
 
 if skip_api_docs:
-    exclude_patterns = ['_build', 'PIL.rst']
+    exclude_patterns = ['_build', 'PIL.rst', 'plugins.rst']
