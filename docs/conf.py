@@ -95,6 +95,7 @@ from better import better_theme_path
 html_theme_path = [better_theme_path]
 html_theme = 'better'
 
+html_title = "Pillow v{release} (PIL fork)".format(release=release)
 html_short_title = "Home"
 html_static_path = ['_static']
 
