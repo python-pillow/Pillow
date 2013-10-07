@@ -2,7 +2,7 @@ Pillow: a modern fork of PIL
 ============================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    handbook/index.rst
    PIL
