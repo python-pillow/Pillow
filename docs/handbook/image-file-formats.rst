@@ -154,7 +154,7 @@ PNG
 ^^^
 
 PIL identifies, reads, and writes PNG files containing ``1``, ``L``, ``P``,
-``RGB``, or ``RGBA`` data. Interlaced files are currently not supported.
+``RGB``, or ``RGBA`` data. Interlaced files are supported as of v1.1.7.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
@@ -383,7 +383,7 @@ PIL identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 SGI
 ^^^
 
-PIL reads uncompressed ``L`` and ``RGB`` files.
+PIL reads uncompressed ``L``, ``RGB``, and ``RGBA`` files.
 
 TGA
 ^^^
