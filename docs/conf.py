@@ -283,3 +283,13 @@ epub_copyright = u'2013, Author'
 
 # Allow duplicate toc entries.
 #epub_tocdup = True
+
+# skip_api_docs setting will skip PIL.rst if True. Used for working on the
+# guides; makes livereload basically instantaneous.
+def setup(app):
+    app.add_config_value('skip_api_docs', False, True)
+
+skip_api_docs = False
+
+if skip_api_docs:
+    exclude_patterns = ['_build', 'PIL.rst']
