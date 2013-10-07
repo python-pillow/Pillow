@@ -4,7 +4,8 @@ Pillow: a modern fork of PIL
 .. toctree::
    :maxdepth: 3
 
-   handbook/index.rst
+   handbook/guides.rst
+   handbook/appendices.rst
    PIL
 
 Indices and tables

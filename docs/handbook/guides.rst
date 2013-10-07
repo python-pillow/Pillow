@@ -1,5 +1,5 @@
-PIL Handbook
-============
+Guides
+======
 
 .. toctree::
   :maxdepth: 2

@@ -107,4 +107,3 @@ filter that behaves properly when downsampling (that is, when converting a
 large image to a small one). The ``BILINEAR`` and ``BICUBIC`` filters use a
 fixed input environment, and are best used for scale-preserving geometric
 transforms and upsamping.
-
