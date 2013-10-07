@@ -15,8 +15,8 @@ in the :py:mod:`~PIL.Image` module::
     >>> from PIL import Image
     >>> im = Image.open("lena.ppm")
 
-If successful, this function returns an :py:class:`PIL.Image.Image` object. You
-can now use instance attributes to examine the file contents::
+If successful, this function returns an :py:class:`~PIL.Image.Image` object.
+You can now use instance attributes to examine the file contents::
 
     >>> print im.format, im.size, im.mode
     PPM (512, 512) RGB
