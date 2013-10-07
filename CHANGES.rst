@@ -4,6 +4,8 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Alpha Premultiplication support for transform and resize [wiredfool]
+
 - Fixes to make Pypy 2.1.0 work on Ubuntu 12.04/64 [wiredfool]
 
 2.2.1 (2013-10-02)
