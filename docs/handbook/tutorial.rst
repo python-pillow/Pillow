@@ -18,7 +18,8 @@ in the :py:mod:`~PIL.Image` module::
 If successful, this function returns an :py:class:`~PIL.Image.Image` object.
 You can now use instance attributes to examine the file contents::
 
-    >>> print im.format, im.size, im.mode
+    >>> from __future__ import print_function
+    >>> print(im.format, im.size, im.mode)
     PPM (512, 512) RGB
 
 The :py:attr:`~PIL.Image.Image.format` attribute identifies the source of an
@@ -66,6 +67,7 @@ Convert files to JPEG
 
 ::
 
+    from __future__ import print_function
     import os, sys
     from PIL import Image
 
@@ -76,7 +78,7 @@ Convert files to JPEG
             try:
                 Image.open(infile).save(outfile)
             except IOError:
-                print "cannot convert", infile
+                print("cannot convert", infile)
 
 A second argument can be supplied to the :py:meth:`~PIL.Image.Image.save`
 method which explicitly specifies a file format. If you use a non-standard
@@ -87,6 +89,7 @@ Create JPEG thumbnails
 
 ::
 
+    from __future__ import print_function
     import os, sys
     from PIL import Image
 
@@ -100,7 +103,7 @@ Create JPEG thumbnails
                 im.thumbnail(size)
                 im.save(outfile, "JPEG")
             except IOError:
-                print "cannot create thumbnail for", infile
+                print("cannot create thumbnail for", infile)
 
 
 It is important to note that the library doesn’t decode or load the raster data
@@ -118,13 +121,14 @@ Identify Image Files
 
 ::
 
+    from __future__ import print_function
     import sys
     from PIL import Image
 
     for infile in sys.argv[1:]:
         try:
             im = Image.open(infile)
-            print infile, im.format, "%dx%d" % im.size, im.mode
+            print(infile, im.format, "%dx%d" % im.size, im.mode)
         except IOError:
             pass
 
@@ -518,13 +522,14 @@ Reading in draft mode
 
 ::
 
+    from __future__ import print_function
     im = Image.open(file)
-    print "original =", im.mode, im.size
+    print("original =", im.mode, im.size)
 
     im.draft("L", (100, 100))
-    print "draft =", im.mode, im.size
+    print("draft =", im.mode, im.size)
 
-    This prints something like:
+This prints something like::
 
     original = RGB (512, 512)
     draft = L (128, 128)
