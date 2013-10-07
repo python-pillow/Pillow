@@ -501,7 +501,7 @@ Reading from a tar archive
     fp = TarIO.TarIO("Imaging.tar", "Imaging/test/lena.ppm")
     im = Image.open(fp)
 
-Controlling the Decoder
+Controlling the decoder
 -----------------------
 
 Some decoders allow you to manipulate the image while reading it from a file.
