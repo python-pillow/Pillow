@@ -213,11 +213,45 @@ def _accept(prefix):
 # Wrapper for TIFF IFDs.
 
 class ImageFileDirectory(collections.MutableMapping):
+    """ This class represents a TIFF tag directory.  To speed things
+        up, we don't decode tags unless they're asked for.
 
-    # represents a TIFF tag directory.  to speed things up,
-    # we don't decode tags unless they're asked for.
+        Exposes a dictionary interface of the tags in the directory
+        ImageFileDirectory[key] = value
+        value = ImageFileDirectory[key]
+
+        Also contains a dictionary of tag types as read from the tiff
+        image file, 'ImageFileDirectory.tagtype'
+
+
+        Data Structures:
+        'public'
+        * self.tagtype = {} Key: numerical tiff tag number
+                            Value: integer corresponding to the data type from
+                            `TiffTags.TYPES`
+
+        'internal'            
+        * self.tags = {}  Key: numerical tiff tag number
+                          Value: Decoded data, Generally a tuple.
+                            * If set from __setval__ -- always a tuple
+                            * Numeric types -- always a tuple
+                            * String type -- not a tuple, returned as string
+                            * Undefined data -- not a tuple, returned as bytes
+                            * Byte -- not a tuple, returned as byte.
+        * self.tagdata = {} Key: numerical tiff tag number
+                            Value: undecoded byte string from file
+
+
+        Tags will be found in either self.tags or self.tagdata, but
+        not both. The union of the two should contain all the tags
+        from the Tiff image file.  External classes shouldn't
+        reference these unless they're really sure what they're doing.
+        """
 
     def __init__(self, prefix=II):
+        """
+        :prefix: 'II'|'MM'  tiff endianness
+        """
         self.prefix = prefix[:2]
         if self.prefix == MM:
             self.i16, self.i32 = ib16, ib32
@@ -263,7 +297,8 @@ class ImageFileDirectory(collections.MutableMapping):
         try:
             return self.tags[tag]
         except KeyError:
-            type, data = self.tagdata[tag] # unpack on the fly
+            data = self.tagdata[tag] # unpack on the fly
+            type = self.tagtype[tag]
             size, handler = self.load_dispatch[type]
             self.tags[tag] = data = handler(self, data)
             del self.tagdata[tag]
@@ -292,8 +327,10 @@ class ImageFileDirectory(collections.MutableMapping):
             return tag in self
 
     def __setitem__(self, tag, value):
+        # tags are tuples for integers
+        # tags are not tuples for byte, string, and undefined data.
+        # see load_*
         if not isinstance(value, tuple):
-            # UNDONE -- this should probably be type, value
             value = (value,)
         self.tags[tag] = value
 
@@ -407,7 +444,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 warnings.warn("Possibly corrupt EXIF data.  Expecting to read %d bytes but only got %d. Skipping tag %s" % (size, len(data), tag))
                 continue
 
-            self.tagdata[tag] = typ, data
+            self.tagdata[tag] = data
             self.tagtype[tag] = typ
 
             if Image.DEBUG:
