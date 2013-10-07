@@ -262,6 +262,12 @@ dictionary of decoded TIFF fields. Values are stored as either strings or
 tuples. Note that only short, long and ASCII tags are correctly unpacked by
 this release.
 
+WebP
+^^^^
+
+PIL reads and writes WebP files. The specifics of PIL's capabilities with this
+format are currently undocumented.
+
 XBM
 ^^^
 
