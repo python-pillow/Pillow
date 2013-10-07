@@ -20,8 +20,8 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     uint8_t *output;
     char *mode;
     Py_ssize_t size;
-    int icc_size;  /* see comment below */
-    int exif_size;
+    Py_ssize_t icc_size; 
+    Py_ssize_t  exif_size;
     size_t ret_size;
 
     if (!PyArg_ParseTuple(args, "s#iifss#s#",
@@ -52,10 +52,16 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     }
 #else
    {
+    /* I want to truncate the *_size items that get passed into webp
+       data. Pypy2.1.0 had some issues where the Py_ssize_t items had 
+       data in the upper byte. (Not sure why, it shouldn't have been there)
+    */
+    int i_icc_size = (int)icc_size; 
+    int i_exif_size = (int)exif_size;
     WebPData output_data = {0};
     WebPData image = { output, ret_size };
-    WebPData icc_profile = { icc_bytes, icc_size };
-    WebPData exif = { exif_bytes, exif_size };
+    WebPData icc_profile = { icc_bytes, i_icc_size };
+    WebPData exif = { exif_bytes, i_exif_size };
     WebPMuxError err;
     int dbg = 0;
 
@@ -66,16 +72,11 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     WebPMuxSetImage(mux, &image, copy_data);
 
     if (dbg) {
-        fprintf(stderr, "icc size %d, %d \n", icc_size, icc_size > 0);
+        /* was getting %ld icc_size == 0, icc_size>0 was true */
+        fprintf(stderr, "icc size %d, %d \n", i_icc_size, i_icc_size > 0);
     }
-    /* icc_size and exif size used to be Py_ssize_t, now they're int.
-       PyPy2.1 was having trouble with these, as they were getting
-       cast badly. Since WebP can't take a 64 bit value, They were
-       ending up as null PyArg_ParseTuple can kick out ints, we're
-       going to use those instead so that we don't have 32/64 bit
-       problems here.
-    */
-    if (icc_size > 0) {
+
+    if (i_icc_size > 0) {
         if (dbg) {
             fprintf (stderr, "Adding ICC Profile\n");
         }
@@ -88,9 +89,9 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     }
 
     if (dbg) {
-        fprintf(stderr, "exif size %d \n", exif_size);
+        fprintf(stderr, "exif size %d \n", i_exif_size);
     }
-    if (exif_size > 0) {
+    if (i_exif_size > 0) {
         if (dbg){
             fprintf (stderr, "Adding Exif Data\n");
         }
