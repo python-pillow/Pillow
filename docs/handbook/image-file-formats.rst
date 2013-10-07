@@ -241,8 +241,11 @@ TIFF
 
 PIL reads and writes TIFF files. It can read both striped and tiled images,
 pixel and plane interleaved multi-band images, and either uncompressed, or
-Packbits, LZW, or JPEG compressed images. In the current version, PIL always
-writes uncompressed TIFF files.
+Packbits, LZW, or JPEG compressed images.
+
+If you have libtiff and its headers installed, PIL can read and write many more
+kinds of compressed TIFF files. If not, PIL will always write uncompressed
+files.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
