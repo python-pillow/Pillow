@@ -26,7 +26,7 @@ image. If the image was not read from a file, it is set to None. The size
 attribute is a 2-tuple containing width and height (in pixels). The
 :py:attr:`~PIL.Image.Image.mode` attribute defines the number and names of the
 bands in the image, and also the pixel type and depth. Common modes are “L”
-(luminance) for greyscale images, “RGB” for true colour images, and “CMYK” for
+(luminance) for greyscale images, “RGB” for true color images, and “CMYK” for
 pre-press images.
 
 If the file cannot be opened, an :py:exc:`IOError` exception is raised.
@@ -207,7 +207,7 @@ Splitting and merging bands
     im = Image.merge("RGB", (b, g, r))
 
 Note that for a single-band image, :py:meth:`~PIL.Image.Image.split` returns
-the image itself. To work with individual colour bands, you may want to convert
+the image itself. To work with individual color bands, you may want to convert
 the image to “RGB” first.
 
 Geometrical transforms
@@ -346,7 +346,7 @@ For more advanced image enhancement, you can use the classes in the
 :py:mod:`~PIL.ImageEnhance` module. Once created from an image, an enhancement
 object can be used to quickly try out different settings.
 
-You can adjust contrast, brightness, colour balance and sharpness in this way.
+You can adjust contrast, brightness, color balance and sharpness in this way.
 
 Enhancing images
 ~~~~~~~~~~~~~~~~
