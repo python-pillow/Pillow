@@ -57,6 +57,40 @@ def test_mesh():
     assert_image_equal(blank, transformed.crop((w//2,0,w,h//2)))
     assert_image_equal(blank, transformed.crop((0,h//2,w//2,h)))
 
+def _test_alpha_premult(op):
+     # create image with half white, half black, with the black half transparent.
+    # do op, 
+    # there should be no darkness in the white section.
+    im = Image.new('RGBA', (10,10), (0,0,0,0));
+    im2 = Image.new('RGBA', (5,10), (255,255,255,255));
+    im.paste(im2, (0,0))
+    
+    im = op(im, (40,10))
+    im_background = Image.new('RGB', (40,10), (255,255,255))
+    im_background.paste(im, (0,0), im)
+    
+    hist = im_background.histogram()
+    assert_equal(40*10, hist[-1])
+
+    
+def test_alpha_premult_resize():
+
+    def op (im, sz):
+        return im.resize(sz, Image.LINEAR)
+    
+    _test_alpha_premult(op)
+    
+def test_alpha_premult_transform():
+    
+    def op(im, sz):
+        (w,h) = im.size
+        return im.transform(sz, Image.EXTENT,
+                            (0,0,
+                             w,h), 
+                            Image.BILINEAR)
+
+    _test_alpha_premult(op)
+
 
 def test_blank_fill():
     # attempting to hit

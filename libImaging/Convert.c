@@ -289,6 +289,31 @@ rgba2rgba(UINT8* out, const UINT8* in, int xsize)
     }
 }
 
+/* RGBa -> RGBA conversion to remove premultiplication 
+   Needed for correct transforms/resizing on RGBA images */
+static void
+rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    unsigned int alpha;
+    for (x = 0; x < xsize; x++, in+=4) {
+        alpha = in[3];
+        if (alpha) {
+            *out++ = CLIP((255 * in[0]) / alpha);
+            *out++ = CLIP((255 * in[1]) / alpha);
+            *out++ = CLIP((255 * in[2]) / alpha);
+        } else {
+            *out++ = in[0];
+            *out++ = in[1];
+            *out++ = in[2];
+        }
+        *out++ = in[3];
+
+    }
+}
+
+
+
 /* ---------------- */
 /* CMYK conversions */
 /* ---------------- */
@@ -618,6 +643,8 @@ static struct {
     { "RGBA", "RGBX", rgb2rgba },
     { "RGBA", "CMYK", rgb2cmyk },
     { "RGBA", "YCbCr", ImagingConvertRGB2YCbCr },
+
+    { "RGBa", "RGBA", rgba2rgbA },
 
     { "RGBX", "1", rgb2bit },
     { "RGBX", "L", rgb2l },
