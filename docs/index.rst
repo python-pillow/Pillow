@@ -7,6 +7,7 @@ Pillow: a modern fork of PIL
    handbook/guides.rst
    handbook/appendices.rst
    PIL
+   plugins
 
 Indices and tables
 ==================
