@@ -1071,11 +1071,13 @@ def _save(im, fp, filename):
             _fp = os.dup(fp.fileno())
 
         blocklist =  [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
-        atts = dict([(k,v) for (k,(v,)) in ifd.items() if k not in blocklist])
+        
+        items = itertools.chain(getattr(im, 'ifd', {}).items(), ifd.items())
+        atts = {}
         try:
             # pull in more bits from the original file, e.g x,y resolution
             # so that we can save(load('')) == original file.
-            for k,v in im.ifd.items():
+            for k,v in items:
                 if k not in atts and k not in blocklist:
                     if type(v[0]) == tuple and len(v) > 1:
                        # A tuple of more than one rational tuples
@@ -1094,9 +1096,15 @@ def _save(im, fp, filename):
                     if type(v) == str:
                         atts[k] = v
                         continue
+                    if type(v) == unicode:
+                        atts[k] = v.encode('ascii', errors='ignore')
+                        continue
 
-        except:
+        except Exception, msg:
             # if we don't have an ifd here, just punt.
+            if Image.DEBUG:
+                print (msg)
+                #raise msg
             pass
         if Image.DEBUG:
             print (atts)
