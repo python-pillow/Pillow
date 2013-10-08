@@ -481,7 +481,10 @@ class ImageFileDirectory(collections.MutableMapping):
 
             if tag in self.tagtype:
                 typ = self.tagtype[tag]
-
+                
+            if Image.DEBUG:
+                print ("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
+                   
             if typ == 1:
                 # byte data
                 if isinstance(value, tuple):
@@ -491,7 +494,7 @@ class ImageFileDirectory(collections.MutableMapping):
             elif typ == 7:
                 # untyped data
                 data = value = b"".join(value)
-            elif isinstance(value[0], str):
+            elif type(value[0]) in  (str, unicode):
                 # string data
                 if isinstance(value, tuple):
                     value = value[-1]
@@ -508,9 +511,12 @@ class ImageFileDirectory(collections.MutableMapping):
                 if tag == STRIPOFFSETS:
                     stripoffsets = len(directory)
                     typ = 4 # to avoid catch-22
-                elif tag in (X_RESOLUTION, Y_RESOLUTION):
+                elif tag in (X_RESOLUTION, Y_RESOLUTION) or typ==5:
                     # identify rational data fields
                     typ = 5
+                    # UNDONE -- could be multiple rational tuples.
+                    if isinstance(value[0], tuple):
+                        value = value[-1]
                 elif not typ:
                     typ = 3
                     for v in value:
