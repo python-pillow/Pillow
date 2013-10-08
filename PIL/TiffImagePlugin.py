@@ -1098,7 +1098,7 @@ def _save(im, fp, filename):
                         atts[k] = v[0]
                         continue
                     if isStringType(v):
-                        atts[k] = v.encode('ascii', errors='ignore')
+                        atts[k] = v.encode('ascii', 'ignore')
                         continue
 
         except Exception as msg:
