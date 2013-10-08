@@ -514,9 +514,9 @@ class ImageFileDirectory(collections.MutableMapping):
                 elif tag in (X_RESOLUTION, Y_RESOLUTION) or typ==5:
                     # identify rational data fields
                     typ = 5
-                    # UNDONE -- could be multiple rational tuples.
                     if isinstance(value[0], tuple):
-                        value = value[-1]
+                        # long name for flatten
+                        value = tuple(itertools.chain.from_iterable(value))
                 elif not typ:
                     typ = 3
                     for v in value:
