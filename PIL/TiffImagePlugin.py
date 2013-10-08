@@ -1101,7 +1101,7 @@ def _save(im, fp, filename):
                         atts[k] = v.encode('ascii', errors='ignore')
                         continue
 
-        except (Exception, msg):
+        except Exception as msg:
             # if we don't have an ifd here, just punt.
             if Image.DEBUG:
                 print (msg)
