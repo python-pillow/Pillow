@@ -21,7 +21,6 @@ aware that it was last updated for PIL 1.1.5.
    handbook/guides.rst
    handbook/appendices.rst
    PIL
-   plugins
 
 Indices and tables
 ==================
