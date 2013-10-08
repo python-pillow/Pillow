@@ -92,7 +92,6 @@ def test_g4_write():
     assert_equal(reread.size,(500,500))
     _assert_noerr(reread)
     assert_image_equal(reread, rot)
-
     assert_false(orig.tobytes() == reread.tobytes())
 
 def test_adobe_deflate_tiff():
@@ -105,3 +104,23 @@ def test_adobe_deflate_tiff():
     assert_no_exception(lambda: im.load())
 
 
+def test_write_metadata():
+    """ Test metadata writing through libtiff """
+    img = Image.open('Tests/images/lena_g4.tif')
+    f = tempfile('temp.tiff')
+    img.save(f, tiffinfo = img.tag)
+
+    loaded = Image.open(f)
+
+    original = img.tag.named()
+    reloaded = loaded.tag.named()
+
+    ignored = ['StripByteCounts', 'RowsPerStrip', 'PageNumber']
+    
+    for tag, value in reloaded.items():
+        if tag not in ignored:
+            assert_equal(original[tag], value, "%s didn't roundtrip" % tag)
+
+    for tag, value in original.items():
+        if tag not in ignored: 
+            assert_equal(value, reloaded[tag], "%s didn't roundtrip" % tag)
