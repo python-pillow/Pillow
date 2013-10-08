@@ -35,7 +35,7 @@ def test_read_metadata():
              'ImageLength': (128,),
              'Compression': (4,),
              'FillOrder': (1,),
-             'DocumentName': u'lena.g4.tif',
+             'DocumentName': 'lena.g4.tif',
              'RowsPerStrip': (128,),
              'ResolutionUnit': (1,),
              'PhotometricInterpretation': (0,),
@@ -46,7 +46,7 @@ def test_read_metadata():
              'StripByteCounts': (1796,),
              'SamplesPerPixel': (1,),
              'StripOffsets': (8,),
-             'Software': u'ImageMagick 6.5.7-8 2012-08-17 Q16 http://www.imagemagick.org'}
+             'Software': 'ImageMagick 6.5.7-8 2012-08-17 Q16 http://www.imagemagick.org'}
 
     # assert_equal is equivalent, but less helpful in telling what's wrong. 
     named = img.tag.named()

@@ -46,12 +46,15 @@ __version__ = "1.3.5"
 from PIL import Image, ImageFile
 from PIL import ImagePalette
 from PIL import _binary
+from PIL._util import isStringType
 
 import warnings
 import array, sys
 import collections
 import itertools
 import os
+
+
 
 II = b"II" # little-endian (intel-style)
 MM = b"MM" # big-endian (motorola-style)
@@ -494,7 +497,7 @@ class ImageFileDirectory(collections.MutableMapping):
             elif typ == 7:
                 # untyped data
                 data = value = b"".join(value)
-            elif type(value[0]) in  (str, unicode):
+            elif isStringType(value[0]):
                 # string data
                 if isinstance(value, tuple):
                     value = value[-1]
@@ -984,7 +987,8 @@ def _save(im, fp, filename):
     info = im.encoderinfo.get("tiffinfo",{})
     if Image.DEBUG:
         print ("Tiffinfo Keys: %s"% info.keys)
-    for key in info.keys():
+    keys = list(info.keys())
+    for key in keys:
         ifd[key] = info.get(key)
         try:
             ifd.tagtype[key] = info.tagtype[key]
@@ -1093,14 +1097,11 @@ def _save(im, fp, filename):
                         # int or similar
                         atts[k] = v[0]
                         continue
-                    if type(v) == str:
-                        atts[k] = v
-                        continue
-                    if type(v) == unicode:
+                    if isStringType(v):
                         atts[k] = v.encode('ascii', errors='ignore')
                         continue
 
-        except Exception, msg:
+        except (Exception, msg):
             # if we don't have an ifd here, just punt.
             if Image.DEBUG:
                 print (msg)
