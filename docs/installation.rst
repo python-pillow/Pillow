@@ -14,13 +14,13 @@ Simple installation
     the external libraries first. This page probably also include specific
     instructions for your platform.
 
-You can install Pillow with ``pip``::
+You can install Pillow with :command:`pip`::
 
     $ pip install Pillow
 
 Or :command:`easy_install` (for installing `Python Eggs
-<http://peak.telecommunity.com/DevCenter/PythonEggs>`_, as pip does not support
-them)::
+<http://peak.telecommunity.com/DevCenter/PythonEggs>`_, as :command:`pip` does
+not support them)::
 
     $ easy_install Pillow
 
