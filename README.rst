@@ -194,21 +194,3 @@ Platform support
 
 Current platform support for Pillow is documented here:
 http://pillow.readthedocs.org/en/latest/installation.html#platform-support
-
-Port existing PIL-based code to Pillow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Pillow is a functional drop-in replacement for the Python Imaging Library. To run your existing PIL-compatible code with Pillow, it needs to be modified to import the ``Imaging`` module from the ``PIL`` namespace *instead* of the global namespace. I.e. change::
-
-    import Image
-
-to::
-
-    from PIL import Image
-
-.. Note:: If your code imports from ``_imaging``, it will no longer work.
-
-The preferred, future proof method of importing the private ``_imaging`` module is::
-
-    from PIL import Image
-    _imaging = Image.core
