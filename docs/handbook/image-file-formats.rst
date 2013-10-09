@@ -265,6 +265,57 @@ dictionary of decoded TIFF fields. Values are stored as either strings or
 tuples. Note that only short, long and ASCII tags are correctly unpacked by
 this release.
 
+Saving Tiff Images
+~~~~~~~~~~~~~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**tiffinfo** 
+    A :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory` object or dict
+    object containing tiff tags and values. The TIFF field type is
+    autodetected for Numeric and string values, any other types
+    require using an :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory`
+    object and setting the type in
+    :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory.tagtype` with
+    the appropriate numerical value from
+    ``TiffTags.TYPES``.
+ 
+    .. versionadded:: 2.3.0
+
+**compression**
+    A string containing the desired compression method for the
+	file. (valid only with libtiff installed) Valid compression
+	methods are: ``[None, "tiff_ccitt", "group3", "group4",
+	"tiff_jpeg", "tiff_adobe_deflate", "tiff_thunderscan",
+	"tiff_deflate", "tiff_sgilog", "tiff_sgilog24", "tiff_raw_16"]``
+
+These arguments to set the tiff header fields are an alternative to using the general tags available through tiffinfo.
+
+**description** 
+
+**software**
+
+**date time**
+
+**artist**
+
+**copyright**
+    Strings
+
+**resolution unit**
+    A string of "inch", "centimeter" or "cm" 
+
+**resolution**
+
+**x resolution**
+
+**y resolution**
+
+**dpi**
+    Either a Float, Integer, or 2 tuple of (numerator,
+    denominator). Resolution implies an equal x and y resolution, dpi
+    also implies a unit of inches.
+
 WebP
 ^^^^
 
