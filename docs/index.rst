@@ -24,7 +24,8 @@ instructions <installation>`.
 
 If you can't find the information you need, try the old `PIL Handbook`_, but be
 aware that it was last updated for PIL 1.1.5. You can download archives and old
-versions from `PyPI <https://pypi.python.org/pypi/Pillow>`_.
+versions from `PyPI <https://pypi.python.org/pypi/Pillow>`_. You can get the
+source and contribute at https://github.com/python-imaging/Pillow.
 
 .. _PIL Handbook: http://effbot.org/imagingbook/pil-index.htm
 
