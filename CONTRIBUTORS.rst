@@ -27,6 +27,7 @@ Contributors (Pillow)
 - Sandro Mani <manisandro __at__ gmail.com>
 - Simon Law <simon.law __at__ ecometrica.com>
 - Stéphane Klein <stephane __at__ harobed.org>
+- Steve Johnson <steve __at__ steveasleep.com>
 - Takeshi KOMIYA <i.tkomiya __at__ gmail.com>
 - Tom Gross <tom __at__ toms-projekte.de>
 - Tom Payne <twpayne __at__ gmail.com>
