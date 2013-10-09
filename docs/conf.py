@@ -48,7 +48,7 @@ html_theme_options = {}
 html_sidebars = {
     '**': ['localtoc.html', 'sourcelink.html', 'sidebarhelp.html',
            'searchbox.html'],
-    'index': ['sidebarhelp.html', 'searchbox.html'],
+    'index': ['globaltoc.html', 'sidebarhelp.html', 'searchbox.html'],
 }
 
 # Output file base name for HTML help builder.
