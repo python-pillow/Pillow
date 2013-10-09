@@ -8,6 +8,14 @@ Pillow is the "friendly" PIL fork by Alex Clark and Contributors. PIL is the Pyt
 .. image:: https://travis-ci.org/python-imaging/Pillow.png
    :target: https://travis-ci.org/python-imaging/Pillow
 
+.. image:: https://pypip.in/v/Pillow/badge.png
+    :target: https://pypi.python.org/pypi/Pillow/
+    :alt: Latest PyPI version
+
+.. image:: https://pypip.in/d/Pillow/badge.png
+    :target: https://pypi.python.org/pypi/Pillow/
+    :alt: Number of PyPI downloads
+
 Introduction
 ------------
 
@@ -147,6 +155,17 @@ Prerequisites are installed with on **Ubuntu 12.04 LTS** or **Raspian Wheezy 7.0
 
     $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms1-dev libwebp-dev tcl8.5-dev tk8.5-dev
 
+Distributions
+^^^^^^^^^^^^^
+
+.. Note:: XXX Provide links
+
+Additionally, many Linux distributions now include Pillow (instead of PIL) with their distribution:
+
+- Fedora
+- Debian/Ubuntu
+- ArchLinux
+
 Mac OS X
 ++++++++
 
@@ -197,13 +216,13 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Mac OS X 10.8 Mountain Lion      |Yes          | 2.6,2.7,3.2,3.3              |                              |x86-64                 |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
-| Mac OS X 10.7 Lion               |Yes          | 2.7                          | 2.2.0                        |x86-64                 |
+| Mac OS X 10.7 Lion               |Yes          | 2.6,2.7,3.2,3.3              | 2.2.0                        |x86-64                 |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Redhat Linux 6                   |Yes          | 2.6                          |                              |x86                    |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Ubuntu Linux 10.04 LTS           |Yes          | 2.6                          | 2.2.0                        |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
-| Ubuntu Linux 12.04 LTS           |Yes          | 2.6,2.7,3.2,3.3              | 2.2.0                        |x86,x86-64             |
+| Ubuntu Linux 12.04 LTS           |Yes          | 2.6,2.7,3.2,3.3,PyPy2.1      | 2.2.0                        |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Raspian Wheezy                   |Yes          | 2.7,3.2                      | 2.2.0                        |arm                    |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
@@ -213,11 +232,9 @@ Current platform support for Pillow. Binary distributions are contributed for ea
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |                              |x86-64                 |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
-| Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,PyPy1.9 [1]_ | 2.2.0                        |x86 [2]_,x86-64        |
+| Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,3.4a3        | 2.2.0                        |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 
-.. [1] x86 only, 2.1.0 tested
-.. [2] In some cases, x86 support may indicate 32-bit compilation on 64-bit architecture (vs. compilation on 32-bit hardware).
 
 Port existing PIL-based code to Pillow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

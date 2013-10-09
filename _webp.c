@@ -20,8 +20,8 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     uint8_t *output;
     char *mode;
     Py_ssize_t size;
-    Py_ssize_t icc_size;
-    Py_ssize_t exif_size;
+    Py_ssize_t icc_size; 
+    Py_ssize_t  exif_size;
     size_t ret_size;
 
     if (!PyArg_ParseTuple(args, "s#iifss#s#",
@@ -29,7 +29,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
                 &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
         Py_RETURN_NONE;
     }
-
+    
 	if (strcmp(mode, "RGBA")==0){
 		if (size < width * height * 4){
 			Py_RETURN_NONE;
@@ -52,8 +52,18 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     }
 #else
    {
+    /* I want to truncate the *_size items that get passed into webp
+       data. Pypy2.1.0 had some issues where the Py_ssize_t items had 
+       data in the upper byte. (Not sure why, it shouldn't have been there)
+    */
+    int i_icc_size = (int)icc_size; 
+    int i_exif_size = (int)exif_size;
     WebPData output_data = {0};
     WebPData image = { output, ret_size };
+    WebPData icc_profile = { icc_bytes, i_icc_size };
+    WebPData exif = { exif_bytes, i_exif_size };
+    WebPMuxError err;
+    int dbg = 0;
 
     int copy_data = 0;  // value 1 indicates given data WILL be copied to the mux
                         // and value 0 indicates data will NOT be copied.
@@ -61,14 +71,36 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     WebPMux* mux = WebPMuxNew();
     WebPMuxSetImage(mux, &image, copy_data);
 
-    if (icc_size > 0) {
-        WebPData icc_profile = { icc_bytes, icc_size };
-        WebPMuxSetChunk(mux, "ICCP", &icc_profile, copy_data);
+    if (dbg) {
+        /* was getting %ld icc_size == 0, icc_size>0 was true */
+        fprintf(stderr, "icc size %d, %d \n", i_icc_size, i_icc_size > 0);
     }
 
-    if (exif_size > 0) {
-        WebPData exif = { exif_bytes, exif_size };
-        WebPMuxSetChunk(mux, "EXIF", &exif, copy_data);
+    if (i_icc_size > 0) {
+        if (dbg) {
+            fprintf (stderr, "Adding ICC Profile\n");
+        }
+        err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, copy_data);
+        if (dbg && err == WEBP_MUX_INVALID_ARGUMENT) {
+            fprintf(stderr, "Invalid ICC Argument\n");
+        } else if (dbg && err == WEBP_MUX_MEMORY_ERROR) {
+            fprintf(stderr, "ICC Memory Error\n");
+        }
+    }
+
+    if (dbg) {
+        fprintf(stderr, "exif size %d \n", i_exif_size);
+    }
+    if (i_exif_size > 0) {
+        if (dbg){
+            fprintf (stderr, "Adding Exif Data\n");
+        }
+        err = WebPMuxSetChunk(mux, "EXIF", &exif, copy_data);
+        if (dbg && err == WEBP_MUX_INVALID_ARGUMENT) {
+            fprintf(stderr, "Invalid Exif Argument\n");
+        } else if (dbg && err == WEBP_MUX_MEMORY_ERROR) {
+            fprintf(stderr, "Exif Memory Error\n");
+        }
     }
 
     WebPMuxAssemble(mux, &output_data);
