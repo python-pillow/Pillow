@@ -1,7 +1,7 @@
 # requirements for working on docs
 
 # install pillow from master if you're into that, but RtD needs this
-pillow>=2.2.0
+pillow>=2.2.1
 
 Jinja2==2.7.1
 MarkupSafe==0.18

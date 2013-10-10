@@ -215,7 +215,7 @@ class pil_build_ext(build_ext):
         # FIXME: check /opt/stuff directories here?
 
         # respect CFLAGS/LDFLAGS
-        for k in 'CFLAGS LDFLAGS'.split():
+        for k in ('CFLAGS', 'LDFLAGS'):
             if k in os.environ:
                 for match in re.finditer(r'-I([^\s]+)', os.environ[k]):
                     _add_directory(include_dirs, match.group(1))
@@ -223,12 +223,12 @@ class pil_build_ext(build_ext):
                     _add_directory(library_dirs, match.group(1))
 
         # include, rpath, if set as environment variables:
-        for k in 'C_INCLUDE_PATH INCLUDE'.split():
+        for k in ('C_INCLUDE_PATH', 'INCLUDE'):
             if k in os.environ:
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(include_dirs, d)
 
-        for k in 'LD_RUN_PATH LIBRARY_PATH LIB'.split():
+        for k in ('LD_RUN_PATH', 'LIBRARY_PATH', 'LIB'):
             if k in os.environ:
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(library_dirs, d)
