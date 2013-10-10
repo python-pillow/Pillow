@@ -4,6 +4,8 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Respect CFLAGS/LDFLAGS when searching for headers/libs [iElectric]
+
 - Port PIL Handbook tutorial and appendices [irksep]
 
 - Alpha Premultiplication support for transform and resize [wiredfool]
