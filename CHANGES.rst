@@ -4,6 +4,8 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Move or copy content from README.rst to docs/ [irksep]
+
 - Respect CFLAGS/LDFLAGS when searching for headers/libs [iElectric]
 
 - Port PIL Handbook tutorial and appendices [irksep]
