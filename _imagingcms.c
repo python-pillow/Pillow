@@ -525,66 +525,10 @@ _profile_getattr(CmsProfileObject* self, cmsInfoType field)
 }
 
 static PyObject*
-cms_profile_getattr_product_name(CmsProfileObject* self, void* closure)
-{
-    // name was "%s - %s" (model, manufacturer) || Description , 
-    // but if the Model and Manufacturer were the same or the model 
-    // was long, Just the model,  in 1.x
-    PyObject *model = _profile_getattr(self, cmsInfoModel);
-    PyObject *manufacturer = _profile_getattr(self, cmsInfoManufacturer);
-    PyObject *result;
-
-    if (!PyUnicode_GetSize(model) && !PyUnicode_GetSize(manufacturer)){
-        return _profile_getattr(self, cmsInfoDescription);
-    }
-    if (!PyUnicode_GetSize(manufacturer) || PyUnicode_GetSize(model)> 30){
-        return model;
-    }
-    result = PyUnicode_Concat(model,
-                    PyUnicode_FromString(" - "));
-    result = PyUnicode_Concat(result,_profile_getattr(self, cmsInfoManufacturer));
-    return result;
-}
-
-static PyObject*
 cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
 {    
     // description was Description != 'Copyright' || or  "%s - %s" (manufacturer, model) in 1.x
     return _profile_getattr(self, cmsInfoDescription);
-}
-
-void _info_concat(PyObject **ret, PyObject *elt){
-    if (PyUnicode_GetSize(elt)){
-        *ret = PyUnicode_Concat(*ret, elt);
-        *ret = PyUnicode_Concat(*ret, PyUnicode_FromString("\r\n\r\n"));
-    }
-}
-
-static PyObject*
-cms_profile_getattr_product_info(CmsProfileObject* self, void* closure)
-{   
-    // info was description \r\n\r\n copyright \r\n\r\n K007 tag \r\n\r\n whitepoint
-    PyObject *description = _profile_getattr(self, cmsInfoDescription);
-    PyObject *copyright = _profile_getattr(self, cmsInfoCopyright);
-    PyObject *ret = PyUnicode_FromString("");
-
-    _info_concat(&ret, description);
-    _info_concat(&ret, copyright);
- 
-    if (cmsIsTag(self->profile, cmsSigMediaWhitePointTag)){
-        cmsCIEXYZ *WhitePt;
-        cmsCIExyY xyyWhitePt;
-        cmsFloat64Number tempK;
-
-        WhitePt = (cmsCIEXYZ *) cmsReadTag(self->profile, cmsSigMediaWhitePointTag);
-        cmsXYZ2xyY(&xyyWhitePt, WhitePt);
-        if (cmsTempFromWhitePoint(&tempK, &xyyWhitePt)){
-            char tempstr[10];
-            snprintf(tempstr, 10, "%5.0f", tempK);
-            _info_concat(&ret, PyUnicode_FromFormat("White Point: %sK", tempstr));
-        } 
-    }
-    return ret;
 }
 
 /* use these four for the individual fields. 
@@ -633,9 +577,7 @@ cms_profile_getattr_color_space(CmsProfileObject* self, void* closure)
 
 /* FIXME: add more properties (creation_datetime etc) */
 static struct PyGetSetDef cms_profile_getsetters[] = {
-    { "product_name",       (getter) cms_profile_getattr_product_name },
     { "product_desc",       (getter) cms_profile_getattr_product_desc },
-    { "product_info",       (getter) cms_profile_getattr_product_info },
     { "product_description", (getter) cms_profile_getattr_product_description },
     { "product_manufacturer", (getter) cms_profile_getattr_product_manufacturer },
     { "product_model",      (getter) cms_profile_getattr_product_model },

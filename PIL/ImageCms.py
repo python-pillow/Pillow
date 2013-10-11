@@ -153,8 +153,8 @@ class ImageCmsProfile:
         self.profile = profile
         self.filename = filename
         if profile:
-            self.product_name = profile.product_name
-            self.product_info = profile.product_info
+            self.product_name = None #profile.product_name
+            self.product_info = None #profile.product_info
         else:
             self.product_name = None
             self.product_info = None
@@ -599,12 +599,19 @@ def getProfileName(profile):
         # add an extra newline to preserve pyCMS compatibility
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
-        ## print ("get profile name")
-        ## print ("\n".join([profile.profile.product_model,
-        ##                   profile.profile.product_description,
-        ##                   profile.profile.product_manufacturer,
-        ##                   profile.profile.product_copyright]))
-        return profile.profile.product_name + "\n"
+        # do it in python, not c.
+        #    // name was "%s - %s" (model, manufacturer) || Description , 
+        #    // but if the Model and Manufacturer were the same or the model 
+        #    // was long, Just the model,  in 1.x
+        model = profile.profile.product_model
+        manufacturer = profile.profile.product_manufacturer
+
+        if not (model or manufacturer):
+            return profile.profile.product_description+"\n"
+        if not manufacturer or len(model) > 30:
+            return model + "\n"
+        return "%s - %s\n" % (model, manufacturer)
+
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
@@ -632,7 +639,16 @@ def getProfileInfo(profile):
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
         # add an extra newline to preserve pyCMS compatibility
-        return profile.product_info + "\n"
+        # Python, not C. the white point bits weren't working well, so skipping.
+        #    // info was description \r\n\r\n copyright \r\n\r\n K007 tag \r\n\r\n whitepoint
+        description = profile.profile.product_description
+        cpright = profile.profile.product_copyright
+        arr = []
+        for elt in (description, cpright):
+            if elt:
+                arr.append(elt)
+        return "\r\n\r\n".join(arr)+"\r\n\r\n"
+
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
