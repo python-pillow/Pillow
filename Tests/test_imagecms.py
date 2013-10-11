@@ -98,6 +98,8 @@ def test_lab_color_profile():
 def test_lab_color():
     pLab = ImageCms.createProfile("LAB")    
     t = ImageCms.buildTransform(SRGB, pLab, "RGB", "RGB")
+    # need to add a type mapping for some PIL type to TYPE_Lab_8 in findLCMSType,
+    # and have that mapping work back to a PIL mode. (likely RGB)
     i = ImageCms.applyTransform(lena(), t)
     assert_image(i, "RGB", (128, 128))
 
