@@ -236,6 +236,9 @@ findLCMStype(char* PILmode)
     else if (strcmp(PILmode, "YCC") == 0) {
         return TYPE_YCbCr_8;
     }
+    else if (strcmp(PILmode, "LAB") == 0) {
+        return TYPE_Lab_8;
+    }
 
     else {
         /* take a wild guess... but you probably should fail instead. */
