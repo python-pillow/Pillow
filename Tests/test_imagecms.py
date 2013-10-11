@@ -89,3 +89,18 @@ def test_exceptions():
 def test_display_profile():
     # try fetching the profile for the current display device
     assert_no_exception(lambda: ImageCms.get_display_profile())
+
+
+def test_lab_color_profile():
+    pLab = ImageCms.createProfile("LAB", 5000)
+    pLab = ImageCms.createProfile("LAB", 6500)
+    
+def test_lab_color():
+    pLab = ImageCms.createProfile("LAB")    
+    t = ImageCms.buildTransform(SRGB, pLab, "RGB", "RGB")
+    i = ImageCms.applyTransform(lena(), t)
+    assert_image(i, "RGB", (128, 128))
+
+    target = Image.open('Tests/images/lena.Lab.tif')
+
+    assert_image_similar(i,target, 1)

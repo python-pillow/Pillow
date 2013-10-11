@@ -566,10 +566,10 @@ def createProfile(colorSpace, colorTemp=-1):
         raise PyCMSError("Color space not supported for on-the-fly profile creation (%s)" % colorSpace)
 
     if colorSpace == "LAB":
-        if isinstance(colorTemp, float):
-            colorTemp = int(colorTemp + 0.5)
-        if not isinstance(colorTemp, int):
-            raise PyCMSError("Color temperature must be a positive integer, \"%s\" not valid" % colorTemp)
+        try:
+            colorTemp = float(colorTemp)
+        except:
+            raise PyCMSError("Color temperature must be numeric, \"%s\" not valid" % colorTemp)
 
     try:
         return core.createProfile(colorSpace, colorTemp)

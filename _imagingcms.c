@@ -389,7 +389,7 @@ createProfile(PyObject *self, PyObject *args)
     char *sColorSpace;
     cmsHPROFILE hProfile;
     cmsFloat64Number dColorTemp = 0.0;
-    cmsCIExyY *whitePoint = NULL;
+    cmsCIExyY whitePoint;
     cmsBool result;
 
     if (!PyArg_ParseTuple(args, "s|d:createProfile", &sColorSpace, &dColorTemp))
@@ -397,12 +397,12 @@ createProfile(PyObject *self, PyObject *args)
 
     if (strcmp(sColorSpace, "LAB") == 0) {
         if (dColorTemp > 0.0) {
-            result = cmsWhitePointFromTemp(whitePoint, dColorTemp);
+            result = cmsWhitePointFromTemp(&whitePoint, dColorTemp);
             if (!result) {
                 PyErr_SetString(PyExc_ValueError, "ERROR: Could not calculate white point from color temperature provided, must be float in degrees Kelvin");
                 return NULL;
             }
-            hProfile = cmsCreateLab2Profile(whitePoint);
+            hProfile = cmsCreateLab2Profile(&whitePoint);
         } else {
             hProfile = cmsCreateLab2Profile(NULL);
         }
