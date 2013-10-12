@@ -65,14 +65,6 @@ PIL Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageColor` Module
-------------------------
-
-.. automodule:: PIL.ImageColor
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageDraw` Module
 -----------------------
 
