@@ -102,6 +102,8 @@ def test_lab_color():
     # and have that mapping work back to a PIL mode. (likely RGB)
     i = ImageCms.applyTransform(lena(), t)
     assert_image(i, "LAB", (128, 128))
+    
+    i.save('temp.lab.tif')
 
     target = Image.open('Tests/images/lena.Lab.tif')
 

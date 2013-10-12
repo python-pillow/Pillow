@@ -225,7 +225,7 @@ _MODE_CONV = {
     "RGBA": ('|u1', 4),
     "CMYK": ('|u1', 4),
     "YCbCr": ('|u1', 3),
-    "LAB": ('|u1', 3),
+    "LAB": ('|u1', 3), # UNDONE - unsigned |u1i1i1
     "I;16": ('=u2', None),
     "I;16B": ('>u2', None),
     "I;16L": ('<u2', None),
