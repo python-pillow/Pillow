@@ -57,14 +57,6 @@ PIL Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageChops` Module
-------------------------
-
-.. automodule:: PIL.ImageChops
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageCms` Module
 ----------------------
 
