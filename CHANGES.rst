@@ -4,15 +4,23 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
-- Move or copy content from README.rst to docs/ [irksep]
+- Port and update docs for Image, ImageChops, ImageColor, and ImageDraw
+  [irksep]
 
-- Respect CFLAGS/LDFLAGS when searching for headers/libs [iElectric]
+- Move or copy content from README.rst to docs/
+  [irksep]
 
-- Port PIL Handbook tutorial and appendices [irksep]
+- Respect CFLAGS/LDFLAGS when searching for headers/libs
+  [iElectric]
 
-- Alpha Premultiplication support for transform and resize [wiredfool]
+- Port PIL Handbook tutorial and appendices
+  [irksep]
 
-- Fixes to make Pypy 2.1.0 work on Ubuntu 12.04/64 [wiredfool]
+- Alpha Premultiplication support for transform and resize
+  [wiredfool]
+
+- Fixes to make Pypy 2.1.0 work on Ubuntu 12.04/64
+  [wiredfool]
 
 2.2.1 (2013-10-02)
 ------------------
