@@ -108,3 +108,25 @@ def test_lab_color():
     target = Image.open('Tests/images/lena.Lab.tif')
 
     assert_image_similar(i, target, 1)
+
+def test_lab_srgb():
+    pLab = ImageCms.createProfile("LAB")    
+    t = ImageCms.buildTransform(pLab, SRGB, "LAB", "RGB")
+
+    img = Image.open('Tests/images/lena.Lab.tif')
+
+    img_srgb = ImageCms.applyTransform(img, t)
+
+    assert_image_similar(lena(), img_srgb, 1)
+
+def test_lab_roundtrip():
+    # check to see if we're at least internally consistent. 
+    pLab = ImageCms.createProfile("LAB")    
+    t = ImageCms.buildTransform(SRGB, pLab, "RGB", "LAB")
+
+    t2 = ImageCms.buildTransform(pLab, SRGB, "LAB", "RGB")
+
+    i = ImageCms.applyTransform(lena(), t)
+    out = ImageCms.applyTransform(i, t2)
+
+    assert_image_similar(lena(), out, 2)
