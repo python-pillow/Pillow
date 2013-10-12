@@ -30,6 +30,15 @@ import re
 #    as an RGB value.
 
 def getrgb(color):
+    """
+     Convert a color string to an RGB tuple. If the string cannot be parsed,
+     this function raises a :py:exc:`ValueError` exception.
+
+    .. versionadded:: 1.1.4
+
+    :param color: A color string
+    :return: ``(red, green, blue)``
+    """
     try:
         rgb = colormap[color]
     except KeyError:
@@ -97,6 +106,16 @@ def getrgb(color):
     raise ValueError("unknown color specifier: %r" % color)
 
 def getcolor(color, mode):
+    """
+    Same as :py:func:`~PIL.ImageColor.getrgb`, but converts the RGB value to a
+    greyscale value if the mode is not color or a palette image. If the string
+    cannot be parsed, this function raises a :py:exc:`ValueError` exception.
+
+    .. versionadded:: 1.1.4
+
+    :param color: A color string
+    :return: ``(red, green, blue)``
+    """
     # same as getrgb, but converts the result to the given mode
     color = getrgb(color)
     if mode == "RGB":
