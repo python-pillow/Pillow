@@ -76,14 +76,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageFile` Module
------------------------
-
-.. automodule:: PIL.ImageFile
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageFileIO` Module
 -------------------------
 

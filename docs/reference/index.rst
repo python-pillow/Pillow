@@ -9,4 +9,5 @@ Reference
    ImageColor
    ImageDraw
    ImageEnhance
+   ImageFile
    ../PIL
