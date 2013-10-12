@@ -9,6 +9,8 @@ CSS3-style color specifiers to RGB tuples. This module is used by
 :py:meth:`PIL.Image.Image.new` and the :py:mod:`~PIL.ImageDraw` module, among
 others.
 
+.. _color-names:
+
 Color Names
 -----------
 

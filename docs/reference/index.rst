@@ -7,4 +7,5 @@ Reference
    Image
    ImageChops
    ImageColor
+   ImageDraw
    ../PIL
