@@ -18,7 +18,7 @@ Example: Draw a gray cross over an image
 
 .. code-block:: python
 
-    import Image, ImageDraw
+    from PIL import Image, ImageDraw
 
     im = Image.open("lena.pgm")
 

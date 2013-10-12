@@ -15,7 +15,7 @@ Vary the Sharpness of an Image
 
 .. code-block:: python
 
-    import ImageEnhance
+    from PIL import ImageEnhance
 
     enhancer = ImageEnhance.Sharpness(image)
 
