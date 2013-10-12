@@ -180,9 +180,11 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
 
     } else if (strcmp(mode, "LAB") == 0) {
         /* 24-bit color, luminance, + 2 color channels */
+        /* L is uint8, a,b are int8 */
         im->bands = 3;
-        im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->pixelsize = 3;
+        im->linesize = (xsize*4 + 3) & -4;
+        im->type = IMAGING_TYPE_SPECIAL;
 
     } else {
         free(im);

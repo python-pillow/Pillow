@@ -527,7 +527,7 @@ static struct {
     {"YCbCr",  	"Cr",           8,      band2},
 
     /* LAB Color */
-    {"LAB",	    "LAB",	       24,     ImagingPackRGB},
+    {"LAB",	    "LAB",	       24,     copy3},
     {"LAB",  	"L",           8,      band0},
     {"LAB",  	"A",           8,      band1},
     {"LAB",  	"B",           8,      band2},

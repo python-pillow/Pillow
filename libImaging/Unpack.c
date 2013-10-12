@@ -675,6 +675,13 @@ copy2(UINT8* out, const UINT8* in, int pixels)
 }
 
 static void
+copy3(UINT8* out, const UINT8* in, int pixels)
+{
+    /* LAB triples, 24bit */
+    memcpy(out, in, 3 * pixels);
+}
+
+static void
 copy4(UINT8* out, const UINT8* in, int pixels)
 {
     /* RGBA, CMYK quadruples */
@@ -958,7 +965,7 @@ static struct {
     {"YCbCr",   "YCbCrK",       32,     copy4},
 
     /* LAB Color */
-    {"LAB",	    "LAB",	        24,	    ImagingUnpackRGB},
+    {"LAB",	    "LAB",	        24,	    copy3},
     {"LAB",  	"L",            8,      band0},
     {"LAB",  	"A",            8,      band1},
     {"LAB",  	"B",            8,      band2},
