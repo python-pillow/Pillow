@@ -36,7 +36,7 @@ source and contribute at https://github.com/python-imaging/Pillow.
    about
    guides
    handbook/appendices
-   PIL
+   reference/index.rst
    original-readme
 
 Support Pillow!

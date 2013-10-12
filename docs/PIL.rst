@@ -1,14 +1,6 @@
 PIL Package
 ===========
 
-:mod:`Image` Module
--------------------
-
-.. automodule:: PIL.Image
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`BdfFontFile` Module
 -------------------------
 
