@@ -1,5 +1,5 @@
-PIL Package (autodoc)
-=====================
+PIL Package (autodoc of remaining modules)
+==========================================
 
 Reference for modules whose documentation has not yet been ported or written
 can be found here.
