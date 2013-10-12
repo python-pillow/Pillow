@@ -957,6 +957,12 @@ static struct {
     {"YCbCr",   "YCbCrX",       32,     copy4},
     {"YCbCr",   "YCbCrK",       32,     copy4},
 
+    /* LAB Color */
+    {"LAB",	    "LAB",	        24,	    ImagingUnpackRGB},
+    {"LAB",  	"L",            8,      band0},
+    {"LAB",  	"A",            8,      band1},
+    {"LAB",  	"B",            8,      band2},
+
     /* integer variations */
     {"I",       "I",            32,     copy4},
     {"I",       "I;8",          8,      unpackI8},
