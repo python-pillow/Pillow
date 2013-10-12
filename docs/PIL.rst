@@ -1,13 +1,8 @@
-PIL Package
-===========
+PIL Package (autodoc of remaining modules)
+==========================================
 
-:mod:`Image` Module
--------------------
-
-.. automodule:: PIL.Image
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Reference for modules whose documentation has not yet been ported or written
+can be found here.
 
 :mod:`BdfFontFile` Module
 -------------------------
@@ -65,34 +60,10 @@ PIL Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageChops` Module
-------------------------
-
-.. automodule:: PIL.ImageChops
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageCms` Module
 ----------------------
 
 .. automodule:: PIL.ImageCms
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageColor` Module
-------------------------
-
-.. automodule:: PIL.ImageColor
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageDraw` Module
------------------------
-
-.. automodule:: PIL.ImageDraw
     :members:
     :undoc-members:
     :show-inheritance:
