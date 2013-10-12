@@ -68,14 +68,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageDraw` Module
------------------------
-
-.. automodule:: PIL.ImageDraw
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageDraw2` Module
 ------------------------
 
