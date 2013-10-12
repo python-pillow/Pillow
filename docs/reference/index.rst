@@ -10,4 +10,5 @@ Reference
    ImageDraw
    ImageEnhance
    ImageFile
+   ImageFilter
    ../PIL
