@@ -8,4 +8,5 @@ Reference
    ImageChops
    ImageColor
    ImageDraw
+   ImageEnhance
    ../PIL

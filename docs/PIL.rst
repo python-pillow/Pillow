@@ -76,14 +76,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageEnhance` Module
---------------------------
-
-.. automodule:: PIL.ImageEnhance
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageFile` Module
 -----------------------
 
