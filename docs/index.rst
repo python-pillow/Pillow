@@ -35,8 +35,8 @@ source and contribute at https://github.com/python-imaging/Pillow.
    installation
    about
    guides
-   handbook/appendices
    reference/index.rst
+   handbook/appendices
    original-readme
 
 Support Pillow!
