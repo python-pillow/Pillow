@@ -68,6 +68,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
+.. intentionally skipped documenting this because it's not documented anywhere
 :mod:`ImageDraw2` Module
 ------------------------
 
@@ -76,66 +77,11 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageEnhance` Module
---------------------------
-
-.. automodule:: PIL.ImageEnhance
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageFile` Module
------------------------
-
-.. automodule:: PIL.ImageFile
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+.. intentionally skipped documenting this because it's deprecated
 :mod:`ImageFileIO` Module
 -------------------------
 
 .. automodule:: PIL.ImageFileIO
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageFilter` Module
--------------------------
-
-.. automodule:: PIL.ImageFilter
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageFont` Module
------------------------
-
-.. automodule:: PIL.ImageFont
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageMath` Module
------------------------
-
-.. automodule:: PIL.ImageMath
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageMode` Module
------------------------
-
-.. automodule:: PIL.ImageMode
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageOps` Module
-----------------------
-
-.. automodule:: PIL.ImageOps
     :members:
     :undoc-members:
     :show-inheritance:

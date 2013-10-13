@@ -8,4 +8,11 @@ Reference
    ImageChops
    ImageColor
    ImageDraw
+   ImageEnhance
+   ImageFile
+   ImageFilter
+   ImageFont
+   ImageGrab
+   ImageMath
+   ImageOps
    ../PIL
