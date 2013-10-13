@@ -12,4 +12,5 @@ Reference
    ImageFile
    ImageFilter
    ImageFont
+   ImageGrab
    ../PIL

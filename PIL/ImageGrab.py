@@ -17,33 +17,31 @@
 
 from PIL import Image
 
-##
-# (New in 1.1.3)  The <b>ImageGrab</b> module can be used to copy
-# the contents of the screen to a PIL image memory.
-# <p>
-# The current version works on Windows only.</p>
-#
-# @since 1.1.3
-##
 
 try:
     # built-in driver (1.1.3 and later)
     grabber = Image.core.grabscreen
 except AttributeError:
-    # stand-alone driver (pil plus)
-    import _grabscreen
-    grabber = _grabscreen.grab
+    try:
+        # stand-alone driver (pil plus)
+        import _grabscreen
+        grabber = _grabscreen.grab
+    except ImportError:
+        # allow the module to be imported by autodoc
+        grabber = None
 
-##
-# (New in 1.1.3) Take a snapshot of the screen.  The pixels inside the
-# bounding box are returned as an "RGB" image.  If the bounding box is
-# omitted, the entire screen is copied.
-#
-# @param bbox What region to copy.  Default is the entire screen.
-# @return An image
-# @since 1.1.3
 
 def grab(bbox=None):
+    """
+    Take a snapshot of the screen. The pixels inside the bounding box are
+    returned as an "RGB" image. If the bounding box is omitted, the entire
+    screen is copied.
+
+    .. versionadded:: 1.1.3
+
+    :param bbox: What region to copy. Default is the entire screen.
+    :return: An image
+    """
     size, data = grabber()
     im = Image.frombytes(
         "RGB", size, data,
@@ -55,14 +53,17 @@ def grab(bbox=None):
     return im
 
 ##
-# (New in 1.1.4) Take a snapshot of the clipboard image, if any.
-#
-# @return An image, a list of filenames, or None if the clipboard does
-#     not contain image data or filenames.  Note that if a list is
-#     returned, the filenames may not represent image files.
-# @since 1.1.4
 
 def grabclipboard():
+    """
+    Take a snapshot of the clipboard image, if any.
+
+    .. versionadded:: 1.1.4
+
+    :return: An image, a list of filenames, or None if the clipboard does
+             not contain image data or filenames.  Note that if a list is
+             returned, the filenames may not represent image files.
+    """
     debug = 0 # temporary interface
     data = Image.core.grabclipboard(debug)
     if isinstance(data, bytes):
