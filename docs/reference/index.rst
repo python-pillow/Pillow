@@ -11,4 +11,5 @@ Reference
    ImageEnhance
    ImageFile
    ImageFilter
+   ImageFont
    ../PIL

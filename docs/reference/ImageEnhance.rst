@@ -7,11 +7,8 @@
 The :py:mod:`ImageEnhance` module contains a number of classes that can be used
 for image enhancement.
 
-Example
--------
-
-Vary the Sharpness of an Image
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Example: Vary the sharpness of an image
+---------------------------------------
 
 .. code-block:: python
 

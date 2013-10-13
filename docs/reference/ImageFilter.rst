@@ -5,15 +5,15 @@
 =========================
 
 The :py:mod:`ImageFilter` module contains definitions for a pre-defined set of
-filters, which can be be used with :py:meth:`Image.filter()
-<PIL.Image.Image.filter>`.
+filters, which can be be used with the :py:meth:`Image.filter()
+<PIL.Image.Image.filter>` method.
 
-Example Filter an image
------------------------
+Example: Filter an image
+------------------------
 
 .. code-block:: python
 
-    import ImageFilter
+    from PIL import ImageFilter
 
     im1 = im.filter(ImageFilter.BLUR)
 
