@@ -86,46 +86,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageFilter` Module
--------------------------
-
-.. automodule:: PIL.ImageFilter
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageFont` Module
------------------------
-
-.. automodule:: PIL.ImageFont
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageMath` Module
------------------------
-
-.. automodule:: PIL.ImageMath
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageMode` Module
------------------------
-
-.. automodule:: PIL.ImageMode
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageOps` Module
-----------------------
-
-.. automodule:: PIL.ImageOps
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImagePalette` Module
 --------------------------
 
