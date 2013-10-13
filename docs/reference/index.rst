@@ -13,4 +13,5 @@ Reference
    ImageFilter
    ImageFont
    ImageGrab
+   ImageMath
    ../PIL
