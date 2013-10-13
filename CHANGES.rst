@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Document ImageEnhance, ImageFile, ImageFilter, ImageFont, ImageGrab, ImageMath, and ImageOps
+  [irksep]
+
 - Port and update docs for Image, ImageChops, ImageColor, and ImageDraw
   [irksep]
 
