@@ -1,8 +1,8 @@
 .. py:module:: PIL.Image
 .. py:currentmodule:: PIL.Image
 
-:mod:`Image` Module
-===================
+:py:mod:`Image` Module
+======================
 
 The :py:mod:`~PIL.Image` module provides a class with the same name which is
 used to represent a PIL image. The module also provides a number of factory

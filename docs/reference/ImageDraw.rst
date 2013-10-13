@@ -1,8 +1,8 @@
 .. py:module:: PIL.ImageDraw
 .. py:currentmodule:: PIL.ImageDraw
 
-:mod:`ImageDraw` Module
-=======================
+:py:mod:`ImageDraw` Module
+==========================
 
 The :py:mod:`ImageDraw` module provide simple 2D graphics for
 :py:class:`~PIL.Image.Image` objects.  You can use this module to create new
@@ -18,7 +18,7 @@ Example: Draw a gray cross over an image
 
 .. code-block:: python
 
-    import Image, ImageDraw
+    from PIL import Image, ImageDraw
 
     im = Image.open("lena.pgm")
 
