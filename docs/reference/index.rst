@@ -14,4 +14,5 @@ Reference
    ImageFont
    ImageGrab
    ImageMath
+   ImageOps
    ../PIL

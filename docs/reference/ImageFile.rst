@@ -1,8 +1,8 @@
 .. py:module:: PIL.ImageFile
 .. py:currentmodule:: PIL.ImageFile
 
-:mod:`ImageFile` Module
-=======================
+:py:mod:`ImageFile` Module
+==========================
 
 The :py:mod:`ImageFile` module provides support functions for the image open
 and save functions.

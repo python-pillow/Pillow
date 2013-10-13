@@ -1,8 +1,8 @@
 .. py:module:: PIL.ImageFilter
 .. py:currentmodule:: PIL.ImageFilter
 
-:mod:`ImageFilter` Module
-=========================
+:py:mod:`ImageFilter` Module
+============================
 
 The :py:mod:`ImageFilter` module contains definitions for a pre-defined set of
 filters, which can be be used with the :py:meth:`Image.filter()
