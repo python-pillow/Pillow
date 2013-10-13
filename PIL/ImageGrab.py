@@ -22,26 +22,12 @@ try:
     # built-in driver (1.1.3 and later)
     grabber = Image.core.grabscreen
 except AttributeError:
-    try:
-        # stand-alone driver (pil plus)
-        import _grabscreen
-        grabber = _grabscreen.grab
-    except ImportError:
-        # allow the module to be imported by autodoc
-        grabber = None
+    # stand-alone driver (pil plus)
+    import _grabscreen
+    grabber = _grabscreen.grab
 
 
 def grab(bbox=None):
-    """
-    Take a snapshot of the screen. The pixels inside the bounding box are
-    returned as an "RGB" image. If the bounding box is omitted, the entire
-    screen is copied.
-
-    .. versionadded:: 1.1.3
-
-    :param bbox: What region to copy. Default is the entire screen.
-    :return: An image
-    """
     size, data = grabber()
     im = Image.frombytes(
         "RGB", size, data,
@@ -52,18 +38,8 @@ def grab(bbox=None):
         im = im.crop(bbox)
     return im
 
-##
 
 def grabclipboard():
-    """
-    Take a snapshot of the clipboard image, if any.
-
-    .. versionadded:: 1.1.4
-
-    :return: An image, a list of filenames, or None if the clipboard does
-             not contain image data or filenames.  Note that if a list is
-             returned, the filenames may not represent image files.
-    """
     debug = 0 # temporary interface
     data = Image.core.grabclipboard(debug)
     if isinstance(data, bytes):
