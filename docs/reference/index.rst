@@ -22,4 +22,5 @@ Reference
    ImageStat
    ImageTk
    ImageWin
+   PSDraw
    ../PIL

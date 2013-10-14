@@ -118,14 +118,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`PSDraw` Module
---------------------
-
-.. automodule:: PIL.PSDraw
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`PaletteFile` Module
 -------------------------
 
