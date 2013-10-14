@@ -21,4 +21,5 @@ Reference
    ImageSequence
    ImageStat
    ImageTk
+   ImageWin
    ../PIL

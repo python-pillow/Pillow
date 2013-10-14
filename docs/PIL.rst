@@ -102,14 +102,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageWin` Module
-----------------------
-
-.. automodule:: PIL.ImageWin
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`JpegPresets` Module
 -------------------------
 
