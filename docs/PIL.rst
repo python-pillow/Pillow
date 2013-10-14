@@ -86,14 +86,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageSequence` Module
----------------------------
-
-.. automodule:: PIL.ImageSequence
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageShow` Module
 -----------------------
 

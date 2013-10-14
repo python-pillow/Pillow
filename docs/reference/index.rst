@@ -18,4 +18,5 @@ Reference
    ImagePalette
    ImagePath
    ImageQt
+   ImageSequence
    ../PIL
