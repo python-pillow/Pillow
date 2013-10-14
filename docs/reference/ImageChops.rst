@@ -1,8 +1,8 @@
 .. py:module:: PIL.ImageChops
 .. py:currentmodule:: PIL.ImageChops
 
-:py:mod:`ImageChops` Module
-===========================
+:py:mod:`ImageChops` ("Channel Operations") Module
+==================================================
 
 The :py:mod:`ImageChops` module contains a number of arithmetical image
 operations, called channel operations (“chops”). These can be used for various
