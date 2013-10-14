@@ -19,4 +19,5 @@ Reference
    ImagePath
    ImageQt
    ImageSequence
+   ImageStat
    ../PIL

@@ -94,14 +94,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageStat` Module
------------------------
-
-.. automodule:: PIL.ImageStat
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageTk` Module
 ---------------------
 
