@@ -17,4 +17,5 @@ Reference
    ImageOps
    ImagePalette
    ImagePath
+   ImageQt
    ../PIL
