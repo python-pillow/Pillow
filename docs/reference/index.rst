@@ -20,4 +20,5 @@ Reference
    ImageQt
    ImageSequence
    ImageStat
+   ImageTk
    ../PIL

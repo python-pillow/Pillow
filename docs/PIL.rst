@@ -94,14 +94,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageTk` Module
----------------------
-
-.. automodule:: PIL.ImageTk
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageTransform` Module
 ----------------------------
 
