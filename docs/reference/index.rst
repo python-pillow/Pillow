@@ -15,4 +15,12 @@ Reference
    ImageGrab
    ImageMath
    ImageOps
+   ImagePalette
+   ImagePath
+   ImageQt
+   ImageSequence
+   ImageStat
+   ImageTk
+   ImageWin
+   PSDraw
    ../PIL

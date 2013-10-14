@@ -16,16 +16,11 @@
 
 from PIL import Image
 
-##
-# Path wrapper.
+
+# the Python class below is overridden by the C implementation.
+
 
 class Path:
-
-    ##
-    # Creates a path object.
-    #
-    # @param xy Sequence.  The sequence can contain 2-tuples [(x, y), ...]
-    #     or a flat list of numbers [x, y, ...].
 
     def __init__(self, xy):
         pass

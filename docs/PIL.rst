@@ -86,38 +86,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImagePalette` Module
---------------------------
-
-.. automodule:: PIL.ImagePalette
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImagePath` Module
------------------------
-
-.. automodule:: PIL.ImagePath
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageQt` Module
----------------------
-
-.. automodule:: PIL.ImageQt
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageSequence` Module
----------------------------
-
-.. automodule:: PIL.ImageSequence
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageShow` Module
 -----------------------
 
@@ -126,34 +94,10 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageStat` Module
------------------------
-
-.. automodule:: PIL.ImageStat
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageTk` Module
----------------------
-
-.. automodule:: PIL.ImageTk
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageTransform` Module
 ----------------------------
 
 .. automodule:: PIL.ImageTransform
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageWin` Module
-----------------------
-
-.. automodule:: PIL.ImageWin
     :members:
     :undoc-members:
     :show-inheritance:
@@ -170,14 +114,6 @@ can be found here.
 -----------------------
 
 .. automodule:: PIL.OleFileIO
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`PSDraw` Module
---------------------
-
-.. automodule:: PIL.PSDraw
     :members:
     :undoc-members:
     :show-inheritance:

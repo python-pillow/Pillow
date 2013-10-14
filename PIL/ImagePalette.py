@@ -19,11 +19,9 @@
 import array
 from PIL import Image, ImageColor
 
-##
-# Colour palette wrapper for palette mapped images.
 
 class ImagePalette:
-    "Colour palette for palette mapped images"
+    "Color palette for palette mapped images"
 
     def __init__(self, mode = "RGB", palette = None):
         self.mode = mode
@@ -35,14 +33,21 @@ class ImagePalette:
             raise ValueError("wrong palette size")
 
     def getdata(self):
-        # experimental: get palette contents in format suitable
-        # for the low-level im.putpalette primitive
+        """
+        Get palette contents in format suitable # for the low-level
+        ``im.putpalette`` primitive.
+
+        .. warning:: This method is experimental.
+        """
         if self.rawmode:
             return self.rawmode, self.palette
         return self.mode + ";L", self.tobytes()
 
     def tobytes(self):
-        # experimental: convert palette to bytes
+        """Convert palette to bytes.
+
+        .. warning:: This method is experimental.
+        """
         if self.rawmode:
             raise ValueError("palette contains raw palette data")
         if isinstance(self.palette, bytes):
@@ -57,7 +62,10 @@ class ImagePalette:
     tostring = tobytes
 
     def getcolor(self, color):
-        # experimental: given an rgb tuple, allocate palette entry
+        """Given an rgb tuple, allocate palette entry.
+
+        .. warning:: This method is experimental.
+        """
         if self.rawmode:
             raise ValueError("palette contains raw palette data")
         if isinstance(color, tuple):
@@ -80,7 +88,10 @@ class ImagePalette:
             raise ValueError("unknown color specifier: %r" % color)
 
     def save(self, fp):
-        # (experimental) save palette to text file
+        """Save palette to text file.
+
+        .. warning:: This method is experimental.
+        """
         if self.rawmode:
             raise ValueError("palette contains raw palette data")
         if isinstance(fp, str):
@@ -192,6 +203,3 @@ def load(filename):
         raise IOError("cannot load palette")
 
     return lut # data, rawmode
-
-
-# add some psuedocolour palettes as well
