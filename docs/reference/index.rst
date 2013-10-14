@@ -16,4 +16,5 @@ Reference
    ImageMath
    ImageOps
    ImagePalette
+   ImagePath
    ../PIL

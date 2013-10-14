@@ -86,14 +86,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImagePath` Module
------------------------
-
-.. automodule:: PIL.ImagePath
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageQt` Module
 ---------------------
 
