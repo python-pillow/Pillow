@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Document remaining Image* modules listed in PIL handbook
+  [irksep]
+
 - Document ImageEnhance, ImageFile, ImageFilter, ImageFont, ImageGrab, ImageMath, and ImageOps
   [irksep]
 
