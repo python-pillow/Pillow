@@ -86,14 +86,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImagePalette` Module
---------------------------
-
-.. automodule:: PIL.ImagePalette
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImagePath` Module
 -----------------------
 

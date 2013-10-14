@@ -15,4 +15,5 @@ Reference
    ImageGrab
    ImageMath
    ImageOps
+   ImagePalette
    ../PIL
