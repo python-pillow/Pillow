@@ -16,4 +16,4 @@ Pillow is the "friendly" PIL fork by Alex Clark and Contributors. PIL is the Pyt
     :target: https://pypi.python.org/pypi/Pillow/
     :alt: Number of PyPI downloads
 
-The full documentation is hosted at http://pillow.readthedocs.org/. It contains installation instructions, tutorials, reference, compatibility details, and more.
+The documentation is hosted at http://pillow.readthedocs.org/. It contains installation instructions, tutorials, reference, compatibility details, and more.
