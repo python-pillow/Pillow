@@ -15,7 +15,7 @@ Python Imaging Library by Fredrik Lundh and Contributors.
     :target: https://pypi.python.org/pypi/Pillow/
     :alt: Number of PyPI downloads
 
-For full compatibility, you'll want to read the complete :doc:`installation
+To start using Pillow, read the :doc:`installation
 instructions <installation>`.
 
 If you can't find the information you need, try the old `PIL Handbook`_, but be
