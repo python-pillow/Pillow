@@ -8,7 +8,9 @@ Installation
 .. warning:: PIL and Pillow currently cannot co-exist in the same environment.
     If you want to use Pillow, please remove PIL first.
 
-.. Note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7; Pillow >= 2.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3.
+.. note:: Pillow >= 2.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3.
+
+.. note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7.
 
 Simple installation
 -------------------

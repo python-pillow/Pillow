@@ -15,10 +15,6 @@ Python Imaging Library by Fredrik Lundh and Contributors.
     :target: https://pypi.python.org/pypi/Pillow/
     :alt: Number of PyPI downloads
 
-.. note:: Pillow >= 2.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3.
-
-.. note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7.
-
 For full compatibility, you'll want to read the complete :doc:`installation
 instructions <installation>`.
 
