@@ -182,9 +182,8 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
         /* 24-bit color, luminance, + 2 color channels */
         /* L is uint8, a,b are int8 */
         im->bands = 3;
-        im->pixelsize = 3;
-        im->linesize = (xsize*4 + 3) & -4;
-        im->type = IMAGING_TYPE_SPECIAL;
+        im->pixelsize = 4;
+        im->linesize = xsize * 4;
 
     } else {
         free(im);
