@@ -101,8 +101,11 @@ def test_unpack():
     assert_equal(unpack("RGB", "RGB;R", 3), (128, 64, 192))
     assert_equal(unpack("RGB", "RGB;16B", 6), (1, 3, 5)) # ?
     assert_equal(unpack("RGB", "BGR", 3), (3, 2, 1))
+    assert_equal(unpack("RGB", "RGB;15", 2), (8, 131, 0))
     assert_equal(unpack("RGB", "BGR;15", 2), (0, 131, 8))
+    assert_equal(unpack("RGB", "RGB;16", 2), (8, 64, 0))
     assert_equal(unpack("RGB", "BGR;16", 2), (0, 64, 8))
+    assert_equal(unpack("RGB", "RGB;4B", 2), (17, 0, 34))
 
     assert_equal(unpack("RGB", "RGBX", 4), (1, 2, 3))
     assert_equal(unpack("RGB", "BGRX", 4), (3, 2, 1))
@@ -113,11 +116,17 @@ def test_unpack():
     assert_equal(unpack("RGBA", "BGRA", 4), (3, 2, 1, 4))
     assert_equal(unpack("RGBA", "ARGB", 4), (2, 3, 4, 1))
     assert_equal(unpack("RGBA", "ABGR", 4), (4, 3, 2, 1))
+    assert_equal(unpack("RGBA", "RGBA;15", 2), (8, 131, 0, 0))
+    assert_equal(unpack("RGBA", "BGRA;15", 2), (0, 131, 8, 0))
+    assert_equal(unpack("RGBA", "RGBA;4B", 2), (17, 0, 34, 0))
 
     assert_equal(unpack("RGBX", "RGBX", 4), (1, 2, 3, 4)) # 4->255?
     assert_equal(unpack("RGBX", "BGRX", 4), (3, 2, 1, 255))
     assert_equal(unpack("RGBX", "XRGB", 4), (2, 3, 4, 255))
     assert_equal(unpack("RGBX", "XBGR", 4), (4, 3, 2, 255))
+    assert_equal(unpack("RGBX", "RGB;15", 2), (8, 131, 0, 255))
+    assert_equal(unpack("RGBX", "BGR;15", 2), (0, 131, 8, 255))
+    assert_equal(unpack("RGBX", "RGB;4B", 2), (17, 0, 34, 255))
 
     assert_equal(unpack("CMYK", "CMYK", 4), (1, 2, 3, 4))
     assert_equal(unpack("CMYK", "CMYK;I", 4), (254, 253, 252, 251))
