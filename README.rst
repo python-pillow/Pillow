@@ -23,9 +23,13 @@ details, and more.
 Introduction
 ------------
 
+.. Note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7; Pillow >= 2.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3.
+
 .. Note:: Pillow >= 2.1.0 no longer supports "import _imaging". Please use "from PIL.Image import core as _imaging" instead.
 
-.. Note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7; Pillow >= 2.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3.
+.. Note:: Pillow >= 1.0 no longer supports "import Image". Please use "from PIL import Image" instead.
+
+.. Note:: PIL and Pillow currently cannot co-exist in the same environment. If you want to use Pillow, please remove PIL first.
 
 The fork author's goal is to foster active development of PIL through:
 
@@ -41,8 +45,6 @@ For information about why this fork exists and how it differs from PIL, see
 
 Installation
 ------------
-
-.. Note:: PIL and Pillow currently cannot co-exist in the same environment. If you want to use Pillow, please remove PIL first.
 
 You can install Pillow with ``pip``::
 
