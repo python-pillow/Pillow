@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- LCMS support upgraded from version 1 to version 2, fixes #343
+  [wiredfool]
+
 - Added more raw decoder 16 bit pixel formats
   [svanheulen]
 
