@@ -660,6 +660,31 @@ unpackCMYKI(UINT8* out, const UINT8* in, int pixels)
     }
 }
 
+/* Unpack to "LAB" image */
+/* There are two representations of LAB images for whatever precision:
+   L: Uint (in PS, it's 0-100)
+   A: Int (in ps, -128 .. 128, or elsewhere 0..255, with 128 as middle. 
+           Channels in PS display a 0 value as middle grey, 
+           LCMS appears to use 128 as the 0 value for these channels)
+   B: Int (as above) 
+
+   Since we don't have any signed ints, we're going with the shifted versions 
+   internally, and we'll unshift for saving and whatnot. 
+*/
+void
+ImagingUnpackLAB(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* LAB triplets */
+    for (i = 0; i < pixels; i++) {
+        out[0] = in[0];
+        out[1] = in[1] ^ 128; /* signed in outside world */
+        out[2] = in[2] ^ 128;
+        out[3] = 255;
+        out += 4; in += 3;
+    }
+}
+
 static void
 copy1(UINT8* out, const UINT8* in, int pixels)
 {
@@ -965,7 +990,7 @@ static struct {
     {"YCbCr",   "YCbCrK",       32,     copy4},
 
     /* LAB Color */
-    {"LAB",	    "LAB",	        24,	    ImagingUnpackRGB},
+    {"LAB",	    "LAB",	        24,	    ImagingUnpackLAB},
     {"LAB",  	"L",            8,      band0},
     {"LAB",  	"A",            8,      band1},
     {"LAB",  	"B",            8,      band2},
