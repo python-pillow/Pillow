@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Added more raw decoder 16 bit pixel formats
+  [svanheulen]
+
 - Document remaining Image* modules listed in PIL handbook
   [irksep]
 
