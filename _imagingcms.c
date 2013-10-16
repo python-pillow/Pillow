@@ -237,7 +237,8 @@ findLCMStype(char* PILmode)
         return TYPE_YCbCr_8;
     }
     else if (strcmp(PILmode, "LAB") == 0) {
-        return TYPE_Lab_8;
+        // LabX equvalent like ALab, but not reversed -- no #define in lcms2
+        return (COLORSPACE_SH(PT_LabV2)|CHANNELS_SH(3)|BYTES_SH(1)|EXTRA_SH(1));
     }
 
     else {
