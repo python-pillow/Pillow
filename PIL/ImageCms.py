@@ -42,6 +42,8 @@ pyCMS
 
     Version History:
 
+        1.0.0 pil       Oct 2013 Port to LCMS 2.
+
         0.1.0 pil mod   March 10, 2009
 
                         Renamed display profile to proof profile. The proof
@@ -77,7 +79,7 @@ pyCMS
 
 """
 
-VERSION = "0.1.0 pil"
+VERSION = "1.0.0 pil"
 
 # --------------------------------------------------------------------.
 
@@ -151,8 +153,8 @@ class ImageCmsProfile:
         self.profile = profile
         self.filename = filename
         if profile:
-            self.product_name = profile.product_name
-            self.product_info = profile.product_info
+            self.product_name = None #profile.product_name
+            self.product_info = None #profile.product_info
         else:
             self.product_name = None
             self.product_info = None
@@ -564,10 +566,10 @@ def createProfile(colorSpace, colorTemp=-1):
         raise PyCMSError("Color space not supported for on-the-fly profile creation (%s)" % colorSpace)
 
     if colorSpace == "LAB":
-        if isinstance(colorTemp, float):
-            colorTemp = int(colorTemp + 0.5)
-        if not isinstance(colorTemp, int):
-            raise PyCMSError("Color temperature must be a positive integer, \"%s\" not valid" % colorTemp)
+        try:
+            colorTemp = float(colorTemp)
+        except:
+            raise PyCMSError("Color temperature must be numeric, \"%s\" not valid" % colorTemp)
 
     try:
         return core.createProfile(colorSpace, colorTemp)
@@ -597,7 +599,19 @@ def getProfileName(profile):
         # add an extra newline to preserve pyCMS compatibility
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
-        return profile.profile.product_name + "\n"
+        # do it in python, not c.
+        #    // name was "%s - %s" (model, manufacturer) || Description , 
+        #    // but if the Model and Manufacturer were the same or the model 
+        #    // was long, Just the model,  in 1.x
+        model = profile.profile.product_model
+        manufacturer = profile.profile.product_manufacturer
+
+        if not (model or manufacturer):
+            return profile.profile.product_description+"\n"
+        if not manufacturer or len(model) > 30:
+            return model + "\n"
+        return "%s - %s\n" % (model, manufacturer)
+
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
@@ -625,9 +639,129 @@ def getProfileInfo(profile):
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
         # add an extra newline to preserve pyCMS compatibility
-        return profile.product_info + "\n"
+        # Python, not C. the white point bits weren't working well, so skipping.
+        #    // info was description \r\n\r\n copyright \r\n\r\n K007 tag \r\n\r\n whitepoint
+        description = profile.profile.product_description
+        cpright = profile.profile.product_copyright
+        arr = []
+        for elt in (description, cpright):
+            if elt:
+                arr.append(elt)
+        return "\r\n\r\n".join(arr)+"\r\n\r\n"
+
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
+
+
+##
+# (pyCMS) Gets the copyright for the given profile.
+#
+# If profile isn't a valid CmsProfile object or filename to a profile,
+# a PyCMSError is raised.
+#
+# If an error occurs while trying to obtain the copyright tag, a PyCMSError
+# is raised
+#
+# Use this function to obtain the information stored in the profile's
+# copyright tag.  
+#
+# @param profile EITHER a valid CmsProfile object, OR a string of the filename
+#     of an ICC profile.
+# @return A string containing the internal profile information stored in an ICC
+#     tag.
+# @exception PyCMSError
+
+def getProfileCopyright(profile):
+    try:
+        # add an extra newline to preserve pyCMS compatibility
+        if not isinstance(profile, ImageCmsProfile):
+            profile = ImageCmsProfile(profile)
+        return profile.profile.product_copyright + "\n"
+    except (AttributeError, IOError, TypeError, ValueError) as v:
+        raise PyCMSError(v)
+
+##
+# (pyCMS) Gets the manufacturer for the given profile.
+#
+# If profile isn't a valid CmsProfile object or filename to a profile,
+# a PyCMSError is raised.
+#
+# If an error occurs while trying to obtain the manufacturer tag, a PyCMSError
+# is raised
+#
+# Use this function to obtain the information stored in the profile's
+# manufacturer tag.  
+#
+# @param profile EITHER a valid CmsProfile object, OR a string of the filename
+#     of an ICC profile.
+# @return A string containing the internal profile information stored in an ICC
+#     tag.
+# @exception PyCMSError
+
+def getProfileManufacturer(profile):
+    try:
+        # add an extra newline to preserve pyCMS compatibility
+        if not isinstance(profile, ImageCmsProfile):
+            profile = ImageCmsProfile(profile)
+        return profile.profile.product_manufacturer + "\n"
+    except (AttributeError, IOError, TypeError, ValueError) as v:
+        raise PyCMSError(v)
+
+##
+# (pyCMS) Gets the model for the given profile.
+#
+# If profile isn't a valid CmsProfile object or filename to a profile,
+# a PyCMSError is raised.
+#
+# If an error occurs while trying to obtain the model tag, a PyCMSError
+# is raised
+#
+# Use this function to obtain the information stored in the profile's
+# model tag.  
+#
+# @param profile EITHER a valid CmsProfile object, OR a string of the filename
+#     of an ICC profile.
+# @return A string containing the internal profile information stored in an ICC
+#     tag.
+# @exception PyCMSError
+
+def getProfileModel(profile):
+    try:
+        # add an extra newline to preserve pyCMS compatibility
+        if not isinstance(profile, ImageCmsProfile):
+            profile = ImageCmsProfile(profile)
+        return profile.profile.product_model + "\n"
+    except (AttributeError, IOError, TypeError, ValueError) as v:
+        raise PyCMSError(v)
+
+##
+# (pyCMS) Gets the description for the given profile.
+#
+# If profile isn't a valid CmsProfile object or filename to a profile,
+# a PyCMSError is raised.
+#
+# If an error occurs while trying to obtain the description tag, a PyCMSError
+# is raised
+#
+# Use this function to obtain the information stored in the profile's
+# description tag.  
+#
+# @param profile EITHER a valid CmsProfile object, OR a string of the filename
+#     of an ICC profile.
+# @return A string containing the internal profile information stored in an ICC
+#     tag.
+# @exception PyCMSError
+
+def getProfileDescription(profile):
+    try:
+        # add an extra newline to preserve pyCMS compatibility
+        if not isinstance(profile, ImageCmsProfile):
+            profile = ImageCmsProfile(profile)
+        return profile.profile.product_description + "\n"
+    except (AttributeError, IOError, TypeError, ValueError) as v:
+        raise PyCMSError(v)
+
+
 
 ##
 # (pyCMS) Gets the default intent name for the given profile.

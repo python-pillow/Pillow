@@ -200,6 +200,7 @@ _MODEINFO = {
     "RGBA": ("RGB", "L", ("R", "G", "B", "A")),
     "CMYK": ("RGB", "L", ("C", "M", "Y", "K")),
     "YCbCr": ("RGB", "L", ("Y", "Cb", "Cr")),
+    "LAB": ("RGB", "L", ("L", "A", "B")),
 
     # Experimental modes include I;16, I;16L, I;16B, RGBa, BGR;15, and
     # BGR;24.  Use these modes only if you know exactly what you're
@@ -224,6 +225,7 @@ _MODE_CONV = {
     "RGBA": ('|u1', 4),
     "CMYK": ('|u1', 4),
     "YCbCr": ('|u1', 3),
+    "LAB": ('|u1', 3), # UNDONE - unsigned |u1i1i1
     "I;16": ('=u2', None),
     "I;16B": ('>u2', None),
     "I;16L": ('<u2', None),

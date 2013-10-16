@@ -40,6 +40,7 @@ extern "C" {
  * RGBA	    4		R, G, B, A
  * CMYK	    4		C, M, Y, K
  * YCbCr    4		Y, Cb, Cr, -
+ * Lab      4       L, a, b, -
  *
  * experimental modes (incomplete):
  * LA       4           L, -, -, A

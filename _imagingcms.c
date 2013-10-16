@@ -24,24 +24,21 @@ http://www.cazabon.com\n\
 "
 
 #include "Python.h"
-#include "lcms.h"
+#include "lcms2.h"
 #include "Imaging.h"
 #include "py3.h"
-
-#if LCMS_VERSION < 117
-#define LCMSBOOL BOOL
-#endif
 
 #ifdef WIN32
 #include <windef.h>
 #include <wingdi.h>
 #endif
 
-#define PYCMSVERSION "0.1.0 pil"
+#define PYCMSVERSION "1.0.0 pil"
 
 /* version history */
 
 /*
+  1.0.0 pil Integrating littleCMS2
   0.1.0 pil integration & refactoring
   0.0.2 alpha:  Minor updates, added interfaces to littleCMS features, Jan 6, 2003
   - fixed some memory holes in how transforms/profiles were created and passed back to Python
@@ -107,8 +104,6 @@ cms_profile_open(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "s:profile_open", &sProfile))
         return NULL;
 
-    cmsErrorAction(LCMS_ERROR_IGNORE);
-
     hProfile = cmsOpenProfileFromFile(sProfile, "r");
     if (!hProfile) {
         PyErr_SetString(PyExc_IOError, "cannot open profile file");
@@ -132,8 +127,6 @@ cms_profile_fromstring(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "s#:profile_fromstring", &pProfile, &nProfile))
         return NULL;
 #endif
-
-    cmsErrorAction(LCMS_ERROR_IGNORE);
 
     hProfile = cmsOpenProfileFromMem(pProfile, nProfile);
     if (!hProfile) {
@@ -192,25 +185,25 @@ cms_transform_dealloc(CmsTransformObject* self)
 /* internal functions */
 
 static const char*
-findICmode(icColorSpaceSignature cs)
+findICmode(cmsColorSpaceSignature cs)
 {
     switch (cs) {
-    case icSigXYZData: return "XYZ";
-    case icSigLabData: return "LAB";
-    case icSigLuvData: return "LUV";
-    case icSigYCbCrData: return "YCbCr";
-    case icSigYxyData: return "YXY";
-    case icSigRgbData: return "RGB";
-    case icSigGrayData: return "L";
-    case icSigHsvData: return "HSV";
-    case icSigHlsData: return "HLS";
-    case icSigCmykData: return "CMYK";
-    case icSigCmyData: return "CMY";
+    case cmsSigXYZData: return "XYZ";
+    case cmsSigLabData: return "LAB";
+    case cmsSigLuvData: return "LUV";
+    case cmsSigYCbCrData: return "YCbCr";
+    case cmsSigYxyData: return "YXY";
+    case cmsSigRgbData: return "RGB";
+    case cmsSigGrayData: return "L";
+    case cmsSigHsvData: return "HSV";
+    case cmsSigHlsData: return "HLS";
+    case cmsSigCmykData: return "CMYK";
+    case cmsSigCmyData: return "CMY";
     default: return ""; /* other TBA */
     }
 }
 
-static DWORD
+static cmsUInt32Number
 findLCMStype(char* PILmode)
 {
     if (strcmp(PILmode, "RGB") == 0) {
@@ -243,6 +236,10 @@ findLCMStype(char* PILmode)
     else if (strcmp(PILmode, "YCC") == 0) {
         return TYPE_YCbCr_8;
     }
+    else if (strcmp(PILmode, "LAB") == 0) {
+        // LabX equvalent like ALab, but not reversed -- no #define in lcms2
+        return (COLORSPACE_SH(PT_LabV2)|CHANNELS_SH(3)|BYTES_SH(1)|EXTRA_SH(1));
+    }
 
     else {
         /* take a wild guess... but you probably should fail instead. */
@@ -269,11 +266,9 @@ pyCMSdoTransform(Imaging im, Imaging imOut, cmsHTRANSFORM hTransform)
 }
 
 static cmsHTRANSFORM
-_buildTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, char *sInMode, char *sOutMode, int iRenderingIntent, DWORD cmsFLAGS)
+_buildTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, char *sInMode, char *sOutMode, int iRenderingIntent, cmsUInt32Number cmsFLAGS)
 {
     cmsHTRANSFORM hTransform;
-
-    cmsErrorAction(LCMS_ERROR_IGNORE);
 
     Py_BEGIN_ALLOW_THREADS
 
@@ -293,11 +288,9 @@ _buildTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, char *sIn
 }
 
 static cmsHTRANSFORM
-_buildProofTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, cmsHPROFILE hProofProfile, char *sInMode, char *sOutMode, int iRenderingIntent, int iProofIntent, DWORD cmsFLAGS)
+_buildProofTransform(cmsHPROFILE hInputProfile, cmsHPROFILE hOutputProfile, cmsHPROFILE hProofProfile, char *sInMode, char *sOutMode, int iRenderingIntent, int iProofIntent, cmsUInt32Number cmsFLAGS)
 {
     cmsHTRANSFORM hTransform;
-
-    cmsErrorAction(LCMS_ERROR_IGNORE);
 
     Py_BEGIN_ALLOW_THREADS
 
@@ -336,8 +329,6 @@ buildTransform(PyObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "O!O!ss|ii:buildTransform", &CmsProfile_Type, &pInputProfile, &CmsProfile_Type, &pOutputProfile, &sInMode, &sOutMode, &iRenderingIntent, &cmsFLAGS))
         return NULL;
 
-    cmsErrorAction(LCMS_ERROR_IGNORE);
-
     transform = _buildTransform(pInputProfile->profile, pOutputProfile->profile, sInMode, sOutMode, iRenderingIntent, cmsFLAGS);
 
     if (!transform)
@@ -362,8 +353,6 @@ buildProofTransform(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "O!O!O!ss|iii:buildProofTransform", &CmsProfile_Type, &pInputProfile, &CmsProfile_Type, &pOutputProfile, &CmsProfile_Type, &pProofProfile, &sInMode, &sOutMode, &iRenderingIntent, &iProofIntent, &cmsFLAGS))
         return NULL;
-
-    cmsErrorAction(LCMS_ERROR_IGNORE);
 
     transform = _buildProofTransform(pInputProfile->profile, pOutputProfile->profile, pProofProfile->profile, sInMode, sOutMode, iRenderingIntent, iProofIntent, cmsFLAGS);
 
@@ -390,8 +379,6 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args)
     im = (Imaging) idIn;
     imOut = (Imaging) idOut;
 
-    cmsErrorAction(LCMS_ERROR_IGNORE);
-
     result = pyCMSdoTransform(im, imOut, self->transform);
 
     return Py_BuildValue("i", result);
@@ -405,32 +392,34 @@ createProfile(PyObject *self, PyObject *args)
 {
     char *sColorSpace;
     cmsHPROFILE hProfile;
-    int iColorTemp = 0;
-    LPcmsCIExyY whitePoint = NULL;
-    LCMSBOOL result;
+    cmsFloat64Number dColorTemp = 0.0;
+    cmsCIExyY whitePoint;
+    cmsBool result;
 
-    if (!PyArg_ParseTuple(args, "s|i:createProfile", &sColorSpace, &iColorTemp))
+    if (!PyArg_ParseTuple(args, "s|d:createProfile", &sColorSpace, &dColorTemp))
         return NULL;
 
-    cmsErrorAction(LCMS_ERROR_IGNORE);
-
     if (strcmp(sColorSpace, "LAB") == 0) {
-        if (iColorTemp > 0) {
-            result = cmsWhitePointFromTemp(iColorTemp, whitePoint);
+        if (dColorTemp > 0.0) {
+            result = cmsWhitePointFromTemp(&whitePoint, dColorTemp);
             if (!result) {
-                PyErr_SetString(PyExc_ValueError, "ERROR: Could not calculate white point from color temperature provided, must be integer in degrees Kelvin");
+                PyErr_SetString(PyExc_ValueError, "ERROR: Could not calculate white point from color temperature provided, must be float in degrees Kelvin");
                 return NULL;
             }
-            hProfile = cmsCreateLabProfile(whitePoint);
-        } else
-            hProfile = cmsCreateLabProfile(NULL);
+            hProfile = cmsCreateLab2Profile(&whitePoint);
+        } else {
+            hProfile = cmsCreateLab2Profile(NULL);
+        }
     }
-    else if (strcmp(sColorSpace, "XYZ") == 0)
+    else if (strcmp(sColorSpace, "XYZ") == 0) {
         hProfile = cmsCreateXYZProfile();
-    else if (strcmp(sColorSpace, "sRGB") == 0)
+    } 
+    else if (strcmp(sColorSpace, "sRGB") == 0) {
         hProfile = cmsCreate_sRGBProfile();
-    else
+    }
+    else {
         hProfile = NULL;
+    }
 
     if (!hProfile) {
         PyErr_SetString(PyExc_ValueError, "failed to create requested color space");
@@ -446,7 +435,7 @@ createProfile(PyObject *self, PyObject *args)
 static PyObject *
 cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args)
 {
-    LCMSBOOL result;
+    cmsBool result;
 
     int intent;
     int direction;
@@ -465,7 +454,7 @@ static PyObject *
 cms_get_display_profile_win32(PyObject* self, PyObject* args)
 {
     char filename[MAX_PATH];
-    DWORD filename_size;
+    cmsUInt32Number filename_size;
     BOOL ok;
 
     int handle = 0;
@@ -519,27 +508,63 @@ static struct PyMethodDef cms_profile_methods[] = {
 };
 
 static PyObject*
-cms_profile_getattr_product_name(CmsProfileObject* self, void* closure)
+_profile_getattr(CmsProfileObject* self, cmsInfoType field)
 {
-    return PyUnicode_DecodeFSDefault(cmsTakeProductName(self->profile));
+    // UNDONE -- check that I'm getting the right fields on these.
+    // return PyUnicode_DecodeFSDefault(cmsTakeProductName(self->profile));
+    //wchar_t buf[256]; -- UNDONE need wchar_t for unicode version. 
+    char buf[256];
+    cmsUInt32Number written;
+    written =  cmsGetProfileInfoASCII(self->profile, 
+                                      field,
+                                      "en",
+                                      "us",
+                                      buf,
+                                      256);
+    if (written) {
+        return PyUnicode_FromString(buf);
+    }
+    // UNDONE suppressing error here by sending back blank string. 
+    return PyUnicode_FromString("");
 }
 
 static PyObject*
 cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
-{
-    return PyUnicode_DecodeFSDefault(cmsTakeProductDesc(self->profile));
+{    
+    // description was Description != 'Copyright' || or  "%s - %s" (manufacturer, model) in 1.x
+    return _profile_getattr(self, cmsInfoDescription);
+}
+
+/* use these four for the individual fields. 
+ */
+static PyObject*
+cms_profile_getattr_product_description(CmsProfileObject* self, void* closure)
+{    
+    return _profile_getattr(self, cmsInfoDescription);
 }
 
 static PyObject*
-cms_profile_getattr_product_info(CmsProfileObject* self, void* closure)
-{
-    return PyUnicode_DecodeFSDefault(cmsTakeProductInfo(self->profile));
+cms_profile_getattr_product_model(CmsProfileObject* self, void* closure)
+{    
+    return _profile_getattr(self, cmsInfoModel);
+}
+
+static PyObject*
+cms_profile_getattr_product_manufacturer(CmsProfileObject* self, void* closure)
+{    
+    return _profile_getattr(self, cmsInfoManufacturer);
+}
+
+static PyObject*
+cms_profile_getattr_product_copyright(CmsProfileObject* self, void* closure)
+{    
+    return _profile_getattr(self, cmsInfoCopyright);
 }
 
 static PyObject*
 cms_profile_getattr_rendering_intent(CmsProfileObject* self, void* closure)
 {
-    return PyInt_FromLong(cmsTakeRenderingIntent(self->profile));
+    return PyInt_FromLong(cmsGetHeaderRenderingIntent(self->profile));
 }
 
 static PyObject*
@@ -556,9 +581,11 @@ cms_profile_getattr_color_space(CmsProfileObject* self, void* closure)
 
 /* FIXME: add more properties (creation_datetime etc) */
 static struct PyGetSetDef cms_profile_getsetters[] = {
-    { "product_name",       (getter) cms_profile_getattr_product_name },
     { "product_desc",       (getter) cms_profile_getattr_product_desc },
-    { "product_info",       (getter) cms_profile_getattr_product_info },
+    { "product_description", (getter) cms_profile_getattr_product_description },
+    { "product_manufacturer", (getter) cms_profile_getattr_product_manufacturer },
+    { "product_model",      (getter) cms_profile_getattr_product_model },
+    { "product_copyright",  (getter) cms_profile_getattr_product_copyright },
     { "rendering_intent",   (getter) cms_profile_getattr_rendering_intent },
     { "pcs",                (getter) cms_profile_getattr_pcs },
     { "color_space",        (getter) cms_profile_getattr_color_space },
