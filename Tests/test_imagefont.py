@@ -88,5 +88,48 @@ def test_render_multiline():
 	# setting a tight epsilon, I'm showing the original test failure
 	# at epsilon = ~38.
     assert_image_similar(im, target_img,.5)
-    
- 
+
+
+def test_rotated_transposed_font():
+    img_grey = Image.new("L", (100, 100))
+    draw = ImageDraw.Draw(img_grey)
+    word = "testing"
+    font = ImageFont.truetype(font_path, font_size)
+
+    orientation = Image.ROTATE_90
+    transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
+
+    # Original font
+    draw.setfont(font)
+    box_size_a = draw.textsize(word)
+
+    # Rotated font
+    draw.setfont(transposed_font)
+    box_size_b = draw.textsize(word)
+
+    # Check (w,h) of box a is (h,w) of box b
+    assert_equal(box_size_a[0], box_size_b[1])
+    assert_equal(box_size_a[1], box_size_b[0])
+
+
+def test_unrotated_transposed_font():
+    img_grey = Image.new("L", (100, 100))
+    draw = ImageDraw.Draw(img_grey)
+    word = "testing"
+    font = ImageFont.truetype(font_path, font_size)
+
+    orientation = None
+    transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
+
+    # Original font
+    draw.setfont(font)
+    box_size_a = draw.textsize(word)
+
+    # Rotated font
+    draw.setfont(transposed_font)
+    box_size_b = draw.textsize(word)
+
+    # Check boxes a and b are same size
+    assert_equal(box_size_a, box_size_b)
+
+
