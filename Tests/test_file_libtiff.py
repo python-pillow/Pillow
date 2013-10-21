@@ -92,6 +92,7 @@ def test_g4_write():
     assert_equal(reread.size,(500,500))
     _assert_noerr(reread)
     assert_image_equal(reread, rot)
+    assert_equal(reread.info['compression'], 'group4')
 
     assert_false(orig.tobytes() == reread.tobytes())
 
@@ -105,3 +106,12 @@ def test_adobe_deflate_tiff():
     assert_no_exception(lambda: im.load())
 
 
+def test_g3_compression():
+    i = Image.open('Tests/images/lena_g4_500.tif')
+    out = tempfile("temp.tif")
+    i.save(out, compression='group3')
+
+    reread = Image.open(out)
+    assert_equal(reread.info['compression'], 'group3')
+    assert_image_equal(reread, i)
+    
