@@ -804,6 +804,12 @@ class TiffImageFile(ImageFile.ImageFile):
                     # fillorder==2 modes have a corresponding
                     # fillorder=1 mode
                     self.mode, rawmode = OPEN_INFO[key]
+                # libtiff always returns the bytes in native order.
+                # we're expecting image byte order. So, if the rawmode
+                # contains I;16, we need to convert from native to image
+                # byte order.
+                if self.mode in ('I;16B', 'I;16'):
+                    rawmode = 'I;16N'
 
                 # Offset in the tile tuple is 0, we go from 0,0 to
                 # w,h, and we only do this once -- eds
