@@ -105,3 +105,25 @@ def test_adobe_deflate_tiff():
     assert_no_exception(lambda: im.load())
 
 
+def test_little_endian():
+	im = Image.open('Tests/images/12bit.deflate.tif')
+	assert_equal(im.getpixel((0,0)), 480)
+	assert_equal(im.mode, 'I;16')
+
+	b = im.tobytes()
+	# Bytes are in image native order (little endian)
+	assert_equal(b[0], b'\xe0')
+	assert_equal(b[1], b'\x01')
+
+def test_big_endian():
+	im = Image.open('Tests/images/12bit.MM.deflate.tif')
+
+	assert_equal(im.getpixel((0,0)), 480)
+	assert_equal(im.mode, 'I;16B')
+
+	b = im.tobytes()
+
+	# Bytes are in image native order (big endian)
+	assert_equal(b[0], b'\x01')
+	assert_equal(b[1], b'\xe0')
+	
