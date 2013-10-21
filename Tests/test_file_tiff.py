@@ -80,8 +80,13 @@ def test_little_endian():
 
 	b = im.tobytes()
 	# Bytes are in image native order (little endian)
-	assert_equal(b[0], b'\xe0')
-	assert_equal(b[1], b'\x01')
+	if py3:
+		assert_equal(b[0], ord(b'\xe0'))
+		assert_equal(b[1], ord(b'\x01'))
+	else:
+		assert_equal(b[0], b'\xe0')
+		assert_equal(b[1], b'\x01')
+		
 
 def test_big_endian():
 	im = Image.open('Tests/images/12bit.MM.cropped.tif')
@@ -91,8 +96,9 @@ def test_big_endian():
 	b = im.tobytes()
 
 	# Bytes are in image native order (big endian)
-	assert_equal(b[0], b'\x01')
-	assert_equal(b[1], b'\xe0')
-
-
-				  
+	if py3:
+		assert_equal(b[0], ord(b'\x01'))
+		assert_equal(b[1], ord(b'\xe0'))
+	else:
+		assert_equal(b[0], b'\x01')
+		assert_equal(b[1], b'\xe0')
