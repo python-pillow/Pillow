@@ -1040,6 +1040,14 @@ def _save(im, fp, filename):
             pass
         if Image.DEBUG:
             print (atts)
+
+        # libtiff always returns the bytes in native order.
+        # we're expecting image byte order. So, if the rawmode
+        # contains I;16, we need to convert from native to image
+        # byte order.
+        if im.mode in ('I;16B', 'I;16'):
+            rawmode = 'I;16N'
+
         a = (rawmode, compression, _fp, filename, atts)
         e = Image._getencoder(im.mode, compression, a, im.encoderconfig)
         e.setimage(im.im, (0,0)+im.size)

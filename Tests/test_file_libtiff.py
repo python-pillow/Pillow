@@ -115,6 +115,16 @@ def test_little_endian():
 	assert_equal(b[0], b'\xe0')
 	assert_equal(b[1], b'\x01')
 
+	out = tempfile("temp.tif")
+	out = "temp.le.tif"
+	im.save(out)
+	reread = Image.open(out)
+
+	assert_equal(reread.info['compression'], im.info['compression'])
+	assert_equal(reread.getpixel((0,0)), 480)
+	# UNDONE - libtiff defaults to writing in native endian, so
+	# on big endian, we'll get back mode = 'I;16B' here. 
+	
 def test_big_endian():
 	im = Image.open('Tests/images/12bit.MM.deflate.tif')
 
@@ -127,3 +137,10 @@ def test_big_endian():
 	assert_equal(b[0], b'\x01')
 	assert_equal(b[1], b'\xe0')
 	
+	out = tempfile("temp.tif")
+	im.save(out)
+	reread = Image.open(out)
+
+	assert_equal(reread.info['compression'], im.info['compression'])
+	assert_equal(reread.getpixel((0,0)), 480)
+
