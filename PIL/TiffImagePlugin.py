@@ -908,7 +908,7 @@ def _save(im, fp, filename):
 
     ifd = ImageFileDirectory(prefix)
 
-    compression = im.info.get('compression','raw')
+    compression = im.encoderinfo.get('compression',im.info.get('compression','raw'))
     libtiff = compression in ["tiff_ccitt", "group3", "group4",
                               "tiff_jpeg", "tiff_adobe_deflate",
                               "tiff_thunderscan", "tiff_deflate",
@@ -1005,6 +1005,7 @@ def _save(im, fp, filename):
             _fp = os.dup(fp.fileno())
 
         blocklist =  [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
+
         atts = dict([(k,v) for (k,(v,)) in ifd.items() if k not in blocklist])
         try:
             # pull in more bits from the original file, e.g x,y resolution
