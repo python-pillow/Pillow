@@ -93,6 +93,8 @@ def test_g4_write():
     _assert_noerr(reread)
     assert_image_equal(reread, rot)
 
+    assert_equal(reread.info['compression'], orig.info['compression'])
+    
     assert_false(orig.tobytes() == reread.tobytes())
 
 def test_adobe_deflate_tiff():
@@ -152,4 +154,18 @@ def test_big_endian():
 
     assert_equal(reread.info['compression'], im.info['compression'])
     assert_equal(reread.getpixel((0,0)), 480)
+
+def test_g4_string_info():
+    """Tests String data in info directory"""
+    file = "Tests/images/lena_g4_500.tif"
+    orig = Image.open(file)
+    
+    out = tempfile("temp.tif")
+
+    orig.tag[269] = 'temp.tif'
+    orig.save(out)
+             
+    reread = Image.open(out)
+    assert_equal('temp.tif', reread.tag[269])
+
 
