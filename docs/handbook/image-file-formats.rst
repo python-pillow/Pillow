@@ -271,6 +271,24 @@ WebP
 PIL reads and writes WebP files. The specifics of PIL's capabilities with this
 format are currently undocumented.
 
+The :py:meth:`~PIL.Image.Image.save` method supports the following options:
+
+**lossless** 
+    If present, instructs the WEBP writer to use lossless
+    compression.
+
+**quality** 
+    Integer, 1-100, Defaults to 80. Sets the quality level for
+    lossy compression.
+
+**icc_procfile** 
+    The ICC Profile to include in the saved file. Only supported if
+    the system webp library was built with webpmux support.
+
+**exif** 
+    The exif data to include in the saved file. Only supported if
+    the system webp library was built with webpmux support.
+
 XBM
 ^^^
 
