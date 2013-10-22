@@ -1011,33 +1011,30 @@ def _save(im, fp, filename):
             _fp = os.dup(fp.fileno())
 
         blocklist =  [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
-        atts = dict([(k,v) for (k,(v,)) in ifd.items() if k not in blocklist])
-        try:
-            # pull in more bits from the original file, e.g x,y resolution
-            # so that we can save(load('')) == original file.
-            for k,v in im.ifd.items():
-                if k not in atts and k not in blocklist:
-                    if type(v[0]) == tuple and len(v) > 1:
-                       # A tuple of more than one rational tuples
-                        # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
-                        atts[k] = [float(elt[0])/float(elt[1]) for elt in v]
-                        continue
-                    if type(v[0]) == tuple and len(v) == 1:
-                       # A tuple of one rational tuples
-                        # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
-                        atts[k] = float(v[0][0])/float(v[0][1])
-                        continue
-                    if type(v) == tuple and len(v) == 1:
-                        # int or similar
-                        atts[k] = v[0]
-                        continue
-                    if type(v) == str:
-                        atts[k] = v
-                        continue
+        atts={}
+        # Merge the ones that we have with (optional) more bits from
+        # the original file, e.g x,y resolution so that we can
+        # save(load('')) == original file.
+        for k,v in itertools.chain(ifd.items(), getattr(im, 'ifd', {}).items()):
+            if k not in atts and k not in blocklist:
+                if type(v[0]) == tuple and len(v) > 1:
+                    # A tuple of more than one rational tuples
+                    # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
+                    atts[k] = [float(elt[0])/float(elt[1]) for elt in v]
+                    continue
+                if type(v[0]) == tuple and len(v) == 1:
+                    # A tuple of one rational tuples
+                    # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
+                    atts[k] = float(v[0][0])/float(v[0][1])
+                    continue
+                if type(v) == tuple and len(v) == 1:
+                    # int or similar
+                    atts[k] = v[0]
+                    continue
+                if type(v) == str:
+                    atts[k] = bytes(v.encode('ascii', 'replace')) + b"\0"
+                    continue
 
-        except:
-            # if we don't have an ifd here, just punt.
-            pass
         if Image.DEBUG:
             print (atts)
 
@@ -1049,6 +1046,7 @@ def _save(im, fp, filename):
             rawmode = 'I;16N'
 
         a = (rawmode, compression, _fp, filename, atts)
+        print (im.mode, compression, a, im.encoderconfig)
         e = Image._getencoder(im.mode, compression, a, im.encoderconfig)
         e.setimage(im.im, (0,0)+im.size)
         while 1:
