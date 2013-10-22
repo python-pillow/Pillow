@@ -105,7 +105,8 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
         im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_INT32;
 
-    } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 || strcmp(mode, "I;16B") == 0) {
+    } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 \
+			   || strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0)  {
         /* EXPERIMENTAL */
         /* 16-bit raw integer images */
         im->bands = 1;
@@ -178,9 +179,16 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
         im->pixelsize = 4;
         im->linesize = xsize * 4;
 
+    } else if (strcmp(mode, "LAB") == 0) {
+        /* 24-bit color, luminance, + 2 color channels */
+        /* L is uint8, a,b are int8 */
+        im->bands = 3;
+        im->pixelsize = 4;
+        im->linesize = xsize * 4;
+
     } else {
         free(im);
-	return (Imaging) ImagingError_ValueError("unrecognized mode");
+        return (Imaging) ImagingError_ValueError("unrecognized mode");
     }
 
     /* Setup image descriptor */

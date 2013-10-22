@@ -214,13 +214,21 @@ class pil_build_ext(build_ext):
         _add_directory(library_dirs, "/usr/local/lib")
         # FIXME: check /opt/stuff directories here?
 
+        # respect CFLAGS/LDFLAGS
+        for k in ('CFLAGS', 'LDFLAGS'):
+            if k in os.environ:
+                for match in re.finditer(r'-I([^\s]+)', os.environ[k]):
+                    _add_directory(include_dirs, match.group(1))
+                for match in re.finditer(r'-L([^\s]+)', os.environ[k]):
+                    _add_directory(library_dirs, match.group(1))
+
         # include, rpath, if set as environment variables:
-        for k in 'C_INCLUDE_PATH INCLUDE'.split():
+        for k in ('C_INCLUDE_PATH', 'INCLUDE'):
             if k in os.environ:
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(include_dirs, d)
 
-        for k in 'LD_RUN_PATH LIBRARY_PATH LIB'.split():
+        for k in ('LD_RUN_PATH', 'LIBRARY_PATH', 'LIB'):
             if k in os.environ:
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(library_dirs, d)
@@ -334,8 +342,8 @@ class pil_build_ext(build_ext):
                         _add_directory(self.compiler.include_dirs, dir, 0)
 
         if feature.want('lcms'):
-            if _find_include_file(self, "lcms.h"):
-                if _find_library_file(self, "lcms"):
+            if _find_include_file(self, "lcms2.h"):
+                if _find_library_file(self, "lcms2"):
                     feature.lcms = "lcms"
 
         if _tkinter and _find_include_file(self, "tk.h"):
@@ -418,7 +426,7 @@ class pil_build_ext(build_ext):
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
             exts.append(Extension(
-                "PIL._imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra))
+                "PIL._imagingcms", ["_imagingcms.c"], libraries=["lcms2"] + extra))
 
         if os.path.isfile("_webp.c") and feature.webp:
             libs = ["webp"]
@@ -494,7 +502,7 @@ class pil_build_ext(build_ext):
             (feature.zlib, "ZLIB (PNG/ZIP)"),
             (feature.tiff, "TIFF G3/G4 (experimental)"),
             (feature.freetype, "FREETYPE2"),
-            (feature.lcms, "LITTLECMS"),
+            (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"), ]
 

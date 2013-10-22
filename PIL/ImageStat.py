@@ -25,25 +25,8 @@ from PIL import Image
 import operator, math
 from functools import reduce
 
-##
-# The <b>ImageStat</b> module calculates global statistics for an
-# image, or a region of an image.
-##
-
-##
-# Calculate statistics for the given image.  If a mask is included,
-# only the regions covered by that mask are included in the
-# statistics.
 
 class Stat:
-    "Get image or feature statistics"
-
-    ##
-    # Create a statistics object.
-    #
-    # @def __init__(image, mask=None)
-    # @param image A PIL image, or a precalculate histogram.
-    # @param mask An optional mask.
 
     def __init__(self, image_or_list, mask = None):
         try:

@@ -1,13 +1,8 @@
-PIL Package
-===========
+PIL Package (autodoc of remaining modules)
+==========================================
 
-:mod:`Image` Module
--------------------
-
-.. automodule:: PIL.Image
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Reference for modules whose documentation has not yet been ported or written
+can be found here.
 
 :mod:`BdfFontFile` Module
 -------------------------
@@ -65,14 +60,6 @@ PIL Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageChops` Module
-------------------------
-
-.. automodule:: PIL.ImageChops
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageCms` Module
 ----------------------
 
@@ -81,22 +68,7 @@ PIL Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageColor` Module
-------------------------
-
-.. automodule:: PIL.ImageColor
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageDraw` Module
------------------------
-
-.. automodule:: PIL.ImageDraw
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+.. intentionally skipped documenting this because it's not documented anywhere
 :mod:`ImageDraw2` Module
 ------------------------
 
@@ -105,98 +77,11 @@ PIL Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageEnhance` Module
---------------------------
-
-.. automodule:: PIL.ImageEnhance
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageFile` Module
------------------------
-
-.. automodule:: PIL.ImageFile
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+.. intentionally skipped documenting this because it's deprecated
 :mod:`ImageFileIO` Module
 -------------------------
 
 .. automodule:: PIL.ImageFileIO
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageFilter` Module
--------------------------
-
-.. automodule:: PIL.ImageFilter
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageFont` Module
------------------------
-
-.. automodule:: PIL.ImageFont
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageMath` Module
------------------------
-
-.. automodule:: PIL.ImageMath
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageMode` Module
------------------------
-
-.. automodule:: PIL.ImageMode
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageOps` Module
-----------------------
-
-.. automodule:: PIL.ImageOps
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImagePalette` Module
---------------------------
-
-.. automodule:: PIL.ImagePalette
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImagePath` Module
------------------------
-
-.. automodule:: PIL.ImagePath
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageQt` Module
----------------------
-
-.. automodule:: PIL.ImageQt
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageSequence` Module
----------------------------
-
-.. automodule:: PIL.ImageSequence
     :members:
     :undoc-members:
     :show-inheritance:
@@ -209,34 +94,10 @@ PIL Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageStat` Module
------------------------
-
-.. automodule:: PIL.ImageStat
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageTk` Module
----------------------
-
-.. automodule:: PIL.ImageTk
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageTransform` Module
 ----------------------------
 
 .. automodule:: PIL.ImageTransform
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageWin` Module
-----------------------
-
-.. automodule:: PIL.ImageWin
     :members:
     :undoc-members:
     :show-inheritance:
@@ -253,14 +114,6 @@ PIL Package
 -----------------------
 
 .. automodule:: PIL.OleFileIO
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`PSDraw` Module
---------------------
-
-.. automodule:: PIL.PSDraw
     :members:
     :undoc-members:
     :show-inheritance:

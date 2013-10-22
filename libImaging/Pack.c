@@ -362,6 +362,27 @@ packI16B(UINT8* out, const UINT8* in_, int pixels)
 }
 
 static void
+packI16N_I16B(UINT8* out, const UINT8* in, int pixels){
+    int i;
+    UINT8* tmp = (UINT8*) in;
+    for (i = 0; i < pixels; i++) {
+        C16B;
+	out += 2; tmp += 2;
+    }
+	
+}
+static void
+packI16N_I16(UINT8* out, const UINT8* in, int pixels){
+    int i;
+    UINT8* tmp = (UINT8*) in;
+    for (i = 0; i < pixels; i++) {
+        C16L;
+	out += 2; tmp += 2;
+    }
+}
+
+
+static void
 packI32S(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
@@ -369,6 +390,19 @@ packI32S(UINT8* out, const UINT8* in, int pixels)
     for (i = 0; i < pixels; i++) {
         C32L;
 	out += 4; tmp += 4;
+    }
+}
+
+void
+ImagingPackLAB(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* LAB triplets */
+    for (i = 0; i < pixels; i++) {
+	out[0] = in[0];
+	out[1] = in[1] ^ 128; /* signed in outside world */ 
+	out[2] = in[2] ^ 128;
+	out += 3; in += 4;
     }
 }
 
@@ -526,6 +560,12 @@ static struct {
     {"YCbCr",  	"Cb",           8,      band1},
     {"YCbCr",  	"Cr",           8,      band2},
 
+    /* LAB Color */
+    {"LAB",	    "LAB",	       24,     ImagingPackLAB},
+    {"LAB",  	"L",           8,      band0},
+    {"LAB",  	"A",           8,      band1},
+    {"LAB",  	"B",           8,      band2},
+
     /* integer */
     {"I", 	"I",		32,	copy4},
     {"I", 	"I;16B",	16,	packI16B},
@@ -541,6 +581,9 @@ static struct {
     {"I;16", 	"I;16",		16,	copy2},
     {"I;16B", 	"I;16B",	16,	copy2},
     {"I;16L", 	"I;16L",	16,	copy2},
+    {"I;16", 	"I;16N",	16,	packI16N_I16}, // LibTiff native->image endian.
+    {"I;16L", 	"I;16N",	16,	packI16N_I16},
+    {"I;16B", 	"I;16N",	16,	packI16N_I16B},
     {"BGR;15", 	"BGR;15",	16,	copy2},
     {"BGR;16", 	"BGR;16",	16,	copy2},
     {"BGR;24", 	"BGR;24",	24,	copy3},

@@ -863,6 +863,12 @@ class TiffImageFile(ImageFile.ImageFile):
                     # fillorder==2 modes have a corresponding
                     # fillorder=1 mode
                     self.mode, rawmode = OPEN_INFO[key]
+                # libtiff always returns the bytes in native order.
+                # we're expecting image byte order. So, if the rawmode
+                # contains I;16, we need to convert from native to image
+                # byte order.
+                if self.mode in ('I;16B', 'I;16'):
+                    rawmode = 'I;16N'
 
                 # Offset in the tile tuple is 0, we go from 0,0 to
                 # w,h, and we only do this once -- eds
@@ -1075,41 +1081,54 @@ def _save(im, fp, filename):
             _fp = os.dup(fp.fileno())
 
         blocklist =  [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
-        
-        items = itertools.chain(getattr(im, 'ifd', {}).items(), ifd.items())
-        atts = {}
-        try:
-            # pull in more bits from the original file, e.g x,y resolution
-            # so that we can save(load('')) == original file.
-            for k,v in items:
-                if k not in atts and k not in blocklist:
-                    if type(v[0]) == tuple and len(v) > 1:
-                       # A tuple of more than one rational tuples
-                        # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
-                        atts[k] = [float(elt[0])/float(elt[1]) for elt in v]
-                        continue
-                    if type(v[0]) == tuple and len(v) == 1:
-                       # A tuple of one rational tuples
-                        # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
-                        atts[k] = float(v[0][0])/float(v[0][1])
-                        continue
-                    if type(v) == tuple and len(v) == 1:
-                        # int or similar
-                        atts[k] = v[0]
-                        continue
-                    if isStringType(v):
-                        atts[k] = v.encode('ascii', 'ignore')
-                        continue
+        atts={}
+        # Merge the ones that we have with (optional) more bits from
+        # the original file, e.g x,y resolution so that we can
+        # save(load('')) == original file.
+        for k,v in itertools.chain(ifd.items(), getattr(im, 'ifd', {}).items()):
+            if k not in atts and k not in blocklist:
+                if type(v[0]) == tuple and len(v) > 1:
+                    # A tuple of more than one rational tuples
+                    # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
+                    atts[k] = [float(elt[0])/float(elt[1]) for elt in v]
+                    continue
+                if type(v[0]) == tuple and len(v) == 1:
+                    # A tuple of one rational tuples
+                    # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
+                    atts[k] = float(v[0][0])/float(v[0][1])
+                    continue
+                if type(v) == tuple and len(v) > 2:
+                    # List of ints?
+                    # BitsPerSample is one example, I get (8,8,8)
+                    # UNDONE
+                    continue
+                if type(v) == tuple and len(v) == 2:
+                    # one rational tuple
+                    # flatten to float, following tiffcp.c->cpTag->TIFF_RATIONAL
+                    atts[k] = float(v[0])/float(v[1])
+                    continue
+                if type(v) == tuple and len(v) == 1:
+                    v = v[0]
+                    # drop through
+                if isStringType(v):
+                    atts[k] = bytes(v.encode('ascii', 'replace')) + b"\0"
+                    continue
+                else:
+                    # int or similar
+                    atts[k] = v
 
-        except Exception as msg:
-            # if we don't have an ifd here, just punt.
-            if Image.DEBUG:
-                print (msg)
-                #raise msg
-            pass
         if Image.DEBUG:
             print (atts)
+
+        # libtiff always returns the bytes in native order.
+        # we're expecting image byte order. So, if the rawmode
+        # contains I;16, we need to convert from native to image
+        # byte order.
+        if im.mode in ('I;16B', 'I;16'):
+            rawmode = 'I;16N'
+
         a = (rawmode, compression, _fp, filename, atts)
+        # print (im.mode, compression, a, im.encoderconfig)
         e = Image._getencoder(im.mode, compression, a, im.encoderconfig)
         e.setimage(im.im, (0,0)+im.size)
         while 1:

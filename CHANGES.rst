@@ -4,11 +4,35 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
-- Port PIL Handbook tutorial and appendices [irksep]
+- LCMS support upgraded from version 1 to version 2, fixes #343
+  [wiredfool]
 
-- Alpha Premultiplication support for transform and resize [wiredfool]
+- Added more raw decoder 16 bit pixel formats
+  [svanheulen]
 
-- Fixes to make Pypy 2.1.0 work on Ubuntu 12.04/64 [wiredfool]
+- Document remaining Image* modules listed in PIL handbook
+  [irksep]
+
+- Document ImageEnhance, ImageFile, ImageFilter, ImageFont, ImageGrab, ImageMath, and ImageOps
+  [irksep]
+
+- Port and update docs for Image, ImageChops, ImageColor, and ImageDraw
+  [irksep]
+
+- Move or copy content from README.rst to docs/
+  [irksep]
+
+- Respect CFLAGS/LDFLAGS when searching for headers/libs
+  [iElectric]
+
+- Port PIL Handbook tutorial and appendices
+  [irksep]
+
+- Alpha Premultiplication support for transform and resize
+  [wiredfool]
+
+- Fixes to make Pypy 2.1.0 work on Ubuntu 12.04/64
+  [wiredfool]
 
 2.2.1 (2013-10-02)
 ------------------
