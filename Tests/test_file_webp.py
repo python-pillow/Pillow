@@ -66,6 +66,26 @@ def test_write_rgb():
     assert_image_similar(image, target, 20.0)
 
 
+def test_write_lossless_rgb():
+    temp_file = tempfile("temp.webp")
+
+    lena("RGB").save(temp_file, lossless=True)
+
+    image = Image.open(temp_file)
+    image.load()
+
+    assert_equal(image.mode, "RGB")
+    assert_equal(image.size, (128, 128))
+    assert_equal(image.format, "WEBP")
+    assert_no_exception(lambda: image.load())
+    assert_no_exception(lambda: image.getdata())
+
+
+    assert_image_equal(image, lena("RGB"))
+
+
+
+
 def test_write_rgba():
     """
     Can we write a RGBA mode file to webp without error. Does it have the bits we
@@ -111,3 +131,30 @@ def test_read_rgba():
     target = Image.open('Images/transparent.png')
     assert_image_similar(image, target, 20.0)
 
+
+
+def test_write_lossless_rgb():
+    temp_file = tempfile("temp.webp")
+    #temp_file = "temp.webp"
+    
+    pil_image = lena('RGBA')
+
+    mask = Image.new("RGBA", (64, 64), (128,128,128,128))
+    pil_image.paste(mask, (0,0), mask)   # add some partially transparent bits.
+    
+    pil_image.save(temp_file, lossless=True)
+
+    # Visually checking the image in Chrome shows as expected.
+    # This is failing to read...
+    
+    image = Image.open(temp_file)
+    image.load()
+
+    assert_equal(image.mode, "RGBA")
+    assert_equal(image.size, pil_image.size)
+    assert_equal(image.format, "WEBP")
+    assert_no_exception(lambda: image.load())
+    assert_no_exception(lambda: image.getdata())
+
+
+    assert_image_equal(image, pil_image)
