@@ -773,11 +773,10 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                                             (ttag_t) PyInt_AsLong(key),
                                             PyInt_AsLong(value));
         } else if(PyBytes_Check(value)) {
-            TRACE(("Setting from String: %d, %s \n", (int)PyInt_AsLong(key),PyBytes_AsString(value)));
+            TRACE(("Setting from Bytes: %d, %s \n", (int)PyInt_AsLong(key),PyBytes_AsString(value)));
             status = ImagingLibTiffSetField(&encoder->state,
                                             (ttag_t) PyInt_AsLong(key),
                                             PyBytes_AsString(value));
-
         } else if(PyList_Check(value)) {
             int len,i;
             float *floatav;
@@ -795,12 +794,12 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                 free(floatav);
             }
         } else if (PyFloat_Check(value)) {
-            TRACE(("Setting from String: %d, %f \n", (int)PyInt_AsLong(key),PyFloat_AsDouble(value)));
+            TRACE(("Setting from Float: %d, %f \n", (int)PyInt_AsLong(key),PyFloat_AsDouble(value)));
             status = ImagingLibTiffSetField(&encoder->state,
                                             (ttag_t) PyInt_AsLong(key),
                                             (float)PyFloat_AsDouble(value));
         } else {
-            TRACE(("Unhandled type for key %d : %s ",
+            TRACE(("Unhandled type for key %d : %s \n",
                    (int)PyInt_AsLong(key),
                    PyBytes_AsString(PyObject_Str(value))));
         }

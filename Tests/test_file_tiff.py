@@ -71,3 +71,34 @@ def test_xyres_tiff():
     im.tag.tags[Y_RESOLUTION] = (72,)
     im._setup()
     assert_equal(im.info['dpi'], (72., 72.))
+
+
+def test_little_endian():
+	im = Image.open('Tests/images/12bit.cropped.tif')
+	assert_equal(im.getpixel((0,0)), 480)
+	assert_equal(im.mode, 'I;16')
+
+	b = im.tobytes()
+	# Bytes are in image native order (little endian)
+	if py3:
+		assert_equal(b[0], ord(b'\xe0'))
+		assert_equal(b[1], ord(b'\x01'))
+	else:
+		assert_equal(b[0], b'\xe0')
+		assert_equal(b[1], b'\x01')
+		
+
+def test_big_endian():
+	im = Image.open('Tests/images/12bit.MM.cropped.tif')
+	assert_equal(im.getpixel((0,0)), 480)
+	assert_equal(im.mode, 'I;16B')
+
+	b = im.tobytes()
+
+	# Bytes are in image native order (big endian)
+	if py3:
+		assert_equal(b[0], ord(b'\x01'))
+		assert_equal(b[1], ord(b'\xe0'))
+	else:
+		assert_equal(b[0], b'\x01')
+		assert_equal(b[1], b'\xe0')
