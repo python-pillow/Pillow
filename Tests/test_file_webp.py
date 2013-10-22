@@ -143,9 +143,6 @@ def test_write_lossless_rgb():
     pil_image.paste(mask, (0,0), mask)   # add some partially transparent bits.
     
     pil_image.save(temp_file, lossless=True)
-
-    # Visually checking the image in Chrome shows as expected.
-    # This is failing to read...
     
     image = Image.open(temp_file)
     image.load()
