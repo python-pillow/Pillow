@@ -46,6 +46,7 @@ __version__ = "1.3.5"
 from PIL import Image, ImageFile
 from PIL import ImagePalette
 from PIL import _binary
+from PIL._util import isStringType
 
 import warnings
 import array, sys
@@ -1027,13 +1028,25 @@ def _save(im, fp, filename):
                     # flatten to floats, following tiffcp.c->cpTag->TIFF_RATIONAL
                     atts[k] = float(v[0][0])/float(v[0][1])
                     continue
-                if type(v) == tuple and len(v) == 1:
-                    # int or similar
-                    atts[k] = v[0]
+                if type(v) == tuple and len(v) > 2:
+                    # List of ints?
+                    # BitsPerSample is one example, I get (8,8,8)
+                    # UNDONE
                     continue
-                if type(v) == str:
+                if type(v) == tuple and len(v) == 2:
+                    # one rational tuple
+                    # flatten to float, following tiffcp.c->cpTag->TIFF_RATIONAL
+                    atts[k] = float(v[0])/float(v[1])
+                    continue
+                if type(v) == tuple and len(v) == 1:
+                    v = v[0]
+                    # drop through
+                if isStringType(v):
                     atts[k] = bytes(v.encode('ascii', 'replace')) + b"\0"
                     continue
+                else:
+                    # int or similar
+                    atts[k] = v
 
         if Image.DEBUG:
             print (atts)
