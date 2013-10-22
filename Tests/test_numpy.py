@@ -78,7 +78,7 @@ def test_16bit():
     img = Image.open('Tests/images/12bit.cropped.tif')
     np_img = numpy.array(img)
     _test_img_equals_nparray(img, np_img)
-    assert_equal(np_img.dtype, numpy.dtype('uint16'))
+    assert_equal(np_img.dtype, numpy.dtype('<u2'))
 
 def test_to_array():
 
@@ -97,9 +97,9 @@ def test_to_array():
              ("RGBX", 'uint8'),
              ("CMYK", 'uint8'),
              ("YCbCr", 'uint8'),
-             ("I;16", 'uint16'),
+             ("I;16", '<u2'),
              ("I;16B", '>u2'),
-             ("I;16L", 'uint16'),
+             ("I;16L", '<u2'),
              ]
     
 

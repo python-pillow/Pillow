@@ -94,6 +94,8 @@ def test_g4_write():
     assert_image_equal(reread, rot)
     assert_equal(reread.info['compression'], 'group4')
 
+    assert_equal(reread.info['compression'], orig.info['compression'])
+    
     assert_false(orig.tobytes() == reread.tobytes())
 
 def test_adobe_deflate_tiff():
@@ -115,3 +117,65 @@ def test_g3_compression():
     assert_equal(reread.info['compression'], 'group3')
     assert_image_equal(reread, i)
     
+def test_little_endian():
+    im = Image.open('Tests/images/12bit.deflate.tif')
+    assert_equal(im.getpixel((0,0)), 480)
+    assert_equal(im.mode, 'I;16')
+
+    b = im.tobytes()
+    # Bytes are in image native order (little endian)
+    if py3:
+        assert_equal(b[0], ord(b'\xe0'))
+        assert_equal(b[1], ord(b'\x01'))
+    else:
+        assert_equal(b[0], b'\xe0')
+        assert_equal(b[1], b'\x01')
+        
+
+    out = tempfile("temp.tif")
+    out = "temp.le.tif"
+    im.save(out)
+    reread = Image.open(out)
+
+    assert_equal(reread.info['compression'], im.info['compression'])
+    assert_equal(reread.getpixel((0,0)), 480)
+    # UNDONE - libtiff defaults to writing in native endian, so
+    # on big endian, we'll get back mode = 'I;16B' here. 
+    
+def test_big_endian():
+    im = Image.open('Tests/images/12bit.MM.deflate.tif')
+
+    assert_equal(im.getpixel((0,0)), 480)
+    assert_equal(im.mode, 'I;16B')
+
+    b = im.tobytes()
+
+    # Bytes are in image native order (big endian)
+    if py3:
+        assert_equal(b[0], ord(b'\x01'))
+        assert_equal(b[1], ord(b'\xe0'))
+    else:
+        assert_equal(b[0], b'\x01')
+        assert_equal(b[1], b'\xe0')
+    
+    out = tempfile("temp.tif")
+    im.save(out)
+    reread = Image.open(out)
+
+    assert_equal(reread.info['compression'], im.info['compression'])
+    assert_equal(reread.getpixel((0,0)), 480)
+
+def test_g4_string_info():
+    """Tests String data in info directory"""
+    file = "Tests/images/lena_g4_500.tif"
+    orig = Image.open(file)
+    
+    out = tempfile("temp.tif")
+
+    orig.tag[269] = 'temp.tif'
+    orig.save(out)
+             
+    reread = Image.open(out)
+    assert_equal('temp.tif', reread.tag[269])
+
+

@@ -226,16 +226,17 @@ _MODE_CONV = {
     "CMYK": ('|u1', 4),
     "YCbCr": ('|u1', 3),
     "LAB": ('|u1', 3), # UNDONE - unsigned |u1i1i1
-    "I;16": ('=u2', None),
+	# I;16 == I;16L, and I;32 == I;32L  
+    "I;16": ('<u2', None),
     "I;16B": ('>u2', None),
     "I;16L": ('<u2', None),
-    "I;16S": ('=i2', None),
+    "I;16S": ('<i2', None),
     "I;16BS": ('>i2', None),
     "I;16LS": ('<i2', None),
-    "I;32": ('=u4', None),
+    "I;32": ('<u4', None),
     "I;32B": ('>u4', None),
     "I;32L": ('<u4', None),
-    "I;32S": ('=i4', None),
+    "I;32S": ('<i4', None),
     "I;32BS": ('>i4', None),
     "I;32LS": ('<i4', None),
 }
