@@ -1046,7 +1046,7 @@ def _save(im, fp, filename):
             rawmode = 'I;16N'
 
         a = (rawmode, compression, _fp, filename, atts)
-        print (im.mode, compression, a, im.encoderconfig)
+        # print (im.mode, compression, a, im.encoderconfig)
         e = Image._getencoder(im.mode, compression, a, im.encoderconfig)
         e.setimage(im.im, (0,0)+im.size)
         while 1:
