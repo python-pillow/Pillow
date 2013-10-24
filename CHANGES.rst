@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Take compression as an option in the save call for tiffs
+  [wiredfool]
+
 - Add support for saving lossless WebP. Just pass 'lossless=True' to save()
   [liftoff]
 
