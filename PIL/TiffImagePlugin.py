@@ -915,7 +915,7 @@ def _save(im, fp, filename):
 
     ifd = ImageFileDirectory(prefix)
 
-    compression = im.info.get('compression','raw')
+    compression = im.encoderinfo.get('compression',im.info.get('compression','raw'))
     libtiff = compression in ["tiff_ccitt", "group3", "group4",
                               "tiff_jpeg", "tiff_adobe_deflate",
                               "tiff_thunderscan", "tiff_deflate",
