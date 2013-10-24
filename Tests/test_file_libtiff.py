@@ -111,6 +111,7 @@ def test_write_metadata():
     """ Test metadata writing through libtiff """
     img = Image.open('Tests/images/lena_g4.tif')
     f = tempfile('temp.tiff')
+
     img.save(f, tiffinfo = img.tag)
 
     loaded = Image.open(f)
@@ -118,8 +119,9 @@ def test_write_metadata():
     original = img.tag.named()
     reloaded = loaded.tag.named()
 
-    ignored = ['StripByteCounts', 'RowsPerStrip', 'PageNumber']
-    
+    # PhotometricInterpretation is set from SAVE_INFO, not the original image. 
+    ignored = ['StripByteCounts', 'RowsPerStrip', 'PageNumber', 'PhotometricInterpretation']
+
     for tag, value in reloaded.items():
         if tag not in ignored:
             assert_equal(original[tag], value, "%s didn't roundtrip" % tag)
