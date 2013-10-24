@@ -12,6 +12,7 @@ _VALID_WEBP_MODES = {
 _VP8_MODES_BY_IDENTIFIER = {
     b"VP8 ": "RGB",
     b"VP8X": "RGBA",
+    b"VP8L": "RGBA", # lossless
     }
 
 

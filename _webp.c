@@ -25,7 +25,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     Py_ssize_t  exif_size;
     size_t ret_size;
 
-    if (!PyArg_ParseTuple(args, "s#iiOfss#s#",
+    if (!PyArg_ParseTuple(args, "s#iiifss#s#",
                 (char**)&rgb, &size, &width, &height, &lossless, &quality_factor, &mode,
                 &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
         Py_RETURN_NONE;
@@ -34,7 +34,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         if (size < width * height * 4){
             Py_RETURN_NONE;
         }
-        if (PyObject_IsTrue(lossless)) {
+        if (lossless) {
             ret_size = WebPEncodeLosslessRGBA(rgb, width, height, 4* width, &output);
         } else {
             ret_size = WebPEncodeRGBA(rgb, width, height, 4* width, quality_factor, &output);
@@ -43,7 +43,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         if (size < width * height * 3){
             Py_RETURN_NONE;
         }
-        if (PyObject_IsTrue(lossless)) {
+        if (lossless) {
             ret_size = WebPEncodeLosslessRGB(rgb, width, height, 3* width, &output);
         } else {
             ret_size = WebPEncodeRGB(rgb, width, height, 3* width, quality_factor, &output);
