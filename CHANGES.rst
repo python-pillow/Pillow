@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Lossless WEBP Support
+  [wiredfool]
+
 - Take compression as an option in the save call for tiffs
   [wiredfool]
 
