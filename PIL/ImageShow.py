@@ -35,14 +35,24 @@ def register(viewer, order=1):
 #
 # @param image An image object.
 # @param title Optional title.  Not all viewers can display the title.
+# @param command Optional command. Command to display the image with.
 # @param **options Additional viewer options.
 # @return True if a suitable viewer was found, false otherwise.
 
-def show(image, title=None, **options):
+def show(image, title=None, command=None, **options):
+    if command is not None:
+        return _showWithCommand(image,command,title=title,**options)
     for viewer in _viewers:
         if viewer.show(image, title=title, **options):
             return 1
     return 0
+
+def _showWithCommand(image,command,**options):
+    viewer = CustomCommandViewer(command)
+    #TODO: Should we register these viewers and see if there is already a
+    #viewer for this command?
+    viewer.show(image,**options)
+    return True
 
 ##
 # Base class for viewers.
@@ -139,6 +149,16 @@ else:
             return 1
 
     # implementations
+
+    class CustomCommandViewer(UnixViewer):
+
+        def __init__(self,command):
+            super(CustomCommandViewer, self).__init__()
+            self._command = command
+
+        def get_command_ex(self, file, **options):
+            command = executable = self._command
+            return command, executable
 
     class DisplayViewer(UnixViewer):
         def get_command_ex(self, file, **options):
