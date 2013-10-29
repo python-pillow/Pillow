@@ -48,7 +48,7 @@ def show(image, title=None, command=None, **options):
     return 0
 
 def _showWithCommand(image,command,**options):
-    viewer = CustomCommandViewer(command)
+    viewer = SimpleCommandViewer(command)
     #TODO: Should we register these viewers and see if there is already a
     #viewer for this command?
     viewer.show(image,**options)
@@ -113,6 +113,9 @@ if sys.platform == "win32":
 
     register(WindowsViewer)
 
+    class SimpleCommandViewer(WindowsViewer):
+        pass
+
 elif sys.platform == "darwin":
 
     class MacViewer(Viewer):
@@ -125,6 +128,9 @@ elif sys.platform == "darwin":
             return command
 
     register(MacViewer)
+
+    class SimpleCommandViewer(MacViewer):
+        pass
 
 else:
 
@@ -150,10 +156,9 @@ else:
 
     # implementations
 
-    class CustomCommandViewer(UnixViewer):
-
+    class SimpleCommandViewer(UnixViewer):
         def __init__(self,command):
-            super(CustomCommandViewer, self).__init__()
+            super(SimpleCommandViewer, self).__init__()
             self._command = command
 
         def get_command_ex(self, file, **options):
