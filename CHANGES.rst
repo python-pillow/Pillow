@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Support RGBA TIFF with missing ExtraSamples tag
+  [cgohlke]
+
 - Lossless WEBP Support
   [wiredfool]
 
