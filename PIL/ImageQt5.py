@@ -8,6 +8,7 @@
 # 2006-06-03 fl: created
 # 2006-06-04 fl: inherit from QImage instead of wrapping it
 # 2006-06-05 fl: removed toimage helper; move string support to ImageQt
+# 2013-11-05 fl: add support for Qt5 (aurelien.ballier@cyclonit.com)
 #
 # Copyright (c) 2006 by Secret Labs AB
 # Copyright (c) 2006 by Fredrik Lundh
