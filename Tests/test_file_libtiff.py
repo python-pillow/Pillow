@@ -196,8 +196,13 @@ def test_blur():
 
 
 def test_packbits():
-    #im.info['compression']='packbits'
-    pass
+    im = lena('RGB')
+    out = tempfile('temp.tif')
+
+    im.save(out, compression='packbits')
+    im2 = Image.open(out)
+    assert_image_equal(im, im2)
+
 
 
 def test_cmyk_save():
