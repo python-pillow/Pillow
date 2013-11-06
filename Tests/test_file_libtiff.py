@@ -179,3 +179,31 @@ def test_g4_string_info():
     assert_equal('temp.tif', reread.tag[269])
 
 
+def test_blur():
+    # test case from irc, how to do blur on b/w image and save to compressed tif. 
+    from PIL import ImageFilter
+    out = tempfile('temp.tif')
+    im = Image.open('Tests/images/pport_g4.tif')
+    im = im.convert('L')
+
+    im=im.filter(ImageFilter.GaussianBlur(4))
+    im.save(out, compression='tiff_adobe_deflate')
+
+    im2 = Image.open(out)
+    im2.load()
+
+    assert_image_equal(im, im2)
+
+
+def test_packbits():
+    #im.info['compression']='packbits'
+    pass
+
+
+def test_cmyk_save():
+    im = lena('CMYK')
+    out = tempfile('temp.tif')
+
+    im.save(out, compression='tiff_adobe_deflate')
+    im2 = Image.open(out)
+    assert_image_equal(im, im2)

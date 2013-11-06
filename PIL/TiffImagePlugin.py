@@ -923,6 +923,9 @@ def _save(im, fp, filename):
                               "tiff_sgilog", "tiff_sgilog24",
                               "tiff_raw_16"]
 
+    # required for color libtiff images
+    ifd[PLANAR_CONFIGURATION] = getattr(im, '_planar_configuration', 1)
+    
     # -- multi-page -- skip TIFF header on subsequent pages
     if not libtiff and fp.tell() == 0:
         # tiff header (write via IFD to get everything right)
@@ -1014,6 +1017,8 @@ def _save(im, fp, filename):
 
         blocklist =  [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
         atts={}
+        # bits per sample is a single short in the tiff directory, not a list. 
+        atts[BITSPERSAMPLE] = bits[0]
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
