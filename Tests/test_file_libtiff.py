@@ -212,3 +212,11 @@ def test_cmyk_save():
     im.save(out, compression='tiff_adobe_deflate')
     im2 = Image.open(out)
     assert_image_equal(im, im2)
+
+def test_bw_compression_wRGB():
+    im = lena('RGB')
+    out = tempfile('temp.tif')
+
+    assert_exception(IOError, lambda: im.save(out, compression='tiff_ccitt'))
+    assert_exception(IOError, lambda: im.save(out, compression='group3'))
+    assert_exception(IOError, lambda: im.save(out, compression='group4'))
