@@ -36,3 +36,13 @@ def test_roundtrip():
 
     assert_image_similar(reread.convert('RGB'), im, 50)
 
+def test_roundtrip2():
+    #see https://github.com/python-imaging/Pillow/issues/403
+    out = 'temp.gif'#tempfile('temp.gif')
+    im = Image.open('Images/lena.gif')
+    im2 = im.copy()
+    im2.save(out)
+    reread = Image.open(out)
+
+    assert_image_similar(reread.convert('RGB'), lena(), 50)
+
