@@ -27,3 +27,12 @@ def test_optimize():
         return len(file.getvalue())
     assert_equal(test(0), 800)
     assert_equal(test(1), 38)
+
+def test_roundtrip():
+    out = tempfile('temp.gif')
+    im = lena()
+    im.save(out)
+    reread = Image.open(out)
+
+    assert_image_similar(reread.convert('RGB'), im, 50)
+
