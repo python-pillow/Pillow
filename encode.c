@@ -780,18 +780,35 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
         } else if(PyList_Check(value)) {
             int len,i;
             float *floatav;
+            int *intav;
             TRACE(("Setting from List: %d \n", (int)PyInt_AsLong(key)));
             len = (int)PyList_Size(value);
-            TRACE((" %d elements, setting as floats \n", len));
-            floatav = malloc(sizeof(float)*len);
-            if (floatav) {
-                for (i=0;i<len;i++) {
-                    floatav[i] = (float)PyFloat_AsDouble(PyList_GetItem(value,i));
+            if (len) {
+                if (PyInt_Check(PyList_GetItem(value,0))) {
+                    TRACE((" %d elements, setting as ints \n", len));
+                    intav = malloc(sizeof(int)*len);
+                    if (intav) {
+                        for (i=0;i<len;i++) {
+                            intav[i] = (int)PyInt_AsLong(PyList_GetItem(value,i));
+                        }
+                        status = ImagingLibTiffSetField(&encoder->state,
+                                                        (ttag_t) PyInt_AsLong(key),
+                                                        intav);
+                        free(intav);
+                    }       
+                } else {
+                    TRACE((" %d elements, setting as floats \n", len));
+                    floatav = malloc(sizeof(float)*len);
+                    if (floatav) {
+                        for (i=0;i<len;i++) {
+                            floatav[i] = (float)PyFloat_AsDouble(PyList_GetItem(value,i));
+                        }
+                        status = ImagingLibTiffSetField(&encoder->state,
+                                                        (ttag_t) PyInt_AsLong(key),
+                                                        floatav);
+                        free(floatav);
+                    }
                 }
-                status = ImagingLibTiffSetField(&encoder->state,
-                                                (ttag_t) PyInt_AsLong(key),
-                                                floatav);
-                free(floatav);
             }
         } else if (PyFloat_Check(value)) {
             TRACE(("Setting from Float: %d, %f \n", (int)PyInt_AsLong(key),PyFloat_AsDouble(value)));

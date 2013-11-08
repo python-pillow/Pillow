@@ -1036,8 +1036,8 @@ def _save(im, fp, filename):
                     continue
                 if type(v) == tuple and len(v) > 2:
                     # List of ints?
-                    # BitsPerSample is one example, I get (8,8,8)
-                    # UNDONE
+                    if type(v[0]) in (int, float):
+                        atts[k] = list(v)
                     continue
                 if type(v) == tuple and len(v) == 2:
                     # one rational tuple
