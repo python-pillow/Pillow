@@ -475,7 +475,7 @@ class Image:
         new.mode = im.mode
         new.size = im.size
         new.palette = self.palette
-        if im.mode == "P":
+        if im.mode == "P" and not new.palette:
             from PIL import ImagePalette
             new.palette = ImagePalette.ImagePalette()
         try:
