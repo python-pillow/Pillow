@@ -675,15 +675,18 @@ class Image:
 
             L = R * 299/1000 + G * 587/1000 + B * 114/1000
 
-        When translating a greyscale image into a bilevel image (mode
-        "1"), all non-zero values are set to 255 (white). To use other
-        thresholds, use the :py:meth:`~PIL.Image.Image.point` method.
+        The default method of converting a greyscale ("L") or "RGB"
+        image into a bilevel (mode "1") image uses Floyd-Steinberg
+        dither to approximate the original image luminosity levels. If
+        dither is NONE, all non-zero values are set to 255 (white). To
+        use other thresholds, use the :py:meth:`~PIL.Image.Image.point`
+        method.
 
         :param mode: The requested mode.
         :param matrix: An optional conversion matrix.  If given, this
            should be 4- or 16-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
-           mode "RGB" to "P".
+           mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are NONE or FLOYDSTEINBERG (default).
         :param palette: Palette to use when converting from mode "RGB"
            to "P".  Available palettes are WEB or ADAPTIVE.
