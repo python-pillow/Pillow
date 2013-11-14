@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Adds directories for NetBSD.
+  [deepy]
+
 - Support RGBA TIFF with missing ExtraSamples tag
   [cgohlke]
 
