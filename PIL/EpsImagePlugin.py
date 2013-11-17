@@ -50,12 +50,20 @@ if sys.platform.startswith('win'):
     else:
         gs_windows_binary = False
 
-def Ghostscript(tile, size, fp):
+def Ghostscript(tile, size, fp, scale=1):
     """Render an image using Ghostscript"""
 
     # Unpack decoder tile
     decoder, tile, offset, data = tile[0]
     length, bbox = data
+
+    #Hack to support hi-res rendering
+    scale = int(scale) or 1
+    orig_size = size
+    orig_bbox = bbox
+    size = (size[0] * scale, size[1] * scale)
+    bbox = [bbox[0], bbox[1], bbox[2] * scale, bbox[3] * scale]
+    #print("Ghostscript", scale, size, orig_size, bbox, orig_bbox)
 
     import tempfile, os
 
@@ -65,6 +73,7 @@ def Ghostscript(tile, size, fp):
     command = ["gs",
                "-q",                    # quite mode
                "-g%dx%d" % size,        # set output geometry (pixels)
+               "-r%d" % (72*scale),     # set input DPI (dots per inch)
                "-dNOPAUSE -dSAFER",     # don't pause between pages, safe mode
                "-sDEVICE=ppmraw",       # ppm driver
                "-sOutputFile=%s" % file,# output file
@@ -304,11 +313,11 @@ class EpsImageFile(ImageFile.ImageFile):
         if not box:
             raise IOError("cannot determine EPS bounding box")
 
-    def load(self):
+    def load(self, scale=1):
         # Load EPS via Ghostscript
         if not self.tile:
             return
-        self.im = Ghostscript(self.tile, self.size, self.fp)
+        self.im = Ghostscript(self.tile, self.size, self.fp, scale)
         self.mode = self.im.mode
         self.size = self.im.size
         self.tile = []
