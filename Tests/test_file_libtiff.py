@@ -118,7 +118,7 @@ def test_g3_compression():
     assert_image_equal(reread, i)
     
 def test_little_endian():
-    im = Image.open('Tests/images/12bit.deflate.tif')
+    im = Image.open('Tests/images/16bit.deflate.tif')
     assert_equal(im.getpixel((0,0)), 480)
     assert_equal(im.mode, 'I;16')
 
@@ -143,7 +143,7 @@ def test_little_endian():
     # on big endian, we'll get back mode = 'I;16B' here. 
     
 def test_big_endian():
-    im = Image.open('Tests/images/12bit.MM.deflate.tif')
+    im = Image.open('Tests/images/16bit.MM.deflate.tif')
 
     assert_equal(im.getpixel((0,0)), 480)
     assert_equal(im.mode, 'I;16B')

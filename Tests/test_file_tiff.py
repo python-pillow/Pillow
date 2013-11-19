@@ -74,7 +74,7 @@ def test_xyres_tiff():
 
 
 def test_little_endian():
-	im = Image.open('Tests/images/12bit.cropped.tif')
+	im = Image.open('Tests/images/16bit.cropped.tif')
 	assert_equal(im.getpixel((0,0)), 480)
 	assert_equal(im.mode, 'I;16')
 
@@ -89,7 +89,7 @@ def test_little_endian():
 		
 
 def test_big_endian():
-	im = Image.open('Tests/images/12bit.MM.cropped.tif')
+	im = Image.open('Tests/images/16bit.MM.cropped.tif')
 	assert_equal(im.getpixel((0,0)), 480)
 	assert_equal(im.mode, 'I;16B')
 
