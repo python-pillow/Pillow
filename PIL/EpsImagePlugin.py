@@ -89,7 +89,7 @@ def Ghostscript(tile, size, fp, scale=1):
         gs = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         # adjust for image origin
         if bbox[0] != 0 or bbox[1] != 0:
-            gs.stdin.write("%d %d translate\n" % (-bbox[0], -bbox[1]))
+            gs.stdin.write(b"%d %d translate\n" % (-bbox[0], -bbox[1]))
         fp.seek(offset)
         while length > 0:
             s = fp.read(8192)
