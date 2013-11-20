@@ -65,7 +65,7 @@ def Ghostscript(tile, size, fp, scale=1):
     bbox = [bbox[0], bbox[1], bbox[2] * scale, bbox[3] * scale]
     #print("Ghostscript", scale, size, orig_size, bbox, orig_bbox)
 
-    import tempfile, os
+    import tempfile, os, subprocess
 
     file = tempfile.mktemp()
 
@@ -77,30 +77,28 @@ def Ghostscript(tile, size, fp, scale=1):
                "-dNOPAUSE -dSAFER",     # don't pause between pages, safe mode
                "-sDEVICE=ppmraw",       # ppm driver
                "-sOutputFile=%s" % file,# output file
-               "- >/dev/null 2>/dev/null"]
+            ]
 
     if gs_windows_binary is not None:
         if gs_windows_binary is False:
             raise WindowsError('Unable to locate Ghostscript on paths')
         command[0] = gs_windows_binary
-        command[-1] = '- >nul 2>nul'
-
-    command = " ".join(command)
 
     # push data through ghostscript
     try:
-        gs = os.popen(command, "w")
+        gs = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         # adjust for image origin
         if bbox[0] != 0 or bbox[1] != 0:
-            gs.write("%d %d translate\n" % (-bbox[0], -bbox[1]))
+            gs.stdin.write("%d %d translate\n" % (-bbox[0], -bbox[1]))
         fp.seek(offset)
         while length > 0:
             s = fp.read(8192)
             if not s:
                 break
             length = length - len(s)
-            gs.write(s)
-        status = gs.close()
+            gs.stdin.write(s)
+        gs.stdin.close()
+        status = gs.wait()
         if status:
             raise IOError("gs failed (status %d)" % status)
         im = Image.core.open_ppm(file)
