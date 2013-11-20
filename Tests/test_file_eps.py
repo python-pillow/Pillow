@@ -69,14 +69,14 @@ def test_render_scale2():
     #Zero bounding box
     image1_scale2 = Image.open(file1)
     image1_scale2.load(scale=2)
-    image1_scale2_compare = Image.open(file1_compare).convert("RGB")
+    image1_scale2_compare = Image.open(file1_compare_scale2).convert("RGB")
     image1_scale2_compare.load()
     assert_image_similar(image1_scale2, image1_scale2_compare, 5)
 
     #Non-Zero bounding box
     image2_scale2 = Image.open(file2)
     image2_scale2.load(scale=2)
-    image2_scale2_compare = Image.open(file2_compare).convert("RGB")
+    image2_scale2_compare = Image.open(file1_compare_scale2).convert("RGB")
     image2_scale2_compare.load()
     assert_image_similar(image2_scale2, image2_scale2_compare, 10)
 
