@@ -21,7 +21,6 @@ def test_rgb():
     
     def checkrgb(r,g,b):
         val = ImageQt.rgb(r,g,b)
-        print val
         val = val % 2**24 # drop the alpha
         assert_equal(val >> 16, r)
         assert_equal(((val >> 8 ) % 2**8), g)
@@ -35,5 +34,4 @@ def test_rgb():
 
 def test_image():
     for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
-        print ( "Testing mode %s" % mode)
         assert_no_exception(lambda: ImageQt.ImageQt(lena(mode)))
