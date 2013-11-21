@@ -102,3 +102,29 @@ def test_big_endian():
 	else:
 		assert_equal(b[0], b'\x01')
 		assert_equal(b[1], b'\xe0')
+
+
+def test_12bit_rawmode():
+    """ Are we generating the same interpretation of the image as Imagemagick is? """
+
+    #Image.DEBUG = True
+    im = Image.open('Tests/images/12bit.cropped.tif')
+
+    # to make the target --
+    # convert 12bit.cropped.tif -depth 16 tmp.tif
+    # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
+    # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
+    # so we need to unshift so that the integer values are the same. 
+    
+    im2 = Image.open('Tests/images/12in16bit.tif')
+
+    if Image.DEBUG:
+        print (im.getpixel((0,0)))
+        print (im.getpixel((0,1)))
+        print (im.getpixel((0,2)))
+
+        print (im2.getpixel((0,0)))
+        print (im2.getpixel((0,1)))
+        print (im2.getpixel((0,2)))
+  
+    assert_image_equal(im, im2)
