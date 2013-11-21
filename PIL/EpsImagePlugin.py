@@ -50,14 +50,22 @@ if sys.platform.startswith('win'):
     else:
         gs_windows_binary = False
 
-def Ghostscript(tile, size, fp):
+def Ghostscript(tile, size, fp, scale=1):
     """Render an image using Ghostscript"""
 
     # Unpack decoder tile
     decoder, tile, offset, data = tile[0]
     length, bbox = data
 
-    import tempfile, os
+    #Hack to support hi-res rendering
+    scale = int(scale) or 1
+    orig_size = size
+    orig_bbox = bbox
+    size = (size[0] * scale, size[1] * scale)
+    bbox = [bbox[0], bbox[1], bbox[2] * scale, bbox[3] * scale]
+    #print("Ghostscript", scale, size, orig_size, bbox, orig_bbox)
+
+    import tempfile, os, subprocess
 
     file = tempfile.mktemp()
 
@@ -65,33 +73,32 @@ def Ghostscript(tile, size, fp):
     command = ["gs",
                "-q",                    # quite mode
                "-g%dx%d" % size,        # set output geometry (pixels)
+               "-r%d" % (72*scale),     # set input DPI (dots per inch)
                "-dNOPAUSE -dSAFER",     # don't pause between pages, safe mode
                "-sDEVICE=ppmraw",       # ppm driver
                "-sOutputFile=%s" % file,# output file
-               "- >/dev/null 2>/dev/null"]
+            ]
 
     if gs_windows_binary is not None:
         if gs_windows_binary is False:
             raise WindowsError('Unable to locate Ghostscript on paths')
         command[0] = gs_windows_binary
-        command[-1] = '- >nul 2>nul'
-
-    command = " ".join(command)
 
     # push data through ghostscript
     try:
-        gs = os.popen(command, "w")
+        gs = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         # adjust for image origin
         if bbox[0] != 0 or bbox[1] != 0:
-            gs.write("%d %d translate\n" % (-bbox[0], -bbox[1]))
+            gs.stdin.write(("%d %d translate\n" % (-bbox[0], -bbox[1])).encode('ascii'))
         fp.seek(offset)
         while length > 0:
             s = fp.read(8192)
             if not s:
                 break
             length = length - len(s)
-            gs.write(s)
-        status = gs.close()
+            gs.stdin.write(s)
+        gs.stdin.close()
+        status = gs.wait()
         if status:
             raise IOError("gs failed (status %d)" % status)
         im = Image.core.open_ppm(file)
@@ -304,11 +311,11 @@ class EpsImageFile(ImageFile.ImageFile):
         if not box:
             raise IOError("cannot determine EPS bounding box")
 
-    def load(self):
+    def load(self, scale=1):
         # Load EPS via Ghostscript
         if not self.tile:
             return
-        self.im = Ghostscript(self.tile, self.size, self.fp)
+        self.im = Ghostscript(self.tile, self.size, self.fp, scale)
         self.mode = self.im.mode
         self.size = self.im.size
         self.tile = []

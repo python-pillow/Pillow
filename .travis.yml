@@ -10,7 +10,7 @@ python:
   - 3.2
   - 3.3
 
-install: "sudo apt-get -qq install libfreetype6-dev liblcms2-dev libwebp-dev python-qt4"
+install: "sudo apt-get -qq install libfreetype6-dev liblcms2-dev libwebp-dev python-qt4 ghostscript""
 
 script:
   - python setup.py clean
