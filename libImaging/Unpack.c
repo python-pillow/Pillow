@@ -797,21 +797,22 @@ unpackI16N_I16(UINT8* out, const UINT8* in, int pixels){
 
 static void
 unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
-    /*  Fillorder 1/MSB -> LittleEndian 
+    /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer greyscale tiffs. 
         
-        According to the spec: 
+        According to the TIFF spec: 
 
         FillOrder = 2 should be used only when BitsPerSample = 1 and
         the data is either uncompressed or compressed using CCITT 1D
         or 2D compression, to avoid potentially ambigous situations.
 
-        Yeah. I thought so. See how well people read the spec. 
+        Yeah. I thought so. We'll see how well people read the spec. 
+        We've got several fillorder=2 modes in TiffImagePlugin.py
 
-        
-        So, it appears that the layout is: 00 80 00 ... -> (128 , 0
-        ...). The samples are stored in a single big bitian 12bit
-        block, but need to be pulled out to little endian format to be
-        stored in a 2 byte int.
+        There's no spec I can find. It appears that the in storage
+        layout is: 00 80 00 ... -> (128 , 0 ...). The samples are
+        stored in a single big bitian 12bit block, but need to be
+        pulled out to little endian format to be stored in a 2 byte
+        int.
      */
 
     int i;
@@ -1216,7 +1217,7 @@ static struct {
     {"I;16L", 	"I;16N",	    16,	    unpackI16N_I16}, // LibTiff native->image endian.
     {"I;16B", 	"I;16N",	    16,	    unpackI16N_I16B},
 
-    {"I;16", 	"I;12",	        12,	    unpackI12_I16}, // 
+    {"I;16", 	"I;12",	        12,	    unpackI12_I16}, // 12 bit Tiffs stored in 16bits.
 
     {NULL} /* sentinel */
 };
