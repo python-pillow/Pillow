@@ -6,7 +6,7 @@ python:
   - 3.2
   - 3.3
 
-install: "sudo apt-get -qq install libfreetype6-dev liblcms2-dev libwebp-dev"
+install: "sudo apt-get -qq install libfreetype6-dev liblcms2-dev libwebp-dev ghostscript"
 
 script:
   - python setup.py clean
