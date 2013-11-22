@@ -1,10 +1,10 @@
 from tester import *
 
-from PIL import Image
+from PIL import Image, TiffImagePlugin
 
 codecs = dir(Image.core)
 
-if "group4_encoder" not in codecs or "group4_decoder" not in codecs:
+if "libtiff_encoder" not in codecs or "libtiff_decoder" not in codecs:
     skip("tiff support not available")
 
 def _assert_noerr(im):
@@ -118,7 +118,7 @@ def test_g3_compression():
     assert_image_equal(reread, i)
     
 def test_little_endian():
-    im = Image.open('Tests/images/12bit.deflate.tif')
+    im = Image.open('Tests/images/16bit.deflate.tif')
     assert_equal(im.getpixel((0,0)), 480)
     assert_equal(im.mode, 'I;16')
 
@@ -143,7 +143,7 @@ def test_little_endian():
     # on big endian, we'll get back mode = 'I;16B' here. 
     
 def test_big_endian():
-    im = Image.open('Tests/images/12bit.MM.deflate.tif')
+    im = Image.open('Tests/images/16bit.MM.deflate.tif')
 
     assert_equal(im.getpixel((0,0)), 480)
     assert_equal(im.mode, 'I;16B')
@@ -178,6 +178,31 @@ def test_g4_string_info():
     reread = Image.open(out)
     assert_equal('temp.tif', reread.tag[269])
 
+def test_12bit_rawmode():
+    """ Are we generating the same interpretation of the image as Imagemagick is? """
+    TiffImagePlugin.READ_LIBTIFF = True
+    #Image.DEBUG = True
+    im = Image.open('Tests/images/12bit.cropped.tif')
+    im.load()
+    TiffImagePlugin.READ_LIBTIFF = False
+    # to make the target --
+    # convert 12bit.cropped.tif -depth 16 tmp.tif
+    # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
+    # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
+    # so we need to unshift so that the integer values are the same. 
+    
+    im2 = Image.open('Tests/images/12in16bit.tif')
+
+    if Image.DEBUG:
+        print (im.getpixel((0,0)))
+        print (im.getpixel((0,1)))
+        print (im.getpixel((0,2)))
+
+        print (im2.getpixel((0,0)))
+        print (im2.getpixel((0,1)))
+        print (im2.getpixel((0,2)))
+  
+    assert_image_equal(im, im2)
 
 def test_blur():
     # test case from irc, how to do blur on b/w image and save to compressed tif. 

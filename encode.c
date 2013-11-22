@@ -673,7 +673,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     char* rawmode;
     char* compname;
     char* filename;
-    int compression;
     int fp;
 
     PyObject *dir;
@@ -705,47 +704,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 
 
     TRACE(("new tiff encoder %s fp: %d, filename: %s \n", compname, fp, filename));
-
-    /* UNDONE -- we can probably do almost any arbitrary compression here,
-     *  so long as we're doing row/stripe based actions and not tiles.
-     */
-
-    if (strcasecmp(compname, "tiff_ccitt") == 0) {
-        compression = COMPRESSION_CCITTRLE;
-
-    } else if (strcasecmp(compname, "group3") == 0) {
-        compression = COMPRESSION_CCITTFAX3;
-
-    } else if (strcasecmp(compname, "group4") == 0) {
-        compression = COMPRESSION_CCITTFAX4;
-
-    } else if (strcasecmp(compname, "tiff_jpeg") == 0) {
-        compression = COMPRESSION_OJPEG;
-
-    } else if (strcasecmp(compname, "tiff_adobe_deflate") == 0) {
-        compression = COMPRESSION_ADOBE_DEFLATE;
-
-    } else if (strcasecmp(compname, "tiff_thunderscan") == 0) {
-        compression = COMPRESSION_THUNDERSCAN;
-
-    } else if (strcasecmp(compname, "tiff_deflate") == 0) {
-        compression = COMPRESSION_DEFLATE;
-
-    } else if (strcasecmp(compname, "tiff_sgilog") == 0) {
-        compression = COMPRESSION_SGILOG;
-
-    } else if (strcasecmp(compname, "tiff_sgilog24") == 0) {
-        compression = COMPRESSION_SGILOG24;
-
-    } else if (strcasecmp(compname, "tiff_raw_16") == 0) {
-        compression = COMPRESSION_CCITTRLEW;
-
-    } else {
-        PyErr_SetString(PyExc_ValueError, "unknown compession");
-        return NULL;
-    }
-
-    TRACE(("Found compression: %d\n", compression));
 
     encoder = PyImaging_EncoderNew(sizeof(TIFFSTATE));
     if (encoder == NULL)

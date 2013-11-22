@@ -75,7 +75,7 @@ def _test_img_equals_nparray(img, np):
 
 
 def test_16bit():
-    img = Image.open('Tests/images/12bit.cropped.tif')
+    img = Image.open('Tests/images/16bit.cropped.tif')
     np_img = numpy.array(img)
     _test_img_equals_nparray(img, np_img)
     assert_equal(np_img.dtype, numpy.dtype('<u2'))

@@ -38,12 +38,12 @@ def test_8bit():
     im = Image.open('Images/lena.jpg')
     _test_float_conversion(im.convert('L'))
 
-def test_12bit():
-    im = Image.open('Tests/images/12bit.cropped.tif')
+def test_16bit():
+    im = Image.open('Tests/images/16bit.cropped.tif')
     _test_float_conversion(im)
 
-def test_12bit_workaround():
-    im = Image.open('Tests/images/12bit.cropped.tif')
+def test_16bit_workaround():
+    im = Image.open('Tests/images/16bit.cropped.tif')
     _test_float_conversion(im.convert('I'))
     
 
