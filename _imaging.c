@@ -3316,6 +3316,7 @@ static PyMethodDef functions[] = {
 #endif
     {"tiff_lzw_decoder", (PyCFunction)PyImaging_TiffLzwDecoderNew, 1},
 #ifdef HAVE_LIBTIFF
+    {"libtiff_decoder", (PyCFunction)PyImaging_LibTiffDecoderNew, 1},
     {"tiff_ccitt_decoder", (PyCFunction)PyImaging_LibTiffDecoderNew, 1},
     {"group3_decoder", (PyCFunction)PyImaging_LibTiffDecoderNew, 1},
     {"group4_decoder", (PyCFunction)PyImaging_LibTiffDecoderNew, 1},
@@ -3327,6 +3328,7 @@ static PyMethodDef functions[] = {
     {"tiff_sgilog24_decoder", (PyCFunction)PyImaging_LibTiffDecoderNew, 1},
     {"tiff_raw_16_decoder", (PyCFunction)PyImaging_LibTiffDecoderNew, 1},
 
+    {"libtiff_encoder", (PyCFunction)PyImaging_LibTiffEncoderNew, 1},
     {"tiff_ccitt_encoder", (PyCFunction)PyImaging_LibTiffEncoderNew, 1},
     {"group3_encoder", (PyCFunction)PyImaging_LibTiffEncoderNew, 1},
     {"group4_encoder", (PyCFunction)PyImaging_LibTiffEncoderNew, 1},

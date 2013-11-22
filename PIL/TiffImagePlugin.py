@@ -634,7 +634,7 @@ class TiffImageFile(ImageFile.ImageFile):
             raise IOError("Not exactly one tile")
 
         d, e, o, a = self.tile[0]
-        d = Image._getdecoder(self.mode, d, a, self.decoderconfig)
+        d = Image._getdecoder(self.mode, 'libtiff', a, self.decoderconfig)
         try:
             d.setimage(self.im, e)
         except ValueError:
@@ -1062,7 +1062,7 @@ def _save(im, fp, filename):
 
         a = (rawmode, compression, _fp, filename, atts)
         # print (im.mode, compression, a, im.encoderconfig)
-        e = Image._getencoder(im.mode, compression, a, im.encoderconfig)
+        e = Image._getencoder(im.mode, 'libtiff', a, im.encoderconfig)
         e.setimage(im.im, (0,0)+im.size)
         while 1:
             l, s, d = e.encode(16*1024) # undone, change to self.decodermaxblock
