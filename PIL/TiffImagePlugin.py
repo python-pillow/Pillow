@@ -811,7 +811,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 # we're expecting image byte order. So, if the rawmode
                 # contains I;16, we need to convert from native to image
                 # byte order.
-                if self.mode in ('I;16B', 'I;16'):
+                if self.mode in ('I;16B', 'I;16') and 'I;16' in rawmode:
                     rawmode = 'I;16N'
 
                 # Offset in the tile tuple is 0, we go from 0,0 to
