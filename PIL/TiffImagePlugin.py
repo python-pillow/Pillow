@@ -54,6 +54,7 @@ import collections
 import itertools
 import os
 
+# Set these to true to force use of libtiff for reading or writing. 
 READ_LIBTIFF = False
 WRITE_LIBTIFF= False
 
@@ -621,8 +622,8 @@ class TiffImageFile(ImageFile.ImageFile):
         return args
 
     def _load_libtiff(self):
-        """ Overload method triggered when we detect a g3/g4 tiff
-            Calls out to lib tiff """
+        """ Overload method triggered when we detect a compressed tiff
+            Calls out to libtiff """
 
         pixel = Image.Image.load(self)
 
@@ -1056,8 +1057,8 @@ def _save(im, fp, filename):
         if Image.DEBUG:
             print (atts)
 
-        # libtiff always returns the bytes in native order.
-        # we're expecting image byte order. So, if the rawmode
+        # libtiff always expects the bytes in native order.
+        # we're storing image byte order. So, if the rawmode
         # contains I;16, we need to convert from native to image
         # byte order.
         if im.mode in ('I;16B', 'I;16'):
