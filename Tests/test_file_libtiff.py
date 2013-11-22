@@ -133,7 +133,7 @@ def test_little_endian():
         
 
     out = tempfile("temp.tif")
-    out = "temp.le.tif"
+    #out = "temp.le.tif"
     im.save(out)
     reread = Image.open(out)
 
@@ -224,8 +224,8 @@ def test_compressions():
     im = lena('RGB')
     out = tempfile('temp.tif')
 
-    #TiffImagePlugin.READ_LIBTIFF = True
-    #TiffImagePlugin.WRITE_LIBTIFF = True
+    TiffImagePlugin.READ_LIBTIFF = True
+    TiffImagePlugin.WRITE_LIBTIFF = True
 
     for compression in ('packbits', 'tiff_lzw'):
         im.save(out, compression=compression)
