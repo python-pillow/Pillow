@@ -54,6 +54,9 @@ import collections
 import itertools
 import os
 
+READ_LIBTIFF = False
+WRITE_LIBTIFF= False
+
 II = b"II" # little-endian (intel-style)
 MM = b"MM" # big-endian (motorola-style)
 
@@ -760,11 +763,11 @@ class TiffImageFile(ImageFile.ImageFile):
             offsets = self.tag[STRIPOFFSETS]
             h = getscalar(ROWSPERSTRIP, ysize)
             w = self.size[0]
-            if self._compression in ["tiff_ccitt", "group3", "group4",
-                                     "tiff_jpeg", "tiff_adobe_deflate",
-                                     "tiff_thunderscan", "tiff_deflate",
-                                     "tiff_sgilog", "tiff_sgilog24",
-                                     "tiff_raw_16"]:
+            if READ_LIBTIFF or self._compression in ["tiff_ccitt", "group3", "group4",
+                                                     "tiff_jpeg", "tiff_adobe_deflate",
+                                                     "tiff_thunderscan", "tiff_deflate",
+                                                     "tiff_sgilog", "tiff_sgilog24",
+                                                     "tiff_raw_16"]:
                 ## if Image.DEBUG:
                 ##     print "Activating g4 compression for whole file"
 
@@ -918,12 +921,12 @@ def _save(im, fp, filename):
     ifd = ImageFileDirectory(prefix)
 
     compression = im.encoderinfo.get('compression',im.info.get('compression','raw'))
-    libtiff = compression in ["tiff_ccitt", "group3", "group4",
-                              "tiff_jpeg", "tiff_adobe_deflate",
-                              "tiff_thunderscan", "tiff_deflate",
-                              "tiff_sgilog", "tiff_sgilog24",
-                              "tiff_raw_16"]
-
+    libtiff = WRITE_LIBTIFF or compression in ["tiff_ccitt", "group3", "group4",
+                                               "tiff_jpeg", "tiff_adobe_deflate",
+                                               "tiff_thunderscan", "tiff_deflate",
+                                               "tiff_sgilog", "tiff_sgilog24",
+                                               "tiff_raw_16"]
+    
     # -- multi-page -- skip TIFF header on subsequent pages
     if not libtiff and fp.tell() == 0:
         # tiff header (write via IFD to get everything right)
