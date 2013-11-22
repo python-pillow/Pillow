@@ -1,6 +1,6 @@
 from tester import *
 
-from PIL import Image
+from PIL import Image, TiffImagePlugin
 
 codecs = dir(Image.core)
 
@@ -178,4 +178,29 @@ def test_g4_string_info():
     reread = Image.open(out)
     assert_equal('temp.tif', reread.tag[269])
 
+def test_12bit_rawmode():
+    """ Are we generating the same interpretation of the image as Imagemagick is? """
+    TiffImagePlugin.READ_LIBTIFF = True
+    #Image.DEBUG = True
+    im = Image.open('Tests/images/12bit.cropped.tif')
+    im.load()
+    TiffImagePlugin.READ_LIBTIFF = False
+    # to make the target --
+    # convert 12bit.cropped.tif -depth 16 tmp.tif
+    # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
+    # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
+    # so we need to unshift so that the integer values are the same. 
+    
+    im2 = Image.open('Tests/images/12in16bit.tif')
+
+    if Image.DEBUG:
+        print (im.getpixel((0,0)))
+        print (im.getpixel((0,1)))
+        print (im.getpixel((0,2)))
+
+        print (im2.getpixel((0,0)))
+        print (im2.getpixel((0,1)))
+        print (im2.getpixel((0,2)))
+  
+    assert_image_equal(im, im2)
 
