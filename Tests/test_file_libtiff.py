@@ -220,13 +220,25 @@ def test_blur():
     assert_image_equal(im, im2)
 
 
-def test_packbits():
+def test_compressions():
     im = lena('RGB')
     out = tempfile('temp.tif')
 
-    im.save(out, compression='packbits')
+    #TiffImagePlugin.READ_LIBTIFF = True
+    #TiffImagePlugin.WRITE_LIBTIFF = True
+
+    for compression in ('packbits', 'tiff_lzw'):
+        im.save(out, compression=compression)
+        im2 = Image.open(out)
+        assert_image_equal(im, im2)
+
+    im.save(out, compression='jpeg')
     im2 = Image.open(out)
-    assert_image_equal(im, im2)
+    assert_image_similar(im, im2, 30)
+                            
+    TiffImagePlugin.READ_LIBTIFF = False
+    TiffImagePlugin.WRITE_LIBTIFF = False
+
 
 
 
