@@ -731,6 +731,10 @@ class Image:
             self.palette.dirty = 1
             self.load()
 
+        # Use transparent conversion to promote from transparent color to an alpha channel.
+        if self.mode == "RGB" and mode == "RGBA" and "transparency" in self.info:
+            return self._new(self.im.convert_transparent(mode, self.info['transparency']))
+            
         try:
             im = self.im.convert(mode, dither)
         except ValueError:

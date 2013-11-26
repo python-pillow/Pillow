@@ -795,6 +795,18 @@ _convert_matrix(ImagingObject* self, PyObject* args)
 }
 
 static PyObject*
+_convert_transparent(ImagingObject* self, PyObject* args)
+{
+    char* mode;
+    int r,g,b;
+    if (!PyArg_ParseTuple(args, "s(iii)", &mode, &r, &g, &b)) {
+        return NULL;
+    }
+
+    return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, g, b));
+}
+
+static PyObject*
 _copy(ImagingObject* self, PyObject* args)
 {
     if (!PyArg_ParseTuple(args, ""))
@@ -2931,6 +2943,7 @@ static struct PyMethodDef methods[] = {
     {"convert", (PyCFunction)_convert, 1},
     {"convert2", (PyCFunction)_convert2, 1},
     {"convert_matrix", (PyCFunction)_convert_matrix, 1},
+    {"convert_transparent", (PyCFunction)_convert_transparent, 1},
     {"copy", (PyCFunction)_copy, 1},
     {"copy2", (PyCFunction)_copy2, 1},
 #ifdef WITH_CRACKCODE
