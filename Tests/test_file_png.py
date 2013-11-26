@@ -158,8 +158,8 @@ def test_load_transparent_rgb():
     im = im.convert("RGBA")
     assert_image(im, "RGBA", (64, 64))
 
-    # image has 867 transparent pixels
-    assert_equal(im.split()[3].getcolors()[0][0], 867)
+    # image has 876 transparent pixels
+    assert_equal(im.split()[3].getcolors()[0][0], 876)
 
 def test_save_p_transparent_palette():
     in_file = "Tests/images/pil123p.png"
