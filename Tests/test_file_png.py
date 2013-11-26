@@ -182,6 +182,10 @@ def test_save_l_transparency():
     file = tempfile("temp.png")
     assert_no_exception(lambda: im.save(file))
 
+    # There are 559 transparent pixels. 
+    im = im.convert('RGBA')
+    assert_equal(im.split()[3].getcolors()[0][0], 559)
+
 def test_save_rgb_single_transparency():
     in_file = "Tests/images/caption_6_33_22.png"
     im = Image.open(in_file)

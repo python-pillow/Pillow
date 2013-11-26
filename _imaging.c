@@ -799,11 +799,14 @@ _convert_transparent(ImagingObject* self, PyObject* args)
 {
     char* mode;
     int r,g,b;
-    if (!PyArg_ParseTuple(args, "s(iii)", &mode, &r, &g, &b)) {
-        return NULL;
+    if (PyArg_ParseTuple(args, "s(iii)", &mode, &r, &g, &b)) {
+        return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, g, b));
     }
-
-    return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, g, b));
+    PyErr_Clear();
+    if (PyArg_ParseTuple(args, "si", &mode, &r)) {
+        return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, 0, 0));
+    }
+    return NULL;
 }
 
 static PyObject*
