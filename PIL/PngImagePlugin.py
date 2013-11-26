@@ -559,24 +559,29 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
             palette_bytes += b'\0'
         chunk(fp, b"PLTE", palette_bytes)
 
-    if "transparency" in im.encoderinfo:
+    transparency = im.encoderinfo.get('transparency',im.info.get('transparency', None))
+    
+    if transparency:
         if im.mode == "P":
             # limit to actual palette size
             alpha_bytes = 2**bits
-            if isinstance(im.encoderinfo["transparency"], bytes):
-                chunk(fp, b"tRNS", im.encoderinfo["transparency"][:alpha_bytes])
+            if isinstance(transparency, bytes):
+                chunk(fp, b"tRNS", transparency[:alpha_bytes])
             else:
-                transparency = max(0, min(255, im.encoderinfo["transparency"]))
+                transparency = max(0, min(255, transparency))
                 alpha = b'\xFF' * transparency + b'\0'
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
         elif im.mode == "L":
-            transparency = max(0, min(65535, im.encoderinfo["transparency"]))
+            transparency = max(0, min(65535, transparency))
             chunk(fp, b"tRNS", o16(transparency))
         elif im.mode == "RGB":
-            red, green, blue = im.encoderinfo["transparency"]
+            red, green, blue = transparency
             chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
         else:
-            raise IOError("cannot use transparency for this mode")
+            if "transparency" in im.encoderinfo:
+                # don't bother with transparency if it's an RGBA
+                # and it's in the info dict. It's probably just stale. 
+                raise IOError("cannot use transparency for this mode")
     else:
         if im.mode == "P" and im.im.getpalettemode() == "RGBA":
             alpha = im.im.getpalette("RGBA", "A")
