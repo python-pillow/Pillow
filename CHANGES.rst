@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Fix compiling with FreeType 2.5.1
+  [stromnov]
+
 - Adds directories for NetBSD.
   [deepy]
 
