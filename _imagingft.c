@@ -59,7 +59,7 @@ struct {
     const char* message;
 } ft_errors[] =
 
-#include <freetype/fterrors.h>
+#include <freetype2/fterrors.h>
 
 /* -------------------------------------------------------------------- */
 /* font objects */
