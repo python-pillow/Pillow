@@ -15,3 +15,9 @@ to this::
 The :py:mod:`_imaging` module has been moved. You can now import it like this::
 
     from PIL.Image import core as _imaging
+
+The image plugin loading mechanisim has changed. Pillow no longer
+automatically imports any file in the Python path with a name ending
+in :file:`ImagePlugin.py`. You will need to import your image plugin
+manually.
+
