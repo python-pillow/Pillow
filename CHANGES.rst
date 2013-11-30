@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Save arbitrary tags in Tiff image files
+  [wiredfool]
+
 - Quote filenames and title before using on command line
   [tmccombs]
 
