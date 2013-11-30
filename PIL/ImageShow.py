@@ -65,7 +65,7 @@ class Viewer:
         if base != image.mode and image.mode != "1":
             image = image.convert(base)
 
-        self.show_image(image, **options)
+        return self.show_image(image, **options)
 
     # hook methods
 
