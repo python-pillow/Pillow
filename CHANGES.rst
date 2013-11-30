@@ -4,6 +4,36 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Quote filenames and title before using on command line
+  [tmccombs]
+
+- Fixed Viewer.show to return properly
+  [tmccombs]
+
+- Documentation fixes
+  [wiredfool]
+
+- Fixed memory leak saving images as webp when webpmux is available
+  [cezarsa]
+
+- Fix compiling with FreeType 2.5.1
+  [stromnov]
+
+- Adds directories for NetBSD.
+  [deepy]
+
+- Support RGBA TIFF with missing ExtraSamples tag
+  [cgohlke]
+
+- Lossless WEBP Support
+  [wiredfool]
+
+- Take compression as an option in the save call for tiffs
+  [wiredfool]
+
+- Add support for saving lossless WebP. Just pass 'lossless=True' to save()
+  [liftoff]
+
 - LCMS support upgraded from version 1 to version 2, fixes #343
   [wiredfool]
 

@@ -92,6 +92,7 @@ def test_g4_write():
     assert_equal(reread.size,(500,500))
     _assert_noerr(reread)
     assert_image_equal(reread, rot)
+    assert_equal(reread.info['compression'], 'group4')
 
     assert_equal(reread.info['compression'], orig.info['compression'])
     
@@ -105,7 +106,6 @@ def test_adobe_deflate_tiff():
     assert_equal(im.size, (278, 374))
     assert_equal(im.tile[0][:3], ('tiff_adobe_deflate', (0, 0, 278, 374), 0))
     assert_no_exception(lambda: im.load())
-
 
 def test_write_metadata():
     """ Test metadata writing through libtiff """
@@ -130,6 +130,15 @@ def test_write_metadata():
         if tag not in ignored: 
             assert_equal(value, reloaded[tag], "%s didn't roundtrip" % tag)
 
+
+def test_g3_compression():
+    i = Image.open('Tests/images/lena_g4_500.tif')
+    out = tempfile("temp.tif")
+    i.save(out, compression='group3')
+
+    reread = Image.open(out)
+    assert_equal(reread.info['compression'], 'group3')
+    assert_image_equal(reread, i)
 
 def test_little_endian():
     im = Image.open('Tests/images/12bit.deflate.tif')

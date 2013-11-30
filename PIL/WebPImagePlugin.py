@@ -12,6 +12,7 @@ _VALID_WEBP_MODES = {
 _VP8_MODES_BY_IDENTIFIER = {
     b"VP8 ": "RGB",
     b"VP8X": "RGBA",
+    b"VP8L": "RGBA", # lossless
     }
 
 
@@ -48,6 +49,7 @@ def _save(im, fp, filename):
     if im.mode not in _VALID_WEBP_MODES:
         raise IOError("cannot write mode %s as WEBP" % image_mode)
 
+    lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
@@ -56,6 +58,7 @@ def _save(im, fp, filename):
         im.tobytes(),
         im.size[0],
         im.size[1],
+        lossless,
         float(quality),
         im.mode,
         icc_profile,

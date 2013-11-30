@@ -36,6 +36,20 @@ PIL identifies EPS files containing image data, and can read files that contain
 embedded raster images (ImageData descriptors). If Ghostscript is available,
 other EPS files can be read as well. The EPS driver can also write EPS images.
 
+If Ghostscript is available, you can call the :py:meth:`~PIL.Image.Image.load`
+method with the following parameter to affect how Ghostscript renders the EPS
+
+**scale**
+    Affects the scale of the resultant rasterized image. If the EPS suggests
+    that the image be rendered at 100px x 100px, setting this parameter to
+    2 will make the Ghostscript render a 200px x 200px image instead. The
+    relative position of the bounding box is maintained::
+
+        im = Image.open(...)
+        im.size #(100,100)
+        im.load(scale=2)
+        im.size #(200,200)
+
 GIF
 ^^^
 
@@ -321,6 +335,24 @@ WebP
 
 PIL reads and writes WebP files. The specifics of PIL's capabilities with this
 format are currently undocumented.
+
+The :py:meth:`~PIL.Image.Image.save` method supports the following options:
+
+**lossless**
+    If present, instructs the WEBP writer to use lossless
+    compression.
+
+**quality**
+    Integer, 1-100, Defaults to 80. Sets the quality level for
+    lossy compression.
+
+**icc_procfile**
+    The ICC Profile to include in the saved file. Only supported if
+    the system webp library was built with webpmux support.
+
+**exif**
+    The exif data to include in the saved file. Only supported if
+    the system webp library was built with webpmux support.
 
 XBM
 ^^^

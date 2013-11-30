@@ -156,6 +156,7 @@ OPEN_INFO = {
     (II, 1, 3, 1, (32,), ()): ("F", "F;32F"),
     (II, 2, 1, 1, (8,8,8), ()): ("RGB", "RGB"),
     (II, 2, 1, 2, (8,8,8), ()): ("RGB", "RGB;R"),
+    (II, 2, 1, 1, (8,8,8,8), ()): ("RGBA", "RGBA"),  # missing ExtraSamples
     (II, 2, 1, 1, (8,8,8,8), (0,)): ("RGBX", "RGBX"),
     (II, 2, 1, 1, (8,8,8,8), (1,)): ("RGBA", "RGBa"),
     (II, 2, 1, 1, (8,8,8,8), (2,)): ("RGBA", "RGBA"),
@@ -973,7 +974,7 @@ def _save(im, fp, filename):
 
     ifd = ImageFileDirectory(prefix)
 
-    compression = im.info.get('compression','raw')
+    compression = im.encoderinfo.get('compression',im.info.get('compression','raw'))
     libtiff = compression in ["tiff_ccitt", "group3", "group4",
                               "tiff_jpeg", "tiff_adobe_deflate",
                               "tiff_thunderscan", "tiff_deflate",

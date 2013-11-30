@@ -13,6 +13,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 {
     int width;
     int height;
+    int lossless;
     float quality_factor;
     uint8_t *rgb;
     uint8_t *icc_bytes;
@@ -20,29 +21,36 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     uint8_t *output;
     char *mode;
     Py_ssize_t size;
-    Py_ssize_t icc_size; 
+    Py_ssize_t icc_size;
     Py_ssize_t  exif_size;
     size_t ret_size;
 
-    if (!PyArg_ParseTuple(args, "s#iifss#s#",
-                (char**)&rgb, &size, &width, &height, &quality_factor, &mode,
+    if (!PyArg_ParseTuple(args, "s#iiifss#s#",
+                (char**)&rgb, &size, &width, &height, &lossless, &quality_factor, &mode,
                 &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
         Py_RETURN_NONE;
     }
-    
-	if (strcmp(mode, "RGBA")==0){
-		if (size < width * height * 4){
-			Py_RETURN_NONE;
-		}
-		ret_size = WebPEncodeRGBA(rgb, width, height, 4* width, quality_factor, &output);
-	} else if (strcmp(mode, "RGB")==0){
-		if (size < width * height * 3){
-			Py_RETURN_NONE;
-		}
-		ret_size = WebPEncodeRGB(rgb, width, height, 3* width, quality_factor, &output);
-	} else {
-		Py_RETURN_NONE;
-	}
+    if (strcmp(mode, "RGBA")==0){
+        if (size < width * height * 4){
+            Py_RETURN_NONE;
+        }
+        if (lossless) {
+            ret_size = WebPEncodeLosslessRGBA(rgb, width, height, 4* width, &output);
+        } else {
+            ret_size = WebPEncodeRGBA(rgb, width, height, 4* width, quality_factor, &output);
+        }
+    } else if (strcmp(mode, "RGB")==0){
+        if (size < width * height * 3){
+            Py_RETURN_NONE;
+        }
+        if (lossless) {
+            ret_size = WebPEncodeLosslessRGB(rgb, width, height, 3* width, &output);
+        } else {
+            ret_size = WebPEncodeRGB(rgb, width, height, 3* width, quality_factor, &output);
+        }
+    } else {
+        Py_RETURN_NONE;
+    }
 
 #ifndef HAVE_WEBPMUX
     if (ret_size > 0) {
@@ -53,10 +61,10 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 #else
    {
     /* I want to truncate the *_size items that get passed into webp
-       data. Pypy2.1.0 had some issues where the Py_ssize_t items had 
+       data. Pypy2.1.0 had some issues where the Py_ssize_t items had
        data in the upper byte. (Not sure why, it shouldn't have been there)
     */
-    int i_icc_size = (int)icc_size; 
+    int i_icc_size = (int)icc_size;
     int i_exif_size = (int)exif_size;
     WebPData output_data = {0};
     WebPData image = { output, ret_size };
@@ -105,11 +113,11 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 
     WebPMuxAssemble(mux, &output_data);
     WebPMuxDelete(mux);
+    free(output);
 
-    output = (uint8_t*)output_data.bytes;
     ret_size = output_data.size;
     if (ret_size > 0) {
-        PyObject *ret = PyBytes_FromStringAndSize((char*)output, ret_size);
+        PyObject *ret = PyBytes_FromStringAndSize((char*)output_data.bytes, ret_size);
         WebPDataClear(&output_data);
         return ret;
     }
