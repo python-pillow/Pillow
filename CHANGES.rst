@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Quote filenames and title before using on command line
+  [tmccombs]
+
 - Fixed Viewer.show to return properly
   [tmccombs]
 
