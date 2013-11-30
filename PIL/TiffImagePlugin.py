@@ -54,6 +54,8 @@ import collections
 import itertools
 import os
 
+
+
 II = b"II" # little-endian (intel-style)
 MM = b"MM" # big-endian (motorola-style)
 
@@ -215,11 +217,45 @@ def _accept(prefix):
 # Wrapper for TIFF IFDs.
 
 class ImageFileDirectory(collections.MutableMapping):
+    """ This class represents a TIFF tag directory.  To speed things
+        up, we don't decode tags unless they're asked for.
 
-    # represents a TIFF tag directory.  to speed things up,
-    # we don't decode tags unless they're asked for.
+        Exposes a dictionary interface of the tags in the directory
+        ImageFileDirectory[key] = value
+        value = ImageFileDirectory[key]
 
-    def __init__(self, prefix):
+        Also contains a dictionary of tag types as read from the tiff
+        image file, 'ImageFileDirectory.tagtype'
+
+
+        Data Structures:
+        'public'
+        * self.tagtype = {} Key: numerical tiff tag number
+                            Value: integer corresponding to the data type from
+                            `TiffTags.TYPES`
+
+        'internal'            
+        * self.tags = {}  Key: numerical tiff tag number
+                          Value: Decoded data, Generally a tuple.
+                            * If set from __setval__ -- always a tuple
+                            * Numeric types -- always a tuple
+                            * String type -- not a tuple, returned as string
+                            * Undefined data -- not a tuple, returned as bytes
+                            * Byte -- not a tuple, returned as byte.
+        * self.tagdata = {} Key: numerical tiff tag number
+                            Value: undecoded byte string from file
+
+
+        Tags will be found in either self.tags or self.tagdata, but
+        not both. The union of the two should contain all the tags
+        from the Tiff image file.  External classes shouldn't
+        reference these unless they're really sure what they're doing.
+        """
+
+    def __init__(self, prefix=II):
+        """
+        :prefix: 'II'|'MM'  tiff endianness
+        """
         self.prefix = prefix[:2]
         if self.prefix == MM:
             self.i16, self.i32 = ib16, ib32
@@ -265,7 +301,8 @@ class ImageFileDirectory(collections.MutableMapping):
         try:
             return self.tags[tag]
         except KeyError:
-            type, data = self.tagdata[tag] # unpack on the fly
+            data = self.tagdata[tag] # unpack on the fly
+            type = self.tagtype[tag]
             size, handler = self.load_dispatch[type]
             self.tags[tag] = data = handler(self, data)
             del self.tagdata[tag]
@@ -294,6 +331,9 @@ class ImageFileDirectory(collections.MutableMapping):
             return tag in self
 
     def __setitem__(self, tag, value):
+        # tags are tuples for integers
+        # tags are not tuples for byte, string, and undefined data.
+        # see load_*
         if not isinstance(value, tuple):
             value = (value,)
         self.tags[tag] = value
@@ -408,7 +448,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 warnings.warn("Possibly corrupt EXIF data.  Expecting to read %d bytes but only got %d. Skipping tag %s" % (size, len(data), tag))
                 continue
 
-            self.tagdata[tag] = typ, data
+            self.tagdata[tag] = data
             self.tagtype[tag] = typ
 
             if Image.DEBUG:
@@ -445,25 +485,42 @@ class ImageFileDirectory(collections.MutableMapping):
 
             if tag in self.tagtype:
                 typ = self.tagtype[tag]
-
+                
+            if Image.DEBUG:
+                print ("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
+                   
             if typ == 1:
                 # byte data
-                data = value
+                if isinstance(value, tuple):
+                    data = value = value[-1]
+                else:
+                    data = value
             elif typ == 7:
                 # untyped data
                 data = value = b"".join(value)
-            elif isinstance(value[0], str):
+            elif isStringType(value[0]):
                 # string data
+                if isinstance(value, tuple):
+                    value = value[-1]
                 typ = 2
-                data = value = b"\0".join(value.encode('ascii', 'replace')) + b"\0"
+                # was b'\0'.join(str), which led to \x00a\x00b sorts
+                # of strings which I don't see in in the wild tiffs
+                # and doesn't match the tiff spec: 8-bit byte that
+                # contains a 7-bit ASCII code; the last byte must be
+                # NUL (binary zero). Also, I don't think this was well
+                # excersized before. 
+                data = value = b"" + value.encode('ascii', 'replace') + b"\0"
             else:
                 # integer data
                 if tag == STRIPOFFSETS:
                     stripoffsets = len(directory)
                     typ = 4 # to avoid catch-22
-                elif tag in (X_RESOLUTION, Y_RESOLUTION):
+                elif tag in (X_RESOLUTION, Y_RESOLUTION) or typ==5:
                     # identify rational data fields
                     typ = 5
+                    if isinstance(value[0], tuple):
+                        # long name for flatten
+                        value = tuple(itertools.chain.from_iterable(value))
                 elif not typ:
                     typ = 3
                     for v in value:
@@ -495,6 +552,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 count = len(value)
                 if typ == 5:
                     count = count // 2        # adjust for rational data field
+
                 append((tag, typ, count, o32(offset), data))
                 offset = offset + len(data)
                 if offset & 1:
@@ -932,23 +990,34 @@ def _save(im, fp, filename):
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]
 
+    # write any arbitrary tags passed in as an ImageFileDirectory
+    info = im.encoderinfo.get("tiffinfo",{})
+    if Image.DEBUG:
+        print ("Tiffinfo Keys: %s"% info.keys)
+    keys = list(info.keys())
+    for key in keys:
+        ifd[key] = info.get(key)
+        try:
+            ifd.tagtype[key] = info.tagtype[key]
+        except:
+            pass # might not be an IFD, Might not have populated type
+
+
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
     if hasattr(im, 'tag'):
         # preserve tags from original TIFF image file
-        for key in (RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION):
-            if key in im.tag.tagdata:
-                ifd[key] = im.tag.tagdata.get(key)
-        # preserve some more tags from original TIFF image file
-        # -- 2008-06-06 Florian Hoech
-        ifd.tagtype = im.tag.tagtype
-        for key in (IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK, XMP):
+        for key in (RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION,
+                    IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK, XMP):
             if key in im.tag:
                 ifd[key] = im.tag[key]
+            ifd.tagtype[key] = im.tag.tagtype.get(key, None)
+
         # preserve ICC profile (should also work when saving other formats
         # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
         if "icc_profile" in im.info:
             ifd[ICCPROFILE] = im.info["icc_profile"]
+            
     if "description" in im.encoderinfo:
         ifd[IMAGEDESCRIPTION] = im.encoderinfo["description"]
     if "resolution" in im.encoderinfo:
