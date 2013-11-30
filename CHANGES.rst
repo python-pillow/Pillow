@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Fixed Viewer.show to return properly
+  [tmccombs]
+
 - Documentation fixes
   [wiredfool]
 
