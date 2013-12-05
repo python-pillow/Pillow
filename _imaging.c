@@ -1234,7 +1234,8 @@ static PyObject*
 _putdata(ImagingObject* self, PyObject* args)
 {
     Imaging image;
-    int n, i, x, y;
+    // i & n are # pixels, require py_ssize_t. x can be as large as n. y, just because.
+    Py_ssize_t n, i, x, y;
 
     PyObject* data;
     double scale = 1.0;
@@ -1244,16 +1245,16 @@ _putdata(ImagingObject* self, PyObject* args)
         return NULL;
 
     if (!PySequence_Check(data)) {
-    PyErr_SetString(PyExc_TypeError, must_be_sequence);
-    return NULL;
+        PyErr_SetString(PyExc_TypeError, must_be_sequence);
+        return NULL;
     }
 
     image = self->image;
 
     n = PyObject_Length(data);
-    if (n > (int) (image->xsize * image->ysize)) {
-    PyErr_SetString(PyExc_TypeError, "too many data entries");
-    return NULL;
+    if (n > (Py_ssize_t) (image->xsize * image->ysize)) {
+        PyErr_SetString(PyExc_TypeError, "too many data entries");
+        return NULL;
     }
 
     if (image->image8) {
@@ -1648,7 +1649,7 @@ _stretch(ImagingObject* self, PyObject* args)
     imIn = self->image;
 
     /* two-pass resize: minimize size of intermediate image */
-    if (imIn->xsize * ysize < xsize * imIn->ysize)
+    if ((Py_ssize_t) imIn->xsize * ysize < (Py_ssize_t) xsize * imIn->ysize)
         imTemp = ImagingNew(imIn->mode, imIn->xsize, ysize);
     else
         imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
@@ -3073,7 +3074,7 @@ image_length(ImagingObject *self)
 {
     Imaging im = self->image;
 
-    return im->xsize * im->ysize;
+    return (Py_ssize_t) im->xsize * im->ysize;
 }
 
 static PyObject *
