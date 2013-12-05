@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- 2gigapix image fixes
+  [wiredfool]
+
 - Save arbitrary tags in Tiff image files
   [wiredfool]
 
