@@ -587,8 +587,7 @@ setup(
     description='Python Imaging Library (Fork)',
     long_description=(
         _read('README.rst') + b'\n' +
-        _read('CHANGES.rst') + b'\n' +
-        _read('CONTRIBUTORS.rst')).decode('utf-8'),
+        _read('CHANGES.rst')),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
     url='http://python-imaging.github.io/',
