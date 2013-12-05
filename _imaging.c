@@ -1250,6 +1250,7 @@ _putdata(ImagingObject* self, PyObject* args)
 
     image = self->image;
 
+    // UNDONE Py_ssize_t 2Gpix image issue
     n = PyObject_Length(data);
     if (n > (int) (image->xsize * image->ysize)) {
     PyErr_SetString(PyExc_TypeError, "too many data entries");
@@ -3073,7 +3074,7 @@ image_length(ImagingObject *self)
 {
     Imaging im = self->image;
 
-    return im->xsize * im->ysize;
+    return (Py_ssize_t) im->xsize * im->ysize;
 }
 
 static PyObject *
