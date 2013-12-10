@@ -54,7 +54,9 @@ import collections
 import itertools
 import os
 
-
+# Set these to true to force use of libtiff for reading or writing. 
+READ_LIBTIFF = False
+WRITE_LIBTIFF= False
 
 II = b"II" # little-endian (intel-style)
 MM = b"MM" # big-endian (motorola-style)
@@ -149,6 +151,7 @@ OPEN_INFO = {
     (II, 1, 1, 1, (8,), ()): ("L", "L"),
     (II, 1, 1, 1, (8,8), (2,)): ("LA", "LA"),
     (II, 1, 1, 2, (8,), ()): ("L", "L;R"),
+    (II, 1, 1, 1, (12,), ()): ("I;16", "I;12"),
     (II, 1, 1, 1, (16,), ()): ("I;16", "I;16"),
     (II, 1, 2, 1, (16,), ()): ("I;16S", "I;16S"),
     (II, 1, 1, 1, (32,), ()): ("I", "I;32N"),
@@ -675,8 +678,8 @@ class TiffImageFile(ImageFile.ImageFile):
         return args
 
     def _load_libtiff(self):
-        """ Overload method triggered when we detect a g3/g4 tiff
-            Calls out to lib tiff """
+        """ Overload method triggered when we detect a compressed tiff
+            Calls out to libtiff """
 
         pixel = Image.Image.load(self)
 
@@ -691,7 +694,7 @@ class TiffImageFile(ImageFile.ImageFile):
             raise IOError("Not exactly one tile")
 
         d, e, o, a = self.tile[0]
-        d = Image._getdecoder(self.mode, d, a, self.decoderconfig)
+        d = Image._getdecoder(self.mode, 'libtiff', a, self.decoderconfig)
         try:
             d.setimage(self.im, e)
         except ValueError:
@@ -817,11 +820,11 @@ class TiffImageFile(ImageFile.ImageFile):
             offsets = self.tag[STRIPOFFSETS]
             h = getscalar(ROWSPERSTRIP, ysize)
             w = self.size[0]
-            if self._compression in ["tiff_ccitt", "group3", "group4",
-                                     "tiff_jpeg", "tiff_adobe_deflate",
-                                     "tiff_thunderscan", "tiff_deflate",
-                                     "tiff_sgilog", "tiff_sgilog24",
-                                     "tiff_raw_16"]:
+            if READ_LIBTIFF or self._compression in ["tiff_ccitt", "group3", "group4",
+                                                     "tiff_jpeg", "tiff_adobe_deflate",
+                                                     "tiff_thunderscan", "tiff_deflate",
+                                                     "tiff_sgilog", "tiff_sgilog24",
+                                                     "tiff_raw_16"]:
                 ## if Image.DEBUG:
                 ##     print "Activating g4 compression for whole file"
 
@@ -868,7 +871,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 # we're expecting image byte order. So, if the rawmode
                 # contains I;16, we need to convert from native to image
                 # byte order.
-                if self.mode in ('I;16B', 'I;16'):
+                if self.mode in ('I;16B', 'I;16') and 'I;16' in rawmode:
                     rawmode = 'I;16N'
 
                 # Offset in the tile tuple is 0, we go from 0,0 to
@@ -975,12 +978,12 @@ def _save(im, fp, filename):
     ifd = ImageFileDirectory(prefix)
 
     compression = im.encoderinfo.get('compression',im.info.get('compression','raw'))
-    libtiff = compression in ["tiff_ccitt", "group3", "group4",
-                              "tiff_jpeg", "tiff_adobe_deflate",
-                              "tiff_thunderscan", "tiff_deflate",
-                              "tiff_sgilog", "tiff_sgilog24",
-                              "tiff_raw_16"]
-
+    libtiff = WRITE_LIBTIFF or compression in ["tiff_ccitt", "group3", "group4",
+                                               "tiff_jpeg", "tiff_adobe_deflate",
+                                               "tiff_thunderscan", "tiff_deflate",
+                                               "tiff_sgilog", "tiff_sgilog24",
+                                               "tiff_raw_16"]
+    
     # -- multi-page -- skip TIFF header on subsequent pages
     if not libtiff and fp.tell() == 0:
         # tiff header (write via IFD to get everything right)
@@ -1121,8 +1124,8 @@ def _save(im, fp, filename):
         if Image.DEBUG:
             print (atts)
 
-        # libtiff always returns the bytes in native order.
-        # we're expecting image byte order. So, if the rawmode
+        # libtiff always expects the bytes in native order.
+        # we're storing image byte order. So, if the rawmode
         # contains I;16, we need to convert from native to image
         # byte order.
         if im.mode in ('I;16B', 'I;16'):
@@ -1130,7 +1133,7 @@ def _save(im, fp, filename):
 
         a = (rawmode, compression, _fp, filename, atts)
         # print (im.mode, compression, a, im.encoderconfig)
-        e = Image._getencoder(im.mode, compression, a, im.encoderconfig)
+        e = Image._getencoder(im.mode, 'libtiff', a, im.encoderconfig)
         e.setimage(im.im, (0,0)+im.size)
         while 1:
             l, s, d = e.encode(16*1024) # undone, change to self.decodermaxblock

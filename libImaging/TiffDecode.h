@@ -38,7 +38,7 @@ typedef struct {
 
 
 
-extern int ImagingLibTiffInit(ImagingCodecState state, int compression, int fp);
+extern int ImagingLibTiffInit(ImagingCodecState state, int fp);
 extern int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp);
 extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 
