@@ -60,9 +60,13 @@ Many of Pillow's features require external libraries:
 
 * **littlecms** provides color management
 
+  * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
+    above uses liblcms2. Tested with **1.19** and **2.2**.
+
 * **libwebp** provides the Webp format.
 
-  * Pillow has been tested with version **0.1.3**, which does not read transparent webp files. Version **0.3.0** supports transparency.
+  * Pillow has been tested with version **0.1.3**, which does not read
+    transparent webp files. Version **0.3.0** supports transparency.
 
 * **tcl/tk** provides support for tkinter bitmap and photo images. 
 
@@ -101,13 +105,13 @@ Or for Python 3::
 Prerequisites are installed on **Ubuntu 10.04 LTS** with::
 
     $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev \
-        libfreetype6-dev liblcms1-dev tcl8.5-dev tk8.5-dev
+        libfreetype6-dev tcl8.5-dev tk8.5-dev
 
 Prerequisites are installed with on **Ubuntu 12.04 LTS** or **Raspian Wheezy
 7.0** with::
 
     $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev \
-        libfreetype6-dev liblcms1-dev libwebp-dev tcl8.5-dev tk8.5-dev
+        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.5-dev tk8.5-dev
 
 Mac OS X installation
 ---------------------

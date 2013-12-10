@@ -82,7 +82,7 @@ except ImportError:
 
 
 NAME = 'Pillow'
-VERSION = '2.2.1'
+VERSION = '2.3.0'
 TCL_ROOT = None
 JPEG_ROOT = None
 ZLIB_ROOT = None
@@ -210,6 +210,10 @@ class pil_build_ext(build_ext):
             # try Barry's more general approach. Afterward, something should
             # work ;-)
             self.add_multiarch_paths()
+
+        elif sys.platform.startswith("netbsd"):
+                    _add_directory(library_dirs, "/usr/pkg/lib")
+                    _add_directory(include_dirs, "/usr/pkg/include")
 
         _add_directory(library_dirs, "/usr/local/lib")
         # FIXME: check /opt/stuff directories here?
@@ -583,8 +587,7 @@ setup(
     description='Python Imaging Library (Fork)',
     long_description=(
         _read('README.rst') + b'\n' +
-        _read('CHANGES.rst') + b'\n' +
-        _read('CONTRIBUTORS.rst')).decode('utf-8'),
+        _read('CHANGES.rst')),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
     url='http://python-imaging.github.io/',
