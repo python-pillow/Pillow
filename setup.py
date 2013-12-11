@@ -37,7 +37,10 @@ _LIB_IMAGING = (
 
 
 def _add_directory(path, dir, where=None):
-    if dir and os.path.isdir(dir) and dir not in path:
+    if dir is None:
+        return
+    dir = os.path.realpath(dir)
+    if os.path.isdir(dir) and dir not in path:
         if where is None:
             path.append(dir)
         else:
