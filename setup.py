@@ -226,7 +226,7 @@ class pil_build_ext(build_ext):
                     _add_directory(library_dirs, match.group(1))
 
         # include, rpath, if set as environment variables:
-        for k in ('C_INCLUDE_PATH', 'INCLUDE'):
+        for k in ('C_INCLUDE_PATH', 'CPATH', 'INCLUDE'):
             if k in os.environ:
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(include_dirs, d)
