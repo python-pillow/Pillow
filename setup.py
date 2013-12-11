@@ -187,7 +187,7 @@ class pil_build_ext(build_ext):
                     _add_directory(include_dirs, os.path.join(prefix, 'include'))
             except:
                 pass # homebrew not installed
-                    
+
         elif sys.platform.startswith("linux"):
             for platform_ in (plat.processor(), plat.architecture()[0]):
 
@@ -215,7 +215,6 @@ class pil_build_ext(build_ext):
                     _add_directory(library_dirs, "/usr/pkg/lib")
                     _add_directory(include_dirs, "/usr/pkg/include")
 
-        _add_directory(library_dirs, "/usr/local/lib")
         # FIXME: check /opt/stuff directories here?
 
         # respect CFLAGS/LDFLAGS
