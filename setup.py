@@ -156,6 +156,30 @@ class pil_build_ext(build_ext):
             _add_directory(library_dirs, lib_root)
             _add_directory(include_dirs, include_root)
 
+        # respect CFLAGS/LDFLAGS
+        for k in ('CFLAGS', 'LDFLAGS'):
+            if k in os.environ:
+                for match in re.finditer(r'-I([^\s]+)', os.environ[k]):
+                    _add_directory(include_dirs, match.group(1))
+                for match in re.finditer(r'-L([^\s]+)', os.environ[k]):
+                    _add_directory(library_dirs, match.group(1))
+
+        # include, rpath, if set as environment variables:
+        for k in ('C_INCLUDE_PATH', 'CPATH', 'INCLUDE'):
+            if k in os.environ:
+                for d in os.environ[k].split(os.path.pathsep):
+                    _add_directory(include_dirs, d)
+
+        for k in ('LD_RUN_PATH', 'LIBRARY_PATH', 'LIB'):
+            if k in os.environ:
+                for d in os.environ[k].split(os.path.pathsep):
+                    _add_directory(library_dirs, d)
+
+        prefix = sysconfig.get_config_var("prefix")
+        if prefix:
+            _add_directory(library_dirs, os.path.join(prefix, "lib"))
+            _add_directory(include_dirs, os.path.join(prefix, "include"))
+
         #
         # add platform directories
 
@@ -216,30 +240,6 @@ class pil_build_ext(build_ext):
                     _add_directory(include_dirs, "/usr/pkg/include")
 
         # FIXME: check /opt/stuff directories here?
-
-        # respect CFLAGS/LDFLAGS
-        for k in ('CFLAGS', 'LDFLAGS'):
-            if k in os.environ:
-                for match in re.finditer(r'-I([^\s]+)', os.environ[k]):
-                    _add_directory(include_dirs, match.group(1))
-                for match in re.finditer(r'-L([^\s]+)', os.environ[k]):
-                    _add_directory(library_dirs, match.group(1))
-
-        # include, rpath, if set as environment variables:
-        for k in ('C_INCLUDE_PATH', 'CPATH', 'INCLUDE'):
-            if k in os.environ:
-                for d in os.environ[k].split(os.path.pathsep):
-                    _add_directory(include_dirs, d)
-
-        for k in ('LD_RUN_PATH', 'LIBRARY_PATH', 'LIB'):
-            if k in os.environ:
-                for d in os.environ[k].split(os.path.pathsep):
-                    _add_directory(library_dirs, d)
-
-        prefix = sysconfig.get_config_var("prefix")
-        if prefix:
-            _add_directory(library_dirs, os.path.join(prefix, "lib"))
-            _add_directory(include_dirs, os.path.join(prefix, "include"))
 
         #
         # locate tkinter libraries
