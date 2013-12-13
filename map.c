@@ -323,7 +323,7 @@ mapping_destroy_buffer(Imaging im)
 PyObject*
 PyImaging_MapBuffer(PyObject* self, PyObject* args)
 {
-    int y, size;
+    Py_ssize_t y, size;
     Imaging im;
 
     PyObject* target;
@@ -331,12 +331,12 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     char* mode;
     char* codec;
     PyObject* bbox;
-    int offset;
+    Py_ssize_t offset;
     int xsize, ysize;
     int stride;
     int ystep;
 
-    if (!PyArg_ParseTuple(args, "O(ii)sOi(sii)", &target, &xsize, &ysize,
+    if (!PyArg_ParseTuple(args, "O(ii)sOn(sii)", &target, &xsize, &ysize,
                           &codec, &bbox, &offset, &mode, &stride, &ystep))
 	return NULL;
 
@@ -354,7 +354,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
             stride = xsize * 4;
     }
 
-    size = ysize * stride;
+    size = (Py_ssize_t) ysize * stride;
 
     /* check buffer size */
     if (PyImaging_GetBuffer(target, &view) < 0)
