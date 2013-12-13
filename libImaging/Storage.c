@@ -325,15 +325,15 @@ Imaging
 ImagingNewBlock(const char *mode, int xsize, int ysize)
 {
     Imaging im;
-    int y, i;
-    int bytes;
+    Py_ssize_t y, i;
+    Py_ssize_t bytes;
 
     im = ImagingNewPrologue(mode, xsize, ysize);
     if (!im)
 	return NULL;
 
     /* Use a single block */
-    bytes = im->ysize * im->linesize;
+    bytes = (Py_ssize_t) im->ysize * im->linesize;
     if (bytes <= 0)
         /* some platforms return NULL for malloc(0); this fix
            prevents MemoryError on zero-sized images on such
