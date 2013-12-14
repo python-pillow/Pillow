@@ -241,6 +241,7 @@ font_getsize(FontObject* self, PyObject* args)
             yoffset = face->glyph->metrics.horiBearingY;
             
         last_index = index;
+        FT_Done_Glyph(glyph);
     }
 
     if (face) {
