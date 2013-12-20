@@ -107,6 +107,29 @@ def test_adobe_deflate_tiff():
     assert_equal(im.tile[0][:3], ('tiff_adobe_deflate', (0, 0, 278, 374), 0))
     assert_no_exception(lambda: im.load())
 
+def test_write_metadata():
+    """ Test metadata writing through libtiff """
+    img = Image.open('Tests/images/lena_g4.tif')
+    f = tempfile('temp.tiff')
+
+    img.save(f, tiffinfo = img.tag)
+
+    loaded = Image.open(f)
+
+    original = img.tag.named()
+    reloaded = loaded.tag.named()
+
+    # PhotometricInterpretation is set from SAVE_INFO, not the original image. 
+    ignored = ['StripByteCounts', 'RowsPerStrip', 'PageNumber', 'PhotometricInterpretation']
+
+    for tag, value in reloaded.items():
+        if tag not in ignored:
+            assert_equal(original[tag], value, "%s didn't roundtrip" % tag)
+
+    for tag, value in original.items():
+        if tag not in ignored: 
+            assert_equal(value, reloaded[tag], "%s didn't roundtrip" % tag)
+
 
 def test_g3_compression():
     i = Image.open('Tests/images/lena_g4_500.tif')
@@ -116,7 +139,7 @@ def test_g3_compression():
     reread = Image.open(out)
     assert_equal(reread.info['compression'], 'group3')
     assert_image_equal(reread, i)
-    
+
 def test_little_endian():
     im = Image.open('Tests/images/16bit.deflate.tif')
     assert_equal(im.getpixel((0,0)), 480)

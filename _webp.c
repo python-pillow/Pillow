@@ -113,11 +113,11 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 
     WebPMuxAssemble(mux, &output_data);
     WebPMuxDelete(mux);
+    free(output);
 
-    output = (uint8_t*)output_data.bytes;
     ret_size = output_data.size;
     if (ret_size > 0) {
-        PyObject *ret = PyBytes_FromStringAndSize((char*)output, ret_size);
+        PyObject *ret = PyBytes_FromStringAndSize((char*)output_data.bytes, ret_size);
         WebPDataClear(&output_data);
         return ret;
     }

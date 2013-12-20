@@ -27,6 +27,8 @@ recursive-include Sane README
 recursive-include Scripts *.py
 recursive-include Scripts README
 recursive-include Tests *.bin
+recursive-include Tests *.eps
+recursive-include Tests *.gnuplot
 recursive-include Tests *.icm
 recursive-include Tests *.jpg
 recursive-include Tests *.pcf
@@ -42,8 +44,11 @@ recursive-include Tk *.c
 recursive-include Tk *.txt
 recursive-include docs *.bat
 recursive-include docs *.gitignore
+recursive-include docs *.html
 recursive-include docs *.py
 recursive-include docs *.rst
+recursive-include docs *.txt
+recursive-include docs Guardfile
 recursive-include docs Makefile
 recursive-include docs BUILDME
 recursive-include docs COPYING
