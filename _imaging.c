@@ -463,14 +463,14 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
 {
     union {
       UINT8 b[4];
-      INT16 h;
-      INT32 i;
+      UINT16 h;
+      UINT32 i;
       FLOAT32 f;
     } pixel;
 
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
-    PyErr_SetString(PyExc_IndexError, outside_image);
-    return NULL;
+        PyErr_SetString(PyExc_IndexError, outside_image);
+        return NULL;
     }
 
     access->get_pixel(im, x, y, &pixel);
