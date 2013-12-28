@@ -106,3 +106,15 @@ def test_to_array():
     for mode in modes:
         assert_no_exception(lambda: _to_array(*mode))
 
+
+def test_point_lut():
+    # see https://github.com/python-imaging/Pillow/issues/439
+    
+    data = list(range(256))*3
+    lut = numpy.array(data, dtype='uint8')
+
+    im = lena()
+
+    assert_no_exception(lambda: im.point(lut))
+    
+

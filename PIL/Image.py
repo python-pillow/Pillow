@@ -1128,14 +1128,16 @@ class Image:
         """
         Maps this image through a lookup table or function.
 
-        :param lut: A lookup table, containing 256 values per band in the
-           image. A function can be used instead, it should take a single
-           argument. The function is called once for each possible pixel
-           value, and the resulting table is applied to all bands of the
-           image.
+        :param lut: A lookup table, containing 256 (or 65336 if
+           self.mode=="I" and mode == "L") values per band in the
+           image.  A function can be used instead, it should take a
+           single argument. The function is called once for each
+           possible pixel value, and the resulting table is applied to
+           all bands of the image.
         :param mode: Output mode (default is same as input).  In the
            current version, this can only be used if the source image
-           has mode "L" or "P", and the output has mode "1".
+           has mode "L" or "P", and the output has mode "1" or the
+           source image mode is "I" and the output mode is "L".
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -1144,10 +1146,12 @@ class Image:
         if isinstance(lut, ImagePointHandler):
             return lut.point(self)
 
-        if not isinstance(lut, collections.Sequence):
+        if callable(lut):
             # if it isn't a list, it should be a function
             if self.mode in ("I", "I;16", "F"):
                 # check if the function can be used with point_transform
+                # UNDONE wiredfool -- I think this prevents us from ever doing
+                # a gamma function point transform on > 8bit images. 
                 scale, offset = _getscaleoffset(lut)
                 return self._new(self.im.point_transform(scale, offset))
             # for other modes, convert the function to a table
