@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Image.point fixes for numpy.array and docs
+  [wiredfool]
+
 - Save the transparency header by default for PNGs
   [wiredfool]
 
