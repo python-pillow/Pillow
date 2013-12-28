@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Fix memory leak in font_getsize
+  [wiredfool]
+
 - Correctly prioritize include and library paths
   [ohanar]
 
