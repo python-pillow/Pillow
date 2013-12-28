@@ -16,7 +16,7 @@ Changelog (Pillow)
 - Updates for saving color tiffs w/compression using libtiff
   [wiredfool]
 
-- 2gigapix image fixes
+- 2gigapix image fixes and redux
   [wiredfool]
 
 - Save arbitrary tags in Tiff image files
