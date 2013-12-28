@@ -6,7 +6,7 @@ from test_file_libtiff import _assert_noerr
 
 codecs = dir(Image.core)
 
-if "group4_encoder" not in codecs or "group4_decoder" not in codecs:
+if "libtiff_encoder" not in codecs or "libtiff_decoder" not in codecs:
     skip("tiff support not available")
 
 """ The small lena image was failing on open in the libtiff

@@ -673,7 +673,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     char* rawmode;
     char* compname;
     char* filename;
-    int compression;
     int fp;
 
     PyObject *dir;
@@ -705,47 +704,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 
 
     TRACE(("new tiff encoder %s fp: %d, filename: %s \n", compname, fp, filename));
-
-    /* UNDONE -- we can probably do almost any arbitrary compression here,
-     *  so long as we're doing row/stripe based actions and not tiles.
-     */
-
-    if (strcasecmp(compname, "tiff_ccitt") == 0) {
-        compression = COMPRESSION_CCITTRLE;
-
-    } else if (strcasecmp(compname, "group3") == 0) {
-        compression = COMPRESSION_CCITTFAX3;
-
-    } else if (strcasecmp(compname, "group4") == 0) {
-        compression = COMPRESSION_CCITTFAX4;
-
-    } else if (strcasecmp(compname, "tiff_jpeg") == 0) {
-        compression = COMPRESSION_OJPEG;
-
-    } else if (strcasecmp(compname, "tiff_adobe_deflate") == 0) {
-        compression = COMPRESSION_ADOBE_DEFLATE;
-
-    } else if (strcasecmp(compname, "tiff_thunderscan") == 0) {
-        compression = COMPRESSION_THUNDERSCAN;
-
-    } else if (strcasecmp(compname, "tiff_deflate") == 0) {
-        compression = COMPRESSION_DEFLATE;
-
-    } else if (strcasecmp(compname, "tiff_sgilog") == 0) {
-        compression = COMPRESSION_SGILOG;
-
-    } else if (strcasecmp(compname, "tiff_sgilog24") == 0) {
-        compression = COMPRESSION_SGILOG24;
-
-    } else if (strcasecmp(compname, "tiff_raw_16") == 0) {
-        compression = COMPRESSION_CCITTRLEW;
-
-    } else {
-        PyErr_SetString(PyExc_ValueError, "unknown compession");
-        return NULL;
-    }
-
-    TRACE(("Found compression: %d\n", compression));
 
     encoder = PyImaging_EncoderNew(sizeof(TIFFSTATE));
     if (encoder == NULL)
@@ -780,18 +738,35 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
         } else if(PyList_Check(value)) {
             int len,i;
             float *floatav;
+            int *intav;
             TRACE(("Setting from List: %d \n", (int)PyInt_AsLong(key)));
             len = (int)PyList_Size(value);
-            TRACE((" %d elements, setting as floats \n", len));
-            floatav = malloc(sizeof(float)*len);
-            if (floatav) {
-                for (i=0;i<len;i++) {
-                    floatav[i] = (float)PyFloat_AsDouble(PyList_GetItem(value,i));
+            if (len) {
+                if (PyInt_Check(PyList_GetItem(value,0))) {
+                    TRACE((" %d elements, setting as ints \n", len));
+                    intav = malloc(sizeof(int)*len);
+                    if (intav) {
+                        for (i=0;i<len;i++) {
+                            intav[i] = (int)PyInt_AsLong(PyList_GetItem(value,i));
+                        }
+                        status = ImagingLibTiffSetField(&encoder->state,
+                                                        (ttag_t) PyInt_AsLong(key),
+                                                        intav);
+                        free(intav);
+                    }       
+                } else {
+                    TRACE((" %d elements, setting as floats \n", len));
+                    floatav = malloc(sizeof(float)*len);
+                    if (floatav) {
+                        for (i=0;i<len;i++) {
+                            floatav[i] = (float)PyFloat_AsDouble(PyList_GetItem(value,i));
+                        }
+                        status = ImagingLibTiffSetField(&encoder->state,
+                                                        (ttag_t) PyInt_AsLong(key),
+                                                        floatav);
+                        free(floatav);
+                    }
                 }
-                status = ImagingLibTiffSetField(&encoder->state,
-                                                (ttag_t) PyInt_AsLong(key),
-                                                floatav);
-                free(floatav);
             }
         } else if (PyFloat_Check(value)) {
             TRACE(("Setting from Float: %d, %f \n", (int)PyInt_AsLong(key),PyFloat_AsDouble(value)));

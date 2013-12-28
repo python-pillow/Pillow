@@ -142,11 +142,11 @@ void _tiffUnmapProc(thandle_t hdata, tdata_t base, toff_t size) {
 	(void) hdata; (void) base; (void) size;
 }
 
-int ImagingLibTiffInit(ImagingCodecState state, int compression, int fp) {
+int ImagingLibTiffInit(ImagingCodecState state, int fp) {
 	TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
 
     TRACE(("initing libtiff\n"));
-	TRACE(("Compression: %d, filepointer: %d \n", compression, fp));
+	TRACE(("filepointer: %d \n",  fp));
 	TRACE(("State: count %d, state %d, x %d, y %d, ystep %d\n", state->count, state->state,
 		   state->x, state->y, state->ystep));
 	TRACE(("State: xsize %d, ysize %d, xoff %d, yoff %d \n", state->xsize, state->ysize,
