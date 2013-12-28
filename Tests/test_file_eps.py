@@ -30,23 +30,7 @@ file2_compare_scale2 = "Tests/images/non_zero_bb_scale2.png"
 def test_sanity():
     #Regular scale
     image1 = Image.open(file1)
-    try:
-        image1.load()
-    except OSError:
-        #Tests/test_file_eps.py:19: image1.load() failed:
-        #Traceback (most recent call last):
-        #  File "Tests/test_file_eps.py", line 19, in test_sanity
-        #    image1.load()
-        #  File "/Users/aclark/Developer/Pillow/PIL/EpsImagePlugin.py", line 318, in load
-        #    self.im = Ghostscript(self.tile, self.size, self.fp, scale)
-        #  File "/Users/aclark/Developer/Pillow/PIL/EpsImagePlugin.py", line 89, in Ghostscript
-        #    gs = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        #  File "/usr/local/Cellar/python/2.7.6/Frameworks/Python.framework/Versions/2.7/lib/python2.7/subprocess.py", line 709, in __init__
-        #    errread, errwrite)
-        #  File "/usr/local/Cellar/python/2.7.6/Frameworks/Python.framework/Versions/2.7/lib/python2.7/subprocess.py", line 1326, in _execute_child
-        #    raise child_exception
-        #OSError: [Errno 2] No such file or directory
-        skip("Image load failed, missing Ghostscript?")
+    image1.load()
     assert_equal(image1.mode, "RGB")
     assert_equal(image1.size, (460, 352))
     assert_equal(image1.format, "EPS")
