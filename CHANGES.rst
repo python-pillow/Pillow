@@ -70,6 +70,12 @@ Changelog (Pillow)
 - Fixes to make Pypy 2.1.0 work on Ubuntu 12.04/64
   [wiredfool]
 
+2.2.2 (2013-12-11)
+------------------
+
+- Fix #427: compiling with FreeType 2.5.1
+  [stromnov]
+
 2.2.1 (2013-10-02)
 ------------------
 
