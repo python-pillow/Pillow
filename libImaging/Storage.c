@@ -54,7 +54,7 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
 
     im = (Imaging) calloc(1, size);
     if (!im)
-	return (Imaging) ImagingError_MemoryError();
+        return (Imaging) ImagingError_MemoryError();
 
     /* Setup image descriptor */
     im->xsize = xsize;
@@ -106,7 +106,7 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
         im->type = IMAGING_TYPE_INT32;
 
     } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 \
-			   || strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0)  {
+                           || strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0)  {
         /* EXPERIMENTAL */
         /* 16-bit raw integer images */
         im->bands = 1;
@@ -203,8 +203,8 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
     ImagingSectionLeave(&cookie);
 
     if (!im->image) {
-	free(im);
-	return (Imaging) ImagingError_MemoryError();
+        free(im);
+        return (Imaging) ImagingError_MemoryError();
     }
 
     ImagingNewCount++;
@@ -227,16 +227,16 @@ ImagingNewEpilogue(Imaging im)
        assume that it couldn't allocate the required amount of
        memory. */
     if (!im->destroy)
-	return (Imaging) ImagingError_MemoryError();
+        return (Imaging) ImagingError_MemoryError();
 
     /* Initialize alias pointers to pixel data. */
     switch (im->pixelsize) {
     case 1: case 2: case 3:
-	im->image8 = (UINT8 **) im->image;
-	break;
+        im->image8 = (UINT8 **) im->image;
+        break;
     case 4:
-	im->image32 = (INT32 **) im->image;
-	break;
+        im->image32 = (INT32 **) im->image;
+        break;
     }
 
     return im;
@@ -246,16 +246,16 @@ void
 ImagingDelete(Imaging im)
 {
     if (!im)
-	return;
+        return;
 
     if (im->palette)
-	ImagingPaletteDelete(im->palette);
+        ImagingPaletteDelete(im->palette);
 
     if (im->destroy)
-	im->destroy(im);
+        im->destroy(im);
 
     if (im->image)
-	free(im->image);
+        free(im->image);
 
     free(im);
 }
@@ -271,9 +271,9 @@ ImagingDestroyArray(Imaging im)
     int y;
 
     if (im->image)
-	for (y = 0; y < im->ysize; y++)
-	    if (im->image[y])
-		free(im->image[y]);
+        for (y = 0; y < im->ysize; y++)
+            if (im->image[y])
+                free(im->image[y]);
 }
 
 Imaging
@@ -287,24 +287,24 @@ ImagingNewArray(const char *mode, int xsize, int ysize)
 
     im = ImagingNewPrologue(mode, xsize, ysize);
     if (!im)
-	return NULL;
+        return NULL;
 
     ImagingSectionEnter(&cookie);
 
     /* Allocate image as an array of lines */
     for (y = 0; y < im->ysize; y++) {
-	p = (char *) malloc(im->linesize);
-	if (!p) {
-	    ImagingDestroyArray(im);
-	    break;
-	}
+        p = (char *) malloc(im->linesize);
+        if (!p) {
+            ImagingDestroyArray(im);
+            break;
+        }
         im->image[y] = p;
     }
 
     ImagingSectionLeave(&cookie);
 
     if (y == im->ysize)
-	im->destroy = ImagingDestroyArray;
+        im->destroy = ImagingDestroyArray;
 
     return ImagingNewEpilogue(im);
 }
@@ -318,22 +318,22 @@ static void
 ImagingDestroyBlock(Imaging im)
 {
     if (im->block)
-	free(im->block);
+        free(im->block);
 }
 
 Imaging
 ImagingNewBlock(const char *mode, int xsize, int ysize)
 {
     Imaging im;
-    int y, i;
-    int bytes;
+    Py_ssize_t y, i;
+    Py_ssize_t bytes;
 
     im = ImagingNewPrologue(mode, xsize, ysize);
     if (!im)
-	return NULL;
+        return NULL;
 
     /* Use a single block */
-    bytes = im->ysize * im->linesize;
+    bytes = (Py_ssize_t) im->ysize * im->linesize;
     if (bytes <= 0)
         /* some platforms return NULL for malloc(0); this fix
            prevents MemoryError on zero-sized images on such
@@ -344,12 +344,12 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
     if (im->block) {
         memset(im->block, 0, bytes);
 
-	for (y = i = 0; y < im->ysize; y++) {
-	    im->image[y] = im->block + i;
-	    i += im->linesize;
-	}
+        for (y = i = 0; y < im->ysize; y++) {
+            im->image[y] = im->block + i;
+            i += im->linesize;
+        }
 
-	im->destroy = ImagingDestroyBlock;
+        im->destroy = ImagingDestroyBlock;
 
     }
 
@@ -360,9 +360,9 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
  * Create a new, internally allocated, image.
  */
 #if defined(IMAGING_SMALL_MODEL)
-#define	THRESHOLD	16384L
+#define THRESHOLD       16384L
 #else
-#define	THRESHOLD	(2048*2048*4L)
+#define THRESHOLD       (2048*2048*4L)
 #endif
 
 Imaging
@@ -418,6 +418,6 @@ ImagingCopyInfo(Imaging destination, Imaging source)
     if (source->palette) {
         if (destination->palette)
             ImagingPaletteDelete(destination->palette);
-	destination->palette = ImagingPaletteDuplicate(source->palette);
+        destination->palette = ImagingPaletteDuplicate(source->palette);
     }
 }
