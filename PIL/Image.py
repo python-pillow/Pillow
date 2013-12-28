@@ -724,16 +724,10 @@ class Image:
         if dither is None:
             dither = FLOYDSTEINBERG
 
-        # fake a P-mode image, otherwise the transparency will get lost as there is
-        # currently no other way to convert transparency into an RGBA image
-        if self.mode == "L" and mode == "RGBA" and "transparency" in self.info:
-            from PIL import ImagePalette
-            self.mode = "P"
-            bytePalette = bytes(bytearray([i//3 for i in range(768)]))
-            self.palette = ImagePalette.raw("RGB", bytePalette)
-            self.palette.dirty = 1
-            self.load()
-
+        # Use transparent conversion to promote from transparent color to an alpha channel.
+        if self.mode in ("L", "RGB") and mode == "RGBA" and "transparency" in self.info:
+            return self._new(self.im.convert_transparent(mode, self.info['transparency']))
+            
         try:
             im = self.im.convert(mode, dither)
         except ValueError:

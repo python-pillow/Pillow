@@ -312,7 +312,33 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
     }
 }
 
+/*
+ * Conversion of RGB + single transparent color to RGBA, 
+ * where any pixel that matches the color will have the 
+ * alpha channel set to 0
+ */
+ 
+static void
+rgbT2rgba(UINT8* out, int xsize, int r, int g, int b) 
+{
+#ifdef WORDS_BIGENDIAN
+    UINT32 trns = ((r & 0xff)<<24) | ((g & 0xff)<<16) | ((b & 0xff)<<8) | 0xff;
+    UINT32 repl = trns & 0xffffff00;
+#else
+    UINT32 trns = (0xff <<24) | ((b & 0xff)<<16) | ((g & 0xff)<<8) | (r & 0xff);
+    UINT32 repl = trns & 0x00ffffff;
+#endif
 
+    UINT32* tmp = (UINT32 *)out;
+    int i;
+
+    for (i=0; i < xsize; i++ ,tmp++) {
+        if (tmp[0]==trns) {
+            tmp[0]=repl;
+        }
+    }
+}
+    
 
 /* ---------------- */
 /* CMYK conversions */
@@ -1160,6 +1186,60 @@ Imaging
 ImagingConvert2(Imaging imOut, Imaging imIn)
 {
     return convert(imOut, imIn, imOut->mode, NULL, 0);
+}
+
+
+Imaging
+ImagingConvertTransparent(Imaging imIn, const char *mode,
+                          int r, int g, int b)
+{
+    ImagingSectionCookie cookie;
+    ImagingShuffler convert;
+    Imaging imOut = NULL;
+    int y;
+
+    if (!imIn){
+        return (Imaging) ImagingError_ModeError();
+    }
+    
+    if (!((strcmp(imIn->mode, "RGB") == 0 || 
+           strcmp(imIn->mode, "L") == 0) 
+          && strcmp(mode, "RGBA") == 0))
+#ifdef notdef
+    {
+        return (Imaging) ImagingError_ValueError("conversion not supported");
+    }
+#else
+    {
+      static char buf[256];
+      /* FIXME: may overflow if mode is too large */
+      sprintf(buf, "conversion from %s to %s not supported in convert_transparent", imIn->mode, mode);
+      return (Imaging) ImagingError_ValueError(buf);
+    }
+#endif
+
+    if (strcmp(imIn->mode, "RGB") == 0) {
+        convert = rgb2rgba;
+    } else {
+        convert = l2rgb;
+        g = b = r;
+    }
+
+    imOut = ImagingNew2(mode, imOut, imIn);
+    if (!imOut){
+        return NULL;
+    }
+
+    ImagingSectionEnter(&cookie);
+    for (y = 0; y < imIn->ysize; y++) {
+        (*convert)((UINT8*) imOut->image[y], (UINT8*) imIn->image[y],
+                   imIn->xsize);
+        rgbT2rgba((UINT8*) imOut->image[y], imIn->xsize, r, g, b);
+    }
+    ImagingSectionLeave(&cookie);
+
+    return imOut; 
+
 }
 
 Imaging

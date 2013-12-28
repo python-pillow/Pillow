@@ -150,6 +150,17 @@ def test_load_transparent_p():
     # image has 124 uniqe qlpha values
     assert_equal(len(im.split()[3].getcolors()), 124)
 
+def test_load_transparent_rgb():
+    file = "Tests/images/rgb_trns.png"
+    im = Image.open(file)
+
+    assert_image(im, "RGB", (64, 64))
+    im = im.convert("RGBA")
+    assert_image(im, "RGBA", (64, 64))
+
+    # image has 876 transparent pixels
+    assert_equal(im.split()[3].getcolors()[0][0], 876)
+
 def test_save_p_transparent_palette():
     in_file = "Tests/images/pil123p.png"
     im = Image.open(in_file)
@@ -170,6 +181,10 @@ def test_save_l_transparency():
 
     file = tempfile("temp.png")
     assert_no_exception(lambda: im.save(file))
+
+    # There are 559 transparent pixels. 
+    im = im.convert('RGBA')
+    assert_equal(im.split()[3].getcolors()[0][0], 559)
 
 def test_save_rgb_single_transparency():
     in_file = "Tests/images/caption_6_33_22.png"

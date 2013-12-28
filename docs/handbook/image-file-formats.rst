@@ -187,9 +187,9 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     possible. This includes extra processing in order to find optimal encoder
     settings.
 
-**transparency**
-    For ``P`` and ``L`` images, this option controls what color image to mark as
-    transparent.
+**transparency** 
+    For ``P``, ``L``, and ``RGB`` images, this option controls what
+    color image to mark as transparent.
 
 **bits (experimental)**
     For ``P`` images, this option controls how many bits to store. If omitted,
