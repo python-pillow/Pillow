@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Save the transparency header by default for PNGs
+  [wiredfool]
+
 - Support for PNG tRNS header when converting from RGB->RGBA
   [wiredfool]
 
