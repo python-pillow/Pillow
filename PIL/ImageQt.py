@@ -8,6 +8,7 @@
 # 2006-06-03 fl: created
 # 2006-06-04 fl: inherit from QImage instead of wrapping it
 # 2006-06-05 fl: removed toimage helper; move string support to ImageQt
+# 2013-11-13 fl: add support for Qt5 (aurelien.ballier@cyclonit.com)
 #
 # Copyright (c) 2006 by Secret Labs AB
 # Copyright (c) 2006 by Fredrik Lundh
@@ -18,15 +19,18 @@
 from PIL import Image
 from PIL._util import isPath
 
-from PyQt4.QtGui import QImage, qRgb
+try:
+    from PyQt5.QtGui import QImage, qRgba
+except:
+    from PyQt4.QtGui import QImage, qRgba
 
 ##
 # (Internal) Turns an RGB color into a Qt compatible color integer.
 
-def rgb(r, g, b):
+def rgb(r, g, b, a=255):
     # use qRgb to pack the colors, and then turn the resulting long
     # into a negative integer with the same bitpattern.
-    return (qRgb(r, g, b) & 0xffffff) - 0x1000000
+    return (qRgba(r, g, b, a) & 0xffffffff)
 
 ##
 # An PIL image wrapper for Qt.  This is a subclass of PyQt4's QImage
