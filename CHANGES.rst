@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- PyQT5 Support
+  [wiredfool]
+
 - Updates for saving color tiffs w/compression using libtiff
   [wiredfool]
 
