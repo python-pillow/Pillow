@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Correctly prioritize include and library paths
+  [ohanar]
+
 - Image.point fixes for numpy.array and docs
   [wiredfool]
 
