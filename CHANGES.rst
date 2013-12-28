@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Updates for saving color tiffs w/compression using libtiff
+  [wiredfool]
+
 - 2gigapix image fixes
   [wiredfool]
 
