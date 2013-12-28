@@ -244,5 +244,9 @@ def test_trns_rgb():
     im = Image.open(file)
     assert_equal(im.info["transparency"], (248, 248, 248))
 
+    # check saving transparency by default
+    im = roundtrip(im)
+    assert_equal(im.info["transparency"], (248, 248, 248))
+
     im = roundtrip(im, transparency=(0, 1, 2))
     assert_equal(im.info["transparency"], (0, 1, 2))
