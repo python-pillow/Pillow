@@ -124,11 +124,21 @@ def test_write_metadata():
 
     for tag, value in reloaded.items():
         if tag not in ignored:
-            assert_equal(original[tag], value, "%s didn't roundtrip" % tag)
+            if tag.endswith('Resolution'):
+                val = original[tag]
+                assert_almost_equal(val[0][0]/val[0][1], value[0][0]/value[0][1],
+                                    msg="%s didn't roundtrip" % tag)
+            else:
+                assert_equal(original[tag], value, "%s didn't roundtrip" % tag)
 
     for tag, value in original.items():
         if tag not in ignored: 
-            assert_equal(value, reloaded[tag], "%s didn't roundtrip" % tag)
+            if tag.endswith('Resolution'):
+                val = reloaded[tag]
+                assert_almost_equal(val[0][0]/val[0][1], value[0][0]/value[0][1],
+                                    msg="%s didn't roundtrip" % tag)
+            else:
+                assert_equal(value, reloaded[tag], "%s didn't roundtrip" % tag)
 
 
 def test_g3_compression():
