@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Report availability of LIBTIFF during setup and selftest
+  [cgohlke]
+
 - Fix msvc build error C1189: "No Target Architecture"
   [cgohlke]
 
