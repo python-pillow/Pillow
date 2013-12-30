@@ -29,6 +29,7 @@ http://www.cazabon.com\n\
 #include "py3.h"
 
 #ifdef WIN32
+#include <windows.h>
 #include <windef.h>
 #include <wingdi.h>
 #endif
