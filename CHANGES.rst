@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Fix msvc build error C1189: "No Target Architecture"
+  [cgohlke]
+
 - Fix memory leak in font_getsize
   [wiredfool]
 
