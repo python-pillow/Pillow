@@ -67,6 +67,12 @@ def assert_equal(a, b, msg=None):
     else:
         failure(msg or "got %r, expected %r" % (a, b))
 
+def assert_almost_equal(a, b, msg=None, eps=1e-6):
+    if abs(a-b) < eps:
+        success()
+    else:
+        failure(msg or "got %r, expected %r" % (a, b))
+
 def assert_deep_equal(a, b, msg=None):
     try:
         if len(a) == len(b):
