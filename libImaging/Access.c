@@ -125,11 +125,11 @@ static void
 get_pixel_32L(Imaging im, int x, int y, void* color)
 {
     UINT8* in = (UINT8*) &im->image[y][x*4];
-    UINT32* out = color;
+    INT32* out = color;
 #ifdef WORDS_BIGENDIAN
     out[0] = in[0] + (in[1]<<8) + (in[2]<<16) + (in[3]<<24);
 #else
-    out[0] = *(UINT32*) in;
+    out[0] = *(INT32*) in;
 #endif
 }
 
@@ -137,9 +137,9 @@ static void
 get_pixel_32B(Imaging im, int x, int y, void* color)
 {
     UINT8* in = (UINT8*) &im->image[y][x*4];
-    UINT32* out = color;
+    INT32* out = color;
 #ifdef WORDS_BIGENDIAN
-    out[0] = *(UINT32*) in;
+    out[0] = *(INT32*) in;
 #else
     out[0] = in[3] + (in[2]<<8) + (in[1]<<16) + (in[0]<<24);
 #endif

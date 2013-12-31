@@ -42,10 +42,6 @@ def test_signedness():
         check(mode, 2**15+1)
         check(mode, 2**16-1)
 
-    check("I", 2**31-1)
-    check("I", 2**31)
-    check("I", 2**31+1)
-    check("I", 2**32-1)
                 
 
 
