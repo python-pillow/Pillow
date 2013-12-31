@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.3.0 (2014-01-01)
 ------------------
 
+- Stop leaking filename parameter passed to getfont
+  [jpharvey]
+
 - Report availability of LIBTIFF during setup and selftest
   [cgohlke]
 
