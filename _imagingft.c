@@ -113,12 +113,6 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         "filename", "size", "index", "encoding", "font_bytes", NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|iss#", kwlist,
-                                     Py_FileSystemDefaultEncoding, &filename,
-                                     &size, &index, &encoding, &font_bytes,
-                                     &font_bytes_size))
-        return NULL;
-
     if (!library) {
         PyErr_SetString(
             PyExc_IOError,
@@ -126,10 +120,18 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
             );
         return NULL;
     }
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|iss#", kwlist,
+                                     Py_FileSystemDefaultEncoding, &filename,
+                                     &size, &index, &encoding, &font_bytes,
+                                     &font_bytes_size))
+        return NULL;
 
     self = PyObject_New(FontObject, &Font_Type);
-    if (!self)
+    if (!self) {
+        if (filename)
+            PyMem_Free(filename);
         return NULL;
+    }
 
     if (filename && font_bytes_size <= 0) {
         error = FT_New_Face(library, filename, index, &self->face);
@@ -146,6 +148,8 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
             );
         error = FT_Select_Charmap(self->face, encoding_tag);
     }
+    if (filename)
+      PyMem_Free(filename);
 
     if (error) {
         PyObject_Del(self);
