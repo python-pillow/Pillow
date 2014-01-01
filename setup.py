@@ -214,7 +214,7 @@ class pil_build_ext(build_ext):
                     _add_directory(include_dirs, os.path.join(prefix, 'opt', 'freetype', 'include'))
             except:
                 pass # homebrew not installed
-            
+                
             # freetype2 ships with X11 (after homebrew, so that homebrew freetype is prefered)
             _add_directory(library_dirs, "/usr/X11/lib")
             _add_directory(include_dirs, "/usr/X11/include")
