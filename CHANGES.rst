@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+2.4.0 (2014-04-01)
+------------------
+
+- Prefer homebrew freetype over X11 freetype (but still allow both)
+  [dmckeone]
+
 2.3.0 (2014-01-01)
 ------------------
 
