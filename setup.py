@@ -201,9 +201,7 @@ class pil_build_ext(build_ext):
             # darwin ports installation directories
             _add_directory(library_dirs, "/opt/local/lib")
             _add_directory(include_dirs, "/opt/local/include")
-            # freetype2 ships with X11
-            _add_directory(library_dirs, "/usr/X11/lib")
-            _add_directory(include_dirs, "/usr/X11/include")
+            
             # if homebrew is installed, use its lib and include directories
             import subprocess
             try:
@@ -212,8 +210,16 @@ class pil_build_ext(build_ext):
                     prefix = prefix.strip()
                     _add_directory(library_dirs, os.path.join(prefix, 'lib'))
                     _add_directory(include_dirs, os.path.join(prefix, 'include'))
+                    
+                    # freetype2 is a key-only brew under opt/
+                    _add_directory(library_dirs, os.path.join(prefix, 'opt', 'freetype', 'lib'))
+                    _add_directory(include_dirs, os.path.join(prefix, 'opt', 'freetype', 'include'))
             except:
                 pass # homebrew not installed
+            
+            # freetype2 ships with X11 (after homebrew, so that homebrew freetype is preferred)
+            _add_directory(library_dirs, "/usr/X11/lib")
+            _add_directory(include_dirs, "/usr/X11/include")
 
         elif sys.platform.startswith("linux"):
             for platform_ in (plat.processor(), plat.architecture()[0]):
