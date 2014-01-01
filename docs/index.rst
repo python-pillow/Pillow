@@ -49,7 +49,7 @@ Financial
 
 Pillow is a volunteer effort led by Alex Clark. If you can't help with
 development please consider helping us financially. Your assistance is
-greatly appreciated!
+greatly appreciated.
 
 .. note:: Contributors please add your name and donation preference here. 
 
