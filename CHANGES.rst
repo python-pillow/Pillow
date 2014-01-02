@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (2014-04-01)
 ------------------
 
+- Correctly quote file names for WindowsViewer command
+  [cgohlke]
+
 - Prefer homebrew freetype over X11 freetype (but still allow both)
   [dmckeone]
 
