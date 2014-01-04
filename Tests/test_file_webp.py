@@ -28,7 +28,7 @@ def test_read_rgb():
 
     # generated with: dwebp -ppm ../../Images/lena.webp -o lena_webp_bits.ppm
     target = Image.open('Tests/images/lena_webp_bits.ppm')
-    assert_image_equal(image, target)
+    assert_image_similar(image, target, 20.0)
 
 
 def test_write_rgb():
