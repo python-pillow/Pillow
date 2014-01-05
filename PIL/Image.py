@@ -100,6 +100,17 @@ import os, sys
 import collections
 import numbers
 
+USE_CFFI_ACCESS = True
+try:
+    import cffi
+    HAS_CFFI=True
+except:
+    HAS_CFFI=False
+
+#if HAS_CFFI:
+#    from PIL import PyAccess
+
+
 
 def isImageType(t):
     """
@@ -468,6 +479,7 @@ class Image:
         self.info = {}
         self.category = NORMAL
         self.readonly = 0
+        self.pyaccess = None
 
     def _new(self, im):
         new = Image()
@@ -645,6 +657,13 @@ class Image:
                 self.palette.mode = "RGBA"
 
         if self.im:
+            if HAS_CFFI and USE_CFFI_ACCESS:
+                if self.pyaccess:
+                    return self.pyaccess
+                from PIL import PyAccess
+                self.pyaccess = PyAccess.new(self, self.readonly)
+                if self.pyaccess:
+                    return self.pyaccess
             return self.im.pixel_access(self.readonly)
 
     def verify(self):
@@ -974,6 +993,8 @@ class Image:
         """
 
         self.load()
+        if self.pyaccess:
+            return self.pyaccess.getpixel(xy)
         return self.im.getpixel(xy)
 
     def getprojection(self):
@@ -1290,7 +1311,9 @@ class Image:
         self.load()
         if self.readonly:
             self._copy()
-
+            
+        if self.pyaccess: # undone , what about the readonly?  Fix premerge
+            return self.pyaccess.putpixel(xy,value)
         return self.im.putpixel(xy, value)
 
     def resize(self, size, resample=NEAREST):
