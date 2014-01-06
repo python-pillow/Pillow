@@ -112,6 +112,7 @@ class _PyAccess32_4(PyAccess):
     def set_pixel(self, x,y, color):
         pixel = self.pixels[y][x]
         # tuple
+        #undone clamp?
         pixel.r, pixel.g, pixel.b, pixel.a = color
             
 class _PyAccess8(PyAccess):
@@ -124,10 +125,10 @@ class _PyAccess8(PyAccess):
     def set_pixel(self, x,y, color):
         try:
             # integer
-            self.pixels[y][x] = color & 0xFF
+            self.pixels[y][x] = min(color,255)
         except:
             # tuple
-            self.pixels[y][x] = color[0] & 0xFF
+            self.pixels[y][x] = min(color[0],255)
 
 
 mode_map = {'1': _PyAccess8,
