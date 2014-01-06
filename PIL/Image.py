@@ -1311,8 +1311,10 @@ class Image:
         self.load()
         if self.readonly:
             self._copy()
+            self.pyaccess = None
+            self.load()
             
-        if self.pyaccess: # undone , what about the readonly?  Fix premerge
+        if self.pyaccess: 
             return self.pyaccess.putpixel(xy,value)
         return self.im.putpixel(xy, value)
 
