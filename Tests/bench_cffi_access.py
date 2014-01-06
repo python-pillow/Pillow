@@ -19,10 +19,16 @@ def iterate_set(size, access):
             access[(x,y)] = access[(x,y)]
 
 def timer(func, label, *args):
+    iterations = 1000
     starttime = time.time()
-    func(*args)
-    endtime = time.time()
-    print ("%s: %.4f s" %(label, endtime-starttime))
+    for x in range(iterations):
+        func(*args)
+        if time.time()-starttime > 10:
+            print ("%s: breaking at %s iterations, %.6f per iteration"%(label, x+1, (time.time()-starttime)/(x+1.0)))
+            break
+    if x == iterations-1:
+        endtime = time.time()
+        print ("%s: %.4f s  %.6f per iteration" %(label, endtime-starttime, (endtime-starttime)/(x+1.0)))
 
 def test_direct():
     im = lena()
