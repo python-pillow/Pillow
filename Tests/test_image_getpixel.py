@@ -2,6 +2,8 @@ from tester import *
 
 from PIL import Image
 
+Image.USE_CFFI_ACCESS=False
+
 def color(mode):
     bands = Image.getmodebands(mode)
     if bands == 1:
