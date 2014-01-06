@@ -504,6 +504,7 @@ class Image:
     def _copy(self):
         self.load()
         self.im = self.im.copy()
+        self.pyaccess = None
         self.readonly = 0
 
     def _dump(self, file=None, format=None):
@@ -1205,12 +1206,14 @@ class Image:
                 mode = getmodebase(self.mode) + "A"
                 try:
                     self.im.setmode(mode)
+                    self.pyaccess = None
                 except (AttributeError, ValueError):
                     # do things the hard way
                     im = self.im.convert(mode)
                     if im.mode not in ("LA", "RGBA"):
                         raise ValueError # sanity check
                     self.im = im
+                    self.pyaccess = None
                 self.mode = self.im.mode
             except (KeyError, ValueError):
                 raise ValueError("illegal image mode")
@@ -1616,6 +1619,7 @@ class Image:
         self.size = size
 
         self.readonly = 0
+        self.pyaccess = None
 
     # FIXME: the different tranform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
