@@ -22,6 +22,7 @@
 from __future__ import print_function
 
 from cffi import FFI
+import sys
 
 DEBUG = 0
     
@@ -29,7 +30,9 @@ defs = """
 struct Pixel_RGBA {
     unsigned char r,g,b,a;
 };
-
+struct Pixel_I16 {
+    unsigned char l,r;
+};
 """
 ffi = FFI()
 ffi.cdef(defs)
@@ -152,6 +155,59 @@ class _PyAccess8(PyAccess):
             # tuple
             self.pixels[y][x] = min(color[0],255)
 
+class _PyAccessI16_N(PyAccess):
+    """ I;16 access, native bitendian without conversion """
+    def _post_init(self, *args, **kwargs):
+        self.pixels = ffi.cast('unsigned short **', self.image)
+
+    def get_pixel(self, x,y):
+        return self.pixels[y][x]
+
+    def set_pixel(self, x,y, color):
+        try:
+            # integer
+            self.pixels[y][x] = min(color, 65535)
+        except:
+            # tuple
+            self.pixels[y][x] = min(color[0], 65535)
+
+class _PyAccessI16_L(PyAccess):
+    """ I;16L access, with conversion """
+    def _post_init(self, *args, **kwargs):
+        self.pixels = ffi.cast('struct Pixel_I16 **', self.image)
+
+    def get_pixel(self, x,y):
+        pixel = self.pixels[y][x]
+        return pixel.l + pixel.r * 256
+
+    def set_pixel(self, x,y, color):
+        pixel = self.pixels[y][x]
+        try:
+            color = min(color, 65535)
+        except:
+            color = min(color[0], 65535)
+
+        pixel.l = color & 0xFF
+        pixel.r = color >> 8
+
+class _PyAccessI16_B(PyAccess):
+    """ I;16B access, with conversion """
+    def _post_init(self, *args, **kwargs):
+        self.pixels = ffi.cast('struct Pixel_I16 **', self.image)
+
+    def get_pixel(self, x,y):
+        pixel = self.pixels[y][x]
+        return pixel.l *256  + pixel.r
+
+    def set_pixel(self, x,y, color):
+        pixel = self.pixels[y][x]
+        try:
+            color = min(color, 65535)
+        except:
+            color = min(color[0], 65535)
+
+        pixel.l = color >> 8
+        pixel.r = color & 0xFF
 
 mode_map = {'1': _PyAccess8,
             'L': _PyAccess8,
@@ -167,6 +223,16 @@ mode_map = {'1': _PyAccess8,
             'CMYK': _PyAccess32_4,
             }
 
+if sys.byteorder == 'little':
+    mode_map['I;16'] = _PyAccessI16_N
+    mode_map['I;16L'] = _PyAccessI16_N
+    mode_map['I;16B'] = _PyAccessI16_B
+else:
+    mode_map['I;16'] = _PyAccessI16_L
+    mode_map['I;16L'] = _PyAccessI16_L
+    mode_map['I;16B'] = _PyAccessI16_N
+
+    
 def new(img, readonly=False):
 
     access_type = mode_map.get(img.mode, None)
