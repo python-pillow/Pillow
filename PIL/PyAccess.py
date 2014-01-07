@@ -61,7 +61,7 @@ class PyAccess(object):
         :param xy: The pixel coordinate, given as (x, y).
         :param value: The pixel value.                
         """
-        if self.readonly: raise Exception('ValueError')  # undone, ImagingError_ValueError
+        if self.readonly: raise ValueError('Attempt to putpixel a read only image') 
         (x,y) = self.check_xy(xy)
         return self.set_pixel(x,y,color)
 
@@ -83,8 +83,8 @@ class PyAccess(object):
     def check_xy(self, xy):
         (x,y) = xy
         if not (0 <= x < self.xsize and 0 <= y < self.ysize):
-            raise Exception('ValueError- pixel location out of range') #undone
-        return (x,y)
+            raise ValueError('pixel location out of range')
+        return xy
 
 
 class _PyAccess32_3(PyAccess):
