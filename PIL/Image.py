@@ -100,17 +100,13 @@ import os, sys
 import collections
 import numbers
 
-USE_CFFI_ACCESS = True
+# works everywhere, win for pypy, not cpython
+USE_CFFI_ACCESS = hasattr(sys, 'pypy_version_info')  
 try:
     import cffi
     HAS_CFFI=True
 except:
     HAS_CFFI=False
-
-#if HAS_CFFI:
-#    from PIL import PyAccess
-
-
 
 def isImageType(t):
     """
