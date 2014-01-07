@@ -208,6 +208,7 @@ class pil_build_ext(build_ext):
                 prefix = subprocess.check_output(['brew', '--prefix'])
                 if prefix:
                     prefix = prefix.strip()
+                    _add_directory(include_dirs, os.path.join(prefix, 'include', 'freetype2'))
                     _add_directory(library_dirs, os.path.join(prefix, 'lib'))
                     _add_directory(include_dirs, os.path.join(prefix, 'include'))
                     
