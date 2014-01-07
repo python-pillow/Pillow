@@ -463,7 +463,7 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
 {
     union {
       UINT8 b[4];
-      INT16 h;
+      UINT16 h;
       INT32 i;
       FLOAT32 f;
     } pixel;
