@@ -18,8 +18,8 @@ def test_put():
     put.test_sanity()
 
 def test_get():
-    get.test_pixel()
-    get.test_image()
+    get.test_basic()
+    get.test_signedness()
 
 def _test_get_access(im):
     """ Do we get the same thing as the old pixel access """
@@ -31,7 +31,7 @@ def _test_get_access(im):
     w,h = im.size
     for x in range(0,w,10):
         for y in range(0,h,10):
-            assert_equal(caccess[(x,y)], access[(x,y)])
+            assert_equal(access[(x,y)], caccess[(x,y)])
 
 def test_get_vs_c():
     _test_get_access(lena('RGB'))
@@ -42,6 +42,12 @@ def test_get_vs_c():
     _test_get_access(lena('P'))
     #_test_get_access(lena('PA')) # PA   -- how do I make a PA image???
 
+    im = Image.new('I;16', (10,10), 40000)
+    _test_get_access(im)
+    im = Image.new('I;16L', (10,10), 40000)
+    _test_get_access(im)
+    im = Image.new('I;16B', (10,10), 40000)
+    _test_get_access(im)
 
 def _test_set_access(im, color):
     """ Are we writing the correct bits into the image? """
@@ -54,7 +60,7 @@ def _test_set_access(im, color):
     for x in range(0,w,10):
         for y in range(0,h,10):
             access[(x,y)] = color
-            assert_equal(caccess[(x,y)], color)
+            assert_equal(color, caccess[(x,y)])
 
 def test_set_vs_c():
     _test_set_access(lena('RGB'), (255, 128,0) )
@@ -65,4 +71,10 @@ def test_set_vs_c():
     _test_set_access(lena('P') , 128)
     ##_test_set_access(i, (128,128)) #PA  -- undone how to make
 
+    im = Image.new('I;16', (10,10), 40000)
+    _test_set_access(im, 45000)
+    im = Image.new('I;16L', (10,10), 40000)
+    _test_set_access(im, 45000)
+    im = Image.new('I;16B', (10,10), 40000)
+    _test_set_access(im, 45000)
     
