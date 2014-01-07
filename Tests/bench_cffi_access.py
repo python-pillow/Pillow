@@ -3,6 +3,7 @@ from tester import *
 # not running this test by default. No DOS against travis.
 
 from PIL import PyAccess
+from PIL import Image
 
 import time
 
@@ -16,10 +17,10 @@ def iterate_set(size, access):
     (w,h) = size
     for x in range(w):
         for y in range(h):
-            access[(x,y)] = access[(x,y)]
+            access[(x,y)] = (x %256,y%256,0)
 
 def timer(func, label, *args):
-    iterations = 1000
+    iterations = 5000
     starttime = time.time()
     for x in range(iterations):
         func(*args)
@@ -33,6 +34,7 @@ def timer(func, label, *args):
 def test_direct():
     im = lena()
     im.load()
+    #im = Image.new( "RGB", (2000,2000), (1,3,2))
     caccess = im.im.pixel_access(False)
     access = PyAccess.new(im, False)
 
