@@ -235,6 +235,9 @@ class pil_build_ext(build_ext):
                 elif platform_ in ["i386", "i686", "32bit"]:
                     _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
                     break
+                elif platform_ in ["ppc"]:
+                    _add_directory(library_dirs, "/usr/lib/powerpc-linux-gnu")
+                    break
             else:
                 raise ValueError(
                     "Unable to identify Linux platform: `%s`" % platform_)
