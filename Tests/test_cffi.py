@@ -37,8 +37,10 @@ def test_get_vs_c():
     _test_get_access(lena('RGB'))
     _test_get_access(lena('RGBA'))
     _test_get_access(lena('L'))
+    _test_get_access(lena('LA'))
     _test_get_access(lena('1'))
     _test_get_access(lena('P'))
+    #_test_get_access(lena('PA')) # PA   -- how do I make a PA image???
 
 
 def _test_set_access(im, color):
@@ -58,7 +60,9 @@ def test_set_vs_c():
     _test_set_access(lena('RGB'), (255, 128,0) )
     _test_set_access(lena('RGBA'), (255, 192, 128, 0))
     _test_set_access(lena('L'), 128)
+    _test_set_access(lena('LA'), (128,128))
     _test_set_access(lena('1'), 255)
     _test_set_access(lena('P') , 128)
+    ##_test_set_access(i, (128,128)) #PA  -- undone how to make
 
     

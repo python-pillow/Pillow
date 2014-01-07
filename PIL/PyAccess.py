@@ -86,8 +86,24 @@ class PyAccess(object):
             raise ValueError('pixel location out of range')
         return xy
 
+class _PyAccess32_2(PyAccess):
+    """ PA, LA, stored in first and last bytes of a 32 bit word """
+    def _post_init(self, *args, **kwargs):
+        self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
+        
+    def get_pixel(self, x,y):
+        pixel = self.pixels[y][x]
+        return (pixel.r, pixel.a)
 
+    def set_pixel(self, x,y, color):
+        pixel = self.pixels[y][x]
+        # tuple
+        pixel.r = min(color[0],255)
+        pixel.a = min(color[1],255)
+        
 class _PyAccess32_3(PyAccess):
+    """ RGB and friends, stored in the first three bytes of a 32 bit word """
+    
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
         
@@ -103,6 +119,7 @@ class _PyAccess32_3(PyAccess):
         pixel.b = min(color[2],255)
 
 class _PyAccess32_4(PyAccess):
+    """ RGBA etc, all 4 bytes of a 32 bit word """
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
         
@@ -120,6 +137,7 @@ class _PyAccess32_4(PyAccess):
 
             
 class _PyAccess8(PyAccess):
+    """ 1, L, P, 8 bit images stored as uint8 """
     def _post_init(self, *args, **kwargs):
         self.pixels = self.image8
         
@@ -138,6 +156,8 @@ class _PyAccess8(PyAccess):
 mode_map = {'1': _PyAccess8,
             'L': _PyAccess8,
             'P': _PyAccess8,
+            'LA': _PyAccess32_2,
+            'PA': _PyAccess32_2,
             'RGB': _PyAccess32_3,
             'LAB': _PyAccess32_3,
             'YCbCr': _PyAccess32_3,
