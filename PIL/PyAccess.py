@@ -98,8 +98,9 @@ class _PyAccess32_3(PyAccess):
     def set_pixel(self, x,y, color):
         pixel = self.pixels[y][x]
         # tuple
-        pixel.r, pixel.g, pixel.b = color
-
+        pixel.r = min(color[0],255)
+        pixel.g = min(color[1],255)
+        pixel.b = min(color[2],255)
 
 class _PyAccess32_4(PyAccess):
     def _post_init(self, *args, **kwargs):
@@ -112,8 +113,11 @@ class _PyAccess32_4(PyAccess):
     def set_pixel(self, x,y, color):
         pixel = self.pixels[y][x]
         # tuple
-        #undone clamp?
-        pixel.r, pixel.g, pixel.b, pixel.a = color
+        pixel.r = min(color[0],255)
+        pixel.g = min(color[1],255)
+        pixel.b = min(color[2],255)
+        pixel.a = min(color[3],255)
+
             
 class _PyAccess8(PyAccess):
     def _post_init(self, *args, **kwargs):
