@@ -1141,7 +1141,7 @@ def _save(im, fp, filename):
         # print (im.mode, compression, a, im.encoderconfig)
         e = Image._getencoder(im.mode, 'libtiff', a, im.encoderconfig)
         e.setimage(im.im, (0,0)+im.size)
-        while 1:
+        while True:
             l, s, d = e.encode(16*1024) # undone, change to self.decodermaxblock
             if not _fp:
                 fp.write(d)
