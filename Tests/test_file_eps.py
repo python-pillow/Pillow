@@ -3,10 +3,10 @@ from tester import *
 from PIL import Image, EpsImagePlugin
 import sys
 
-if EpsImagePlugin.gs_windows_binary == False:
-    # already checked. Not there. 
+if EpsImagePlugin.gs_windows_binary is False:
+    # already checked. Not there.
     skip()
-    
+
 if not sys.platform.startswith('win'):
     import subprocess
     try:
