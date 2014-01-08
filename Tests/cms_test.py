@@ -47,7 +47,7 @@ TEST_misc                           = False
 #######################################################################
 def outputImage(im, funcName = None):
     # save or display the image, depending on value of SHOW_IMAGES
-    if SHOW is True:
+    if SHOW:
         im.show()
     else:
         im.save(os.path.join(OUTPUTDIR, "%s.tif" %funcName))
@@ -57,7 +57,7 @@ def outputImage(im, funcName = None):
 # The tests themselves
 #######################################################################
 
-if TEST_error_catching is True:
+if TEST_error_catching:
     im = Image.open(IMAGE)
     try:
         #neither of these proifles exists (unless you make them), so we should
@@ -70,7 +70,7 @@ if TEST_error_catching is True:
     print("error catching test completed successfully (if you see the message \
     above that we caught the error).")
 
-if TEST_profileToProfile is True:
+if TEST_profileToProfile:
     # open the image file using the standard PIL function Image.open()
     im = Image.open(IMAGE)
 
@@ -84,7 +84,7 @@ if TEST_profileToProfile is True:
 
     print("profileToProfile test completed successfully.")
 
-if TEST_profileToProfile_inPlace is True:
+if TEST_profileToProfile_inPlace:
     # we'll do the same test as profileToProfile, but modify im in place
     # instead of getting a new image returned to us
     im = Image.open(IMAGE)
@@ -103,7 +103,7 @@ if TEST_profileToProfile_inPlace is True:
 
     print("profileToProfile in-place test completed successfully.")
 
-if TEST_buildTransform is True:
+if TEST_buildTransform:
     # make a transform using the input and output profile path strings
     transform = ImageCms.buildTransform(INPUT_PROFILE, OUTPUT_PROFILE, INMODE, \
                 OUTMODE)
@@ -126,7 +126,7 @@ if TEST_buildTransform is True:
     # Python should also do this automatically when it goes out of scope.
     del(transform)
 
-if TEST_buildTransformFromOpenProfiles is True:
+if TEST_buildTransformFromOpenProfiles:
     # we'll actually test a couple profile open/creation functions here too
 
     # first, get a handle to an input profile, in this case we'll create
@@ -160,7 +160,7 @@ if TEST_buildTransformFromOpenProfiles is True:
     del(outputProfile)
     del(transform)
 
-if TEST_buildProofTransform is True:
+if TEST_buildProofTransform:
     # make a transform using the input and output and proof profile path
     # strings
     # images converted with this transform will simulate the appearance
@@ -188,7 +188,7 @@ if TEST_buildProofTransform is True:
     # Python should also do this automatically when it goes out of scope.
     del(transform)
 
-if TEST_getProfileInfo is True:
+if TEST_getProfileInfo:
     # get a profile handle
     profile = ImageCms.getOpenProfile(INPUT_PROFILE)
 
@@ -212,7 +212,7 @@ if TEST_getProfileInfo is True:
 
     print("getProfileInfo test completed successfully.")
 
-if TEST_misc is True:
+if TEST_misc:
     # test the versions, about, and copyright functions
     print("Versions: %s" %str(ImageCms.versions()))
     print("About:\n\n%s" %ImageCms.about())
