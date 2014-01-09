@@ -41,13 +41,16 @@ def test_get_vs_c():
     _test_get_access(lena('1'))
     _test_get_access(lena('P'))
     #_test_get_access(lena('PA')) # PA   -- how do I make a PA image???
-
+    _test_get_access(lena('F'))
+    
     im = Image.new('I;16', (10,10), 40000)
     _test_get_access(im)
     im = Image.new('I;16L', (10,10), 40000)
     _test_get_access(im)
     im = Image.new('I;16B', (10,10), 40000)
     _test_get_access(im)
+    
+
 
 def _test_set_access(im, color):
     """ Are we writing the correct bits into the image? """
@@ -70,7 +73,8 @@ def test_set_vs_c():
     _test_set_access(lena('1'), 255)
     _test_set_access(lena('P') , 128)
     ##_test_set_access(i, (128,128)) #PA  -- undone how to make
-
+    _test_set_access(lena('F'), 1024.0)
+    
     im = Image.new('I;16', (10,10), 40000)
     _test_set_access(im, 45000)
     im = Image.new('I;16L', (10,10), 40000)

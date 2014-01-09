@@ -209,6 +209,24 @@ class _PyAccessI16_B(PyAccess):
         pixel.l = color >> 8
         pixel.r = color & 0xFF
 
+
+class _PyAccessF(PyAccess):
+    """ 32 bit float access """
+    def _post_init(self, *args, **kwargs):
+        self.pixels = ffi.cast('float **', self.image32)
+
+    def get_pixel(self, x,y):
+        return self.pixels[y][x]
+
+    def set_pixel(self, x,y, color):
+        try:
+            # not a tuple
+            self.pixels[y][x] = color
+        except:
+            # tuple
+            self.pixels[y][x] = color[0]
+
+
 mode_map = {'1': _PyAccess8,
             'L': _PyAccess8,
             'P': _PyAccess8,
@@ -221,6 +239,7 @@ mode_map = {'1': _PyAccess8,
             'RGBa': _PyAccess32_4,
             'RGBX': _PyAccess32_4,
             'CMYK': _PyAccess32_4,
+            'F': _PyAccessF,
             }
 
 if sys.byteorder == 'little':
