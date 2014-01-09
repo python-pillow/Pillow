@@ -267,6 +267,7 @@ mode_map = {'1': _PyAccess8,
             'RGBX': _PyAccess32_4,
             'CMYK': _PyAccess32_4,
             'F': _PyAccessF,
+            'I': _PyAccessI32_N,
             }
 
 if sys.byteorder == 'little':
@@ -274,15 +275,13 @@ if sys.byteorder == 'little':
     mode_map['I;16L'] = _PyAccessI16_N
     mode_map['I;16B'] = _PyAccessI16_B
     
-    mode_map['I'] = _PyAccessI32_N
     mode_map['I;32L'] = _PyAccessI32_N
     mode_map['I;32B'] = _PyAccessI32_Swap
 else:
     mode_map['I;16'] = _PyAccessI16_L
     mode_map['I;16L'] = _PyAccessI16_L
     mode_map['I;16B'] = _PyAccessI16_N
-    
-    mode_map['I'] = _PyAccessI32_Swap
+
     mode_map['I;32L'] = _PyAccessI32_Swap
     mode_map['I;32B'] = _PyAccessI32_N
     
