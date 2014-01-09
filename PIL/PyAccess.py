@@ -209,6 +209,33 @@ class _PyAccessI16_B(PyAccess):
         pixel.l = color >> 8
         pixel.r = color & 0xFF
 
+class _PyAccessI32_N(PyAccess):
+    """ Signed Int32 access, native endian """
+    def _post_init(self, *args, **kwargs):
+        self.pixels = self.image32
+
+    def get_pixel(self, x,y):
+        return self.pixels[y][x]
+
+    def set_pixel(self, x,y, color):
+        self.pixels[y][x] = color
+
+class _PyAccessI32_Swap(PyAccess):
+    """ I;32L/B access, with byteswapping conversion """
+    def _post_init(self, *args, **kwargs):
+        self.pixels = self.image32
+
+    def reverse(self, i):
+        orig = ffi.new('int *', i)
+        chars = ffi.cast('unsigned char *', orig)
+        chars[0],chars[1],chars[2],chars[3] = chars[3], chars[2],chars[1],chars[0]
+        return ffi.cast('int *', chars)[0]
+        
+    def get_pixel(self, x,y):
+        return self.reverse(self.pixels[y][x])
+
+    def set_pixel(self, x,y, color):
+        self.pixels[y][x] = self.reverse(color)
 
 class _PyAccessF(PyAccess):
     """ 32 bit float access """
@@ -246,11 +273,18 @@ if sys.byteorder == 'little':
     mode_map['I;16'] = _PyAccessI16_N
     mode_map['I;16L'] = _PyAccessI16_N
     mode_map['I;16B'] = _PyAccessI16_B
+    
+    mode_map['I'] = _PyAccessI32_N
+    mode_map['I;32L'] = _PyAccessI32_N
+    mode_map['I;32B'] = _PyAccessI32_Swap
 else:
     mode_map['I;16'] = _PyAccessI16_L
     mode_map['I;16L'] = _PyAccessI16_L
     mode_map['I;16B'] = _PyAccessI16_N
-
+    
+    mode_map['I'] = _PyAccessI32_Swap
+    mode_map['I;32L'] = _PyAccessI32_Swap
+    mode_map['I;32B'] = _PyAccessI32_N
     
 def new(img, readonly=False):
 

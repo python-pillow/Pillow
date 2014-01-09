@@ -50,6 +50,15 @@ def test_get_vs_c():
     im = Image.new('I;16B', (10,10), 40000)
     _test_get_access(im)
     
+    im = Image.new('I', (10,10), 40000)
+    _test_get_access(im)
+    # These don't actually appear to be modes that I can actually make,
+    # as unpack sets them directly into the I mode. 
+    #im = Image.new('I;32L', (10,10), -2**10)
+    #_test_get_access(im)
+    #im = Image.new('I;32B', (10,10), 2**10)
+    #_test_get_access(im)
+
 
 
 def _test_set_access(im, color):
@@ -82,3 +91,10 @@ def test_set_vs_c():
     im = Image.new('I;16B', (10,10), 40000)
     _test_set_access(im, 45000)
     
+
+    im = Image.new('I', (10,10), 40000)
+    _test_set_access(im, 45000)
+#    im = Image.new('I;32L', (10,10), -(2**10))
+#    _test_set_access(im, -(2**13)+1)
+    #im = Image.new('I;32B', (10,10), 2**10)
+   #_test_set_access(im, 2**13-1)
