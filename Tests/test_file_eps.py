@@ -3,7 +3,7 @@ from tester import *
 from PIL import Image, EpsImagePlugin
 import sys
 
-if EpsImagePlugin.gs_windows_binary is False:
+if not EpsImagePlugin.gs_windows_binary:
     # already checked. Not there.
     skip()
 
