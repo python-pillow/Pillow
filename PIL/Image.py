@@ -804,6 +804,8 @@ class Image:
 
     def draft(self, mode, size):
         """
+        NYI
+        
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
         size.  For example, you can use this method to convert a color
@@ -1299,7 +1301,7 @@ class Image:
 
         :param size: The requested size in pixels, as a 2-tuple:
            (width, height).
-        :param filter: An optional resampling filter.  This can be
+        :param resample: An optional resampling filter.  This can be
            one of :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
            :py:attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
            environment), :py:attr:`PIL.Image.BICUBIC` (cubic spline
