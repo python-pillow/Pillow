@@ -368,7 +368,7 @@ class OleFileIO:
         self.root.dump()
 
     def _clsid(self, clsid):
-        if clsid == "\0" * len(clsid):
+        if not clsid.strip(b"\0"):
             return ""
         return (("%08X-%04X-%04X-%02X%02X-" + "%02X" * 6) %
                 ((i32(clsid, 0), i16(clsid, 4), i16(clsid, 6)) +
@@ -454,7 +454,7 @@ class OleFileIO:
         fp.seek(i32(s, 16))
 
         # get section
-        s = "****" + fp.read(i32(fp.read(4))-4)
+        s = b"****" + fp.read(i32(fp.read(4))-4)
 
         for i in range(i32(s, 4)):
 
