@@ -14,8 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import ContainerIO
-import string
+from PIL import ContainerIO
 
 ##
 # A file object that provides read access to a given member of a TAR
@@ -33,20 +32,20 @@ class TarIO(ContainerIO.ContainerIO):
 
         fh = open(tarfile, "rb")
 
-        while 1:
+        while True:
 
             s = fh.read(512)
             if len(s) != 512:
-                raise IOError, "unexpected end of tar file"
+                raise IOError("unexpected end of tar file")
 
-            name = s[:100]
-            i = string.find(name, chr(0))
+            name = s[:100].decode('utf-8')
+            i = name.find('\0')
             if i == 0:
-                raise IOError, "cannot find subfile"
+                raise IOError("cannot find subfile")
             if i > 0:
                 name = name[:i]
 
-            size = string.atoi(s[124:136], 8)
+            size = int(s[124:135], 8)
 
             if file == name:
                 break

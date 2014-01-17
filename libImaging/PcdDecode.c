@@ -37,7 +37,7 @@ ImagingPcdDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
     for (;;) {
 
-	/* We need data for two full lines before we can do anything */ 
+	/* We need data for two full lines before we can do anything */
 	if (bytes < chunk)
 	    return ptr - buf;
 

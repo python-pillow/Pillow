@@ -25,10 +25,16 @@
 
 __version__ = "0.1"
 
-import ImageFile, ImagePalette
+from PIL import ImageFile, ImagePalette, _binary
+from PIL._util import isPath
 
-def i16(c):
-    return ord(c[1]) + (ord(c[0])<<8)
+try:
+    import builtins
+except ImportError:
+    import __builtin__
+    builtins = __builtin__
+
+i16 = _binary.i16be
 
 ##
 # Image plugin for the GD uncompressed format.  Note that this format
@@ -72,10 +78,9 @@ def open(fp, mode = "r"):
     if mode != "r":
         raise ValueError("bad mode")
 
-    if type(fp) == type(""):
-        import __builtin__
+    if isPath(fp):
         filename = fp
-        fp = __builtin__.open(fp, "rb")
+        fp = builtins.open(fp, "rb")
     else:
         filename = ""
 

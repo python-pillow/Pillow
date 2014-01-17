@@ -186,6 +186,10 @@ TAGS = {
     50738: "AntiAliasStrength",
     50740: "DNGPrivateData",
     50741: "MakerNoteSafety",
+
+    #ImageJ
+    50838: "ImageJMetaDataByteCounts", # private tag registered with Adobe
+    50839: "ImageJMetaData", # private tag registered with Adobe
 }
 
 ##

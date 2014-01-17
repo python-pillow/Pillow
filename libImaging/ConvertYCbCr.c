@@ -352,7 +352,7 @@ ImagingConvertRGB2YCbCr(UINT8* out, const UINT8* in, int pixels)
         y =  (Y_R[r]  +  Y_G[g] +  Y_B[b]) >> SCALE;
         cb = ((Cb_R[r] + Cb_G[g] + Cb_B[b]) >> SCALE) + 128;
         cr = ((Cr_R[r] + Cr_G[g] + Cr_B[b]) >> SCALE) + 128;
-        
+
         out[0] = (UINT8) y;
         out[1] = (UINT8) cb;
         out[2] = (UINT8) cr;

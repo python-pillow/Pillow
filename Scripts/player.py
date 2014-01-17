@@ -1,9 +1,16 @@
+#!/usr/bin/env python
 #
 # The Python Imaging Library
 # $Id$
 #
 
-from Tkinter import *
+from __future__ import print_function
+
+try:
+    from tkinter import *
+except ImportError:
+    from Tkinter import *
+
 from PIL import Image, ImageTk
 import sys
 
@@ -36,7 +43,7 @@ class AppletDisplay:
 class UI(Label):
 
     def __init__(self, master, im):
-        if type(im) == type([]):
+        if isinstance(im, list):
             # list of images
             self.im = im[1:]
             im = self.im[0]
@@ -65,7 +72,7 @@ class UI(Label):
 
     def next(self):
 
-        if type(self.im) == type([]):
+        if isinstance(self.im, list):
 
             try:
                 im = self.im[0]
@@ -98,7 +105,7 @@ class UI(Label):
 if __name__ == "__main__":
 
     if not sys.argv[1:]:
-        print "Syntax: python player.py imagefile(s)"
+        print("Syntax: python player.py imagefile(s)")
         sys.exit(1)
 
     filename = sys.argv[1]
@@ -108,7 +115,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 2:
         # list of images
-        print "loading..."
+        print("loading...")
         im = []
         for filename in sys.argv[1:]:
             im.append(Image.open(filename))

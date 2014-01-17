@@ -2,7 +2,7 @@
  * The Python Imaging Library
  * $Id$
  *
- * pilopen antialiasing support 
+ * pilopen antialiasing support
  *
  * history:
  * 2002-03-09 fl  Created (for PIL 1.1.3)
@@ -133,7 +133,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
         filterscale = 1.0;
         support = 0.5;
     }
-    
+
     support = support * filterscale;
 
     /* coefficient buffer (with rounding safety margin) */

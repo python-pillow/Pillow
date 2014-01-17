@@ -11,29 +11,30 @@
 #
 # See the README file for information on usage and redistribution.
 #
+"""
+The **ImageFileIO** module can be used to read an image from a
+socket, or any other stream device.
 
-from StringIO import StringIO
+Deprecated. New code should use the :class:`PIL.ImageFile.Parser`
+class in the :mod:`PIL.ImageFile` module instead.
 
-##
-# The <b>ImageFileIO</b> module can be used to read an image from a
-# socket, or any other stream device.
-# <p>
-# This module is deprecated. New code should use the <b>Parser</b>
-# class in the <a href="imagefile">ImageFile</a> module instead.
-#
-# @see ImageFile#Parser
+.. seealso:: modules :class:`PIL.ImageFile.Parser`
+"""
 
-class ImageFileIO(StringIO):
+from io import BytesIO
 
-    ##
-    # Adds buffering to a stream file object, in order to
-    # provide <b>seek</b> and <b>tell</b> methods required
-    # by the <b>Image.open</b> method. The stream object must
-    # implement <b>read</b> and <b>close</b> methods.
-    #
-    # @param fp Stream file handle.
-    # @see Image#open
 
+class ImageFileIO(BytesIO):
     def __init__(self, fp):
+        """
+        Adds buffering to a stream file object, in order to
+        provide **seek** and **tell** methods required
+        by the :func:`PIL.Image.Image.open` method. The stream object must
+        implement **read** and **close** methods.
+
+        :param fp: Stream file handle.
+
+        .. seealso:: modules :func:`PIL.Image.open`
+        """
         data = fp.read()
-        StringIO.__init__(self, data)
+        BytesIO.__init__(self, data)

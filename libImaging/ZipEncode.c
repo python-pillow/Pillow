@@ -26,6 +26,7 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 {
     ZIPSTATE* context = (ZIPSTATE*) state->context;
     int err;
+    int compress_level, compress_type;
     UINT8* ptr;
     int i, bpp, s, sum;
     ImagingSectionCookie cookie;
@@ -73,17 +74,25 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	context->z_stream.next_in = 0;
 	context->z_stream.avail_in = 0;
 
+	compress_level = (context->optimize) ? Z_BEST_COMPRESSION
+					     : context->compress_level;
+
+	if (context->compress_type == -1) {
+	    compress_type = (context->mode == ZIP_PNG) ? Z_FILTERED
+						       : Z_DEFAULT_STRATEGY;
+	} else {
+	    compress_type = context->compress_type;
+	}
+
 	err = deflateInit2(&context->z_stream,
 			   /* compression level */
-			   (context->optimize) ? Z_BEST_COMPRESSION
-					       : Z_DEFAULT_COMPRESSION,
+			   compress_level,
 			   /* compression method */
 			   Z_DEFLATED,
 			   /* compression memory resources */
 			   15, 9,
 			   /* compression strategy (image data are filtered)*/
-			   (context->mode == ZIP_PNG) ? Z_FILTERED
-						      : Z_DEFAULT_STRATEGY);
+			   compress_type);
 	if (err < 0) {
 	    state->errcode = IMAGING_CODEC_CONFIG;
 	    return -1;
@@ -147,7 +156,7 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
 		/* Stuff image data into the compressor */
 		state->shuffle(state->buffer+1,
-			       (UINT8*) im->image[state->y + state->yoff] + 
+			       (UINT8*) im->image[state->y + state->yoff] +
 			       state->xoff * im->pixelsize,
 			       state->xsize);
 

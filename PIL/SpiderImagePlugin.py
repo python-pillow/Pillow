@@ -33,7 +33,9 @@
 # http://www.wadsworth.org/spider_doc/spider/docs/image_doc.html
 #
 
-import Image, ImageFile
+from __future__ import print_function
+
+from PIL import Image, ImageFile
 import os, struct, sys
 
 def isInt(f):
@@ -101,14 +103,14 @@ class SpiderImageFile(ImageFile.ImageFile):
                 t = struct.unpack('<27f',f)  # little-endian
                 hdrlen = isSpiderHeader(t)
             if hdrlen == 0:
-                raise SyntaxError, "not a valid Spider file"
+                raise SyntaxError("not a valid Spider file")
         except struct.error:
-            raise SyntaxError, "not a valid Spider file"
+            raise SyntaxError("not a valid Spider file")
 
         h = (99,) + t   # add 1 value : spider header index starts at 1
         iform = int(h[5])
         if iform != 1:
-            raise SyntaxError, "not a Spider 2D image"
+            raise SyntaxError("not a Spider 2D image")
 
         self.size = int(h[12]), int(h[2]) # size in pixels (width, height)
         self.istack = int(h[24])
@@ -131,7 +133,7 @@ class SpiderImageFile(ImageFile.ImageFile):
             offset = hdrlen + self.stkoffset
             self.istack = 2  # So Image knows it's still a stack
         else:
-            raise SyntaxError, "inconsistent stack header values"
+            raise SyntaxError("inconsistent stack header values")
 
         if self.bigendian:
             self.rawmode = "F;32BF"
@@ -154,7 +156,7 @@ class SpiderImageFile(ImageFile.ImageFile):
         if self.istack == 0:
             return
         if frame >= self.nimages:
-            raise EOFError, "attempt to seek past end of file"
+            raise EOFError("attempt to seek past end of file")
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
         self.fp = self.__fp
         self.fp.seek(self.stkoffset)
@@ -171,7 +173,7 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     # returns a ImageTk.PhotoImage object, after rescaling to 0..255
     def tkPhotoImage(self):
-        import ImageTk
+        from PIL import ImageTk
         return ImageTk.PhotoImage(self.convert2byte(), palette=256)
 
 # --------------------------------------------------------------------
@@ -186,13 +188,13 @@ def loadImageSeries(filelist=None):
     imglist = []
     for img in filelist:
         if not os.path.exists(img):
-            print "unable to find %s" % img
+            print("unable to find %s" % img)
             continue
         try:
             im = Image.open(img).convert2byte()
         except:
             if not isSpiderImage(img):
-                print img + " is not a Spider image file"
+                print(img + " is not a Spider image file")
             continue
         im.info['filename'] = img
         imglist.append(im)
@@ -239,13 +241,13 @@ def _save(im, fp, filename):
 
     hdr = makeSpiderHeader(im)
     if len(hdr) < 256:
-        raise IOError, "Error creating Spider header"
+        raise IOError("Error creating Spider header")
 
     # write the SPIDER header
     try:
         fp = open(filename, 'wb')
     except:
-        raise IOError, "Unable to open %s for writing" % filename
+        raise IOError("Unable to open %s for writing" % filename)
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  #32-bit native floating point
@@ -267,12 +269,12 @@ Image.register_save("SPIDER", _save_spider)
 if __name__ == "__main__":
 
     if not sys.argv[1:]:
-        print "Syntax: python SpiderImagePlugin.py Spiderimage [outfile]"
+        print("Syntax: python SpiderImagePlugin.py Spiderimage [outfile]")
         sys.exit()
 
     filename = sys.argv[1]
     if not isSpiderImage(filename):
-        print "input image must be in Spider format"
+        print("input image must be in Spider format")
         sys.exit()
 
     outfile = ""
@@ -280,15 +282,15 @@ if __name__ == "__main__":
         outfile = sys.argv[2]
 
     im = Image.open(filename)
-    print "image: " + str(im)
-    print "format: " + str(im.format)
-    print "size: " + str(im.size)
-    print "mode: " + str(im.mode)
-    print "max, min: ",
-    print im.getextrema()
+    print("image: " + str(im))
+    print("format: " + str(im.format))
+    print("size: " + str(im.size))
+    print("mode: " + str(im.mode))
+    print("max, min: ", end=' ')
+    print(im.getextrema())
 
     if outfile != "":
         # perform some image operation
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
-        print "saving a flipped version of %s as %s " % (os.path.basename(filename), outfile)
+        print("saving a flipped version of %s as %s " % (os.path.basename(filename), outfile))
         im.save(outfile, "SPIDER")

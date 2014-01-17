@@ -12,7 +12,7 @@ _sane.c:
     because it is only set when SANE_ACTION_SET_VALUE is used.
   - scanDev.get_parameters() now returns the scanner mode as 'format',
     no more the typical PIL codes. So 'L' became 'gray', 'RGB' is now
-    'color', 'R' is 'red', 'G' is 'green', 'B' is 'red'. This matches 
+    'color', 'R' is 'red', 'G' is 'green', 'B' is 'red'. This matches
     the way scanDev.mode is set.
     This should be the only incompatibility vs. version 1.0.
 

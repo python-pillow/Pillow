@@ -33,17 +33,17 @@
 #include "Imaging.h"
 
 
-#define	R 0
-#define	G 1
-#define	B 2
-#define	X 3
+#define R 0
+#define G 1
+#define B 2
+#define X 3
 
-#define	A 3
+#define A 3
 
-#define	C 0
-#define	M 1
-#define	Y 2
-#define	K 3
+#define C 0
+#define M 1
+#define Y 2
+#define K 3
 
 #define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
 
@@ -110,18 +110,18 @@ unpack1(UINT8* out, const UINT8* in, int pixels)
 {
     /* bits (msb first, white is non-zero) */
     while (pixels > 0) {
-	UINT8 byte = *in++;
-	switch (pixels) {
-	default:    *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
-	case 7:	    *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
-	case 6:	    *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
-	case 5:	    *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
-	case 4:	    *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
-	case 3:	    *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
-	case 2:	    *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
-	case 1:	    *out++ = (byte & 128) ? 255 : 0;
-	}
-	pixels -= 8;
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
+        case 7:     *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
+        case 6:     *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
+        case 5:     *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
+        case 4:     *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
+        case 3:     *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
+        case 2:     *out++ = (byte & 128) ? 255 : 0; byte <<= 1;
+        case 1:     *out++ = (byte & 128) ? 255 : 0;
+        }
+        pixels -= 8;
     }
 }
 
@@ -130,18 +130,18 @@ unpack1I(UINT8* out, const UINT8* in, int pixels)
 {
     /* bits (msb first, white is zero) */
     while (pixels > 0) {
-	UINT8 byte = *in++;
-	switch (pixels) {
-	default:    *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
-	case 7:	    *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
-	case 6:	    *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
-	case 5:	    *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
-	case 4:	    *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
-	case 3:	    *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
-	case 2:	    *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
-	case 1:	    *out++ = (byte & 128) ? 0 : 255;
-	}
-	pixels -= 8;
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
+        case 7:     *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
+        case 6:     *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
+        case 5:     *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
+        case 4:     *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
+        case 3:     *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
+        case 2:     *out++ = (byte & 128) ? 0 : 255; byte <<= 1;
+        case 1:     *out++ = (byte & 128) ? 0 : 255;
+        }
+        pixels -= 8;
     }
 }
 
@@ -150,18 +150,18 @@ unpack1R(UINT8* out, const UINT8* in, int pixels)
 {
     /* bits (lsb first, white is non-zero) */
     while (pixels > 0) {
-	UINT8 byte = *in++;
-	switch (pixels) {
-	default:    *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
-	case 7:	    *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
-	case 6:	    *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
-	case 5:	    *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
-	case 4:	    *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
-	case 3:	    *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
-	case 2:	    *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
-	case 1:	    *out++ = (byte & 1) ? 255 : 0;
-	}
-	pixels -= 8;
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
+        case 7:     *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
+        case 6:     *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
+        case 5:     *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
+        case 4:     *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
+        case 3:     *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
+        case 2:     *out++ = (byte & 1) ? 255 : 0; byte >>= 1;
+        case 1:     *out++ = (byte & 1) ? 255 : 0;
+        }
+        pixels -= 8;
     }
 }
 
@@ -170,18 +170,18 @@ unpack1IR(UINT8* out, const UINT8* in, int pixels)
 {
     /* bits (lsb first, white is zero) */
     while (pixels > 0) {
-	UINT8 byte = *in++;
-	switch (pixels) {
-	default:    *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
-	case 7:	    *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
-	case 6:	    *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
-	case 5:	    *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
-	case 4:	    *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
-	case 3:	    *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
-	case 2:	    *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
-	case 1:	    *out++ = (byte & 1) ? 0 : 255;
-	}
-	pixels -= 8;
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
+        case 7:     *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
+        case 6:     *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
+        case 5:     *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
+        case 4:     *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
+        case 3:     *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
+        case 2:     *out++ = (byte & 1) ? 0 : 255; byte >>= 1;
+        case 1:     *out++ = (byte & 1) ? 0 : 255;
+        }
+        pixels -= 8;
     }
 }
 
@@ -193,14 +193,14 @@ unpackL2(UINT8* out, const UINT8* in, int pixels)
 {
     /* nibbles */
     while (pixels > 0) {
-	UINT8 byte = *in++;
-	switch (pixels) {
-	default:    *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
-	case 3:	    *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
-	case 2:	    *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
-	case 1:	    *out++ = ((byte >> 6) & 3) * 255 / 3;
-	}
-	pixels -= 4;
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
+        case 3:     *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
+        case 2:     *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
+        case 1:     *out++ = ((byte >> 6) & 3) * 255 / 3;
+        }
+        pixels -= 4;
     }
 }
 
@@ -209,12 +209,12 @@ unpackL4(UINT8* out, const UINT8* in, int pixels)
 {
     /* nibbles */
     while (pixels > 0) {
-	UINT8 byte = *in++;
-	switch (pixels) {
-	default:    *out++ = ((byte >> 4) & 15) * 255 / 15; byte <<= 4;
-	case 1:	    *out++ = ((byte >> 4) & 15) * 255 / 15;
-	}
-	pixels -= 2;
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = ((byte >> 4) & 15) * 255 / 15; byte <<= 4;
+        case 1:     *out++ = ((byte >> 4) & 15) * 255 / 15;
+        }
+        pixels -= 2;
     }
 }
 
@@ -224,9 +224,9 @@ unpackLA(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* LA, pixel interleaved */
     for (i = 0; i < pixels; i++) {
-	out[R] = out[G] = out[B] = in[0];
-	out[A] = in[1];
-	in += 2; out += 4;
+        out[R] = out[G] = out[B] = in[0];
+        out[A] = in[1];
+        in += 2; out += 4;
     }
 }
 
@@ -236,9 +236,9 @@ unpackLAL(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* LA, line interleaved */
     for (i = 0; i < pixels; i++) {
-	out[R] = out[G] = out[B] = in[i];
-	out[A] = in[i+pixels];
-	out += 4;
+        out[R] = out[G] = out[B] = in[i];
+        out[A] = in[i+pixels];
+        out += 4;
     }
 }
 
@@ -248,7 +248,7 @@ unpackLI(UINT8* out, const UINT8* in, int pixels)
     /* negative */
     int i;
     for (i = 0; i < pixels; i++)
-	out[i] = ~in[i];
+        out[i] = ~in[i];
 }
 
 static void
@@ -257,7 +257,7 @@ unpackLR(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGB, bit reversed */
     for (i = 0; i < pixels; i++) {
-	out[i] = BITFLIP[in[i]];
+        out[i] = BITFLIP[in[i]];
     }
 }
 
@@ -267,8 +267,8 @@ unpackL16(UINT8* out, const UINT8* in, int pixels)
     /* int16 (upper byte, little endian) */
     int i;
     for (i = 0; i < pixels; i++) {
-	out[i] = in[1];
-	in += 2;
+        out[i] = in[1];
+        in += 2;
     }
 }
 
@@ -278,8 +278,8 @@ unpackL16B(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* int16 (upper byte, big endian) */
     for (i = 0; i < pixels; i++) {
-	out[i] = in[0];
-	in += 2;
+        out[i] = in[0];
+        in += 2;
     }
 }
 
@@ -291,18 +291,18 @@ unpackP1(UINT8* out, const UINT8* in, int pixels)
 {
     /* bits */
     while (pixels > 0) {
-	UINT8 byte = *in++;
-	switch (pixels) {
-	default:    *out++ = (byte >> 7) & 1; byte <<= 1;
-	case 7:	    *out++ = (byte >> 7) & 1; byte <<= 1;
-	case 6:	    *out++ = (byte >> 7) & 1; byte <<= 1;
-	case 5:	    *out++ = (byte >> 7) & 1; byte <<= 1;
-	case 4:	    *out++ = (byte >> 7) & 1; byte <<= 1;
-	case 3:	    *out++ = (byte >> 7) & 1; byte <<= 1;
-	case 2:	    *out++ = (byte >> 7) & 1; byte <<= 1;
-	case 1:	    *out++ = (byte >> 7) & 1;
-	}
-	pixels -= 8;
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = (byte >> 7) & 1; byte <<= 1;
+        case 7:     *out++ = (byte >> 7) & 1; byte <<= 1;
+        case 6:     *out++ = (byte >> 7) & 1; byte <<= 1;
+        case 5:     *out++ = (byte >> 7) & 1; byte <<= 1;
+        case 4:     *out++ = (byte >> 7) & 1; byte <<= 1;
+        case 3:     *out++ = (byte >> 7) & 1; byte <<= 1;
+        case 2:     *out++ = (byte >> 7) & 1; byte <<= 1;
+        case 1:     *out++ = (byte >> 7) & 1;
+        }
+        pixels -= 8;
     }
 }
 
@@ -311,14 +311,14 @@ unpackP2(UINT8* out, const UINT8* in, int pixels)
 {
     /* bit pairs */
     while (pixels > 0) {
-	UINT8 byte = *in++;
-	switch (pixels) {
-	default:    *out++ = (byte >> 6) & 3; byte <<= 2;
-	case 3:	    *out++ = (byte >> 6) & 3; byte <<= 2;
-	case 2:	    *out++ = (byte >> 6) & 3; byte <<= 2;
-	case 1:	    *out++ = (byte >> 6) & 3;
-	}
-	pixels -= 4;
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = (byte >> 6) & 3; byte <<= 2;
+        case 3:     *out++ = (byte >> 6) & 3; byte <<= 2;
+        case 2:     *out++ = (byte >> 6) & 3; byte <<= 2;
+        case 1:     *out++ = (byte >> 6) & 3;
+        }
+        pixels -= 4;
     }
 }
 
@@ -327,12 +327,12 @@ unpackP4(UINT8* out, const UINT8* in, int pixels)
 {
     /* nibbles */
     while (pixels > 0) {
-	UINT8 byte = *in++;
-	switch (pixels) {
-	default:    *out++ = (byte >> 4) & 15; byte <<= 4;
-	case 1:	    *out++ = (byte >> 4) & 15;
-	}
-	pixels -= 2;
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = (byte >> 4) & 15; byte <<= 4;
+        case 1:     *out++ = (byte >> 4) & 15;
+        }
+        pixels -= 2;
     }
 }
 
@@ -344,11 +344,11 @@ unpackP2L(UINT8* out, const UINT8* in, int pixels)
     m = 128;
     s = (pixels+7)/8;
     for (i = j = 0; i < pixels; i++) {
-	out[i] = ((in[j] & m) ? 1 : 0) + ((in[j + s] & m) ? 2 : 0);
-	if ((m >>= 1) == 0) {
-	    m = 128;
-	    j++;
-	}
+        out[i] = ((in[j] & m) ? 1 : 0) + ((in[j + s] & m) ? 2 : 0);
+        if ((m >>= 1) == 0) {
+            m = 128;
+            j++;
+        }
     }
 }
 
@@ -360,12 +360,12 @@ unpackP4L(UINT8* out, const UINT8* in, int pixels)
     m = 128;
     s = (pixels+7)/8;
     for (i = j = 0; i < pixels; i++) {
-	out[i] = ((in[j] & m) ? 1 : 0) + ((in[j + s] & m) ? 2 : 0) +
-		 ((in[j + 2*s] & m) ? 4 : 0) + ((in[j + 3*s] & m) ? 8 : 0);
-	if ((m >>= 1) == 0) {
-	    m = 128;
-	    j++;
-	}
+        out[i] = ((in[j] & m) ? 1 : 0) + ((in[j + s] & m) ? 2 : 0) +
+                 ((in[j + 2*s] & m) ? 4 : 0) + ((in[j + 3*s] & m) ? 8 : 0);
+        if ((m >>= 1) == 0) {
+            m = 128;
+            j++;
+        }
     }
 }
 
@@ -377,11 +377,11 @@ ImagingUnpackRGB(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGB triplets */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[0];
-	out[G] = in[1];
-	out[B] = in[2];
-	out[A] = 255;
-	out += 4; in += 3;
+        out[R] = in[0];
+        out[G] = in[1];
+        out[B] = in[2];
+        out[A] = 255;
+        out += 4; in += 3;
     }
 }
 
@@ -391,11 +391,11 @@ unpackRGB16B(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* 16-bit RGB triplets, big-endian order */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[0];
-	out[G] = in[2];
-	out[B] = in[4];
-	out[A] = 255;
-	out += 4; in += 6;
+        out[R] = in[0];
+        out[G] = in[2];
+        out[B] = in[4];
+        out[A] = 255;
+        out += 4; in += 6;
     }
 }
 
@@ -405,11 +405,11 @@ unpackRGBL(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGB, line interleaved */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[i];
-	out[G] = in[i+pixels];
-	out[B] = in[i+pixels+pixels];
-	out[A] = 255;
-	out += 4;
+        out[R] = in[i];
+        out[G] = in[i+pixels];
+        out[B] = in[i+pixels+pixels];
+        out[A] = 255;
+        out += 4;
     }
 }
 
@@ -419,11 +419,11 @@ unpackRGBR(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGB, bit reversed */
     for (i = 0; i < pixels; i++) {
-	out[R] = BITFLIP[in[0]];
-	out[G] = BITFLIP[in[1]];
-	out[B] = BITFLIP[in[2]];
-	out[A] = 255;
-	out += 4; in += 3;
+        out[R] = BITFLIP[in[0]];
+        out[G] = BITFLIP[in[1]];
+        out[B] = BITFLIP[in[2]];
+        out[A] = 255;
+        out += 4; in += 3;
     }
 }
 
@@ -433,11 +433,41 @@ ImagingUnpackBGR(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGB, reversed bytes */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[2];
-	out[G] = in[1];
-	out[B] = in[0];
-	out[A] = 255;
-	out += 4; in += 3;
+        out[R] = in[2];
+        out[G] = in[1];
+        out[B] = in[0];
+        out[A] = 255;
+        out += 4; in += 3;
+    }
+}
+
+void
+ImagingUnpackRGB15(UINT8* out, const UINT8* in, int pixels)
+{
+    int i, pixel;
+    /* RGB, 5 bits per pixel */
+    for (i = 0; i < pixels; i++) {
+        pixel = in[0] + (in[1] << 8);
+        out[R] = (pixel & 31) * 255 / 31;
+        out[G] = ((pixel>>5) & 31) * 255 / 31;
+        out[B] = ((pixel>>10) & 31) * 255 / 31;
+        out[A] = 255;
+        out += 4; in += 2;
+    }
+}
+
+void
+ImagingUnpackRGBA15(UINT8* out, const UINT8* in, int pixels)
+{
+    int i, pixel;
+    /* RGB, 5/5/5/1 bits per pixel */
+    for (i = 0; i < pixels; i++) {
+        pixel = in[0] + (in[1] << 8);
+        out[R] = (pixel & 31) * 255 / 31;
+        out[G] = ((pixel>>5) & 31) * 255 / 31;
+        out[B] = ((pixel>>10) & 31) * 255 / 31;
+        out[A] = (pixel>>15) * 255;
+        out += 4; in += 2;
     }
 }
 
@@ -447,12 +477,42 @@ ImagingUnpackBGR15(UINT8* out, const UINT8* in, int pixels)
     int i, pixel;
     /* RGB, reversed bytes, 5 bits per pixel */
     for (i = 0; i < pixels; i++) {
-	pixel = in[0] + (in[1] << 8);
-	out[B] = (pixel & 31) * 255 / 31;
-	out[G] = ((pixel>>5) & 31) * 255 / 31;
-	out[R] = ((pixel>>10) & 31) * 255 / 31;
-	out[A] = 255;
-	out += 4; in += 2;
+        pixel = in[0] + (in[1] << 8);
+        out[B] = (pixel & 31) * 255 / 31;
+        out[G] = ((pixel>>5) & 31) * 255 / 31;
+        out[R] = ((pixel>>10) & 31) * 255 / 31;
+        out[A] = 255;
+        out += 4; in += 2;
+    }
+}
+
+void
+ImagingUnpackBGRA15(UINT8* out, const UINT8* in, int pixels)
+{
+    int i, pixel;
+    /* RGB, reversed bytes, 5/5/5/1 bits per pixel */
+    for (i = 0; i < pixels; i++) {
+        pixel = in[0] + (in[1] << 8);
+        out[B] = (pixel & 31) * 255 / 31;
+        out[G] = ((pixel>>5) & 31) * 255 / 31;
+        out[R] = ((pixel>>10) & 31) * 255 / 31;
+        out[A] = (pixel>>15) * 255;
+        out += 4; in += 2;
+    }
+}
+
+void
+ImagingUnpackRGB16(UINT8* out, const UINT8* in, int pixels)
+{
+    int i, pixel;
+    /* RGB, 5/6/5 bits per pixel */
+    for (i = 0; i < pixels; i++) {
+        pixel = in[0] + (in[1] << 8);
+        out[R] = (pixel & 31) * 255 / 31;
+        out[G] = ((pixel>>5) & 63) * 255 / 63;
+        out[B] = ((pixel>>11) & 31) * 255 / 31;
+        out[A] = 255;
+        out += 4; in += 2;
     }
 }
 
@@ -462,12 +522,42 @@ ImagingUnpackBGR16(UINT8* out, const UINT8* in, int pixels)
     int i, pixel;
     /* RGB, reversed bytes, 5/6/5 bits per pixel */
     for (i = 0; i < pixels; i++) {
-	pixel = in[0] + (in[1] << 8);
-	out[B] = (pixel & 31) * 255 / 31;
-	out[G] = ((pixel>>5) & 63) * 255 / 63;
-	out[R] = ((pixel>>11) & 31) * 255 / 31;
-	out[A] = 255;
-	out += 4; in += 2;
+        pixel = in[0] + (in[1] << 8);
+        out[B] = (pixel & 31) * 255 / 31;
+        out[G] = ((pixel>>5) & 63) * 255 / 63;
+        out[R] = ((pixel>>11) & 31) * 255 / 31;
+        out[A] = 255;
+        out += 4; in += 2;
+    }
+}
+
+void
+ImagingUnpackRGB4B(UINT8* out, const UINT8* in, int pixels)
+{
+    int i, pixel;
+    /* RGB, 4 bits per pixel */
+    for (i = 0; i < pixels; i++) {
+        pixel = in[0] + (in[1] << 8);
+        out[R] = (pixel & 15) * 17;
+        out[G] = ((pixel>>4) & 15) * 17;
+        out[B] = ((pixel>>8) & 15) * 17;
+        out[A] = 255;
+        out += 4; in += 2;
+    }
+}
+
+void
+ImagingUnpackRGBA4B(UINT8* out, const UINT8* in, int pixels)
+{
+    int i, pixel;
+    /* RGBA, 4 bits per pixel */
+    for (i = 0; i < pixels; i++) {
+        pixel = in[0] + (in[1] << 8);
+        out[R] = (pixel & 15) * 17;
+        out[G] = ((pixel>>4) & 15) * 17;
+        out[B] = ((pixel>>8) & 15) * 17;
+        out[A] = ((pixel>>12) & 15) * 17;
+        out += 4; in += 2;
     }
 }
 
@@ -477,11 +567,11 @@ ImagingUnpackBGRX(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGB, reversed bytes with padding */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[2];
-	out[G] = in[1];
-	out[B] = in[0];
-	out[A] = 255;
-	out += 4; in += 4;
+        out[R] = in[2];
+        out[G] = in[1];
+        out[B] = in[0];
+        out[A] = 255;
+        out += 4; in += 4;
     }
 }
 
@@ -491,11 +581,11 @@ ImagingUnpackXRGB(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGB, leading pad */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[1];
-	out[G] = in[2];
-	out[B] = in[3];
-	out[A] = 255;
-	out += 4; in += 4;
+        out[R] = in[1];
+        out[G] = in[2];
+        out[B] = in[3];
+        out[A] = 255;
+        out += 4; in += 4;
     }
 }
 
@@ -505,11 +595,11 @@ ImagingUnpackXBGR(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGB, reversed bytes, leading pad */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[3];
-	out[G] = in[2];
-	out[B] = in[1];
-	out[A] = 255;
-	out += 4; in += 4;
+        out[R] = in[3];
+        out[G] = in[2];
+        out[B] = in[1];
+        out[A] = 255;
+        out += 4; in += 4;
     }
 }
 
@@ -521,9 +611,9 @@ unpackRGBALA(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* greyscale with alpha */
     for (i = 0; i < pixels; i++) {
-	out[R] = out[G] = out[B] = in[0];
-	out[A] = in[1];
-	out += 4; in += 2;
+        out[R] = out[G] = out[B] = in[0];
+        out[A] = in[1];
+        out += 4; in += 2;
     }
 }
 
@@ -533,9 +623,9 @@ unpackRGBALA16B(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* 16-bit greyscale with alpha, big-endian */
     for (i = 0; i < pixels; i++) {
-	out[R] = out[G] = out[B] = in[0];
-	out[A] = in[2];
-	out += 4; in += 4;
+        out[R] = out[G] = out[B] = in[0];
+        out[A] = in[2];
+        out += 4; in += 4;
     }
 }
 
@@ -545,7 +635,7 @@ unpackRGBa(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* premultiplied RGBA */
     for (i = 0; i < pixels; i++) {
-	int a = in[3];
+        int a = in[3];
         if (!a)
             out[R] = out[G] = out[B] = out[A] = 0;
         else {
@@ -554,7 +644,7 @@ unpackRGBa(UINT8* out, const UINT8* in, int pixels)
             out[B] = CLIP(in[2] * 255 / a);
             out[A] = a;
         }
-	out += 4; in += 4;
+        out += 4; in += 4;
     }
 }
 
@@ -564,11 +654,11 @@ unpackRGBAI(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGBA, inverted RGB bytes (FlashPix) */
     for (i = 0; i < pixels; i++) {
-	out[R] = ~in[0];
-	out[G] = ~in[1];
-	out[B] = ~in[2];
-	out[A] = in[3];
-	out += 4; in += 4;
+        out[R] = ~in[0];
+        out[G] = ~in[1];
+        out[B] = ~in[2];
+        out[A] = in[3];
+        out += 4; in += 4;
     }
 }
 
@@ -579,11 +669,11 @@ unpackRGBAL(UINT8* out, const UINT8* in, int pixels)
 
     /* RGBA, line interleaved */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[i];
-	out[G] = in[i+pixels];
-	out[B] = in[i+pixels+pixels];
-	out[A] = in[i+pixels+pixels+pixels];
-	out += 4;
+        out[R] = in[i];
+        out[G] = in[i+pixels];
+        out[B] = in[i+pixels+pixels];
+        out[A] = in[i+pixels+pixels+pixels];
+        out += 4;
     }
 }
 
@@ -593,11 +683,11 @@ unpackRGBA16B(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* 16-bit RGBA, big-endian order */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[0];
-	out[G] = in[2];
-	out[B] = in[4];
-	out[A] = in[6];
-	out += 4; in += 8;
+        out[R] = in[0];
+        out[G] = in[2];
+        out[B] = in[4];
+        out[A] = in[6];
+        out += 4; in += 8;
     }
 }
 
@@ -607,11 +697,11 @@ unpackARGB(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGBA, leading pad */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[1];
-	out[G] = in[2];
-	out[B] = in[3];
-	out[A] = in[0];
-	out += 4; in += 4;
+        out[R] = in[1];
+        out[G] = in[2];
+        out[B] = in[3];
+        out[A] = in[0];
+        out += 4; in += 4;
     }
 }
 
@@ -621,11 +711,11 @@ unpackABGR(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGBA, reversed bytes */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[3];
-	out[G] = in[2];
-	out[B] = in[1];
-	out[A] = in[0];
-	out += 4; in += 4;
+        out[R] = in[3];
+        out[G] = in[2];
+        out[B] = in[1];
+        out[A] = in[0];
+        out += 4; in += 4;
     }
 }
 
@@ -635,11 +725,11 @@ unpackBGRA(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* RGBA, reversed bytes */
     for (i = 0; i < pixels; i++) {
-	out[R] = in[2];
-	out[G] = in[1];
-	out[B] = in[0];
-	out[A] = in[3];
-	out += 4; in += 4;
+        out[R] = in[2];
+        out[G] = in[1];
+        out[B] = in[0];
+        out[A] = in[3];
+        out += 4; in += 4;
     }
 }
 
@@ -652,13 +742,112 @@ unpackCMYKI(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* CMYK, inverted bytes (Photoshop 2.5) */
     for (i = 0; i < pixels; i++) {
-	out[C] = ~in[0];
-	out[M] = ~in[1];
-	out[Y] = ~in[2];
-	out[K] = ~in[3];
-	out += 4; in += 4;
+        out[C] = ~in[0];
+        out[M] = ~in[1];
+        out[Y] = ~in[2];
+        out[K] = ~in[3];
+        out += 4; in += 4;
     }
 }
+
+/* Unpack to "LAB" image */
+/* There are two representations of LAB images for whatever precision:
+   L: Uint (in PS, it's 0-100)
+   A: Int (in ps, -128 .. 128, or elsewhere 0..255, with 128 as middle. 
+           Channels in PS display a 0 value as middle grey, 
+           LCMS appears to use 128 as the 0 value for these channels)
+   B: Int (as above) 
+
+   Since we don't have any signed ints, we're going with the shifted versions 
+   internally, and we'll unshift for saving and whatnot. 
+*/
+void
+ImagingUnpackLAB(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* LAB triplets */
+    for (i = 0; i < pixels; i++) {
+        out[0] = in[0];
+        out[1] = in[1] ^ 128; /* signed in outside world */
+        out[2] = in[2] ^ 128;
+        out[3] = 255;
+        out += 4; in += 3;
+    }
+}
+
+static void
+unpackI16N_I16B(UINT8* out, const UINT8* in, int pixels){
+    int i;
+    UINT8* tmp = (UINT8*) out;
+    for (i = 0; i < pixels; i++) {
+        C16B;
+		in += 2; tmp += 2;
+    }
+	
+}
+static void
+unpackI16N_I16(UINT8* out, const UINT8* in, int pixels){
+    int i;
+    UINT8* tmp = (UINT8*) out;
+    for (i = 0; i < pixels; i++) {
+        C16L;
+		in += 2; tmp += 2;
+    }
+}
+
+static void
+unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
+    /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer greyscale tiffs. 
+        
+        According to the TIFF spec: 
+
+        FillOrder = 2 should be used only when BitsPerSample = 1 and
+        the data is either uncompressed or compressed using CCITT 1D
+        or 2D compression, to avoid potentially ambigous situations.
+
+        Yeah. I thought so. We'll see how well people read the spec. 
+        We've got several fillorder=2 modes in TiffImagePlugin.py
+
+        There's no spec I can find. It appears that the in storage
+        layout is: 00 80 00 ... -> (128 , 0 ...). The samples are
+        stored in a single big bitian 12bit block, but need to be
+        pulled out to little endian format to be stored in a 2 byte
+        int.
+     */
+
+    int i;
+    UINT16 pixel;
+#ifdef WORDS_BIGENDIAN
+    UINT8* tmp = (UINT8 *)&pixel;
+#endif
+    UINT16* out16 = (UINT16 *)out;
+    for (i = 0; i < pixels-1; i+=2) {
+        pixel = (((UINT16) in[0]) << 4 ) + (in[1] >>4);
+#ifdef WORDS_BIGENDIAN
+        out[0] = tmp[1];  out[1] = tmp[0];
+#else
+        out16[0] = pixel;
+#endif
+
+        pixel = (((UINT16) (in[1] & 0x0F)) << 8) + in[2];
+#ifdef WORDS_BIGENDIAN
+        out[2] = tmp[1];  out[3] = tmp[0];
+#else
+        out16[1] = pixel;
+#endif
+  
+		in += 3; out16 += 2; out+=4;
+    }
+    if (i == pixels-1) {
+        pixel = (((UINT16) in[0]) << 4 ) + (in[1] >>4);
+#ifdef WORDS_BIGENDIAN
+        out[0] = tmp[1];  out[1] = tmp[0];
+#else
+        out16[0] = pixel;
+#endif
+    }
+}
+
 
 static void
 copy1(UINT8* out, const UINT8* in, int pixels)
@@ -672,6 +861,13 @@ copy2(UINT8* out, const UINT8* in, int pixels)
 {
     /* I;16 */
     memcpy(out, in, pixels*2);
+}
+
+static void
+copy3(UINT8* out, const UINT8* in, int pixels)
+{
+    /* LAB triples, 24bit */
+    memcpy(out, in, 3 * pixels);
 }
 
 static void
@@ -753,8 +949,8 @@ band0(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* band 0 only */
     for (i = 0; i < pixels; i++) {
-	out[0] = in[i];
-	out += 4;
+        out[0] = in[i];
+        out += 4;
     }
 }
 
@@ -764,8 +960,8 @@ band1(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* band 1 only */
     for (i = 0; i < pixels; i++) {
-	out[1] = in[i];
-	out += 4;
+        out[1] = in[i];
+        out += 4;
     }
 }
 
@@ -775,8 +971,8 @@ band2(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* band 2 only */
     for (i = 0; i < pixels; i++) {
-	out[2] = in[i];
-	out += 4;
+        out[2] = in[i];
+        out += 4;
     }
 }
 
@@ -786,8 +982,8 @@ band3(UINT8* out, const UINT8* in, int pixels)
     /* band 3 only */
     int i;
     for (i = 0; i < pixels; i++) {
-	out[3] = in[i];
-	out += 4;
+        out[3] = in[i];
+        out += 4;
     }
 }
 
@@ -797,8 +993,8 @@ band0I(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* band 0 only */
     for (i = 0; i < pixels; i++) {
-	out[0] = ~in[i];
-	out += 4;
+        out[0] = ~in[i];
+        out += 4;
     }
 }
 
@@ -808,8 +1004,8 @@ band1I(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* band 1 only */
     for (i = 0; i < pixels; i++) {
-	out[1] = ~in[i];
-	out += 4;
+        out[1] = ~in[i];
+        out += 4;
     }
 }
 
@@ -819,8 +1015,8 @@ band2I(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* band 2 only */
     for (i = 0; i < pixels; i++) {
-	out[2] = ~in[i];
-	out += 4;
+        out[2] = ~in[i];
+        out += 4;
     }
 }
 
@@ -830,8 +1026,8 @@ band3I(UINT8* out, const UINT8* in, int pixels)
     /* band 3 only */
     int i;
     for (i = 0; i < pixels; i++) {
-	out[3] = ~in[i];
-	out += 4;
+        out[3] = ~in[i];
+        out += 4;
     }
 }
 
@@ -852,157 +1048,176 @@ static struct {
        interleave, "S" signed, "F" floating point */
 
     /* bilevel */
-    {"1",	"1",		1,	unpack1},
-    {"1",	"1;I",		1,	unpack1I},
-    {"1",	"1;R",		1,	unpack1R},
-    {"1",	"1;IR",		1,	unpack1IR},
+    {"1",       "1",            1,      unpack1},
+    {"1",       "1;I",          1,      unpack1I},
+    {"1",       "1;R",          1,      unpack1R},
+    {"1",       "1;IR",         1,      unpack1IR},
 
     /* greyscale */
-    {"L",	"L;2",  	2,	unpackL2},
-    {"L",	"L;4",  	4,	unpackL4},
-    {"L",	"L",   		8,	copy1},
-    {"L",	"L;I",   	8,	unpackLI},
-    {"L",	"L;R",   	8,	unpackLR},
-    {"L",	"L;16",  	16,	unpackL16},
-    {"L",	"L;16B",  	16,	unpackL16B},
+    {"L",       "L;2",          2,      unpackL2},
+    {"L",       "L;4",          4,      unpackL4},
+    {"L",       "L",            8,      copy1},
+    {"L",       "L;I",          8,      unpackLI},
+    {"L",       "L;R",          8,      unpackLR},
+    {"L",       "L;16",         16,     unpackL16},
+    {"L",       "L;16B",        16,     unpackL16B},
 
     /* greyscale w. alpha */
-    {"LA",	"LA",   	16,	unpackLA},
-    {"LA",	"LA;L",   	16,	unpackLAL},
+    {"LA",      "LA",           16,     unpackLA},
+    {"LA",      "LA;L",         16,     unpackLAL},
 
     /* palette */
-    {"P",	"P;1",   	1,	unpackP1},
-    {"P",	"P;2",   	2,	unpackP2},
-    {"P",	"P;2L",   	2,	unpackP2L},
-    {"P",	"P;4",   	4,	unpackP4},
-    {"P",	"P;4L",   	4,	unpackP4L},
-    {"P",	"P",		8,	copy1},
-    {"P",	"P;R",   	8,	unpackLR},
+    {"P",       "P;1",          1,      unpackP1},
+    {"P",       "P;2",          2,      unpackP2},
+    {"P",       "P;2L",         2,      unpackP2L},
+    {"P",       "P;4",          4,      unpackP4},
+    {"P",       "P;4L",         4,      unpackP4L},
+    {"P",       "P",            8,      copy1},
+    {"P",       "P;R",          8,      unpackLR},
 
     /* palette w. alpha */
-    {"PA",	"PA",   	16,	unpackLA},
-    {"PA",	"PA;L",   	16,	unpackLAL},
+    {"PA",      "PA",           16,     unpackLA},
+    {"PA",      "PA;L",         16,     unpackLAL},
 
     /* true colour */
-    {"RGB",	"RGB",		24,	ImagingUnpackRGB},
-    {"RGB",	"RGB;L",	24,	unpackRGBL},
-    {"RGB",	"RGB;R",	24,	unpackRGBR},
-    {"RGB",	"RGB;16B",	48,	unpackRGB16B},
-    {"RGB",	"BGR",		24,	ImagingUnpackBGR},
-    {"RGB",	"BGR;15",	16,	ImagingUnpackBGR15},
-    {"RGB",	"BGR;16",	16,	ImagingUnpackBGR16},
-    {"RGB",	"BGR;5",	16,	ImagingUnpackBGR15}, /* compat */
-    {"RGB",	"RGBX",		32,	copy4},
-    {"RGB",	"RGBX;L",	32,	unpackRGBAL},
-    {"RGB",	"BGRX",		32,	ImagingUnpackBGRX},
-    {"RGB",	"XRGB",		24,	ImagingUnpackXRGB},
-    {"RGB",	"XBGR",		32,	ImagingUnpackXBGR},
-    {"RGB",	"YCC;P",	24,	ImagingUnpackYCC},
-    {"RGB",	"R",   		8,	band0},
-    {"RGB",	"G",   		8,	band1},
-    {"RGB",	"B",   		8,	band2},
+    {"RGB",     "RGB",          24,     ImagingUnpackRGB},
+    {"RGB",     "RGB;L",        24,     unpackRGBL},
+    {"RGB",     "RGB;R",        24,     unpackRGBR},
+    {"RGB",     "RGB;16B",      48,     unpackRGB16B},
+    {"RGB",     "BGR",          24,     ImagingUnpackBGR},
+    {"RGB",     "RGB;15",       16,     ImagingUnpackRGB15},
+    {"RGB",     "BGR;15",       16,     ImagingUnpackBGR15},
+    {"RGB",     "RGB;16",       16,     ImagingUnpackRGB16},
+    {"RGB",     "BGR;16",       16,     ImagingUnpackBGR16},
+    {"RGB",     "RGB;4B",       16,     ImagingUnpackRGB4B},
+    {"RGB",     "BGR;5",        16,     ImagingUnpackBGR15}, /* compat */
+    {"RGB",     "RGBX",         32,     copy4},
+    {"RGB",     "RGBX;L",       32,     unpackRGBAL},
+    {"RGB",     "BGRX",         32,     ImagingUnpackBGRX},
+    {"RGB",     "XRGB",         24,     ImagingUnpackXRGB},
+    {"RGB",     "XBGR",         32,     ImagingUnpackXBGR},
+    {"RGB",     "YCC;P",        24,     ImagingUnpackYCC},
+    {"RGB",     "R",            8,      band0},
+    {"RGB",     "G",            8,      band1},
+    {"RGB",     "B",            8,      band2},
 
     /* true colour w. alpha */
-    {"RGBA",	"LA",		16,	unpackRGBALA},
-    {"RGBA",	"LA;16B",	32,	unpackRGBALA16B},
-    {"RGBA",	"RGBA",		32,	copy4},
-    {"RGBA",	"RGBa",		32,	unpackRGBa},
-    {"RGBA",	"RGBA;I",	32,	unpackRGBAI},
-    {"RGBA",	"RGBA;L",	32,	unpackRGBAL},
-    {"RGBA",	"RGBA;16B",	64,	unpackRGBA16B},
-    {"RGBA",	"BGRA",		32,	unpackBGRA},
-    {"RGBA",	"ARGB",		32,	unpackARGB},
-    {"RGBA",	"ABGR",		32,	unpackABGR},
-    {"RGBA",	"YCCA;P",	32,	ImagingUnpackYCCA},
-    {"RGBA",	"R",   		8,	band0},
-    {"RGBA",	"G",   		8,	band1},
-    {"RGBA",	"B",   		8,	band2},
-    {"RGBA",	"A",   		8,	band3},
+    {"RGBA",    "LA",           16,     unpackRGBALA},
+    {"RGBA",    "LA;16B",       32,     unpackRGBALA16B},
+    {"RGBA",    "RGBA",         32,     copy4},
+    {"RGBA",    "RGBa",         32,     unpackRGBa},
+    {"RGBA",    "RGBA;I",       32,     unpackRGBAI},
+    {"RGBA",    "RGBA;L",       32,     unpackRGBAL},
+    {"RGBA",    "RGBA;15",      16,     ImagingUnpackRGBA15},
+    {"RGBA",    "BGRA;15",      16,     ImagingUnpackBGRA15},
+    {"RGBA",    "RGBA;4B",      16,     ImagingUnpackRGBA4B},
+    {"RGBA",    "RGBA;16B",     64,     unpackRGBA16B},
+    {"RGBA",    "BGRA",         32,     unpackBGRA},
+    {"RGBA",    "ARGB",         32,     unpackARGB},
+    {"RGBA",    "ABGR",         32,     unpackABGR},
+    {"RGBA",    "YCCA;P",       32,     ImagingUnpackYCCA},
+    {"RGBA",    "R",            8,      band0},
+    {"RGBA",    "G",            8,      band1},
+    {"RGBA",    "B",            8,      band2},
+    {"RGBA",    "A",            8,      band3},
 
     /* true colour w. padding */
-    {"RGBX",	"RGB",		24,	ImagingUnpackRGB},
-    {"RGBX",	"RGB;L",	24,	unpackRGBL},
-    {"RGBX",	"RGB;16B",	48,	unpackRGB16B},
-    {"RGBX",	"BGR",		24,	ImagingUnpackBGR},
-    {"RGBX",	"BGR;15",	16,	ImagingUnpackBGR15},
-    {"RGB",	"BGR;16",	16,	ImagingUnpackBGR16},
-    {"RGBX",	"BGR;5",	16,	ImagingUnpackBGR15}, /* compat */
-    {"RGBX",	"RGBX",		32,	copy4},
-    {"RGBX",	"RGBX;L",	32,	unpackRGBAL},
-    {"RGBX",	"BGRX",		32,	ImagingUnpackBGRX},
-    {"RGBX",	"XRGB",		24,	ImagingUnpackXRGB},
-    {"RGBX",	"XBGR",		32,	ImagingUnpackXBGR},
-    {"RGBX",	"YCC;P",	24,	ImagingUnpackYCC},
-    {"RGBX",	"R",   		8,	band0},
-    {"RGBX",	"G",   		8,	band1},
-    {"RGBX",	"B",   		8,	band2},
-    {"RGBX",	"X",   		8,	band3},
+    {"RGBX",    "RGB",          24,     ImagingUnpackRGB},
+    {"RGBX",    "RGB;L",        24,     unpackRGBL},
+    {"RGBX",    "RGB;16B",      48,     unpackRGB16B},
+    {"RGBX",    "BGR",          24,     ImagingUnpackBGR},
+    {"RGBX",    "RGB;15",       16,     ImagingUnpackRGB15},
+    {"RGBX",    "BGR;15",       16,     ImagingUnpackBGR15},
+    {"RGBX",    "RGB;4B",       16,     ImagingUnpackRGB4B},
+    {"RGBX",    "BGR;5",        16,     ImagingUnpackBGR15}, /* compat */
+    {"RGBX",    "RGBX",         32,     copy4},
+    {"RGBX",    "RGBX;L",       32,     unpackRGBAL},
+    {"RGBX",    "BGRX",         32,     ImagingUnpackBGRX},
+    {"RGBX",    "XRGB",         24,     ImagingUnpackXRGB},
+    {"RGBX",    "XBGR",         32,     ImagingUnpackXBGR},
+    {"RGBX",    "YCC;P",        24,     ImagingUnpackYCC},
+    {"RGBX",    "R",            8,      band0},
+    {"RGBX",    "G",            8,      band1},
+    {"RGBX",    "B",            8,      band2},
+    {"RGBX",    "X",            8,      band3},
 
     /* colour separation */
-    {"CMYK",	"CMYK",		32,	copy4},
-    {"CMYK",	"CMYK;I",	32,	unpackCMYKI},
-    {"CMYK",	"CMYK;L",	32,	unpackRGBAL},
-    {"CMYK",	"C",   		8,	band0},
-    {"CMYK",	"M",   		8,	band1},
-    {"CMYK",	"Y",   		8,	band2},
-    {"CMYK",	"K",   		8,	band3},
-    {"CMYK",	"C;I",   	8,	band0I},
-    {"CMYK",	"M;I",   	8,	band1I},
-    {"CMYK",	"Y;I",   	8,	band2I},
-    {"CMYK",	"K;I",   	8,	band3I},
+    {"CMYK",    "CMYK",         32,     copy4},
+    {"CMYK",    "CMYK;I",       32,     unpackCMYKI},
+    {"CMYK",    "CMYK;L",       32,     unpackRGBAL},
+    {"CMYK",    "C",            8,      band0},
+    {"CMYK",    "M",            8,      band1},
+    {"CMYK",    "Y",            8,      band2},
+    {"CMYK",    "K",            8,      band3},
+    {"CMYK",    "C;I",          8,      band0I},
+    {"CMYK",    "M;I",          8,      band1I},
+    {"CMYK",    "Y;I",          8,      band2I},
+    {"CMYK",    "K;I",          8,      band3I},
 
     /* video (YCbCr) */
-    {"YCbCr",	"YCbCr",	24,	ImagingUnpackRGB},
-    {"YCbCr",	"YCbCr;L",	24,	unpackRGBL},
-    {"YCbCr",	"YCbCrX",	32,	copy4},
-    {"YCbCr",	"YCbCrK",	32,	copy4},
+    {"YCbCr",   "YCbCr",        24,     ImagingUnpackRGB},
+    {"YCbCr",   "YCbCr;L",      24,     unpackRGBL},
+    {"YCbCr",   "YCbCrX",       32,     copy4},
+    {"YCbCr",   "YCbCrK",       32,     copy4},
+
+    /* LAB Color */
+    {"LAB",	    "LAB",	        24,	    ImagingUnpackLAB},
+    {"LAB",  	"L",            8,      band0},
+    {"LAB",  	"A",            8,      band1},
+    {"LAB",  	"B",            8,      band2},
 
     /* integer variations */
-    {"I",	"I",		32,	copy4},
-    {"I",	"I;8",		8,	unpackI8},
-    {"I",	"I;8S",		8,	unpackI8S},
-    {"I",	"I;16",		16,	unpackI16},
-    {"I",	"I;16S",	16,	unpackI16S},
-    {"I",	"I;16B",	16,	unpackI16B},
-    {"I",	"I;16BS",	16,	unpackI16BS},
-    {"I",	"I;16N",	16,	unpackI16N},
-    {"I",	"I;16NS",	16,	unpackI16NS},
-    {"I",	"I;32",		32,	unpackI32},
-    {"I",	"I;32S",	32,	unpackI32S},
-    {"I",	"I;32B",	32,	unpackI32B},
-    {"I",	"I;32BS",	32,	unpackI32BS},
-    {"I",	"I;32N",	32,	unpackI32N},
-    {"I",	"I;32NS",	32,	unpackI32NS},
+    {"I",       "I",            32,     copy4},
+    {"I",       "I;8",          8,      unpackI8},
+    {"I",       "I;8S",         8,      unpackI8S},
+    {"I",       "I;16",         16,     unpackI16},
+    {"I",       "I;16S",        16,     unpackI16S},
+    {"I",       "I;16B",        16,     unpackI16B},
+    {"I",       "I;16BS",       16,     unpackI16BS},
+    {"I",       "I;16N",        16,     unpackI16N},
+    {"I",       "I;16NS",       16,     unpackI16NS},
+    {"I",       "I;32",         32,     unpackI32},
+    {"I",       "I;32S",        32,     unpackI32S},
+    {"I",       "I;32B",        32,     unpackI32B},
+    {"I",       "I;32BS",       32,     unpackI32BS},
+    {"I",       "I;32N",        32,     unpackI32N},
+    {"I",       "I;32NS",       32,     unpackI32NS},
 
     /* floating point variations */
-    {"F",	"F",		32,	copy4},
-    {"F",	"F;8",		8,	unpackF8},
-    {"F",	"F;8S",		8,	unpackF8S},
-    {"F",	"F;16",		16,	unpackF16},
-    {"F",	"F;16S",	16,	unpackF16S},
-    {"F",	"F;16B",	16,	unpackF16B},
-    {"F",	"F;16BS",	16,	unpackF16BS},
-    {"F",	"F;16N",	16,	unpackF16N},
-    {"F",	"F;16NS",	16,	unpackF16NS},
-    {"F",	"F;32",		32,	unpackF32},
-    {"F",	"F;32S",	32,	unpackF32S},
-    {"F",	"F;32B",	32,	unpackF32B},
-    {"F",	"F;32BS",	32,	unpackF32BS},
-    {"F",	"F;32N",	32,	unpackF32N},
-    {"F",	"F;32NS",	32,	unpackF32NS},
-    {"F",	"F;32F",	32,	unpackF32F},
-    {"F",	"F;32BF",	32,	unpackF32BF},
-    {"F",	"F;32NF",	32,	unpackF32NF},
+    {"F",       "F",            32,     copy4},
+    {"F",       "F;8",          8,      unpackF8},
+    {"F",       "F;8S",         8,      unpackF8S},
+    {"F",       "F;16",         16,     unpackF16},
+    {"F",       "F;16S",        16,     unpackF16S},
+    {"F",       "F;16B",        16,     unpackF16B},
+    {"F",       "F;16BS",       16,     unpackF16BS},
+    {"F",       "F;16N",        16,     unpackF16N},
+    {"F",       "F;16NS",       16,     unpackF16NS},
+    {"F",       "F;32",         32,     unpackF32},
+    {"F",       "F;32S",        32,     unpackF32S},
+    {"F",       "F;32B",        32,     unpackF32B},
+    {"F",       "F;32BS",       32,     unpackF32BS},
+    {"F",       "F;32N",        32,     unpackF32N},
+    {"F",       "F;32NS",       32,     unpackF32NS},
+    {"F",       "F;32F",        32,     unpackF32F},
+    {"F",       "F;32BF",       32,     unpackF32BF},
+    {"F",       "F;32NF",       32,     unpackF32NF},
 #ifdef FLOAT64
-    {"F",	"F;64F",	64,	unpackF64F},
-    {"F",	"F;64BF",	64,	unpackF64BF},
-    {"F",	"F;64NF",	64,	unpackF64NF},
+    {"F",       "F;64F",        64,     unpackF64F},
+    {"F",       "F;64BF",       64,     unpackF64BF},
+    {"F",       "F;64NF",       64,     unpackF64NF},
 #endif
 
     /* storage modes */
-    {"I;16",	"I;16",		16,	copy2},
-    {"I;16B",	"I;16B",	16,	copy2},
-    {"I;16L",	"I;16L",	16,	copy2},
+    {"I;16",    "I;16",         16,     copy2},
+    {"I;16B",   "I;16B",        16,     copy2},
+    {"I;16L",   "I;16L",        16,     copy2},
+
+    {"I;16", 	"I;16N",	    16,	    unpackI16N_I16}, // LibTiff native->image endian.
+    {"I;16L", 	"I;16N",	    16,	    unpackI16N_I16}, // LibTiff native->image endian.
+    {"I;16B", 	"I;16N",	    16,	    unpackI16N_I16B},
+
+    {"I;16", 	"I;12",	        12,	    unpackI12_I16}, // 12 bit Tiffs stored in 16bits.
 
     {NULL} /* sentinel */
 };
@@ -1015,12 +1230,12 @@ ImagingFindUnpacker(const char* mode, const char* rawmode, int* bits_out)
 
     /* find a suitable pixel unpacker */
     for (i = 0; unpackers[i].rawmode; i++)
-	if (strcmp(unpackers[i].mode, mode) == 0 &&
+        if (strcmp(unpackers[i].mode, mode) == 0 &&
             strcmp(unpackers[i].rawmode, rawmode) == 0) {
-	    if (bits_out)
-		*bits_out = unpackers[i].bits;
-	    return unpackers[i].unpack;
-	}
+            if (bits_out)
+                *bits_out = unpackers[i].bits;
+            return unpackers[i].unpack;
+        }
 
     /* FIXME: configure a general unpacker based on the type codes... */
 

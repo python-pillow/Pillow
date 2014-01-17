@@ -44,7 +44,7 @@ emit(GIFENCODERSTATE *context, int byte)
 
         /* no room in the current block (or no current block);
            allocate a new one */
-        
+
         /* add current block to end of flush queue */
         if (context->block) {
             block = context->flush;

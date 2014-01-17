@@ -1,13 +1,13 @@
 STARTFONT 2.1
 COMMENT $XConsortium: courB08.bdf,v 1.5 94/04/10 21:46:11 gildea Exp $
-COMMENT 
+COMMENT
 COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
 COMMENT  Portions Copyright 1988 Digital Equipment Corporation
-COMMENT 
-COMMENT  Adobe is a registered trademark of Adobe Systems, Inc.  Permission 
+COMMENT
+COMMENT  Adobe is a registered trademark of Adobe Systems, Inc.  Permission
 COMMENT  to use these trademarks is hereby granted only in association with the
 COMMENT  images described in this file.
-COMMENT 
+COMMENT
 COMMENT  Permission to use, copy, modify, and distribute this software and
 COMMENT  its documentation for any purpose and without fee is hereby granted,
 COMMENT  provided that the above copyright notices appear in all copies and
@@ -19,7 +19,7 @@ COMMENT  specific, written prior permission.  Adobe Systems and Digital
 COMMENT  Equipment Corporation make no representations about the suitability
 COMMENT  of this software for any purpose.  It is provided "as is" without
 COMMENT  express or implied warranty.
-COMMENT 
+COMMENT
 COMMENT  ADOBE SYSTEMS AND DIGITAL EQUIPMENT CORPORATION DISCLAIM ALL
 COMMENT  WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
 COMMENT  WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ADOBE
@@ -28,8 +28,8 @@ COMMENT  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
 COMMENT  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 COMMENT  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-COMMENT 
-COMMENT 
+COMMENT
+COMMENT
 FONT -Adobe-Courier-Bold-R-Normal--11-80-100-100-M-60-ISO8859-1
 SIZE 8 100 100
 FONTBOUNDINGBOX 8 11 -1 -2

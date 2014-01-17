@@ -11,7 +11,7 @@
  * 2005-02-07 fl   Limit number of colors to 256
  *
  * Written by Toby J Sargeant <tjs@longford.cs.monash.edu.au>.
- * 
+ *
  * Copyright (c) 1998 by Toby J Sargeant
  * Copyright (c) 1998-2004 by Secret Labs AB.  All rights reserved.
  *
@@ -25,16 +25,15 @@
 #include <memory.h>
 #include <time.h>
 
-#include "Quant.h"
-
-#include "QuantDefines.h"
+#include "QuantTypes.h"
+#include "QuantOctree.h"
 #include "QuantHash.h"
 #include "QuantHeap.h"
 
 #define NO_OUTPUT
 
 typedef struct {
-    unsigned long scale;
+    uint32_t scale;
 } PixelHashData;
 
 typedef struct _PixelList {
@@ -49,7 +48,7 @@ typedef struct _BoxNode {
     PixelList *head[3],*tail[3];
     int axis;
     int volume;
-    unsigned long pixelCount;
+    uint32_t pixelCount;
 } BoxNode;
 
 #define _SQR(x) ((x)*(x))
@@ -75,104 +74,92 @@ typedef struct _BoxNode {
     ((q)->c.g=(p)->c.g>>(s)),              \
     ((q)->c.b=(p)->c.b>>(s))
 
-static unsigned long
-unshifted_pixel_hash(const HashTable h, const void *p)
+static uint32_t
+unshifted_pixel_hash(const HashTable *h, const Pixel pixel)
 {
-   Pixel *pixel=(Pixel *)&p;
-   unsigned long hash=PIXEL_HASH(pixel->c.r,
-                                 pixel->c.g,
-                                 pixel->c.b);
-   return hash;
+   return PIXEL_HASH(pixel.c.r, pixel.c.g, pixel.c.b);
 }
 
 static int
-unshifted_pixel_cmp(const HashTable h, const void *a, const void *b)
+unshifted_pixel_cmp(const HashTable *h, const Pixel pixel1, const Pixel pixel2)
 {
-    Pixel *pixel1=(Pixel *)&a;
-    Pixel *pixel2=(Pixel *)&b;
-    if (pixel1->c.r==pixel2->c.r) {
-        if (pixel1->c.g==pixel2->c.g) {
-            if (pixel1->c.b==pixel2->c.b) {
+    if (pixel1.c.r==pixel2.c.r) {
+        if (pixel1.c.g==pixel2.c.g) {
+            if (pixel1.c.b==pixel2.c.b) {
                 return 0;
             } else {
-                return (int)(pixel1->c.b)-(int)(pixel2->c.b);
+                return (int)(pixel1.c.b)-(int)(pixel2.c.b);
             }
         } else {
-            return (int)(pixel1->c.g)-(int)(pixel2->c.g);
+            return (int)(pixel1.c.g)-(int)(pixel2.c.g);
         }
     } else {
-        return (int)(pixel1->c.r)-(int)(pixel2->c.r);
+        return (int)(pixel1.c.r)-(int)(pixel2.c.r);
     }
 }
 
-static unsigned long
-pixel_hash(const HashTable h,const void *p)
+static uint32_t
+pixel_hash(const HashTable *h,const Pixel pixel)
 {
     PixelHashData *d=(PixelHashData *)hashtable_get_user_data(h);
-    Pixel *pixel=(Pixel *)&p;
-    unsigned long hash=PIXEL_HASH(pixel->c.r>>d->scale,
-                                  pixel->c.g>>d->scale,
-                                  pixel->c.b>>d->scale);
-    return hash;
+    return PIXEL_HASH(pixel.c.r>>d->scale, pixel.c.g>>d->scale, pixel.c.b>>d->scale);
 }
 
 static int
-pixel_cmp(const HashTable h,const void *a,const void *b)
+pixel_cmp(const HashTable *h,const Pixel pixel1, const Pixel pixel2)
 {
     PixelHashData *d=(PixelHashData *)hashtable_get_user_data(h);
-    Pixel *pixel1=(Pixel *)&a;
-    Pixel *pixel2=(Pixel *)&b;
-    unsigned long A,B;
-    A=PIXEL_HASH(pixel1->c.r>>d->scale,
-                 pixel1->c.g>>d->scale,
-                 pixel1->c.b>>d->scale);
-    B=PIXEL_HASH(pixel2->c.r>>d->scale,
-                 pixel2->c.g>>d->scale,
-                 pixel2->c.b>>d->scale);
+    uint32_t A,B;
+    A=PIXEL_HASH(pixel1.c.r>>d->scale, pixel1.c.g>>d->scale, pixel1.c.b>>d->scale);
+    B=PIXEL_HASH(pixel2.c.r>>d->scale, pixel2.c.g>>d->scale, pixel2.c.b>>d->scale);
     return (A==B)?0:((A<B)?-1:1);
 }
 
 static void
-exists_count_func(const HashTable h, const void *key, void **val)
+exists_count_func(const HashTable *h, const Pixel key, uint32_t *val)
 {
-    (*(int *)val)+=1;
+    *val+=1;
 }
 
 static void
-new_count_func(const HashTable h, const void *key, void **val)
+new_count_func(const HashTable *h, const Pixel key, uint32_t *val)
 {
-    (*(int *)val)=1;
+    *val=1;
 }
 
 static void
-rehash_collide(HashTable h,
-               void **keyp,
-               void **valp,
-               void *newkey,
-               void *newval)
+rehash_collide(const HashTable *h,
+               Pixel *keyp,
+               uint32_t *valp,
+               Pixel newkey,
+               uint32_t newval)
 {
-   *valp=(void *)((*(int *)valp)+(*(int *)&newval));
+    *valp += newval;
 }
 
 /* %% */
 
-static HashTable
-create_pixel_hash(Pixel *pixelData,unsigned long nPixels)
+static HashTable *
+create_pixel_hash(Pixel *pixelData,uint32_t nPixels)
 {
    PixelHashData *d;
    HashTable *hash;
-   unsigned long i;
-   unsigned long timer,timer2,timer3;
+   uint32_t i;
+#ifndef NO_OUTPUT
+   uint32_t timer,timer2,timer3;
+#endif
 
    d=malloc(sizeof(PixelHashData));
    if (!d) return NULL;
    hash=hashtable_new(pixel_hash,pixel_cmp);
    hashtable_set_user_data(hash,d);
    d->scale=0;
+#ifndef NO_OUTPUT
    timer=timer3=clock();
+#endif
    for (i=0;i<nPixels;i++) {
       if (!hashtable_insert_or_update_computed(hash,
-                                              (void *)pixelData[i].v,
+                                              pixelData[i],
                                               new_count_func,
                                               exists_count_func)) {;
       }
@@ -180,14 +167,14 @@ create_pixel_hash(Pixel *pixelData,unsigned long nPixels)
          d->scale++;
 #ifndef NO_OUTPUT
          printf ("rehashing - new scale: %d\n",(int)d->scale);
-#endif
          timer2=clock();
-         hashtable_rehash_compute(hash,rehash_collide);
-         timer2=clock()-timer2;
-#ifndef NO_OUTPUT
-         printf ("rehash took %f sec\n",timer2/(double)CLOCKS_PER_SEC);
 #endif
+         hashtable_rehash_compute(hash,rehash_collide);
+#ifndef NO_OUTPUT
+         timer2=clock()-timer2;
+         printf ("rehash took %f sec\n",timer2/(double)CLOCKS_PER_SEC);
          timer+=timer2;
+#endif
       }
    }
 #ifndef NO_OUTPUT
@@ -200,7 +187,7 @@ create_pixel_hash(Pixel *pixelData,unsigned long nPixels)
 }
 
 static void
-destroy_pixel_hash(HashTable hash)
+destroy_pixel_hash(HashTable *hash)
 {
    PixelHashData *d=(PixelHashData *)hashtable_get_user_data(hash);
    if (d) free(d);
@@ -236,21 +223,19 @@ compute_box_volume(BoxNode *b)
 }
 
 static void
-hash_to_list(HashTable h, const void *key, const void *val, void *u)
+hash_to_list(const HashTable *h, const Pixel pixel, const uint32_t count, void *u)
 {
    PixelHashData *d=(PixelHashData *)hashtable_get_user_data(h);
    PixelList **pl=(PixelList **)u;
    PixelList *p;
-   Pixel *pixel=(Pixel *)&key;
    int i;
    Pixel q;
-   int count=*(int *)&val;
 
-   PIXEL_SCALE(pixel,&q,d->scale);
+   PIXEL_SCALE(&pixel,&q,d->scale);
 
    p=malloc(sizeof(PixelList));
    if (!p) return;
-   
+
    p->flag=0;
    p->p=q;
    p->count=count;
@@ -326,7 +311,7 @@ test_sorted(PixelList *pl[3])
 #endif
 
 static int
-box_heap_cmp(const Heap h, const void *A, const void *B)
+box_heap_cmp(const Heap *h, const void *A, const void *B)
 {
    BoxNode *a=(BoxNode *)A;
    BoxNode *b=(BoxNode *)B;
@@ -340,11 +325,11 @@ splitlists(PixelList *h[3],
            PixelList *t[3],
            PixelList *nh[2][3],
            PixelList *nt[2][3],
-           unsigned long nCount[2],
+           uint32_t nCount[2],
            int axis,
-           unsigned long pixelCount)
+           uint32_t pixelCount)
 {
-   unsigned long left;
+   uint32_t left;
 
    PixelList *l,*r,*c,*n;
    int i;
@@ -475,7 +460,7 @@ split(BoxNode *node)
    int i;
    PixelList *heads[2][3];
    PixelList *tails[2][3];
-   unsigned long newCounts[2];
+   uint32_t newCounts[2];
    BoxNode *left,*right;
 
    rh=node->head[0]->p.c.r;
@@ -499,7 +484,7 @@ split(BoxNode *node)
 #ifdef TEST_SPLIT
    printf ("along axis %d\n",axis+1);
 #endif
-   
+
 #ifdef TEST_SPLIT
    {
       PixelList *_prevTest,*_nextTest;
@@ -617,13 +602,13 @@ split(BoxNode *node)
 
 static BoxNode *
 median_cut(PixelList *hl[3],
-           unsigned long imPixelCount,
+           uint32_t imPixelCount,
            int nPixels)
 {
    PixelList *tl[3];
    int i;
    BoxNode *root;
-   Heap h;
+   Heap* h;
    BoxNode *thisNode;
 
    h=ImagingQuantHeapNew(box_heap_cmp);
@@ -700,7 +685,7 @@ checkContained(BoxNode *n,Pixel *pp)
 #endif
 
 static int
-annotate_hash_table(BoxNode *n,HashTable h,unsigned long *box)
+annotate_hash_table(BoxNode *n,HashTable *h,uint32_t *box)
 {
    PixelList *p;
    PixelHashData *d=(PixelHashData *)hashtable_get_user_data(h);
@@ -716,7 +701,7 @@ annotate_hash_table(BoxNode *n,HashTable h,unsigned long *box)
    }
    for (p=n->head[0];p;p=p->next[0]) {
       PIXEL_UNSCALE(&(p->p),&q,d->scale);
-      if (!hashtable_insert(h,(void *)q.v,(void *)*box)) {
+      if (!hashtable_insert(h,q,*box)) {
 #ifndef NO_OUTPUT
          printf ("hashtable insert failed\n");
 #endif
@@ -730,20 +715,20 @@ annotate_hash_table(BoxNode *n,HashTable h,unsigned long *box)
 static int
 _sort_ulong_ptr_keys(const void *a, const void *b)
 {
-   unsigned long A=**(unsigned long **)a;
-   unsigned long B=**(unsigned long **)b;
+   uint32_t A=**(uint32_t **)a;
+   uint32_t B=**(uint32_t **)b;
    return (A==B)?0:((A<B)?-1:+1);
 }
 
 static int
-resort_distance_tables(unsigned long *avgDist,
-                       unsigned long **avgDistSortKey,
+resort_distance_tables(uint32_t *avgDist,
+                       uint32_t **avgDistSortKey,
                        Pixel *p,
-                       unsigned long nEntries)
+                       uint32_t nEntries)
 {
-   unsigned long i,j,k;
-   unsigned long **skRow;
-   unsigned long *skElt;
+   uint32_t i,j,k;
+   uint32_t **skRow;
+   uint32_t *skElt;
 
    for (i=0;i<nEntries;i++) {
       avgDist[i*nEntries+i]=0;
@@ -766,12 +751,12 @@ resort_distance_tables(unsigned long *avgDist,
 }
 
 static int
-build_distance_tables(unsigned long *avgDist,
-                      unsigned long **avgDistSortKey,
+build_distance_tables(uint32_t *avgDist,
+                      uint32_t **avgDistSortKey,
                       Pixel *p,
-                      unsigned long nEntries)
+                      uint32_t nEntries)
 {
-   unsigned long i,j;
+   uint32_t i,j;
 
    for (i=0;i<nEntries;i++) {
       avgDist[i*nEntries+i]=0;
@@ -786,7 +771,7 @@ build_distance_tables(unsigned long *avgDist,
    for (i=0;i<nEntries;i++) {
       qsort(avgDistSortKey+i*nEntries,
             nEntries,
-            sizeof(unsigned long *),
+            sizeof(uint32_t *),
             _sort_ulong_ptr_keys);
    }
    return 1;
@@ -794,23 +779,23 @@ build_distance_tables(unsigned long *avgDist,
 
 static int
 map_image_pixels(Pixel *pixelData,
-                 unsigned long nPixels,
+                 uint32_t nPixels,
                  Pixel *paletteData,
-                 unsigned long nPaletteEntries,
-                 unsigned long *avgDist,
-                 unsigned long **avgDistSortKey,
-                 unsigned long *pixelArray)
+                 uint32_t nPaletteEntries,
+                 uint32_t *avgDist,
+                 uint32_t **avgDistSortKey,
+                 uint32_t *pixelArray)
 {
-   unsigned long *aD,**aDSK;
-   unsigned long idx;
-   unsigned long i,j;
-   unsigned long bestdist,bestmatch,dist;
-   unsigned long initialdist;
-   HashTable h2;
+   uint32_t *aD,**aDSK;
+   uint32_t idx;
+   uint32_t i,j;
+   uint32_t bestdist,bestmatch,dist;
+   uint32_t initialdist;
+   HashTable *h2;
 
    h2=hashtable_new(unshifted_pixel_hash,unshifted_pixel_cmp);
    for (i=0;i<nPixels;i++) {
-      if (!hashtable_lookup(h2,(void *)pixelData[i].v,(void **)&bestmatch)) {
+      if (!hashtable_lookup(h2,pixelData[i],&bestmatch)) {
          bestmatch=0;
          initialdist=_DISTSQR(paletteData+bestmatch,pixelData+i);
          bestdist=initialdist;
@@ -829,7 +814,7 @@ map_image_pixels(Pixel *pixelData,
                break;
             }
          }
-         hashtable_insert(h2,(void *)pixelData[i].v,(void *)bestmatch);
+         hashtable_insert(h2,pixelData[i],bestmatch);
       }
       pixelArray[i]=bestmatch;
    }
@@ -840,26 +825,26 @@ map_image_pixels(Pixel *pixelData,
 static int
 map_image_pixels_from_quantized_pixels(
     Pixel *pixelData,
-    unsigned long nPixels,
+    uint32_t nPixels,
     Pixel *paletteData,
-    unsigned long nPaletteEntries,
-    unsigned long *avgDist,
-    unsigned long **avgDistSortKey,
-    unsigned long *pixelArray,
-    unsigned long *avg[3],
-    unsigned long *count)
+    uint32_t nPaletteEntries,
+    uint32_t *avgDist,
+    uint32_t **avgDistSortKey,
+    uint32_t *pixelArray,
+    uint32_t *avg[3],
+    uint32_t *count)
 {
-   unsigned long *aD,**aDSK;
-   unsigned long idx;
-   unsigned long i,j;
-   unsigned long bestdist,bestmatch,dist;
-   unsigned long initialdist;
-   HashTable h2;
+   uint32_t *aD,**aDSK;
+   uint32_t idx;
+   uint32_t i,j;
+   uint32_t bestdist,bestmatch,dist;
+   uint32_t initialdist;
+   HashTable *h2;
    int changes=0;
 
    h2=hashtable_new(unshifted_pixel_hash,unshifted_pixel_cmp);
    for (i=0;i<nPixels;i++) {
-      if (!hashtable_lookup(h2,(void *)pixelData[i].v,(void **)&bestmatch)) {
+      if (!hashtable_lookup(h2,pixelData[i],&bestmatch)) {
          bestmatch=pixelArray[i];
          initialdist=_DISTSQR(paletteData+bestmatch,pixelData+i);
          bestdist=initialdist;
@@ -878,7 +863,7 @@ map_image_pixels_from_quantized_pixels(
                break;
             }
          }
-         hashtable_insert(h2,(void *)pixelData[i].v,(void *)bestmatch);
+         hashtable_insert(h2,pixelData[i],bestmatch);
       }
       if (pixelArray[i]!=bestmatch) {
          changes++;
@@ -900,29 +885,29 @@ map_image_pixels_from_quantized_pixels(
 static int
 map_image_pixels_from_median_box(
     Pixel *pixelData,
-    unsigned long nPixels,
+    uint32_t nPixels,
     Pixel *paletteData,
-    unsigned long nPaletteEntries,
+    uint32_t nPaletteEntries,
     HashTable *medianBoxHash,
-    unsigned long *avgDist,
-    unsigned long **avgDistSortKey,
-    unsigned long *pixelArray)
+    uint32_t *avgDist,
+    uint32_t **avgDistSortKey,
+    uint32_t *pixelArray)
 {
-   unsigned long *aD,**aDSK;
-   unsigned long idx;
-   unsigned long i,j;
-   unsigned long bestdist,bestmatch,dist;
-   unsigned long initialdist;
-   HashTable h2;
-   int pixelVal;
+   uint32_t *aD,**aDSK;
+   uint32_t idx;
+   uint32_t i,j;
+   uint32_t bestdist,bestmatch,dist;
+   uint32_t initialdist;
+   HashTable *h2;
+   uint32_t pixelVal;
 
    h2=hashtable_new(unshifted_pixel_hash,unshifted_pixel_cmp);
    for (i=0;i<nPixels;i++) {
-      if (hashtable_lookup(h2,(void *)pixelData[i].v,(void **)&pixelVal)) {
+      if (hashtable_lookup(h2,pixelData[i],&pixelVal)) {
          pixelArray[i]=pixelVal;
          continue;
       }
-      if (!hashtable_lookup(medianBoxHash,(void *)pixelData[i].v,(void **)&pixelVal)) {
+      if (!hashtable_lookup(medianBoxHash,pixelData[i],&pixelVal)) {
 #ifndef NO_OUTPUT
          printf ("pixel lookup failed\n");
 #endif
@@ -947,7 +932,7 @@ map_image_pixels_from_median_box(
          }
       }
       pixelArray[i]=bestmatch;
-      hashtable_insert(h2,(void *)pixelData[i].v,(void *)bestmatch);
+      hashtable_insert(h2,pixelData[i],bestmatch);
    }
    hashtable_free(h2);
    return 1;
@@ -956,27 +941,27 @@ map_image_pixels_from_median_box(
 static int
 compute_palette_from_median_cut(
     Pixel *pixelData,
-    unsigned long nPixels,
-    HashTable medianBoxHash,
+    uint32_t nPixels,
+    HashTable *medianBoxHash,
     Pixel **palette,
-    unsigned long nPaletteEntries)
+    uint32_t nPaletteEntries)
 {
-   unsigned long i;
-   unsigned long paletteEntry;
+   uint32_t i;
+   uint32_t paletteEntry;
    Pixel *p;
-   unsigned long *avg[3];
-   unsigned long *count;
-   
+   uint32_t *avg[3];
+   uint32_t *count;
+
    *palette=NULL;
-   if (!(count=malloc(sizeof(unsigned long)*nPaletteEntries))) {
+   if (!(count=malloc(sizeof(uint32_t)*nPaletteEntries))) {
       return 0;
    }
-   memset(count,0,sizeof(unsigned long)*nPaletteEntries);
+   memset(count,0,sizeof(uint32_t)*nPaletteEntries);
    for(i=0;i<3;i++) {
       avg[i]=NULL;
    }
    for(i=0;i<3;i++) {
-      if (!(avg[i]=malloc(sizeof(unsigned long)*nPaletteEntries))) {
+      if (!(avg[i]=malloc(sizeof(uint32_t)*nPaletteEntries))) {
          for(i=0;i<3;i++) {
             if (avg[i]) free (avg[i]);
          }
@@ -985,7 +970,7 @@ compute_palette_from_median_cut(
       }
    }
    for(i=0;i<3;i++) {
-      memset(avg[i],0,sizeof(unsigned long)*nPaletteEntries);
+      memset(avg[i],0,sizeof(uint32_t)*nPaletteEntries);
    }
    for (i=0;i<nPixels;i++) {
 #ifdef TEST_SPLIT_INTEGRITY
@@ -997,7 +982,7 @@ compute_palette_from_median_cut(
          return 0;
       }
 #endif
-      if (!hashtable_lookup(medianBoxHash,(void *)pixelData[i].v,(void **)&paletteEntry)) {
+      if (!hashtable_lookup(medianBoxHash,pixelData[i],&paletteEntry)) {
 #ifndef NO_OUTPUT
          printf ("pixel lookup failed\n");
 #endif
@@ -1038,11 +1023,11 @@ compute_palette_from_median_cut(
 static int
 recompute_palette_from_averages(
     Pixel *palette,
-    unsigned long nPaletteEntries,
-    unsigned long *avg[3],
-    unsigned long *count)
+    uint32_t nPaletteEntries,
+    uint32_t *avg[3],
+    uint32_t *count)
 {
-    unsigned long i;
+    uint32_t i;
 
     for (i=0;i<nPaletteEntries;i++) {
         palette[i].c.r=(int)(.5+(double)avg[0][i]/(double)count[i]);
@@ -1055,18 +1040,18 @@ recompute_palette_from_averages(
 static int
 compute_palette_from_quantized_pixels(
     Pixel *pixelData,
-    unsigned long nPixels,
+    uint32_t nPixels,
     Pixel *palette,
-    unsigned long nPaletteEntries,
-    unsigned long *avg[3],
-    unsigned long *count,
-    unsigned long *qp)
+    uint32_t nPaletteEntries,
+    uint32_t *avg[3],
+    uint32_t *count,
+    uint32_t *qp)
 {
-   unsigned long i;
+   uint32_t i;
 
-   memset(count,0,sizeof(unsigned long)*nPaletteEntries);
+   memset(count,0,sizeof(uint32_t)*nPaletteEntries);
    for(i=0;i<3;i++) {
-      memset(avg[i],0,sizeof(unsigned long)*nPaletteEntries);
+      memset(avg[i],0,sizeof(uint32_t)*nPaletteEntries);
    }
    for (i=0;i<nPixels;i++) {
       if (qp[i]>=nPaletteEntries) {
@@ -1090,35 +1075,35 @@ compute_palette_from_quantized_pixels(
 
 static int
 k_means(Pixel *pixelData,
-        unsigned long nPixels,
+        uint32_t nPixels,
         Pixel *paletteData,
-        unsigned long nPaletteEntries,
-        unsigned long *qp,
+        uint32_t nPaletteEntries,
+        uint32_t *qp,
         int threshold)
 {
-   unsigned long *avg[3];
-   unsigned long *count;
-   unsigned long i;
-   unsigned long *avgDist;
-   unsigned long **avgDistSortKey;
+   uint32_t *avg[3];
+   uint32_t *count;
+   uint32_t i;
+   uint32_t *avgDist;
+   uint32_t **avgDistSortKey;
    int changes;
    int built=0;
-   
-   if (!(count=malloc(sizeof(unsigned long)*nPaletteEntries))) {
+
+   if (!(count=malloc(sizeof(uint32_t)*nPaletteEntries))) {
       return 0;
    }
    for(i=0;i<3;i++) {
       avg[i]=NULL;
    }
    for(i=0;i<3;i++) {
-      if (!(avg[i]=malloc(sizeof(unsigned long)*nPaletteEntries))) {
+      if (!(avg[i]=malloc(sizeof(uint32_t)*nPaletteEntries))) {
          goto error_1;
       }
    }
-   avgDist=malloc(sizeof(unsigned long)*nPaletteEntries*nPaletteEntries);
+   avgDist=malloc(sizeof(uint32_t)*nPaletteEntries*nPaletteEntries);
    if (!avgDist) { goto error_1; }
 
-   avgDistSortKey=malloc(sizeof(unsigned long *)*nPaletteEntries*nPaletteEntries);
+   avgDistSortKey=malloc(sizeof(uint32_t *)*nPaletteEntries*nPaletteEntries);
    if (!avgDistSortKey) { goto error_2; }
 
 #ifndef NO_OUTPUT
@@ -1171,26 +1156,26 @@ error_1:
 
 int
 quantize(Pixel *pixelData,
-         unsigned long nPixels,
-         unsigned long nQuantPixels,
+         uint32_t nPixels,
+         uint32_t nQuantPixels,
          Pixel **palette,
-         unsigned long *paletteLength,
-         unsigned long **quantizedPixels,
+         uint32_t *paletteLength,
+         uint32_t **quantizedPixels,
          int kmeans)
 {
    PixelList *hl[3];
-   HashTable h;
+   HashTable *h;
    BoxNode *root;
-   unsigned long i;
-   unsigned long *qp;
-   unsigned long nPaletteEntries;
-   
-   unsigned long *avgDist;
-   unsigned long **avgDistSortKey;
+   uint32_t i;
+   uint32_t *qp;
+   uint32_t nPaletteEntries;
+
+   uint32_t *avgDist;
+   uint32_t **avgDistSortKey;
    Pixel *p;
-   
+
 #ifndef NO_OUTPUT
-   unsigned long timer,timer2;
+   uint32_t timer,timer2;
 #endif
 
 #ifndef NO_OUTPUT
@@ -1265,13 +1250,13 @@ quantize(Pixel *pixelData,
    free_box_tree(root);
    root=NULL;
 
-   qp=malloc(sizeof(unsigned long)*nPixels);
+   qp=malloc(sizeof(uint32_t)*nPixels);
    if (!qp) { goto error_4; }
 
-   avgDist=malloc(sizeof(unsigned long)*nPaletteEntries*nPaletteEntries);
+   avgDist=malloc(sizeof(uint32_t)*nPaletteEntries*nPaletteEntries);
    if (!avgDist) { goto error_5; }
 
-   avgDistSortKey=malloc(sizeof(unsigned long *)*nPaletteEntries*nPaletteEntries);
+   avgDistSortKey=malloc(sizeof(uint32_t *)*nPaletteEntries*nPaletteEntries);
    if (!avgDistSortKey) { goto error_6; }
 
    if (!build_distance_tables(avgDist,avgDistSortKey,p,nPaletteEntries)) {
@@ -1285,12 +1270,12 @@ quantize(Pixel *pixelData,
 #ifdef TEST_NEAREST_NEIGHBOUR
 #include <math.h>
    {
-      unsigned long bestmatch,bestdist,dist;
-      HashTable h2;
+      uint32_t bestmatch,bestdist,dist;
+      HashTable *h2;
       printf ("nearest neighbour search (full search)..."); fflush(stdout); timer=clock();
       h2=hashtable_new(unshifted_pixel_hash,unshifted_pixel_cmp);
       for (i=0;i<nPixels;i++) {
-         if (hashtable_lookup(h2,(void *)pixelData[i].v,(void **)&paletteEntry)) {
+         if (hashtable_lookup(h2,pixelData[i],&paletteEntry)) {
             bestmatch=paletteEntry;
          } else {
             bestmatch=0;
@@ -1311,7 +1296,7 @@ quantize(Pixel *pixelData,
                   bestmatch=j;
                }
             }
-            hashtable_insert(h2,(void *)pixelData[i].v,(void *)bestmatch);
+            hashtable_insert(h2,pixelData[i],bestmatch);
          }
          if (qp[i]!=bestmatch ) {
             printf ("discrepancy in matching algorithms pixel %d [%d %d] %f %f\n",
@@ -1374,53 +1359,52 @@ error_0:
 typedef struct {
    Pixel new;
    Pixel furthest;
-   unsigned long furthestDistance;
+   uint32_t furthestDistance;
    int secondPixel;
 } DistanceData;
 
 static void
-compute_distances(const HashTable h, const void *key, void **val, void *u)
+compute_distances(const HashTable *h, const Pixel pixel, uint32_t *dist, void *u)
 {
    DistanceData *data=(DistanceData *)u;
-   Pixel *pixel=(Pixel *)&key;
-   unsigned long oldDist=*(unsigned long *)val;
-   unsigned long newDist;
-   newDist=_DISTSQR(&(data->new),pixel);
+   uint32_t oldDist=*dist;
+   uint32_t newDist;
+   newDist=_DISTSQR(&(data->new),&pixel);
    if (data->secondPixel || newDist<oldDist) {
-      *(unsigned long *)val=newDist;
+      *dist=newDist;
       oldDist=newDist;
    }
    if (oldDist>data->furthestDistance) {
       data->furthestDistance=oldDist;
-      data->furthest.v=pixel->v;
+      data->furthest.v=pixel.v;
    }
 }
 
 int
 quantize2(Pixel *pixelData,
-          unsigned long nPixels,
-          unsigned long nQuantPixels,
+          uint32_t nPixels,
+          uint32_t nQuantPixels,
           Pixel **palette,
-          unsigned long *paletteLength,
-          unsigned long **quantizedPixels,
+          uint32_t *paletteLength,
+          uint32_t **quantizedPixels,
           int kmeans)
 {
-   HashTable h;
-   unsigned long i;
-   unsigned long mean[3];
+   HashTable *h;
+   uint32_t i;
+   uint32_t mean[3];
    Pixel *p;
    DistanceData data;
 
-   unsigned long *qp;
-   unsigned long *avgDist;
-   unsigned long **avgDistSortKey;
+   uint32_t *qp;
+   uint32_t *avgDist;
+   uint32_t **avgDistSortKey;
 
    p=malloc(sizeof(Pixel)*nQuantPixels);
    if (!p) return 0;
    mean[0]=mean[1]=mean[2]=0;
    h=hashtable_new(unshifted_pixel_hash,unshifted_pixel_cmp);
    for (i=0;i<nPixels;i++) {
-      hashtable_insert(h,(void *)pixelData[i].v,(void *)0xffffffff);
+      hashtable_insert(h,pixelData[i],0xffffffff);
       mean[0]+=pixelData[i].c.r;
       mean[1]+=pixelData[i].c.g;
       mean[2]+=pixelData[i].c.b;
@@ -1437,13 +1421,13 @@ quantize2(Pixel *pixelData,
    }
    hashtable_free(h);
 
-   qp=malloc(sizeof(unsigned long)*nPixels);
+   qp=malloc(sizeof(uint32_t)*nPixels);
    if (!qp) { goto error_1; }
 
-   avgDist=malloc(sizeof(unsigned long)*nQuantPixels*nQuantPixels);
+   avgDist=malloc(sizeof(uint32_t)*nQuantPixels*nQuantPixels);
    if (!avgDist) { goto error_2; }
 
-   avgDistSortKey=malloc(sizeof(unsigned long *)*nQuantPixels*nQuantPixels);
+   avgDistSortKey=malloc(sizeof(uint32_t *)*nQuantPixels*nQuantPixels);
    if (!avgDistSortKey) { goto error_3; }
 
    if (!build_distance_tables(avgDist,avgDistSortKey,p,nQuantPixels)) {
@@ -1481,10 +1465,12 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
     UINT8* pp;
     Pixel* p;
     Pixel* palette;
-    unsigned long paletteLength;
+    uint32_t paletteLength;
     int result;
-    unsigned long* newData;
+    uint32_t* newData;
     Imaging imOut;
+    int withAlpha = 0;
+    ImagingSectionCookie cookie;
 
     if (!im)
 	return ImagingError_ModeError();
@@ -1494,8 +1480,12 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         return (Imaging) ImagingError_ValueError("bad number of colors");
 
     if (strcmp(im->mode, "L") != 0 && strcmp(im->mode, "P") != 0 &&
-        strcmp(im->mode, "RGB"))
+        strcmp(im->mode, "RGB") != 0 && strcmp(im->mode, "RGBA") !=0)
         return ImagingError_ModeError();
+
+    /* only octree supports RGBA */
+    if (!strcmp(im->mode, "RGBA") && mode != 2)
+       return ImagingError_ModeError();
 
     p = malloc(sizeof(Pixel) * im->xsize * im->ysize);
     if (!p)
@@ -1529,7 +1519,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
                 p[i].c.b = pp[v*4+2];
             }
 
-    } else if (!strcmp(im->mode, "RGB")) {
+    } else if (!strcmp(im->mode, "RGB") || !strcmp(im->mode, "RGBA")) {
         /* true colour */
 
         for (i = y = 0; y < im->ysize; y++)
@@ -1540,6 +1530,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         free(p);
         return (Imaging) ImagingError_ValueError("internal error");
     }
+
+    ImagingSectionEnter(&cookie);
 
     switch (mode) {
     case 0:
@@ -1566,16 +1558,31 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
             kmeans
             );
         break;
+    case 2:
+        if (!strcmp(im->mode, "RGBA")) {
+            withAlpha = 1;
+        }
+        result = quantize_octree(
+            p,
+            im->xsize*im->ysize,
+            colors,
+            &palette,
+            &paletteLength,
+            &newData,
+            withAlpha
+            );
+        break;
     default:
         result = 0;
         break;
     }
 
     free(p);
+    ImagingSectionLeave(&cookie);
 
     if (result) {
-
         imOut = ImagingNew("P", im->xsize, im->ysize);
+        ImagingSectionEnter(&cookie);
 
         for (i = y = 0; y < im->ysize; y++)
             for (x=0; x < im->xsize; x++)
@@ -1589,7 +1596,11 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
             *pp++ = palette[i].c.r;
             *pp++ = palette[i].c.g;
             *pp++ = palette[i].c.b;
-            *pp++ = 255;
+            if (withAlpha) {
+               *pp++ = palette[i].c.a;
+            } else {
+               *pp++ = 255;
+            }
         }
         for (; i < 256; i++) {
             *pp++ = 0;
@@ -1598,7 +1609,12 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
             *pp++ = 255;
         }
 
+        if (withAlpha) {
+            strcpy(imOut->palette->mode, "RGBA");
+        }
+
         free(palette);
+        ImagingSectionLeave(&cookie);
 
         return imOut;
 

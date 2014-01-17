@@ -12,17 +12,21 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
-typedef void *HashTable;
-typedef void *Heap;
+#ifdef _MSC_VER
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int64 uint64_t;
+#else
+#include <stdint.h>
+#endif
 
-typedef unsigned long (*HashFunc)(const HashTable,const void *);
-typedef int (*HashCmpFunc)(const HashTable,const void *,const void *);
-typedef void (*IteratorFunc)(const HashTable,const void *,const void *,void *);
-typedef void (*IteratorUpdateFunc)(const HashTable,const void *,void **,void *);
-typedef void (*DestroyFunc)(const HashTable,void *);
-typedef void (*ComputeFunc)(const HashTable,const void *,void **);
-typedef void (*CollisionFunc)(const HashTable,void **,void **,void *,void *);
-
-typedef int (*HeapCmpFunc)(const Heap,const void *,const void *);
+typedef union {
+   struct {
+      unsigned char r,g,b,a;
+   } c;
+   struct {
+      unsigned char v[4];
+   } a;
+   uint32_t v;
+} Pixel;
 
 #endif

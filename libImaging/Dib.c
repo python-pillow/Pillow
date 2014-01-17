@@ -126,7 +126,7 @@ ImagingNewDIB(const char *mode, int xsize, int ysize)
     /* Bind a palette to it as well (only required for 8-bit DIBs) */
     if (dib->pixelsize == 1) {
 	for (i = 0; i < 256; i++) {
-	    palette[i].rgbRed = 
+	    palette[i].rgbRed =
 	    palette[i].rgbGreen =
 	    palette[i].rgbBlue = i;
 	    palette[i].rgbReserved = 0;
@@ -181,7 +181,7 @@ ImagingNewDIB(const char *mode, int xsize, int ysize)
 			i++;
 		    }
 	    for (r = 1; r < 22-1; r++) {
-		/* Black and white are already provided by the cube. */ 
+		/* Black and white are already provided by the cube. */
 		pal->palPalEntry[i].peRed =
 		pal->palPalEntry[i].peGreen =
 		pal->palPalEntry[i].peBlue = r * 255 / (22-1);

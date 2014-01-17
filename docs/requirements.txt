@@ -1,0 +1,17 @@
+# requirements for working on docs
+
+# install pillow from master if you're into that, but RtD needs this
+pillow>=2.2.1
+
+Jinja2==2.7.1
+MarkupSafe==0.18
+Pygments==1.6
+Sphinx==1.1.3
+docopt==0.6.1
+docutils==0.11
+wsgiref==0.1.2
+sphinx-better-theme==0.1.5
+
+# livereload not strictly necessary but really useful (make livehtml)
+tornado==3.1.1
+livereload==1.0.1

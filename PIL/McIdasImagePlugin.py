@@ -19,10 +19,10 @@
 __version__ = "0.2"
 
 import struct
-import Image, ImageFile
+from PIL import Image, ImageFile
 
 def _accept(s):
-    return s[:8] == "\x00\x00\x00\x00\x00\x00\x00\x04"
+    return s[:8] == b"\x00\x00\x00\x00\x00\x00\x00\x04"
 
 ##
 # Image plugin for McIdas area images.

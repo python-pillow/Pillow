@@ -1,7 +1,7 @@
 /*
  * The Python Imaging Library
  * $Id$
- * 
+ *
  * declarations for the imaging core library
  *
  * Copyright (c) 1997-2005 by Secret Labs AB
@@ -40,6 +40,7 @@ extern "C" {
  * RGBA	    4		R, G, B, A
  * CMYK	    4		C, M, Y, K
  * YCbCr    4		Y, Cb, Cr, -
+ * Lab      4       L, a, b, -
  *
  * experimental modes (incomplete):
  * LA       4           L, -, -, A
@@ -72,10 +73,12 @@ typedef struct ImagingPaletteInstance* ImagingPalette;
 #define IMAGING_TYPE_FLOAT32 2
 #define IMAGING_TYPE_SPECIAL 3 /* check mode for details */
 
+#define IMAGING_MODE_LENGTH 6+1 /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
+
 struct ImagingMemoryInstance {
 
     /* Format */
-    char mode[4+1];	/* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK") */
+    char mode[IMAGING_MODE_LENGTH];	/* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
     int type;		/* Data type (IMAGING_TYPE_*) */
     int depth;		/* Depth (ignored in this version) */
     int bands;		/* Number of bands (1, 2, 3, or 4) */
@@ -127,7 +130,7 @@ struct ImagingAccessInstance {
 struct ImagingHistogramInstance {
 
     /* Format */
-    char mode[4+1];	/* Band names (of corresponding source image) */
+    char mode[IMAGING_MODE_LENGTH];	/* Band names (of corresponding source image) */
     int bands;		/* Number of bands (1, 3, or 4) */
 
     /* Data */
@@ -139,7 +142,7 @@ struct ImagingHistogramInstance {
 struct ImagingPaletteInstance {
 
     /* Format */
-    char mode[4+1];	/* Band names */
+    char mode[IMAGING_MODE_LENGTH];	/* Band names */
 
     /* Data */
     UINT8 palette[1024];/* Palette data (same format as image data) */
@@ -239,11 +242,13 @@ typedef int (*ImagingTransformFilter)(void* out, Imaging im,
 /* Image Manipulation Methods */
 /* -------------------------- */
 
+extern Imaging ImagingAlphaComposite(Imaging imIn1, Imaging imIn2);
 extern Imaging ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging ImagingCopy(Imaging im);
 extern Imaging ImagingConvert(Imaging im, const char* mode, ImagingPalette palette, int dither);
 extern Imaging ImagingConvertInPlace(Imaging im, const char* mode);
 extern Imaging ImagingConvertMatrix(Imaging im, const char *mode, float m[]);
+extern Imaging ImagingConvertTransparent(Imaging im, const char *mode, int r, int g, int b);
 extern Imaging ImagingCrop(Imaging im, int x0, int y0, int x1, int y1);
 extern Imaging ImagingExpand(Imaging im, int x, int y, int mode);
 extern Imaging ImagingFill(Imaging im, const void* ink);
@@ -288,16 +293,16 @@ extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
 extern Imaging ImagingStretch(Imaging imOut, Imaging imIn, int filter);
 extern Imaging ImagingTransformPerspective(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     double a[8], int filter, int fill);
 extern Imaging ImagingTransformAffine(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     double a[6], int filter, int fill);
 extern Imaging ImagingTransformQuad(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     double a[8], int filter, int fill);
 extern Imaging ImagingTransform(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     ImagingTransformMap transform, void* transform_data,
     ImagingTransformFilter filter, void* filter_data,
     int fill);
@@ -370,7 +375,7 @@ extern int ImagingOutlineLine(ImagingOutline outline, float x, float y);
 extern int ImagingOutlineCurve(ImagingOutline outline, float x1, float y1,
                                 float x2, float y2, float x3, float y3);
 extern int ImagingOutlineTransform(ImagingOutline outline, double a[6]);
-                                   
+
 extern int ImagingOutlineClose(ImagingOutline outline);
 
 /* Special effects */
@@ -414,11 +419,19 @@ extern int ImagingHexDecode(Imaging im, ImagingCodecState state,
 #ifdef	HAVE_LIBJPEG
 extern int ImagingJpegDecode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);
+extern int ImagingJpegDecodeCleanup(ImagingCodecState state);
+
 extern int ImagingJpegEncode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);
 #endif
 extern int ImagingLzwDecode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
+#ifdef	HAVE_LIBTIFF
+extern int ImagingLibTiffDecode(Imaging im, ImagingCodecState state,
+				UINT8* buffer, int bytes);
+extern int ImagingLibTiffEncode(Imaging im, ImagingCodecState state,
+				UINT8* buffer, int bytes);
+#endif
 #ifdef	HAVE_LIBMPEG
 extern int ImagingMpegDecode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # The Python Imaging Library
 # $Id$
@@ -39,8 +40,9 @@
 # write data directly to a socket.  Or something...
 #
 
+from __future__ import print_function
+
 from PIL import Image, ImageChops
-import string
 
 from PIL.GifImagePlugin import getheader, getdata
 
@@ -128,8 +130,8 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 3:
-        print "GIFMAKER -- create GIF animations"
-        print "Usage: gifmaker infile outfile"
+        print("GIFMAKER -- create GIF animations")
+        print("Usage: gifmaker infile outfile")
         sys.exit(1)
 
     compress(sys.argv[1], sys.argv[2])

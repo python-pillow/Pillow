@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # The Python Imaging Library
 # $Id$
@@ -6,7 +7,11 @@
 # as a dynamically updated overlay
 #
 
-from Tkinter import *
+try:
+    from tkinter import *
+except ImportError:
+    from Tkinter import *
+
 from PIL import Image, ImageTk
 import sys
 

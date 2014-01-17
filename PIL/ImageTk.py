@@ -25,15 +25,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Tkinter, Image
+try:
+    import tkinter
+except ImportError:
+    import Tkinter
+    tkinter = Tkinter
+    del Tkinter
 
-##
-# The <b>ImageTk</b> module contains support to create and modify
-# Tkinter <b>BitmapImage</b> and <b>PhotoImage</b> objects.
-# <p>
-# For examples, see the demo programs in the <i>Scripts</i>
-# directory.
-##
+from PIL import Image
+
 
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
@@ -45,48 +45,45 @@ def _pilbitmap_check():
     if _pilbitmap_ok is None:
         try:
             im = Image.new("1", (1,1))
-            Tkinter.BitmapImage(data="PIL:%d" % im.im.id)
+            tkinter.BitmapImage(data="PIL:%d" % im.im.id)
             _pilbitmap_ok = 1
-        except Tkinter.TclError:
+        except tkinter.TclError:
             _pilbitmap_ok = 0
     return _pilbitmap_ok
 
 # --------------------------------------------------------------------
 # PhotoImage
 
-##
-# Creates a Tkinter-compatible photo image.  This can be used
-# everywhere Tkinter expects an image object.  If the image is an RGBA
-# image, pixels having alpha 0 are treated as transparent.
-
 class PhotoImage:
+    """
+    A Tkinter-compatible photo image.  This can be used
+    everywhere Tkinter expects an image object.  If the image is an RGBA
+    image, pixels having alpha 0 are treated as transparent.
 
-    ##
-    # Create a photo image object. The constructor takes either
-    # a PIL image, or a mode and a size.  Alternatively, you can
-    # use the <b>file</b> or <b>data</b> options to initialize
-    # the photo image object.
-    # <p>
-    # @def __init__(image=None, size=None, **options)
-    # @param image Either a PIL image, or a mode string.  If a
-    #    mode string is used, a size must also be given.
-    # @param size If the first argument is a mode string, this
-    #    defines the size of the image.
-    # @keyparam file A filename to load the image from (using
-    #    Image.open(file)).
-    # @keyparam data An 8-bit string containing image data (as
-    #    loaded from an image file).
+    The constructor takes either a PIL image, or a mode and a size.
+    Alternatively, you can use the **file** or **data** options to initialize
+    the photo image object.
+
+    :param image: Either a PIL image, or a mode string.  If a mode string is
+                  used, a size must also be given.
+    :param size: If the first argument is a mode string, this defines the size
+                 of the image.
+    :keyword file: A filename to load the image from (using
+                   ``Image.open(file)``).
+    :keyword data: An 8-bit string containing image data (as loaded from an
+                   image file).
+    """
 
     def __init__(self, image=None, size=None, **kw):
 
         # Tk compatibility: file or data
         if image is None:
-            if kw.has_key("file"):
+            if "file" in kw:
                 image = Image.open(kw["file"])
                 del kw["file"]
-            elif kw.has_key("data"):
-                from StringIO import StringIO
-                image = Image.open(StringIO(kw["data"]))
+            elif "data" in kw:
+                from io import BytesIO
+                image = Image.open(BytesIO(kw["data"]))
                 del kw["data"]
 
         if hasattr(image, "mode") and hasattr(image, "size"):
@@ -110,7 +107,7 @@ class PhotoImage:
 
         self.__mode = mode
         self.__size = size
-        self.__photo = apply(Tkinter.PhotoImage, (), kw)
+        self.__photo = tkinter.PhotoImage(**kw)
         self.tk = self.__photo.tk
         if image:
             self.paste(image)
@@ -123,44 +120,48 @@ class PhotoImage:
         except:
             pass # ignore internal errors
 
-    ##
-    # Get the Tkinter photo image identifier.  This method is
-    # automatically called by Tkinter whenever a PhotoImage object is
-    # passed to a Tkinter method.
-    #
-    # @return A Tkinter photo image identifier (a string).
 
     def __str__(self):
+        """
+        Get the Tkinter photo image identifier.  This method is automatically
+        called by Tkinter whenever a PhotoImage object is passed to a Tkinter
+        method.
+
+        :return: A Tkinter photo image identifier (a string).
+        """
         return str(self.__photo)
 
-    ##
-    # Get the width of the image.
-    #
-    # @return The width, in pixels.
 
     def width(self):
+        """
+        Get the width of the image.
+
+        :return: The width, in pixels.
+        """
         return self.__size[0]
 
-    ##
-    # Get the height of the image.
-    #
-    # @return The height, in pixels.
 
     def height(self):
+        """
+        Get the height of the image.
+
+        :return: The height, in pixels.
+        """
         return self.__size[1]
 
-    ##
-    # Paste a PIL image into the photo image.  Note that this can
-    # be very slow if the photo image is displayed.
-    #
-    # @param im A PIL image.  The size must match the target region.
-    #    If the mode does not match, the image is converted to the
-    #    mode of the bitmap image.
-    # @param box A 4-tuple defining the left, upper, right, and
-    #    lower pixel coordinate.  If None is given instead of a
-    #    tuple, all of the image is assumed.
 
     def paste(self, im, box=None):
+        """
+        Paste a PIL image into the photo image.  Note that this can
+        be very slow if the photo image is displayed.
+
+        :param im: A PIL image. The size must match the target region.  If the
+                   mode does not match, the image is converted to the mode of
+                   the bitmap image.
+        :param box: A 4-tuple defining the left, upper, right, and lower pixel
+                    coordinate.  If None is given instead of a tuple, all of
+                    the image is assumed.
+        """
 
         # convert to blittable
         im.load()
@@ -175,50 +176,47 @@ class PhotoImage:
 
         try:
             tk.call("PyImagingPhoto", self.__photo, block.id)
-        except Tkinter.TclError, v:
+        except tkinter.TclError as v:
             # activate Tkinter hook
             try:
-                import _imagingtk
+                from PIL import _imagingtk
                 try:
                     _imagingtk.tkinit(tk.interpaddr(), 1)
                 except AttributeError:
                     _imagingtk.tkinit(id(tk), 0)
                 tk.call("PyImagingPhoto", self.__photo, block.id)
-            except (ImportError, AttributeError, Tkinter.TclError):
+            except (ImportError, AttributeError, tkinter.TclError):
                 raise # configuration problem; cannot attach to Tkinter
 
 # --------------------------------------------------------------------
 # BitmapImage
 
-##
-# Create a Tkinter-compatible bitmap image.  This can be used
-# everywhere Tkinter expects an image object.
 
 class BitmapImage:
+    """
 
-    ##
-    # Create a Tkinter-compatible bitmap image.
-    # <p>
-    # The given image must have mode "1".  Pixels having value 0 are
-    # treated as transparent.  Options, if any, are passed on to
-    # Tkinter.  The most commonly used option is <b>foreground</b>,
-    # which is used to specify the colour for the non-transparent
-    # parts.  See the Tkinter documentation for information on how to
-    # specify colours.
-    #
-    # @def __init__(image=None, **options)
-    # @param image A PIL image.
+    A Tkinter-compatible bitmap image.  This can be used everywhere Tkinter
+    expects an image object.
+
+    The given image must have mode "1".  Pixels having value 0 are treated as
+    transparent.  Options, if any, are passed on to Tkinter.  The most commonly
+    used option is **foreground**, which is used to specify the color for the
+    non-transparent parts.  See the Tkinter documentation for information on
+    how to specify colours.
+
+    :param image: A PIL image.
+    """
 
     def __init__(self, image=None, **kw):
 
         # Tk compatibility: file or data
         if image is None:
-            if kw.has_key("file"):
+            if "file" in kw:
                 image = Image.open(kw["file"])
                 del kw["file"]
-            elif kw.has_key("data"):
-                from StringIO import StringIO
-                image = Image.open(StringIO(kw["data"]))
+            elif "data" in kw:
+                from io import BytesIO
+                image = Image.open(BytesIO(kw["data"]))
                 del kw["data"]
 
         self.__mode = image.mode
@@ -232,7 +230,7 @@ class BitmapImage:
         else:
             # slow but safe way
             kw["data"] = image.tobitmap()
-        self.__photo = apply(Tkinter.BitmapImage, (), kw)
+        self.__photo = tkinter.BitmapImage(**kw)
 
     def __del__(self):
         name = self.__photo.name
@@ -242,36 +240,38 @@ class BitmapImage:
         except:
             pass # ignore internal errors
 
-    ##
-    # Get the width of the image.
-    #
-    # @return The width, in pixels.
 
     def width(self):
+        """
+        Get the width of the image.
+
+        :return: The width, in pixels.
+        """
         return self.__size[0]
 
-    ##
-    # Get the height of the image.
-    #
-    # @return The height, in pixels.
 
     def height(self):
+        """
+        Get the height of the image.
+
+        :return: The height, in pixels.
+        """
         return self.__size[1]
 
-    ##
-    # Get the Tkinter bitmap image identifier.  This method is
-    # automatically called by Tkinter whenever a BitmapImage object
-    # is passed to a Tkinter method.
-    #
-    # @return A Tkinter bitmap image identifier (a string).
 
     def __str__(self):
+        """
+        Get the Tkinter bitmap image identifier.  This method is automatically
+        called by Tkinter whenever a BitmapImage object is passed to a Tkinter
+        method.
+
+        :return: A Tkinter bitmap image identifier (a string).
+        """
         return str(self.__photo)
 
-##
-# Copies the contents of a PhotoImage to a PIL image memory.
 
 def getimage(photo):
+    """Copies the contents of a PhotoImage to a PIL image memory."""
     photo.tk.call("PyImagingPhotoGet", photo)
 
 # --------------------------------------------------------------------
@@ -279,18 +279,18 @@ def getimage(photo):
 
 def _show(image, title):
 
-    class UI(Tkinter.Label):
+    class UI(tkinter.Label):
         def __init__(self, master, im):
             if im.mode == "1":
                 self.image = BitmapImage(im, foreground="white", master=master)
             else:
                 self.image = PhotoImage(im, master=master)
-            Tkinter.Label.__init__(self, master, image=self.image,
+            tkinter.Label.__init__(self, master, image=self.image,
                 bg="black", bd=0)
 
-    if not Tkinter._default_root:
-        raise IOError, "tkinter not initialized"
-    top = Tkinter.Toplevel()
+    if not tkinter._default_root:
+        raise IOError("tkinter not initialized")
+    top = tkinter.Toplevel()
     if title:
         top.title(title)
     UI(top, image).pack()

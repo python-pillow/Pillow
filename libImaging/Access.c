@@ -17,7 +17,7 @@
 #define ACCESS_TABLE_HASH 30197
 
 static struct ImagingAccessInstance access_table[ACCESS_TABLE_SIZE];
-  
+
 static inline UINT32
 hash(const char* mode)
 {
@@ -237,6 +237,7 @@ ImagingAccessInit()
     ADD("RGBX", line_32, get_pixel_32, put_pixel_32);
     ADD("CMYK", line_32, get_pixel_32, put_pixel_32);
     ADD("YCbCr", line_32, get_pixel_32, put_pixel_32);
+    ADD("LAB", line_32, get_pixel_32, put_pixel_32);
 }
 
 ImagingAccess

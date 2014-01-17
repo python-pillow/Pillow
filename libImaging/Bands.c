@@ -1,7 +1,7 @@
-/* 
+/*
  * The Python Imaging Library
  * $Id$
- * 
+ *
  * stuff to extract and paste back individual bands
  *
  * history:

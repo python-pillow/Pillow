@@ -75,7 +75,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int bytes)
 	    state->errcode = IMAGING_CODEC_CONFIG;
 	    return -1;
 	}
-					
+
 	/* Clear code */
 	context->clear = 1 << context->bits;
 

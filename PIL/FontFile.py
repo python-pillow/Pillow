@@ -15,7 +15,7 @@
 #
 
 import os
-import Image
+from PIL import Image, _binary
 
 import marshal
 
@@ -31,7 +31,7 @@ def puti16(fp, values):
     for v in values:
         if v < 0:
             v = v + 65536
-        fp.write(chr(v>>8&255) + chr(v&255))
+        fp.write(_binary.o16be(v))
 
 ##
 # Base class for raster font file handlers.
@@ -106,9 +106,9 @@ class FontFile:
 
         # font metrics
         fp = open(os.path.splitext(filename)[0] + ".pil", "wb")
-        fp.write("PILfont\n")
-        fp.write(";;;;;;%d;\n" % self.ysize) # HACK!!!
-        fp.write("DATA\n")
+        fp.write(b"PILfont\n")
+        fp.write((";;;;;;%d;\n" % self.ysize).encode('ascii')) # HACK!!!
+        fp.write(b"DATA\n")
         for id in range(256):
             m = self.metrics[id]
             if not m:
@@ -128,13 +128,13 @@ class FontFile:
         data = marshal.dumps((self.metrics, self.info))
 
         if zlib:
-            data = "z" + zlib.compress(data, 9)
+            data = b"z" + zlib.compress(data, 9)
         else:
-            data = "u" + data
+            data = b"u" + data
 
         fp = open(os.path.splitext(filename)[0] + ".pil", "wb")
 
-        fp.write("PILfont2\n" + self.name + "\n" + "DATA\n")
+        fp.write(b"PILfont2\n" + self.name + "\n" + "DATA\n")
 
         fp.write(data)
 

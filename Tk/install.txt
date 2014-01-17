@@ -1,5 +1,5 @@
 ====================================================================
-Using PIL With Tkinter 
+Using PIL With Tkinter
 ====================================================================
 
 Starting with 1.0 final (release candidate 2 and later, to be

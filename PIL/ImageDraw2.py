@@ -16,7 +16,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image, ImageColor, ImageDraw, ImageFont, ImagePath
+from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePath
 
 class Pen:
     def __init__(self, color, width=1, opacity=255):
@@ -68,7 +68,8 @@ class Draw:
         else:
             getattr(self.draw, op)(xy, fill=fill, outline=outline)
 
-    def settransform(self, (xoffset, yoffset)):
+    def settransform(self, offset):
+        (xoffset, yoffset) = offset
         self.transform = (1, 0, xoffset, 0, 1, yoffset)
 
     def arc(self, xy, start, end, *options):

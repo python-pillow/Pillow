@@ -20,14 +20,10 @@
 __version__ = "0.3"
 
 
-import Image, ImageFile, ImagePalette
+from PIL import Image, ImageFile, ImagePalette, _binary
 
-
-def i16(c):
-    return ord(c[1]) + (ord(c[0])<<8)
-
-def i32(c):
-    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
+i16 = _binary.i16be
+i32 = _binary.i32be
 
 
 def _accept(prefix):
@@ -46,7 +42,7 @@ class SunImageFile(ImageFile.ImageFile):
         # HEAD
         s = self.fp.read(32)
         if i32(s) != 0x59a66a95:
-            raise SyntaxError, "not an SUN raster file"
+            raise SyntaxError("not an SUN raster file")
 
         offset = 32
 
@@ -60,7 +56,7 @@ class SunImageFile(ImageFile.ImageFile):
         elif depth == 24:
             self.mode, rawmode = "RGB", "BGR"
         else:
-            raise SyntaxError, "unsupported mode"
+            raise SyntaxError("unsupported mode")
 
         compression = i32(s[20:24])
 
@@ -71,7 +67,7 @@ class SunImageFile(ImageFile.ImageFile):
             if self.mode == "L":
                 self.mode = rawmode = "P"
 
-        stride = (((self.size[0] * depth + 7) / 8) + 3) & (~3)
+        stride = (((self.size[0] * depth + 7) // 8) + 3) & (~3)
 
         if compression == 1:
             self.tile = [("raw", (0,0)+self.size, offset, (rawmode, stride))]

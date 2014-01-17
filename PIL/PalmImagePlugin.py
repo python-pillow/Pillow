@@ -9,7 +9,7 @@
 
 __version__ = "1.0"
 
-import Image, ImageFile
+from PIL import Image, ImageFile, _binary
 
 _Palm8BitColormapValues = (
     ( 255, 255, 255 ), ( 255, 204, 255 ), ( 255, 153, 255 ), ( 255, 102, 255 ),
@@ -80,7 +80,7 @@ _Palm8BitColormapValues = (
 # so build a prototype image to be used for palette resampling
 def build_prototype_image():
     image = Image.new("L", (1,len(_Palm8BitColormapValues),))
-    image.putdata(range(len(_Palm8BitColormapValues)))
+    image.putdata(list(range(len(_Palm8BitColormapValues))))
     palettedata = ()
     for i in range(len(_Palm8BitColormapValues)):
         palettedata = palettedata + _Palm8BitColormapValues[i]
@@ -107,8 +107,8 @@ _COMPRESSION_TYPES = {
     "scanline": 0x00,
     }
 
-def o16b(i):
-    return chr(i>>8&255) + chr(i&255)
+o8 = _binary.o8
+o16b = _binary.o16be
 
 #
 # --------------------------------------------------------------------
@@ -127,7 +127,7 @@ def _save(im, fp, filename, check=0):
         bpp = 8
         version = 1
 
-    elif im.mode == "L" and im.encoderinfo.has_key("bpp") and im.encoderinfo["bpp"] in (1, 2, 4):
+    elif im.mode == "L" and "bpp" in im.encoderinfo and im.encoderinfo["bpp"] in (1, 2, 4):
 
         # this is 8-bit grayscale, so we shift it to get the high-order bits, and invert it because
         # Palm does greyscale from white (0) to black (1)
@@ -138,7 +138,7 @@ def _save(im, fp, filename, check=0):
         rawmode = "P;" + str(bpp)
         version = 1
 
-    elif im.mode == "L" and im.info.has_key("bpp") and im.info["bpp"] in (1, 2, 4):
+    elif im.mode == "L" and "bpp" in im.info and im.info["bpp"] in (1, 2, 4):
 
         # here we assume that even though the inherent mode is 8-bit grayscale, only
         # the lower bpp bits are significant.  We invert them to match the Palm.
@@ -158,7 +158,7 @@ def _save(im, fp, filename, check=0):
 
     else:
 
-        raise IOError, "cannot write mode %s as Palm" % im.mode
+        raise IOError("cannot write mode %s as Palm" % im.mode)
 
     if check:
         return check
@@ -172,12 +172,12 @@ def _save(im, fp, filename, check=0):
     cols = im.size[0]
     rows = im.size[1]
 
-    rowbytes = ((cols + (16/bpp - 1)) / (16 / bpp)) * 2;
+    rowbytes = ((cols + (16//bpp - 1)) / (16 // bpp)) * 2;
     transparent_index = 0
     compression_type = _COMPRESSION_TYPES["none"]
 
     flags = 0;
-    if im.mode == "P" and im.info.has_key("custom-colormap"):
+    if im.mode == "P" and "custom-colormap" in im.info:
         flags = flags & _FLAGS["custom-colormap"]
         colormapsize = 4 * 256 + 2;
         colormapmode = im.palette.mode
@@ -185,17 +185,17 @@ def _save(im, fp, filename, check=0):
     else:
         colormapsize = 0
 
-    if im.info.has_key("offset"):
-        offset = (rowbytes * rows + 16 + 3 + colormapsize) / 4;
+    if "offset" in im.info:
+        offset = (rowbytes * rows + 16 + 3 + colormapsize) // 4;
     else:
         offset = 0
 
     fp.write(o16b(cols) + o16b(rows) + o16b(rowbytes) + o16b(flags))
-    fp.write(chr(bpp))
-    fp.write(chr(version))
+    fp.write(o8(bpp))
+    fp.write(o8(version))
     fp.write(o16b(offset))
-    fp.write(chr(transparent_index))
-    fp.write(chr(compression_type))
+    fp.write(o8(transparent_index))
+    fp.write(o8(compression_type))
     fp.write(o16b(0))   # reserved by Palm
 
     # now write colormap if necessary
@@ -203,11 +203,11 @@ def _save(im, fp, filename, check=0):
     if colormapsize > 0:
         fp.write(o16b(256))
         for i in range(256):
-            fp.write(chr(i))
+            fp.write(o8(i))
             if colormapmode == 'RGB':
-                fp.write(chr(colormap[3 * i]) + chr(colormap[3 * i + 1]) + chr(colormap[3 * i + 2]))
+                fp.write(o8(colormap[3 * i]) + o8(colormap[3 * i + 1]) + o8(colormap[3 * i + 2]))
             elif colormapmode == 'RGBA':
-                fp.write(chr(colormap[4 * i]) + chr(colormap[4 * i + 1]) + chr(colormap[4 * i + 2]))
+                fp.write(o8(colormap[4 * i]) + o8(colormap[4 * i + 1]) + o8(colormap[4 * i + 2]))
 
     # now convert data to raw form
     ImageFile._save(im, fp, [("raw", (0,0)+im.size, 0, (rawmode, rowbytes, 1))])

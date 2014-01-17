@@ -22,11 +22,11 @@
 
 #include "Imaging.h"
 
-#ifdef	HAVE_LIBJPEG
+#ifdef  HAVE_LIBJPEG
 
-#undef HAVE_PROTOTYPES 
-#undef HAVE_STDLIB_H 
-#undef HAVE_STDDEF_H 
+#undef HAVE_PROTOTYPES
+#undef HAVE_STDLIB_H
+#undef HAVE_STDDEF_H
 #undef UINT8
 #undef UINT16
 #undef UINT32
@@ -36,7 +36,7 @@
 #include "Jpeg.h"
 
 /* -------------------------------------------------------------------- */
-/* Suspending output handler						*/
+/* Suspending output handler                                            */
 /* -------------------------------------------------------------------- */
 
 METHODDEF(void)
@@ -64,16 +64,16 @@ jpeg_buffer_dest(j_compress_ptr cinfo, JPEGDESTINATION* destination)
 
 
 /* -------------------------------------------------------------------- */
-/* Error handler							*/
+/* Error handler                                                        */
 /* -------------------------------------------------------------------- */
 
 METHODDEF(void)
 error(j_common_ptr cinfo)
 {
-  JPEGERROR* error;
-  error = (JPEGERROR*) cinfo->err;
-  (*cinfo->err->output_message) (cinfo);
-  longjmp(error->setjmp_buffer, 1);
+    JPEGERROR* error;
+    error = (JPEGERROR*) cinfo->err;
+    (*cinfo->err->output_message) (cinfo);
+    longjmp(error->setjmp_buffer, 1);
 }
 
 
@@ -143,48 +143,62 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
 	/* Compressor configuration */
 	jpeg_set_defaults(&context->cinfo);
-	if (context->quality > 0)
+
+	/* Use custom quantization tables */
+	if (context->qtables) {
+	    int i;
+	    int quality = 100;
+	    if (context->quality > 0) {
+		quality = context->quality;
+	    }
+	    for (i = 0; i < sizeof(context->qtables)/sizeof(unsigned int); i++) {
+		// TODO: Should add support for none baseline
+		jpeg_add_quant_table(&context->cinfo, i, context->qtables[i],
+				     quality, TRUE);
+	    }
+	} else if (context->quality > 0) {
 	    jpeg_set_quality(&context->cinfo, context->quality, 1);
-	
+	}
+
 	/* Set subsampling options */
 	switch (context->subsampling)
-	{
-		case 0:  /* 1x1 1x1 1x1 (4:4:4) : None */
+	    {
+	    case 0:  /* 1x1 1x1 1x1 (4:4:4) : None */
 		{
-			context->cinfo.comp_info[0].h_samp_factor = 1;
-			context->cinfo.comp_info[0].v_samp_factor = 1;
-			context->cinfo.comp_info[1].h_samp_factor = 1;
-			context->cinfo.comp_info[1].v_samp_factor = 1;
-			context->cinfo.comp_info[2].h_samp_factor = 1;
-			context->cinfo.comp_info[2].v_samp_factor = 1;
-			break;
+		    context->cinfo.comp_info[0].h_samp_factor = 1;
+		    context->cinfo.comp_info[0].v_samp_factor = 1;
+		    context->cinfo.comp_info[1].h_samp_factor = 1;
+		    context->cinfo.comp_info[1].v_samp_factor = 1;
+		    context->cinfo.comp_info[2].h_samp_factor = 1;
+		    context->cinfo.comp_info[2].v_samp_factor = 1;
+		    break;
 		}
-		case 1:  /* 2x1, 1x1, 1x1 (4:2:2) : Medium */
+	    case 1:  /* 2x1, 1x1, 1x1 (4:2:2) : Medium */
 		{
-			context->cinfo.comp_info[0].h_samp_factor = 2;
-			context->cinfo.comp_info[0].v_samp_factor = 1;
-			context->cinfo.comp_info[1].h_samp_factor = 1;
-			context->cinfo.comp_info[1].v_samp_factor = 1;
-			context->cinfo.comp_info[2].h_samp_factor = 1;
-			context->cinfo.comp_info[2].v_samp_factor = 1;
-			break;
+		    context->cinfo.comp_info[0].h_samp_factor = 2;
+		    context->cinfo.comp_info[0].v_samp_factor = 1;
+		    context->cinfo.comp_info[1].h_samp_factor = 1;
+		    context->cinfo.comp_info[1].v_samp_factor = 1;
+		    context->cinfo.comp_info[2].h_samp_factor = 1;
+		    context->cinfo.comp_info[2].v_samp_factor = 1;
+		    break;
 		}
-		case 2:  /* 2x2, 1x1, 1x1 (4:1:1) : High */
+	    case 2:  /* 2x2, 1x1, 1x1 (4:1:1) : High */
 		{
-			context->cinfo.comp_info[0].h_samp_factor = 2;
-			context->cinfo.comp_info[0].v_samp_factor = 2;
-			context->cinfo.comp_info[1].h_samp_factor = 1;
-			context->cinfo.comp_info[1].v_samp_factor = 1;
-			context->cinfo.comp_info[2].h_samp_factor = 1;
-			context->cinfo.comp_info[2].v_samp_factor = 1;
-			break;
+		    context->cinfo.comp_info[0].h_samp_factor = 2;
+		    context->cinfo.comp_info[0].v_samp_factor = 2;
+		    context->cinfo.comp_info[1].h_samp_factor = 1;
+		    context->cinfo.comp_info[1].v_samp_factor = 1;
+		    context->cinfo.comp_info[2].h_samp_factor = 1;
+		    context->cinfo.comp_info[2].v_samp_factor = 1;
+		    break;
 		}
-		default:
+	    default:
 		{
-			/* Use the lib's default */
-			break;
+		    /* Use the lib's default */
+		    break;
 		}
-	}
+	    }
 	if (context->progressive)
 	    jpeg_simple_progression(&context->cinfo);
 	context->cinfo.smoothing_factor = context->smooth;
@@ -215,6 +229,19 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	/* fall through */
 
     case 2:
+        // check for exif len + 'APP1' header bytes
+        if (context->rawExifLen + 5 >  context->destination.pub.free_in_buffer){
+            break;
+        }
+        //add exif header
+        if (context->rawExifLen > 0){
+            jpeg_write_marker(&context->cinfo, JPEG_APP0+1,
+                              (unsigned char*)context->rawExif, context->rawExifLen);
+        }
+
+	state->state++;
+	/* fall through */
+    case 3:
 
         if (context->extra) {
             /* copy extra buffer to output buffer */
@@ -231,9 +258,12 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             else
                 break;
         } else
-              state->state++;
+	    state->state++;
 
-    case 3:
+    case 4:
+        if (1024 > context->destination.pub.free_in_buffer){
+            break;
+        }
 
 	ok = 1;
 	while (state->y < state->ysize) {
@@ -251,7 +281,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	state->state++;
 	/* fall through */
 
-    case 4:
+    case 5:
 
 	/* Finish compression */
 	if (context->destination.pub.free_in_buffer < 100)

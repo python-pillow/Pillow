@@ -9,7 +9,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image, ImageFile
+from PIL import Image, ImageFile
 
 _handler = None
 
@@ -26,7 +26,7 @@ def register_handler(handler):
 # Image adapter
 
 def _accept(prefix):
-    return prefix[:4] == "BUFR" or prefix[:4] == "ZCZC"
+    return prefix[:4] == b"BUFR" or prefix[:4] == b"ZCZC"
 
 class BufrStubImageFile(ImageFile.StubImageFile):
 

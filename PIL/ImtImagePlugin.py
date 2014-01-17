@@ -19,12 +19,12 @@ __version__ = "0.2"
 
 import re
 
-import Image, ImageFile
+from PIL import Image, ImageFile
 
 #
 # --------------------------------------------------------------------
 
-field = re.compile(r"([a-z]*) ([^ \r\n]*)")
+field = re.compile(br"([a-z]*) ([^ \r\n]*)")
 
 ##
 # Image plugin for IM Tools images.
@@ -39,19 +39,19 @@ class ImtImageFile(ImageFile.ImageFile):
         # Quick rejection: if there's not a LF among the first
         # 100 bytes, this is (probably) not a text header.
 
-        if not "\n" in self.fp.read(100):
-            raise SyntaxError, "not an IM file"
+        if not b"\n" in self.fp.read(100):
+            raise SyntaxError("not an IM file")
         self.fp.seek(0)
 
         xsize = ysize = 0
 
-        while 1:
+        while True:
 
             s = self.fp.read(1)
             if not s:
                 break
 
-            if s == chr(12):
+            if s == b'\x0C':
 
                 # image data begins
                 self.tile = [("raw", (0,0)+self.size,
@@ -67,7 +67,7 @@ class ImtImageFile(ImageFile.ImageFile):
                 s = s + self.fp.readline()
                 if len(s) == 1 or len(s) > 100:
                     break
-                if s[0] == "*":
+                if s[0] == b"*":
                     continue # comment
 
                 m = field.match(s)

@@ -19,21 +19,19 @@
 
 __version__ = "0.1"
 
-import Image, BmpImagePlugin
+from PIL import Image, BmpImagePlugin, _binary
 
 
 #
 # --------------------------------------------------------------------
 
-def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
-
-def i32(c):
-    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
+i8 = _binary.i8
+i16 = _binary.i16le
+i32 = _binary.i32le
 
 
 def _accept(prefix):
-    return prefix[:4] == "\0\0\2\0"
+    return prefix[:4] == b"\0\0\2\0"
 
 ##
 # Image plugin for Windows Cursor files.
@@ -50,20 +48,20 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         # check magic
         s = self.fp.read(6)
         if not _accept(s):
-            raise SyntaxError, "not an CUR file"
+            raise SyntaxError("not an CUR file")
 
         # pick the largest cursor in the file
-        m = ""
+        m = b""
         for i in range(i16(s[4:])):
             s = self.fp.read(16)
             if not m:
                 m = s
-            elif ord(s[0]) > ord(m[0]) and ord(s[1]) > ord(m[1]):
+            elif i8(s[0]) > i8(m[0]) and i8(s[1]) > i8(m[1]):
                 m = s
-            #print "width", ord(s[0])
-            #print "height", ord(s[1])
-            #print "colors", ord(s[2])
-            #print "reserved", ord(s[3])
+            #print "width", i8(s[0])
+            #print "height", i8(s[1])
+            #print "colors", i8(s[2])
+            #print "reserved", i8(s[3])
             #print "hotspot x", i16(s[4:])
             #print "hotspot y", i16(s[6:])
             #print "bytes", i32(s[8:])
@@ -73,7 +71,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         self._bitmap(i32(m[12:]) + offset)
 
         # patch up the bitmap height
-        self.size = self.size[0], self.size[1]/2
+        self.size = self.size[0], self.size[1]//2
         d, e, o, a = self.tile[0]
         self.tile[0] = d, (0,0)+self.size, o, a
 

@@ -13,10 +13,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image, ImageFile
+from PIL import Image, ImageFile, _binary
 
-def i32(c):
-    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24L)
+i32 = _binary.i32be
 
 def _accept(prefix):
     return i32(prefix) >= 20 and i32(prefix[4:8]) == 1
@@ -34,13 +33,13 @@ class GbrImageFile(ImageFile.ImageFile):
         header_size = i32(self.fp.read(4))
         version = i32(self.fp.read(4))
         if header_size < 20 or version != 1:
-            raise SyntaxError, "not a GIMP brush"
+            raise SyntaxError("not a GIMP brush")
 
         width = i32(self.fp.read(4))
         height = i32(self.fp.read(4))
         bytes = i32(self.fp.read(4))
         if width <= 0 or height <= 0 or bytes != 1:
-            raise SyntaxError, "not a GIMP brush"
+            raise SyntaxError("not a GIMP brush")
 
         comment = self.fp.read(header_size - 20)[:-1]
 
@@ -59,8 +58,8 @@ class GbrImageFile(ImageFile.ImageFile):
 
         # create an image out of the brush data block
         self.im = Image.core.new(self.mode, self.size)
-        self.im.fromstring(self.data)
-        self.data = ""
+        self.im.frombytes(self.data)
+        self.data = b""
 
 #
 # registry

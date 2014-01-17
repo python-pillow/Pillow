@@ -1,0 +1,19 @@
+language: python
+
+# for python-qt4
+virtualenv:
+  system_site_packages: true
+
+python:
+  - 2.6
+  - 2.7
+  - 3.2
+  - 3.3
+
+install: "sudo apt-get -qq install libfreetype6-dev liblcms2-dev libwebp-dev python-qt4 ghostscript"
+
+script:
+  - python setup.py clean
+  - python setup.py build_ext --inplace
+  - python selftest.py
+  - python Tests/run.py

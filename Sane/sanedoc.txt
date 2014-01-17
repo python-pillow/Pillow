@@ -9,13 +9,13 @@ understanding.
 
 This module has been originally developed by A.M. Kuchling (amk1@erols.com),
 now development has been taken over by Ralph Heinkel (rheinkel-at-email.de).
-If you write to me please make sure to have the word 'SANE' or 'sane' in 
+If you write to me please make sure to have the word 'SANE' or 'sane' in
 the subject of your mail, otherwise it might be classified as spam in the
 future.
 
 
 The module exports two object types, a bunch of constants, and two
-functions.  
+functions.
 
 get_devices()
   Return a list of 4-tuples containing the available scanning
@@ -73,7 +73,7 @@ get_parameters()
 start()
    Start a scan.  This function must be called before the
    _snap()_ method can be used.
-	
+
 cancel()
    Cancel a scan already in progress.
 
@@ -81,7 +81,7 @@ snap(no_cancel=0)
    Snap a single frame of data, returning a PIL Image object
    containing the data. If no_cancel is false, the Sane library function
    sane_cancel is called after the scan. This is reasonable in most cases,
-   but may cause backends for duplex ADF scanners to drop the backside image, 
+   but may cause backends for duplex ADF scanners to drop the backside image,
    when snap() is called for the front side image. If no_cancel is true,
    cancel() should be called manually, after all scans are finished.
 
@@ -90,13 +90,13 @@ scan()
    Returns a PIL image
 
 multi_scan()
-   This method returns an iterator. It is intended to be used for 
-   scanning with an automatic document feeder. The next() method of the 
+   This method returns an iterator. It is intended to be used for
+   scanning with an automatic document feeder. The next() method of the
    iterator tries to start a scan. If this is successful, it returns a
-   PIL Image object, like scan(); if the document feeder runs out of 
+   PIL Image object, like scan(); if the document feeder runs out of
    paper, it raises StopIteration, thereby signaling that the sequence
    is ran out of items.
-   
+
 arr_snap(multipleOf=1)
    same as snap, but the result is a NumArray object. (Not that
    num_array must be installed already at compilation time, otherwise
@@ -123,14 +123,14 @@ Attributes:
 SaneDev objects have a few fixed attributes which are always
 available, and a larger collection of attributes which vary depending
 on the device. An Epson 1660 photo scanner has attributes like
-'mode', 'depth', etc. 
+'mode', 'depth', etc.
 Another (pseudo scanner), the _pnm:0_ device, takes a PNM file and
 simulates a scanner using the image data; a SaneDev object
 representing the _pnm:0_ device therefore has a _filename_ attribute
 which can be changed to specify the filename, _contrast_ and
 _brightness_ attributes to modify the returned image, and so forth.
 
-The values of the scanner options may be an integer, floating-point 
+The values of the scanner options may be an integer, floating-point
 value, or string, depending on the nature of the option.
 
 sane_signature
@@ -183,13 +183,13 @@ In order to change 'mode' to 'gray', just type:
 >>> s.mode = 'gray'
 
 
-With the attributes and methods of sane-option objects it is possible 
+With the attributes and methods of sane-option objects it is possible
 to access individual option values:
 
-is_active() 
+is_active()
   Returns true if the option is active.
 
-is_settable() 
+is_settable()
   Returns true if the option can be set under software control.
 
 
@@ -216,21 +216,21 @@ index
   An integer giving the option's index in the option list.
 
 name
-  A short name for the option, as it comes from the sane-backend. 
+  A short name for the option, as it comes from the sane-backend.
 
-py_name 
+py_name
   The option's name, as a legal Python identifier.  The name
   attribute may contain the '-' character, so it will be converted to
   '_' for the py_name attribute.
 
 size
-  For a string-valued option, this is the maximum length allowed. 
+  For a string-valued option, this is the maximum length allowed.
 
 title
   A single-line string that can be used as a title string.
-	
+
 type
-  A constant giving the type of this option: will be one of the following 
+  A constant giving the type of this option: will be one of the following
   constants found in the SANE module:
 	TYPE_BOOL
 	TYPE_INT
@@ -274,7 +274,7 @@ Device parameters: ('L', 1, (424, 585), 1, 53)
 ## In order to obtain a 16-bit grayscale image at 100DPI in a numarray object
 ## with bottom-right coordinates set to (160, 120) [in millimeter] :
 >>> s.mode = 'gray'
->>> s.br_x=160. ; s.br_y=120.    
+>>> s.br_x=160. ; s.br_y=120.
 >>> s.resolution = 100
 >>> s.depth=16
 >>> s.start()

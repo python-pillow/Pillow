@@ -62,7 +62,7 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		}
 
 		memset(state->buffer + state->x, ptr[2], n);
-		
+
 		ptr += 3;
 		bytes -= 3;
 

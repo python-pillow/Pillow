@@ -18,15 +18,12 @@
 
 __version__ = "0.2"
 
-import Image, ImageFile, ImagePalette
-import string
+from PIL import Image, ImageFile, ImagePalette, _binary
 
-
-def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
-
-def i32(c):
-    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
+i8 = _binary.i8
+i16 = _binary.i16le
+i32 = _binary.i32le
+o8 = _binary.o8
 
 #
 # decoder
@@ -48,8 +45,10 @@ class FliImageFile(ImageFile.ImageFile):
         # HEAD
         s = self.fp.read(128)
         magic = i16(s[4:6])
-        if magic not in [0xAF11, 0xAF12]:
-            raise SyntaxError, "not an FLI/FLC file"
+        if not (magic in [0xAF11, 0xAF12] and
+                i16(s[14:16]) in [0, 3] and  # flags
+                s[20:22] == b"\x00\x00"): # reserved
+            raise SyntaxError("not an FLI/FLC file")
 
         # image characteristics
         self.mode = "P"
@@ -62,7 +61,7 @@ class FliImageFile(ImageFile.ImageFile):
         self.info["duration"] = duration
 
         # look for palette
-        palette = map(lambda a: (a,a,a), range(256))
+        palette = [(a,a,a) for a in range(256)]
 
         s = self.fp.read(16)
 
@@ -81,8 +80,8 @@ class FliImageFile(ImageFile.ImageFile):
             elif i16(s[4:6]) == 4:
                 self._palette(palette, 0)
 
-        palette = map(lambda (r,g,b): chr(r)+chr(g)+chr(b), palette)
-        self.palette = ImagePalette.raw("RGB", string.join(palette, ""))
+        palette = [o8(r)+o8(g)+o8(b) for (r,g,b) in palette]
+        self.palette = ImagePalette.raw("RGB", b"".join(palette))
 
         # set things up to decode first frame
         self.frame = -1
@@ -96,22 +95,22 @@ class FliImageFile(ImageFile.ImageFile):
         i = 0
         for e in range(i16(self.fp.read(2))):
             s = self.fp.read(2)
-            i = i + ord(s[0])
-            n = ord(s[1])
+            i = i + i8(s[0])
+            n = i8(s[1])
             if n == 0:
                 n = 256
             s = self.fp.read(n * 3)
             for n in range(0, len(s), 3):
-                r = ord(s[n]) << shift
-                g = ord(s[n+1]) << shift
-                b = ord(s[n+2]) << shift
+                r = i8(s[n]) << shift
+                g = i8(s[n+1]) << shift
+                b = i8(s[n+2]) << shift
                 palette[i] = (r, g, b)
                 i = i + 1
 
     def seek(self, frame):
 
         if frame != self.frame + 1:
-            raise ValueError, "cannot seek to frame %d" % frame
+            raise ValueError("cannot seek to frame %d" % frame)
         self.frame = frame
 
         # move to next frame

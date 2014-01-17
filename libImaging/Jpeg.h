@@ -88,6 +88,9 @@ typedef struct {
     /* Chroma Subsampling (-1=default, 0=none, 1=medium, 2=high) */
     int subsampling;
 
+    /* Custom quantization tables () */
+    unsigned int **qtables;
+
     /* Extra data (to be injected after header) */
     char* extra; int extra_size;
 
@@ -100,5 +103,8 @@ typedef struct {
     JPEGDESTINATION destination;
 
     int extra_offset;
+
+    int rawExifLen;   /* EXIF data length */
+    char* rawExif;  /* EXIF buffer pointer */
 
 } JPEGENCODERSTATE;

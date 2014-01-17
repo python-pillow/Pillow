@@ -30,7 +30,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image, ImageColor
+import numbers
+
+from PIL import Image, ImageColor
+from PIL._util import isStringType
 
 try:
     import warnings
@@ -96,9 +99,9 @@ class ImageDraw:
                 "'setink' is deprecated; use keyword arguments instead",
                 DeprecationWarning, stacklevel=2
                 )
-        if Image.isStringType(ink):
+        if isStringType(ink):
             ink = ImageColor.getcolor(ink, self.mode)
-        if self.palette and not Image.isNumberType(ink):
+        if self.palette and not isinstance(ink, numbers.Number):
             ink = self.palette.getcolor(ink)
         self.ink = self.draw.draw_ink(ink, self.mode)
 
@@ -127,7 +130,7 @@ class ImageDraw:
     def getfont(self):
         if not self.font:
             # FIXME: should add a font repository
-            import ImageFont
+            from PIL import ImageFont
             self.font = ImageFont.load_default()
         return self.font
 
@@ -139,15 +142,15 @@ class ImageDraw:
                 ink = self.ink
         else:
             if ink is not None:
-                if Image.isStringType(ink):
+                if isStringType(ink):
                     ink = ImageColor.getcolor(ink, self.mode)
-                if self.palette and not Image.isNumberType(ink):
+                if self.palette and not isinstance(ink, numbers.Number):
                     ink = self.palette.getcolor(ink)
                 ink = self.draw.draw_ink(ink, self.mode)
             if fill is not None:
-                if Image.isStringType(fill):
+                if isStringType(fill):
                     fill = ImageColor.getcolor(fill, self.mode)
-                if self.palette and not Image.isNumberType(fill):
+                if self.palette and not isinstance(fill, numbers.Number):
                     fill = self.palette.getcolor(fill)
                 fill = self.draw.draw_ink(fill, self.mode)
         return ink, fill
@@ -313,13 +316,11 @@ def getdraw(im=None, hints=None):
     handler = None
     if not hints or "nicest" in hints:
         try:
-            import _imagingagg
-            handler = _imagingagg
+            from PIL import _imagingagg as handler
         except ImportError:
             pass
     if handler is None:
-        import ImageDraw2
-        handler = ImageDraw2
+        from PIL import ImageDraw2 as handler
     if im:
         im = handler.Draw(im)
     return im, handler

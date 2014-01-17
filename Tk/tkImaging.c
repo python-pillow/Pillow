@@ -11,11 +11,11 @@
  *
  * To use this module, import the _imagingtk module (ImageTk does
  * this for you).
- * 
+ *
  * If you're using Python in an embedded context, you can add the
  * following lines to your Tcl_AppInit function (in tkappinit.c)
  * instead.  Put them after the calls to Tcl_Init and Tk_Init:
- *	
+ *
  *	{
  *          extern void TkImaging_Init(Tcl_Interp* interp);
  *          TkImaging_Init(interp);
@@ -48,9 +48,8 @@
    for the Tcl_CreateCommand command. */
 #define USE_COMPAT_CONST
 
-#include "tk.h"
-
 #include "Imaging.h"
+#include "tk.h"
 
 #include <stdlib.h>
 
@@ -58,7 +57,7 @@
 static Imaging
 ImagingFind(const char* name)
 {
-    long id;
+    Py_ssize_t id;
 
     /* FIXME: use CObject instead? */
     id = atol(name);

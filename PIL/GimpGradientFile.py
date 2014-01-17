@@ -14,7 +14,7 @@
 #
 
 from math import pi, log, sin, sqrt
-import string
+from PIL._binary import o8
 
 # --------------------------------------------------------------------
 # Stuff to translate curve segments to palette values (derived from
@@ -79,15 +79,15 @@ class GradientFile:
                 scale = segment((xm - x0) / w, (x - x0) / w)
 
             # expand to RGBA
-            r = chr(int(255 * ((rgb1[0] - rgb0[0]) * scale + rgb0[0]) + 0.5))
-            g = chr(int(255 * ((rgb1[1] - rgb0[1]) * scale + rgb0[1]) + 0.5))
-            b = chr(int(255 * ((rgb1[2] - rgb0[2]) * scale + rgb0[2]) + 0.5))
-            a = chr(int(255 * ((rgb1[3] - rgb0[3]) * scale + rgb0[3]) + 0.5))
+            r = o8(int(255 * ((rgb1[0] - rgb0[0]) * scale + rgb0[0]) + 0.5))
+            g = o8(int(255 * ((rgb1[1] - rgb0[1]) * scale + rgb0[1]) + 0.5))
+            b = o8(int(255 * ((rgb1[2] - rgb0[2]) * scale + rgb0[2]) + 0.5))
+            a = o8(int(255 * ((rgb1[3] - rgb0[3]) * scale + rgb0[3]) + 0.5))
 
             # add to palette
             palette.append(r + g + b + a)
 
-        return string.join(palette, ""), "RGBA"
+        return b"".join(palette), "RGBA"
 
 ##
 # File handler for GIMP's gradient format.
@@ -96,8 +96,8 @@ class GimpGradientFile(GradientFile):
 
     def __init__(self, fp):
 
-        if fp.readline()[:13] != "GIMP Gradient":
-            raise SyntaxError, "not a GIMP gradient file"
+        if fp.readline()[:13] != b"GIMP Gradient":
+            raise SyntaxError("not a GIMP gradient file")
 
         count = int(fp.readline())
 
@@ -105,8 +105,8 @@ class GimpGradientFile(GradientFile):
 
         for i in range(count):
 
-            s = string.split(fp.readline())
-            w = map(float, s[:11])
+            s = fp.readline().split()
+            w = [float(x) for x in s[:11]]
 
             x0, x1  = w[0], w[2]
             xm      = w[1]
@@ -117,7 +117,7 @@ class GimpGradientFile(GradientFile):
             cspace  = int(s[12])
 
             if cspace != 0:
-                raise IOError, "cannot handle HSV colour space"
+                raise IOError("cannot handle HSV colour space")
 
             gradient.append((x0, x1, xm, rgb0, rgb1, segment))
 

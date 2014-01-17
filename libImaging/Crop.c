@@ -26,7 +26,7 @@ ImagingCrop(Imaging imIn, int sx0, int sy0, int sx1, int sy1)
     int xsize, ysize;
     int dx0, dy0, dx1, dy1;
     INT32 zero = 0;
-    
+
     if (!imIn)
 	return (Imaging) ImagingError_ModeError();
 

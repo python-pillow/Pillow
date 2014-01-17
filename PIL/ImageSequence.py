@@ -14,15 +14,18 @@
 #
 
 ##
-# This class implements an iterator object that can be used to loop
-# over an image sequence.
 
 class Iterator:
+    """
+    This class implements an iterator object that can be used to loop
+    over an image sequence.
 
-    ##
-    # Create an iterator.
-    #
-    # @param im An image object.
+    You can use the ``[]`` operator to access elements by index. This operator
+    will raise an :py:exc:`IndexError` if you try to access a nonexistent
+    frame.
+
+    :param im: An image object.
+    """
 
     def __init__(self, im):
         if not hasattr(im, "seek"):

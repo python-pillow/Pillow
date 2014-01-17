@@ -16,6 +16,7 @@
 #include "Python.h"
 
 #include "Imaging.h"
+#include "py3.h"
 
 #include "math.h"
 #include "float.h"
@@ -81,7 +82,7 @@ void name(Imaging out, Imaging im1, Imaging im2)\
 /* --------------------------------------------------------------------
  * some day, we should add FPE protection mechanisms.  see pyfpe.h for
  * details.
- *   
+ *
  * PyFPE_START_PROTECT("Error in foobar", return 0)
  * PyFPE_END_PROTECT(result)
  */
@@ -173,15 +174,15 @@ _unop(PyObject* self, PyObject* args)
     Imaging im1;
     void (*unop)(Imaging, Imaging);
 
-    long op, i0, i1;
-    if (!PyArg_ParseTuple(args, "lll", &op, &i0, &i1))
+    Py_ssize_t op, i0, i1;
+    if (!PyArg_ParseTuple(args, "nnn", &op, &i0, &i1))
         return NULL;
 
     out = (Imaging) i0;
     im1 = (Imaging) i1;
 
     unop = (void*) op;
-    
+
     unop(out, im1);
 
     Py_INCREF(Py_None);
@@ -196,8 +197,8 @@ _binop(PyObject* self, PyObject* args)
     Imaging im2;
     void (*binop)(Imaging, Imaging, Imaging);
 
-    long op, i0, i1, i2;
-    if (!PyArg_ParseTuple(args, "llll", &op, &i0, &i1, &i2))
+    Py_ssize_t op, i0, i1, i2;
+    if (!PyArg_ParseTuple(args, "nnnn", &op, &i0, &i1, &i2))
         return NULL;
 
     out = (Imaging) i0;
@@ -205,7 +206,7 @@ _binop(PyObject* self, PyObject* args)
     im2 = (Imaging) i2;
 
     binop = (void*) op;
-    
+
     binop(out, im1, im2);
 
     Py_INCREF(Py_None);
@@ -221,20 +222,15 @@ static PyMethodDef _functions[] = {
 static void
 install(PyObject *d, char* name, void* value)
 {
-    PyObject *v = PyInt_FromLong((long) value);
+    PyObject *v = PyInt_FromSsize_t((Py_ssize_t) value);
     if (!v || PyDict_SetItemString(d, name, v))
         PyErr_Clear();
     Py_XDECREF(v);
 }
 
-DL_EXPORT(void)
-init_imagingmath(void)
-{
-    PyObject* m;
-    PyObject* d;
-
-    m = Py_InitModule("_imagingmath", _functions);
-    d = PyModule_GetDict(m);
+static int
+setup_module(PyObject* m) {
+    PyObject* d = PyModule_GetDict(m);
 
     install(d, "abs_I", abs_I);
     install(d, "neg_I", neg_I);
@@ -281,4 +277,35 @@ init_imagingmath(void)
     install(d, "gt_F", gt_F);
     install(d, "ge_F", ge_F);
 
+    return 0;
 }
+
+#if PY_VERSION_HEX >= 0x03000000
+PyMODINIT_FUNC
+PyInit__imagingmath(void) {
+    PyObject* m;
+
+    static PyModuleDef module_def = {
+        PyModuleDef_HEAD_INIT,
+        "_imagingmath",     /* m_name */
+        NULL,               /* m_doc */
+        -1,                 /* m_size */
+        _functions,         /* m_methods */
+    };
+
+    m = PyModule_Create(&module_def);
+
+    if (setup_module(m) < 0)
+        return NULL;
+
+    return m;
+}
+#else
+PyMODINIT_FUNC
+init_imagingmath(void)
+{
+    PyObject* m = Py_InitModule("_imagingmath", _functions);
+    setup_module(m);
+}
+#endif
+

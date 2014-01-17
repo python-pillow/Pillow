@@ -30,14 +30,14 @@ typedef struct {
     Tcl_Interp* interp;
 } TkappObject;
 
-static PyObject* 
+static PyObject*
 _tkinit(PyObject* self, PyObject* args)
 {
     Tcl_Interp* interp;
 
-    long arg;
+    Py_ssize_t arg;
     int is_interp;
-    if (!PyArg_ParseTuple(args, "li", &arg, &is_interp))
+    if (!PyArg_ParseTuple(args, "ni", &arg, &is_interp))
         return NULL;
 
     if (is_interp)
@@ -63,8 +63,24 @@ static PyMethodDef functions[] = {
     {NULL, NULL} /* sentinel */
 };
 
-DL_EXPORT(void)
+#if PY_VERSION_HEX >= 0x03000000
+PyMODINIT_FUNC
+PyInit__imagingtk(void) {
+    static PyModuleDef module_def = {
+        PyModuleDef_HEAD_INIT,
+        "_imagingtk",       /* m_name */
+        NULL,               /* m_doc */
+        -1,                 /* m_size */
+        functions,          /* m_methods */
+    };
+
+    return PyModule_Create(&module_def);
+}
+#else
+PyMODINIT_FUNC
 init_imagingtk(void)
 {
     Py_InitModule("_imagingtk", functions);
 }
+#endif
+

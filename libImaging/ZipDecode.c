@@ -32,7 +32,7 @@ static const int ROW_INCREMENT[] = { 8, 8, 8, 4, 4, 2, 2 };
  * for interlaced images */
 static int get_row_len(ImagingCodecState state, int pass)
 {
-    int row_len = (state->xsize + OFFSET[pass]) / COL_INCREMENT[pass]; 
+    int row_len = (state->xsize + OFFSET[pass]) / COL_INCREMENT[pass];
     return ((row_len * state->bits) + 7) / 8;
 }
 
@@ -202,7 +202,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    if (state->bits >= 8) {
 		/* Stuff pixels in their correct location, one by one */
 		for (i = 0; i < row_len; i += ((state->bits + 7) / 8)) {
-		    state->shuffle((UINT8*) im->image[state->y] + 
+		    state->shuffle((UINT8*) im->image[state->y] +
 				   col * im->pixelsize,
 				   state->buffer + context->prefix + i, 1);
 		    col += COL_INCREMENT[context->pass];
@@ -214,7 +214,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		for (i = 0; i < row_bits; i += state->bits) {
 		    UINT8 byte = *(state->buffer + context->prefix + (i / 8));
 		    byte <<= (i % 8);
-		    state->shuffle((UINT8*) im->image[state->y] + 
+		    state->shuffle((UINT8*) im->image[state->y] +
 				   col * im->pixelsize, &byte, 1);
 		    col += COL_INCREMENT[context->pass];
 		}
@@ -235,7 +235,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		memset(state->buffer, 0, state->bytes+1);
 	    }
 	} else {
-	    state->shuffle((UINT8*) im->image[state->y + state->yoff] + 
+	    state->shuffle((UINT8*) im->image[state->y + state->yoff] +
 			   state->xoff * im->pixelsize,
 			   state->buffer + context->prefix,
 			   state->xsize);

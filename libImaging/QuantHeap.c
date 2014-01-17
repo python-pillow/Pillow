@@ -21,31 +21,29 @@
 #include <string.h>
 #include <math.h>
 
-#include "QuantHash.h"
-#include "QuantDefines.h"
+#include "QuantHeap.h"
 
-typedef struct {
+struct _Heap {
    void **heap;
    int heapsize;
    int heapcount;
    HeapCmpFunc cf;
-} IntHeap;
+};
 
 #define INITIAL_SIZE 256
 
-#define DEBUG
+// #define DEBUG
 
 #ifdef DEBUG
-static int _heap_test(Heap);
+static int _heap_test(Heap *);
 #endif
 
-void ImagingQuantHeapFree(Heap H) {
-   IntHeap *h=(IntHeap *)H;
+void ImagingQuantHeapFree(Heap *h) {
    free(h->heap);
    free(h);
 }
 
-static int _heap_grow(IntHeap *h,int newsize) {
+static int _heap_grow(Heap *h,int newsize) {
    void *newheap;
    if (!newsize) newsize=h->heapsize<<1;
    if (newsize<h->heapsize) return 0;
@@ -59,15 +57,14 @@ static int _heap_grow(IntHeap *h,int newsize) {
 }
 
 #ifdef DEBUG
-static int _heap_test(Heap H) {
-   IntHeap *h=(IntHeap *)H;
+static int _heap_test(Heap *h) {
    int k;
    for (k=1;k*2<=h->heapcount;k++) {
-      if (h->cf(H,h->heap[k],h->heap[k*2])<0) {
+      if (h->cf(h,h->heap[k],h->heap[k*2])<0) {
          printf ("heap is bad\n");
          return 0;
       }
-      if (k*2+1<=h->heapcount && h->cf(H,h->heap[k],h->heap[k*2+1])<0) {
+      if (k*2+1<=h->heapcount && h->cf(h,h->heap[k],h->heap[k*2+1])<0) {
          printf ("heap is bad\n");
          return 0;
       }
@@ -76,8 +73,7 @@ static int _heap_test(Heap H) {
 }
 #endif
 
-int ImagingQuantHeapRemove(Heap H,void **r) {
-   IntHeap *h=(IntHeap *)H;
+int ImagingQuantHeapRemove(Heap* h,void **r) {
    int k,l;
    void *v;
 
@@ -89,31 +85,30 @@ int ImagingQuantHeapRemove(Heap H,void **r) {
    for (k=1;k*2<=h->heapcount;k=l) {
       l=k*2;
       if (l<h->heapcount) {
-         if (h->cf(H,h->heap[l],h->heap[l+1])<0) {
+         if (h->cf(h,h->heap[l],h->heap[l+1])<0) {
             l++;
          }
       }
-      if (h->cf(H,v,h->heap[l])>0) {
+      if (h->cf(h,v,h->heap[l])>0) {
          break;
       }
       h->heap[k]=h->heap[l];
    }
    h->heap[k]=v;
 #ifdef DEBUG
-   if (!_heap_test(H)) { printf ("oops - heap_remove messed up the heap\n"); exit(1); }
+   if (!_heap_test(h)) { printf ("oops - heap_remove messed up the heap\n"); exit(1); }
 #endif
    return 1;
 }
 
-int ImagingQuantHeapAdd(Heap H,void *val) {
-   IntHeap *h=(IntHeap *)H;
+int ImagingQuantHeapAdd(Heap *h,void *val) {
    int k;
    if (h->heapcount==h->heapsize-1) {
       _heap_grow(h,0);
    }
    k=++h->heapcount;
    while (k!=1) {
-      if (h->cf(H,val,h->heap[k/2])<=0) {
+      if (h->cf(h,val,h->heap[k/2])<=0) {
          break;
       }
       h->heap[k]=h->heap[k/2];
@@ -121,13 +116,12 @@ int ImagingQuantHeapAdd(Heap H,void *val) {
    }
    h->heap[k]=val;
 #ifdef DEBUG
-   if (!_heap_test(H)) { printf ("oops - heap_add messed up the heap\n"); exit(1); }
+   if (!_heap_test(h)) { printf ("oops - heap_add messed up the heap\n"); exit(1); }
 #endif
    return 1;
 }
 
-int ImagingQuantHeapTop(Heap H,void **r) {
-   IntHeap *h=(IntHeap *)H;
+int ImagingQuantHeapTop(Heap *h,void **r) {
    if (!h->heapcount) {
       return 0;
    }
@@ -136,15 +130,14 @@ int ImagingQuantHeapTop(Heap H,void **r) {
 }
 
 Heap *ImagingQuantHeapNew(HeapCmpFunc cf) {
-   IntHeap *h;
-   
-   h=malloc(sizeof(IntHeap));
+   Heap *h;
+
+   h=malloc(sizeof(Heap));
    if (!h) return NULL;
    h->heapsize=INITIAL_SIZE;
    h->heap=malloc(sizeof(void *)*h->heapsize);
    if (!h->heap) { free(h); return NULL; }
    h->heapcount=0;
    h->cf=cf;
-   return (Heap)h;
+   return h;
 }
-

@@ -14,27 +14,31 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image, ImageFile
-import string, struct
+from PIL import Image, ImageFile, _binary
+import struct
+
+i8 = _binary.i8
 
 HEADERSIZE = 8
 
 def nextheader(fobj):
     return struct.unpack('>4sI', fobj.read(HEADERSIZE))
 
-def read_32t(fobj, (start, length), (width, height)):
+def read_32t(fobj, start_length, size):
     # The 128x128 icon seems to have an extra header for some reason.
+    (start, length) = start_length
     fobj.seek(start)
     sig = fobj.read(4)
-    if sig != '\x00\x00\x00\x00':
-        raise SyntaxError, 'Unknown signature, expecting 0x00000000'
-    return read_32(fobj, (start + 4, length - 4), (width, height))
+    if sig != b'\x00\x00\x00\x00':
+        raise SyntaxError('Unknown signature, expecting 0x00000000')
+    return read_32(fobj, (start + 4, length - 4), size)
 
-def read_32(fobj, (start, length), size):
+def read_32(fobj, start_length, size):
     """
     Read a 32bit RGB icon resource.  Seems to be either uncompressed or
     an RLE packbits-like scheme.
     """
+    (start, length) = start_length
     fobj.seek(start)
     sizesq = size[0] * size[1]
     if length == sizesq * 3:
@@ -51,7 +55,7 @@ def read_32(fobj, (start, length), size):
                 byte = fobj.read(1)
                 if not byte:
                     break
-                byte = ord(byte)
+                byte = i8(byte)
                 if byte & 0x80:
                     blocksize = byte - 125
                     byte = fobj.read(1)
@@ -68,13 +72,14 @@ def read_32(fobj, (start, length), size):
                     "Error reading channel [%r left]" % bytesleft
                     )
             band = Image.frombuffer(
-                "L", size, string.join(data, ""), "raw", "L", 0, 1
+                "L", size, b"".join(data), "raw", "L", 0, 1
                 )
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
 
-def read_mk(fobj, (start, length), size):
+def read_mk(fobj, start_length, size):
     # Alpha masks seem to be uncompressed
+    (start, length) = start_length
     fobj.seek(start)
     band = Image.frombuffer(
         "L", size, fobj.read(size[0]*size[1]), "raw", "L", 0, 1
@@ -85,20 +90,20 @@ class IcnsFile:
 
     SIZES = {
         (128, 128): [
-            ('it32', read_32t),
-            ('t8mk', read_mk),
+            (b'it32', read_32t),
+            (b't8mk', read_mk),
         ],
         (48, 48): [
-            ('ih32', read_32),
-            ('h8mk', read_mk),
+            (b'ih32', read_32),
+            (b'h8mk', read_mk),
         ],
         (32, 32): [
-            ('il32', read_32),
-            ('l8mk', read_mk),
+            (b'il32', read_32),
+            (b'l8mk', read_mk),
         ],
         (16, 16): [
-            ('is32', read_32),
-            ('s8mk', read_mk),
+            (b'is32', read_32),
+            (b's8mk', read_mk),
         ],
     }
 
@@ -111,7 +116,7 @@ class IcnsFile:
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
         if sig != 'icns':
-            raise SyntaxError, 'not an icns file'
+            raise SyntaxError('not an icns file')
         i = HEADERSIZE
         while i < filesize:
             sig, blocksize = nextheader(fobj)
@@ -125,7 +130,7 @@ class IcnsFile:
         sizes = []
         for size, fmts in self.SIZES.items():
             for (fmt, reader) in fmts:
-                if self.dct.has_key(fmt):
+                if fmt in self.dct:
                     sizes.append(size)
                     break
         return sizes
@@ -133,7 +138,7 @@ class IcnsFile:
     def bestsize(self):
         sizes = self.itersizes()
         if not sizes:
-            raise SyntaxError, "No 32bit icon resources found"
+            raise SyntaxError("No 32bit icon resources found")
         return max(sizes)
 
     def dataforsize(self, size):
@@ -201,7 +206,7 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.load_end()
 
 
-Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == 'icns')
+Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == b'icns')
 Image.register_extension("ICNS", '.icns')
 
 if __name__ == '__main__':

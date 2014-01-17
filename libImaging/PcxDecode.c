@@ -36,7 +36,7 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		return ptr - buf;
 
 	    n = ptr[0] & 0x3F;
-	    
+
 	    while (n > 0) {
 		if (state->x >= state->bytes) {
 		    state->errcode = IMAGING_CODEC_OVERRUN;

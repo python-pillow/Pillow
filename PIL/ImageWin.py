@@ -17,46 +17,52 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+import warnings
+from PIL import Image
 
-##
-# The <b>ImageWin</b> module contains support to create and display
-# images under Windows 95/98, NT, 2000 and later.
 
 class HDC:
+    """
+    Wraps a HDC integer. The resulting object can be passed to the
+    :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
+    methods.
+    """
     def __init__(self, dc):
         self.dc = dc
     def __int__(self):
         return self.dc
 
 class HWND:
+    """
+    Wraps a HWND integer. The resulting object can be passed to the
+    :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
+    methods, instead of a DC.
+    """
     def __init__(self, wnd):
         self.wnd = wnd
     def __int__(self):
         return self.wnd
 
-##
-# Create a Windows bitmap with the given mode and size.  The mode can
-# be one of "1", "L", "P", or "RGB".
-#
-# If the display requires a palette, this constructor creates a
-# suitable palette and associates it with the image. For an "L" image,
-# 128 greylevels are allocated. For an "RGB" image, a 6x6x6 colour
-# cube is used, together with 20 greylevels.
-#
-# To make sure that palettes work properly under Windows, you must
-# call the <b>palette</b> method upon certain events from Windows.
 
 class Dib:
+    """
+    A Windows bitmap with the given mode and size.  The mode can be one of "1",
+    "L", "P", or "RGB".
 
-    ##
-    # Create Windows bitmap.
-    #
-    # @param image Either a PIL image, or a mode string.  If a
-    #    mode string is used, a size must also be given.  The
-    #    mode can be one of "1", "L", "P", or "RGB".
-    # @param size If the first argument is a mode string, this
-    #    defines the size of the image.
+    If the display requires a palette, this constructor creates a suitable
+    palette and associates it with the image. For an "L" image, 128 greylevels
+    are allocated. For an "RGB" image, a 6x6x6 colour cube is used, together
+    with 20 greylevels.
+
+    To make sure that palettes work properly under Windows, you must call the
+    **palette** method upon certain events from Windows.
+
+    :param image: Either a PIL image, or a mode string. If a mode string is
+                  used, a size must also be given.  The mode can be one of "1",
+                  "L", "P", or "RGB".
+    :param size: If the first argument is a mode string, this
+                 defines the size of the image.
+    """
 
     def __init__(self, image, size=None):
         if hasattr(image, "mode") and hasattr(image, "size"):
@@ -73,15 +79,15 @@ class Dib:
         if image:
             self.paste(image)
 
-    ##
-    # Copy the bitmap contents to a device context.
-    #
-    # @param handle Device context (HDC), cast to a Python integer,
-    #    or a HDC or HWND instance.  In PythonWin, you can use the
-    #    <b>GetHandleAttrib</b> method of the <b>CDC</b> class to get
-    #    a suitable handle.
 
     def expose(self, handle):
+        """
+        Copy the bitmap contents to a device context.
+
+        :param handle: Device context (HDC), cast to a Python integer, or a HDC
+                       or HWND instance.  In PythonWin, you can use the
+                       :py:meth:`CDC.GetHandleAttrib` to get a suitable handle.
+        """
         if isinstance(handle, HWND):
             dc = self.image.getdc(handle)
             try:
@@ -93,6 +99,15 @@ class Dib:
         return result
 
     def draw(self, handle, dst, src=None):
+        """
+        Same as expose, but allows you to specify where to draw the image, and
+        what part of it to draw.
+
+        The destination and source areas are given as 4-tuple rectangles. If
+        the source is omitted, the entire image is copied. If the source and
+        the destination have different sizes, the image is resized as
+        necessary.
+        """
         if not src:
             src = (0,0) + self.size
         if isinstance(handle, HWND):
@@ -105,22 +120,22 @@ class Dib:
             result = self.image.draw(handle, dst, src)
         return result
 
-    ##
-    # Installs the palette associated with the image in the
-    # given device context.
-    # <p>
-    # This method should be called upon <b>QUERYNEWPALETTE</b>
-    # and <b>PALETTECHANGED</b> events from Windows. If this
-    # method returns a non-zero value, one or more display
-    # palette entries were changed, and the image should be
-    # redrawn.
-    #
-    # @param handle Device context (HDC), cast to a Python integer,
-    #     or an HDC or HWND instance.
-    # @return A true value if one or more entries were changed
-    #    (this indicates that the image should be redrawn).
 
     def query_palette(self, handle):
+        """
+        Installs the palette associated with the image in the given device
+        context.
+
+        This method should be called upon **QUERYNEWPALETTE** and
+        **PALETTECHANGED** events from Windows. If this method returns a
+        non-zero value, one or more display palette entries were changed, and
+        the image should be redrawn.
+
+        :param handle: Device context (HDC), cast to a Python integer, or an
+                       HDC or HWND instance.
+        :return: A true value if one or more entries were changed (this
+                 indicates that the image should be redrawn).
+        """
         if isinstance(handle, HWND):
             handle = self.image.getdc(handle)
             try:
@@ -131,17 +146,18 @@ class Dib:
             result = self.image.query_palette(handle)
         return result
 
-    ##
-    # Paste a PIL image into the bitmap image.
-    #
-    # @param im A PIL image.  The size must match the target region.
-    #    If the mode does not match, the image is converted to the
-    #    mode of the bitmap image.
-    # @param box A 4-tuple defining the left, upper, right, and
-    #    lower pixel coordinate.  If None is given instead of a
-    #    tuple, all of the image is assumed.
 
     def paste(self, im, box=None):
+        """
+        Paste a PIL image into the bitmap image.
+
+        :param im: A PIL image.  The size must match the target region.
+                   If the mode does not match, the image is converted to the
+                   mode of the bitmap image.
+        :param box: A 4-tuple defining the left, upper, right, and
+                    lower pixel coordinate.  If None is given instead of a
+                    tuple, all of the image is assumed.
+        """
         im.load()
         if self.mode != im.mode:
             im = im.convert(self.mode)
@@ -150,23 +166,43 @@ class Dib:
         else:
             self.image.paste(im.im)
 
-    ##
-    # Load display memory contents from string buffer.
-    #
-    # @param buffer A string buffer containing display data (usually
-    #     data returned from <b>tostring</b>)
 
-    def fromstring(self, buffer):
-        return self.image.fromstring(buffer)
+    def frombytes(self, buffer):
+        """
+        Load display memory contents from byte data.
+
+        :param buffer: A buffer containing display data (usually
+                       data returned from <b>tobytes</b>)
+        """
+        return self.image.frombytes(buffer)
+
+
+    def tobytes(self):
+        """
+        Copy display memory contents to bytes object.
+
+        :return: A bytes object containing display data.
+        """
+        return self.image.tobytes()
 
     ##
-    # Copy display memory contents to string buffer.
-    #
-    # @return A string buffer containing display data.
+    # Deprecated aliases to frombytes & tobytes.
+
+    def fromstring(self, *args, **kw):
+        warnings.warn(
+            'fromstring() is deprecated. Please call frombytes() instead.',
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return self.frombytes(*args, **kw)
 
     def tostring(self):
-        return self.image.tostring()
-
+        warnings.warn(
+            'tostring() is deprecated. Please call tobytes() instead.',
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return self.tobytes()
 
 ##
 # Create a Window with the given title size.
@@ -179,7 +215,7 @@ class Window:
             )
 
     def __dispatcher(self, action, *args):
-        return apply(getattr(self, "ui_handle_" + action), args)
+        return getattr(self, "ui_handle_" + action)(*args)
 
     def ui_handle_clear(self, dc, x0, y0, x1, y1):
         pass

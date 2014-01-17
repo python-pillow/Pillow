@@ -19,8 +19,8 @@
 __version__ = "0.1"
 
 
-import Image, ImageFile
-from OleFileIO import *
+from PIL import Image, ImageFile
+from PIL.OleFileIO import *
 
 
 # we map from colour field tuples to (mode, rawmode) descriptors
@@ -60,10 +60,10 @@ class FpxImageFile(ImageFile.ImageFile):
         try:
             self.ole = OleFileIO(self.fp)
         except IOError:
-            raise SyntaxError, "not an FPX file; invalid OLE file"
+            raise SyntaxError("not an FPX file; invalid OLE file")
 
         if self.ole.root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
-            raise SyntaxError, "not an FPX file; bad root CLSID"
+            raise SyntaxError("not an FPX file; bad root CLSID")
 
         self._open_index(1)
 
@@ -108,7 +108,7 @@ class FpxImageFile(ImageFile.ImageFile):
         self.jpeg = {}
         for i in range(256):
             id = 0x3000001|(i << 16)
-            if prop.has_key(id):
+            if id in prop:
                 self.jpeg[i] = prop[id]
 
         # print len(self.jpeg), "tables loaded"
@@ -143,7 +143,7 @@ class FpxImageFile(ImageFile.ImageFile):
         # print size, self.mode, self.rawmode
 
         if size != self.size:
-            raise IOError, "subimage mismatch"
+            raise IOError("subimage mismatch")
 
         # get tile descriptors
         fp.seek(28 + offset)
@@ -170,8 +170,8 @@ class FpxImageFile(ImageFile.ImageFile):
 
             elif compression == 2:
 
-                internal_color_conversion = ord(s[14])
-                jpeg_tables = ord(s[15])
+                internal_color_conversion = i8(s[14])
+                jpeg_tables = i8(s[15])
                 rawmode = self.rawmode
 
                 if internal_color_conversion:
@@ -198,7 +198,7 @@ class FpxImageFile(ImageFile.ImageFile):
                     self.tile_prefix = self.jpeg[jpeg_tables]
 
             else:
-                raise IOError, "unknown/invalid compression"
+                raise IOError("unknown/invalid compression")
 
             x = x + xtile
             if x >= xsize:

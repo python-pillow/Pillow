@@ -69,7 +69,7 @@ ImagingRawDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    return ptr - buf;
 
 	/* Unpack data */
-	state->shuffle((UINT8*) im->image[state->y + state->yoff] + 
+	state->shuffle((UINT8*) im->image[state->y + state->yoff] +
 		       state->xoff * im->pixelsize, ptr, state->xsize);
 
 	ptr += state->bytes;

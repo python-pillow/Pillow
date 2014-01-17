@@ -15,13 +15,18 @@
 # See the README file for information on usage and redistribution.
 #
 
-import EpsImagePlugin
-import string
+from __future__ import print_function
+
+from PIL import EpsImagePlugin
 
 ##
 # Simple Postscript graphics interface.
 
 class PSDraw:
+    """
+    Sets up printing to the given file. If **file** is omitted,
+    :py:attr:`sys.stdout` is assumed.
+    """
 
     def __init__(self, fp=None):
         if not fp:
@@ -30,7 +35,7 @@ class PSDraw:
         self.fp = fp
 
     def begin_document(self, id = None):
-        "Write Postscript DSC header"
+        """Set up printing of a document. (Write Postscript DSC header.)"""
         # FIXME: incomplete
         self.fp.write("%!PS-Adobe-3.0\n"
                       "save\n"
@@ -44,7 +49,7 @@ class PSDraw:
         self.isofont = {}
 
     def end_document(self):
-        "Write Postscript DSC footer"
+        """Ends printing. (Write Postscript DSC footer.)"""
         self.fp.write("%%EndDocument\n"
                       "restore showpage\n"
                       "%%End\n")
@@ -52,7 +57,13 @@ class PSDraw:
             self.fp.flush()
 
     def setfont(self, font, size):
-        if not self.isofont.has_key(font):
+        """
+        Selects which font to use.
+
+        :param font: A Postscript font name
+        :param size: Size in points.
+        """
+        if font not in self.isofont:
             # reencode font
             self.fp.write("/PSDraw-%s ISOLatin1Encoding /%s E\n" %\
                           (font, font))
@@ -61,23 +72,49 @@ class PSDraw:
         self.fp.write("/F0 %d /PSDraw-%s F\n" % (size, font))
 
     def setink(self, ink):
-        print "*** NOT YET IMPLEMENTED ***"
+        """
+        .. warning::
+
+            This has been in the PIL API for ages but was never implemented.
+        """
+        print("*** NOT YET IMPLEMENTED ***")
 
     def line(self, xy0, xy1):
+        """
+        Draws a line between the two points. Coordinates are given in
+        Postscript point coordinates (72 points per inch, (0, 0) is the lower
+        left corner of the page).
+        """
         xy = xy0 + xy1
         self.fp.write("%d %d %d %d Vl\n" % xy)
 
     def rectangle(self, box):
+        """
+        Draws a rectangle.
+
+        :param box: A 4-tuple of integers whose order and function is currently
+                    undocumented.
+
+                    Hint: the tuple is passed into this format string:
+
+                    .. code-block:: python
+
+                        %d %d M %d %d 0 Vr\n
+        """
         self.fp.write("%d %d M %d %d 0 Vr\n" % box)
 
     def text(self, xy, text):
-        text = string.joinfields(string.splitfields(text, "("), "\\(")
-        text = string.joinfields(string.splitfields(text, ")"), "\\)")
+        """
+        Draws text at the given position. You must use
+        :py:meth:`~PIL.PSDraw.PSDraw.setfont` before calling this method.
+        """
+        text = "\\(".join(text.split("("))
+        text = "\\)".join(text.split(")"))
         xy = xy + (text,)
         self.fp.write("%d %d M (%s) S\n" % xy)
 
     def image(self, box, im, dpi = None):
-        "Write an PIL image"
+        """Draw a PIL image, centered in the given box."""
         # default resolution depends on mode
         if not dpi:
             if im.mode == "1":

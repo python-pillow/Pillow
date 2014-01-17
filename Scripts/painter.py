@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # The Python Imaging Library
 # $Id$
@@ -8,7 +9,11 @@
 # the image into a set of tiles.
 #
 
-from Tkinter import *
+try:
+    from tkinter import *
+except ImportError:
+    from Tkinter import *
+
 from PIL import Image, ImageTk
 import sys
 

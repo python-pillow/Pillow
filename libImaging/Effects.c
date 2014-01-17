@@ -1,4 +1,4 @@
-/* 
+/*
  * The Python Imaging Library
  * $Id$
  *

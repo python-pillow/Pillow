@@ -57,7 +57,7 @@ ImagingOpenPPM(const char* infile)
 
     x = y = max = 0;
 
-    while (i < 3) {	
+    while (i < 3) {
 
 	/* Ignore optional comment fields */
 	while (c == '\n') {

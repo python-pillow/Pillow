@@ -18,7 +18,9 @@
 __version__ = "0.1"
 
 
-import Image, ImageFile
+from PIL import Image, ImageFile, _binary
+
+i8 = _binary.i8
 
 ##
 # Image plugin for PhotoCD images.  This plugin only reads the 768x512
@@ -36,10 +38,10 @@ class PcdImageFile(ImageFile.ImageFile):
         self.fp.seek(2048)
         s = self.fp.read(2048)
 
-        if s[:4] != "PCD_":
-            raise SyntaxError, "not a PCD file"
+        if s[:4] != b"PCD_":
+            raise SyntaxError("not a PCD file")
 
-        orientation = ord(s[1538]) & 3
+        orientation = i8(s[1538]) & 3
         if orientation == 1:
             self.tile_post_rotate = 90 # hack
         elif orientation == 3:

@@ -25,8 +25,16 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
-import os, string, sys
+from __future__ import print_function
+
+from PIL import Image
+from PIL._util import isDirectory, isPath
+import os, sys
+
+try:
+    import warnings
+except ImportError:
+    warnings = None
 
 class _imagingft_not_installed:
     # module placeholder
@@ -34,9 +42,7 @@ class _imagingft_not_installed:
         raise ImportError("The _imagingft C module is not installed")
 
 try:
-    import _imagingft
-    core = _imagingft
-    del _imagingft
+    from PIL import _imagingft as core
 except ImportError:
     core = _imagingft_not_installed()
 
@@ -55,21 +61,6 @@ except ImportError:
 # position according to dx, dy.
 # --------------------------------------------------------------------
 
-##
-# The <b>ImageFont</b> module defines a class with the same name.
-# Instances of this class store bitmap fonts, and are used with the
-# <b>text</b> method of the <b>ImageDraw</b> class.
-# <p>
-# PIL uses it's own font file format to store bitmap fonts. You can
-# use the <b>pilfont</b> utility to convert BDF and PCF font
-# descriptors (X window font formats) to this format.
-# <p>
-# Starting with version 1.1.4, PIL can be configured to support
-# TrueType and OpenType fonts.  For earlier version, TrueType
-# support is only available as part of the imToolkit package
-#
-# @see ImageDraw#ImageDraw.text
-# @see pilfont
 
 class ImageFont:
     "PIL font wrapper"
@@ -97,13 +88,13 @@ class ImageFont:
     def _load_pilfont_data(self, file, image):
 
         # read PILfont header
-        if file.readline() != "PILfont\n":
+        if file.readline() != b"PILfont\n":
             raise SyntaxError("Not a PILfont file")
-        d = string.split(file.readline(), ";")
+        d = file.readline().split(b";")
         self.info = [] # FIXME: should be a dictionary
         while True:
             s = file.readline()
-            if not s or s == "DATA\n":
+            if not s or s == b"DATA\n":
                 break
             self.info.append(s)
 
@@ -129,9 +120,18 @@ class ImageFont:
 class FreeTypeFont:
     "FreeType font wrapper (requires _imagingft service)"
 
-    def __init__(self, file, size, index=0, encoding=""):
+    def __init__(self, font=None, size=10, index=0, encoding="", file=None):
         # FIXME: use service provider instead
-        self.font = core.getfont(file, size, index, encoding)
+        if file:
+            if warnings:
+                warnings.warn('file parameter deprecated, please use font parameter instead.', DeprecationWarning)
+            font = file
+
+        if isPath(font):
+            self.font = core.getfont(font, size, index, encoding)
+        else:
+            self.font_bytes = font.read()
+            self.font = core.getfont("", size, index, encoding, self.font_bytes)
 
     def getname(self):
         return self.font.family, self.font.style
@@ -141,6 +141,9 @@ class FreeTypeFont:
 
     def getsize(self, text):
         return self.font.getsize(text)[0]
+
+    def getoffset(self, text):
+        return self.font.getsize(text)[1]
 
     def getmask(self, text, mode=""):
         return self.getmask2(text, mode)[0]
@@ -179,43 +182,50 @@ class TransposedFont:
             return im.transpose(self.orientation)
         return im
 
-##
-# Load font file.  This function loads a font object from the given
-# bitmap font file, and returns the corresponding font object.
-#
-# @param filename Name of font file.
-# @return A font object.
-# @exception IOError If the file could not be read.
 
 def load(filename):
-    "Load a font file."
+    """
+    Load a font file.  This function loads a font object from the given
+    bitmap font file, and returns the corresponding font object.
+
+    :param filename: Name of font file.
+    :return: A font object.
+    :exception IOError: If the file could not be read.
+    """
     f = ImageFont()
     f._load_pilfont(filename)
     return f
 
-##
-# Load a TrueType or OpenType font file, and create a font object.
-# This function loads a font object from the given file, and creates
-# a font object for a font of the given size.
-# <p>
-# This function requires the _imagingft service.
-#
-# @param filename A truetype font file.  Under Windows, if the file
-#    is not found in this filename, the loader also looks in Windows
-#    <b>fonts</b> directory
-# @param size The requested size, in points.
-# @param index Which font face to load (default is first available face).
-# @param encoding Which font encoding to use (default is Unicode).  Common
-#    encodings are "unic" (Unicode), "symb" (Microsoft Symbol), "ADOB"
-#    (Adobe Standard), "ADBE" (Adobe Expert), and "armn" (Apple Roman).
-#    See the FreeType documentation for more information.
-# @return A font object.
-# @exception IOError If the file could not be read.
 
-def truetype(filename, size, index=0, encoding=""):
-    "Load a truetype font file."
+def truetype(font=None, size=10, index=0, encoding="", filename=None):
+    """
+    Load a TrueType or OpenType font file, and create a font object.
+    This function loads a font object from the given file, and creates
+    a font object for a font of the given size.
+
+    This function requires the _imagingft service.
+
+    :param filename: A truetype font file. Under Windows, if the file
+                     is not found in this filename, the loader also looks in
+                     Windows :file:`fonts/` directory.
+    :param size: The requested size, in points.
+    :param index: Which font face to load (default is first available face).
+    :param encoding: Which font encoding to use (default is Unicode). Common
+                     encodings are "unic" (Unicode), "symb" (Microsoft
+                     Symbol), "ADOB" (Adobe Standard), "ADBE" (Adobe Expert),
+                     and "armn" (Apple Roman). See the FreeType documentation
+                     for more information.
+    :return: A font object.
+    :exception IOError: If the file could not be read.
+    """
+
+    if filename:
+        if warnings:
+            warnings.warn('filename parameter deprecated, please use font parameter instead.', DeprecationWarning)
+        font = filename
+
     try:
-        return FreeTypeFont(filename, size, index, encoding)
+        return FreeTypeFont(font, size, index, encoding)
     except IOError:
         if sys.platform == "win32":
             # check the windows font repository
@@ -223,42 +233,47 @@ def truetype(filename, size, index=0, encoding=""):
             # 1.5.2's os.environ.get()
             windir = os.environ.get("WINDIR")
             if windir:
-                filename = os.path.join(windir, "fonts", filename)
+                filename = os.path.join(windir, "fonts", font)
                 return FreeTypeFont(filename, size, index, encoding)
         raise
 
-##
-# Load font file.  Same as load, but searches for a bitmap font along
-# the Python path.
-#
-# @param filename Name of font file.
-# @return A font object.
-# @exception IOError If the file could not be read.
-# @see #load
 
 def load_path(filename):
-    "Load a font file, searching along the Python path."
+    """
+    Load font file. Same as :py:func:`~PIL.ImageFont.load`, but searches for a
+    bitmap font along the Python path.
+
+    :param filename: Name of font file.
+    :return: A font object.
+    :exception IOError: If the file could not be read.
+    """
     for dir in sys.path:
-        if Image.isDirectory(dir):
+        if isDirectory(dir):
+            if not isinstance(filename, str):
+                if bytes is str:
+                    filename = filename.encode("utf-8")
+                else:
+                    filename = filename.decode("utf-8")
             try:
                 return load(os.path.join(dir, filename))
             except IOError:
                 pass
     raise IOError("cannot find font file")
 
-##
-# Load a (probably rather ugly) default font.
-#
-# @return A font object.
 
 def load_default():
-    "Load a default font."
-    from StringIO import StringIO
+    """Load a "better than nothing" default font.
+
+    .. versionadded:: 1.1.4
+
+    :return: A font object.
+    """
+    from io import BytesIO
     import base64
     f = ImageFont()
     f._load_pilfont_data(
          # courB08
-         StringIO(base64.decodestring('''
+         BytesIO(base64.decodestring(b'''
 UElMZm9udAo7Ozs7OzsxMDsKREFUQQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -350,7 +365,7 @@ AJsAEQAGAAAAAP/6AAX//wCbAAoAoAAPAAYAAAAA//oABQABAKAACgClABEABgAA////+AAGAAAA
 pQAKAKwAEgAGAAD////4AAYAAACsAAoAswASAAYAAP////gABgAAALMACgC6ABIABgAA////+QAG
 AAAAugAKAMEAEQAGAAD////4AAYAAgDBAAoAyAAUAAYAAP////kABQACAMgACgDOABMABgAA////
 +QAGAAIAzgAKANUAEw==
-''')), Image.open(StringIO(base64.decodestring('''
+''')), Image.open(BytesIO(base64.decodestring(b'''
 iVBORw0KGgoAAAANSUhEUgAAAx4AAAAUAQAAAAArMtZoAAAEwElEQVR4nABlAJr/AHVE4czCI/4u
 Mc4b7vuds/xzjz5/3/7u/n9vMe7vnfH/9++vPn/xyf5zhxzjt8GHw8+2d83u8x27199/nxuQ6Od9
 M43/5z2I+9n9ZtmDBwMQECDRQw/eQIQohJXxpBCNVE6QCCAAAAD//wBlAJr/AgALyj1t/wINwq0g
@@ -377,14 +392,15 @@ w7IkEbzhVQAAAABJRU5ErkJggg==
 '''))))
     return f
 
+
 if __name__ == "__main__":
     # create font data chunk for embedding
     import base64, os, sys
     font = "../Images/courB08"
-    print "    f._load_pilfont_data("
-    print "         # %s" % os.path.basename(font)
-    print "         StringIO(base64.decodestring('''"
+    print("    f._load_pilfont_data(")
+    print("         # %s" % os.path.basename(font))
+    print("         BytesIO(base64.decodestring(b'''")
     base64.encode(open(font + ".pil", "rb"), sys.stdout)
-    print "''')), Image.open(StringIO(base64.decodestring('''"
+    print("''')), Image.open(BytesIO(base64.decodestring(b'''")
     base64.encode(open(font + ".pbm", "rb"), sys.stdout)
-    print "'''))))"
+    print("'''))))")

@@ -23,6 +23,8 @@ See source code and LICENSE.txt for information on usage and redistribution.
 WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
+from __future__ import print_function
+
 __author__  = "Philippe Lagadec, Fredrik Lundh (Secret Labs AB)"
 __date__    = "2013-07-24"
 __version__ = '0.26'
@@ -218,10 +220,17 @@ __version__ = '0.26'
 
 #------------------------------------------------------------------------------
 
-import string, StringIO, struct, array, os.path, sys, datetime
+import io
+import sys
+from PIL import _binary
+from PIL._util import isPath
+import struct, array, os.path, sys, datetime
 
 #[PL] Define explicitly the public API to avoid private objects in pydoc:
 __all__ = ['OleFileIO', 'isOleFile']
+
+if str is not bytes:
+    long = int
 
 #[PL] workaround to fix an issue with array item size on 64 bits systems:
 if array.array('L').itemsize == 4:
@@ -280,7 +289,7 @@ def set_debug_mode(debug_mode):
         debug = debug_pass
 
 #TODO: convert this to hex
-MAGIC = '\320\317\021\340\241\261\032\341'
+MAGIC = b'\320\317\021\340\241\261\032\341'
 
 #[PL]: added constants for Sector IDs (from AAF specifications)
 MAXREGSECT = 0xFFFFFFFAL; # maximum SECT
@@ -319,7 +328,7 @@ VT_VECTOR=0x1000;
 # map property id to name (for debugging purposes)
 
 VT = {}
-for keyword, var in vars().items():
+for keyword, var in list(vars().items()):
     if keyword[:3] == "VT_":
         VT[var] = keyword
 
@@ -360,26 +369,9 @@ def isOleFile (filename):
         return False
 
 
-#TODO: replace i16 and i32 with more readable struct.unpack equivalent
-def i16(c, o = 0):
-    """
-    Converts a 2-bytes (16 bits) string to an integer.
-
-    c: string containing bytes to convert
-    o: offset of bytes to convert in string
-    """
-    return ord(c[o])+(ord(c[o+1])<<8)
-
-
-def i32(c, o = 0):
-    """
-    Converts a 4-bytes (32 bits) string to an integer.
-
-    c: string containing bytes to convert
-    o: offset of bytes to convert in string
-    """
-    return int(ord(c[o])+(ord(c[o+1])<<8)+(ord(c[o+2])<<16)+(ord(c[o+3])<<24))
-    # [PL]: added int() because "<<" gives long int since Python 2.4
+i8 = _binary.i8
+i16 = _binary.i16le
+i32 = _binary.i32le
 
 
 def _clsid(clsid):
@@ -392,7 +384,7 @@ def _clsid(clsid):
         return ""
     return (("%08X-%04X-%04X-%02X%02X-" + "%02X" * 6) %
             ((i32(clsid, 0), i16(clsid, 4), i16(clsid, 6)) +
-            tuple(map(ord, clsid[8:16]))))
+            tuple(map(i8, clsid[8:16]))))
 
 
 
@@ -416,7 +408,7 @@ try:
             # First the string is converted to plain Unicode:
             # (assuming it is encoded as UTF-16 little-endian)
             u = s.decode('UTF-16LE', errors)
-            if KEEP_UNICODE_NAMES:
+            if bytes is not str or KEEP_UNICODE_NAMES:
                 return u
             else:
                 # Second the unicode string is converted to Latin-1
@@ -608,7 +600,7 @@ class OleMetadata:
 
 #--- _OleStream ---------------------------------------------------------------
 
-class _OleStream(StringIO.StringIO):
+class _OleStream(io.BytesIO):
     """
     OLE2 Stream
 
@@ -718,7 +710,7 @@ class _OleStream(StringIO.StringIO):
         #[PL] Last sector should be a "end of chain" marker:
         if sect != ENDOFCHAIN:
             raise IOError, 'incorrect last sector index in OLE stream'
-        data = string.join(data, "")
+        data = b"".join(data)
         # Data is truncated to the actual stream size:
         if len(data) >= size:
             data = data[:size]
@@ -733,7 +725,7 @@ class _OleStream(StringIO.StringIO):
             debug('len(data)=%d, size=%d' % (len(data), size))
             raise IOError, 'OLE stream size is less than declared'
         # when all data is read in memory, StringIO constructor is called
-        StringIO.StringIO.__init__(self, data)
+        io.BytesIO.__init__(self, data)
         # Then the _OleStream object can be used as a read-only file object.
 
 
@@ -943,12 +935,12 @@ class _OleDirectoryEntry:
         "Dump this entry, and all its subentries (for debug purposes only)"
         TYPES = ["(invalid)", "(storage)", "(stream)", "(lockbytes)",
                  "(property)", "(root)"]
-        print " "*tab + repr(self.name), TYPES[self.entry_type],
+        print(" "*tab + repr(self.name), TYPES[self.entry_type], end=' ')
         if self.entry_type in (STGTY_STREAM, STGTY_ROOT):
-            print self.size, "bytes",
-        print
+            print(self.size, "bytes", end=' ')
+        print()
         if self.entry_type in (STGTY_STORAGE, STGTY_ROOT) and self.clsid:
-            print " "*tab + "{%s}" % self.clsid
+            print(" "*tab + "{%s}" % self.clsid)
 
         for kid in self.kids:
             kid.dump(tab + 2)
@@ -994,7 +986,7 @@ class OleFileIO:
 
     Object names are given as a list of strings, one for each subentry
     level.  The root entry should be omitted.  For example, the following
-    code extracts all image streams from a Microsoft Image Composer file:
+    code extracts all image streams from a Microsoft Image Composer file::
 
         ole = OleFileIO("fan.mic")
 
@@ -1047,7 +1039,7 @@ class OleFileIO:
         """
         # added by [PL]
         if defect_level >= self._raise_defects_level:
-            raise exception_type, message
+            raise exception_type(message)
         else:
             # just record the issue, no exception raised:
             self.parsing_issues.append((exception_type, message))
@@ -1070,7 +1062,7 @@ class OleFileIO:
             #TODO: if larger than 1024 bytes, this could be the actual data => StringIO
             self.fp = open(filename, "rb")
         # old code fails if filename is not a plain string:
-        #if type(filename) == type(""):
+        #if isPath(filename):
         #    self.fp = open(filename, "rb")
         #else:
         #    self.fp = filename
@@ -1389,7 +1381,7 @@ class OleFileIO:
 ##          if ix == 0xFFFFFFFEL or ix == 0xFFFFFFFFL:
 ##              break
 ##          s = self.getsect(ix)
-##          #fat    = fat + map(lambda i, s=s: i32(s, i), range(0, len(s), 4))
+##          #fat    = fat + [i32(s, i) for i in range(0, len(s), 4)]
 ##          fat = fat + array.array(UINT32, s)
         if self.csectDif != 0:
             # [PL] There's a DIFAT because file is larger than 6.8MB
@@ -1462,7 +1454,7 @@ class OleFileIO:
         # In any case, first read stream_size:
         s = self._open(self.minifatsect, stream_size, force_FAT=True).read()
         #[PL] Old code replaced by an array:
-        #self.minifat = map(lambda i, s=s: i32(s, i), range(0, len(s), 4))
+        #self.minifat = [i32(s, i) for i in range(0, len(s), 4)]
         self.minifat = self.sect2array(s)
         # Then shrink the array to used size, to avoid indexes out of MiniStream:
         debug('MiniFAT shrunk from %d to %d sectors' % (len(self.minifat), nb_minisectors))
@@ -1660,7 +1652,7 @@ class OleFileIO:
                 if kid.name.lower() == name.lower():
                     break
             else:
-                raise IOError, "file not found"
+                raise IOError("file not found")
             node = kid
         return node.sid
 
@@ -1680,7 +1672,7 @@ class OleFileIO:
         sid = self._find(filename)
         entry = self.direntries[sid]
         if entry.entry_type != STGTY_STREAM:
-            raise IOError, "this file is not a stream"
+            raise IOError("this file is not a stream")
         return self._open(entry.isectStart, entry.size)
 
 
@@ -1881,9 +1873,9 @@ class OleFileIO:
                     else:
                         # legacy code kept for backward compatibility: returns a
                         # number of seconds since Jan 1,1601
-                        value = value / 10000000L # seconds
+                        value = value // 10000000 # seconds
                 elif type == VT_UI1: # 1-byte unsigned integer
-                    value = ord(s[offset+4])
+                    value = i8(s[offset+4])
                 elif type == VT_CLSID:
                     value = _clsid(s[offset+4:offset+20])
                 elif type == VT_CF:
@@ -1972,16 +1964,15 @@ Options:
                 continue
 
             ole = OleFileIO(filename)#, raise_defects=DEFECT_INCORRECT)
-            print "-" * 68
-            print filename
-            print "-" * 68
+            print("-" * 68)
+            print(filename)
+            print("-" * 68)
             ole.dumpdirectory()
             for streamname in ole.listdir():
                 if streamname[-1][0] == "\005":
-                    print streamname, ": properties"
+                    print(streamname, ": properties")
                     props = ole.getproperties(streamname, convert_time=True)
-                    props = props.items()
-                    props.sort()
+                    props = sorted(props.items())
                     for k, v in props:
                         #[PL]: avoid to display too large or binary values:
                         if isinstance(v, basestring):
@@ -1993,7 +1984,7 @@ Options:
                                 if chr(c) in v:
                                     v = '(binary data)'
                                     break
-                        print "   ", k, v
+                        print("   ", k, v)
 
             if check_streams:
                 # Read all streams to check if there are errors:
@@ -2044,5 +2035,5 @@ Options:
                     print '- %s: %s' % (exctype.__name__, msg)
             else:
                 print 'None'
-##      except IOError, v:
-##          print "***", "cannot read", file, "-", v
+##      except IOError as v:
+##          print("***", "cannot read", file, "-", v)
