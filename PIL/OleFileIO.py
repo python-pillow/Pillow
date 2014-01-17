@@ -112,7 +112,7 @@ class _OleStream(io.BytesIO):
 
         data = b"".join(data)
 
-        # print len(data), size
+        # print(len(data), size)
 
         io.BytesIO.__init__(self, data[:size])
 
@@ -501,8 +501,8 @@ class OleFileIO:
 
             # FIXME: add support for VT_VECTOR
 
-            #print "%08x" % id, repr(value),
-            #print "(%s)" % VT[i32(s, offset) & 0xFFF]
+            #print("%08x" % id, repr(value), end=" ")
+            #print("(%s)" % VT[i32(s, offset) & 0xFFF])
 
             data[id] = value
 
