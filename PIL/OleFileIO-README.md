@@ -12,7 +12,7 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 Main improvements over PIL version of OleFileIO:
 ------------------------------------------------
 
-- Better compatibility with Python 2.4 up to 2.7
+- Better compatibility with Python 2.7 (also compatible with Python 3.2+)
 - Support for files larger than 6.8MB
 - Robust: many checks to detect malformed files
 - Improved API
@@ -57,28 +57,28 @@ Here are a few examples:
 		ole = OleFileIO_PL.OleFileIO('myfile.doc')
 		
 		# Get list of streams:
-		print ole.listdir()
+		print(ole.listdir())
 		
 		# Test if known streams/storages exist:
 		if ole.exists('worddocument'):
-		    print "This is a Word document."
-		    print "size :", ole.get_size('worddocument')
+		    print("This is a Word document.")
+		    print("size :", ole.get_size('worddocument'))
 		    if ole.exists('macros/vba'):
-		         print "This document seems to contain VBA macros."
-		
+		         print("This document seems to contain VBA macros.")
+
 		# Extract the "Pictures" stream from a PPT file:
 		if ole.exists('Pictures'):
 		    pics = ole.openstream('Pictures')
 		    data = pics.read()
-		    f = open('Pictures.bin', 'w')
+		    f = open('Pictures.bin', 'wb')
 		    f.write(data)
 		    f.close()
 
 		# Extract metadata (new in v0.24) - see source code for all attributes:
 		meta = ole.get_metadata()
-		print 'Author:', meta.author
-		print 'Title:', meta.title
-		print 'Creation date:', meta.create_time
+		print('Author:', meta.author)
+		print('Title:', meta.title)
+		print('Creation date:', meta.create_time)
 		# print all metadata:
 		meta.dump()
 
@@ -87,9 +87,9 @@ Here are a few examples:
 		
 		# Work with a file-like object (e.g. StringIO) instead of a file on disk:
 		data = open('myfile.doc', 'rb').read()
-		f = StringIO.StringIO(data)
+		f = io.BytesIO(data)
 		ole = OleFileIO_PL.OleFileIO(f)
-		print ole.listdir()
+		print(ole.listdir())
 		ole.close()
 		
 		
