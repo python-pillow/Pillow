@@ -638,7 +638,7 @@ class _OleStream(io.BytesIO):
             raise IOError('incorrect OLE sector index for empty stream')
         #[PL] A fixed-length for loop is used instead of an undefined while
         # loop to avoid DoS attacks:
-        for i in xrange(nb_sectors):
+        for i in range(nb_sectors):
             # Sector index may be ENDOFCHAIN, but only if size was unknown
             if sect == ENDOFCHAIN:
                 if unknown_size:
@@ -1376,7 +1376,7 @@ class OleFileIO:
             if self.csectDif != nb_difat:
                 raise IOError('incorrect DIFAT')
             isect_difat = self.sectDifStart
-            for i in xrange(nb_difat):
+            for i in range(nb_difat):
                 debug( "DIFAT block %d, sector %X" % (i, isect_difat) )
                 #TODO: check if corresponding FAT SID = DIFSECT
                 sector_difat = self.getsect(isect_difat)
@@ -1485,7 +1485,7 @@ class OleFileIO:
         #self.direntries = []
         # We start with a list of "None" object
         self.direntries = [None] * max_entries
-##        for sid in xrange(max_entries):
+##        for sid in range(max_entries):
 ##            entry = fp.read(128)
 ##            if not entry:
 ##                break
