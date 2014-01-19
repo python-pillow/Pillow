@@ -252,8 +252,25 @@ def test_trns_rgb():
     assert_equal(im.info["transparency"], (0, 1, 2))
 
 def test_save_icc_profile_none():
+    # check saving files with an ICC profile set to None (omit profile)
     in_file = "Tests/images/icc_profile_none.png"
     im = Image.open(in_file)
+    assert im.info['icc_profile'] is None
 
     file = tempfile("temp.png")
     assert_no_exception(lambda: im.save(file))
+    im = Image.open(file)
+    assert 'icc_profile' not in im.info
+
+def test_save_icc_profile_exists():
+    # check icc profile is kept during save()
+    in_file = "Tests/images/trollface.png"
+    im = Image.open(in_file)
+    orig_profile = im.info['icc_profile']
+    assert len(orig_profile) == 6636
+
+    file = tempfile("temp.png")
+    assert_no_exception(lambda: im.save(file))
+
+    im = Image.open(file)
+    assert im.info['icc_profile'] == orig_profile
