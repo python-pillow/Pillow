@@ -250,3 +250,10 @@ def test_trns_rgb():
 
     im = roundtrip(im, transparency=(0, 1, 2))
     assert_equal(im.info["transparency"], (0, 1, 2))
+
+def test_save_icc_profile_none():
+    in_file = "Tests/images/icc_profile_none.png"
+    im = Image.open(in_file)
+
+    file = tempfile("temp.png")
+    assert_no_exception(lambda: im.save(file))

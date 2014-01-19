@@ -618,7 +618,7 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
             name = p.tags.desc.get("ASCII", p.tags.desc.get("Unicode", p.tags.desc.get("Macintosh", p.tags.desc.get("en", {}).get("US", "ICC Profile")))).encode("latin1", "replace")[:79]
         except ImportError:
             name = b"ICC Profile"
-        data = name + b"\0\0" + zlib.compress(im.info["icc_profile"])
+        data = name or b'ICC Profile' + b"\0\0" + zlib.compress(im.info["icc_profile"])
         chunk(fp, b"iCCP", data)
 
     ImageFile._save(im, _idat(fp, chunk), [("zip", (0,0)+im.size, 0, rawmode)])
