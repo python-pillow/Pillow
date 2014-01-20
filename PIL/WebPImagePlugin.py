@@ -32,8 +32,10 @@ class WebPImageFile(ImageFile.ImageFile):
     def _open(self):
         data, width, height, self.mode, icc_profile, exif = _webp.WebPDecode(self.fp.read())
 
-        self.info["icc_profile"] = icc_profile
-        self.info["exif"] = exif
+        if icc_profile:
+            self.info["icc_profile"] = icc_profile
+        if exif:
+            self.info["exif"] = exif
 
         self.size = width, height
         self.fp = BytesIO(data)
