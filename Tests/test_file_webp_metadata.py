@@ -82,3 +82,20 @@ def test_write_icc_metadata():
     assert_true(webp_icc_profile)
     if webp_icc_profile:
         assert_equal(webp_icc_profile, expected_icc_profile, "Webp ICC didn't match")
+
+
+def test_read_no_exif():
+    file_path = "Tests/images/flower.jpg"
+    image = Image.open(file_path)
+    expected_exif = image.info['exif']
+
+    buffer = BytesIO()
+
+    image.save(buffer, "webp")
+    
+    buffer.seek(0)
+    webp_image = Image.open(buffer)
+
+    assert_false(webp_image._getexif())
+    
+ 
