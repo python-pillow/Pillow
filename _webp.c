@@ -34,18 +34,24 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         if (size < width * height * 4){
             Py_RETURN_NONE;
         }
+        #if WEBP_ENCODER_ABI_VERSION >= 0x0100
         if (lossless) {
             ret_size = WebPEncodeLosslessRGBA(rgb, width, height, 4* width, &output);
-        } else {
+        } else
+        #endif
+        {
             ret_size = WebPEncodeRGBA(rgb, width, height, 4* width, quality_factor, &output);
         }
     } else if (strcmp(mode, "RGB")==0){
         if (size < width * height * 3){
             Py_RETURN_NONE;
         }
+        #if WEBP_ENCODER_ABI_VERSION >= 0x0100
         if (lossless) {
             ret_size = WebPEncodeLosslessRGB(rgb, width, height, 3* width, &output);
-        } else {
+        } else
+        #endif
+        {
             ret_size = WebPEncodeRGB(rgb, width, height, 3* width, quality_factor, &output);
         }
     } else {
