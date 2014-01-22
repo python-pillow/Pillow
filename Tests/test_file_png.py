@@ -257,20 +257,17 @@ def test_save_icc_profile_none():
     im = Image.open(in_file)
     assert_equal(im.info['icc_profile'], None)
 
-    f = tempfile("temp.png")
-    assert_no_exception(lambda: im.save(f))
-    im = Image.open(f)
+    im = roundtrip(im)
     assert_false('icc_profile' in im.info)
 
-def test_save_icc_profile_exists():
-    # check icc profile is kept during save()
-    in_file = "Tests/images/trollface.png"
-    im = Image.open(in_file)
-    orig_profile = im.info['icc_profile']
-    assert_equal(len(orig_profile), 6636)
+def test_roundtrip_icc_profile():
+    # check that we can roundtrip the icc profile
+    im = lena('RGB')
 
-    f = tempfile("temp.png")
-    assert_no_exception(lambda: im.save(f))
+    jpeg_image = Image.open('Tests/images/flower2.jpg')
+    expected_icc = jpeg_image.info['icc_profile']
 
-    im = Image.open(f)
-    assert_equal(im.info['icc_profile'], orig_profile)
+    im.info['icc_profile'] = expected_icc
+    im = roundtrip(im)
+    assert_equal(im.info['icc_profile'], expected_icc)
+
