@@ -129,6 +129,8 @@ class BmpImageFile(ImageFile.ImageFile):
             greyscale = 1
             if colors == 2:
                 indices = (0, 255)
+            elif colors > 2**16 or colors <=0: #We're reading a i32. 
+                raise IOError("Unsupported BMP Palette size (%d)" % colors)
             else:
                 indices = list(range(colors))
             for i in indices:
