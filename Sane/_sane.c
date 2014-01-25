@@ -916,10 +916,13 @@ SaneDev_snap(SaneDevObject *self, PyObject *args)
                  call which returns SANE_STATUS_EOF in order to start
                  a new frame.
               */
-              do {
-                   st = sane_read(self->h, buffer, READSIZE, &len);
-                 }
-              while (st == SANE_STATUS_GOOD);
+              if (st != SANE_STATUS_EOF)
+                {
+                  do {
+                    st = sane_read(self->h, buffer, READSIZE, &len);
+                  }
+                  while (st == SANE_STATUS_GOOD);
+                }
               if (st != SANE_STATUS_EOF)
                 {
                    Py_BLOCK_THREADS
@@ -937,10 +940,13 @@ SaneDev_snap(SaneDevObject *self, PyObject *args)
         }
     }
   /* enforce SANE_STATUS_EOF. Can be necessary for ADF scans for some backends */
-  do {
-       st = sane_read(self->h, buffer, READSIZE, &len);
-     }
-  while (st == SANE_STATUS_GOOD);
+  if (st != SANE_STATUS_EOF)
+    {
+      do {
+        st = sane_read(self->h, buffer, READSIZE, &len);
+      }
+      while (st == SANE_STATUS_GOOD);
+    }
   if (st != SANE_STATUS_EOF)
     {
       sane_cancel(self->h);
