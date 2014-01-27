@@ -82,7 +82,7 @@ class BmpImageFile(ImageFile.ImageFile):
             colors = 0
             direction = -1
 
-        elif len(s) in [40, 64]:
+        elif len(s) in [40, 64, 108, 124]:
 
             # WIN 3.1 or OS/2 2.0 INFO
             bits = i16(s[14:])
