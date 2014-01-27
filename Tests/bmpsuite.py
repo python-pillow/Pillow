@@ -65,20 +65,20 @@ def test_good():
     
     for f in get_files('g'):
         try:
-            print '.'
+            print '.',
             #print ("Trying %s"%f)
             im = Image.open(f)
             #print ("%s, %s" %(im.size, im.mode))
             im.load()
             compare = Image.open(get_compare(f))
             compare.load()
-            im = im.convert(compare.mode)
-            #print ("%s, %s" %(compare.size, compare.mode))
-            if not assert_image_similar(im, compare,10):
-                print (f)
-                im.show()
-                compare.show()
-                sys.exit()
+            if im.mode == 'P':
+                # assert image similar doesn't really work
+                # with paletized image, since the palette might
+                # be differently ordered for an equivalent image.
+                im = im.convert('RGBA')
+                compare = im.convert('RGBA')
+            assert_image_similar(im, compare,5)
             
             
         except Exception as msg:
