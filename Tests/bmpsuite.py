@@ -10,27 +10,25 @@ def get_files(d, ext='.bmp'):
     return [os.path.join(base,d,f) for f
             in os.listdir(os.path.join(base, d)) if ext in f]
 
-def xtest_bad():
+def test_bad():
     """ These shouldn't crash/dos, but they shouldn't return anything either """
     for f in get_files('b'):
         try:
-            print ("Trying %s"%f)
             im = Image.open(f)
-            print ("%s, %s" %(im.size, im.mode))
             im.load()
         except Exception as msg:
-            print ("Bad Image %s: %s" %(f,msg))
+            pass
+            # print ("Bad Image %s: %s" %(f,msg))
 
-def xtest_questionable():
+def test_questionable():
     """ These shouldn't crash/dos, but its not well defined that these are in spec """
     for f in get_files('q'):
         try:
-            print ("Trying %s"%f)
             im = Image.open(f)
-            print ("%s, %s" %(im.size, im.mode))
             im.load()
         except Exception as msg:
-            print ("Bad Image %s: %s" %(f,msg))
+            pass
+            # print ("Bad Image %s: %s" %(f,msg))
 
 
 def test_good():
@@ -65,10 +63,7 @@ def test_good():
     
     for f in get_files('g'):
         try:
-            print '.',
-            #print ("Trying %s"%f)
             im = Image.open(f)
-            #print ("%s, %s" %(im.size, im.mode))
             im.load()
             compare = Image.open(get_compare(f))
             compare.load()
@@ -82,5 +77,5 @@ def test_good():
             
             
         except Exception as msg:
-            print ("Bad Image %s: %s" %(f,msg))
+            print ("Unsupported Image %s: %s" %(f,msg))
             pass
