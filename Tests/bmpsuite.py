@@ -77,5 +77,10 @@ def test_good():
             
             
         except Exception as msg:
-            print ("Unsupported Image %s: %s" %(f,msg))
-            pass
+            # there are three here that are unsupported:
+            unsupported = ('Tests/images/bmp/g/rgb32bf.bmp',
+                           'Tests/images/bmp/g/pal8rle.bmp',
+                           'Tests/images/bmp/g/pal4rle.bmp')
+            if f not in unsupported:
+                assert_true(False, "Unsupported Image %s: %s" %(f,msg))
+
