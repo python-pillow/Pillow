@@ -137,6 +137,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     }
 
     if (filename && font_bytes_size <= 0) {
+        self->font_bytes = NULL;
         error = FT_New_Face(library, filename, index, &self->face);
     } else {
         /* need to have allocated storage for font_bytes for the life of the object.*/
