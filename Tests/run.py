@@ -67,9 +67,10 @@ def main():
 
     files = filter_tests(files)
 
-    print (files)
     pool = Pool()
     results = pool.map(test_one, files)
+    pool.close()
+    pool.join()
     
     for test,(result, status) in zip(files,results):
         if result == "ok":
