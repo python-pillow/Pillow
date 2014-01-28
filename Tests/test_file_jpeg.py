@@ -138,7 +138,7 @@ def test_progressive_large_buffer():
 def test_progressive_large_buffer_highest_quality():
     f = tempfile('temp.jpg')
     a = array.array('B')
-    a.extend(random.randint(0, 255) for _ in xrange(256 * 256 * 3))
+    a.extend(random.randint(0, 255) for _ in range(256 * 256 * 3))
     im = Image.frombuffer("RGB", (256, 256), a, "raw", "RGB", 0, 1)
     # this requires more bytes than pixels in the image
     im.save(f, format="JPEG", progressive=True, quality=100)
