@@ -73,6 +73,7 @@ static FT_Library library;
 typedef struct {
     PyObject_HEAD
     FT_Face face;
+    unsigned char *font_bytes;
 } FontObject;
 
 static PyTypeObject Font_Type;
@@ -101,7 +102,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     /* create a font object from a file name and a size (in pixels) */
 
     FontObject* self;
-    int error;
+    int error = 0;
 
     char* filename = NULL;
     int size;
@@ -120,11 +121,13 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
             );
         return NULL;
     }
+
     if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|iss#", kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
                                      &size, &index, &encoding, &font_bytes,
-                                     &font_bytes_size))
+                                     &font_bytes_size)) {
         return NULL;
+    }
 
     self = PyObject_New(FontObject, &Font_Type);
     if (!self) {
@@ -136,7 +139,17 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     if (filename && font_bytes_size <= 0) {
         error = FT_New_Face(library, filename, index, &self->face);
     } else {
-        error = FT_New_Memory_Face(library, (FT_Byte*)font_bytes, font_bytes_size, index, &self->face);
+        /* need to have allocated storage for font_bytes for the life of the object.*/
+        /* Don't free this before FT_Done_Face */
+        self->font_bytes = PyMem_Malloc(font_bytes_size);
+        if (!self->font_bytes) {
+            error = 65; // Out of Memory in Freetype. 
+        }
+        if (!error) {
+            memcpy(self->font_bytes, font_bytes, (size_t)font_bytes_size);
+            error = FT_New_Memory_Face(library, (FT_Byte*)self->font_bytes, 
+                                       font_bytes_size, index, &self->face);
+        }
     }
 
     if (!error)
@@ -152,6 +165,9 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
       PyMem_Free(filename);
 
     if (error) {
+        if (self->font_bytes) {
+            PyMem_Free(self->font_bytes);
+        }  
         PyObject_Del(self);
         return geterror(error);
     }
@@ -435,6 +451,9 @@ static void
 font_dealloc(FontObject* self)
 {
     FT_Done_Face(self->face);
+    if (self->font_bytes) {
+        PyMem_Free(self->font_bytes);
+    }  
     PyObject_Del(self);
 }
 
