@@ -43,10 +43,12 @@ def test_parser():
     assert_image_equal(*roundtrip("PPM"))
     assert_image_equal(*roundtrip("TIFF"))
     assert_image_equal(*roundtrip("XBM"))
-    #assert_image_equal(*roundtrip("EPS"))      #no eps_decoder
     assert_image_equal(*roundtrip("TGA"))
     assert_image_equal(*roundtrip("PCX"))
 
+    im1, im2 = roundtrip("EPS")
+    assert_image_similar(im1, im2.convert('L'),20) # EPS comes back in RGB      
+    
     if "jpeg_encoder" in codecs:
         im1, im2 = roundtrip("JPEG") # lossy compression
         assert_image(im1, im2.mode, im2.size)

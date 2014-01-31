@@ -67,16 +67,29 @@ def Ghostscript(tile, size, fp, scale=1):
 
     import tempfile, os, subprocess
 
-    file = tempfile.mktemp()
+    outfile = tempfile.mktemp()
+    infile = tempfile.mktemp()
+
+    with open(infile, 'wb') as f:
+        fp.seek(offset)
+        while length >0:
+            s = fp.read(100*1024)
+            if not s:
+                break
+            length = length - len(s)
+            f.write(s)
 
     # Build ghostscript command
     command = ["gs",
-               "-q",                    # quite mode
-               "-g%dx%d" % size,        # set output geometry (pixels)
-               "-r%d" % (72*scale),     # set input DPI (dots per inch)
-               "-dNOPAUSE -dSAFER",     # don't pause between pages, safe mode
-               "-sDEVICE=ppmraw",       # ppm driver
-               "-sOutputFile=%s" % file,# output file
+               "-q",                        # quiet mode
+               "-g%dx%d" % size,            # set output geometry (pixels)
+               "-r%d" % (72*scale),         # set input DPI (dots per inch)
+               "-dNOPAUSE -dSAFER",         # don't pause between pages, safe mode
+               "-sDEVICE=ppmraw",           # ppm driver
+               "-sOutputFile=%s" % outfile, # output file
+               "-c", "%d %d translate" % (-bbox[0], -bbox[1]),
+                                            # adjust for image origin
+               "-f", infile,                # input file
             ]
 
     if gs_windows_binary is not None:
@@ -87,23 +100,15 @@ def Ghostscript(tile, size, fp, scale=1):
     # push data through ghostscript
     try:
         gs = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        # adjust for image origin
-        if bbox[0] != 0 or bbox[1] != 0:
-            gs.stdin.write(("%d %d translate\n" % (-bbox[0], -bbox[1])).encode('ascii'))
-        fp.seek(offset)
-        while length > 0:
-            s = fp.read(8192)
-            if not s:
-                break
-            length = length - len(s)
-            gs.stdin.write(s)
         gs.stdin.close()
         status = gs.wait()
         if status:
             raise IOError("gs failed (status %d)" % status)
-        im = Image.core.open_ppm(file)
+        im = Image.core.open_ppm(outfile)
     finally:
-        try: os.unlink(file)
+        try:
+            os.unlink(outfile)
+            os.unlink(infile)
         except: pass
 
     return im
@@ -320,6 +325,11 @@ class EpsImageFile(ImageFile.ImageFile):
         self.size = self.im.size
         self.tile = []
 
+    def load_seek(self,*args,**kwargs):
+        # we can't incrementally load, so force ImageFile.parser to
+        # use our custom load method by defining this method. 
+        pass
+
 #
 # --------------------------------------------------------------------
 
@@ -350,7 +360,9 @@ def _save(im, fp, filename, eps=1):
             pass
 
     base_fp = fp
-    fp = io.TextIOWrapper(NoCloseStream(fp), encoding='latin-1')
+    fp = NoCloseStream(fp)
+    if sys.version_info[0] > 2:
+        fp = io.TextIOWrapper(fp, encoding='latin-1')
 
     if eps:
         #
