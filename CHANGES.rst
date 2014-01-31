@@ -1,8 +1,20 @@
 Changelog (Pillow)
 ==================
 
-2.4.0 (2014-04-01)
+2.4.0 (2014-04-01 est.)
 ------------------
+
+- Fix segfault in getfont when passed a memory resident font
+  [wiredfool]
+
+- Fix crash on Saving a PNG when icc-profile is None
+  [brutasse]
+
+- Cffi+Python implementation of the PixelAccess object
+  [wiredfool]
+
+- PixelAccess returns unsigned ints for I16 mode
+  [wiredfool]
 
 - Minor patch on booleans + Travis
   [sciunto]
