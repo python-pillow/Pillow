@@ -250,3 +250,24 @@ def test_trns_rgb():
 
     im = roundtrip(im, transparency=(0, 1, 2))
     assert_equal(im.info["transparency"], (0, 1, 2))
+
+def test_save_icc_profile_none():
+    # check saving files with an ICC profile set to None (omit profile)
+    in_file = "Tests/images/icc_profile_none.png"
+    im = Image.open(in_file)
+    assert_equal(im.info['icc_profile'], None)
+
+    im = roundtrip(im)
+    assert_false('icc_profile' in im.info)
+
+def test_roundtrip_icc_profile():
+    # check that we can roundtrip the icc profile
+    im = lena('RGB')
+
+    jpeg_image = Image.open('Tests/images/flower2.jpg')
+    expected_icc = jpeg_image.info['icc_profile']
+
+    im.info['icc_profile'] = expected_icc
+    im = roundtrip(im)
+    assert_equal(im.info['icc_profile'], expected_icc)
+
