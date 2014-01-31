@@ -463,7 +463,7 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
 {
     union {
       UINT8 b[4];
-      INT16 h;
+      UINT16 h;
       INT32 i;
       FLOAT32 f;
     } pixel;
@@ -3072,12 +3072,35 @@ _getattr_ptr(ImagingObject* self, void* closure)
 #endif
 }
 
+static PyObject*
+_getattr_unsafe_ptrs(ImagingObject* self, void* closure)
+{
+    return Py_BuildValue("(ss)(si)(si)(si)(si)(si)(sn)(sn)(sn)(sn)(sn)(si)(si)(sn)", 
+                         "mode", self->image->mode, 
+                         "type", self->image->type,
+                         "depth", self->image->depth,
+                         "bands", self->image->bands,
+                         "xsize", self->image->xsize,
+                         "ysize", self->image->ysize,
+                         "palette", self->image->palette,
+                         "image8", self->image->image8,
+                         "image32", self->image->image32,
+                         "image", self->image->image,
+                         "block", self->image->block,
+                         "pixelsize", self->image->pixelsize,
+                         "linesize", self->image->linesize,
+                         "destroy", self->image->destroy
+                        );
+};
+
+
 static struct PyGetSetDef getsetters[] = {
     { "mode",   (getter) _getattr_mode },
     { "size",   (getter) _getattr_size },
     { "bands",  (getter) _getattr_bands },
     { "id",     (getter) _getattr_id },
     { "ptr",    (getter) _getattr_ptr },
+    { "unsafe_ptrs", (getter) _getattr_unsafe_ptrs },
     { NULL }
 };
 
