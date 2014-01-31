@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (2014-04-01)
 ------------------
 
+- Look in multiarch paths in GNU platforms
+  [pinotree]
+
 - Add arch support for pcc64, s390, s390x, armv7l, aarch64
   [manisandro]
 
