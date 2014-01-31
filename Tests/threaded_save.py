@@ -18,7 +18,7 @@ result = []
 
 class Worker(threading.Thread):
     def run(self):
-        while 1:
+        while True:
             im = queue.get()
             if im is None:
                 queue.task_done()

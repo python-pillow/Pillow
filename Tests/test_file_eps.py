@@ -4,10 +4,10 @@ from PIL import Image, EpsImagePlugin
 import sys
 import io
 
-if EpsImagePlugin.gs_windows_binary == False:
-    # already checked. Not there. 
+if not EpsImagePlugin.gs_windows_binary:
+    # already checked. Not there.
     skip()
-    
+
 if not sys.platform.startswith('win'):
     import subprocess
     try:

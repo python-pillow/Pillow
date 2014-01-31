@@ -93,7 +93,7 @@ def Ghostscript(tile, size, fp, scale=1):
             ]
 
     if gs_windows_binary is not None:
-        if gs_windows_binary is False:
+        if not gs_windows_binary:
             raise WindowsError('Unable to locate Ghostscript on paths')
         command[0] = gs_windows_binary
 
