@@ -82,7 +82,7 @@ class BmpImageFile(ImageFile.ImageFile):
             colors = 0
             direction = -1
 
-        elif len(s) in [40, 64]:
+        elif len(s) in [40, 64, 108, 124]:
 
             # WIN 3.1 or OS/2 2.0 INFO
             bits = i16(s[14:])
@@ -129,6 +129,8 @@ class BmpImageFile(ImageFile.ImageFile):
             greyscale = 1
             if colors == 2:
                 indices = (0, 255)
+            elif colors > 2**16 or colors <=0: #We're reading a i32. 
+                raise IOError("Unsupported BMP Palette size (%d)" % colors)
             else:
                 indices = list(range(colors))
             for i in indices:

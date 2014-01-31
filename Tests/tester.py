@@ -27,6 +27,7 @@ def success():
     success.count += 1
     if _logfile:
         print(sys.argv[0], success.count, failure.count, file=_logfile)
+    return True
 
 def failure(msg=None, frame=None):
     import sys, linecache
@@ -44,6 +45,7 @@ def failure(msg=None, frame=None):
         print("- " + msg)
     if _logfile:
         print(sys.argv[0], success.count, failure.count, file=_logfile)
+    return False
 
 success.count = failure.count = 0
 
@@ -198,9 +200,9 @@ def assert_image_similar(a, b, epsilon, msg=None):
             diff += abs(abyte-bbyte)
     ave_diff = float(diff)/(a.size[0]*a.size[1])
     if epsilon < ave_diff:
-        failure(msg or "average pixel value difference %.4f > epsilon %.4f" %(ave_diff, epsilon))
+        return failure(msg or "average pixel value difference %.4f > epsilon %.4f" %(ave_diff, epsilon))
     else:
-        success()
+        return success()
 
 def tempfile(template, *extra):
     import os, os.path, sys, tempfile
