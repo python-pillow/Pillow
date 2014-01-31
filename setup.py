@@ -235,6 +235,29 @@ class pil_build_ext(build_ext):
                 elif platform_ in ["i386", "i686", "32bit"]:
                     _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
                     break
+                elif platform_ in ["aarch64"]:
+                    _add_directory(library_dirs, "/usr/lib64")
+                    _add_directory(library_dirs, "/usr/lib/aarch64-linux-gnu")
+                    break
+                elif platform_ in ["arm", "armv7l"]:
+                    _add_directory(library_dirs, "/usr/lib/arm-linux-gnueabi")
+                    break
+                elif platform_ in ["ppc64"]:
+                    _add_directory(library_dirs, "/usr/lib64")
+                    _add_directory(library_dirs, "/usr/lib/ppc64-linux-gnu")
+                    _add_directory(library_dirs, "/usr/lib/powerpc64-linux-gnu")
+                    break
+                elif platform_ in ["ppc"]:
+                    _add_directory(library_dirs, "/usr/lib/ppc-linux-gnu")
+                    _add_directory(library_dirs, "/usr/lib/powerpc-linux-gnu")
+                    break
+                elif platform_ in ["s390x"]:
+                    _add_directory(library_dirs, "/usr/lib64")
+                    _add_directory(library_dirs, "/usr/lib/s390x-linux-gnu")
+                    break
+                elif platform_ in ["s390"]:
+                    _add_directory(library_dirs, "/usr/lib/s390-linux-gnu")
+                    break
             else:
                 raise ValueError(
                     "Unable to identify Linux platform: `%s`" % platform_)

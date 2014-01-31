@@ -14,6 +14,7 @@ install:
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev libwebp-dev python-qt4 ghostscript libffi-dev"
   - "pip install cffi"
 
+
 script:
   - python setup.py clean
   - python setup.py build_ext --inplace
