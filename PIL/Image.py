@@ -100,6 +100,13 @@ import os, sys
 import collections
 import numbers
 
+# works everywhere, win for pypy, not cpython
+USE_CFFI_ACCESS = hasattr(sys, 'pypy_version_info')  
+try:
+    import cffi
+    HAS_CFFI=True
+except:
+    HAS_CFFI=False
 
 def isImageType(t):
     """
@@ -468,6 +475,7 @@ class Image:
         self.info = {}
         self.category = NORMAL
         self.readonly = 0
+        self.pyaccess = None
 
     def _new(self, im):
         new = Image()
@@ -492,6 +500,7 @@ class Image:
     def _copy(self):
         self.load()
         self.im = self.im.copy()
+        self.pyaccess = None
         self.readonly = 0
 
     def _dump(self, file=None, format=None):
@@ -645,6 +654,13 @@ class Image:
                 self.palette.mode = "RGBA"
 
         if self.im:
+            if HAS_CFFI and USE_CFFI_ACCESS:
+                if self.pyaccess:
+                    return self.pyaccess
+                from PIL import PyAccess
+                self.pyaccess = PyAccess.new(self, self.readonly)
+                if self.pyaccess:
+                    return self.pyaccess
             return self.im.pixel_access(self.readonly)
 
     def verify(self):
@@ -976,6 +992,8 @@ class Image:
         """
 
         self.load()
+        if self.pyaccess:
+            return self.pyaccess.getpixel(xy)
         return self.im.getpixel(xy)
 
     def getprojection(self):
@@ -1186,12 +1204,14 @@ class Image:
                 mode = getmodebase(self.mode) + "A"
                 try:
                     self.im.setmode(mode)
+                    self.pyaccess = None
                 except (AttributeError, ValueError):
                     # do things the hard way
                     im = self.im.convert(mode)
                     if im.mode not in ("LA", "RGBA"):
                         raise ValueError # sanity check
                     self.im = im
+                    self.pyaccess = None
                 self.mode = self.im.mode
             except (KeyError, ValueError):
                 raise ValueError("illegal image mode")
@@ -1292,7 +1312,11 @@ class Image:
         self.load()
         if self.readonly:
             self._copy()
-
+            self.pyaccess = None
+            self.load()
+            
+        if self.pyaccess: 
+            return self.pyaccess.putpixel(xy,value)
         return self.im.putpixel(xy, value)
 
     def resize(self, size, resample=NEAREST):
@@ -1593,6 +1617,7 @@ class Image:
         self.size = size
 
         self.readonly = 0
+        self.pyaccess = None
 
     # FIXME: the different tranform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
