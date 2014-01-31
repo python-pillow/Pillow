@@ -12,7 +12,7 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 Main improvements over PIL version of OleFileIO:
 ------------------------------------------------
 
-- Better compatibility with Python 2.7 (also compatible with Python 3.2+)
+- Better compatibility with Python 2.6 (also compatible with Python 3.0+)
 - Support for files larger than 6.8MB
 - Robust: many checks to detect malformed files
 - Improved API

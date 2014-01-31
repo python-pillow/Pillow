@@ -224,7 +224,6 @@ import io
 import sys
 from PIL import _binary
 import struct, array, os.path, datetime
-from functools import total_ordering
 
 #[PL] Define explicitly the public API to avoid private objects in pydoc:
 __all__ = ['OleFileIO', 'isOleFile']
@@ -707,7 +706,6 @@ class _OleStream(io.BytesIO):
 
 #--- _OleDirectoryEntry -------------------------------------------------------
 
-@total_ordering
 class _OleDirectoryEntry:
 
     """
@@ -909,6 +907,12 @@ class _OleDirectoryEntry:
         return self.name < other.name
     #TODO: replace by the same function as MS implementation ?
     # (order by name length first, then case-insensitive order)
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    def __le__(self, other):
+        return self.__eq__(other) or self.__lt__(other)
+    # Reflected __lt__() and __le__() will be used for __gt__() and __ge__()
 
 
     def dump(self, tab = 0):
