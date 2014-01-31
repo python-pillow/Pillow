@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (2014-04-01)
 ------------------
 
+- Minor patch on booleans + Travis
+  [sciunto]
+
 - Look in multiarch paths in GNU platforms
   [pinotree]
 
