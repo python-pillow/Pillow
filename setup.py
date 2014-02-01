@@ -267,6 +267,9 @@ class pil_build_ext(build_ext):
             # work ;-)
             self.add_multiarch_paths()
 
+        elif sys.platform.startswith("gnu"):
+            self.add_multiarch_paths()
+
         elif sys.platform.startswith("netbsd"):
                     _add_directory(library_dirs, "/usr/pkg/lib")
                     _add_directory(include_dirs, "/usr/pkg/include")
