@@ -4,6 +4,12 @@ Changelog (Pillow)
 2.4.0 (2014-04-01)
 ------------------
 
+- Fixed DOS with invalid palette size or invalid image size in BMP file
+  [wiredfool]
+  
+- Added support for BMP version 4 and 5
+  [eddwardo, wiredfool]
+
 - Minor patch on booleans + Travis
   [sciunto]
 
