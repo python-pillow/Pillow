@@ -99,6 +99,10 @@ class BmpImageFile(ImageFile.ImageFile):
         else:
             raise IOError("Unsupported BMP header type (%d)" % len(s))
 
+        if (self.size[0]*self.size[1]) > 2**31:
+            # Prevent DOS for > 2gb images
+            raise IOError("Unsupported BMP Size: (%dx%d)" % self.size)
+
         if not colors:
             colors = 1 << bits
 
