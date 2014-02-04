@@ -226,7 +226,7 @@ from PIL import _binary
 import struct, array, os.path, datetime
 
 #[PL] Define explicitly the public API to avoid private objects in pydoc:
-__all__ = ['OleFileIO', 'isOleFile']
+__all__ = ['OleFileIO', 'isOleFile', 'MAGIC']
 
 if str is not bytes:
     long = int
