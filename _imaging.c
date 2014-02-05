@@ -2245,24 +2245,28 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
     Imaging im;
     Imaging bitmap;
     int x, b;
+    int i=0;
     int status;
     Glyph* glyph;
 
     unsigned char* text;
     char* mode = "";
-    if (!PyArg_ParseTuple(args, "s|s:getmask", &text, &mode))
+    if (!PyArg_ParseTuple(args, "es|s:getmask", "latin1", &text, &mode)){
         return NULL;
+    }
 
     im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
-    if (!im)
+    if (!im) {
+        PyMem_Free(text);
         return NULL;
+    }
 
     b = 0;
     (void) ImagingFill(im, &b);
 
     b = self->baseline;
-    for (x = 0; *text; text++) {
-        glyph = &self->glyphs[*text];
+    for (x = 0; text[i]; i++) {
+        glyph = &self->glyphs[text[i]];
         bitmap = ImagingCrop(
             self->bitmap,
             glyph->sx0, glyph->sy0, glyph->sx1, glyph->sy1
@@ -2279,10 +2283,11 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
         x = x + glyph->dx;
         b = b + glyph->dy;
     }
-
+    PyMem_Free(text);
     return PyImagingNew(im);
 
   failed:
+    PyMem_Free(text);
     ImagingDelete(im);
     return NULL;
 }
@@ -2291,10 +2296,14 @@ static PyObject*
 _font_getsize(ImagingFontObject* self, PyObject* args)
 {
     unsigned char* text;
-    if (!PyArg_ParseTuple(args, "s:getsize", &text))
+    PyObject* retval;
+    if (!PyArg_ParseTuple(args, "es:getsize", "latin-1", &text))
         return NULL;
 
-    return Py_BuildValue("ii", textwidth(self, text), self->ysize);
+    retval = Py_BuildValue("ii", textwidth(self, text), self->ysize);
+    PyMem_Free(text);
+    return retval;
+        
 }
 
 static struct PyMethodDef _font_methods[] = {

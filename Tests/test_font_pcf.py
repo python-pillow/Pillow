@@ -22,10 +22,22 @@ def test_sanity():
 
     font.save(tempname)
 
-def test_draw():
+def xtest_draw():
 
     font = ImageFont.load(tempname)
     image = Image.new("L", font.getsize(message), "white")
     draw = ImageDraw.Draw(image)
     draw.text((0, 0), message, font=font)
     # assert_signature(image, "7216c60f988dea43a46bb68321e3c1b03ec62aee")
+
+def test_high_characters():
+    
+    message = "".join([chr(i+1) for i in range(140,232)])
+    font = ImageFont.load(tempname)
+    image = Image.new("L", font.getsize(message), "white")
+    draw = ImageDraw.Draw(image)
+    draw.text((0, 0), message, font=font)
+
+    compare = Image.open('Tests/images/high_ascii_chars.png')
+
+    assert_image_equal(image, compare)
