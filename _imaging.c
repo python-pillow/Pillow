@@ -2239,6 +2239,33 @@ textwidth(ImagingFontObject* self, const unsigned char* text)
     return xsize;
 }
 
+void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
+    PyObject* bytes;
+
+    if (PyUnicode_CheckExact(encoded_string)){
+        bytes = PyUnicode_AsLatin1String(encoded_string);
+        if (bytes) {
+            *text = (unsigned char*)PyBytes_AsString(bytes);
+        } else {
+            *text = NULL;
+        }
+    } else {
+#if PY_VERSION_HEX >= 0x03000000
+        /* this should always be a unicode if we're in Py3.x */
+        *text = NULL;
+#else
+        /* likely case here is py2.x with an ordinary string.
+           but this isn't defined in Py3.x */
+        if (PyString_Check(encoded_string)) {
+            *text = (unsigned char *)PyString_AsString(encoded_string);
+        } else {
+            *text = NULL;
+        }
+#endif
+    }
+}
+    
+
 static PyObject*
 _font_getmask(ImagingFontObject* self, PyObject* args)
 {
@@ -2249,15 +2276,22 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
     int status;
     Glyph* glyph;
 
+    PyObject* encoded_string;
+
     unsigned char* text;
     char* mode = "";
-    if (!PyArg_ParseTuple(args, "es|s:getmask", "latin1", &text, &mode)){
+
+    if (!PyArg_ParseTuple(args, "O|s:getmask",  &encoded_string, &mode)){
+        return NULL;
+    }
+
+    _font_text_asBytes(encoded_string, &text);
+    if (!text) {
         return NULL;
     }
 
     im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
     if (!im) {
-        PyMem_Free(text);
         return NULL;
     }
 
@@ -2283,11 +2317,9 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
         x = x + glyph->dx;
         b = b + glyph->dy;
     }
-    PyMem_Free(text);
     return PyImagingNew(im);
 
   failed:
-    PyMem_Free(text);
     ImagingDelete(im);
     return NULL;
 }
@@ -2296,14 +2328,17 @@ static PyObject*
 _font_getsize(ImagingFontObject* self, PyObject* args)
 {
     unsigned char* text;
-    PyObject* retval;
-    if (!PyArg_ParseTuple(args, "es:getsize", "latin-1", &text))
+    PyObject* encoded_string;
+
+    if (!PyArg_ParseTuple(args, "O:getsize", &encoded_string))
         return NULL;
 
-    retval = Py_BuildValue("ii", textwidth(self, text), self->ysize);
-    PyMem_Free(text);
-    return retval;
-        
+    _font_text_asBytes(encoded_string, &text);
+    if (!text) {
+        return NULL;
+    }
+
+    return Py_BuildValue("ii", textwidth(self, text), self->ysize);        
 }
 
 static struct PyMethodDef _font_methods[] = {
