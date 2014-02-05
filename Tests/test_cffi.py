@@ -1,16 +1,15 @@
 from tester import *
 
+try:
+    import cffi
+except:
+    skip()
+    
 from PIL import Image, PyAccess
 
 import test_image_putpixel as put
 import test_image_getpixel as get
 
-
-
-try:
-    import cffi
-except:
-    skip()
 
 Image.USE_CFFI_ACCESS = True
 
