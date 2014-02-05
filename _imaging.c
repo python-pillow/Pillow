@@ -2240,29 +2240,27 @@ textwidth(ImagingFontObject* self, const unsigned char* text)
 }
 
 void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
-    PyObject* bytes;
+    PyObject* bytes = NULL;
+
+    *text = NULL;
 
     if (PyUnicode_CheckExact(encoded_string)){
         bytes = PyUnicode_AsLatin1String(encoded_string);
-        if (bytes) {
-            *text = (unsigned char*)PyBytes_AsString(bytes);
-        } else {
-            *text = NULL;
-        }
-    } else {
-#if PY_VERSION_HEX >= 0x03000000
-        /* this should always be a unicode if we're in Py3.x */
-        *text = NULL;
-#else
-        /* likely case here is py2.x with an ordinary string.
-           but this isn't defined in Py3.x */
-        if (PyString_Check(encoded_string)) {
-            *text = (unsigned char *)PyString_AsString(encoded_string);
-        } else {
-            *text = NULL;
-        }
-#endif
+    } else if (PyBytes_Check(encoded_string)) {
+        bytes = encoded_string;
     }
+    if (bytes) {
+        *text = (unsigned char*)PyBytes_AsString(bytes);
+        return;
+    } 
+
+#if PY_VERSION_HEX < 0x03000000
+    /* likely case here is py2.x with an ordinary string.
+       but this isn't defined in Py3.x */
+    if (PyString_Check(encoded_string)) {
+        *text = (unsigned char *)PyString_AsString(encoded_string);
+    } 
+#endif
 }
     
 
