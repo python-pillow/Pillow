@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (2014-04-01 est.)
 ------------------
 
+- Improve heuristic used when saving progressive and optimized JPEGs with high quality values
+  [e98cuenc]
+
 - Fixed DOS with invalid palette size or invalid image size in BMP file
   [wiredfool]
   
