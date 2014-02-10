@@ -1,5 +1,7 @@
 from tester import *
 
+import random
+
 from PIL import Image
 from PIL import ImageFile
 
@@ -132,13 +134,23 @@ def test_progressive_large_buffer():
     im = Image.new("RGB", (4096,4096), 0xff3333)
     im.save(f, format="JPEG", progressive=True)
 
+def test_progressive_large_buffer_highest_quality():
+    f = tempfile('temp.jpg')
+    if py3:
+        a = bytes(random.randint(0, 255) for _ in range(256 * 256 * 3))
+    else:
+        a = b''.join(chr(random.randint(0, 255)) for _ in range(256 * 256 * 3))
+    im = Image.frombuffer("RGB", (256, 256), a, "raw", "RGB", 0, 1)
+    # this requires more bytes than pixels in the image
+    im.save(f, format="JPEG", progressive=True, quality=100)
+
 def test_large_exif():
     #https://github.com/python-imaging/Pillow/issues/148
     f = tempfile('temp.jpg')
     im = lena()
     im.save(f,'JPEG', quality=90, exif=b"1"*65532)
 
-def test_progressive():
+def test_progressive_compat():
     im1 = roundtrip(lena())
     im2 = roundtrip(lena(), progressive=1)
     im3 = roundtrip(lena(), progression=1) # compatibility
