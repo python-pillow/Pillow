@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.4.0 (2014-04-01 est.)
+2.4.0 (unreleased)
 ------------------
 
 - Improve heuristic used when saving progressive and optimized JPEGs with high quality values
