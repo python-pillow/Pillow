@@ -497,6 +497,25 @@ class Image:
 
     _makeself = _new # compatibility
 
+    # with compatibility
+    def __enter__(self):
+        return self
+    def __exit__(self, *args):
+        self.close()
+        
+    def close(self):
+        """ Close the file pointer, if possible. Destroy the image core.
+            This releases memory, and the image will be unusable afterward
+            """
+        try:
+            self.fp.close()
+        except Exception as msg:
+            if Image.DEBUG:
+                print ("Error closing: %s" %msg)
+
+        self.im = None
+        
+
     def _copy(self):
         self.load()
         self.im = self.im.copy()
