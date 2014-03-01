@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Fixed saving mode P image as a PNG with transparency = palette color 0
+  [d-schmidt]
+
 - Improve heuristic used when saving progressive and optimized JPEGs with high quality values
   [e98cuenc]
 
