@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (2014-04-01 est.)
 ------------------
 
+- Fixed opening and saving odd sized .pcx files
+  [wiredfool]
+
 - Fixed DOS with invalid palette size or invalid image size in BMP file
   [wiredfool]
   
