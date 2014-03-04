@@ -5,7 +5,7 @@
  * encoder for PCX data
  *
  * history:
- * 99-02-07 fl	created
+ * 99-02-07 fl  created
  *
  * Copyright (c) Fredrik Lundh 1999.
  * Copyright (c) Secret Labs AB 1999.
@@ -30,19 +30,18 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     ptr = buf;
 
     if (!state->state) {
-
         /* sanity check */
         if (state->xsize <= 0 || state->ysize <= 0) {
             state->errcode = IMAGING_CODEC_END;
             return 0;
         }
 
-	state->bytes = (state->xsize*state->bits + 7) / 8;
+        state->bytes = (state->xsize*state->bits + 7) / 8;
         state->state = FETCH;
 
     }
 
-    for (;;)
+    for (;;) {
 
         switch (state->state) {
         case FETCH:
@@ -68,7 +67,6 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             /* fall through */
 
         case ENCODE:
-
             /* compress this line */
 
             /* when we arrive here, "count" contains the number of
@@ -78,7 +76,6 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             while (state->x < state->bytes) {
 
                 if (state->count == 63) {
-
                     /* this run is full; flush it */
                     if (bytes < 2)
                         return ptr - buf;
@@ -93,7 +90,6 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 this = state->buffer[state->x];
 
                 if (this == state->LAST) {
-
                     /* extend the current run */
                     state->x++;
                     state->count++;
@@ -102,14 +98,16 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
                     /* start a new run */
                     if (state->count == 1 && (state->LAST < 0xc0)) {
-                        if (bytes < 1)
+                        if (bytes < 1) {
                             return ptr - buf;
+                        }
                         *ptr++ = state->LAST;
                         bytes--;
                     } else {
                         if (state->count > 0) {
-                            if (bytes < 2)
+                            if (bytes < 2) {
                                 return ptr - buf;
+                            }
                             *ptr++ = 0xc0 | state->count;
                             *ptr++ = state->LAST;
                             bytes -= 2;
@@ -126,14 +124,16 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
             /* end of line; flush the current run */
             if (state->count == 1 && (state->LAST < 0xc0)) {
-                if (bytes < 1)
+                if (bytes < 1) {
                     return ptr - buf;
+                }
                 *ptr++ = state->LAST;
                 bytes--;
             } else {
                 if (state->count > 0) {
-                    if (bytes < 2)
+                    if (bytes < 2) {
                         return ptr - buf;
+                    }
                     *ptr++ = 0xc0 | state->count;
                     *ptr++ = state->LAST;
                     bytes -= 2;
@@ -143,6 +143,7 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             /* read next line */
             state->state = FETCH;
             break;
-
         }
+    }
 }
+
