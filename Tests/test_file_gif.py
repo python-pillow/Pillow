@@ -46,3 +46,20 @@ def test_roundtrip2():
 
     assert_image_similar(reread.convert('RGB'), lena(), 50)
 
+def test_palette_handling():
+    # see https://github.com/python-imaging/Pillow/issues/513
+
+    im = Image.open('Images/lena.gif')
+    im = im.convert('RGB')
+    
+    im = im.resize((100,100), Image.ANTIALIAS)
+    im2 = im.convert('P', palette=Image.ADAPTIVE, colors=256)
+
+    f = tempfile('temp.gif')
+    im2.save(f, optimize=True)
+
+    reloaded = Image.open(f)
+    
+    assert_image_similar(im, reloaded.convert('RGB'), 10)
+    
+    
