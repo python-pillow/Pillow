@@ -1101,7 +1101,6 @@ class Image:
            third, the box defaults to (0, 0), and the second argument
            is interpreted as a mask image.
         :param mask: An optional mask image.
-        :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
         if isImageType(box) and mask is None:

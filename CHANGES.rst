@@ -1,11 +1,17 @@
 Changelog (Pillow)
 ==================
 
-2.4.0 (2014-04-01 est.)
+2.4.0 (unreleased)
 ------------------
 
 - Fixed palette handling when converting from mode P->RGB->P
   [d_schmidt] 
+
+- Fixed saving mode P image as a PNG with transparency = palette color 0
+  [d-schmidt]
+
+- Improve heuristic used when saving progressive and optimized JPEGs with high quality values
+  [e98cuenc]
 
 - Fixed DOS with invalid palette size or invalid image size in BMP file
   [wiredfool]
