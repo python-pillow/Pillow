@@ -38,7 +38,7 @@ def test_roundtrip():
 
 def test_roundtrip2():
     #see https://github.com/python-imaging/Pillow/issues/403
-    out = 'temp.gif'#tempfile('temp.gif')
+    out = tempfile('temp.gif')
     im = Image.open('Images/lena.gif')
     im2 = im.copy()
     im2.save(out)
