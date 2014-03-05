@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (2014-04-01 est.)
 ------------------
 
+- Fixed palette handling when converting from mode P->RGB->P
+  [d_schmidt] 
+
 - Fixed DOS with invalid palette size or invalid image size in BMP file
   [wiredfool]
   
