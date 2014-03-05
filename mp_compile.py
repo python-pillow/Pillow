@@ -17,26 +17,31 @@ def _mp_compile_one(tp):
 def _mp_compile(self, sources, output_dir=None, macros=None,
                 include_dirs=None, debug=0, extra_preargs=None,
                 extra_postargs=None, depends=None):
-        """Compile one or more source files.
-
-        see distutils.ccompiler.CCompiler.compile for comments.
-        """
-        # A concrete compiler class can either override this method
-        # entirely or implement _compile().
-
-        macros, objects, extra_postargs, pp_opts, build = \
-                self._setup_compile(output_dir, macros, include_dirs, sources,
-                                    depends, extra_postargs)
-        cc_args = self._get_cc_args(pp_opts, debug, extra_preargs)
-
-        pool = Pool()
-        print ("Building using %d processes" % pool._processes)
-        arr = [(self, obj, build, cc_args, extra_postargs, pp_opts) for obj in objects]
-        results = pool.map_async(_mp_compile_one,arr)
-                           
-        pool.close()
-        pool.join()
-        # Return *all* object filenames, not just the ones we just built.
-        return objects
+    """Compile one or more source files.
+    
+    see distutils.ccompiler.CCompiler.compile for comments.
+    """
+    # A concrete compiler class can either override this method
+    # entirely or implement _compile().
+    
+    macros, objects, extra_postargs, pp_opts, build = \
+            self._setup_compile(output_dir, macros, include_dirs, sources,
+                                depends, extra_postargs)
+    cc_args = self._get_cc_args(pp_opts, debug, extra_preargs)
+    
+    try:
+        processes = cpu_count() * 2
+    except:
+        processes = 2
+        
+    pool = Pool(processes)
+    print ("Building using %d processes" % pool._processes)
+    arr = [(self, obj, build, cc_args, extra_postargs, pp_opts) for obj in objects]
+    results = pool.map_async(_mp_compile_one,arr)
+    
+    pool.close()
+    pool.join()
+    # Return *all* object filenames, not just the ones we just built.
+    return objects
 
 CCompiler.compile = _mp_compile
