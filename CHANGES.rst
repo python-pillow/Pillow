@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Fixed opening and saving odd sized .pcx files
+  [wiredfool]
+
 - Fixed saving mode P image as a PNG with transparency = palette color 0
   [d-schmidt]
 
