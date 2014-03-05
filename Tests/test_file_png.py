@@ -251,6 +251,20 @@ def test_trns_rgb():
     im = roundtrip(im, transparency=(0, 1, 2))
     assert_equal(im.info["transparency"], (0, 1, 2))
 
+def test_trns_p():
+    # Check writing a transparency of 0, issue #528
+    im = lena('P')
+    im.info['transparency']=0
+    
+    f = tempfile("temp.png")
+    im.save(f)
+
+    im2 = Image.open(f)
+    assert_true('transparency' in im2.info)
+
+    assert_image_equal(im2.convert('RGBA'), im.convert('RGBA'))
+        
+    
 def test_save_icc_profile_none():
     # check saving files with an ICC profile set to None (omit profile)
     in_file = "Tests/images/icc_profile_none.png"
