@@ -252,6 +252,12 @@ def _save(im, fp, filename):
     except KeyError:
         palette = None
         im.encoderinfo["optimize"] = im.encoderinfo.get("optimize", True)
+        if im.encoderinfo["optimize"]:
+            # When the mode is L, and we optimize, we end up with
+            # im.mode == P and rawmode = L, which fails.
+            # If we're optimizing the palette, we're going to be
+            # in a rawmode of P anyway. 
+            rawmode = 'P'
 
     header, usedPaletteColors = getheader(imOut, palette, im.encoderinfo)
     for s in header:
