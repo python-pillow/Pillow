@@ -1,7 +1,7 @@
 # A monkey patch of the base distutils.ccompiler to use parallel builds
 # Tested on 2.7, looks to be identical to 3.3.
 
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 from distutils.ccompiler import CCompiler
 
 # hideous monkeypatching.  but. but. but.
@@ -29,12 +29,7 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
                                 depends, extra_postargs)
     cc_args = self._get_cc_args(pp_opts, debug, extra_preargs)
     
-    try:
-        processes = cpu_count() * 2
-    except:
-        processes = 2
-        
-    pool = Pool(processes)
+    pool = Pool()
     print ("Building using %d processes" % pool._processes)
     arr = [(self, obj, build, cc_args, extra_postargs, pp_opts) for obj in objects]
     results = pool.map_async(_mp_compile_one,arr)
