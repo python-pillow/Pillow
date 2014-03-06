@@ -109,13 +109,13 @@ In Fedora, the command is::
 Prerequisites are installed on **Ubuntu 10.04 LTS** with::
 
     $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev \
-        libfreetype6-dev tcl8.5-dev tk8.5-dev
+        libfreetype6-dev tcl8.5-dev tk8.5-dev python-tk
 
 Prerequisites are installed with on **Ubuntu 12.04 LTS** or **Raspian Wheezy
 7.0** with::
 
     $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev \
-        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.5-dev tk8.5-dev
+        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.5-dev tk8.5-dev python-tk
 
 Prerequisites are installed on **Fedora 20** with::
 
