@@ -20,15 +20,6 @@
 from PIL import Image
 import re
 
-
-##
-# Convert color string to RGB tuple.
-#
-# @param color A CSS3-style colour string.
-# @return An RGB-tuple.
-# @exception ValueError If the color string could not be interpreted
-#    as an RGB value.
-
 def getrgb(color):
     """
      Convert a color string to an RGB tuple. If the string cannot be parsed,
@@ -37,7 +28,7 @@ def getrgb(color):
     .. versionadded:: 1.1.4
 
     :param color: A color string
-    :return: ``(red, green, blue)``
+    :return: ``(red, green, blue[, alpha])``
     """
     try:
         rgb = colormap[color]
@@ -114,7 +105,7 @@ def getcolor(color, mode):
     .. versionadded:: 1.1.4
 
     :param color: A color string
-    :return: ``(red, green, blue)``
+    :return: ``(graylevel [, alpha]) or (red, green, blue[, alpha])``
     """
     # same as getrgb, but converts the result to the given mode
     color, alpha = getrgb(color), 255
