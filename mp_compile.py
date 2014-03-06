@@ -30,7 +30,9 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
     cc_args = self._get_cc_args(pp_opts, debug, extra_preargs)
     
     pool = Pool()
-    print ("Building using %d processes" % pool._processes)
+    try:
+        print ("Building using %d processes" % pool._processes)
+    except: pass
     arr = [(self, obj, build, cc_args, extra_postargs, pp_opts) for obj in objects]
     results = pool.map_async(_mp_compile_one,arr)
     
