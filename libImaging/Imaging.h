@@ -424,6 +424,11 @@ extern int ImagingJpegDecodeCleanup(ImagingCodecState state);
 extern int ImagingJpegEncode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);
 #endif
+#ifdef HAVE_OPENJPEG
+extern int ImagingJpeg2KDecode(Imaging im, ImagingCodecState state,
+                               UINT8* buffer, int bytes);
+extern int ImagingJpeg2KDecodeCleanup(ImagingCodecState state);
+#endif
 extern int ImagingLzwDecode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
 #ifdef	HAVE_LIBTIFF
@@ -496,6 +501,19 @@ struct ImagingCodecStateInstance {
     UINT8 *buffer;
     void *context;
 };
+
+/* Incremental decoding support */
+typedef struct ImagingIncrementalDecoderStruct *ImagingIncrementalDecoder;
+
+typedef int (*ImagingIncrementalDecoderEntry)(Imaging im, 
+                                              ImagingCodecState state,
+                                              ImagingIncrementalDecoder decoder);
+
+extern ImagingIncrementalDecoder ImagingIncrementalDecoderCreate(ImagingIncrementalDecoderEntry decoder_entry, Imaging im, ImagingCodecState state);
+extern void ImagingIncrementalDecoderDestroy(ImagingIncrementalDecoder decoder);
+extern int ImagingIncrementalDecodeData(ImagingIncrementalDecoder decoder, UINT8 *buf, int bytes);
+size_t ImagingIncrementalDecoderRead(ImagingIncrementalDecoder decoder, void *buffer, size_t bytes);
+off_t ImagingIncrementalDecoderSkip(ImagingIncrementalDecoder decoder, off_t bytes);
 
 /* Errcodes */
 #define	IMAGING_CODEC_END	 1
