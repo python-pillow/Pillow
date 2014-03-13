@@ -428,6 +428,9 @@ extern int ImagingJpegEncode(Imaging im, ImagingCodecState state,
 extern int ImagingJpeg2KDecode(Imaging im, ImagingCodecState state,
                                UINT8* buffer, int bytes);
 extern int ImagingJpeg2KDecodeCleanup(ImagingCodecState state);
+extern int ImagingJpeg2KEncode(Imaging im, ImagingCodecState state,
+                               UINT8* buffer, int bytes);
+extern int ImagingJpeg2KEncodeCleanup(ImagingCodecState state);
 #endif
 extern int ImagingLzwDecode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
@@ -502,18 +505,20 @@ struct ImagingCodecStateInstance {
     void *context;
 };
 
-/* Incremental decoding support */
-typedef struct ImagingIncrementalDecoderStruct *ImagingIncrementalDecoder;
+/* Incremental encoding/decoding support */
+typedef struct ImagingIncrementalCodecStruct *ImagingIncrementalCodec;
 
-typedef int (*ImagingIncrementalDecoderEntry)(Imaging im, 
-                                              ImagingCodecState state,
-                                              ImagingIncrementalDecoder decoder);
+typedef int (*ImagingIncrementalCodecEntry)(Imaging im, 
+                                            ImagingCodecState state,
+                                            ImagingIncrementalCodec codec);
 
-extern ImagingIncrementalDecoder ImagingIncrementalDecoderCreate(ImagingIncrementalDecoderEntry decoder_entry, Imaging im, ImagingCodecState state);
-extern void ImagingIncrementalDecoderDestroy(ImagingIncrementalDecoder decoder);
-extern int ImagingIncrementalDecodeData(ImagingIncrementalDecoder decoder, UINT8 *buf, int bytes);
-size_t ImagingIncrementalDecoderRead(ImagingIncrementalDecoder decoder, void *buffer, size_t bytes);
-off_t ImagingIncrementalDecoderSkip(ImagingIncrementalDecoder decoder, off_t bytes);
+extern ImagingIncrementalCodec ImagingIncrementalCodecCreate(ImagingIncrementalCodecEntry codec_entry, Imaging im, ImagingCodecState state);
+extern void ImagingIncrementalCodecDestroy(ImagingIncrementalCodec codec);
+extern int ImagingIncrementalCodecPushBuffer(ImagingIncrementalCodec codec, UINT8 *buf, int bytes);
+extern size_t ImagingIncrementalCodecRead(ImagingIncrementalCodec codec, void *buffer, size_t bytes);
+extern off_t ImagingIncrementalCodecSkip(ImagingIncrementalCodec codec, off_t bytes);
+extern size_t ImagingIncrementalCodecWrite(ImagingIncrementalCodec codec, const void *buffer, size_t bytes);
+extern size_t ImagingIncrementalCodecBytesInBuffer(ImagingIncrementalCodec codec);
 
 /* Errcodes */
 #define	IMAGING_CODEC_END	 1

@@ -778,19 +778,10 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
 #endif
 
 /* -------------------------------------------------------------------- */
-/* JPEG2000                                                             */
+/* JPEG 2000                                                            */
 /* -------------------------------------------------------------------- */
 
 #ifdef HAVE_OPENJPEG
-
-/* We better define this decoder last in this file, so the following
-   undef's won't mess things up for the Imaging library proper. */
-#undef  UINT8
-#undef  UINT16
-#undef  UINT32
-#undef  INT8
-#undef  INT16
-#undef  INT32
 
 #include "Jpeg2K.h"
 
@@ -798,7 +789,7 @@ PyObject*
 PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
 {
     ImagingDecoderObject* decoder;
-    JPEG2KSTATE *context;
+    JPEG2KDECODESTATE *context;
 
     char* mode;
     char* format;
@@ -809,16 +800,16 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
                           &reduce, &layers))
         return NULL;
 
-    if (strcmp (format, "j2k") == 0)
+    if (strcmp(format, "j2k") == 0)
         codec_format = OPJ_CODEC_J2K;
-    else if (strcmp (format, "jpt") == 0)
+    else if (strcmp(format, "jpt") == 0)
         codec_format = OPJ_CODEC_JPT;
-    else if (strcmp (format, "jp2") == 0)
+    else if (strcmp(format, "jp2") == 0)
         codec_format = OPJ_CODEC_JP2;
     else
         return NULL;
 
-    decoder = PyImaging_DecoderNew(sizeof(JPEG2KSTATE));
+    decoder = PyImaging_DecoderNew(sizeof(JPEG2KDECODESTATE));
     if (decoder == NULL)
         return NULL;
 
@@ -826,9 +817,8 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
     decoder->decode = ImagingJpeg2KDecode;
     decoder->cleanup = ImagingJpeg2KDecodeCleanup;
 
-    context = (JPEG2KSTATE *)decoder->state.context;
+    context = (JPEG2KDECODESTATE *)decoder->state.context;
 
-    strncpy(context->mode, mode, 8);
     context->format = codec_format;
     context->reduce = reduce;
     context->layers = layers;

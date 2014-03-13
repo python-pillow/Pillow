@@ -3300,6 +3300,7 @@ extern PyObject* PyImaging_ZipDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_EpsEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_GifEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_JpegEncoderNew(PyObject* self, PyObject* args);
+extern PyObject* PyImaging_Jpeg2KEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_PcxEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_RawEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_XbmEncoderNew(PyObject* self, PyObject* args);
@@ -3355,6 +3356,7 @@ static PyMethodDef functions[] = {
 #endif
 #ifdef HAVE_OPENJPEG
     {"jpeg2k_decoder", (PyCFunction)PyImaging_Jpeg2KDecoderNew, 1},
+    {"jpeg2k_encoder", (PyCFunction)PyImaging_Jpeg2KEncoderNew, 1},
 #endif
     {"tiff_lzw_decoder", (PyCFunction)PyImaging_TiffLzwDecoderNew, 1},
 #ifdef HAVE_LIBTIFF

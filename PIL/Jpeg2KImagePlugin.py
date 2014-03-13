@@ -174,16 +174,28 @@ def _accept(prefix):
             or prefix[:12] == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a')
 
 # ------------------------------------------------------------
+# Save support
+
+def _save(im, fp, filename):
+    if filename.endswith('.j2k'):
+        kind = 'j2k'
+    else:
+        kind = 'jp2'
+        
+    ImageFile._save(im, fp, [('jpeg2k', (0, 0)+im.size, 0, kind)])
+    
+# ------------------------------------------------------------
 # Registry stuff
 
-Image.register_open("JPEG2000", Jpeg2KImageFile, _accept)
+Image.register_open('JPEG2000', Jpeg2KImageFile, _accept)
+Image.register_save('JPEG2000', _save)
 
-Image.register_extension("JPEG2000", ".jp2")
-Image.register_extension("JPEG2000", ".j2k")
-Image.register_extension("JPEG2000", ".jpc")
-Image.register_extension("JPEG2000", ".jpf")
-Image.register_extension("JPEG2000", ".jpx")
-Image.register_extension("JPEG2000", ".j2c")
+Image.register_extension('JPEG2000', '.jp2')
+Image.register_extension('JPEG2000', '.j2k')
+Image.register_extension('JPEG2000', '.jpc')
+Image.register_extension('JPEG2000', '.jpf')
+Image.register_extension('JPEG2000', '.jpx')
+Image.register_extension('JPEG2000', '.j2c')
 
-Image.register_mime("JPEG2000", "image/jp2")
-Image.register_mime("JPEG2000", "image/jpx")
+Image.register_mime('JPEG2000', 'image/jp2')
+Image.register_mime('JPEG2000', 'image/jpx')

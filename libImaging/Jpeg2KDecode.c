@@ -34,7 +34,7 @@ typedef struct {
 static void
 j2k_error(const char *msg, void *client_data)
 {
-    JPEG2KSTATE *state = (JPEG2KSTATE *) client_data;
+    JPEG2KDECODESTATE *state = (JPEG2KDECODESTATE *) client_data;
     free((void *)state->error_msg);
     state->error_msg = strdup(msg);
 }
@@ -46,9 +46,9 @@ j2k_error(const char *msg, void *client_data)
 static OPJ_SIZE_T
 j2k_read(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
 {
-    ImagingIncrementalDecoder decoder = (ImagingIncrementalDecoder)p_user_data;
+    ImagingIncrementalCodec decoder = (ImagingIncrementalCodec)p_user_data;
 
-    size_t len = ImagingIncrementalDecoderRead(decoder, p_buffer, p_nb_bytes);
+    size_t len = ImagingIncrementalCodecRead(decoder, p_buffer, p_nb_bytes);
 
     return len ? len : (OPJ_SIZE_T)-1;
 }
@@ -65,8 +65,8 @@ j2k_write(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
 static OPJ_OFF_T
 j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 {
-    ImagingIncrementalDecoder decoder = (ImagingIncrementalDecoder)p_user_data;
-    off_t pos = ImagingIncrementalDecoderSkip(decoder, p_nb_bytes);
+    ImagingIncrementalCodec decoder = (ImagingIncrementalCodec)p_user_data;
+    off_t pos = ImagingIncrementalCodecSkip(decoder, p_nb_bytes);
 
     return pos ? pos : (OPJ_OFF_T)-1;
 }
@@ -455,9 +455,9 @@ enum {
 
 static int
 j2k_decode_entry(Imaging im, ImagingCodecState state,
-                 ImagingIncrementalDecoder decoder)
+                 ImagingIncrementalCodec decoder)
 {
-    JPEG2KSTATE *context = (JPEG2KSTATE *) state->context;
+    JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *) state->context;
     opj_stream_t *stream = NULL;
     opj_image_t *image = NULL;
     opj_codec_t *codec = NULL;
@@ -481,7 +481,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     opj_stream_set_seek_function(stream, j2k_seek);
 
     opj_stream_set_user_data(stream, context->decoder);
-
 
     /* Setup decompression context */
     context->error_msg = NULL;
@@ -559,7 +558,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     for (n = 0; n < sizeof(j2k_unpackers) / sizeof (j2k_unpackers[0]); ++n) {
         if (color_space == j2k_unpackers[n].color_space
             && image->numcomps == j2k_unpackers[n].components
-            && strcmp (context->mode, j2k_unpackers[n].mode) == 0) {
+            && strcmp (im->mode, j2k_unpackers[n].mode) == 0) {
             unpack = j2k_unpackers[n].unpacker;
             break;
         }
@@ -617,6 +616,14 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
         unpack(image, &tile_info, state->buffer, im);
     }
 
+    if (!opj_end_decompress(codec, stream)) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        state->state = J2K_STATE_FAILED;
+        goto quick_exit;
+    }
+
+    state->state = J2K_STATE_DONE;
+
  quick_exit:
     if (codec)
         opj_destroy_codec(codec);
@@ -631,14 +638,14 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
 int
 ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 {
-    JPEG2KSTATE *context = (JPEG2KSTATE *) state->context;
+    JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *) state->context;
 
     if (state->state == J2K_STATE_DONE || state->state == J2K_STATE_FAILED)
         return -1;
 
     if (state->state == J2K_STATE_START) {
-        context->decoder = ImagingIncrementalDecoderCreate(j2k_decode_entry,
-                                                           im, state);
+        context->decoder = ImagingIncrementalCodecCreate(j2k_decode_entry,
+                                                         im, state);
 
         if (!context->decoder) {
             state->errcode = IMAGING_CODEC_BROKEN;
@@ -649,7 +656,7 @@ ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         state->state = J2K_STATE_DECODING;
     }
 
-    return ImagingIncrementalDecodeData(context->decoder, buf, bytes);
+    return ImagingIncrementalCodecPushBuffer(context->decoder, buf, bytes);
 }
 
 /* -------------------------------------------------------------------- */
@@ -658,10 +665,13 @@ ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
 int
 ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
-    JPEG2KSTATE *context = (JPEG2KSTATE *)state->context;
+    JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *)state->context;
+
+    if (context->error_msg)
+        free ((void *)context->error_msg);
 
     if (context->decoder)
-        ImagingIncrementalDecoderDestroy(context->decoder);
+        ImagingIncrementalCodecDestroy(context->decoder);
 
     return -1;
 }

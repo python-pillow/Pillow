@@ -12,12 +12,10 @@
 
 /* -------------------------------------------------------------------- */
 /* Decoder								*/
+/* -------------------------------------------------------------------- */
 
 typedef struct {
     /* CONFIGURATION */
-
-    /* Output mode */
-    char           mode[8];
 
     /* Specify the desired format */
     OPJ_CODEC_FORMAT format;
@@ -31,10 +29,50 @@ typedef struct {
     /* PRIVATE CONTEXT (set by decoder) */
     const char    *error_msg;
 
-    ImagingIncrementalDecoder decoder;
+    ImagingIncrementalCodec decoder;
+} JPEG2KDECODESTATE;
 
-    opj_stream_t  *stream;
-} JPEG2KSTATE;
+/* -------------------------------------------------------------------- */
+/* Encoder								*/
+/* -------------------------------------------------------------------- */
+
+typedef struct {
+    /* CONFIGURATION */
+
+    /* Specify the desired format */
+    OPJ_CODEC_FORMAT format;
+
+    /* Image offset */
+    int            offset_x, offset_y;
+
+    /* Tile information */
+    int            tile_offset_x, tile_offset_y;
+    int            tile_size_x, tile_size_y;
+
+    /* Quality layers (a sequence of numbers giving *either* rates or dB) */
+    int            quality_is_in_db;
+    PyObject      *quality_layers;
+
+    /* Number of resolutions (DWT decompositions + 1 */
+    int            num_resolutions;
+
+    /* Code block size */
+    int            cblk_width, cblk_height;
+
+    /* Compression style */
+    int            irreversible;
+
+    /* Progression order (LRCP/RLCP/RPCL/PCRL/CPRL) */
+    OPJ_PROG_ORDER progression;
+
+    /* Cinema mode */
+    OPJ_CINEMA_MODE cinema_mode;
+
+    /* PRIVATE CONTEXT (set by decoder) */
+    const char    *error_msg;
+
+    ImagingIncrementalCodec encoder;
+} JPEG2KENCODESTATE;
 
 /*
  * Local Variables:

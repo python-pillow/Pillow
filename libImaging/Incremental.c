@@ -13,9 +13,9 @@
 
 /* The idea behind this interface is simple: the actual decoding proceeds in
    a thread, which is run in lock step with the main thread.  Whenever the
-   ImagingIncrementalDecoderRead() call runs short on data, it suspends the
+   ImagingIncrementalCodecRead() call runs short on data, it suspends the
    decoding thread and wakes the main thread.  Conversely, the
-   ImagingIncrementalDecodeData() call suspends the main thread and wakes
+   ImagingIncrementalCodecPushBuffer() call suspends the main thread and wakes
    the decoding thread, providing a buffer of data.
 
    The two threads are never running simultaneously, so there is no need for
@@ -50,27 +50,21 @@
 #define DEBUG(...)
 #endif
 
-struct ImagingIncrementalStreamStruct {
-  UINT8 *buffer;
-  UINT8 *ptr;
-  UINT8 *end;
-};
-
-struct ImagingIncrementalDecoderStruct {
+struct ImagingIncrementalCodecStruct {
 #ifdef _WIN32
-  HANDLE            hDecodeEvent;
+  HANDLE            hCodecEvent;
   HANDLE            hDataEvent;
   HANDLE            hThread;
 #else
   pthread_mutex_t   start_mutex;
   pthread_cond_t    start_cond;
-  pthread_mutex_t   decode_mutex;
-  pthread_cond_t    decode_cond;
+  pthread_mutex_t   codec_mutex;
+  pthread_cond_t    codec_cond;
   pthread_mutex_t   data_mutex;
   pthread_cond_t    data_cond;
   pthread_t         thread;
 #endif
-  ImagingIncrementalDecoderEntry        entry;
+  ImagingIncrementalCodecEntry        entry;
   Imaging                               im;
   ImagingCodecState                     state;
   struct {
@@ -84,222 +78,228 @@ struct ImagingIncrementalDecoderStruct {
 
 #if _WIN32
 static void __stdcall
-incremental_thread(void *ptr)
+codec_thread(void *ptr)
 {
-  ImagingIncrementalDecoder decoder = (ImagingIncrementalDecoder)ptr;
+  ImagingIncrementalCodec codec = (ImagingIncrementalCodec)ptr;
 
-  decoder->result = decoder->entry(decoder->im, decoder->state, decoder);
+  codec->result = codec->entry(codec->im, codec->state, codec);
 
-  SetEvent(decoder->hDecodeEvent);
+  SetEvent(codec->hCodecEvent);
 }
 #else
 static void *
-incremental_thread(void *ptr)
+codec_thread(void *ptr)
 {
-  ImagingIncrementalDecoder decoder = (ImagingIncrementalDecoder)ptr;
+  ImagingIncrementalCodec codec = (ImagingIncrementalCodec)ptr;
 
-  decoder->result = decoder->entry(decoder->im, decoder->state, decoder);
+  codec->result = codec->entry(codec->im, codec->state, codec);
 
-  pthread_cond_signal(&decoder->decode_cond);
+  pthread_cond_signal(&codec->codec_cond);
 
   return NULL;
 }
 #endif
 
 /**
- * Create a new incremental decoder */
-ImagingIncrementalDecoder
-ImagingIncrementalDecoderCreate(ImagingIncrementalDecoderEntry decoder_entry,
-                                Imaging im,
-                                ImagingCodecState state)
+ * Create a new incremental codec */
+ImagingIncrementalCodec
+ImagingIncrementalCodecCreate(ImagingIncrementalCodecEntry codec_entry,
+                              Imaging im,
+                              ImagingCodecState state)
 {
-  ImagingIncrementalDecoder decoder = (ImagingIncrementalDecoder)malloc(sizeof(struct ImagingIncrementalDecoderStruct));
+  ImagingIncrementalCodec codec = (ImagingIncrementalCodec)malloc(sizeof(struct ImagingIncrementalCodecStruct));
 
-  decoder->entry = decoder_entry;
-  decoder->im = im;
-  decoder->state = state;
-  decoder->result = 0;
-  decoder->stream.buffer = decoder->stream.ptr = decoder->stream.end = NULL;
-  decoder->started = 0;
+  codec->entry = codec_entry;
+  codec->im = im;
+  codec->state = state;
+  codec->result = 0;
+  codec->stream.buffer = codec->stream.ptr = codec->stream.end = NULL;
+  codec->started = 0;
 
   /* System specific set-up */
 #if _WIN32
-  decoder->hDecodeEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+  codec->hCodecEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-  if (!decoder->hDecodeEvent) {
-    free(decoder);
+  if (!codec->hCodecEvent) {
+    free(codec);
     return NULL;
   }
 
-  decoder->hDataEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+  codec->hDataEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-  if (!decoder->hDataEvent) {
-    CloseHandle(decoder->hDecodeEvent);
-    free(decoder);
+  if (!codec->hDataEvent) {
+    CloseHandle(codec->hCodecEvent);
+    free(codec);
     return NULL;
   }
 
-  decoder->hThread = _beginthreadex(NULL, 0, incremental_thread, decoder,
+  codec->hThread = _beginthreadex(NULL, 0, codec_thread, codec,
                                     CREATE_SUSPENDED, NULL);
 
-  if (!decoder->hThread) {
-    CloseHandle(decoder->hDecodeEvent);
-    CloseHandle(decoder->hDataEvent);
-    free(decoder);
+  if (!codec->hThread) {
+    CloseHandle(codec->hCodecEvent);
+    CloseHandle(codec->hDataEvent);
+    free(codec);
     return NULL;
   }
 #else
-  if (pthread_mutex_init(&decoder->start_mutex, NULL)) {
-    free (decoder);
+  if (pthread_mutex_init(&codec->start_mutex, NULL)) {
+    free (codec);
     return NULL;
   }
 
-  if (pthread_mutex_init(&decoder->decode_mutex, NULL)) {
-    pthread_mutex_destroy(&decoder->start_mutex);
-    free(decoder);
+  if (pthread_mutex_init(&codec->codec_mutex, NULL)) {
+    pthread_mutex_destroy(&codec->start_mutex);
+    free(codec);
     return NULL;
   }
 
-  if (pthread_mutex_init(&decoder->data_mutex, NULL)) {
-    pthread_mutex_destroy(&decoder->start_mutex);
-    pthread_mutex_destroy(&decoder->decode_mutex);
-    free(decoder);
+  if (pthread_mutex_init(&codec->data_mutex, NULL)) {
+    pthread_mutex_destroy(&codec->start_mutex);
+    pthread_mutex_destroy(&codec->codec_mutex);
+    free(codec);
     return NULL;
   }
 
-  if (pthread_cond_init(&decoder->start_cond, NULL)) {
-    pthread_mutex_destroy(&decoder->start_mutex);
-    pthread_mutex_destroy(&decoder->decode_mutex);
-    pthread_mutex_destroy(&decoder->data_mutex);
-    free(decoder);
+  if (pthread_cond_init(&codec->start_cond, NULL)) {
+    pthread_mutex_destroy(&codec->start_mutex);
+    pthread_mutex_destroy(&codec->codec_mutex);
+    pthread_mutex_destroy(&codec->data_mutex);
+    free(codec);
     return NULL;
   }
 
-  if (pthread_cond_init(&decoder->decode_cond, NULL)) {
-    pthread_mutex_destroy(&decoder->start_mutex);
-    pthread_mutex_destroy(&decoder->decode_mutex);
-    pthread_mutex_destroy(&decoder->data_mutex);
-    pthread_cond_destroy(&decoder->start_cond);
-    free(decoder);
+  if (pthread_cond_init(&codec->codec_cond, NULL)) {
+    pthread_mutex_destroy(&codec->start_mutex);
+    pthread_mutex_destroy(&codec->codec_mutex);
+    pthread_mutex_destroy(&codec->data_mutex);
+    pthread_cond_destroy(&codec->start_cond);
+    free(codec);
     return NULL;
   }
 
-  if (pthread_cond_init(&decoder->data_cond, NULL)) {
-    pthread_mutex_destroy(&decoder->start_mutex);
-    pthread_mutex_destroy(&decoder->decode_mutex);
-    pthread_mutex_destroy(&decoder->data_mutex);
-    pthread_cond_destroy(&decoder->start_cond);
-    pthread_cond_destroy(&decoder->decode_cond);
-    free(decoder);
+  if (pthread_cond_init(&codec->data_cond, NULL)) {
+    pthread_mutex_destroy(&codec->start_mutex);
+    pthread_mutex_destroy(&codec->codec_mutex);
+    pthread_mutex_destroy(&codec->data_mutex);
+    pthread_cond_destroy(&codec->start_cond);
+    pthread_cond_destroy(&codec->codec_cond);
+    free(codec);
     return NULL;
   }
 
-  if (pthread_create(&decoder->thread, NULL, incremental_thread, decoder)) {
-    pthread_mutex_destroy(&decoder->start_mutex);
-    pthread_mutex_destroy(&decoder->decode_mutex);
-    pthread_mutex_destroy(&decoder->data_mutex);
-    pthread_cond_destroy(&decoder->start_cond);
-    pthread_cond_destroy(&decoder->decode_cond);
-    pthread_cond_destroy(&decoder->data_cond);
-    free(decoder);
+  if (pthread_create(&codec->thread, NULL, codec_thread, codec)) {
+    pthread_mutex_destroy(&codec->start_mutex);
+    pthread_mutex_destroy(&codec->codec_mutex);
+    pthread_mutex_destroy(&codec->data_mutex);
+    pthread_cond_destroy(&codec->start_cond);
+    pthread_cond_destroy(&codec->codec_cond);
+    pthread_cond_destroy(&codec->data_cond);
+    free(codec);
     return NULL;
   }
 #endif
 
-  return decoder;
+  return codec;
 }
 
 /**
- * Destroy an incremental decoder */
+ * Destroy an incremental codec */
 void
-ImagingIncrementalDecoderDestroy(ImagingIncrementalDecoder decoder)
+ImagingIncrementalCodecDestroy(ImagingIncrementalCodec codec)
 {
   DEBUG("destroying\n");
 
-  if (!decoder->started) {
+  if (!codec->started) {
 #ifdef _WIN32
-    ResumeThread(decoder->hThread);
+    ResumeThread(codec->hThread);
 #else
-    pthread_cond_signal(&decoder->start_cond);
+    pthread_cond_signal(&codec->start_cond);
 #endif
-    decoder->started = 1;
+    codec->started = 1;
   }
 
 #ifndef _WIN32
-  pthread_mutex_lock(&decoder->data_mutex);
+  pthread_mutex_lock(&codec->data_mutex);
 #endif
 
-  decoder->stream.buffer = decoder->stream.ptr = decoder->stream.end = NULL;
+  codec->stream.buffer = codec->stream.ptr = codec->stream.end = NULL;
 
 #ifdef _WIN32
-  SetEvent(decoder->hDataEvent);
+  SetEvent(codec->hDataEvent);
 
-  WaitForSingleObject(decoder->hThread, INFINITE);
+  WaitForSingleObject(codec->hThread, INFINITE);
 
-  CloseHandle(decoder->hThread);
-  CloseHandle(decoder->hDecodeEvent);
-  CloseHandle(decoder->hDataEvent);
+  CloseHandle(codec->hThread);
+  CloseHandle(codec->hCodecEvent);
+  CloseHandle(codec->hDataEvent);
 #else
-  pthread_cond_signal(&decoder->data_cond);
-  pthread_mutex_unlock(&decoder->data_mutex);
+  pthread_cond_signal(&codec->data_cond);
+  pthread_mutex_unlock(&codec->data_mutex);
 
-  pthread_join(decoder->thread, NULL);
+  pthread_join(codec->thread, NULL);
 
-  pthread_mutex_destroy(&decoder->start_mutex);
-  pthread_mutex_destroy(&decoder->decode_mutex);
-  pthread_mutex_destroy(&decoder->data_mutex);
-  pthread_cond_destroy(&decoder->start_cond);
-  pthread_cond_destroy(&decoder->decode_cond);
-  pthread_cond_destroy(&decoder->data_cond);
+  pthread_mutex_destroy(&codec->start_mutex);
+  pthread_mutex_destroy(&codec->codec_mutex);
+  pthread_mutex_destroy(&codec->data_mutex);
+  pthread_cond_destroy(&codec->start_cond);
+  pthread_cond_destroy(&codec->codec_cond);
+  pthread_cond_destroy(&codec->data_cond);
 #endif
-  free (decoder);
+  free (codec);
 }
 
 /**
- * Decode data using an incremental decoder */
+ * Push a data buffer for an incremental codec */
 int
-ImagingIncrementalDecodeData(ImagingIncrementalDecoder decoder,
-                             UINT8 *buf, int bytes)
+ImagingIncrementalCodecPushBuffer(ImagingIncrementalCodec codec,
+                                  UINT8 *buf, int bytes)
 {
-  if (!decoder->started) {
+  if (!codec->started) {
     DEBUG("starting\n");
 
 #ifdef _WIN32
-    ResumeThread(decoder->hThread);
+    ResumeThread(codec->hThread);
 #else
-    pthread_cond_signal(&decoder->start_cond);
+    pthread_cond_signal(&codec->start_cond);
 #endif
-    decoder->started = 1;
+    codec->started = 1;
   }
 
   DEBUG("providing %p, %d\n", buf, bytes);
 
 #ifndef _WIN32
-  pthread_mutex_lock(&decoder->data_mutex);
+  pthread_mutex_lock(&codec->data_mutex);
 #endif
 
-  decoder->stream.buffer = decoder->stream.ptr = buf;
-  decoder->stream.end = buf + bytes;
+  codec->stream.buffer = codec->stream.ptr = buf;
+  codec->stream.end = buf + bytes;
 
 #ifdef _WIN32
-  SetEvent(decoder->hDataEvent);
-  WaitForSingleObject(decoder->hDecodeEvent);
+  SetEvent(codec->hDataEvent);
+  WaitForSingleObject(codec->hCodecEvent);
 #else
-  pthread_cond_signal(&decoder->data_cond);
-  pthread_mutex_unlock(&decoder->data_mutex);
+  pthread_cond_signal(&codec->data_cond);
+  pthread_mutex_unlock(&codec->data_mutex);
 
-  pthread_mutex_lock(&decoder->decode_mutex);
-  pthread_cond_wait(&decoder->decode_cond, &decoder->decode_mutex);
-  pthread_mutex_unlock(&decoder->decode_mutex);
+  pthread_mutex_lock(&codec->codec_mutex);
+  pthread_cond_wait(&codec->codec_cond, &codec->codec_mutex);
+  pthread_mutex_unlock(&codec->codec_mutex);
 #endif
 
-  DEBUG("got result %d\n", decoder->result);
+  DEBUG("got result %d\n", codec->result);
 
-  return decoder->result;
+  return codec->result;
 }
 
 size_t
-ImagingIncrementalDecoderRead(ImagingIncrementalDecoder decoder,
+ImagingIncrementalCodecBytesInBuffer(ImagingIncrementalCodec codec)
+{
+  return codec->stream.ptr - codec->stream.buffer;
+}
+
+size_t
+ImagingIncrementalCodecRead(ImagingIncrementalCodec codec,
                              void *buffer, size_t bytes)
 {
   UINT8 *ptr = (UINT8 *)buffer;
@@ -308,29 +308,29 @@ ImagingIncrementalDecoderRead(ImagingIncrementalDecoder decoder,
   DEBUG("reading (want %llu bytes)\n", (unsigned long long)bytes);
 
 #ifndef _WIN32
-  pthread_mutex_lock(&decoder->data_mutex);
+  pthread_mutex_lock(&codec->data_mutex);
 #endif
   while (bytes) {
     size_t todo = bytes;
-    size_t remaining = decoder->stream.end - decoder->stream.ptr;
+    size_t remaining = codec->stream.end - codec->stream.ptr;
 
     if (!remaining) {
       DEBUG("waiting for data\n");
 
 #ifndef _WIN32
-      pthread_mutex_lock(&decoder->decode_mutex);
+      pthread_mutex_lock(&codec->codec_mutex);
 #endif
-      decoder->result = (int)(decoder->stream.ptr - decoder->stream.buffer);
+      codec->result = (int)(codec->stream.ptr - codec->stream.buffer);
 #if _WIN32
-      SetEvent(decoder->hDecodeEvent);
-      WaitForSingleObject(decoder->hDataEvent);
+      SetEvent(codec->hCodecEvent);
+      WaitForSingleObject(codec->hDataEvent);
 #else
-      pthread_cond_signal(&decoder->decode_cond);
-      pthread_mutex_unlock(&decoder->decode_mutex);
-      pthread_cond_wait(&decoder->data_cond, &decoder->data_mutex);
+      pthread_cond_signal(&codec->codec_cond);
+      pthread_mutex_unlock(&codec->codec_mutex);
+      pthread_cond_wait(&codec->data_cond, &codec->data_mutex);
 #endif
 
-      remaining = decoder->stream.end - decoder->stream.ptr;
+      remaining = codec->stream.end - codec->stream.ptr;
 
       DEBUG("got %llu bytes\n", (unsigned long long)remaining);
     }
@@ -340,14 +340,14 @@ ImagingIncrementalDecoderRead(ImagingIncrementalDecoder decoder,
     if (!todo)
       break;
 
-    memcpy (ptr, decoder->stream.ptr, todo);
-    decoder->stream.ptr += todo;
+    memcpy (ptr, codec->stream.ptr, todo);
+    codec->stream.ptr += todo;
     bytes -= todo;
     done += todo;
     ptr += todo;
   }
 #ifndef _WIN32
-  pthread_mutex_unlock(&decoder->data_mutex);
+  pthread_mutex_unlock(&codec->data_mutex);
 #endif
 
   DEBUG("read total %llu bytes\n", (unsigned long long)done);
@@ -356,7 +356,7 @@ ImagingIncrementalDecoderRead(ImagingIncrementalDecoder decoder,
 }
 
 off_t
-ImagingIncrementalDecoderSkip(ImagingIncrementalDecoder decoder,
+ImagingIncrementalCodecSkip(ImagingIncrementalCodec codec,
                               off_t bytes)
 {
   off_t done = 0;
@@ -364,29 +364,29 @@ ImagingIncrementalDecoderSkip(ImagingIncrementalDecoder decoder,
   DEBUG("skipping (want %llu bytes)\n", (unsigned long long)bytes);
 
 #ifndef _WIN32
-  pthread_mutex_lock(&decoder->data_mutex);
+  pthread_mutex_lock(&codec->data_mutex);
 #endif
   while (bytes) {
     off_t todo = bytes;
-    off_t remaining = decoder->stream.end - decoder->stream.ptr;
+    off_t remaining = codec->stream.end - codec->stream.ptr;
 
     if (!remaining) {
       DEBUG("waiting for data\n");
 
 #ifndef _WIN32
-      pthread_mutex_lock(&decoder->decode_mutex);
+      pthread_mutex_lock(&codec->codec_mutex);
 #endif
-      decoder->result = (int)(decoder->stream.ptr - decoder->stream.buffer);
+      codec->result = (int)(codec->stream.ptr - codec->stream.buffer);
 #if _WIN32
-      SetEvent(decoder->hDecodeEvent);
-      WaitForSingleObject(decoder->hDataEvent);
+      SetEvent(codec->hCodecEvent);
+      WaitForSingleObject(codec->hDataEvent);
 #else
-      pthread_cond_signal(&decoder->decode_cond);
-      pthread_mutex_unlock(&decoder->decode_mutex);
-      pthread_cond_wait(&decoder->data_cond, &decoder->data_mutex);
+      pthread_cond_signal(&codec->codec_cond);
+      pthread_mutex_unlock(&codec->codec_mutex);
+      pthread_cond_wait(&codec->data_cond, &codec->data_mutex);
 #endif
 
-      remaining = decoder->stream.end - decoder->stream.ptr;
+      remaining = codec->stream.end - codec->stream.ptr;
     }
     if (todo > remaining)
       todo = remaining;
@@ -394,12 +394,12 @@ ImagingIncrementalDecoderSkip(ImagingIncrementalDecoder decoder,
     if (!todo)
       break;
 
-    decoder->stream.ptr += todo;
+    codec->stream.ptr += todo;
     bytes -= todo;
     done += todo;
   }
 #ifndef _WIN32
-  pthread_mutex_unlock(&decoder->data_mutex);
+  pthread_mutex_unlock(&codec->data_mutex);
 #endif
 
   DEBUG("skipped total %llu bytes\n", (unsigned long long)done);
@@ -407,3 +407,59 @@ ImagingIncrementalDecoderSkip(ImagingIncrementalDecoder decoder,
   return done;
 }
 
+size_t
+ImagingIncrementalCodecWrite(ImagingIncrementalCodec codec,
+                             const void *buffer, size_t bytes)
+{
+  const UINT8 *ptr = (const UINT8 *)buffer;
+  size_t done = 0;
+
+  DEBUG("write (have %llu bytes)\n", (unsigned long long)bytes);
+
+#ifndef _WIN32
+  pthread_mutex_lock(&codec->data_mutex);
+#endif
+  while (bytes) {
+    size_t todo = bytes;
+    size_t remaining = codec->stream.end - codec->stream.ptr;
+
+    if (!remaining) {
+      DEBUG("waiting for space\n");
+
+#ifndef _WIN32
+      pthread_mutex_lock(&codec->codec_mutex);
+#endif
+      codec->result = (int)(codec->stream.ptr - codec->stream.buffer);
+#if _WIN32
+      SetEvent(codec->hCodecEvent);
+      WaitForSingleObject(codec->hDataEvent);
+#else
+      pthread_cond_signal(&codec->codec_cond);
+      pthread_mutex_unlock(&codec->codec_mutex);
+      pthread_cond_wait(&codec->data_cond, &codec->data_mutex);
+#endif
+
+      remaining = codec->stream.end - codec->stream.ptr;
+
+      DEBUG("got %llu bytes\n", (unsigned long long)remaining);
+    }
+    if (todo > remaining)
+      todo = remaining;
+
+    if (!todo)
+      break;
+
+    memcpy (codec->stream.ptr, ptr, todo);
+    codec->stream.ptr += todo;
+    bytes -= todo;
+    done += todo;
+    ptr += todo;
+  }
+#ifndef _WIN32
+  pthread_mutex_unlock(&codec->data_mutex);
+#endif
+
+  DEBUG("wrote total %llu bytes\n", (unsigned long long)done);
+
+  return done;
+}
