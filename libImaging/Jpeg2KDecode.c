@@ -264,7 +264,7 @@ j2ku_graya_la(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
 
             UINT8 byte = j2ku_shift(offset + word, shift);
             row[0] = row[1] = row[2] = byte;
-            row[3] = (unsigned)(aoffset + aword) >> ashift;
+            row[3] = j2ku_shift(aoffset + aword, ashift);
             row += 4;
         }
     }
