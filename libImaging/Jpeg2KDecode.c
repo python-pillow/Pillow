@@ -20,6 +20,13 @@
 #include <stdlib.h>
 #include "Jpeg2K.h"
 
+typedef struct {
+    OPJ_UINT32 tile_index;
+    OPJ_UINT32 data_size;
+    OPJ_INT32  x0, y0, x1, y1;
+    OPJ_UINT32 nb_comps;
+} JPEG2KTILEINFO;
+
 /* -------------------------------------------------------------------- */
 /* Error handler                                                        */
 /* -------------------------------------------------------------------- */
@@ -77,7 +84,10 @@ j2k_seek(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 /* Unpackers                                                            */
 /* -------------------------------------------------------------------- */
 
-typedef void (*j2k_unpacker_t)(opj_image_t *in, Imaging im);
+typedef void (*j2k_unpacker_t)(opj_image_t *in,
+                               const JPEG2KTILEINFO *tileInfo,
+                               const UINT8 *data, 
+                               Imaging im);
 
 struct j2k_decode_unpacker {
     const char          *mode;
@@ -96,102 +106,216 @@ unsigned j2ku_shift(unsigned x, int n)
 }
 
 static void
-j2ku_gray_l(opj_image_t *in, Imaging im)
+j2ku_gray_l(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
+            const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = in->comps[0].x0, y0 = in->comps[0].y0;
-    unsigned w = in->comps[0].w, h = in->comps[0].h;
+    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned w = tileinfo->x1 - tileinfo->x0;
+    unsigned h = tileinfo->y1 - tileinfo->y0;
+
     int shift = 8 - in->comps[0].prec;
     int offset = in->comps[0].sgnd ? 1 << (in->comps[0].prec - 1) : 0;
+    int csiz = (in->comps[0].prec + 7) >> 3;
+
     unsigned x, y;
+
+    if (csiz == 3)
+        csiz = 4;
 
     if (shift < 0)
         offset += 1 << (-shift - 1);
 
-    for (y = 0; y < h; ++y) {
-        OPJ_INT32 *data = &in->comps[0].data[y * w];
-        UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
-        for (x = 0; x < w; ++x)
-            *row++ = j2ku_shift(offset + *data++, shift);
-    }
-}
-
-static void
-j2ku_gray_rgb(opj_image_t *in, Imaging im)
-{
-    unsigned x0 = in->comps[0].x0, y0 = in->comps[0].y0;
-    unsigned w = in->comps[0].w, h = in->comps[0].h;
-    int shift = 8 - in->comps[0].prec;
-    int offset = in->comps[0].sgnd ? 1 << (in->comps[0].prec - 1) : 0;
-    unsigned x, y;
-
-    if (shift < 0)
-        offset += 1 << (-shift - 1);
-
-    for (y = 0; y < h; ++y) {
-        OPJ_INT32 *data = &in->comps[0].data[y * w];
-        UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
-        for (x = 0; x < w; ++x) {
-            UINT8 byte = j2ku_shift(offset + *data++, shift);
-            row[0] = row[1] = row[2] = byte;
-            row[3] = 0xff;
-            row += 4;
+    switch (csiz) {
+    case 1:
+        for (y = 0; y < h; ++y) {
+            const UINT8 *data = &tiledata[y * w];
+            UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
+            for (x = 0; x < w; ++x)
+                *row++ = j2ku_shift(offset + *data++, shift);
         }
+        break;
+    case 2:
+        for (y = 0; y < h; ++y) {
+            const UINT16 *data = (const UINT16 *)&tiledata[2 * y * w];
+            UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
+            for (x = 0; x < w; ++x)
+                *row++ = j2ku_shift(offset + *data++, shift);
+        }
+        break;
+    case 4:
+        for (y = 0; y < h; ++y) {
+            const UINT32 *data = (const UINT32 *)&tiledata[4 * y * w];
+            UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
+            for (x = 0; x < w; ++x)
+                *row++ = j2ku_shift(offset + *data++, shift);
+        }
+        break;
     }
 }
 
 static void
-j2ku_graya_la(opj_image_t *in, Imaging im)
+j2ku_gray_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
+              const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = in->comps[0].x0, y0 = in->comps[0].y0;
-    unsigned w = in->comps[0].w, h = in->comps[0].h;
+    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned w = tileinfo->x1 - tileinfo->x0;
+    unsigned h = tileinfo->y1 - tileinfo->y0;
+
     int shift = 8 - in->comps[0].prec;
     int offset = in->comps[0].sgnd ? 1 << (in->comps[0].prec - 1) : 0;
+    int csiz = (in->comps[0].prec + 7) >> 3;
+
+    unsigned x, y;
+
+    if (shift < 0)
+        offset += 1 << (-shift - 1);
+
+    if (csiz == 3)
+        csiz = 4;
+
+    switch (csiz) {
+    case 1:
+        for (y = 0; y < h; ++y) {
+            const UINT8 *data = &tiledata[y * w];
+            UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
+            for (x = 0; x < w; ++x) {
+                UINT8 byte = j2ku_shift(offset + *data++, shift);
+                row[0] = row[1] = row[2] = byte;
+                row[3] = 0xff;
+                row += 4;
+            }
+        }
+        break;
+    case 2:
+        for (y = 0; y < h; ++y) {
+            const UINT16 *data = (UINT16 *)&tiledata[2 * y * w];
+            UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
+            for (x = 0; x < w; ++x) {
+                UINT8 byte = j2ku_shift(offset + *data++, shift);
+                row[0] = row[1] = row[2] = byte;
+                row[3] = 0xff;
+                row += 4;
+            }
+        }
+        break;
+    case 4:
+        for (y = 0; y < h; ++y) {
+            const UINT32 *data = (UINT32 *)&tiledata[4 * y * w];
+            UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
+            for (x = 0; x < w; ++x) {
+                UINT8 byte = j2ku_shift(offset + *data++, shift);
+                row[0] = row[1] = row[2] = byte;
+                row[3] = 0xff;
+                row += 4;
+            }
+        }
+        break;
+    }
+}
+
+static void
+j2ku_graya_la(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
+              const UINT8 *tiledata, Imaging im)
+{
+    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned w = tileinfo->x1 - tileinfo->x0;
+    unsigned h = tileinfo->y1 - tileinfo->y0;
+
+    int shift = 8 - in->comps[0].prec;
+    int offset = in->comps[0].sgnd ? 1 << (in->comps[0].prec - 1) : 0;
+    int csiz = (in->comps[0].prec + 7) >> 3;
     int ashift = 8 - in->comps[1].prec;
     int aoffset = in->comps[1].sgnd ? 1 << (in->comps[1].prec - 1) : 0;
+    int acsiz = (in->comps[1].prec + 7) >> 3;
+    const UINT8 *atiledata;
+
     unsigned x, y;
+
+    if (csiz == 3)
+        csiz = 4;
+    if (acsiz == 3)
+        acsiz = 4;
 
     if (shift < 0)
         offset += 1 << (-shift - 1);
     if (ashift < 0)
         aoffset += 1 << (-ashift - 1);
 
+    atiledata = tiledata + csiz * w * h;
+
     for (y = 0; y < h; ++y) {
-        OPJ_INT32 *data = &in->comps[0].data[y * w];
-        OPJ_INT32 *adata = &in->comps[1].data[y * w];
+        const UINT8 *data = &tiledata[csiz * y * w];
+        const UINT8 *adata = &atiledata[acsiz * y * w];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         for (x = 0; x < w; ++x) {
-            UINT8 byte = j2ku_shift(offset + *data++, shift);
+            UINT32 word, aword;
+
+            switch (csiz) {
+            case 1: word = *data++; break;
+            case 2: word = *(const UINT16 *)data; data += 2; break;
+            case 4: word = *(const UINT32 *)data; data += 4; break;
+            }
+
+            switch (acsiz) {
+            case 1: aword = *adata++; break;
+            case 2: aword = *(const UINT16 *)adata; adata += 2; break;
+            case 4: aword = *(const UINT32 *)adata; adata += 4; break;
+            }
+
+            UINT8 byte = j2ku_shift(offset + word, shift);
             row[0] = row[1] = row[2] = byte;
-            row[3] = (unsigned)(offset + *adata++) >> shift;
+            row[3] = (unsigned)(aoffset + aword) >> ashift;
             row += 4;
         }
     }
 }
 
 static void
-j2ku_srgb_rgb(opj_image_t *in, Imaging im)
+j2ku_srgb_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
+              const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = in->comps[0].x0, y0 = in->comps[0].y0;
-    unsigned w = in->comps[0].w, h = in->comps[0].h;
-    int shifts[3], offsets[3];
+    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned w = tileinfo->x1 - tileinfo->x0;
+    unsigned h = tileinfo->y1 - tileinfo->y0;
+
+    int shifts[3], offsets[3], csiz[3];
+    const UINT8 *cdata[3];
+    const UINT8 *cptr = tiledata;
     unsigned n, x, y;
 
     for (n = 0; n < 3; ++n) {
+        cdata[n] = cptr;
         shifts[n] = 8 - in->comps[n].prec;
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
+        csiz[n] = (in->comps[n].prec + 7) >> 3;
+
+        if (csiz[n] == 3)
+            csiz[n] = 4;
+
         if (shifts[n] < 0)
             offsets[n] += 1 << (-shifts[n] - 1);
+
+        cptr += csiz[n] * w * h;
     }
 
     for (y = 0; y < h; ++y) {
-        OPJ_INT32 *data[3];
+        const UINT8 *data[3];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         for (n = 0; n < 3; ++n)
-            data[n] = &in->comps[n].data[y * w];
+            data[n] = &cdata[n][csiz[n] * y * w];
         
         for (x = 0; x < w; ++x) {
-            for (n = 0; n < 3; ++n)
-                row[n] = j2ku_shift(offsets[n] + *data[n]++, shifts[n]);
+            for (n = 0; n < 3; ++n) {
+                UINT32 word;
+
+                switch (csiz[n]) {
+                case 1: word = *data[n]++; break;
+                case 2: word = *(const UINT16 *)data[n]; data[n] += 2; break;
+                case 4: word = *(const UINT32 *)data[n]; data[n] += 4; break;
+                }
+
+                row[n] = j2ku_shift(offsets[n] + word, shifts[n]);
+            }
             row[3] = 0xff;
             row += 4;
         }
@@ -199,61 +323,106 @@ j2ku_srgb_rgb(opj_image_t *in, Imaging im)
 }
 
 static void
-j2ku_sycc_rgb(opj_image_t *in, Imaging im)
+j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
+              const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = in->comps[0].x0, y0 = in->comps[0].y0;
-    unsigned w = in->comps[0].w, h = in->comps[0].h;
-    int shifts[3], offsets[3];
+    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned w = tileinfo->x1 - tileinfo->x0;
+    unsigned h = tileinfo->y1 - tileinfo->y0;
+
+    int shifts[3], offsets[3], csiz[3];
+    const UINT8 *cdata[3];
+    const UINT8 *cptr = tiledata;
     unsigned n, x, y;
 
     for (n = 0; n < 3; ++n) {
+        cdata[n] = cptr;
         shifts[n] = 8 - in->comps[n].prec;
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
+        csiz[n] = (in->comps[n].prec + 7) >> 3;
+
+        if (csiz[n] == 3)
+            csiz[n] = 4;
+
         if (shifts[n] < 0)
             offsets[n] += 1 << (-shifts[n] - 1);
+
+        cptr += csiz[n] * w * h;
     }
 
     for (y = 0; y < h; ++y) {
-        OPJ_INT32 *data[3];
+        const UINT8 *data[3];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         UINT8 *row_start = row;
         for (n = 0; n < 3; ++n)
-            data[n] = &in->comps[n].data[y * w];
+            data[n] = &cdata[n][csiz[n] * y * w];
         
         for (x = 0; x < w; ++x) {
-            for (n = 0; n < 3; ++n)
-                row[n] = j2ku_shift(offsets[n] + *data[n]++, shifts[n]);
+            for (n = 0; n < 3; ++n) {
+                UINT32 word;
+
+                switch (csiz[n]) {
+                case 1: word = *data[n]++; break;
+                case 2: word = *(const UINT16 *)data[n]; data[n] += 2; break;
+                case 4: word = *(const UINT32 *)data[n]; data[n] += 4; break;
+                }
+
+                row[n] = j2ku_shift(offsets[n] + word, shifts[n]);
+            }
             row[3] = 0xff;
             row += 4;
         }
+
         ImagingConvertYCbCr2RGB(row_start, row_start, w);
     }
 }
 
 static void
-j2ku_srgba_rgba(opj_image_t *in, Imaging im)
+j2ku_srgba_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
+                const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = in->comps[0].x0, y0 = in->comps[0].y0;
-    unsigned w = in->comps[0].w, h = in->comps[0].h;
-    int shifts[4], offsets[4];
+    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned w = tileinfo->x1 - tileinfo->x0;
+    unsigned h = tileinfo->y1 - tileinfo->y0;
+
+    int shifts[4], offsets[4], csiz[4];
+    const UINT8 *cdata[4];
+    const UINT8 *cptr = tiledata;
     unsigned n, x, y;
 
     for (n = 0; n < 4; ++n) {
+        cdata[n] = cptr;
         shifts[n] = 8 - in->comps[n].prec;
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
+        csiz[n] = (in->comps[n].prec + 7) >> 3;
+
+        if (csiz[n] == 3)
+            csiz[n] = 4;
+
         if (shifts[n] < 0)
             offsets[n] += 1 << (-shifts[n] - 1);
+
+        cptr += csiz[n] * w * h;
     }
 
     for (y = 0; y < h; ++y) {
-        OPJ_INT32 *data[4];
+        const UINT8 *data[4];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         for (n = 0; n < 4; ++n)
-            data[n] = &in->comps[n].data[y * w];
+            data[n] = &cdata[n][csiz[n] * y * w];
         
         for (x = 0; x < w; ++x) {
-            for (n = 0; n < 4; ++n)
-                row[n] = j2ku_shift(offsets[n] + *data[n]++, shifts[n]);
+            for (n = 0; n < 4; ++n) {
+                UINT32 word;
+
+                switch (csiz[n]) {
+                case 1: word = *data[n]++; break;
+                case 2: word = *(const UINT16 *)data[n]; data[n] += 2; break;
+                case 4: word = *(const UINT32 *)data[n]; data[n] += 4; break;
+                }
+
+                row[n] = j2ku_shift(offsets[n] + word, shifts[n]);
+            }
             row += 4;
         }
     }
@@ -295,6 +464,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     opj_dparameters_t params;
     OPJ_COLOR_SPACE color_space;
     j2k_unpacker_t unpack = NULL;
+    size_t buffer_size = 0;
     unsigned n;
 
     stream = opj_stream_default_create(OPJ_TRUE);
@@ -353,13 +523,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
             state->state = J2K_STATE_FAILED;
             goto quick_exit;
         }
-        
-        /* Check that the bit depth is uniform */
-        if (image->comps[0].prec != image->comps[n].prec) {
-            state->errcode = IMAGING_CODEC_BROKEN;
-            state->state = J2K_STATE_FAILED;
-            goto quick_exit;
-        }                
     }
     
     /* 
@@ -408,15 +571,51 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
         goto quick_exit; 
     }
 
-    /* Decode and unpack the image */
-    if (!opj_decode(codec, stream, image)
-        || !opj_end_decompress(codec, stream)) {
-        state->errcode = IMAGING_CODEC_BROKEN;
-        state->state = J2K_STATE_FAILED;
-        goto quick_exit;
-    }
+    /* Decode the image tile-by-tile; this means we only need use as much
+       memory as is required for one tile's worth of components. */
+    for (;;) {
+        JPEG2KTILEINFO tile_info;
+        OPJ_BOOL should_continue;
 
-    unpack(image, im);
+        if (!opj_read_tile_header(codec,
+                                  stream,
+                                  &tile_info.tile_index,
+                                  &tile_info.data_size,
+                                  &tile_info.x0, &tile_info.y0,
+                                  &tile_info.x1, &tile_info.y1,
+                                  &tile_info.nb_comps,
+                                  &should_continue)) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
+
+        if (!should_continue)
+            break;
+
+        if (buffer_size < tile_info.data_size) {
+            UINT8 *new = realloc (state->buffer, tile_info.data_size);
+            if (!new) {
+                state->errcode = IMAGING_CODEC_MEMORY;
+                state->state = J2K_STATE_FAILED;
+                goto quick_exit;
+            }
+            state->buffer = new;
+            buffer_size = tile_info.data_size;
+        }
+
+        if (!opj_decode_tile_data(codec,
+                                  tile_info.tile_index,
+                                  (OPJ_BYTE *)state->buffer,
+                                  tile_info.data_size,
+                                  stream)) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
+
+        unpack(image, &tile_info, state->buffer, im);
+    }
 
  quick_exit:
     if (codec)
