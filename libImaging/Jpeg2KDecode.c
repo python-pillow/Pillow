@@ -17,7 +17,7 @@
 
 #ifdef HAVE_OPENJPEG
 
-#include <unistd.h>
+#include <stdlib.h>
 #include "Jpeg2K.h"
 
 /* -------------------------------------------------------------------- */
@@ -41,27 +41,35 @@ j2k_read(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
 {
     ImagingIncrementalDecoder decoder = (ImagingIncrementalDecoder)p_user_data;
 
-    return ImagingIncrementalDecoderRead(decoder, p_buffer, p_nb_bytes);
+    size_t len = ImagingIncrementalDecoderRead(decoder, p_buffer, p_nb_bytes);
+
+    return len ? len : (OPJ_SIZE_T)-1;
 }
 
 static OPJ_SIZE_T
 j2k_write(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
 {
-    return OPJ_FALSE;
+    /* This should never happen */
+    fprintf(stderr, "OpenJPEG has written to our read stream(!)");
+    abort();
+    return (OPJ_SIZE_T)-1;
 }
 
 static OPJ_OFF_T
 j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 {
     ImagingIncrementalDecoder decoder = (ImagingIncrementalDecoder)p_user_data;
+    off_t pos = ImagingIncrementalDecoderSkip(decoder, p_nb_bytes);
 
-    return ImagingIncrementalDecoderSkip(decoder, p_nb_bytes);
+    return pos ? pos : (OPJ_OFF_T)-1;
 }
 
 static OPJ_BOOL
 j2k_seek(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 {
-    // We *deliberately* don't implement this
+    /* This should never happen */
+    fprintf(stderr, "OpenJPEG tried to seek our read stream(!)");
+    abort();
     return OPJ_FALSE;
 }
 
@@ -281,12 +289,12 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
                  ImagingIncrementalDecoder decoder)
 {
     JPEG2KSTATE *context = (JPEG2KSTATE *) state->context;
-    opj_stream_t *stream;
-    opj_image_t *image;
-    opj_codec_t *codec;
+    opj_stream_t *stream = NULL;
+    opj_image_t *image = NULL;
+    opj_codec_t *codec = NULL;
     opj_dparameters_t params;
     OPJ_COLOR_SPACE color_space;
-    j2k_unpacker_t unpack;
+    j2k_unpacker_t unpack = NULL;
     unsigned n;
 
     stream = opj_stream_default_create(OPJ_TRUE);

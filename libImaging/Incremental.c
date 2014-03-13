@@ -42,6 +42,14 @@
 #include <pthread.h>
 #endif
 
+#define DEBUG_INCREMENTAL 0
+
+#if DEBUG_INCREMENTAL
+#define DEBUG(...) printf(__VA_ARGS__)
+#else
+#define DEBUG(...)
+#endif
+
 struct ImagingIncrementalStreamStruct {
   UINT8 *buffer;
   UINT8 *ptr;
@@ -206,6 +214,8 @@ ImagingIncrementalDecoderCreate(ImagingIncrementalDecoderEntry decoder_entry,
 void
 ImagingIncrementalDecoderDestroy(ImagingIncrementalDecoder decoder)
 {
+  DEBUG("destroying\n");
+
   if (!decoder->started) {
 #ifdef _WIN32
     ResumeThread(decoder->hThread);
@@ -252,6 +262,8 @@ ImagingIncrementalDecodeData(ImagingIncrementalDecoder decoder,
                              UINT8 *buf, int bytes)
 {
   if (!decoder->started) {
+    DEBUG("starting\n");
+
 #ifdef _WIN32
     ResumeThread(decoder->hThread);
 #else
@@ -259,6 +271,8 @@ ImagingIncrementalDecodeData(ImagingIncrementalDecoder decoder,
 #endif
     decoder->started = 1;
   }
+
+  DEBUG("providing %p, %d\n", buf, bytes);
 
 #ifndef _WIN32
   pthread_mutex_lock(&decoder->data_mutex);
@@ -279,6 +293,8 @@ ImagingIncrementalDecodeData(ImagingIncrementalDecoder decoder,
   pthread_mutex_unlock(&decoder->decode_mutex);
 #endif
 
+  DEBUG("got result %d\n", decoder->result);
+
   return decoder->result;
 }
 
@@ -289,12 +305,74 @@ ImagingIncrementalDecoderRead(ImagingIncrementalDecoder decoder,
   UINT8 *ptr = (UINT8 *)buffer;
   size_t done = 0;
 
+  DEBUG("reading (want %llu bytes)\n", (unsigned long long)bytes);
+
+#ifndef _WIN32
   pthread_mutex_lock(&decoder->data_mutex);
+#endif
   while (bytes) {
     size_t todo = bytes;
     size_t remaining = decoder->stream.end - decoder->stream.ptr;
 
     if (!remaining) {
+      DEBUG("waiting for data\n");
+
+#ifndef _WIN32
+      pthread_mutex_lock(&decoder->decode_mutex);
+#endif
+      decoder->result = (int)(decoder->stream.ptr - decoder->stream.buffer);
+#if _WIN32
+      SetEvent(decoder->hDecodeEvent);
+      WaitForSingleObject(decoder->hDataEvent);
+#else
+      pthread_cond_signal(&decoder->decode_cond);
+      pthread_mutex_unlock(&decoder->decode_mutex);
+      pthread_cond_wait(&decoder->data_cond, &decoder->data_mutex);
+#endif
+
+      remaining = decoder->stream.end - decoder->stream.ptr;
+
+      DEBUG("got %llu bytes\n", (unsigned long long)remaining);
+    }
+    if (todo > remaining)
+      todo = remaining;
+
+    if (!todo)
+      break;
+
+    memcpy (ptr, decoder->stream.ptr, todo);
+    decoder->stream.ptr += todo;
+    bytes -= todo;
+    done += todo;
+    ptr += todo;
+  }
+#ifndef _WIN32
+  pthread_mutex_unlock(&decoder->data_mutex);
+#endif
+
+  DEBUG("read total %llu bytes\n", (unsigned long long)done);
+
+  return done;
+}
+
+off_t
+ImagingIncrementalDecoderSkip(ImagingIncrementalDecoder decoder,
+                              off_t bytes)
+{
+  off_t done = 0;
+
+  DEBUG("skipping (want %llu bytes)\n", (unsigned long long)bytes);
+
+#ifndef _WIN32
+  pthread_mutex_lock(&decoder->data_mutex);
+#endif
+  while (bytes) {
+    off_t todo = bytes;
+    off_t remaining = decoder->stream.end - decoder->stream.ptr;
+
+    if (!remaining) {
+      DEBUG("waiting for data\n");
+
 #ifndef _WIN32
       pthread_mutex_lock(&decoder->decode_mutex);
 #endif
@@ -316,50 +394,15 @@ ImagingIncrementalDecoderRead(ImagingIncrementalDecoder decoder,
     if (!todo)
       break;
 
-    memcpy (ptr, decoder->stream.ptr, todo);
     decoder->stream.ptr += todo;
     bytes -= todo;
     done += todo;
-    ptr += todo;
   }
+#ifndef _WIN32
   pthread_mutex_unlock(&decoder->data_mutex);
-
-  return done;
-}
-
-off_t
-ImagingIncrementalDecoderSkip(ImagingIncrementalDecoder decoder,
-                              off_t bytes)
-{
-  off_t done = 0;
-
-  while (bytes) {
-    off_t todo = bytes;
-    off_t remaining = decoder->stream.end - decoder->stream.ptr;
-
-    if (!remaining) {
-      decoder->result = (int)(decoder->stream.ptr - decoder->stream.buffer);
-#if _WIN32
-      SetEvent(decoder->hDecodeEvent);
-      WaitForSingleObject(decoder->hDataEvent);
-#else
-      pthread_cond_signal(&decoder->decode_cond);
-      pthread_mutex_lock(&decoder->data_mutex);
-      pthread_cond_wait(&decoder->data_cond, &decoder->data_mutex);
 #endif
 
-      remaining = decoder->stream.end - decoder->stream.ptr;
-    }
-    if (todo > remaining)
-      todo = remaining;
-
-    if (!todo)
-      break;
-
-    decoder->stream.ptr += todo;
-    bytes -= todo;
-    done += todo;
-  }
+  DEBUG("skipped total %llu bytes\n", (unsigned long long)done);
 
   return done;
 }

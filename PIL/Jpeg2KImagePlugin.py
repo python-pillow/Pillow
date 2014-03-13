@@ -138,12 +138,10 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         sig = self.fp.read(4)
         if sig == b'\xff\x4f\xff\x51':
             self.codec = "j2k"
-            print 'Reading size/mode'
             try:
                 self.size, self.mode = _parse_codestream(self.fp)
             except Exception as e:
                 print e
-            print '%r, %r' % (self.size, self.mode)
         else:
             sig = sig + self.fp.read(8)
         
