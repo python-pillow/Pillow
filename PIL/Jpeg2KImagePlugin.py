@@ -165,7 +165,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
     def load(self):
         if self.reduce:
             power = 1 << self.reduce
-            self.size = (self.size[0] / power, self.size[1] / power)
+            adjust = power >> 1
+            self.size = ((self.size[0] + adjust) / power,
+                         (self.size[1] + adjust) / power)
         
         ImageFile.ImageFile.load(self)
         
