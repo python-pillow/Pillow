@@ -45,6 +45,12 @@ Changelog (Pillow)
 
 - Prefer homebrew freetype over X11 freetype (but still allow both)
   [dmckeone]
+  
+2.3.1 (2014-03-14)
+------------------
+
+- Fix insecure use of tempfile.mktemp (CVE-2014-1932 CVE-2014-1933)
+  [wiredfool]  
 
 2.3.0 (2014-01-01)
 ------------------
