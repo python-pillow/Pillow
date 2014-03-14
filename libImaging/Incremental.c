@@ -88,7 +88,7 @@ struct ImagingIncrementalCodecStruct {
 static void flush_stream(ImagingIncrementalCodec codec);
 
 #if _WIN32
-static void __stdcall
+static unsigned int __stdcall
 codec_thread(void *ptr)
 {
   ImagingIncrementalCodec codec = (ImagingIncrementalCodec)ptr;
@@ -98,6 +98,8 @@ codec_thread(void *ptr)
   flush_stream(codec);
 
   SetEvent(codec->hCodecEvent);
+
+  return 0;
 }
 #else
 static void *
@@ -327,7 +329,7 @@ ImagingIncrementalCodecPushBuffer(ImagingIncrementalCodec codec,
 
     /* Wait for the thread to ask for data */
 #ifdef _WIN32
-    WaitForSingleObject(codec->hCodecEvent);
+    WaitForSingleObject(codec->hCodecEvent, INFINITE);
 #else
     pthread_mutex_lock(&codec->codec_mutex);
     pthread_cond_wait(&codec->codec_cond, &codec->codec_mutex);
@@ -375,7 +377,7 @@ ImagingIncrementalCodecPushBuffer(ImagingIncrementalCodec codec,
 
 #ifdef _WIN32
   SetEvent(codec->hDataEvent);
-  WaitForSingleObject(codec->hCodecEvent);
+  WaitForSingleObject(codec->hCodecEvent, INFINITE);
 #else
   pthread_cond_signal(&codec->data_cond);
   pthread_mutex_unlock(&codec->data_mutex);
@@ -433,7 +435,7 @@ ImagingIncrementalCodecRead(ImagingIncrementalCodec codec,
       codec->result = (int)(codec->stream.ptr - codec->stream.buffer);
 #if _WIN32
       SetEvent(codec->hCodecEvent);
-      WaitForSingleObject(codec->hDataEvent);
+      WaitForSingleObject(codec->hDataEvent, INFINITE);
 #else
       pthread_cond_signal(&codec->codec_cond);
       pthread_mutex_unlock(&codec->codec_mutex);
@@ -509,7 +511,7 @@ ImagingIncrementalCodecSkip(ImagingIncrementalCodec codec,
       codec->result = (int)(codec->stream.ptr - codec->stream.buffer);
 #if _WIN32
       SetEvent(codec->hCodecEvent);
-      WaitForSingleObject(codec->hDataEvent);
+      WaitForSingleObject(codec->hDataEvent, INFINITE);
 #else
       pthread_cond_signal(&codec->codec_cond);
       pthread_mutex_unlock(&codec->codec_mutex);
@@ -590,7 +592,7 @@ ImagingIncrementalCodecWrite(ImagingIncrementalCodec codec,
         codec->result = (int)(codec->stream.ptr - codec->stream.buffer);
 #if _WIN32
         SetEvent(codec->hCodecEvent);
-        WaitForSingleObject(codec->hDataEvent);
+        WaitForSingleObject(codec->hDataEvent, INFINITE);
 #else
         pthread_cond_signal(&codec->codec_cond);
         pthread_mutex_unlock(&codec->codec_mutex);

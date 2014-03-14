@@ -89,6 +89,7 @@ NAME = 'Pillow'
 VERSION = '2.3.0'
 TCL_ROOT = None
 JPEG_ROOT = None
+JPEG2K_ROOT = None
 ZLIB_ROOT = None
 TIFF_ROOT = None
 FREETYPE_ROOT = None
@@ -152,7 +153,7 @@ class pil_build_ext(build_ext):
         #
         # add configured kits
 
-        for root in (TCL_ROOT, JPEG_ROOT, TIFF_ROOT, ZLIB_ROOT,
+        for root in (TCL_ROOT, JPEG_ROOT, JPEG2K_ROOT, TIFF_ROOT, ZLIB_ROOT,
                      FREETYPE_ROOT, LCMS_ROOT):
             if isinstance(root, type(())):
                 lib_root, include_root = root
@@ -322,6 +323,16 @@ class pil_build_ext(build_ext):
 
         _add_directory(library_dirs, "/usr/lib")
         _add_directory(include_dirs, "/usr/include")
+
+        # on Windows, look for the OpenJPEG libraries in the location that
+        # the official installed puts them
+        if sys.platform == "win32":
+            _add_directory(library_dirs, 
+                           os.path.join(os.environ.get("ProgramFiles", ""),
+                                        "OpenJPEG 2.0", "lib"))
+            _add_directory(include_dirs,
+                           os.path.join(os.environ.get("ProgramFiles", ""),
+                                        "OpenJPEG 2.0", "include"))
 
         #
         # insert new dirs *before* default libs, to avoid conflicts
