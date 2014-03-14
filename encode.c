@@ -836,7 +836,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
     char *quality_mode = "rates";
     PyObject *quality_layers = NULL;
     int num_resolutions = 0;
-    PyObject *cblk_size = NULL;
+    PyObject *cblk_size = NULL, *precinct_size = NULL;
     PyObject *irreversible = NULL;
     char *progression = "LRCP";
     OPJ_PROG_ORDER prog_order;
@@ -844,10 +844,11 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
     OPJ_CINEMA_MODE cine_mode;
     int fd = -1;
 
-    if (!PyArg_ParseTuple(args, "ss|OOOsOIOOssi", &mode, &format,
+    if (!PyArg_ParseTuple(args, "ss|OOOsOIOOOssi", &mode, &format,
                           &offset, &tile_offset, &tile_size,
                           &quality_mode, &quality_layers, &num_resolutions,
-                          &cblk_size, &irreversible, &progression, &cinema_mode,
+                          &cblk_size, &precinct_size,
+                          &irreversible, &progression, &cinema_mode,
                           &fd))
         return NULL;
 
@@ -916,6 +917,9 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
     j2k_decode_coord_tuple(cblk_size,
                            &context->cblk_width,
                            &context->cblk_height);
+    j2k_decode_coord_tuple(precinct_size,
+                           &context->precinct_width,
+                           &context->precinct_height);
 
     context->irreversible = PyObject_IsTrue(irreversible);
     context->progression = prog_order;

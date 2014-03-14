@@ -3461,6 +3461,13 @@ setup_module(PyObject* m) {
   }
 #endif
 
+#ifdef HAVE_OPENJPEG
+  {
+    extern const char *ImagingJpeg2KVersion(void);
+    PyDict_SetItemString(d, "jp2klib_version", PyUnicode_FromString(ImagingJpeg2KVersion()));
+  }
+#endif
+
 #ifdef HAVE_LIBZ
   /* zip encoding strategies */
   PyModule_AddIntConstant(m, "DEFAULT_STRATEGY", Z_DEFAULT_STRATEGY);

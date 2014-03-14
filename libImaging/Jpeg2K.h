@@ -65,6 +65,9 @@ typedef struct {
     /* Code block size */
     int            cblk_width, cblk_height;
 
+    /* Precinct size */
+    int            precinct_width, precinct_height;
+
     /* Compression style */
     int            irreversible;
 

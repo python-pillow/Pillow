@@ -364,6 +364,15 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
         params.cblockh_init = context->cblk_height;
     }
 
+    if (context->precinct_width >= 4 && context->precinct_height >= 4
+        && context->precinct_width >= context->cblk_width
+        && context->precinct_height > context->cblk_height) {
+        params.prcw_init[0] = context->precinct_width;
+        params.prch_init[0] = context->precinct_height;
+        params.res_spec = 1;
+        params.csty |= 0x01;
+    }
+
     params.irreversible = context->irreversible;
 
     params.prog_order = context->progression;

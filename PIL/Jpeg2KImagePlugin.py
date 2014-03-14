@@ -196,6 +196,7 @@ def _save(im, fp, filename):
     quality_layers = info.get('quality_layers', None)
     num_resolutions = info.get('num_resolutions', 0)
     cblk_size = info.get('codeblock_size', None)
+    precinct_size = info.get('precinct_size', None)
     irreversible = info.get('irreversible', False)
     progression = info.get('progression', 'LRCP')
     cinema_mode = info.get('cinema_mode', 'no')
@@ -212,6 +213,7 @@ def _save(im, fp, filename):
         quality_layers,
         num_resolutions,
         cblk_size,
+        precinct_size,
         irreversible,
         progression,
         cinema_mode,
