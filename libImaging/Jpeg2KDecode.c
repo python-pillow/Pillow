@@ -230,7 +230,7 @@ j2ku_graya_la(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         const UINT8 *adata = &atiledata[acsiz * y * w];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         for (x = 0; x < w; ++x) {
-            UINT32 word, aword;
+            UINT32 word = 0, aword = 0;
 
             switch (csiz) {
             case 1: word = *data++; break;
@@ -288,7 +288,7 @@ j2ku_srgb_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 3; ++n) {
-                UINT32 word;
+                UINT32 word = 0;
 
                 switch (csiz[n]) {
                 case 1: word = *data[n]++; break;
@@ -341,7 +341,7 @@ j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 3; ++n) {
-                UINT32 word;
+                UINT32 word = 0;
 
                 switch (csiz[n]) {
                 case 1: word = *data[n]++; break;
@@ -395,7 +395,7 @@ j2ku_srgba_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 4; ++n) {
-                UINT32 word;
+                UINT32 word = 0;
 
                 switch (csiz[n]) {
                 case 1: word = *data[n]++; break;
@@ -447,7 +447,7 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 4; ++n) {
-                UINT32 word;
+                UINT32 word = 0;
 
                 switch (csiz[n]) {
                 case 1: word = *data[n]++; break;
