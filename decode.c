@@ -94,6 +94,9 @@ PyImaging_DecoderNew(int contextsize)
     /* Initialize the cleanup function pointer */
     decoder->cleanup = NULL;
 
+    /* Most decoders don't want to handle EOF themselves */
+    decoder->handles_eof = 0;
+
     return decoder;
 }
 
