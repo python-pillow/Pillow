@@ -172,8 +172,8 @@ class IptcImageFile(ImageFile.ImageFile):
         self.fp.seek(offset)
 
         # Copy image data to temporary file
-        outfile = tempfile.mktemp()
-        o = open(outfile, "wb")
+        o_fd, outfile = tempfile.mkstemp(text=False)
+        o = os.fdopen(o_fd)
         if encoding == "raw":
             # To simplify access to the extracted file,
             # prepend a PPM header
