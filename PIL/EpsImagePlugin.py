@@ -67,7 +67,8 @@ def Ghostscript(tile, size, fp, scale=1):
 
     import tempfile, os, subprocess
 
-    file = tempfile.mktemp()
+    out_fd, file = tempfile.mkstemp()
+    os.close(out_fd)
 
     # Build ghostscript command
     command = ["gs",

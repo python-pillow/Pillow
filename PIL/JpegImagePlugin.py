@@ -344,13 +344,17 @@ class JpegImageFile(ImageFile.ImageFile):
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
         import tempfile, os
-        file = tempfile.mktemp()
-        os.system("djpeg %s >%s" % (self.filename, file))
+        f, path = tempfile.mkstemp()
+        os.close(f)
+        if os.path.exists(self.filename):
+            os.system("djpeg '%s' >'%s'" % (self.filename, path))
+        else:
+            raise ValueError("Invalid Filename")
 
         try:
-            self.im = Image.core.open_ppm(file)
+            self.im = Image.core.open_ppm(path)
         finally:
-            try: os.unlink(file)
+            try: os.unlink(path)
             except: pass
 
         self.mode = self.im.mode
