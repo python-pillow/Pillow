@@ -413,9 +413,8 @@ ImagingIncrementalCodecRead(ImagingIncrementalCodec codec,
   DEBUG("reading (want %llu bytes)\n", (unsigned long long)bytes);
 
   if (codec->stream.fd >= 0) {
-    off_t offset = lseek(codec->stream.fd, 0, SEEK_CUR);
     ssize_t ret = read(codec->stream.fd, buffer, bytes);
-    DEBUG("read %lld bytes from fd at %lld\n", (long long)ret, (long long)offset);
+    DEBUG("read %lld bytes from fd\n", (long long)ret);
     return ret;
   }
 
@@ -482,7 +481,7 @@ ImagingIncrementalCodecSkip(ImagingIncrementalCodec codec,
     static const UINT8 zeroes[256] = { 0 };
     off_t done = 0;
     while (bytes) {
-      size_t todo = bytes > 256 ? 256 : bytes;
+      size_t todo = (size_t)(bytes > 256 ? 256 : bytes);
       ssize_t written = ImagingIncrementalCodecWrite(codec, zeroes, todo);
       if (written <= 0)
         break;
