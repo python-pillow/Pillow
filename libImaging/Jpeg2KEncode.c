@@ -80,9 +80,10 @@ j2k_pack_l(Imaging im, UINT8 *buf,
            unsigned x0, unsigned y0, unsigned w, unsigned h)
 {
     UINT8 *ptr = buf;
-    for (unsigned y = 0; y < h; ++y) {
+    unsigned x,y;
+    for (y = 0; y < h; ++y) {
         UINT8 *data = (UINT8 *)(im->image[y + y0] + x0);
-        for (unsigned x = 0; x < w; ++x)
+        for (x = 0; x < w; ++x)
             *ptr++ = *data++;
     }
 }
@@ -93,9 +94,10 @@ j2k_pack_la(Imaging im, UINT8 *buf,
 {
     UINT8 *ptr = buf;
     UINT8 *ptra = buf + w * h;
-    for (unsigned y = 0; y < h; ++y) {
+    unsigned x,y;
+    for (y = 0; y < h; ++y) {
         UINT8 *data = (UINT8 *)(im->image[y + y0] + 4 * x0);
-        for (unsigned x = 0; x < w; ++x) {
+        for (x = 0; x < w; ++x) {
             *ptr++ = data[0];
             *ptra++ = data[3];
             data += 4;
@@ -110,9 +112,10 @@ j2k_pack_rgb(Imaging im, UINT8 *buf,
     UINT8 *pr = buf;
     UINT8 *pg = pr + w * h;
     UINT8 *pb = pg + w * h;
-    for (unsigned y = 0; y < h; ++y) {
+    unsigned x,y;
+    for (y = 0; y < h; ++y) {
         UINT8 *data = (UINT8 *)(im->image[y + y0] + 4 * x0);
-        for (unsigned x = 0; x < w; ++x) {
+        for (x = 0; x < w; ++x) {
             *pr++ = data[0];
             *pg++ = data[1];
             *pb++ = data[2];
@@ -129,9 +132,10 @@ j2k_pack_rgba(Imaging im, UINT8 *buf,
     UINT8 *pg = pr + w * h;
     UINT8 *pb = pg + w * h;
     UINT8 *pa = pb + w * h;
-    for (unsigned y = 0; y < h; ++y) {
+    unsigned x,y;
+    for (y = 0; y < h; ++y) {
         UINT8 *data = (UINT8 *)(im->image[y + y0] + 4 * x0);
-        for (unsigned x = 0; x < w; ++x) {
+        for (x = 0; x < w; ++x) {
             *pr++ = *data++;
             *pg++ = *data++;
             *pb++ = *data++;
@@ -239,6 +243,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     unsigned tile_width, tile_height;
     unsigned tiles_x, tiles_y, num_tiles;
     unsigned x, y, tile_ndx;
+    unsigned n;
     j2k_pack_tile_t pack;
     int ret = -1;
 
@@ -283,7 +288,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
         goto quick_exit;
     }
 
-    for (unsigned n = 0; n < components; ++n) {
+    for (n = 0; n < components; ++n) {
         image_params[n].dx = image_params[n].dy = 1;
         image_params[n].w = im->xsize;
         image_params[n].h = im->ysize;
