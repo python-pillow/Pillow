@@ -67,8 +67,10 @@ def Ghostscript(tile, size, fp, scale=1):
 
     import tempfile, os, subprocess
 
-    outfile = tempfile.mktemp()
-    infile = tempfile.mktemp()
+    out_fd, outfile = tempfile.mkstemp()
+    os.close(out_fd)
+    in_fd, infile = tempfile.mkstemp()
+    os.close(in_fd)
 
     with open(infile, 'wb') as f:
         fp.seek(offset)
