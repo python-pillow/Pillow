@@ -53,15 +53,6 @@ j2k_read(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
     return len ? len : (OPJ_SIZE_T)-1;
 }
 
-static OPJ_SIZE_T
-j2k_write(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
-{
-    /* This should never happen */
-    fprintf(stderr, "OpenJPEG has written to our read stream(!)");
-    abort();
-    return (OPJ_SIZE_T)-1;
-}
-
 static OPJ_OFF_T
 j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 {
@@ -69,15 +60,6 @@ j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
     off_t pos = ImagingIncrementalCodecSkip(decoder, p_nb_bytes);
 
     return pos ? pos : (OPJ_OFF_T)-1;
-}
-
-static OPJ_BOOL
-j2k_seek(OPJ_OFF_T p_nb_bytes, void *p_user_data)
-{
-    /* This should never happen */
-    fprintf(stderr, "OpenJPEG tried to seek our read stream(!)");
-    abort();
-    return OPJ_FALSE;
 }
 
 /* -------------------------------------------------------------------- */
@@ -476,9 +458,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     }
 
     opj_stream_set_read_function(stream, j2k_read);
-    opj_stream_set_write_function(stream, j2k_write);
     opj_stream_set_skip_function(stream, j2k_skip);
-    opj_stream_set_seek_function(stream, j2k_seek);
 
     opj_stream_set_user_data(stream, context->decoder);
 
@@ -623,6 +603,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     }
 
     state->state = J2K_STATE_DONE;
+    state->errcode = IMAGING_CODEC_END;
 
  quick_exit:
     if (codec)
@@ -645,7 +626,10 @@ ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
     if (state->state == J2K_STATE_START) {
         context->decoder = ImagingIncrementalCodecCreate(j2k_decode_entry,
-                                                         im, state);
+                                                         im, state,
+                                                         INCREMENTAL_CODEC_READ,
+                                                         INCREMENTAL_CODEC_NOT_SEEKABLE,
+                                                         context->fd);
 
         if (!context->decoder) {
             state->errcode = IMAGING_CODEC_BROKEN;

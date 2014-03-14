@@ -17,6 +17,9 @@
 typedef struct {
     /* CONFIGURATION */
 
+    /* File descriptor, if available; otherwise, -1 */
+    int fd;
+
     /* Specify the desired format */
     OPJ_CODEC_FORMAT format;
 
@@ -38,6 +41,9 @@ typedef struct {
 
 typedef struct {
     /* CONFIGURATION */
+
+    /* File descriptor, if available; otherwise, -1 */
+    int           fd;
 
     /* Specify the desired format */
     OPJ_CODEC_FORMAT format;

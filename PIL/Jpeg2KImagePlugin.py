@@ -156,9 +156,13 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         
         self.reduce = 0
         self.layers = 0
+        fd = -1
 
+        if hasattr(self.fp, "fileno"):
+            fd = self.fp.fileno()
+        
         self.tile = [('jpeg2k', (0, 0) + self.size, 0,
-                      (self.codec, self.reduce, self.layers))]
+                      (self.codec, self.reduce, self.layers, fd))]
 
     def load(self):
         if self.reduce:
@@ -181,6 +185,38 @@ def _save(im, fp, filename):
         kind = 'j2k'
     else:
         kind = 'jp2'
+
+    # Get the keyword arguments
+    info = im.encoderinfo
+
+    offset = info.get('offset', None)
+    tile_offset = info.get('tile_offset', None)
+    tile_size = info.get('tile_size', None)
+    quality_mode = info.get('quality_mode', 'rates')
+    quality_layers = info.get('quality_layers', None)
+    num_resolutions = info.get('num_resolutions', 0)
+    cblk_size = info.get('codeblock_size', None)
+    irreversible = info.get('irreversible', False)
+    progression = info.get('progression', 'LRCP')
+    cinema_mode = info.get('cinema_mode', 'no')
+    fd = -1
+
+    if hasattr(fp, "fileno"):
+        fd = fp.fileno()
+    
+    im.encoderconfig = (
+        offset,
+        tile_offset,
+        tile_size,
+        quality_mode,
+        quality_layers,
+        num_resolutions,
+        cblk_size,
+        irreversible,
+        progression,
+        cinema_mode,
+        fd
+        )
         
     ImageFile._save(im, fp, [('jpeg2k', (0, 0)+im.size, 0, kind)])
     

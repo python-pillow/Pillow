@@ -512,12 +512,23 @@ typedef int (*ImagingIncrementalCodecEntry)(Imaging im,
                                             ImagingCodecState state,
                                             ImagingIncrementalCodec codec);
 
-extern ImagingIncrementalCodec ImagingIncrementalCodecCreate(ImagingIncrementalCodecEntry codec_entry, Imaging im, ImagingCodecState state);
+enum {
+  INCREMENTAL_CODEC_READ = 1,
+  INCREMENTAL_CODEC_WRITE = 2
+};
+
+enum {
+  INCREMENTAL_CODEC_NOT_SEEKABLE = 0,
+  INCREMENTAL_CODEC_SEEKABLE = 1
+};
+
+extern ImagingIncrementalCodec ImagingIncrementalCodecCreate(ImagingIncrementalCodecEntry codec_entry, Imaging im, ImagingCodecState state, int read_or_write, int seekable, int fd);
 extern void ImagingIncrementalCodecDestroy(ImagingIncrementalCodec codec);
 extern int ImagingIncrementalCodecPushBuffer(ImagingIncrementalCodec codec, UINT8 *buf, int bytes);
-extern size_t ImagingIncrementalCodecRead(ImagingIncrementalCodec codec, void *buffer, size_t bytes);
+extern ssize_t ImagingIncrementalCodecRead(ImagingIncrementalCodec codec, void *buffer, size_t bytes);
 extern off_t ImagingIncrementalCodecSkip(ImagingIncrementalCodec codec, off_t bytes);
-extern size_t ImagingIncrementalCodecWrite(ImagingIncrementalCodec codec, const void *buffer, size_t bytes);
+extern ssize_t ImagingIncrementalCodecWrite(ImagingIncrementalCodec codec, const void *buffer, size_t bytes);
+extern off_t ImagingIncrementalCodecSeek(ImagingIncrementalCodec codec, off_t bytes);
 extern size_t ImagingIncrementalCodecBytesInBuffer(ImagingIncrementalCodec codec);
 
 /* Errcodes */

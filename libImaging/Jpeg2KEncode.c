@@ -41,15 +41,6 @@ j2k_error(const char *msg, void *client_data)
 /* -------------------------------------------------------------------- */
 
 static OPJ_SIZE_T
-j2k_read(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
-{
-    /* This should never happen */
-    fprintf (stderr, "OpenJPEG has read from our write stream(!)");
-    abort();
-    return (OPJ_SIZE_T)-1;
-}
-
-static OPJ_SIZE_T
 j2k_write(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
 {
     ImagingIncrementalCodec encoder = (ImagingIncrementalCodec)p_user_data;
@@ -61,8 +52,8 @@ j2k_write(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
 static OPJ_OFF_T
 j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 {
-    ImagingIncrementalCodec decoder = (ImagingIncrementalCodec)p_user_data;
-    off_t pos = ImagingIncrementalCodecSkip(decoder, p_nb_bytes);
+    ImagingIncrementalCodec encoder = (ImagingIncrementalCodec)p_user_data;
+    off_t pos = ImagingIncrementalCodecSkip(encoder, p_nb_bytes);
 
     return pos ? pos : (OPJ_OFF_T)-1;
 }
@@ -70,10 +61,10 @@ j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 static OPJ_BOOL
 j2k_seek(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 {
-    /* This should never happen */
-    fprintf(stderr, "OpenJPEG tried to seek our write stream(!)");
-    abort();
-    return OPJ_FALSE;
+    ImagingIncrementalCodec encoder = (ImagingIncrementalCodec)p_user_data;
+    off_t pos = ImagingIncrementalCodecSeek(encoder, p_nb_bytes);
+
+    return pos == p_nb_bytes;
 }
 
 /* -------------------------------------------------------------------- */
@@ -259,7 +250,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
         goto quick_exit;
     }
 
-    opj_stream_set_read_function(stream, j2k_read);
     opj_stream_set_write_function(stream, j2k_write);
     opj_stream_set_skip_function(stream, j2k_skip);
     opj_stream_set_seek_function(stream, j2k_seek);
@@ -499,12 +489,19 @@ ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
 {
     JPEG2KENCODESTATE *context = (JPEG2KENCODESTATE *)state->context;
 
-    if (state->state == J2K_STATE_DONE || state->state == J2K_STATE_FAILED)
+    if (state->state == J2K_STATE_FAILED)
         return -1;
 
     if (state->state == J2K_STATE_START) {
+        int seekable = (context->format != OPJ_CODEC_J2K 
+                        ? INCREMENTAL_CODEC_SEEKABLE 
+                        : INCREMENTAL_CODEC_NOT_SEEKABLE);
+
         context->encoder = ImagingIncrementalCodecCreate(j2k_encode_entry,
-                                                         im, state);
+                                                         im, state,
+                                                         INCREMENTAL_CODEC_WRITE,
+                                                         seekable,
+                                                         context->fd);
 
         if (!context->encoder) {
             state->errcode = IMAGING_CODEC_BROKEN;

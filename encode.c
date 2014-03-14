@@ -837,16 +837,18 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
     PyObject *quality_layers = NULL;
     int num_resolutions = 0;
     PyObject *cblk_size = NULL;
-    int irreversible = 0;
+    PyObject *irreversible = NULL;
     char *progression = "LRCP";
     OPJ_PROG_ORDER prog_order;
     char *cinema_mode = "no";
     OPJ_CINEMA_MODE cine_mode;
+    int fd = -1;
 
-    if (!PyArg_ParseTuple(args, "ss|OOOsOiOpss", &mode, &format,
+    if (!PyArg_ParseTuple(args, "ss|OOOsOIOOssi", &mode, &format,
                           &offset, &tile_offset, &tile_size,
                           &quality_mode, &quality_layers, &num_resolutions,
-                          &cblk_size, &irreversible, &progression, &cinema_mode))
+                          &cblk_size, &irreversible, &progression, &cinema_mode,
+                          &fd))
         return NULL;
 
     if (strcmp (format, "j2k") == 0)
@@ -891,6 +893,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
 
     context = (JPEG2KENCODESTATE *)encoder->state.context;
 
+    context->fd = fd;
     context->format = codec_format;
     context->offset_x = context->offset_y = 0;
 
@@ -905,6 +908,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
     if (quality_layers && PySequence_Check(quality_layers)) {
         context->quality_is_in_db = strcmp (quality_mode, "dB") == 0;
         context->quality_layers = quality_layers;
+        Py_INCREF(quality_layers);
     }
 
     context->num_resolutions = num_resolutions;
@@ -913,7 +917,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
                            &context->cblk_width,
                            &context->cblk_height);
 
-    context->irreversible = irreversible;
+    context->irreversible = PyObject_IsTrue(irreversible);
     context->progression = prog_order;
     context->cinema_mode = cine_mode;
 
