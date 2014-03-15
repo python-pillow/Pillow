@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Added support for JPEG 2000
+  [al45tair]
+
 - Fixed saving mode P image as a PNG with transparency = palette color 0
   [d-schmidt]
 
