@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Fixed palette handling when converting from mode P->RGB->P
+  [d_schmidt] 
+
 - Fixed saving mode P image as a PNG with transparency = palette color 0
   [d-schmidt]
 
