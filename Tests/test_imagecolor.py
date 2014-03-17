@@ -41,7 +41,11 @@ Image.new("L", (1, 1), "white")
 
 assert_equal(0, ImageColor.getcolor("black", "1"))
 assert_equal(255, ImageColor.getcolor("white", "1"))
+# The following test is wrong, but is current behavior
+# The correct result should be 255 due to the mode 1 
 assert_equal(162, ImageColor.getcolor("rgba(0, 255, 115, 33)", "1"))
+# Correct behavior
+# assert_equal(255, ImageColor.getcolor("rgba(0, 255, 115, 33)", "1"))
 Image.new("1", (1, 1), "white")
 
 assert_equal((0, 255), ImageColor.getcolor("black", "LA"))
