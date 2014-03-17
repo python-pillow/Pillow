@@ -222,7 +222,7 @@ class pil_build_ext(build_ext):
             _add_directory(include_dirs, "/usr/X11/include")
 
         elif sys.platform.startswith("linux"):
-            for platform_ in (plat.processor(), plat.architecture()[0]):
+            for platform_ in (plat.architecture()[0], plat.processor()):
 
                 if not platform_:
                     continue
