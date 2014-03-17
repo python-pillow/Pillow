@@ -13,6 +13,9 @@ Changelog (Pillow)
 - Fixed opening and saving odd sized .pcx files, fixes #523
   [wiredfool]
 
+- Fixed palette handling when converting from mode P->RGB->P
+  [d_schmidt] 
+
 - Fixed saving mode P image as a PNG with transparency = palette color 0
   [d-schmidt]
 

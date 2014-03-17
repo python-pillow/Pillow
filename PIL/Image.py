@@ -737,7 +737,10 @@ class Image:
 
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
-            return self._new(im)
+            new = self._new(im)
+            from PIL import ImagePalette
+            new.palette = ImagePalette.raw("RGB", new.im.getpalette("RGB"))
+            return new
 
         # colorspace conversion
         if dither is None:
