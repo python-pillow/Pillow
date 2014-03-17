@@ -117,17 +117,18 @@ def getcolor(color, mode):
     :return: ``(red, green, blue)``
     """
     # same as getrgb, but converts the result to the given mode
-    color = getrgb(color)
-    if mode == "RGB":
-        return color
-    if mode == "RGBA":
-        if len(color) == 3:
-          color = (color + (255,))
-        r, g, b, a = color
-        return r, g, b, a
+    color, alpha = getrgb(color), 255
+    if len(color) == 4:
+        color, alpha = color[0:3], color[3]
+
     if Image.getmodebase(mode) == "L":
         r, g, b = color
-        return (r*299 + g*587 + b*114)//1000
+        color = (r*299 + g*587 + b*114)//1000
+        if mode[-1] == 'A':
+            return (color, alpha)
+    else:
+        if mode[-1] == 'A':
+            return color + (alpha,)
     return color
 
 colormap = {
