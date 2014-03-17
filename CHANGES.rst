@@ -8,6 +8,7 @@ Changelog (Pillow)
   [wiredfool]
 
 - Skip CFFI test earlier if it's not installed
+  [wiredfool]
 
 - Fixed opening and saving odd sized .pcx files, fixes #523
   [wiredfool]
