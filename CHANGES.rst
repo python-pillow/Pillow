@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Make ICO files work with the ImageFile.Parser interface, fixes #522
+  [wiredfool]
+
 - Handle 32bit compiled python on 64bit architecture
   [choppsv1]
 
