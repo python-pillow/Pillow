@@ -8,6 +8,8 @@ Changelog (Pillow)
   [wiredfool]
 
 - Skip CFFI test earlier if it's not installed
+
+- Fixed opening and saving odd sized .pcx files, fixes #523
   [wiredfool]
 
 - Fixed saving mode P image as a PNG with transparency = palette color 0
