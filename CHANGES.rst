@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Fix ImageColor.getcolor
+  [homm]
+
 - Make ICO files work with the ImageFile.Parser interface, fixes #522
   [wiredfool]
 
