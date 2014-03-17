@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Skip CFFI test earlier if it's not installed
+  [wiredfool]
+
 - Fixed saving mode P image as a PNG with transparency = palette color 0
   [d-schmidt]
 
