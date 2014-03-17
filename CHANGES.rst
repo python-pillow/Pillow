@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Handle 32bit compiled python on 64bit architecture
+  [choppsv1]
+
 - Fix support for characters >128 using .pcf or .pil fonts in Py3k. Fixes #505
   [wiredfool]
 
