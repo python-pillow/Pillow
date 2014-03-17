@@ -27,8 +27,10 @@ recursive-include Sane README
 recursive-include Scripts *.py
 recursive-include Scripts README
 recursive-include Tests *.bin
+recursive-include Tests *.bmp
 recursive-include Tests *.eps
 recursive-include Tests *.gnuplot
+recursive-include Tests *.html
 recursive-include Tests *.icm
 recursive-include Tests *.jpg
 recursive-include Tests *.pcf
