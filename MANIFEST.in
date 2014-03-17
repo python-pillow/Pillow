@@ -19,6 +19,7 @@ recursive-include Images *.psd
 recursive-include Images *.tar
 recursive-include Images *.webp
 recursive-include Images *.xpm
+recursive-include PIL *.md
 recursive-include Sane *.c
 recursive-include Sane *.py
 recursive-include Sane *.txt
@@ -29,9 +30,11 @@ recursive-include Scripts README
 recursive-include Tests *.bin
 recursive-include Tests *.bmp
 recursive-include Tests *.eps
+recursive-include Tests *.gif
 recursive-include Tests *.gnuplot
 recursive-include Tests *.html
 recursive-include Tests *.icm
+recursive-include Tests *.ico
 recursive-include Tests *.jpg
 recursive-include Tests *.pcf
 recursive-include Tests *.pcx
