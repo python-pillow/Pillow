@@ -846,7 +846,7 @@ _crop(ImagingObject* self, PyObject* args)
 }
 
 static PyObject*
-_expand(ImagingObject* self, PyObject* args)
+_expand_image(ImagingObject* self, PyObject* args)
 {
     int x, y;
     int mode = 0;
@@ -2996,7 +2996,7 @@ static struct PyMethodDef methods[] = {
     {"crackcode", (PyCFunction)_crackcode, 1},
 #endif
     {"crop", (PyCFunction)_crop, 1},
-    {"expand", (PyCFunction)_expand, 1},
+    {"expand", (PyCFunction)_expand_image, 1},
     {"filter", (PyCFunction)_filter, 1},
     {"histogram", (PyCFunction)_histogram, 1},
 #ifdef WITH_MODEFILTER

@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Avoid conflicting _expand functions in PIL & MINGW, fixes #538
+  [aclark]
+
 - Merge from Philippe Lagadec’s OleFileIO_PL fork
   [vadmium]
 
