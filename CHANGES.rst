@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Merge from Philippe Lagadec’s OleFileIO_PL fork
+  [vadmium]
+
 - Fix ImageColor.getcolor
   [homm]
 
