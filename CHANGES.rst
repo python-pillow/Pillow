@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Fix support for characters >128 using .pcf or .pil fonts in Py3k. Fixes #505
+  [wiredfool]
+
 - Skip CFFI test earlier if it's not installed
   [wiredfool]
 
