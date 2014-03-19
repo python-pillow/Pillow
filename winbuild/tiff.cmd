@@ -4,10 +4,6 @@ set CMAKE="C:\Program Files (x86)\CMake 2.8\bin\cmake.exe"
 set INCLIB=%~dp0\depends
 set BUILD=%~dp0\build
 
-echo "Removing Directories" 
-rd /S /Q %INCLIB%
-rd /S /Q %BUILD%
-
 mkdir %INCLIB%
 mkdir %BUILD%
 
