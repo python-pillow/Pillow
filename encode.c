@@ -885,7 +885,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
     else
         return NULL;
 
-     encoder = PyImaging_EncoderNew(sizeof(JPEG2KENCODESTATE));
+    encoder = PyImaging_EncoderNew(sizeof(JPEG2KENCODESTATE));
     if (!encoder)
         return NULL;
 
@@ -905,6 +905,24 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
     j2k_decode_coord_tuple(tile_size, 
                            &context->tile_size_x,
                            &context->tile_size_y);
+
+    /* Error on illegal tile offsets */
+    if (context->tile_size_x && context->tile_size_y) {
+        if (context->tile_offset_x <= context->offset_x - context->tile_size_x
+            || context->tile_offset_y <= context->offset_y - context->tile_size_y) {
+            PyErr_SetString(PyExc_ValueError,
+                            "JPEG 2000 tile offset too small; top left tile must "
+                            "intersect image area");
+        }
+
+        if (context->tile_offset_x > context->offset_x
+            || context->tile_offset_y > context->offset_y) {
+            PyErr_SetString(PyExc_ValueError, 
+                            "JPEG 2000 tile offset too large to cover image area");
+            Py_DECREF(encoder);
+            return NULL;
+        }
+    }
 
     if (quality_layers && PySequence_Check(quality_layers)) {
         context->quality_is_in_db = strcmp (quality_mode, "dB") == 0;

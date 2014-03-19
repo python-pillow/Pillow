@@ -254,7 +254,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     opj_stream_set_skip_function(stream, j2k_skip);
     opj_stream_set_seek_function(stream, j2k_seek);
 
-    opj_stream_set_user_data(stream, context->encoder);
+    opj_stream_set_user_data(stream, encoder);
 
     /* Setup an opj_image */
     if (strcmp (im->mode, "L") == 0) {
@@ -425,8 +425,11 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     }
 
     /* Write each tile */
-    tiles_x = (im->xsize + tile_width - 1) / tile_width;
-    tiles_y = (im->ysize + tile_height - 1) / tile_height;
+    tiles_x = (im->xsize + (params.image_offset_x0 - params.cp_tx0)
+               + tile_width - 1) / tile_width;
+    tiles_y = (im->ysize + (params.image_offset_y0 - params.cp_ty0)
+               + tile_height - 1) / tile_height;
+
     num_tiles = tiles_x * tiles_y;
 
     state->buffer = malloc (tile_width * tile_height * components);

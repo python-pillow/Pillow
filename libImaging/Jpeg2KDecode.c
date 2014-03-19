@@ -91,7 +91,7 @@ static void
 j2ku_gray_l(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
             const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
@@ -139,7 +139,7 @@ static void
 j2ku_gray_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
               const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
@@ -199,7 +199,7 @@ static void
 j2ku_graya_la(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
               const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
@@ -256,7 +256,7 @@ static void
 j2ku_srgb_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
               const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
@@ -308,7 +308,7 @@ static void
 j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
               const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
@@ -363,7 +363,7 @@ static void
 j2ku_srgba_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
                 const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
@@ -414,7 +414,7 @@ static void
 j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
                 const UINT8 *tiledata, Imaging im)
 {
-    unsigned x0 = tileinfo->x0, y0 = tileinfo->y0;
+    unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
@@ -517,7 +517,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     opj_stream_set_read_function(stream, j2k_read);
     opj_stream_set_skip_function(stream, j2k_skip);
 
-    opj_stream_set_user_data(stream, context->decoder);
+    opj_stream_set_user_data(stream, decoder);
 
     /* Setup decompression context */
     context->error_msg = NULL;
@@ -645,6 +645,20 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
                                   (OPJ_BYTE *)state->buffer,
                                   tile_info.data_size,
                                   stream)) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
+
+        /* Check the tile bounds; if the tile is outside the image area,
+           or if it has a negative width or height (i.e. the coordinates are
+           swapped), bail. */
+        if (tile_info.x0 >= tile_info.x1
+            || tile_info.y0 >= tile_info.y1
+            || tile_info.x0 < image->x0
+            || tile_info.y0 < image->y0
+            || tile_info.x1 - image->x0 > im->xsize
+            || tile_info.y1 - image->y0 > im->ysize) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
             goto quick_exit;

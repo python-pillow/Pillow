@@ -93,7 +93,11 @@ codec_thread(void *ptr)
 {
   ImagingIncrementalCodec codec = (ImagingIncrementalCodec)ptr;
 
+  DEBUG("Entering thread\n");
+
   codec->result = codec->entry(codec->im, codec->state, codec);
+
+  DEBUG("Leaving thread (%d)\n", codec->result);
 
   flush_stream(codec);
 
@@ -107,7 +111,11 @@ codec_thread(void *ptr)
 {
   ImagingIncrementalCodec codec = (ImagingIncrementalCodec)ptr;
 
+  DEBUG("Entering thread\n");
+
   codec->result = codec->entry(codec->im, codec->state, codec);
+
+  DEBUG("Leaving thread (%d)\n", codec->result);
 
   flush_stream(codec);
 
@@ -335,6 +343,11 @@ ImagingIncrementalCodecPushBuffer(ImagingIncrementalCodec codec,
     pthread_cond_wait(&codec->codec_cond, &codec->codec_mutex);
     pthread_mutex_unlock(&codec->codec_mutex);
 #endif
+    if (codec->result < 0) {
+      DEBUG("got result %d\n", codec->result);
+
+      return codec->result;
+    }
   }
 
   /* Codecs using an fd don't need data, so when we get here, we're done */

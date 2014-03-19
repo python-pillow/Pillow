@@ -827,7 +827,7 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
     context->format = codec_format;
     context->reduce = reduce;
     context->layers = layers;
-    
+
     return (PyObject*) decoder;
 }
 #endif /* HAVE_OPENJPEG */

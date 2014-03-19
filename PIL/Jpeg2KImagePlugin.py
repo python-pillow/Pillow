@@ -153,11 +153,15 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         
         self.reduce = 0
         self.layers = 0
+
         fd = -1
 
         if hasattr(self.fp, "fileno"):
-            fd = self.fp.fileno()
-        
+            try:
+                fd = self.fp.fileno()
+            except:
+                fd = -1
+
         self.tile = [('jpeg2k', (0, 0) + self.size, 0,
                       (self.codec, self.reduce, self.layers, fd))]
 
@@ -167,6 +171,12 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             adjust = power >> 1
             self.size = ((self.size[0] + adjust) / power,
                          (self.size[1] + adjust) / power)
+
+        if self.tile:
+            # Update the reduce and layers settings
+            t = self.tile[0]
+            t3 = (t[3][0], self.reduce, self.layers, t[3][3])
+            self.tile = [(t[0], t[1], t[2], t3)]
         
         ImageFile.ImageFile.load(self)
         
@@ -200,7 +210,10 @@ def _save(im, fp, filename):
     fd = -1
 
     if hasattr(fp, "fileno"):
-        fd = fp.fileno()
+        try:
+            fd = fp.fileno()
+        except:
+            fd = -1
     
     im.encoderconfig = (
         offset,
