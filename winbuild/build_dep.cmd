@@ -32,6 +32,12 @@ py -3 unzip.py jpegsr9a.zip %BUILD%
 set LIBJPEG=%BUILD%\jpeg-9a
 copy /Y /B jpegsr9a.zip %INCLIB%
 
+rem get libtiff
+py -3 fetch.py ftp://ftp.remotesensing.org/pub/libtiff/tiff-4.0.3.zip
+py -3 unzip.py tiff-4.0.3.zip %BUILD%
+set TIFF=%BUILD%\tiff-4.0.3
+copy /Y /B tiff-4.0.3.zip %INCLIB%
+
 rem Get lcms2
 py -3 fetch.py http://hivelocity.dl.sourceforge.net/project/lcms/lcms/2.6/lcms2-2.6.zip
 py -3 unzip.py lcms2-2.6.zip %BUILD%
@@ -79,6 +85,16 @@ copy /Y /B *.lib %INCLIB%
 copy /Y /B zlib.lib %INCLIB%\z.lib
 copy /Y /B zlib.h %INCLIB%
 copy /Y /B zconf.h %INCLIB%
+endlocal
+
+rem Build libtiff
+setlocal
+cd /D %TIFF%
+nmake -f makefile.vc clean
+nmake -f makefile.vc 
+copy /Y /B *.dll %INCLIB%
+copy /Y /B *.lib %INCLIB%
+copy /Y /B Tiff.h %INCLIB%
 endlocal
 
 rem Build freetype
