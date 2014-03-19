@@ -32,7 +32,14 @@ py -3 unzip.py jpegsr9a.zip %BUILD%
 set LIBJPEG=%BUILD%\jpeg-9a
 copy /Y /B jpegsr9a.zip %INCLIB%
 
+rem Get lcms2
+py -3 fetch.py http://hivelocity.dl.sourceforge.net/project/lcms/lcms/2.6/lcms2-2.6.zip
+py -3 unzip.py lcms2-2.6.zip %BUILD%
+set LCMS=%BUILD%\lcms2-2.6
+copy /Y /B lcms2-2.6.zip %INCLIB%
+
 rem Get tcl/tk
+
 py -3 fetch.py http://hivelocity.dl.sourceforge.net/project/tcl/Tcl/8.5.13/tcl8513-src.zip
 py -3 unzip.py tcl8513-src.zip %BUILD%
 copy /Y /B tcl8513-src.zip %INCLIB%
@@ -83,6 +90,17 @@ rd /S /Q %FREETYPE%\objs
 xcopy /E /Q %FREETYPE%\include %INCLIB%
 xcopy /E /Q %FREETYPE%\objs\win32\vc2008 %INCLIB%
 copy /Y /B %FREETYPE%\objs\win32\vc2008\*.lib %INCLIB%\freetype.lib
+endlocal
+
+rem Build lcms2
+setlocal
+py -3 %~dp0\fixproj.py %LCMS%\Projects\vc2008\lcms2.sln x64
+py -3 %~dp0\fixproj.py %LCMS%\Projects\vc2008\lcms2.vcproj x64
+rd /S /Q %LCMS%\objs
+%MSBUILD% %LCMS%\Projects\vc2008\lcms2.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=x64
+xcopy /E /Q %LCMS%\include %INCLIB%
+xcopy /E /Q %LCMS%\objs\win32\vc2008 %INCLIB%
+copy /Y /B %LCMS%\objs\win32\vc2008\*.lib %INCLIB%\lcms2.lib
 endlocal
 
 endlocal
