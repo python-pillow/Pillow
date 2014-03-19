@@ -72,7 +72,7 @@ nmake -f makefile.vc clean
 nmake -f makefile.vc all
 copy /Y /B *.dll %INCLIB%
 copy /Y /B *.lib %INCLIB%
-copy /Y /B jpeglib.h %INCLIB%
+copy /Y /B j*.h %INCLIB%
 endlocal
 
 rem Build zlib
@@ -94,8 +94,7 @@ nmake -f makefile.vc clean
 nmake -f makefile.vc 
 copy /Y /B libtiff\*.dll %INCLIB%
 copy /Y /B libtiff\*.lib %INCLIB%
-copy /Y /B libtiff\tiff.h %INCLIB%
-copy /Y /B libtiff\tiffio.h %INCLIB%
+copy /Y /B libtiff\tiff*.h %INCLIB%
 endlocal
 
 rem Build freetype
