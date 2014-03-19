@@ -92,9 +92,10 @@ setlocal
 cd /D %TIFF%
 nmake -f makefile.vc clean
 nmake -f makefile.vc 
-copy /Y /B *.dll %INCLIB%
-copy /Y /B *.lib %INCLIB%
-copy /Y /B Tiff.h %INCLIB%
+copy /Y /B libtiff\*.dll %INCLIB%
+copy /Y /B libtiff\*.lib %INCLIB%
+copy /Y /B libtiff\tiff.h %INCLIB%
+copy /Y /B libtiff\tiffio.h %INCLIB%
 endlocal
 
 rem Build freetype
