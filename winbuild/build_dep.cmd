@@ -94,13 +94,13 @@ endlocal
 
 rem Build lcms2
 setlocal
-py -3 %~dp0\fixproj.py %LCMS%\Projects\vc2008\lcms2.sln x64
-py -3 %~dp0\fixproj.py %LCMS%\Projects\vc2008\lcms2.vcproj x64
+py -3 %~dp0\fixproj.py %LCMS%\Projects\VC2008\lcms2.sln x64
+py -3 %~dp0\fixproj.py %LCMS%\Projects\VC2008\lcms2.vcproj x64
 rd /S /Q %LCMS%\objs
-%MSBUILD% %LCMS%\Projects\vc2008\lcms2.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=x64
+%MSBUILD% %LCMS%\Projects\VC2008\lcms2.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=x64
 xcopy /E /Q %LCMS%\include %INCLIB%
-xcopy /E /Q %LCMS%\objs\win32\vc2008 %INCLIB%
-copy /Y /B %LCMS%\objs\win32\vc2008\*.lib %INCLIB%\lcms2.lib
+xcopy /E /Q %LCMS%\objs\win32\VC2008 %INCLIB%
+copy /Y /B %LCMS%\objs\win32\VC2008\*.lib %INCLIB%\lcms2.lib
 endlocal
 
 endlocal
