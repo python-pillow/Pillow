@@ -1,5 +1,5 @@
 @echo off
-rem Build Matplotlib Dependencies
+rem Build Pillow Dependencies
 
 setlocal
 set MSBUILD=C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe
@@ -59,7 +59,7 @@ nmake -f makefile.vc clean
 nmake -f makefile.vc all
 copy /Y /B *.dll %INCLIB%
 copy /Y /B *.lib %INCLIB%
-copy /Y /B libjpeg.h %INCLIB%
+copy /Y /B jpeglib.h %INCLIB%
 endlocal
 
 rem Build zlib
@@ -86,6 +86,8 @@ copy /Y /B %FREETYPE%\objs\win32\vc2008\*.lib %INCLIB%\freetype.lib
 endlocal
 
 endlocal
+rem UNDONE --removeme!
+exit
 
 rem Build for VC 2008 32 bit
 setlocal EnableDelayedExpansion
