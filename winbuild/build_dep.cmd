@@ -7,6 +7,7 @@ set CMAKE="C:\Program Files (x86)\CMake 2.8\bin\cmake.exe"
 set INCLIB=%~dp0\depends
 set BUILD=%~dp0\build
 
+echo "Removing Directories" 
 rd /S /Q %INCLIB%
 rd /S /Q %BUILD%
 
@@ -58,10 +59,10 @@ endlocal
 
 rem Build freetype
 setlocal
-py -3 %~dp0\fixproj.py %FREETYPE%\builds\win32\vc2008\freetype.sln x64
-py -3 %~dp0\fixproj.py %FREETYPE%\builds\win32\vc2008\freetype.vcproj x64
+py -3 %~dp0\fixproj.py %FREETYPE%\builds\windows\vc2008\freetype.sln x64
+py -3 %~dp0\fixproj.py %FREETYPE%\builds\windows\vc2008\freetype.vcproj x64
 rd /S /Q %FREETYPE%\objs
-%MSBUILD% %FREETYPE%\builds\win32\vc2008\freetype.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=x64
+%MSBUILD% %FREETYPE%\builds\windows\vc2008\freetype.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=x64
 xcopy /E /Q %FREETYPE%\include %INCLIB%
 xcopy /E /Q %FREETYPE%\objs\win32\vc2008 %INCLIB%
 copy /Y /B %FREETYPE%\objs\win32\vc2008\*.lib %INCLIB%\freetype.lib
@@ -89,10 +90,10 @@ endlocal
 
 rem Build freetype
 setlocal
-%~dp0\fixproj.py %FREETYPE%\builds\win32\vc2008\freetype.sln Win32
-%~dp0\fixproj.py %FREETYPE%\builds\win32\vc2008\freetype.vcproj Win32
+%~dp0\fixproj.py %FREETYPE%\builds\windows\vc2008\freetype.sln Win32
+%~dp0\fixproj.py %FREETYPE%\builds\windows\vc2008\freetype.vcproj Win32
 rd /S /Q %FREETYPE%\objs
-%MSBUILD% %FREETYPE%\builds\win32\vc2008\freetype.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=Win32
+%MSBUILD% %FREETYPE%\builds\windows\vc2008\freetype.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=Win32
 xcopy /E /Q %FREETYPE%\include %INCLIB%
 xcopy /E /Q %FREETYPE%\objs\win32\vc2008 %INCLIB%
 copy /Y /B %FREETYPE%\objs\win32\vc2008\*.lib %INCLIB%\freetype.lib
@@ -120,10 +121,10 @@ endlocal
 
 rem Build freetype
 setlocal
-py -3 %~dp0\fixproj.py %FREETYPE%\builds\win32\vc2010\freetype.sln x64
-py -3 %~dp0\fixproj.py %FREETYPE%\builds\win32\vc2010\freetype.vcxproj x64
+py -3 %~dp0\fixproj.py %FREETYPE%\builds\windows\vc2010\freetype.sln x64
+py -3 %~dp0\fixproj.py %FREETYPE%\builds\windows\vc2010\freetype.vcxproj x64
 rd /S /Q %FREETYPE%\objs
-%MSBUILD% %FREETYPE%\builds\win32\vc2010\freetype.sln /t:Clean;Build /p:Configuration="Release";Platform=x64
+%MSBUILD% %FREETYPE%\builds\windows\vc2010\freetype.sln /t:Clean;Build /p:Configuration="Release";Platform=x64
 xcopy /E /Q %FREETYPE%\include %INCLIB%
 xcopy /E /Q %FREETYPE%\objs\win32\vc2010 %INCLIB%
 copy /Y /B %FREETYPE%\objs\win32\vc2010\*.lib %INCLIB%\freetype.lib
@@ -151,10 +152,10 @@ endlocal
 
 rem Build freetype
 setlocal
-%~dp0\fixproj.py %FREETYPE%\builds\win32\vc2010\freetype.sln Win32
-%~dp0\fixproj.py %FREETYPE%\builds\win32\vc2010\freetype.vcxproj Win32
+%~dp0\fixproj.py %FREETYPE%\builds\windows\vc2010\freetype.sln Win32
+%~dp0\fixproj.py %FREETYPE%\builds\windows\vc2010\freetype.vcxproj Win32
 rd /S /Q %FREETYPE%\objs
-%MSBUILD% %FREETYPE%\builds\win32\vc2010\freetype.sln /t:Clean;Build /p:Configuration="Release";Platform=Win32
+%MSBUILD% %FREETYPE%\builds\windows\vc2010\freetype.sln /t:Clean;Build /p:Configuration="Release";Platform=Win32
 xcopy /E /Q %FREETYPE%\include %INCLIB%
 xcopy /E /Q %FREETYPE%\objs\win32\vc2010 %INCLIB%
 copy /Y /B %FREETYPE%\objs\win32\vc2010\*.lib %INCLIB%\freetype.lib
