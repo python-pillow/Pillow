@@ -8,7 +8,7 @@ rem Adjust the following if necessary
 set MPLSRC=%~dp0\..
 set INCLIB=%~dp0\depends
 rem set BLDOPT=bdist_wininst --user-access-control=auto
-set BLDOPT=build_ext
+set BLDOPT=install
 cd /D %MPLSRC%
 
 rem Set TkAgg as default backend
@@ -30,7 +30,8 @@ set INCLUDE=%INCLUDE%;%INCLIB%\msvcr90-x64;%INCLIB%\tcl85\include
 setlocal
 set LIB=%LIB%;C:\Python27x64\tcl
 rd /q /s build
-call C:\Python27x64\python.exe setup.py %BLDOPT%
+call z:\vpy27x64\Scripts\activate.bat
+call python.exe setup.py %BLDOPT%
 endlocal
 
 endlocal
