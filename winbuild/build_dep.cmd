@@ -89,6 +89,9 @@ endlocal
 
 rem Build libtiff
 setlocal
+rem do after building jpeg and zlib
+copy %~dp0\nmake.opt %TIFF%
+
 cd /D %TIFF%
 nmake -f makefile.vc clean
 nmake -f makefile.vc 
