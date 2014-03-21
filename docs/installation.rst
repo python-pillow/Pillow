@@ -172,6 +172,15 @@ Python Wheels
 
     $ pip install --use-wheel Pillow
 
+If the above does not work, it's likely because we haven't uploaded a
+wheel for the latest version of Pillow. In that case, try pinning it
+to a specific version:
+
+::
+
+    $ pip install --use-wheel Pillow==2.3.0
+
+
 Platform support
 ----------------
 
