@@ -15,7 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, PngImagePlugin, _binary
+from PIL import Image, ImageFile, PngImagePlugin, Jpeg2KImagePlugin, _binary
 import struct
 
 i8 = _binary.i8
@@ -102,7 +102,11 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         or sig[:4] == b'\x0d\x0a\x87\x0a' \
         or sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
         # j2k, jpc or j2c
-        raise ValueError('Cannot decode JPEG 2000 icons yet (sorry)')
+        fobj.seek(start)
+        im = Jpeg2KImagePlugin.Jpeg2KImageFile(fobj)
+        if im.mode != 'RGBA':
+            im = im.convert('RGBA')
+        return {"RGBA": im}
 
 class IcnsFile:
 
