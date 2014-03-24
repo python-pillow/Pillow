@@ -275,11 +275,9 @@ if __name__ == '__main__':
     import os, sys
     imf = IcnsImageFile(open(sys.argv[1], 'rb'))
     for size in imf.info['sizes']:
-        print size
         imf.size = size
         imf.load()
         im = imf.im
-        print im
         im.save('out-%s-%s-%s.png' % size)
     im = Image.open(open(sys.argv[1], "rb"))
     im.save("out.png")
