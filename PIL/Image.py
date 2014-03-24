@@ -1965,7 +1965,7 @@ def fromarray(obj, mode=None):
     else:
         ndmax = 4
     if ndim > ndmax:
-        raise ValueError("Too many dimensions.")
+        raise ValueError("Too many dimensions: %d > %d." % (ndim, ndmax))
 
     size = shape[1], shape[0]
     if strides is not None:
@@ -2018,7 +2018,7 @@ def open(fp, mode="r"):
     """
 
     if mode != "r":
-        raise ValueError("bad mode")
+        raise ValueError("bad mode %r" % mode)
 
     if isPath(fp):
         filename = fp
@@ -2054,7 +2054,8 @@ def open(fp, mode="r"):
                 #traceback.print_exc()
                 pass
 
-    raise IOError("cannot identify image file")
+    raise IOError("cannot identify image file %r"
+                  % (filename if filename else fp))
 
 #
 # Image processing.
