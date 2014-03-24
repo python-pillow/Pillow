@@ -9,6 +9,7 @@ python:
   - 2.7
   - 3.2
   - 3.3
+  - "pypy"
 
 install: 
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev libwebp-dev python-qt4 ghostscript libffi-dev"
@@ -20,3 +21,7 @@ script:
   - python setup.py build_ext --inplace
   - python selftest.py
   - python Tests/run.py
+
+matrix:
+  allow_failures:
+    - python: "pypy"
