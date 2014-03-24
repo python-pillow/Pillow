@@ -16,7 +16,7 @@
 #
 
 from PIL import Image, ImageFile, PngImagePlugin, Jpeg2KImagePlugin, _binary
-import struct
+import struct, io
 
 i8 = _binary.i8
 
@@ -103,7 +103,9 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         or sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
         # j2k, jpc or j2c
         fobj.seek(start)
-        im = Jpeg2KImagePlugin.Jpeg2KImageFile(fobj)
+        jp2kstream = fobj.read(length)
+        f = io.BytesIO(jp2kstream)
+        im = Jpeg2KImagePlugin.Jpeg2KImageFile(f)
         if im.mode != 'RGBA':
             im = im.convert('RGBA')
         return {"RGBA": im}
