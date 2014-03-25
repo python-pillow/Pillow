@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Add more detailed error messages to Image.py 
+  [larsmans]
+
 - Avoid conflicting _expand functions in PIL & MINGW, fixes #538
   [aclark]
 
