@@ -1,5 +1,6 @@
 from fetch import fetch
 from unzip import unzip
+from untar import untar
 import os, hashlib
 
 
@@ -37,7 +38,12 @@ libs = { 'zlib':{
     'url':'http://hivelocity.dl.sourceforge.net/project/tcl/Tcl/8.5.13/tk8513-src.zip',
     'hash': 'sha1:23a1d7ddd416e11e06dfdb9f86111d4bab9420b4',
     'dir': '',
-    }
+    },
+         'webp':{
+    'url':'https://webp.googlecode.com/files/libwebp-0.4.0.tar.gz',
+    'hash':'sha1:326c4b6787a01e5e32a9b30bae76442d18d2d1b6',
+    'dir':'libwebp-0.4.0',
+    },
          }
 
 compilers = [ {
@@ -60,14 +66,14 @@ compilers = [ {
     'vc_version':'2010',
     'env_flags': '/x64 /vista',
     'inc_dir': 'msvcr10-x64',
-    'platform': 'x64'
+    'platform': 'x64',
     },
               {
     'env_version':'v7.1',
     'vc_version':'2010',
     'env_flags': '/x86 /xp',
     'inc_dir': 'msvcr10-x32',
-    'platform': 'Win32'
+    'platform': 'Win32',
     },
 
     ]
@@ -107,9 +113,15 @@ def mkdirs():
     except:
         pass
 
+def extract(src, dest):
+    if '.zip' in src:
+        return unzip(src, dest)
+    if '.tar.gz' in src or '.tgz' in src:
+        return untar(src, dest)
+
 def fetch_libs():
     for lib in libs.values():
-        unzip(check_hash(fetch(lib['url']),lib['hash']),build_dir)
+        extract(check_hash(fetch(lib['url']),lib['hash']),build_dir)
 
 def cp_tk():
     return r"""
@@ -145,7 +157,7 @@ def nmake_libs(compiler):
     return r"""
 rem Build libjpeg
 setlocal
-cd /D %s
+cd /D %%JPEG%%
 nmake -f makefile.vc setup-vc6
 nmake -f makefile.vc clean
 nmake -f makefile.vc all
@@ -156,7 +168,7 @@ endlocal
 
 rem Build zlib
 setlocal
-cd /D %s
+cd /D %%ZLIB%%
 nmake -f win32\Makefile.msc clean
 nmake -f win32\Makefile.msc
 copy /Y /B *.dll %%INCLIB%%
@@ -166,23 +178,30 @@ copy /Y /B zlib.h %%INCLIB%%
 copy /Y /B zconf.h %%INCLIB%%
 endlocal
 
+rem Build webp
+setlocal
+cd /D %%WEBP%%
+nmake -f Makefile.vc clean
+nmake -f Makefile.vc CFG=release-static RTLIBCFG=static OBJDIR=output
+copy /Y /B release-static\output\%(platform)s\* %%INCLIB%%
+copy /Y /B src\webp\*.h %%INCLIB%%
+endlocal
+
 rem Build libtiff
 setlocal
 rem do after building jpeg and zlib
-copy %%~dp0\nmake.opt %s
+copy %%~dp0\nmake.opt %%TIFF%%
 
-cd /D %s
+cd /D %%TIFF%%
 nmake -f makefile.vc clean
 nmake -f makefile.vc 
 copy /Y /B libtiff\*.dll %%INCLIB%%
 copy /Y /B libtiff\*.lib %%INCLIB%%
 copy /Y /B libtiff\tiff*.h %%INCLIB%%
 endlocal
-""" %(_relbuild(libs['jpeg']['dir']),
-      _relbuild(libs['zlib']['dir']),
-      _relbuild(libs['tiff']['dir']),
-      _relbuild(libs['tiff']['dir']),
-      )
+
+
+""" % compiler
     
       
 def msbuild_libs(compiler):
