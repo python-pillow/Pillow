@@ -327,7 +327,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
         tile_height = im->ysize;
     }
 
-    if (PySequence_Check(context->quality_layers)) {
+    if (context->quality_layers && PySequence_Check(context->quality_layers)) {
         Py_ssize_t len = PySequence_Length(context->quality_layers);
         Py_ssize_t n;
         float *pq;
