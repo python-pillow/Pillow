@@ -12,10 +12,15 @@ python:
   - "pypy"
 
 install: 
-  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev libwebp-dev python-qt4 ghostscript libffi-dev"
+  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev"
   - "pip install cffi"
+  # enables pypy to compile
   - "sudo apt-get install python-tk"
 
+  # webp  UNDONE -- refactor
+  - "wget 'https://webp.googlecode.com/files/libwebp-0.4.0.tar.gz' -O /tmp/libwebp-0.4.0.tar.gz"
+  - "tar -C /tmp -xvzf /tmp/libwebp-0.4.0.tar.gz"
+  - "cd /tmp/libwebp-0.4.0 && ./configure --enable-libwebpmux --enable-libwebpdemux && make && sudo make install"
 
 script:
   - python setup.py clean
