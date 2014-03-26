@@ -24,7 +24,7 @@ install:
 
   - "wget 'https://openjpeg.googlecode.com/files/openjpeg-2.0.0.tar.gz' -O /tmp/openjpeg-2.0.0.tar.gz"
   - "tar -C /tmp -xvzf /tmp/openjpeg-2.0.0.tar.gz"
-  - "pushd /tmp/openjpeg-2.0.0 && cmake . && make && sudo DESTDIR=/usr make install && popd"
+  - "pushd /tmp/openjpeg-2.0.0 && cmake -DCMAKE_INSTALL_PREFIX=/usr . && make && sudo make install && popd"
 
 script:
   - python setup.py clean
