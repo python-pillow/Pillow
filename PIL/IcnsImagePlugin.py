@@ -74,7 +74,7 @@ def read_32(fobj, start_length, size):
                     "Error reading channel [%r left]" % bytesleft
                     )
             band = Image.frombuffer(
-                "L", size, b"".join(data), "raw", "L", 0, 1
+                "L", pixel_size, b"".join(data), "raw", "L", 0, 1
                 )
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
