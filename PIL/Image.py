@@ -769,7 +769,7 @@ class Image:
                         # after quantization. 
                         trns_im = trns_im.convert('RGB')
                     trns = trns_im.getpixel((0,0))
-
+                        
                     
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
@@ -785,7 +785,7 @@ class Image:
                     new.info['transparency'] = new.palette.getcolor(trns)
                 except:
                     # if we can't make a transparent color, don't leave the old
-                    # transparency hanging around to mess us up. 
+                    # transparency hanging around to mess us up.
                     del(new.info['transparency'])
                     warnings.warn("Couldn't allocate palette entry for transparency")
             return new
@@ -809,7 +809,14 @@ class Image:
             #crash fail if we leave a bytes transparency in an rgb/l mode.
             del(new.info['transparency'])
         if trns is not None:
-            new_im.info['transparency'] = trns
+            if new_im.mode == 'P':
+                try:
+                    new_im.info['transparency'] = new_im.palette.getcolor(trns)
+                except:
+                    del(new_im.info['transparency'])
+                    warnings.warn("Couldn't allocate palette entry for transparency")
+            else:
+                new_im.info['transparency'] = trns
         return new_im
 
     def quantize(self, colors=256, method=None, kmeans=0, palette=None):
