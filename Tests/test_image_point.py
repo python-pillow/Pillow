@@ -2,6 +2,11 @@ from tester import *
 
 from PIL import Image
 
+if hasattr(sys, 'pypy_version_info'):
+    # This takes _forever_ on pypy. Open Bug,
+    # see https://github.com/python-imaging/Pillow/issues/484
+    skip()
+
 def test_sanity():
 
     im = lena()
