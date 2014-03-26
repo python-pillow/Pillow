@@ -21,7 +21,7 @@ install:
  # - "sudo apt-get install python-tk"
 
   # webp  
-  - pushd depends && ./install_web[.sh && popd
+  - pushd depends && ./install_web.sh && popd
 
   # openjpeg
   - pushd depends && ./install_openjpeg.sh && popd
