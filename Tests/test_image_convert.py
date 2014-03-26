@@ -46,5 +46,13 @@ def test_16bit_workaround():
     im = Image.open('Tests/images/16bit.cropped.tif')
     _test_float_conversion(im.convert('I'))
     
+def test_rgba_p():
+    im = lena('RGBA')
+    im.putalpha(lena('L'))
 
+    converted = im.convert('P')
+    comparable = converted.convert('RGBA')
+
+    assert_image_similar(im, comparable, 20)
+               
     
