@@ -401,8 +401,11 @@ class pil_build_ext(build_ext):
         if feature.want('webp'):
             if (_find_include_file(self, "webp/encode.h") and
                     _find_include_file(self, "webp/decode.h")):
-                if _find_library_file(self, "webp"): # in googles precompiled zip it is call "libwebp"
+                if _find_library_file(self, "webp"): 
                     feature.webp = "webp"
+                elif _find_library_file(self, "libwebp"):
+                    # in googles precompiled zip, or 0.4.0 it is call "libwebp"
+                    feature.webp = "libwebp"
 
         if feature.want('webpmux'):
             if (_find_include_file(self, "webp/mux.h") and
