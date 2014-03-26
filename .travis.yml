@@ -17,8 +17,6 @@ python:
 install: 
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
   - "pip install cffi"
-  # enables pypy to compile
- # - "sudo apt-get install python-tk"
 
   # webp  
   - pushd depends && ./install_webp.sh && popd
