@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Indexed Transparency handled for conversions between L, RGB, and P modes. Fixes #510
+  [wiredfool]
+
 - Conversions enabled from RGBA->P, Fixes #544
   [wiredfool]
 
