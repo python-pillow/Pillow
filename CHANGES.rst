@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Conversions enabled from RGBA->P, Fixes #544
+  [wiredfool]
+
 - Add more detailed error messages to Image.py 
   [larsmans]
 

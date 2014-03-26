@@ -735,6 +735,9 @@ class Image:
             im = self.im.convert_matrix(mode, matrix)
             return self._new(im)
 
+        if mode == "P" and self.mode == "RGBA":
+            return self.quantize(colors)
+
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
             new = self._new(im)
@@ -762,7 +765,7 @@ class Image:
 
         return self._new(im)
 
-    def quantize(self, colors=256, method=0, kmeans=0, palette=None):
+    def quantize(self, colors=256, method=None, kmeans=0, palette=None):
 
         # methods:
         #    0 = median cut
@@ -773,7 +776,18 @@ class Image:
         # quantizer interface in a later version of PIL.
 
         self.load()
+        
+        if method is None:
+            # defaults:
+            method = 0
+            if self.mode == 'RGBA':
+                method = 2
 
+        if self.mode == 'RGBA' and method != 2:
+            # Caller specified an invalid mode. 
+            raise ValueError('Fast Octree (method == 2) is the ' +
+                             ' only valid method for quantizing RGBA images')
+        
         if palette:
             # use palette from reference image
             palette.load()
