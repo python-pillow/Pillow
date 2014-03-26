@@ -20,7 +20,7 @@ install:
   # webp  UNDONE -- refactor
   - "wget 'https://webp.googlecode.com/files/libwebp-0.4.0.tar.gz' -O /tmp/libwebp-0.4.0.tar.gz"
   - "tar -C /tmp -xvzf /tmp/libwebp-0.4.0.tar.gz"
-  - "pushd /tmp/libwebp-0.4.0 && ./configure --enable-libwebpmux --enable-libwebpdemux && make && sudo make install && popd"
+  - "pushd /tmp/libwebp-0.4.0 && ./configure --prefix=/usr --enable-libwebpmux --enable-libwebpdemux && make && sudo make install && popd"
 
 
 
