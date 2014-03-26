@@ -160,7 +160,7 @@ class IcnsFile:
         self.dct = dct = {}
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
-        if sig != 'icns':
+        if sig != b'icns':
             raise SyntaxError('not an icns file')
         i = HEADERSIZE
         while i < filesize:
