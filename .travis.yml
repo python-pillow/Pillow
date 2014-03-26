@@ -4,12 +4,15 @@ language: python
 virtualenv:
   system_site_packages: true
 
+notifications:
+  irc: "chat.freenode.net#pil"
+
 python:
-#  - 2.6
+  - 2.6
   - 2.7
-#  - 3.2
-#  - 3.3
-#  - "pypy"
+  - 3.2
+  - 3.3
+  - "pypy"
 
 install: 
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
@@ -18,13 +21,19 @@ install:
  # - "sudo apt-get install python-tk"
 
   # webp  UNDONE -- refactor
+  - date
   - "wget 'https://webp.googlecode.com/files/libwebp-0.4.0.tar.gz' -O /tmp/libwebp-0.4.0.tar.gz"
+  - date
   - "tar -C /tmp -xvzf /tmp/libwebp-0.4.0.tar.gz"
   - "pushd /tmp/libwebp-0.4.0 && ./configure --prefix=/usr --enable-libwebpmux --enable-libwebpdemux && make && sudo make install && popd"
+  - date
 
+  # openjpeg
   - "wget 'https://openjpeg.googlecode.com/files/openjpeg-2.0.0.tar.gz' -O /tmp/openjpeg-2.0.0.tar.gz"
   - "tar -C /tmp -xvzf /tmp/openjpeg-2.0.0.tar.gz"
+  - date
   - "pushd /tmp/openjpeg-2.0.0 && cmake -DCMAKE_INSTALL_PREFIX=/usr . && make && sudo make install && popd"
+  - date
 
 script:
   - python setup.py clean
@@ -32,6 +41,6 @@ script:
   - python selftest.py
   - python Tests/run.py
 
-#matrix:
-#  allow_failures:
-#    - python: "pypy"
+matrix:
+  allow_failures:
+    - python: "pypy"
