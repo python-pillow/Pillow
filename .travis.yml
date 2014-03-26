@@ -20,20 +20,11 @@ install:
   # enables pypy to compile
  # - "sudo apt-get install python-tk"
 
-  # webp  UNDONE -- refactor
-  - date
-  - "wget 'https://webp.googlecode.com/files/libwebp-0.4.0.tar.gz' -O /tmp/libwebp-0.4.0.tar.gz"
-  - date
-  - "tar -C /tmp -xvzf /tmp/libwebp-0.4.0.tar.gz"
-  - "pushd /tmp/libwebp-0.4.0 && ./configure --prefix=/usr --enable-libwebpmux --enable-libwebpdemux && make && sudo make install && popd"
-  - date
+  # webp  
+  - pushd depends && ./install_web[.sh && popd
 
   # openjpeg
-  - "wget 'https://openjpeg.googlecode.com/files/openjpeg-2.0.0.tar.gz' -O /tmp/openjpeg-2.0.0.tar.gz"
-  - "tar -C /tmp -xvzf /tmp/openjpeg-2.0.0.tar.gz"
-  - date
-  - "pushd /tmp/openjpeg-2.0.0 && cmake -DCMAKE_INSTALL_PREFIX=/usr . && make && sudo make install && popd"
-  - date
+  - pushd depends && ./install_openjpeg.sh && popd
 
 script:
   - python setup.py clean
