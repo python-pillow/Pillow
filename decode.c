@@ -52,6 +52,7 @@ typedef struct {
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject* lock;
+    int     handles_eof;
 } ImagingDecoderObject;
 
 static PyTypeObject ImagingDecoderType;
@@ -92,6 +93,9 @@ PyImaging_DecoderNew(int contextsize)
 
     /* Initialize the cleanup function pointer */
     decoder->cleanup = NULL;
+
+    /* Most decoders don't want to handle EOF themselves */
+    decoder->handles_eof = 0;
 
     return decoder;
 }
@@ -194,11 +198,24 @@ _setimage(ImagingDecoderObject* decoder, PyObject* args)
     return Py_None;
 }
 
+static PyObject *
+_get_handles_eof(ImagingDecoderObject *decoder)
+{
+    return PyBool_FromLong(decoder->handles_eof);
+}
+
 static struct PyMethodDef methods[] = {
     {"decode", (PyCFunction)_decode, 1},
     {"cleanup", (PyCFunction)_decode_cleanup, 1},
     {"setimage", (PyCFunction)_setimage, 1},
     {NULL, NULL} /* sentinel */
+};
+
+static struct PyGetSetDef getseters[] = {
+    {"handles_eof", (getter)_get_handles_eof, NULL,
+     "True if this decoder expects to handle EOF itself.",
+     NULL},
+    {NULL, NULL, NULL, NULL, NULL} /* sentinel */
 };
 
 static PyTypeObject ImagingDecoderType = {
@@ -232,7 +249,7 @@ static PyTypeObject ImagingDecoderType = {
     0,                          /*tp_iternext*/
     methods,                    /*tp_methods*/
     0,                          /*tp_members*/
-    0,                          /*tp_getset*/
+    getseters,                  /*tp_getset*/
 };
 
 /* -------------------------------------------------------------------- */
@@ -762,3 +779,55 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
     return (PyObject*) decoder;
 }
 #endif
+
+/* -------------------------------------------------------------------- */
+/* JPEG 2000                                                            */
+/* -------------------------------------------------------------------- */
+
+#ifdef HAVE_OPENJPEG
+
+#include "Jpeg2K.h"
+
+PyObject*
+PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
+{
+    ImagingDecoderObject* decoder;
+    JPEG2KDECODESTATE *context;
+
+    char* mode;
+    char* format;
+    OPJ_CODEC_FORMAT codec_format;
+    int reduce = 0;
+    int layers = 0;
+    int fd = -1;
+    if (!PyArg_ParseTuple(args, "ss|iii", &mode, &format,
+                          &reduce, &layers, &fd))
+        return NULL;
+
+    if (strcmp(format, "j2k") == 0)
+        codec_format = OPJ_CODEC_J2K;
+    else if (strcmp(format, "jpt") == 0)
+        codec_format = OPJ_CODEC_JPT;
+    else if (strcmp(format, "jp2") == 0)
+        codec_format = OPJ_CODEC_JP2;
+    else
+        return NULL;
+
+    decoder = PyImaging_DecoderNew(sizeof(JPEG2KDECODESTATE));
+    if (decoder == NULL)
+        return NULL;
+
+    decoder->handles_eof = 1;
+    decoder->decode = ImagingJpeg2KDecode;
+    decoder->cleanup = ImagingJpeg2KDecodeCleanup;
+
+    context = (JPEG2KDECODESTATE *)decoder->state.context;
+
+    context->fd = fd;
+    context->format = codec_format;
+    context->reduce = reduce;
+    context->layers = layers;
+
+    return (PyObject*) decoder;
+}
+#endif /* HAVE_OPENJPEG */

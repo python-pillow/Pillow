@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Added support for JPEG 2000
+  [al45tair]
+
 - Add more detailed error messages to Image.py 
   [larsmans]
 

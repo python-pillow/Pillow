@@ -3325,6 +3325,7 @@ extern PyObject* PyImaging_FliDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_GifDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_HexDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_JpegDecoderNew(PyObject* self, PyObject* args);
+extern PyObject* PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_TiffLzwDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_LibTiffDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_MspDecoderNew(PyObject* self, PyObject* args);
@@ -3341,6 +3342,7 @@ extern PyObject* PyImaging_ZipDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_EpsEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_GifEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_JpegEncoderNew(PyObject* self, PyObject* args);
+extern PyObject* PyImaging_Jpeg2KEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_PcxEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_RawEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_XbmEncoderNew(PyObject* self, PyObject* args);
@@ -3393,6 +3395,10 @@ static PyMethodDef functions[] = {
 #ifdef HAVE_LIBJPEG
     {"jpeg_decoder", (PyCFunction)PyImaging_JpegDecoderNew, 1},
     {"jpeg_encoder", (PyCFunction)PyImaging_JpegEncoderNew, 1},
+#endif
+#ifdef HAVE_OPENJPEG
+    {"jpeg2k_decoder", (PyCFunction)PyImaging_Jpeg2KDecoderNew, 1},
+    {"jpeg2k_encoder", (PyCFunction)PyImaging_Jpeg2KEncoderNew, 1},
 #endif
     {"tiff_lzw_decoder", (PyCFunction)PyImaging_TiffLzwDecoderNew, 1},
 #ifdef HAVE_LIBTIFF
@@ -3494,6 +3500,13 @@ setup_module(PyObject* m) {
   {
     extern const char* ImagingJpegVersion(void);
     PyDict_SetItemString(d, "jpeglib_version", PyUnicode_FromString(ImagingJpegVersion()));
+  }
+#endif
+
+#ifdef HAVE_OPENJPEG
+  {
+    extern const char *ImagingJpeg2KVersion(void);
+    PyDict_SetItemString(d, "jp2klib_version", PyUnicode_FromString(ImagingJpeg2KVersion()));
   }
 #endif
 

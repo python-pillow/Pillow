@@ -33,7 +33,8 @@ _LIB_IMAGING = (
     "QuantHeap", "PcdDecode", "PcxDecode", "PcxEncode", "Point",
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
     "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
-    "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode")
+    "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Incremental",
+    "Jpeg2KDecode", "Jpeg2KEncode")
 
 
 def _add_directory(path, dir, where=None):
@@ -88,6 +89,7 @@ NAME = 'Pillow'
 VERSION = '2.3.0'
 TCL_ROOT = None
 JPEG_ROOT = None
+JPEG2K_ROOT = None
 ZLIB_ROOT = None
 TIFF_ROOT = None
 FREETYPE_ROOT = None
@@ -98,6 +100,7 @@ class pil_build_ext(build_ext):
 
     class feature:
         zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = webpmux = None
+        jpeg2000 = None
         required = []
 
         def require(self, feat):
@@ -150,7 +153,7 @@ class pil_build_ext(build_ext):
         #
         # add configured kits
 
-        for root in (TCL_ROOT, JPEG_ROOT, TIFF_ROOT, ZLIB_ROOT,
+        for root in (TCL_ROOT, JPEG_ROOT, JPEG2K_ROOT, TIFF_ROOT, ZLIB_ROOT,
                      FREETYPE_ROOT, LCMS_ROOT):
             if isinstance(root, type(())):
                 lib_root, include_root = root
@@ -321,6 +324,16 @@ class pil_build_ext(build_ext):
         _add_directory(library_dirs, "/usr/lib")
         _add_directory(include_dirs, "/usr/include")
 
+        # on Windows, look for the OpenJPEG libraries in the location that
+        # the official installed puts them
+        if sys.platform == "win32":
+            _add_directory(library_dirs, 
+                           os.path.join(os.environ.get("ProgramFiles", ""),
+                                        "OpenJPEG 2.0", "lib"))
+            _add_directory(include_dirs,
+                           os.path.join(os.environ.get("ProgramFiles", ""),
+                                        "OpenJPEG 2.0", "include"))
+
         #
         # insert new dirs *before* default libs, to avoid conflicts
         # between Python PYD stub libs and real libraries
@@ -349,6 +362,11 @@ class pil_build_ext(build_ext):
                         _find_library_file(self, "libjpeg")):
                     feature.jpeg = "libjpeg"  # alternative name
 
+        if feature.want('jpeg2000'):
+            if _find_include_file(self, "openjpeg-2.0/openjpeg.h"):
+                if _find_library_file(self, "openjp2"):
+                    feature.jpeg2000 = "openjp2"
+                    
         if feature.want('tiff'):
             if _find_library_file(self, "tiff"):
                 feature.tiff = "tiff"
@@ -430,6 +448,9 @@ class pil_build_ext(build_ext):
         if feature.jpeg:
             libs.append(feature.jpeg)
             defs.append(("HAVE_LIBJPEG", None))
+        if feature.jpeg2000:
+            libs.append(feature.jpeg2000)
+            defs.append(("HAVE_OPENJPEG", None))
         if feature.zlib:
             libs.append(feature.zlib)
             defs.append(("HAVE_LIBZ", None))
@@ -537,6 +558,7 @@ class pil_build_ext(build_ext):
         options = [
             (feature.tcl and feature.tk, "TKINTER"),
             (feature.jpeg, "JPEG"),
+            (feature.jpeg2000, "OPENJPEG (JPEG2000)"),
             (feature.zlib, "ZLIB (PNG/ZIP)"),
             (feature.tiff, "LIBTIFF"),
             (feature.freetype, "FREETYPE2"),
