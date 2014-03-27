@@ -130,6 +130,9 @@ codec_thread(void *ptr)
 static void
 flush_stream(ImagingIncrementalCodec codec)
 {
+  UINT8 *buffer;
+  size_t bytes;
+
   /* This is to flush data from the write buffer for a seekable write
      codec. */
   if (codec->read_or_write != INCREMENTAL_CODEC_WRITE
@@ -140,8 +143,8 @@ flush_stream(ImagingIncrementalCodec codec)
 
   DEBUG("flushing data\n");
 
-  UINT8 *buffer = codec->stream.buffer;
-  size_t bytes = codec->stream.ptr - codec->stream.buffer;
+  buffer = codec->stream.buffer;
+  bytes = codec->stream.ptr - codec->stream.buffer;
 
   codec->state->errcode = 0;
   codec->seekable = INCREMENTAL_CODEC_NOT_SEEKABLE;
@@ -645,6 +648,8 @@ off_t
 ImagingIncrementalCodecSeek(ImagingIncrementalCodec codec,
                             off_t bytes)
 {
+  off_t buffered;
+
   DEBUG("seeking (going to %llu bytes)\n", (unsigned long long)bytes);
 
   if (codec->stream.fd >= 0)
@@ -660,7 +665,7 @@ ImagingIncrementalCodecSeek(ImagingIncrementalCodec codec,
     return -1;
   }
     
-  off_t buffered = codec->stream.top - codec->stream.buffer;
+  buffered = codec->stream.top - codec->stream.buffer;
 
   if (bytes <= buffered) {
     DEBUG("seek within buffer\n");
