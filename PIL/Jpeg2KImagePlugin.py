@@ -169,14 +169,14 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         if self.reduce:
             power = 1 << self.reduce
             adjust = power >> 1
-            self.size = ((self.size[0] + adjust) / power,
-                         (self.size[1] + adjust) / power)
+            self.size = (int((self.size[0] + adjust) / power),
+                         int((self.size[1] + adjust) / power))
 
         if self.tile:
             # Update the reduce and layers settings
             t = self.tile[0]
             t3 = (t[3][0], self.reduce, self.layers, t[3][3])
-            self.tile = [(t[0], t[1], t[2], t3)]
+            self.tile = [(t[0], (0, 0) + self.size, t[2], t3)]
         
         ImageFile.ImageFile.load(self)
         
