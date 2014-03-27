@@ -203,3 +203,9 @@ def test_exif():
     im = Image.open("Tests/images/pil_sample_rgb.jpg")
     info = im._getexif()
     assert_equal(info[305], 'Adobe Photoshop CS Macintosh')
+
+
+def test_quality_keep():
+    im = Image.open("Images/lena.jpg")
+    f = tempfile('temp.jpg')
+    assert_no_exception(lambda: im.save(f, quality='keep'))
