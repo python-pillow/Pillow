@@ -6,6 +6,8 @@ from PIL import Image
 file = "Images/pillow.icns"
 data = open(file, "rb").read()
 
+enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
+
 def test_sanity():
     # Loading this icon by default should result in the largest size
     # (512x512@2x) being loaded
@@ -40,3 +42,25 @@ def test_older_icon():
         im2.load()
         assert_equal(im2.mode, 'RGBA')
         assert_equal(im2.size, (wr, hr))
+
+def test_jp2_icon():
+    # This icon was made by using Uli Kusterer's oldiconutil to replace
+    # the PNG images with JPEG 2000 ones.  The advantage of doing this is
+    # that OS X 10.5 supports JPEG 2000 but not PNG; some commercial
+    # software therefore does just this.
+    
+    # (oldiconutil is here: https://github.com/uliwitness/oldiconutil)
+
+    if not enable_jpeg2k:
+        return
+    
+    im = Image.open('Tests/images/pillow3.icns')
+    for w,h,r in im.info['sizes']:
+        wr = w * r
+        hr = h * r
+        im2 = Image.open('Tests/images/pillow3.icns')
+        im2.size = (w, h, r)
+        im2.load()
+        assert_equal(im2.mode, 'RGBA')
+        assert_equal(im2.size, (wr, hr))
+    

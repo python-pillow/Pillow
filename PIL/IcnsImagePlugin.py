@@ -15,8 +15,12 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, PngImagePlugin, Jpeg2KImagePlugin, _binary
+from PIL import Image, ImageFile, PngImagePlugin, _binary
 import struct, io
+
+enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
+if enable_jpeg2k:
+    import Jpeg2KImagePlugin
 
 i8 = _binary.i8
 
@@ -101,6 +105,8 @@ def read_png_or_jpeg2000(fobj, start_length, size):
     elif sig[:4] == b'\xff\x4f\xff\x51' \
         or sig[:4] == b'\x0d\x0a\x87\x0a' \
         or sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
+        if not enable_jpeg2k:
+            raise ValueError('Unsupported icon subimage format (rebuild PIL with JPEG 2000 support to fix this)')
         # j2k, jpc or j2c
         fobj.seek(start)
         jp2kstream = fobj.read(length)
@@ -109,6 +115,8 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         if im.mode != 'RGBA':
             im = im.convert('RGBA')
         return {"RGBA": im}
+    else:
+        raise ValueError('Unsupported icon subimage format')
 
 class IcnsFile:
 
