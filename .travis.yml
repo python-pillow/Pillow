@@ -4,6 +4,9 @@ language: python
 virtualenv:
   system_site_packages: true
 
+notifications:
+  irc: "chat.freenode.net#pil"
+
 python:
   - 2.6
   - 2.7
@@ -12,10 +15,14 @@ python:
   - "pypy"
 
 install: 
-  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev libwebp-dev python-qt4 ghostscript libffi-dev"
+  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
   - "pip install cffi"
-  - "sudo apt-get install python-tk"
 
+  # webp  
+  - pushd depends && ./install_webp.sh && popd
+
+  # openjpeg
+  - pushd depends && ./install_openjpeg.sh && popd
 
 script:
   - python setup.py clean
