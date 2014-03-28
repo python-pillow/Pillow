@@ -81,7 +81,8 @@ def _read(file):
 
 try:
     import _tkinter
-except ImportError:
+except (ImportError, OSError):
+    # pypy emits an oserror
     _tkinter = None
 
 
