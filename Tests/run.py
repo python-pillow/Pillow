@@ -2,7 +2,7 @@ from __future__ import print_function
 
 # minimal test runner
 
-import glob, os, os.path, sys, tempfile
+import glob, os, os.path, sys, tempfile, re
 
 try:
     root = os.path.dirname(__file__)
@@ -38,6 +38,8 @@ skipped = []
 python_options = " ".join(python_options)
 tester_options = " ".join(tester_options)
 
+ignore_re = re.compile('^ignore: (.*)$', re.MULTILINE)
+
 for file in files:
     test, ext = os.path.splitext(os.path.basename(file))
     if include and test not in include:
@@ -48,7 +50,30 @@ for file in files:
     out = os.popen("%s %s -u %s %s 2>&1" % (
             sys.executable, python_options, file, tester_options
             ))
-    result = out.read().strip()
+    result = out.read()
+
+    # Extract any ignore patterns
+    ignore_pats = ignore_re.findall(result)
+    result = ignore_re.sub('', result)
+
+    try:
+        def fix_re(p):
+            if not p.startswith('^'):
+                p = '^' + p
+            if not p.endswith('$'):
+                p = p + '$'
+            return p
+        
+        ignore_res = [re.compile(fix_re(p), re.MULTILINE) for p in ignore_pats]
+    except:
+        print('(bad ignore patterns %r)' % ignore_pats)
+        ignore_res = []
+
+    for r in ignore_res:
+        result = r.sub('', result)
+
+    result = result.strip()
+    
     if result == "ok":
         result = None
     elif result == "skip":

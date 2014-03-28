@@ -205,7 +205,7 @@ class ImageFile(Image.Image):
                         else:
                             raise IndexError(ie)
 
-                    if not s: # truncated jpeg
+                    if not s and not d.handles_eof: # truncated jpeg
                         self.tile = []
 
                         # JpegDecode needs to clean things up here either way
