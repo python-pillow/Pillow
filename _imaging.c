@@ -846,7 +846,7 @@ _crop(ImagingObject* self, PyObject* args)
 }
 
 static PyObject*
-_expand(ImagingObject* self, PyObject* args)
+_expand_image(ImagingObject* self, PyObject* args)
 {
     int x, y;
     int mode = 0;
@@ -2239,30 +2239,66 @@ textwidth(ImagingFontObject* self, const unsigned char* text)
     return xsize;
 }
 
+void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
+    PyObject* bytes = NULL;
+
+    *text = NULL;
+
+    if (PyUnicode_CheckExact(encoded_string)){
+        bytes = PyUnicode_AsLatin1String(encoded_string);
+    } else if (PyBytes_Check(encoded_string)) {
+        bytes = encoded_string;
+    }
+    if (bytes) {
+        *text = (unsigned char*)PyBytes_AsString(bytes);
+        return;
+    } 
+
+#if PY_VERSION_HEX < 0x03000000
+    /* likely case here is py2.x with an ordinary string.
+       but this isn't defined in Py3.x */
+    if (PyString_Check(encoded_string)) {
+        *text = (unsigned char *)PyString_AsString(encoded_string);
+    } 
+#endif
+}
+    
+
 static PyObject*
 _font_getmask(ImagingFontObject* self, PyObject* args)
 {
     Imaging im;
     Imaging bitmap;
     int x, b;
+    int i=0;
     int status;
     Glyph* glyph;
 
+    PyObject* encoded_string;
+
     unsigned char* text;
     char* mode = "";
-    if (!PyArg_ParseTuple(args, "s|s:getmask", &text, &mode))
+
+    if (!PyArg_ParseTuple(args, "O|s:getmask",  &encoded_string, &mode)){
         return NULL;
+    }
+
+    _font_text_asBytes(encoded_string, &text);
+    if (!text) {
+        return NULL;
+    }
 
     im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
-    if (!im)
+    if (!im) {
         return NULL;
+    }
 
     b = 0;
     (void) ImagingFill(im, &b);
 
     b = self->baseline;
-    for (x = 0; *text; text++) {
-        glyph = &self->glyphs[*text];
+    for (x = 0; text[i]; i++) {
+        glyph = &self->glyphs[text[i]];
         bitmap = ImagingCrop(
             self->bitmap,
             glyph->sx0, glyph->sy0, glyph->sx1, glyph->sy1
@@ -2279,7 +2315,6 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
         x = x + glyph->dx;
         b = b + glyph->dy;
     }
-
     return PyImagingNew(im);
 
   failed:
@@ -2291,10 +2326,17 @@ static PyObject*
 _font_getsize(ImagingFontObject* self, PyObject* args)
 {
     unsigned char* text;
-    if (!PyArg_ParseTuple(args, "s:getsize", &text))
+    PyObject* encoded_string;
+
+    if (!PyArg_ParseTuple(args, "O:getsize", &encoded_string))
         return NULL;
 
-    return Py_BuildValue("ii", textwidth(self, text), self->ysize);
+    _font_text_asBytes(encoded_string, &text);
+    if (!text) {
+        return NULL;
+    }
+
+    return Py_BuildValue("ii", textwidth(self, text), self->ysize);        
 }
 
 static struct PyMethodDef _font_methods[] = {
@@ -2954,7 +2996,7 @@ static struct PyMethodDef methods[] = {
     {"crackcode", (PyCFunction)_crackcode, 1},
 #endif
     {"crop", (PyCFunction)_crop, 1},
-    {"expand", (PyCFunction)_expand, 1},
+    {"expand", (PyCFunction)_expand_image, 1},
     {"filter", (PyCFunction)_filter, 1},
     {"histogram", (PyCFunction)_histogram, 1},
 #ifdef WITH_MODEFILTER

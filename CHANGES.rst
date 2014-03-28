@@ -4,8 +4,41 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Fixes for Jpeg encoding in Python 3, fixes #577
+  [wiredfool]
+
 - Added support for JPEG 2000
   [al45tair]
+
+- Add more detailed error messages to Image.py 
+  [larsmans]
+
+- Avoid conflicting _expand functions in PIL & MINGW, fixes #538
+  [aclark]
+
+- Merge from Philippe Lagadec’s OleFileIO_PL fork
+  [vadmium]
+
+- Fix ImageColor.getcolor
+  [homm]
+
+- Make ICO files work with the ImageFile.Parser interface, fixes #522
+  [wiredfool]
+
+- Handle 32bit compiled python on 64bit architecture
+  [choppsv1]
+
+- Fix support for characters >128 using .pcf or .pil fonts in Py3k. Fixes #505
+  [wiredfool]
+
+- Skip CFFI test earlier if it's not installed
+  [wiredfool]
+
+- Fixed opening and saving odd sized .pcx files, fixes #523
+  [wiredfool]
+
+- Fixed palette handling when converting from mode P->RGB->P
+  [d_schmidt] 
 
 - Fixed saving mode P image as a PNG with transparency = palette color 0
   [d-schmidt]
@@ -48,6 +81,12 @@ Changelog (Pillow)
 
 - Prefer homebrew freetype over X11 freetype (but still allow both)
   [dmckeone]
+  
+2.3.1 (2014-03-14)
+------------------
+
+- Fix insecure use of tempfile.mktemp (CVE-2014-1932 CVE-2014-1933)
+  [wiredfool]
 
 2.3.0 (2014-01-01)
 ------------------

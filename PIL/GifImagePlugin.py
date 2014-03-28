@@ -237,7 +237,10 @@ def _save(im, fp, filename):
         # convert on the fly (EXPERIMENTAL -- I'm not sure PIL
         # should automatically convert images on save...)
         if Image.getmodebase(im.mode) == "RGB":
-            imOut = im.convert("P")
+            palette_size = 256
+            if im.palette:
+                palette_size = len(im.palette.getdata()[1]) // 3
+            imOut = im.convert("P", palette=1, colors=palette_size)
             rawmode = "P"
         else:
             imOut = im.convert("L")
@@ -248,9 +251,13 @@ def _save(im, fp, filename):
         palette = im.encoderinfo["palette"]
     except KeyError:
         palette = None
-        if im.palette:
-            # use existing if possible
-            palette = im.palette.getdata()[1]
+        im.encoderinfo["optimize"] = im.encoderinfo.get("optimize", True)
+        if im.encoderinfo["optimize"]:
+            # When the mode is L, and we optimize, we end up with
+            # im.mode == P and rawmode = L, which fails.
+            # If we're optimizing the palette, we're going to be
+            # in a rawmode of P anyway. 
+            rawmode = 'P'
 
     header, usedPaletteColors = getheader(imOut, palette, im.encoderinfo)
     for s in header:
@@ -391,6 +398,9 @@ def getheader(im, palette=None, info=None):
             for i in range(len(imageBytes)):
                 imageBytes[i] = newPositions[imageBytes[i]]
             im.frombytes(bytes(imageBytes))
+            newPaletteBytes = paletteBytes + (768 - len(paletteBytes)) * b'\x00'
+            im.putpalette(newPaletteBytes) 
+            im.palette = ImagePalette.ImagePalette("RGB", palette = paletteBytes, size = len(paletteBytes))
 
     if not paletteBytes:
         paletteBytes = sourcePalette

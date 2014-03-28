@@ -57,6 +57,13 @@ def test_parser():
     # https://github.com/python-imaging/Pillow/issues/78
     #assert_exception(IOError, lambda: roundtrip("PDF"))
 
+def test_ico():
+    with open('Tests/images/python.ico', 'rb') as f:
+        data = f.read()
+    p = ImageFile.Parser()
+    p.feed(data)
+    assert_equal((48,48), p.image.size)
+
 def test_safeblock():
 
     im1 = lena()

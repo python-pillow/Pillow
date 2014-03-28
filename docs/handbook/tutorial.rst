@@ -105,7 +105,6 @@ Create JPEG thumbnails
             except IOError:
                 print("cannot create thumbnail for", infile)
 
-
 It is important to note that the library doesn’t decode or load the raster data
 unless it really has to. When you open a file, the file header is read to
 determine the file format and extract things like mode, size, and other

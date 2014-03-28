@@ -505,7 +505,7 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
         else:
             # check palette contents
             if im.palette:
-                colors = len(im.palette.getdata()[1])//3
+                colors = max(min(len(im.palette.getdata()[1])//3, 256), 2)
             else:
                 colors = 256
 

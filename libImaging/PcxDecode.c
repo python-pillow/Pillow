@@ -57,7 +57,16 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	}
 
 	if (state->x >= state->bytes) {
-
+        if (state->bytes % state->xsize && state->bytes > state->xsize) {
+            int bands = state->bytes / state->xsize;
+            int stride = state->bytes / bands;
+            int i;
+            for (i=1; i< bands; i++) {  // note -- skipping first band
+                memmove(&state->buffer[i*state->xsize], 
+                        &state->buffer[i*stride], 
+                        state->xsize);
+            }
+        }
 	    /* Got a full line, unpack it */
 	    state->shuffle((UINT8*) im->image[state->y + state->yoff] +
 			   state->xoff * im->pixelsize, state->buffer,

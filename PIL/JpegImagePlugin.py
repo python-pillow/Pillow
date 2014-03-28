@@ -344,13 +344,17 @@ class JpegImageFile(ImageFile.ImageFile):
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
         import tempfile, os
-        file = tempfile.mktemp()
-        os.system("djpeg %s >%s" % (self.filename, file))
+        f, path = tempfile.mkstemp()
+        os.close(f)
+        if os.path.exists(self.filename):
+            os.system("djpeg '%s' >'%s'" % (self.filename, path))
+        else:
+            raise ValueError("Invalid Filename")
 
         try:
-            self.im = Image.core.open_ppm(file)
+            self.im = Image.core.open_ppm(path)
         finally:
-            try: os.unlink(file)
+            try: os.unlink(path)
             except: pass
 
         self.mode = self.im.mode
@@ -438,7 +442,7 @@ samplings = {
             }
 
 def convert_dict_qtables(qtables):
-    qtables = [qtables[key] for key in xrange(len(qtables)) if qtables.has_key(key)]
+    qtables = [qtables[key] for key in range(len(qtables)) if key in qtables]
     for idx, table in enumerate(qtables):
         qtables[idx] = [table[i] for i in zigzag_index]
     return qtables
@@ -500,7 +504,7 @@ def _save(im, fp, filename):
             except ValueError:
                 raise ValueError("Invalid quantization table")
             else:
-                qtables = [lines[s:s+64] for s in xrange(0, len(lines), 64)]
+                qtables = [lines[s:s+64] for s in range(0, len(lines), 64)]
         if isinstance(qtables, (tuple, list, dict)):
             if isinstance(qtables, dict):
                 qtables = convert_dict_qtables(qtables)

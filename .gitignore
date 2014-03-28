@@ -5,3 +5,11 @@ dist
 .tox
 *.so
 docs/_build
+
+# Vim cruft
+.*.swp
+
+#emacs
+*~
+\#*#
+.#*

@@ -504,14 +504,17 @@ class Image:
         self.readonly = 0
 
     def _dump(self, file=None, format=None):
-        import tempfile
+        import tempfile, os
         if not file:
-            file = tempfile.mktemp()
+            f, file = tempfile.mkstemp(format or '')
+            os.close(f)
+            
         self.load()
         if not format or format == "PPM":
             self.im.save_ppm(file)
         else:
-            file = file + "." + format
+            if file.endswith(format):
+                file = file + "." + format
             self.save(file, format)
         return file
 
@@ -734,7 +737,10 @@ class Image:
 
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
-            return self._new(im)
+            new = self._new(im)
+            from PIL import ImagePalette
+            new.palette = ImagePalette.raw("RGB", new.im.getpalette("RGB"))
+            return new
 
         # colorspace conversion
         if dither is None:
@@ -1959,7 +1965,7 @@ def fromarray(obj, mode=None):
     else:
         ndmax = 4
     if ndim > ndmax:
-        raise ValueError("Too many dimensions.")
+        raise ValueError("Too many dimensions: %d > %d." % (ndim, ndmax))
 
     size = shape[1], shape[0]
     if strides is not None:
@@ -2012,7 +2018,7 @@ def open(fp, mode="r"):
     """
 
     if mode != "r":
-        raise ValueError("bad mode")
+        raise ValueError("bad mode %r" % mode)
 
     if isPath(fp):
         filename = fp
@@ -2048,7 +2054,8 @@ def open(fp, mode="r"):
                 #traceback.print_exc()
                 pass
 
-    raise IOError("cannot identify image file")
+    raise IOError("cannot identify image file %r"
+                  % (filename if filename else fp))
 
 #
 # Image processing.

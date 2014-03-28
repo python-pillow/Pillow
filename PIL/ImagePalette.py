@@ -23,13 +23,14 @@ from PIL import Image, ImageColor
 class ImagePalette:
     "Color palette for palette mapped images"
 
-    def __init__(self, mode = "RGB", palette = None):
+    def __init__(self, mode = "RGB", palette = None, size = 0):
         self.mode = mode
         self.rawmode = None # if set, palette contains raw data
         self.palette = palette or list(range(256))*len(self.mode)
         self.colors = {}
         self.dirty = None
-        if len(self.mode)*256 != len(self.palette):
+        if ((size == 0 and len(self.mode)*256 != len(self.palette)) or 
+                (size != 0 and size != len(self.palette))):
             raise ValueError("wrong palette size")
 
     def getdata(self):

@@ -38,7 +38,7 @@ def test_roundtrip():
 
 def test_roundtrip2():
     #see https://github.com/python-imaging/Pillow/issues/403
-    out = 'temp.gif'#tempfile('temp.gif')
+    out = tempfile('temp.gif')
     im = Image.open('Images/lena.gif')
     im2 = im.copy()
     im2.save(out)
@@ -46,3 +46,42 @@ def test_roundtrip2():
 
     assert_image_similar(reread.convert('RGB'), lena(), 50)
 
+
+def test_palette_handling():
+    # see https://github.com/python-imaging/Pillow/issues/513
+
+    im = Image.open('Images/lena.gif')
+    im = im.convert('RGB')
+    
+    im = im.resize((100,100), Image.ANTIALIAS)
+    im2 = im.convert('P', palette=Image.ADAPTIVE, colors=256)
+
+    f = tempfile('temp.gif')
+    im2.save(f, optimize=True)
+
+    reloaded = Image.open(f)
+    
+    assert_image_similar(im, reloaded.convert('RGB'), 10)
+    
+def test_palette_434():
+    # see https://github.com/python-imaging/Pillow/issues/434
+
+    def roundtrip(im, *args, **kwargs):
+        out = tempfile('temp.gif')
+        im.save(out, *args, **kwargs)
+        reloaded = Image.open(out)
+
+        return [im, reloaded]
+
+    orig = "Tests/images/test.colors.gif"
+    im = Image.open(orig)
+
+    assert_image_equal(*roundtrip(im))
+    assert_image_equal(*roundtrip(im, optimize=True))
+    
+    im = im.convert("RGB")
+    # check automatic P conversion
+    reloaded = roundtrip(im)[1].convert('RGB')
+    assert_image_equal(im, reloaded)
+
+    

@@ -25,10 +25,23 @@ else:
         return bytes((i&255,))
 
 # Input, le = little endian, be = big endian
+#TODO: replace with more readable struct.unpack equivalent
 def i16le(c, o=0):
+    """
+    Converts a 2-bytes (16 bits) string to an integer.
+
+    c: string containing bytes to convert
+    o: offset of bytes to convert in string
+    """
     return i8(c[o]) | (i8(c[o+1])<<8)
 
 def i32le(c, o=0):
+    """
+    Converts a 4-bytes (32 bits) string to an integer.
+
+    c: string containing bytes to convert
+    o: offset of bytes to convert in string
+    """
     return i8(c[o]) | (i8(c[o+1])<<8) | (i8(c[o+2])<<16) | (i8(c[o+3])<<24)
 
 def i16be(c, o=0):

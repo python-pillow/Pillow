@@ -55,12 +55,18 @@ class PcxImageFile(ImageFile.ImageFile):
         bbox = i16(s,4), i16(s,6), i16(s,8)+1, i16(s,10)+1
         if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
             raise SyntaxError("bad PCX image size")
+        if Image.DEBUG:
+            print ("BBox: %s %s %s %s" % bbox)
+
 
         # format
         version = i8(s[1])
         bits = i8(s[3])
         planes = i8(s[65])
         stride = i16(s,66)
+        if Image.DEBUG:
+            print ("PCX version %s, bits %s, planes %s, stride %s" %
+                   (version, bits, planes, stride))
 
         self.info["dpi"] = i16(s,12), i16(s,14)
 
@@ -98,7 +104,9 @@ class PcxImageFile(ImageFile.ImageFile):
         self.size = bbox[2]-bbox[0], bbox[3]-bbox[1]
 
         bbox = (0, 0) + self.size
-
+        if Image.DEBUG:
+            print ("size: %sx%s" % self.size)
+            
         self.tile = [("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))]
 
 # --------------------------------------------------------------------
@@ -126,6 +134,16 @@ def _save(im, fp, filename, check=0):
 
     # bytes per plane
     stride = (im.size[0] * bits + 7) // 8
+    # stride should be even
+    stride = stride + (stride % 2)
+    # Stride needs to be kept in sync with the PcxEncode.c version.
+    # Ideally it should be passed in in the state, but the bytes value
+    # gets overwritten. 
+
+
+    if Image.DEBUG:
+        print ("PcxImagePlugin._save: xwidth: %d, bits: %d, stride: %d" % (
+            im.size[0], bits, stride))
 
     # under windows, we could determine the current screen size with
     # "Image.core.display_mode()[1]", but I think that's overkill...
