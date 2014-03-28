@@ -20,7 +20,7 @@ import struct, io
 
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
 if enable_jpeg2k:
-    import Jpeg2KImagePlugin
+    from PIL import Jpeg2KImagePlugin
 
 i8 = _binary.i8
 
