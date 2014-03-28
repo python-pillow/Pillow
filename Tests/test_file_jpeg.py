@@ -10,9 +10,7 @@ codecs = dir(Image.core)
 if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
     skip("jpeg support not available")
 
-# sample jpeg stream
-file = "Images/lena.jpg"
-data = open(file, "rb").read()
+test_file = "Images/lena.jpg"
 
 def roundtrip(im, **options):
     out = BytesIO()
@@ -30,7 +28,7 @@ def test_sanity():
     # internal version number
     assert_match(Image.core.jpeglib_version, "\d+\.\d+$")
 
-    im = Image.open(file)
+    im = Image.open(test_file)
     im.load()
     assert_equal(im.mode, "RGB")
     assert_equal(im.size, (128, 128))
@@ -40,7 +38,7 @@ def test_sanity():
 
 def test_app():
     # Test APP/COM reader (@PIL135)
-    im = Image.open(file)
+    im = Image.open(test_file)
     assert_equal(im.applist[0],
                  ("APP0", b"JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00"))
     assert_equal(im.applist[1], ("COM", b"Python Imaging Library"))
@@ -49,8 +47,8 @@ def test_app():
 def test_cmyk():
     # Test CMYK handling.  Thanks to Tim and Charlie for test data,
     # Michael for getting me to look one more time.
-    file = "Tests/images/pil_sample_cmyk.jpg"
-    im = Image.open(file)
+    f = "Tests/images/pil_sample_cmyk.jpg"
+    im = Image.open(f)
     # the source image has red pixels in the upper left corner.
     c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
     assert_true(c == 0.0 and m > 0.8 and y > 0.8 and k == 0.0)
@@ -66,7 +64,7 @@ def test_cmyk():
 
 def test_dpi():
     def test(xdpi, ydpi=None):
-        im = Image.open(file)
+        im = Image.open(test_file)
         im = roundtrip(im, dpi=(xdpi, ydpi or xdpi))
         return im.info.get("dpi")
     assert_equal(test(72), (72, 72))
@@ -80,9 +78,9 @@ def test_icc():
     icc_profile = im1.info["icc_profile"]
     assert_equal(len(icc_profile), 3144)
     # Roundtrip via physical file.
-    file = tempfile("temp.jpg")
-    im1.save(file, icc_profile=icc_profile)
-    im2 = Image.open(file)
+    f = tempfile("temp.jpg")
+    im1.save(f, icc_profile=icc_profile)
+    im2 = Image.open(f)
     assert_equal(im2.info.get("icc_profile"), icc_profile)
     # Roundtrip via memory buffer.
     im1 = roundtrip(lena())
@@ -203,3 +201,9 @@ def test_exif():
     im = Image.open("Tests/images/pil_sample_rgb.jpg")
     info = im._getexif()
     assert_equal(info[305], 'Adobe Photoshop CS Macintosh')
+
+
+def test_quality_keep():
+    im = Image.open("Images/lena.jpg")
+    f = tempfile('temp.jpg')
+    assert_no_exception(lambda: im.save(f, quality='keep'))
