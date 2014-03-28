@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Fixes for Jpeg encoding in Python 3, fixes #577
+  [wiredfool]
+
 - Added support for JPEG 2000
   [al45tair]
 
