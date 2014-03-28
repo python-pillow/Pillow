@@ -729,6 +729,9 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self.tile = []
         self.readonly = 0
+        # libtiff closed the fp in a, we need to close self.fp, if possible
+        if hasattr(self.fp, 'close'):
+            self.fp.close()
         self.fp = None # might be shared
 
         if e < 0:
