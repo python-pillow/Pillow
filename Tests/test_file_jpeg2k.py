@@ -8,6 +8,10 @@ codecs = dir(Image.core)
 if "jpeg2k_encoder" not in codecs or "jpeg2k_decoder" not in codecs:
     skip('JPEG 2000 support not available')
 
+# OpenJPEG 2.0.0 outputs this debugging message sometimes; we should
+# ignore it---it doesn't represent a test failure.
+ignore('Not enough memory to handle tile data')
+
 test_card = Image.open('Tests/images/test-card.png')
 test_card.load()
 

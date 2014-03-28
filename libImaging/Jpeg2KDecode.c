@@ -230,7 +230,7 @@ j2ku_graya_la(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         const UINT8 *adata = &atiledata[acsiz * y * w];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         for (x = 0; x < w; ++x) {
-            UINT32 word = 0, aword = 0;
+            UINT32 word = 0, aword = 0, byte;
 
             switch (csiz) {
             case 1: word = *data++; break;
@@ -244,7 +244,7 @@ j2ku_graya_la(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
             case 4: aword = *(const UINT32 *)adata; adata += 4; break;
             }
 
-            UINT8 byte = j2ku_shift(offset + word, shift);
+            byte = j2ku_shift(offset + word, shift);
             row[0] = row[1] = row[2] = byte;
             row[3] = j2ku_shift(aoffset + aword, ashift);
             row += 4;
@@ -552,9 +552,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     }
     
     for (n = 1; n < image->numcomps; ++n) {
-        /* Check that the sample frequency is uniform */
-        if (image->comps[0].dx != image->comps[n].dx
-            || image->comps[0].dy != image->comps[n].dy) {
+        if (image->comps[n].dx != 1 || image->comps[n].dy != 1) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
             goto quick_exit;
@@ -612,6 +610,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     for (;;) {
         JPEG2KTILEINFO tile_info;
         OPJ_BOOL should_continue;
+        unsigned correction = (1 << params.cp_reduce) - 1;
 
         if (!opj_read_tile_header(codec,
                                   stream,
@@ -628,6 +627,13 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
 
         if (!should_continue)
             break;
+
+        /* Adjust the tile co-ordinates based on the reduction (OpenJPEG
+           doesn't do this for us) */
+        tile_info.x0 = (tile_info.x0 + correction) >> context->reduce;
+        tile_info.y0 = (tile_info.y0 + correction) >> context->reduce;
+        tile_info.x1 = (tile_info.x1 + correction) >> context->reduce;
+        tile_info.y1 = (tile_info.y1 + correction) >> context->reduce;
 
         if (buffer_size < tile_info.data_size) {
             UINT8 *new = realloc (state->buffer, tile_info.data_size);
