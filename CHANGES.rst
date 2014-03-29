@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Fix libtiff leaking open files, fixes #580
+  [wiredfool]
+
 - Fixes for Jpeg encoding in Python 3, fixes #577
   [wiredfool]
 
