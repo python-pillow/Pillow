@@ -452,6 +452,8 @@ class pil_build_ext(build_ext):
         if feature.jpeg2000:
             libs.append(feature.jpeg2000)
             defs.append(("HAVE_OPENJPEG", None))
+            if sys.platform == "win32":
+                defs.append(("OPJ_STATIC", None))
         if feature.zlib:
             libs.append(feature.zlib)
             defs.append(("HAVE_LIBZ", None))
