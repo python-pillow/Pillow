@@ -10,12 +10,17 @@
 # Copyright (c) 2004 by Bob Ippolito.
 # Copyright (c) 2004 by Secret Labs.
 # Copyright (c) 2004 by Fredrik Lundh.
+# Copyright (c) 2014 by Alastair Houghton.
 #
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, _binary
-import struct
+from PIL import Image, ImageFile, PngImagePlugin, _binary
+import struct, io
+
+enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
+if enable_jpeg2k:
+    from PIL import Jpeg2KImagePlugin
 
 i8 = _binary.i8
 
@@ -40,14 +45,15 @@ def read_32(fobj, start_length, size):
     """
     (start, length) = start_length
     fobj.seek(start)
-    sizesq = size[0] * size[1]
+    pixel_size = (size[0] * size[2], size[1] * size[2])
+    sizesq = pixel_size[0] * pixel_size[1]
     if length == sizesq * 3:
         # uncompressed ("RGBRGBGB")
         indata = fobj.read(length)
-        im = Image.frombuffer("RGB", size, indata, "raw", "RGB", 0, 1)
+        im = Image.frombuffer("RGB", pixel_size, indata, "raw", "RGB", 0, 1)
     else:
         # decode image
-        im = Image.new("RGB", size, None)
+        im = Image.new("RGB", pixel_size, None)
         for band_ix in range(3):
             data = []
             bytesleft = sizesq
@@ -72,7 +78,7 @@ def read_32(fobj, start_length, size):
                     "Error reading channel [%r left]" % bytesleft
                     )
             band = Image.frombuffer(
-                "L", size, b"".join(data), "raw", "L", 0, 1
+                "L", pixel_size, b"".join(data), "raw", "L", 0, 1
                 )
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
@@ -81,27 +87,80 @@ def read_mk(fobj, start_length, size):
     # Alpha masks seem to be uncompressed
     (start, length) = start_length
     fobj.seek(start)
+    pixel_size = (size[0] * size[2], size[1] * size[2])
+    sizesq = pixel_size[0] * pixel_size[1]
     band = Image.frombuffer(
-        "L", size, fobj.read(size[0]*size[1]), "raw", "L", 0, 1
+        "L", pixel_size, fobj.read(sizesq), "raw", "L", 0, 1
         )
     return {"A": band}
+
+def read_png_or_jpeg2000(fobj, start_length, size):
+    (start, length) = start_length
+    fobj.seek(start)
+    sig = fobj.read(12)
+    if sig[:8] == b'\x89PNG\x0d\x0a\x1a\x0a':
+        fobj.seek(start)
+        im = PngImagePlugin.PngImageFile(fobj)
+        return {"RGBA": im}
+    elif sig[:4] == b'\xff\x4f\xff\x51' \
+        or sig[:4] == b'\x0d\x0a\x87\x0a' \
+        or sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
+        if not enable_jpeg2k:
+            raise ValueError('Unsupported icon subimage format (rebuild PIL with JPEG 2000 support to fix this)')
+        # j2k, jpc or j2c
+        fobj.seek(start)
+        jp2kstream = fobj.read(length)
+        f = io.BytesIO(jp2kstream)
+        im = Jpeg2KImagePlugin.Jpeg2KImageFile(f)
+        if im.mode != 'RGBA':
+            im = im.convert('RGBA')
+        return {"RGBA": im}
+    else:
+        raise ValueError('Unsupported icon subimage format')
 
 class IcnsFile:
 
     SIZES = {
-        (128, 128): [
+        (512, 512, 2): [
+            (b'ic10', read_png_or_jpeg2000),
+        ],
+        (512, 512, 1): [
+            (b'ic09', read_png_or_jpeg2000),
+        ],
+        (256, 256, 2): [
+            (b'ic14', read_png_or_jpeg2000),
+        ],
+        (256, 256, 1): [
+            (b'ic08', read_png_or_jpeg2000),
+        ],
+        (128, 128, 2): [
+            (b'ic13', read_png_or_jpeg2000),
+        ],
+        (128, 128, 1): [
+            (b'ic07', read_png_or_jpeg2000),
             (b'it32', read_32t),
             (b't8mk', read_mk),
         ],
-        (48, 48): [
+        (64, 64, 1): [
+            (b'icp6', read_png_or_jpeg2000),
+        ],
+        (32, 32, 2): [
+            (b'ic12', read_png_or_jpeg2000),
+        ],
+        (48, 48, 1): [
             (b'ih32', read_32),
             (b'h8mk', read_mk),
         ],
-        (32, 32): [
+        (32, 32, 1): [
+            (b'icp5', read_png_or_jpeg2000),
             (b'il32', read_32),
             (b'l8mk', read_mk),
         ],
-        (16, 16): [
+        (16, 16, 2): [
+            (b'ic11', read_png_or_jpeg2000),
+        ],
+        (16, 16, 1): [
+            (b'icp4', read_png_or_jpeg2000),
             (b'is32', read_32),
             (b's8mk', read_mk),
         ],
@@ -115,7 +174,7 @@ class IcnsFile:
         self.dct = dct = {}
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
-        if sig != 'icns':
+        if sig != b'icns':
             raise SyntaxError('not an icns file')
         i = HEADERSIZE
         while i < filesize:
@@ -157,7 +216,14 @@ class IcnsFile:
     def getimage(self, size=None):
         if size is None:
             size = self.bestsize()
+        if len(size) == 2:
+            size = (size[0], size[1], 1)
         channels = self.dataforsize(size)
+
+        im = channels.get('RGBA', None)
+        if im:
+            return im
+        
         im = channels.get("RGB").copy()
         try:
             im.putalpha(channels["A"])
@@ -185,18 +251,29 @@ class IcnsImageFile(ImageFile.ImageFile):
     def _open(self):
         self.icns = IcnsFile(self.fp)
         self.mode = 'RGBA'
-        self.size = self.icns.bestsize()
+        self.best_size = self.icns.bestsize()
+        self.size = (self.best_size[0] * self.best_size[2],
+                     self.best_size[1] * self.best_size[2])
         self.info['sizes'] = self.icns.itersizes()
         # Just use this to see if it's loaded or not yet.
         self.tile = ('',)
 
     def load(self):
+        if len(self.size) == 3:
+            self.best_size = self.size
+            self.size = (self.best_size[0] * self.best_size[2],
+                         self.best_size[1] * self.best_size[2])
+
         Image.Image.load(self)
         if not self.tile:
             return
         self.load_prepare()
         # This is likely NOT the best way to do it, but whatever.
-        im = self.icns.getimage(self.size)
+        im = self.icns.getimage(self.best_size)
+
+        # If this is a PNG or JPEG 2000, it won't be loaded yet
+        im.load()
+        
         self.im = im.im
         self.mode = im.mode
         self.size = im.size
@@ -205,12 +282,18 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.tile = ()
         self.load_end()
 
-
 Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == b'icns')
 Image.register_extension("ICNS", '.icns')
 
 if __name__ == '__main__':
     import os, sys
+    imf = IcnsImageFile(open(sys.argv[1], 'rb'))
+    for size in imf.info['sizes']:
+        imf.size = size
+        imf.load()
+        im = imf.im
+        im.save('out-%s-%s-%s.png' % size)
     im = Image.open(open(sys.argv[1], "rb"))
     im.save("out.png")
-    os.startfile("out.png")
+    if sys.platform == 'windows':
+        os.startfile("out.png")
