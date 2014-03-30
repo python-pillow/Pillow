@@ -84,7 +84,8 @@ def test_trns_l():
     assert_true('transparency' in p.info)
     assert_no_exception(lambda: p.save(f))
 
-    p = im.convert('P', palette = Image.ADAPTIVE)
+    p = assert_warning(UserWarning,
+                       lambda: im.convert('P', palette = Image.ADAPTIVE))
     assert_false('transparency' in p.info)
     assert_no_exception(lambda: p.save(f))
 
@@ -103,7 +104,8 @@ def test_trns_RGB():
     assert_true('transparency' in p.info)
     assert_no_exception(lambda: p.save(f))
     
-    p = im.convert('P', palette = Image.ADAPTIVE)
+    p = assert_warning(UserWarning,
+                       lambda: im.convert('P', palette = Image.ADAPTIVE))
     assert_false('transparency' in p.info)
     assert_no_exception(lambda: p.save(f))
 
