@@ -10,6 +10,18 @@ Changelog (Pillow)
 - Conversions enabled from RGBA->P, Fixes #544
   [wiredfool]
 
+- Improved icns support
+  [al45tair]
+
+- Fix libtiff leaking open files, fixes #580
+  [wiredfool]
+
+- Fixes for Jpeg encoding in Python 3, fixes #577
+  [wiredfool]
+
+- Added support for JPEG 2000
+  [al45tair]
+
 - Add more detailed error messages to Image.py 
   [larsmans]
 
