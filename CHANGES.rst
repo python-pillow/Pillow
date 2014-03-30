@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.4.0 (unreleased)
 ------------------
 
+- Improved icns support
+  [al45tair]
+
 - Fix libtiff leaking open files, fixes #580
   [wiredfool]
 
