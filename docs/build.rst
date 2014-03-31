@@ -31,13 +31,18 @@ download and install one of them first.
 ::
 
    for version in ['2.6.5', '2.7.6', '3.2.5', '3.3.5', '3.4.0']:
-       http://legacy.python.org/ftp/python/%s/python-%s['','.amd64'].msi['','.asc']
+        for platform in ['', '.amd64']:
+            for extension in ['','.asc']:
+                fetch('https://www.python.org/ftp/python/%s/python-%s%s.msi%s' %(
+                    version, version, platform, extension))
 
-
-UNDONE -- gpg verify the signatures
+UNDONE -- gpg verify the signatures (note that we can download from https)
 
 We also need virtualenv and setuptools in at least one of the pythons
 to build testing versions. 
+
+Python 3.4 comes with pip. That makes it an ideal python to install
+first. 
 
 Compilers
 ^^^^^^^^^
