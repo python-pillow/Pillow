@@ -153,6 +153,14 @@ Plugin reference
     :undoc-members:
     :show-inheritance:
 
+:mod:`Jpeg2KImagePlugin` Module
+-----------------------------
+
+.. automodule:: PIL.Jpeg2KImagePlugin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`McIdasImagePlugin` Module
 -------------------------------
 

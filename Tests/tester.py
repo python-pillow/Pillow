@@ -260,6 +260,11 @@ def skip(msg=None):
     print("skip")
     os._exit(0) # don't run exit handlers
 
+def ignore(pattern):
+    """Tells the driver to ignore messages matching the pattern, for the
+    duration of the current test."""
+    print('ignore: %s' % pattern)
+
 def _setup():
     global _logfile
     def report():

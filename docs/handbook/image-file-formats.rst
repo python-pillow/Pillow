@@ -153,6 +153,92 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     before building the Python Imaging Library. See the distribution README for
     details.
 
+JPEG 2000
+^^^^^^^^^
+
+PIL reads and writes JPEG 2000 files containing ``L``, ``LA``, ``RGB`` or
+``RGBA`` data.  It can also read files containing ``YCbCr`` data, which it
+converts on read into ``RGB`` or ``RGBA`` depending on whether or not there is
+an alpha channel.  PIL supports JPEG 2000 raw codestreams (``.j2k`` files), as
+well as boxed JPEG 2000 files (``.j2p`` or ``.jpx`` files).  PIL does *not*
+support files whose components have different sampling frequencies.
+
+When loading, if you set the ``mode`` on the image prior to the
+:py:meth:`~PIL.Image.Image.load` method being invoked, you can ask PIL to
+convert the image to either ``RGB`` or ``RGBA`` rather than choosing for
+itself.  It is also possible to set ``reduce`` to the number of resolutions to
+discard (each one reduces the size of the resulting image by a factor of 2),
+and ``layers`` to specify the number of quality layers to load.
+
+The :py:meth:`~PIL.Image.Image.save` method supports the following options:
+
+**offset**
+    The image offset, as a tuple of integers, e.g. (16, 16)
+
+**tile_offset**
+    The tile offset, again as a 2-tuple of integers.
+
+**tile_size**
+    The tile size as a 2-tuple.  If not specified, or if set to None, the
+    image will be saved without tiling.
+
+**quality_mode**
+    Either `"rates"` or `"dB"` depending on the units you want to use to
+    specify image quality.
+
+**quality_layers**
+    A sequence of numbers, each of which represents either an approximate size
+    reduction (if quality mode is `"rates"`) or a signal to noise ratio value
+    in decibels.  If not specified, defaults to a single layer of full quality.
+
+**num_resolutions**
+    The number of different image resolutions to be stored (which corresponds
+    to the number of Discrete Wavelet Transform decompositions plus one).
+
+**codeblock_size**
+    The code-block size as a 2-tuple.  Minimum size is 4 x 4, maximum is 1024 x
+    1024, with the additional restriction that no code-block may have more
+    than 4096 coefficients (i.e. the product of the two numbers must be no
+    greater than 4096).
+
+**precinct_size**
+    The precinct size as a 2-tuple.  Must be a power of two along both axes,
+    and must be greater than the code-block size.
+
+**irreversible**
+    If ``True``, use the lossy Irreversible Color Transformation
+    followed by DWT 9-7.  Defaults to ``False``, which means to use the
+    Reversible Color Transformation with DWT 5-3.
+
+**progression**
+    Controls the progression order; must be one of ``"LRCP"``, ``"RLCP"``,
+    ``"RPCL"``, ``"PCRL"``, ``"CPRL"``.  The letters stand for Component,
+    Position, Resolution and Layer respectively and control the order of
+    encoding, the idea being that e.g. an image encoded using LRCP mode can
+    have its quality layers decoded as they arrive at the decoder, while one
+    encoded using RLCP mode will have increasing resolutions decoded as they
+    arrive, and so on.
+
+**cinema_mode**
+    Set the encoder to produce output compliant with the digital cinema
+    specifications.  The options here are ``"no"`` (the default),
+    ``"cinema2k-24"`` for 24fps 2K, ``"cinema2k-48"`` for 48fps 2K, and
+    ``"cinema4k-24"`` for 24fps 4K.  Note that for compliant 2K files,
+    *at least one* of your image dimensions must match 2048 x 1080, while
+    for compliant 4K files, *at least one* of the dimensions must match
+    4096 x 2160.
+
+.. note::
+
+   To enable JPEG 2000 support, you need to build and install the OpenJPEG
+   library, version 2.0.0 or higher, before building the Python Imaging
+   Library.
+
+   Windows users can install the OpenJPEG binaries available on the
+   OpenJPEG website, but must add them to their PATH in order to use PIL (if
+   you fail to do this, you will get errors about not being able to load the
+   ``_imaging`` DLL).
+
 MSP
 ^^^
 
@@ -436,6 +522,25 @@ ICO
 ^^^
 
 ICO is used to store icons on Windows. The largest available icon is read.
+
+ICNS
+^^^^
+
+PIL reads Mac OS X ``.icns`` files.  By default, the largest available icon is
+read, though you can override this by setting the :py:attr:`~PIL.Image.Image.size`
+property before calling :py:meth:`~PIL.Image.Image.load`.  The
+:py:meth:`~PIL.Image.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` property:
+
+**sizes**
+    A list of supported sizes found in this icon file; these are a
+    3-tuple, ``(width, height, scale)``, where ``scale`` is 2 for a retina
+    icon and 1 for a standard icon.  You *are* permitted to use this 3-tuple
+    format for the :py:attr:`~PIL.Image.Image.size` property if you set it
+    before calling :py:meth:`~PIL.Image.Image.load`; after loading, the size
+    will be reset to a 2-tuple containing pixel dimensions (so, e.g. if you
+    ask for ``(512, 512, 2)``, the final value of
+    :py:attr:`~PIL.Image.Image.size` will be ``(1024, 1024)``).
 
 IMT
 ^^^

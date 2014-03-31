@@ -172,6 +172,15 @@ Python Wheels
 
     $ pip install --use-wheel Pillow
 
+If the above does not work, it's likely because we haven't uploaded a
+wheel for the latest version of Pillow. In that case, try pinning it
+to a specific version:
+
+::
+
+    $ pip install --use-wheel Pillow==2.3.0
+
+
 Platform support
 ----------------
 
@@ -215,5 +224,7 @@ current versions of Linux, OS X, and Windows.
 | Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |                              |x86-64                 |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,3.4a3        | 2.2.0                        |x86,x86-64             |
++----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
+| Windows 8.1 Pro                  |Yes          | 2.6,2.7,3.2,3.3,3.4          | 2.3.0                        |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 
