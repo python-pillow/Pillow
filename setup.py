@@ -226,45 +226,50 @@ class pil_build_ext(build_ext):
             _add_directory(include_dirs, "/usr/X11/include")
 
         elif sys.platform.startswith("linux"):
-            for platform_ in (plat.architecture()[0], plat.processor()):
-
-                if not platform_:
-                    continue
-
-                if platform_ in ["x86_64", "64bit"]:
-                    _add_directory(library_dirs, "/lib64")
-                    _add_directory(library_dirs, "/usr/lib64")
-                    _add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
-                    break
-                elif platform_ in ["i386", "i686", "32bit"]:
-                    _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
-                    break
-                elif platform_ in ["aarch64"]:
-                    _add_directory(library_dirs, "/usr/lib64")
-                    _add_directory(library_dirs, "/usr/lib/aarch64-linux-gnu")
-                    break
-                elif platform_ in ["arm", "armv7l"]:
-                    _add_directory(library_dirs, "/usr/lib/arm-linux-gnueabi")
-                    break
-                elif platform_ in ["ppc64"]:
-                    _add_directory(library_dirs, "/usr/lib64")
-                    _add_directory(library_dirs, "/usr/lib/ppc64-linux-gnu")
-                    _add_directory(library_dirs, "/usr/lib/powerpc64-linux-gnu")
-                    break
-                elif platform_ in ["ppc"]:
-                    _add_directory(library_dirs, "/usr/lib/ppc-linux-gnu")
-                    _add_directory(library_dirs, "/usr/lib/powerpc-linux-gnu")
-                    break
-                elif platform_ in ["s390x"]:
-                    _add_directory(library_dirs, "/usr/lib64")
-                    _add_directory(library_dirs, "/usr/lib/s390x-linux-gnu")
-                    break
-                elif platform_ in ["s390"]:
-                    _add_directory(library_dirs, "/usr/lib/s390-linux-gnu")
-                    break
+            arch_tp = (plat.processor(), plat.architecture()[0])
+            if arch_tp == ("x86_64","32bit"):
+                # 32 bit build on 64 bit machine. 
+                _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
             else:
-                raise ValueError(
-                    "Unable to identify Linux platform: `%s`" % platform_)
+                for platform_ in arch_tp:
+
+                    if not platform_:
+                        continue
+
+                    if platform_ in ["x86_64", "64bit"]:
+                        _add_directory(library_dirs, "/lib64")
+                        _add_directory(library_dirs, "/usr/lib64")
+                        _add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
+                        break
+                    elif platform_ in ["i386", "i686", "32bit"]:
+                        _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
+                        break
+                    elif platform_ in ["aarch64"]:
+                        _add_directory(library_dirs, "/usr/lib64")
+                        _add_directory(library_dirs, "/usr/lib/aarch64-linux-gnu")
+                        break
+                    elif platform_ in ["arm", "armv7l"]:
+                        _add_directory(library_dirs, "/usr/lib/arm-linux-gnueabi")
+                        break
+                    elif platform_ in ["ppc64"]:
+                        _add_directory(library_dirs, "/usr/lib64")
+                        _add_directory(library_dirs, "/usr/lib/ppc64-linux-gnu")
+                        _add_directory(library_dirs, "/usr/lib/powerpc64-linux-gnu")
+                        break
+                    elif platform_ in ["ppc"]:
+                        _add_directory(library_dirs, "/usr/lib/ppc-linux-gnu")
+                        _add_directory(library_dirs, "/usr/lib/powerpc-linux-gnu")
+                        break
+                    elif platform_ in ["s390x"]:
+                        _add_directory(library_dirs, "/usr/lib64")
+                        _add_directory(library_dirs, "/usr/lib/s390x-linux-gnu")
+                        break
+                    elif platform_ in ["s390"]:
+                        _add_directory(library_dirs, "/usr/lib/s390-linux-gnu")
+                        break
+                else:
+                    raise ValueError(
+                        "Unable to identify Linux platform: `%s`" % platform_)
 
             # XXX Kludge. Above /\ we brute force support multiarch. Here we
             # try Barry's more general approach. Afterward, something should
