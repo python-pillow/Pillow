@@ -70,6 +70,10 @@ Many of Pillow's features require external libraries:
 
 * **tcl/tk** provides support for tkinter bitmap and photo images. 
 
+* **openjpeg** provides JPEG 2000 functionality. 
+
+  * Pillow 2.4 requires openjpeg 2.0.0.
+
 If the prerequisites are installed in the standard library locations for your
 machine (e.g. :file:`/usr` or :file:`/usr/local`), no additional configuration
 should be required. If they are installed in a non-standard location, you may
