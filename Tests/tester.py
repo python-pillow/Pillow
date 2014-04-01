@@ -121,9 +121,9 @@ def assert_no_exception(func):
 def assert_warning(warn_class, func):
     # note: this assert calls func three times!
     import warnings
-    def warn_error(message, category, **options):
+    def warn_error(message, category=UserWarning, **options):
         raise category(message)
-    def warn_ignore(message, category, **options):
+    def warn_ignore(message, category=UserWarning, **options):
         pass
     warn = warnings.warn
     result = None

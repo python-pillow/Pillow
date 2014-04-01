@@ -20,3 +20,8 @@ def test_octree_quantize():
     assert_image(im, "P", im.size)
 
     assert len(im.getcolors()) == 100
+
+def test_rgba_quantize():
+    im = lena('RGBA')
+    assert_no_exception(lambda: im.quantize())
+    assert_exception(Exception, lambda: im.quantize(method=0))
