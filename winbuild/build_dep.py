@@ -3,6 +3,8 @@ from unzip import unzip
 from untar import untar
 import os, hashlib
 
+SF_MIRROR = 'http://hivelocity.dl.sourceforge.net'
+SF_MIRROR = 'http://iweb.dl.sourceforge.net'
 
 libs = { 'zlib':{
     'url':'http://zlib.net/zlib128.zip',
@@ -25,17 +27,17 @@ libs = { 'zlib':{
     'dir': 'freetype-2.5.3',
     },
          'lcms':{
-    'url':'http://hivelocity.dl.sourceforge.net/project/lcms/lcms/2.6/lcms2-2.6.zip',
+    'url':SF_MIRROR+'/project/lcms/lcms/2.6/lcms2-2.6.zip',
     'hash': 'sha1:eea25f001246fa2e6b242ac456cecff7483cf061',
     'dir': 'lcms2-2.6',
    },
          'tcl':{
-    'url':'http://hivelocity.dl.sourceforge.net/project/tcl/Tcl/8.5.13/tcl8513-src.zip',
+    'url':SF_MIRROR+'/project/tcl/Tcl/8.5.13/tcl8513-src.zip',
     'hash': 'sha1:3e01585c91293c532a3cd594ec59deca92153a5e',
     'dir': '',
    },
          'tk':{
-    'url':'http://hivelocity.dl.sourceforge.net/project/tcl/Tcl/8.5.13/tk8513-src.zip',
+    'url':SF_MIRROR+'/project/tcl/Tcl/8.5.13/tk8513-src.zip',
     'hash': 'sha1:23a1d7ddd416e11e06dfdb9f86111d4bab9420b4',
     'dir': '',
     },
@@ -211,9 +213,9 @@ setlocal
 py -3 %%~dp0\fixproj.py %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln %(platform)s
 py -3 %%~dp0\fixproj.py %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.vcproj %(platform)s
 rd /S /Q %%FREETYPE%%\objs
-%%MSBUILD%% %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=%(platform)s
-xcopy /E /Q %%FREETYPE%%\include %%INCLIB%%
-xcopy /E /Q %%FREETYPE%%\objs\win32\vc%(vc_version)s %%INCLIB%%
+%%MSBUILD%% %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=%(platform)s /m 
+xcopy /Y /E /Q %%FREETYPE%%\include %%INCLIB%%
+xcopy /Y /E /Q %%FREETYPE%%\objs\win32\vc%(vc_version)s %%INCLIB%%
 copy /Y /B %%FREETYPE%%\objs\win32\vc%(vc_version)s\*.lib %%INCLIB%%\freetype.lib
 endlocal
 
@@ -222,9 +224,9 @@ setlocal
 py -3 %%~dp0\fixproj.py %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln %(platform)s
 py -3 %%~dp0\fixproj.py %%LCMS%%\Projects\VC%(vc_version)s\lcms2.vcproj %(platform)s
 rd /S /Q %%LCMS%%\objs
-%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=%(platform)s
-xcopy /E /Q %%LCMS%%\include %%INCLIB%%
-xcopy /E /Q %%LCMS%%\objs\win32\VC%(vc_version)s %%INCLIB%%
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=%(platform)s /m
+xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
+xcopy /Y /E /Q %%LCMS%%\objs\win32\VC%(vc_version)s %%INCLIB%%
 copy /Y /B %%LCMS%%\objs\win32\VC%(vc_version)s\*.lib %%INCLIB%%\lcms2.lib
 endlocal
 """ % compiler
@@ -235,9 +237,14 @@ fetch_libs()
 script = [header(), cp_tk()]
 
 for compiler in compilers:
+#if True:
+ #   compiler = compilers[0]
     script.append(setup_compiler(compiler))
-    script.append(nmake_libs(compiler))
+    #script.append(nmake_libs(compiler))
     script.append(msbuild_libs(compiler))
     script.append(end_compiler())
-    
-print ("\n".join(script))
+
+with open('build_deps.cmd', 'w') as f:    
+    f.write("\n".join(script))
+
+
