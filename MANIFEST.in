@@ -10,6 +10,7 @@ recursive-include Images *.bdf
 recursive-include Images *.fli
 recursive-include Images *.gif
 recursive-include Images *.ico
+recursive-include Images *.icns
 recursive-include Images *.jpg
 recursive-include Images *.pbm
 recursive-include Images *.pil
@@ -34,13 +35,16 @@ recursive-include Tests *.gif
 recursive-include Tests *.gnuplot
 recursive-include Tests *.html
 recursive-include Tests *.icm
+recursive-include Tests *.icns
 recursive-include Tests *.ico
 recursive-include Tests *.jpg
+recursive-include Tests *.jp2
 recursive-include Tests *.pcf
 recursive-include Tests *.pcx
 recursive-include Tests *.png
 recursive-include Tests *.ppm
 recursive-include Tests *.py
+recursive-include depends *.sh
 recursive-include Tests *.tif
 recursive-include Tests *.tiff
 recursive-include Tests *.ttf

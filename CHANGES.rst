@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.4.0 (unreleased)
+2.4.0 (04/01/2014)
 ------------------
 
 - Indexed Transparency handled for conversions between L, RGB, and P modes. Fixes #510
