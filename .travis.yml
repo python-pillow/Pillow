@@ -4,8 +4,8 @@ language: python
 virtualenv:
   system_site_packages: true
 
-# notifications:
-  # irc: "chat.freenode.net#pil"
+notifications:
+  irc: "chat.freenode.net#pil"
 
 python:
   - 2.6
