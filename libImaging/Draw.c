@@ -414,62 +414,71 @@ x_cmp(const void *x0, const void *x1)
 }
 
 
+/*
+ * Filled polygon draw function using scan line algorithm.
+ */
 static inline int
 polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
-        hline_handler handler)
+        hline_handler hline)
 {
-    int i, j;
-    float *xx;
-    int ymin, ymax;
-    float y;
-
-    if (n <= 0)
+    if (n <= 0) {
         return 0;
-
-    /* Find upper and lower polygon boundary (within image) */
-
-    ymin = e[0].ymin;
-    ymax = e[0].ymax;
-    for (i = 1; i < n; i++) {
-        if (e[i].ymin < ymin) ymin = e[i].ymin;
-        if (e[i].ymax > ymax) ymax = e[i].ymax;
     }
 
-    if (ymin < 0)
-        ymin = 0;
-    if (ymax >= im->ysize)
-        ymax = im->ysize-1;
-
-    /* Process polygon edges */
-
-    xx = malloc(n * sizeof(float));
-    if (!xx)
+    /* Initialize the edge table and find polygon boundaries */
+    Edge** edge_table = malloc(sizeof(Edge*) * n);
+    if (!edge_table) {
         return -1;
+    }
+    int edge_count = 0;
+    int ymin = im->ysize - 1;
+    int ymax = 0;
+    int i;
+    for (i = 0; i < n; i++) {
+        /* This causes that the pixels of horizontal edges are drawn twice :(
+         * but without it there are inconsistencies in ellipses */
+        if (e[i].ymin == e[i].ymax) {
+            (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink);
+            continue;
+        }
+        if (ymin > e[i].ymin) {
+            ymin = e[i].ymin;
+        }
+        if (ymax < e[i].ymax) {
+            ymax = e[i].ymax;
+        }
+        edge_table[edge_count++] = (e + i);
+    }
+    if (ymin < 0) {
+        ymin = 0;
+    }
+    if (ymax >= im->ysize) {
+        ymax = im->ysize - 1;
+    }
 
-    for (;ymin <= ymax; ymin++) {
-        y = ymin+0.5F;
-        for (i = j = 0; i < n; i++) {
-            if (y >= e[i].ymin && y <= e[i].ymax) {
-                if (e[i].d == 0)
-                    (*handler)(im, e[i].xmin, ymin, e[i].xmax, ink);
-                else
-                    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
+    /* Process the edge table with a scan line searching for intersections */
+    float* xx = malloc(sizeof(float) * edge_count * 2);
+    for (; ymin <= ymax; ymin++) {
+        int j = 0;
+        for (i = 0; i < edge_count; i++) {
+            Edge* current = edge_table[i];
+            if (ymin >= current->ymin && ymin <= current->ymax) {
+                xx[j++] = (ymin - current->y0) * current->dx + current->x0;
+            }
+            /* Needed to draw consistent polygons */
+            if (ymin == current->ymax && ymin < ymax) {
+                xx[j] = xx[j - 1];
+                j++;
             }
         }
-        if (j == 2) {
-            if (xx[0] < xx[1])
-                (*handler)(im, CEIL(xx[0]-0.5), ymin, FLOOR(xx[1]+0.5), ink);
-            else
-                (*handler)(im, CEIL(xx[1]-0.5), ymin, FLOOR(xx[0]+0.5), ink);
-        } else {
-            qsort(xx, j, sizeof(float), x_cmp);
-            for (i = 0; i < j-1 ; i += 2)
-                (*handler)(im, CEIL(xx[i]-0.5), ymin, FLOOR(xx[i+1]+0.5), ink);
+        qsort(xx, j, sizeof(float), x_cmp);
+        for (i = 1; i < j; i += 2) {
+            (*hline)(im, ROUND_UP(xx[i - 1]), ymin, ROUND_DOWN(xx[i]), ink);
         }
     }
 
     free(xx);
-
+    free(edge_table);
     return 0;
 }
 
