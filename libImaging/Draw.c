@@ -588,11 +588,6 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
     DRAW* draw;
     INT32 ink;
 
-    Edge e[4];
-
-    int dx, dy;
-    double d;
-
     DRAWINIT();
 
     if (width <= 1) {
@@ -600,23 +595,34 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
         return 0;
     }
 
-    dx = x1-x0;
-    dy = y1-y0;
-
+    int dx = x1-x0;
+    int dy = y1-y0;
     if (dx == 0 && dy == 0) {
         draw->point(im, x0, y0, ink);
         return 0;
     }
 
-    d = width / sqrt((float) (dx*dx + dy*dy)) / 2.0;
+    double big_hypotenuse = sqrt((double) (dx*dx + dy*dy));
+    double small_hypotenuse = (width - 1) / 2.0;
+    double ratio_max = ROUND_UP(small_hypotenuse) / big_hypotenuse;
+    double ratio_min = ROUND_DOWN(small_hypotenuse) / big_hypotenuse;
 
-    dx = (int) floor(d * (y1-y0) + 0.5);
-    dy = (int) floor(d * (x1-x0) + 0.5);
+    int dxmin = ROUND_DOWN(ratio_min * dy);
+    int dxmax = ROUND_DOWN(ratio_max * dy);
+    int dymin = ROUND_DOWN(ratio_min * dx);
+    int dymax = ROUND_DOWN(ratio_max * dx);
+    int vertices[4][2] = {
+        {x0 - dxmin, y0 + dymax},
+        {x1 - dxmin, y1 + dymax},
+        {x1 + dxmax, y1 - dymin},
+        {x0 + dxmax, y0 - dymin}
+    };
 
-    add_edge(e+0, x0 - dx,  y0 + dy, x1 - dx,  y1 + dy);
-    add_edge(e+1, x1 - dx,  y1 + dy, x1 + dx,  y1 - dy);
-    add_edge(e+2, x1 + dx,  y1 - dy, x0 + dx,  y0 - dy);
-    add_edge(e+3, x0 + dx,  y0 - dy, x0 - dx,  y0 + dy);
+    Edge e[4];
+    add_edge(e+0, vertices[0][0], vertices[0][1], vertices[1][0], vertices[1][1]);
+    add_edge(e+1, vertices[1][0], vertices[1][1], vertices[2][0], vertices[2][1]);
+    add_edge(e+2, vertices[2][0], vertices[2][1], vertices[3][0], vertices[3][1]);
+    add_edge(e+3, vertices[3][0], vertices[3][1], vertices[0][0], vertices[0][1]);
 
     draw->polygon(im, 4, e, ink, 0);
 
