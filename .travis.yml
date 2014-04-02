@@ -29,8 +29,8 @@ script:
   - coverage erase
   - python setup.py clean
   - python setup.py build_ext --inplace
-  - coverage run --append --source=PIL selftest.py
-  - coverage run --append --source=PIL Tests/run.py
+  - coverage run --append --include=PIL/* selftest.py
+  - coverage run --append --include=PIL/* Tests/run.py
 
 after_success:
   - coverage report
