@@ -29,10 +29,11 @@ script:
   - coverage erase
   - python setup.py clean
   - python setup.py build_ext --inplace
-  - coverage run --append selftest.py
-  - coverage run --append Tests/run.py
+  - coverage run --append --omit=/usr/* selftest.py
+  - coverage run --append --omit=/usr/* Tests/run.py
 
 after_success:
+  - coverage report
   - coveralls
 
 matrix:
