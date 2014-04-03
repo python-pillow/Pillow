@@ -50,7 +50,7 @@
         (MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
 
 /*
- * Rounds around zero (up=torwards zero, down=away from zero)
+ * Rounds around zero (up=away from zero, down=torwards zero)
  * This guarantees that ROUND_UP|DOWN(f) == -ROUND_UP|DOWN(-f)
  */
 #define ROUND_UP(f)    ((int) ((f) >= 0.0 ? floor((f) + 0.5F) : -floor(fabs(f) + 0.5F)))
