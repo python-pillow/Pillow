@@ -16,7 +16,7 @@ def isDirectory(f):
     return isPath(f) and os.path.isdir(f)
 
 class import_err(object):
-    def __init__(self, name=''):
-        self.name = name
+    def __init__(self, ex):
+        self.ex = ex
     def __getattr__(self, elt):
-        raise Exception("Import Error, %s not available" % self.name)
+        raise self.ex
