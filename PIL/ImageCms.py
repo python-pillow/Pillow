@@ -84,7 +84,13 @@ VERSION = "1.0.0 pil"
 # --------------------------------------------------------------------.
 
 from PIL import Image
-from PIL import _imagingcms
+try:
+    from PIL import _imagingcms
+except ImportError:
+    # Allow error import for doc purposes, but error out when accessing
+    # anything in core. 
+    from _util import import_err
+    _imagingcms = import_err('ImagingCMS')
 from PIL._util import isStringType
 
 core = _imagingcms
