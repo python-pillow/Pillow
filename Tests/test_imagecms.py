@@ -3,6 +3,7 @@ from tester import *
 from PIL import Image
 try:
     from PIL import ImageCms
+    ImageCms.core.profile_open
 except ImportError:
     skip()
 
