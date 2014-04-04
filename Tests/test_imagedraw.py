@@ -42,3 +42,24 @@ def create_base_image_draw(size, mode=DEFAULT_MODE, background1=WHITE, backgroun
                 img.putpixel((x, y), background2)
     return (img, ImageDraw.Draw(img))
 
+
+def test_square():
+    expected = Image.open(os.path.join(IMAGES_PATH, 'square.png'))
+    expected.load()
+    # Normal polygon
+    img, draw = create_base_image_draw((10, 10))
+    draw.polygon([(2, 2), (2, 7), (7, 7), (7, 2)], BLACK)
+    assert_image_equal(img, expected)
+    # Inverted polygon
+    img, draw = create_base_image_draw((10, 10))
+    draw.polygon([(7, 7), (7, 2), (2, 2), (2, 7)], BLACK)
+    assert_image_equal(img, expected)
+    # Normal rectangle
+    img, draw = create_base_image_draw((10, 10))
+    draw.rectangle((2, 2, 7, 7), BLACK)
+    assert_image_equal(img, expected)
+    # Inverted rectangle
+    img, draw = create_base_image_draw((10, 10))
+    draw.rectangle((7, 7, 2, 2), BLACK)
+    assert_image_equal(img, expected)
+
