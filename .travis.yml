@@ -35,6 +35,9 @@ script:
 after_success:
   - coverage report
   - coveralls
+  - pip install pep8 pyflakes
+  - pep8 PIL/*.py
+  - pyflakes PIL/*.py
 
 matrix:
   allow_failures:
