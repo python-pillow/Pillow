@@ -458,6 +458,9 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
 
     /* Process the edge table with a scan line searching for intersections */
     float* xx = malloc(sizeof(float) * edge_count * 2);
+    if (!xx) {
+        return -1;
+    }
     for (; ymin <= ymax; ymin++) {
         int j = 0;
         for (i = 0; i < edge_count; i++) {
