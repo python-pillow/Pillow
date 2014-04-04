@@ -95,3 +95,28 @@ def test_line_horizontal():
     img, draw = create_base_image_draw((20, 20))
     draw.line((14, 5, 5, 5), BLACK, 3)
     assert_image_equal(img, expected)
+
+
+def test_line_vertical():
+    # Normal 2px line
+    expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_w2px_normal.png'))
+    expected.load()
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 5, 14), BLACK, 2)
+    assert_image_equal(img, expected)
+    # Inverted 2px line
+    expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_w2px_inverted.png'))
+    expected.load()
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 14, 5, 5), BLACK, 2)
+    assert_image_equal(img, expected)
+    # Normal 3px line
+    expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_w3px.png'))
+    expected.load()
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 5, 14), BLACK, 3)
+    assert_image_equal(img, expected)
+    # Inverted 3px line
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 14, 5, 5), BLACK, 3)
+    assert_image_equal(img, expected)
