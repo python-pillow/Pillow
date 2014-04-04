@@ -14,11 +14,8 @@ def test_one(params):
         proc = subprocess.Popen(command, 
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE)
-        proc.stdin.close()
-        status = proc.wait()
-        print ("Waiting on read: %s, %s" % params)
-        trace = proc.stdout.read()
-        proc.stdout.close()
+        (trace, stderr) = proc.communicate()
+        status = proc.returncode
         print ("Done with %s, %s -- %s" % (python, architecture, status ))
         return (python, architecture, status, trace)
     except Exception as msg:
@@ -29,15 +26,14 @@ def test_one(params):
 if __name__=='__main__':
 
     os.chdir('..')
-    #pool = multiprocessing.Pool()
-    matrix = [(python, architecture)  for python in pythons
+    pool = multiprocessing.Pool()
+    matrix = [(python, architecture)  for python in pythons 
                                   for architecture in ('', 'x64')]
-    results = map(test_one, matrix)
+
+    results = pool.map(test_one, matrix)
 
     for (python, architecture, status, trace) in results:
         print ("%s%s: %s" % (python, architecture, status))
-
-
 
         
         
