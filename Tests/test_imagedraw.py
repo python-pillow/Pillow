@@ -63,3 +63,10 @@ def test_square():
     draw.rectangle((7, 7, 2, 2), BLACK)
     assert_image_equal(img, expected)
 
+
+def test_triangle_right():
+    expected = Image.open(os.path.join(IMAGES_PATH, 'triangle_right.png'))
+    expected.load()
+    img, draw = create_base_image_draw((20, 20))
+    draw.polygon([(3, 5), (17, 5), (10, 12)], BLACK)
+    assert_image_equal(img, expected)
