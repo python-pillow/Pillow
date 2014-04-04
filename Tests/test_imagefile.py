@@ -2,6 +2,7 @@ from tester import *
 
 from PIL import Image
 from PIL import ImageFile
+from PIL import EpsImagePlugin
 
 codecs = dir(Image.core)
 
@@ -46,8 +47,9 @@ def test_parser():
     assert_image_equal(*roundtrip("TGA"))
     assert_image_equal(*roundtrip("PCX"))
 
-    im1, im2 = roundtrip("EPS")
-    assert_image_similar(im1, im2.convert('L'),20) # EPS comes back in RGB      
+    if EpsImagePlugin.has_ghostscript():
+        im1, im2 = roundtrip("EPS")
+        assert_image_similar(im1, im2.convert('L'),20) # EPS comes back in RGB      
     
     if "jpeg_encoder" in codecs:
         im1, im2 = roundtrip("JPEG") # lossy compression
