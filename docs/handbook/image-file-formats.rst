@@ -156,6 +156,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 JPEG 2000
 ^^^^^^^^^
 
+.. versionadded:: 2.4.0
+
 PIL reads and writes JPEG 2000 files containing ``L``, ``LA``, ``RGB`` or
 ``RGBA`` data.  It can also read files containing ``YCbCr`` data, which it
 converts on read into ``RGB`` or ``RGBA`` depending on whether or not there is

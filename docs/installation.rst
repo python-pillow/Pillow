@@ -66,9 +66,14 @@ Many of Pillow's features require external libraries:
 * **libwebp** provides the Webp format.
 
   * Pillow has been tested with version **0.1.3**, which does not read
-    transparent webp files. Version **0.3.0** supports transparency.
+    transparent webp files. Versions **0.3.0** and **0.4.0** support
+    transparency. 
 
 * **tcl/tk** provides support for tkinter bitmap and photo images. 
+
+* **openjpeg** provides JPEG 2000 functionality. 
+
+  * Pillow has been tested with openjpeg **2.0.0**.
 
 If the prerequisites are installed in the standard library locations for your
 machine (e.g. :file:`/usr` or :file:`/usr/local`), no additional configuration
@@ -225,6 +230,6 @@ current versions of Linux, OS X, and Windows.
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,3.4a3        | 2.2.0                        |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
-| Windows 8.1 Pro                  |Yes          | 2.6,2.7,3.2,3.3,3.4          | 2.3.0                        |x86,x86-64             |
+| Windows 8.1 Pro                  |Yes          | 2.6,2.7,3.2,3.3,3.4          | 2.3.0, 2.4.0                 |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 

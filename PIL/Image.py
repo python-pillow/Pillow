@@ -735,21 +735,65 @@ class Image:
             im = self.im.convert_matrix(mode, matrix)
             return self._new(im)
 
+        if mode == "P" and self.mode == "RGBA":
+            return self.quantize(colors)
+
+        trns = None
+        delete_trns = False
+        # transparency handling
+        if "transparency" in self.info and self.info['transparency'] is not None:
+            if self.mode in ('L', 'RGB') and mode == 'RGBA':
+                # Use transparent conversion to promote from transparent
+                # color to an alpha channel.         
+                return self._new(self.im.convert_transparent(
+                                           mode, self.info['transparency']))
+            elif self.mode in ('L', 'RGB', 'P') and mode in ('L', 'RGB', 'P'):
+                t = self.info['transparency']
+                if isinstance(t, bytes):
+                    # Dragons. This can't be represented by a single color
+                    warnings.warn('Palette images with Transparency expressed '+
+                                  ' in bytes should be converted to RGBA images')
+                    delete_trns = True
+                else:
+                    # get the new transparency color.
+                    # use existing conversions
+                    trns_im = Image()._new(core.new(self.mode, (1,1)))
+                    if self.mode == 'P':
+                        trns_im.putpalette(self.palette)
+                    trns_im.putpixel((0,0), t)
+
+                    if mode in ('L','RGB'):
+                        trns_im = trns_im.convert(mode)
+                    else:
+                        # can't just retrieve the palette number, got to do it
+                        # after quantization. 
+                        trns_im = trns_im.convert('RGB')
+                    trns = trns_im.getpixel((0,0))
+                        
+                    
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
             new = self._new(im)
             from PIL import ImagePalette
             new.palette = ImagePalette.raw("RGB", new.im.getpalette("RGB"))
+            if delete_trns:
+                # This could possibly happen if we requantize to fewer colors.
+                # The transparency would be totally off in that case. 
+                del(new.info['transparency'])
+            if trns is not None:
+                try:
+                    new.info['transparency'] = new.palette.getcolor(trns)
+                except:
+                    # if we can't make a transparent color, don't leave the old
+                    # transparency hanging around to mess us up.
+                    del(new.info['transparency'])
+                    warnings.warn("Couldn't allocate palette entry for transparency")
             return new
 
         # colorspace conversion
         if dither is None:
             dither = FLOYDSTEINBERG
-
-        # Use transparent conversion to promote from transparent color to an alpha channel.
-        if self.mode in ("L", "RGB") and mode == "RGBA" and "transparency" in self.info:
-            return self._new(self.im.convert_transparent(mode, self.info['transparency']))
-            
+                
         try:
             im = self.im.convert(mode, dither)
         except ValueError:
@@ -760,9 +804,22 @@ class Image:
             except KeyError:
                 raise ValueError("illegal conversion")
 
-        return self._new(im)
+        new_im = self._new(im)
+        if delete_trns:
+            #crash fail if we leave a bytes transparency in an rgb/l mode.
+            del(new.info['transparency'])
+        if trns is not None:
+            if new_im.mode == 'P':
+                try:
+                    new_im.info['transparency'] = new_im.palette.getcolor(trns)
+                except:
+                    del(new_im.info['transparency'])
+                    warnings.warn("Couldn't allocate palette entry for transparency")
+            else:
+                new_im.info['transparency'] = trns
+        return new_im
 
-    def quantize(self, colors=256, method=0, kmeans=0, palette=None):
+    def quantize(self, colors=256, method=None, kmeans=0, palette=None):
 
         # methods:
         #    0 = median cut
@@ -773,7 +830,18 @@ class Image:
         # quantizer interface in a later version of PIL.
 
         self.load()
+        
+        if method is None:
+            # defaults:
+            method = 0
+            if self.mode == 'RGBA':
+                method = 2
 
+        if self.mode == 'RGBA' and method != 2:
+            # Caller specified an invalid mode. 
+            raise ValueError('Fast Octree (method == 2) is the ' +
+                             ' only valid method for quantizing RGBA images')
+        
         if palette:
             # use palette from reference image
             palette.load()
