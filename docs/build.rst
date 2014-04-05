@@ -7,7 +7,8 @@ Building Pillow on Windows
 This page will describe a build setup to build Pillow against the
 supported python versions in 32 and 64 bit modes, using freely
 availble Microsoft compilers.  This has been developed and tested
-against a bare Windows Server 2012 64bit RTM version on Amazon EC2.
+against 64bit Windows 7 Professional and a bare Windows Server 2012
+64bit RTM version on Amazon EC2.
 
 Prerequsites
 ------------
@@ -15,34 +16,35 @@ Prerequsites
 Extra Build Helpers
 ^^^^^^^^^^^^^^^^^^^
 
-* Google Chrome (optional - for sanity)
-* GPG (for checking signatures)  (UNDONE -- python signature checking)
 * Powershell (available by default on Windows Server)
 * Github client (provides git+bash shell)
+
+Optional:
+* GPG (for checking signatures)  (UNDONE -- python signature checking)
+
 
 Pythons
 ^^^^^^^
 
-Download and install Python 2.6, 2.7, 3.2, 3.3, and 3.4, both 32 and
-64 bit versions. There is a python script that will download the
-installers in `winbuild/get_pythons.py`. It requires python to run, so
-download and install one of them first. 
+The build routines expect Python to be installed at C:\PythonXX for 32
+bit versions or C:\PythonXXx64 for the 64 bit versions.
 
-::
+Download Python 3.4.0, install it, and add it to the path. This is the
+Python that we will use to bootstrap the build process. (The download
+routines are using 3.2+ features, and installing 3.4 gives us pip and
+virtualenv as well, reducing the number of packages that we need to
+install.) 
 
-   for version in ['2.6.5', '2.7.6', '3.2.5', '3.3.5', '3.4.0']:
-        for platform in ['', '.amd64']:
-            for extension in ['','.asc']:
-                fetch('https://www.python.org/ftp/python/%s/python-%s%s.msi%s' %(
-                    version, version, platform, extension))
+Download the rest of the pythons by opening a command window, changing
+to the `winbuild` directory, and running `python
+get_pythons.py`. 
 
-UNDONE -- gpg verify the signatures (note that we can download from https)
+UNDONE -- gpg verify the signatures (note that we can download from
+https)
 
-We also need virtualenv and setuptools in at least one of the pythons
-to build testing versions. 
+Run each installer and set the proper path to the installation. Don't
+set any of them as the default python, or add them to the path.
 
-Python 3.4 comes with pip. That makes it an ideal python to install
-first. 
 
 Compilers
 ^^^^^^^^^
@@ -63,26 +65,30 @@ compilers and other tools. UNDONE -- check exact wording.
 Dependencies
 ------------
 
-Run `winbuild/build_dep.cmd` in a command window. There are times when
-the output clears the terminal, so it's best to run it in the
-Powershell IDE, which has a more powerful terminal than the standard
-Powershell window. 
+The script 'build_dep.py' downloads and builds the dependencies.  Open
+a command window, change directory into `winbuild` and run `python
+build_dep.py`. 
 
 This will download libjpeg, libtiff, libz, and freetype. It will then
 compile 32 and 64 bit versions of the libraries, with both versions of
 the compilers. 
 
 UNDONE -- lcms fails. 
-UNDONE -- webp not included yet. 
+UNDONE -- webp, jpeg2k not recognized
 
-Testing Builds
+Building Pillow
+---------------
+
+Once the dependencies are built, run `python build.py --clean` to
+build and install Pillow in virtualenvs for each python
+build. `build.py --dist` will build windows installers instead of
+installing into virtualenvs. 
+ 
+UNDONE -- suppressed output, what about failures.
+
+Testing Pillow
 --------------
 
-Use the script UNDONE to build, install, selftest, and test Pillow in
-virtualenvs for each Python that is installed. 
+Build and install Pillow, then run `python test.py` from the
+`winbuild` directory.
 
-Installer Builds
-----------------
- 
-Run `winbuild/build.cmd` in a powershell terminal to build Pillow
-installers against each of the Pythons. 
