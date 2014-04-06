@@ -46,22 +46,18 @@ def create_base_image_draw(size, mode=DEFAULT_MODE, background1=WHITE, backgroun
 def test_square():
     expected = Image.open(os.path.join(IMAGES_PATH, 'square.png'))
     expected.load()
-    # Normal polygon
     img, draw = create_base_image_draw((10, 10))
     draw.polygon([(2, 2), (2, 7), (7, 7), (7, 2)], BLACK)
-    assert_image_equal(img, expected)
-    # Inverted polygon
+    assert_image_equal(img, expected, 'square as normal polygon failed')
     img, draw = create_base_image_draw((10, 10))
     draw.polygon([(7, 7), (7, 2), (2, 2), (2, 7)], BLACK)
-    assert_image_equal(img, expected)
-    # Normal rectangle
+    assert_image_equal(img, expected, 'square as inverted polygon failed')
     img, draw = create_base_image_draw((10, 10))
     draw.rectangle((2, 2, 7, 7), BLACK)
-    assert_image_equal(img, expected)
-    # Inverted rectangle
+    assert_image_equal(img, expected, 'square as normal rectangle failed')
     img, draw = create_base_image_draw((10, 10))
     draw.rectangle((7, 7, 2, 2), BLACK)
-    assert_image_equal(img, expected)
+    assert_image_equal(img, expected, 'square as inverted rectangle failed')
 
 
 def test_triangle_right():
@@ -69,54 +65,46 @@ def test_triangle_right():
     expected.load()
     img, draw = create_base_image_draw((20, 20))
     draw.polygon([(3, 5), (17, 5), (10, 12)], BLACK)
-    assert_image_equal(img, expected)
+    assert_image_equal(img, expected, 'triangle right failed')
 
 
 def test_line_horizontal():
-    # Normal 2px line
     expected = Image.open(os.path.join(IMAGES_PATH, 'line_horizontal_w2px_normal.png'))
     expected.load()
     img, draw = create_base_image_draw((20, 20))
     draw.line((5, 5, 14, 5), BLACK, 2)
-    assert_image_equal(img, expected)
-    # Inverted 2px line
+    assert_image_equal(img, expected, 'line straigth horizontal normal 2px wide failed')
     expected = Image.open(os.path.join(IMAGES_PATH, 'line_horizontal_w2px_inverted.png'))
     expected.load()
     img, draw = create_base_image_draw((20, 20))
     draw.line((14, 5, 5, 5), BLACK, 2)
-    assert_image_equal(img, expected)
-    # Normal 3px line
+    assert_image_equal(img, expected, 'line straigth horizontal inverted 2px wide failed')
     expected = Image.open(os.path.join(IMAGES_PATH, 'line_horizontal_w3px.png'))
     expected.load()
     img, draw = create_base_image_draw((20, 20))
     draw.line((5, 5, 14, 5), BLACK, 3)
-    assert_image_equal(img, expected)
-    # Inverted 3px line
+    assert_image_equal(img, expected, 'line straigth horizontal normal 3px wide failed')
     img, draw = create_base_image_draw((20, 20))
     draw.line((14, 5, 5, 5), BLACK, 3)
-    assert_image_equal(img, expected)
+    assert_image_equal(img, expected, 'line straigth horizontal inverted 3px wide failed')
 
 
 def test_line_vertical():
-    # Normal 2px line
     expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_w2px_normal.png'))
     expected.load()
     img, draw = create_base_image_draw((20, 20))
     draw.line((5, 5, 5, 14), BLACK, 2)
-    assert_image_equal(img, expected)
-    # Inverted 2px line
+    assert_image_equal(img, expected, 'line straigth vertical normal 2px wide failed')
     expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_w2px_inverted.png'))
     expected.load()
     img, draw = create_base_image_draw((20, 20))
     draw.line((5, 14, 5, 5), BLACK, 2)
-    assert_image_equal(img, expected)
-    # Normal 3px line
+    assert_image_equal(img, expected, 'line straigth vertical inverted 2px wide failed')
     expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_w3px.png'))
     expected.load()
     img, draw = create_base_image_draw((20, 20))
     draw.line((5, 5, 5, 14), BLACK, 3)
-    assert_image_equal(img, expected)
-    # Inverted 3px line
+    assert_image_equal(img, expected, 'line straigth vertical normal 3px wide failed')
     img, draw = create_base_image_draw((20, 20))
     draw.line((5, 14, 5, 5), BLACK, 3)
-    assert_image_equal(img, expected)
+    assert_image_equal(img, expected, 'line straigth vertical inverted 3px wide failed')
