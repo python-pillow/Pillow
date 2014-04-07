@@ -807,7 +807,7 @@ class Image:
         new_im = self._new(im)
         if delete_trns:
             #crash fail if we leave a bytes transparency in an rgb/l mode.
-            del(new.info['transparency'])
+            del(new_im.info['transparency'])
         if trns is not None:
             if new_im.mode == 'P':
                 try:
