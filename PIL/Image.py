@@ -505,8 +505,11 @@ class Image:
 
     def _dump(self, file=None, format=None):
         import tempfile, os
+        suffix = ''
+        if format:
+            suffix = '.'+format
         if not file:
-            f, file = tempfile.mkstemp(format or '')
+            f, file = tempfile.mkstemp(suffix)
             os.close(f)
             
         self.load()
