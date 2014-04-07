@@ -505,15 +505,18 @@ class Image:
 
     def _dump(self, file=None, format=None):
         import tempfile, os
+        suffix = ''
+        if format:
+            suffix = '.'+format
         if not file:
-            f, file = tempfile.mkstemp(format or '')
+            f, file = tempfile.mkstemp(suffix)
             os.close(f)
             
         self.load()
         if not format or format == "PPM":
             self.im.save_ppm(file)
         else:
-            if file.endswith(format):
+            if not file.endswith(format):
                 file = file + "." + format
             self.save(file, format)
         return file
