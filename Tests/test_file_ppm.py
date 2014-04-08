@@ -22,3 +22,15 @@ def test_16bit_pgm():
     tgt = Image.open('Tests/images/16_bit_binary_pgm.png')
     assert_image_equal(im, tgt)
 
+
+def test_16bit_pgm_write():
+    im = Image.open('Tests/images/16_bit_binary.pgm')
+    im.load()
+
+    f = tempfile('temp.pgm')
+    assert_no_exception(lambda: im.save(f, 'PPM'))
+
+    reloaded = Image.open(f)
+    assert_image_equal(im, reloaded)
+
+
