@@ -299,6 +299,12 @@ def ignore(pattern):
 def _setup():
     global _logfile
 
+    import sys
+    if "--coverage" in sys.argv:
+        import coverage
+        cov = coverage.coverage(auto_data=True, include="PIL/*")
+        cov.start()
+
     def report():
         if run:
             run()
@@ -320,12 +326,8 @@ def _setup():
                 pass
 
     import atexit
-    import sys
     atexit.register(report)
-    if "--coverage" in sys.argv:
-        import coverage
-        cov = coverage.coverage(auto_data=True, include="PIL/*")
-        cov .start()
+
     if "--log" in sys.argv:
         _logfile = open("test.log", "a")
 
