@@ -12,3 +12,13 @@ def test_sanity():
     assert_equal(im.mode, "RGB")
     assert_equal(im.size, (128, 128))
     assert_equal(im.format, "PPM")
+
+def test_16bit_pgm():
+    im = Image.open('Tests/images/16_bit_binary.pgm')
+    im.load()
+    assert_equal(im.mode, 'I')
+    assert_equal(im.size, (20,100))
+
+    tgt = Image.open('Tests/images/16_bit_binary_pgm.png')
+    assert_image_equal(im, tgt)
+
