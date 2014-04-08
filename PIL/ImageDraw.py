@@ -279,6 +279,10 @@ class ImageDraw:
             spacing=0, align="left"):
         widths, heights = [], []
         max_width = 0
+        # spacing in em (multiples of the width of a "m")
+        if spacing != 0:
+            m_width, m_height = self.textsize("m", font)
+            spacing = float(spacing) * m_width
         lines = text.split("\n")
         for line in lines:
             line_width, line_height = self.textsize(line, font)
