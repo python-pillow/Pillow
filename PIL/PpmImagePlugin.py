@@ -96,7 +96,18 @@ class PpmImageFile(ImageFile.ImageFile):
                 ysize = s
                 if mode == "1":
                     break
-
+            elif ix == 2:
+                # maxgrey
+                if s > 255:
+                    if not mode == 'L':
+                        raise ValueError("Too many colors for band: %s" %s)
+                    if s <= 2**16 - 1:
+                        self.mode = 'I'
+                        rawmode = 'I;16B'
+                    else:
+                        self.mode = 'I';
+                        rawmode = 'I;32B'
+                        
         self.size = xsize, ysize
         self.tile = [("raw",
                      (0, 0, xsize, ysize),
