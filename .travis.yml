@@ -30,7 +30,7 @@ script:
   - python setup.py clean
   - python setup.py build_ext --inplace
   - coverage run --append --include=PIL/* selftest.py
-  - coverage run --append --include=PIL/* Tests/run.py
+  - python Tests/run.py --coverage
 
 after_success:
   - coverage report
