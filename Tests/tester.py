@@ -289,7 +289,8 @@ def _setup():
     atexit.register(report)
     if "--coverage" in sys.argv:
         import coverage
-        coverage.start()
+        cov = coverage.coverage(auto_data=True, include="PIL/*")
+        cov .start()
     if "--log" in sys.argv:
         _logfile = open("test.log", "a")
 
