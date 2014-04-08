@@ -6,21 +6,20 @@ warnings.simplefilter('default')
 # temporarily turn off resource warnings that warn about unclosed
 # files in the test scripts.
 try:
-	warnings.filterwarnings("ignore", category=ResourceWarning)
+    warnings.filterwarnings("ignore", category=ResourceWarning)
 except NameError:
-	# we expect a NameError on py2.x, since it doesn't have ResourceWarnings.
-	pass
-
-
+    # we expect a NameError on py2.x, since it doesn't have ResourceWarnings.
+    pass
 
 import sys
-py3 = (sys.version_info >= (3,0))
+py3 = (sys.version_info >= (3, 0))
 
 # some test helpers
 
 _target = None
 _tempfiles = []
 _logfile = None
+
 
 def success():
     import sys
@@ -29,8 +28,10 @@ def success():
         print(sys.argv[0], success.count, failure.count, file=_logfile)
     return True
 
+
 def failure(msg=None, frame=None):
-    import sys, linecache
+    import sys
+    import linecache
     failure.count += 1
     if _target:
         if frame is None:
@@ -49,6 +50,7 @@ def failure(msg=None, frame=None):
 
 success.count = failure.count = 0
 
+
 # predicates
 
 def assert_true(v, msg=None):
@@ -57,11 +59,13 @@ def assert_true(v, msg=None):
     else:
         failure(msg or "got %r, expected true value" % v)
 
+
 def assert_false(v, msg=None):
     if v:
         failure(msg or "got %r, expected false value" % v)
     else:
         success()
+
 
 def assert_equal(a, b, msg=None):
     if a == b:
@@ -69,23 +73,25 @@ def assert_equal(a, b, msg=None):
     else:
         failure(msg or "got %r, expected %r" % (a, b))
 
+
 def assert_almost_equal(a, b, msg=None, eps=1e-6):
     if abs(a-b) < eps:
         success()
     else:
         failure(msg or "got %r, expected %r" % (a, b))
 
+
 def assert_deep_equal(a, b, msg=None):
     try:
         if len(a) == len(b):
-            if all([x==y for x,y in zip(a,b)]):
+            if all([x == y for x, y in zip(a, b)]):
                 success()
             else:
-                failure(msg or "got %s, expected %s" % (a,b))
+                failure(msg or "got %s, expected %s" % (a, b))
         else:
             failure(msg or "got length %s, expected %s" % (len(a), len(b)))
     except:
-        assert_equal(a,b,msg)
+        assert_equal(a, b, msg)
 
 
 def assert_match(v, pattern, msg=None):
@@ -95,8 +101,10 @@ def assert_match(v, pattern, msg=None):
     else:
         failure(msg or "got %r, doesn't match pattern %r" % (v, pattern))
 
+
 def assert_exception(exc_class, func):
-    import sys, traceback
+    import sys
+    import traceback
     try:
         func()
     except exc_class:
@@ -108,8 +116,10 @@ def assert_exception(exc_class, func):
     else:
         failure("expected %r exception, got no exception" % exc_class.__name__)
 
+
 def assert_no_exception(func):
-    import sys, traceback
+    import sys
+    import traceback
     try:
         func()
     except:
@@ -118,11 +128,14 @@ def assert_no_exception(func):
     else:
         success()
 
+
 def assert_warning(warn_class, func):
     # note: this assert calls func three times!
     import warnings
+
     def warn_error(message, category=UserWarning, **options):
         raise category(message)
+
     def warn_ignore(message, category=UserWarning, **options):
         pass
     warn = warnings.warn
@@ -134,21 +147,24 @@ def assert_warning(warn_class, func):
         warnings.warn = warn_error
         assert_exception(warn_class, func)
     finally:
-        warnings.warn = warn # restore
+        warnings.warn = warn  # restore
     return result
 
 # helpers
 
 from io import BytesIO
 
+
 def fromstring(data):
     from PIL import Image
     return Image.open(BytesIO(data))
+
 
 def tostring(im, format, **options):
     out = BytesIO()
     im.save(out, format, **options)
     return out.getvalue()
+
 
 def lena(mode="RGB", cache={}):
     from PIL import Image
@@ -165,6 +181,7 @@ def lena(mode="RGB", cache={}):
     cache[mode] = im
     return im
 
+
 def assert_image(im, mode, size, msg=None):
     if mode is not None and im.mode != mode:
         failure(msg or "got mode %r, expected %r" % (im.mode, mode))
@@ -172,6 +189,7 @@ def assert_image(im, mode, size, msg=None):
         failure(msg or "got size %r, expected %r" % (im.size, size))
     else:
         success()
+
 
 def assert_image_equal(a, b, msg=None):
     if a.mode != b.mode:
@@ -184,6 +202,7 @@ def assert_image_equal(a, b, msg=None):
     else:
         success()
 
+
 def assert_image_similar(a, b, epsilon, msg=None):
     epsilon = float(epsilon)
     if a.mode != b.mode:
@@ -193,19 +212,25 @@ def assert_image_similar(a, b, epsilon, msg=None):
     diff = 0
     try:
         ord(b'0')
-        for abyte,bbyte in zip(a.tobytes(),b.tobytes()):
+        for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
             diff += abs(ord(abyte)-ord(bbyte))
     except:
-        for abyte,bbyte in zip(a.tobytes(),b.tobytes()):
+        for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
             diff += abs(abyte-bbyte)
     ave_diff = float(diff)/(a.size[0]*a.size[1])
     if epsilon < ave_diff:
-        return failure(msg or "average pixel value difference %.4f > epsilon %.4f" %(ave_diff, epsilon))
+        return failure(
+            msg or "average pixel value difference %.4f > epsilon %.4f" % (
+                ave_diff, epsilon))
     else:
         return success()
 
+
 def tempfile(template, *extra):
-    import os, os.path, sys, tempfile
+    import os
+    import os.path
+    import sys
+    import tempfile
     files = []
     root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
     try:
@@ -222,18 +247,20 @@ def tempfile(template, *extra):
     _tempfiles.extend(files)
     return files[0]
 
+
 # test runner
 
 def run():
     global _target, _tests, run
-    import sys, traceback
+    import sys
+    import traceback
     _target = sys.modules["__main__"]
-    run = None # no need to run twice
+    run = None  # no need to run twice
     tests = []
     for name, value in list(vars(_target).items()):
         if name[:5] == "test_" and type(value) is type(success):
             tests.append((value.__code__.co_firstlineno, name, value))
-    tests.sort() # sort by line
+    tests.sort()  # sort by line
     for lineno, name, func in tests:
         try:
             _tests = []
@@ -251,41 +278,49 @@ def run():
                     sys.argv[0], lineno, v))
                 failure.count += 1
 
+
 def yield_test(function, *args):
     # collect delayed/generated tests
     _tests.append((function, args))
 
+
 def skip(msg=None):
     import os
     print("skip")
-    os._exit(0) # don't run exit handlers
+    os._exit(0)  # don't run exit handlers
+
 
 def ignore(pattern):
     """Tells the driver to ignore messages matching the pattern, for the
     duration of the current test."""
     print('ignore: %s' % pattern)
 
+
 def _setup():
     global _logfile
+
     def report():
         if run:
             run()
         if success.count and not failure.count:
             print("ok")
             # only clean out tempfiles if test passed
-            import os, os.path, tempfile
+            import os
+            import os.path
+            import tempfile
             for file in _tempfiles:
                 try:
                     os.remove(file)
                 except OSError:
-                    pass # report?
+                    pass  # report?
             temp_root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
             try:
                 os.rmdir(temp_root)
             except OSError:
                 pass
 
-    import atexit, sys
+    import atexit
+    import sys
     atexit.register(report)
     if "--coverage" in sys.argv:
         import coverage
