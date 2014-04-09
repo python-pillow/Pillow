@@ -92,7 +92,7 @@ except ImportError:
 
 from PIL import ImageMode
 from PIL._binary import i8, o8
-from PIL._util import isPath, isStringType
+from PIL._util import isPath, isStringType, deferred_error
 
 import os, sys
 
@@ -513,7 +513,10 @@ class Image:
             if Image.DEBUG:
                 print ("Error closing: %s" %msg)
 
-        self.im = None
+        # Instead of simply setting to None, we're setting up a
+        # deferred error that will better explain that the core image
+        # object is gone.
+        self.im = deferred_error(ValueError("Operation on closed image"))
         
 
     def _copy(self):
