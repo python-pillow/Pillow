@@ -1,4 +1,4 @@
-Pillow 
+Pillow
 ======
 
 Pillow is the 'friendly' PIL fork by Alex Clark and Contributors. PIL is the
@@ -6,7 +6,7 @@ Python Imaging Library by Fredrik Lundh and Contributors.
 
 .. image:: https://travis-ci.org/python-imaging/Pillow.svg?branch=master
    :target: https://travis-ci.org/python-imaging/Pillow
-   :alt: GitHub build status
+   :alt: Travis CI build status
 
 .. image:: https://pypip.in/v/Pillow/badge.png
     :target: https://pypi.python.org/pypi/Pillow/
@@ -53,7 +53,7 @@ Pillow is a volunteer effort led by Alex Clark. If you can't help with
 development please consider helping us financially. Your assistance would
 be very much appreciated!
 
-.. note:: Contributors please add your name and donation preference here. 
+.. note:: Contributors please add your name and donation preference here.
 
 ======================================= =======================================
 **Developer**                           **Preference**
