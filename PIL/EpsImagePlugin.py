@@ -50,6 +50,21 @@ if sys.platform.startswith('win'):
     else:
         gs_windows_binary = False
 
+def has_ghostscript():
+    if gs_windows_binary:
+        return True
+    if not sys.platform.startswith('win'):
+        import subprocess
+        try:
+            gs = subprocess.Popen(['gs','--version'], stdout=subprocess.PIPE)
+            gs.stdout.read()
+            return True
+        except OSError:
+            # no ghostscript
+            pass
+    return False
+   
+
 def Ghostscript(tile, size, fp, scale=1):
     """Render an image using Ghostscript"""
 
@@ -67,8 +82,10 @@ def Ghostscript(tile, size, fp, scale=1):
 
     import tempfile, os, subprocess
 
-    outfile = tempfile.mktemp()
-    infile = tempfile.mktemp()
+    out_fd, outfile = tempfile.mkstemp()
+    os.close(out_fd)
+    in_fd, infile = tempfile.mkstemp()
+    os.close(in_fd)
 
     with open(infile, 'wb') as f:
         fp.seek(offset)

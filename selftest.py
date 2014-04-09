@@ -192,6 +192,7 @@ if __name__ == "__main__":
     check_module("PIL CORE", "PIL._imaging")
     check_module("TKINTER", "PIL._imagingtk")
     check_codec("JPEG", "jpeg")
+    check_codec("JPEG 2000", "jpeg2k")
     check_codec("ZLIB (PNG/ZIP)", "zip")
     check_codec("LIBTIFF", "libtiff")
     check_module("FREETYPE2", "PIL._imagingft")

@@ -2,7 +2,7 @@ from __future__ import print_function
 
 # minimal test runner
 
-import glob, os, os.path, sys, tempfile
+import glob, os, os.path, sys, tempfile, re
 from multiprocessing import Pool
 
 try:
@@ -19,15 +19,41 @@ python_options = []
 tester_options = []
 include = [x for x in sys.argv[1:] if x[:2] != "--"]
 
+ignore_re = re.compile('^ignore: (.*)$', re.MULTILINE)
+
 def test_one(f):
     test, ext = os.path.splitext(os.path.basename(f))
+
     print("running", test, "...")
     # 2>&1 works on unix and on modern windowses.  we might care about
     # very old Python versions, but not ancient microsoft products :-)
     out = os.popen("%s %s -u %s %s 2>&1" % (
         sys.executable, python_options, f, tester_options
             ))
-    result = out.read().strip()
+
+    result = out.read()
+
+    # Extract any ignore patterns
+    ignore_pats = ignore_re.findall(result)
+    result = ignore_re.sub('', result)
+
+    try:
+        def fix_re(p):
+            if not p.startswith('^'):
+                p = '^' + p
+            if not p.endswith('$'):
+                p = p + '$'
+            return p
+        
+        ignore_res = [re.compile(fix_re(p), re.MULTILINE) for p in ignore_pats]
+    except:
+        print('(bad ignore patterns %r)' % ignore_pats)
+        ignore_res = []
+
+    for r in ignore_res:
+        result = r.sub('', result)
+
+    result = result.strip()    
     status = out.close()
 
     return (result, status)

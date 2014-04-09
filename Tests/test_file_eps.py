@@ -4,18 +4,8 @@ from PIL import Image, EpsImagePlugin
 import sys
 import io
 
-if not EpsImagePlugin.gs_windows_binary:
-    # already checked. Not there.
+if not EpsImagePlugin.has_ghostscript():
     skip()
-
-if not sys.platform.startswith('win'):
-    import subprocess
-    try:
-        gs = subprocess.Popen(['gs','--version'], stdout=subprocess.PIPE)
-        gs.stdout.read()
-    except OSError:
-        # no ghostscript
-        skip()
 
 #Our two EPS test files (they are identical except for their bounding boxes)
 file1 = "Tests/images/zero_bb.eps"

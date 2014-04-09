@@ -2,29 +2,30 @@ from tester import *
 
 from PIL import Image
 
+
+def _roundtrip(im):
+    f = tempfile("temp.pcx")
+    im.save(f)
+    im2 = Image.open(f)
+
+    assert_equal(im2.mode, im.mode)
+    assert_equal(im2.size, im.size)
+    assert_equal(im2.format, "PCX")
+    assert_image_equal(im2, im)
+    
 def test_sanity():
+    for mode in ('1', 'L', 'P', 'RGB'):
+        _roundtrip(lena(mode))
 
-    file = tempfile("temp.pcx")
-
-    lena("1").save(file)
-
-    im = Image.open(file)
-    im.load()
-    assert_equal(im.mode, "1")
-    assert_equal(im.size, (128, 128))
-    assert_equal(im.format, "PCX")
-
-    lena("1").save(file)
-    im = Image.open(file)
-
-    lena("L").save(file)
-    im = Image.open(file)
-
-    lena("P").save(file)
-    im = Image.open(file)
-
-    lena("RGB").save(file)
-    im = Image.open(file)
+def test_odd():
+    # see issue #523, odd sized images should have a stride that's even.
+    # not that imagemagick or gimp write pcx that way. 
+    # we were not handling properly. 
+    for mode in ('1', 'L', 'P', 'RGB'):
+        # larger, odd sized images are better here to ensure that
+        # we handle interrupted scan lines properly.
+        _roundtrip(lena(mode).resize((511,511)))
+        
 
 def test_pil184():
     # Check reading of files where xmin/xmax is not zero.
