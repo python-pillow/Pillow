@@ -241,7 +241,7 @@ def tempfile(template, *extra):
         assert temp[:5] in ("temp.", "temp_")
         name = os.path.basename(sys.argv[0])
         name = temp[:4] + os.path.splitext(name)[0][4:]
-        name = name + "_%d" % len(_tempfiles) + temp[4:]
+        name = name + "_%d_%d" % (os.getpid(), len(_tempfiles)) + temp[4:]
         name = os.path.join(root, name)
         files.append(name)
     _tempfiles.extend(files)
