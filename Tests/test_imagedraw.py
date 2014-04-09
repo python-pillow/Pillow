@@ -92,6 +92,11 @@ def test_line_horizontal():
     img, draw = create_base_image_draw((200, 110))
     draw.line((5, 55, 195, 55), BLACK, 101)
     assert_image_equal(img, expected, 'line straigth horizontal 101px wide failed')
+    expected = Image.open(os.path.join(IMAGES_PATH, 'line_horizontal_slope1px_w2px.png'))
+    expected.load()
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 14, 6), BLACK, 2)
+    assert_image_equal(img, expected, 'line horizontal 1px slope 2px wide failed')
 
 
 def test_line_vertical():
@@ -118,6 +123,11 @@ def test_line_vertical():
     img, draw = create_base_image_draw((110, 200))
     draw.line((55, 5, 55, 195), BLACK, 101)
     assert_image_equal(img, expected, 'line straigth vertical 101px wide failed')
+    expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_slope1px_w2px.png'))
+    expected.load()
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 6, 14), BLACK, 2)
+    assert_image_equal(img, expected, 'line vertical 1px slope 2px wide failed')
 
 
 def test_line_oblique_45():
