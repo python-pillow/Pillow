@@ -146,7 +146,7 @@ def _save(im, fp, filename):
     if head == b"P6":
         fp.write(b"255\n")
     if head == b"P5":
-        if rawmode == "I":
+        if rawmode == "L":
             fp.write(b"255\n")
         elif rawmode == "I;16B":
             fp.write(b"65535\n")
