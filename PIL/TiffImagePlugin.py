@@ -693,10 +693,11 @@ class TiffImageFile(ImageFile.ImageFile):
         if not len(self.tile) == 1:
             raise IOError("Not exactly one tile")
 
-        d, e, o, a = self.tile[0]
-        d = Image._getdecoder(self.mode, 'libtiff', a, self.decoderconfig)
+        # (self._compression, (extents tuple), 0, (rawmode, self._compression, fp))
+        ignored, extents, ignored_2, args = self.tile[0]
+        decoder = Image._getdecoder(self.mode, 'libtiff', args, self.decoderconfig)
         try:
-            d.setimage(self.im, e)
+            decoder.setimage(self.im, extents)
         except ValueError:
             raise IOError("Couldn't set the image")
 
@@ -712,27 +713,30 @@ class TiffImageFile(ImageFile.ImageFile):
             # with here by reordering.
             if Image.DEBUG:
                 print ("have getvalue. just sending in a string from getvalue")
-            n,e = d.decode(self.fp.getvalue())
+            n,err = decoder.decode(self.fp.getvalue())
         elif hasattr(self.fp, "fileno"):
             # we've got a actual file on disk, pass in the fp.
             if Image.DEBUG:
                 print ("have fileno, calling fileno version of the decoder.")
             self.fp.seek(0)
-            n,e = d.decode(b"fpfp") # 4 bytes, otherwise the trace might error out
+            n,err = decoder.decode(b"fpfp") # 4 bytes, otherwise the trace might error out
         else:
             # we have something else.
             if Image.DEBUG:
                 print ("don't have fileno or getvalue. just reading")
             # UNDONE -- so much for that buffer size thing.
-            n, e = d.decode(self.fp.read())
+            n,err = decoder.decode(self.fp.read())
 
 
         self.tile = []
         self.readonly = 0
+        # libtiff closed the fp in a, we need to close self.fp, if possible
+        if hasattr(self.fp, 'close'):
+            self.fp.close()
         self.fp = None # might be shared
 
-        if e < 0:
-            raise IOError(e)
+        if err < 0:
+            raise IOError(err)
 
         self.load_end()
 

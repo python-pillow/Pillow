@@ -1,8 +1,38 @@
 Changelog (Pillow)
 ==================
 
-2.4.0 (unreleased)
+2.5.0 (unreleased)
 ------------------
+
+- Have the tempfile use a suffix with a dot
+  [wiredfool]
+
+- Fix variable name used for transparency manipulations
+  [nijel]
+
+2.4.0 (2014-04-01)
+------------------
+
+- Indexed Transparency handled for conversions between L, RGB, and P modes. Fixes #510
+  [wiredfool]
+
+- Conversions enabled from RGBA->P, Fixes #544
+  [wiredfool]
+
+- Improved icns support
+  [al45tair]
+
+- Fix libtiff leaking open files, fixes #580
+  [wiredfool]
+
+- Fixes for Jpeg encoding in Python 3, fixes #577
+  [wiredfool]
+
+- Added support for JPEG 2000
+  [al45tair]
+
+- Add more detailed error messages to Image.py 
+  [larsmans]
 
 - Avoid conflicting _expand functions in PIL & MINGW, fixes #538
   [aclark]

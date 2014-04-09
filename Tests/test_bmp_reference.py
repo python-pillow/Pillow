@@ -3,7 +3,7 @@ from tester import *
 from PIL import Image
 import os
 
-base = 'Tests/images/bmp/'
+base = os.path.join('Tests', 'images', 'bmp')
 
 
 def get_files(d, ext='.bmp'):
@@ -78,9 +78,9 @@ def test_good():
             
         except Exception as msg:
             # there are three here that are unsupported:
-            unsupported = ('Tests/images/bmp/g/rgb32bf.bmp',
-                           'Tests/images/bmp/g/pal8rle.bmp',
-                           'Tests/images/bmp/g/pal4rle.bmp')
+            unsupported = (os.path.join(base, 'g', 'rgb32bf.bmp'),
+                           os.path.join(base, 'g', 'pal8rle.bmp'),
+                           os.path.join(base, 'g', 'pal4rle.bmp'))
             if f not in unsupported:
                 assert_true(False, "Unsupported Image %s: %s" %(f,msg))
 

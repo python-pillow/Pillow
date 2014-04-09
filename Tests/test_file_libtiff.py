@@ -1,4 +1,5 @@
 from tester import *
+import os
 
 from PIL import Image, TiffImagePlugin
 
@@ -295,3 +296,13 @@ def xtest_bw_compression_wRGB():
     assert_exception(IOError, lambda: im.save(out, compression='group3'))
     assert_exception(IOError, lambda: im.save(out, compression='group4'))
 
+def test_fp_leak():
+    im = Image.open("Tests/images/lena_g4_500.tif")
+    fn = im.fp.fileno()
+
+    assert_no_exception(lambda: os.fstat(fn))
+    im.load()  # this should close it. 
+    assert_exception(OSError, lambda: os.fstat(fn)) 
+    im = None  # this should force even more closed.
+    assert_exception(OSError, lambda: os.fstat(fn)) 
+    assert_exception(OSError, lambda: os.close(fn))

@@ -40,6 +40,7 @@ typedef struct {
     PyObject_HEAD
     int (*encode)(Imaging im, ImagingCodecState state,
                   UINT8* buffer, int bytes);
+    int (*cleanup)(ImagingCodecState state);
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject* lock;
@@ -77,6 +78,9 @@ PyImaging_EncoderNew(int contextsize)
     /* Initialize encoder context */
     encoder->state.context = context;
 
+    /* Most encoders don't need this */
+    encoder->cleanup = NULL;
+
     /* Target image */
     encoder->lock = NULL;
     encoder->im = NULL;
@@ -87,6 +91,8 @@ PyImaging_EncoderNew(int contextsize)
 static void
 _dealloc(ImagingEncoderObject* encoder)
 {
+    if (encoder->cleanup)
+        encoder->cleanup(&encoder->state);
     free(encoder->state.buffer);
     free(encoder->state.context);
     Py_XDECREF(encoder->lock);
@@ -797,4 +803,158 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 
 #endif
 
+/* -------------------------------------------------------------------- */
+/* JPEG	2000								*/
+/* -------------------------------------------------------------------- */
 
+#ifdef HAVE_OPENJPEG
+
+#include "Jpeg2K.h"
+
+static void
+j2k_decode_coord_tuple(PyObject *tuple, int *x, int *y)
+{
+    *x = *y = 0;
+
+    if (tuple && PyTuple_Check(tuple) && PyTuple_GET_SIZE(tuple) == 2) {
+        *x = (int)PyInt_AsLong(PyTuple_GET_ITEM(tuple, 0));
+        *y = (int)PyInt_AsLong(PyTuple_GET_ITEM(tuple, 1));
+
+        if (*x < 0)
+            *x = 0;
+        if (*y < 0)
+            *y = 0;
+    }
+}
+
+PyObject*
+PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
+{
+    ImagingEncoderObject *encoder;
+    JPEG2KENCODESTATE *context;
+
+    char *mode;
+    char *format;
+    OPJ_CODEC_FORMAT codec_format;
+    PyObject *offset = NULL, *tile_offset = NULL, *tile_size = NULL;
+    char *quality_mode = "rates";
+    PyObject *quality_layers = NULL;
+    int num_resolutions = 0;
+    PyObject *cblk_size = NULL, *precinct_size = NULL;
+    PyObject *irreversible = NULL;
+    char *progression = "LRCP";
+    OPJ_PROG_ORDER prog_order;
+    char *cinema_mode = "no";
+    OPJ_CINEMA_MODE cine_mode;
+    int fd = -1;
+
+    if (!PyArg_ParseTuple(args, "ss|OOOsOIOOOssi", &mode, &format,
+                          &offset, &tile_offset, &tile_size,
+                          &quality_mode, &quality_layers, &num_resolutions,
+                          &cblk_size, &precinct_size,
+                          &irreversible, &progression, &cinema_mode,
+                          &fd))
+        return NULL;
+
+    if (strcmp (format, "j2k") == 0)
+        codec_format = OPJ_CODEC_J2K;
+    else if (strcmp (format, "jpt") == 0)
+        codec_format = OPJ_CODEC_JPT;
+    else if (strcmp (format, "jp2") == 0)
+        codec_format = OPJ_CODEC_JP2;
+    else
+        return NULL;
+
+    if (strcmp(progression, "LRCP") == 0)
+        prog_order = OPJ_LRCP;
+    else if (strcmp(progression, "RLCP") == 0)
+        prog_order = OPJ_RLCP;
+    else if (strcmp(progression, "RPCL") == 0)
+        prog_order = OPJ_RPCL;
+    else if (strcmp(progression, "PCRL") == 0)
+        prog_order = OPJ_PCRL;
+    else if (strcmp(progression, "CPRL") == 0)
+        prog_order = OPJ_CPRL;
+    else
+        return NULL;
+
+    if (strcmp(cinema_mode, "no") == 0)
+        cine_mode = OPJ_OFF;
+    else if (strcmp(cinema_mode, "cinema2k-24") == 0)
+        cine_mode = OPJ_CINEMA2K_24;
+    else if (strcmp(cinema_mode, "cinema2k-48") == 0)
+        cine_mode = OPJ_CINEMA2K_48;
+    else if (strcmp(cinema_mode, "cinema4k-24") == 0)
+        cine_mode = OPJ_CINEMA4K_24;
+    else
+        return NULL;
+
+    encoder = PyImaging_EncoderNew(sizeof(JPEG2KENCODESTATE));
+    if (!encoder)
+        return NULL;
+
+    encoder->encode = ImagingJpeg2KEncode;
+    encoder->cleanup = ImagingJpeg2KEncodeCleanup;
+
+    context = (JPEG2KENCODESTATE *)encoder->state.context;
+
+    context->fd = fd;
+    context->format = codec_format;
+    context->offset_x = context->offset_y = 0;
+
+    j2k_decode_coord_tuple(offset, &context->offset_x, &context->offset_y);
+    j2k_decode_coord_tuple(tile_offset,
+                           &context->tile_offset_x,
+                           &context->tile_offset_y);
+    j2k_decode_coord_tuple(tile_size, 
+                           &context->tile_size_x,
+                           &context->tile_size_y);
+
+    /* Error on illegal tile offsets */
+    if (context->tile_size_x && context->tile_size_y) {
+        if (context->tile_offset_x <= context->offset_x - context->tile_size_x
+            || context->tile_offset_y <= context->offset_y - context->tile_size_y) {
+            PyErr_SetString(PyExc_ValueError,
+                            "JPEG 2000 tile offset too small; top left tile must "
+                            "intersect image area");
+        }
+
+        if (context->tile_offset_x > context->offset_x
+            || context->tile_offset_y > context->offset_y) {
+            PyErr_SetString(PyExc_ValueError, 
+                            "JPEG 2000 tile offset too large to cover image area");
+            Py_DECREF(encoder);
+            return NULL;
+        }
+    }
+
+    if (quality_layers && PySequence_Check(quality_layers)) {
+        context->quality_is_in_db = strcmp (quality_mode, "dB") == 0;
+        context->quality_layers = quality_layers;
+        Py_INCREF(quality_layers);
+    }
+
+    context->num_resolutions = num_resolutions;
+
+    j2k_decode_coord_tuple(cblk_size,
+                           &context->cblk_width,
+                           &context->cblk_height);
+    j2k_decode_coord_tuple(precinct_size,
+                           &context->precinct_width,
+                           &context->precinct_height);
+
+    context->irreversible = PyObject_IsTrue(irreversible);
+    context->progression = prog_order;
+    context->cinema_mode = cine_mode;
+
+    return (PyObject *)encoder;
+}
+
+#endif
+
+/*
+ * Local Variables:
+ * c-basic-offset: 4
+ * End:
+ *
+ */
