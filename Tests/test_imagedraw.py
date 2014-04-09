@@ -108,3 +108,22 @@ def test_line_vertical():
     img, draw = create_base_image_draw((20, 20))
     draw.line((5, 14, 5, 5), BLACK, 3)
     assert_image_equal(img, expected, 'line straigth vertical inverted 3px wide failed')
+
+
+def test_line_oblique_45():
+    expected = Image.open(os.path.join(IMAGES_PATH, 'line_oblique_45_w3px_a.png'))
+    expected.load()
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 14, 14), BLACK, 3)
+    assert_image_equal(img, expected, 'line oblique 45º normal 3px wide A failed')
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((14, 14, 5, 5), BLACK, 3)
+    assert_image_equal(img, expected, 'line oblique 45º inverted 3px wide A failed')
+    expected = Image.open(os.path.join(IMAGES_PATH, 'line_oblique_45_w3px_b.png'))
+    expected.load()
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((14, 5, 5, 14), BLACK, 3)
+    assert_image_equal(img, expected, 'line oblique 45º normal 3px wide B failed')
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 14, 14, 5), BLACK, 3)
+    assert_image_equal(img, expected, 'line oblique 45º inverted 3px wide B failed')
