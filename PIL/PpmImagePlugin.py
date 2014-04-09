@@ -63,7 +63,11 @@ class PpmImageFile(ImageFile.ImageFile):
             c = self.fp.read(1)
             if not c or c in b_whitespace:
                 break
+            if c > b'\x79':
+                raise ValueError("Expected ASCII value, found binary")
             s = s + c
+            if (len(s) > 9):
+                raise ValueError("Expected int, got > 9 digits")
         return s
 
     def _open(self):
