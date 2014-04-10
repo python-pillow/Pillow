@@ -1,4 +1,5 @@
 from __future__ import print_function
+import tempfile
 
 # require that deprecation warnings are triggered
 import warnings
@@ -18,6 +19,7 @@ py3 = (sys.version_info >= (3, 0))
 
 _target = None
 _tempfiles = []
+_temproot = tempfile.mkdtemp(prefix='pillow-tests')
 _logfile = None
 
 
@@ -230,19 +232,14 @@ def tempfile(template, *extra):
     import os
     import os.path
     import sys
-    import tempfile
+    
     files = []
-    root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
-    try:
-        os.mkdir(root)
-    except OSError:
-        pass
     for temp in (template,) + extra:
         assert temp[:5] in ("temp.", "temp_")
         name = os.path.basename(sys.argv[0])
         name = temp[:4] + os.path.splitext(name)[0][4:]
         name = name + "_%d_%d" % (os.getpid(), len(_tempfiles)) + temp[4:]
-        name = os.path.join(root, name)
+        name = os.path.join(_temproot, name)
         files.append(name)
     _tempfiles.extend(files)
     return files[0]
@@ -319,9 +316,8 @@ def _setup():
                     os.remove(file)
                 except OSError:
                     pass  # report?
-            temp_root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
             try:
-                os.rmdir(temp_root)
+                os.rmdir(_temproot)
             except OSError:
                 pass
 
