@@ -105,5 +105,3 @@ def test_convert():
     verify(im.convert("I;16B"))
     verify(im.convert("I;16B").convert("L"))
     verify(im.convert("I;16B").convert("I"))
-
-    assert(False)  # TEMP FOR TESTING!
