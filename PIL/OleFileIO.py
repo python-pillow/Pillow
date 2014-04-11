@@ -285,15 +285,15 @@ def set_debug_mode(debug_mode):
 MAGIC = b'\320\317\021\340\241\261\032\341'
 
 #[PL]: added constants for Sector IDs (from AAF specifications)
-MAXREGSECT = 0xFFFFFFFA; # maximum SECT
-DIFSECT    = 0xFFFFFFFC; # (-4) denotes a DIFAT sector in a FAT
-FATSECT    = 0xFFFFFFFD; # (-3) denotes a FAT sector in a FAT
-ENDOFCHAIN = 0xFFFFFFFE; # (-2) end of a virtual stream chain
-FREESECT   = 0xFFFFFFFF; # (-1) unallocated sector
+MAXREGSECT = 0xFFFFFFFA  # maximum SECT
+DIFSECT    = 0xFFFFFFFC  # (-4) denotes a DIFAT sector in a FAT
+FATSECT    = 0xFFFFFFFD  # (-3) denotes a FAT sector in a FAT
+ENDOFCHAIN = 0xFFFFFFFE  # (-2) end of a virtual stream chain
+FREESECT   = 0xFFFFFFFF  # (-1) unallocated sector
 
 #[PL]: added constants for Directory Entry IDs (from AAF specifications)
-MAXREGSID  = 0xFFFFFFFA; # maximum directory entry ID
-NOSTREAM   = 0xFFFFFFFF; # (-1) unallocated directory entry
+MAXREGSID  = 0xFFFFFFFA  # maximum directory entry ID
+NOSTREAM   = 0xFFFFFFFF  # (-1) unallocated directory entry
 
 #[PL] object types in storage (from AAF specifications)
 STGTY_EMPTY     = 0 # empty directory entry (according to OpenOffice.org doc)
@@ -308,15 +308,15 @@ STGTY_ROOT      = 5 # element is a root storage
 # --------------------------------------------------------------------
 # property types
 
-VT_EMPTY=0; VT_NULL=1; VT_I2=2; VT_I4=3; VT_R4=4; VT_R8=5; VT_CY=6;
-VT_DATE=7; VT_BSTR=8; VT_DISPATCH=9; VT_ERROR=10; VT_BOOL=11;
-VT_VARIANT=12; VT_UNKNOWN=13; VT_DECIMAL=14; VT_I1=16; VT_UI1=17;
-VT_UI2=18; VT_UI4=19; VT_I8=20; VT_UI8=21; VT_INT=22; VT_UINT=23;
-VT_VOID=24; VT_HRESULT=25; VT_PTR=26; VT_SAFEARRAY=27; VT_CARRAY=28;
-VT_USERDEFINED=29; VT_LPSTR=30; VT_LPWSTR=31; VT_FILETIME=64;
-VT_BLOB=65; VT_STREAM=66; VT_STORAGE=67; VT_STREAMED_OBJECT=68;
-VT_STORED_OBJECT=69; VT_BLOB_OBJECT=70; VT_CF=71; VT_CLSID=72;
-VT_VECTOR=0x1000;
+VT_EMPTY=0; VT_NULL=1; VT_I2=2; VT_I4=3; VT_R4=4; VT_R8=5; VT_CY=6
+VT_DATE=7; VT_BSTR=8; VT_DISPATCH=9; VT_ERROR=10; VT_BOOL=11
+VT_VARIANT=12; VT_UNKNOWN=13; VT_DECIMAL=14; VT_I1=16; VT_UI1=17
+VT_UI2=18; VT_UI4=19; VT_I8=20; VT_UI8=21; VT_INT=22; VT_UINT=23
+VT_VOID=24; VT_HRESULT=25; VT_PTR=26; VT_SAFEARRAY=27; VT_CARRAY=28
+VT_USERDEFINED=29; VT_LPSTR=30; VT_LPWSTR=31; VT_FILETIME=64
+VT_BLOB=65; VT_STREAM=66; VT_STORAGE=67; VT_STREAMED_OBJECT=68
+VT_STORED_OBJECT=69; VT_BLOB_OBJECT=70; VT_CF=71; VT_CLSID=72
+VT_VECTOR=0x1000
 
 # map property id to name (for debugging purposes)
 
@@ -1761,7 +1761,7 @@ class OleFileIO:
         return: a dictionary of values indexed by id (integer)
         """
         # make sure no_conversion is a list, just to simplify code below:
-        if no_conversion == None:
+        if no_conversion is None:
             no_conversion = []
         # stream path as a string to report exceptions:
         streampath = filename
@@ -1810,7 +1810,7 @@ class OleFileIO:
                 if type == VT_I2: # 16-bit signed integer
                     value = i16(s, offset+4)
                     if value >= 32768:
-                        value = value - 65536
+                        value -= 65536
                 elif type == VT_UI2: # 2-byte unsigned integer
                     value = i16(s, offset+4)
                 elif type in (VT_I4, VT_INT, VT_ERROR):
@@ -1856,7 +1856,7 @@ class OleFileIO:
                     else:
                         # legacy code kept for backward compatibility: returns a
                         # number of seconds since Jan 1,1601
-                        value = value // 10000000 # seconds
+                        value //= 10000000  # seconds
                 elif type == VT_UI1: # 1-byte unsigned integer
                     value = i8(s[offset+4])
                 elif type == VT_CLSID:

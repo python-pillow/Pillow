@@ -67,7 +67,7 @@ for file in files:
             if not p.startswith('^'):
                 p = '^' + p
             if not p.endswith('$'):
-                p = p + '$'
+                p += '$'
             return p
 
         ignore_res = [re.compile(fix_re(p), re.MULTILINE) for p in ignore_pats]
@@ -99,7 +99,7 @@ for file in files:
             print(result)
         failed.append(test)
     else:
-        success = success + 1
+        success += 1
 
 print("-"*68)
 

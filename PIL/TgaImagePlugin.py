@@ -167,7 +167,7 @@ def _save(im, fp, filename, check=0):
 
     orientation = im.info.get("orientation", -1)
     if orientation > 0:
-        flags = flags | 0x20
+        flags |= 0x20
 
     fp.write(b"\000" +
              o8(colormaptype) +

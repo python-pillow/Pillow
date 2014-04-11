@@ -82,7 +82,7 @@ def _save(im, fp, filename):
 
     sum = 0
     for h in header:
-        sum = sum ^ h
+        sum ^= h
     header[12] = sum # FIXME: is this the right field?
 
     # header
