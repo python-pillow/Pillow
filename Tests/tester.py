@@ -94,6 +94,34 @@ def assert_deep_equal(a, b, msg=None):
         assert_equal(a, b, msg)
 
 
+def assert_greater(a, b, msg=None):
+    if a > b:
+        success()
+    else:
+        failure(msg or "got %r, expected %r" % (a, b))
+
+
+def assert_greater_equal(a, b, msg=None):
+    if a >= b:
+        success()
+    else:
+        failure(msg or "got %r, expected %r" % (a, b))
+
+
+def assert_less(a, b, msg=None):
+    if a < b:
+        success()
+    else:
+        failure(msg or "got %r, expected %r" % (a, b))
+
+
+def assert_less_equal(a, b, msg=None):
+    if a <= b:
+        success()
+    else:
+        failure(msg or "got %r, expected %r" % (a, b))
+
+
 def assert_match(v, pattern, msg=None):
     import re
     if re.match(pattern, v):
