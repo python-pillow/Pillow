@@ -2,7 +2,12 @@ from __future__ import print_function
 
 # minimal test runner
 
-import glob, os, os.path, sys, tempfile, re
+import glob
+import os
+import os.path
+import re
+import sys
+import tempfile
 
 try:
     root = os.path.dirname(__file__)
@@ -34,6 +39,7 @@ files.sort()
 success = failure = 0
 include = [x for x in sys.argv[1:] if x[:2] != "--"]
 skipped = []
+failed = []
 
 python_options = " ".join(python_options)
 tester_options = " ".join(tester_options)
@@ -48,8 +54,8 @@ for file in files:
     # 2>&1 works on unix and on modern windowses.  we might care about
     # very old Python versions, but not ancient microsoft products :-)
     out = os.popen("%s %s -u %s %s 2>&1" % (
-            sys.executable, python_options, file, tester_options
-            ))
+        sys.executable, python_options, file, tester_options
+        ))
     result = out.read()
 
     # Extract any ignore patterns
@@ -63,7 +69,7 @@ for file in files:
             if not p.endswith('$'):
                 p = p + '$'
             return p
-        
+
         ignore_res = [re.compile(fix_re(p), re.MULTILINE) for p in ignore_pats]
     except:
         print('(bad ignore patterns %r)' % ignore_pats)
@@ -73,11 +79,11 @@ for file in files:
         result = r.sub('', result)
 
     result = result.strip()
-    
+
     if result == "ok":
         result = None
     elif result == "skip":
-        print("---", "skipped") # FIXME: driver should include a reason
+        print("---", "skipped")  # FIXME: driver should include a reason
         skipped.append(test)
         continue
     elif not result:
@@ -91,7 +97,7 @@ for file in files:
                 # if there's an ok at the end, it's not really ok
                 result = result[:-3]
             print(result)
-        failure = failure + 1
+        failed.append(test)
     else:
         success = success + 1
 
@@ -105,6 +111,7 @@ if tempfiles:
         print(file)
     print("-"*68)
 
+
 def tests(n):
     if n == 1:
         return "1 test"
@@ -112,10 +119,12 @@ def tests(n):
         return "%d tests" % n
 
 if skipped:
-    print("---", tests(len(skipped)), "skipped.")
-    print(skipped)
-if failure:
-    print("***", tests(failure), "of", (success + failure), "failed.")
+    print("---", tests(len(skipped)), "skipped:")
+    print(", ".join(skipped))
+if failed:
+    failure = len(failed)
+    print("***", tests(failure), "of", (success + failure), "failed:")
+    print(", ".join(failed))
     sys.exit(1)
 else:
     print(tests(success), "passed.")
