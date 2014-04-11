@@ -97,7 +97,7 @@ for file in files:
                 # if there's an ok at the end, it's not really ok
                 result = result[:-3]
             print(result)
-        failed.append[test]
+        failed.append(test)
     else:
         success = success + 1
 
