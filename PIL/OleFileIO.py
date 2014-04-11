@@ -2,11 +2,12 @@
 # -*- coding: latin-1 -*-
 """
 OleFileIO_PL:
-    Module to read Microsoft OLE2 files (also called Structured Storage or
-    Microsoft Compound Document File Format), such as Microsoft Office
-    documents, Image Composer and FlashPix files, Outlook messages, ...
+Module to read Microsoft OLE2 files (also called Structured Storage or
+Microsoft Compound Document File Format), such as Microsoft Office
+documents, Image Composer and FlashPix files, Outlook messages, ...
+This version is compatible with Python 2.6+ and 3.x
 
-version 0.26 2013-07-24 Philippe Lagadec - http://www.decalage.info
+version 0.30 2014-02-04 Philippe Lagadec - http://www.decalage.info
 
 Project website: http://www.decalage.info/python/olefileio
 
@@ -16,25 +17,30 @@ See: http://www.pythonware.com/products/pil/index.htm
 The Python Imaging Library (PIL) is
     Copyright (c) 1997-2005 by Secret Labs AB
     Copyright (c) 1995-2005 by Fredrik Lundh
-OleFileIO_PL changes are Copyright (c) 2005-2013 by Philippe Lagadec
+OleFileIO_PL changes are Copyright (c) 2005-2014 by Philippe Lagadec
 
 See source code and LICENSE.txt for information on usage and redistribution.
 
 WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
-from __future__ import print_function
+# Starting with OleFileIO_PL v0.30, only Python 2.6+ and 3.x is supported
+# This import enables print() as a function rather than a keyword
+# (main requirement to be compatible with Python 3.x)
+# The comment on the line below should be printed on Python 2.5 or older:
+from __future__ import print_function # This version of OleFileIO_PL requires Python 2.6+ or 3.x.
+
 
 __author__  = "Philippe Lagadec, Fredrik Lundh (Secret Labs AB)"
-__date__    = "2013-07-24"
-__version__ = '0.26'
+__date__    = "2014-02-04"
+__version__ = '0.30'
 
 #--- LICENSE ------------------------------------------------------------------
 
 # OleFileIO_PL is an improved version of the OleFileIO module from the
 # Python Imaging Library (PIL).
 
-# OleFileIO_PL changes are Copyright (c) 2005-2013 by Philippe Lagadec
+# OleFileIO_PL changes are Copyright (c) 2005-2014 by Philippe Lagadec
 #
 # The Python Imaging Library (PIL) is
 #    Copyright (c) 1997-2005 by Secret Labs AB
@@ -133,9 +139,14 @@ __version__ = '0.26'
 #                        of a directory entry or a storage/stream
 #                      - fixed parsing of direntry timestamps
 # 2013-07-24       PL: - new options in listdir to list storages and/or streams
+# 2014-02-04 v0.30 PL: - upgraded code to support Python 3.x by Martin Panter
+#                      - several fixes for Python 2.6 (xrange, MAGIC)
+#                      - reused i32 from Pillow's _binary
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
+# + isOleFile should accept file-like objects like open
+# + fix how all the methods handle unicode str and/or bytes as arguments
 # + add path attrib to _OleDirEntry, set it once and for all in init or
 #   append_kids (then listdir/_list can be simplified)
 # - TESTS with Linux, MacOSX, Python 1.5.2, various files, PIL, ...
@@ -220,16 +231,25 @@ __version__ = '0.26'
 
 #------------------------------------------------------------------------------
 
+
 import io
 import sys
-from PIL import _binary
 import struct, array, os.path, datetime
 
 #[PL] Define explicitly the public API to avoid private objects in pydoc:
 __all__ = ['OleFileIO', 'isOleFile', 'MAGIC']
 
+# For Python 3.x, need to redefine long as int:
 if str is not bytes:
     long = int
+
+# Need to make sure we use xrange both on Python 2 and 3.x:
+try:
+    # on Python 2 we need xrange:
+    iterrange = xrange
+except:
+    # no xrange, for Python 3 it was renamed as range:
+    iterrange = range
 
 #[PL] workaround to fix an issue with array item size on 64 bits systems:
 if array.array('L').itemsize == 4:
@@ -281,8 +301,7 @@ def set_debug_mode(debug_mode):
     else:
         debug = debug_pass
 
-#TODO: convert this to hex
-MAGIC = b'\320\317\021\340\241\261\032\341'
+MAGIC = b'\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1'
 
 #[PL]: added constants for Sector IDs (from AAF specifications)
 MAXREGSECT = 0xFFFFFFFA; # maximum SECT
@@ -362,9 +381,39 @@ def isOleFile (filename):
         return False
 
 
-i8 = _binary.i8
-i16 = _binary.i16le
-i32 = _binary.i32le
+if bytes is str:
+    # version for Python 2.x
+    def i8(c):
+        return ord(c)
+else:
+    # version for Python 3.x
+    def i8(c):
+        return c if c.__class__ is int else c[0]
+
+
+#TODO: replace i16 and i32 with more readable struct.unpack equivalent?
+
+def i16(c, o = 0):
+    """
+    Converts a 2-bytes (16 bits) string to an integer.
+
+    c: string containing bytes to convert
+    o: offset of bytes to convert in string
+    """
+    return i8(c[o]) | (i8(c[o+1])<<8)
+
+
+def i32(c, o = 0):
+    """
+    Converts a 4-bytes (32 bits) string to an integer.
+
+    c: string containing bytes to convert
+    o: offset of bytes to convert in string
+    """
+##    return int(ord(c[o])+(ord(c[o+1])<<8)+(ord(c[o+2])<<16)+(ord(c[o+3])<<24))
+##    # [PL]: added int() because "<<" gives long int since Python 2.4
+    # copied from Pillow's _binary:
+    return i8(c[o]) | (i8(c[o+1])<<8) | (i8(c[o+2])<<16) | (i8(c[o+3])<<24)
 
 
 def _clsid(clsid):
@@ -373,7 +422,9 @@ def _clsid(clsid):
     clsid: string of length 16.
     """
     assert len(clsid) == 16
-    if clsid == bytearray(16):
+    # if clsid is only made of null bytes, return an empty string:
+    # (PL: why not simply return the string with zeroes?)
+    if not clsid.strip(b"\0"):
         return ""
     return (("%08X-%04X-%04X-%02X%02X-" + "%02X" * 6) %
             ((i32(clsid, 0), i16(clsid, 4), i16(clsid, 6)) +
@@ -902,17 +953,21 @@ class _OleDirectoryEntry:
     def __eq__(self, other):
         "Compare entries by name"
         return self.name == other.name
+
     def __lt__(self, other):
         "Compare entries by name"
         return self.name < other.name
-    #TODO: replace by the same function as MS implementation ?
-    # (order by name length first, then case-insensitive order)
-    
+
     def __ne__(self, other):
         return not self.__eq__(other)
+
     def __le__(self, other):
         return self.__eq__(other) or self.__lt__(other)
+
     # Reflected __lt__() and __le__() will be used for __gt__() and __ge__()
+
+    #TODO: replace by the same function as MS implementation ?
+    # (order by name length first, then case-insensitive order)
 
 
     def dump(self, tab = 0):
@@ -978,7 +1033,7 @@ class OleFileIO:
             if entry[1:2] == "Image":
                 fin = ole.openstream(entry)
                 fout = open(entry[0:1], "wb")
-                while True:
+                while 1:
                     s = fin.read(8192)
                     if not s:
                         break
@@ -1046,7 +1101,7 @@ class OleFileIO:
             #TODO: if larger than 1024 bytes, this could be the actual data => BytesIO
             self.fp = open(filename, "rb")
         # old code fails if filename is not a plain string:
-        #if isPath(filename):
+        #if isinstance(filename, (bytes, basestring)):
         #    self.fp = open(filename, "rb")
         #else:
         #    self.fp = filename
@@ -1133,7 +1188,7 @@ class OleFileIO:
         ) = struct.unpack(fmt_header, header1)
         debug( struct.unpack(fmt_header,    header1))
 
-        if self.Sig != b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1':
+        if self.Sig != MAGIC:
             # OLE signature should always be present
             self._raise_defect(DEFECT_FATAL, "incorrect OLE signature")
         if self.clsid != bytearray(16):
@@ -1385,7 +1440,7 @@ class OleFileIO:
             if self.csectDif != nb_difat:
                 raise IOError('incorrect DIFAT')
             isect_difat = self.sectDifStart
-            for i in range(nb_difat):
+            for i in iterrange(nb_difat):
                 debug( "DIFAT block %d, sector %X" % (i, isect_difat) )
                 #TODO: check if corresponding FAT SID = DIFSECT
                 sector_difat = self.getsect(isect_difat)
@@ -1494,7 +1549,7 @@ class OleFileIO:
         #self.direntries = []
         # We start with a list of "None" object
         self.direntries = [None] * max_entries
-##        for sid in range(max_entries):
+##        for sid in iterrange(max_entries):
 ##            entry = fp.read(128)
 ##            if not entry:
 ##                break
