@@ -95,7 +95,7 @@ def test_meta():
     meta = ole.get_metadata()
 
     # Assert
-    assert_equal(meta.author, "Laurence Ipsum")
+    assert_equal(meta.author, b"Laurence Ipsum")
     assert_equal(meta.num_pages, 1)
 
 # End of file
