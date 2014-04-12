@@ -78,7 +78,8 @@ def Ghostscript(tile, size, fp, scale=1):
     orig_bbox = bbox
     size = (size[0] * scale, size[1] * scale)
     bbox = [bbox[0], bbox[1], bbox[2] * scale, bbox[3] * scale]
-    #print("Ghostscript", scale, size, orig_size, bbox, orig_bbox)
+    res = ( int((72 * size[0]) / (bbox[2]-bbox[0])), int((72 * size[1]) / (bbox[3]-bbox[1])) )
+    #print("Ghostscript", scale, size, orig_size, bbox, orig_bbox, res)
 
     import tempfile, os, subprocess
 
@@ -100,7 +101,7 @@ def Ghostscript(tile, size, fp, scale=1):
     command = ["gs",
                "-q",                        # quiet mode
                "-g%dx%d" % size,            # set output geometry (pixels)
-               "-r%d" % (72*scale),         # set input DPI (dots per inch)
+               "-r%dx%d" % res,             # set input DPI (dots per inch)
                "-dNOPAUSE -dSAFER",         # don't pause between pages, safe mode
                "-sDEVICE=ppmraw",           # ppm driver
                "-sOutputFile=%s" % outfile, # output file
