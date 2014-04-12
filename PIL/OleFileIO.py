@@ -1033,7 +1033,7 @@ class OleFileIO:
             if entry[1:2] == "Image":
                 fin = ole.openstream(entry)
                 fout = open(entry[0:1], "wb")
-                while 1:
+                while True:
                     s = fin.read(8192)
                     if not s:
                         break
