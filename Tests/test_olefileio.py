@@ -135,4 +135,26 @@ def test_listdir():
     ole.close()
 
 
+def test_debug():
+    # Arrange
+    print("ignore_all_except_last_line")
+    ole_file = "Tests/images/test-ole-file.doc"
+    ole = OleFileIO.OleFileIO(ole_file)
+    meta = ole.get_metadata()
+
+    # Act
+    OleFileIO.set_debug_mode(True)
+    ole.dumpdirectory()
+    meta.dump()
+
+    OleFileIO.set_debug_mode(False)
+    ole.dumpdirectory()
+    meta.dump()
+
+    # Assert
+    # No assert, just check they run ok
+    print("ok")
+    ole.close()
+
+
 # End of file
