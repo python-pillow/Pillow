@@ -105,6 +105,7 @@ def test_meta():
     assert_equal(meta.num_pages, 1)
     ole.close()
 
+
 def test_gettimes():
     # Arrange
     ole_file = "Tests/images/test-ole-file.doc"
@@ -112,13 +113,14 @@ def test_gettimes():
     root_entry = ole.direntries[0]
 
     # Act
-    ctime = root_entry.getmtime()
+    ctime = root_entry.getctime()
     mtime = root_entry.getmtime()
 
     # Assert
-    assert_is_instance(ctime, datetime.datetime)
+    assert_is_instance(ctime, type(None))
     assert_is_instance(mtime, datetime.datetime)
-    assert_equal(ctime.year, 2014)
+    assert_equal(ctime, None)
+    assert_equal(mtime.year, 2014)
     ole.close()
 
 
