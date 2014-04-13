@@ -1,5 +1,6 @@
 from __future__ import print_function
 from tester import *
+import datetime
 
 import PIL.OleFileIO as OleFileIO
 
@@ -36,6 +37,7 @@ def test_exists_worddocument():
 
     # Assert
     assert_true(exists)
+    ole.close()
 
 
 def test_exists_no_vba_macros():
@@ -48,6 +50,7 @@ def test_exists_no_vba_macros():
 
     # Assert
     assert_false(exists)
+    ole.close()
 
 
 def test_get_type():
@@ -60,6 +63,7 @@ def test_get_type():
 
     # Assert
     assert_equal(type, OleFileIO.STGTY_STREAM)
+    ole.close()
 
 
 def test_get_size():
@@ -72,6 +76,7 @@ def test_get_size():
 
     # Assert
     assert_greater(size, 0)
+    ole.close()
 
 
 def test_get_rootentry_name():
@@ -84,6 +89,7 @@ def test_get_rootentry_name():
 
     # Assert
     assert_equal(root, "Root Entry")
+    ole.close()
 
 
 def test_meta():
@@ -97,5 +103,56 @@ def test_meta():
     # Assert
     assert_equal(meta.author, b"Laurence Ipsum")
     assert_equal(meta.num_pages, 1)
+    ole.close()
+
+def test_gettimes():
+    # Arrange
+    ole_file = "Tests/images/test-ole-file.doc"
+    ole = OleFileIO.OleFileIO(ole_file)
+    root_entry = ole.direntries[0]
+
+    # Act
+    ctime = root_entry.getmtime()
+    mtime = root_entry.getmtime()
+
+    # Assert
+    assert_is_instance(ctime, datetime.datetime)
+    assert_is_instance(mtime, datetime.datetime)
+    assert_equal(ctime.year, 2014)
+    ole.close()
+
+
+def test_listdir():
+    # Arrange
+    ole_file = "Tests/images/test-ole-file.doc"
+    ole = OleFileIO.OleFileIO(ole_file)
+
+    # Act
+    dirlist = ole.listdir()
+
+    # Assert
+    assert_in(['WordDocument'], dirlist)
+    ole.close()
+
+
+def test_debug():
+    # Arrange
+    ole_file = "Tests/images/test-ole-file.doc"
+    ole = OleFileIO.OleFileIO(ole_file)
+    meta = ole.get_metadata()
+
+    # Act
+    OleFileIO.set_debug_mode(True)
+    ole.dumpdirectory()
+    meta.dump()
+
+    OleFileIO.set_debug_mode(False)
+    ole.dumpdirectory()
+    meta.dump()
+
+    # Assert
+    # No assert, just check they run ok
+    ole.close()
+
 
 # End of file
