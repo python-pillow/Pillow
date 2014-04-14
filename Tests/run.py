@@ -2,8 +2,14 @@ from __future__ import print_function
 
 # minimal test runner
 
-import glob, os, os.path, sys, tempfile, re
+
 from multiprocessing import Pool
+import glob
+import os
+import os.path
+import re
+import sys
+import tempfile
 
 try:
     root = os.path.dirname(__file__)
@@ -18,6 +24,11 @@ if not os.path.isfile("PIL/Image.py"):
 python_options = []
 tester_options = []
 include = [x for x in sys.argv[1:] if x[:2] != "--"]
+skipped = []
+failed = []
+
+python_options = " ".join(python_options)
+tester_options = " ".join(tester_options)
 
 ignore_re = re.compile('^ignore: (.*)$', re.MULTILINE)
 
@@ -44,7 +55,7 @@ def test_one(f):
             if not p.endswith('$'):
                 p = p + '$'
             return p
-        
+
         ignore_res = [re.compile(fix_re(p), re.MULTILINE) for p in ignore_pats]
     except:
         print('(bad ignore patterns %r)' % ignore_pats)
@@ -115,12 +126,13 @@ def main():
                     # if there's an ok at the end, it's not really ok
                     result = result[:-3]
                 print(result)
-            failure = failure + 1
+            failed.append(test)
         else:
             success = success + 1
 
     print("-"*68)
 
+    #UNDONE -- this is wrong 
     temp_root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
     tempfiles = glob.glob(os.path.join(temp_root, "temp_*"))
     if tempfiles:
@@ -137,9 +149,11 @@ def main():
 
     if skipped:
         print("---", tests(len(skipped)), "skipped.")
-        print(skipped)
-    if failure:
-        print("***", tests(failure), "of", (success + failure), "failed.")
+        print(", ".join(skipped))
+    if failed:
+        failure = len(failed)
+        print("***", tests(failure), "of", (success + failure), "failed:")
+        print(", ".join(failed))
         sys.exit(1)
     else:
         print(tests(success), "passed.")
@@ -148,3 +162,4 @@ def main():
 
 if __name__=='__main__':
     sys.exit(main())
+
