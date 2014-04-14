@@ -143,7 +143,7 @@ distribution. Otherwise, use whatever XCode you used to compile Python.)
 The easiest way to install the prerequisites is via `Homebrew
 <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run::
 
-    $ brew install libtiff libjpeg webp littlecms
+    $ brew install libtiff libjpeg webp little-cms2
 
 If you've built your own Python, then you should be able to install Pillow
 using::
