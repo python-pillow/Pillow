@@ -306,13 +306,13 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
         color_space = OPJ_CLRSPC_GRAY;
         pack = j2k_pack_i16;
         prec = 16;
-        bpp = 16;
+        bpp = 12;
     } else if (strcmp (im->mode, "I;16B") == 0) {
         components = 1;
         color_space = OPJ_CLRSPC_GRAY;
         pack = j2k_pack_i16b;
         prec = 16;
-        bpp = 16;
+        bpp = 12;
     } else if (strcmp (im->mode, "LA") == 0) {
         components = 2; 
         color_space = OPJ_CLRSPC_GRAY;
