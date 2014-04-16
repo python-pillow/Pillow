@@ -27,12 +27,10 @@ include = [x for x in sys.argv[1:] if x[:2] != "--"]
 skipped = []
 failed = []
 
-python_options = " ".join(python_options)
-tester_options = " ".join(tester_options)
-
 ignore_re = re.compile('^ignore: (.*)$', re.MULTILINE)
 
-def test_one(f):
+def test_one(params):
+    f, python_options, tester_options = params
     test, ext = os.path.splitext(os.path.basename(f))
 
     print("running", test, "...")
@@ -69,13 +67,13 @@ def test_one(f):
 
     return (result, status)
 
-def filter_tests(files):
+def filter_tests(files, python_options, tester_options):
     ret = []
     for f in files:
         test, ext = os.path.splitext(os.path.basename(f))
         if include and test not in include:
             continue
-        ret.append(f)
+        ret.append((f, python_options, tester_options))
     return ret
 
 def main():
@@ -102,14 +100,14 @@ def main():
     tester_options = " ".join(tester_options)
 
 
-    files = filter_tests(files)
+    files = filter_tests(files, python_options, tester_options)
 
     pool = Pool()
     results = pool.map(test_one, files)
     pool.close()
     pool.join()
     
-    for test,(result, status) in zip(files,results):
+    for (test,pyop, top), (result, status) in zip(files,results):
         if result == "ok":
             result = None
         elif result == "skip":
