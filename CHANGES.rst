@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Updated OleFileIO to version 0.30 from upstream
+  [hugovk]
+
 - Added support for additional TIFF floating point format 
   [Hijackal]
 
