@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Added support for additional TIFF floating point format 
+  [Hijackal]
+
 - Have the tempfile use a suffix with a dot
   [wiredfool]
 
