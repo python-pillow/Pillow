@@ -115,7 +115,7 @@ def main():
         if result == "ok":
             result = None
         elif result == "skip":
-            print("---", "skipped") # FIXME: driver should include a reason
+            #print("---", "skipped") # FIXME: driver should include a reason
             skipped.append(test)
             continue
         elif not result:
