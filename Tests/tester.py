@@ -22,8 +22,10 @@ _target = None
 _tempfiles = []
 if 'pillow-tests' in sys.argv[-1] and os.path.exists(sys.argv[-1]):
     _temproot = sys.argv[-1]
+    _rmtempdir = False
 else:
     _temproot = tempfile.mkdtemp(prefix='pillow-tests')
+    _rmtempdir = True
 _logfile = None
 
 
@@ -320,10 +322,11 @@ def _setup():
                     os.remove(file)
                 except OSError:
                     pass  # report?
-            try:
-                os.rmdir(_temproot)
-            except OSError:
-                pass
+            if _rmtempdir:
+                try:
+                    os.rmdir(_temproot)
+                except OSError:
+                    pass
 
     import atexit
     atexit.register(report)
