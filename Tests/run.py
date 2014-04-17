@@ -27,6 +27,8 @@ include = [x for x in sys.argv[1:] if x[:2] != "--"]
 skipped = []
 failed = []
 
+_temproot = tempfile.mkdtemp(prefix='pillow-tests')
+
 ignore_re = re.compile('^ignore: (.*)$', re.MULTILINE)
 
 def test_one(params):
@@ -96,6 +98,8 @@ def main():
     success = failure = 0
     skipped = []
 
+    tester_options.append(_temproot)
+
     python_options = " ".join(python_options)
     tester_options = " ".join(tester_options)
 
@@ -130,9 +134,7 @@ def main():
 
     print("-"*68)
 
-    #UNDONE -- this is wrong 
-    temp_root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
-    tempfiles = glob.glob(os.path.join(temp_root, "temp_*"))
+    tempfiles = glob.glob(os.path.join(_temproot, "temp_*"))
     if tempfiles:
         print("===", "remaining temporary files")
         for file in tempfiles:

@@ -1,5 +1,6 @@
 from __future__ import print_function
 import tempfile
+import os
 
 # require that deprecation warnings are triggered
 import warnings
@@ -19,7 +20,10 @@ py3 = (sys.version_info >= (3, 0))
 
 _target = None
 _tempfiles = []
-_temproot = tempfile.mkdtemp(prefix='pillow-tests')
+if 'pillow-tests' in sys.argv[-1] and os.path.exists(sys.argv[-1]):
+    _temproot = sys.argv[-1]
+else:
+    _temproot = tempfile.mkdtemp(prefix='pillow-tests')
 _logfile = None
 
 
