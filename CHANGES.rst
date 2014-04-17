@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Added support for 16 bit PGM files. 
+  [wiredfool]
+
 - Updated OleFileIO to version 0.30 from upstream
   [hugovk]
 
