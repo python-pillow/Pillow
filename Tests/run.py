@@ -58,6 +58,11 @@ for file in files:
         ))
     result = out.read()
 
+    result_lines = result.splitlines()
+    if len(result_lines):
+        if result_lines[0] == "ignore_all_except_last_line":
+            result = result_lines[-1]
+
     # Extract any ignore patterns
     ignore_pats = ignore_re.findall(result)
     result = ignore_re.sub('', result)
