@@ -61,8 +61,8 @@ def _test_alpha_premult(op):
      # create image with half white, half black, with the black half transparent.
     # do op, 
     # there should be no darkness in the white section.
-    im = Image.new('RGBA', (10,10), (0,0,0,0));
-    im2 = Image.new('RGBA', (5,10), (255,255,255,255));
+    im = Image.new('RGBA', (10,10), (0,0,0,0))
+    im2 = Image.new('RGBA', (5,10), (255,255,255,255))
     im.paste(im2, (0,0))
     
     im = op(im, (40,10))

@@ -21,7 +21,7 @@ def test_rgb():
     
     def checkrgb(r,g,b):
         val = ImageQt.rgb(r,g,b)
-        val = val % 2**24 # drop the alpha
+        val %= 2 ** 24  # drop the alpha
         assert_equal(val >> 16, r)
         assert_equal(((val >> 8 ) % 2**8), g)
         assert_equal(val % 2**8, b)

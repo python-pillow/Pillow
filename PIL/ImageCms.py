@@ -134,7 +134,7 @@ FLAGS = {
 _MAX_FLAG = 0
 for flag in FLAGS.values():
     if isinstance(flag, int):
-        _MAX_FLAG = _MAX_FLAG | flag
+        _MAX_FLAG |= flag
 
 # --------------------------------------------------------------------.
 # Experimental PIL-level API
@@ -885,7 +885,7 @@ if __name__ == "__main__":
         print("%s" %f)
 
         try:
-            exec ("doc = ImageCms.%s.__doc__" %(f))
+            exec ("doc = ImageCms.%s.__doc__" % f)
             if "pyCMS" in doc:
                 # so we don't get the __doc__ string for imported modules
                 print(doc)

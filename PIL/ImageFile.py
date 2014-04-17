@@ -502,5 +502,5 @@ def _safe_read(fp, size):
         if not block:
             break
         data.append(block)
-        size = size - len(block)
+        size -= len(block)
     return b"".join(data)

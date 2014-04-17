@@ -15,7 +15,7 @@
 
 __version__ = "0.1"
 
-from PIL import Image, ImageFile, _binary
+from PIL import Image, ImageFile
 import struct
 import os
 import io
@@ -45,7 +45,7 @@ def _parse_codestream(fp):
     elif csiz == 3:
         mode = 'RGB'
     elif csiz == 4:
-        mode == 'RGBA'
+        mode = 'RGBA'
     else:
         mode = None
     
@@ -122,7 +122,7 @@ def _parse_jp2_header(fp):
                     if nc == 3:
                         mode = 'RGB'
                     elif nc == 4:
-                        mode == 'RGBA'
+                        mode = 'RGBA'
                     break
 
     return (size, mode)

@@ -59,7 +59,7 @@ word = _binary.i16le
 def short(c, o=0):
     v = word(c, o)
     if v >= 32768:
-        v = v - 65536
+        v -= 65536
     return v
 
 dword = _binary.i32le

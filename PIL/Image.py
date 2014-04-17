@@ -26,7 +26,7 @@
 
 from __future__ import print_function
 
-from PIL import VERSION, PILLOW_VERSION, _plugins
+from PIL import PILLOW_VERSION, _plugins
 
 import warnings
 
@@ -91,7 +91,7 @@ except ImportError:
     builtins = __builtin__
 
 from PIL import ImageMode
-from PIL._binary import i8, o8
+from PIL._binary import i8
 from PIL._util import isPath, isStringType
 
 import os, sys
@@ -434,9 +434,9 @@ def _getscaleoffset(expr):
     data = expr(_E(stub)).data
     try:
         (a, b, c) = data # simplified syntax
-        if (a is stub and b == "__mul__" and isinstance(c, numbers.Number)):
+        if a is stub and b == "__mul__" and isinstance(c, numbers.Number):
             return c, 0.0
-        if (a is stub and b == "__add__" and isinstance(c, numbers.Number)):
+        if a is stub and b == "__add__" and isinstance(c, numbers.Number):
             return 1.0, c
     except TypeError: pass
     try:
@@ -1972,7 +1972,6 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     .. versionadded:: 1.1.4
     """
-    "Load image from bytes or buffer"
 
     # may pass tuple instead of argument list
     if len(args) == 1 and isinstance(args[0], tuple):

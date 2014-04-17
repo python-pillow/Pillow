@@ -275,7 +275,7 @@ def _save(im, fp, filename):
         interlace = 0
 
     if interlace:
-        flags = flags | 64
+        flags |= 64
 
     try:
         transparency = im.encoderinfo["transparency"]
