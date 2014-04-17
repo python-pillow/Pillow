@@ -303,7 +303,7 @@ def _setup():
     import sys
     if "--coverage" in sys.argv:
         import coverage
-        cov = coverage.coverage(auto_data=True, include="PIL/*")
+        cov = coverage.coverage(auto_data=True, data_suffix=True, include="PIL/*")
         cov.start()
 
     def report():

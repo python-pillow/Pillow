@@ -33,6 +33,7 @@ script:
   - python Tests/run.py --coverage
 
 after_success:
+  - coverage combine
   - coverage report
   - coveralls
   - pip install pep8 pyflakes
