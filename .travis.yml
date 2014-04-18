@@ -39,8 +39,8 @@ after_success:
   - pyflakes PIL/*.py
 
 env:
-  - TEST_CMD=coverage run --append --include=PIL/* selftest.py
-  - TEST_CMD=python Tests/run.py --coverage
+  - TEST_CMD="coverage run --append --include=PIL/* selftest.py"
+  - TEST_CMD="python Tests/run.py --coverage"
 
 matrix:
   allow_failures:
