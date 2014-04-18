@@ -106,7 +106,11 @@ def main():
 
     files = filter_tests(files, python_options, tester_options)
 
-    pool = Pool()
+    try:
+        max_procs = int(os.environ.get('MAX_CONCURRENCY', cpu_count()))
+    except:
+        max_procs = None
+    pool = Pool(max_procs)
     results = pool.map(test_one, files)
     pool.close()
     pool.join()

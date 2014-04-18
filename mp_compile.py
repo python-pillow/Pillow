@@ -3,6 +3,7 @@
 
 from multiprocessing import Pool, cpu_count
 from distutils.ccompiler import CCompiler
+import os
 
 # hideous monkeypatching.  but. but. but.
 def _mp_compile_one(tp):
@@ -28,8 +29,13 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
             self._setup_compile(output_dir, macros, include_dirs, sources,
                                 depends, extra_postargs)
     cc_args = self._get_cc_args(pp_opts, debug, extra_preargs)
-    
-    pool = Pool()
+
+
+    try:
+        max_procs = int(os.environ.get('MAX_CONCURRENCY', cpu_count()))
+    except:
+        max_procs = None
+    pool = Pool(max_procs)
     try:
         print ("Building using %d processes" % pool._processes)
     except: pass

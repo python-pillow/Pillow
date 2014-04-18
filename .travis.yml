@@ -7,6 +7,8 @@ virtualenv:
 notifications:
   irc: "chat.freenode.net#pil"
 
+env: MAX_CONCURRENCY=4
+
 python:
   - 2.6
   - 2.7
