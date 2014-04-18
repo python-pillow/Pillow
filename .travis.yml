@@ -7,6 +7,8 @@ virtualenv:
 notifications:
   irc: "chat.freenode.net#pil"
 
+env: MAX_CONCURRENCY=4
+
 python:
   - "pypy"
   - 2.6
@@ -33,6 +35,7 @@ script:
   - python Tests/run.py --coverage
 
 after_success:
+  - coverage combine
   - coverage report
   - coveralls
   - pip install pep8 pyflakes

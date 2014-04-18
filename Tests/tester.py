@@ -1,4 +1,6 @@
 from __future__ import print_function
+import tempfile
+import os
 
 # require that deprecation warnings are triggered
 import warnings
@@ -18,6 +20,12 @@ py3 = (sys.version_info >= (3, 0))
 
 _target = None
 _tempfiles = []
+if 'pillow-tests' in sys.argv[-1] and os.path.exists(sys.argv[-1]):
+    _temproot = sys.argv[-1]
+    _rmtempdir = False
+else:
+    _temproot = tempfile.mkdtemp(prefix='pillow-tests')
+    _rmtempdir = True
 _logfile = None
 
 
@@ -274,19 +282,14 @@ def tempfile(template, *extra):
     import os
     import os.path
     import sys
-    import tempfile
+    
     files = []
-    root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
-    try:
-        os.mkdir(root)
-    except OSError:
-        pass
     for temp in (template,) + extra:
         assert temp[:5] in ("temp.", "temp_")
         name = os.path.basename(sys.argv[0])
         name = temp[:4] + os.path.splitext(name)[0][4:]
-        name = name + "_%d" % len(_tempfiles) + temp[4:]
-        name = os.path.join(root, name)
+        name = name + "_%d_%d" % (os.getpid(), len(_tempfiles)) + temp[4:]
+        name = os.path.join(_temproot, name)
         files.append(name)
     _tempfiles.extend(files)
     return files[0]
@@ -346,7 +349,7 @@ def _setup():
     import sys
     if "--coverage" in sys.argv:
         import coverage
-        cov = coverage.coverage(auto_data=True, include="PIL/*")
+        cov = coverage.coverage(auto_data=True, data_suffix=True, include="PIL/*")
         cov.start()
 
     def report():
@@ -363,11 +366,11 @@ def _setup():
                     os.remove(file)
                 except OSError:
                     pass  # report?
-            temp_root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
-            try:
-                os.rmdir(temp_root)
-            except OSError:
-                pass
+            if _rmtempdir:
+                try:
+                    os.rmdir(_temproot)
+                except OSError:
+                    pass
 
     import atexit
     atexit.register(report)
