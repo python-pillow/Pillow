@@ -29,7 +29,8 @@ script:
   - coverage erase
   - python setup.py clean
   - python setup.py build_ext --inplace
-  - $TEST_CMD
+  - coverage run --append --include=PIL/* selftest.py
+  - python Tests/run.py --coverage
 
 after_success:
   - coverage report
@@ -37,10 +38,6 @@ after_success:
   - pip install pep8 pyflakes
   - pep8 PIL/*.py
   - pyflakes PIL/*.py
-
-env:
-  - TEST_CMD="coverage run --append --include=PIL/* selftest.py"
-  - TEST_CMD="python Tests/run.py --coverage"
 
 matrix:
   allow_failures:
