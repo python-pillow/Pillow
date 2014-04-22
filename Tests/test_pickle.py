@@ -52,12 +52,14 @@ def test_pickle_image():
 
 def test_cpickle_image():
     # Arrange
-    import cPickle
+    try:
+        import cPickle
+    except ImportError:
+        skip()
 
     # Act / Assert
     for protocol in range(0, cPickle.HIGHEST_PROTOCOL + 1):
         helper_test_pickle_string(cPickle, protocol)
         helper_test_pickle_file(cPickle, protocol)
-
 
 # End of file
