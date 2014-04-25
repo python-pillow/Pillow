@@ -585,9 +585,16 @@ class Image:
         return [self.mode, self.size, self.tobytes()]
 
     def __setstate__(self, state):
+        self.category = NORMAL
+        self.info = {}
+        self.palette = None
+        self.pyaccess = None
+        self.readonly = 0
+        self.tile = []
         mode, size, data = state
         self.mode = mode
         self.size = size
+        self.im = core.new(mode, size)
         self.frombytes(data)
 
     def tobytes(self, encoder_name="raw", *args):
