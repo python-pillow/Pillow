@@ -41,7 +41,7 @@ def test_pickle_image():
 def test_cpickle_image():
     # Arrange
     try:
-        import ABCcPickle
+        import cPickle
     except ImportError:
         return
 
