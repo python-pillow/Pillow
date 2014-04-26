@@ -563,6 +563,21 @@ class Image:
             self.save(file, format)
         return file
 
+    def __eq__(self, other):
+        a = (self.mode == other.mode)
+        b = (self.size == other.size)
+        c = (self.getpalette() == other.getpalette())
+        d = (self.info == other.info)
+        e = (self.category == other.category)
+        f = (self.readonly == other.readonly)
+        g = (self.pyaccess == other.pyaccess)
+        h = (self.tobytes() == other.tobytes())
+        return a and b and c and d and e and f and g and h
+
+    def __ne__(self, other):
+        eq = (self == other)
+        return not eq
+
     def __repr__(self):
         return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
             self.__class__.__module__, self.__class__.__name__,
@@ -582,15 +597,23 @@ class Image:
         raise AttributeError(name)
 
     def __getstate__(self):
-        return [self.mode, self.size, self.tobytes()]
+        return [
+            self.info,
+            self.mode,
+            self.size,
+            self.getpalette(),
+            self.tobytes()]
 
     def __setstate__(self, state):
         Image.__init__(self)
         self.tile = []
-        mode, size, data = state
+        info, mode, size, palette, data = state
+        self.info = info
         self.mode = mode
         self.size = size
         self.im = core.new(mode, size)
+        if mode in ("L", "P"):
+            self.putpalette(palette)
         self.frombytes(data)
 
     def tobytes(self, encoder_name="raw", *args):
@@ -870,7 +893,7 @@ class Image:
 
         new_im = self._new(im)
         if delete_trns:
-            #crash fail if we leave a bytes transparency in an rgb/l mode.
+            # crash fail if we leave a bytes transparency in an rgb/l mode.
             del(new_im.info['transparency'])
         if trns is not None:
             if new_im.mode == 'P':
@@ -2188,8 +2211,8 @@ def open(fp, mode="r"):
                 fp.seek(0)
                 return factory(fp, filename)
         except (SyntaxError, IndexError, TypeError):
-            #import traceback
-            #traceback.print_exc()
+            # import traceback
+            # traceback.print_exc()
             pass
 
     if init():
@@ -2201,8 +2224,8 @@ def open(fp, mode="r"):
                     fp.seek(0)
                     return factory(fp, filename)
             except (SyntaxError, IndexError, TypeError):
-                #import traceback
-                #traceback.print_exc()
+                # import traceback
+                # traceback.print_exc()
                 pass
 
     raise IOError("cannot identify image file %r"

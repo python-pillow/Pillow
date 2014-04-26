@@ -242,7 +242,8 @@ def assert_image_equal(a, b, msg=None):
         failure(msg or "got size %r, expected %r" % (a.size, b.size))
     elif a.tobytes() != b.tobytes():
         failure(msg or "got different content")
-        # generate better diff?
+    elif a != b:
+        failure(msg or "images different")
     else:
         success()
 
