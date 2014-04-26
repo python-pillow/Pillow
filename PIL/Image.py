@@ -585,11 +585,7 @@ class Image:
         return [self.mode, self.size, self.tobytes()]
 
     def __setstate__(self, state):
-        self.category = NORMAL
-        self.info = {}
-        self.palette = None
-        self.pyaccess = None
-        self.readonly = 0
+        Image.__init__(self)
         self.tile = []
         mode, size, data = state
         self.mode = mode
