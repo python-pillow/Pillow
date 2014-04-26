@@ -14,7 +14,7 @@ def helper_test_pickle_file(pickle, protocol=0):
         loaded_im = pickle.load(f)
 
     # Assert
-    assert_image_equal(im, loaded_im)
+    assert_image_completely_equal(im, loaded_im)
 
 
 def helper_test_pickle_string(pickle, protocol=0, file='Images/lena.jpg'):
@@ -25,7 +25,7 @@ def helper_test_pickle_string(pickle, protocol=0, file='Images/lena.jpg'):
     loaded_im = pickle.loads(dumped_string)
 
     # Assert
-    assert_image_equal(im, loaded_im)
+    assert_image_completely_equal(im, loaded_im)
 
 
 def test_pickle_image():
