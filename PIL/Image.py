@@ -570,9 +570,8 @@ class Image:
         d = (self.info == other.info)
         e = (self.category == other.category)
         f = (self.readonly == other.readonly)
-        g = (self.pyaccess == other.pyaccess)
-        h = (self.tobytes() == other.tobytes())
-        return a and b and c and d and e and f and g and h
+        g = (self.tobytes() == other.tobytes())
+        return a and b and c and d and e and f and g
 
     def __ne__(self, other):
         eq = (self == other)
