@@ -1,9 +1,5 @@
 language: python
 
-# for python-qt4
-virtualenv:
-  system_site_packages: true
-
 notifications:
   irc: "chat.freenode.net#pil"
 
@@ -13,7 +9,6 @@ python:
   - 2.7
   - 3.2
   - 3.3
-  - 3.4
 
 install:
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
@@ -43,3 +38,4 @@ after_success:
 matrix:
   allow_failures:
     - python: "pypy"
+    - python: 3.4
