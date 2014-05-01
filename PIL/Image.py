@@ -918,10 +918,10 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        self.load()
         if box is None:
             return self.copy()
-
+	else:
+	    self.load()
         # lazy operation
         return _ImageCrop(self, box)
 
