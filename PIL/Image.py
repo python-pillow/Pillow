@@ -233,7 +233,7 @@ _MODE_CONV = {
     "CMYK": ('|u1', 4),
     "YCbCr": ('|u1', 3),
     "LAB": ('|u1', 3), # UNDONE - unsigned |u1i1i1
-	# I;16 == I;16L, and I;32 == I;32L  
+    # I;16 == I;16L, and I;32 == I;32L  
     "I;16": ('<u2', None),
     "I;16B": ('>u2', None),
     "I;16L": ('<u2', None),
@@ -920,8 +920,8 @@ class Image:
 
         if box is None:
             return self.copy()
-	else:
-	    self.load()
+        else:
+            self.load()
         # lazy operation
         return _ImageCrop(self, box)
 

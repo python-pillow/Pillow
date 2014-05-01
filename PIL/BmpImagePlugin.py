@@ -232,8 +232,7 @@ def _save(im, fp, filename, check=0):
         for i in (0, 255):
             fp.write(o8(i) * 4)
     elif im.mode == "L":
-        for i in range(256):
-            fp.write(o8(i) * 4)
+        fp.write("".join(o8(i) * 4 for i in range(256)))
     elif im.mode == "P":
         fp.write(im.im.getpalette("RGB", "BGRX"))
 

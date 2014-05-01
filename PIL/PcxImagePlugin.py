@@ -173,8 +173,7 @@ def _save(im, fp, filename, check=0):
     elif im.mode == "L":
         # greyscale palette
         fp.write(o8(12))
-        for i in range(256):
-            fp.write(o8(i)*3)
+        fp.write("".join(o8(i)*3 for i in range(256)))
 
 # --------------------------------------------------------------------
 # registry

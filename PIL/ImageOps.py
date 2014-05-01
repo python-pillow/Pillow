@@ -86,7 +86,7 @@ def autocontrast(image, cutoff=0, ignore=None):
             # get number of pixels
             n = 0
             for ix in range(256):
-                n = n + h[ix]
+                n += h[ix]
             # remove cutoff% pixels from the low end
             cut = n * cutoff // 100
             for lo in range(256):
@@ -147,13 +147,10 @@ def colorize(image, black, white):
     assert image.mode == "L"
     black = _color(black, "RGB")
     white = _color(white, "RGB")
-    red = []; green = []; blue = []
-    for i in range(256):
-        red.append(black[0]+i*(white[0]-black[0])//255)
-        green.append(black[1]+i*(white[1]-black[1])//255)
-        blue.append(black[2]+i*(white[2]-black[2])//255)
     image = image.convert("RGB")
-    return _lut(image, red + green + blue)
+    return _lut(image, ([black[0]+i*(white[0]-black[0])//255 for i in range(256)] +
+            [black[1]+i*(white[1]-black[1])//255 for i in range(256)] + 
+            [black[2]+i*(white[2]-black[2])//255 for i in range(256)]))
 
 
 def crop(image, border=0):
@@ -357,10 +354,7 @@ def invert(image):
     :param image: The image to invert.
     :return: An image.
     """
-    lut = []
-    for i in range(256):
-        lut.append(255-i)
-    return _lut(image, lut)
+    return _lut(image, [255 - i for i in range(256)])
 
 
 def mirror(image):
@@ -381,11 +375,8 @@ def posterize(image, bits):
     :param bits: The number of bits to keep for each channel (1-8).
     :return: An image.
     """
-    lut = []
     mask = ~(2**(8-bits)-1)
-    for i in range(256):
-        lut.append(i & mask)
-    return _lut(image, lut)
+    return _lut(image, [i & mask for i in range(256)])
 
 
 def solarize(image, threshold=128):
@@ -396,13 +387,7 @@ def solarize(image, threshold=128):
     :param threshold: All pixels above this greyscale level are inverted.
     :return: An image.
     """
-    lut = []
-    for i in range(256):
-        if i < threshold:
-            lut.append(i)
-        else:
-            lut.append(255-i)
-    return _lut(image, lut)
+    return _lut(image, [i if i < threshold else 255 - i for i in range(256)])
 
 # --------------------------------------------------------------------
 # PIL USM components, from Kevin Cazabon.

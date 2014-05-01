@@ -17,7 +17,7 @@ from __future__ import print_function
 from PIL import Image
 import os, sys
 
-if(sys.version_info >= (3, 3)):
+if sys.version_info >= (3, 3):
     from shlex import quote
 else:
     from pipes import quote
@@ -52,7 +52,7 @@ def show(image, title=None, **options):
 ##
 # Base class for viewers.
 
-class Viewer:
+class Viewer(object):
 
     # main api
 

@@ -54,7 +54,7 @@ def _pilbitmap_check():
 # --------------------------------------------------------------------
 # PhotoImage
 
-class PhotoImage:
+class PhotoImage(object):
     """
     A Tkinter-compatible photo image.  This can be used
     everywhere Tkinter expects an image object.  If the image is an RGBA
@@ -192,7 +192,7 @@ class PhotoImage:
 # BitmapImage
 
 
-class BitmapImage:
+class BitmapImage(object):
     """
 
     A Tkinter-compatible bitmap image.  This can be used everywhere Tkinter

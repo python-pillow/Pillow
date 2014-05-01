@@ -30,7 +30,7 @@ except:
 def rgb(r, g, b, a=255):
     # use qRgb to pack the colors, and then turn the resulting long
     # into a negative integer with the same bitpattern.
-    return (qRgba(r, g, b, a) & 0xffffffff)
+    return qRgba(r, g, b, a) & 0xffffffff
 
 ##
 # An PIL image wrapper for Qt.  This is a subclass of PyQt4's QImage
@@ -57,9 +57,7 @@ class ImageQt(QImage):
             format = QImage.Format_Mono
         elif im.mode == "L":
             format = QImage.Format_Indexed8
-            colortable = []
-            for i in range(256):
-                colortable.append(rgb(i, i, i))
+            colortable = [rgb(i, i, i) for i in range(256)] 
         elif im.mode == "P":
             format = QImage.Format_Indexed8
             colortable = []
