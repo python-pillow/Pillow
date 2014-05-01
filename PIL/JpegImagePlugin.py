@@ -307,7 +307,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
-            elif i == 0 or i == 65535:
+            elif i in (0, 65535):
                 # padded marker or junk; move on
                 s = "\xff"
             else:

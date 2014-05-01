@@ -134,7 +134,7 @@ class ImImageFile(ImageFile.ImageFile):
             if s == b"\r":
                 continue
 
-            if not s or s == b'\0' or s == b'\x1A':
+            if not s or s in (b'\0', b'\x1A'):
                 break
 
             # FIXME: this may read whole file if not a text file
@@ -212,7 +212,7 @@ class ImImageFile(ImageFile.ImageFile):
                         linear = 0
                 else:
                     greyscale = 0
-            if self.mode == "L" or self.mode == "LA":
+            if self.mode in ("L", "LA"):
                 if greyscale:
                     if not linear:
                         self.lut = [i8(c) for c in palette[:256]]
@@ -258,7 +258,7 @@ class ImImageFile(ImageFile.ImageFile):
 
     def seek(self, frame):
 
-        if frame < 0 or frame >= self.info[FRAMES]:
+        if not 0 <= frame < self.info[FRAMES]:
             raise EOFError("seek outside sequence")
 
         if self.frame == frame:

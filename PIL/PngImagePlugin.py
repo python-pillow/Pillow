@@ -555,8 +555,9 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
     if im.mode == "P":
         palette_byte_number = (2 ** bits) * 3
         palette_bytes = im.im.getpalette("RGB")[:palette_byte_number]
-        while len(palette_bytes) < palette_byte_number:
-            palette_bytes += b'\0'
+        diff = palette_byte_number - len(palette_bytes)
+        if diff > 0:
+            palette_bytes += b'\0' * diff
         chunk(fp, b"PLTE", palette_bytes)
 
     transparency = im.encoderinfo.get('transparency',im.info.get('transparency', None))

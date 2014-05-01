@@ -272,12 +272,12 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     if not isinstance(centering, list):
         centering = [centering[0], centering[1]]
 
-    if centering[0] > 1.0 or centering[0] < 0.0:
+    if not 0.0 < centering[0] < 1.0:
         centering [0] = 0.50
-    if centering[1] > 1.0 or centering[1] < 0.0:
+    if not 0.0 < centering[1] < 1.0:
         centering[1] = 0.50
 
-    if bleed > 0.49999 or bleed < 0.0:
+    if not 0.0 < bleed < 0.49999:
         bleed = 0.0
 
     # calculate the area to use for resizing and cropping, subtracting

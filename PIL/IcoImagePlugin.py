@@ -102,7 +102,7 @@ class IcoFile:
         Get an image from the icon
         """
         for (i, h) in enumerate(self.entry):
-            if size == h['dim'] and (bpp == False or bpp == h['color_depth']):
+            if size == h['dim'] and bpp in (h['color_depth'], False):
                 return self.frame(i)
         return self.frame(0)
 

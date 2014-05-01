@@ -699,7 +699,7 @@ class _OleStream(io.BytesIO):
                     debug('sect=ENDOFCHAIN before expected size')
                     raise IOError('incomplete OLE stream')
             # sector index should be within FAT:
-            if sect<0 or sect>=len(fat):
+            if not 0 <= sect < len(fat):
                 debug('sect=%d (%X) / len(fat)=%d' % (sect, sect, len(fat)))
                 debug('i=%d / nb_sectors=%d' %(i, nb_sectors))
 ##                tmp_data = b"".join(data)
@@ -920,7 +920,7 @@ class _OleDirectoryEntry:
         if child_sid == NOSTREAM:
             return
         # check if child SID is in the proper range:
-        if child_sid<0 or child_sid>=len(self.olefile.direntries):
+        if not 0 <= child_sid < len(self.olefile.direntries):
             self.olefile._raise_defect(DEFECT_FATAL, 'OLE DirEntry index out of range')
         # get child direntry:
         child = self.olefile._load_direntry(child_sid) #direntries[child_sid]
@@ -1385,7 +1385,7 @@ class OleFileIO:
         # The FAT is a sector chain starting at the first index of itself.
         for isect in fat1:
             #print("isect = %X" % isect)
-            if isect == ENDOFCHAIN or isect == FREESECT:
+            if isect in (ENDOFCHAIN, FREESECT):
                 # the end of the sector chain has been reached
                 break
             # read the FAT sector
@@ -1572,7 +1572,7 @@ class OleFileIO:
         raise: IOError if the entry has always been referenced.
         """
         # check if SID is OK:
-        if sid<0 or sid>=len(self.direntries):
+        if 0 <= sid < len(self.direntries):
             self._raise_defect(DEFECT_FATAL, "OLE directory index out of range")
         # check if entry was already referenced:
         if self.direntries[sid] is not None:

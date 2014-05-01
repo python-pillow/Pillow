@@ -53,7 +53,7 @@ class SgiImageFile(ImageFile.ImageFile):
         layout = i8(s[3]), i16(s[4:]), i16(s[10:])
 
         # determine mode from bytes/zsize
-        if layout == (1, 2, 1) or layout == (1, 1, 1):
+        if layout in ((1, 2, 1), (1, 1, 1)):
             self.mode = "L"
         elif layout == (1, 3, 3):
             self.mode = "RGB"
