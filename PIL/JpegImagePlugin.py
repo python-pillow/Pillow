@@ -290,24 +290,29 @@ class JpegImageFile(ImageFile.ImageFile):
 
         while True:
 
-            s = s + self.fp.read(1)
-
-            i = i16(s)
+            i = i8(s)
+            if i == 0xFF:
+                s = s + self.fp.read(1)
+                i = i16(s)
+            else:
+                # Skip non-0xFF junk
+                s = "\xff"
+                continue
 
             if i in MARKER:
                 name, description, handler = MARKER[i]
                 # print hex(i), name, description
                 if handler is not None:
                     handler(self, i)
-                if i == 0xFFDA: # start of scan
+                if i == 0xFFDA:  # start of scan
                     rawmode = self.mode
                     if self.mode == "CMYK":
-                        rawmode = "CMYK;I" # assume adobe conventions
-                    self.tile = [("jpeg", (0,0) + self.size, 0, (rawmode, ""))]
+                        rawmode = "CMYK;I"  # assume adobe conventions
+                    self.tile = [("jpeg", (0, 0) + self.size, 0, (rawmode, ""))]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
-            elif i == 0 or i == 65535:
+            elif i == 0 or i == 0xFFFF:
                 # padded marker or junk; move on
                 s = "\xff"
             else:
