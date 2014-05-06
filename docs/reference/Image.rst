@@ -136,9 +136,9 @@ ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
 .. automethod:: PIL.Image.Image.verify
 
 .. automethod:: PIL.Image.Image.fromstring
-.. deprecated:: 2.0
 
 .. automethod:: PIL.Image.Image.load
+.. automethod:: PIL.Image.Image.close
 
 Attributes
 ----------

@@ -2,6 +2,7 @@ from tester import *
 
 from PIL import Image
 
+
 def verify(im1):
     im2 = lena("I")
     assert_equal(im1.size, im2.size)
@@ -18,6 +19,7 @@ def verify(im1):
                 return
     success()
 
+
 def test_basic():
     # PIL 1.1 has limited support for 16-bit image data.  Check that
     # create/copy/transform and save works as expected.
@@ -30,10 +32,10 @@ def test_basic():
         w, h = imIn.size
 
         imOut = imIn.copy()
-        verify(imOut) # copy
+        verify(imOut)  # copy
 
         imOut = imIn.transform((w, h), Image.EXTENT, (0, 0, w, h))
-        verify(imOut) # transform
+        verify(imOut)  # transform
 
         filename = tempfile("temp.im")
         imIn.save(filename)

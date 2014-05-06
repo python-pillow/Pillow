@@ -128,3 +128,14 @@ def test_12bit_rawmode():
         print (im2.getpixel((0,2)))
   
     assert_image_equal(im, im2)
+
+def test_32bit_float():
+    # Issue 614, specific 32 bit float format
+    path = 'Tests/images/10ct_32bit_128.tiff'
+    im = Image.open(path)
+    im.load()
+
+    assert_equal(im.getpixel((0,0)), -0.4526388943195343)
+    assert_equal(im.getextrema(), (-3.140936851501465, 3.140684127807617))
+
+    

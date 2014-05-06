@@ -1,35 +1,42 @@
 language: python
 
-# for python-qt4
-virtualenv:
-  system_site_packages: true
-
 notifications:
   irc: "chat.freenode.net#pil"
 
 python:
+  - "pypy"
   - 2.6
   - 2.7
   - 3.2
   - 3.3
-  - "pypy"
+  - 3.4
 
-install: 
+install:
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
   - "pip install cffi"
+  - "pip install coveralls"
 
-  # webp  
+  # webp
   - pushd depends && ./install_webp.sh && popd
 
   # openjpeg
   - pushd depends && ./install_openjpeg.sh && popd
 
 script:
+  - coverage erase
   - python setup.py clean
   - python setup.py build_ext --inplace
-  - python selftest.py
-  - python Tests/run.py
+  - coverage run --append --include=PIL/* selftest.py
+  - python Tests/run.py --coverage
+
+after_success:
+  - coverage report
+  - coveralls
+  - pip install pep8 pyflakes
+  - pep8 PIL/*.py
+  - pyflakes PIL/*.py
 
 matrix:
   allow_failures:
     - python: "pypy"
+    - python: 3.4
