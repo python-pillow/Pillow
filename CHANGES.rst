@@ -4,6 +4,18 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Added Image.close, context manager support.
+  [wiredfool]
+
+- Added support for 16 bit PGM files. 
+  [wiredfool]
+
+- Updated OleFileIO to version 0.30 from upstream
+  [hugovk]
+
+- Added support for additional TIFF floating point format 
+  [Hijackal]
+
 - Have the tempfile use a suffix with a dot
   [wiredfool]
 

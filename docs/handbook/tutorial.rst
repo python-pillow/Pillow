@@ -126,8 +126,8 @@ Identify Image Files
 
     for infile in sys.argv[1:]:
         try:
-            im = Image.open(infile)
-            print(infile, im.format, "%dx%d" % im.size, im.mode)
+            with Image.open(infile) as im:
+                print(infile, im.format, "%dx%d" % im.size, im.mode)
         except IOError:
             pass
 

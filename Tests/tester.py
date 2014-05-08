@@ -94,6 +94,50 @@ def assert_deep_equal(a, b, msg=None):
         assert_equal(a, b, msg)
 
 
+def assert_greater(a, b, msg=None):
+    if a > b:
+        success()
+    else:
+        failure(msg or "%r unexpectedly not greater than %r" % (a, b))
+
+
+def assert_greater_equal(a, b, msg=None):
+    if a >= b:
+        success()
+    else:
+        failure(
+            msg or "%r unexpectedly not greater than or equal to %r" % (a, b))
+
+
+def assert_less(a, b, msg=None):
+    if a < b:
+        success()
+    else:
+        failure(msg or "%r unexpectedly not less than %r" % (a, b))
+
+
+def assert_less_equal(a, b, msg=None):
+    if a <= b:
+        success()
+    else:
+        failure(
+            msg or "%r unexpectedly not less than or equal to %r" % (a, b))
+
+
+def assert_is_instance(a, b, msg=None):
+    if isinstance(a, b):
+        success()
+    else:
+        failure(msg or "got %r, expected %r" % (type(a), b))
+
+
+def assert_in(a, b, msg=None):
+    if a in b:
+        success()
+    else:
+        failure(msg or "%r unexpectedly not in %r" % (a, b))
+
+
 def assert_match(v, pattern, msg=None):
     import re
     if re.match(pattern, v):

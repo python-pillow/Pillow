@@ -92,7 +92,7 @@ except ImportError:
 
 from PIL import ImageMode
 from PIL._binary import i8, o8
-from PIL._util import isPath, isStringType
+from PIL._util import isPath, isStringType, deferred_error
 
 import os, sys
 
@@ -497,6 +497,35 @@ class Image:
 
     _makeself = _new # compatibility
 
+    # Context Manager Support
+    def __enter__(self):
+        return self
+    def __exit__(self, *args):
+        self.close()
+        
+    def close(self):
+        """
+        Closes the file pointer, if possible.
+
+        This operation will destroy the image core and release it's memory.
+        The image data will be unusable afterward.
+
+        This function is only required to close images that have not
+        had their file read and closed by the
+        :py:meth:`~PIL.Image.Image.load` method.
+        """
+        try:
+            self.fp.close()
+        except Exception as msg:
+            if Image.DEBUG:
+                print ("Error closing: %s" %msg)
+
+        # Instead of simply setting to None, we're setting up a
+        # deferred error that will better explain that the core image
+        # object is gone.
+        self.im = deferred_error(ValueError("Operation on closed image"))
+        
+
     def _copy(self):
         self.load()
         self.im = self.im.copy()
@@ -642,7 +671,8 @@ class Image:
         Allocates storage for the image and loads the pixel data.  In
         normal cases, you don't need to call this method, since the
         Image class automatically loads an opened image when it is
-        accessed for the first time.
+        accessed for the first time. This method will close the file
+        associated with the image. 
 
         :returns: An image access object.
         """
@@ -2074,10 +2104,11 @@ def open(fp, mode="r"):
     """
     Opens and identifies the given image file.
 
-    This is a lazy operation; this function identifies the file, but the
-    actual image data is not read from the file until you try to process
-    the data (or call the :py:meth:`~PIL.Image.Image.load` method).
-    See :py:func:`~PIL.Image.new`.
+    This is a lazy operation; this function identifies the file, but
+    the file remains open and the actual image data is not read from
+    the file until you try to process the data (or call the
+    :py:meth:`~PIL.Image.Image.load` method).  See
+    :py:func:`~PIL.Image.new`.
 
     :param file: A filename (string) or a file object.  The file object
        must implement :py:meth:`~file.read`, :py:meth:`~file.seek`, and
