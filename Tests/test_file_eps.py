@@ -110,7 +110,7 @@ def test_resize():
 
     # Act
     image1 = image1.resize(new_size)
-    image2 = image1.resize(new_size)
+    image2 = image2.resize(new_size)
 
     # Assert
     assert_equal(image1.size, new_size)
@@ -126,7 +126,7 @@ def test_thumbnail():
 
     # Act
     image1.thumbnail(new_size)
-    image1.thumbnail(new_size)
+    image2.thumbnail(new_size)
 
     # Assert
     assert_equal(image1.size, new_size)
