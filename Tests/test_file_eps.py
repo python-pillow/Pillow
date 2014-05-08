@@ -117,4 +117,19 @@ def test_resize():
     assert_equal(image2.size, new_size)
 
 
+def test_thumbnail():
+    # Issue #619
+    # Arrange
+    image1 = Image.open(file1)
+    image2 = Image.open(file2)
+    new_size = (100, 100)
+
+    # Act
+    image1.thumbnail(new_size)
+    image1.thumbnail(new_size)
+
+    # Assert
+    assert_equal(image1.size, new_size)
+    assert_equal(image2.size, new_size)
+
 # End of file
