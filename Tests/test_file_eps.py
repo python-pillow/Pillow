@@ -129,7 +129,7 @@ def test_thumbnail():
     image2.thumbnail(new_size)
 
     # Assert
-    assert_equal(image1.size, new_size)
-    assert_equal(image2.size, new_size)
+    assert_equal(max(image1.size), max(new_size))
+    assert_equal(max(image2.size), max(new_size))
 
 # End of file
