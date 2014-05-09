@@ -33,7 +33,8 @@
 
 #if defined(_MSC_VER)
 #define inline __inline
-#elif !defined(USE_INLINE)
+#endif
+#if !defined(USE_INLINE)
 #define inline
 #endif
 
