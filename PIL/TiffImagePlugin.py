@@ -264,7 +264,7 @@ class ImageFileDirectory(collections.MutableMapping):
         if self.prefix == MM:
             self.i16, self.i32 = ib16, ib32
             self.o16, self.o32 = ob16, ob32
-        elif self.prefix in (II, '\xf5\xf5', ):
+        elif self.prefix in (II, '\xf5\xf5', '\xfb\xfb', '\xfe\xde', ):
             self.i16, self.i32 = il16, il32
             self.o16, self.o32 = ol16, ol32
         else:
