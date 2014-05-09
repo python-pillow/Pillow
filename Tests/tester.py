@@ -345,7 +345,10 @@ def _setup():
 
     import sys
     if "--coverage" in sys.argv:
-        import coverage
+        # Temporary: ignore PendingDeprecationWarning from Coverage (Py3.4)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            import coverage
         cov = coverage.coverage(auto_data=True, include="PIL/*")
         cov.start()
 
