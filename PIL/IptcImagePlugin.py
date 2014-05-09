@@ -68,7 +68,7 @@ class IptcImageFile(ImageFile.ImageFile):
         tag = i8(s[1]), i8(s[2])
 
         # syntax
-        if i8(s[0]) != 0x1C or tag[0] < 1 or tag[0] > 9:
+        if i8(s[0]) != 0x1C or not 1 <= tag[0] <= 9:
             raise SyntaxError("invalid IPTC/NAA file")
 
         # field size

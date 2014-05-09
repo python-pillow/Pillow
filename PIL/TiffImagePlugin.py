@@ -1043,7 +1043,7 @@ def _save(im, fp, filename):
         unit = im.encoderinfo["resolution unit"]
         if unit == "inch":
             ifd[RESOLUTION_UNIT] = 2
-        elif unit == "cm" or unit == "centimeter":
+        elif unit in ("cm", "centimeter"):
             ifd[RESOLUTION_UNIT] = 3
         else:
             ifd[RESOLUTION_UNIT] = 1

@@ -20,7 +20,7 @@ import array
 from PIL import Image, ImageColor
 
 
-class ImagePalette:
+class ImagePalette(object):
     "Color palette for palette mapped images"
 
     def __init__(self, mode = "RGB", palette = None, size = 0):
@@ -120,19 +120,12 @@ def raw(rawmode, data):
 # Factories
 
 def _make_linear_lut(black, white):
-    lut = []
-    if black == 0:
-        for i in range(256):
-            lut.append(white*i//255)
-    else:
+    if black != 0:
         raise NotImplementedError # FIXME
-    return lut
+    return [(white*i//255) for i in range(256)]
 
 def _make_gamma_lut(exp, mode="RGB"):
-    lut = []
-    for i in range(256):
-        lut.append(int(((i / 255.0) ** exp) * 255.0 + 0.5))
-    return lut
+    return [int(((i / 255.0) ** exp) * 255.0 + 0.5) for i in range(256)]
 
 def new(mode, data):
     return Image.core.new_palette(mode, data)
@@ -144,10 +137,8 @@ def negative(mode="RGB"):
 
 def random(mode="RGB"):
     from random import randint
-    palette = []
-    for i in range(256*len(mode)):
-        palette.append(randint(0, 255))
-    return ImagePalette(mode, palette)
+    
+    return ImagePalette(mode, [randint(0, 255) for i in range(256 * len(mode))])
 
 def sepia(white="#fff0c0"):
     r, g, b = ImageColor.getrgb(white)
