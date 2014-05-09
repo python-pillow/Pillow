@@ -35,6 +35,8 @@ after_success:
   - pip install pep8 pyflakes
   - pep8 PIL/*.py
   - pyflakes PIL/*.py
+  - pep8 Tests/*.py
+  - pyflakes Tests/*.py
 
 matrix:
   allow_failures:
