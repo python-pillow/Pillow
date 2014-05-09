@@ -22,18 +22,6 @@
 
 #include "Imaging.h"
 
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#undef INT8
-#undef UINT8
-#undef INT16
-#undef UINT16
-#undef INT32
-#undef INT64
-#undef UINT32
-#include "windows.h"
-#endif
-
 #include "py3.h"
 
 /* compatibility wrappers (defined in _imaging.c) */
@@ -48,7 +36,7 @@ typedef struct {
     char* base;
     int   size;
     int   offset;
-#ifdef WIN32
+#ifdef _WIN32
     HANDLE hFile;
     HANDLE hMap;
 #endif
@@ -71,7 +59,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
     mapper->base = NULL;
     mapper->size = mapper->offset = 0;
 
-#ifdef WIN32
+#ifdef _WIN32
     mapper->hFile = (HANDLE)-1;
     mapper->hMap  = (HANDLE)-1;
 
@@ -114,7 +102,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
 static void
 mapping_dealloc(ImagingMapperObject* mapper)
 {
-#ifdef WIN32
+#ifdef _WIN32
     if (mapper->base != 0)
         UnmapViewOfFile(mapper->base);
     if (mapper->hMap != (HANDLE)-1)
