@@ -128,5 +128,5 @@ class BdfFontFile(FontFile.FontFile):
             if not c:
                 break
             id, ch, (xy, dst, src), im = c
-            if ch >= 0 and ch < len(self.glyph):
+            if 0 <= ch < len(self.glyph):
                 self.glyph[ch] = xy, dst, src, im

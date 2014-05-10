@@ -104,7 +104,7 @@ while True:
     except EOFError:
         break
 
-    ix = ix + 1
+    ix += 1
 
 if html:
     html.write("</body>\n</html>\n")

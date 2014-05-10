@@ -17,7 +17,7 @@ from __future__ import print_function
 from PIL import Image
 import os, sys
 
-if(sys.version_info >= (3, 3)):
+if sys.version_info >= (3, 3):
     from shlex import quote
 else:
     from pipes import quote
@@ -160,7 +160,7 @@ else:
             # imagemagick's display command instead.
             command = executable = "xv"
             if title:
-                command = command + " -name %s" % quote(title)
+                command += " -name %s" % quote(title)
             return command, executable
 
     if which("xv"):

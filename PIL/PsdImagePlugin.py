@@ -235,7 +235,7 @@ def _layerinfo(file):
             if t:
                 tile.extend(t)
         layers[i] = name, mode, bbox, tile
-        i = i + 1
+        i += 1
 
     return layers
 
@@ -258,7 +258,7 @@ def _maketile(file, mode, bbox, channels):
         for channel in range(channels):
             layer = mode[channel]
             if mode == "CMYK":
-                layer = layer + ";I"
+                layer += ";I"
             tile.append(("raw", bbox, offset, layer))
             offset = offset + xsize*ysize
 
@@ -272,13 +272,13 @@ def _maketile(file, mode, bbox, channels):
         for channel in range(channels):
             layer = mode[channel]
             if mode == "CMYK":
-                layer = layer + ";I"
+                layer += ";I"
             tile.append(
                 ("packbits", bbox, offset, layer)
                 )
             for y in range(ysize):
                 offset = offset + i16(bytecount[i:i+2])
-                i = i + 2
+                i += 2
 
     file.seek(offset)
 

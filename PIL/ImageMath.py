@@ -17,7 +17,6 @@
 
 from PIL import Image
 from PIL import _imagingmath
-import sys
 
 try:
     import builtins

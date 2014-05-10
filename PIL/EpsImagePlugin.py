@@ -93,7 +93,7 @@ def Ghostscript(tile, size, fp, scale=1):
             s = fp.read(100*1024)
             if not s:
                 break
-            length = length - len(s)
+            length -= len(s)
             f.write(s)
 
     # Build ghostscript command
@@ -148,7 +148,7 @@ class PSFile:
     def tell(self):
         pos = self.fp.tell()
         if self.char:
-            pos = pos - 1
+            pos -= 1
         return pos
     def readline(self):
         s = b""

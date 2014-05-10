@@ -70,7 +70,7 @@ def read_32(fobj, start_length, size):
                 else:
                     blocksize = byte + 1
                     data.append(fobj.read(blocksize))
-                bytesleft = bytesleft - blocksize
+                bytesleft -= blocksize
                 if bytesleft <= 0:
                     break
             if bytesleft != 0:
@@ -179,11 +179,11 @@ class IcnsFile:
         i = HEADERSIZE
         while i < filesize:
             sig, blocksize = nextheader(fobj)
-            i = i + HEADERSIZE
-            blocksize = blocksize - HEADERSIZE
+            i += HEADERSIZE
+            blocksize -= HEADERSIZE
             dct[sig] = (i, blocksize)
             fobj.seek(blocksize, 1)
-            i = i + blocksize
+            i += blocksize
 
     def itersizes(self):
         sizes = []

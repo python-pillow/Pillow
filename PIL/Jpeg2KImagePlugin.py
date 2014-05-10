@@ -15,7 +15,7 @@
 
 __version__ = "0.1"
 
-from PIL import Image, ImageFile, _binary
+from PIL import Image, ImageFile
 import struct
 import os
 import io

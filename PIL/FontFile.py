@@ -30,7 +30,7 @@ def puti16(fp, values):
     # write network order (big-endian) 16-bit sequence
     for v in values:
         if v < 0:
-            v = v + 65536
+            v += 65536
         fp.write(_binary.o16be(v))
 
 ##
@@ -63,7 +63,7 @@ class FontFile:
                 h = max(h, src[3] - src[1])
                 w = w + (src[2] - src[0])
                 if w > WIDTH:
-                    lines = lines + 1
+                    lines += 1
                     w = (src[2] - src[0])
                 maxwidth = max(maxwidth, w)
 

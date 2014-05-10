@@ -16,7 +16,7 @@ def test_sanity():
     for frame in seq:
         assert_image_equal(im, frame)
         assert_equal(im.tell(), index)
-        index = index + 1
+        index += 1
 
     assert_equal(index, 1)
 

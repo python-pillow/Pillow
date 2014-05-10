@@ -52,7 +52,7 @@ class GimpPaletteFile:
             if 0 <= i <= 255:
                 self.palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
 
-            i = i + 1
+            i += 1
 
         self.palette = b"".join(self.palette)
 

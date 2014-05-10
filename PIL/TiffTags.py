@@ -161,7 +161,7 @@ TAGS = {
     50716: "BlackLevelDeltaV",
     50717: "WhiteLevel",
     50718: "DefaultScale",
-    50741: "BestQualityScale",
+    50741: "BestQualityScale",  # FIXME! Dictionary contains duplicate keys 50741
     50719: "DefaultCropOrigin",
     50720: "DefaultCropSize",
     50778: "CalibrationIlluminant1",
@@ -185,7 +185,7 @@ TAGS = {
     50737: "ChromaBlurRadius",
     50738: "AntiAliasStrength",
     50740: "DNGPrivateData",
-    50741: "MakerNoteSafety",
+    50741: "MakerNoteSafety",  # FIXME! Dictionary contains duplicate keys 50741
 
     #ImageJ
     50838: "ImageJMetaDataByteCounts", # private tag registered with Adobe
