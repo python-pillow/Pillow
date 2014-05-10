@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Adjust Homebrew freetype detection logic
+  [jacknagel]
+
 - Added Image.close, context manager support.
   [wiredfool]
 
