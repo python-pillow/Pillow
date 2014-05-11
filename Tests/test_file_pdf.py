@@ -20,13 +20,13 @@ def helper_save_as_pdf(mode):
 # /home/travis/build/hugovk/Pillow/PIL/PdfImagePlugin.py:147:
 # DeprecationWarning: tostring() is deprecated. Please call tobytes() instead.
 #   data = im.tostring("raw", "1")
-
-def test_monochrome():
-    # Arrange
-    mode = "1"
-
-    # Act / Assert
-    helper_save_as_pdf(mode)
+#
+# def test_monochrome():
+#     # Arrange
+#     mode = "1"
+#
+#     # Act / Assert
+#     helper_save_as_pdf(mode)
 
 
 def test_greyscale():
@@ -51,7 +51,7 @@ def test_rgb():
 #   in _save
 #     colorspace = colorspace + b"> ]"
 # TypeError: Can't convert 'bytes' object to str implicitly
-
+#
 # def test_p_mode():
 #     # Arrange
 #     mode = "P"
