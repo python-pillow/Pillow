@@ -15,6 +15,12 @@ def helper_save_as_pdf(mode):
     assert_greater(os.path.getsize(outfile), 0)
 
 
+# FIXME: 1-mode test "fails" because it produces a warning.
+# https://travis-ci.org/hugovk/Pillow/builds/24916085
+# /home/travis/build/hugovk/Pillow/PIL/PdfImagePlugin.py:147:
+# DeprecationWarning: tostring() is deprecated. Please call tobytes() instead.
+#   data = im.tostring("raw", "1")
+
 def test_monochrome():
     # Arrange
     mode = "1"
