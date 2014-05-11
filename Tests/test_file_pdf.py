@@ -41,7 +41,7 @@ def test_p_mode():
 
 def test_cmyk_mode():
     # Arrange
-    mode = "P"
+    mode = "CMYK"
 
     # Act / Assert
     helper_save_as_pdf(mode)
