@@ -1,6 +1,7 @@
 from tester import *
 
 from PIL import Image
+from PIL import ImageColor
 from PIL import ImageDraw
 
 # Image size
@@ -217,6 +218,21 @@ def test_rectangle1():
 
 def test_rectangle2():
     helper_rectangle(bbox2)
+
+
+def test_floodfill():
+    # Arrange
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+    draw.rectangle(bbox2, outline="yellow", fill="green")
+    centre_point = (int(w/2), int(h/2))
+
+    # Act
+    ImageDraw.floodfill(im, centre_point, ImageColor.getrgb("red"))
+    del draw
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_floodfill.png"))
 
 
 # End of file
