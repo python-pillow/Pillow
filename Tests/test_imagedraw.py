@@ -7,10 +7,10 @@ from PIL import ImageDraw
 w, h = 100, 100
 
 # Bounding box points
-x0 = w / 4
-x1 = x0 * 3
-y0 = h / 4
-y1 = x0 * 3
+x0 = int(w / 4)
+x1 = int(x0 * 3)
+y0 = int(h / 4)
+y1 = int(x0 * 3)
 
 # Two kinds of bounding box
 bbox1 = [(x0, y0), (x1, y1)]
