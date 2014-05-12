@@ -46,8 +46,10 @@ def _obj(fp, obj, **dict):
                 fp.write("/%s %s\n" % (k, v))
         fp.write(">>\n")
 
+
 def _endobj(fp):
     fp.write("endobj\n")
+
 
 ##
 # (Internal) Image save plugin for the PDF format.
@@ -59,13 +61,15 @@ def _save(im, fp, filename):
     # make sure image data is available
     im.load()
 
-    xref = [0]*(5+1) # placeholders
+    xref = [0]*(5+1)  # placeholders
 
     class TextWriter:
         def __init__(self, fp):
             self.fp = fp
+
         def __getattr__(self, name):
             return getattr(self.fp, name)
+
         def write(self, value):
             self.fp.write(value.encode('latin-1'))
 
@@ -89,13 +93,13 @@ def _save(im, fp, filename):
     if im.mode == "1":
         filter = "/ASCIIHexDecode"
         colorspace = "/DeviceGray"
-        procset = "/ImageB" # grayscale
+        procset = "/ImageB"  # grayscale
         bits = 1
     elif im.mode == "L":
         filter = "/DCTDecode"
         # params = "<< /Predictor 15 /Columns %d >>" % (width-2)
         colorspace = "/DeviceGray"
-        procset = "/ImageB" # grayscale
+        procset = "/ImageB"  # grayscale
     elif im.mode == "P":
         filter = "/ASCIIHexDecode"
         colorspace = "[ /Indexed /DeviceRGB 255 <"
@@ -106,15 +110,15 @@ def _save(im, fp, filename):
             b = i8(palette[i*3+2])
             colorspace = colorspace + "%02x%02x%02x " % (r, g, b)
         colorspace = colorspace + "> ]"
-        procset = "/ImageI" # indexed color
+        procset = "/ImageI"  # indexed color
     elif im.mode == "RGB":
         filter = "/DCTDecode"
         colorspace = "/DeviceRGB"
-        procset = "/ImageC" # color images
+        procset = "/ImageC"  # color images
     elif im.mode == "CMYK":
         filter = "/DCTDecode"
         colorspace = "/DeviceCMYK"
-        procset = "/ImageC" # color images
+        procset = "/ImageC"  # color images
     else:
         raise ValueError("cannot save mode %s" % im.mode)
 
@@ -122,17 +126,21 @@ def _save(im, fp, filename):
     # catalogue
 
     xref[1] = fp.tell()
-    _obj(fp, 1, Type = "/Catalog",
-                Pages = "2 0 R")
+    _obj(
+        fp, 1,
+        Type="/Catalog",
+        Pages="2 0 R")
     _endobj(fp)
 
     #
     # pages
 
     xref[2] = fp.tell()
-    _obj(fp, 2, Type = "/Pages",
-                Count = 1,
-                Kids = "[4 0 R]")
+    _obj(
+        fp, 2,
+        Type="/Pages",
+        Count=1,
+        Kids="[4 0 R]")
     _endobj(fp)
 
     #
@@ -147,26 +155,28 @@ def _save(im, fp, filename):
             data = im.tobytes("raw", "1")
             im = Image.new("L", (len(data), 1), None)
             im.putdata(data)
-        ImageFile._save(im, op, [("hex", (0,0)+im.size, 0, im.mode)])
+        ImageFile._save(im, op, [("hex", (0, 0)+im.size, 0, im.mode)])
     elif filter == "/DCTDecode":
         Image.SAVE["JPEG"](im, op, filename)
     elif filter == "/FlateDecode":
-        ImageFile._save(im, op, [("zip", (0,0)+im.size, 0, im.mode)])
+        ImageFile._save(im, op, [("zip", (0, 0)+im.size, 0, im.mode)])
     elif filter == "/RunLengthDecode":
-        ImageFile._save(im, op, [("packbits", (0,0)+im.size, 0, im.mode)])
+        ImageFile._save(im, op, [("packbits", (0, 0)+im.size, 0, im.mode)])
     else:
         raise ValueError("unsupported PDF filter (%s)" % filter)
 
     xref[3] = fp.tell()
-    _obj(fp, 3, Type = "/XObject",
-                Subtype = "/Image",
-                Width = width, # * 72.0 / resolution,
-                Height = height, # * 72.0 / resolution,
-                Length = len(op.getvalue()),
-                Filter = filter,
-                BitsPerComponent = bits,
-                DecodeParams = params,
-                ColorSpace = colorspace)
+    _obj(
+        fp, 3,
+        Type="/XObject",
+        Subtype="/Image",
+        Width=width,  # * 72.0 / resolution,
+        Height=height,  # * 72.0 / resolution,
+        Length=len(op.getvalue()),
+        Filter=filter,
+        BitsPerComponent=bits,
+        DecodeParams=params,
+        ColorSpace=colorspace)
 
     fp.write("stream\n")
     fp.fp.write(op.getvalue())
@@ -179,11 +189,14 @@ def _save(im, fp, filename):
 
     xref[4] = fp.tell()
     _obj(fp, 4)
-    fp.write("<<\n/Type /Page\n/Parent 2 0 R\n"\
-             "/Resources <<\n/ProcSet [ /PDF %s ]\n"\
-             "/XObject << /image 3 0 R >>\n>>\n"\
-             "/MediaBox [ 0 0 %d %d ]\n/Contents 5 0 R\n>>\n" %\
-             (procset, int(width * 72.0 /resolution) , int(height * 72.0 / resolution)))
+    fp.write(
+        "<<\n/Type /Page\n/Parent 2 0 R\n"
+        "/Resources <<\n/ProcSet [ /PDF %s ]\n"
+        "/XObject << /image 3 0 R >>\n>>\n"
+        "/MediaBox [ 0 0 %d %d ]\n/Contents 5 0 R\n>>\n" % (
+            procset,
+            int(width * 72.0 / resolution),
+            int(height * 72.0 / resolution)))
     _endobj(fp)
 
     #
@@ -191,10 +204,13 @@ def _save(im, fp, filename):
 
     op = TextWriter(io.BytesIO())
 
-    op.write("q %d 0 0 %d 0 0 cm /image Do Q\n" % (int(width * 72.0 / resolution), int(height * 72.0 / resolution)))
+    op.write(
+        "q %d 0 0 %d 0 0 cm /image Do Q\n" % (
+            int(width * 72.0 / resolution),
+            int(height * 72.0 / resolution)))
 
     xref[5] = fp.tell()
-    _obj(fp, 5, Length = len(op.fp.getvalue()))
+    _obj(fp, 5, Length=len(op.fp.getvalue()))
 
     fp.write("stream\n")
     fp.fp.write(op.fp.getvalue())
