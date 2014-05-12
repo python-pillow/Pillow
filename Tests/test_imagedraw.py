@@ -235,4 +235,21 @@ def test_floodfill():
     assert_image_equal(im, Image.open("Tests/images/imagedraw_floodfill.png"))
 
 
+def test_floodfill_border():
+    # Arrange
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+    draw.rectangle(bbox2, outline="yellow", fill="green")
+    centre_point = (int(w/2), int(h/2))
+
+    # Act
+    ImageDraw.floodfill(
+        im, centre_point, ImageColor.getrgb("red"),
+        border=ImageColor.getrgb("black"))
+    del draw
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_floodfill2.png"))
+
+
 # End of file
