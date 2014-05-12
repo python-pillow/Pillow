@@ -16,6 +16,10 @@ y1 = int(x0 * 3)
 bbox1 = [(x0, y0), (x1, y1)]
 bbox2 = [x0, y0, x1, y1]
 
+# Two kinds of coordinate sequences
+points1 = [(10, 10), (20, 40), (30, 30)]
+points2 = [10, 10, 20, 40, 30, 30]
+
 
 def test_sanity():
 
@@ -109,6 +113,27 @@ def test_ellipse2():
     helper_ellipse(bbox2)
 
 
+def helper_line(points):
+    # Arrange
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.line(points1, fill="yellow", width=2)
+    del draw
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+
+
+def test_line1():
+    helper_line(points1)
+
+
+def test_line2():
+    helper_line(points2)
+
+
 def helper_pieslice(bbox):
     # Arrange
     im = Image.new("RGB", (w, h))
@@ -129,6 +154,69 @@ def helper_pieslice(bbox):
 
 def test_pieslice2():
     helper_pieslice(bbox2)
+
+
+def helper_point(points):
+    # Arrange
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.point(points1, fill="yellow")
+    del draw
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_point.png"))
+
+
+def test_point1():
+    helper_point(points1)
+
+
+def test_point2():
+    helper_point(points2)
+
+
+def helper_polygon(points):
+    # Arrange
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.polygon(points1, fill="red", outline="blue")
+    del draw
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
+
+
+def test_polygon1():
+    helper_polygon(points1)
+
+
+def test_polygon2():
+    helper_polygon(points2)
+
+
+def helper_rectangle(bbox):
+    # Arrange
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rectangle(bbox, fill="black", outline="green")
+    del draw
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
+
+
+def test_rectangle1():
+    helper_rectangle(bbox1)
+
+
+def test_rectangle2():
+    helper_rectangle(bbox2)
 
 
 # End of file
