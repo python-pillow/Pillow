@@ -71,6 +71,20 @@ def test_arc2():
     helper_arc(bbox2)
 
 
+def test_bitmap():
+    # Arrange
+    small = Image.open("Tests/images/pil123rgba.png").resize((50, 50))
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.bitmap((10, 10), small)
+    del draw
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_bitmap.png"))
+
+
 def helper_chord(bbox):
     # Arrange
     im = Image.new("RGB", (w, h))
