@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Clean up preprocessor cruft for Windows
+  [CounterPillow]
+
 - Adjust Homebrew freetype detection logic
   [jacknagel]
 
