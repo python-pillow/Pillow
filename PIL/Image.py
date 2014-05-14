@@ -35,6 +35,12 @@ class _imaging_not_installed:
     def __getattr__(self, id):
         raise ImportError("The _imaging C module is not installed")
 
+
+class ImageIsTooBigError(Exception):
+    pass
+
+ARBITARY_LARGE_LIMIT = 6000 * 6000 - 1  # FIXME: Pick sensible limit
+
 try:
     # give Tk a chance to set up the environment, in case we're
     # using an _imaging module linked against libtcl/libtk (use
@@ -101,7 +107,7 @@ import collections
 import numbers
 
 # works everywhere, win for pypy, not cpython
-USE_CFFI_ACCESS = hasattr(sys, 'pypy_version_info')  
+USE_CFFI_ACCESS = hasattr(sys, 'pypy_version_info')
 try:
     import cffi
     HAS_CFFI=True
@@ -233,7 +239,7 @@ _MODE_CONV = {
     "CMYK": ('|u1', 4),
     "YCbCr": ('|u1', 3),
     "LAB": ('|u1', 3), # UNDONE - unsigned |u1i1i1
-	# I;16 == I;16L, and I;32 == I;32L  
+	# I;16 == I;16L, and I;32 == I;32L
     "I;16": ('<u2', None),
     "I;16B": ('>u2', None),
     "I;16L": ('<u2', None),
@@ -502,7 +508,7 @@ class Image:
         return self
     def __exit__(self, *args):
         self.close()
-        
+
     def close(self):
         """
         Closes the file pointer, if possible.
@@ -524,7 +530,7 @@ class Image:
         # deferred error that will better explain that the core image
         # object is gone.
         self.im = deferred_error(ValueError("Operation on closed image"))
-        
+
 
     def _copy(self):
         self.load()
@@ -540,7 +546,7 @@ class Image:
         if not file:
             f, file = tempfile.mkstemp(suffix)
             os.close(f)
-            
+
         self.load()
         if not format or format == "PPM":
             self.im.save_ppm(file)
@@ -672,7 +678,7 @@ class Image:
         normal cases, you don't need to call this method, since the
         Image class automatically loads an opened image when it is
         accessed for the first time. This method will close the file
-        associated with the image. 
+        associated with the image.
 
         :returns: An image access object.
         """
@@ -777,7 +783,7 @@ class Image:
         if "transparency" in self.info and self.info['transparency'] is not None:
             if self.mode in ('L', 'RGB') and mode == 'RGBA':
                 # Use transparent conversion to promote from transparent
-                # color to an alpha channel.         
+                # color to an alpha channel.
                 return self._new(self.im.convert_transparent(
                                            mode, self.info['transparency']))
             elif self.mode in ('L', 'RGB', 'P') and mode in ('L', 'RGB', 'P'):
@@ -799,11 +805,11 @@ class Image:
                         trns_im = trns_im.convert(mode)
                     else:
                         # can't just retrieve the palette number, got to do it
-                        # after quantization. 
+                        # after quantization.
                         trns_im = trns_im.convert('RGB')
                     trns = trns_im.getpixel((0,0))
-                        
-                    
+
+
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
             new = self._new(im)
@@ -811,7 +817,7 @@ class Image:
             new.palette = ImagePalette.raw("RGB", new.im.getpalette("RGB"))
             if delete_trns:
                 # This could possibly happen if we requantize to fewer colors.
-                # The transparency would be totally off in that case. 
+                # The transparency would be totally off in that case.
                 del(new.info['transparency'])
             if trns is not None:
                 try:
@@ -826,7 +832,7 @@ class Image:
         # colorspace conversion
         if dither is None:
             dither = FLOYDSTEINBERG
-                
+
         try:
             im = self.im.convert(mode, dither)
         except ValueError:
@@ -863,7 +869,7 @@ class Image:
         # quantizer interface in a later version of PIL.
 
         self.load()
-        
+
         if method is None:
             # defaults:
             method = 0
@@ -871,10 +877,10 @@ class Image:
                 method = 2
 
         if self.mode == 'RGBA' and method != 2:
-            # Caller specified an invalid mode. 
+            # Caller specified an invalid mode.
             raise ValueError('Fast Octree (method == 2) is the ' +
                              ' only valid method for quantizing RGBA images')
-        
+
         if palette:
             # use palette from reference image
             palette.load()
@@ -928,7 +934,7 @@ class Image:
     def draft(self, mode, size):
         """
         NYI
-        
+
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
         size.  For example, you can use this method to convert a color
@@ -1277,7 +1283,7 @@ class Image:
             if self.mode in ("I", "I;16", "F"):
                 # check if the function can be used with point_transform
                 # UNDONE wiredfool -- I think this prevents us from ever doing
-                # a gamma function point transform on > 8bit images. 
+                # a gamma function point transform on > 8bit images.
                 scale, offset = _getscaleoffset(lut)
                 return self._new(self.im.point_transform(scale, offset))
             # for other modes, convert the function to a table
@@ -1420,8 +1426,8 @@ class Image:
             self._copy()
             self.pyaccess = None
             self.load()
-            
-        if self.pyaccess: 
+
+        if self.pyaccess:
             return self.pyaccess.putpixel(xy,value)
         return self.im.putpixel(xy, value)
 
@@ -2100,7 +2106,18 @@ _fromarray_typemap[((1, 1), _ENDIAN + "i4")] = ("I", "I")
 _fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
 
 
-def open(fp, mode="r"):
+def _compression_bomb_check(im, maximum_pixels):
+    if maximum_pixels is None:
+        return
+
+    pixels = im.size[0] * im.size[1]
+    print("Pixels:", pixels)  # FIXME: temporary
+
+    if im.size[0] * im.size[1] > maximum_pixels:
+        raise ImageIsTooBigError("Image size exceeds limit")
+
+
+def open(fp, mode="r", maximum_pixels=ARBITARY_LARGE_LIMIT):
     """
     Opens and identifies the given image file.
 
@@ -2114,6 +2131,7 @@ def open(fp, mode="r"):
        must implement :py:meth:`~file.read`, :py:meth:`~file.seek`, and
        :py:meth:`~file.tell` methods, and be opened in binary mode.
     :param mode: The mode.  If given, this argument must be "r".
+    :param maximum_pixels: TODO.
     :returns: An :py:class:`~PIL.Image.Image` object.
     :exception IOError: If the file cannot be found, or the image cannot be
        opened and identified.
@@ -2137,7 +2155,10 @@ def open(fp, mode="r"):
             factory, accept = OPEN[i]
             if not accept or accept(prefix):
                 fp.seek(0)
-                return factory(fp, filename)
+                # return factory(fp, filename)
+                im = factory(fp, filename)
+                _compression_bomb_check(im, maximum_pixels)
+                return im
         except (SyntaxError, IndexError, TypeError):
             #import traceback
             #traceback.print_exc()
@@ -2150,7 +2171,10 @@ def open(fp, mode="r"):
                 factory, accept = OPEN[i]
                 if not accept or accept(prefix):
                     fp.seek(0)
-                    return factory(fp, filename)
+                    # return factory(fp, filename)
+                    im = factory(fp, filename)
+                    _compression_bomb_check(im, maximum_pixels)
+                    return im
             except (SyntaxError, IndexError, TypeError):
                 #import traceback
                 #traceback.print_exc()
