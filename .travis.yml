@@ -4,12 +4,12 @@ notifications:
   irc: "chat.freenode.net#pil"
 
 python:
+  - "pypy"
   - 2.6
   - 2.7
   - 3.2
   - 3.3
   - 3.4
-  - "pypy"
 
 install:
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
