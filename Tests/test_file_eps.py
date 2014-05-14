@@ -17,6 +17,8 @@ file1_compare_scale2 = "Tests/images/zero_bb_scale2.png"
 file2_compare = "Tests/images/non_zero_bb.png"
 file2_compare_scale2 = "Tests/images/non_zero_bb_scale2.png"
 
+# EPS test files with binary preview
+file3 = "Tests/images/binary_preview_map.eps"
 
 def test_sanity():
     # Regular scale
@@ -131,5 +133,10 @@ def test_thumbnail():
     # Assert
     assert_equal(max(image1.size), max(new_size))
     assert_equal(max(image2.size), max(new_size))
+
+def test_read_binary_preview():
+    # Issue 302
+    # open image with binary preview
+    image1 = Image.open(file3)
 
 # End of file
