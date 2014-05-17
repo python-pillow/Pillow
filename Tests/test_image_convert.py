@@ -45,7 +45,7 @@ def test_16bit():
 def test_16bit_workaround():
     im = Image.open('Tests/images/16bit.cropped.tif')
     _test_float_conversion(im.convert('I'))
-    
+
 def test_rgba_p():
     im = lena('RGBA')
     im.putalpha(lena('L'))
@@ -54,8 +54,8 @@ def test_rgba_p():
     comparable = converted.convert('RGBA')
 
     assert_image_similar(im, comparable, 20)
-               
-def test_trns_p():    
+
+def test_trns_p():
     im = lena('P')
     im.info['transparency']=0
 
@@ -69,13 +69,26 @@ def test_trns_p():
     rgb = im.convert('RGB')
     assert_equal(rgb.info['transparency'], (0,0,0)) # undone
     assert_no_exception(lambda: rgb.save(f))
-    
+
+
+def test_trns_p_rgba():
+    # Arrange
+    im = lena('P')
+    im.info['transparency'] = 128
+
+    # Act
+    rgba = im.convert('RGBA')
+
+    # Assert
+    assert_false('transparency' in rgba.info)
+
+
 def test_trns_l():
     im = lena('L')
     im.info['transparency'] = 128
 
     f = tempfile('temp.png')
-    
+
     rgb = im.convert('RGB')
     assert_equal(rgb.info['transparency'], (128,128,128)) # undone
     assert_no_exception(lambda: rgb.save(f))
@@ -89,13 +102,13 @@ def test_trns_l():
     assert_false('transparency' in p.info)
     assert_no_exception(lambda: p.save(f))
 
-    
+
 def test_trns_RGB():
     im = lena('RGB')
     im.info['transparency'] = im.getpixel((0,0))
 
     f = tempfile('temp.png')
-        
+
     l = im.convert('L')
     assert_equal(l.info['transparency'], l.getpixel((0,0))) # undone
     assert_no_exception(lambda: l.save(f))
@@ -103,7 +116,7 @@ def test_trns_RGB():
     p = im.convert('P')
     assert_true('transparency' in p.info)
     assert_no_exception(lambda: p.save(f))
-    
+
     p = assert_warning(UserWarning,
                        lambda: im.convert('P', palette = Image.ADAPTIVE))
     assert_false('transparency' in p.info)
