@@ -802,7 +802,8 @@ class Image:
                         # after quantization.
                         trns_im = trns_im.convert('RGB')
                     trns = trns_im.getpixel((0,0))
-
+            elif self.mode == 'P' and mode == 'RGBA' and 'transparency' in self.info:
+                delete_trns = True
 
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
@@ -836,9 +837,6 @@ class Image:
                 im = im.convert(mode, dither)
             except KeyError:
                 raise ValueError("illegal conversion")
-
-        if self.mode == 'P' and mode == 'RGBA' and 'transparency' in self.info:
-            delete_trns = True
 
         new_im = self._new(im)
         if delete_trns:
