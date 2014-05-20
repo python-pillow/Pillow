@@ -54,7 +54,7 @@ import collections
 import itertools
 import os
 
-# Set these to true to force use of libtiff for reading or writing. 
+# Set these to true to force use of libtiff for reading or writing.
 READ_LIBTIFF = False
 WRITE_LIBTIFF= False
 
@@ -238,7 +238,7 @@ class ImageFileDirectory(collections.MutableMapping):
                             Value: integer corresponding to the data type from
                             `TiffTags.TYPES`
 
-        'internal'            
+        'internal'
         * self.tags = {}  Key: numerical tiff tag number
                           Value: Decoded data, Generally a tuple.
                             * If set from __setval__ -- always a tuple
@@ -264,7 +264,7 @@ class ImageFileDirectory(collections.MutableMapping):
         if self.prefix == MM:
             self.i16, self.i32 = ib16, ib32
             self.o16, self.o32 = ob16, ob32
-        elif self.prefix == II:
+        elif self.prefix in (II, '\xf5\xf5', '\xfb\xfb', '\xfe\xde', ):
             self.i16, self.i32 = il16, il32
             self.o16, self.o32 = ol16, ol32
         else:
@@ -489,10 +489,10 @@ class ImageFileDirectory(collections.MutableMapping):
 
             if tag in self.tagtype:
                 typ = self.tagtype[tag]
-                
+
             if Image.DEBUG:
                 print ("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
-                   
+
             if typ == 1:
                 # byte data
                 if isinstance(value, tuple):
@@ -512,7 +512,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 # and doesn't match the tiff spec: 8-bit byte that
                 # contains a 7-bit ASCII code; the last byte must be
                 # NUL (binary zero). Also, I don't think this was well
-                # excersized before. 
+                # excersized before.
                 data = value = b"" + value.encode('ascii', 'replace') + b"\0"
             else:
                 # integer data
@@ -992,7 +992,7 @@ def _save(im, fp, filename):
 
     # required for color libtiff images
     ifd[PLANAR_CONFIGURATION] = getattr(im, '_planar_configuration', 1)
-    
+
     # -- multi-page -- skip TIFF header on subsequent pages
     if not libtiff and fp.tell() == 0:
         # tiff header (write via IFD to get everything right)
@@ -1029,7 +1029,7 @@ def _save(im, fp, filename):
         # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
         if "icc_profile" in im.info:
             ifd[ICCPROFILE] = im.info["icc_profile"]
-            
+
     if "description" in im.encoderinfo:
         ifd[IMAGEDESCRIPTION] = im.encoderinfo["description"]
     if "resolution" in im.encoderinfo:
@@ -1095,7 +1095,7 @@ def _save(im, fp, filename):
 
         blocklist =  [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
         atts={}
-        # bits per sample is a single short in the tiff directory, not a list. 
+        # bits per sample is a single short in the tiff directory, not a list.
         atts[BITSPERSAMPLE] = bits[0]
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
