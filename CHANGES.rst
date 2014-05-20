@@ -4,6 +4,27 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Rename variables not to use built-in function names
+  [hugovk]
+  
+- Ignore junk JPEG markers 
+  [hugovk]
+  
+- Change default interpolation for Image.thumbnail to Image.ANTIALIAS
+  [hugovk]
+  
+- Add tests and fixes for saving PDFs
+  [hugovk]
+  
+- Remove transparency resource after P->RGBA conversion
+  [hugovk]
+  
+- Clean up preprocessor cruft for Windows
+  [CounterPillow]
+
+- Adjust Homebrew freetype detection logic
+  [jacknagel]
+
 - Added Image.close, context manager support.
   [wiredfool]
 

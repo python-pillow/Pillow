@@ -92,8 +92,10 @@ except ImportError:
     builtins = __builtin__
 
 from PIL import ImageMode
-from PIL._binary import i8, o8
-from PIL._util import isPath, isStringType, deferred_error
+from PIL._binary import i8
+from PIL._util import isPath
+from PIL._util import isStringType
+from PIL._util import deferred_error
 
 import os
 import sys
@@ -531,7 +533,7 @@ class Image:
             self.fp.close()
         except Exception as msg:
             if Image.DEBUG:
-                print("Error closing: %s" % msg)
+                print ("Error closing: %s" % msg)
 
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
@@ -545,8 +547,8 @@ class Image:
         self.readonly = 0
 
     def _dump(self, file=None, format=None):
-        import tempfile
         import os
+        import tempfile
         suffix = ''
         if format:
             suffix = '.'+format
@@ -836,9 +838,8 @@ class Image:
                 t = self.info['transparency']
                 if isinstance(t, bytes):
                     # Dragons. This can't be represented by a single color
-                    warnings.warn(
-                        'Palette images with Transparency expressed ' +
-                        ' in bytes should be converted to RGBA images')
+                    warnings.warn('Palette images with Transparency expressed ' +
+                                  ' in bytes should be converted to RGBA images')
                     delete_trns = True
                 else:
                     # get the new transparency color.
@@ -854,7 +855,10 @@ class Image:
                         # can't just retrieve the palette number, got to do it
                         # after quantization.
                         trns_im = trns_im.convert('RGB')
-                    trns = trns_im.getpixel((0, 0))
+                    trns = trns_im.getpixel((0,0))
+
+            elif self.mode == 'P' and mode == 'RGBA':
+                delete_trns = True
 
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
@@ -1546,6 +1550,7 @@ class Image:
                 math.cos(angle), math.sin(angle), 0.0,
                 -math.sin(angle), math.cos(angle), 0.0
                 ]
+            
 
             def transform(x, y, matrix=matrix):
                 (a, b, c, d, e, f) = matrix
@@ -1722,7 +1727,7 @@ class Image:
         """
         return 0
 
-    def thumbnail(self, size, resample=NEAREST):
+    def thumbnail(self, size, resample=ANTIALIAS):
         """
         Make this image into a thumbnail.  This method modifies the
         image to contain a thumbnail version of itself, no larger than
@@ -1738,21 +1743,18 @@ class Image:
 
         Also note that this function modifies the :py:class:`~PIL.Image.Image`
         object in place.  If you need to use the full resolution image as well,
-        apply this method to a :py:meth:`~PIL.Image.Image.copy` of the
-        original image.
+        apply this method to a :py:meth:`~PIL.Image.Image.copy` of the original
+        image.
 
         :param size: Requested size.
         :param resample: Optional resampling filter.  This can be one
            of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
            :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.ANTIALIAS`
            (best quality).  If omitted, it defaults to
-           :py:attr:`PIL.Image.NEAREST` (this will be changed to ANTIALIAS in a
-           future version).
+           :py:attr:`PIL.Image.ANTIALIAS`. (was :py:attr:`PIL.Image.NEAREST`
+           prior to version 2.5.0)
         :returns: None
         """
-
-        # FIXME: the default resampling filter will be changed
-        # to ANTIALIAS in future versions
 
         # preserve aspect ratio
         x, y = self.size

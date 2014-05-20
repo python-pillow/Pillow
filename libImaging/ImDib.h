@@ -10,20 +10,9 @@
  * See the README file for information on usage and redistribution.
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 
-#if (defined(_MSC_VER) && _MSC_VER >= 1200) || (defined __GNUC__)
-/* already defined in basetsd.h */
-#undef INT8
-#undef UINT8
-#undef INT16
-#undef UINT16
-#undef INT32
-#undef INT64
-#undef UINT32
-#endif
-
-#include <windows.h>
+#include "ImPlatform.h"
 
 #if defined(__cplusplus)
 extern "C" {

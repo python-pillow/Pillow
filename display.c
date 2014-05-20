@@ -31,7 +31,7 @@
 /* -------------------------------------------------------------------- */
 /* Windows DIB support	*/
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "ImDib.h"
 
@@ -864,4 +864,4 @@ error:
     return buffer;
 }
 
-#endif /* WIN32 */
+#endif /* _WIN32 */
