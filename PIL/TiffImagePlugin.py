@@ -984,11 +984,7 @@ def _save(im, fp, filename):
 
     compression = im.encoderinfo.get('compression',im.info.get('compression','raw'))
 
-    libtiff = WRITE_LIBTIFF or compression in ["tiff_ccitt", "group3", "group4",
-                                               "tiff_jpeg", "tiff_adobe_deflate",
-                                               "tiff_thunderscan", "tiff_deflate",
-                                               "tiff_sgilog", "tiff_sgilog24",
-                                               "tiff_raw_16"]
+    libtiff = WRITE_LIBTIFF or compression != 'raw' 
 
     # required for color libtiff images
     ifd[PLANAR_CONFIGURATION] = getattr(im, '_planar_configuration', 1)
