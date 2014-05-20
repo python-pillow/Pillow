@@ -1710,7 +1710,8 @@ class Image:
            of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
            :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.ANTIALIAS`
            (best quality).  If omitted, it defaults to
-           :py:attr:`PIL.Image.ANTIALIAS`.
+           :py:attr:`PIL.Image.ANTIALIAS`. (was `PIL.Image.NEAREST` prior
+           to version 2.5.0)
         :returns: None
         """
 
