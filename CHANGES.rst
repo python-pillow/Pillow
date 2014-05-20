@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Remove transparency resource after P->RGBA conversion
+  [hugovk]
+  
 - Clean up preprocessor cruft for Windows
   [CounterPillow]
 
