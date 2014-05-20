@@ -4,6 +4,12 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Change default interpolation for Image.thumbnail to Image.ANTIALIAS
+  [hugovk]
+  
+- Add tests and fixes for saving PDFs
+  [hugovk]
+  
 - Remove transparency resource after P->RGBA conversion
   [hugovk]
   
