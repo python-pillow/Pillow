@@ -258,9 +258,6 @@ def test_compressions():
     im = lena('RGB')
     out = tempfile('temp.tif')
 
-    TiffImagePlugin.READ_LIBTIFF = True
-    TiffImagePlugin.WRITE_LIBTIFF = True
-
     for compression in ('packbits', 'tiff_lzw'):
         im.save(out, compression=compression)
         im2 = Image.open(out)
@@ -270,11 +267,6 @@ def test_compressions():
     im2 = Image.open(out)
     assert_image_similar(im, im2, 30)
                             
-    TiffImagePlugin.READ_LIBTIFF = False
-    TiffImagePlugin.WRITE_LIBTIFF = False
-
-
-
 
 def test_cmyk_save():
     im = lena('CMYK')
