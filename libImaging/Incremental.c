@@ -41,7 +41,6 @@
    two cases. */
 
 #ifdef _WIN32
-#include <windows.h>
 #include <process.h>
 #else
 #include <pthread.h>

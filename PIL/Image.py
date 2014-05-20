@@ -818,7 +818,10 @@ class Image:
                         # can't just retrieve the palette number, got to do it
                         # after quantization.
                         trns_im = trns_im.convert('RGB')
-                    trns = trns_im.getpixel((0, 0))
+                    trns = trns_im.getpixel((0,0))
+
+            elif self.mode == 'P' and mode == 'RGBA':
+                delete_trns = True
 
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)

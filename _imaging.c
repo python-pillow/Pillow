@@ -3350,7 +3350,7 @@ extern PyObject* PyImaging_ZipEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args);
 
 /* Display support etc (in display.c) */
-#ifdef WIN32
+#ifdef _WIN32
 extern PyObject* PyImaging_CreateWindowWin32(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_DisplayWin32(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_DisplayModeWin32(PyObject* self, PyObject* args);
@@ -3423,14 +3423,14 @@ static PyMethodDef functions[] = {
 
     /* Memory mapping */
 #ifdef WITH_MAPPING
-#ifdef WIN32
+#ifdef _WIN32
     {"map", (PyCFunction)PyImaging_Mapper, 1},
 #endif
     {"map_buffer", (PyCFunction)PyImaging_MapBuffer, 1},
 #endif
 
     /* Display support */
-#ifdef WIN32
+#ifdef _WIN32
     {"display", (PyCFunction)PyImaging_DisplayWin32, 1},
     {"display_mode", (PyCFunction)PyImaging_DisplayModeWin32, 1},
     {"grabscreen", (PyCFunction)PyImaging_GrabScreenWin32, 1},
