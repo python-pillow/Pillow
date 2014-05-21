@@ -413,7 +413,7 @@ class PngImageFile(ImageFile.ImageFile):
 
         ImageFile.ImageFile.load_prepare(self)
 
-    def load_read(self, bytes):
+    def load_read(self, read_bytes):
         "internal: read more image data"
 
         while self.__idat == 0:
@@ -430,14 +430,14 @@ class PngImageFile(ImageFile.ImageFile):
             self.__idat = length  # empty chunks are allowed
 
         # read more data from this chunk
-        if bytes <= 0:
-            bytes = self.__idat
+        if read_bytes <= 0:
+            read_bytes = self.__idat
         else:
-            bytes = min(bytes, self.__idat)
+            read_bytes = min(read_bytes, self.__idat)
 
-        self.__idat = self.__idat - bytes
+        self.__idat = self.__idat - read_bytes
 
-        return self.fp.read(bytes)
+        return self.fp.read(read_bytes)
 
 
     def load_end(self):
