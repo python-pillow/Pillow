@@ -302,7 +302,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 i = i16(s)
             else:
                 # Skip non-0xFF junk
-                s = "\xff"
+                s = b"\xff"
                 continue
 
             if i in MARKER:
@@ -320,7 +320,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 s = self.fp.read(1)
             elif i == 0 or i == 0xFFFF:
                 # padded marker or junk; move on
-                s = "\xff"
+                s = b"\xff"
             else:
                 raise SyntaxError("no marker found")
 
