@@ -228,3 +228,11 @@ def test_quality_keep():
     im = Image.open("Images/lena.jpg")
     f = tempfile('temp.jpg')
     assert_no_exception(lambda: im.save(f, quality='keep'))
+
+
+def test_junk_jpeg_header():
+    # https://github.com/python-imaging/Pillow/issues/630
+    filename = "Tests/images/junk_jpeg_header.jpg"
+    assert_no_exception(lambda: Image.open(filename))
+
+# End of file
