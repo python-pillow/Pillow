@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Ignore junk JPEG markers 
+  [hugovk]
+  
 - Change default interpolation for Image.thumbnail to Image.ANTIALIAS
   [hugovk]
   
