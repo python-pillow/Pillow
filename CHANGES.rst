@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Rename variables not to use built-in function names
+  [hugovk]
+  
 - Ignore junk JPEG markers 
   [hugovk]
   
