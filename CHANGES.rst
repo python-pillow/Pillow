@@ -3,6 +3,9 @@ Changelog (Pillow)
 
 2.5.0 (unreleased)
 ------------------
+- Support for pickling Image objects
+  [hugovk]
+
 - Fixed resolution handling for EPS thumbnails
   [eliempje]
   
