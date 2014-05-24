@@ -3,7 +3,12 @@ Changelog (Pillow)
 
 2.5.0 (unreleased)
 ------------------
-
+- Fixed resolution handling for EPS thumbnails
+  [eliempje]
+  
+- Fixed rendering of some binary EPS files (Issue #302)
+  [eliempje] 
+  
 - Rename variables not to use built-in function names
   [hugovk]
   
