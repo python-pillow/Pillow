@@ -54,7 +54,7 @@ try:
     from PIL import _imaging as core
     if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
         raise ImportError("The _imaging extension was built for another "
-                            " version of Pillow or PIL")
+                          " version of Pillow or PIL")
 
 except ImportError as v:
     core = _imaging_not_installed()
@@ -455,7 +455,7 @@ def _getscaleoffset(expr):
     try:
         ((a, b, c), d, e) = data  # full syntax
         if (a is stub and b == "__mul__" and isinstance(c, numbers.Number) and
-            d == "__add__" and isinstance(e, numbers.Number)):
+                d == "__add__" and isinstance(e, numbers.Number)):
             return c, e
     except TypeError:
         pass
@@ -565,6 +565,20 @@ class Image:
             self.save(file, format)
         return file
 
+    def __eq__(self, other):
+        a = (self.mode == other.mode)
+        b = (self.size == other.size)
+        c = (self.getpalette() == other.getpalette())
+        d = (self.info == other.info)
+        e = (self.category == other.category)
+        f = (self.readonly == other.readonly)
+        g = (self.tobytes() == other.tobytes())
+        return a and b and c and d and e and f and g
+
+    def __ne__(self, other):
+        eq = (self == other)
+        return not eq
+
     def __repr__(self):
         return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
             self.__class__.__module__, self.__class__.__name__,
@@ -582,6 +596,26 @@ class Image:
             new['data'] = self.tobytes()
             return new
         raise AttributeError(name)
+
+    def __getstate__(self):
+        return [
+            self.info,
+            self.mode,
+            self.size,
+            self.getpalette(),
+            self.tobytes()]
+
+    def __setstate__(self, state):
+        Image.__init__(self)
+        self.tile = []
+        info, mode, size, palette, data = state
+        self.info = info
+        self.mode = mode
+        self.size = size
+        self.im = core.new(mode, size)
+        if mode in ("L", "P"):
+            self.putpalette(palette)
+        self.frombytes(data)
 
     def tobytes(self, encoder_name="raw", *args):
         """
@@ -643,9 +677,11 @@ class Image:
         if self.mode != "1":
             raise ValueError("not a bitmap")
         data = self.tobytes("xbm")
-        return b"".join([("#define %s_width %d\n" % (name, self.size[0])).encode('ascii'),
-                ("#define %s_height %d\n"% (name, self.size[1])).encode('ascii'),
-                ("static char %s_bits[] = {\n" % name).encode('ascii'), data, b"};"])
+        return b"".join([
+            ("#define %s_width %d\n" % (name, self.size[0])).encode('ascii'),
+            ("#define %s_height %d\n" % (name, self.size[1])).encode('ascii'),
+            ("static char %s_bits[] = {\n" % name).encode('ascii'), data, b"};"
+            ])
 
     def frombytes(self, data, decoder_name="raw", *args):
         """
@@ -791,7 +827,8 @@ class Image:
         trns = None
         delete_trns = False
         # transparency handling
-        if "transparency" in self.info and self.info['transparency'] is not None:
+        if "transparency" in self.info and \
+                self.info['transparency'] is not None:
             if self.mode in ('L', 'RGB') and mode == 'RGBA':
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
@@ -839,7 +876,8 @@ class Image:
                     # if we can't make a transparent color, don't leave the old
                     # transparency hanging around to mess us up.
                     del(new.info['transparency'])
-                    warnings.warn("Couldn't allocate palette entry for transparency")
+                    warnings.warn("Couldn't allocate palette entry " +
+                                  "for transparency")
             return new
 
         # colorspace conversion
@@ -866,7 +904,8 @@ class Image:
                     new_im.info['transparency'] = new_im.palette.getcolor(trns)
                 except:
                     del(new_im.info['transparency'])
-                    warnings.warn("Couldn't allocate palette entry for transparency")
+                    warnings.warn("Couldn't allocate palette entry " +
+                                  "for transparency")
             else:
                 new_im.info['transparency'] = trns
         return new_im
@@ -982,7 +1021,8 @@ class Image:
         if isinstance(filter, collections.Callable):
             filter = filter()
         if not hasattr(filter, "filter"):
-            raise TypeError("filter argument should be ImageFilter.Filter instance or class")
+            raise TypeError("filter argument should be ImageFilter.Filter " +
+                            "instance or class")
 
         if self.im.bands == 1:
             return self._new(filter.filter(self.im))
@@ -1507,9 +1547,10 @@ class Image:
             import math
             angle = -angle * math.pi / 180
             matrix = [
-                 math.cos(angle), math.sin(angle), 0.0,
+                math.cos(angle), math.sin(angle), 0.0,
                 -math.sin(angle), math.cos(angle), 0.0
-                 ]
+                ]
+            
 
             def transform(x, y, matrix=matrix):
                 (a, b, c, d, e, f) = matrix
@@ -1773,9 +1814,8 @@ class Image:
         """
 
         if self.mode == 'RGBA':
-            return self.convert('RGBa') \
-                .transform(size, method, data, resample, fill) \
-                .convert('RGBA')
+            return self.convert('RGBa').transform(
+                size, method, data, resample, fill).convert('RGBA')
 
         if isinstance(method, ImageTransformHandler):
             return method.transform(size, self, resample=resample, fill=fill)
