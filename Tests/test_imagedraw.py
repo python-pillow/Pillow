@@ -53,7 +53,6 @@ def helper_arc(bbox):
     draw = ImageDraw.Draw(im)
 
     # Act
-    # FIXME Should docs note 0 degrees is at 3 o'clock?
     # FIXME Fill param should be named outline.
     draw.arc(bbox, 0, 180)
     del draw
