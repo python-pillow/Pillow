@@ -62,9 +62,8 @@ def helper_arc(bbox):
     assert_image_equal(im, Image.open("Tests/images/imagedraw_arc.png"))
 
 
-# FIXME
-# def test_arc1():
-#     helper_arc(bbox1)
+def test_arc1():
+     assert_exception(TypeError, lambda: helper_arc(bbox1))
 
 
 def test_arc2():
@@ -98,9 +97,8 @@ def helper_chord(bbox):
     assert_image_equal(im, Image.open("Tests/images/imagedraw_chord.png"))
 
 
-# FIXME
-# def test_chord1():
-#     helper_chord(bbox1)
+def test_chord1():
+     assert_exception(TypeError, lambda: helper_chord(bbox1))
 
 
 def test_chord2():
@@ -162,9 +160,8 @@ def helper_pieslice(bbox):
     assert_image_equal(im, Image.open("Tests/images/imagedraw_pieslice.png"))
 
 
-# FIXME
-# def test_pieslice1():
-#     helper_pieslice(bbox1)
+def test_pieslice1():
+     assert_exception(TypeError, lambda: helper_pieslice(bbox1))
 
 
 def test_pieslice2():
