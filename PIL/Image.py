@@ -2111,7 +2111,6 @@ def _compression_bomb_check(im, maximum_pixels):
         return
 
     pixels = im.size[0] * im.size[1]
-    print("Pixels:", pixels)  # FIXME: temporary
 
     if im.size[0] * im.size[1] > maximum_pixels:
         raise ImageIsTooBigError("Image size exceeds limit")
