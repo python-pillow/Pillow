@@ -3,6 +3,9 @@ Changelog (Pillow)
 
 2.5.0 (unreleased)
 ------------------
+- Use libtiff to write any compressed tiff files
+  [wiredfool]
+  
 - Support for pickling Image objects
   [hugovk]
 
