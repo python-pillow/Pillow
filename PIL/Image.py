@@ -2131,7 +2131,6 @@ def open(fp, mode="r"):
        must implement :py:meth:`~file.read`, :py:meth:`~file.seek`, and
        :py:meth:`~file.tell` methods, and be opened in binary mode.
     :param mode: The mode.  If given, this argument must be "r".
-    :param maximum_pixels: TODO.
     :returns: An :py:class:`~PIL.Image.Image` object.
     :exception IOError: If the file cannot be found, or the image cannot be
        opened and identified.
