@@ -36,10 +36,7 @@ class _imaging_not_installed:
         raise ImportError("The _imaging C module is not installed")
 
 
-class ImageIsTooBigError(Exception):
-    pass
-
-ARBITARY_LARGE_LIMIT = 6000 * 6000 - 1  # FIXME: Pick sensible limit
+MAX_IMAGE_PIXELS = 6000 * 6000 - 1  # FIXME: Pick sensible limit
 
 try:
     # give Tk a chance to set up the environment, in case we're
@@ -2106,17 +2103,21 @@ _fromarray_typemap[((1, 1), _ENDIAN + "i4")] = ("I", "I")
 _fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
 
 
-def _compression_bomb_check(im, maximum_pixels):
-    if maximum_pixels is None:
+def _compression_bomb_check(size):
+    if MAX_IMAGE_PIXELS is None:
         return
 
-    pixels = im.size[0] * im.size[1]
+    pixels = size[0] * size[1]
 
-    if im.size[0] * im.size[1] > maximum_pixels:
-        raise ImageIsTooBigError("Image size exceeds limit")
+    if pixels > MAX_IMAGE_PIXELS:
+        warnings.warn(
+            "Image size (%d pixels) exceeds limit of %d pixels, "
+            "could be decompression bomb DOS attack." %
+            (pixels, MAX_IMAGE_PIXELS),
+            RuntimeWarning)
 
 
-def open(fp, mode="r", maximum_pixels=ARBITARY_LARGE_LIMIT):
+def open(fp, mode="r"):
     """
     Opens and identifies the given image file.
 
@@ -2156,7 +2157,7 @@ def open(fp, mode="r", maximum_pixels=ARBITARY_LARGE_LIMIT):
                 fp.seek(0)
                 # return factory(fp, filename)
                 im = factory(fp, filename)
-                _compression_bomb_check(im, maximum_pixels)
+                _compression_bomb_check(im.size)
                 return im
         except (SyntaxError, IndexError, TypeError):
             #import traceback
@@ -2172,7 +2173,7 @@ def open(fp, mode="r", maximum_pixels=ARBITARY_LARGE_LIMIT):
                     fp.seek(0)
                     # return factory(fp, filename)
                     im = factory(fp, filename)
-                    _compression_bomb_check(im, maximum_pixels)
+                    _compression_bomb_check(im.size)
                     return im
             except (SyntaxError, IndexError, TypeError):
                 #import traceback
