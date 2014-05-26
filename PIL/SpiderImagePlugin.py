@@ -208,7 +208,7 @@ def makeSpiderHeader(im):
     if 1024%lenbyt != 0: labrec += 1
     labbyt = labrec * lenbyt
     hdr = []
-    nvalues = labbyt / 4
+    nvalues = int(labbyt / 4)
     for i in range(nvalues):
         hdr.append(0.0)
 
