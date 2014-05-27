@@ -2104,7 +2104,7 @@ _fromarray_typemap[((1, 1), _ENDIAN + "i4")] = ("I", "I")
 _fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
 
 
-def _compression_bomb_check(size):
+def _decompression_bomb_check(size):
     if MAX_IMAGE_PIXELS is None:
         return
 
@@ -2157,7 +2157,7 @@ def open(fp, mode="r"):
                 fp.seek(0)
                 # return factory(fp, filename)
                 im = factory(fp, filename)
-                _compression_bomb_check(im.size)
+                _decompression_bomb_check(im.size)
                 return im
         except (SyntaxError, IndexError, TypeError):
             #import traceback
@@ -2173,7 +2173,7 @@ def open(fp, mode="r"):
                     fp.seek(0)
                     # return factory(fp, filename)
                     im = factory(fp, filename)
-                    _compression_bomb_check(im.size)
+                    _decompression_bomb_check(im.size)
                     return im
             except (SyntaxError, IndexError, TypeError):
                 #import traceback
