@@ -2158,7 +2158,6 @@ def open(fp, mode="r"):
                 # return factory(fp, filename)
                 im = factory(fp, filename)
                 _compression_bomb_check(im.size)
-                print(im)
                 return im
         except (SyntaxError, IndexError, TypeError):
             #import traceback
