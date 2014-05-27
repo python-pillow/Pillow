@@ -259,7 +259,11 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     opj_stream_set_skip_function(stream, j2k_skip);
     opj_stream_set_seek_function(stream, j2k_seek);
 
+#if OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR == 0
     opj_stream_set_user_data(stream, encoder);
+#else
+    opj_stream_set_user_data(stream, encoder, NULL);
+#endif
 
     /* Setup an opj_image */
     if (strcmp (im->mode, "L") == 0) {

@@ -797,8 +797,9 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
     int reduce = 0;
     int layers = 0;
     int fd = -1;
-    if (!PyArg_ParseTuple(args, "ss|iii", &mode, &format,
-                          &reduce, &layers, &fd))
+    PY_LONG_LONG length = -1;
+    if (!PyArg_ParseTuple(args, "ss|iiiL", &mode, &format,
+                          &reduce, &layers, &fd, &length))
         return NULL;
 
     if (strcmp(format, "j2k") == 0)
@@ -821,6 +822,7 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
     context = (JPEG2KDECODESTATE *)decoder->state.context;
 
     context->fd = fd;
+    context->length = (off_t)length;
     context->format = codec_format;
     context->reduce = reduce;
     context->layers = layers;
