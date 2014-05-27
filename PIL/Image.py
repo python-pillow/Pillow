@@ -36,7 +36,8 @@ class _imaging_not_installed:
         raise ImportError("The _imaging C module is not installed")
 
 
-MAX_IMAGE_PIXELS = 6000 * 6000 - 1  # FIXME: Pick sensible limit
+# Limit to around a quarter gigabyte for a 24 bit (3 bpp) image
+MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 / 4 / 3)
 
 try:
     # give Tk a chance to set up the environment, in case we're
@@ -2157,6 +2158,7 @@ def open(fp, mode="r"):
                 # return factory(fp, filename)
                 im = factory(fp, filename)
                 _compression_bomb_check(im.size)
+                print(im)
                 return im
         except (SyntaxError, IndexError, TypeError):
             #import traceback
