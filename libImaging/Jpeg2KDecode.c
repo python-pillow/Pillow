@@ -517,7 +517,8 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     opj_stream_set_read_function(stream, j2k_read);
     opj_stream_set_skip_function(stream, j2k_skip);
 
-#if OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR == 0
+    /* OpenJPEG 2.0 doesn't have OPJ_VERSION_MAJOR */
+#ifndef OPJ_VERSION_MAJOR
     opj_stream_set_user_data(stream, decoder);
 #else
     opj_stream_set_user_data(stream, decoder, NULL);
