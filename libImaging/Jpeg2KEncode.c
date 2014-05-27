@@ -97,25 +97,8 @@ j2k_pack_i16(Imaging im, UINT8 *buf,
     for (y = 0; y < h; ++y) {
         UINT8 *data = (UINT8 *)(im->image[y + y0] + x0);
         for (x = 0; x < w; ++x) {
-            *ptr++ = data[1];
-            *ptr++ = data[0];
-            data += 2;
-        }
-    }
-}
-
-static void
-j2k_pack_i16b(Imaging im, UINT8 *buf,
-              unsigned x0, unsigned y0, unsigned w, unsigned h)
-{
-    UINT8 *ptr = buf;
-    unsigned x,y;
-    for (y = 0; y < h; ++y) {
-        UINT8 *data = (UINT8 *)(im->image[y + y0] + x0);
-        for (x = 0; x < w; ++x) {
-            *ptr++ = data[0];
-            *ptr++ = data[1];
-            data += 2;
+            *ptr++ = *data++;
+            *ptr++ = *data++;
         }
     }
 }
@@ -310,7 +293,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     } else if (strcmp (im->mode, "I;16B") == 0) {
         components = 1;
         color_space = OPJ_CLRSPC_GRAY;
-        pack = j2k_pack_i16b;
+        pack = j2k_pack_i16;
         prec = 16;
         bpp = 12;
     } else if (strcmp (im->mode, "LA") == 0) {
