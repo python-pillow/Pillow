@@ -2155,7 +2155,6 @@ def open(fp, mode="r"):
             factory, accept = OPEN[i]
             if not accept or accept(prefix):
                 fp.seek(0)
-                # return factory(fp, filename)
                 im = factory(fp, filename)
                 _decompression_bomb_check(im.size)
                 return im
@@ -2171,7 +2170,6 @@ def open(fp, mode="r"):
                 factory, accept = OPEN[i]
                 if not accept or accept(prefix):
                     fp.seek(0)
-                    # return factory(fp, filename)
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
