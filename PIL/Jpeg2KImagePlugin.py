@@ -166,9 +166,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         elif hasattr(self.fp, "seek"):
             try:
                 pos = f.tell()
-                seek(0, 2)
+                f.seek(0, 2)
                 length = f.tell()
-                seek(pos, 0)
+                f.seek(pos, 0)
             except:
                 length = -1
         
