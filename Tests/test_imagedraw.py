@@ -62,7 +62,7 @@ def helper_arc(bbox):
 
 
 def test_arc1():
-     assert_exception(TypeError, lambda: helper_arc(bbox1))
+    helper_arc(bbox1)
 
 
 def test_arc2():
@@ -97,7 +97,7 @@ def helper_chord(bbox):
 
 
 def test_chord1():
-     assert_exception(TypeError, lambda: helper_chord(bbox1))
+    helper_chord(bbox1)
 
 
 def test_chord2():
@@ -160,7 +160,7 @@ def helper_pieslice(bbox):
 
 
 def test_pieslice1():
-     assert_exception(TypeError, lambda: helper_pieslice(bbox1))
+    helper_pieslice(bbox1)
 
 
 def test_pieslice2():
