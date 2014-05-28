@@ -103,6 +103,7 @@ j2k_pack_i16(Imaging im, UINT8 *buf,
     }
 }
 
+
 static void
 j2k_pack_la(Imaging im, UINT8 *buf,
             unsigned x0, unsigned y0, unsigned w, unsigned h)
