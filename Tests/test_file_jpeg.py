@@ -230,6 +230,13 @@ def test_quality_keep():
     assert_no_exception(lambda: im.save(f, quality='keep'))
 
 
+def test_qtables():
+    im = Image.open("Images/lena.jpg")
+    qtables = im.quantization
+    f = tempfile('temp.jpg')
+    assert_no_exception(lambda: im.save(f, qtables=qtables, subsampling=0))
+
+
 def test_junk_jpeg_header():
     # https://github.com/python-imaging/Pillow/issues/630
     filename = "Tests/images/junk_jpeg_header.jpg"
