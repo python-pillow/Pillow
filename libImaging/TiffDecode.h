@@ -14,7 +14,12 @@
 #endif
 
 #ifndef _UNISTD_H
-#include <unistd.h>
+	#if defined(_MSC_VER)
+		#include <io.h>
+		#define _UNISTD_H
+	#else
+		#include <unistd.h>
+	#endif	
 #endif
 
 
