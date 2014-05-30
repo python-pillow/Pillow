@@ -101,7 +101,7 @@ class pil_build_ext(build_ext):
 
     class feature:
         zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = webpmux = None
-        jpeg2000 = None
+        jpeg2000 = openjpeg_version = None
         required = []
 
         def require(self, feat):
@@ -611,7 +611,7 @@ class pil_build_ext(build_ext):
         for option in options:
             if option[0]:
                 version = ''
-                if len(option) >= 3:
+                if len(option) >= 3 and option[2]:
                     version = ' (%s)' % option[2]
                 print("--- %s support available%s" % (option[1], version))
             else:
