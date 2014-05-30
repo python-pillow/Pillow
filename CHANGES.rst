@@ -3,6 +3,9 @@ Changelog (Pillow)
 
 2.5.0 (unreleased)
 ------------------
+- Added tests for Spider files
+  [hugovk]
+  
 - Use libtiff to write any compressed tiff files
   [wiredfool]
   
