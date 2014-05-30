@@ -101,7 +101,7 @@ class pil_build_ext(build_ext):
 
     class feature:
         zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = webpmux = None
-        jpeg2000 = openjpeg_version = None
+        jpeg2000 = None
         required = []
 
         def require(self, feat):
@@ -383,6 +383,7 @@ class pil_build_ext(build_ext):
                         _find_library_file(self, "libjpeg")):
                     feature.jpeg = "libjpeg"  # alternative name
 
+        feature.openjpeg_version = None
         if feature.want('jpeg2000'):
             best_version = None
             best_path = None
