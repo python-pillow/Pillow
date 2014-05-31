@@ -83,7 +83,7 @@ def test_render_multiline():
 
     target = 'Tests/images/multiline_text.png'
     target_img = Image.open(target)
-	
+
 	# some versions of freetype have different horizontal spacing.
 	# setting a tight epsilon, I'm showing the original test failure
 	# at epsilon = ~38.
@@ -133,3 +133,8 @@ def test_unrotated_transposed_font():
     assert_equal(box_size_a, box_size_b)
 
 
+def test_font_not_found():
+    assert_exception(IOError, lambda: ImageFont.truetype("/fake/font.ttf"))
+
+
+# End of file
