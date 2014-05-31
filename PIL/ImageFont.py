@@ -207,7 +207,8 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
 
     :param filename: A truetype font file. Under Windows, if the file
                      is not found in this filename, the loader also looks in
-                     Windows :file:`fonts/` directory.
+                     Windows :file:`fonts/` and Linux :file:`XDG_DATA_DIRS`
+                     directories.
     :param size: The requested size, in points.
     :param index: Which font face to load (default is first available face).
     :param encoding: Which font encoding to use (default is Unicode). Common
@@ -227,20 +228,18 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
     try:
         return FreeTypeFont(font, size, index, encoding)
     except IOError:
+        dir = None
         if sys.platform == "win32":
             # check the windows font repository
             # NOTE: must use uppercase WINDIR, to work around bugs in
             # 1.5.2's os.environ.get()
-            windir = os.environ.get("WINDIR")
-            if windir:
-                filename = os.path.join(windir, "fonts", font)
-                return FreeTypeFont(filename, size, index, encoding)
+            dir = os.environ.get("WINDIR")
         elif sys.platform == "linux":
-            # check the linux font repository
-            lindir = os.environ.get("XDG_DATA_DIRS")
-            if lindir:
-                filename = os.path.join(lindir, "fonts", font)
-                return FreeTypeFont(filename, size, index, encoding)
+            # check the Linux font repository
+            dir = os.environ.get("XDG_DATA_DIRS")
+        if dir:
+            filename = os.path.join(dir, "fonts", font)
+            return FreeTypeFont(filename, size, index, encoding)
         raise
 
 
