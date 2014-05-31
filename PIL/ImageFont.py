@@ -235,6 +235,12 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
             if windir:
                 filename = os.path.join(windir, "fonts", font)
                 return FreeTypeFont(filename, size, index, encoding)
+        elif sys.platform == "linux":
+            # check the linux font repository
+            lindir = os.environ.get("XDG_DATA_DIRS")
+            if lindir:
+                filename = os.path.join(lindir, "fonts", font)
+                return FreeTypeFont(filename, size, index, encoding)
         raise
 
 
