@@ -3,6 +3,9 @@ Changelog (Pillow)
 
 2.5.0 (unreleased)
 ------------------
+- Added more ImageDraw tests
+  [hugovk]
+
 - Added tests for Spider files
   [hugovk]
   
