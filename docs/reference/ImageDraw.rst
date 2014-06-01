@@ -91,9 +91,12 @@ Methods
     Draws an arc (a portion of a circle outline) between the start and end
     angles, inside the given bounding box.
 
-    :param xy: Four points to define the bounding box. Sequence of either
+    :param xy: Four points to define the bounding box. Sequence of
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
-    :param outline: Color to use for the outline.
+    :param start: Starting angle, in degrees. Angles are measured from
+            3 o'clock, increasing clockwise.
+    :param end: Ending angle, in degrees.
+    :param fill: Color to use for the arc.
 
 .. py:method:: PIL.ImageDraw.Draw.bitmap(xy, bitmap, fill=None)
 
@@ -111,7 +114,7 @@ Methods
     Same as :py:meth:`~PIL.ImageDraw.Draw.arc`, but connects the end points
     with a straight line.
 
-    :param xy: Four points to define the bounding box. Sequence of either
+    :param xy: Four points to define the bounding box. Sequence of
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
@@ -144,7 +147,7 @@ Methods
     Same as arc, but also draws straight lines between the end points and the
     center of the bounding box.
 
-    :param xy: Four points to define the bounding box. Sequence of either
+    :param xy: Four points to define the bounding box. Sequence of
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
