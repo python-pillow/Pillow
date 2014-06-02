@@ -73,7 +73,7 @@ Many of Pillow's features require external libraries:
 
 * **openjpeg** provides JPEG 2000 functionality. 
 
-  * Pillow has been tested with openjpeg **2.0.0**.
+  * Pillow has been tested with openjpeg **2.0.0** and **2.1.0**.
 
 If the prerequisites are installed in the standard library locations for your
 machine (e.g. :file:`/usr` or :file:`/usr/local`), no additional configuration
