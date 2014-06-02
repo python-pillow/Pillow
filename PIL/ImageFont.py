@@ -29,12 +29,14 @@ from __future__ import print_function
 
 from PIL import Image
 from PIL._util import isDirectory, isPath
-import os, sys
+import os
+import sys
 
 try:
     import warnings
 except ImportError:
     warnings = None
+
 
 class _imagingft_not_installed:
     # module placeholder
@@ -91,7 +93,7 @@ class ImageFont:
         if file.readline() != b"PILfont\n":
             raise SyntaxError("Not a PILfont file")
         d = file.readline().split(b";")
-        self.info = [] # FIXME: should be a dictionary
+        self.info = []  # FIXME: should be a dictionary
         while True:
             s = file.readline()
             if not s or s == b"DATA\n":
@@ -113,6 +115,7 @@ class ImageFont:
         self.getsize = self.font.getsize
         self.getmask = self.font.getmask
 
+
 ##
 # Wrapper for FreeType fonts.  Application code should use the
 # <b>truetype</b> factory function to create font objects.
@@ -131,7 +134,8 @@ class FreeTypeFont:
             self.font = core.getfont(font, size, index, encoding)
         else:
             self.font_bytes = font.read()
-            self.font = core.getfont("", size, index, encoding, self.font_bytes)
+            self.font = core.getfont(
+                "", size, index, encoding, self.font_bytes)
 
     def getname(self):
         return self.font.family, self.font.style
@@ -151,8 +155,9 @@ class FreeTypeFont:
     def getmask2(self, text, mode="", fill=Image.core.fill):
         size, offset = self.font.getsize(text)
         im = fill("L", size, 0)
-        self.font.render(text, im.id, mode=="1")
+        self.font.render(text, im.id, mode == "1")
         return im, offset
+
 
 ##
 # Wrapper that creates a transposed font from any existing font
@@ -168,7 +173,7 @@ class TransposedFont:
 
     def __init__(self, font, orientation=None):
         self.font = font
-        self.orientation = orientation # any 'transpose' argument, or None
+        self.orientation = orientation  # any 'transpose' argument, or None
 
     def getsize(self, text):
         w, h = self.font.getsize(text)
@@ -207,7 +212,8 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
 
     :param filename: A truetype font file. Under Windows, if the file
                      is not found in this filename, the loader also looks in
-                     Windows :file:`fonts/` directory.
+                     Windows :file:`fonts/` and Linux :file:`XDG_DATA_DIRS`
+                     directories.
     :param size: The requested size, in points.
     :param index: Which font face to load (default is first available face).
     :param encoding: Which font encoding to use (default is Unicode). Common
@@ -227,20 +233,18 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
     try:
         return FreeTypeFont(font, size, index, encoding)
     except IOError:
+        dir = None
         if sys.platform == "win32":
             # check the windows font repository
             # NOTE: must use uppercase WINDIR, to work around bugs in
             # 1.5.2's os.environ.get()
-            windir = os.environ.get("WINDIR")
-            if windir:
-                filename = os.path.join(windir, "fonts", font)
-                return FreeTypeFont(filename, size, index, encoding)
+            dir = os.environ.get("WINDIR")
         elif sys.platform == "linux":
-            # check the linux font repository
-            lindir = os.environ.get("XDG_DATA_DIRS")
-            if lindir:
-                filename = os.path.join(lindir, "fonts", font)
-                return FreeTypeFont(filename, size, index, encoding)
+            # check the Linux font repository
+            dir = os.environ.get("XDG_DATA_DIRS")
+        if dir:
+            filename = os.path.join(dir, "fonts", font)
+            return FreeTypeFont(filename, size, index, encoding)
         raise
 
 
@@ -278,8 +282,8 @@ def load_default():
     import base64
     f = ImageFont()
     f._load_pilfont_data(
-         # courB08
-         BytesIO(base64.decodestring(b'''
+        # courB08
+        BytesIO(base64.decodestring(b'''
 UElMZm9udAo7Ozs7OzsxMDsKREFUQQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -401,7 +405,7 @@ w7IkEbzhVQAAAABJRU5ErkJggg==
 
 if __name__ == "__main__":
     # create font data chunk for embedding
-    import base64, os, sys
+    import base64
     font = "../Images/courB08"
     print("    f._load_pilfont_data(")
     print("         # %s" % os.path.basename(font))
