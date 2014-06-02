@@ -25,6 +25,10 @@ def test_sanity():
     i = ImageCms.profileToProfile(lena(), SRGB, SRGB)
     assert_image(i, "RGB", (128, 128))
 
+    i = lena()
+    ImageCms.profileToProfile(i, SRGB, SRGB, inPlace=True)
+    assert_image(i, "RGB", (128, 128))
+
     t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
     i = ImageCms.applyTransform(lena(), t)
     assert_image(i, "RGB", (128, 128))
@@ -51,12 +55,25 @@ def test_name():
                  'IEC 61966-2.1 Default RGB colour space - sRGB')
 
 
-def x_test_info():
+def test_info():
     assert_equal(ImageCms.getProfileInfo(SRGB).splitlines(),
                  ['sRGB IEC61966-2.1', '',
-                  'Copyright (c) 1998 Hewlett-Packard Company', '',
-                  'WhitePoint : D65 (daylight)', '',
-                  'Tests/icc/sRGB.icm'])
+                  'Copyright (c) 1998 Hewlett-Packard Company', ''])
+
+
+def test_copyright():
+    assert_equal(ImageCms.getProfileCopyright(SRGB).strip(),
+                 'Copyright (c) 1998 Hewlett-Packard Company')
+
+
+def test_manufacturer():
+    assert_equal(ImageCms.getProfileManufacturer(SRGB).strip(),
+                 'IEC http://www.iec.ch')
+
+
+def test_description():
+    assert_equal(ImageCms.getProfileDescription(SRGB).strip(),
+                 'sRGB IEC61966-2.1')
 
 
 def test_intent():
