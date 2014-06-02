@@ -3,6 +3,56 @@ Changelog (Pillow)
 
 2.5.0 (unreleased)
 ------------------
+- Added more ImageDraw tests
+  [hugovk]
+
+- Added tests for Spider files
+  [hugovk]
+  
+- Use libtiff to write any compressed tiff files
+  [wiredfool]
+  
+- Support for pickling Image objects
+  [hugovk]
+
+- Fixed resolution handling for EPS thumbnails
+  [eliempje]
+  
+- Fixed rendering of some binary EPS files (Issue #302)
+  [eliempje] 
+  
+- Rename variables not to use built-in function names
+  [hugovk]
+  
+- Ignore junk JPEG markers 
+  [hugovk]
+  
+- Change default interpolation for Image.thumbnail to Image.ANTIALIAS
+  [hugovk]
+  
+- Add tests and fixes for saving PDFs
+  [hugovk]
+  
+- Remove transparency resource after P->RGBA conversion
+  [hugovk]
+  
+- Clean up preprocessor cruft for Windows
+  [CounterPillow]
+
+- Adjust Homebrew freetype detection logic
+  [jacknagel]
+
+- Added Image.close, context manager support.
+  [wiredfool]
+
+- Added support for 16 bit PGM files. 
+  [wiredfool]
+
+- Updated OleFileIO to version 0.30 from upstream
+  [hugovk]
+
+- Added support for additional TIFF floating point format 
+  [Hijackal]
 
 - Have the tempfile use a suffix with a dot
   [wiredfool]

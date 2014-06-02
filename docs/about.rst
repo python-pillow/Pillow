@@ -39,7 +39,7 @@ Why a fork?
 
 PIL is not setuptools compatible. Please see `this Image-SIG post`_ for a more
 detailed explanation. Also, PIL's current bi-yearly (or greater) release
-schedule is too infrequent to accomodate the large number and frequency of
+schedule is too infrequent to accommodate the large number and frequency of
 issues reported.
 
 .. _this Image-SIG post: https://mail.python.org/pipermail/image-sig/2010-August/006480.html
@@ -52,7 +52,7 @@ What about PIL?
     Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0
     added Python 3 support and includes many bug fixes from many contributors.
 
-As more time passes since the last PIL release, the likelyhood of a new PIL
+As more time passes since the last PIL release, the likelihood of a new PIL
 release decreases. However, we've yet to hear an official "PIL is dead"
 announcement. So if you still want to support PIL, please
 `report issues here first`_, then

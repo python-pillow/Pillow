@@ -242,7 +242,13 @@ def assert_image_equal(a, b, msg=None):
         failure(msg or "got size %r, expected %r" % (a.size, b.size))
     elif a.tobytes() != b.tobytes():
         failure(msg or "got different content")
-        # generate better diff?
+    else:
+        success()
+
+
+def assert_image_completely_equal(a, b, msg=None):
+    if a != b:
+        failure(msg or "images different")
     else:
         success()
 
@@ -345,7 +351,10 @@ def _setup():
 
     import sys
     if "--coverage" in sys.argv:
-        import coverage
+        # Temporary: ignore PendingDeprecationWarning from Coverage (Py3.4)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            import coverage
         cov = coverage.coverage(auto_data=True, include="PIL/*")
         cov.start()
 

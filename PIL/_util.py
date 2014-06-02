@@ -15,7 +15,7 @@ else:
 def isDirectory(f):
     return isPath(f) and os.path.isdir(f)
 
-class import_err(object):
+class deferred_error(object):
     def __init__(self, ex):
         self.ex = ex
     def __getattr__(self, elt):

@@ -1,18 +1,15 @@
 language: python
 
-# for python-qt4
-virtualenv:
-  system_site_packages: true
-
 notifications:
   irc: "chat.freenode.net#pil"
 
 python:
+  - "pypy"
   - 2.6
   - 2.7
   - 3.2
   - 3.3
-  - "pypy"
+  - 3.4
 
 install:
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
@@ -29,8 +26,14 @@ script:
   - coverage erase
   - python setup.py clean
   - python setup.py build_ext --inplace
-  - coverage run --append --include=PIL/* selftest.py
-  - python Tests/run.py --coverage
+
+    # Don't cover PyPy: it fails intermittently and is x5.8 slower (#640)
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then python selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then python Tests/run.py; fi
+
+    # Cover the others
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coverage run --append --include=PIL/* selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then python Tests/run.py --coverage; fi
 
 after_success:
   - coverage report
@@ -38,7 +41,5 @@ after_success:
   - pip install pep8 pyflakes
   - pep8 PIL/*.py
   - pyflakes PIL/*.py
-
-matrix:
-  allow_failures:
-    - python: "pypy"
+  - pep8 Tests/*.py
+  - pyflakes Tests/*.py

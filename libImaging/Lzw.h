@@ -45,7 +45,7 @@ typedef struct {
     unsigned char buffer[LZWTABLE];
 
     /* Symbol table */
-    unsigned INT16 link[LZWTABLE];
+    UINT16 link[LZWTABLE];
     unsigned char data[LZWTABLE];
     int next;
 
