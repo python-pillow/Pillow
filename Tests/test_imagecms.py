@@ -33,6 +33,11 @@ def test_sanity():
     i = ImageCms.applyTransform(lena(), t)
     assert_image(i, "RGB", (128, 128))
 
+    i = lena()
+    t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
+    ImageCms.applyTransform(lena(), t, inPlace=True)
+    assert_image(i, "RGB", (128, 128))
+
     p = ImageCms.createProfile("sRGB")
     o = ImageCms.getOpenProfile(SRGB)
     t = ImageCms.buildTransformFromOpenProfiles(p, o, "RGB", "RGB")
@@ -69,6 +74,11 @@ def test_copyright():
 def test_manufacturer():
     assert_equal(ImageCms.getProfileManufacturer(SRGB).strip(),
                  'IEC http://www.iec.ch')
+
+
+def test_model():
+    assert_equal(ImageCms.getProfileModel(SRGB).strip(),
+                 'IEC 61966-2.1 Default RGB colour space - sRGB')
 
 
 def test_description():
