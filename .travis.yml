@@ -45,5 +45,7 @@ after_success:
   - pip install pep8 pyflakes
   - pep8 PIL/*.py
   - pyflakes PIL/*.py
+  - pep8 test/*.py
+  - pyflakes test/*.py
   - pep8 Tests/*.py
   - pyflakes Tests/*.py

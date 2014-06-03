@@ -1,8 +1,6 @@
 from tester import unittest, PillowTestCase, lena
 
 from PIL import Image
-
-from PIL import Image
 from PIL import ImageColor
 from PIL import ImageDraw
 
@@ -146,7 +144,8 @@ class TestImageDraw(PillowTestCase):
         del draw
 
         # Assert
-        self.assert_image_equal(im, Image.open("Tests/images/imagedraw_pieslice.png"))
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_pieslice.png"))
 
     def test_pieslice1(self):
         self.helper_pieslice(bbox1)
@@ -170,7 +169,6 @@ class TestImageDraw(PillowTestCase):
     def test_point1(self):
         self.helper_point(points1)
 
-
     def test_point2(self):
         self.helper_point(points2)
 
@@ -190,10 +188,8 @@ class TestImageDraw(PillowTestCase):
     def test_polygon1(self):
         self.helper_polygon(points1)
 
-
     def test_polygon2(self):
         self.helper_polygon(points2)
-
 
     def helper_rectangle(self, bbox):
         # Arrange
