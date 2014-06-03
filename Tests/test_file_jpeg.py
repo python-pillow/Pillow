@@ -126,7 +126,7 @@ def test_optimize():
 
 
 def test_optimize_large_buffer():
-    # https://github.com/python-imaging/Pillow/issues/148
+    # https://github.com/python-pillow/Pillow/issues/148
     f = tempfile('temp.jpg')
     # this requires ~ 1.5x Image.MAXBLOCK
     im = Image.new("RGB", (4096, 4096), 0xff3333)
@@ -159,7 +159,7 @@ def test_progressive_large_buffer_highest_quality():
 
 
 def test_large_exif():
-    # https://github.com/python-imaging/Pillow/issues/148
+    # https://github.com/python-pillow/Pillow/issues/148
     f = tempfile('temp.jpg')
     im = lena()
     im.save(f, 'JPEG', quality=90, exif=b"1"*65532)
@@ -231,7 +231,7 @@ def test_quality_keep():
 
 
 def test_junk_jpeg_header():
-    # https://github.com/python-imaging/Pillow/issues/630
+    # https://github.com/python-pillow/Pillow/issues/630
     filename = "Tests/images/junk_jpeg_header.jpg"
     assert_no_exception(lambda: Image.open(filename))
 

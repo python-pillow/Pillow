@@ -71,7 +71,7 @@ def test_g4_eq_png():
 
     assert_image_equal(g4, png)
 
-# see https://github.com/python-imaging/Pillow/issues/279
+# see https://github.com/python-pillow/Pillow/issues/279
 def test_g4_fillorder_eq_png():
     """ Checking that we're actually getting the data that we expect"""
     png = Image.open('Tests/images/g4-fillorder-test.png')
@@ -96,7 +96,7 @@ def test_g4_write():
     assert_equal(reread.info['compression'], 'group4')
 
     assert_equal(reread.info['compression'], orig.info['compression'])
-    
+
     assert_false(orig.tobytes() == reread.tobytes())
 
 def test_adobe_deflate_tiff():
@@ -120,7 +120,7 @@ def test_write_metadata():
     original = img.tag.named()
     reloaded = loaded.tag.named()
 
-    # PhotometricInterpretation is set from SAVE_INFO, not the original image. 
+    # PhotometricInterpretation is set from SAVE_INFO, not the original image.
     ignored = ['StripByteCounts', 'RowsPerStrip', 'PageNumber', 'PhotometricInterpretation']
 
     for tag, value in reloaded.items():
@@ -133,7 +133,7 @@ def test_write_metadata():
                 assert_equal(original[tag], value, "%s didn't roundtrip" % tag)
 
     for tag, value in original.items():
-        if tag not in ignored: 
+        if tag not in ignored:
             if tag.endswith('Resolution'):
                 val = reloaded[tag]
                 assert_almost_equal(val[0][0]/val[0][1], value[0][0]/value[0][1],
@@ -164,7 +164,7 @@ def test_little_endian():
     else:
         assert_equal(b[0], b'\xe0')
         assert_equal(b[1], b'\x01')
-        
+
 
     out = tempfile("temp.tif")
     #out = "temp.le.tif"
@@ -174,8 +174,8 @@ def test_little_endian():
     assert_equal(reread.info['compression'], im.info['compression'])
     assert_equal(reread.getpixel((0,0)), 480)
     # UNDONE - libtiff defaults to writing in native endian, so
-    # on big endian, we'll get back mode = 'I;16B' here. 
-    
+    # on big endian, we'll get back mode = 'I;16B' here.
+
 def test_big_endian():
     im = Image.open('Tests/images/16bit.MM.deflate.tif')
 
@@ -191,7 +191,7 @@ def test_big_endian():
     else:
         assert_equal(b[0], b'\x01')
         assert_equal(b[1], b'\xe0')
-    
+
     out = tempfile("temp.tif")
     im.save(out)
     reread = Image.open(out)
@@ -203,12 +203,12 @@ def test_g4_string_info():
     """Tests String data in info directory"""
     file = "Tests/images/lena_g4_500.tif"
     orig = Image.open(file)
-    
+
     out = tempfile("temp.tif")
 
     orig.tag[269] = 'temp.tif'
     orig.save(out)
-             
+
     reread = Image.open(out)
     assert_equal('temp.tif', reread.tag[269])
 
@@ -223,8 +223,8 @@ def test_12bit_rawmode():
     # convert 12bit.cropped.tif -depth 16 tmp.tif
     # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
     # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
-    # so we need to unshift so that the integer values are the same. 
-    
+    # so we need to unshift so that the integer values are the same.
+
     im2 = Image.open('Tests/images/12in16bit.tif')
 
     if Image.DEBUG:
@@ -235,11 +235,11 @@ def test_12bit_rawmode():
         print (im2.getpixel((0,0)))
         print (im2.getpixel((0,1)))
         print (im2.getpixel((0,2)))
-  
+
     assert_image_equal(im, im2)
 
 def test_blur():
-    # test case from irc, how to do blur on b/w image and save to compressed tif. 
+    # test case from irc, how to do blur on b/w image and save to compressed tif.
     from PIL import ImageFilter
     out = tempfile('temp.tif')
     im = Image.open('Tests/images/pport_g4.tif')
@@ -266,7 +266,7 @@ def test_compressions():
     im.save(out, compression='jpeg')
     im2 = Image.open(out)
     assert_image_similar(im, im2, 30)
-                            
+
 
 def test_cmyk_save():
     im = lena('CMYK')
@@ -280,7 +280,7 @@ def xtest_bw_compression_wRGB():
     """ This test passes, but when running all tests causes a failure due to
         output on stderr from the error thrown by libtiff. We need to capture that
         but not now"""
-    
+
     im = lena('RGB')
     out = tempfile('temp.tif')
 
@@ -293,8 +293,8 @@ def test_fp_leak():
     fn = im.fp.fileno()
 
     assert_no_exception(lambda: os.fstat(fn))
-    im.load()  # this should close it. 
-    assert_exception(OSError, lambda: os.fstat(fn)) 
+    im.load()  # this should close it.
+    assert_exception(OSError, lambda: os.fstat(fn))
     im = None  # this should force even more closed.
-    assert_exception(OSError, lambda: os.fstat(fn)) 
+    assert_exception(OSError, lambda: os.fstat(fn))
     assert_exception(OSError, lambda: os.close(fn))

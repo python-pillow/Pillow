@@ -83,12 +83,12 @@ def test_16bit():
 def test_to_array():
 
     def _to_array(mode, dtype):
-        img = lena(mode)            
+        img = lena(mode)
         np_img = numpy.array(img)
         _test_img_equals_nparray(img, np_img)
         assert_equal(np_img.dtype, numpy.dtype(dtype))
-    
-     
+
+
     modes = [("L", 'uint8'),
              ("I", 'int32'),
              ("F", 'float32'),
@@ -101,20 +101,20 @@ def test_to_array():
              ("I;16B", '>u2'),
              ("I;16L", '<u2'),
              ]
-    
+
 
     for mode in modes:
         assert_no_exception(lambda: _to_array(*mode))
 
 
 def test_point_lut():
-    # see https://github.com/python-imaging/Pillow/issues/439
-    
+    # see https://github.com/python-pillow/Pillow/issues/439
+
     data = list(range(256))*3
     lut = numpy.array(data, dtype='uint8')
 
     im = lena()
 
     assert_no_exception(lambda: im.point(lut))
-    
+
 
