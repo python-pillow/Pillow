@@ -14,7 +14,7 @@ python:
 install:
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
   - "pip install cffi"
-  - "pip install coveralls"
+  - "pip install coveralls nose"
 
   # webp
   - pushd depends && ./install_webp.sh && popd
@@ -34,6 +34,8 @@ script:
     # Cover the others
   - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coverage run --append --include=PIL/* selftest.py; fi
   - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then python Tests/run.py --coverage; fi
+
+  - nosetests test/
 
 after_success:
   - coverage report
