@@ -28,7 +28,7 @@ def test_default():
     assert_image(im, "RGB", im.size)
 
 
-# ref https://github.com/python-imaging/Pillow/issues/274
+# ref https://github.com/python-pillow/Pillow/issues/274
 
 def _test_float_conversion(im):
     orig = im.getpixel((5, 5))
@@ -76,7 +76,7 @@ def test_trns_p():
     assert_no_exception(lambda: rgb.save(f))
 
 
-# ref https://github.com/python-imaging/Pillow/issues/664
+# ref https://github.com/python-pillow/Pillow/issues/664
 
 def test_trns_p_rgba():
     # Arrange

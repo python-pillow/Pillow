@@ -39,7 +39,7 @@ after_success:
   - coverage report
   - coveralls
   - pip install pep8 pyflakes
-  - pep8 PIL/*.py
-  - pyflakes PIL/*.py
-  - pep8 Tests/*.py
-  - pyflakes Tests/*.py
+  - pep8 --statistics --count PIL/*.py
+  - pep8 --statistics --count Tests/*.py
+  - pyflakes PIL/*.py   | tee >(wc -l)
+  - pyflakes Tests/*.py | tee >(wc -l)

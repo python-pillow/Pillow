@@ -2252,17 +2252,17 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
     if (bytes) {
         *text = (unsigned char*)PyBytes_AsString(bytes);
         return;
-    } 
+    }
 
 #if PY_VERSION_HEX < 0x03000000
     /* likely case here is py2.x with an ordinary string.
        but this isn't defined in Py3.x */
     if (PyString_Check(encoded_string)) {
         *text = (unsigned char *)PyString_AsString(encoded_string);
-    } 
+    }
 #endif
 }
-    
+
 
 static PyObject*
 _font_getmask(ImagingFontObject* self, PyObject* args)
@@ -2336,7 +2336,7 @@ _font_getsize(ImagingFontObject* self, PyObject* args)
         return NULL;
     }
 
-    return Py_BuildValue("ii", textwidth(self, text), self->ysize);        
+    return Py_BuildValue("ii", textwidth(self, text), self->ysize);
 }
 
 static struct PyMethodDef _font_methods[] = {
@@ -2399,17 +2399,35 @@ _draw_ink(ImagingDrawObject* self, PyObject* args)
 static PyObject*
 _draw_arc(ImagingDrawObject* self, PyObject* args)
 {
-    int x0, y0, x1, y1;
+    double* xy;
+    int n;
+
+    PyObject* data;
     int ink;
     int start, end;
     int op = 0;
-    if (!PyArg_ParseTuple(args, "(iiii)iii|i",
-                          &x0, &y0, &x1, &y1,
-                          &start, &end, &ink))
+    if (!PyArg_ParseTuple(args, "Oiii|i", &data, &start, &end, &ink))
         return NULL;
 
-    if (ImagingDrawArc(self->image->image, x0, y0, x1, y1, start, end,
-                       &ink, op) < 0)
+    n = PyPath_Flatten(data, &xy);
+    if (n < 0)
+        return NULL;
+    if (n != 2) {
+        PyErr_SetString(PyExc_TypeError,
+                        "coordinate list must contain exactly 2 coordinates"
+                        );
+        return NULL;
+    }
+
+    n = ImagingDrawArc(self->image->image,
+                       (int) xy[0], (int) xy[1],
+                       (int) xy[2], (int) xy[3],
+                       start, end, &ink, op
+                       );
+
+    free(xy);
+
+    if (n < 0)
         return NULL;
 
     Py_INCREF(Py_None);
@@ -2455,15 +2473,35 @@ _draw_bitmap(ImagingDrawObject* self, PyObject* args)
 static PyObject*
 _draw_chord(ImagingDrawObject* self, PyObject* args)
 {
-    int x0, y0, x1, y1;
+    double* xy;
+    int n;
+
+    PyObject* data;
     int ink, fill;
     int start, end;
-    if (!PyArg_ParseTuple(args, "(iiii)iiii",
-                          &x0, &y0, &x1, &y1, &start, &end, &ink, &fill))
+    if (!PyArg_ParseTuple(args, "Oiiii",
+                          &data, &start, &end, &ink, &fill))
         return NULL;
 
-    if (ImagingDrawChord(self->image->image, x0, y0, x1, y1,
-                         start, end, &ink, fill, self->blend) < 0)
+    n = PyPath_Flatten(data, &xy);
+    if (n < 0)
+        return NULL;
+    if (n != 2) {
+        PyErr_SetString(PyExc_TypeError,
+                        "coordinate list must contain exactly 2 coordinates"
+                        );
+        return NULL;
+    }
+
+    n = ImagingDrawChord(self->image->image,
+                         (int) xy[0], (int) xy[1],
+                         (int) xy[2], (int) xy[3],
+                         start, end, &ink, fill, self->blend
+                         );
+
+    free(xy);
+
+    if (n < 0)
         return NULL;
 
     Py_INCREF(Py_None);
@@ -2492,8 +2530,8 @@ _draw_ellipse(ImagingDrawObject* self, PyObject* args)
         return NULL;
     }
 
-    n = ImagingDrawEllipse(self->image->image, 
-                           (int) xy[0], (int) xy[1], 
+    n = ImagingDrawEllipse(self->image->image,
+                           (int) xy[0], (int) xy[1],
                            (int) xy[2], (int) xy[3],
                            &ink, fill, self->blend
                            );
@@ -2656,15 +2694,34 @@ _draw_outline(ImagingDrawObject* self, PyObject* args)
 static PyObject*
 _draw_pieslice(ImagingDrawObject* self, PyObject* args)
 {
-    int x0, y0, x1, y1;
+    double* xy;
+    int n;
+
+    PyObject* data;
     int ink, fill;
     int start, end;
-    if (!PyArg_ParseTuple(args, "(iiii)iiii",
-                          &x0, &y0, &x1, &y1, &start, &end, &ink, &fill))
+    if (!PyArg_ParseTuple(args, "Oiiii", &data, &start, &end, &ink, &fill))
         return NULL;
 
-    if (ImagingDrawPieslice(self->image->image, x0, y0, x1, y1,
-                            start, end, &ink, fill, self->blend) < 0)
+    n = PyPath_Flatten(data, &xy);
+    if (n < 0)
+        return NULL;
+    if (n != 2) {
+        PyErr_SetString(PyExc_TypeError,
+                        "coordinate list must contain exactly 2 coordinates"
+                        );
+        return NULL;
+    }
+
+    n = ImagingDrawPieslice(self->image->image,
+                            (int) xy[0], (int) xy[1],
+                            (int) xy[2], (int) xy[3],
+                            start, end, &ink, fill, self->blend
+                            );
+
+    free(xy);
+
+    if (n < 0)
         return NULL;
 
     Py_INCREF(Py_None);
@@ -2738,9 +2795,9 @@ _draw_rectangle(ImagingDrawObject* self, PyObject* args)
         return NULL;
     }
 
-    n = ImagingDrawRectangle(self->image->image, 
+    n = ImagingDrawRectangle(self->image->image,
                              (int) xy[0], (int) xy[1],
-                             (int) xy[2], (int) xy[3], 
+                             (int) xy[2], (int) xy[3],
                              &ink, fill, self->blend
                              );
 
@@ -3117,8 +3174,8 @@ _getattr_ptr(ImagingObject* self, void* closure)
 static PyObject*
 _getattr_unsafe_ptrs(ImagingObject* self, void* closure)
 {
-    return Py_BuildValue("(ss)(si)(si)(si)(si)(si)(sn)(sn)(sn)(sn)(sn)(si)(si)(sn)", 
-                         "mode", self->image->mode, 
+    return Py_BuildValue("(ss)(si)(si)(si)(si)(si)(sn)(sn)(sn)(sn)(sn)(si)(si)(sn)",
+                         "mode", self->image->mode,
                          "type", self->image->type,
                          "depth", self->image->depth,
                          "bands", self->image->bands,

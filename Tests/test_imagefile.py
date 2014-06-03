@@ -49,14 +49,14 @@ def test_parser():
 
     if EpsImagePlugin.has_ghostscript():
         im1, im2 = roundtrip("EPS")
-        assert_image_similar(im1, im2.convert('L'),20) # EPS comes back in RGB      
-    
+        assert_image_similar(im1, im2.convert('L'),20) # EPS comes back in RGB
+
     if "jpeg_encoder" in codecs:
         im1, im2 = roundtrip("JPEG") # lossy compression
         assert_image(im1, im2.mode, im2.size)
 
     # XXX Why assert exception and why does it fail?
-    # https://github.com/python-imaging/Pillow/issues/78
+    # https://github.com/python-pillow/Pillow/issues/78
     #assert_exception(IOError, lambda: roundtrip("PDF"))
 
 def test_ico():
