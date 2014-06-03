@@ -76,6 +76,7 @@ def _parse_jp2_header(fp):
 
     size = None
     mode = None
+    bpc = None
     
     hio = io.BytesIO(header)
     while True:
@@ -93,7 +94,9 @@ def _parse_jp2_header(fp):
               = struct.unpack('>IIHBBBB', content)
             size = (width, height)
             if unkc:
-                if nc == 1:
+                if nc == 1 and bpc == 15:
+                    mode = 'I'
+                elif nc == 1:
                     mode = 'L'
                 elif nc == 2:
                     mode = 'LA'
@@ -113,7 +116,9 @@ def _parse_jp2_header(fp):
                         mode = 'RGBA'
                     break
                 elif cs == 17: # grayscale
-                    if nc == 1:
+                    if nc == 1 and bpc == 15:
+                        mode = 'I'
+                    elif nc == 1:
                         mode = 'L'
                     elif nc == 2:
                         mode = 'LA'
@@ -122,7 +127,7 @@ def _parse_jp2_header(fp):
                     if nc == 3:
                         mode = 'RGB'
                     elif nc == 4:
-                        mode == 'RGBA'
+                        mode = 'RGBA'
                     break
 
     return (size, mode)
