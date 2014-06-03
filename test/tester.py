@@ -112,51 +112,6 @@ py3 = (sys.version_info >= (3, 0))
 #         assert_equal(a, b, msg)
 #
 #
-# def assert_greater(a, b, msg=None):
-#     if a > b:
-#         success()
-#     else:
-#         failure(msg or "%r unexpectedly not greater than %r" % (a, b))
-#
-#
-# def assert_greater_equal(a, b, msg=None):
-#     if a >= b:
-#         success()
-#     else:
-#         failure(
-#             msg or "%r unexpectedly not greater than or equal to %r"
-#               % (a, b))
-#
-#
-# def assert_less(a, b, msg=None):
-#     if a < b:
-#         success()
-#     else:
-#         failure(msg or "%r unexpectedly not less than %r" % (a, b))
-#
-#
-# def assert_less_equal(a, b, msg=None):
-#     if a <= b:
-#         success()
-#     else:
-#         failure(
-#             msg or "%r unexpectedly not less than or equal to %r" % (a, b))
-#
-#
-# def assert_is_instance(a, b, msg=None):
-#     if isinstance(a, b):
-#         success()
-#     else:
-#         failure(msg or "got %r, expected %r" % (type(a), b))
-#
-#
-# def assert_in(a, b, msg=None):
-#     if a in b:
-#         success()
-#     else:
-#         failure(msg or "%r unexpectedly not in %r" % (a, b))
-#
-#
 # def assert_match(v, pattern, msg=None):
 #     import re
 #     if re.match(pattern, v):
@@ -164,55 +119,6 @@ py3 = (sys.version_info >= (3, 0))
 #     else:
 #         failure(msg or "got %r, doesn't match pattern %r" % (v, pattern))
 #
-#
-# def assert_exception(exc_class, func):
-#     import sys
-#     import traceback
-#     try:
-#         func()
-#     except exc_class:
-#         success()
-#     except:
-#         failure("expected %r exception, got %r" % (
-#                 exc_class.__name__, sys.exc_info()[0].__name__))
-#         traceback.print_exc()
-#     else:
-#         failure(
-#           "expected %r exception, got no exception" % exc_class.__name__)
-#
-#
-# def assert_no_exception(func):
-#     import sys
-#     import traceback
-#     try:
-#         func()
-#     except:
-#         failure("expected no exception, got %r" % sys.exc_info()[0].__name__)
-#         traceback.print_exc()
-#     else:
-#         success()
-#
-#
-# def assert_warning(warn_class, func):
-#     # note: this assert calls func three times!
-#     import warnings
-#
-#     def warn_error(message, category=UserWarning, **options):
-#         raise category(message)
-#
-#     def warn_ignore(message, category=UserWarning, **options):
-#         pass
-#     warn = warnings.warn
-#     result = None
-#     try:
-#         warnings.warn = warn_ignore
-#         assert_no_exception(func)
-#         result = func()
-#         warnings.warn = warn_error
-#         assert_exception(warn_class, func)
-#     finally:
-#         warnings.warn = warn  # restore
-#     return result
 #
 # # helpers
 #
