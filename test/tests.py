@@ -1,7 +1,7 @@
-import unittest
+from tester import unittest
 
 
-class PillowTests(unittest.TestCase):
+class SomeTests(unittest.TestCase):
     """
     Can we start moving the test suite here?
     """
@@ -10,8 +10,10 @@ class PillowTests(unittest.TestCase):
         """
         Great idea!
         """
-        assert True is True
+        self.assertTrue(True)
 
 
 if __name__ == '__main__':
     unittest.main()
+
+# End of file
