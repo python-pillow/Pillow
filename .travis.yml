@@ -15,6 +15,7 @@ install:
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
   - "pip install cffi"
   - "pip install coveralls nose"
+  - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip install unittest2; fi
 
   # webp
   - pushd depends && ./install_webp.sh && popd

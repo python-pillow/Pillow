@@ -23,6 +23,21 @@ class PillowTestCase(unittest.TestCase):
             a.tobytes(), b.tobytes(),
             msg or "got different content")
 
+    def assert_warning(self, warn_class, func):
+        import warnings
+
+        with warnings.catch_warnings(record=True) as w:
+            # Cause all warnings to always be triggered.
+            warnings.simplefilter("always")
+
+            # Hopefully trigger a warning.
+            func()
+
+            # Verify some things.
+            self.assertEqual(len(w), 1)
+            assert issubclass(w[-1].category, warn_class)
+            self.assertIn("deprecated", str(w[-1].message))
+
 
 # # require that deprecation warnings are triggered
 # import warnings
