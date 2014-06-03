@@ -234,7 +234,7 @@ class pil_build_ext(build_ext):
         elif sys.platform.startswith("linux"):
             arch_tp = (plat.processor(), plat.architecture()[0])
             if arch_tp == ("x86_64","32bit"):
-                # 32 bit build on 64 bit machine. 
+                # 32 bit build on 64 bit machine.
                 _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
             else:
                 for platform_ in arch_tp:
@@ -339,7 +339,7 @@ class pil_build_ext(build_ext):
         # on Windows, look for the OpenJPEG libraries in the location that
         # the official installed puts them
         if sys.platform == "win32":
-            _add_directory(library_dirs, 
+            _add_directory(library_dirs,
                            os.path.join(os.environ.get("ProgramFiles", ""),
                                         "OpenJPEG 2.0", "lib"))
             _add_directory(include_dirs,
@@ -378,7 +378,7 @@ class pil_build_ext(build_ext):
             if _find_include_file(self, "openjpeg-2.0/openjpeg.h"):
                 if _find_library_file(self, "openjp2"):
                     feature.jpeg2000 = "openjp2"
-                    
+
         if feature.want('tiff'):
             if _find_library_file(self, "tiff"):
                 feature.tiff = "tiff"
@@ -660,7 +660,7 @@ setup(
         _read('CHANGES.rst')).decode('utf-8'),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
-    url='http://python-imaging.github.io/',
+    url='http://python-pillow.github.io/',
     classifiers=[
         "Development Status :: 6 - Mature",
         "Topic :: Multimedia :: Graphics",
