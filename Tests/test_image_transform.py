@@ -10,9 +10,9 @@ def test_extent():
                                 w//2,h//2), # ul -> lr
                                Image.BILINEAR)
 
-    
+
     scaled = im.resize((w*2, h*2), Image.BILINEAR).crop((0,0,w,h))
-    
+
     assert_image_similar(transformed, scaled, 10) # undone -- precision?
 
 def test_quad():
@@ -23,9 +23,9 @@ def test_quad():
                                (0,0,0,h//2,
                                 w//2,h//2,w//2,0), # ul -> ccw around quad
                                Image.BILINEAR)
-    
+
     scaled = im.resize((w*2, h*2), Image.BILINEAR).crop((0,0,w,h))
-    
+
     assert_image_equal(transformed, scaled)
 
 def test_mesh():
@@ -48,8 +48,8 @@ def test_mesh():
     checker = Image.new('RGBA', im.size)
     checker.paste(scaled, (0,0))
     checker.paste(scaled, (w//2,h//2))
-        
-    assert_image_equal(transformed, checker) 
+
+    assert_image_equal(transformed, checker)
 
     # now, check to see that the extra area is (0,0,0,0)
     blank = Image.new('RGBA', (w//2,h//2), (0,0,0,0))
@@ -59,34 +59,34 @@ def test_mesh():
 
 def _test_alpha_premult(op):
      # create image with half white, half black, with the black half transparent.
-    # do op, 
+    # do op,
     # there should be no darkness in the white section.
     im = Image.new('RGBA', (10,10), (0,0,0,0))
     im2 = Image.new('RGBA', (5,10), (255,255,255,255))
     im.paste(im2, (0,0))
-    
+
     im = op(im, (40,10))
     im_background = Image.new('RGB', (40,10), (255,255,255))
     im_background.paste(im, (0,0), im)
-    
+
     hist = im_background.histogram()
     assert_equal(40*10, hist[-1])
 
-    
+
 def test_alpha_premult_resize():
 
     def op (im, sz):
         return im.resize(sz, Image.LINEAR)
-    
+
     _test_alpha_premult(op)
-    
+
 def test_alpha_premult_transform():
-    
+
     def op(im, sz):
         (w,h) = im.size
         return im.transform(sz, Image.EXTENT,
                             (0,0,
-                             w,h), 
+                             w,h),
                             Image.BILINEAR)
 
     _test_alpha_premult(op)
@@ -94,7 +94,7 @@ def test_alpha_premult_transform():
 
 def test_blank_fill():
     # attempting to hit
-    # https://github.com/python-imaging/Pillow/issues/254 reported
+    # https://github.com/python-pillow/Pillow/issues/254 reported
     #
     # issue is that transforms with transparent overflow area
     # contained junk from previous images, especially on systems with
@@ -106,11 +106,11 @@ def test_blank_fill():
     #
     # Running by default, but I'd totally understand not doing it in
     # the future
-    
-    foo = [Image.new('RGBA',(1024,1024), (a,a,a,a))
-             for a in range(1,65)]   
 
-    # Yeah. Watch some JIT optimize this out. 
+    foo = [Image.new('RGBA',(1024,1024), (a,a,a,a))
+             for a in range(1,65)]
+
+    # Yeah. Watch some JIT optimize this out.
     foo = None
 
     test_mesh()

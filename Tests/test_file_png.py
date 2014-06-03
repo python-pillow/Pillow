@@ -101,7 +101,7 @@ def test_bad_text():
     assert_equal(im.info,  {'spam': 'egg\x00'})
 
 def test_bad_ztxt():
-    # Test reading malformed zTXt chunks (python-imaging/Pillow#318)
+    # Test reading malformed zTXt chunks (python-pillow/Pillow#318)
 
     im = load(HEAD + chunk(b'zTXt') + TAIL)
     assert_equal(im.info, {})
@@ -182,7 +182,7 @@ def test_save_l_transparency():
     file = tempfile("temp.png")
     assert_no_exception(lambda: im.save(file))
 
-    # There are 559 transparent pixels. 
+    # There are 559 transparent pixels.
     im = im.convert('RGBA')
     assert_equal(im.split()[3].getcolors()[0][0], 559)
 
@@ -255,7 +255,7 @@ def test_trns_p():
     # Check writing a transparency of 0, issue #528
     im = lena('P')
     im.info['transparency']=0
-    
+
     f = tempfile("temp.png")
     im.save(f)
 
@@ -263,8 +263,8 @@ def test_trns_p():
     assert_true('transparency' in im2.info)
 
     assert_image_equal(im2.convert('RGBA'), im.convert('RGBA'))
-        
-    
+
+
 def test_save_icc_profile_none():
     # check saving files with an ICC profile set to None (omit profile)
     in_file = "Tests/images/icc_profile_none.png"

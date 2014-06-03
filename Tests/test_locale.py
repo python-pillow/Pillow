@@ -3,7 +3,7 @@ from PIL import Image
 
 import locale
 
-# ref https://github.com/python-imaging/Pillow/issues/272
+# ref https://github.com/python-pillow/Pillow/issues/272
 ## on windows, in polish locale:
 
 ## import locale
@@ -16,7 +16,7 @@ import locale
 ## 7
 ## 160
 
-# one of string.whitespace is not freely convertable into ascii. 
+# one of string.whitespace is not freely convertable into ascii.
 
 path = "Images/lena.jpg"
 

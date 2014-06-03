@@ -205,30 +205,36 @@ class pil_build_ext(build_ext):
             # darwin ports installation directories
             _add_directory(library_dirs, "/opt/local/lib")
             _add_directory(include_dirs, "/opt/local/include")
-            
-            # if homebrew is installed, use its lib and include directories
+
+            # if Homebrew is installed, use its lib and include directories
             import subprocess
             try:
-                prefix = subprocess.check_output(['brew', '--prefix'])
-                if prefix:
-                    prefix = prefix.strip()
-                    _add_directory(library_dirs, os.path.join(prefix, 'lib'))
-                    _add_directory(include_dirs, os.path.join(prefix, 'include'))
-                    
-                    # freetype2 is a key-only brew under opt/
-                    _add_directory(library_dirs, os.path.join(prefix, 'opt', 'freetype', 'lib'))
-                    _add_directory(include_dirs, os.path.join(prefix, 'opt', 'freetype', 'include'))
+                prefix = subprocess.check_output(['brew', '--prefix']).strip()
             except:
-                pass # homebrew not installed
-            
-            # freetype2 ships with X11 (after homebrew, so that homebrew freetype is preferred)
-            _add_directory(library_dirs, "/usr/X11/lib")
-            _add_directory(include_dirs, "/usr/X11/include")
+                # Homebrew not installed
+                prefix = None
+
+            ft_prefix = None
+
+            if prefix:
+                # add Homebrew's include and lib directories
+                _add_directory(library_dirs, os.path.join(prefix, 'lib'))
+                _add_directory(include_dirs, os.path.join(prefix, 'include'))
+                ft_prefix = os.path.join(prefix, 'opt', 'freetype')
+
+            if ft_prefix and os.path.isdir(ft_prefix):
+                # freetype might not be linked into Homebrew's prefix
+                _add_directory(library_dirs, os.path.join(ft_prefix, 'lib'))
+                _add_directory(include_dirs, os.path.join(ft_prefix, 'include'))
+            else:
+                # fall back to freetype from XQuartz if Homebrew's freetype is missing
+                _add_directory(library_dirs, "/usr/X11/lib")
+                _add_directory(include_dirs, "/usr/X11/include")
 
         elif sys.platform.startswith("linux"):
             arch_tp = (plat.processor(), plat.architecture()[0])
             if arch_tp == ("x86_64","32bit"):
-                # 32 bit build on 64 bit machine. 
+                # 32 bit build on 64 bit machine.
                 _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
             else:
                 for platform_ in arch_tp:
@@ -333,7 +339,7 @@ class pil_build_ext(build_ext):
         # on Windows, look for the OpenJPEG libraries in the location that
         # the official installed puts them
         if sys.platform == "win32":
-            _add_directory(library_dirs, 
+            _add_directory(library_dirs,
                            os.path.join(os.environ.get("ProgramFiles", ""),
                                         "OpenJPEG 2.0", "lib"))
             _add_directory(include_dirs,
@@ -372,7 +378,7 @@ class pil_build_ext(build_ext):
             if _find_include_file(self, "openjpeg-2.0/openjpeg.h"):
                 if _find_library_file(self, "openjp2"):
                     feature.jpeg2000 = "openjp2"
-                    
+
         if feature.want('tiff'):
             if _find_library_file(self, "tiff"):
                 feature.tiff = "tiff"
@@ -654,7 +660,7 @@ setup(
         _read('CHANGES.rst')).decode('utf-8'),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
-    url='http://python-imaging.github.io/',
+    url='http://python-pillow.github.io/',
     classifiers=[
         "Development Status :: 6 - Mature",
         "Topic :: Multimedia :: Graphics",
