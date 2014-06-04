@@ -13,10 +13,10 @@ try:
             im = ImageGrab.grab()
             self.assert_image(im, im.mode, im.size)
 
-except ImportError as v:
+except ImportError:
     class TestImageCopy(PillowTestCase):
         def test_skip(self):
-            self.skipTest(v)
+            self.skipTest("ImportError")
 
 
 if __name__ == '__main__':
