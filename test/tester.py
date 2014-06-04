@@ -161,17 +161,6 @@ def lena(mode="RGB", cache={}):
 #         success()
 #
 #
-# def assert_image_equal(a, b, msg=None):
-#     if a.mode != b.mode:
-#         failure(msg or "got mode %r, expected %r" % (a.mode, b.mode))
-#     elif a.size != b.size:
-#         failure(msg or "got size %r, expected %r" % (a.size, b.size))
-#     elif a.tobytes() != b.tobytes():
-#         failure(msg or "got different content")
-#     else:
-#         success()
-#
-#
 # def assert_image_completely_equal(a, b, msg=None):
 #     if a != b:
 #         failure(msg or "images different")
