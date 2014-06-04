@@ -3,6 +3,10 @@ Changelog (Pillow)
 
 2.5.0 (unreleased)
 ------------------
+
+- ImageCms fixes
+  [hugovk]
+
 - Added more ImageDraw tests
   [hugovk]
 
