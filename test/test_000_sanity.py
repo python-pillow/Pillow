@@ -1,4 +1,4 @@
-from tester import unittest, PillowTestCase
+from helper import unittest, PillowTestCase
 
 import PIL
 import PIL.Image

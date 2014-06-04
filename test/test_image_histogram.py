@@ -1,4 +1,4 @@
-from tester import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, lena
 
 
 class TestImageHistogram(PillowTestCase):
