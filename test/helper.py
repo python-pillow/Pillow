@@ -12,6 +12,17 @@ else:
 
 class PillowTestCase(unittest.TestCase):
 
+    def assert_image(self, im, mode, size, msg=None):
+        if mode is not None:
+            self.assertEqual(
+                im.mode, mode,
+                msg or "got mode %r, expected %r" % (im.mode, mode))
+
+        if size is not None:
+            self.assertEqual(
+                im.size, size,
+                msg or "got size %r, expected %r" % (im.size, size))
+
     def assert_image_equal(self, a, b, msg=None):
         self.assertEqual(
             a.mode, b.mode,
@@ -152,15 +163,6 @@ def lena(mode="RGB", cache={}):
     return im
 
 
-# def assert_image(im, mode, size, msg=None):
-#     if mode is not None and im.mode != mode:
-#         failure(msg or "got mode %r, expected %r" % (im.mode, mode))
-#     elif size is not None and im.size != size:
-#         failure(msg or "got size %r, expected %r" % (im.size, size))
-#     else:
-#         success()
-#
-#
 # def assert_image_completely_equal(a, b, msg=None):
 #     if a != b:
 #         failure(msg or "images different")
