@@ -17,25 +17,21 @@
 #error Sorry, this library requires ANSI header files.
 #endif
 
-#if defined(_MSC_VER)
-#ifndef WIN32
-#define WIN32
-#endif
-/* VC++ 4.0 is a bit annoying when it comes to precision issues (like
-   claiming that "float a = 0.0;" would lead to loss of precision).  I
-   don't like to see warnings from my code, but since I still want to
-   keep it readable, I simply switch off a few warnings instead of adding
-   the tons of casts that VC++ seem to require.  This code is compiled
-   with numerous other compilers as well, so any real errors are likely
-   to be catched anyway. */
-#pragma warning(disable: 4244) /* conversion from 'float' to 'int' */
+#if defined(_MSC_VER) && !defined(__GNUC__)
+#define inline __inline
 #endif
 
-#if defined(_MSC_VER)
-#define inline __inline
-#elif !defined(USE_INLINE)
-#define inline
+#if !defined(PIL_USE_INLINE)
+#define inline 
 #endif
+
+#ifdef _WIN32
+
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
+#else
+/* For System that are not Windows, we'll need to define these. */
 
 #if SIZEOF_SHORT == 2
 #define	INT16 short
@@ -61,12 +57,16 @@
 #define	INT64 long
 #endif
 
-/* assume IEEE; tweak if necessary (patches are welcome) */
-#define	FLOAT32 float
-#define	FLOAT64 double
-
 #define	INT8  signed char
 #define	UINT8 unsigned char
 
 #define	UINT16 unsigned INT16
 #define	UINT32 unsigned INT32
+
+#endif
+
+/* assume IEEE; tweak if necessary (patches are welcome) */
+#define	FLOAT32 float
+#define	FLOAT64 double
+
+
