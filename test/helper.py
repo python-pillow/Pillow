@@ -34,6 +34,29 @@ class PillowTestCase(unittest.TestCase):
             a.tobytes(), b.tobytes(),
             msg or "got different content")
 
+    def assert_image_similar(self, a, b, epsilon, msg=None):
+        epsilon = float(epsilon)
+        self.assertEqual(
+            a.mode, b.mode,
+            msg or "got mode %r, expected %r" % (a.mode, b.mode))
+        self.assertEqual(
+            a.size, b.size,
+            msg or "got size %r, expected %r" % (a.size, b.size))
+
+        diff = 0
+        try:
+            ord(b'0')
+            for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
+                diff += abs(ord(abyte)-ord(bbyte))
+        except:
+            for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
+                diff += abs(abyte-bbyte)
+        ave_diff = float(diff)/(a.size[0]*a.size[1])
+        self.assertGreaterEqual(
+            epsilon, ave_diff,
+            msg or "average pixel value difference %.4f > epsilon %.4f" % (
+                ave_diff, epsilon))
+
     def assert_warning(self, warn_class, func):
         import warnings
 
@@ -167,29 +190,6 @@ def lena(mode="RGB", cache={}):
 #         failure(msg or "images different")
 #     else:
 #         success()
-#
-#
-# def assert_image_similar(a, b, epsilon, msg=None):
-#     epsilon = float(epsilon)
-#     if a.mode != b.mode:
-#         return failure(msg or "got mode %r, expected %r" % (a.mode, b.mode))
-#     elif a.size != b.size:
-#         return failure(msg or "got size %r, expected %r" % (a.size, b.size))
-#     diff = 0
-#     try:
-#         ord(b'0')
-#         for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
-#             diff += abs(ord(abyte)-ord(bbyte))
-#     except:
-#         for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
-#             diff += abs(abyte-bbyte)
-#     ave_diff = float(diff)/(a.size[0]*a.size[1])
-#     if epsilon < ave_diff:
-#         return failure(
-#             msg or "average pixel value difference %.4f > epsilon %.4f" % (
-#                 ave_diff, epsilon))
-#     else:
-#         return success()
 #
 #
 # def tempfile(template, *extra):
