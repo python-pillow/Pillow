@@ -505,15 +505,18 @@ class Image:
 
     def _dump(self, file=None, format=None):
         import tempfile, os
+        suffix = ''
+        if format:
+            suffix = '.'+format
         if not file:
-            f, file = tempfile.mkstemp(format or '')
+            f, file = tempfile.mkstemp(suffix)
             os.close(f)
             
         self.load()
         if not format or format == "PPM":
             self.im.save_ppm(file)
         else:
-            if file.endswith(format):
+            if not file.endswith(format):
                 file = file + "." + format
             self.save(file, format)
         return file
@@ -807,7 +810,7 @@ class Image:
         new_im = self._new(im)
         if delete_trns:
             #crash fail if we leave a bytes transparency in an rgb/l mode.
-            del(new.info['transparency'])
+            del(new_im.info['transparency'])
         if trns is not None:
             if new_im.mode == 'P':
                 try:

@@ -1,6 +1,15 @@
 Changelog (Pillow)
 ==================
 
+2.5.0 (unreleased)
+------------------
+
+- Have the tempfile use a suffix with a dot
+  [wiredfool]
+
+- Fix variable name used for transparency manipulations
+  [nijel]
+
 2.4.0 (2014-04-01)
 ------------------
 
