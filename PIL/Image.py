@@ -1529,7 +1529,7 @@ class Image:
         clockwise around its centre.
 
         :param angle: In degrees counter clockwise.
-        :param filter: An optional resampling filter.  This can be
+        :param resample: An optional resampling filter.  This can be
            one of :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
            :py:attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
            environment), or :py:attr:`PIL.Image.BICUBIC`
@@ -1550,7 +1550,6 @@ class Image:
                 math.cos(angle), math.sin(angle), 0.0,
                 -math.sin(angle), math.cos(angle), 0.0
                 ]
-            
 
             def transform(x, y, matrix=matrix):
                 (a, b, c, d, e, f) = matrix

@@ -16,8 +16,8 @@ Python Imaging Library by Fredrik Lundh and Contributors.
     :target: https://pypi.python.org/pypi/Pillow/
     :alt: Number of PyPI downloads
 
-.. image:: https://coveralls.io/repos/python-imaging/Pillow/badge.png?branch=master
-    :target: https://coveralls.io/r/python-imaging/Pillow?branch=master
+.. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.png?branch=master
+    :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
     :alt: Test coverage
 
 To start using Pillow, please read the :doc:`installation
