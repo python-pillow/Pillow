@@ -5,19 +5,23 @@ try:
 
     from PIL import Image, PyAccess
 
-    import test_image_putpixel as put
-    import test_image_getpixel as get
+    from test_image_putpixel import TestImagePutPixel
+    from test_image_getpixel import TestImageGetPixel
 
-    class TestCffi(PillowTestCase):
+    Image.USE_CFFI_ACCESS = True
 
-        Image.USE_CFFI_ACCESS = True
+    class TestCffiPutPixel(TestImagePutPixel):
 
         def test_put(self):
-            put.test_sanity()
+            self.test_sanity()
+
+    class TestCffiGetPixel(TestImageGetPixel):
 
         def test_get(self):
-            get.test_basic()
-            get.test_signedness()
+            self.test_basic()
+            self.test_signedness()
+
+    class TestCffi(PillowTestCase):
 
         def _test_get_access(self, im):
             """ Do we get the same thing as the old pixel access """

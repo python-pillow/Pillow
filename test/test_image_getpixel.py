@@ -5,7 +5,7 @@ from PIL import Image
 Image.USE_CFFI_ACCESS = False
 
 
-class TestImage(PillowTestCase):
+class TestImageGetPixel(PillowTestCase):
 
     def color(self, mode):
         bands = Image.getmodebands(mode)
