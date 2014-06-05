@@ -115,7 +115,7 @@ endlocal
 
 rem build openjpeg
 setlocal
-cd /D %%OPENJPEG&&
+cd /D %%OPENJPEG%%
 %%CMAKE%% -DBUILD_THIRDPARTY:BOOL=ON .
 nmake -f Makefile.vc clean
 nmake -f Makefile.vc
