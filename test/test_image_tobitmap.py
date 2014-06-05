@@ -1,21 +1,19 @@
-from helper import unittest, PillowTestCase, lena
-
-from PIL import Image
+from helper import unittest, PillowTestCase, lena, fromstring
 
 
 class TestImage(PillowTestCase):
 
-def test_sanity(self):
+    def test_sanity(self):
 
-    self.assertRaises(ValueError, lambda: lena().tobitmap())
-    assert_no_exception(lambda: lena().convert("1").tobitmap())
+        self.assertRaises(ValueError, lambda: lena().tobitmap())
+        lena().convert("1").tobitmap()
 
-    im1 = lena().convert("1")
+        im1 = lena().convert("1")
 
-    bitmap = im1.tobitmap()
+        bitmap = im1.tobitmap()
 
-    assert_true(isinstance(bitmap, bytes))
-    assert_image_equal(im1, fromstring(bitmap))
+        self.assertIsInstance(bitmap, bytes)
+        self.assert_image_equal(im1, fromstring(bitmap))
 
 
 if __name__ == '__main__':

@@ -129,22 +129,21 @@ py3 = (sys.version_info >= (3, 0))
 #         success()
 #     else:
 #         failure(msg or "got %r, doesn't match pattern %r" % (v, pattern))
-#
-#
-# # helpers
-#
-# from io import BytesIO
-#
-#
-# def fromstring(data):
-#     from PIL import Image
-#     return Image.open(BytesIO(data))
-#
-#
-# def tostring(im, format, **options):
-#     out = BytesIO()
-#     im.save(out, format, **options)
-#     return out.getvalue()
+
+
+# helpers
+
+def fromstring(data):
+    from io import BytesIO
+    from PIL import Image
+    return Image.open(BytesIO(data))
+
+
+def tostring(im, format, **options):
+    from io import BytesIO
+    out = BytesIO()
+    im.save(out, format, **options)
+    return out.getvalue()
 
 
 def lena(mode="RGB", cache={}):
