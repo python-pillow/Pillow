@@ -172,6 +172,7 @@ def tostring(im, format, **options):
 def lena(mode="RGB"): #  , cache={}):
     from PIL import Image
     # im = cache.get(mode)
+    im = None
     if im is None:
         if mode == "RGB":
             im = Image.open("Images/lena.ppm")
