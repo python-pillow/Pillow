@@ -69,9 +69,13 @@ class PillowTestCase(unittest.TestCase):
             result = func()
 
             # Verify some things.
-            self.assertEqual(len(w), 1)
-            assert issubclass(w[-1].category, warn_class)
-            self.assertIn("deprecated", str(w[-1].message))
+            self.assertGreaterEqual(len(w), 1)
+            found = False
+            for v in w:
+                if issubclass(v.category, warn_class):
+                    found = True
+                    break
+            self.assertTrue(found)
         return result
 
 # # require that deprecation warnings are triggered
