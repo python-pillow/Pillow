@@ -11,9 +11,11 @@ class TestImageFileIo(PillowTestCase):
         class DumbFile:
             def __init__(self, data):
                 self.data = data
+
             def read(self, bytes=None):
-                self.assertEqual(bytes, None)
+                assert(bytes is None)
                 return self.data
+
             def close(self):
                 pass
 
