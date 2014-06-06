@@ -169,7 +169,7 @@ def tostring(im, format, **options):
     return out.getvalue()
 
 
-def lena(mode="RGB"), cache={}):
+def lena(mode="RGB", cache={}):
     from PIL import Image
     im = cache.get(mode)
     if im is None:
