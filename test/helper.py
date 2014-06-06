@@ -169,10 +169,9 @@ def tostring(im, format, **options):
     return out.getvalue()
 
 
-def lena(mode="RGB"): #  , cache={}):
+def lena(mode="RGB"), cache={}):
     from PIL import Image
-    # im = cache.get(mode)
-    im = None
+    im = cache.get(mode)
     if im is None:
         if mode == "RGB":
             im = Image.open("Images/lena.ppm")
@@ -182,8 +181,10 @@ def lena(mode="RGB"): #  , cache={}):
             im = lena("I").convert(mode)
         else:
             im = lena("RGB").convert(mode)
-    # cache[mode] = im
-    return im
+    cache[mode] = im
+    import copy
+    duplicate = copy.copy(im)
+    return duplicate
 
 
 # def assert_image_completely_equal(a, b, msg=None):

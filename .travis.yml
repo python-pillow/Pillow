@@ -29,14 +29,14 @@ script:
   - python setup.py build_ext --inplace
 
     # Don't cover PyPy: it fails intermittently and is x5.8 slower (#640)
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then python selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then nosetests test/; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then python Tests/run.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time python selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests test/; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time python Tests/run.py; fi
 
     # Cover the others
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coverage run --append --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coverage run --append --include=PIL/* -m nose test/; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then python Tests/run.py --coverage; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose test/; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time python Tests/run.py --coverage; fi
 
 
 after_success:
