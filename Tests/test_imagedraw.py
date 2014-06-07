@@ -246,6 +246,11 @@ def test_floodfill():
 
 
 def test_floodfill_border():
+    # floodfill() is experimental
+    if hasattr(sys, 'pypy_version_info'):
+        # Causes fatal RPython error on PyPy
+        skip()
+
     # Arrange
     im = Image.new("RGB", (w, h))
     draw = ImageDraw.Draw(im)
