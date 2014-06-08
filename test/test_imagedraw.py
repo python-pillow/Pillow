@@ -4,6 +4,8 @@ from PIL import Image
 from PIL import ImageColor
 from PIL import ImageDraw
 
+import sys
+
 # Image size
 w, h = 100, 100
 
@@ -225,7 +227,11 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_floodfill.png"))
 
+    @unittest.skipIf(hasattr(sys, 'pypy_version_info'),
+                     "Causes fatal RPython error on PyPy")
     def test_floodfill_border(self):
+        # floodfill() is experimental
+
         # Arrange
         im = Image.new("RGB", (w, h))
         draw = ImageDraw.Draw(im)

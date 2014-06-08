@@ -60,18 +60,23 @@ class PillowTestCase(unittest.TestCase):
     def assert_warning(self, warn_class, func):
         import warnings
 
+        result = None
         with warnings.catch_warnings(record=True) as w:
             # Cause all warnings to always be triggered.
             warnings.simplefilter("always")
 
             # Hopefully trigger a warning.
-            func()
+            result = func()
 
             # Verify some things.
-            self.assertEqual(len(w), 1)
-            assert issubclass(w[-1].category, warn_class)
-            self.assertIn("deprecated", str(w[-1].message))
-
+            self.assertGreaterEqual(len(w), 1)
+            found = False
+            for v in w:
+                if issubclass(v.category, warn_class):
+                    found = True
+                    break
+            self.assertTrue(found)
+        return result
 
 # # require that deprecation warnings are triggered
 # import warnings
@@ -171,7 +176,8 @@ def tostring(im, format, **options):
 
 def lena(mode="RGB", cache={}):
     from PIL import Image
-    im = cache.get(mode)
+    im = None
+    # im = cache.get(mode)
     if im is None:
         if mode == "RGB":
             im = Image.open("Images/lena.ppm")
@@ -181,7 +187,7 @@ def lena(mode="RGB", cache={}):
             im = lena("I").convert(mode)
         else:
             im = lena("RGB").convert(mode)
-    cache[mode] = im
+    # cache[mode] = im
     return im
 
 
