@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Use unittest for tests
+  [hugovk]
+
 - ImageCms fixes
   [hugovk]
 
