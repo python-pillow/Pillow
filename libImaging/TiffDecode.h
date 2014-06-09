@@ -13,10 +13,11 @@
 #include <tiff.h>
 #endif
 
-#ifndef _UNISTD_H
-#include <unistd.h>
+#ifndef _MSC_VER
+	#ifndef _UNISTD_H
+	#include <unistd.h>
+	#endif
 #endif
-
 
 #ifndef min
 #define min(x,y) (( x > y ) ? y : x )
