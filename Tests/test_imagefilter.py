@@ -1,31 +1,37 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule
 
-from PIL import Image
 from PIL import ImageFilter
 
-def test_sanity():
-    # see test_image_filter for more tests
 
-    assert_no_exception(lambda: ImageFilter.MaxFilter)
-    assert_no_exception(lambda: ImageFilter.MedianFilter)
-    assert_no_exception(lambda: ImageFilter.MinFilter)
-    assert_no_exception(lambda: ImageFilter.ModeFilter)
-    assert_no_exception(lambda: ImageFilter.Kernel((3, 3), list(range(9))))
-    assert_no_exception(lambda: ImageFilter.GaussianBlur)
-    assert_no_exception(lambda: ImageFilter.GaussianBlur(5))
-    assert_no_exception(lambda: ImageFilter.UnsharpMask)
-    assert_no_exception(lambda: ImageFilter.UnsharpMask(10))
+class TestImageFilter(PillowTestCase):
 
-    assert_no_exception(lambda: ImageFilter.BLUR)
-    assert_no_exception(lambda: ImageFilter.CONTOUR)
-    assert_no_exception(lambda: ImageFilter.DETAIL)
-    assert_no_exception(lambda: ImageFilter.EDGE_ENHANCE)
-    assert_no_exception(lambda: ImageFilter.EDGE_ENHANCE_MORE)
-    assert_no_exception(lambda: ImageFilter.EMBOSS)
-    assert_no_exception(lambda: ImageFilter.FIND_EDGES)
-    assert_no_exception(lambda: ImageFilter.SMOOTH)
-    assert_no_exception(lambda: ImageFilter.SMOOTH_MORE)
-    assert_no_exception(lambda: ImageFilter.SHARPEN)
+    def test_sanity(self):
+        # see test_image_filter for more tests
+
+        # Check these run. Exceptions cause failures.
+        ImageFilter.MaxFilter
+        ImageFilter.MedianFilter
+        ImageFilter.MinFilter
+        ImageFilter.ModeFilter
+        ImageFilter.Kernel((3, 3), list(range(9)))
+        ImageFilter.GaussianBlur
+        ImageFilter.GaussianBlur(5)
+        ImageFilter.UnsharpMask
+        ImageFilter.UnsharpMask(10)
+
+        ImageFilter.BLUR
+        ImageFilter.CONTOUR
+        ImageFilter.DETAIL
+        ImageFilter.EDGE_ENHANCE
+        ImageFilter.EDGE_ENHANCE_MORE
+        ImageFilter.EMBOSS
+        ImageFilter.FIND_EDGES
+        ImageFilter.SMOOTH
+        ImageFilter.SMOOTH_MORE
+        ImageFilter.SHARPEN
 
 
+if __name__ == '__main__':
+    unittest.main()
 
+# End of file

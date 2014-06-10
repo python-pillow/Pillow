@@ -1,40 +1,47 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena
 
 from PIL import Image
 
 
-def _roundtrip(im):
-    f = tempfile("temp.pcx")
-    im.save(f)
-    im2 = Image.open(f)
+class TestFilePcx(PillowTestCase):
 
-    assert_equal(im2.mode, im.mode)
-    assert_equal(im2.size, im.size)
-    assert_equal(im2.format, "PCX")
-    assert_image_equal(im2, im)
-    
-def test_sanity():
-    for mode in ('1', 'L', 'P', 'RGB'):
-        _roundtrip(lena(mode))
+    def _roundtrip(self, im):
+        f = self.tempfile("temp.pcx")
+        im.save(f)
+        im2 = Image.open(f)
 
-def test_odd():
-    # see issue #523, odd sized images should have a stride that's even.
-    # not that imagemagick or gimp write pcx that way. 
-    # we were not handling properly. 
-    for mode in ('1', 'L', 'P', 'RGB'):
-        # larger, odd sized images are better here to ensure that
-        # we handle interrupted scan lines properly.
-        _roundtrip(lena(mode).resize((511,511)))
-        
+        self.assertEqual(im2.mode, im.mode)
+        self.assertEqual(im2.size, im.size)
+        self.assertEqual(im2.format, "PCX")
+        self.assert_image_equal(im2, im)
 
-def test_pil184():
-    # Check reading of files where xmin/xmax is not zero.
+    def test_sanity(self):
+        for mode in ('1', 'L', 'P', 'RGB'):
+            self._roundtrip(lena(mode))
 
-    file = "Tests/images/pil184.pcx"
-    im = Image.open(file)
+    def test_odd(self):
+        # see issue #523, odd sized images should have a stride that's even.
+        # not that imagemagick or gimp write pcx that way.
+        # we were not handling properly.
+        for mode in ('1', 'L', 'P', 'RGB'):
+            # larger, odd sized images are better here to ensure that
+            # we handle interrupted scan lines properly.
+            self._roundtrip(lena(mode).resize((511, 511)))
 
-    assert_equal(im.size, (447, 144))
-    assert_equal(im.tile[0][1], (0, 0, 447, 144))
+    def test_pil184(self):
+        # Check reading of files where xmin/xmax is not zero.
 
-    # Make sure all pixels are either 0 or 255.
-    assert_equal(im.histogram()[0] + im.histogram()[255], 447*144)
+        file = "Tests/images/pil184.pcx"
+        im = Image.open(file)
+
+        self.assertEqual(im.size, (447, 144))
+        self.assertEqual(im.tile[0][1], (0, 0, 447, 144))
+
+        # Make sure all pixels are either 0 or 255.
+        self.assertEqual(im.histogram()[0] + im.histogram()[255], 447*144)
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file
