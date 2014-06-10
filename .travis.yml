@@ -14,7 +14,8 @@ python:
 install:
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
   - "pip install cffi"
-  - "pip install coveralls"
+  - "pip install coveralls nose"
+  - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip install unittest2; fi
 
   # webp
   - pushd depends && ./install_webp.sh && popd
@@ -28,18 +29,18 @@ script:
   - python setup.py build_ext --inplace
 
     # Don't cover PyPy: it fails intermittently and is x5.8 slower (#640)
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then python selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then python Tests/run.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time python selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests test/; fi
 
     # Cover the others
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coverage run --append --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then python Tests/run.py --coverage; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose test/; fi
 
 after_success:
   - coverage report
   - coveralls
   - pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
-  - pep8 --statistics --count Tests/*.py
+  - pep8  --statistics --count Tests/*.py
   - pyflakes PIL/*.py   | tee >(wc -l)
   - pyflakes Tests/*.py | tee >(wc -l)
