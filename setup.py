@@ -680,7 +680,7 @@ setup(
     include_package_data=True,
     packages=find_packages(),
     scripts=glob.glob("Scripts/pil*.py"),
-    test_suite='test.helper.TestSuite',
+    test_suite='PIL.tests',
     keywords=["Imaging",],
     license='Standard PIL License',
     zip_safe=True,
