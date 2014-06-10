@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena, fromstring
+from test.helper import unittest, PillowTestCase, lena, fromstring
 
 
 class TestImage(PillowTestCase):

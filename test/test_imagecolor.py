@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from test.helper import unittest, lena
 
 from PIL import Image
 from PIL import ImageColor
