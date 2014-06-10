@@ -1,4 +1,4 @@
-from test.helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase
 
 
 class TestImageTk(PillowTestCase):

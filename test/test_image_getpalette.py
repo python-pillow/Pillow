@@ -1,4 +1,4 @@
-from test.helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, lena
 
 
 class TestImageGetPalette(PillowTestCase):

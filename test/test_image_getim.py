@@ -1,4 +1,4 @@
-from test.helper import unittest, PillowTestCase, lena, py3
+from helper import unittest, PillowTestCase, lena, py3
 
 
 class TestImageGetIm(PillowTestCase):

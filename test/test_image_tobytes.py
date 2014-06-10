@@ -1,4 +1,4 @@
-from test.helper import unittest, lena
+from helper import unittest, lena
 
 
 class TestImageToBytes(unittest.TestCase):
