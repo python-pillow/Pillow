@@ -1,15 +1,22 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena, fromstring
 
-from PIL import Image
 
-def test_sanity():
+class TestImageToBitmap(PillowTestCase):
 
-    assert_exception(ValueError, lambda: lena().tobitmap())
-    assert_no_exception(lambda: lena().convert("1").tobitmap())
+    def test_sanity(self):
 
-    im1 = lena().convert("1")
+        self.assertRaises(ValueError, lambda: lena().tobitmap())
+        lena().convert("1").tobitmap()
 
-    bitmap = im1.tobitmap()
+        im1 = lena().convert("1")
 
-    assert_true(isinstance(bitmap, bytes))
-    assert_image_equal(im1, fromstring(bitmap))
+        bitmap = im1.tobitmap()
+
+        self.assertIsInstance(bitmap, bytes)
+        self.assert_image_equal(im1, fromstring(bitmap))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

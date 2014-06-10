@@ -1,80 +1,93 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena
+
 from PIL import Image, TiffImagePlugin, TiffTags
 
 tag_ids = dict(zip(TiffTags.TAGS.values(), TiffTags.TAGS.keys()))
 
-def test_rt_metadata():
-    """ Test writing arbitray metadata into the tiff image directory
-        Use case is ImageJ private tags, one numeric, one arbitrary
-        data.  https://github.com/python-pillow/Pillow/issues/291
-        """
 
-    img = lena()
+class TestFileTiffMetadata(PillowTestCase):
 
-    textdata = "This is some arbitrary metadata for a text field"
-    info = TiffImagePlugin.ImageFileDirectory()
+    def test_rt_metadata(self):
+        """ Test writing arbitray metadata into the tiff image directory
+            Use case is ImageJ private tags, one numeric, one arbitrary
+            data.  https://github.com/python-pillow/Pillow/issues/291
+            """
 
-    info[tag_ids['ImageJMetaDataByteCounts']] = len(textdata)
-    info[tag_ids['ImageJMetaData']] = textdata
+        img = lena()
 
-    f = tempfile("temp.tif")
+        textdata = "This is some arbitrary metadata for a text field"
+        info = TiffImagePlugin.ImageFileDirectory()
 
-    img.save(f, tiffinfo=info)
+        info[tag_ids['ImageJMetaDataByteCounts']] = len(textdata)
+        info[tag_ids['ImageJMetaData']] = textdata
 
-    loaded = Image.open(f)
+        f = self.tempfile("temp.tif")
 
-    assert_equal(loaded.tag[50838], (len(textdata),))
-    assert_equal(loaded.tag[50839], textdata)
+        img.save(f, tiffinfo=info)
 
-def test_read_metadata():
-    img = Image.open('Tests/images/lena_g4.tif')
+        loaded = Image.open(f)
 
-    known = {'YResolution': ((1207959552, 16777216),),
-             'PlanarConfiguration': (1,),
-             'BitsPerSample': (1,),
-             'ImageLength': (128,),
-             'Compression': (4,),
-             'FillOrder': (1,),
-             'DocumentName': 'lena.g4.tif',
-             'RowsPerStrip': (128,),
-             'ResolutionUnit': (1,),
-             'PhotometricInterpretation': (0,),
-             'PageNumber': (0, 1),
-             'XResolution': ((1207959552, 16777216),),
-             'ImageWidth': (128,),
-             'Orientation': (1,),
-             'StripByteCounts': (1796,),
-             'SamplesPerPixel': (1,),
-             'StripOffsets': (8,),
-             'Software': 'ImageMagick 6.5.7-8 2012-08-17 Q16 http://www.imagemagick.org'}
+        self.assertEqual(loaded.tag[50838], (len(textdata),))
+        self.assertEqual(loaded.tag[50839], textdata)
 
-    # assert_equal is equivalent, but less helpful in telling what's wrong.
-    named = img.tag.named()
-    for tag, value in named.items():
-        assert_equal(known[tag], value)
+    def test_read_metadata(self):
+        img = Image.open('Tests/images/lena_g4.tif')
 
-    for tag, value in known.items():
-        assert_equal(value, named[tag])
+        known = {'YResolution': ((1207959552, 16777216),),
+                 'PlanarConfiguration': (1,),
+                 'BitsPerSample': (1,),
+                 'ImageLength': (128,),
+                 'Compression': (4,),
+                 'FillOrder': (1,),
+                 'DocumentName': 'lena.g4.tif',
+                 'RowsPerStrip': (128,),
+                 'ResolutionUnit': (1,),
+                 'PhotometricInterpretation': (0,),
+                 'PageNumber': (0, 1),
+                 'XResolution': ((1207959552, 16777216),),
+                 'ImageWidth': (128,),
+                 'Orientation': (1,),
+                 'StripByteCounts': (1796,),
+                 'SamplesPerPixel': (1,),
+                 'StripOffsets': (8,),
+                 'Software': 'ImageMagick 6.5.7-8 2012-08-17 Q16 http://www.imagemagick.org'}
+
+        # self.assertEqual is equivalent,
+        # but less helpful in telling what's wrong.
+        named = img.tag.named()
+        for tag, value in named.items():
+            self.assertEqual(known[tag], value)
+
+        for tag, value in known.items():
+            self.assertEqual(value, named[tag])
+
+    def test_write_metadata(self):
+        """ Test metadata writing through the python code """
+        img = Image.open('Tests/images/lena.tif')
+
+        f = self.tempfile('temp.tiff')
+        img.save(f, tiffinfo=img.tag)
+
+        loaded = Image.open(f)
+
+        original = img.tag.named()
+        reloaded = loaded.tag.named()
+
+        ignored = [
+            'StripByteCounts', 'RowsPerStrip', 'PageNumber', 'StripOffsets']
+
+        for tag, value in reloaded.items():
+            if tag not in ignored:
+                self.assertEqual(
+                    original[tag], value, "%s didn't roundtrip" % tag)
+
+        for tag, value in original.items():
+            if tag not in ignored:
+                self.assertEqual(
+                    value, reloaded[tag], "%s didn't roundtrip" % tag)
 
 
-def test_write_metadata():
-    """ Test metadata writing through the python code """
-    img = Image.open('Tests/images/lena.tif')
+if __name__ == '__main__':
+    unittest.main()
 
-    f = tempfile('temp.tiff')
-    img.save(f, tiffinfo = img.tag)
-
-    loaded = Image.open(f)
-
-    original = img.tag.named()
-    reloaded = loaded.tag.named()
-
-    ignored = ['StripByteCounts', 'RowsPerStrip', 'PageNumber', 'StripOffsets']
-
-    for tag, value in reloaded.items():
-        if tag not in ignored:
-            assert_equal(original[tag], value, "%s didn't roundtrip" % tag)
-
-    for tag, value in original.items():
-        if tag not in ignored:
-            assert_equal(value, reloaded[tag], "%s didn't roundtrip" % tag)
+# End of file

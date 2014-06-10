@@ -1,8 +1,10 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena
 
 from PIL import Image
 from PIL import ImageColor
 from PIL import ImageDraw
+
+import sys
 
 # Image size
 w, h = 100, 100
@@ -22,249 +24,232 @@ points1 = [(10, 10), (20, 40), (30, 30)]
 points2 = [10, 10, 20, 40, 30, 30]
 
 
-def test_sanity():
+class TestImageDraw(PillowTestCase):
 
-    im = lena("RGB").copy()
+    def test_sanity(self):
+        im = lena("RGB").copy()
 
-    draw = ImageDraw.ImageDraw(im)
-    draw = ImageDraw.Draw(im)
+        draw = ImageDraw.ImageDraw(im)
+        draw = ImageDraw.Draw(im)
 
-    draw.ellipse(list(range(4)))
-    draw.line(list(range(10)))
-    draw.polygon(list(range(100)))
-    draw.rectangle(list(range(4)))
+        draw.ellipse(list(range(4)))
+        draw.line(list(range(10)))
+        draw.polygon(list(range(100)))
+        draw.rectangle(list(range(4)))
 
-    success()
+    def test_deprecated(self):
+        im = lena().copy()
 
+        draw = ImageDraw.Draw(im)
 
-def test_deprecated():
+        self.assert_warning(DeprecationWarning, lambda: draw.setink(0))
+        self.assert_warning(DeprecationWarning, lambda: draw.setfill(0))
 
-    im = lena().copy()
+    def helper_arc(self, bbox):
+        # Arrange
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
 
-    draw = ImageDraw.Draw(im)
+        # Act
+        # FIXME Fill param should be named outline.
+        draw.arc(bbox, 0, 180)
+        del draw
 
-    assert_warning(DeprecationWarning, lambda: draw.setink(0))
-    assert_warning(DeprecationWarning, lambda: draw.setfill(0))
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_arc.png"))
 
+    def test_arc1(self):
+        self.helper_arc(bbox1)
 
-def helper_arc(bbox):
-    # Arrange
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
+    def test_arc2(self):
+        self.helper_arc(bbox2)
 
-    # Act
-    # FIXME Fill param should be named outline.
-    draw.arc(bbox, 0, 180)
-    del draw
+    def test_bitmap(self):
+        # Arrange
+        small = Image.open("Tests/images/pil123rgba.png").resize((50, 50))
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
 
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_arc.png"))
+        # Act
+        draw.bitmap((10, 10), small)
+        del draw
 
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_bitmap.png"))
 
-def test_arc1():
-    helper_arc(bbox1)
+    def helper_chord(self, bbox):
+        # Arrange
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
 
+        # Act
+        draw.chord(bbox, 0, 180, fill="red", outline="yellow")
+        del draw
 
-def test_arc2():
-    helper_arc(bbox2)
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_chord.png"))
 
+    def test_chord1(self):
+        self.helper_chord(bbox1)
 
-def test_bitmap():
-    # Arrange
-    small = Image.open("Tests/images/pil123rgba.png").resize((50, 50))
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
+    def test_chord2(self):
+        self.helper_chord(bbox2)
 
-    # Act
-    draw.bitmap((10, 10), small)
-    del draw
+    def helper_ellipse(self, bbox):
+        # Arrange
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
 
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_bitmap.png"))
+        # Act
+        draw.ellipse(bbox, fill="green", outline="blue")
+        del draw
 
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_ellipse.png"))
 
-def helper_chord(bbox):
-    # Arrange
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
+    def test_ellipse1(self):
+        self.helper_ellipse(bbox1)
 
-    # Act
-    draw.chord(bbox, 0, 180, fill="red", outline="yellow")
-    del draw
+    def test_ellipse2(self):
+        self.helper_ellipse(bbox2)
 
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_chord.png"))
+    def helper_line(self, points):
+        # Arrange
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
 
+        # Act
+        draw.line(points1, fill="yellow", width=2)
+        del draw
 
-def test_chord1():
-    helper_chord(bbox1)
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_line.png"))
 
+    def test_line1(self):
+        self.helper_line(points1)
 
-def test_chord2():
-    helper_chord(bbox2)
+    def test_line2(self):
+        self.helper_line(points2)
 
+    def helper_pieslice(self, bbox):
+        # Arrange
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
 
-def helper_ellipse(bbox):
-    # Arrange
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
+        # Act
+        draw.pieslice(bbox, -90, 45, fill="white", outline="blue")
+        del draw
 
-    # Act
-    draw.ellipse(bbox, fill="green", outline="blue")
-    del draw
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_pieslice.png"))
 
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_ellipse.png"))
+    def test_pieslice1(self):
+        self.helper_pieslice(bbox1)
 
+    def test_pieslice2(self):
+        self.helper_pieslice(bbox2)
 
-def test_ellipse1():
-    helper_ellipse(bbox1)
+    def helper_point(self, points):
+        # Arrange
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
 
+        # Act
+        draw.point(points1, fill="yellow")
+        del draw
 
-def test_ellipse2():
-    helper_ellipse(bbox2)
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_point.png"))
 
+    def test_point1(self):
+        self.helper_point(points1)
 
-def helper_line(points):
-    # Arrange
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
+    def test_point2(self):
+        self.helper_point(points2)
 
-    # Act
-    draw.line(points1, fill="yellow", width=2)
-    del draw
+    def helper_polygon(self, points):
+        # Arrange
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
 
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+        # Act
+        draw.polygon(points1, fill="red", outline="blue")
+        del draw
 
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_polygon.png"))
 
-def test_line1():
-    helper_line(points1)
+    def test_polygon1(self):
+        self.helper_polygon(points1)
 
+    def test_polygon2(self):
+        self.helper_polygon(points2)
 
-def test_line2():
-    helper_line(points2)
+    def helper_rectangle(self, bbox):
+        # Arrange
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
 
+        # Act
+        draw.rectangle(bbox, fill="black", outline="green")
+        del draw
 
-def helper_pieslice(bbox):
-    # Arrange
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_rectangle.png"))
 
-    # Act
-    draw.pieslice(bbox, -90, 45, fill="white", outline="blue")
-    del draw
+    def test_rectangle1(self):
+        self.helper_rectangle(bbox1)
 
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_pieslice.png"))
+    def test_rectangle2(self):
+        self.helper_rectangle(bbox2)
 
+    def test_floodfill(self):
+        # Arrange
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
+        draw.rectangle(bbox2, outline="yellow", fill="green")
+        centre_point = (int(w/2), int(h/2))
 
-def test_pieslice1():
-    helper_pieslice(bbox1)
+        # Act
+        ImageDraw.floodfill(im, centre_point, ImageColor.getrgb("red"))
+        del draw
 
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_floodfill.png"))
 
-def test_pieslice2():
-    helper_pieslice(bbox2)
+    @unittest.skipIf(hasattr(sys, 'pypy_version_info'),
+                     "Causes fatal RPython error on PyPy")
+    def test_floodfill_border(self):
+        # floodfill() is experimental
 
+        # Arrange
+        im = Image.new("RGB", (w, h))
+        draw = ImageDraw.Draw(im)
+        draw.rectangle(bbox2, outline="yellow", fill="green")
+        centre_point = (int(w/2), int(h/2))
 
-def helper_point(points):
-    # Arrange
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
+        # Act
+        ImageDraw.floodfill(
+            im, centre_point, ImageColor.getrgb("red"),
+            border=ImageColor.getrgb("black"))
+        del draw
 
-    # Act
-    draw.point(points1, fill="yellow")
-    del draw
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_floodfill2.png"))
 
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_point.png"))
 
-
-def test_point1():
-    helper_point(points1)
-
-
-def test_point2():
-    helper_point(points2)
-
-
-def helper_polygon(points):
-    # Arrange
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
-
-    # Act
-    draw.polygon(points1, fill="red", outline="blue")
-    del draw
-
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
-
-
-def test_polygon1():
-    helper_polygon(points1)
-
-
-def test_polygon2():
-    helper_polygon(points2)
-
-
-def helper_rectangle(bbox):
-    # Arrange
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
-
-    # Act
-    draw.rectangle(bbox, fill="black", outline="green")
-    del draw
-
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
-
-
-def test_rectangle1():
-    helper_rectangle(bbox1)
-
-
-def test_rectangle2():
-    helper_rectangle(bbox2)
-
-
-def test_floodfill():
-    # Arrange
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
-    draw.rectangle(bbox2, outline="yellow", fill="green")
-    centre_point = (int(w/2), int(h/2))
-
-    # Act
-    ImageDraw.floodfill(im, centre_point, ImageColor.getrgb("red"))
-    del draw
-
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_floodfill.png"))
-
-
-def test_floodfill_border():
-    # floodfill() is experimental
-    if hasattr(sys, 'pypy_version_info'):
-        # Causes fatal RPython error on PyPy
-        skip()
-
-    # Arrange
-    im = Image.new("RGB", (w, h))
-    draw = ImageDraw.Draw(im)
-    draw.rectangle(bbox2, outline="yellow", fill="green")
-    centre_point = (int(w/2), int(h/2))
-
-    # Act
-    ImageDraw.floodfill(
-        im, centre_point, ImageColor.getrgb("red"),
-        border=ImageColor.getrgb("black"))
-    del draw
-
-    # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_floodfill2.png"))
-
+if __name__ == '__main__':
+    unittest.main()
 
 # End of file
