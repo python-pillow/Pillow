@@ -308,3 +308,6 @@ def lena(mode="RGB", cache={}):
 #
 #
 # _setup()
+
+TestLoader = unittest.TestLoader()
+TestSuite = TestLoader.discover(start_dir='.')
