@@ -49,10 +49,13 @@ libs = { 'zlib':{
     'hash':'sha1:326c4b6787a01e5e32a9b30bae76442d18d2d1b6',
     'dir':'libwebp-0.4.0',
     },
+     }
+
+bin_libs = {
          'openjpeg':{
-    'url':'https://openjpeg.googlecode.com/files/openjpeg-2.0.0.tar.gz',
-    'hash':'sha1:0af78ab2283b43421458f80373422d8029a9f7a7',
-    'dir':'openjpeg-2.0.0',
+             'filename':'openjpeg-2.0.0-win32-x86.zip',
+             'hash':'sha1:xxx',
+             'version':'2.0'
     },
          }
 

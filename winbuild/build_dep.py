@@ -2,6 +2,7 @@ from fetch import fetch
 from unzip import unzip
 from untar import untar
 import os, hashlib
+import shutil
 
 from config import *
 
@@ -38,6 +39,11 @@ def mkdirs():
         os.mkdir(inc_dir)
     except:
         pass
+    for compiler in compilers.values():
+        try:
+            os.mkdir(os.path.join(inc_dir, compiler['inc_dir']))
+        except: 
+            pass
 
 def extract(src, dest):
     if '.zip' in src:
@@ -57,6 +63,32 @@ def fetch_libs():
         else:
             extract(check_hash(fetch(lib['url']),lib['hash']),build_dir)
 
+def extract_binlib():
+    lib = bin_libs['openjpeg']
+    extract(lib['filename'], build_dir)
+    return
+    base = os.path.splitext(lib['filename'])[0]
+    for compiler in compilers.values():
+        shutil.copy(os.path.join(inc_dir, base, 'include', 'openjpeg-%s' % lib['version']), 
+                    os.path.join(inc_dir, compiler['inc_dir']))
+        shutil.copy(os.path.join(inc_dir, base, 'bin', 'openjp2.dll'), 
+                    os.path.join(inc_dir, compiler['inc_dir']))
+        shutil.copy(os.path.join(inc_dir, base, 'lib', 'openjp2.lib'), 
+                    os.path.join(inc_dir, compiler['inc_dir']))
+
+def extract_openjpeg(compiler):
+    return r"""
+rem build openjpeg
+setlocal
+@echo on
+cd %%BUILD%%
+mkdir %%INCLIB%%\openjpeg-2.0
+copy /Y /B openjpeg-2.0.0-win32-x86\include\openjpeg-2.0  %%INCLIB%%\openjpeg-2.0
+copy /Y /B openjpeg-2.0.0-win32-x86\bin\  %%INCLIB%%
+copy /Y /B openjpeg-2.0.0-win32-x86\lib\  %%INCLIB%%
+endlocal
+""" % compiler
+        
 def cp_tk():
     return r"""
 mkdir %INCLIB%\tcl85\include\X11
@@ -78,7 +110,6 @@ def setup_compiler(compiler):
     return r"""setlocal EnableDelayedExpansion
 call "%%ProgramFiles%%\Microsoft SDKs\Windows\%(env_version)s\Bin\SetEnv.Cmd" /Release %(env_flags)s
 set INCLIB=%%INCLIB%%\%(inc_dir)s
-mkdir %%INCLIB%%
 """ % compiler
 
 def end_compiler():
@@ -136,17 +167,6 @@ copy /Y /B release-static\output\%(platform)s\* %%INCLIB%%
 copy /Y /B src\webp\*.h %%INCLIB%%
 endlocal
 
-rem build openjpeg
-setlocal
-cd /D %%OPENJPEG%%%(inc_dir)s
-%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=ON -G "NMake Makefiles" .
-nmake -f Makefile clean
-nmake -f Makefile
-copy /Y /B bin\* %%INCLIB%%
-mkdir %%INCLIB%%\openjpeg-2.0
-copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-2.0
-endlocal
-
 rem Build libtiff
 setlocal
 rem do after building jpeg and zlib
@@ -191,6 +211,7 @@ endlocal
 
 mkdirs()
 fetch_libs()
+extract_binlib()
 
 script = [header()] #, cp_tk()]
 
@@ -198,9 +219,9 @@ for compiler in compilers.values():
 #if True:
 #    compiler = compilers[(7,64)]
     script.append(setup_compiler(compiler))
-    script.append(nmake_libs(compiler))
-#    script.append(nmake_openjpeg(compiler))
-    script.append(msbuild_libs(compiler))
+#    script.append(nmake_libs(compiler))
+    script.append(extract_openjpeg(compiler))
+ #   script.append(msbuild_libs(compiler))
     script.append(end_compiler())
 
 with open('build_deps.cmd', 'w') as f:    
