@@ -78,6 +78,22 @@ def end_compiler():
 endlocal
 """
         
+def nmake_openjpeg(compiler):
+    return r"""
+rem build openjpeg
+setlocal
+@echo on
+cd /D %%OPENJPEG%%
+nmake -f Makefile clean
+%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=ON -G "NMake Makefiles" .
+nmake -f Makefile
+copy /Y /B bin/* %%INCLIB%%
+mkdir %%INCLIB%%/openjpeg-2.0
+copy /Y /B src/lib/openjp2/openjpeg.h %%INCLIB%%/openjpeg-2.0
+copy /Y /B src/lib/openjp2/opj_stdint.h %%INCLIB%%/openjpeg-2.0
+endlocal
+""" % compiler
+
 def nmake_libs(compiler):
     # undone -- pre, makes, headers, libs
     return r"""
@@ -116,12 +132,13 @@ endlocal
 rem build openjpeg
 setlocal
 cd /D %%OPENJPEG%%
-%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=ON .
-nmake -f Makefile.vc clean
-nmake -f Makefile.vc
+%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=ON -G "NMake Makefiles" .
+nmake -f Makefile clean
+nmake -f Makefile
 copy /Y /B bin/* %%INCLIB%%
-copy /Y /B src/lib/openjp2/openjpeg.h %%INCLIB%%
-copy /Y /B src/lib/openjp2/opj_stdint.h %%INCLIB%%
+mkdir %%INCLIB%%/openjpeg-2.0
+copy /Y /B src/lib/openjp2/openjpeg.h %%INCLIB%%/openjpeg-2.0
+copy /Y /B src/lib/openjp2/opj_stdint.h %%INCLIB%%/openjpeg-2.0
 endlocal
 
 rem Build libtiff
@@ -169,14 +186,15 @@ endlocal
 mkdirs()
 fetch_libs()
 
-script = [header(), cp_tk()]
+script = [header()] #, cp_tk()]
 
 for compiler in compilers.values():
 #if True:
 #    compiler = compilers[(7,64)]
     script.append(setup_compiler(compiler))
-    script.append(nmake_libs(compiler))
-    script.append(msbuild_libs(compiler))
+#    script.append(nmake_libs(compiler))
+    script.append(nmake_openjpeg(compiler))
+#    script.append(msbuild_libs(compiler))
     script.append(end_compiler())
 
 with open('build_deps.cmd', 'w') as f:    
