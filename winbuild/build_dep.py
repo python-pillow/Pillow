@@ -46,8 +46,16 @@ def extract(src, dest):
         return untar(src, dest)
 
 def fetch_libs():
-    for lib in libs.values():
-        extract(check_hash(fetch(lib['url']),lib['hash']),build_dir)
+    for name,lib in libs.items():
+        if name == 'openjpeg':
+            filename = check_hash(fetch(lib['url']),lib['hash'])
+            for compiler in compilers.values():
+                if not os.path.exists(os.path.join(build_dir,lib['dir']+compiler['inc_dir'])): 
+                    extract(filename, build_dir)
+                    os.rename(os.path.join(build_dir,lib['dir']), 
+                              os.path.join(build_dir,lib['dir']+compiler['inc_dir'])) 
+        else:
+            extract(check_hash(fetch(lib['url']),lib['hash']),build_dir)
 
 def cp_tk():
     return r"""
@@ -83,14 +91,13 @@ def nmake_openjpeg(compiler):
 rem build openjpeg
 setlocal
 @echo on
-cd /D %%OPENJPEG%%
-nmake -f Makefile clean
+cd /D %%OPENJPEG%%%(inc_dir)s
 %%CMAKE%% -DBUILD_THIRDPARTY:BOOL=ON -G "NMake Makefiles" .
+nmake -f Makefile clean
 nmake -f Makefile
-copy /Y /B bin/* %%INCLIB%%
-mkdir %%INCLIB%%/openjpeg-2.0
-copy /Y /B src/lib/openjp2/openjpeg.h %%INCLIB%%/openjpeg-2.0
-copy /Y /B src/lib/openjp2/opj_stdint.h %%INCLIB%%/openjpeg-2.0
+copy /Y /B bin\* %%INCLIB%%
+mkdir %%INCLIB%%\openjpeg-2.0
+copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-2.0
 endlocal
 """ % compiler
 
@@ -131,14 +138,13 @@ endlocal
 
 rem build openjpeg
 setlocal
-cd /D %%OPENJPEG%%
+cd /D %%OPENJPEG%%%(inc_dir)s
 %%CMAKE%% -DBUILD_THIRDPARTY:BOOL=ON -G "NMake Makefiles" .
 nmake -f Makefile clean
 nmake -f Makefile
-copy /Y /B bin/* %%INCLIB%%
-mkdir %%INCLIB%%/openjpeg-2.0
-copy /Y /B src/lib/openjp2/openjpeg.h %%INCLIB%%/openjpeg-2.0
-copy /Y /B src/lib/openjp2/opj_stdint.h %%INCLIB%%/openjpeg-2.0
+copy /Y /B bin\* %%INCLIB%%
+mkdir %%INCLIB%%\openjpeg-2.0
+copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-2.0
 endlocal
 
 rem Build libtiff
@@ -192,9 +198,9 @@ for compiler in compilers.values():
 #if True:
 #    compiler = compilers[(7,64)]
     script.append(setup_compiler(compiler))
-#    script.append(nmake_libs(compiler))
-    script.append(nmake_openjpeg(compiler))
-#    script.append(msbuild_libs(compiler))
+    script.append(nmake_libs(compiler))
+#    script.append(nmake_openjpeg(compiler))
+    script.append(msbuild_libs(compiler))
     script.append(end_compiler())
 
 with open('build_deps.cmd', 'w') as f:    

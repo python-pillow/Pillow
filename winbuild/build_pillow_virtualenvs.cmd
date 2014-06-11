@@ -1,0 +1,10 @@
+virtualenv -p c:/Python32/python.exe --clear c:/vp/32
+virtualenv -p c:/Python32x64/python.exe --clear c:/vp/32x64
+virtualenv -p c:/Python34/python.exe --clear c:/vp/34
+virtualenv -p c:/Python34x64/python.exe --clear c:/vp/34x64
+virtualenv -p c:/Python27/python.exe --clear c:/vp/27
+virtualenv -p c:/Python27x64/python.exe --clear c:/vp/27x64
+virtualenv -p c:/Python33/python.exe --clear c:/vp/33
+virtualenv -p c:/Python33x64/python.exe --clear c:/vp/33x64
+virtualenv -p c:/Python26/python.exe --clear c:/vp/26
+virtualenv -p c:/Python26x64/python.exe --clear c:/vp/26x64
