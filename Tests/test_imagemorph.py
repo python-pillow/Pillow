@@ -4,6 +4,8 @@ from tester import *
 from PIL import Image
 from PIL import ImageMorph
 
+import binascii
+
 def img_to_string(im):
     """Turn a (small) binary image into a string representation"""
     chars = '.1'
@@ -48,91 +50,118 @@ A = string_to_img(
 """
 )    
 
+def test_str_to_img():
+    im = Image.open('Tests/images/morph_a.png')
+    assert_image_equal(A, im)
+
+def create_lut():
+    for op in ('corner', 'dilation4', 'dilation8', 'erosion4', 'erosion8', 'edge'):
+        lb = ImageMorph.LutBuilder(op_name=op)
+        lut = lb.build_lut()
+        print (binascii.hexlify(lut))
+        with open('Tests/images/%s.lut' % op, 'wb') as f:
+            f.write(lut)
+
+#create_lut()
+def test_lut():
+    for op in ('corner', 'dilation4', 'dilation8', 'erosion4', 'erosion8', 'edge'):
+        lb = ImageMorph.LutBuilder(op_name=op)
+        lut = lb.build_lut()
+        with open('Tests/images/%s.lut' % op , 'rb') as f:
+            assert_equal(binascii.hexlify(lut), binascii.hexlify(bytearray(f.read())))
+            
+    
 # Test the named patterns
+def test_erosion8():
+    # erosion8
+    mop = ImageMorph.MorphOp(op_name='erosion8')
+    count,Aout = mop.apply(A)
+    assert_equal(count,8)
+    assert_img_equal_img_string(Aout,
+                                """
+                                .......
+                                .......
+                                .......
+                                ...1...
+                                .......
+                                .......
+                                .......
+                                """)
 
-# erosion8
-mop = ImageMorph.MorphOp(op_name='erosion8')
-count,Aout = mop.apply(A)
-assert_equal(count,8)
-assert_img_equal_img_string(Aout,
-"""
-.......
-.......
-.......
-...1...
-.......
-.......
-.......
-""")
+def test_dialation8():
+    # dialation8
+    mop = ImageMorph.MorphOp(op_name='dilation8')
+    count,Aout = mop.apply(A)
+    assert_equal(count,16)
+    assert_img_equal_img_string(Aout,
+                                """
+                                .......
+                                .11111.
+                                .11111.
+                                .11111.
+                                .11111.
+                                .11111.
+                                .......
+                                """)
 
-# erosion8
-mop = ImageMorph.MorphOp(op_name='dilation8')
-count,Aout = mop.apply(A)
-assert_equal(count,16)
-assert_img_equal_img_string(Aout,
-"""
-.......
-.11111.
-.11111.
-.11111.
-.11111.
-.11111.
-.......
-""")
+def test_erosion4():
+    # erosion4
+    mop = ImageMorph.MorphOp(op_name='dilation4')
+    count,Aout = mop.apply(A)
+    assert_equal(count,12)
+    assert_img_equal_img_string(Aout,
+                                """
+                                .......
+                                ..111..
+                                .11111.
+                                .11111.
+                                .11111.
+                                ..111..
+                                .......
+                                """)
 
-# erosion4
-mop = ImageMorph.MorphOp(op_name='dilation4')
-count,Aout = mop.apply(A)
-assert_equal(count,12)
-assert_img_equal_img_string(Aout,
-"""
-.......
-..111..
-.11111.
-.11111.
-.11111.
-..111..
-.......
-""")
+def test_edge():
+    # edge 
+    mop = ImageMorph.MorphOp(op_name='edge')
+    count,Aout = mop.apply(A)
+    assert_equal(count,1)
+    assert_img_equal_img_string(Aout,
+                                """
+                                .......
+                                .......
+                                ..111..
+                                ..1.1..
+                                ..111..
+                                .......
+                                .......
+                                """)
 
-# edge 
-mop = ImageMorph.MorphOp(op_name='edge')
-count,Aout = mop.apply(A)
-assert_equal(count,1)
-assert_img_equal_img_string(Aout,
-"""
-.......
-.......
-..111..
-..1.1..
-..111..
-.......
-.......
-""")
 
-# Create a corner detector pattern
-mop = ImageMorph.MorphOp(patterns = ['1:(... ... ...)->0',
-                                     '4:(00. 01. ...)->1'])
-count,Aout = mop.apply(A)
-assert_equal(count,5)
-assert_img_equal_img_string(Aout,
-"""
-.......
-.......
-..1.1..
-.......
-..1.1..
-.......
-.......
-""")
+def test_corner():
+    # Create a corner detector pattern
+    mop = ImageMorph.MorphOp(patterns = ['1:(... ... ...)->0',
+                                         '4:(00. 01. ...)->1'])
+    count,Aout = mop.apply(A)
+    assert_equal(count,5)
+    assert_img_equal_img_string(Aout,
+                                """
+                                .......
+                                .......
+                                ..1.1..
+                                .......
+                                ..1.1..
+                                .......
+                                .......
+                                """)
 
-# Test the coordinate counting with the same operator
-coords = mop.match(A)
-assert_equal(len(coords), 4)
-assert_equal(tuple(coords),
-             ((2,2),(4,2),(2,4),(4,4)))
 
-coords = mop.get_on_pixels(Aout)
-assert_equal(len(coords), 4)
-assert_equal(tuple(coords),
-             ((2,2),(4,2),(2,4),(4,4)))
+    # Test the coordinate counting with the same operator
+    coords = mop.match(A)
+    assert_equal(len(coords), 4)
+    assert_equal(tuple(coords),
+                 ((2,2),(4,2),(2,4),(4,4)))
+
+    coords = mop.get_on_pixels(Aout)
+    assert_equal(len(coords), 4)
+    assert_equal(tuple(coords),
+                 ((2,2),(4,2),(2,4),(4,4)))
