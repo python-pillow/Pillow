@@ -195,7 +195,7 @@ class MorphOp:
             raise Exception('No operator loaded')
         
         outimage = Image.new(image.mode, image.size, None)
-        count = _imagingmorph.apply(str(self.lut), image.im.id, outimage.im.id)
+        count = _imagingmorph.apply(self.lut, image.im.id, outimage.im.id)
         return count, outimage
     
     def match(self, image):
@@ -205,7 +205,7 @@ class MorphOp:
         if self.lut is None:
             raise Exception('No operator loaded')
         
-        return  _imagingmorph.match(str(self.lut), image.im.id)
+        return  _imagingmorph.match(self.lut, image.im.id)
 
     def get_on_pixels(self, image):
         """Get a list of all turned on pixels in a binary image

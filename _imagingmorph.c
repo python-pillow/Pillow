@@ -32,6 +32,7 @@ static PyObject*
 apply(PyObject *self, PyObject* args)
 {
     const char *lut;
+    PyObject *py_lut;
     Py_ssize_t lut_len, i0, i1;
     Imaging imgin, imgout;
     int width, height;
@@ -39,16 +40,24 @@ apply(PyObject *self, PyObject* args)
     UINT8 **inrows, **outrows;
     int num_changed_pixels = 0;
 
-    if (!PyArg_ParseTuple(args, "s#nn", &lut, &lut_len, &i0, &i1)) {
+    if (!PyArg_ParseTuple(args, "Onn", &py_lut, &i0, &i1)) {
         PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
-
         return NULL;
     }
+
+    if (!PyByteArray_Check(py_lut)) {
+        PyErr_SetString(PyExc_RuntimeError, "The morphology LUT is not a byte array");
+        return NULL;
+    }
+
+    lut_len = PyByteArray_Size(py_lut);
 
     if (lut_len < LUT_SIZE) {
         PyErr_SetString(PyExc_RuntimeError, "The morphology LUT has the wrong size");
         return NULL;
     }
+
+    lut = PyByteArray_AsString(py_lut);
 
     imgin = (Imaging) i0;
     imgout = (Imaging) i1;
@@ -130,6 +139,7 @@ static PyObject*
 match(PyObject *self, PyObject* args)
 {
     const char *lut;
+    PyObject *py_lut;
     Py_ssize_t lut_len, i0;
     Imaging imgin;
     int width, height;
@@ -137,17 +147,24 @@ match(PyObject *self, PyObject* args)
     UINT8 **inrows;
     PyObject *ret = PyList_New(0);
 
-    if (!PyArg_ParseTuple(args, "s#n", &lut, &lut_len, &i0)) {
+    if (!PyArg_ParseTuple(args, "On", &py_lut, &i0)) {
         PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
-
         return NULL;
     }
+
+    if (!PyByteArray_Check(py_lut)) {
+        PyErr_SetString(PyExc_RuntimeError, "The morphology LUT is not a byte array");
+        return NULL;
+    }
+
+    lut_len = PyByteArray_Size(py_lut);
 
     if (lut_len < LUT_SIZE) {
         PyErr_SetString(PyExc_RuntimeError, "The morphology LUT has the wrong size");
         return NULL;
     }
 
+    lut = PyByteArray_AsString(py_lut);
     imgin = (Imaging) i0;
 
     if (imgin->type != IMAGING_TYPE_UINT8 &&
