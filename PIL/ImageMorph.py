@@ -209,14 +209,15 @@ class MorphOp:
 
     def get_on_pixels(self, image):
         """Get a list of all turned on pixels in a binary image
-
         Returns a list of tuples of (x,y) coordinates of all matching pixels."""
         
         return  _imagingmorph.get_on_pixels(image.im.id)
 
     def load_lut(self, filename):
         """Load an operator from an mrl file"""
-        self.lut = bytearray(open(filename,'rb').read())
+        with open(filename,'rb') as f:
+            self.lut = bytearray(f.read())
+            
         if len(self.lut)!= 8192:
             self.lut = None
             raise Exception('Wrong size operator file!')
@@ -225,7 +226,8 @@ class MorphOp:
         """Load an operator save mrl file"""
         if self.lut is None:
             raise Exception('No operator loaded')
-        open(filename,'wb').write(self.lut)
+        with open(filename,'wb') as f:
+            f.write(self.lut)
 
     def set_lut(self, lut):
         """Set the lut from an external source"""
