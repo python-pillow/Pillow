@@ -4,8 +4,6 @@ from tester import *
 from PIL import Image
 from PIL import ImageMorph
 
-import binascii
-
 def img_to_string(im):
     """Turn a (small) binary image into a string representation"""
     chars = '.1'
@@ -58,7 +56,6 @@ def create_lut():
     for op in ('corner', 'dilation4', 'dilation8', 'erosion4', 'erosion8', 'edge'):
         lb = ImageMorph.LutBuilder(op_name=op)
         lut = lb.build_lut()
-        print (binascii.hexlify(lut))
         with open('Tests/images/%s.lut' % op, 'wb') as f:
             f.write(lut)
 
@@ -68,7 +65,7 @@ def test_lut():
         lb = ImageMorph.LutBuilder(op_name=op)
         lut = lb.build_lut()
         with open('Tests/images/%s.lut' % op , 'rb') as f:
-            assert_equal(binascii.hexlify(lut), binascii.hexlify(bytearray(f.read())))
+            assert_equal(lut, bytearray(f.read()))
             
     
 # Test the named patterns
