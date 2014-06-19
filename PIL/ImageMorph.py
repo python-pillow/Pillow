@@ -73,9 +73,9 @@ class LutBuilder:
         self.patterns += patterns
 
     def build_default_lut(self):
-        symbols = ['\0','\1']
+        symbols = [0, 1]
         m = 1 << 4  # pos of current pixel
-        self.lut = bytearray(''.join([symbols[(i & m)>0] for i in range(LUT_SIZE)]))
+        self.lut = bytearray([symbols[(i & m)>0] for i in range(LUT_SIZE)])
 
     def get_lut(self):
         return self.lut
@@ -168,7 +168,7 @@ class LutBuilder:
 
             for p,r in patterns:
                 if p.match(bitpattern):
-                    self.lut[i] = ['\0','\1'][r]
+                    self.lut[i] = [0, 1][r]
 
         return self.lut
         
