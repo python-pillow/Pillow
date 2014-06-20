@@ -14,11 +14,11 @@
 #
 
 # NOTE: This format cannot be automatically recognized, so the reader
-# is not registered for use with Image.open().  To open a WEL file, use
+# is not registered for use with Image.open().  To open a WAL file, use
 # the WalImageFile.open() function instead.
 
 # This reader is based on the specification available from:
-#    http://www.flipcode.com/tutorials/tut_q2levels.shtml
+#    http://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
 # and has been tested with a few sample files found using google.
 
 from __future__ import print_function

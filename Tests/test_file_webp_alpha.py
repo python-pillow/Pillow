@@ -22,7 +22,7 @@ class TestFileWebpAlpha(PillowTestCase):
 
     def test_read_rgba(self):
         # Generated with `cwebp transparent.png -o transparent.webp`
-        file_path = "Images/transparent.webp"
+        file_path = "Tests/images/transparent.webp"
         image = Image.open(file_path)
 
         self.assertEqual(image.mode, "RGBA")
@@ -33,7 +33,7 @@ class TestFileWebpAlpha(PillowTestCase):
 
         image.tobytes()
 
-        target = Image.open('Images/transparent.png')
+        target = Image.open('Tests/images/transparent.png')
         self.assert_image_similar(image, target, 20.0)
 
     def test_write_lossless_rgb(self):

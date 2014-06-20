@@ -4,6 +4,21 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Add binary morphology addon
+  [dov, wiredfool]
+
+- Decompression bomb protection
+  [hugovk]
+
+- Put images in a single directory
+  [hugovk]
+
+- Support OpenJpeg 2.1
+  [al45tair]
+
+- Remove unistd.h #include for all platforms
+  [wiredfool]
+
 - Use unittest for tests
   [hugovk]
 

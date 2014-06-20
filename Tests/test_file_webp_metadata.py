@@ -15,7 +15,7 @@ class TestFileWebpMetadata(PillowTestCase):
 
     def test_read_exif_metadata(self):
 
-        file_path = "Images/flower.webp"
+        file_path = "Tests/images/flower.webp"
         image = Image.open(file_path)
 
         self.assertEqual(image.format, "WEBP")
@@ -54,7 +54,7 @@ class TestFileWebpMetadata(PillowTestCase):
 
     def test_read_icc_profile(self):
 
-        file_path = "Images/flower2.webp"
+        file_path = "Tests/images/flower2.webp"
         image = Image.open(file_path)
 
         self.assertEqual(image.format, "WEBP")
