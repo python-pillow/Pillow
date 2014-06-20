@@ -224,7 +224,7 @@ class TestFileJpeg(PillowTestCase):
         filename = "Tests/images/junk_jpeg_header.jpg"
         Image.open(filename)
 
-    def test_qtables():
+    def test_qtables(self):
         im = Image.open("Tests/images/lena.jpg")
         qtables = im.quantization
         reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
