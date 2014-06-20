@@ -147,6 +147,29 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If present, indicates that this image should be stored as a progressive
     JPEG file.
 
+**subsampling**
+    If present, sets the subsampling for the encoder. 
+    
+    * ``keep``: Only valid for JPEG files, will retain the original image setting.
+    * ``4:4:4``, ``4:2:2``, ``4:1:1``: Specific sampling values
+    * ``-1``: equivalent to ``keep``
+    * ``0``: equivalent to ``4:4:4``
+    * ``1``: equivalent to ``4:2:2``
+    * ``2``: equivalent to ``4:1:1``
+
+**qtables**
+    If present, sets the qtables for the encoder. This is listed as an
+    advanced option for wizards in the JPEG documentation. Use with
+    caution. ``qtables`` can be one of several types of values:
+
+    *  a string, naming a preset, e.g. ``keep``, ``web_low``, or ``web_high``
+    *  a list, tuple, or dictionary (with integer keys =
+       range(len(keys))) of lists of 64 integers. There must be
+       between 2 and 4 tables. 
+
+    .. versionadded:: 2.5.0
+
+
 .. note::
 
     To enable JPEG support, you need to build and install the IJG JPEG library
