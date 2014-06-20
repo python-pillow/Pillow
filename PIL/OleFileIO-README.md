@@ -7,7 +7,7 @@ This is an improved version of the OleFileIO module from [PIL](http://www.python
 
 As far as I know, this module is now the most complete and robust Python implementation to read MS OLE2 files, portable on several operating systems. (please tell me if you know other similar Python modules)
 
-OleFileIO_PL can be used as an independent module or with PIL. The goal is to have it integrated into [Pillow](http://python-imaging.github.io/), the friendly fork of PIL.
+OleFileIO_PL can be used as an independent module or with PIL. The goal is to have it integrated into [Pillow](http://python-pillow.github.io/), the friendly fork of PIL.
 
 OleFileIO\_PL is mostly meant for developers. If you are looking for tools to analyze OLE files or to extract data, then please also check [python-oletools](http://www.decalage.info/python/oletools), which are built upon OleFileIO_PL.
 

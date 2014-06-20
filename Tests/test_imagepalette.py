@@ -1,44 +1,50 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule
 
-from PIL import Image
 from PIL import ImagePalette
 
 ImagePalette = ImagePalette.ImagePalette
 
-def test_sanity():
 
-    assert_no_exception(lambda: ImagePalette("RGB", list(range(256))*3))
-    assert_exception(ValueError, lambda: ImagePalette("RGB", list(range(256))*2))
+class TestImagePalette(PillowTestCase):
 
-def test_getcolor():
+    def test_sanity(self):
 
-    palette = ImagePalette()
+        ImagePalette("RGB", list(range(256))*3)
+        self.assertRaises(
+            ValueError, lambda: ImagePalette("RGB", list(range(256))*2))
 
-    map = {}
-    for i in range(256):
-        map[palette.getcolor((i, i, i))] = i
+    def test_getcolor(self):
 
-    assert_equal(len(map), 256)
-    assert_exception(ValueError, lambda: palette.getcolor((1, 2, 3)))
+        palette = ImagePalette()
 
-def test_file():
+        map = {}
+        for i in range(256):
+            map[palette.getcolor((i, i, i))] = i
 
-    palette = ImagePalette()
+        self.assertEqual(len(map), 256)
+        self.assertRaises(ValueError, lambda: palette.getcolor((1, 2, 3)))
 
-    file = tempfile("temp.lut")
+    def test_file(self):
 
-    palette.save(file)
+        palette = ImagePalette()
 
-    from PIL.ImagePalette import load, raw
+        file = self.tempfile("temp.lut")
 
-    p = load(file)
+        palette.save(file)
 
-    # load returns raw palette information
-    assert_equal(len(p[0]), 768)
-    assert_equal(p[1], "RGB")
+        from PIL.ImagePalette import load, raw
 
-    p = raw(p[1], p[0])
-    assert_true(isinstance(p, ImagePalette))
+        p = load(file)
+
+        # load returns raw palette information
+        self.assertEqual(len(p[0]), 768)
+        self.assertEqual(p[1], "RGB")
+
+        p = raw(p[1], p[0])
+        self.assertIsInstance(p, ImagePalette)
 
 
+if __name__ == '__main__':
+    unittest.main()
 
+# End of file

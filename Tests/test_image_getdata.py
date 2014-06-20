@@ -1,28 +1,35 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena
 
-from PIL import Image
 
-def test_sanity():
+class TestImageGetData(PillowTestCase):
 
-    data = lena().getdata()
+    def test_sanity(self):
 
-    assert_no_exception(lambda: len(data))
-    assert_no_exception(lambda: list(data))
+        data = lena().getdata()
 
-    assert_equal(data[0], (223, 162, 133))
+        len(data)
+        list(data)
 
-def test_roundtrip():
+        self.assertEqual(data[0], (223, 162, 133))
 
-    def getdata(mode):
-        im = lena(mode).resize((32, 30))
-        data = im.getdata()
-        return data[0], len(data), len(list(data))
+    def test_roundtrip(self):
 
-    assert_equal(getdata("1"), (255, 960, 960))
-    assert_equal(getdata("L"), (176, 960, 960))
-    assert_equal(getdata("I"), (176, 960, 960))
-    assert_equal(getdata("F"), (176.0, 960, 960))
-    assert_equal(getdata("RGB"), ((223, 162, 133), 960, 960))
-    assert_equal(getdata("RGBA"), ((223, 162, 133, 255), 960, 960))
-    assert_equal(getdata("CMYK"), ((32, 93, 122, 0), 960, 960))
-    assert_equal(getdata("YCbCr"), ((176, 103, 160), 960, 960))
+        def getdata(mode):
+            im = lena(mode).resize((32, 30))
+            data = im.getdata()
+            return data[0], len(data), len(list(data))
+
+        self.assertEqual(getdata("1"), (255, 960, 960))
+        self.assertEqual(getdata("L"), (176, 960, 960))
+        self.assertEqual(getdata("I"), (176, 960, 960))
+        self.assertEqual(getdata("F"), (176.0, 960, 960))
+        self.assertEqual(getdata("RGB"), ((223, 162, 133), 960, 960))
+        self.assertEqual(getdata("RGBA"), ((223, 162, 133, 255), 960, 960))
+        self.assertEqual(getdata("CMYK"), ((32, 93, 122, 0), 960, 960))
+        self.assertEqual(getdata("YCbCr"), ((176, 103, 160), 960, 960))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file
