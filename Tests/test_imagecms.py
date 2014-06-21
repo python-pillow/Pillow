@@ -18,6 +18,8 @@ class TestImageCms(PillowTestCase):
     def setUp(self):
         try:
             from PIL import ImageCms
+            # need to hit getattr to trigger the delayed import error
+            ImageCms.core.profile_open
         except ImportError as v:
             self.skipTest(v)
 
