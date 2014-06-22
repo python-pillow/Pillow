@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Remove unistd.h #include for all platforms
+  [wiredfool]
+
 - Use unittest for tests
   [hugovk]
 
