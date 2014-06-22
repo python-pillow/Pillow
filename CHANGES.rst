@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Support OpenJpeg 2.1
+  [wiredfool]
+
 - Remove unistd.h #include for all platforms
   [wiredfool]
 
