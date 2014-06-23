@@ -12,7 +12,7 @@ Changelog (Pillow)
 
 - Support OpenJpeg 2.1
   [al45tair]
-
+
 - Remove unistd.h #include for all platforms
   [wiredfool]
 
