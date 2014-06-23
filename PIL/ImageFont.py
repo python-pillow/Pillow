@@ -396,7 +396,7 @@ w7IkEbzhVQAAAABJRU5ErkJggg==
 if __name__ == "__main__":
     # create font data chunk for embedding
     import base64, os, sys
-    font = "../Images/courB08"
+    font = "../Tests/images/courB08"
     print("    f._load_pilfont_data(")
     print("         # %s" % os.path.basename(font))
     print("         BytesIO(base64.decodestring(b'''")

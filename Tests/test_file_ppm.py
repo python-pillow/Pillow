@@ -3,7 +3,7 @@ from helper import unittest, PillowTestCase, tearDownModule
 from PIL import Image
 
 # sample ppm stream
-file = "Images/lena.ppm"
+file = "Tests/images/lena.ppm"
 data = open(file, "rb").read()
 
 

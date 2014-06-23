@@ -3,7 +3,7 @@ from helper import unittest, PillowTestCase, tearDownModule
 from PIL import Image
 
 # sample icon file
-file = "Images/pillow.icns"
+file = "Tests/images/pillow.icns"
 data = open(file, "rb").read()
 
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')

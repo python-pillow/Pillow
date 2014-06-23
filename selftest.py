@@ -49,13 +49,13 @@ def testimage():
 
     Or open existing files:
 
-    >>> im = Image.open(os.path.join(ROOT, "Images/lena.gif"))
+    >>> im = Image.open(os.path.join(ROOT, "Tests/images/lena.gif"))
     >>> _info(im)
     ('GIF', 'P', (128, 128))
-    >>> _info(Image.open(os.path.join(ROOT, "Images/lena.ppm")))
+    >>> _info(Image.open(os.path.join(ROOT, "Tests/images/lena.ppm")))
     ('PPM', 'RGB', (128, 128))
     >>> try:
-    ...  _info(Image.open(os.path.join(ROOT, "Images/lena.jpg")))
+    ...  _info(Image.open(os.path.join(ROOT, "Tests/images/lena.jpg")))
     ... except IOError as v:
     ...  print(v)
     ('JPEG', 'RGB', (128, 128))
@@ -63,7 +63,7 @@ def testimage():
     PIL doesn't actually load the image data until it's needed,
     or you call the "load" method:
 
-    >>> im = Image.open(os.path.join(ROOT, "Images/lena.ppm"))
+    >>> im = Image.open(os.path.join(ROOT, "Tests/images/lena.ppm"))
     >>> print(im.im) # internal image attribute
     None
     >>> a = im.load()
@@ -73,7 +73,7 @@ def testimage():
     You can apply many different operations on images.  Most
     operations return a new image:
 
-    >>> im = Image.open(os.path.join(ROOT, "Images/lena.ppm"))
+    >>> im = Image.open(os.path.join(ROOT, "Tests/images/lena.ppm"))
     >>> _info(im.convert("L"))
     (None, 'L', (128, 128))
     >>> _info(im.copy())

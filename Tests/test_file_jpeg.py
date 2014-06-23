@@ -8,7 +8,7 @@ from PIL import ImageFile
 
 codecs = dir(Image.core)
 
-test_file = "Images/lena.jpg"
+test_file = "Tests/images/lena.jpg"
 
 
 class TestFileJpeg(PillowTestCase):
@@ -215,7 +215,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertEqual(info[305], 'Adobe Photoshop CS Macintosh')
 
     def test_quality_keep(self):
-        im = Image.open("Images/lena.jpg")
+        im = Image.open("Tests/images/lena.jpg")
         f = self.tempfile('temp.jpg')
         im.save(f, quality='keep')
 

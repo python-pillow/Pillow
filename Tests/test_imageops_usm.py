@@ -4,7 +4,7 @@ from PIL import Image
 from PIL import ImageOps
 from PIL import ImageFilter
 
-im = Image.open("Images/lena.ppm")
+im = Image.open("Tests/images/lena.ppm")
 
 
 class TestImageOpsUsm(PillowTestCase):

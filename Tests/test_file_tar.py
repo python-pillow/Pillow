@@ -5,7 +5,7 @@ from PIL import Image, TarIO
 codecs = dir(Image.core)
 
 # sample ppm stream
-tarfile = "Images/lena.tar"
+tarfile = "Tests/images/lena.tar"
 
 
 class TestFileTar(PillowTestCase):

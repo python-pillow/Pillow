@@ -23,7 +23,7 @@ class TestFileWebp(PillowTestCase):
 
     def test_read_rgb(self):
 
-        file_path = "Images/lena.webp"
+        file_path = "Tests/images/lena.webp"
         image = Image.open(file_path)
 
         self.assertEqual(image.mode, "RGB")
@@ -33,7 +33,7 @@ class TestFileWebp(PillowTestCase):
         image.getdata()
 
         # generated with:
-        # dwebp -ppm ../../Images/lena.webp -o lena_webp_bits.ppm
+        # dwebp -ppm ../../Tests/images/lena.webp -o lena_webp_bits.ppm
         target = Image.open('Tests/images/lena_webp_bits.ppm')
         self.assert_image_similar(image, target, 20.0)
 
