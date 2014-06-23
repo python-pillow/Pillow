@@ -234,7 +234,7 @@ class pil_build_ext(build_ext):
         elif sys.platform.startswith("linux"):
             arch_tp = (plat.processor(), plat.architecture()[0])
             if arch_tp == ("x86_64","32bit"):
-                # 32 bit build on 64 bit machine. 
+                # 32 bit build on 64 bit machine.
                 _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
             else:
                 for platform_ in arch_tp:
@@ -337,14 +337,23 @@ class pil_build_ext(build_ext):
         _add_directory(include_dirs, "/usr/include")
 
         # on Windows, look for the OpenJPEG libraries in the location that
-        # the official installed puts them
+        # the official installer puts them
         if sys.platform == "win32":
-            _add_directory(library_dirs, 
-                           os.path.join(os.environ.get("ProgramFiles", ""),
-                                        "OpenJPEG 2.0", "lib"))
-            _add_directory(include_dirs,
-                           os.path.join(os.environ.get("ProgramFiles", ""),
-                                        "OpenJPEG 2.0", "include"))
+            program_files = os.environ.get('ProgramFiles', '')
+            best_version = (0, 0)
+            best_path = None
+            for name in os.listdir(program_files):
+                if name.startswith('OpenJPEG '):
+                    version = tuple([int(x) for x in name[9:].strip().split('.')])
+                    if version > best_version:
+                        best_version = version
+                        best_path = os.path.join(program_files, name)
+
+            if best_path:
+                _add_directory(library_dirs,
+                               os.path.join(best_path, 'lib'))
+                _add_directory(include_dirs,
+                               os.path.join(best_path, 'include'))
 
         #
         # insert new dirs *before* default libs, to avoid conflicts
@@ -374,11 +383,30 @@ class pil_build_ext(build_ext):
                         _find_library_file(self, "libjpeg")):
                     feature.jpeg = "libjpeg"  # alternative name
 
+        feature.openjpeg_version = None
         if feature.want('jpeg2000'):
-            if _find_include_file(self, "openjpeg-2.0/openjpeg.h"):
-                if _find_library_file(self, "openjp2"):
-                    feature.jpeg2000 = "openjp2"
-                    
+            best_version = None
+            best_path = None
+            
+            # Find the best version
+            for directory in self.compiler.include_dirs:
+                for name in os.listdir(directory):
+                    if name.startswith('openjpeg-') and \
+                        os.path.isfile(os.path.join(directory, name,
+                                                    'openjpeg.h')):
+                        version = tuple([int(x) for x in name[9:].split('.')])
+                        if best_version is None or version > best_version:
+                            best_version = version
+                            best_path = os.path.join(directory, name)
+
+            if best_version and _find_library_file(self, 'openjp2'):
+                # Add the directory to the include path so we can include
+                # <openjpeg.h> rather than having to cope with the versioned
+                # include path
+                _add_directory(self.compiler.include_dirs, best_path, 0)
+                feature.jpeg2000 = 'openjp2'
+                feature.openjpeg_version = '.'.join([str(x) for x in best_version])
+                
         if feature.want('tiff'):
             if _find_library_file(self, "tiff"):
                 feature.tiff = "tiff"
@@ -575,7 +603,7 @@ class pil_build_ext(build_ext):
         options = [
             (feature.tcl and feature.tk, "TKINTER"),
             (feature.jpeg, "JPEG"),
-            (feature.jpeg2000, "OPENJPEG (JPEG2000)"),
+            (feature.jpeg2000, "OPENJPEG (JPEG2000)", feature.openjpeg_version),
             (feature.zlib, "ZLIB (PNG/ZIP)"),
             (feature.tiff, "LIBTIFF"),
             (feature.freetype, "FREETYPE2"),
@@ -586,7 +614,10 @@ class pil_build_ext(build_ext):
         all = 1
         for option in options:
             if option[0]:
-                print("--- %s support available" % option[1])
+                version = ''
+                if len(option) >= 3 and option[2]:
+                    version = ' (%s)' % option[2]
+                print("--- %s support available%s" % (option[1], version))
             else:
                 print("*** %s support not available" % option[1])
                 if option[1] == "TKINTER" and _tkinter:
@@ -663,7 +694,7 @@ setup(
         _read('CHANGES.rst')).decode('utf-8'),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
-    url='http://python-imaging.github.io/',
+    url='http://python-pillow.github.io/',
     classifiers=[
         "Development Status :: 6 - Mature",
         "Topic :: Multimedia :: Graphics",

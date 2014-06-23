@@ -1,82 +1,91 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena
 
 from PIL import Image
 
 try:
     from PIL import _webp
 except:
-    skip('webp support not installed')
+    pass
+    # Skip in setUp()
 
 
-if _webp.WebPDecoderBuggyAlpha():
-    skip("Buggy early version of webp installed, not testing transparency")
+class TestFileWebpAlpha(PillowTestCase):
 
-def test_read_rgba():
-    # Generated with `cwebp transparent.png -o transparent.webp`
-    file_path = "Images/transparent.webp"
-    image = Image.open(file_path)
+    def setUp(self):
+        try:
+            from PIL import _webp
+        except:
+            self.skipTest('WebP support not installed')
 
-    assert_equal(image.mode, "RGBA")
-    assert_equal(image.size, (200, 150))
-    assert_equal(image.format, "WEBP")
-    assert_no_exception(lambda: image.load())
-    assert_no_exception(lambda: image.getdata())
+        if _webp.WebPDecoderBuggyAlpha(self):
+            self.skipTest("Buggy early version of WebP installed, not testing transparency")
 
-    orig_bytes  = image.tobytes()
+    def test_read_rgba(self):
+        # Generated with `cwebp transparent.png -o transparent.webp`
+        file_path = "Tests/images/transparent.webp"
+        image = Image.open(file_path)
 
-    target = Image.open('Images/transparent.png')
-    assert_image_similar(image, target, 20.0)
+        self.assertEqual(image.mode, "RGBA")
+        self.assertEqual(image.size, (200, 150))
+        self.assertEqual(image.format, "WEBP")
+        image.load()
+        image.getdata()
+
+        image.tobytes()
+
+        target = Image.open('Tests/images/transparent.png')
+        self.assert_image_similar(image, target, 20.0)
+
+    def test_write_lossless_rgb(self):
+        temp_file = self.tempfile("temp.webp")
+        # temp_file = "temp.webp"
+
+        pil_image = lena('RGBA')
+
+        mask = Image.new("RGBA", (64, 64), (128, 128, 128, 128))
+        # Add some partially transparent bits:
+        pil_image.paste(mask, (0, 0), mask)
+
+        pil_image.save(temp_file, lossless=True)
+
+        image = Image.open(temp_file)
+        image.load()
+
+        self.assertEqual(image.mode, "RGBA")
+        self.assertEqual(image.size, pil_image.size)
+        self.assertEqual(image.format, "WEBP")
+        image.load()
+        image.getdata()
+
+        self.assert_image_equal(image, pil_image)
+
+    def test_write_rgba(self):
+        """
+        Can we write a RGBA mode file to webp without error.
+        Does it have the bits we expect?
+        """
+
+        temp_file = self.tempfile("temp.webp")
+
+        pil_image = Image.new("RGBA", (10, 10), (255, 0, 0, 20))
+        pil_image.save(temp_file)
+
+        if _webp.WebPDecoderBuggyAlpha(self):
+            return
+
+        image = Image.open(temp_file)
+        image.load()
+
+        self.assertEqual(image.mode, "RGBA")
+        self.assertEqual(image.size, (10, 10))
+        self.assertEqual(image.format, "WEBP")
+        image.load
+        image.getdata
+
+        self.assert_image_similar(image, pil_image, 1.0)
 
 
-def test_write_lossless_rgb():
-    temp_file = tempfile("temp.webp")
-    #temp_file = "temp.webp"
-    
-    pil_image = lena('RGBA')
+if __name__ == '__main__':
+    unittest.main()
 
-    mask = Image.new("RGBA", (64, 64), (128,128,128,128))
-    pil_image.paste(mask, (0,0), mask)   # add some partially transparent bits.
-    
-    pil_image.save(temp_file, lossless=True)
-    
-    image = Image.open(temp_file)
-    image.load()
-
-    assert_equal(image.mode, "RGBA")
-    assert_equal(image.size, pil_image.size)
-    assert_equal(image.format, "WEBP")
-    assert_no_exception(lambda: image.load())
-    assert_no_exception(lambda: image.getdata())
-
-
-    assert_image_equal(image, pil_image)
-
-def test_write_rgba():
-    """
-    Can we write a RGBA mode file to webp without error. Does it have the bits we
-    expect?
-
-    """
-
-    temp_file = tempfile("temp.webp")
-
-    pil_image = Image.new("RGBA", (10, 10), (255, 0, 0, 20))
-    pil_image.save(temp_file)
-
-    if _webp.WebPDecoderBuggyAlpha():
-        return
-
-    image = Image.open(temp_file)
-    image.load()
-
-    assert_equal(image.mode, "RGBA")
-    assert_equal(image.size, (10, 10))
-    assert_equal(image.format, "WEBP")
-    assert_no_exception(image.load)
-    assert_no_exception(image.getdata)
-
-    assert_image_similar(image, pil_image, 1.0)
-
-
-
-
+# End of file

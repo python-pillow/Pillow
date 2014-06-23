@@ -31,10 +31,17 @@ from PIL import VERSION, PILLOW_VERSION, _plugins
 import warnings
 
 
+class DecompressionBombWarning(RuntimeWarning):
+    pass
+
 class _imaging_not_installed:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imaging C module is not installed")
+
+
+# Limit to around a quarter gigabyte for a 24 bit (3 bpp) image
+MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 / 4 / 3)
 
 try:
     # give Tk a chance to set up the environment, in case we're
@@ -1529,7 +1536,7 @@ class Image:
         clockwise around its centre.
 
         :param angle: In degrees counter clockwise.
-        :param filter: An optional resampling filter.  This can be
+        :param resample: An optional resampling filter.  This can be
            one of :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
            :py:attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
            environment), or :py:attr:`PIL.Image.BICUBIC`
@@ -1550,7 +1557,6 @@ class Image:
                 math.cos(angle), math.sin(angle), 0.0,
                 -math.sin(angle), math.cos(angle), 0.0
                 ]
-            
 
             def transform(x, y, matrix=matrix):
                 (a, b, c, d, e, f) = matrix
@@ -2173,6 +2179,20 @@ _fromarray_typemap[((1, 1), _ENDIAN + "i4")] = ("I", "I")
 _fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
 
 
+def _decompression_bomb_check(size):
+    if MAX_IMAGE_PIXELS is None:
+        return
+
+    pixels = size[0] * size[1]
+
+    if pixels > MAX_IMAGE_PIXELS:
+        warnings.warn(
+            "Image size (%d pixels) exceeds limit of %d pixels, "
+            "could be decompression bomb DOS attack." %
+            (pixels, MAX_IMAGE_PIXELS),
+            DecompressionBombWarning)
+
+
 def open(fp, mode="r"):
     """
     Opens and identifies the given image file.
@@ -2210,7 +2230,9 @@ def open(fp, mode="r"):
             factory, accept = OPEN[i]
             if not accept or accept(prefix):
                 fp.seek(0)
-                return factory(fp, filename)
+                im = factory(fp, filename)
+                _decompression_bomb_check(im.size)
+                return im
         except (SyntaxError, IndexError, TypeError):
             # import traceback
             # traceback.print_exc()
@@ -2223,7 +2245,9 @@ def open(fp, mode="r"):
                 factory, accept = OPEN[i]
                 if not accept or accept(prefix):
                     fp.seek(0)
-                    return factory(fp, filename)
+                    im = factory(fp, filename)
+                    _decompression_bomb_check(im.size)
+                    return im
             except (SyntaxError, IndexError, TypeError):
                 # import traceback
                 # traceback.print_exc()

@@ -1,68 +1,79 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena
 
 from PIL import Image
-
 
 try:
     from PIL import _webp
 except:
-    skip('webp support not installed')
+    # Skip in setUp()
+    pass
 
 
-def test_version():
-    assert_no_exception(lambda: _webp.WebPDecoderVersion())
-    assert_no_exception(lambda: _webp.WebPDecoderBuggyAlpha())
+class TestFileWebp(PillowTestCase):
 
-def test_read_rgb():
+    def setUp(self):
+        try:
+            from PIL import _webp
+        except:
+            self.skipTest('WebP support not installed')
 
-    file_path = "Images/lena.webp"
-    image = Image.open(file_path)
+    def test_version(self):
+        _webp.WebPDecoderVersion()
+        _webp.WebPDecoderBuggyAlpha()
 
-    assert_equal(image.mode, "RGB")
-    assert_equal(image.size, (128, 128))
-    assert_equal(image.format, "WEBP")
-    assert_no_exception(lambda: image.load())
-    assert_no_exception(lambda: image.getdata())
+    def test_read_rgb(self):
 
-    # generated with: dwebp -ppm ../../Images/lena.webp -o lena_webp_bits.ppm
-    target = Image.open('Tests/images/lena_webp_bits.ppm')
-    assert_image_similar(image, target, 20.0)
+        file_path = "Tests/images/lena.webp"
+        image = Image.open(file_path)
+
+        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.size, (128, 128))
+        self.assertEqual(image.format, "WEBP")
+        image.load()
+        image.getdata()
+
+        # generated with:
+        # dwebp -ppm ../../Tests/images/lena.webp -o lena_webp_bits.ppm
+        target = Image.open('Tests/images/lena_webp_bits.ppm')
+        self.assert_image_similar(image, target, 20.0)
+
+    def test_write_rgb(self):
+        """
+        Can we write a RGB mode file to webp without error.
+        Does it have the bits we expect?
+        """
+
+        temp_file = self.tempfile("temp.webp")
+
+        lena("RGB").save(temp_file)
+
+        image = Image.open(temp_file)
+        image.load()
+
+        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.size, (128, 128))
+        self.assertEqual(image.format, "WEBP")
+        image.load()
+        image.getdata()
+
+        # If we're using the exact same version of WebP, this test should pass.
+        # but it doesn't if the WebP is generated on Ubuntu and tested on
+        # Fedora.
+
+        # generated with: dwebp -ppm temp.webp -o lena_webp_write.ppm
+        # target = Image.open('Tests/images/lena_webp_write.ppm')
+        # self.assert_image_equal(image, target)
+
+        # This test asserts that the images are similar. If the average pixel
+        # difference between the two images is less than the epsilon value,
+        # then we're going to accept that it's a reasonable lossy version of
+        # the image. The included lena images for WebP are showing ~16 on
+        # Ubuntu, the jpegs are showing ~18.
+        target = lena("RGB")
+        self.assert_image_similar(image, target, 20.0)
 
 
-def test_write_rgb():
-    """
-    Can we write a RGB mode file to webp without error. Does it have the bits we
-    expect?
+if __name__ == '__main__':
+    unittest.main()
 
-    """
-
-    temp_file = tempfile("temp.webp")
-
-    lena("RGB").save(temp_file)
-
-    image = Image.open(temp_file)
-    image.load()
-
-    assert_equal(image.mode, "RGB")
-    assert_equal(image.size, (128, 128))
-    assert_equal(image.format, "WEBP")
-    assert_no_exception(lambda: image.load())
-    assert_no_exception(lambda: image.getdata())
-
-    # If we're using the exact same version of webp, this test should pass.
-    # but it doesn't if the webp is generated on Ubuntu and tested on Fedora.
-
-    # generated with: dwebp -ppm temp.webp -o lena_webp_write.ppm
-    #target = Image.open('Tests/images/lena_webp_write.ppm')
-    #assert_image_equal(image, target)
-
-    # This test asserts that the images are similar. If the average pixel difference
-    # between the two images is less than the epsilon value, then we're going to
-    # accept that it's a reasonable lossy version of the image. The included lena images
-    # for webp are showing ~16 on Ubuntu, the jpegs are showing ~18.
-    target = lena("RGB")
-    assert_image_similar(image, target, 20.0)
-
-
-
-
+# End of file
