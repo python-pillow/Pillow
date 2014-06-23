@@ -4,8 +4,13 @@ from PIL import Image
 
 test_file = "Images/lena.ppm"
 
+ORIGINAL_LIMIT = Image.MAX_IMAGE_PIXELS
+
 
 class TestDecompressionBomb(PillowTestCase):
+
+    def tearDown(self):
+        Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
     def test_no_warning_small_file(self):
         # Implicit assert: no warning.
