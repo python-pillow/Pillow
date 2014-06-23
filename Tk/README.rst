@@ -39,7 +39,7 @@ Adding Tkinter support
 The Photoimage Booster Patch (for Windows 95/NT)
 ====================================================================
 
-  This patch kit boosts performance for 16/24-bit displays.  The
+This patch kit boosts performance for 16/24-bit displays.  The
 first patch is required on Tk 4.2 (where it fixes the problems for
 16-bit displays) and later versions, with the exception for Tk 8.0b1
 where Sun added something similar themselves, only to remove it in
@@ -47,7 +47,7 @@ where Sun added something similar themselves, only to remove it in
 much faster on both 16-bit and 24-bit displays.  The patch has been
 tested with Tk 4.2 and 8.0.
 
-  Here's a benchmark, made with a sample program which loads two
+Here's a benchmark, made with a sample program which loads two
 512x512 greyscale PGM's, and two 512x512 colour PPM's, and displays
 each of them in a separate toplevel windows.  Tcl/Tk was compiled
 with Visual C 4.0, and run on a P100 under Win95.  Image load times
@@ -97,7 +97,7 @@ to::
 bad on highend truecolour displays.  IMO, it should be rewritten from
 scratch (some other day...).
 
-  Anyway, the following band-aid makes the situation a little bit
+Anyway, the following band-aid makes the situation a little bit
 better under Windows.  This hack trades some marginal quality (no
 dithering on 16-bit displays) for a dramatic performance boost.
 Requires patch 1, unless you're using Tk 4.1 or Tk 8.0b1.
