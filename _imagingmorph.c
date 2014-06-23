@@ -45,19 +45,19 @@ apply(PyObject *self, PyObject* args)
         return NULL;
     }
 
-    if (!PyByteArray_Check(py_lut)) {
-        PyErr_SetString(PyExc_RuntimeError, "The morphology LUT is not a byte array");
+    if (!PyBytes_Check(py_lut)) {
+        PyErr_SetString(PyExc_RuntimeError, "The morphology LUT is not a bytes object");
         return NULL;
     }
 
-    lut_len = PyByteArray_Size(py_lut);
+    lut_len = PyBytes_Size(py_lut);
 
     if (lut_len < LUT_SIZE) {
         PyErr_SetString(PyExc_RuntimeError, "The morphology LUT has the wrong size");
         return NULL;
     }
 
-    lut = PyByteArray_AsString(py_lut);
+    lut = PyBytes_AsString(py_lut);
 
     imgin = (Imaging) i0;
     imgout = (Imaging) i1;
@@ -152,19 +152,19 @@ match(PyObject *self, PyObject* args)
         return NULL;
     }
 
-    if (!PyByteArray_Check(py_lut)) {
-        PyErr_SetString(PyExc_RuntimeError, "The morphology LUT is not a byte array");
+    if (!PyBytes_Check(py_lut)) {
+        PyErr_SetString(PyExc_RuntimeError, "The morphology LUT is not a bytes object");
         return NULL;
     }
 
-    lut_len = PyByteArray_Size(py_lut);
+    lut_len = PyBytes_Size(py_lut);
 
     if (lut_len < LUT_SIZE) {
         PyErr_SetString(PyExc_RuntimeError, "The morphology LUT has the wrong size");
         return NULL;
     }
 
-    lut = PyByteArray_AsString(py_lut);
+    lut = PyBytes_AsString(py_lut);
     imgin = (Imaging) i0;
 
     if (imgin->type != IMAGING_TYPE_UINT8 &&
