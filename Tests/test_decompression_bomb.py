@@ -2,7 +2,7 @@ from helper import unittest, PillowTestCase, tearDownModule
 
 from PIL import Image
 
-test_file = "Images/lena.ppm"
+test_file = "Tests/images/lena.ppm"
 
 ORIGINAL_LIMIT = Image.MAX_IMAGE_PIXELS
 
