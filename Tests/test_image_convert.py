@@ -36,7 +36,7 @@ class TestImageConvert(PillowTestCase):
         self.assertEqual(orig, converted)
 
     def test_8bit(self):
-        im = Image.open('Images/lena.jpg')
+        im = Image.open('Tests/images/lena.jpg')
         self._test_float_conversion(im.convert('L'))
 
     def test_16bit(self):

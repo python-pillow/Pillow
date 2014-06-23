@@ -19,7 +19,7 @@ import locale
 
 # one of string.whitespace is not freely convertable into ascii.
 
-path = "Images/lena.jpg"
+path = "Tests/images/lena.jpg"
 
 
 class TestLocale(PillowTestCase):

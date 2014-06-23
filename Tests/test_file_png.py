@@ -10,7 +10,7 @@ codecs = dir(Image.core)
 
 # sample png stream
 
-file = "Images/lena.png"
+file = "Tests/images/lena.png"
 data = open(file, "rb").read()
 
 # stuff to create inline PNG images
@@ -204,10 +204,10 @@ class TestFilePng(PillowTestCase):
     def test_load_verify(self):
         # Check open/load/verify exception (@PIL150)
 
-        im = Image.open("Images/lena.png")
+        im = Image.open("Tests/images/lena.png")
         im.verify()
 
-        im = Image.open("Images/lena.png")
+        im = Image.open("Tests/images/lena.png")
         im.load()
         self.assertRaises(RuntimeError, lambda: im.verify())
 

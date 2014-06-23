@@ -16,14 +16,14 @@ class TestImageLoad(PillowTestCase):
         self.assertEqual(pix[0, 0], (223, 162, 133))
 
     def test_close(self):
-        im = Image.open("Images/lena.gif")
+        im = Image.open("Tests/images/lena.gif")
         im.close()
         self.assertRaises(ValueError, lambda: im.load())
         self.assertRaises(ValueError, lambda: im.getpixel((0, 0)))
 
     def test_contextmanager(self):
         fn = None
-        with Image.open("Images/lena.gif") as im:
+        with Image.open("Tests/images/lena.gif") as im:
             fn = im.fp.fileno()
             os.fstat(fn)
 

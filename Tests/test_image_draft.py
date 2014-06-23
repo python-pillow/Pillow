@@ -3,7 +3,7 @@ from helper import unittest, PillowTestCase, tearDownModule, fromstring, tostrin
 from PIL import Image
 
 codecs = dir(Image.core)
-filename = "Images/lena.jpg"
+filename = "Tests/images/lena.jpg"
 data = tostring(Image.open(filename).resize((512, 512)), "JPEG")
 
 

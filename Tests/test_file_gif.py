@@ -5,7 +5,7 @@ from PIL import Image
 codecs = dir(Image.core)
 
 # sample gif stream
-file = "Images/lena.gif"
+file = "Tests/images/lena.gif"
 with open(file, "rb") as f:
     data = f.read()
 
@@ -45,7 +45,7 @@ class TestFileGif(PillowTestCase):
     def test_roundtrip2(self):
         # see https://github.com/python-pillow/Pillow/issues/403
         out = self.tempfile('temp.gif')
-        im = Image.open('Images/lena.gif')
+        im = Image.open('Tests/images/lena.gif')
         im2 = im.copy()
         im2.save(out)
         reread = Image.open(out)
@@ -55,7 +55,7 @@ class TestFileGif(PillowTestCase):
     def test_palette_handling(self):
         # see https://github.com/python-pillow/Pillow/issues/513
 
-        im = Image.open('Images/lena.gif')
+        im = Image.open('Tests/images/lena.gif')
         im = im.convert('RGB')
 
         im = im.resize((100, 100), Image.ANTIALIAS)

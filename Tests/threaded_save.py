@@ -9,7 +9,7 @@ try:
 except:
     format = "PNG"
 
-im = Image.open("Images/lena.ppm")
+im = Image.open("Tests/images/lena.ppm")
 im.load()
 
 queue = queue.Queue()

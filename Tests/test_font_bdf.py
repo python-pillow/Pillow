@@ -2,7 +2,7 @@ from helper import unittest, PillowTestCase, tearDownModule
 
 from PIL import FontFile, BdfFontFile
 
-filename = "Images/courB08.bdf"
+filename = "Tests/images/courB08.bdf"
 
 
 class TestFontBdf(PillowTestCase):
