@@ -571,6 +571,9 @@ class pil_build_ext(build_ext):
         if os.path.isfile("_imagingmath.c"):
             exts.append(Extension("PIL._imagingmath", ["_imagingmath.c"]))
 
+        if os.path.isfile("_imagingmorph.c"):
+            exts.append(Extension("PIL._imagingmorph", ["_imagingmorph.c"]))
+
         self.extensions[:] = exts
 
         build_ext.build_extensions(self)
