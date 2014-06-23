@@ -1,5 +1,5 @@
-
 Python SANE module V1.1 (30 Sep. 2004)
+================================================================================
 
 The SANE module provides an interface to the SANE scanner and frame
 grabber interface for Linux.  This module was contributed by Andrew
@@ -9,11 +9,11 @@ word 'SANE' or 'sane' in the subject of your mail, otherwise it might
 be classified as spam in the future.
 
 
-To build this module, type (in the Sane directory):
+To build this module, type (in the Sane directory)::
 
 	python setup.py build
 
-In order to install the module type:
+In order to install the module type::
 
 	python setup.py install
 
