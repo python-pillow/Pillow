@@ -9,7 +9,7 @@ use PIL.
 However, if you cannot get the this to work on your platform, you
 can do it in the old way:
 
-* Adding Tkinter support
+Adding Tkinter support
 
 1. Compile Python's _tkinter.c with the WITH_APPINIT and WITH_PIL
    flags set, and link it with tkImaging.c and tkappinit.c.  To
@@ -74,7 +74,7 @@ drivers take care of the rest.
    patch!  It only applies to Tk 4.2, Tk 8.0a[12] and Tk 8.0b2.
    ----------------------------------------------------------------
 
-In win/tkWinImage.c, change the following line in XCreateImage:
+In win/tkWinImage.c, change the following line in XCreateImage::
 
     imagePtr->bits_per_pixel = depth;
 
