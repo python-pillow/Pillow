@@ -1,39 +1,51 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule
 
 from PIL import Image
 
-def test_sanity():
 
-    im = Image.new("L", (100, 100))
-    assert_equal(repr(im)[:45], "<PIL.Image.Image image mode=L size=100x100 at")
-    assert_equal(im.mode, "L")
-    assert_equal(im.size, (100, 100))
+class TestImage(PillowTestCase):
 
-    im = Image.new("RGB", (100, 100))
-    assert_equal(repr(im)[:45], "<PIL.Image.Image image mode=RGB size=100x100 ")
-    assert_equal(im.mode, "RGB")
-    assert_equal(im.size, (100, 100))
+    def test_sanity(self):
 
-    im1 = Image.new("L", (100, 100), None)
-    im2 = Image.new("L", (100, 100), 0)
-    im3 = Image.new("L", (100, 100), "black")
+        im = Image.new("L", (100, 100))
+        self.assertEqual(
+            repr(im)[:45], "<PIL.Image.Image image mode=L size=100x100 at")
+        self.assertEqual(im.mode, "L")
+        self.assertEqual(im.size, (100, 100))
 
-    assert_equal(im2.getcolors(), [(10000, 0)])
-    assert_equal(im3.getcolors(), [(10000, 0)])
+        im = Image.new("RGB", (100, 100))
+        self.assertEqual(
+            repr(im)[:45], "<PIL.Image.Image image mode=RGB size=100x100 ")
+        self.assertEqual(im.mode, "RGB")
+        self.assertEqual(im.size, (100, 100))
 
-    assert_exception(ValueError, lambda: Image.new("X", (100, 100)))
-    # assert_exception(MemoryError, lambda: Image.new("L", (1000000, 1000000)))
+        Image.new("L", (100, 100), None)
+        im2 = Image.new("L", (100, 100), 0)
+        im3 = Image.new("L", (100, 100), "black")
 
-def test_internals():
+        self.assertEqual(im2.getcolors(), [(10000, 0)])
+        self.assertEqual(im3.getcolors(), [(10000, 0)])
 
-    im = Image.new("L", (100, 100))
-    im.readonly = 1
-    im._copy()
-    assert_false(im.readonly)
+        self.assertRaises(ValueError, lambda: Image.new("X", (100, 100)))
+        # self.assertRaises(
+        #     MemoryError, lambda: Image.new("L", (1000000, 1000000)))
 
-    im.readonly = 1
-    im.paste(0, (0, 0, 100, 100))
-    assert_false(im.readonly)
+    def test_internals(self):
 
-    file = tempfile("temp.ppm")
-    im._dump(file)
+        im = Image.new("L", (100, 100))
+        im.readonly = 1
+        im._copy()
+        self.assertFalse(im.readonly)
+
+        im.readonly = 1
+        im.paste(0, (0, 0, 100, 100))
+        self.assertFalse(im.readonly)
+
+        file = self.tempfile("temp.ppm")
+        im._dump(file)
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

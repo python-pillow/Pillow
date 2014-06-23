@@ -67,13 +67,13 @@ Many of Pillow's features require external libraries:
 
   * Pillow has been tested with version **0.1.3**, which does not read
     transparent webp files. Versions **0.3.0** and **0.4.0** support
-    transparency. 
+    transparency.
 
-* **tcl/tk** provides support for tkinter bitmap and photo images. 
+* **tcl/tk** provides support for tkinter bitmap and photo images.
 
-* **openjpeg** provides JPEG 2000 functionality. 
+* **openjpeg** provides JPEG 2000 functionality.
 
-  * Pillow has been tested with openjpeg **2.0.0**.
+  * Pillow has been tested with openjpeg **2.0.0** and **2.1.0**.
 
 If the prerequisites are installed in the standard library locations for your
 machine (e.g. :file:`/usr` or :file:`/usr/local`), no additional configuration
@@ -108,7 +108,7 @@ Or for Python 3::
     $ sudo apt-get install python3-dev python3-setuptools
 
 In Fedora, the command is::
-    
+
     $ sudo yum install python-devel
 
 Prerequisites are installed on **Ubuntu 10.04 LTS** with::
@@ -185,6 +185,25 @@ to a specific version:
 
     $ pip install --use-wheel Pillow==2.3.0
 
+FreeBSD installation
+---------------------
+
+.. Note:: Only FreeBSD 10 tested
+
+
+Make sure you have Python's development libraries installed.::
+
+    $ sudo pkg install python2
+
+Or for Python 3::
+
+    $ sudo pkg install python3
+
+Prerequisites are installed on **FreeBSD 10** with::
+
+    $ sudo pkg install jpeg tiff webp lcms2 freetype2
+
+
 
 Platform support
 ----------------
@@ -199,7 +218,7 @@ current versions of Linux, OS X, and Windows.
     Contributors please test on your platform, edit this document, and send a
     pull request.
 
-+----------------------------------+-------------+------------------------------+------------------------------+-----------------------+ 
++----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 |**Operating system**              |**Supported**|**Tested Python versions**    |**Tested Pillow versions**    |**Tested processors**  |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Mac OS X 10.8 Mountain Lion      |Yes          | 2.6,2.7,3.2,3.3              |                              |x86-64                 |
@@ -224,6 +243,8 @@ current versions of Linux, OS X, and Windows.
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Gentoo Linux                     |Yes          | 2.7,3.2                      | 2.1.0                        |x86-64                 |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
+| FreeBSD 10                       |Yes          | 2.7,3.4                      | 2.4,2.3.1                    |x86-64                 |
++----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Windows 7 Pro                    |Yes          | 2.7,3.2,3.3                  | 2.2.1                        |x86-64                 |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |                              |x86-64                 |
@@ -232,4 +253,3 @@ current versions of Linux, OS X, and Windows.
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Windows 8.1 Pro                  |Yes          | 2.6,2.7,3.2,3.3,3.4          | 2.3.0, 2.4.0                 |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
-

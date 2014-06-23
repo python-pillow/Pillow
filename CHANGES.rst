@@ -4,6 +4,51 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Support OpenJpeg 2.1
+  [wiredfool]
+
+- Remove unistd.h #include for all platforms
+  [wiredfool]
+
+- Use unittest for tests
+  [hugovk]
+
+- ImageCms fixes
+  [hugovk]
+
+- Added more ImageDraw tests
+  [hugovk]
+
+- Added tests for Spider files
+  [hugovk]
+
+- Use libtiff to write any compressed tiff files
+  [wiredfool]
+
+- Support for pickling Image objects
+  [hugovk]
+
+- Fixed resolution handling for EPS thumbnails
+  [eliempje]
+
+- Fixed rendering of some binary EPS files (Issue #302)
+  [eliempje]
+
+- Rename variables not to use built-in function names
+  [hugovk]
+
+- Ignore junk JPEG markers
+  [hugovk]
+
+- Change default interpolation for Image.thumbnail to Image.ANTIALIAS
+  [hugovk]
+
+- Add tests and fixes for saving PDFs
+  [hugovk]
+
+- Remove transparency resource after P->RGBA conversion
+  [hugovk]
+
 - Clean up preprocessor cruft for Windows
   [CounterPillow]
 
@@ -13,13 +58,13 @@ Changelog (Pillow)
 - Added Image.close, context manager support.
   [wiredfool]
 
-- Added support for 16 bit PGM files. 
+- Added support for 16 bit PGM files.
   [wiredfool]
 
 - Updated OleFileIO to version 0.30 from upstream
   [hugovk]
 
-- Added support for additional TIFF floating point format 
+- Added support for additional TIFF floating point format
   [Hijackal]
 
 - Have the tempfile use a suffix with a dot
@@ -49,7 +94,7 @@ Changelog (Pillow)
 - Added support for JPEG 2000
   [al45tair]
 
-- Add more detailed error messages to Image.py 
+- Add more detailed error messages to Image.py
   [larsmans]
 
 - Avoid conflicting _expand functions in PIL & MINGW, fixes #538
@@ -77,7 +122,7 @@ Changelog (Pillow)
   [wiredfool]
 
 - Fixed palette handling when converting from mode P->RGB->P
-  [d_schmidt] 
+  [d_schmidt]
 
 - Fixed saving mode P image as a PNG with transparency = palette color 0
   [d-schmidt]
@@ -87,7 +132,7 @@ Changelog (Pillow)
 
 - Fixed DOS with invalid palette size or invalid image size in BMP file
   [wiredfool]
-  
+
 - Added support for BMP version 4 and 5
   [eddwardo, wiredfool]
 
@@ -120,7 +165,7 @@ Changelog (Pillow)
 
 - Prefer homebrew freetype over X11 freetype (but still allow both)
   [dmckeone]
-  
+
 2.3.1 (2014-03-14)
 ------------------
 
@@ -245,7 +290,7 @@ Changelog (Pillow)
   [nikmolnar]
 
 - Fix for encoding of b_whitespace, similar to closed issue #272
-  [mhogg] 
+  [mhogg]
 
 - Fix #273: Add numpy array interface support for 16 and 32 bit integer modes
   [cgohlke]
@@ -405,7 +450,7 @@ Changelog (Pillow)
 - Add Python 3 support. (Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3. Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7.)
   [fluggo]
 
-- Add PyPy support (experimental, please see: https://github.com/python-imaging/Pillow/issues/67)
+- Add PyPy support (experimental, please see: https://github.com/python-pillow/Pillow/issues/67)
 
 - Add WebP support.
   [lqs]
