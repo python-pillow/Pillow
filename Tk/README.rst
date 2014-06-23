@@ -69,10 +69,10 @@ Here's the patches:
 treat 16-bit displays as if they were 24-bit. The Windows device
 drivers take care of the rest.
 
-   ----------------------------------------------------------------
+.. Note::
+
    If you have Tk 4.1 or Tk 8.0b1, you don't have to apply this
    patch!  It only applies to Tk 4.2, Tk 8.0a[12] and Tk 8.0b2.
-   ----------------------------------------------------------------
 
 In win/tkWinImage.c, change the following line in XCreateImage::
 
