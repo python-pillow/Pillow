@@ -370,7 +370,7 @@ class ArgStream(ChunkStream):
                 im1 = im1.chop_add_modulo(im0.crop(bbox))
             im0.paste(im1, bbox)
 
-        self.count = self.count - 1
+        self.count -= 1
 
         if self.count == 0 and self.show:
             self.im = self.images[self.id]

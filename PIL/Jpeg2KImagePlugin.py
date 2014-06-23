@@ -46,7 +46,7 @@ def _parse_codestream(fp):
     elif csiz == 3:
         mode = 'RGB'
     elif csiz == 4:
-        mode == 'RGBA'
+        mode = 'RGBA'
     else:
         mode = None
 
@@ -124,7 +124,7 @@ def _parse_jp2_header(fp):
                     if nc == 3:
                         mode = 'RGB'
                     elif nc == 4:
-                        mode == 'RGBA'
+                        mode = 'RGBA'
                     break
 
     return (size, mode)

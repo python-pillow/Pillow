@@ -172,21 +172,21 @@ def _save(im, fp, filename, check=0):
     cols = im.size[0]
     rows = im.size[1]
 
-    rowbytes = ((cols + (16//bpp - 1)) / (16 // bpp)) * 2;
+    rowbytes = ((cols + (16//bpp - 1)) / (16 // bpp)) * 2
     transparent_index = 0
     compression_type = _COMPRESSION_TYPES["none"]
 
-    flags = 0;
+    flags = 0
     if im.mode == "P" and "custom-colormap" in im.info:
         flags = flags & _FLAGS["custom-colormap"]
-        colormapsize = 4 * 256 + 2;
+        colormapsize = 4 * 256 + 2
         colormapmode = im.palette.mode
         colormap = im.getdata().getpalette()
     else:
         colormapsize = 0
 
     if "offset" in im.info:
-        offset = (rowbytes * rows + 16 + 3 + colormapsize) // 4;
+        offset = (rowbytes * rows + 16 + 3 + colormapsize) // 4
     else:
         offset = 0
 

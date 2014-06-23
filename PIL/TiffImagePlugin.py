@@ -558,9 +558,9 @@ class ImageFileDirectory(collections.MutableMapping):
                     count = count // 2        # adjust for rational data field
 
                 append((tag, typ, count, o32(offset), data))
-                offset = offset + len(data)
+                offset += len(data)
                 if offset & 1:
-                    offset = offset + 1 # word padding
+                    offset += 1  # word padding
 
         # update strip offset data to point beyond auxiliary data
         if stripoffsets is not None:
@@ -644,7 +644,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.fp.seek(self.__next)
             self.tag.load(self.fp)
             self.__next = self.tag.next
-            self.__frame = self.__frame + 1
+            self.__frame += 1
         self._setup()
 
     def _tell(self):
@@ -900,7 +900,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     y = y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l = l + 1
+                        l += 1
                     a = None
         elif TILEOFFSETS in self.tag:
             # tiled image
@@ -921,7 +921,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     x, y = 0, y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l = l + 1
+                        l += 1
                         a = None
         else:
             if Image.DEBUG:
@@ -1089,7 +1089,7 @@ def _save(im, fp, filename):
             fp.seek(0)
             _fp = os.dup(fp.fileno())
 
-        blocklist =  [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
+        blocklist = [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
         atts={}
         # bits per sample is a single short in the tiff directory, not a list.
         atts[BITSPERSAMPLE] = bits[0]

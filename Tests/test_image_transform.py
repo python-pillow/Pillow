@@ -110,8 +110,9 @@ class TestImageTransform(PillowTestCase):
         # Running by default, but I'd totally understand not doing it in
         # the future
 
-        foo = [Image.new('RGBA', (1024, 1024), (a, a, a, a))
-                 for a in range(1, 65)]
+        foo = [
+            Image.new('RGBA', (1024, 1024), (a, a, a, a))
+            for a in range(1, 65)]
 
         # Yeah. Watch some JIT optimize this out.
         foo = None

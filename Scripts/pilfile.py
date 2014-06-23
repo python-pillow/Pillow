@@ -57,7 +57,7 @@ for o, a in opt:
     elif o == "-v":
         verify = 1
     elif o == "-D":
-        Image.DEBUG = Image.DEBUG + 1
+        Image.DEBUG += 1
 
 def globfix(files):
     # expand wildcards where necessary

@@ -84,7 +84,7 @@ class FpxImageFile(ImageFile.ImageFile):
         i = 1
         while size > 64:
             size = size / 2
-            i = i + 1
+            i += 1
         self.maxid = i - 1
 
         # mode.  instead of using a single field for this, flashpix
