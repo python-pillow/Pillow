@@ -123,7 +123,7 @@ class TestImageDraw(PillowTestCase):
         draw = ImageDraw.Draw(im)
 
         # Act
-        draw.line(points1, fill="yellow", width=2)
+        draw.line(points, fill="yellow", width=2)
         del draw
 
         # Assert
@@ -161,7 +161,7 @@ class TestImageDraw(PillowTestCase):
         draw = ImageDraw.Draw(im)
 
         # Act
-        draw.point(points1, fill="yellow")
+        draw.point(points, fill="yellow")
         del draw
 
         # Assert
@@ -180,7 +180,7 @@ class TestImageDraw(PillowTestCase):
         draw = ImageDraw.Draw(im)
 
         # Act
-        draw.polygon(points1, fill="red", outline="blue")
+        draw.polygon(points, fill="red", outline="blue")
         del draw
 
         # Assert
