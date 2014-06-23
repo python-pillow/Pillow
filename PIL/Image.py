@@ -31,6 +31,9 @@ from PIL import VERSION, PILLOW_VERSION, _plugins
 import warnings
 
 
+class DecompressionBombWarning(RuntimeWarning):
+    pass
+
 class _imaging_not_installed:
     # module placeholder
     def __getattr__(self, id):
@@ -2187,7 +2190,7 @@ def _decompression_bomb_check(size):
             "Image size (%d pixels) exceeds limit of %d pixels, "
             "could be decompression bomb DOS attack." %
             (pixels, MAX_IMAGE_PIXELS),
-            RuntimeWarning)
+            DecompressionBombWarning)
 
 
 def open(fp, mode="r"):

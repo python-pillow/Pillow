@@ -31,7 +31,7 @@ def test_warning():
 
     # Act / Assert
     assert_warning(
-        RuntimeWarning,
+        DecompressionBombWarning,
         lambda: Image.open(test_file))
 
 # End of file
