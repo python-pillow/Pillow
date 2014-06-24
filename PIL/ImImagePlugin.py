@@ -182,7 +182,7 @@ class ImImageFile(ImageFile.ImageFile):
                     self.info[k] = v
 
                 if k in TAGS:
-                    n = n + 1
+                    n += 1
 
             else:
 

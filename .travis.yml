@@ -1,35 +1,46 @@
 language: python
 
-# for python-qt4
-virtualenv:
-  system_site_packages: true
-
 notifications:
   irc: "chat.freenode.net#pil"
 
 python:
+  - "pypy"
   - 2.6
   - 2.7
   - 3.2
   - 3.3
-  - "pypy"
+  - 3.4
 
-install: 
+install:
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
   - "pip install cffi"
+  - "pip install coveralls nose"
+  - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip install unittest2; fi
 
-  # webp  
+  # webp
   - pushd depends && ./install_webp.sh && popd
 
   # openjpeg
   - pushd depends && ./install_openjpeg.sh && popd
 
 script:
+  - coverage erase
   - python setup.py clean
   - python setup.py build_ext --inplace
-  - python selftest.py
-  - python Tests/run.py
 
-matrix:
-  allow_failures:
-    - python: "pypy"
+    # Don't cover PyPy: it fails intermittently and is x5.8 slower (#640)
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time python selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests Tests/test_*.py; fi
+
+    # Cover the others
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose Tests/test_*.py; fi
+
+after_success:
+  - coverage report
+  - coveralls
+  - pip install pep8 pyflakes
+  - pep8 --statistics --count PIL/*.py
+  - pep8  --statistics --count Tests/*.py
+  - pyflakes PIL/*.py   | tee >(wc -l)
+  - pyflakes Tests/*.py | tee >(wc -l)

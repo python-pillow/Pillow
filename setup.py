@@ -87,7 +87,7 @@ except (ImportError, OSError):
 
 
 NAME = 'Pillow'
-VERSION = '2.3.0'
+VERSION = '2.4.0'
 TCL_ROOT = None
 JPEG_ROOT = None
 JPEG2K_ROOT = None
@@ -106,6 +106,7 @@ class pil_build_ext(build_ext):
 
         def require(self, feat):
             return feat in self.required
+
         def want(self, feat):
             return getattr(self, feat) is None
 
@@ -137,8 +138,8 @@ class pil_build_ext(build_ext):
                 setattr(self.feature, x, False)
                 if getattr(self, 'enable_%s' % x):
                     raise ValueError(
-                            'Conflicting options: --enable-%s and --disable-%s'
-                            % (x, x))
+                        'Conflicting options: --enable-%s and --disable-%s'
+                        % (x, x))
             if getattr(self, 'enable_%s' % x):
                 self.feature.required.append(x)
 
@@ -205,30 +206,38 @@ class pil_build_ext(build_ext):
             # darwin ports installation directories
             _add_directory(library_dirs, "/opt/local/lib")
             _add_directory(include_dirs, "/opt/local/include")
-            
-            # if homebrew is installed, use its lib and include directories
+
+            # if Homebrew is installed, use its lib and include directories
             import subprocess
             try:
-                prefix = subprocess.check_output(['brew', '--prefix'])
-                if prefix:
-                    prefix = prefix.strip()
-                    _add_directory(library_dirs, os.path.join(prefix, 'lib'))
-                    _add_directory(include_dirs, os.path.join(prefix, 'include'))
-                    
-                    # freetype2 is a key-only brew under opt/
-                    _add_directory(library_dirs, os.path.join(prefix, 'opt', 'freetype', 'lib'))
-                    _add_directory(include_dirs, os.path.join(prefix, 'opt', 'freetype', 'include'))
+                prefix = subprocess.check_output(['brew', '--prefix']).strip()
             except:
-                pass # homebrew not installed
-            
-            # freetype2 ships with X11 (after homebrew, so that homebrew freetype is preferred)
-            _add_directory(library_dirs, "/usr/X11/lib")
-            _add_directory(include_dirs, "/usr/X11/include")
+                # Homebrew not installed
+                prefix = None
+
+            ft_prefix = None
+
+            if prefix:
+                # add Homebrew's include and lib directories
+                _add_directory(library_dirs, os.path.join(prefix, 'lib'))
+                _add_directory(include_dirs, os.path.join(prefix, 'include'))
+                ft_prefix = os.path.join(prefix, 'opt', 'freetype')
+
+            if ft_prefix and os.path.isdir(ft_prefix):
+                # freetype might not be linked into Homebrew's prefix
+                _add_directory(library_dirs, os.path.join(ft_prefix, 'lib'))
+                _add_directory(
+                    include_dirs, os.path.join(ft_prefix, 'include'))
+            else:
+                # fall back to freetype from XQuartz if
+                # Homebrew's freetype is missing
+                _add_directory(library_dirs, "/usr/X11/lib")
+                _add_directory(include_dirs, "/usr/X11/include")
 
         elif sys.platform.startswith("linux"):
             arch_tp = (plat.processor(), plat.architecture()[0])
-            if arch_tp == ("x86_64","32bit"):
-                # 32 bit build on 64 bit machine. 
+            if arch_tp == ("x86_64", "32bit"):
+                # 32 bit build on 64 bit machine.
                 _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
             else:
                 for platform_ in arch_tp:
@@ -239,30 +248,38 @@ class pil_build_ext(build_ext):
                     if platform_ in ["x86_64", "64bit"]:
                         _add_directory(library_dirs, "/lib64")
                         _add_directory(library_dirs, "/usr/lib64")
-                        _add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
+                        _add_directory(
+                            library_dirs, "/usr/lib/x86_64-linux-gnu")
                         break
                     elif platform_ in ["i386", "i686", "32bit"]:
-                        _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
+                        _add_directory(
+                            library_dirs, "/usr/lib/i386-linux-gnu")
                         break
                     elif platform_ in ["aarch64"]:
                         _add_directory(library_dirs, "/usr/lib64")
-                        _add_directory(library_dirs, "/usr/lib/aarch64-linux-gnu")
+                        _add_directory(
+                            library_dirs, "/usr/lib/aarch64-linux-gnu")
                         break
                     elif platform_ in ["arm", "armv7l"]:
-                        _add_directory(library_dirs, "/usr/lib/arm-linux-gnueabi")
+                        _add_directory(
+                            library_dirs, "/usr/lib/arm-linux-gnueabi")
                         break
                     elif platform_ in ["ppc64"]:
                         _add_directory(library_dirs, "/usr/lib64")
-                        _add_directory(library_dirs, "/usr/lib/ppc64-linux-gnu")
-                        _add_directory(library_dirs, "/usr/lib/powerpc64-linux-gnu")
+                        _add_directory(
+                            library_dirs, "/usr/lib/ppc64-linux-gnu")
+                        _add_directory(
+                            library_dirs, "/usr/lib/powerpc64-linux-gnu")
                         break
                     elif platform_ in ["ppc"]:
                         _add_directory(library_dirs, "/usr/lib/ppc-linux-gnu")
-                        _add_directory(library_dirs, "/usr/lib/powerpc-linux-gnu")
+                        _add_directory(
+                            library_dirs, "/usr/lib/powerpc-linux-gnu")
                         break
                     elif platform_ in ["s390x"]:
                         _add_directory(library_dirs, "/usr/lib64")
-                        _add_directory(library_dirs, "/usr/lib/s390x-linux-gnu")
+                        _add_directory(
+                            library_dirs, "/usr/lib/s390x-linux-gnu")
                         break
                     elif platform_ in ["s390"]:
                         _add_directory(library_dirs, "/usr/lib/s390-linux-gnu")
@@ -331,14 +348,24 @@ class pil_build_ext(build_ext):
         _add_directory(include_dirs, "/usr/include")
 
         # on Windows, look for the OpenJPEG libraries in the location that
-        # the official installed puts them
+        # the official installer puts them
         if sys.platform == "win32":
-            _add_directory(library_dirs, 
-                           os.path.join(os.environ.get("ProgramFiles", ""),
-                                        "OpenJPEG 2.0", "lib"))
-            _add_directory(include_dirs,
-                           os.path.join(os.environ.get("ProgramFiles", ""),
-                                        "OpenJPEG 2.0", "include"))
+            program_files = os.environ.get('ProgramFiles', '')
+            best_version = (0, 0)
+            best_path = None
+            for name in os.listdir(program_files):
+                if name.startswith('OpenJPEG '):
+                    version = tuple(
+                        [int(x) for x in name[9:].strip().split('.')])
+                    if version > best_version:
+                        best_version = version
+                        best_path = os.path.join(program_files, name)
+
+            if best_path:
+                _add_directory(library_dirs,
+                               os.path.join(best_path, 'lib'))
+                _add_directory(include_dirs,
+                               os.path.join(best_path, 'include'))
 
         #
         # insert new dirs *before* default libs, to avoid conflicts
@@ -356,7 +383,8 @@ class pil_build_ext(build_ext):
             if _find_include_file(self, "zlib.h"):
                 if _find_library_file(self, "z"):
                     feature.zlib = "z"
-                elif sys.platform == "win32" and _find_library_file(self, "zlib"):
+                elif (sys.platform == "win32" and
+                        _find_library_file(self, "zlib")):
                     feature.zlib = "zlib"  # alternative name
 
         if feature.want('jpeg'):
@@ -368,17 +396,38 @@ class pil_build_ext(build_ext):
                         _find_library_file(self, "libjpeg")):
                     feature.jpeg = "libjpeg"  # alternative name
 
+        feature.openjpeg_version = None
         if feature.want('jpeg2000'):
-            if _find_include_file(self, "openjpeg-2.0/openjpeg.h"):
-                if _find_library_file(self, "openjp2"):
-                    feature.jpeg2000 = "openjp2"
-                    
+            best_version = None
+            best_path = None
+
+            # Find the best version
+            for directory in self.compiler.include_dirs:
+                for name in os.listdir(directory):
+                    if name.startswith('openjpeg-') and \
+                        os.path.isfile(os.path.join(directory, name,
+                                                    'openjpeg.h')):
+                        version = tuple([int(x) for x in name[9:].split('.')])
+                        if best_version is None or version > best_version:
+                            best_version = version
+                            best_path = os.path.join(directory, name)
+
+            if best_version and _find_library_file(self, 'openjp2'):
+                # Add the directory to the include path so we can include
+                # <openjpeg.h> rather than having to cope with the versioned
+                # include path
+                _add_directory(self.compiler.include_dirs, best_path, 0)
+                feature.jpeg2000 = 'openjp2'
+                feature.openjpeg_version = '.'.join(
+                    [str(x) for x in best_version])
+
         if feature.want('tiff'):
             if _find_library_file(self, "tiff"):
                 feature.tiff = "tiff"
             if sys.platform == "win32" and _find_library_file(self, "libtiff"):
                 feature.tiff = "libtiff"
-            if sys.platform == "darwin" and _find_library_file(self, "libtiff"):
+            if (sys.platform == "darwin" and
+                    _find_library_file(self, "libtiff")):
                 feature.tiff = "libtiff"
 
         if feature.want('freetype'):
@@ -425,20 +474,22 @@ class pil_build_ext(build_ext):
         if feature.want('webp'):
             if (_find_include_file(self, "webp/encode.h") and
                     _find_include_file(self, "webp/decode.h")):
-                if _find_library_file(self, "webp"): # in googles precompiled zip it is call "libwebp"
+                # In Google's precompiled zip it is call "libwebp":
+                if _find_library_file(self, "webp"):
                     feature.webp = "webp"
 
         if feature.want('webpmux'):
             if (_find_include_file(self, "webp/mux.h") and
                     _find_include_file(self, "webp/demux.h")):
-                if _find_library_file(self, "webpmux") and _find_library_file(self, "webpdemux"):
+                if (_find_library_file(self, "webpmux") and
+                        _find_library_file(self, "webpdemux")):
                     feature.webpmux = "webpmux"
 
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
                 raise ValueError(
-                        '--enable-%s requested but %s not found, aborting.'
-                        % (f, f))
+                    '--enable-%s requested but %s not found, aborting.'
+                    % (f, f))
 
         #
         # core library
@@ -493,7 +544,9 @@ class pil_build_ext(build_ext):
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
             exts.append(Extension(
-                "PIL._imagingcms", ["_imagingcms.c"], libraries=["lcms2"] + extra))
+                "PIL._imagingcms",
+                ["_imagingcms.c"],
+                libraries=["lcms2"] + extra))
 
         if os.path.isfile("_webp.c") and feature.webp:
             libs = ["webp"]
@@ -537,6 +590,9 @@ class pil_build_ext(build_ext):
         if os.path.isfile("_imagingmath.c"):
             exts.append(Extension("PIL._imagingmath", ["_imagingmath.c"]))
 
+        if os.path.isfile("_imagingmorph.c"):
+            exts.append(Extension("PIL._imagingmorph", ["_imagingmorph.c"]))
+
         self.extensions[:] = exts
 
         build_ext.build_extensions(self)
@@ -566,7 +622,8 @@ class pil_build_ext(build_ext):
         options = [
             (feature.tcl and feature.tk, "TKINTER"),
             (feature.jpeg, "JPEG"),
-            (feature.jpeg2000, "OPENJPEG (JPEG2000)"),
+            (feature.jpeg2000, "OPENJPEG (JPEG2000)",
+                feature.openjpeg_version),
             (feature.zlib, "ZLIB (PNG/ZIP)"),
             (feature.tiff, "LIBTIFF"),
             (feature.freetype, "FREETYPE2"),
@@ -577,7 +634,10 @@ class pil_build_ext(build_ext):
         all = 1
         for option in options:
             if option[0]:
-                print("--- %s support available" % option[1])
+                version = ''
+                if len(option) >= 3 and option[2]:
+                    version = ' (%s)' % option[2]
+                print("--- %s support available%s" % (option[1], version))
             else:
                 print("*** %s support not available" % option[1])
                 if option[1] == "TKINTER" and _tkinter:
@@ -654,7 +714,7 @@ setup(
         _read('CHANGES.rst')).decode('utf-8'),
     author='Alex Clark (fork author)',
     author_email='aclark@aclark.net',
-    url='http://python-imaging.github.io/',
+    url='http://python-pillow.github.io/',
     classifiers=[
         "Development Status :: 6 - Mature",
         "Topic :: Multimedia :: Graphics",
@@ -675,8 +735,9 @@ setup(
     packages=find_packages(),
     scripts=glob.glob("Scripts/pil*.py"),
     test_suite='PIL.tests',
-    keywords=["Imaging",],
+    keywords=["Imaging", ],
     license='Standard PIL License',
     zip_safe=True,
     )
 
+# End of file

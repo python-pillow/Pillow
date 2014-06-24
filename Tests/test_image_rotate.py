@@ -1,15 +1,22 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena
 
-from PIL import Image
 
-def test_rotate():
-    def rotate(mode):
-        im = lena(mode)
-        out = im.rotate(45)
-        assert_equal(out.mode, mode)
-        assert_equal(out.size, im.size) # default rotate clips output
-        out = im.rotate(45, expand=1)
-        assert_equal(out.mode, mode)
-        assert_true(out.size != im.size)
-    for mode in "1", "P", "L", "RGB", "I", "F":
-        yield_test(rotate, mode)
+class TestImageRotate(PillowTestCase):
+
+    def test_rotate(self):
+        def rotate(mode):
+            im = lena(mode)
+            out = im.rotate(45)
+            self.assertEqual(out.mode, mode)
+            self.assertEqual(out.size, im.size)  # default rotate clips output
+            out = im.rotate(45, expand=1)
+            self.assertEqual(out.mode, mode)
+            self.assertNotEqual(out.size, im.size)
+        for mode in "1", "P", "L", "RGB", "I", "F":
+            rotate(mode)
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

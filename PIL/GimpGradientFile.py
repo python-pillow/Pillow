@@ -68,7 +68,7 @@ class GradientFile:
             x = i / float(entries-1)
 
             while x1 < x:
-                ix = ix + 1
+                ix += 1
                 x0, x1, xm, rgb0, rgb1, segment = self.gradient[ix]
 
             w = x1 - x0

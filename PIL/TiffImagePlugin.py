@@ -54,7 +54,7 @@ import collections
 import itertools
 import os
 
-# Set these to true to force use of libtiff for reading or writing. 
+# Set these to true to force use of libtiff for reading or writing.
 READ_LIBTIFF = False
 WRITE_LIBTIFF= False
 
@@ -146,6 +146,7 @@ OPEN_INFO = {
     (II, 0, 1, 2, (1,), ()): ("1", "1;IR"),
     (II, 0, 1, 1, (8,), ()): ("L", "L;I"),
     (II, 0, 1, 2, (8,), ()): ("L", "L;IR"),
+    (II, 0, 3, 1, (32,), ()): ("F", "F;32F"),
     (II, 1, 1, 1, (1,), ()): ("1", "1"),
     (II, 1, 1, 2, (1,), ()): ("1", "1;R"),
     (II, 1, 1, 1, (8,), ()): ("L", "L"),
@@ -237,7 +238,7 @@ class ImageFileDirectory(collections.MutableMapping):
                             Value: integer corresponding to the data type from
                             `TiffTags.TYPES`
 
-        'internal'            
+        'internal'
         * self.tags = {}  Key: numerical tiff tag number
                           Value: Decoded data, Generally a tuple.
                             * If set from __setval__ -- always a tuple
@@ -488,10 +489,10 @@ class ImageFileDirectory(collections.MutableMapping):
 
             if tag in self.tagtype:
                 typ = self.tagtype[tag]
-                
+
             if Image.DEBUG:
                 print ("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
-                   
+
             if typ == 1:
                 # byte data
                 if isinstance(value, tuple):
@@ -511,7 +512,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 # and doesn't match the tiff spec: 8-bit byte that
                 # contains a 7-bit ASCII code; the last byte must be
                 # NUL (binary zero). Also, I don't think this was well
-                # excersized before. 
+                # excersized before.
                 data = value = b"" + value.encode('ascii', 'replace') + b"\0"
             else:
                 # integer data
@@ -557,9 +558,9 @@ class ImageFileDirectory(collections.MutableMapping):
                     count = count // 2        # adjust for rational data field
 
                 append((tag, typ, count, o32(offset), data))
-                offset = offset + len(data)
+                offset += len(data)
                 if offset & 1:
-                    offset = offset + 1 # word padding
+                    offset += 1  # word padding
 
         # update strip offset data to point beyond auxiliary data
         if stripoffsets is not None:
@@ -643,7 +644,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.fp.seek(self.__next)
             self.tag.load(self.fp)
             self.__next = self.tag.next
-            self.__frame = self.__frame + 1
+            self.__frame += 1
         self._setup()
 
     def _tell(self):
@@ -858,7 +859,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 # libtiff handles the fillmode for us, so 1;IR should
                 # actually be 1;I. Including the R double reverses the
                 # bits, so stripes of the image are reversed.  See
-                # https://github.com/python-imaging/Pillow/issues/279
+                # https://github.com/python-pillow/Pillow/issues/279
                 if fillorder == 2:
                     key = (
                         self.tag.prefix, photo, format, 1,
@@ -899,7 +900,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     y = y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l = l + 1
+                        l += 1
                     a = None
         elif TILEOFFSETS in self.tag:
             # tiled image
@@ -920,7 +921,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     x, y = 0, y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l = l + 1
+                        l += 1
                         a = None
         else:
             if Image.DEBUG:
@@ -983,15 +984,11 @@ def _save(im, fp, filename):
 
     compression = im.encoderinfo.get('compression',im.info.get('compression','raw'))
 
-    libtiff = WRITE_LIBTIFF or compression in ["tiff_ccitt", "group3", "group4",
-                                               "tiff_jpeg", "tiff_adobe_deflate",
-                                               "tiff_thunderscan", "tiff_deflate",
-                                               "tiff_sgilog", "tiff_sgilog24",
-                                               "tiff_raw_16"]
+    libtiff = WRITE_LIBTIFF or compression != 'raw'
 
     # required for color libtiff images
     ifd[PLANAR_CONFIGURATION] = getattr(im, '_planar_configuration', 1)
-    
+
     # -- multi-page -- skip TIFF header on subsequent pages
     if not libtiff and fp.tell() == 0:
         # tiff header (write via IFD to get everything right)
@@ -1028,7 +1025,7 @@ def _save(im, fp, filename):
         # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
         if "icc_profile" in im.info:
             ifd[ICCPROFILE] = im.info["icc_profile"]
-            
+
     if "description" in im.encoderinfo:
         ifd[IMAGEDESCRIPTION] = im.encoderinfo["description"]
     if "resolution" in im.encoderinfo:
@@ -1092,9 +1089,9 @@ def _save(im, fp, filename):
             fp.seek(0)
             _fp = os.dup(fp.fileno())
 
-        blocklist =  [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
+        blocklist = [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE] # ICC Profile crashes.
         atts={}
-        # bits per sample is a single short in the tiff directory, not a list. 
+        # bits per sample is a single short in the tiff directory, not a list.
         atts[BITSPERSAMPLE] = bits[0]
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can

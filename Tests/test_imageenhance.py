@@ -1,19 +1,28 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena
 
 from PIL import Image
 from PIL import ImageEnhance
 
-def test_sanity():
 
-    # FIXME: assert_image
-    assert_no_exception(lambda: ImageEnhance.Color(lena()).enhance(0.5))
-    assert_no_exception(lambda: ImageEnhance.Contrast(lena()).enhance(0.5))
-    assert_no_exception(lambda: ImageEnhance.Brightness(lena()).enhance(0.5))
-    assert_no_exception(lambda: ImageEnhance.Sharpness(lena()).enhance(0.5))
+class TestImageEnhance(PillowTestCase):
 
-def test_crash():
+    def test_sanity(self):
 
-    # crashes on small images
-    im = Image.new("RGB", (1, 1))
-    assert_no_exception(lambda: ImageEnhance.Sharpness(im).enhance(0.5))
+        # FIXME: assert_image
+        # Implicit asserts no exception:
+        ImageEnhance.Color(lena()).enhance(0.5)
+        ImageEnhance.Contrast(lena()).enhance(0.5)
+        ImageEnhance.Brightness(lena()).enhance(0.5)
+        ImageEnhance.Sharpness(lena()).enhance(0.5)
 
+    def test_crash(self):
+
+        # crashes on small images
+        im = Image.new("RGB", (1, 1))
+        ImageEnhance.Sharpness(im).enhance(0.5)
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

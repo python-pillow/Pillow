@@ -670,9 +670,6 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 #include "TiffDecode.h"
 
 #include <string.h>
-#ifdef __WIN32__
-#define strcasecmp(s1, s2) stricmp(s1, s2)
-#endif
 
 PyObject*
 PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)

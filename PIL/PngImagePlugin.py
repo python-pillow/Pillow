@@ -89,33 +89,33 @@ class ChunkStream:
         "Fetch a new chunk. Returns header information."
 
         if self.queue:
-            cid, pos, len = self.queue[-1]
+            cid, pos, length = self.queue[-1]
             del self.queue[-1]
             self.fp.seek(pos)
         else:
             s = self.fp.read(8)
             cid = s[4:]
             pos = self.fp.tell()
-            len = i32(s)
+            length = i32(s)
 
         if not is_cid(cid):
             raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
 
-        return cid, pos, len
+        return cid, pos, length
 
     def close(self):
         self.queue = self.crc = self.fp = None
 
-    def push(self, cid, pos, len):
+    def push(self, cid, pos, length):
 
-        self.queue.append((cid, pos, len))
+        self.queue.append((cid, pos, length))
 
-    def call(self, cid, pos, len):
+    def call(self, cid, pos, length):
         "Call the appropriate chunk handler"
 
         if Image.DEBUG:
-            print("STREAM", cid, pos, len)
-        return getattr(self, "chunk_" + cid.decode('ascii'))(pos, len)
+            print("STREAM", cid, pos, length)
+        return getattr(self, "chunk_" + cid.decode('ascii'))(pos, length)
 
     def crc(self, cid, data):
         "Read and verify checksum"
@@ -139,10 +139,10 @@ class ChunkStream:
         cids = []
 
         while True:
-            cid, pos, len = self.read()
+            cid, pos, length = self.read()
             if cid == endchunk:
                 break
-            self.crc(cid, ImageFile._safe_read(self.fp, len))
+            self.crc(cid, ImageFile._safe_read(self.fp, length))
             cids.append(cid)
 
         return cids
@@ -190,10 +190,10 @@ class PngStream(ChunkStream):
         self.im_tile = None
         self.im_palette = None
 
-    def chunk_iCCP(self, pos, len):
+    def chunk_iCCP(self, pos, length):
 
         # ICC profile
-        s = ImageFile._safe_read(self.fp, len)
+        s = ImageFile._safe_read(self.fp, length)
         # according to PNG spec, the iCCP chunk contains:
         # Profile name  1-79 bytes (character string)
         # Null separator        1 byte (null character)
@@ -213,10 +213,10 @@ class PngStream(ChunkStream):
         self.im_info["icc_profile"] = icc_profile
         return s
 
-    def chunk_IHDR(self, pos, len):
+    def chunk_IHDR(self, pos, length):
 
         # image header
-        s = ImageFile._safe_read(self.fp, len)
+        s = ImageFile._safe_read(self.fp, length)
         self.im_size = i32(s), i32(s[4:])
         try:
             self.im_mode, self.im_rawmode = _MODES[(i8(s[8]), i8(s[9]))]
@@ -228,30 +228,30 @@ class PngStream(ChunkStream):
             raise SyntaxError("unknown filter category")
         return s
 
-    def chunk_IDAT(self, pos, len):
+    def chunk_IDAT(self, pos, length):
 
         # image data
         self.im_tile = [("zip", (0,0)+self.im_size, pos, self.im_rawmode)]
-        self.im_idat = len
+        self.im_idat = length
         raise EOFError
 
-    def chunk_IEND(self, pos, len):
+    def chunk_IEND(self, pos, length):
 
         # end of PNG image
         raise EOFError
 
-    def chunk_PLTE(self, pos, len):
+    def chunk_PLTE(self, pos, length):
 
         # palette
-        s = ImageFile._safe_read(self.fp, len)
+        s = ImageFile._safe_read(self.fp, length)
         if self.im_mode == "P":
             self.im_palette = "RGB", s
         return s
 
-    def chunk_tRNS(self, pos, len):
+    def chunk_tRNS(self, pos, length):
 
         # transparency
-        s = ImageFile._safe_read(self.fp, len)
+        s = ImageFile._safe_read(self.fp, length)
         if self.im_mode == "P":
             if _simple_palette.match(s):
                 i = s.find(b"\0")
@@ -265,17 +265,17 @@ class PngStream(ChunkStream):
             self.im_info["transparency"] = i16(s), i16(s[2:]), i16(s[4:])
         return s
 
-    def chunk_gAMA(self, pos, len):
+    def chunk_gAMA(self, pos, length):
 
         # gamma setting
-        s = ImageFile._safe_read(self.fp, len)
+        s = ImageFile._safe_read(self.fp, length)
         self.im_info["gamma"] = i32(s) / 100000.0
         return s
 
-    def chunk_pHYs(self, pos, len):
+    def chunk_pHYs(self, pos, length):
 
         # pixels per unit
-        s = ImageFile._safe_read(self.fp, len)
+        s = ImageFile._safe_read(self.fp, length)
         px, py = i32(s), i32(s[4:])
         unit = i8(s[8])
         if unit == 1: # meter
@@ -285,10 +285,10 @@ class PngStream(ChunkStream):
             self.im_info["aspect"] = px, py
         return s
 
-    def chunk_tEXt(self, pos, len):
+    def chunk_tEXt(self, pos, length):
 
         # text
-        s = ImageFile._safe_read(self.fp, len)
+        s = ImageFile._safe_read(self.fp, length)
         try:
             k, v = s.split(b"\0", 1)
         except ValueError:
@@ -301,10 +301,10 @@ class PngStream(ChunkStream):
             self.im_info[k] = self.im_text[k] = v
         return s
 
-    def chunk_zTXt(self, pos, len):
+    def chunk_zTXt(self, pos, length):
 
         # compressed text
-        s = ImageFile._safe_read(self.fp, len)
+        s = ImageFile._safe_read(self.fp, length)
         try:
             k, v = s.split(b"\0", 1)
         except ValueError:
@@ -358,16 +358,16 @@ class PngImageFile(ImageFile.ImageFile):
             #
             # get next chunk
 
-            cid, pos, len = self.png.read()
+            cid, pos, length = self.png.read()
 
             try:
-                s = self.png.call(cid, pos, len)
+                s = self.png.call(cid, pos, length)
             except EOFError:
                 break
             except AttributeError:
                 if Image.DEBUG:
-                    print(cid, pos, len, "(unknown)")
-                s = ImageFile._safe_read(self.fp, len)
+                    print(cid, pos, length, "(unknown)")
+                s = ImageFile._safe_read(self.fp, length)
 
             self.png.crc(cid, s)
 
@@ -388,7 +388,7 @@ class PngImageFile(ImageFile.ImageFile):
             rawmode, data = self.png.im_palette
             self.palette = ImagePalette.raw(rawmode, data)
 
-        self.__idat = len # used by load_read()
+        self.__idat = length  # used by load_read()
 
 
     def verify(self):
@@ -413,7 +413,7 @@ class PngImageFile(ImageFile.ImageFile):
 
         ImageFile.ImageFile.load_prepare(self)
 
-    def load_read(self, bytes):
+    def load_read(self, read_bytes):
         "internal: read more image data"
 
         while self.__idat == 0:
@@ -421,23 +421,23 @@ class PngImageFile(ImageFile.ImageFile):
 
             self.fp.read(4) # CRC
 
-            cid, pos, len = self.png.read()
+            cid, pos, length = self.png.read()
 
             if cid not in [b"IDAT", b"DDAT"]:
-                self.png.push(cid, pos, len)
+                self.png.push(cid, pos, length)
                 return b""
 
-            self.__idat = len # empty chunks are allowed
+            self.__idat = length  # empty chunks are allowed
 
         # read more data from this chunk
-        if bytes <= 0:
-            bytes = self.__idat
+        if read_bytes <= 0:
+            read_bytes = self.__idat
         else:
-            bytes = min(bytes, self.__idat)
+            read_bytes = min(read_bytes, self.__idat)
 
-        self.__idat = self.__idat - bytes
+        self.__idat = self.__idat - read_bytes
 
-        return self.fp.read(bytes)
+        return self.fp.read(read_bytes)
 
 
     def load_end(self):
@@ -560,7 +560,7 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
         chunk(fp, b"PLTE", palette_bytes)
 
     transparency = im.encoderinfo.get('transparency',im.info.get('transparency', None))
-    
+
     if transparency or transparency == 0:
         if im.mode == "P":
             # limit to actual palette size
@@ -580,7 +580,7 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
         else:
             if "transparency" in im.encoderinfo:
                 # don't bother with transparency if it's an RGBA
-                # and it's in the info dict. It's probably just stale. 
+                # and it's in the info dict. It's probably just stale.
                 raise IOError("cannot use transparency for this mode")
     else:
         if im.mode == "P" and im.im.getpalettemode() == "RGBA":

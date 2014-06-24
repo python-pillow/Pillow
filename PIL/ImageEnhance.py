@@ -6,7 +6,7 @@
 #
 # For a background, see "Image Processing By Interpolation and
 # Extrapolation", Paul Haeberli and Douglas Voorhies.  Available
-# at http://www.sgi.com/grafica/interp/index.html
+# at http://www.graficaobscura.com/interp/index.html
 #
 # History:
 # 1996-03-23 fl  Created

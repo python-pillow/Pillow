@@ -59,7 +59,7 @@ typedef struct {
     unsigned char buffer[GIFTABLE];
 
     /* Symbol table */
-    unsigned INT16 link[GIFTABLE];
+    UINT16 link[GIFTABLE];
     unsigned char data[GIFTABLE];
     int next;
 

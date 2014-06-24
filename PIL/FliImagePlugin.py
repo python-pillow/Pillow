@@ -105,7 +105,7 @@ class FliImageFile(ImageFile.ImageFile):
                 g = i8(s[n+1]) << shift
                 b = i8(s[n+2]) << shift
                 palette[i] = (r, g, b)
-                i = i + 1
+                i += 1
 
     def seek(self, frame):
 

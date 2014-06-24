@@ -1,308 +1,318 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena, py3
+
 import os
 
 from PIL import Image, TiffImagePlugin
 
-codecs = dir(Image.core)
 
-if "libtiff_encoder" not in codecs or "libtiff_decoder" not in codecs:
-    skip("tiff support not available")
+class TestFileLibTiff(PillowTestCase):
 
-def _assert_noerr(im):
-    """Helper tests that assert basic sanity about the g4 tiff reading"""
-    #1 bit
-    assert_equal(im.mode, "1")
+    def setUp(self):
+        codecs = dir(Image.core)
 
-    # Does the data actually load
-    assert_no_exception(lambda: im.load())
-    assert_no_exception(lambda: im.getdata())
+        if "libtiff_encoder" not in codecs or "libtiff_decoder" not in codecs:
+            self.skipTest("tiff support not available")
 
-    try:
-        assert_equal(im._compression, 'group4')
-    except:
-        print("No _compression")
-        print (dir(im))
+    def _assert_noerr(self, im):
+        """Helper tests that assert basic sanity about the g4 tiff reading"""
+        # 1 bit
+        self.assertEqual(im.mode, "1")
 
-    # can we write it back out, in a different form.
-    out = tempfile("temp.png")
-    assert_no_exception(lambda: im.save(out))
+        # Does the data actually load
+        im.load()
+        im.getdata()
 
-def test_g4_tiff():
-    """Test the ordinary file path load path"""
+        try:
+            self.assertEqual(im._compression, 'group4')
+        except:
+            print("No _compression")
+            print (dir(im))
 
-    file = "Tests/images/lena_g4_500.tif"
-    im = Image.open(file)
+        # can we write it back out, in a different form.
+        out = self.tempfile("temp.png")
+        im.save(out)
 
-    assert_equal(im.size, (500,500))
-    _assert_noerr(im)
+    def test_g4_tiff(self):
+        """Test the ordinary file path load path"""
 
-def test_g4_large():
-    file = "Tests/images/pport_g4.tif"
-    im = Image.open(file)
-    _assert_noerr(im)
+        file = "Tests/images/lena_g4_500.tif"
+        im = Image.open(file)
 
-def test_g4_tiff_file():
-    """Testing the string load path"""
+        self.assertEqual(im.size, (500, 500))
+        self._assert_noerr(im)
 
-    file = "Tests/images/lena_g4_500.tif"
-    with open(file,'rb') as f:
-        im = Image.open(f)
+    def test_g4_large(self):
+        file = "Tests/images/pport_g4.tif"
+        im = Image.open(file)
+        self._assert_noerr(im)
 
-        assert_equal(im.size, (500,500))
-        _assert_noerr(im)
+    def test_g4_tiff_file(self):
+        """Testing the string load path"""
 
-def test_g4_tiff_bytesio():
-    """Testing the stringio loading code path"""
-    from io import BytesIO
-    file = "Tests/images/lena_g4_500.tif"
-    s = BytesIO()
-    with open(file,'rb') as f:
-        s.write(f.read())
-        s.seek(0)
-    im = Image.open(s)
+        file = "Tests/images/lena_g4_500.tif"
+        with open(file, 'rb') as f:
+            im = Image.open(f)
 
-    assert_equal(im.size, (500,500))
-    _assert_noerr(im)
+            self.assertEqual(im.size, (500, 500))
+            self._assert_noerr(im)
 
-def test_g4_eq_png():
-    """ Checking that we're actually getting the data that we expect"""
-    png = Image.open('Tests/images/lena_bw_500.png')
-    g4 = Image.open('Tests/images/lena_g4_500.tif')
+    def test_g4_tiff_bytesio(self):
+        """Testing the stringio loading code path"""
+        from io import BytesIO
+        file = "Tests/images/lena_g4_500.tif"
+        s = BytesIO()
+        with open(file, 'rb') as f:
+            s.write(f.read())
+            s.seek(0)
+        im = Image.open(s)
 
-    assert_image_equal(g4, png)
+        self.assertEqual(im.size, (500, 500))
+        self._assert_noerr(im)
 
-# see https://github.com/python-imaging/Pillow/issues/279
-def test_g4_fillorder_eq_png():
-    """ Checking that we're actually getting the data that we expect"""
-    png = Image.open('Tests/images/g4-fillorder-test.png')
-    g4 = Image.open('Tests/images/g4-fillorder-test.tif')
+    def test_g4_eq_png(self):
+        """ Checking that we're actually getting the data that we expect"""
+        png = Image.open('Tests/images/lena_bw_500.png')
+        g4 = Image.open('Tests/images/lena_g4_500.tif')
 
-    assert_image_equal(g4, png)
+        self.assert_image_equal(g4, png)
 
-def test_g4_write():
-    """Checking to see that the saved image is the same as what we wrote"""
-    file = "Tests/images/lena_g4_500.tif"
-    orig = Image.open(file)
+    # see https://github.com/python-pillow/Pillow/issues/279
+    def test_g4_fillorder_eq_png(self):
+        """ Checking that we're actually getting the data that we expect"""
+        png = Image.open('Tests/images/g4-fillorder-test.png')
+        g4 = Image.open('Tests/images/g4-fillorder-test.tif')
 
-    out = tempfile("temp.tif")
-    rot = orig.transpose(Image.ROTATE_90)
-    assert_equal(rot.size,(500,500))
-    rot.save(out)
+        self.assert_image_equal(g4, png)
 
-    reread = Image.open(out)
-    assert_equal(reread.size,(500,500))
-    _assert_noerr(reread)
-    assert_image_equal(reread, rot)
-    assert_equal(reread.info['compression'], 'group4')
+    def test_g4_write(self):
+        """Checking to see that the saved image is the same as what we wrote"""
+        file = "Tests/images/lena_g4_500.tif"
+        orig = Image.open(file)
 
-    assert_equal(reread.info['compression'], orig.info['compression'])
-    
-    assert_false(orig.tobytes() == reread.tobytes())
+        out = self.tempfile("temp.tif")
+        rot = orig.transpose(Image.ROTATE_90)
+        self.assertEqual(rot.size, (500, 500))
+        rot.save(out)
 
-def test_adobe_deflate_tiff():
-    file = "Tests/images/tiff_adobe_deflate.tif"
-    im = Image.open(file)
+        reread = Image.open(out)
+        self.assertEqual(reread.size, (500, 500))
+        self._assert_noerr(reread)
+        self.assert_image_equal(reread, rot)
+        self.assertEqual(reread.info['compression'], 'group4')
 
-    assert_equal(im.mode, "RGB")
-    assert_equal(im.size, (278, 374))
-    assert_equal(im.tile[0][:3], ('tiff_adobe_deflate', (0, 0, 278, 374), 0))
-    assert_no_exception(lambda: im.load())
+        self.assertEqual(reread.info['compression'], orig.info['compression'])
 
-def test_write_metadata():
-    """ Test metadata writing through libtiff """
-    img = Image.open('Tests/images/lena_g4.tif')
-    f = tempfile('temp.tiff')
+        self.assertNotEqual(orig.tobytes(), reread.tobytes())
 
-    img.save(f, tiffinfo = img.tag)
+    def test_adobe_deflate_tiff(self):
+        file = "Tests/images/tiff_adobe_deflate.tif"
+        im = Image.open(file)
 
-    loaded = Image.open(f)
+        self.assertEqual(im.mode, "RGB")
+        self.assertEqual(im.size, (278, 374))
+        self.assertEqual(
+            im.tile[0][:3], ('tiff_adobe_deflate', (0, 0, 278, 374), 0))
+        im.load()
 
-    original = img.tag.named()
-    reloaded = loaded.tag.named()
+    def test_write_metadata(self):
+        """ Test metadata writing through libtiff """
+        img = Image.open('Tests/images/lena_g4.tif')
+        f = self.tempfile('temp.tiff')
 
-    # PhotometricInterpretation is set from SAVE_INFO, not the original image. 
-    ignored = ['StripByteCounts', 'RowsPerStrip', 'PageNumber', 'PhotometricInterpretation']
+        img.save(f, tiffinfo=img.tag)
 
-    for tag, value in reloaded.items():
-        if tag not in ignored:
-            if tag.endswith('Resolution'):
-                val = original[tag]
-                assert_almost_equal(val[0][0]/val[0][1], value[0][0]/value[0][1],
-                                    msg="%s didn't roundtrip" % tag)
-            else:
-                assert_equal(original[tag], value, "%s didn't roundtrip" % tag)
+        loaded = Image.open(f)
 
-    for tag, value in original.items():
-        if tag not in ignored: 
-            if tag.endswith('Resolution'):
-                val = reloaded[tag]
-                assert_almost_equal(val[0][0]/val[0][1], value[0][0]/value[0][1],
-                                    msg="%s didn't roundtrip" % tag)
-            else:
-                assert_equal(value, reloaded[tag], "%s didn't roundtrip" % tag)
+        original = img.tag.named()
+        reloaded = loaded.tag.named()
 
+        # PhotometricInterpretation is set from SAVE_INFO,
+        # not the original image.
+        ignored = [
+            'StripByteCounts', 'RowsPerStrip',
+            'PageNumber', 'PhotometricInterpretation']
 
-def test_g3_compression():
-    i = Image.open('Tests/images/lena_g4_500.tif')
-    out = tempfile("temp.tif")
-    i.save(out, compression='group3')
+        for tag, value in reloaded.items():
+            if tag not in ignored:
+                if tag.endswith('Resolution'):
+                    val = original[tag]
+                    self.assert_almost_equal(
+                        val[0][0]/val[0][1], value[0][0]/value[0][1],
+                        msg="%s didn't roundtrip" % tag)
+                else:
+                    self.assertEqual(
+                        original[tag], value, "%s didn't roundtrip" % tag)
 
-    reread = Image.open(out)
-    assert_equal(reread.info['compression'], 'group3')
-    assert_image_equal(reread, i)
+        for tag, value in original.items():
+            if tag not in ignored:
+                if tag.endswith('Resolution'):
+                    val = reloaded[tag]
+                    self.assert_almost_equal(
+                        val[0][0]/val[0][1], value[0][0]/value[0][1],
+                        msg="%s didn't roundtrip" % tag)
+                else:
+                    self.assertEqual(
+                        value, reloaded[tag], "%s didn't roundtrip" % tag)
 
-def test_little_endian():
-    im = Image.open('Tests/images/16bit.deflate.tif')
-    assert_equal(im.getpixel((0,0)), 480)
-    assert_equal(im.mode, 'I;16')
+    def test_g3_compression(self):
+        i = Image.open('Tests/images/lena_g4_500.tif')
+        out = self.tempfile("temp.tif")
+        i.save(out, compression='group3')
 
-    b = im.tobytes()
-    # Bytes are in image native order (little endian)
-    if py3:
-        assert_equal(b[0], ord(b'\xe0'))
-        assert_equal(b[1], ord(b'\x01'))
-    else:
-        assert_equal(b[0], b'\xe0')
-        assert_equal(b[1], b'\x01')
-        
+        reread = Image.open(out)
+        self.assertEqual(reread.info['compression'], 'group3')
+        self.assert_image_equal(reread, i)
 
-    out = tempfile("temp.tif")
-    #out = "temp.le.tif"
-    im.save(out)
-    reread = Image.open(out)
+    def test_little_endian(self):
+        im = Image.open('Tests/images/16bit.deflate.tif')
+        self.assertEqual(im.getpixel((0, 0)), 480)
+        self.assertEqual(im.mode, 'I;16')
 
-    assert_equal(reread.info['compression'], im.info['compression'])
-    assert_equal(reread.getpixel((0,0)), 480)
-    # UNDONE - libtiff defaults to writing in native endian, so
-    # on big endian, we'll get back mode = 'I;16B' here. 
-    
-def test_big_endian():
-    im = Image.open('Tests/images/16bit.MM.deflate.tif')
+        b = im.tobytes()
+        # Bytes are in image native order (little endian)
+        if py3:
+            self.assertEqual(b[0], ord(b'\xe0'))
+            self.assertEqual(b[1], ord(b'\x01'))
+        else:
+            self.assertEqual(b[0], b'\xe0')
+            self.assertEqual(b[1], b'\x01')
 
-    assert_equal(im.getpixel((0,0)), 480)
-    assert_equal(im.mode, 'I;16B')
+        out = self.tempfile("temp.tif")
+        # out = "temp.le.tif"
+        im.save(out)
+        reread = Image.open(out)
 
-    b = im.tobytes()
+        self.assertEqual(reread.info['compression'], im.info['compression'])
+        self.assertEqual(reread.getpixel((0, 0)), 480)
+        # UNDONE - libtiff defaults to writing in native endian, so
+        # on big endian, we'll get back mode = 'I;16B' here.
 
-    # Bytes are in image native order (big endian)
-    if py3:
-        assert_equal(b[0], ord(b'\x01'))
-        assert_equal(b[1], ord(b'\xe0'))
-    else:
-        assert_equal(b[0], b'\x01')
-        assert_equal(b[1], b'\xe0')
-    
-    out = tempfile("temp.tif")
-    im.save(out)
-    reread = Image.open(out)
+    def test_big_endian(self):
+        im = Image.open('Tests/images/16bit.MM.deflate.tif')
 
-    assert_equal(reread.info['compression'], im.info['compression'])
-    assert_equal(reread.getpixel((0,0)), 480)
+        self.assertEqual(im.getpixel((0, 0)), 480)
+        self.assertEqual(im.mode, 'I;16B')
 
-def test_g4_string_info():
-    """Tests String data in info directory"""
-    file = "Tests/images/lena_g4_500.tif"
-    orig = Image.open(file)
-    
-    out = tempfile("temp.tif")
+        b = im.tobytes()
 
-    orig.tag[269] = 'temp.tif'
-    orig.save(out)
-             
-    reread = Image.open(out)
-    assert_equal('temp.tif', reread.tag[269])
+        # Bytes are in image native order (big endian)
+        if py3:
+            self.assertEqual(b[0], ord(b'\x01'))
+            self.assertEqual(b[1], ord(b'\xe0'))
+        else:
+            self.assertEqual(b[0], b'\x01')
+            self.assertEqual(b[1], b'\xe0')
 
-def test_12bit_rawmode():
-    """ Are we generating the same interpretation of the image as Imagemagick is? """
-    TiffImagePlugin.READ_LIBTIFF = True
-    #Image.DEBUG = True
-    im = Image.open('Tests/images/12bit.cropped.tif')
-    im.load()
-    TiffImagePlugin.READ_LIBTIFF = False
-    # to make the target --
-    # convert 12bit.cropped.tif -depth 16 tmp.tif
-    # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
-    # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
-    # so we need to unshift so that the integer values are the same. 
-    
-    im2 = Image.open('Tests/images/12in16bit.tif')
+        out = self.tempfile("temp.tif")
+        im.save(out)
+        reread = Image.open(out)
 
-    if Image.DEBUG:
-        print (im.getpixel((0,0)))
-        print (im.getpixel((0,1)))
-        print (im.getpixel((0,2)))
+        self.assertEqual(reread.info['compression'], im.info['compression'])
+        self.assertEqual(reread.getpixel((0, 0)), 480)
 
-        print (im2.getpixel((0,0)))
-        print (im2.getpixel((0,1)))
-        print (im2.getpixel((0,2)))
-  
-    assert_image_equal(im, im2)
+    def test_g4_string_info(self):
+        """Tests String data in info directory"""
+        file = "Tests/images/lena_g4_500.tif"
+        orig = Image.open(file)
 
-def test_blur():
-    # test case from irc, how to do blur on b/w image and save to compressed tif. 
-    from PIL import ImageFilter
-    out = tempfile('temp.tif')
-    im = Image.open('Tests/images/pport_g4.tif')
-    im = im.convert('L')
+        out = self.tempfile("temp.tif")
 
-    im=im.filter(ImageFilter.GaussianBlur(4))
-    im.save(out, compression='tiff_adobe_deflate')
+        orig.tag[269] = 'temp.tif'
+        orig.save(out)
 
-    im2 = Image.open(out)
-    im2.load()
+        reread = Image.open(out)
+        self.assertEqual('temp.tif', reread.tag[269])
 
-    assert_image_equal(im, im2)
+    def test_12bit_rawmode(self):
+        """ Are we generating the same interpretation
+        of the image as Imagemagick is? """
+        TiffImagePlugin.READ_LIBTIFF = True
+        # Image.DEBUG = True
+        im = Image.open('Tests/images/12bit.cropped.tif')
+        im.load()
+        TiffImagePlugin.READ_LIBTIFF = False
+        # to make the target --
+        # convert 12bit.cropped.tif -depth 16 tmp.tif
+        # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
+        # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
+        # so we need to unshift so that the integer values are the same.
 
+        im2 = Image.open('Tests/images/12in16bit.tif')
 
-def test_compressions():
-    im = lena('RGB')
-    out = tempfile('temp.tif')
+        if Image.DEBUG:
+            print (im.getpixel((0, 0)))
+            print (im.getpixel((0, 1)))
+            print (im.getpixel((0, 2)))
 
-    TiffImagePlugin.READ_LIBTIFF = True
-    TiffImagePlugin.WRITE_LIBTIFF = True
+            print (im2.getpixel((0, 0)))
+            print (im2.getpixel((0, 1)))
+            print (im2.getpixel((0, 2)))
 
-    for compression in ('packbits', 'tiff_lzw'):
-        im.save(out, compression=compression)
+        self.assert_image_equal(im, im2)
+
+    def test_blur(self):
+        # test case from irc, how to do blur on b/w image
+        # and save to compressed tif.
+        from PIL import ImageFilter
+        out = self.tempfile('temp.tif')
+        im = Image.open('Tests/images/pport_g4.tif')
+        im = im.convert('L')
+
+        im = im.filter(ImageFilter.GaussianBlur(4))
+        im.save(out, compression='tiff_adobe_deflate')
+
         im2 = Image.open(out)
-        assert_image_equal(im, im2)
+        im2.load()
 
-    im.save(out, compression='jpeg')
-    im2 = Image.open(out)
-    assert_image_similar(im, im2, 30)
-                            
-    TiffImagePlugin.READ_LIBTIFF = False
-    TiffImagePlugin.WRITE_LIBTIFF = False
+        self.assert_image_equal(im, im2)
+
+    def test_compressions(self):
+        im = lena('RGB')
+        out = self.tempfile('temp.tif')
+
+        for compression in ('packbits', 'tiff_lzw'):
+            im.save(out, compression=compression)
+            im2 = Image.open(out)
+            self.assert_image_equal(im, im2)
+
+        im.save(out, compression='jpeg')
+        im2 = Image.open(out)
+        self.assert_image_similar(im, im2, 30)
+
+    def test_cmyk_save(self):
+        im = lena('CMYK')
+        out = self.tempfile('temp.tif')
+
+        im.save(out, compression='tiff_adobe_deflate')
+        im2 = Image.open(out)
+        self.assert_image_equal(im, im2)
+
+    def xtest_bw_compression_wRGB(self):
+        """ This test passes, but when running all tests causes a failure due
+            to output on stderr from the error thrown by libtiff. We need to
+            capture that but not now"""
+
+        im = lena('RGB')
+        out = self.tempfile('temp.tif')
+
+        self.assertRaises(
+            IOError, lambda: im.save(out, compression='tiff_ccitt'))
+        self.assertRaises(IOError, lambda: im.save(out, compression='group3'))
+        self.assertRaises(IOError, lambda: im.save(out, compression='group4'))
+
+    def test_fp_leak(self):
+        im = Image.open("Tests/images/lena_g4_500.tif")
+        fn = im.fp.fileno()
+
+        os.fstat(fn)
+        im.load()  # this should close it.
+        self.assertRaises(OSError, lambda: os.fstat(fn))
+        im = None  # this should force even more closed.
+        self.assertRaises(OSError, lambda: os.fstat(fn))
+        self.assertRaises(OSError, lambda: os.close(fn))
 
 
+if __name__ == '__main__':
+    unittest.main()
 
-
-def test_cmyk_save():
-    im = lena('CMYK')
-    out = tempfile('temp.tif')
-
-    im.save(out, compression='tiff_adobe_deflate')
-    im2 = Image.open(out)
-    assert_image_equal(im, im2)
-
-def xtest_bw_compression_wRGB():
-    """ This test passes, but when running all tests causes a failure due to
-        output on stderr from the error thrown by libtiff. We need to capture that
-        but not now"""
-    
-    im = lena('RGB')
-    out = tempfile('temp.tif')
-
-    assert_exception(IOError, lambda: im.save(out, compression='tiff_ccitt'))
-    assert_exception(IOError, lambda: im.save(out, compression='group3'))
-    assert_exception(IOError, lambda: im.save(out, compression='group4'))
-
-def test_fp_leak():
-    im = Image.open("Tests/images/lena_g4_500.tif")
-    fn = im.fp.fileno()
-
-    assert_no_exception(lambda: os.fstat(fn))
-    im.load()  # this should close it. 
-    assert_exception(OSError, lambda: os.fstat(fn)) 
-    im = None  # this should force even more closed.
-    assert_exception(OSError, lambda: os.fstat(fn)) 
-    assert_exception(OSError, lambda: os.close(fn))
+# End of file

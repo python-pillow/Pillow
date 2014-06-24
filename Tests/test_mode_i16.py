@@ -1,105 +1,109 @@
-from tester import *
+from helper import unittest, PillowTestCase, tearDownModule, lena
 
 from PIL import Image
 
-def verify(im1):
-    im2 = lena("I")
-    assert_equal(im1.size, im2.size)
-    pix1 = im1.load()
-    pix2 = im2.load()
-    for y in range(im1.size[1]):
-        for x in range(im1.size[0]):
-            xy = x, y
-            if pix1[xy] != pix2[xy]:
-                failure(
-                    "got %r from mode %s at %s, expected %r" %
-                    (pix1[xy], im1.mode, xy, pix2[xy])
-                    )
-                return
-    success()
 
-def test_basic():
-    # PIL 1.1 has limited support for 16-bit image data.  Check that
-    # create/copy/transform and save works as expected.
+class TestModeI16(PillowTestCase):
 
-    def basic(mode):
+    def verify(self, im1):
+        im2 = lena("I")
+        self.assertEqual(im1.size, im2.size)
+        pix1 = im1.load()
+        pix2 = im2.load()
+        for y in range(im1.size[1]):
+            for x in range(im1.size[0]):
+                xy = x, y
+                self.assertEqual(
+                    pix1[xy], pix2[xy],
+                    ("got %r from mode %s at %s, expected %r" %
+                        (pix1[xy], im1.mode, xy, pix2[xy])))
 
-        imIn = lena("I").convert(mode)
-        verify(imIn)
+    def test_basic(self):
+        # PIL 1.1 has limited support for 16-bit image data.  Check that
+        # create/copy/transform and save works as expected.
 
-        w, h = imIn.size
+        def basic(mode):
 
-        imOut = imIn.copy()
-        verify(imOut) # copy
+            imIn = lena("I").convert(mode)
+            self.verify(imIn)
 
-        imOut = imIn.transform((w, h), Image.EXTENT, (0, 0, w, h))
-        verify(imOut) # transform
+            w, h = imIn.size
 
-        filename = tempfile("temp.im")
-        imIn.save(filename)
+            imOut = imIn.copy()
+            self.verify(imOut)  # copy
 
-        imOut = Image.open(filename)
+            imOut = imIn.transform((w, h), Image.EXTENT, (0, 0, w, h))
+            self.verify(imOut)  # transform
 
-        verify(imIn)
-        verify(imOut)
+            filename = self.tempfile("temp.im")
+            imIn.save(filename)
 
-        imOut = imIn.crop((0, 0, w, h))
-        verify(imOut)
+            imOut = Image.open(filename)
 
-        imOut = Image.new(mode, (w, h), None)
-        imOut.paste(imIn.crop((0, 0, w//2, h)), (0, 0))
-        imOut.paste(imIn.crop((w//2, 0, w, h)), (w//2, 0))
+            self.verify(imIn)
+            self.verify(imOut)
 
-        verify(imIn)
-        verify(imOut)
+            imOut = imIn.crop((0, 0, w, h))
+            self.verify(imOut)
 
-        imIn = Image.new(mode, (1, 1), 1)
-        assert_equal(imIn.getpixel((0, 0)), 1)
+            imOut = Image.new(mode, (w, h), None)
+            imOut.paste(imIn.crop((0, 0, w//2, h)), (0, 0))
+            imOut.paste(imIn.crop((w//2, 0, w, h)), (w//2, 0))
 
-        imIn.putpixel((0, 0), 2)
-        assert_equal(imIn.getpixel((0, 0)), 2)
+            self.verify(imIn)
+            self.verify(imOut)
 
-        if mode == "L":
-            max = 255
-        else:
-            max = 32767
+            imIn = Image.new(mode, (1, 1), 1)
+            self.assertEqual(imIn.getpixel((0, 0)), 1)
 
-        imIn = Image.new(mode, (1, 1), 256)
-        assert_equal(imIn.getpixel((0, 0)), min(256, max))
+            imIn.putpixel((0, 0), 2)
+            self.assertEqual(imIn.getpixel((0, 0)), 2)
 
-        imIn.putpixel((0, 0), 512)
-        assert_equal(imIn.getpixel((0, 0)), min(512, max))
+            if mode == "L":
+                max = 255
+            else:
+                max = 32767
 
-    basic("L")
+            imIn = Image.new(mode, (1, 1), 256)
+            self.assertEqual(imIn.getpixel((0, 0)), min(256, max))
 
-    basic("I;16")
-    basic("I;16B")
-    basic("I;16L")
+            imIn.putpixel((0, 0), 512)
+            self.assertEqual(imIn.getpixel((0, 0)), min(512, max))
 
-    basic("I")
+        basic("L")
+
+        basic("I;16")
+        basic("I;16B")
+        basic("I;16L")
+
+        basic("I")
+
+    def test_tobytes(self):
+
+        def tobytes(mode):
+            return Image.new(mode, (1, 1), 1).tobytes()
+
+        order = 1 if Image._ENDIAN == '<' else -1
+
+        self.assertEqual(tobytes("L"), b"\x01")
+        self.assertEqual(tobytes("I;16"), b"\x01\x00")
+        self.assertEqual(tobytes("I;16B"), b"\x00\x01")
+        self.assertEqual(tobytes("I"), b"\x01\x00\x00\x00"[::order])
+
+    def test_convert(self):
+
+        im = lena("I")
+
+        self.verify(im.convert("I;16"))
+        self.verify(im.convert("I;16").convert("L"))
+        self.verify(im.convert("I;16").convert("I"))
+
+        self.verify(im.convert("I;16B"))
+        self.verify(im.convert("I;16B").convert("L"))
+        self.verify(im.convert("I;16B").convert("I"))
 
 
-def test_tobytes():
+if __name__ == '__main__':
+    unittest.main()
 
-    def tobytes(mode):
-        return Image.new(mode, (1, 1), 1).tobytes()
-
-    order = 1 if Image._ENDIAN == '<' else -1
-
-    assert_equal(tobytes("L"), b"\x01")
-    assert_equal(tobytes("I;16"), b"\x01\x00")
-    assert_equal(tobytes("I;16B"), b"\x00\x01")
-    assert_equal(tobytes("I"), b"\x01\x00\x00\x00"[::order])
-
-
-def test_convert():
-
-    im = lena("I")
-
-    verify(im.convert("I;16"))
-    verify(im.convert("I;16").convert("L"))
-    verify(im.convert("I;16").convert("I"))
-
-    verify(im.convert("I;16B"))
-    verify(im.convert("I;16B").convert("L"))
-    verify(im.convert("I;16B").convert("I"))
+# End of file
