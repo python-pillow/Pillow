@@ -3,6 +3,8 @@ language: python
 notifications:
   irc: "chat.freenode.net#pil"
 
+env: MAX_CONCURRENCY=4
+
 python:
   - "pypy"
   - 2.6
