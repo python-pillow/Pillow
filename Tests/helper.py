@@ -160,59 +160,11 @@ class PillowTestCase(unittest.TestCase):
         return files[0]
 
 
-# # require that deprecation warnings are triggered
-# import warnings
-# warnings.simplefilter('default')
-# # temporarily turn off resource warnings that warn about unclosed
-# # files in the test scripts.
-# try:
-#     warnings.filterwarnings("ignore", category=ResourceWarning)
-# except NameError:
-#     # we expect a NameError on py2.x, since it doesn't have ResourceWarnings.
-#     pass
+# helpers
 
 import sys
 py3 = (sys.version_info >= (3, 0))
 
-# # some test helpers
-#
-# _target = None
-# _tempfiles = []
-# _logfile = None
-#
-#
-# def success():
-#     import sys
-#     success.count += 1
-#     if _logfile:
-#         print(sys.argv[0], success.count, failure.count, file=_logfile)
-#     return True
-#
-#
-# def failure(msg=None, frame=None):
-#     import sys
-#     import linecache
-#     failure.count += 1
-#     if _target:
-#         if frame is None:
-#             frame = sys._getframe()
-#             while frame.f_globals.get("__name__") != _target.__name__:
-#                 frame = frame.f_back
-#         location = (frame.f_code.co_filename, frame.f_lineno)
-#         prefix = "%s:%d: " % location
-#         line = linecache.getline(*location)
-#         print(prefix + line.strip() + " failed:")
-#     if msg:
-#         print("- " + msg)
-#     if _logfile:
-#         print(sys.argv[0], success.count, failure.count, file=_logfile)
-#     return False
-#
-# success.count = failure.count = 0
-#
-
-
-# helpers
 
 def fromstring(data):
     from io import BytesIO
@@ -230,6 +182,9 @@ def tostring(im, format, **options):
 def lena(mode="RGB", cache={}):
     from PIL import Image
     im = None
+    # FIXME: Implement caching to reduce reading from disk but so an original
+    # copy is returned each time and the cached image isn't modified by tests
+    # (for fast, isolated, repeatable tests).
     # im = cache.get(mode)
     if im is None:
         if mode == "RGB":
@@ -243,99 +198,4 @@ def lena(mode="RGB", cache={}):
     # cache[mode] = im
     return im
 
-
-# def assert_image_completely_equal(a, b, msg=None):
-#     if a != b:
-#         failure(msg or "images different")
-#     else:
-#         success()
-#
-#
-# # test runner
-#
-# def run():
-#     global _target, _tests, run
-#     import sys
-#     import traceback
-#     _target = sys.modules["__main__"]
-#     run = None  # no need to run twice
-#     tests = []
-#     for name, value in list(vars(_target).items()):
-#         if name[:5] == "test_" and type(value) is type(success):
-#             tests.append((value.__code__.co_firstlineno, name, value))
-#     tests.sort()  # sort by line
-#     for lineno, name, func in tests:
-#         try:
-#             _tests = []
-#             func()
-#             for func, args in _tests:
-#                 func(*args)
-#         except:
-#             t, v, tb = sys.exc_info()
-#             tb = tb.tb_next
-#             if tb:
-#                 failure(frame=tb.tb_frame)
-#                 traceback.print_exception(t, v, tb)
-#             else:
-#                 print("%s:%d: cannot call test function: %s" % (
-#                     sys.argv[0], lineno, v))
-#                 failure.count += 1
-#
-#
-# def yield_test(function, *args):
-#     # collect delayed/generated tests
-#     _tests.append((function, args))
-#
-#
-# def skip(msg=None):
-#     import os
-#     print("skip")
-#     os._exit(0)  # don't run exit handlers
-#
-#
-# def ignore(pattern):
-#     """Tells the driver to ignore messages matching the pattern, for the
-#     duration of the current test."""
-#     print('ignore: %s' % pattern)
-#
-#
-# def _setup():
-#     global _logfile
-#
-#     import sys
-#     if "--coverage" in sys.argv:
-#         # Temporary: ignore PendingDeprecationWarning from Coverage (Py3.4)
-#         with warnings.catch_warnings():
-#             warnings.simplefilter("ignore")
-#             import coverage
-#         cov = coverage.coverage(auto_data=True, include="PIL/*")
-#         cov.start()
-#
-#     def report():
-#         if run:
-#             run()
-#         if success.count and not failure.count:
-#             print("ok")
-#             # only clean out tempfiles if test passed
-#             import os
-#             import os.path
-#             import tempfile
-#             for file in _tempfiles:
-#                 try:
-#                     os.remove(file)
-#                 except OSError:
-#                     pass  # report?
-#             temp_root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
-#             try:
-#                 os.rmdir(temp_root)
-#             except OSError:
-#                 pass
-#
-#     import atexit
-#     atexit.register(report)
-#
-#     if "--log" in sys.argv:
-#         _logfile = open("test.log", "a")
-#
-#
-# _setup()
+# End of file
