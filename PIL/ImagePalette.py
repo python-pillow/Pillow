@@ -101,7 +101,7 @@ class ImagePalette:
         fp.write("# Mode: %s\n" % self.mode)
         for i in range(256):
             fp.write("%d" % i)
-            for j in range(i*3, i*3+3):
+            for j in range(i*len(self.mode), (i+1)*len(self.mode)):
                 try:
                     fp.write(" %d" % self.palette[j])
                 except IndexError:
