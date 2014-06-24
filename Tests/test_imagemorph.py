@@ -168,4 +168,8 @@ class MorphTests(PillowTestCase):
         self.assertEqual(len(coords), 4)
         self.assertEqual(tuple(coords), ((2, 2), (4, 2), (2, 4), (4, 4)))
 
+
+if __name__ == '__main__':
+    unittest.main()
+
 # End of file
