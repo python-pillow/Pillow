@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Add binary morphology addon
+  [dov, wiredfool]
+
 - Decompression bomb protection
   [hugovk]
 
