@@ -231,7 +231,7 @@ class MorphOp:
             raise Exception('Wrong size operator file!')
 
     def save_lut(self, filename):
-        """Load an operator save mrl file"""
+        """Save an operator to an mrl file"""
         if self.lut is None:
             raise Exception('No operator loaded')
         with open(filename, 'wb') as f:
