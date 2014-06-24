@@ -4,8 +4,11 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Fixed ImagePalette.save
+  [brightpisces]
+
 - Support JPEG qtables
-  [wiredfool]
+  [csinchok]
 
 - Add binary morphology addon
   [dov, wiredfool]
