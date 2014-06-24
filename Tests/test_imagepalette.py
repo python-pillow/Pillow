@@ -26,15 +26,15 @@ class TestImagePalette(PillowTestCase):
 
     def test_file(self):
 
-        palette = ImagePalette()
+        palette = ImagePalette("RGB", list(range(256))*3)
 
-        file = self.tempfile("temp.lut")
+        f = self.tempfile("temp.lut")
 
-        palette.save(file)
+        palette.save(f)
 
         from PIL.ImagePalette import load, raw
 
-        p = load(file)
+        p = load(f)
 
         # load returns raw palette information
         self.assertEqual(len(p[0]), 768)
@@ -42,7 +42,7 @@ class TestImagePalette(PillowTestCase):
 
         p = raw(p[1], p[0])
         self.assertIsInstance(p, ImagePalette)
-
+        self.assertEqual(p.palette, palette.tobytes())
 
 if __name__ == '__main__':
     unittest.main()
