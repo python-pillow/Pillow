@@ -486,7 +486,7 @@ class PILDriver:
                 print("Stack: " + repr(self.stack))
             top = self.top()
             if not isinstance(top, str):
-                continue;
+                continue
             funcname = "do_" + top
             if not hasattr(self, funcname):
                 continue
@@ -513,9 +513,9 @@ if __name__ == '__main__':
         while True:
             try:
                 if sys.version_info[0] >= 3:
-                    line = input('pildriver> ');
+                    line = input('pildriver> ')
                 else:
-                    line = raw_input('pildriver> ');
+                    line = raw_input('pildriver> ')
             except EOFError:
                 print("\nPILDriver says goodbye.")
                 break

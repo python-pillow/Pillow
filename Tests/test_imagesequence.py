@@ -18,7 +18,7 @@ class TestImageSequence(PillowTestCase):
         for frame in seq:
             self.assert_image_equal(im, frame)
             self.assertEqual(im.tell(), index)
-            index = index + 1
+            index += 1
 
         self.assertEqual(index, 1)
 

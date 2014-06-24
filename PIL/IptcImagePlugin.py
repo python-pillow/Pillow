@@ -103,7 +103,7 @@ class IptcImageFile(ImageFile.ImageFile):
                 break
             if s != sz:
                 return 0
-            y = y + 1
+            y += 1
         return y == size[1]
 
     def _open(self):
@@ -187,7 +187,7 @@ class IptcImageFile(ImageFile.ImageFile):
                 if not s:
                     break
                 o.write(s)
-                size = size - len(s)
+                size -= len(s)
         o.close()
 
         try:
@@ -235,26 +235,26 @@ def getiptcinfo(im):
                 # parse the image resource block
                 offset = 0
                 while app[offset:offset+4] == "8BIM":
-                    offset = offset + 4
+                    offset += 4
                     # resource code
                     code = JpegImagePlugin.i16(app, offset)
-                    offset = offset + 2
+                    offset += 2
                     # resource name (usually empty)
                     name_len = i8(app[offset])
                     name = app[offset+1:offset+1+name_len]
                     offset = 1 + offset + name_len
                     if offset & 1:
-                        offset = offset + 1
+                        offset += 1
                     # resource data block
                     size = JpegImagePlugin.i32(app, offset)
-                    offset = offset + 4
+                    offset += 4
                     if code == 0x0404:
                         # 0x0404 contains IPTC/NAA data
                         data = app[offset:offset+size]
                         break
                     offset = offset + size
                     if offset & 1:
-                        offset = offset + 1
+                        offset += 1
         except (AttributeError, KeyError):
             pass
 

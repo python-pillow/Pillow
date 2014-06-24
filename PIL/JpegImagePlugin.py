@@ -561,8 +561,8 @@ def _save(im, fp, filename):
         i = 1
         for marker in markers:
             size = struct.pack(">H", 2 + ICC_OVERHEAD_LEN + len(marker))
-            extra = extra + (b"\xFF\xE2" + size + b"ICC_PROFILE\0" + o8(i) + o8(len(markers)) + marker)
-            i = i + 1
+            extra += b"\xFF\xE2" + size + b"ICC_PROFILE\0" + o8(i) + o8(len(markers)) + marker
+            i += 1
 
     # get keyword arguments
     im.encoderconfig = (

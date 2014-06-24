@@ -455,7 +455,7 @@ def _getscaleoffset(expr):
         (a, b, c) = data  # simplified syntax
         if (a is stub and b == "__mul__" and isinstance(c, numbers.Number)):
             return c, 0.0
-        if (a is stub and b == "__add__" and isinstance(c, numbers.Number)):
+        if a is stub and b == "__add__" and isinstance(c, numbers.Number):
             return 1.0, c
     except TypeError:
         pass
@@ -2081,7 +2081,6 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     .. versionadded:: 1.1.4
     """
-    "Load image from bytes or buffer"
 
     # may pass tuple instead of argument list
     if len(args) == 1 and isinstance(args[0], tuple):

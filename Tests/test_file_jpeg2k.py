@@ -107,6 +107,18 @@ class TestFileJpeg2k(PillowTestCase):
         im.load()
         self.assert_image_similar(im, test_card, 0.4)
 
+    def test_rgba(self):
+        # Arrange
+        j2k = Image.open('Tests/images/rgb_trns_ycbc.j2k')
+        jp2 = Image.open('Tests/images/rgb_trns_ycbc.jp2')
+
+        # Act
+        j2k.load()
+        jp2.load()
+
+        # Assert
+        self.assertEqual(j2k.mode, 'RGBA')
+        self.assertEqual(jp2.mode, 'RGBA')
 
 if __name__ == '__main__':
     unittest.main()
