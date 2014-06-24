@@ -224,7 +224,57 @@ class TestFileJpeg(PillowTestCase):
         filename = "Tests/images/junk_jpeg_header.jpg"
         Image.open(filename)
 
+    def test_qtables(self):
+        im = Image.open("Tests/images/lena.jpg")
+        qtables = im.quantization
+        reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
+        self.assertEqual(im.quantization, reloaded.quantization)
+        self.assert_image_similar(im, self.roundtrip(im, qtables='web_low'), 30)
+        self.assert_image_similar(im, self.roundtrip(im, qtables='web_high'), 30)
+        self.assert_image_similar(im, self.roundtrip(im, qtables='keep'), 30)
 
+        #values from wizard.txt in jpeg9-a src package.
+        standard_l_qtable = [int(s) for s in """
+            16  11  10  16  24  40  51  61
+            12  12  14  19  26  58  60  55
+            14  13  16  24  40  57  69  56
+            14  17  22  29  51  87  80  62
+            18  22  37  56  68 109 103  77
+            24  35  55  64  81 104 113  92
+            49  64  78  87 103 121 120 101
+            72  92  95  98 112 100 103  99
+            """.split(None)]
+
+        standard_chrominance_qtable= [int(s) for s in """
+            17  18  24  47  99  99  99  99
+            18  21  26  66  99  99  99  99
+            24  26  56  99  99  99  99  99
+            47  66  99  99  99  99  99  99
+            99  99  99  99  99  99  99  99
+            99  99  99  99  99  99  99  99
+            99  99  99  99  99  99  99  99
+            99  99  99  99  99  99  99  99
+            """.split(None)]
+        # list of qtable lists
+        self.assert_image_similar(im,
+                                  self.roundtrip(im,
+                                                 qtables=[standard_l_qtable,
+                                                          standard_chrominance_qtable]),
+                                  30)
+        # tuple of qtable lists
+        self.assert_image_similar(im,
+                                  self.roundtrip(im,
+                                                 qtables=(standard_l_qtable,
+                                                          standard_chrominance_qtable)),
+                                  30)
+        # dict of qtable lists
+        self.assert_image_similar(im,
+                                  self.roundtrip(im,
+                                                 qtables={0:standard_l_qtable,
+                                                          1:standard_chrominance_qtable}),
+                                  30)
+        
+        
 if __name__ == '__main__':
     unittest.main()
 

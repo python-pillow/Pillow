@@ -498,7 +498,7 @@ def _save(im, fp, filename):
     else:
         if subsampling in presets:
             subsampling = presets[subsampling].get('subsampling', -1)
-        if qtables in presets:
+        if isStringType(qtables) and qtables in presets:
             qtables = presets[qtables].get('quantization')
 
     if subsampling == "4:4:4":
