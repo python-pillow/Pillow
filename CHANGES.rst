@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Support JPEG qtables
+  [wiredfool]
+
 - Add binary morphology addon
   [dov, wiredfool]
 
