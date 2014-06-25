@@ -3,7 +3,7 @@ language: python
 notifications:
   irc: "chat.freenode.net#pil"
 
-env: MAX_CONCURRENCY=4
+env: MAX_CONCURRENCY=4 NOSE_PROCESSES=4 NOSE_PROCESS_TIMEOUT=30
 
 python:
   - "pypy"
