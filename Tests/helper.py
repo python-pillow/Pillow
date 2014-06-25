@@ -10,6 +10,8 @@ else:
     import unittest
 
 
+# This should be imported into every test_XXX.py file to report
+# any remaining temp files at the end of the run.
 def tearDownModule():
     import glob
     import os
