@@ -20,9 +20,9 @@ XDIM = 48000
 
 class LargeMemoryNumpyTest(PillowTestCase):
 
-    def _write_png(self, XDIM, YDIM):
+    def _write_png(self, xdim, ydim):
         dtype = np.uint8
-        a = np.zeros((XDIM, YDIM), dtype=dtype)
+        a = np.zeros((xdim, ydim), dtype=dtype)
         f = self.tempfile('temp.png')
         im = Image.fromarray(a, 'L')
         im.save(f)
@@ -33,7 +33,7 @@ class LargeMemoryNumpyTest(PillowTestCase):
 
     def test_2gpx(self):
         """failed prepatch"""
-        self._write_png(XDIM, YDIM)
+        self._write_png(XDIM, XDIM)
 
 
 if __name__ == '__main__':
