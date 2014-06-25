@@ -89,6 +89,22 @@ j2k_pack_l(Imaging im, UINT8 *buf,
 }
 
 static void
+j2k_pack_i16(Imaging im, UINT8 *buf,
+             unsigned x0, unsigned y0, unsigned w, unsigned h)
+{
+    UINT8 *ptr = buf;
+    unsigned x,y;
+    for (y = 0; y < h; ++y) {
+        UINT8 *data = (UINT8 *)(im->image[y + y0] + x0);
+        for (x = 0; x < w; ++x) {
+            *ptr++ = *data++;
+            *ptr++ = *data++;
+        }
+    }
+}
+
+
+static void
 j2k_pack_la(Imaging im, UINT8 *buf,
             unsigned x0, unsigned y0, unsigned w, unsigned h)
 {
@@ -247,6 +263,9 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     j2k_pack_tile_t pack;
     int ret = -1;
 
+    unsigned prec = 8;
+    unsigned bpp = 8;
+
     stream = opj_stream_default_create(OPJ_FALSE);
 
     if (!stream) {
@@ -271,6 +290,12 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
         components = 1;
         color_space = OPJ_CLRSPC_GRAY;
         pack = j2k_pack_l;
+    } else if (strcmp (im->mode, "I")){
+        components = 1;
+        color_space = OPJ_CLRSPC_GRAY;
+        pack = j2k_pack_i16;
+        prec = 16;
+        bpp = 12;
     } else if (strcmp (im->mode, "LA") == 0) {
         components = 2; 
         color_space = OPJ_CLRSPC_GRAY;
@@ -298,8 +323,8 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
         image_params[n].w = im->xsize;
         image_params[n].h = im->ysize;
         image_params[n].x0 = image_params[n].y0 = 0;
-        image_params[n].prec = 8;
-        image_params[n].bpp = 8;
+        image_params[n].prec = prec;
+        image_params[n].bpp = bpp;
         image_params[n].sgnd = 0;
     }
 
@@ -442,7 +467,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
 
     num_tiles = tiles_x * tiles_y;
 
-    state->buffer = malloc (tile_width * tile_height * components);
+    state->buffer = malloc (tile_width * tile_height * components * prec / 8);
 
     tile_ndx = 0;
     for (y = 0; y < tiles_y; ++y) {
@@ -474,7 +499,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
 
             pack(im, state->buffer, pixx, pixy, pixw, pixh);
 
-            data_size = pixw * pixh * components;
+            data_size = pixw * pixh * components * prec / 8;
 
             if (!opj_write_tile(codec, tile_ndx++, state->buffer,
                                 data_size, stream)) {

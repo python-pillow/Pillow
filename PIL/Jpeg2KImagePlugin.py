@@ -40,7 +40,10 @@ def _parse_codestream(fp):
 
     size = (xsiz - xosiz, ysiz - yosiz)
     if csiz == 1:
-        mode = 'L'
+        if len(yrsiz) > 0 and yrsiz[0] > 8:
+            mode = 'I'
+        else:
+            mode = 'L'
     elif csiz == 2:
         mode = 'LA'
     elif csiz == 3:
@@ -78,6 +81,7 @@ def _parse_jp2_header(fp):
 
     size = None
     mode = None
+    bpc = None
 
     hio = io.BytesIO(header)
     while True:
@@ -95,7 +99,9 @@ def _parse_jp2_header(fp):
                 = struct.unpack('>IIHBBBB', content)
             size = (width, height)
             if unkc:
-                if nc == 1:
+                if nc == 1 and bpc > 8:
+                    mode = 'I'
+                elif nc == 1:
                     mode = 'L'
                 elif nc == 2:
                     mode = 'LA'
@@ -109,13 +115,19 @@ def _parse_jp2_header(fp):
             if meth == 1:
                 cs = struct.unpack('>I', content[3:7])[0]
                 if cs == 16:   # sRGB
-                    if nc == 3:
+                    if nc == 1 and bpc > 8:
+                        mode = 'I'
+                    elif nc == 1:
+                        mode = 'L'
+                    elif nc == 3:
                         mode = 'RGB'
                     elif nc == 4:
                         mode = 'RGBA'
                     break
                 elif cs == 17:  # grayscale
-                    if nc == 1:
+                    if nc == 1 and bpc > 8:
+                        mode = 'I'
+                    elif nc == 1:
                         mode = 'L'
                     elif nc == 2:
                         mode = 'LA'
@@ -129,9 +141,9 @@ def _parse_jp2_header(fp):
 
     return (size, mode)
 
-
 ##
 # Image plugin for JPEG2000 images.
+
 
 class Jpeg2KImageFile(ImageFile.ImageFile):
     format = "JPEG2000"
@@ -174,7 +186,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 f.seek(pos, 0)
             except:
                 length = -1
-        
+
         self.tile = [('jpeg2k', (0, 0) + self.size, 0,
                       (self.codec, self.reduce, self.layers, fd, length))]
 
