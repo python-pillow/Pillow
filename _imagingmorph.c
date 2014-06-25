@@ -267,9 +267,10 @@ setup_module(PyObject* m)
 
 static PyMethodDef functions[] = {
     /* Functions */
-    {"apply", (PyCFunction)apply, 1},
-    {"get_on_pixels", (PyCFunction)get_on_pixels, 1},
-    {"match", (PyCFunction)match, 1},
+    {"apply", (PyCFunction)apply, METH_VARARGS, NULL},
+    {"get_on_pixels", (PyCFunction)get_on_pixels, METH_VARARGS, NULL},
+    {"match", (PyCFunction)match, METH_VARARGS, NULL},
+    {NULL, NULL, 0, NULL}
 };
 
 #if PY_VERSION_HEX >= 0x03000000
