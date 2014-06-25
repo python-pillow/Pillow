@@ -120,6 +120,42 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertEqual(j2k.mode, 'RGBA')
         self.assertEqual(jp2.mode, 'RGBA')
 
+    def test_16bit_monochrome_has_correct_mode(self):
+
+        j2k = Image.open('Tests/images/16bit.cropped.j2k')
+        jp2 = Image.open('Tests/images/16bit.cropped.jp2')
+
+        j2k.load()
+        jp2.load()
+
+        self.assertEqual(j2k.mode, 'I;16')
+        self.assertEqual(jp2.mode, 'I;16')
+
+    def test_16bit_monchrome_jp2_like_tiff(self):
+
+        tiff_16bit = Image.open('Tests/images/16bit.cropped.tif')
+        jp2 = Image.open('Tests/images/16bit.cropped.jp2')
+        self.assert_image_similar(jp2, tiff_16bit, 1e-3)
+
+    def test_16bit_monchrome_j2k_like_tiff(self):
+
+        tiff_16bit = Image.open('Tests/images/16bit.cropped.tif')
+        j2k = Image.open('Tests/images/16bit.cropped.j2k')
+        self.assert_image_similar(j2k, tiff_16bit, 1e-3)
+
+    def test_16bit_j2k_roundtrips(self):
+
+        j2k = Image.open('Tests/images/16bit.cropped.j2k')
+        im = self.roundtrip(j2k)
+        self.assert_image_equal(im, j2k)
+
+    def test_16bit_jp2_roundtrips(self):
+
+        jp2 = Image.open('Tests/images/16bit.cropped.jp2')
+        im = self.roundtrip(jp2)
+        self.assert_image_equal(im, jp2)
+
+
 if __name__ == '__main__':
     unittest.main()
 

@@ -40,8 +40,8 @@ def _parse_codestream(fp):
 
     size = (xsiz - xosiz, ysiz - yosiz)
     if csiz == 1:
-        if (ssiz[0] & 0x7f) > 8:
-            mode = 'I'
+        if (yrsiz[0] & 0x7f) > 8:
+            mode = 'I;16'
         else:
             mode = 'L'
     elif csiz == 2:
@@ -100,7 +100,7 @@ def _parse_jp2_header(fp):
             size = (width, height)
             if unkc:
                 if nc == 1 and (bpc & 0x7f) > 8:
-                    mode = 'I'
+                    mode = 'I;16'
                 elif nc == 1:
                     mode = 'L'
                 elif nc == 2:
@@ -116,7 +116,7 @@ def _parse_jp2_header(fp):
                 cs = struct.unpack('>I', content[3:7])[0]
                 if cs == 16:   # sRGB
                     if nc == 1 and (bpc & 0x7f) > 8:
-                        mode = 'I'
+                        mode = 'I;16'
                     elif nc == 1:
                         mode = 'L'
                     elif nc == 3:
@@ -126,7 +126,7 @@ def _parse_jp2_header(fp):
                     break
                 elif cs == 17:  # grayscale
                     if nc == 1 and (bpc & 0x7f) > 8:
-                        mode = 'I'
+                        mode = 'I;16'
                     elif nc == 1:
                         mode = 'L'
                     elif nc == 2:

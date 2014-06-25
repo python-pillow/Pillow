@@ -160,7 +160,7 @@ j2ku_gray_i(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
     case 1:
         for (y = 0; y < h; ++y) {
             const UINT8 *data = &tiledata[y * w];
-            UINT32 *row = (UINT32 *)im->image[y0 + y] + x0;
+            UINT16 *row = (UINT16 *)im->image[y0 + y] + x0;
             for (x = 0; x < w; ++x)
                 *row++ = j2ku_shift(offset + *data++, shift);
         }
@@ -168,7 +168,7 @@ j2ku_gray_i(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
     case 2:
         for (y = 0; y < h; ++y) {
             const UINT16 *data = (const UINT16 *)&tiledata[2 * y * w];
-            UINT32 *row = (UINT32 *)im->image[y0 + y] + x0;
+            UINT16 *row = (UINT16 *)im->image[y0 + y] + x0;
             for (x = 0; x < w; ++x)
                 *row++ = j2ku_shift(offset + *data++, shift);
         }
@@ -176,7 +176,7 @@ j2ku_gray_i(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
     case 4:
         for (y = 0; y < h; ++y) {
             const UINT32 *data = (const UINT32 *)&tiledata[4 * y * w];
-            UINT32 *row = (UINT32 *)im->image[y0 + y] + x0;
+            UINT16 *row = (UINT16 *)im->image[y0 + y] + x0;
             for (x = 0; x < w; ++x)
                 *row++ = j2ku_shift(offset + *data++, shift);
         }
@@ -516,7 +516,8 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
 
 static const struct j2k_decode_unpacker j2k_unpackers[] = {
     { "L", OPJ_CLRSPC_GRAY, 1, j2ku_gray_l },
-    { "I", OPJ_CLRSPC_GRAY, 1, j2ku_gray_i },
+    { "I;16", OPJ_CLRSPC_GRAY, 1, j2ku_gray_i },
+    { "I;16B", OPJ_CLRSPC_GRAY, 1, j2ku_gray_i },
     { "LA", OPJ_CLRSPC_GRAY, 2, j2ku_graya_la },
     { "RGB", OPJ_CLRSPC_GRAY, 1, j2ku_gray_rgb },
     { "RGB", OPJ_CLRSPC_GRAY, 2, j2ku_gray_rgb },
