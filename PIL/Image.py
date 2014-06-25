@@ -539,7 +539,7 @@ class Image:
         try:
             self.fp.close()
         except Exception as msg:
-            if Image.DEBUG:
+            if DEBUG:
                 print ("Error closing: %s" % msg)
 
         # Instead of simply setting to None, we're setting up a
