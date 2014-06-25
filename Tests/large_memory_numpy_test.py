@@ -1,4 +1,4 @@
-from tester import *
+from helper import *
 
 # This test is not run automatically.
 #
@@ -6,32 +6,37 @@ from tester import *
 # second test.  Running this automatically would amount to a denial of
 # service on our testing infrastructure.  I expect this test to fail
 # on any 32 bit machine, as well as any smallish things (like
-# raspberrypis).
+# Raspberry Pis).
 
 from PIL import Image
 try:
     import numpy as np
 except:
-    skip()
-    
-ydim = 32769
-xdim = 48000
-f = tempfile('temp.png')
+    sys.exit("Skipping: Numpy not installed")
 
-def _write_png(xdim,ydim):
-    dtype = np.uint8
-    a = np.zeros((xdim, ydim), dtype=dtype)
-    im = Image.fromarray(a, 'L')
-    im.save(f)
-    success()
-
-def test_large():
-    """ succeeded prepatch"""
-    _write_png(xdim,ydim)
-def test_2gpx():
-    """failed prepatch"""
-    _write_png(xdim,xdim)
+YDIM = 32769
+XDIM = 48000
 
 
+class LargeMemoryNumpyTest(PillowTestCase):
+
+    def _write_png(self, XDIM, YDIM):
+        dtype = np.uint8
+        a = np.zeros((XDIM, YDIM), dtype=dtype)
+        f = self.tempfile('temp.png')
+        im = Image.fromarray(a, 'L')
+        im.save(f)
+
+    def test_large(self):
+        """ succeeded prepatch"""
+        self._write_png(XDIM, YDIM)
+
+    def test_2gpx(self):
+        """failed prepatch"""
+        self._write_png(XDIM, YDIM)
 
 
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

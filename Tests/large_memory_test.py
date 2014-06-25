@@ -14,7 +14,7 @@ YDIM = 32769
 XDIM = 48000
 
 
-class TestImage(PillowTestCase):
+class LargeMemoryTest(PillowTestCase):
 
     def _write_png(self, XDIM, YDIM):
         f = self.tempfile('temp.png')
@@ -27,7 +27,7 @@ class TestImage(PillowTestCase):
 
     def test_2gpx(self):
         """failed prepatch"""
-        self._write_png(XDIM, XDIM)
+        self._write_png(XDIM, YDIM)
 
 
 if __name__ == '__main__':
