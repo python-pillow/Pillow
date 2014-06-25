@@ -17,12 +17,12 @@
 #error Sorry, this library requires ANSI header files.
 #endif
 
+#if !defined(PIL_USE_INLINE)
+#define inline 
+#else
 #if defined(_MSC_VER) && !defined(__GNUC__)
 #define inline __inline
 #endif
-
-#if !defined(PIL_USE_INLINE)
-#define inline 
 #endif
 
 #ifdef _WIN32
