@@ -34,11 +34,17 @@
 
 __version__ = "0.6"
 
+import sys
 import array
 import struct
 from PIL import Image, ImageFile, _binary
 from PIL.JpegPresets import presets
 from PIL._util import isStringType
+
+if sys.version_info >= (3, 3):
+    from shlex import quote
+else:
+    from pipes import quote
 
 i8 = _binary.i8
 o8 = _binary.o8
@@ -359,7 +365,7 @@ class JpegImageFile(ImageFile.ImageFile):
         f, path = tempfile.mkstemp()
         os.close(f)
         if os.path.exists(self.filename):
-            os.system("djpeg '%s' >'%s'" % (self.filename, path))
+            os.system("djpeg %s > '%s'" % (quote(self.filename), path))
         else:
             raise ValueError("Invalid Filename")
 
