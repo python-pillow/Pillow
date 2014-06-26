@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- 16-bit monochrome support for JPEG2000
+  [videan42]
+
 - Fixed ImagePalette.save
   [brightpisces]
 
