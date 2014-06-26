@@ -4,6 +4,18 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Fix test_imagedraw failures #727
+  [cgohlke]
+
+- Fix AttributeError: class Image has no attribute 'DEBUG' #726
+  [cgohlke]
+
+- Fix msvc warning: 'inline' : macro redefinition #725
+  [cgohlke]
+
+- Cleanup #654
+  [dvska, hugovk, wiredfool]
+
 - 16-bit monochrome support for JPEG2000
   [videan42]
 
