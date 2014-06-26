@@ -36,13 +36,11 @@ class PillowTestCase(unittest.TestCase):
         if ok:
             # only clean out tempfiles if test passed
             try:
-                print("Removing File: %s" % path)
                 os.remove(path)
             except OSError:
                 pass  # report?
         else:
-            print("=== orphaned temp file")
-            print(path)
+            print("=== orphaned temp file: %s" %path)
 
     def assert_almost_equal(self, a, b, msg=None, eps=1e-6):
         self.assertLess(
