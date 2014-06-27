@@ -14,8 +14,6 @@ import re
 import struct
 import sys
 
-import mp_compile
-
 from distutils.command.build_ext import build_ext
 from distutils import sysconfig
 from setuptools import Extension, setup, find_packages
@@ -707,7 +705,7 @@ class pil_build_ext(build_ext):
         finally:
             os.unlink(tmpfile)
 
-if __name__=='__main__':
+if __name__ == '__main__':
     setup(
         name=NAME,
         version=VERSION,
@@ -742,5 +740,4 @@ if __name__=='__main__':
         license='Standard PIL License',
         zip_safe=True,
     )
- 
 # End of file
