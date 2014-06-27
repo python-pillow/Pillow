@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, tearDownModule, lena
 
 from PIL import Image
+from PIL import GifImagePlugin
 
 codecs = dir(Image.core)
 
@@ -88,6 +89,20 @@ class TestFileGif(PillowTestCase):
         # check automatic P conversion
         reloaded = roundtrip(im)[1].convert('RGB')
         self.assert_image_equal(im, reloaded)
+
+    def test_save_netpbm_bmp_mode(self):
+        img = Image.open(file).convert("RGB")
+
+        tempfile = self.tempfile("temp.gif")
+        GifImagePlugin._save_netpbm(img, 0, tempfile)
+        self.assert_image_similar(img, Image.open(tempfile).convert("RGB"), 0)
+
+    def test_save_netpbm_l_mode(self):
+        img = Image.open(file).convert("L")
+
+        tempfile = self.tempfile("temp.gif")
+        GifImagePlugin._save_netpbm(img, 0, tempfile)
+        self.assert_image_similar(img, Image.open(tempfile).convert("L"), 0)
 
 
 if __name__ == '__main__':

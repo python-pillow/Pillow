@@ -5,6 +5,7 @@ from io import BytesIO
 
 from PIL import Image
 from PIL import ImageFile
+from PIL import JpegImagePlugin
 
 codecs = dir(Image.core)
 
@@ -273,8 +274,21 @@ class TestFileJpeg(PillowTestCase):
                                                  qtables={0:standard_l_qtable,
                                                           1:standard_chrominance_qtable}),
                                   30)
-        
-        
+
+    def test_load_djpeg(self):
+        img = Image.open(test_file)
+        img.load_djpeg()
+        self.assert_image_similar(img, Image.open(test_file), 0)
+
+    def test_save_cjpeg(self):
+        img = Image.open(test_file)
+
+        tempfile = self.tempfile("temp.jpg")
+        JpegImagePlugin._save_cjpeg(img, 0, tempfile)
+        # Default save quality is 75%, so a tiny bit of difference is alright
+        self.assert_image_similar(img, Image.open(tempfile), 1)
+
+
 if __name__ == '__main__':
     unittest.main()
 
