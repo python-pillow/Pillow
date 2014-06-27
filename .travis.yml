@@ -16,7 +16,7 @@ python:
 install:
   - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
   - "pip install cffi"
-  - "pip install coveralls nose"
+  - "pip install coveralls nose nose-cov"
   - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip install unittest2; fi
 
   # webp
@@ -35,8 +35,9 @@ script:
   - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests Tests/test_*.py; fi
 
     # Cover the others
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --parallel-mode --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --parallel-mode --include=PIL/* -m nose Tests/test_*.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coverage run --parallel-mode --include=PIL/* selftest.py; fi
+     # write html report, then ignore. Coverage needs to be combined first
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then nosetests --with-cov --cov='PIL/' --cov-report=html Tests/test_*.py; fi
 
 after_success:
   - ls -l .coverage*
