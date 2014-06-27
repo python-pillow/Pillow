@@ -35,10 +35,11 @@ script:
   - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests Tests/test_*.py; fi
 
     # Cover the others
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --parallel-mode --append --include=PIL/* -m nose Tests/test_*.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --parallel-mode --include=PIL/* selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --parallel-mode --include=PIL/* -m nose Tests/test_*.py; fi
 
 after_success:
+  - ls -l .coverage*
   - coverage combine
   - coverage report
   - coveralls
