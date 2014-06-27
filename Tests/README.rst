@@ -1,6 +1,10 @@
-Pillow test files.
+Pillow Tests
+============
 
 Test scripts are named `test_xxx.py` and use the `unittest` module. A base class and helper functions can be found in `helper.py`.
+
+Execution
+---------
 
 Run the tests from the root of the Pillow source distribution:
 
