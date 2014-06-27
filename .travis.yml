@@ -36,9 +36,10 @@ script:
 
     # Cover the others
   - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose Tests/test_*.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --parallel-mode --append --include=PIL/* -m nose Tests/test_*.py; fi
 
 after_success:
+  - coverage combine
   - coverage report
   - coveralls
   - pip install pep8 pyflakes
