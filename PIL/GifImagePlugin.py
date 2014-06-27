@@ -333,13 +333,20 @@ def _save_netpbm(im, fp, filename):
     # below for information on how to enable this.
 
     import os
+    from subprocess import Popen, check_call, PIPE
     file = im._dump()
     if im.mode != "RGB":
-        os.system("ppmtogif %s >%s" % (file, filename))
+        with open(filename, 'wb') as f:
+            check_call(["ppmtogif", file], stdout=f)
     else:
-        os.system("ppmquant 256 %s | ppmtogif >%s" % (file, filename))
-    try: os.unlink(file)
-    except: pass
+        with open(filename, 'wb') as f:
+            #TODO: What happens if ppmquant fails?
+            ppmquant_proc = Popen(["ppmquant", "256", file], stdout=PIPE)
+            check_call(["ppmtogif"], stdin=ppmquant_proc.stdout, stdout=f)
+    try:
+        os.unlink(file)
+    except:
+        pass
 
 
 # --------------------------------------------------------------------
