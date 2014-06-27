@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena
+from helper import unittest, PillowTestCase, tearDownModule, lena, netpbm_available
 
 from PIL import Image
 from PIL import GifImagePlugin
@@ -90,6 +90,7 @@ class TestFileGif(PillowTestCase):
         reloaded = roundtrip(im)[1].convert('RGB')
         self.assert_image_equal(im, reloaded)
 
+    @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_bmp_mode(self):
         img = Image.open(file).convert("RGB")
 
@@ -97,6 +98,7 @@ class TestFileGif(PillowTestCase):
         GifImagePlugin._save_netpbm(img, 0, tempfile)
         self.assert_image_similar(img, Image.open(tempfile).convert("RGB"), 0)
 
+    @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_l_mode(self):
         img = Image.open(file).convert("L")
 

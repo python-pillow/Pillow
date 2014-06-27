@@ -1,4 +1,5 @@
 from helper import unittest, PillowTestCase, tearDownModule, lena, py3
+from helper import djpeg_available, cjpeg_available
 
 import random
 from io import BytesIO
@@ -275,11 +276,13 @@ class TestFileJpeg(PillowTestCase):
                                                           1:standard_chrominance_qtable}),
                                   30)
 
+    @unittest.skipUnless(djpeg_available(), "djpeg not available")
     def test_load_djpeg(self):
         img = Image.open(test_file)
         img.load_djpeg()
         self.assert_image_similar(img, Image.open(test_file), 0)
 
+    @unittest.skipUnless(cjpeg_available(), "cjpeg not available")
     def test_save_cjpeg(self):
         img = Image.open(test_file)
 
