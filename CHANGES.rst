@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Remove obsolete Animated Raster Graphics (ARG) support
+  [hugovk]
+
 - Fix test_imagedraw failures #727
   [cgohlke]
 
