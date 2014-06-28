@@ -3,9 +3,9 @@ language:
 
 env:
   matrix:
-    - VERSION=2.7.7 NUMPY_VERSION=1.6.0
-    - VERSION=3.3.5 NUMPY_VERSION=1.7.1
-    - VERSION=3.4.1 NUMPY_VERSION=1.7.1
+    - VERSION=2.7.7
+    - VERSION=3.3.5
+    - VERSION=3.4.1
 
 install:
     - source run_install.sh
@@ -22,7 +22,7 @@ script:
     - python selftest.py --installed
     - cd ..
 
-before_deploy: cd scikit-image/dist
+before_deploy: cd Pillow/dist
 deploy:
   provider: cloudfiles
   username: travis-worker

@@ -49,8 +49,8 @@ function init_vars {
     SRC_PREFIX=$PWD/working
     BUILD_PREFIX=$PWD/build
     export PATH=$BUILD_PREFIX/bin:$PATH
-    CPATH=$BUILD_PREFIX/include
-    LIBRARY_PATH=$BUILD_PREFIX/lib
+    export CPATH=$BUILD_PREFIX/include
+    export LIBRARY_PATH=$BUILD_PREFIX/lib
 }
 
 
