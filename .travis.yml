@@ -42,14 +42,15 @@ after_success:
   - coverage report
   - coveralls
 
-  - pip install diff_cover
-  - coverage xml
-  - diff-cover coverage.xml
-  - diff-quality --violation=pep8
-  - diff-quality --violation=pyflakes
-
   - pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
   - pep8  --statistics --count Tests/*.py
   - pyflakes PIL/*.py   | tee >(wc -l)
   - pyflakes Tests/*.py | tee >(wc -l)
+
+  - time git fetch origin master:refs/remotes/origin/master
+  - time pip install diff_cover
+  - time coverage xml
+  - time diff-cover coverage.xml
+  - time diff-quality --violation=pep8
+  - time diff-quality --violation=pyflakes
