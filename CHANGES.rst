@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Fix error in setup.py for Python 3
+  [matthew-brett]
+
 - Pyroma fix and add Python 3.4 to setup metadata #742
   [wirefool]
 
