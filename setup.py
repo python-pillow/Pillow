@@ -210,7 +210,9 @@ class pil_build_ext(build_ext):
             # if Homebrew is installed, use its lib and include directories
             import subprocess
             try:
-                prefix = subprocess.check_output(['brew', '--prefix']).strip()
+                prefix = subprocess.check_output(
+                    ['brew', '--prefix']
+                ).strip().decode('latin1')
             except:
                 # Homebrew not installed
                 prefix = None
