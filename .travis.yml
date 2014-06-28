@@ -12,6 +12,8 @@ install:
     - get_python_environment macpython $VERSION venv
     - pip install delocate
     - cd Pillow
+    # Needs patch for python3 / homebrew detection
+    - patch -p1 < ../pillow.patch
     - python setup.py bdist_wheel
     - delocate-wheel dist/*.whl
     - pip install dist/*.whl
