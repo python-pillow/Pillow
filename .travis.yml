@@ -16,6 +16,7 @@ install:
     - patch -p1 < ../pillow.patch
     - python setup.py bdist_wheel
     - delocate-wheel dist/*.whl
+    - rename_wheels dist/*.whl
     - pip install dist/*.whl
     - cd ..
 
