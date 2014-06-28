@@ -97,6 +97,8 @@ class BmpImageFile(ImageFile.ImageFile):
                 # upside-down storage
                 self.size = self.size[0], 2**32 - self.size[1]
                 direction = 0
+            
+            self.info["dpi"] = tuple(map(lambda x: math.ceil(x / 39.3701), pxperm))
 
         else:
             raise IOError("Unsupported BMP header type (%d)" % len(s))
@@ -164,7 +166,6 @@ class BmpImageFile(ImageFile.ImageFile):
                      (rawmode, ((self.size[0]*bits+31)>>3)&(~3), direction))]
 
         self.info["compression"] = compression
-        self.info["dpi"] = tuple(map(lambda x: math.ceil(x / 39.3701), pxperm))
 
     def _open(self):
 
