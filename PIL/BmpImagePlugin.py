@@ -203,30 +203,37 @@ def _save(im, fp, filename, check=0):
     if check:
         return check
 
+    info = im.encoderinfo
+
+    dpi = info.get("dpi", (96, 96))
+
+    # 1 meter == 39.3701 inches
+    ppm = map(lambda x: int(x * 39.3701), dpi)
+
     stride = ((im.size[0]*bits+7)//8+3)&(~3)
     header = 40 # or 64 for OS/2 version 2
     offset = 14 + header + colors * 4
     image  = stride * im.size[1]
 
     # bitmap header
-    fp.write(b"BM" +                    # file type (magic)
-             o32(offset+image) +        # file size
-             o32(0) +                   # reserved
-             o32(offset))               # image data offset
+    fp.write(b"BM" +                      # file type (magic)
+             o32(offset+image) +          # file size
+             o32(0) +                     # reserved
+             o32(offset))                 # image data offset
 
     # bitmap info header
-    fp.write(o32(header) +              # info header size
-             o32(im.size[0]) +          # width
-             o32(im.size[1]) +          # height
-             o16(1) +                   # planes
-             o16(bits) +                # depth
-             o32(0) +                   # compression (0=uncompressed)
-             o32(image) +               # size of bitmap
-             o32(1) + o32(1) +          # resolution
-             o32(colors) +              # colors used
-             o32(colors))               # colors important
+    fp.write(o32(header) +                # info header size
+             o32(im.size[0]) +            # width
+             o32(im.size[1]) +            # height
+             o16(1) +                     # planes
+             o16(bits) +                  # depth
+             o32(0) +                     # compression (0=uncompressed)
+             o32(image) +                 # size of bitmap
+             o32(ppm[0]) + o32(ppm[1]) +  # resolution
+             o32(colors) +                # colors used
+             o32(colors))                 # colors important
 
-    fp.write(b"\0" * (header - 40))    # padding (for OS/2 format)
+    fp.write(b"\0" * (header - 40))       # padding (for OS/2 format)
 
     if im.mode == "1":
         for i in (0, 255):
