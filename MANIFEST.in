@@ -67,6 +67,7 @@ recursive-include Tk *.c
 recursive-include Tk *.txt
 recursive-include Tk *.rst
 recursive-include depends *.sh
+recursive-include depends *.rst
 recursive-include docs *.bat
 recursive-include docs *.gitignore
 recursive-include docs *.html
