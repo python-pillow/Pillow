@@ -705,39 +705,41 @@ class pil_build_ext(build_ext):
         finally:
             os.unlink(tmpfile)
 
-if __name__ == '__main__':
-    setup(
-        name=NAME,
-        version=VERSION,
-        description='Python Imaging Library (Fork)',
-        long_description=(
-            _read('README.rst') + b'\n' +
-            _read('CHANGES.rst')).decode('utf-8'),
-        author='Alex Clark (fork author)',
-        author_email='aclark@aclark.net',
-        url='http://python-pillow.github.io/',
-        classifiers=[
-            "Development Status :: 6 - Mature",
-            "Topic :: Multimedia :: Graphics",
-            "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
-            "Topic :: Multimedia :: Graphics :: Capture :: Scanners",
-            "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
-            "Topic :: Multimedia :: Graphics :: Graphics Conversion",
-            "Topic :: Multimedia :: Graphics :: Viewers",
-            "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.6",
-            "Programming Language :: Python :: 2.7",
-            "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.2",
-            "Programming Language :: Python :: 3.3", ],
-        cmdclass={"build_ext": pil_build_ext},
-        ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
-        include_package_data=True,
-        packages=find_packages(),
-        scripts=glob.glob("Scripts/pil*.py"),
-        test_suite='PIL.tests',
-        keywords=["Imaging", ],
-        license='Standard PIL License',
-        zip_safe=True,
-    )
+
+setup(
+    name=NAME,
+    version=VERSION,
+    description='Python Imaging Library (Fork)',
+    long_description=(
+        _read('README.rst') + b'\n' +
+        _read('CHANGES.rst')).decode('utf-8'),
+    author='Alex Clark (fork author)',
+    author_email='aclark@aclark.net',
+    url='http://python-pillow.github.io/',
+    classifiers=[
+        "Development Status :: 6 - Mature",
+        "Topic :: Multimedia :: Graphics",
+        "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+        "Topic :: Multimedia :: Graphics :: Capture :: Scanners",
+        "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+        "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+        "Topic :: Multimedia :: Graphics :: Viewers",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.2",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        ],
+    cmdclass={"build_ext": pil_build_ext},
+    ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
+    include_package_data=True,
+    packages=find_packages(),
+    scripts=glob.glob("Scripts/pil*.py"),
+    test_suite='PIL.tests',
+    keywords=["Imaging", ],
+    license='Standard PIL License',
+    zip_safe=True,
+)
 # End of file
