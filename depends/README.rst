@@ -1,1 +1,4 @@
-Scripts in this directory download, build and install the non-packaged dependencies for testing with Travis CI.
+Depends
+=======
+
+Scripts in this directory can be used to download, build & install non-packaged dependencies; useful for testing with Travis CI.
