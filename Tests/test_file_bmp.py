@@ -37,6 +37,18 @@ class TestFileBmp(PillowTestCase):
         self.assertEqual(im.size, reloaded.size)
         self.assertEqual(reloaded.format, "BMP")
 
+    def test_dpi(self):
+        dpi = (72, 72)
+
+        output = io.BytesIO()
+        im = lena()
+        im.save(output, "BMP", dpi=dpi)
+
+        output.seek(0)
+        reloaded = Image.open(output)
+
+        self.assertEqual(reloaded.info["dpi"], dpi)
+
 
 if __name__ == '__main__':
     unittest.main()
