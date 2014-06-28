@@ -2,6 +2,7 @@ include *.c
 include *.h
 include *.py
 include *.rst
+include *.txt
 include .coveragerc
 include .gitattributes
 include .travis.yml
