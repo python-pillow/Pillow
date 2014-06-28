@@ -28,6 +28,7 @@ __version__ = "0.7"
 
 
 from PIL import Image, ImageFile, ImagePalette, _binary
+import math
 
 i8 = _binary.i8
 i16 = _binary.i16le
@@ -88,6 +89,7 @@ class BmpImageFile(ImageFile.ImageFile):
             bits = i16(s[14:])
             self.size = i32(s[4:]), i32(s[8:])
             compression = i32(s[16:])
+            pxperm = (i32(s[24:]), i32(s[28:]))  # Pixels per meter
             lutsize = 4
             colors = i32(s[32:])
             direction = -1
@@ -162,6 +164,7 @@ class BmpImageFile(ImageFile.ImageFile):
                      (rawmode, ((self.size[0]*bits+31)>>3)&(~3), direction))]
 
         self.info["compression"] = compression
+        self.info["dpi"] = tuple(map(lambda x: math.ceil(x / 39.3701), pxperm))
 
     def _open(self):
 
@@ -208,7 +211,7 @@ def _save(im, fp, filename, check=0):
     dpi = info.get("dpi", (96, 96))
 
     # 1 meter == 39.3701 inches
-    ppm = map(lambda x: int(x * 39.3701), dpi)
+    ppm = tuple(map(lambda x: int(x * 39.3701), dpi))
 
     stride = ((im.size[0]*bits+7)//8+3)&(~3)
     header = 40 # or 64 for OS/2 version 2
