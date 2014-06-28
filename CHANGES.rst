@@ -4,6 +4,12 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Pyroma fix and add Python 3.4 to setup metadata #742
+  [wirefool]
+
+- Top level flake8 fixes #741
+  [aclark]
+
 - Remove obsolete Animated Raster Graphics (ARG) support
   [hugovk]
 
