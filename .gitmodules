@@ -1,0 +1,6 @@
+[submodule "terryfy"]
+	path = terryfy
+	url = git://github.com/matthew-brett/terryfy.git
+[submodule "Pillow"]
+	path = Pillow
+	url = git://github.com/python-Pillow/Pillow.git

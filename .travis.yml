@@ -1,0 +1,33 @@
+language:
+  - objective-c
+
+env:
+  matrix:
+    - VERSION=2.7.7 NUMPY_VERSION=1.6.0
+    - VERSION=3.3.5 NUMPY_VERSION=1.7.1
+    - VERSION=3.4.1 NUMPY_VERSION=1.7.1
+
+install:
+    - source run_install.sh
+    - get_python_environment macpython $VERSION venv
+    - pip install delocate
+    - cd Pillow
+    - python setup.py bdist_wheel
+    - delocate-wheel dist/*.whl
+    - pip install dist/*.whl
+    - cd ..
+
+script:
+    - cd Pillow
+    - python selftest.py --installed
+    - cd ..
+
+before_deploy: cd scikit-image/dist
+deploy:
+  provider: cloudfiles
+  username: travis-worker
+  api_key:
+    secure: U+rKEiR6sQ+vsTJt3MuqqZwWvPV4gkjnQvzeR6cP9JZpfvkKuaa+vcgj7OngZ69DUgFTzRiTnFAxCbArGpDUkbP9V+kX5UgkePMdxhK+j9V0UOo8g+QwZtlqmV78pTXemWndwbqcy0uyfxuBpxhPXGSAHuzk+pZUbhH2zSEfh0s=
+  region: ORD
+  container: wheels
+  skip_cleanup: true
