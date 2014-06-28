@@ -54,6 +54,7 @@ recursive-include Tests *.png
 recursive-include Tests *.ppm
 recursive-include Tests *.psd
 recursive-include Tests *.py
+recursive-include Tests *.rst
 recursive-include Tests *.spider
 recursive-include Tests *.tar
 recursive-include Tests *.tif
