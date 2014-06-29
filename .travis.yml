@@ -49,7 +49,7 @@ after_success:
   - pyflakes Tests/*.py | tee >(wc -l)
 
   - time git fetch origin master:refs/remotes/origin/master
-  - time pip install diff_cover
+  - time CFLAGS=-O0 pip install --use-wheel diff_cover
   - time coverage xml
   - time diff-cover coverage.xml
   - time diff-quality --violation=pep8
