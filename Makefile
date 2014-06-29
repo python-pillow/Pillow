@@ -1,4 +1,6 @@
 pre:
+	virtualenv .
+	bin/pip install -r requirements.txt
 	bin/python setup.py develop
 	bin/python selftest.py
 	bin/nosetests Tests/test_*.py
