@@ -4,8 +4,8 @@ import os
 import sys
 import glob
 
-# monkey with the path, removing the local directory but adding the Tests/ directory
-# for helper.py and the other local imports there.
+# monkey with the path, removing the local directory but adding the Tests/
+# directory for helper.py and the other local imports there.
 
 del(sys.path[0])
 sys.path.insert(0, os.path.abspath('./Tests'))
@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath('./Tests'))
 if len(sys.argv) == 1:
     sys.argv.extend(glob.glob('Tests/test*.py'))
 
-# Make sure that nose doesn't muck with our paths. 
+# Make sure that nose doesn't muck with our paths.
 if ('--no-path-adjustment' not in sys.argv) and ('-P' not in sys.argv):
     sys.argv.insert(1, '--no-path-adjustment')
 

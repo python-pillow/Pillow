@@ -4,6 +4,21 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Support for Resolution in BMP files #734
+  [gcq]
+  
+- Fix error in setup.py for Python 3
+  [matthew-brett]
+
+- Pyroma fix and add Python 3.4 to setup metadata #742
+  [wirefool]
+
+- Top level flake8 fixes #741
+  [aclark]
+
+- Remove obsolete Animated Raster Graphics (ARG) support
+  [hugovk]
+
 - Fix test_imagedraw failures #727
   [cgohlke]
 

@@ -2,6 +2,7 @@ include *.c
 include *.h
 include *.py
 include *.rst
+include *.txt
 include .coveragerc
 include .gitattributes
 include .travis.yml
@@ -54,6 +55,7 @@ recursive-include Tests *.png
 recursive-include Tests *.ppm
 recursive-include Tests *.psd
 recursive-include Tests *.py
+recursive-include Tests *.rst
 recursive-include Tests *.spider
 recursive-include Tests *.tar
 recursive-include Tests *.tif
@@ -66,6 +68,7 @@ recursive-include Tk *.c
 recursive-include Tk *.txt
 recursive-include Tk *.rst
 recursive-include depends *.sh
+recursive-include depends *.rst
 recursive-include docs *.bat
 recursive-include docs *.gitignore
 recursive-include docs *.html

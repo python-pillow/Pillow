@@ -1,14 +1,6 @@
 Plugin reference
 ================
 
-:mod:`ArgImagePlugin` Module
-----------------------------
-
-.. automodule:: PIL.ArgImagePlugin
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`BmpImagePlugin` Module
 ----------------------------
 
