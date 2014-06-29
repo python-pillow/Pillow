@@ -48,6 +48,7 @@ after_success:
   - pyflakes PIL/*.py   | tee >(wc -l)
   - pyflakes Tests/*.py | tee >(wc -l)
 
+  # Coverage and quality reports on just the last diff
   - time git fetch origin master:refs/remotes/origin/master
   - time CFLAGS=-O0 pip install --use-wheel diff_cover
   - time coverage xml
