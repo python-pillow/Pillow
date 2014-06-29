@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Support for Resolution in BMP files #734
+  [gcq]
+  
 - Fix error in setup.py for Python 3
   [matthew-brett]
 
