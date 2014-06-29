@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Prevent shell injection #748
+  [mbrown1413, wiredfool]
+  
 - Support for Resolution in BMP files #734
   [gcq]
   
