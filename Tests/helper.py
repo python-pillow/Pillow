@@ -199,4 +199,29 @@ def lena(mode="RGB", cache={}):
     # cache[mode] = im
     return im
 
+
+def command_succeeds(cmd):
+    """
+    Runs the command, which must be a list of strings. Returns True if the
+    command succeeds, or False if an OSError was raised by subprocess.Popen.
+    """
+    import os
+    import subprocess
+    with open(os.devnull, 'w') as f:
+        try:
+            subprocess.Popen(cmd, stdout=f, stderr=subprocess.STDOUT).wait()
+        except OSError:
+            return False
+    return True
+
+def djpeg_available():
+    return command_succeeds(['djpeg', '--help'])
+
+def cjpeg_available():
+    return command_succeeds(['cjpeg', '--help'])
+
+def netpbm_available():
+    return command_succeeds(["ppmquant", "--help"]) and \
+           command_succeeds(["ppmtogif", "--help"])
+
 # End of file

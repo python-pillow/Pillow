@@ -333,13 +333,41 @@ def _save_netpbm(im, fp, filename):
     # below for information on how to enable this.
 
     import os
+    from subprocess import Popen, check_call, PIPE, CalledProcessError
+    import tempfile    
     file = im._dump()
+
     if im.mode != "RGB":
-        os.system("ppmtogif %s >%s" % (file, filename))
+        with open(filename, 'wb') as f:
+            stderr = tempfile.TemporaryFile()
+            check_call(["ppmtogif", file], stdout=f, stderr=stderr)
     else:
-        os.system("ppmquant 256 %s | ppmtogif >%s" % (file, filename))
-    try: os.unlink(file)
-    except: pass
+        with open(filename, 'wb') as f:
+
+            # Pipe ppmquant output into ppmtogif
+            # "ppmquant 256 %s | ppmtogif > %s" % (file, filename)
+            quant_cmd = ["ppmquant", "256", file]
+            togif_cmd = ["ppmtogif"]
+            stderr = tempfile.TemporaryFile()
+            quant_proc = Popen(quant_cmd, stdout=PIPE, stderr=stderr)
+            stderr = tempfile.TemporaryFile()
+            togif_proc = Popen(togif_cmd, stdin=quant_proc.stdout, stdout=f, stderr=stderr)
+            
+            # Allow ppmquant to receive SIGPIPE if ppmtogif exits
+            quant_proc.stdout.close()
+
+            retcode = quant_proc.wait()
+            if retcode:
+                raise CalledProcessError(retcode, quant_cmd)
+
+            retcode = togif_proc.wait()
+            if retcode:
+                raise CalledProcessError(retcode, togif_cmd)
+
+    try:
+        os.unlink(file)
+    except:
+        pass
 
 
 # --------------------------------------------------------------------

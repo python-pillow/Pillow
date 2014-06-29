@@ -354,12 +354,14 @@ class JpegImageFile(ImageFile.ImageFile):
 
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
+        import subprocess
         import tempfile
         import os
         f, path = tempfile.mkstemp()
         os.close(f)
         if os.path.exists(self.filename):
-            os.system("djpeg '%s' >'%s'" % (self.filename, path))
+            with open(path, 'wb') as f:
+                subprocess.check_call(["djpeg", self.filename], stdout=f)
         else:
             raise ValueError("Invalid Filename")
 
@@ -602,8 +604,10 @@ def _save(im, fp, filename):
 def _save_cjpeg(im, fp, filename):
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
     import os
-    file = im._dump()
-    os.system("cjpeg %s >%s" % (file, filename))
+    import subprocess
+    tempfile = im._dump()
+    with open(filename, 'wb') as f:
+        subprocess.check_call(["cjpeg", tempfile], stdout=f)
     try:
         os.unlink(file)
     except:
