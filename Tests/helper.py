@@ -92,9 +92,8 @@ class PillowTestCase(unittest.TestCase):
         self.assertEqual(
             a.size, b.size,
             msg or "got size %r, expected %r" % (a.size, b.size))
-        self.assertEqual(
-            a.tobytes(), b.tobytes(),
-            msg or "got different content")
+        if a.tobytes() != b.tobytes():
+            self.fail(msg or "got different content")
 
     def assert_image_similar(self, a, b, epsilon, msg=None):
         epsilon = float(epsilon)
