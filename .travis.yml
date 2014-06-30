@@ -48,10 +48,14 @@ after_success:
   - pyflakes PIL/*.py   | tee >(wc -l)
   - pyflakes Tests/*.py | tee >(wc -l)
 
-  # Coverage and quality reports on just the last diff
-  - time git fetch origin master:refs/remotes/origin/master
-  - time CFLAGS=-O0 pip install --use-wheel diff_cover
-  - time coverage xml
-  - time diff-cover coverage.xml
-  - time diff-quality --violation=pep8
-  - time diff-quality --violation=pyflakes
+
+    # Coverage and quality reports on just the latest diff.
+    # (Installation is very slow on Py3, so just do it for Py2.)
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then
+        git fetch origin master:refs/remotes/origin/master
+        time CFLAGS=-O0 pip install --use-wheel diff_cover
+        coverage xml
+        diff-cover coverage.xml
+        diff-quality --violation=pep8
+        diff-quality --violation=pyflakes
+    fi
