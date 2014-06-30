@@ -2,6 +2,8 @@ include *.c
 include *.h
 include *.py
 include *.rst
+include *.txt
+include .coveragerc
 include .gitattributes
 include .travis.yml
 include Makefile
@@ -28,29 +30,45 @@ recursive-include Sane CHANGES
 recursive-include Sane README
 recursive-include Scripts *.py
 recursive-include Scripts README
+recursive-include Tests *.bdf
 recursive-include Tests *.bin
 recursive-include Tests *.bmp
+recursive-include Tests *.doc
 recursive-include Tests *.eps
+recursive-include Tests *.fli
 recursive-include Tests *.gif
 recursive-include Tests *.gnuplot
 recursive-include Tests *.html
 recursive-include Tests *.icm
 recursive-include Tests *.icns
 recursive-include Tests *.ico
+recursive-include Tests *.j2k
 recursive-include Tests *.jp2
 recursive-include Tests *.jpg
+recursive-include Tests *.lut
+recursive-include Tests *.pbm
 recursive-include Tests *.pcf
 recursive-include Tests *.pcx
+recursive-include Tests *.pgm
+recursive-include Tests *.pil
 recursive-include Tests *.png
 recursive-include Tests *.ppm
+recursive-include Tests *.psd
 recursive-include Tests *.py
+recursive-include Tests *.rst
+recursive-include Tests *.spider
+recursive-include Tests *.tar
 recursive-include Tests *.tif
 recursive-include Tests *.tiff
 recursive-include Tests *.ttf
 recursive-include Tests *.txt
+recursive-include Tests *.webp
+recursive-include Tests *.xpm
 recursive-include Tk *.c
 recursive-include Tk *.txt
+recursive-include Tk *.rst
 recursive-include depends *.sh
+recursive-include depends *.rst
 recursive-include docs *.bat
 recursive-include docs *.gitignore
 recursive-include docs *.html
@@ -64,3 +82,5 @@ recursive-include docs COPYING
 recursive-include docs LICENSE
 recursive-include libImaging *.c
 recursive-include libImaging *.h
+recursive-include Sane *.rst
+recursive-include Scripts *.rst

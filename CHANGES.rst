@@ -4,6 +4,39 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Prevent shell injection #748
+  [mbrown1413, wiredfool]
+  
+- Support for Resolution in BMP files #734
+  [gcq]
+  
+- Fix error in setup.py for Python 3
+  [matthew-brett]
+
+- Pyroma fix and add Python 3.4 to setup metadata #742
+  [wirefool]
+
+- Top level flake8 fixes #741
+  [aclark]
+
+- Remove obsolete Animated Raster Graphics (ARG) support
+  [hugovk]
+
+- Fix test_imagedraw failures #727
+  [cgohlke]
+
+- Fix AttributeError: class Image has no attribute 'DEBUG' #726
+  [cgohlke]
+
+- Fix msvc warning: 'inline' : macro redefinition #725
+  [cgohlke]
+
+- Cleanup #654
+  [dvska, hugovk, wiredfool]
+
+- 16-bit monochrome support for JPEG2000
+  [videan42]
+
 - Fixed ImagePalette.save
   [brightpisces]
 

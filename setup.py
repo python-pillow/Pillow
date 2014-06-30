@@ -210,7 +210,9 @@ class pil_build_ext(build_ext):
             # if Homebrew is installed, use its lib and include directories
             import subprocess
             try:
-                prefix = subprocess.check_output(['brew', '--prefix']).strip()
+                prefix = subprocess.check_output(
+                    ['brew', '--prefix']
+                ).strip().decode('latin1')
             except:
                 # Homebrew not installed
                 prefix = None
@@ -403,7 +405,12 @@ class pil_build_ext(build_ext):
 
             # Find the best version
             for directory in self.compiler.include_dirs:
-                for name in os.listdir(directory):
+                try:
+                    listdir = os.listdir(directory)
+                except Exception:  
+                    # WindowsError, FileNotFoundError
+                    continue
+                for name in listdir:
                     if name.startswith('openjpeg-') and \
                         os.path.isfile(os.path.join(directory, name,
                                                     'openjpeg.h')):
@@ -705,6 +712,7 @@ class pil_build_ext(build_ext):
         finally:
             os.unlink(tmpfile)
 
+
 setup(
     name=NAME,
     version=VERSION,
@@ -728,7 +736,9 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
-        "Programming Language :: Python :: 3.3", ],
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        ],
     cmdclass={"build_ext": pil_build_ext},
     ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
     include_package_data=True,
@@ -738,6 +748,5 @@ setup(
     keywords=["Imaging", ],
     license='Standard PIL License',
     zip_safe=True,
-    )
-
+)
 # End of file
