@@ -51,6 +51,7 @@ function init_vars {
     export PATH=$BUILD_PREFIX/bin:$PATH
     export CPATH=$BUILD_PREFIX/include
     export LIBRARY_PATH=$BUILD_PREFIX/lib
+    export PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig
 }
 
 
