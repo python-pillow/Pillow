@@ -18,6 +18,9 @@ from distutils.command.build_ext import build_ext
 from distutils import sysconfig
 from setuptools import Extension, setup, find_packages
 
+# monkey patch import hook. Even though flake8 says it's not used, it is.
+# comment this out to disable multi threaded builds. 
+import mp_compile
 
 _IMAGING = (
     "decode", "encode", "map", "display", "outline", "path")
