@@ -20,5 +20,13 @@ if len(sys.argv) == 1:
 if ('--no-path-adjustment' not in sys.argv) and ('-P' not in sys.argv):
     sys.argv.insert(1, '--no-path-adjustment')
 
+if 'NOSE_PROCESSES' not in os.environ:
+    for arg in sys.argv:
+        if '--processes' in arg:
+            break
+    else: #  for
+        sys.argv.insert(1, '--processes=-1') # -1 == number of cores
+        sys.argv.insert(1, '--process-timeout=30') 
+    
 if __name__ == '__main__':
     nose.main()

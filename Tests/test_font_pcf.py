@@ -22,7 +22,8 @@ class TestFontPcf(PillowTestCase):
         self.assertIsInstance(font, FontFile.FontFile)
         self.assertEqual(len([_f for _f in font.glyph if _f]), 192)
 
-        tempname = self.tempfile("temp.pil", "temp.pbm")
+        tempname = self.tempfile("temp.pil")
+        self.addCleanup(self.delete_tempfile, tempname[:-4]+'.pbm')
         font.save(tempname)
         return tempname
 
