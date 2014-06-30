@@ -1,4 +1,4 @@
-import unittest
+from helper import *
 
 try:
     import pyroma
