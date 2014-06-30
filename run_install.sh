@@ -8,7 +8,6 @@ brew install pkg-config
 # Set up build
 init_vars
 clean_builds
-# install_pkg_config
 install_jpeg
 install_tiff
 install_libpng

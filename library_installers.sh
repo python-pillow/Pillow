@@ -4,20 +4,11 @@
 # Get needed utilities
 source terryfy/travis_tools.sh
 
-# Package versions / URLs for fresh source builds (MacPython only)
-PKG_CONFIG_VERSION=0.28
-FT_BASE_URL=http://sourceforge.net/projects/freetype/files/freetype2
+# Package versions for fresh source builds
 FT_VERSION="2.5.3"
-PNG_BASE_URL=http://downloads.sourceforge.net/project/libpng/libpng16
 PNG_VERSION="1.6.12"
-TCL_VERSION="8.5.14.0"
-TCL_RELEASE_DMG="http://downloads.activestate.com/ActiveTcl/releases/$TCL_VERSION/ActiveTcl$TCL_VERSION.296777-macosx10.5-i386-x86_64-threaded.dmg"
-XQ_BASE_URL=http://xquartz.macosforge.org/downloads/SL
-XQUARTZ_VERSION="2.7.4"
-JPEG_URL=http://www.ijg.org/files
 JPEG_VERSION=9a
 OPENJPEG_VERSION=2.0.0
-TIFF_URL=ftp://ftp.remotesensing.org/pub/libtiff
 TIFF_VERSION=4.0.3
 LCMS_VERSION=2.6
 WEBP_VERSION=0.4.0
@@ -66,31 +57,6 @@ function clean_builds {
     git clean -fxd
     git reset --hard
     cd ..
-}
-
-
-function install_pkg_config {
-    check_var $PKG_CONFIG_VERSION
-    check_var $SRC_PREFIX
-    check_var $BUILD_PREFIX
-    local archive_path="archives/pkg-config-${PKG_CONFIG_VERSION}.tar.gz"
-    tar zxvf $archive_path -C $SRC_PREFIX
-    cd $SRC_PREFIX/pkg-config-$PKG_CONFIG_VERSION
-    require_success "Failed to cd to pkg-config directory"
-    ./configure --prefix=$BUILD_PREFIX --with-internal-glib
-    make
-    make install
-    require_success "Failed to install pkg-config $version"
-    cd ../..
-}
-
-
-function install_tkl_85 {
-    curl $TCL_RELEASE_DMG > ActiveTCL.dmg
-    require_success "Failed to download TCL $TCL_VERSION"
-    hdiutil attach ActiveTCL.dmg -mountpoint /Volumes/ActiveTcl
-    sudo installer -pkg /Volumes/ActiveTcl/ActiveTcl-8.5.pkg -target /
-    require_success "Failed to install ActiveTcl $TCL_VERSION"
 }
 
 
@@ -209,16 +175,4 @@ function install_webp {
     make install
     require_success "Failed to install webp $version"
     cd ../..
-}
-
-
-function install_xquartz {
-    local version=$1
-    check_version
-    curl $XQ_BASE_URL/XQuartz-$version.dmg > xquartz.dmg
-    require_success "failed to download XQuartz"
-
-    hdiutil attach xquartz.dmg -mountpoint /Volumes/XQuartz
-    sudo installer -pkg /Volumes/XQuartz/XQuartz.pkg -target /
-    require_success "Failed to install XQuartz $version"
 }
