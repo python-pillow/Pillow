@@ -864,13 +864,6 @@ copy2(UINT8* out, const UINT8* in, int pixels)
 }
 
 static void
-copy3(UINT8* out, const UINT8* in, int pixels)
-{
-    /* LAB triples, 24bit */
-    memcpy(out, in, 3 * pixels);
-}
-
-static void
 copy4(UINT8* out, const UINT8* in, int pixels)
 {
     /* RGBA, CMYK quadruples */
