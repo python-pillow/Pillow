@@ -35,7 +35,6 @@ and old versions from `PyPI <https://pypi.python.org/pypi/Pillow>`_.
    guides
    reference/index.rst
    handbook/appendices
-   developer
    original-readme
 
 Support Pillow!
