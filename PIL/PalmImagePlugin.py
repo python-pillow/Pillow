@@ -180,7 +180,7 @@ def _save(im, fp, filename, check=0):
     cols = im.size[0]
     rows = im.size[1]
 
-    rowbytes = ((cols + (16//bpp - 1)) / (16 // bpp)) * 2
+    rowbytes = int((cols + (16//bpp - 1)) / (16 // bpp)) * 2
     transparent_index = 0
     compression_type = _COMPRESSION_TYPES["none"]
 
