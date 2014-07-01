@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, tearDownModule
 from helper import djpeg_available, cjpeg_available, netpbm_available
 
+import sys
 import shutil
 
 from PIL import Image, JpegImagePlugin, GifImagePlugin
@@ -16,6 +17,7 @@ test_filenames = (
     "temp_'\"&&",
 )
 
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
 class TestShellInjection(PillowTestCase):
 
     def assert_save_filename_check(self, src_img, save_func):
