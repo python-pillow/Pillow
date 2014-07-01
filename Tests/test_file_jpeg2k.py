@@ -39,6 +39,14 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertEqual(im.size, (640, 480))
         self.assertEqual(im.format, 'JPEG2000')
 
+    def test_bytesio(self):
+        with open('Tests/images/test-card-lossless.jp2', 'rb') as f:
+            data = BytesIO(f.read())
+        im = Image.open(data)
+        im.load()
+        print ("bytesio")
+        self.assert_image_similar(im, test_card, 1.0e-3)
+
     # These two test pre-written JPEG 2000 files that were not written with
     # PIL (they were made using Adobe Photoshop)
 
