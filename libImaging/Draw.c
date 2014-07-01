@@ -421,19 +421,24 @@ static inline int
 polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
         hline_handler hline)
 {
+
+    Edge** edge_table;
+    float* xx;
+    int edge_count = 0;
+    int ymin = im->ysize - 1;
+    int ymax = 0;
+    int i;
+
     if (n <= 0) {
         return 0;
     }
 
     /* Initialize the edge table and find polygon boundaries */
-    Edge** edge_table = malloc(sizeof(Edge*) * n);
+    edge_table = malloc(sizeof(Edge*) * n);
     if (!edge_table) {
         return -1;
     }
-    int edge_count = 0;
-    int ymin = im->ysize - 1;
-    int ymax = 0;
-    int i;
+
     for (i = 0; i < n; i++) {
         /* This causes that the pixels of horizontal edges are drawn twice :(
          * but without it there are inconsistencies in ellipses */
@@ -457,7 +462,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     }
 
     /* Process the edge table with a scan line searching for intersections */
-    float* xx = malloc(sizeof(float) * edge_count * 2);
+    xx = malloc(sizeof(float) * edge_count * 2);
     if (!xx) {
         free(edge_table);
         return -1;
@@ -591,6 +596,11 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
 {
     DRAW* draw;
     INT32 ink;
+    int dx, dy;
+    double big_hypotenuse, small_hypotenuse, ratio_max, ratio_min;
+    int dxmin, dxmax, dymin, dymax;
+    Edge e[4];
+    int vertices[4][2];
 
     DRAWINIT();
 
@@ -599,35 +609,35 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
         return 0;
     }
 
-    int dx = x1-x0;
-    int dy = y1-y0;
+    dx = x1-x0;
+    dy = y1-y0;
     if (dx == 0 && dy == 0) {
         draw->point(im, x0, y0, ink);
         return 0;
     }
 
-    double big_hypotenuse = sqrt((double) (dx*dx + dy*dy));
-    double small_hypotenuse = (width - 1) / 2.0;
-    double ratio_max = ROUND_UP(small_hypotenuse) / big_hypotenuse;
-    double ratio_min = ROUND_DOWN(small_hypotenuse) / big_hypotenuse;
+    big_hypotenuse = sqrt((double) (dx*dx + dy*dy));
+    small_hypotenuse = (width - 1) / 2.0;
+    ratio_max = ROUND_UP(small_hypotenuse) / big_hypotenuse;
+    ratio_min = ROUND_DOWN(small_hypotenuse) / big_hypotenuse;
 
-    int dxmin = ROUND_DOWN(ratio_min * dy);
-    int dxmax = ROUND_DOWN(ratio_max * dy);
-    int dymin = ROUND_DOWN(ratio_min * dx);
-    int dymax = ROUND_DOWN(ratio_max * dx);
-    int vertices[4][2] = {
+    dxmin = ROUND_DOWN(ratio_min * dy);
+    dxmax = ROUND_DOWN(ratio_max * dy);
+    dymin = ROUND_DOWN(ratio_min * dx);
+    dymax = ROUND_DOWN(ratio_max * dx);
+    
+    vertices = (int[][]) {
         {x0 - dxmin, y0 + dymax},
         {x1 - dxmin, y1 + dymax},
         {x1 + dxmax, y1 - dymin},
         {x0 + dxmax, y0 - dymin}
     };
 
-    Edge e[4];
     add_edge(e+0, vertices[0][0], vertices[0][1], vertices[1][0], vertices[1][1]);
     add_edge(e+1, vertices[1][0], vertices[1][1], vertices[2][0], vertices[2][1]);
     add_edge(e+2, vertices[2][0], vertices[2][1], vertices[3][0], vertices[3][1]);
     add_edge(e+3, vertices[3][0], vertices[3][1], vertices[0][0], vertices[0][1]);
-
+    
     draw->polygon(im, 4, e, ink, 0);
 
     return 0;
