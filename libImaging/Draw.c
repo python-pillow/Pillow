@@ -625,21 +625,21 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
     dxmax = ROUND_DOWN(ratio_max * dy);
     dymin = ROUND_DOWN(ratio_min * dx);
     dymax = ROUND_DOWN(ratio_max * dx);
-    
-    vertices = (int[][]) {
-        {x0 - dxmin, y0 + dymax},
-        {x1 - dxmin, y1 + dymax},
-        {x1 + dxmax, y1 - dymin},
-        {x0 + dxmax, y0 - dymin}
-    };
+    {
+        int vertices[4][2] = {
+            {x0 - dxmin, y0 + dymax},
+            {x1 - dxmin, y1 + dymax},
+            {x1 + dxmax, y1 - dymin},
+            {x0 + dxmax, y0 - dymin}
+        };
 
-    add_edge(e+0, vertices[0][0], vertices[0][1], vertices[1][0], vertices[1][1]);
-    add_edge(e+1, vertices[1][0], vertices[1][1], vertices[2][0], vertices[2][1]);
-    add_edge(e+2, vertices[2][0], vertices[2][1], vertices[3][0], vertices[3][1]);
-    add_edge(e+3, vertices[3][0], vertices[3][1], vertices[0][0], vertices[0][1]);
-    
-    draw->polygon(im, 4, e, ink, 0);
+        add_edge(e+0, vertices[0][0], vertices[0][1], vertices[1][0], vertices[1][1]);
+        add_edge(e+1, vertices[1][0], vertices[1][1], vertices[2][0], vertices[2][1]);
+        add_edge(e+2, vertices[2][0], vertices[2][1], vertices[3][0], vertices[3][1]);
+        add_edge(e+3, vertices[3][0], vertices[3][1], vertices[0][0], vertices[0][1]);
 
+        draw->polygon(im, 4, e, ink, 0);
+    }
     return 0;
 }
 
