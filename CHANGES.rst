@@ -495,6 +495,10 @@ Changelog (Pillow)
 2.0.0 (2013-03-15)
 ------------------
 
+.. Note:: Special thanks to Christoph Gohlke and Eric Soroos for assisting with a pre-PyCon 2013 release!
+
+- Many other bug fixes and enhancements by many other people. 
+
 - Add Python 3 support. (Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3. Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7.)
   [fluggo]
 
@@ -517,10 +521,6 @@ Changelog (Pillow)
 
 - Added support for PNG images with transparency palette.
   [d-schmidt]
-
-- Many other bug fixes and enhancements by many other people (see commit log and/or docs/CONTRIBUTORS.txt).
-
-- Special thanks to Christoph Gohlke and Eric Soroos for rallying around the effort to get a release out for PyCon 2013.
 
 1.7.8 (2012-11-01)
 ------------------
@@ -594,44 +594,55 @@ Changelog (Pillow)
   [elro]
 
 - Doc fixes
+  [aclark]
 
 1.5 (11/28/2010)
 ----------------
 
 - Module and package fixes
+  [aclark]
 
 1.4 (11/28/2010)
 ----------------
 
 - Doc fixes
+  [aclark]
 
 1.3 (11/28/2010)
 ----------------
 
 - Add support for /lib64 and /usr/lib64 library directories on Linux
+  [aclark]
+
 - Doc fixes
+  [aclark]
 
 1.2 (08/02/2010)
 ----------------
 
-- On OS X also check for freetype2 in the X11 path [jezdez]
-- Doc fixes [aclark]
+- On OS X also check for freetype2 in the X11 path
+  [jezdez]
+
+- Doc fixes
+  [aclark]
 
 1.1 (07/31/2010)
 ----------------
 
 - Removed setuptools_hg requirement
+  [aclark]
+
 - Doc fixes
+  [aclark]
 
 1.0 (07/30/2010)
 ----------------
 
-- Forked PIL based on Hanno Schlichting's re-packaging
-  (http://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz)
+- Remove support for ``import Image``, etc. from the standard namespace. ``from PIL import Image`` etc. now required.
+- Forked PIL based on `Hanno Schlichting's re-packaging <http://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz>`_
+  [aclark]
 
-- Remove support for importing from the standard namespace
-
-.. Note:: What follows is the original PIL 1.1.7 CHANGES file contents
+.. Note:: What follows is the original PIL 1.1.7 CHANGES
 
 ::
 
