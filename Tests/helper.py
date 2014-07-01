@@ -3,39 +3,30 @@ Helper functions.
 """
 from __future__ import print_function
 import sys
+import tempfile
+import os
+import glob
 
 if sys.version_info[:2] <= (2, 6):
     import unittest2 as unittest
 else:
     import unittest
 
-
-# This should be imported into every test_XXX.py file to report
-# any remaining temp files at the end of the run.
 def tearDownModule():
-    import glob
-    import os
-    import tempfile
-    temp_root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
-    tempfiles = glob.glob(os.path.join(temp_root, "temp_*"))
-    if tempfiles:
-        print("===", "remaining temporary files")
-        for file in tempfiles:
-            print(file)
-        print("-"*68)
-
+    #remove me later
+    pass
 
 class PillowTestCase(unittest.TestCase):
 
-    currentResult = None  # holds last result object passed to run method
-    _tempfiles = []
+    def __init__(self, *args, **kwargs):
+        unittest.TestCase.__init__(self, *args, **kwargs)
+        self.currentResult = None  # holds last result object passed to run method
 
     def run(self, result=None):
-        self.addCleanup(self.delete_tempfiles)
         self.currentResult = result  # remember result for use later
         unittest.TestCase.run(self, result)  # call superclass run method
 
-    def delete_tempfiles(self):
+    def delete_tempfile(self, path):
         try:
             ok = self.currentResult.wasSuccessful()
         except AttributeError:  # for nosetests
@@ -44,19 +35,12 @@ class PillowTestCase(unittest.TestCase):
 
         if ok:
             # only clean out tempfiles if test passed
-            import os
-            import os.path
-            import tempfile
-            for file in self._tempfiles:
-                try:
-                    os.remove(file)
-                except OSError:
-                    pass  # report?
-            temp_root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
             try:
-                os.rmdir(temp_root)
+                os.remove(path)
             except OSError:
-                pass
+                pass  # report?
+        else:
+            print("=== orphaned temp file: %s" %path)
 
     def assert_almost_equal(self, a, b, msg=None, eps=1e-6):
         self.assertLess(
@@ -139,27 +123,13 @@ class PillowTestCase(unittest.TestCase):
             self.assertTrue(found)
         return result
 
-    def tempfile(self, template, *extra):
-        import os
-        import os.path
-        import sys
-        import tempfile
-        files = []
-        root = os.path.join(tempfile.gettempdir(), 'pillow-tests')
-        try:
-            os.mkdir(root)
-        except OSError:
-            pass
-        for temp in (template,) + extra:
-            assert temp[:5] in ("temp.", "temp_")
-            name = os.path.basename(sys.argv[0])
-            name = temp[:4] + os.path.splitext(name)[0][4:]
-            name = name + "_%d" % len(self._tempfiles) + temp[4:]
-            name = os.path.join(root, name)
-            files.append(name)
-        self._tempfiles.extend(files)
-        return files[0]
-
+    def tempfile(self, template):
+        assert template[:5] in ("temp.", "temp_")
+        (fd, path) = tempfile.mkstemp(template[4:], template[:4])
+        os.close(fd)
+        
+        self.addCleanup(self.delete_tempfile, path)      
+        return path
 
 # helpers
 
