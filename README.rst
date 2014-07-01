@@ -20,4 +20,4 @@ Pillow is the "friendly" PIL fork by Alex Clark and Contributors. PIL is the Pyt
 .. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.png?branch=master
   :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
 
-The documentation is hosted at http://pillow.readthedocs.org/. It contains installation instructions, tutorials, reference, compatibility details, and more.
+The documentation is hosted at http://pillow.readthedocs.org/. It contains installation instructions, tutorials, reference, compatibility details and more.
