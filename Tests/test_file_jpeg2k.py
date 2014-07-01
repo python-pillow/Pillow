@@ -44,7 +44,6 @@ class TestFileJpeg2k(PillowTestCase):
             data = BytesIO(f.read())
         im = Image.open(data)
         im.load()
-        print ("bytesio")
         self.assert_image_similar(im, test_card, 1.0e-3)
 
     # These two test pre-written JPEG 2000 files that were not written with
