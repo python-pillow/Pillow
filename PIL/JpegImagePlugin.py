@@ -360,8 +360,7 @@ class JpegImageFile(ImageFile.ImageFile):
         f, path = tempfile.mkstemp()
         os.close(f)
         if os.path.exists(self.filename):
-            with open(path, 'wb') as f:
-                subprocess.check_call(["djpeg", self.filename], stdout=f)
+            subprocess.check_call(["djpeg", "-outfile", path, self.filename])
         else:
             raise ValueError("Invalid Filename")
 
@@ -606,8 +605,7 @@ def _save_cjpeg(im, fp, filename):
     import os
     import subprocess
     tempfile = im._dump()
-    with open(filename, 'wb') as f:
-        subprocess.check_call(["cjpeg", tempfile], stdout=f)
+    subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
     try:
         os.unlink(file)
     except:
