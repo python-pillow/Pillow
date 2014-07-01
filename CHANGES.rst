@@ -4,6 +4,12 @@ Changelog (Pillow)
 2.5.0 (unreleased)
 ------------------
 
+- Imagedraw rewrite
+  [terseus, wiredfool]
+
+- Add support for multithreaded test execution
+  [wiredfool]
+
 - Prevent shell injection #748
   [mbrown1413, wiredfool]
   
