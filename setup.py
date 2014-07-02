@@ -90,7 +90,7 @@ except (ImportError, OSError):
 
 
 NAME = 'Pillow'
-VERSION = '2.4.0'
+PILLOW_VERSION = '2.5.0'
 TCL_ROOT = None
 JPEG_ROOT = None
 JPEG2K_ROOT = None
@@ -622,7 +622,7 @@ class pil_build_ext(build_ext):
         print("-" * 68)
         print("PIL SETUP SUMMARY")
         print("-" * 68)
-        print("version      Pillow %s" % VERSION)
+        print("version      Pillow %s" % PILLOW_VERSION)
         v = sys.version.split("[")
         print("platform     %s %s" % (sys.platform, v[0].strip()))
         for v in v[1:]:
@@ -718,7 +718,7 @@ class pil_build_ext(build_ext):
 
 setup(
     name=NAME,
-    version=VERSION,
+    version=PILLOW_VERSION,
     description='Python Imaging Library (Fork)',
     long_description=(
         _read('README.rst') + b'\n' +
