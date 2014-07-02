@@ -96,6 +96,7 @@ class GifImageFile(ImageFile.ImageFile):
             # rewind
             self.__offset = 0
             self.dispose = None
+            self.dispose_extent = [0, 0, 0, 0] #x0, y0, x1, y1
             self.__frame = -1
             self.__fp.seek(self.__rewind)
 
@@ -114,12 +115,12 @@ class GifImageFile(ImageFile.ImageFile):
             self.__offset = 0
 
         if self.dispose:
-            self.im = self.dispose
-            self.dispose = None
+            self.im.paste(self.dispose, self.dispose_extent)
 
         from copy import copy
         self.palette = copy(self.global_palette)
 
+        disposal_method = 0
         while True:
 
             s = self.fp.read(1)
@@ -140,17 +141,10 @@ class GifImageFile(ImageFile.ImageFile):
                     if flags & 1:
                         self.info["transparency"] = i8(block[3])
                     self.info["duration"] = i16(block[1:3]) * 10
-                    try:
-                        # disposal methods
-                        if flags & 8:
-                            # replace with background colour
-                            self.dispose = Image.core.fill("P", self.size,
-                                self.info["background"])
-                        elif flags & 16:
-                            # replace with previous contents
-                            self.dispose = self.im.copy()
-                    except (AttributeError, KeyError):
-                        pass
+
+                    # disposal method - find the value of bits 4 - 6
+                    disposal_method = 0b00011100 & flags
+                    disposal_method = disposal_method >> 2
                 elif i8(s) == 255:
                     #
                     # application extension
@@ -172,6 +166,7 @@ class GifImageFile(ImageFile.ImageFile):
                 # extent
                 x0, y0 = i16(s[0:]), i16(s[2:])
                 x1, y1 = x0 + i16(s[4:]), y0 + i16(s[6:])
+                self.dispose_extent = x0, y0, x1, y1
                 flags = i8(s[8])
 
                 interlace = (flags & 64) != 0
@@ -193,6 +188,26 @@ class GifImageFile(ImageFile.ImageFile):
             else:
                 pass
                 # raise IOError, "illegal GIF tag `%x`" % i8(s)
+
+        try:
+            if disposal_method < 2:
+                # do not dispose or none specified
+                self.dispose = None
+            elif disposal_method == 2:
+                # replace with background colour
+                self.dispose = Image.core.fill("P", self.size,
+                                               self.info["background"])
+            else:
+                # replace with previous contents
+                if self.im:
+                    self.dispose = self.im.copy()
+
+            # only dispose the extent in this frame
+            if self.dispose:
+                self.dispose = self.dispose.crop(self.dispose_extent)
+        except (AttributeError, KeyError):
+            pass
+
 
         if not self.tile:
             # self.__fp = None
