@@ -253,3 +253,8 @@ current versions of Linux, OS X, and Windows.
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Windows 8.1 Pro                  |Yes          | 2.6,2.7,3.2,3.3,3.4          | 2.3.0, 2.4.0                 |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
+
+Old Versions
+------------
+
+You can download old distributions from `PyPI <https://pypi.python.org/pypi/Pillow>`_. Only the latest 1.x and 2.x releases are visible, but all releases are available by direct URL access e.g. https://pypi.python.org/pypi/Pillow/1.0.
