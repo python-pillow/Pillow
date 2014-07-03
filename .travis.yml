@@ -40,7 +40,8 @@ script:
 
 after_success:
   - coverage report
-  - coveralls
+    # No need to send empty coverage to Coveralls for PyPy
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coveralls; fi
 
   - pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
