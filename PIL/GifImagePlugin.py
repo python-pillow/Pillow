@@ -144,8 +144,14 @@ class GifImageFile(ImageFile.ImageFile):
                     self.info["duration"] = i16(block[1:3]) * 10
 
                     # disposal method - find the value of bits 4 - 6
-                    self.disposal_method = 0b00011100 & flags
-                    self.disposal_method = self.disposal_method >> 2
+                    dispose_bits = 0b00011100 & flags
+                    dispose_bits = dispose_bits >> 2
+                    if dispose_bits:
+                        # only set the dispose if it is not
+                        # unspecified. I'm not sure if this is
+                        # correct, but it seems to prevent the last
+                        # frame from looking odd for some animations
+                        self.disposal_method = dispose_bits
                 elif i8(s) == 255:
                     #
                     # application extension
