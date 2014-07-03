@@ -44,7 +44,6 @@ PIL needs you! Please help us maintain the Python Imaging Library here:
 
 - `GitHub <https://github.com/python-pillow/Pillow>`_
 - `Freenode <irc://irc.freenode.net#pil>`_
-- `Image-SIG <http://mail.python.org/mailman/listinfo/image-sig>`_
 
 Financial
 ---------
