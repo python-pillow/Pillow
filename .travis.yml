@@ -2,6 +2,7 @@ language:
   - objective-c
 
 env:
+  global: LATEST_TAG=1
   matrix:
     - VERSION=2.7.7
     - VERSION=3.3.5
@@ -12,8 +13,10 @@ install:
     - get_python_environment macpython $VERSION venv
     - pip install delocate
     - cd Pillow
-    # Needs patch for python3 / homebrew detection
-    - patch -p1 < ../pillow.patch
+    - if [ -n "$LATEST_TAG" ]; then
+      git fetch --tags ;
+      git checkout `git describe --abbrev=0 --tags` ;
+      fi
     - python setup.py bdist_wheel
     - delocate-wheel dist/*.whl
     - rename_wheels dist/*.whl
