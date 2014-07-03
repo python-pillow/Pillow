@@ -99,6 +99,8 @@ class GifImageFile(ImageFile.ImageFile):
             self.dispose_extent = [0, 0, 0, 0] #x0, y0, x1, y1
             self.__frame = -1
             self.__fp.seek(self.__rewind)
+            self._prev_im = None
+            self.disposal_method = 0
 
         if frame != self.__frame + 1:
             raise ValueError("cannot seek to frame %d" % frame)
@@ -120,7 +122,6 @@ class GifImageFile(ImageFile.ImageFile):
         from copy import copy
         self.palette = copy(self.global_palette)
 
-        disposal_method = 0
         while True:
 
             s = self.fp.read(1)
@@ -143,8 +144,8 @@ class GifImageFile(ImageFile.ImageFile):
                     self.info["duration"] = i16(block[1:3]) * 10
 
                     # disposal method - find the value of bits 4 - 6
-                    disposal_method = 0b00011100 & flags
-                    disposal_method = disposal_method >> 2
+                    self.disposal_method = 0b00011100 & flags
+                    self.disposal_method = self.disposal_method >> 2
                 elif i8(s) == 255:
                     #
                     # application extension
@@ -190,10 +191,10 @@ class GifImageFile(ImageFile.ImageFile):
                 # raise IOError, "illegal GIF tag `%x`" % i8(s)
 
         try:
-            if disposal_method < 2:
+            if self.disposal_method < 2:
                 # do not dispose or none specified
                 self.dispose = None
-            elif disposal_method == 2:
+            elif self.disposal_method == 2:
                 # replace with background colour
                 self.dispose = Image.core.fill("P", self.size,
                                                self.info["background"])
@@ -220,6 +221,18 @@ class GifImageFile(ImageFile.ImageFile):
     def tell(self):
         return self.__frame
 
+    def load_end(self):
+        ImageFile.ImageFile.load_end(self)
+
+        # if the disposal method is 'do not dispose', transparent
+        # pixels should show the content of the previous frame
+        if self._prev_im and self.disposal_method == 1:
+            # we do this by pasting the updated area onto the previous
+            # frame which we then use as the current image content
+            updated = self.im.crop(self.dispose_extent)
+            self._prev_im.paste(updated, self.dispose_extent, updated.convert('RGBA'))
+            self.im = self._prev_im
+        self._prev_im = self.im.copy()
 
 # --------------------------------------------------------------------
 # Write GIF files
