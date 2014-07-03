@@ -14,8 +14,9 @@ install:
     - pip install delocate
     - cd Pillow
     - if [ -n "$LATEST_TAG" ]; then
+      git fetch
       git fetch --tags ;
-      git checkout `git describe --abbrev=0 --tags` ;
+      git checkout `git describe --abbrev=0 --tags origin/master` ;
       fi
     - python setup.py bdist_wheel
     - delocate-wheel dist/*.whl
