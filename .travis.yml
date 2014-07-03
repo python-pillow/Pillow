@@ -4,7 +4,8 @@ language:
 env:
   global: LATEST_TAG=1
   matrix:
-    - VERSION=2.7.7
+    - VERSION=2.6.9
+    - VERSION=2.7.8
     - VERSION=3.2.5
     - VERSION=3.3.5
     - VERSION=3.4.1
