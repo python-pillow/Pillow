@@ -8,3 +8,4 @@ Guides
   handbook/tutorial
   handbook/concepts
   porting-pil-to-pillow
+  developer

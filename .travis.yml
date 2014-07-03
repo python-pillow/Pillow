@@ -41,8 +41,15 @@ script:
 after_success:
   - coverage report
   - coveralls
+
   - pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
   - pep8  --statistics --count Tests/*.py
   - pyflakes PIL/*.py   | tee >(wc -l)
   - pyflakes Tests/*.py | tee >(wc -l)
+
+
+    # Coverage and quality reports on just the latest diff.
+    # (Installation is very slow on Py3, so just do it for Py2.)
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-install.sh; fi
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-run.sh; fi

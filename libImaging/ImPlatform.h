@@ -17,7 +17,7 @@
 #error Sorry, this library requires ANSI header files.
 #endif
 
-#if !defined(PIL_USE_INLINE)
+#if defined(PIL_NO_INLINE)
 #define inline 
 #else
 #if defined(_MSC_VER) && !defined(__GNUC__)

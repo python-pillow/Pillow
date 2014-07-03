@@ -1,3 +1,5 @@
+import sys
+
 from helper import *
 
 # This test is not run automatically.
@@ -18,6 +20,7 @@ YDIM = 32769
 XDIM = 48000
 
 
+@unittest.skipIf(sys.maxsize <= 2**32, "requires 64 bit system")
 class LargeMemoryNumpyTest(PillowTestCase):
 
     def _write_png(self, xdim, ydim):
