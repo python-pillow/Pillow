@@ -5,6 +5,7 @@ env:
   global: LATEST_TAG=1
   matrix:
     - VERSION=2.7.7
+    - VERSION=3.2.5
     - VERSION=3.3.5
     - VERSION=3.4.1
 
@@ -14,9 +15,9 @@ install:
     - pip install delocate
     - cd Pillow
     - if [ -n "$LATEST_TAG" ]; then
-      git fetch
+      git fetch ;
       git fetch --tags ;
-      git checkout `git describe --abbrev=0 --tags origin/master` ;
+      git checkout `../terryfy/git-latest-tag` ;
       fi
     - python setup.py bdist_wheel
     - delocate-wheel dist/*.whl
