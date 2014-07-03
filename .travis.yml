@@ -29,6 +29,11 @@ install:
 script:
     - cd Pillow
     - python selftest.py --installed
+    - if [ -f test-installed.py ]; then
+      python test-installed.py ;
+      else
+      python Tests/run.py --installed ;
+      fi
     - cd ..
 
 before_deploy: cd Pillow/dist
