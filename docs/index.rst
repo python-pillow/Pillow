@@ -19,7 +19,7 @@ Pillow is the 'friendly' PIL fork by Alex Clark and Contributors. PIL is the Pyt
     :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
     :alt: Test coverage
 
-To install Pillow, please read the :doc:`installation instructions <installation>`. To download the source code and/or contribute to the development process please see: https://github.com/python-pillow/Pillow. 
+To install Pillow, please read the :doc:`installation instructions <installation>`. To download the source code and/or contribute to the development of Pillow please see: https://github.com/python-pillow/Pillow. 
 
 .. toctree::
    :maxdepth: 2
@@ -30,29 +30,6 @@ To install Pillow, please read the :doc:`installation instructions <installation
    reference/index.rst
    handbook/appendices
    original-readme
-
-Support Pillow!
-===============
-
-PIL needs you! Please help us maintain the Python Imaging Library here:
-
-- `GitHub <https://github.com/python-pillow/Pillow>`_
-- `Freenode <irc://irc.freenode.net#pil>`_
-
-Financial
----------
-
-Pillow is a volunteer effort led by Alex Clark. If you can't help with
-development please consider helping us financially. Your assistance would
-be very much appreciated!
-
-.. note:: Contributors please add your name and donation preference here.
-
-======================================= =======================================
-**Developer**                           **Preference**
-======================================= =======================================
-Alex Clark (fork author)                http://gittip.com/aclark4life
-======================================= =======================================
 
 Indices and tables
 ==================
