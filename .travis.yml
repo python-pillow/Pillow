@@ -17,7 +17,7 @@ install:
     - if [ -n "$LATEST_TAG" ]; then
       git fetch ;
       git fetch --tags ;
-      git checkout `../terryfy/git-latest-tag` ;
+      git checkout `../terryfy/git-closest-tag` ;
       fi
     - python setup.py bdist_wheel
     - delocate-wheel dist/*.whl
