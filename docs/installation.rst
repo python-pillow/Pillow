@@ -130,17 +130,13 @@ Prerequisites are installed on **Fedora 20** with::
 Mac OS X installation
 ---------------------
 
-**We do not provide binaries for OS X**, so you'll need XCode to install
-Pillow. (XCode 4.2 on 10.6 will work with the Official Python binary
-distribution. Otherwise, use whatever XCode you used to compile Python.)
+We provide binaries for Windows in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow with with XCode.
 
-The easiest way to install the prerequisites is via `Homebrew
-<http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run::
+The easiest way to install external libraries is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run::
 
     $ brew install libtiff libjpeg webp little-cms2
 
-If you've built your own Python, then you should be able to install Pillow
-using::
+Install Pillow with::
 
     $ pip install Pillow
 
