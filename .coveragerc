@@ -12,3 +12,5 @@ exclude_lines =
     # Don't complain about debug code
     if Image.DEBUG:
     if DEBUG:
+    # Don't complain about Windows code as Travis is Linux
+    if sys.platform == "win32":
