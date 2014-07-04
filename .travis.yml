@@ -29,6 +29,7 @@ script:
     - cd Pillow
     - python selftest.py --installed
     - pip install nose
+    - export NOSE_PROCESSES=0
     - if [ -f test-installed.py ]; then
       python test-installed.py ;
       else
