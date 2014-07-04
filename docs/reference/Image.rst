@@ -49,8 +49,7 @@ Functions
 
 .. autofunction:: open
 
-    .. warning:: > To protect against potential DOS attacks caused by "
-`decompression bombs<https://en.wikipedia.org/wiki/Zip_bomb>`_" (i.e. malicious files which decompress into a huge amount of data and are designed to crash or cause disruption by using up a lot of memory), Pillow will issue a `DecompressionBombWarning` if the image is over a certain limit. If desired, the warning can be turned into an error with `warnings.simplefilter('error', Image.DecompressionBombWarning)` or suppressed entirely with `warnings.simplefilter('ignore', Image.DecompressionBombWarning)`. See also `the logging documentation<https://docs.python.org/2/library/logging.html?highlight=logging#integration-with-the-warnings-module>`_ to have warnings output to the logging facility instead of stderr.
+    .. warning:: > To protect against potential DOS attacks caused by "`decompression bombs<https://en.wikipedia.org/wiki/Zip_bomb>`_" (i.e. malicious files which decompress into a huge amount of data and are designed to crash or cause disruption by using up a lot of memory), Pillow will issue a `DecompressionBombWarning` if the image is over a certain limit. If desired, the warning can be turned into an error with `warnings.simplefilter('error', Image.DecompressionBombWarning)` or suppressed entirely with `warnings.simplefilter('ignore', Image.DecompressionBombWarning)`. See also `the logging documentation<https://docs.python.org/2/library/logging.html?highlight=logging#integration-with-the-warnings-module>`_ to have warnings output to the logging facility instead of stderr.
 
 Image processing
 ^^^^^^^^^^^^^^^^
