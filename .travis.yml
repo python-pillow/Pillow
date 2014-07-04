@@ -30,6 +30,7 @@ script:
     - python selftest.py --installed
     - pip install nose
     - export NOSE_PROCESS_TIMEOUT=600
+    - export NOSE_PROCESSES=-1
     - if [ -f test-installed.py ]; then
       python test-installed.py ;
       else
