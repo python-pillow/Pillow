@@ -19,7 +19,7 @@ Pillow is the 'friendly' PIL fork by Alex Clark and Contributors. PIL is the Pyt
     :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
     :alt: Test coverage
 
-To install Pillow, please read the :doc:`installation instructions <installation>`. To download the source code and/or contribute to the development of Pillow please see: https://github.com/python-pillow/Pillow. 
+To install Pillow, please follow the :doc:`installation instructions <installation>`. To download source and/or contribute to development of Pillow please see: https://github.com/python-pillow/Pillow. 
 
 .. toctree::
    :maxdepth: 2
