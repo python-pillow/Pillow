@@ -44,6 +44,10 @@ run::
 External libraries
 ------------------
 
+.. note::
+
+    You *do not* need to install all of the external libraries to use Pillow's basic features.
+
 Many of Pillow's features require external libraries:
 
 * **libjpeg** provides JPEG functionality.
@@ -92,11 +96,6 @@ Linux installation
     Fedora, Debian/Ubuntu, and ArchLinux include Pillow (instead of PIL) with
     their distributions. Consider using those instead of installing manually.
 
-.. note::
-
-    You *do not* need to install all of the external libraries to get Pillow's
-    basics to work.
-
 **We do not provide binaries for Linux.** If you didn't build Python from
 source, make sure you have Python's development libraries installed. In Debian
 or Ubuntu::
@@ -130,11 +129,6 @@ Prerequisites are installed on **Fedora 20** with::
 
 Mac OS X installation
 ---------------------
-
-.. note::
-
-    You *do not* need to install all of the external libraries to get Pillow's
-    basics to work.
 
 **We do not provide binaries for OS X**, so you'll need XCode to install
 Pillow. (XCode 4.2 on 10.6 will work with the Official Python binary
