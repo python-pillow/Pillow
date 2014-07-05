@@ -18,6 +18,9 @@ class TestFileJpeg2k(PillowTestCase):
     def setUp(self):
         if "jpeg2k_encoder" not in codecs or "jpeg2k_decoder" not in codecs:
             self.skipTest('JPEG 2000 support not available')
+        self.skipKnownBadTest("Jpeg2000 hangs on Travis on OSX",
+                              platform='darwin',
+                              travis=True)
 
     def roundtrip(self, im, **options):
         out = BytesIO()
