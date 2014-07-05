@@ -29,13 +29,6 @@ script:
     - cd Pillow
     - python selftest.py --installed
     - pip install nose
-    - export NOSE_PROCESS_TIMEOUT=600
-    - export NOSE_PROCESSES=-1
-    - if [ -f test-installed.py ]; then
-      python test-installed.py ;
-      else
-      python Tests/run.py --installed ;
-      fi
     - cd ..
 
 before_deploy: cd Pillow/dist
