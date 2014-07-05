@@ -131,6 +131,17 @@ class PillowTestCase(unittest.TestCase):
         self.addCleanup(self.delete_tempfile, path)      
         return path
 
+    def open_withImagemagick(self, f):
+        if not imagemagick_available():
+            raise IOError()
+
+        outfile = self.tempfile("temp.png")
+        if command_succeeds(['convert', f, outfile]):
+            from PIL import Image
+            return Image.open(outfile)
+        raise IOError()
+    
+        
 # helpers
 
 import sys
@@ -194,4 +205,7 @@ def netpbm_available():
     return command_succeeds(["ppmquant", "--help"]) and \
            command_succeeds(["ppmtogif", "--help"])
 
+def imagemagick_available():
+    return command_succeeds(['convert', '-version'])
+                            
 # End of file

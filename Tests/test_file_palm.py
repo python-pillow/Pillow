@@ -1,10 +1,11 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena
+from helper import unittest, PillowTestCase, tearDownModule, lena, imagemagick_available
 
 import os.path
 
 
 class TestFilePalm(PillowTestCase):
-
+    _roundtrip = imagemagick_available()
+    
     def helper_save_as_palm(self, mode):
         # Arrange
         im = lena(mode)
@@ -17,12 +18,25 @@ class TestFilePalm(PillowTestCase):
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
 
+    def roundtrip(self, mode):
+        if not self._roundtrip:
+            return
+        
+        im = lena(mode)
+        outfile = self.tempfile("temp.palm")
+
+        im.save(outfile)
+        converted = self.open_withImagemagick(outfile)
+        self.assert_image_equal(converted, im)
+        
+
     def test_monochrome(self):
         # Arrange
         mode = "1"
 
         # Act / Assert
         self.helper_save_as_palm(mode)
+        self.roundtrip(mode)
 
     def test_p_mode(self):
         # Arrange
@@ -30,7 +44,8 @@ class TestFilePalm(PillowTestCase):
 
         # Act / Assert
         self.helper_save_as_palm(mode)
-
+        self.roundtrip(mode)
+        
     def test_rgb_ioerror(self):
         # Arrange
         mode = "RGB"
