@@ -379,7 +379,7 @@ ImagingNew(const char* mode, int xsize, int ysize)
     } else
         bytes = strlen(mode); /* close enough */
 
-    if ((Py_ssize_t) xsize * ysize * bytes <= THRESHOLD) {
+    if ((int64_t) xsize * (int64_t) ysize * bytes <= THRESHOLD) {
         im = ImagingNewBlock(mode, xsize, ysize);
         if (im)
             return im;
