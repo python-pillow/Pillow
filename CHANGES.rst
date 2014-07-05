@@ -1,6 +1,13 @@
 Changelog (Pillow)
 ==================
 
+2.6.0 (unreleased)
+------------------
+
+- Test PalmImagePlugin and method to skip known bad tests
+  [hugovk, wiredfool]
+
+
 2.5.0 (2014-07-01)
 ------------------
 
