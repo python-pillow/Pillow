@@ -69,4 +69,6 @@
 #define	FLOAT32 float
 #define	FLOAT64 double
 
-
+#ifdef _MSC_VER
+typedef signed __int64       int64_t;
+#endif
