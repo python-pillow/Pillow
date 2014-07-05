@@ -44,6 +44,10 @@ run::
 External libraries
 ------------------
 
+.. note::
+
+    You *do not* need to install all of the external libraries to use Pillow's basic features.
+
 Many of Pillow's features require external libraries:
 
 * **libjpeg** provides JPEG functionality.
@@ -92,11 +96,6 @@ Linux installation
     Fedora, Debian/Ubuntu, and ArchLinux include Pillow (instead of PIL) with
     their distributions. Consider using those instead of installing manually.
 
-.. note::
-
-    You *do not* need to install all of the external libraries to get Pillow's
-    basics to work.
-
 **We do not provide binaries for Linux.** If you didn't build Python from
 source, make sure you have Python's development libraries installed. In Debian
 or Ubuntu::
@@ -131,22 +130,13 @@ Prerequisites are installed on **Fedora 20** with::
 Mac OS X installation
 ---------------------
 
-.. note::
+We provide binaries for OS X in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow with with XCode.
 
-    You *do not* need to install all of the external libraries to get Pillow's
-    basics to work.
-
-**We do not provide binaries for OS X**, so you'll need XCode to install
-Pillow. (XCode 4.2 on 10.6 will work with the Official Python binary
-distribution. Otherwise, use whatever XCode you used to compile Python.)
-
-The easiest way to install the prerequisites is via `Homebrew
-<http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run::
+The easiest way to install external libraries is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run::
 
     $ brew install libtiff libjpeg webp little-cms2
 
-If you've built your own Python, then you should be able to install Pillow
-using::
+Install Pillow with::
 
     $ pip install Pillow
 
@@ -253,3 +243,8 @@ current versions of Linux, OS X, and Windows.
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 | Windows 8.1 Pro                  |Yes          | 2.6,2.7,3.2,3.3,3.4          | 2.3.0, 2.4.0                 |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
+
+Old Versions
+------------
+
+You can download old distributions from `PyPI <https://pypi.python.org/pypi/Pillow>`_. Only the latest 1.x and 2.x releases are visible, but all releases are available by direct URL access e.g. https://pypi.python.org/pypi/Pillow/1.0.

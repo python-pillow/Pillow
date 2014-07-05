@@ -3,7 +3,7 @@ language: python
 notifications:
   irc: "chat.freenode.net#pil"
 
-env: MAX_CONCURRENCY=4 NOSE_PROCESSES=4 NOSE_PROCESS_TIMEOUT=30
+env: MAX_CONCURRENCY=4
 
 python:
   - "pypy"
@@ -14,9 +14,9 @@ python:
   - 3.4
 
 install:
-  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake imagemagick"
+  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
   - "pip install cffi"
-  - "pip install coveralls nose pyroma nose-cov"
+  - "pip install coveralls nose pyroma"
   - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip install unittest2; fi
 
   # webp
@@ -35,17 +35,22 @@ script:
   - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests Tests/test_*.py; fi
 
     # Cover the others
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coverage run --parallel-mode --include=PIL/* selftest.py; fi
-     # write html report, then ignore. Coverage needs to be combined first
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then nosetests --with-cov --cov='PIL/' --cov-report=html Tests/test_*.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose Tests/test_*.py; fi
 
 after_success:
-  - ls -l .coverage*
-  - coverage combine
   - coverage report
-  - coveralls
+    # No need to send empty coverage to Coveralls for PyPy
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coveralls; fi
+
   - pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
   - pep8  --statistics --count Tests/*.py
   - pyflakes PIL/*.py   | tee >(wc -l)
   - pyflakes Tests/*.py | tee >(wc -l)
+
+
+    # Coverage and quality reports on just the latest diff.
+    # (Installation is very slow on Py3, so just do it for Py2.)
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-install.sh; fi
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-run.sh; fi

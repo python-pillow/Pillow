@@ -9,12 +9,10 @@ The fork authors' goal is to foster active development of PIL through:
 - Continuous integration testing via `Travis CI`_
 - Publicized development activity on `GitHub`_
 - Regular releases to the `Python Package Index`_
-- Solicitation for community contributions and involvement on `Image-SIG`_
 
 .. _Travis CI: https://travis-ci.org/python-pillow/Pillow
 .. _GitHub: https://github.com/python-pillow/Pillow
 .. _Python Package Index: https://pypi.python.org/pypi/Pillow
-.. _Image-SIG: http://mail.python.org/mailman/listinfo/image-sig
 
 License
 -------

@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.5.0 (unreleased)
+2.5.0 (2014-07-01)
 ------------------
 
 - Imagedraw rewrite

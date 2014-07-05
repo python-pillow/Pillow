@@ -172,18 +172,16 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         fd = -1
         length = -1
 
-        if hasattr(self.fp, "fileno"):
+        try:
+            fd = self.fp.fileno()
+            length = os.fstat(fd).st_size
+        except:
+            fd = -1
             try:
-                fd = self.fp.fileno()
-                length = os.fstat(fd).st_size
-            except:
-                fd = -1
-        elif hasattr(self.fp, "seek"):
-            try:
-                pos = f.tell()
-                f.seek(0, 2)
-                length = f.tell()
-                f.seek(pos, 0)
+                pos = self.fp.tell()
+                self.fp.seek(0, 2)
+                length = self.fp.tell()
+                self.fp.seek(pos, 0)
             except:
                 length = -1
 
