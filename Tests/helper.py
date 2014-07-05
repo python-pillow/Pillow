@@ -123,6 +123,21 @@ class PillowTestCase(unittest.TestCase):
             self.assertTrue(found)
         return result
 
+    def skipKnownBadTest(self, msg=None, platform=None, travis=None):
+        # Skip if platform/travis matches, and
+        # PILLOW_RUN_KNOWN_BAD is not true in the environment.
+        if bool(os.environ.get('PILLOW_RUN_KNOWN_BAD', False)):
+            print (os.environ.get('PILLOW_RUN_KNOWN_BAD', False))
+            return
+
+        skip = True
+        if platform is not None:
+            skip = sys.platform.startswith(platform)
+        if travis is not None:
+            skip = skip and (travis == bool(os.environ.get('TRAVIS',False)))
+        if skip:
+            self.skipTest(msg or "Known Bad Test")
+
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")
         (fd, path) = tempfile.mkstemp(template[4:], template[:4])
@@ -131,6 +146,17 @@ class PillowTestCase(unittest.TestCase):
         self.addCleanup(self.delete_tempfile, path)      
         return path
 
+    def open_withImagemagick(self, f):
+        if not imagemagick_available():
+            raise IOError()
+
+        outfile = self.tempfile("temp.png")
+        if command_succeeds(['convert', f, outfile]):
+            from PIL import Image
+            return Image.open(outfile)
+        raise IOError()
+    
+        
 # helpers
 
 import sys
@@ -194,4 +220,7 @@ def netpbm_available():
     return command_succeeds(["ppmquant", "--help"]) and \
            command_succeeds(["ppmtogif", "--help"])
 
+def imagemagick_available():
+    return command_succeeds(['convert', '-version'])
+                            
 # End of file
