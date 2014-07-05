@@ -13,12 +13,8 @@ install:
     - source run_install.sh
     - get_python_environment macpython $VERSION venv
     - pip install delocate
+    - if [ -n "$LATEST_TAG" ]; then checkout_closest_tag Pillow; fi
     - cd Pillow
-    - if [ -n "$LATEST_TAG" ]; then
-      git fetch ;
-      git fetch --tags ;
-      git checkout `../terryfy/git-closest-tag origin/master` ;
-      fi
     - python setup.py bdist_wheel
     - delocate-wheel dist/*.whl
     - rename_wheels dist/*.whl
