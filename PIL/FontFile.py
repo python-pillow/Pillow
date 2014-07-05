@@ -134,7 +134,7 @@ class FontFile:
 
         fp = open(os.path.splitext(filename)[0] + ".pil", "wb")
 
-        fp.write(b"PILfont2\n" + self.name + "\n" + "DATA\n")
+        fp.write(b"PILfont2\n" + self.name.encode('ascii') + b"\n" + b"DATA\n")
 
         fp.write(data)
 
