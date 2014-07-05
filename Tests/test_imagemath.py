@@ -14,8 +14,12 @@ def pixel(im):
 
 A = Image.new("L", (1, 1), 1)
 B = Image.new("L", (1, 1), 2)
+Z = Image.new("L", (1, 1), 0)  # Z for zero
 F = Image.new("F", (1, 1), 3)
 I = Image.new("I", (1, 1), 4)
+
+A2 = A.resize((2, 2))
+B2 = B.resize((2, 2))
 
 images = {"A": A, "B": B, "F": F, "I": I}
 
@@ -70,6 +74,86 @@ class TestImageMath(PillowTestCase):
         self.assertEqual(pixel(ImageMath.eval("max(A, B)", images)), "I 2")
         self.assertEqual(pixel(ImageMath.eval("A == 1", images)), "I 1")
         self.assertEqual(pixel(ImageMath.eval("A == 2", images)), "I 0")
+
+    def test_one_image_larger(self):
+        self.assertEqual(pixel(ImageMath.eval("A+B", A=A2, B=B)), "I 3")
+        self.assertEqual(pixel(ImageMath.eval("A+B", A=A, B=B2)), "I 3")
+
+    def test_abs(self):
+        self.assertEqual(pixel(ImageMath.eval("abs(A)", A=A)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("abs(B)", B=B)), "I 2")
+
+    def test_bitwise_invert(self):
+        self.assertEqual(pixel(ImageMath.eval("~Z", Z=Z)), "I -1")
+        self.assertEqual(pixel(ImageMath.eval("~A", A=A)), "I -2")
+        self.assertEqual(pixel(ImageMath.eval("~B", B=B)), "I -3")
+
+    def test_bitwise_and(self):
+        self.assertEqual(pixel(ImageMath.eval("Z&Z", A=A, Z=Z)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("Z&A", A=A, Z=Z)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("A&Z", A=A, Z=Z)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("A&A", A=A, Z=Z)), "I 1")
+
+    def test_bitwise_or(self):
+        self.assertEqual(pixel(ImageMath.eval("Z|Z", A=A, Z=Z)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("Z|A", A=A, Z=Z)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A|Z", A=A, Z=Z)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A|A", A=A, Z=Z)), "I 1")
+
+    def test_bitwise_xor(self):
+        self.assertEqual(pixel(ImageMath.eval("Z^Z", A=A, Z=Z)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("Z^A", A=A, Z=Z)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A^Z", A=A, Z=Z)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A^A", A=A, Z=Z)), "I 0")
+
+    def test_bitwise_leftshift(self):
+        self.assertEqual(pixel(ImageMath.eval("Z<<0", Z=Z)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("Z<<1", Z=Z)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("A<<0", A=A)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A<<1", A=A)), "I 2")
+
+    def test_bitwise_rightshift(self):
+        self.assertEqual(pixel(ImageMath.eval("Z>>0", Z=Z)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("Z>>1", Z=Z)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("A>>0", A=A)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A>>1", A=A)), "I 0")
+
+    def test_logical_eq(self):
+        self.assertEqual(pixel(ImageMath.eval("A==A", A=A)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("B==B", B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A==B", A=A, B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("B==A", A=A, B=B)), "I 0")
+
+    def test_logical_ne(self):
+        self.assertEqual(pixel(ImageMath.eval("A!=A", A=A)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("B!=B", B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("A!=B", A=A, B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("B!=A", A=A, B=B)), "I 1")
+
+    def test_logical_lt(self):
+        self.assertEqual(pixel(ImageMath.eval("A<A", A=A)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("B<B", B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("A<B", A=A, B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("B<A", A=A, B=B)), "I 0")
+
+    def test_logical_le(self):
+        self.assertEqual(pixel(ImageMath.eval("A<=A", A=A)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("B<=B", B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A<=B", A=A, B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("B<=A", A=A, B=B)), "I 0")
+
+    def test_logical_gt(self):
+        self.assertEqual(pixel(ImageMath.eval("A>A", A=A)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("B>B", B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("A>B", A=A, B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("B>A", A=A, B=B)), "I 1")
+
+    def test_logical_ge(self):
+        self.assertEqual(pixel(ImageMath.eval("A>=A", A=A)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("B>=B", B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A>=B", A=A, B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("B>=A", A=A, B=B)), "I 1")
+
 
 
 if __name__ == '__main__':
