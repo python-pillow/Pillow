@@ -2,7 +2,7 @@ language:
   - objective-c
 
 env:
-  global: LATEST_TAG=1
+    # global: LATEST_TAG=1
   matrix:
     - VERSION=2.7.8
     - VERSION=3.2.5
