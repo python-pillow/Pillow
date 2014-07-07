@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena, py3
+from helper import unittest, PillowTestCase, lena, py3
 from helper import djpeg_available, cjpeg_available
 
 import random

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule
+from helper import unittest, PillowTestCase
 
 from PIL import Image
 
@@ -43,6 +43,17 @@ class TestImage(PillowTestCase):
 
         file = self.tempfile("temp.ppm")
         im._dump(file)
+
+    def test_comparison_with_other_type(self):
+        # Arrange
+        item = Image.new('RGB', (25, 25), '#000')
+        num = 12
+
+        # Act/Assert
+        # Shouldn't cause AttributeError (#774)
+        self.assertFalse(item is None)
+        self.assertFalse(item == None)
+        self.assertFalse(item == num)
 
 
 if __name__ == '__main__':

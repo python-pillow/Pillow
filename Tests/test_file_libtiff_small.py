@@ -1,4 +1,4 @@
-from helper import unittest, tearDownModule
+from helper import unittest
 
 from PIL import Image
 

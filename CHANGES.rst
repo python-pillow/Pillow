@@ -4,9 +4,18 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
-- Test PalmImagePlugin and method to skip known bad tests
-  [hugovk, wiredfool]
+- Fix dispose calculations for animated GIFs #765
+  [larsjsol]
 
+- 32bit mult overflow fix #782
+  [wiredfool]
+
+- Added class checking to Image __eq__ function #775
+  [radarhere, hugovk]
+
+- Test PalmImagePlugin and method to skip known bad tests #776
+  [hugovk, wiredfool]
+  
 
 2.5.0 (2014-07-01)
 ------------------
