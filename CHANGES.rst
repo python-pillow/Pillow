@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Fix dispose calculations for animated GIFs #765
+  [larsjsol]
+
 - 32bit mult overflow fix #782
   [wiredfool]
 
