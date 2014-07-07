@@ -7,40 +7,41 @@ class TestUtil(PillowTestCase):
 
     def test_is_string_type(self):
         # Arrange
-        text = "abc"
+        color = "red"
 
         # Act
-        it_is = _util.isStringType(text)
+        it_is = _util.isStringType(color)
 
         # Assert
         self.assertTrue(it_is)
 
     def test_is_not_string_type(self):
         # Arrange
-        integer = 123
+        color = (255, 0, 0)
 
         # Act
-        it_is_not = _util.isStringType(integer)
+        it_is_not = _util.isStringType(color)
 
         # Assert
         self.assertFalse(it_is_not)
 
     def test_is_path(self):
         # Arrange
-        text = "abc"
+        fp = "filename.ext"
 
         # Act
-        it_is = _util.isStringType(text)
+        it_is = _util.isStringType(fp)
 
         # Assert
         self.assertTrue(it_is)
 
     def test_is_not_path(self):
         # Arrange
-        integer = 123
+        filename = self.tempfile("temp.ext")
+        fp = open(filename, 'w').close()
 
         # Act
-        it_is_not = _util.isPath(integer)
+        it_is_not = _util.isPath(fp)
 
         # Assert
         self.assertFalse(it_is_not)
