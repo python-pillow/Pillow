@@ -106,6 +106,50 @@ class TestFileGif(PillowTestCase):
         GifImagePlugin._save_netpbm(img, 0, tempfile)
         self.assert_image_similar(img, Image.open(tempfile).convert("L"), 0)
 
+    def test_seek(self):
+        img = Image.open("Tests/images/dispose_none.gif")
+        framecount = 0
+        try:
+            while True:
+                framecount += 1
+                img.seek(img.tell() +1)
+        except EOFError:
+            self.assertEqual(framecount, 5)
+
+    def test_dispose_none(self):
+        img = Image.open("Tests/images/dispose_none.gif")
+        try:
+            while True:
+                img.seek(img.tell() +1)
+                self.assertEqual(img.disposal_method, 1)
+        except EOFError:
+            pass
+
+    def test_dispose_background(self):
+        img = Image.open("Tests/images/dispose_bgnd.gif")
+        try:
+            while True:
+                img.seek(img.tell() +1)
+                self.assertEqual(img.disposal_method, 2)
+        except EOFError:
+            pass
+
+    def test_dispose_previous(self):
+        img = Image.open("Tests/images/dispose_prev.gif")
+        try:
+            while True:
+                img.seek(img.tell() +1)
+                self.assertEqual(img.disposal_method, 3)
+        except EOFError:
+            pass
+
+    def test_iss634(self):
+        img = Image.open("Tests/images/iss634.gif")
+        # seek to the second frame
+        img.seek(img.tell() +1)
+        # all transparent pixels should be replaced with the color from the first frame
+        self.assertEqual(img.histogram()[img.info['transparency']], 0)
+
 
 if __name__ == '__main__':
     unittest.main()
