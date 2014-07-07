@@ -114,14 +114,14 @@ class TestFileGif(PillowTestCase):
                 framecount += 1
                 img.seek(img.tell() +1)
         except EOFError:
-            assert(framecount == 5)
+            self.assertEqual(framecount, 5)
 
     def test_dispose_none(self):
         img = Image.open("Tests/images/dispose_none.gif")
         try:
             while True:
                 img.seek(img.tell() +1)
-                assert(img.disposal_method == 1)
+                self.assertEqual(img.disposal_method, 1)
         except EOFError:
             pass
 
@@ -130,7 +130,7 @@ class TestFileGif(PillowTestCase):
         try:
             while True:
                 img.seek(img.tell() +1)
-                assert(img.disposal_method == 2)
+                self.assertEqual(img.disposal_method, 2)
         except EOFError:
             pass
 
@@ -139,7 +139,7 @@ class TestFileGif(PillowTestCase):
         try:
             while True:
                 img.seek(img.tell() +1)
-                assert(img.disposal_method == 3)
+                self.assertEqual(img.disposal_method, 3)
         except EOFError:
             pass
 
@@ -148,7 +148,7 @@ class TestFileGif(PillowTestCase):
         # seek to the second frame
         img.seek(img.tell() +1)
         # all transparent pixels should be replaced with the color from the first frame
-        assert(img.histogram()[img.info['transparency']] == 0)
+        self.assertEqual(img.histogram()[img.info['transparency']], 0)
 
 
 if __name__ == '__main__':
