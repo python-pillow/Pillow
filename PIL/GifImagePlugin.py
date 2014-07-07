@@ -101,6 +101,10 @@ class GifImageFile(ImageFile.ImageFile):
             self.__fp.seek(self.__rewind)
             self._prev_im = None
             self.disposal_method = 0
+        else:
+            # ensure that the previous frame was loaded
+            if not self.im:
+                self.load()
 
         if frame != self.__frame + 1:
             raise ValueError("cannot seek to frame %d" % frame)
