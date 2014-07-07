@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena, netpbm_available
+from helper import unittest, PillowTestCase, lena, netpbm_available
 
 from PIL import Image
 from PIL import GifImagePlugin
