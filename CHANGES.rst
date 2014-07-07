@@ -6,6 +6,9 @@ Changelog (Pillow)
 
 - Test PalmImagePlugin and method to skip known bad tests
   [hugovk, wiredfool]
+  
+- Added class checking to Image __eq__ function
+  [radarhere, hugovk]
 
 
 2.5.0 (2014-07-01)
