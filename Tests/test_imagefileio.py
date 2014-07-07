@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena, tostring
+from helper import unittest, PillowTestCase, lena, tostring
 
 from PIL import Image
 from PIL import ImageFileIO

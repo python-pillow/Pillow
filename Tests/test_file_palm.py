@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena, imagemagick_available
+from helper import unittest, PillowTestCase, lena, imagemagick_available
 
 import os.path
 
