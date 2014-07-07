@@ -38,8 +38,8 @@ before_deploy: cd Pillow/dist
 deploy:
   provider: cloudfiles
   username: travis-worker
-  api_key:
-    secure: ZcwPFUNQlkSXqy7QRbgJsDwK0feE5ju3ISEbYcjl+zG/C8h/vZVOJpoG4PaeOrTRb2k4VaG/zPM4mN1JJKo4qR4c4X4hHY+sPldiD86ubT0tOPD6Mrm9xgu3KBOIg7OO5uiS6VppGkS/G/zfmMiFl97nxfwp9ecsXdKRieiw2kI=
+  api-key:
+    secure: nhBa8C26Je374Gbo3htQAgJ4H3ZnRTS/R+hKfgqOOkehdGrW6WLlrTe+6oVx1cFsoXVmUamKAmi7v3VNTiG3CbXfTUl1tKyjTSrIXE6rnaFbgHN6vzSTQbdXG97K7OBT31PK0JdFsR+x4VH9tyDhCWEMCtR9aBz8+YfleMNX1Eg=
   region: ORD
   container: wheels
   skip_cleanup: true
