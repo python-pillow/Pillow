@@ -573,6 +573,8 @@ class Image:
         return file
 
     def __eq__(self, other):
+        if self.__class__.__name__ != other.__class__.__name__:
+            return False
         a = (self.mode == other.mode)
         b = (self.size == other.size)
         c = (self.getpalette() == other.getpalette())
