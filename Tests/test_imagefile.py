@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena, fromstring, tostring
+from helper import unittest, PillowTestCase, lena, fromstring, tostring
 
 from io import BytesIO
 

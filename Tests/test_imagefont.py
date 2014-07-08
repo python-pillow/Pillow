@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule
+from helper import unittest, PillowTestCase
 
 from PIL import Image
 from PIL import ImageDraw
@@ -71,11 +71,25 @@ try:
             self.assert_image_equal(img_path, img_filelike)
             self._clean()
 
+        def test_textsize_equal(self):
+            im = Image.new(mode='RGB', size=(300, 100))
+            draw = ImageDraw.Draw(im)
+            ttf = ImageFont.truetype(font_path, font_size)
+
+            txt = "Hello World!"
+            size = draw.textsize(txt, ttf)
+            draw.text((10, 10), txt, font=ttf)
+            draw.rectangle((10, 10, 10 + size[0], 10 + size[1]))
+
+            target = 'Tests/images/rectangle_surrounding_text.png'
+            target_img = Image.open(target)
+            self.assert_image_equal(im, target_img)
+
         def test_render_multiline(self):
             im = Image.new(mode='RGB', size=(300, 100))
             draw = ImageDraw.Draw(im)
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
-            line_spacing = draw.textsize('A', font=ttf)[1] + 8
+            line_spacing = draw.textsize('A', font=ttf)[1] + 4
             lines = ['hey you', 'you are awesome', 'this looks awkward']
             y = 0
             for line in lines:

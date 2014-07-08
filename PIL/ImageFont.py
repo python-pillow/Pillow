@@ -147,7 +147,8 @@ class FreeTypeFont:
         return self.font.ascent, self.font.descent
 
     def getsize(self, text):
-        return self.font.getsize(text)[0]
+        size, offset = self.font.getsize(text)
+        return (size[0] + offset[0], size[1] + offset[1])
 
     def getoffset(self, text):
         return self.font.getsize(text)[1]

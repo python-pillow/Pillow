@@ -79,14 +79,20 @@ Many of Pillow's features require external libraries:
 
   * Pillow has been tested with openjpeg **2.0.0** and **2.1.0**.
 
-If the prerequisites are installed in the standard library locations for your
-machine (e.g. :file:`/usr` or :file:`/usr/local`), no additional configuration
-should be required. If they are installed in a non-standard location, you may
-need to configure setuptools to use those locations (i.e. by editing
-:file:`setup.py` and/or :file:`setup.cfg`). Once you have installed the
-prerequisites, run::
+Once you have installed the prerequisites,run::
 
     $ pip install Pillow
+
+If the prerequisites are installed in the standard library locations
+for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
+additional configuration should be required. If they are installed in
+a non-standard location, you may need to configure setuptools to use
+those locations by editing :file:`setup.py` or
+:file:`setup.cfg`, or by adding environment variables on the command
+line::
+
+    $ CFLAGS="-I/usr/pkg/include" pip install pillow
+
 
 Linux installation
 ------------------
@@ -130,7 +136,7 @@ Prerequisites are installed on **Fedora 20** with::
 Mac OS X installation
 ---------------------
 
-We provide binaries for Windows in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow with with XCode.
+We provide binaries for OS X in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow with with XCode.
 
 The easiest way to install external libraries is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run::
 
