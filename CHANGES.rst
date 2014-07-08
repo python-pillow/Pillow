@@ -1,6 +1,15 @@
 Changelog (Pillow)
 ==================
 
+2.5.1 (2014-07-09)
+------------------
+
+- Fixed install issue if Multiprocessing.Pool is not available
+  [wiredfool]
+
+- 32bit mult overflow fix #782
+  [wiredfool]
+
 2.5.0 (2014-07-01)
 ------------------
 
