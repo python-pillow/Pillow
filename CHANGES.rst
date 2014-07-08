@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Fix return value of FreeTypeFont.textsize() does not include font offsets
+  [tk0miya]
+
 - Fix dispose calculations for animated GIFs #765
   [larsjsol]
 
