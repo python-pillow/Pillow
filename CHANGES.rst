@@ -3,6 +3,8 @@ Changelog (Pillow)
 
 2.6.0 (unreleased)
 ------------------
+- More tests for ImageFont and _util
+  [hugovk]
 
 - Fix return value of FreeTypeFont.textsize() does not include font offsets
   [tk0miya]
