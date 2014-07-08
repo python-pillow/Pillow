@@ -74,7 +74,7 @@ try:
         def test_textsize_equal(self):
             im = Image.new(mode='RGB', size=(300, 100))
             draw = ImageDraw.Draw(im)
-            ttf = ImageFont.truetype(font_path, font_size)
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
             txt = "Hello World!"
             size = draw.textsize(txt, ttf)
