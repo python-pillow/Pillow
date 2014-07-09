@@ -3,6 +3,10 @@ Changelog (Pillow)
 
 2.6.0 (unreleased)
 ------------------
+
+- Fixed install issue if Multiprocessing.Pool is not available
+  [wiredfool]
+
 - More tests for ImageFont and _util
   [hugovk]
 
