@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
@@ -54,6 +54,53 @@ class TestImage(PillowTestCase):
         self.assertFalse(item is None)
         self.assertFalse(item == None)
         self.assertFalse(item == num)
+
+    def test_expand_x(self):
+        # Arrange
+        im = lena()
+        orig_size = im.size
+        xmargin = 5
+
+        # Act
+        im = im._expand(xmargin)
+
+        # Assert
+        self.assertEqual(im.size[0], orig_size[0] + 2*xmargin)
+        self.assertEqual(im.size[1], orig_size[1] + 2*xmargin)
+
+    def test_expand_xy(self):
+        # Arrange
+        im = lena()
+        orig_size = im.size
+        xmargin = 5
+        ymargin = 3
+
+        # Act
+        im = im._expand(xmargin, ymargin)
+
+        # Assert
+        self.assertEqual(im.size[0], orig_size[0] + 2*xmargin)
+        self.assertEqual(im.size[1], orig_size[1] + 2*ymargin)
+
+    def test_getbands(self):
+        # Arrange
+        im = lena()
+
+        # Act
+        bands = im.getbands()
+
+        # Assert
+        self.assertEqual(bands, ('R', 'G', 'B'))
+
+    def test_getbbox(self):
+        # Arrange
+        im = lena()
+
+        # Act
+        bbox = im.getbbox()
+
+        # Assert
+        self.assertEqual(bbox, (0, 0, 128, 128))
 
 
 if __name__ == '__main__':
