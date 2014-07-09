@@ -83,6 +83,14 @@ class TestImageMath(PillowTestCase):
         self.assertEqual(pixel(ImageMath.eval("abs(A)", A=A)), "I 1")
         self.assertEqual(pixel(ImageMath.eval("abs(B)", B=B)), "I 2")
 
+    def test_binary_mod(self):
+        self.assertEqual(pixel(ImageMath.eval("A%A", A=A)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("B%B", B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("A%B", A=A, B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("B%A", A=A, B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("Z%A", A=A, Z=Z)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("Z%B", B=B, Z=Z)), "I 0")
+
     def test_bitwise_invert(self):
         self.assertEqual(pixel(ImageMath.eval("~Z", Z=Z)), "I -1")
         self.assertEqual(pixel(ImageMath.eval("~A", A=A)), "I -2")
@@ -154,6 +162,24 @@ class TestImageMath(PillowTestCase):
         self.assertEqual(pixel(ImageMath.eval("A>=B", A=A, B=B)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("B>=A", A=A, B=B)), "I 1")
 
+    def test_logical_equal(self):
+        self.assertEqual(pixel(ImageMath.eval("equal(A, A)", A=A)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("equal(B, B)", B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("equal(Z, Z)", Z=Z)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("equal(A, B)", A=A, B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("equal(B, A)", A=A, B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("equal(A, Z)", A=A, Z=Z)), "I 0")
+
+    def test_logical_not_equal(self):
+        self.assertEqual(pixel(ImageMath.eval("notequal(A, A)", A=A)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("notequal(B, B)", B=B)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("notequal(Z, Z)", Z=Z)), "I 0")
+        self.assertEqual(
+            pixel(ImageMath.eval("notequal(A, B)", A=A, B=B)), "I 1")
+        self.assertEqual(
+            pixel(ImageMath.eval("notequal(B, A)", A=A, B=B)), "I 1")
+        self.assertEqual(
+            pixel(ImageMath.eval("notequal(A, Z)", A=A, Z=Z)), "I 1")
 
 
 if __name__ == '__main__':
