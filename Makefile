@@ -15,7 +15,9 @@ pre:
 clean:
 	python setup.py clean
 	rm PIL/*.so || true
-	find . -name __pycache__ | xargs rm -r
+	rm -r build || true
+	find . -name __pycache__ | xargs rm -r || true
+
 
 install:
 	python setup.py install
