@@ -5,6 +5,11 @@ from multiprocessing import Pool, cpu_count
 from distutils.ccompiler import CCompiler
 import os
 
+try:
+    MAX_PROCS = int(os.environ.get('MAX_CONCURRENCY', cpu_count()))
+except:
+    MAX_PROCS = None
+        
 
 # hideous monkeypatching.  but. but. but.
 def _mp_compile_one(tp):
@@ -31,22 +36,27 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
         output_dir, macros, include_dirs, sources, depends, extra_postargs)
     cc_args = self._get_cc_args(pp_opts, debug, extra_preargs)
 
-    try:
-        max_procs = int(os.environ.get('MAX_CONCURRENCY', cpu_count()))
-    except:
-        max_procs = None
-    pool = Pool(max_procs)
+    pool = Pool(MAX_PROCS)
     try:
         print ("Building using %d processes" % pool._processes)
     except:
         pass
-    arr = [
-        (self, obj, build, cc_args, extra_postargs, pp_opts) for obj in objects
-        ]
+    arr = [(self, obj, build, cc_args, extra_postargs, pp_opts)
+           for obj in objects]
     pool.map_async(_mp_compile_one, arr)
     pool.close()
     pool.join()
     # Return *all* object filenames, not just the ones we just built.
     return objects
 
-CCompiler.compile = _mp_compile
+# explicitly don't enable if environment says 1 processor
+if MAX_PROCS != 1:
+    try:
+        # bug, only enable if we can make a Pool. see issue #790 and
+        # http://stackoverflow.com/questions/6033599/oserror-38-errno-38-with-multiprocessing
+        pool = Pool(2)
+        CCompiler.compile = _mp_compile
+    except Exception as msg:
+        print("Exception installing mp_compile, proceeding without: %s" %msg)
+else:
+    print("Single threaded build, not installing mp_compile: %s processes" %MAX_PROCS)
