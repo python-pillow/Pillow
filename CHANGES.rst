@@ -7,7 +7,7 @@ Changelog (Pillow)
 - Fixed install issue if Multiprocessing.Pool is not available
   [wiredfool]
 
-- More tests for ImageFont and _util
+- More tests for ImageFont, ImageMath, and _util
   [hugovk]
 
 - Fix return value of FreeTypeFont.textsize() does not include font offsets
