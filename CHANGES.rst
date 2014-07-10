@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.5.1 (2014-07-09)
+2.5.1 (2014-07-10)
 ------------------
 
 - Fixed install issue if Multiprocessing.Pool is not available
