@@ -20,14 +20,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ExifTags` Module
-----------------------
-
-.. automodule:: PIL.ExifTags
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`FontFile` Module
 ----------------------
 
@@ -82,6 +74,14 @@ can be found here.
 -------------------------
 
 .. automodule:: PIL.ImageFileIO
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`ImageMorph` Module
+------------------------
+
+.. automodule:: PIL.ImageMorph
     :members:
     :undoc-members:
     :show-inheritance:

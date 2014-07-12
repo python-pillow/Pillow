@@ -4,6 +4,7 @@ Reference
 .. toctree::
    :maxdepth: 2
 
+
    Image
    ImageChops
    ImageColor
@@ -22,5 +23,6 @@ Reference
    ImageStat
    ImageTk
    ImageWin
+   ExifTags
    PSDraw
    ../PIL
