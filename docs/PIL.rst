@@ -20,14 +20,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ExifTags` Module
-----------------------
-
-.. automodule:: PIL.ExifTags
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`FontFile` Module
 ----------------------
 
