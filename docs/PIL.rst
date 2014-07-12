@@ -78,6 +78,14 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
+:mod:`ImageMorph` Module
+------------------------
+
+.. automodule:: PIL.ImageMorph
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`ImageShow` Module
 -----------------------
 
