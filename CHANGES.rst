@@ -4,10 +4,10 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
-- Fixed install issue if Multiprocessing.Pool is not available
-  [wiredfool]
+- Added docs for ExifTags
+  [Wintermute3]
 
-- More tests for ImageFont and _util
+- More tests for ImageFont, ImageMath, and _util
   [hugovk]
 
 - Fix return value of FreeTypeFont.textsize() does not include font offsets
@@ -16,15 +16,20 @@ Changelog (Pillow)
 - Fix dispose calculations for animated GIFs #765
   [larsjsol]
 
-- 32bit mult overflow fix #782
-  [wiredfool]
-
 - Added class checking to Image __eq__ function #775
   [radarhere, hugovk]
 
 - Test PalmImagePlugin and method to skip known bad tests #776
   [hugovk, wiredfool]
   
+2.5.1 (2014-07-10)
+------------------
+
+- Fixed install issue if Multiprocessing.Pool is not available
+  [wiredfool]
+
+- 32bit mult overflow fix #782
+  [wiredfool]
 
 2.5.0 (2014-07-01)
 ------------------

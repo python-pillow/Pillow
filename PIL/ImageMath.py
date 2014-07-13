@@ -26,8 +26,10 @@ except ImportError:
 
 VERBOSE = 0
 
+
 def _isconstant(v):
     return isinstance(v, int) or isinstance(v, float)
+
 
 class _Operand:
     # wraps an image operand, providing standard operators
@@ -68,20 +70,25 @@ class _Operand:
             im2 = self.__fixup(im2)
             if im1.mode != im2.mode:
                 # convert both arguments to floating point
-                if im1.mode != "F": im1 = im1.convert("F")
-                if im2.mode != "F": im2 = im2.convert("F")
+                if im1.mode != "F":
+                    im1 = im1.convert("F")
+                if im2.mode != "F":
+                    im2 = im2.convert("F")
                 if im1.mode != im2.mode:
                     raise ValueError("mode mismatch")
             if im1.size != im2.size:
                 # crop both arguments to a common size
                 size = (min(im1.size[0], im2.size[0]),
                         min(im1.size[1], im2.size[1]))
-                if im1.size != size: im1 = im1.crop((0, 0) + size)
-                if im2.size != size: im2 = im2.crop((0, 0) + size)
+                if im1.size != size:
+                    im1 = im1.crop((0, 0) + size)
+                if im2.size != size:
+                    im2 = im2.crop((0, 0) + size)
                 out = Image.new(mode or im1.mode, size, None)
             else:
                 out = Image.new(mode or im1.mode, im1.size, None)
-            im1.load(); im2.load()
+            im1.load()
+            im2.load()
             try:
                 op = getattr(_imagingmath, op+"_"+im1.mode)
             except AttributeError:
@@ -101,34 +108,47 @@ class _Operand:
 
     def __abs__(self):
         return self.apply("abs", self)
+
     def __pos__(self):
         return self
+
     def __neg__(self):
         return self.apply("neg", self)
 
     # binary operators
     def __add__(self, other):
         return self.apply("add", self, other)
+
     def __radd__(self, other):
         return self.apply("add", other, self)
+
     def __sub__(self, other):
         return self.apply("sub", self, other)
+
     def __rsub__(self, other):
         return self.apply("sub", other, self)
+
     def __mul__(self, other):
         return self.apply("mul", self, other)
+
     def __rmul__(self, other):
         return self.apply("mul", other, self)
+
     def __truediv__(self, other):
         return self.apply("div", self, other)
+
     def __rtruediv__(self, other):
         return self.apply("div", other, self)
+
     def __mod__(self, other):
         return self.apply("mod", self, other)
+
     def __rmod__(self, other):
         return self.apply("mod", other, self)
+
     def __pow__(self, other):
         return self.apply("pow", self, other)
+
     def __rpow__(self, other):
         return self.apply("pow", other, self)
 
@@ -142,53 +162,76 @@ class _Operand:
     # bitwise
     def __invert__(self):
         return self.apply("invert", self)
+
     def __and__(self, other):
         return self.apply("and", self, other)
+
     def __rand__(self, other):
         return self.apply("and", other, self)
+
     def __or__(self, other):
         return self.apply("or", self, other)
+
     def __ror__(self, other):
         return self.apply("or", other, self)
+
     def __xor__(self, other):
         return self.apply("xor", self, other)
+
     def __rxor__(self, other):
         return self.apply("xor", other, self)
+
     def __lshift__(self, other):
         return self.apply("lshift", self, other)
+
     def __rshift__(self, other):
         return self.apply("rshift", self, other)
 
     # logical
     def __eq__(self, other):
         return self.apply("eq", self, other)
+
     def __ne__(self, other):
         return self.apply("ne", self, other)
+
     def __lt__(self, other):
         return self.apply("lt", self, other)
+
     def __le__(self, other):
         return self.apply("le", self, other)
+
     def __gt__(self, other):
         return self.apply("gt", self, other)
+
     def __ge__(self, other):
         return self.apply("ge", self, other)
+
 
 # conversions
 def imagemath_int(self):
     return _Operand(self.im.convert("I"))
+
+
 def imagemath_float(self):
     return _Operand(self.im.convert("F"))
+
 
 # logical
 def imagemath_equal(self, other):
     return self.apply("eq", self, other, mode="I")
+
+
 def imagemath_notequal(self, other):
     return self.apply("ne", self, other, mode="I")
 
+
 def imagemath_min(self, other):
     return self.apply("min", self, other)
+
+
 def imagemath_max(self, other):
     return self.apply("max", self, other)
+
 
 def imagemath_convert(self, mode):
     return _Operand(self.im.convert(mode))
