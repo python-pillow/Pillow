@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
@@ -54,6 +54,91 @@ class TestImage(PillowTestCase):
         self.assertFalse(item is None)
         self.assertFalse(item == None)
         self.assertFalse(item == num)
+
+    def test_expand_x(self):
+        # Arrange
+        im = lena()
+        orig_size = im.size
+        xmargin = 5
+
+        # Act
+        im = im._expand(xmargin)
+
+        # Assert
+        self.assertEqual(im.size[0], orig_size[0] + 2*xmargin)
+        self.assertEqual(im.size[1], orig_size[1] + 2*xmargin)
+
+    def test_expand_xy(self):
+        # Arrange
+        im = lena()
+        orig_size = im.size
+        xmargin = 5
+        ymargin = 3
+
+        # Act
+        im = im._expand(xmargin, ymargin)
+
+        # Assert
+        self.assertEqual(im.size[0], orig_size[0] + 2*xmargin)
+        self.assertEqual(im.size[1], orig_size[1] + 2*ymargin)
+
+    def test_getbands(self):
+        # Arrange
+        im = lena()
+
+        # Act
+        bands = im.getbands()
+
+        # Assert
+        self.assertEqual(bands, ('R', 'G', 'B'))
+
+    def test_getbbox(self):
+        # Arrange
+        im = lena()
+
+        # Act
+        bbox = im.getbbox()
+
+        # Assert
+        self.assertEqual(bbox, (0, 0, 128, 128))
+
+    def test_ne(self):
+        # Arrange
+        im1 = Image.new('RGB', (25, 25), 'black')
+        im2 = Image.new('RGB', (25, 25), 'white')
+
+        # Act / Assert
+        self.assertTrue(im1 != im2)
+
+    def test_alpha_composite(self):
+        # http://stackoverflow.com/questions/3374878
+        # Arrange
+        from PIL import ImageDraw
+
+        expected_colors = sorted([
+            (1122, (128, 127, 0, 255)),
+            (1089, (0, 255, 0, 255)),
+            (3300, (255, 0, 0, 255)),
+            (1156, (170, 85, 0, 192)),
+            (1122, (0, 255, 0, 128)),
+            (1122, (255, 0, 0, 128)),
+            (1089, (0, 255, 0, 0))])
+
+        dst = Image.new('RGBA', size=(100, 100), color=(0, 255, 0, 255))
+        draw = ImageDraw.Draw(dst)
+        draw.rectangle((0, 33, 100, 66), fill=(0, 255, 0, 128))
+        draw.rectangle((0, 67, 100, 100), fill=(0, 255, 0, 0))
+        src = Image.new('RGBA', size=(100, 100), color=(255, 0, 0, 255))
+        draw = ImageDraw.Draw(src)
+        draw.rectangle((33, 0, 66, 100), fill=(255, 0, 0, 128))
+        draw.rectangle((67, 0, 100, 100), fill=(255, 0, 0, 0))
+
+        # Act
+        img = Image.alpha_composite(dst, src)
+
+        # Assert
+        img_colors = sorted(img.getcolors())
+        self.assertEqual(img_colors, expected_colors)
 
 
 if __name__ == '__main__':
