@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Fix `ImageStat` docs
+  [akx]
+
 - Added docs for ExifTags
   [Wintermute3]
 
