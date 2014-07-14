@@ -102,6 +102,44 @@ class TestImage(PillowTestCase):
         # Assert
         self.assertEqual(bbox, (0, 0, 128, 128))
 
+    def test_ne(self):
+        # Arrange
+        im1 = Image.new('RGB', (25, 25), 'black')
+        im2 = Image.new('RGB', (25, 25), 'white')
+
+        # Act / Assert
+        self.assertTrue(im1 != im2)
+
+    def test_alpha_composite(self):
+        # http://stackoverflow.com/questions/3374878
+        # Arrange
+        import ImageDraw
+
+        expected_colors = sorted([
+            (1122, (128, 127, 0, 255)),
+            (1089, (0, 255, 0, 255)),
+            (3300, (255, 0, 0, 255)),
+            (1156, (170, 85, 0, 192)),
+            (1122, (0, 255, 0, 128)),
+            (1122, (255, 0, 0, 128)),
+            (1089, (0, 255, 0, 0))])
+
+        dst = Image.new('RGBA', size=(100, 100), color=(0, 255, 0, 255))
+        draw = ImageDraw.Draw(dst)
+        draw.rectangle((0, 33, 100, 66), fill=(0, 255, 0, 128))
+        draw.rectangle((0, 67, 100, 100), fill=(0, 255, 0, 0))
+        src = Image.new('RGBA', size=(100, 100), color=(255, 0, 0, 255))
+        draw = ImageDraw.Draw(src)
+        draw.rectangle((33, 0, 66, 100), fill=(255, 0, 0, 128))
+        draw.rectangle((67, 0, 100, 100), fill=(255, 0, 0, 0))
+
+        # Act
+        img = Image.alpha_composite(dst, src)
+
+        # Assert
+        img_colors = sorted(img.getcolors())
+        self.assertEqual(img_colors, expected_colors)
+
 
 if __name__ == '__main__':
     unittest.main()
