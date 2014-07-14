@@ -113,7 +113,7 @@ class TestImage(PillowTestCase):
     def test_alpha_composite(self):
         # http://stackoverflow.com/questions/3374878
         # Arrange
-        import ImageDraw
+        from PIL import ImageDraw
 
         expected_colors = sorted([
             (1122, (128, 127, 0, 255)),
