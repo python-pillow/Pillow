@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Doc cleanup
+  [wiredfool]
+
 - Fix `ImageStat` docs
   [akx]
 
