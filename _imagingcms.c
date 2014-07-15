@@ -6,6 +6,8 @@
  * http://www.cazabon.com
  * Adapted/reworked for PIL by Fredrik Lundh
  * Copyright (c) 2009 Fredrik Lundh
+ * Updated to LCMS2
+ * Copyright (c) 2013 Eric Soroos
  *
  * pyCMS home page:  http://www.cazabon.com/pyCMS
  * littleCMS home page:  http://www.littlecms.com

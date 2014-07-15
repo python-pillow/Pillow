@@ -10,6 +10,7 @@
 
 ## Copyright (C) 2002-2003 Kevin Cazabon
 ## Copyright (c) 2009 by Fredrik Lundh
+## Copyright (c) 2013 by Eric Soroos
 
 ## See the README file for information on usage and redistribution.  See
 ## below for the original description.
