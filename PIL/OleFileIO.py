@@ -15,8 +15,11 @@ Improved version of the OleFileIO module from PIL library v1.1.6
 See: http://www.pythonware.com/products/pil/index.htm
 
 The Python Imaging Library (PIL) is
+
     Copyright (c) 1997-2005 by Secret Labs AB
+    
     Copyright (c) 1995-2005 by Fredrik Lundh
+
 OleFileIO_PL changes are Copyright (c) 2005-2014 by Philippe Lagadec
 
 See source code and LICENSE.txt for information on usage and redistribution.
@@ -1701,10 +1704,12 @@ class OleFileIO:
         Open a stream as a read-only file object (BytesIO).
 
         filename: path of stream in storage tree (except root entry), either:
+        
             - a string using Unix path syntax, for example:
               'storage_1/storage_1.2/stream'
             - a list of storage filenames, path to the desired stream/storage.
               Example: ['storage_1', 'storage_1.2', 'stream']
+              
         return: file object (read-only)
         raise IOError if filename not found, or if this is not a stream.
         """
@@ -1722,6 +1727,7 @@ class OleFileIO:
 
         filename: path of stream in storage tree. (see openstream for syntax)
         return: False if object does not exist, its entry type (>0) otherwise:
+        
             - STGTY_STREAM: a stream
             - STGTY_STORAGE: a storage
             - STGTY_ROOT: the root entry
@@ -1812,7 +1818,7 @@ class OleFileIO:
         filename: path of stream in storage tree (see openstream for syntax)
         convert_time: bool, if True timestamps will be converted to Python datetime
         no_conversion: None or list of int, timestamps not to be converted
-                       (for example total editing time is not a real timestamp)
+        (for example total editing time is not a real timestamp)
         return: a dictionary of values indexed by id (integer)
         """
         # make sure no_conversion is a list, just to simplify code below:
