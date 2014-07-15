@@ -52,15 +52,8 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageCms` Module
-----------------------
-
-.. automodule:: PIL.ImageCms
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 .. intentionally skipped documenting this because it's not documented anywhere
+
 :mod:`ImageDraw2` Module
 ------------------------
 
@@ -70,6 +63,7 @@ can be found here.
     :show-inheritance:
 
 .. intentionally skipped documenting this because it's deprecated
+
 :mod:`ImageFileIO` Module
 -------------------------
 

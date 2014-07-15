@@ -1,19 +1,19 @@
-"""
-The Python Imaging Library.
-$Id$
+## The Python Imaging Library.
+## $Id$
 
-Optional color managment support, based on Kevin Cazabon's PyCMS
-library.
+## Optional color managment support, based on Kevin Cazabon's PyCMS
+## library.
 
-History:
-2009-03-08 fl   Added to PIL.
+## History:
 
-Copyright (C) 2002-2003 Kevin Cazabon
-Copyright (c) 2009 by Fredrik Lundh
+## 2009-03-08 fl   Added to PIL.
 
-See the README file for information on usage and redistribution.  See
-below for the original description.
-"""
+## Copyright (C) 2002-2003 Kevin Cazabon
+## Copyright (c) 2009 by Fredrik Lundh
+## Copyright (c) 2013 by Eric Soroos
+
+## See the README file for information on usage and redistribution.  See
+## below for the original description.
 
 from __future__ import print_function
 
@@ -637,7 +637,7 @@ def getProfileName(profile):
 
     (pyCMS) Gets the internal product name for the given profile.
 
-     If profile isn't a valid CmsProfile object or filename to a profile,
+    If profile isn't a valid CmsProfile object or filename to a profile,
     a PyCMSError is raised If an error occurs while trying to obtain the
     name tag, a PyCMSError is raised.
 
@@ -876,7 +876,7 @@ def isIntentSupported(profile, intent, direction):
     input/output/proof profile as you desire.
 
     Some profiles are created specifically for one "direction", can cannot
-     be used for others.  Some profiles can only be used for certain
+    be used for others.  Some profiles can only be used for certain
     rendering intents... so it's best to either verify this before trying
     to create a transform with them (using this function), or catch the
     potential PyCMSError that will occur if they don't support the modes
