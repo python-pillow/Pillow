@@ -134,13 +134,6 @@ def _make_linear_lut(black, white):
     return lut
 
 
-def _make_gamma_lut(exp, mode="RGB"):
-    lut = []
-    for i in range(256):
-        lut.append(int(((i / 255.0) ** exp) * 255.0 + 0.5))
-    return lut
-
-
 def new(mode, data):
     return Image.core.new_palette(mode, data)
 
