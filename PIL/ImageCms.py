@@ -1,19 +1,18 @@
-"""
-The Python Imaging Library.
-$Id$
+## The Python Imaging Library.
+## $Id$
 
-Optional color managment support, based on Kevin Cazabon's PyCMS
-library.
+## Optional color managment support, based on Kevin Cazabon's PyCMS
+## library.
 
-History:
-2009-03-08 fl   Added to PIL.
+## History:
 
-Copyright (C) 2002-2003 Kevin Cazabon
-Copyright (c) 2009 by Fredrik Lundh
+## 2009-03-08 fl   Added to PIL.
 
-See the README file for information on usage and redistribution.  See
-below for the original description.
-"""
+## Copyright (C) 2002-2003 Kevin Cazabon
+## Copyright (c) 2009 by Fredrik Lundh
+
+## See the README file for information on usage and redistribution.  See
+## below for the original description.
 
 from __future__ import print_function
 
