@@ -637,7 +637,7 @@ def getProfileName(profile):
 
     (pyCMS) Gets the internal product name for the given profile.
 
-     If profile isn't a valid CmsProfile object or filename to a profile,
+    If profile isn't a valid CmsProfile object or filename to a profile,
     a PyCMSError is raised If an error occurs while trying to obtain the
     name tag, a PyCMSError is raised.
 
@@ -876,7 +876,7 @@ def isIntentSupported(profile, intent, direction):
     input/output/proof profile as you desire.
 
     Some profiles are created specifically for one "direction", can cannot
-     be used for others.  Some profiles can only be used for certain
+    be used for others.  Some profiles can only be used for certain
     rendering intents... so it's best to either verify this before trying
     to create a transform with them (using this function), or catch the
     potential PyCMSError that will occur if they don't support the modes
