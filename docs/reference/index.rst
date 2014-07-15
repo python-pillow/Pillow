@@ -16,6 +16,7 @@ Reference
    ImageFont
    ImageGrab
    ImageMath
+   ImageMorph
    ImageOps
    ImagePalette
    ImagePath
