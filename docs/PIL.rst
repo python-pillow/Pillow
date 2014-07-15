@@ -97,14 +97,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`OleFileIO` Module
------------------------
-
-.. automodule:: PIL.OleFileIO
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`PaletteFile` Module
 -------------------------
 

@@ -1,31 +1,29 @@
 #!/usr/local/bin/python
 # -*- coding: latin-1 -*-
-"""
-OleFileIO_PL:
-Module to read Microsoft OLE2 files (also called Structured Storage or
-Microsoft Compound Document File Format), such as Microsoft Office
-documents, Image Composer and FlashPix files, Outlook messages, ...
-This version is compatible with Python 2.6+ and 3.x
+## OleFileIO_PL:
+## Module to read Microsoft OLE2 files (also called Structured Storage or
+## Microsoft Compound Document File Format), such as Microsoft Office
+## documents, Image Composer and FlashPix files, Outlook messages, ...
+## This version is compatible with Python 2.6+ and 3.x
 
-version 0.30 2014-02-04 Philippe Lagadec - http://www.decalage.info
+## version 0.30 2014-02-04 Philippe Lagadec - http://www.decalage.info
 
-Project website: http://www.decalage.info/python/olefileio
+## Project website: http://www.decalage.info/python/olefileio
 
-Improved version of the OleFileIO module from PIL library v1.1.6
-See: http://www.pythonware.com/products/pil/index.htm
+## Improved version of the OleFileIO module from PIL library v1.1.6
+## See: http://www.pythonware.com/products/pil/index.htm
 
-The Python Imaging Library (PIL) is
+## The Python Imaging Library (PIL) is
 
-    Copyright (c) 1997-2005 by Secret Labs AB
-    
-    Copyright (c) 1995-2005 by Fredrik Lundh
+##     Copyright (c) 1997-2005 by Secret Labs AB
+##     Copyright (c) 1995-2005 by Fredrik Lundh
 
-OleFileIO_PL changes are Copyright (c) 2005-2014 by Philippe Lagadec
+## OleFileIO_PL changes are Copyright (c) 2005-2014 by Philippe Lagadec
 
-See source code and LICENSE.txt for information on usage and redistribution.
+## See source code and LICENSE.txt for information on usage and redistribution.
 
-WARNING: THIS IS (STILL) WORK IN PROGRESS.
-"""
+## WARNING: THIS IS (STILL) WORK IN PROGRESS.
+
 
 # Starting with OleFileIO_PL v0.30, only Python 2.6+ and 3.x is supported
 # This import enables print() as a function rather than a keyword

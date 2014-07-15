@@ -26,5 +26,6 @@ Reference
    ImageTk
    ImageWin
    ExifTags
+   OleFileIO
    PSDraw
    ../PIL
