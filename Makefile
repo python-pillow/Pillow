@@ -1,4 +1,16 @@
+.PHONY: pre clean install test inplace coverage test-dep help docs livedocs
 
+help:
+	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "  html       to make standalone HTML files"
+	@echo "  clean		remove build products"
+	@echo "  install	make and install"
+	@echo "  test		run tests on installed pillow"
+	@echo "  inplace	make inplace extension" 
+	@echo "  coverage	run coverage test (in progress)"
+	@echo "  docs		make html docs"
+	@echo "  docserver	run an http server on the docs directory"
+	@echo "  test-dep	install coveraget and test dependencies"
 
 pre:
 	virtualenv .
@@ -18,12 +30,11 @@ clean:
 	rm -r build || true
 	find . -name __pycache__ | xargs rm -r || true
 
-
 install:
 	python setup.py install
 	python selftest.py --installed
 
-test: install
+test:
 	python test-installed.py
 
 inplace: clean
@@ -42,3 +53,9 @@ coverage:
 
 test-dep:
 	pip install coveralls nose nose-cov pep8 pyflakes
+
+docs:
+	$(MAKE) -C docs html
+
+docserver:
+	cd docs/_build/html && python -mSimpleHTTPServer 2> /dev/null&
