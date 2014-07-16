@@ -12,7 +12,6 @@ class TestFileSgi(PillowTestCase):
         # Assert
         self.assertEqual(im.mode, expected_mode)
         self.assertEqual(im.size, expected_size)
-        print filename, im.mode
 
     def test_rgb(self):
         # Arrange
