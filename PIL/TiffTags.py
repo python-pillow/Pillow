@@ -147,6 +147,38 @@ TAGS = {
     # ICC Profile
     34675: "ICCProfile",
 
+    # Additional Exif Info
+    36864: "ExifVersion",
+    36867: "DateTimeOriginal",
+    36868: "DateTImeDigitized",
+    37121: "ComponentsConfiguration",
+    37377: "ShutterSpeedValue",
+    37378: "ApertureValue",
+    37379: "BrightnessValue",
+    37380: "ExposureBiasValue",
+    37381: "MaxApertureValue",
+    37382: "SubjectDistance",
+    37383: "MeteringMode",
+    37384: "LightSource",
+    37385: "Flash",
+    37386: "FocalLength",
+    37396: "SubjectArea",
+    37500: "MakerNote",
+    37510: "UserComment",
+    40960: "FlashPixVersion",
+    40961: "ColorSpace",
+    40962: "PixelXDimension",
+    40963: "PixelYDimension",
+    40965: "InteroperabilityIFDPointer",
+    42016: "ImageUniqueID",
+
+    # MP Info
+    45056: "MPFVersion",
+    45057: "NumberOfImages",
+    45058: "MPEntry",
+    45059: "ImageUIDList",
+    45060: "TotalFrames",
+    
     # Adobe DNG
     50706: "DNGVersion",
     50707: "DNGBackwardVersion",

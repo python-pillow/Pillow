@@ -36,7 +36,8 @@ __version__ = "0.6"
 
 import array
 import struct
-from PIL import Image, ImageFile, _binary
+import io
+from PIL import Image, ImageFile, TiffImagePlugin, _binary
 from PIL.JpegPresets import presets
 from PIL._util import isStringType
 
@@ -110,6 +111,9 @@ def APP(self, marker):
             pass
         else:
             self.info["adobe_transform"] = adobe_transform
+    elif marker == 0xFFE2 and s[:4] == b"MPF\0":
+        # extract MPO information
+        self.info["mp"] = s[4:]
 
 
 def COM(self, marker):
@@ -380,18 +384,22 @@ class JpegImageFile(ImageFile.ImageFile):
     def _getexif(self):
         return _getexif(self)
 
+    def _getmp(self):
+        return _getmp(self)
+
+
+def _fixup(value):
+    # Helper function for _getexif() and _getmp()
+    if len(value) == 1:
+        return value[0]
+    return value
+
 
 def _getexif(self):
     # Extract EXIF information.  This method is highly experimental,
     # and is likely to be replaced with something better in a future
     # version.
-    from PIL import TiffImagePlugin
-    import io
 
-    def fixup(value):
-        if len(value) == 1:
-            return value[0]
-        return value
     # The EXIF record consists of a TIFF file embedded in a JPEG
     # application marker (!).
     try:
@@ -405,7 +413,7 @@ def _getexif(self):
     info = TiffImagePlugin.ImageFileDirectory(head)
     info.load(file)
     for key, value in info.items():
-        exif[key] = fixup(value)
+        exif[key] = _fixup(value)
     # get exif extension
     try:
         file.seek(exif[0x8769])
@@ -415,7 +423,7 @@ def _getexif(self):
         info = TiffImagePlugin.ImageFileDirectory(head)
         info.load(file)
         for key, value in info.items():
-            exif[key] = fixup(value)
+            exif[key] = _fixup(value)
     # get gpsinfo extension
     try:
         file.seek(exif[0x8825])
@@ -426,8 +434,31 @@ def _getexif(self):
         info.load(file)
         exif[0x8825] = gps = {}
         for key, value in info.items():
-            gps[key] = fixup(value)
+            gps[key] = _fixup(value)
     return exif
+
+
+def _getmp(self):
+    # Extract MP information.  This method was inspired by the "highly
+    # experimental" _getexif version that's been in use for years now,
+    # itself based on the ImageFileDirectory class in the TIFF plug-in.
+
+    # The MP record essentially consists of a TIFF file embedded in a JPEG
+    # application marker.
+    try:
+        data = self.info["mp"]
+    except KeyError:
+        return None
+    file = io.BytesIO(data)
+    head = file.read(8)
+    mp = {}
+    # process dictionary
+    info = TiffImagePlugin.ImageFileDirectory(head)
+    info.load(file)
+    for key, value in info.items():
+        mp[key] = _fixup(value)
+    return mp
+
 
 # --------------------------------------------------------------------
 # stuff to save JPEG files
