@@ -16,6 +16,7 @@ Reference
    ImageFont
    ImageGrab
    ImageMath
+   ImageMorph
    ImageOps
    ImagePalette
    ImagePath
@@ -25,5 +26,6 @@ Reference
    ImageTk
    ImageWin
    ExifTags
+   OleFileIO
    PSDraw
    ../PIL
