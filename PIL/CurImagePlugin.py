@@ -33,6 +33,7 @@ i32 = _binary.i32le
 def _accept(prefix):
     return prefix[:4] == b"\0\0\2\0"
 
+
 ##
 # Image plugin for Windows Cursor files.
 
@@ -48,7 +49,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         # check magic
         s = self.fp.read(6)
         if not _accept(s):
-            raise SyntaxError("not an CUR file")
+            raise SyntaxError("not a CUR file")
 
         # pick the largest cursor in the file
         m = b""
@@ -58,14 +59,14 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
                 m = s
             elif i8(s[0]) > i8(m[0]) and i8(s[1]) > i8(m[1]):
                 m = s
-            #print "width", i8(s[0])
-            #print "height", i8(s[1])
-            #print "colors", i8(s[2])
-            #print "reserved", i8(s[3])
-            #print "hotspot x", i16(s[4:])
-            #print "hotspot y", i16(s[6:])
-            #print "bytes", i32(s[8:])
-            #print "offset", i32(s[12:])
+            # print "width", i8(s[0])
+            # print "height", i8(s[1])
+            # print "colors", i8(s[2])
+            # print "reserved", i8(s[3])
+            # print "hotspot x", i16(s[4:])
+            # print "hotspot y", i16(s[6:])
+            # print "bytes", i32(s[8:])
+            # print "offset", i32(s[12:])
 
         # load as bitmap
         self._bitmap(i32(m[12:]) + offset)
@@ -73,7 +74,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         # patch up the bitmap height
         self.size = self.size[0], self.size[1]//2
         d, e, o, a = self.tile[0]
-        self.tile[0] = d, (0,0)+self.size, o, a
+        self.tile[0] = d, (0, 0)+self.size, o, a
 
         return
 
