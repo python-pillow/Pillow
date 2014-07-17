@@ -353,6 +353,10 @@ def preinit():
     except ImportError:
         pass
     try:
+        from PIL import MpoImagePlugin
+    except ImportError:
+        pass
+    try:
         from PIL import PpmImagePlugin
     except ImportError:
         pass
@@ -554,7 +558,6 @@ class Image:
         self.readonly = 0
 
     def _dump(self, file=None, format=None):
-        import os
         import tempfile
         suffix = ''
         if format:
@@ -2228,6 +2231,7 @@ def open(fp, mode="r"):
 
     for i in ID:
         try:
+            print(ID)
             factory, accept = OPEN[i]
             if not accept or accept(prefix):
                 fp.seek(0)
