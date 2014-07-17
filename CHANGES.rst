@@ -4,7 +4,7 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
-- More tests for SpiderImagePlugin.py
+- More tests for SpiderImagePlugin, CurImagePlugin, DcxImagePlugin
   [hugovk]
 
 - Doc cleanup
