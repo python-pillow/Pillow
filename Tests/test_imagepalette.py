@@ -44,6 +44,25 @@ class TestImagePalette(PillowTestCase):
         self.assertIsInstance(p, ImagePalette)
         self.assertEqual(p.palette, palette.tobytes())
 
+    def test_make_gamma_lut(self):
+        # Arrange
+        from PIL.ImagePalette import make_gamma_lut
+        exp = 5
+
+        # Act
+        lut = make_gamma_lut(exp)
+
+        # Assert
+        self.assertIsInstance(lut, list)
+        self.assertEqual(len(lut), 256)
+        # Check a few values
+        self.assertEqual(lut[0], 0)
+        self.assertEqual(lut[63], 0)
+        self.assertEqual(lut[127], 8)
+        self.assertEqual(lut[191], 60)
+        self.assertEqual(lut[255], 255)
+
+
 if __name__ == '__main__':
     unittest.main()
 
