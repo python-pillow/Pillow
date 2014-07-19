@@ -45,7 +45,7 @@ class SgiImageFile(ImageFile.ImageFile):
         # HEAD
         s = self.fp.read(512)
         if i16(s) != 474:
-            raise SyntaxError("not an SGI image file")
+            raise ValueError("Not an SGI image file")
 
         # relevant header entries
         compression = i8(s[2])
@@ -61,7 +61,7 @@ class SgiImageFile(ImageFile.ImageFile):
         elif layout == (1, 3, 4):
             self.mode = "RGBA"
         else:
-            raise SyntaxError("unsupported SGI image mode")
+            raise ValueError("Unsupported SGI image mode")
 
         # size
         self.size = i16(s[6:]), i16(s[8:])
@@ -76,8 +76,7 @@ class SgiImageFile(ImageFile.ImageFile):
                     ("raw", (0, 0)+self.size, offset, (layer, 0, -1)))
                 offset = offset + pagesize
         elif compression == 1:
-            self.tile = [
-                ("sgi_rle", (0, 0)+self.size, 512, (self.mode, 0, -1))]
+            raise ValueError("SGI RLE encoding not supported")
 
 #
 # registry
@@ -87,5 +86,6 @@ Image.register_open("SGI", SgiImageFile, _accept)
 Image.register_extension("SGI", ".bw")
 Image.register_extension("SGI", ".rgb")
 Image.register_extension("SGI", ".rgba")
-
 Image.register_extension("SGI", ".sgi")
+
+# End of file
