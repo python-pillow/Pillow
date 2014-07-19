@@ -14,7 +14,7 @@ MAXBLOCK = ImageFile.MAXBLOCK
 SAFEBLOCK = ImageFile.SAFEBLOCK
 
 
-class TestImagePutData(PillowTestCase):
+class TestImageFile(PillowTestCase):
 
     def test_parser(self):
 

@@ -5,7 +5,7 @@ from PIL import Image
 im = lena().resize((128, 100))
 
 
-class TestImageCrop(PillowTestCase):
+class TestImageArray(PillowTestCase):
 
     def test_toarray(self):
         def test(mode):
