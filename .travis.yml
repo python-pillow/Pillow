@@ -33,11 +33,11 @@ script:
 
     # Don't cover PyPy: it fails intermittently and is x5.8 slower (#640)
   - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time python selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests Tests/test_*.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests -v Tests/test_*.py; fi
 
     # Cover the others
   - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose Tests/test_*.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose -v Tests/test_*.py; fi
 
 after_success:
   - coverage report
