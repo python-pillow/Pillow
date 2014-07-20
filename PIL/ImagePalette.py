@@ -182,9 +182,9 @@ def random(mode="RGB"):
 
 def sepia(white="#fff0c0"):
     r, g, b = ImageColor.getrgb(white)
-    r = _make_linear_lut(0, r)
-    g = _make_linear_lut(0, g)
-    b = _make_linear_lut(0, b)
+    r = make_linear_lut(0, r)
+    g = make_linear_lut(0, g)
+    b = make_linear_lut(0, b)
     return ImagePalette("RGB", r + g + b)
 
 
