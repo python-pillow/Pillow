@@ -16,7 +16,7 @@ Changelog (Pillow)
 - Added docs for ExifTags
   [Wintermute3]
 
-- More tests for CurImagePlugin, DcxImagePlugin, ImageFont, ImageMath, SpiderImagePlugin, XpmImagePlugin and _util
+- More tests for CurImagePlugin, DcxImagePlugin, ImageFont, ImageMath, SpiderImagePlugin, SgiImagePlugin, XpmImagePlugin and _util
   [hugovk]
 
 - Fix return value of FreeTypeFont.textsize() does not include font offsets
