@@ -29,6 +29,10 @@ class TestImageFilter(PillowTestCase):
         filter(ImageFilter.MinFilter)
         filter(ImageFilter.ModeFilter)
         filter(ImageFilter.Kernel((3, 3), list(range(9))))
+        filter(ImageFilter.GaussianBlur)
+        filter(ImageFilter.GaussianBlur(5))
+        filter(ImageFilter.UnsharpMask)
+        filter(ImageFilter.UnsharpMask(10))
 
         self.assertRaises(TypeError, lambda: filter("hello"))
 
