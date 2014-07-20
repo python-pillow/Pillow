@@ -44,6 +44,34 @@ class TestImagePalette(PillowTestCase):
         self.assertIsInstance(p, ImagePalette)
         self.assertEqual(p.palette, palette.tobytes())
 
+    def test_make_linear_lut(self):
+        # Arrange
+        from PIL.ImagePalette import make_linear_lut
+        black = 0
+        white = 255
+
+        # Act
+        lut = make_linear_lut(black, white)
+
+        # Assert
+        self.assertIsInstance(lut, list)
+        self.assertEqual(len(lut), 256)
+        # Check values
+        for i in range(0, len(lut)):
+            self.assertEqual(lut[i], i)
+
+    def test_make_linear_lut_not_yet_implemented(self):
+        # Update after FIXME
+        # Arrange
+        from PIL.ImagePalette import make_linear_lut
+        black = 1
+        white = 255
+
+        # Act
+        self.assertRaises(
+            NotImplementedError,
+            lambda: make_linear_lut(black, white))
+
     def test_make_gamma_lut(self):
         # Arrange
         from PIL.ImagePalette import make_gamma_lut
@@ -61,6 +89,27 @@ class TestImagePalette(PillowTestCase):
         self.assertEqual(lut[127], 8)
         self.assertEqual(lut[191], 60)
         self.assertEqual(lut[255], 255)
+
+    def test_private_make_linear_lut_warning(self):
+        # Arrange
+        from PIL.ImagePalette import _make_linear_lut
+        black = 0
+        white = 255
+
+        # Act / Assert
+        self.assert_warning(
+            DeprecationWarning,
+            lambda: _make_linear_lut(black, white))
+
+    def test_private_make_gamma_lut_warning(self):
+        # Arrange
+        from PIL.ImagePalette import _make_gamma_lut
+        exp = 5
+
+        # Act / Assert
+        self.assert_warning(
+            DeprecationWarning,
+            lambda: _make_gamma_lut(exp))
 
 
 if __name__ == '__main__':

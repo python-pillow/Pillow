@@ -17,6 +17,7 @@
 #
 
 import array
+import warnings
 from PIL import Image, ImageColor
 
 
@@ -125,6 +126,26 @@ def raw(rawmode, data):
 # Factories
 
 def _make_linear_lut(black, white):
+    warnings.warn(
+        '_make_linear_lut() is deprecated. '
+        'Please call make_linear_lut() instead.',
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return make_linear_lut(black, white)
+
+
+def _make_gamma_lut(exp):
+    warnings.warn(
+        '_make_gamma_lut() is deprecated. '
+        'Please call make_gamma_lut() instead.',
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return make_gamma_lut(exp)
+
+
+def make_linear_lut(black, white):
     lut = []
     if black == 0:
         for i in range(256):
