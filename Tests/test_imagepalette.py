@@ -111,6 +111,41 @@ class TestImagePalette(PillowTestCase):
             DeprecationWarning,
             lambda: _make_gamma_lut(exp))
 
+    def test_rawmode_valueerrors(self):
+        # Arrange
+        from PIL.ImagePalette import raw
+        palette = raw("RGB", list(range(256))*3)
+
+        # Act / Assert
+        self.assertRaises(ValueError, lambda: palette.tobytes())
+        self.assertRaises(ValueError, lambda: palette.getcolor((1, 2, 3)))
+        f = self.tempfile("temp.lut")
+        self.assertRaises(ValueError, lambda: palette.save(f))
+
+    def test_getdata(self):
+        # Arrange
+        data_in = list(range(256))*3
+        palette = ImagePalette("RGB", data_in)
+
+        # Act
+        mode, data_out = palette.getdata()
+
+        # Assert
+        self.assertEqual(mode, "RGB;L")
+
+    def test_rawmode_getdata(self):
+        # Arrange
+        from PIL.ImagePalette import raw
+        data_in = list(range(256))*3
+        palette = raw("RGB", data_in)
+
+        # Act
+        rawmode, data_out = palette.getdata()
+
+        # Assert
+        self.assertEqual(rawmode, "RGB")
+        self.assertEqual(data_in, data_out)
+
 
 if __name__ == '__main__':
     unittest.main()

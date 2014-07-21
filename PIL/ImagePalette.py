@@ -18,7 +18,7 @@
 
 import array
 import warnings
-from PIL import Image, ImageColor
+from PIL import ImageColor
 
 
 class ImagePalette:
@@ -160,10 +160,6 @@ def make_gamma_lut(exp):
     for i in range(256):
         lut.append(int(((i / 255.0) ** exp) * 255.0 + 0.5))
     return lut
-
-
-def new(mode, data):
-    return Image.core.new_palette(mode, data)
 
 
 def negative(mode="RGB"):
