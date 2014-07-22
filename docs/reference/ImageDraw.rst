@@ -74,6 +74,34 @@ To load a OpenType/TrueType font, use the truetype function in the
 :py:mod:`~PIL.ImageFont` module. Note that this function depends on third-party
 libraries, and may not available in all PIL builds.
 
+Example: Draw Partial Opacity Text
+----------------------------------
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw, ImageFont
+    # get an image
+    base = Image.open('Pillow/Tests/images/lena.png').convert('RGBA')  
+
+    # make a blank image for the text, initialized to transparent text color
+    txt = Image.new('RGBA', base.size, (255,255,255,0))
+
+    # get a font
+    fnt = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', 40)
+    # get a drawing context
+    d = ImageDraw.Draw(txt) 
+
+    # draw text, half opacity
+    d.text((10,10), "Hello", font=fnt, fill=(255,255,255,128))
+    # draw text, full opacity
+    d.text((10,60), "World", font=fnt, fill=(255,255,255,255))
+
+    out = Image.alpha_composite(base, txt)
+
+    out.show()
+
+
+
 Functions
 ---------
 
@@ -82,6 +110,13 @@ Functions
     Creates an object that can be used to draw in the given image.
 
     Note that the image will be modified in place.
+
+    :param im: The image to draw in.
+    :param mode: Optional mode to use for color values.  For RGB
+        images, this argument can be RGB or RGBA (to blend the
+        drawing into the image).  For all other modes, this argument
+        must be the same as the image mode.  If omitted, the mode
+        defaults to the mode of the image.
 
 Methods
 -------
