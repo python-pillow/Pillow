@@ -37,6 +37,7 @@ __version__ = "0.6"
 import array
 import struct
 import io
+from struct import unpack
 from PIL import Image, ImageFile, TiffImagePlugin, _binary
 from PIL.JpegPresets import presets
 from PIL._util import isStringType
@@ -114,6 +115,7 @@ def APP(self, marker):
     elif marker == 0xFFE2 and s[:4] == b"MPF\0":
         # extract MPO information
         self.info["mp"] = s[4:]
+        self.info["mpoffset"] = self.fp.tell()
 
 
 def COM(self, marker):
@@ -451,12 +453,30 @@ def _getmp(self):
         return None
     file = io.BytesIO(data)
     head = file.read(8)
+    endianness = '>' if head[:4] == b'\x4d\x4d\x00\x2a' else '<'
     mp = {}
     # process dictionary
     info = TiffImagePlugin.ImageFileDirectory(head)
     info.load(file)
     for key, value in info.items():
         mp[key] = _fixup(value)
+    # it's an error not to have a number of images
+    try:
+        quant = mp[0xB001]
+    except KeyError:
+        raise SyntaxError("malformed MP Index (no number of images)")
+    # get MP entries
+    try:
+        mpentries = []
+        for entrynum in range(0, quant):
+            rawmpentry = mp[0xB002][entrynum * 16:(entrynum + 1) * 16]
+            unpackedentry = unpack('{0}LLLHH'.format(endianness), rawmpentry)
+            labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1', 'EntryNo2')
+            mpentry = dict(zip(labels, unpackedentry))
+            mpentries.append(mpentry)
+        mp[0xB002] = mpentries
+    except KeyError:
+        raise SyntaxError("malformed MP Index (bad MP Entry)")
     return mp
 
 

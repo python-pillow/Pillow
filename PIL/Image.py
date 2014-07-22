@@ -2231,7 +2231,6 @@ def open(fp, mode="r"):
 
     for i in ID:
         try:
-            print(ID)
             factory, accept = OPEN[i]
             if not accept or accept(prefix):
                 fp.seek(0)

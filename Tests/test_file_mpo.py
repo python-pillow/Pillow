@@ -54,6 +54,26 @@ class TestFileMpo(PillowTestCase):
             info = im._getmp()
             self.assertEqual(info[45056], '0100')
             self.assertEqual(info[45057], 2)
+    
+    def test_seek(self):
+        for test_file in test_files:
+            im = Image.open(test_file)
+            self.assertEqual(im.tell(), 0)
+            # prior to first image raises an error, both blatant and borderline
+            self.assertRaises(EOFError, im.seek, -1)
+            self.assertRaises(EOFError, im.seek, -523)
+            # after the final image raises an error, both blatant and borderline
+            self.assertRaises(EOFError, im.seek, 2)
+            self.assertRaises(EOFError, im.seek, 523)
+            # bad calls shouldn't change the frame
+            self.assertEqual(im.tell(), 0)
+            # this one will work
+            im.seek(1)
+            self.assertEqual(im.tell(), 1)
+            # and this one, too
+            im.seek(0)
+            self.assertEqual(im.tell(), 0)
+            
 
 if __name__ == '__main__':
     unittest.main()

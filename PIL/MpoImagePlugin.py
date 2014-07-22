@@ -38,21 +38,28 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
     def _open(self):
         JpegImagePlugin.JpegImageFile._open(self)
+        self.mpinfo = self._getmp()
+        self.__framecount = self.mpinfo[0xB001]
+        self.__mpoffsets = [mpent['DataOffset'] + self.info['mpoffset'] \
+            for mpent in self.mpinfo[0xB002]]
+        assert self.__framecount == len(self.__mpoffsets)
+        del self.info['mpoffset'] # no longer needed
         self.__fp = self.fp # FIXME: hack
-        self.__rewind = self.fp.tell()
-        self.seek(0) # get ready to read first frame
+        self.__fp.seek(self.__mpoffsets[0]) # get ready to read first frame
+        self.__frame = 0
+        self.offset = 0
 
     def seek(self, frame):
-
-        if frame == 0:
-            # rewind
-            self.__offset = 0
-            self.dispose = None
-            self.__frame = -1
-            self.__fp.seek(self.__rewind)
-
-        if frame != self.__frame + 1:
-            raise ValueError("cannot seek to frame %d" % frame)
+        if frame < 0 or frame >= self.__framecount:
+            raise EOFError("no more images in MPO file")
+        else:
+            self.fp = self.__fp
+            self.fp.seek(self.__mpoffsets[frame])
+            self.offset = self.__mpoffsets[frame]
+            rawmode = self.mode
+            if self.mode == "CMYK":
+                rawmode = "CMYK;I"  # assume adobe conventions
+            self.tile = [("jpeg", (0, 0) + self.size, 0, (rawmode, ""))]
         self.__frame = frame
 
     def tell(self):
