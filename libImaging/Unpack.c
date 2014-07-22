@@ -1159,6 +1159,12 @@ static struct {
     {"LAB",  	"A",            8,      band1},
     {"LAB",  	"B",            8,      band2},
 
+    /* HSV Color */
+    {"HSV",	    "HSV",	        24,	    ImagingUnpackRGB},
+    {"HSV",  	"H",            8,      band0},
+    {"HSV",  	"S",            8,      band1},
+    {"HSV",  	"V",            8,      band2},
+
     /* integer variations */
     {"I",       "I",            32,     copy4},
     {"I",       "I;8",          8,      unpackI8},

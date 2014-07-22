@@ -220,6 +220,7 @@ _MODEINFO = {
     "CMYK": ("RGB", "L", ("C", "M", "Y", "K")),
     "YCbCr": ("RGB", "L", ("Y", "Cb", "Cr")),
     "LAB": ("RGB", "L", ("L", "A", "B")),
+    "HSV": ("RGB", "L", ("H", "S", "V")),
 
     # Experimental modes include I;16, I;16L, I;16B, RGBa, BGR;15, and
     # BGR;24.  Use these modes only if you know exactly what you're
