@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Removed unusable ImagePalette.new()
+  [hugovk]
+
 - Fix Scrambled XPM #808
   [wiredfool]
 
@@ -16,7 +19,7 @@ Changelog (Pillow)
 - Added docs for ExifTags
   [Wintermute3]
 
-- More tests for CurImagePlugin, DcxImagePlugin, ImageFont, ImageMath, SpiderImagePlugin, SgiImagePlugin, XpmImagePlugin and _util
+- More tests for CurImagePlugin, DcxImagePlugin, ImageFont, ImageMath, ImagePalette, SpiderImagePlugin, SgiImagePlugin, XpmImagePlugin and _util
   [hugovk]
 
 - Fix return value of FreeTypeFont.textsize() does not include font offsets
