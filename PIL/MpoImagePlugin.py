@@ -42,6 +42,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.__framecount = self.mpinfo[0xB001]
         self.__mpoffsets = [mpent['DataOffset'] + self.info['mpoffset'] \
             for mpent in self.mpinfo[0xB002]]
+        self.__mpoffsets[0] = 0
         assert self.__framecount == len(self.__mpoffsets)
         del self.info['mpoffset'] # no longer needed
         self.__fp = self.fp # FIXME: hack
@@ -56,10 +57,6 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             self.fp = self.__fp
             self.fp.seek(self.__mpoffsets[frame])
             self.offset = self.__mpoffsets[frame]
-            rawmode = self.mode
-            if self.mode == "CMYK":
-                rawmode = "CMYK;I"  # assume adobe conventions
-            self.tile = [("jpeg", (0, 0) + self.size, 0, (rawmode, ""))]
         self.__frame = frame
 
     def tell(self):

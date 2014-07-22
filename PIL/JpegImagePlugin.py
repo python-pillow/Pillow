@@ -115,7 +115,8 @@ def APP(self, marker):
     elif marker == 0xFFE2 and s[:4] == b"MPF\0":
         # extract MPO information
         self.info["mp"] = s[4:]
-        self.info["mpoffset"] = self.fp.tell()
+        # offset is current location minus buffer size plus constant header size
+        self.info["mpoffset"] = self.fp.tell() - n + 4
 
 
 def COM(self, marker):
