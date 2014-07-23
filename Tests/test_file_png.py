@@ -281,6 +281,34 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.text["eggs"].lang, "en")
         self.assertEqual(im.text["eggs"].tkey, "Eggs")
 
+    def test_nonunicode_text(self):
+        # Check so that non-Unicode text is saved as a tEXt rather than iTXt
+
+        im = Image.new("RGB", (32, 32))
+        info = PngImagePlugin.PngInfo()
+        info.add_text("Text", "Ascii")
+        im = roundtrip(im, pnginfo=info)
+        self.assertEqual(type(im.info["Text"]), str)
+
+    def test_unicode_text(self):
+        # Check preservation of non-ASCII characters on Python3
+        # This cannot really be meaningfully tested on Python2,
+        # since it didn't preserve charsets to begin with.
+
+        def rt_text(value):
+            im = Image.new("RGB", (32, 32))
+            info = PngImagePlugin.PngInfo()
+            info.add_text("Text", value)
+            im = roundtrip(im, pnginfo=info)
+            self.assertEqual(im.info, {"Text": value})
+
+        if str is not bytes:
+            rt_text(" Aa" + chr(0xa0) + chr(0xc4) + chr(0xff)) # Latin1
+            rt_text(chr(0x400) + chr(0x472) + chr(0x4ff))      # Cyrillic
+            rt_text(chr(0x4e00) + chr(0x66f0) +                # CJK
+                    chr(0x9fba) + chr(0x3042) + chr(0xac00))
+            rt_text("A" + chr(0xc4) + chr(0x472) + chr(0x3042)) # Combined
+
     def test_scary(self):
         # Check reading of evil PNG file.  For information, see:
         # http://scary.beasts.org/security/CESA-2004-001.txt
