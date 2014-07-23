@@ -12,7 +12,10 @@ class TestFormatHSV(PillowTestCase):
         return float(ord(i))/255.0
     def to_int(self, f):
         return int(f*255.0)
-
+    def tuple_to_ints(self, tp):
+        x,y,z = tp
+        return (int(x*255.0), int(y*255.0), int(z*255.0))
+    
     def test_sanity(self):
         im = Image.new('HSV', (100,100))
 
@@ -49,38 +52,24 @@ class TestFormatHSV(PillowTestCase):
         (r,g,b) = im.split()
         
         if bytes is str:
-            f_r = map(self.str_to_float,r.tobytes())
-            f_g = map(self.str_to_float,g.tobytes())
-            f_b = map(self.str_to_float,b.tobytes())
+            conv_func = self.str_to_float
         else:
-            f_r = map(self.int_to_float,r.tobytes())
-            f_g = map(self.int_to_float,g.tobytes())
-            f_b = map(self.int_to_float,b.tobytes())
-
-        f_h = [];
-        f_s = [];
-        f_v = [];
+            conv_func = self.int_to_float
 
         if hasattr(itertools, 'izip'):
             iter_helper = itertools.izip
         else:
             iter_helper = itertools.zip_longest
+
+
+        converted = [self.tuple_to_ints(func(conv_func(_r), conv_func(_g), conv_func(_b)))
+                     for (_r, _g, _b) in iter_helper(r.tobytes(), g.tobytes(), b.tobytes())]
+
         
-        for (_r, _g, _b) in iter_helper(f_r, f_g, f_b):
-            _h, _s, _v = func(_r, _g, _b)
-            f_h.append(_h)
-            f_s.append(_s)
-            f_v.append(_v)
-
-        h = Image.new('L', r.size)
-        h.putdata(list(map(self.to_int, f_h)))
-        s = Image.new('L', r.size)
-        s.putdata(list(map(self.to_int, f_s)))
-        v = Image.new('L', r.size)
-        v.putdata(list(map(self.to_int, f_v)))
-            
-        hsv = Image.merge(mode, (h, s, v))
-
+        new_bytes = b''.join(chr(h)+chr(s)+chr(v) for (h,s,v) in converted)
+        
+        hsv = Image.frombytes(mode,r.size,  new_bytes)
+        
         return hsv
 
     def to_hsv_colorsys(self, im):
@@ -90,8 +79,9 @@ class TestFormatHSV(PillowTestCase):
         return self.to_xxx_colorsys(im, colorsys.hsv_to_rgb, 'RGB')
 
     def test_wedge(self):
-        im = self.wedge().convert('HSV')
-        comparable = self.to_hsv_colorsys(self.wedge())
+        src = self.wedge().resize((3*32,32),Image.BILINEAR)
+        im = src.convert('HSV')
+        comparable = self.to_hsv_colorsys(src)
 
         #print (im.getpixel((448, 64)))
         #print (comparable.getpixel((448, 64)))
@@ -111,7 +101,7 @@ class TestFormatHSV(PillowTestCase):
 
         #print (im.getpixel((192, 64)))
 
-        comparable = self.wedge()
+        comparable = src
         im = im.convert('RGB')
 
         #im.split()[0].show()
