@@ -265,6 +265,22 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.info, {'TXT': 'VALUE', 'ZIP': 'VALUE'})
         self.assertEqual(im.text, {'TXT': 'VALUE', 'ZIP': 'VALUE'})
 
+    def test_roundtrip_itxt(self):
+        # Check iTXt roundtripping
+
+        im = Image.new("RGB", (32, 32))
+        info = PngImagePlugin.PngInfo()
+        info.add_itxt("spam", "Eggs", "en", "Spam")
+        info.add_text("eggs", PngImagePlugin.iTXt("Spam", "en", "Eggs"), zip=True)
+
+        im = roundtrip(im, pnginfo=info)
+        self.assertEqual(im.info, {"spam": "Eggs", "eggs": "Spam"})
+        self.assertEqual(im.text, {"spam": "Eggs", "eggs": "Spam"})
+        self.assertEqual(im.text["spam"].lang, "en")
+        self.assertEqual(im.text["spam"].tkey, "Spam")
+        self.assertEqual(im.text["eggs"].lang, "en")
+        self.assertEqual(im.text["eggs"].tkey, "Eggs")
+
     def test_scary(self):
         # Check reading of evil PNG file.  For information, see:
         # http://scary.beasts.org/security/CESA-2004-001.txt
