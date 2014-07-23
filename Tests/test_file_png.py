@@ -129,6 +129,39 @@ class TestFilePng(PillowTestCase):
             HEAD + chunk(b'zTXt', b'spam\0\0' + zlib.compress(b'egg')) + TAIL)
         self.assertEqual(im.info,  {'spam': 'egg'})
 
+    def test_bad_itxt(self):
+
+        im = load(HEAD + chunk(b'iTXt') + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam') + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0') + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\x02') + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\0\0foo\0') + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\0\0en\0Spam\0egg') + TAIL)
+        self.assertEqual(im.info, {"spam": "egg"})
+        self.assertEqual(im.info["spam"].lang, "en")
+        self.assertEqual(im.info["spam"].tkey, "Spam")
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' + zlib.compress(b"egg")[:1]) + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\1en\0Spam\0' + zlib.compress(b"egg")) + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' + zlib.compress(b"egg")) + TAIL)
+        self.assertEqual(im.info, {"spam": "egg"})
+        self.assertEqual(im.info["spam"].lang, "en")
+        self.assertEqual(im.info["spam"].tkey, "Spam")
+
     def test_interlace(self):
 
         file = "Tests/images/pil123p.png"
