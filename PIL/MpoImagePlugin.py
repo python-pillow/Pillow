@@ -49,14 +49,21 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.__fp.seek(self.__mpoffsets[0]) # get ready to read first frame
         self.__frame = 0
         self.offset = 0
+        # for now we can only handle reading and individual frame extraction
+        self.readonly = 1
+
+    def load_seek(self, pos):
+        self.__fp.seek(pos)
 
     def seek(self, frame):
         if frame < 0 or frame >= self.__framecount:
             raise EOFError("no more images in MPO file")
         else:
             self.fp = self.__fp
-            self.fp.seek(self.__mpoffsets[frame])
             self.offset = self.__mpoffsets[frame]
+            self.tile = [
+                ("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))
+            ]
         self.__frame = frame
 
     def tell(self):

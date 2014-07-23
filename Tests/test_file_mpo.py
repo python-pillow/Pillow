@@ -73,6 +73,20 @@ class TestFileMpo(PillowTestCase):
             # and this one, too
             im.seek(0)
             self.assertEqual(im.tell(), 0)
+    
+    def test_image_grab(self):
+        for test_file in test_files:
+            im = Image.open(test_file)
+            self.assertEqual(im.tell(), 0)
+            im0 = im.tobytes()
+            im.seek(1)
+            self.assertEqual(im.tell(), 1)
+            im1 = im.tobytes()
+            im.seek(0)
+            self.assertEqual(im.tell(), 0)
+            im0 = im.tobytes()
+            self.assertEqual(im0, im02)
+            self.assertNotEqual(im0, im1)
             
 
 if __name__ == '__main__':
