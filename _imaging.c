@@ -365,9 +365,12 @@ getbands(const char* mode)
 static void*
 getlist(PyObject* arg, int* length, const char* wrong_length, int type)
 {
-    int i, n;
+    int i, n, itemp;
+    double dtemp;
     void* list;
-
+    PyObject* seq;
+    PyObject* op;
+    
     if (!PySequence_Check(arg)) {
         PyErr_SetString(PyExc_TypeError, must_be_sequence);
         return NULL;
@@ -383,70 +386,41 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
     if (!list)
         return PyErr_NoMemory();
 
+    seq = PySequence_Fast(arg, must_be_sequence);
+    if (!seq) {
+        free(list);
+        PyErr_SetString(PyExc_TypeError, must_be_sequence);
+        return NULL;
+    }
+    
     switch (type) {
     case TYPE_UINT8:
-        if (PyList_Check(arg)) {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PyList_GET_ITEM(arg, i);
-                int temp = PyInt_AsLong(op);
-                ((UINT8*)list)[i] = CLIP(temp);
-            }
-        } else {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(arg, i);
-                int temp = PyInt_AsLong(op);
-                Py_XDECREF(op);
-                ((UINT8*)list)[i] = CLIP(temp);
-            }
+        for (i = 0; i < n; i++) {
+            op = PySequence_Fast_GET_ITEM(seq, i);
+            itemp = PyInt_AsLong(op);
+            ((UINT8*)list)[i] = CLIP(itemp);
         }
         break;
     case TYPE_INT32:
-        if (PyList_Check(arg)) {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PyList_GET_ITEM(arg, i);
-                int temp = PyInt_AsLong(op);
-                ((INT32*)list)[i] = temp;
-            }
-        } else {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(arg, i);
-                int temp = PyInt_AsLong(op);
-                Py_XDECREF(op);
-                ((INT32*)list)[i] = temp;
-            }
+        for (i = 0; i < n; i++) {
+            op = PySequence_Fast_GET_ITEM(seq, i);
+            itemp = PyInt_AsLong(op);
+            ((INT32*)list)[i] = itemp;
         }
         break;
     case TYPE_FLOAT32:
-        if (PyList_Check(arg)) {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PyList_GET_ITEM(arg, i);
-                double temp = PyFloat_AsDouble(op);
-                ((FLOAT32*)list)[i] = (FLOAT32) temp;
-            }
-        } else {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(arg, i);
-                double temp = PyFloat_AsDouble(op);
-                Py_XDECREF(op);
-                ((FLOAT32*)list)[i] = (FLOAT32) temp;
-            }
-        }
+         for (i = 0; i < n; i++) {
+             op = PySequence_Fast_GET_ITEM(seq, i);
+             dtemp = PyFloat_AsDouble(op);
+             ((FLOAT32*)list)[i] = (FLOAT32) dtemp;
+         }
         break;
     case TYPE_DOUBLE:
-        if (PyList_Check(arg)) {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PyList_GET_ITEM(arg, i);
-                double temp = PyFloat_AsDouble(op);
-                ((double*)list)[i] = temp;
-            }
-        } else {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(arg, i);
-                double temp = PyFloat_AsDouble(op);
-                Py_XDECREF(op);
-                ((double*)list)[i] = temp;
-            }
-        }
+        for (i = 0; i < n; i++) {
+            op = PySequence_Fast_GET_ITEM(seq, i);
+            dtemp = PyFloat_AsDouble(op);
+            ((double*)list)[i] = (double) dtemp;
+         }
         break;
     }
 
