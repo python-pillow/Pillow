@@ -147,6 +147,17 @@ class ChunkStream:
 
         return cids
 
+# --------------------------------------------------------------------
+# Subclass of string to allow iTXt chunks to look like strings while
+# keeping their extra information
+
+class iTXt(str):
+    @staticmethod
+    def __new__(cls, text, lang, tkey):
+        self = str.__new__(cls, text)
+        self.lang = lang
+        self.tkey = tkey
+        return self
 
 # --------------------------------------------------------------------
 # PNG chunk container (for use with save(pnginfo=))
@@ -159,7 +170,26 @@ class PngInfo:
     def add(self, cid, data):
         self.chunks.append((cid, data))
 
+    def add_itxt(self, key, value, lang="", tkey="", zip=False):
+        if not isinstance(key, bytes):
+            key = key.encode("latin-1", "strict")
+        if not isinstance(value, bytes):
+            value = value.encode("utf-8", "strict")
+        if not isinstance(lang, bytes):
+            lang = lang.encode("utf-8", "strict")
+        if not isinstance(tkey, bytes):
+            tkey = tkey.encode("utf-8", "strict")
+
+        if zip:
+            import zlib
+            self.add(b"iTXt", key + b"\0\x01\0" + lang + b"\0" + tkey + b"\0" + zlib.compress(value))
+        else:
+            self.add(b"iTXt", key + b"\0\0\0" + lang + b"\0" + tkey + b"\0" + value)
+
     def add_text(self, key, value, zip=0):
+        if isinstance(value, iTXt):
+            return self.add_itxt(key, value, value.lang, value.tkey, bool(zip))
+
         # The tEXt chunk stores latin-1 text
         if not isinstance(key, bytes):
             key = key.encode('latin-1', 'strict')
@@ -327,6 +357,43 @@ class PngStream(ChunkStream):
                 v = v.decode('latin-1', 'replace')
 
             self.im_info[k] = self.im_text[k] = v
+        return s
+
+    def chunk_iTXt(self, pos, length):
+
+        # international text
+        r = s = ImageFile._safe_read(self.fp, length)
+        try:
+            k, r = r.split(b"\0", 1)
+        except ValueError:
+            return s
+        if len(r) < 2:
+            return s
+        cf, cm, r = i8(r[0]), i8(r[1]), r[2:]
+        try:
+            lang, tk, v = r.split(b"\0", 2)
+        except ValueError:
+            return s
+        if cf != 0:
+            if cm == 0:
+                import zlib
+                try:
+                    v = zlib.decompress(v)
+                except zlib.error:
+                    return s
+            else:
+                return s
+        if bytes is not str:
+            try:
+                k = k.decode("latin-1", "strict")
+                lang = lang.decode("utf-8", "strict")
+                tk = tk.decode("utf-8", "strict")
+                v = v.decode("utf-8", "strict")
+            except UnicodeError:
+                return s
+
+        self.im_info[k] = self.im_text[k] = iTXt(v, lang, tk)
+        
         return s
 
 # --------------------------------------------------------------------
