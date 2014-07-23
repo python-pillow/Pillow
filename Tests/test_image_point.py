@@ -26,7 +26,7 @@ class TestImagePoint(PillowTestCase):
             """
         # This takes _forever_ on PyPy. Open Bug,
         # see https://github.com/python-pillow/Pillow/issues/484
-        self.skipKnownBadTest(msg="Too Slow on pypy", interpreter='pypy')
+        #self.skipKnownBadTest(msg="Too Slow on pypy", interpreter='pypy')
 
         im = lena("I")
         im.point(list(range(256))*256, 'L')
