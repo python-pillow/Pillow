@@ -191,11 +191,14 @@ class PngInfo:
             return self.add_itxt(key, value, value.lang, value.tkey, bool(zip))
 
         # The tEXt chunk stores latin-1 text
+        if not isinstance(value, bytes):
+            try:
+                value = value.encode('latin-1', 'strict')
+            except UnicodeError:
+                return self.add_itxt(key, value, zip=bool(zip))
+
         if not isinstance(key, bytes):
             key = key.encode('latin-1', 'strict')
-
-        if not isinstance(value, bytes):
-            value = value.encode('latin-1', 'replace')
 
         if zip:
             import zlib
