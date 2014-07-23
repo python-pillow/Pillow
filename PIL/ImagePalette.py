@@ -17,19 +17,20 @@
 #
 
 import array
-from PIL import Image, ImageColor
+import warnings
+from PIL import ImageColor
 
 
 class ImagePalette:
     "Color palette for palette mapped images"
 
-    def __init__(self, mode = "RGB", palette = None, size = 0):
+    def __init__(self, mode="RGB", palette=None, size=0):
         self.mode = mode
-        self.rawmode = None # if set, palette contains raw data
+        self.rawmode = None  # if set, palette contains raw data
         self.palette = palette or list(range(256))*len(self.mode)
         self.colors = {}
         self.dirty = None
-        if ((size == 0 and len(self.mode)*256 != len(self.palette)) or 
+        if ((size == 0 and len(self.mode)*256 != len(self.palette)) or
                 (size != 0 and size != len(self.palette))):
             raise ValueError("wrong palette size")
 
@@ -55,7 +56,7 @@ class ImagePalette:
             return self.palette
         arr = array.array("B", self.palette)
         if hasattr(arr, 'tobytes'):
-            #py3k has a tobytes, tostring is deprecated.
+            # py3k has a tobytes, tostring is deprecated.
             return arr.tobytes()
         return arr.tostring()
 
@@ -109,6 +110,7 @@ class ImagePalette:
             fp.write("\n")
         fp.close()
 
+
 # --------------------------------------------------------------------
 # Internal
 
@@ -119,31 +121,52 @@ def raw(rawmode, data):
     palette.dirty = 1
     return palette
 
+
 # --------------------------------------------------------------------
 # Factories
 
 def _make_linear_lut(black, white):
+    warnings.warn(
+        '_make_linear_lut() is deprecated. '
+        'Please call make_linear_lut() instead.',
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return make_linear_lut(black, white)
+
+
+def _make_gamma_lut(exp):
+    warnings.warn(
+        '_make_gamma_lut() is deprecated. '
+        'Please call make_gamma_lut() instead.',
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return make_gamma_lut(exp)
+
+
+def make_linear_lut(black, white):
     lut = []
     if black == 0:
         for i in range(256):
             lut.append(white*i//255)
     else:
-        raise NotImplementedError # FIXME
+        raise NotImplementedError  # FIXME
     return lut
 
-def _make_gamma_lut(exp, mode="RGB"):
+
+def make_gamma_lut(exp):
     lut = []
     for i in range(256):
         lut.append(int(((i / 255.0) ** exp) * 255.0 + 0.5))
     return lut
 
-def new(mode, data):
-    return Image.core.new_palette(mode, data)
 
 def negative(mode="RGB"):
     palette = list(range(256))
     palette.reverse()
     return ImagePalette(mode, palette * len(mode))
+
 
 def random(mode="RGB"):
     from random import randint
@@ -152,15 +175,18 @@ def random(mode="RGB"):
         palette.append(randint(0, 255))
     return ImagePalette(mode, palette)
 
+
 def sepia(white="#fff0c0"):
     r, g, b = ImageColor.getrgb(white)
-    r = _make_linear_lut(0, r)
-    g = _make_linear_lut(0, g)
-    b = _make_linear_lut(0, b)
+    r = make_linear_lut(0, r)
+    g = make_linear_lut(0, g)
+    b = make_linear_lut(0, b)
     return ImagePalette("RGB", r + g + b)
+
 
 def wedge(mode="RGB"):
     return ImagePalette(mode, list(range(256)) * len(mode))
+
 
 def load(filename):
 
@@ -177,8 +203,8 @@ def load(filename):
             p = GimpPaletteFile.GimpPaletteFile(fp)
             lut = p.getpalette()
         except (SyntaxError, ValueError):
-            #import traceback
-            #traceback.print_exc()
+            # import traceback
+            # traceback.print_exc()
             pass
 
     if not lut:
@@ -188,8 +214,8 @@ def load(filename):
             p = GimpGradientFile.GimpGradientFile(fp)
             lut = p.getpalette()
         except (SyntaxError, ValueError):
-            #import traceback
-            #traceback.print_exc()
+            # import traceback
+            # traceback.print_exc()
             pass
 
     if not lut:
@@ -206,4 +232,4 @@ def load(filename):
     if not lut:
         raise IOError("cannot load palette")
 
-    return lut # data, rawmode
+    return lut  # data, rawmode

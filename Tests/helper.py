@@ -19,6 +19,10 @@ class PillowTestCase(unittest.TestCase):
         # holds last result object passed to run method:
         self.currentResult = None
 
+    # Nicer output for --verbose
+    def __str__(self):
+        return self.__class__.__name__ + "." + self._testMethodName
+
     def run(self, result=None):
         self.currentResult = result  # remember result for use later
         unittest.TestCase.run(self, result)  # call superclass run method

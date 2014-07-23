@@ -9,6 +9,7 @@ python:
   - "pypy"
   - 2.6
   - 2.7
+  - "2.7_with_system_site_packages" # For PyQt4
   - 3.2
   - 3.3
   - 3.4
@@ -33,11 +34,11 @@ script:
 
     # Don't cover PyPy: it fails intermittently and is x5.8 slower (#640)
   - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time python selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests Tests/test_*.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests -vx Tests/test_*.py; fi
 
     # Cover the others
   - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose Tests/test_*.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py; fi
 
 after_success:
   - coverage report

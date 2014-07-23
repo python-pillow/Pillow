@@ -22,32 +22,32 @@ for a region of an image.
 
     .. py:attribute:: count
 
-        Total number of pixels.
+        Total number of pixels for each band in the image.
 
     .. py:attribute:: sum
 
-        Sum of all pixels.
+        Sum of all pixels for each band in the image.
 
     .. py:attribute:: sum2
 
-        Squared sum of all pixels.
+        Squared sum of all pixels for each band in the image.
 
-    .. py:attribute:: pixel
+    .. py:attribute:: mean
 
-        Average pixel level.
+        Average (arithmetic mean) pixel level for each band in the image.
 
     .. py:attribute:: median
 
-        Median pixel level.
+        Median pixel level for each band in the image.
 
     .. py:attribute:: rms
 
-        RMS (root-mean-square).
+        RMS (root-mean-square) for each band in the image.
 
     .. py:attribute:: var
 
-        Variance.
+        Variance for each band in the image.
 
     .. py:attribute:: stddev
 
-        Standard deviation.
+        Standard deviation for each band in the image.
