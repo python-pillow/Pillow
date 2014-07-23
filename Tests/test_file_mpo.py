@@ -84,7 +84,7 @@ class TestFileMpo(PillowTestCase):
             im1 = im.tobytes()
             im.seek(0)
             self.assertEqual(im.tell(), 0)
-            im0 = im.tobytes()
+            im02 = im.tobytes()
             self.assertEqual(im0, im02)
             self.assertNotEqual(im0, im1)
             
