@@ -65,8 +65,10 @@ class TestFormatHSV(PillowTestCase):
         converted = [self.tuple_to_ints(func(conv_func(_r), conv_func(_g), conv_func(_b)))
                      for (_r, _g, _b) in iter_helper(r.tobytes(), g.tobytes(), b.tobytes())]
 
-        
-        new_bytes = b''.join(chr(h)+chr(s)+chr(v) for (h,s,v) in converted)
+        if str is bytes:
+            new_bytes = b''.join(chr(h)+chr(s)+chr(v) for (h,s,v) in converted)
+        else:
+            new_bytes = b''.join(bytes(chr(h)+chr(s)+chr(v), 'latin-1') for (h,s,v) in converted)
         
         hsv = Image.frombytes(mode,r.size,  new_bytes)
         
