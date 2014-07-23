@@ -42,6 +42,10 @@ class TestImagePutData(PillowTestCase):
             self.assertEqual(put(sys.maxsize), (255, 255, 255, 127))
 
 
+    def test_pypy_performance(self):
+        im = Image.new('L', (256,256))
+        im.putdata(list(range(256))*256)
+
 if __name__ == '__main__':
     unittest.main()
 
