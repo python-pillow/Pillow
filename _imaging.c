@@ -1220,6 +1220,8 @@ _putdata(ImagingObject* self, PyObject* args)
     Py_ssize_t n, i, x, y;
 
     PyObject* data;
+    PyObject* seq;
+    PyObject* op;
     double scale = 1.0;
     double offset = 0.0;
 
@@ -1259,69 +1261,61 @@ _putdata(ImagingObject* self, PyObject* args)
                         x = 0, y++;
                 }
         } else {
-            if (scale == 1.0 && offset == 0.0) {
-                /* Clipped data */
-                if (PyList_Check(data)) {
-                    for (i = x = y = 0; i < n; i++) {
-                        PyObject *op = PyList_GET_ITEM(data, i);
-                        image->image8[y][x] = (UINT8) CLIP(PyInt_AsLong(op));
-                        if (++x >= (int) image->xsize)
-                            x = 0, y++;
-                    }
-                } else {
-                    for (i = x = y = 0; i < n; i++) {
-                        PyObject *op = PySequence_GetItem(data, i);
-                        image->image8[y][x] = (UINT8) CLIP(PyInt_AsLong(op));
-                        Py_XDECREF(op);
-                        if (++x >= (int) image->xsize)
-                            x = 0, y++;
-                    }
-                }
+           seq = PySequence_Fast(data, must_be_sequence);
+           if (!seq) {
+               PyErr_SetString(PyExc_TypeError, must_be_sequence);
+               return NULL;
+           }
+           if (scale == 1.0 && offset == 0.0) {
+               /* Clipped data */
+               for (i = x = y = 0; i < n; i++) {
+                   op = PySequence_Fast_GET_ITEM(data, i);
+                   image->image8[y][x] = (UINT8) CLIP(PyInt_AsLong(op));
+                   if (++x >= (int) image->xsize){
+                       x = 0, y++;
+                   }
+               }
+
             } else {
-                if (PyList_Check(data)) {
-                    /* Scaled and clipped data */
-                    for (i = x = y = 0; i < n; i++) {
-                        PyObject *op = PyList_GET_ITEM(data, i);
-                        image->image8[y][x] = CLIP(
-                            (int) (PyFloat_AsDouble(op) * scale + offset));
-                        if (++x >= (int) image->xsize)
-                            x = 0, y++;
-                    }
-                } else {
-                    for (i = x = y = 0; i < n; i++) {
-                        PyObject *op = PySequence_GetItem(data, i);
-                        image->image8[y][x] = CLIP(
-                            (int) (PyFloat_AsDouble(op) * scale + offset));
-                        Py_XDECREF(op);
-                        if (++x >= (int) image->xsize)
-                            x = 0, y++;
-                    }
-                }
-            }
-            PyErr_Clear(); /* Avoid weird exceptions */
+               /* Scaled and clipped data */
+               for (i = x = y = 0; i < n; i++) {
+                   PyObject *op = PySequence_Fast_GET_ITEM(data, i);
+                   image->image8[y][x] = CLIP(
+                       (int) (PyFloat_AsDouble(op) * scale + offset));
+                   if (++x >= (int) image->xsize){
+                       x = 0, y++;
+                   }
+               }
+           }
+           PyErr_Clear(); /* Avoid weird exceptions */
         }
     } else {
         /* 32-bit images */
+        seq = PySequence_Fast(data, must_be_sequence);
+        if (!seq) {
+            PyErr_SetString(PyExc_TypeError, must_be_sequence);
+            return NULL;
+        }
         switch (image->type) {
         case IMAGING_TYPE_INT32:
             for (i = x = y = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(data, i);
+                op = PySequence_Fast_GET_ITEM(data, i);
                 IMAGING_PIXEL_INT32(image, x, y) =
                     (INT32) (PyFloat_AsDouble(op) * scale + offset);
-                Py_XDECREF(op);
-                if (++x >= (int) image->xsize)
+                if (++x >= (int) image->xsize){
                     x = 0, y++;
+                }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
             break;
         case IMAGING_TYPE_FLOAT32:
             for (i = x = y = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(data, i);
+                op = PySequence_Fast_GET_ITEM(data, i);
                 IMAGING_PIXEL_FLOAT32(image, x, y) =
                     (FLOAT32) (PyFloat_AsDouble(op) * scale + offset);
-                Py_XDECREF(op);
-                if (++x >= (int) image->xsize)
+                if (++x >= (int) image->xsize){
                     x = 0, y++;
+                }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
             break;
@@ -1332,16 +1326,15 @@ _putdata(ImagingObject* self, PyObject* args)
                     INT32 inkint;
                 } u;
 
-                PyObject *op = PySequence_GetItem(data, i);
+                op = PySequence_Fast_GET_ITEM(data, i);
                 if (!op || !getink(op, image, u.ink)) {
-                    Py_DECREF(op);
                     return NULL;
                 }
                 /* FIXME: what about scale and offset? */
                 image->image32[y][x] = u.inkint;
-                Py_XDECREF(op);
-                if (++x >= (int) image->xsize)
+                if (++x >= (int) image->xsize){
                     x = 0, y++;
+                }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
             break;
