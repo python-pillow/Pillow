@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- HSV Support #816
+  [wiredfool]
+
 - Removed unusable ImagePalette.new()
   [hugovk]
 
