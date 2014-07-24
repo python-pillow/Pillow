@@ -663,10 +663,27 @@ def _save_cjpeg(im, fp, filename):
     except:
         pass
 
+
+##
+# Factory for making JPEG and MPO instances
+def jpeg_factory(fp=None, filename=None):
+    im = JpegImageFile(fp, filename)
+    mpheader = im._getmp()
+    try:
+        if mpheader[45057] > 1:
+            # It's actually an MPO
+            from MpoImagePlugin import MpoImageFile
+            im = MpoImageFile(fp, filename)
+    except (TypeError, IndexError):
+        # It is really a JPEG
+        pass
+    return im
+
+
 # -------------------------------------------------------------------q-
 # Registry stuff
 
-Image.register_open("JPEG", JpegImageFile, _accept)
+Image.register_open("JPEG", jpeg_factory, _accept)
 Image.register_save("JPEG", _save)
 
 Image.register_extension("JPEG", ".jfif")

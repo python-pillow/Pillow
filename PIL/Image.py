@@ -2236,19 +2236,6 @@ def open(fp, mode="r"):
                 fp.seek(0)
                 im = factory(fp, filename)
                 _decompression_bomb_check(im.size)
-                if i == 'JPEG':
-                    # Things are more complicated for JPEGs; we need to parse
-                    # more deeply than 16 characters and check the contents of
-                    # a potential MP header block to be sure.
-                    mpheader = im._getmp()
-                    try:
-                        if mpheader[45057] > 1:
-                            # It's actually an MPO
-                            factory, accept = OPEN['MPO']
-                            im = factory(fp, filename)
-                    except (TypeError, IndexError):
-                        # It is really a JPEG
-                        pass
                 return im
         except (SyntaxError, IndexError, TypeError):
             # import traceback

@@ -37,6 +37,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     format_description = "MPO (CIPA DC-007)"
 
     def _open(self):
+        self.fp.seek(0) # prep the fp in order to pass the JPEG test
         JpegImagePlugin.JpegImageFile._open(self)
         self.mpinfo = self._getmp()
         self.__framecount = self.mpinfo[0xB001]
@@ -73,7 +74,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 # -------------------------------------------------------------------q-
 # Registry stuff
 
-Image.register_open("MPO", MpoImageFile, _accept)
+Image.register_open("MPO", JpegImagePlugin.jpeg_factory, _accept)
 Image.register_save("MPO", _save)
 
 Image.register_extension("MPO", ".mpo")
