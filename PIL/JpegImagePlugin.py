@@ -474,10 +474,37 @@ def _getmp(self):
             unpackedentry = unpack('{0}LLLHH'.format(endianness), rawmpentry)
             labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1', 'EntryNo2')
             mpentry = dict(zip(labels, unpackedentry))
+            mpentryattr = {
+                'DependentParentImageFlag': bool(mpentry['Attribute'] & (1<<31)),
+                'DependentChildImageFlag': bool(mpentry['Attribute'] & (1<<30)),
+                'RepresentativeImageFlag': bool(mpentry['Attribute'] & (1<<29)),
+                'Reserved': (mpentry['Attribute'] & (3<<27)) >> 27,
+                'ImageDataFormat': (mpentry['Attribute'] & (7<<24)) >> 24,
+                'MPType': mpentry['Attribute'] & 0x00FFFFFF
+            }
+            if mpentryattr['ImageDataFormat'] == 0:
+                mpentryattr['ImageDataFormat'] = 'JPEG'
+            else:
+                raise SyntaxError("unsupported picture format in MPO")
+            mptypemap = {
+                0x000000: 'Undefined',
+                0x010001: 'Large Thumbnail (VGA Equivalent)',
+                0x010002: 'Large Thumbnail (Full HD Equivalent)',
+                0x020001: 'Multi-Frame Image (Panorama)',
+                0x020002: 'Multi-Frame Image: (Disparity)',
+                0x020003: 'Multi-Frame Image: (Multi-Angle)',
+                0x030000: 'Baseline MP Primary Image'
+            }
+            mpentryattr['MPType'] = mptypemap.get(mpentryattr['MPType'],
+                'Unknown')
+            mpentry['Attribute'] = mpentryattr
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
     except KeyError:
         raise SyntaxError("malformed MP Index (bad MP Entry)")
+    # Next we should try and parse the individual image unique ID list;
+    # we don't because I've never seen this actually used in a real MPO
+    # file and so can't test it.
     return mp
 
 

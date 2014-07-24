@@ -51,10 +51,29 @@ class TestFileMpo(PillowTestCase):
     def test_mp(self):
         for test_file in test_files:
             im = Image.open(test_file)
-            info = im._getmp()
-            self.assertEqual(info[45056], '0100')
-            self.assertEqual(info[45057], 2)
+            mpinfo = im._getmp()
+            self.assertEqual(mpinfo[45056], '0100')
+            self.assertEqual(mpinfo[45057], 2)
     
+    def test_mp_attribute(self):
+        for test_file in test_files:
+            im = Image.open(test_file)
+            mpinfo = im._getmp()
+            frameNumber = 0
+            for mpentry in mpinfo[45058]:
+                mpattr = mpentry['Attribute']
+                if frameNumber:
+                    self.assertFalse(mpattr['RepresentativeImageFlag'])
+                else:
+                    self.assertTrue(mpattr['RepresentativeImageFlag'])
+                self.assertFalse(mpattr['DependentParentImageFlag'])
+                self.assertFalse(mpattr['DependentChildImageFlag'])
+                self.assertEqual(mpattr['ImageDataFormat'], 'JPEG')
+                self.assertEqual(mpattr['MPType'],
+                    'Multi-Frame Image: (Disparity)')
+                self.assertEqual(mpattr['Reserved'], 0)
+                frameNumber += 1
+
     def test_seek(self):
         for test_file in test_files:
             im = Image.open(test_file)
