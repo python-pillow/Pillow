@@ -39,7 +39,7 @@ deploy:
   provider: cloudfiles
   username: travis-upload
   api-key:
-    secure: huNYD62NxNY79Lxbidi+RAitV2KEOQSCAbOI8fK7H3PAzDXf3AAkwV8p7JsAkEsdR0LDEGprF1x8F8JQ+6fOBMvuFsfMJv5ldk/9xduXz8ntbyp7nSjqBPgxQGpOaKLI0OE0u7GdkGKsGI3NOyLe9OsEohRcJA6Z+NMbCF+X7xg=
+    secure: MqebEoOm+nNwSKWcINYJ0ct6Z16q4DBB9j/plfTw3Xc4Rr8e/OC66/hLBEga5J7afr4TkIK1849xaB2ce/Gxe2+mRM9qbg4ggz2Ul16lKhl9obFZwcP2ttLEqs//LjBHD9MAz1NMRxhwvb80OKuC2dg02/s9K7CRb2sJmDG4nC0=
   region: ORD
   container: wheels
   skip_cleanup: true
