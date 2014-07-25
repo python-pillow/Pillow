@@ -52,7 +52,7 @@ class TestFileMpo(PillowTestCase):
         for test_file in test_files:
             im = Image.open(test_file)
             mpinfo = im._getmp()
-            self.assertEqual(mpinfo[45056], '0100')
+            self.assertEqual(mpinfo[45056], b'0100')
             self.assertEqual(mpinfo[45057], 2)
     
     def test_mp_attribute(self):
