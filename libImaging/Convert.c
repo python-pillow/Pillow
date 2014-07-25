@@ -35,6 +35,9 @@
 
 #include "Imaging.h"
 
+#define MAX(a, b) (a)>(b) ? (a) : (b)
+#define MIN(a, b) (a)<(b) ? (a) : (b)
+
 #define CLIP(v) ((v) <= 0 ? 0 : (v) >= 255 ? 255 : (v))
 #define CLIP16(v) ((v) <= -32768 ? -32768 : (v) >= 32767 ? 32767 : (v))
 
@@ -235,6 +238,126 @@ rgb2bgr24(UINT8* out, const UINT8* in, int xsize)
         *out++ = in[0];
     }
 }
+
+static void
+rgb2hsv(UINT8* out, const UINT8* in, int xsize)
+{ // following colorsys.py
+    float h,s,rc,gc,bc,cr;
+    UINT8 maxc,minc;
+    UINT8 r, g, b;
+    UINT8 uh,us,uv;
+    int x;
+
+    for (x = 0; x < xsize; x++, in += 4) {
+        r = in[0];
+        g = in[1];
+        b = in[2];
+        
+        maxc = MAX(r,MAX(g,b)); 
+        minc = MIN(r,MIN(g,b));
+        uv = maxc;
+        if (minc == maxc){
+            *out++ = 0;
+            *out++ = 0;
+            *out++ = uv;
+        } else {              
+            cr = (float)(maxc-minc);
+            s = cr/(float)maxc;
+            rc = ((float)(maxc-r))/cr;
+            gc = ((float)(maxc-g))/cr;
+            bc = ((float)(maxc-b))/cr;
+            if (r == maxc) {
+                h = bc-gc;
+            } else if (g == maxc) {
+                h = 2.0 + rc-bc;
+            } else {
+                h = 4.0 + gc-rc;
+            }
+            // incorrect hue happens if h/6 is negative.
+            h = fmod((h/6.0 + 1.0), 1.0);  
+
+            uh = (UINT8)CLIP((int)(h*255.0));
+            us = (UINT8)CLIP((int)(s*255.0));
+
+            *out++ = uh;
+            *out++ = us;
+            *out++ = uv;
+           
+        }
+        *out++ = in[3];
+    }
+}
+
+static void
+hsv2rgb(UINT8* out, const UINT8* in, int xsize)
+{ // following colorsys.py
+    
+    int p,q,t;
+    uint up,uq,ut;
+    int i, x;
+    float f, fs;
+    uint h,s,v;
+       
+    for (x = 0; x < xsize; x++, in += 4) {
+        h = in[0];
+        s = in[1];
+        v = in[2];
+        
+        if (s==0){
+            *out++ = v;
+            *out++ = v;
+            *out++ = v;
+        } else { 
+            i = floor((float)h * 6.0 / 255.0); // 0 - 6
+            f = (float)h * 6.0 / 255.0 - (float)i; // 0-1 : remainder. 
+            fs = ((float)s)/255.0; 
+
+            p = round((float)v * (1.0-fs));
+            q = round((float)v * (1.0-fs*f));
+            t = round((float)v * (1.0-fs*(1.0-f)));
+            up = (UINT8)CLIP(p);
+            uq = (UINT8)CLIP(q);
+            ut = (UINT8)CLIP(t);
+                
+            switch (i%6) {
+            case 0: 
+                *out++ = v;
+                *out++ = ut;
+                *out++ = up;
+                break;
+            case 1: 
+                *out++ = uq;
+                *out++ = v;
+                *out++ = up;
+                break;
+            case 2: 
+                *out++ = up;
+                *out++ = v;
+                *out++ = ut;
+                break;
+            case 3: 
+                *out++ = up;
+                *out++ = uq;
+                *out++ = v;
+                break;
+            case 4: 
+                *out++ = ut;
+                *out++ = up;
+                *out++ = v;
+                break;
+            case 5: 
+                *out++ = v;
+                *out++ = up;
+                *out++ = uq;
+                break;
+        
+            }
+        }
+        *out++ = in[3];
+    }
+}
+
+
 
 /* ---------------- */
 /* RGBA conversions */
@@ -658,6 +781,7 @@ static struct {
     { "RGB", "RGBX", rgb2rgba },
     { "RGB", "CMYK", rgb2cmyk },
     { "RGB", "YCbCr", ImagingConvertRGB2YCbCr },
+    { "RGB", "HSV", rgb2hsv },
 
     { "RGBA", "1", rgb2bit },
     { "RGBA", "L", rgb2l },
@@ -686,6 +810,8 @@ static struct {
 
     { "YCbCr", "L", ycbcr2l },
     { "YCbCr", "RGB", ImagingConvertYCbCr2RGB },
+
+    { "HSV", "RGB", hsv2rgb },
 
     { "I", "I;16", I_I16L },
     { "I;16", "I", I16L_I },

@@ -100,7 +100,7 @@ class PillowTestCase(unittest.TestCase):
         ave_diff = float(diff)/(a.size[0]*a.size[1])
         self.assertGreaterEqual(
             epsilon, ave_diff,
-            msg or "average pixel value difference %.4f > epsilon %.4f" % (
+            (msg or '') + " average pixel value difference %.4f > epsilon %.4f" % (
                 ave_diff, epsilon))
 
     def assert_warning(self, warn_class, func):
