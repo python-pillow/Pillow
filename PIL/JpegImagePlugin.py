@@ -699,7 +699,7 @@ def jpeg_factory(fp=None, filename=None):
     try:
         if mpheader[45057] > 1:
             # It's actually an MPO
-            from MpoImagePlugin import MpoImageFile
+            from .MpoImagePlugin import MpoImageFile
             im = MpoImageFile(fp, filename)
     except (TypeError, IndexError):
         # It is really a JPEG
