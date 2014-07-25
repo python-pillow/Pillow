@@ -297,10 +297,10 @@ hsv2rgb(UINT8* out, const UINT8* in, int xsize)
 { // following colorsys.py
     
     int p,q,t;
-    uint up,uq,ut;
+    UINT8 up,uq,ut;
     int i, x;
     float f, fs;
-    uint h,s,v;
+    UINT8 h,s,v;
        
     for (x = 0; x < xsize; x++, in += 4) {
         h = in[0];
