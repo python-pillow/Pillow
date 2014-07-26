@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Added support for encoding and decoding iTXt chunks #818
+  [dolda2000]
+
 - HSV Support #816
   [wiredfool]
 
