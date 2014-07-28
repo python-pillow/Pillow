@@ -354,10 +354,6 @@ def preinit():
     except ImportError:
         pass
     try:
-        from PIL import MpoImagePlugin
-    except ImportError:
-        pass
-    try:
         from PIL import PpmImagePlugin
     except ImportError:
         pass

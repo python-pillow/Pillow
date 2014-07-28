@@ -44,6 +44,8 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.__mpoffsets = [mpent['DataOffset'] + self.info['mpoffset'] \
             for mpent in self.mpinfo[0xB002]]
         self.__mpoffsets[0] = 0
+        # Note that the following assertion will only be invalid if something
+        # gets broken within JpegImagePlugin.
         assert self.__framecount == len(self.__mpoffsets)
         del self.info['mpoffset'] # no longer needed
         self.__fp = self.fp # FIXME: hack
@@ -74,7 +76,9 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 # -------------------------------------------------------------------q-
 # Registry stuff
 
-Image.register_open("MPO", JpegImagePlugin.jpeg_factory, _accept)
+# Note that since MPO shares a factory with JPEG, we do not need to do a
+# separate registration for it here.
+#Image.register_open("MPO", JpegImagePlugin.jpeg_factory, _accept)
 Image.register_save("MPO", _save)
 
 Image.register_extension("MPO", ".mpo")
