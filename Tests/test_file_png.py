@@ -129,6 +129,39 @@ class TestFilePng(PillowTestCase):
             HEAD + chunk(b'zTXt', b'spam\0\0' + zlib.compress(b'egg')) + TAIL)
         self.assertEqual(im.info,  {'spam': 'egg'})
 
+    def test_bad_itxt(self):
+
+        im = load(HEAD + chunk(b'iTXt') + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam') + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0') + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\x02') + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\0\0foo\0') + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\0\0en\0Spam\0egg') + TAIL)
+        self.assertEqual(im.info, {"spam": "egg"})
+        self.assertEqual(im.info["spam"].lang, "en")
+        self.assertEqual(im.info["spam"].tkey, "Spam")
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' + zlib.compress(b"egg")[:1]) + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\1en\0Spam\0' + zlib.compress(b"egg")) + TAIL)
+        self.assertEqual(im.info, {})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' + zlib.compress(b"egg")) + TAIL)
+        self.assertEqual(im.info, {"spam": "egg"})
+        self.assertEqual(im.info["spam"].lang, "en")
+        self.assertEqual(im.info["spam"].tkey, "Spam")
+
     def test_interlace(self):
 
         file = "Tests/images/pil123p.png"
@@ -231,6 +264,50 @@ class TestFilePng(PillowTestCase):
         im = roundtrip(im, pnginfo=info)
         self.assertEqual(im.info, {'TXT': 'VALUE', 'ZIP': 'VALUE'})
         self.assertEqual(im.text, {'TXT': 'VALUE', 'ZIP': 'VALUE'})
+
+    def test_roundtrip_itxt(self):
+        # Check iTXt roundtripping
+
+        im = Image.new("RGB", (32, 32))
+        info = PngImagePlugin.PngInfo()
+        info.add_itxt("spam", "Eggs", "en", "Spam")
+        info.add_text("eggs", PngImagePlugin.iTXt("Spam", "en", "Eggs"), zip=True)
+
+        im = roundtrip(im, pnginfo=info)
+        self.assertEqual(im.info, {"spam": "Eggs", "eggs": "Spam"})
+        self.assertEqual(im.text, {"spam": "Eggs", "eggs": "Spam"})
+        self.assertEqual(im.text["spam"].lang, "en")
+        self.assertEqual(im.text["spam"].tkey, "Spam")
+        self.assertEqual(im.text["eggs"].lang, "en")
+        self.assertEqual(im.text["eggs"].tkey, "Eggs")
+
+    def test_nonunicode_text(self):
+        # Check so that non-Unicode text is saved as a tEXt rather than iTXt
+
+        im = Image.new("RGB", (32, 32))
+        info = PngImagePlugin.PngInfo()
+        info.add_text("Text", "Ascii")
+        im = roundtrip(im, pnginfo=info)
+        self.assertEqual(type(im.info["Text"]), str)
+
+    def test_unicode_text(self):
+        # Check preservation of non-ASCII characters on Python3
+        # This cannot really be meaningfully tested on Python2,
+        # since it didn't preserve charsets to begin with.
+
+        def rt_text(value):
+            im = Image.new("RGB", (32, 32))
+            info = PngImagePlugin.PngInfo()
+            info.add_text("Text", value)
+            im = roundtrip(im, pnginfo=info)
+            self.assertEqual(im.info, {"Text": value})
+
+        if str is not bytes:
+            rt_text(" Aa" + chr(0xa0) + chr(0xc4) + chr(0xff)) # Latin1
+            rt_text(chr(0x400) + chr(0x472) + chr(0x4ff))      # Cyrillic
+            rt_text(chr(0x4e00) + chr(0x66f0) +                # CJK
+                    chr(0x9fba) + chr(0x3042) + chr(0xac00))
+            rt_text("A" + chr(0xc4) + chr(0x472) + chr(0x3042)) # Combined
 
     def test_scary(self):
         # Check reading of evil PNG file.  For information, see:
