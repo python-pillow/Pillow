@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- PyPy performance improvements #821
+  [wiredfool]
+
 - Added support for reading MPO files
   [Feneric]
   
