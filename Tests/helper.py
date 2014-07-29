@@ -124,7 +124,8 @@ class PillowTestCase(unittest.TestCase):
             self.assertTrue(found)
         return result
 
-    def skipKnownBadTest(self, msg=None, platform=None, travis=None):
+    def skipKnownBadTest(self, msg=None, platform=None,
+                         travis=None, interpreter=None):
         # Skip if platform/travis matches, and
         # PILLOW_RUN_KNOWN_BAD is not true in the environment.
         if bool(os.environ.get('PILLOW_RUN_KNOWN_BAD', False)):
@@ -136,6 +137,8 @@ class PillowTestCase(unittest.TestCase):
             skip = sys.platform.startswith(platform)
         if travis is not None:
             skip = skip and (travis == bool(os.environ.get('TRAVIS', False)))
+        if interpreter is not None:
+            skip = skip and (interpreter == 'pypy' and hasattr(sys, 'pypy_version_info'))
         if skip:
             self.skipTest(msg or "Known Bad Test")
 
