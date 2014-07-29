@@ -216,6 +216,10 @@ class TestFileJpeg(PillowTestCase):
         info = im._getexif()
         self.assertEqual(info[305], 'Adobe Photoshop CS Macintosh')
 
+    def test_mp(self):
+        im = Image.open("Tests/images/pil_sample_rgb.jpg")
+        self.assertIsNone(im._getmp())
+
     def test_quality_keep(self):
         im = Image.open("Tests/images/lena.jpg")
         f = self.tempfile('temp.jpg')

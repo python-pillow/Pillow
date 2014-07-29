@@ -555,7 +555,6 @@ class Image:
         self.readonly = 0
 
     def _dump(self, file=None, format=None):
-        import os
         import tempfile
         suffix = ''
         if format:
