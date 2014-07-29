@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Added support for reading MPO files
+  [Feneric]
+  
 - Added support for encoding and decoding iTXt chunks #818
   [dolda2000]
 
