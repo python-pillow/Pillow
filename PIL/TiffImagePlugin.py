@@ -453,19 +453,17 @@ class ImageFileDirectory(collections.MutableMapping):
                 data = ifd[8:8+size]
 
             if len(data) != size:
-                warnings.warn(
-                    "Possibly corrupt EXIF data.  "
-                    "Expecting to read %d bytes but only got %d. "
-                    "Skipping tag %s" % (size, len(data), tag))
+                warnings.warn("Possibly corrupt EXIF data.  "
+                              "Expecting to read %d bytes but only got %d. "
+                              "Skipping tag %s" % (size, len(data), tag))
                 continue
 
             self.tagdata[tag] = data
             self.tagtype[tag] = typ
 
             if Image.DEBUG:
-                if tag in (
-                        COLORMAP, IPTC_NAA_CHUNK,
-                        PHOTOSHOP_CHUNK, ICCPROFILE, XMP):
+                if tag in (COLORMAP, IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK,
+                           ICCPROFILE, XMP):
                     print("- value: <table: %d bytes>" % size)
                 else:
                     print("- value:", self[tag])
@@ -550,9 +548,8 @@ class ImageFileDirectory(collections.MutableMapping):
                 typname = TiffTags.TYPES.get(typ, "unknown")
                 print("save: %s (%d)" % (tagname, tag), end=' ')
                 print("- type: %s (%d)" % (typname, typ), end=' ')
-                if tag in (
-                        COLORMAP, IPTC_NAA_CHUNK,
-                        PHOTOSHOP_CHUNK, ICCPROFILE, XMP):
+                if tag in (COLORMAP, IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK,
+                           ICCPROFILE, XMP):
                     size = len(data)
                     print("- value: <table: %d bytes>" % size)
                 else:
@@ -709,8 +706,8 @@ class TiffImageFile(ImageFile.ImageFile):
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
         ignored, extents, ignored_2, args = self.tile[0]
-        decoder = Image._getdecoder(
-            self.mode, 'libtiff', args, self.decoderconfig)
+        decoder = Image._getdecoder(self.mode, 'libtiff', args,
+                                    self.decoderconfig)
         try:
             decoder.setimage(self.im, extents)
         except ValueError:
@@ -839,12 +836,14 @@ class TiffImageFile(ImageFile.ImageFile):
             offsets = self.tag[STRIPOFFSETS]
             h = getscalar(ROWSPERSTRIP, ysize)
             w = self.size[0]
-            if READ_LIBTIFF or self._compression in [
-                    "tiff_ccitt", "group3", "group4",
-                    "tiff_jpeg", "tiff_adobe_deflate",
-                    "tiff_thunderscan", "tiff_deflate",
-                    "tiff_sgilog", "tiff_sgilog24",
-                    "tiff_raw_16"]:
+            if READ_LIBTIFF or self._compression in ["tiff_ccitt", "group3",
+                                                     "group4", "tiff_jpeg",
+                                                     "tiff_adobe_deflate",
+                                                     "tiff_thunderscan",
+                                                     "tiff_deflate",
+                                                     "tiff_sgilog",
+                                                     "tiff_sgilog24",
+                                                     "tiff_raw_16"]:
                 # if Image.DEBUG:
                 #     print "Activating g4 compression for whole file"
 
@@ -1002,8 +1001,8 @@ def _save(im, fp, filename):
 
     ifd = ImageFileDirectory(prefix)
 
-    compression = im.encoderinfo.get(
-        'compression', im.info.get('compression', 'raw'))
+    compression = im.encoderinfo.get('compression', im.info.get('compression',
+                                     'raw'))
 
     libtiff = WRITE_LIBTIFF or compression != 'raw'
 
@@ -1118,8 +1117,8 @@ def _save(im, fp, filename):
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
-        for k, v in itertools.chain(
-                ifd.items(), getattr(im, 'ifd', {}).items()):
+        for k, v in itertools.chain(ifd.items(),
+                                    getattr(im, 'ifd', {}).items()):
             if k not in atts and k not in blocklist:
                 if type(v[0]) == tuple and len(v) > 1:
                     # A tuple of more than one rational tuples
