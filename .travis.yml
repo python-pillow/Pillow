@@ -33,18 +33,12 @@ script:
   - python setup.py clean
   - python setup.py build_ext --inplace
 
-    # Don't cover PyPy: it fails intermittently and is x5.8 slower (#640)
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time python selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests -vx Tests/test_*.py; fi
-
-    # Cover the others
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py; fi
+  - time coverage run --append --include=PIL/* selftest.py
+  - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
 
 after_success:
   - coverage report
-    # No need to send empty coverage to Coveralls for PyPy
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coveralls; fi
+  - coveralls
 
   - pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
