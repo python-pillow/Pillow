@@ -49,7 +49,8 @@ http://www.cazabon.com\n\
 
 /* known to-do list with current version:
 
-   Verify that PILmode->littleCMStype conversion in findLCMStype is correct for all PIL modes (it probably isn't for the more obscure ones)
+   Verify that PILmode->littleCMStype conversion in findLCMStype is correct for all 
+   PIL modes (it probably isn't for the more obscure ones)
 
    Add support for creating custom RGB profiles on the fly
    Add support for checking presence of a specific tag in a profile
@@ -132,6 +133,49 @@ cms_profile_fromstring(PyObject* self, PyObject* args)
     }
 
     return cms_profile_new(hProfile);
+}
+
+static PyObject*
+cms_profile_tobytes(PyObject* self, PyObject* args)
+{
+    char *pProfile =NULL;
+    cmsUInt32Number nProfile;
+    PyObject* CmsProfile;
+
+    cmsHPROFILE *profile;
+
+    PyObject* ret;
+    if (!PyArg_ParseTuple(args, "O", &CmsProfile)){
+        return NULL;
+    }
+
+    profile = ((CmsProfileObject*)CmsProfile)->profile;
+
+    if (!cmsSaveProfileToMem(profile, pProfile, &nProfile)) {
+        PyErr_SetString(PyExc_IOError, "Could not determine profile size");
+        return NULL;
+    }
+
+    pProfile = (char*)malloc(nProfile);
+    if (!pProfile) {
+        PyErr_SetString(PyExc_IOError, "Out of Memory");
+        return NULL;
+    }
+
+    if (!cmsSaveProfileToMem(profile, pProfile, &nProfile)) {
+        PyErr_SetString(PyExc_IOError, "Could not get profile");
+        free(pProfile);
+        return NULL;
+    }
+
+#if PY_VERSION_HEX >= 0x03000000
+    ret = PyBytes_FromStringAndSize(pProfile, (Py_ssize_t)nProfile);
+#else
+    ret = PyString_FromStringAndSize(pProfile, (Py_ssize_t)nProfile);
+#endif
+
+    free(pProfile);
+    return ret;
 }
 
 static void
@@ -485,6 +529,7 @@ static PyMethodDef pyCMSdll_methods[] = {
     {"profile_open", cms_profile_open, 1},
     {"profile_frombytes", cms_profile_fromstring, 1},
     {"profile_fromstring", cms_profile_fromstring, 1},
+    {"profile_tobytes", cms_profile_tobytes, 1},
 
     /* profile and transform functions */
     {"buildTransform", buildTransform, 1},

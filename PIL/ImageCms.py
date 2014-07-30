@@ -169,6 +169,8 @@ class ImageCmsProfile:
             self.product_name = None
             self.product_info = None
 
+    def tobytes(self):
+        return core.profile_tobytes(self.profile)
 
 class ImageCmsTransform(Image.ImagePointHandler):
 

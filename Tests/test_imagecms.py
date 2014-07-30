@@ -210,6 +210,23 @@ class TestImageCms(PillowTestCase):
         self.assert_image_similar(lena(), out, 2)
 
 
+    def test_profile_tobytes(self):
+        from io import BytesIO
+        i = Image.open("Tests/images/rgb.jpg")
+        p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
+
+        p2 = ImageCms.getOpenProfile(BytesIO(p.tobytes()))
+
+        # not the same bytes as the original icc_profile,
+        # but it does roundtrip
+        self.assertEqual(p.tobytes(),p2.tobytes())
+        self.assertEqual(ImageCms.getProfileName(p),
+                         ImageCms.getProfileName(p2))
+        self.assertEqual(ImageCms.getProfileDescription(p),
+                         ImageCms.getProfileDescription(p2))
+        
+
+        
 if __name__ == '__main__':
     unittest.main()
 
