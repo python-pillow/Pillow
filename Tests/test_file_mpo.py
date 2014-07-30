@@ -13,7 +13,8 @@ class TestFileMpo(PillowTestCase):
         if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
             self.skipTest("jpeg support not available")
 
-    def roundtrip(self, im, **options):
+    def frame_roundtrip(self, im, **options):
+        # Note that for now, there is no MPO saving functionality
         out = BytesIO()
         im.save(out, "MPO", **options)
         bytes = out.tell()
@@ -106,7 +107,19 @@ class TestFileMpo(PillowTestCase):
             im02 = im.tobytes()
             self.assertEqual(im0, im02)
             self.assertNotEqual(im0, im1)
-            
+
+    def test_save(self):
+        # Note that only individual frames can be saved at present
+        for test_file in test_files:
+            im = Image.open(test_file)
+            self.assertEqual(im.tell(), 0)
+            jpg0 = self.frame_roundtrip(im)
+            self.assert_image_similar(im, jpg0, 30)
+            im.seek(1)
+            self.assertEqual(im.tell(), 1)
+            jpg1 = self.frame_roundtrip(im)
+            self.assert_image_similar(im, jpg1, 30)
+
 
 if __name__ == '__main__':
     unittest.main()
