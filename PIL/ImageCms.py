@@ -199,6 +199,8 @@ class ImageCmsTransform(Image.ImagePointHandler):
         self.input_mode = self.inputMode = input_mode
         self.output_mode = self.outputMode = output_mode
 
+        self.output_profile = output
+
     def point(self, im):
         return self.apply(im)
 
@@ -207,6 +209,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         if imOut is None:
             imOut = Image.new(self.output_mode, im.size, None)
         self.transform.apply(im.im.id, imOut.im.id)
+        imOut.info['icc_profile'] = self.output_profile.tobytes()
         return imOut
 
     def apply_in_place(self, im):
@@ -214,6 +217,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         if im.mode != self.output_mode:
             raise ValueError("mode mismatch")  # wrong output mode
         self.transform.apply(im.im.id, im.im.id)
+        im.info['icc_profile'] = self.output_profile.tobytes()
         return im
 
 
