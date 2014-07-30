@@ -237,11 +237,11 @@ def getiptcinfo(im):
         # extract the IPTC/NAA resource
         try:
             app = im.app["APP13"]
-            if app[:14] == "Photoshop 3.0\x00":
+            if app[:14] == b"Photoshop 3.0\x00":
                 app = app[14:]
                 # parse the image resource block
                 offset = 0
-                while app[offset:offset+4] == "8BIM":
+                while app[offset:offset+4] == b"8BIM":
                     offset += 4
                     # resource code
                     code = JpegImagePlugin.i16(app, offset)
