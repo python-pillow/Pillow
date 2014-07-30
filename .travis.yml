@@ -7,6 +7,7 @@ env: MAX_CONCURRENCY=4
 
 python:
   - "pypy"
+  - "pypy3"
   - 2.6
   - 2.7
   - "2.7_with_system_site_packages" # For PyQt4
