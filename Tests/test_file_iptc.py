@@ -41,19 +41,6 @@ class TestFileIptc(PillowTestCase):
         self.assertEqual(iptc[(2, 90)], b"Budapest")
         self.assertEqual(iptc[(2, 101)], b"Hungary")
 
-    # _FIXME: is_raw() is disabled. Should we remove it?
-    def test__is_raw_equal_zero(self):
-        # Arrange
-        im = self.dummy_IptcImagePlugin()
-        offset = 0
-        size = 4
-
-        # Act
-        ret = im._is_raw(offset, size)
-
-        # Assert
-        self.assertEqual(ret, 0)
-
     def test_i(self):
         # Arrange
         c = b"a"

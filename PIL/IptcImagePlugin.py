@@ -88,28 +88,6 @@ class IptcImageFile(ImageFile.ImageFile):
 
         return tag, size
 
-    def _is_raw(self, offset, size):
-        #
-        # check if the file can be mapped
-
-        # DISABLED: the following only slows things down...
-        return 0
-
-        self.fp.seek(offset)
-        t, sz = self.field()
-        if sz != size[0]:
-            return 0
-        y = 1
-        while True:
-            self.fp.seek(sz, 1)
-            t, s = self.field()
-            if t != (8, 10):
-                break
-            if s != sz:
-                return 0
-            y += 1
-        return y == size[1]
-
     def _open(self):
 
         # load descriptive fields
@@ -157,12 +135,8 @@ class IptcImageFile(ImageFile.ImageFile):
 
         # tile
         if tag == (8, 10):
-            if compression == "raw" and self._is_raw(offset, self.size):
-                self.tile = [(compression, (offset, size + 5, -1),
-                             (0, 0, self.size[0], self.size[1]))]
-            else:
-                self.tile = [("iptc", (compression, offset),
-                             (0, 0, self.size[0], self.size[1]))]
+            self.tile = [("iptc", (compression, offset),
+                         (0, 0, self.size[0], self.size[1]))]
 
     def load(self):
 
