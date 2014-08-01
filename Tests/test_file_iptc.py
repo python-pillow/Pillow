@@ -70,7 +70,7 @@ class TestFileIptc(PillowTestCase):
         sys.stdout = old_stdout
 
         # Assert
-        self.assertEqual(mystdout.getvalue(), b"61 62 63 \n")
+        self.assertEqual(mystdout.getvalue(), "61 62 63 \n")
 
 
 if __name__ == '__main__':
