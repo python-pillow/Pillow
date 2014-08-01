@@ -51,6 +51,27 @@ class TestFileIptc(PillowTestCase):
         # Assert
         self.assertEqual(ret, 97)
 
+    def test_dump(self):
+        # Arrange
+        c = b"abc"
+        # Temporarily redirect stdout
+        try:
+            from cStringIO import StringIO
+        except ImportError:
+            from io import StringIO
+        import sys
+        old_stdout = sys.stdout
+        sys.stdout = mystdout = StringIO()
+
+        # Act
+        IptcImagePlugin.dump(c)
+
+        # Reset stdout
+        sys.stdout = old_stdout
+
+        # Assert
+        self.assertEqual(mystdout.getvalue(), b"61 62 63 \n")
+
 
 if __name__ == '__main__':
     unittest.main()
