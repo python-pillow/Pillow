@@ -16,9 +16,10 @@ python:
   - 3.4
 
 install:
-  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
+  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick lcov"
   - "pip install cffi"
-  - "pip install coveralls nose"
+  - "pip install coveralls nose coveralls-merge"
+  - "gem install coveralls-lcov"
   - travis_retry pip install pyroma
   - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip install unittest2; fi
 
@@ -31,14 +32,22 @@ install:
 script:
   - coverage erase
   - python setup.py clean
-  - python setup.py build_ext --inplace
+  - CFLAGS="-coverage" python setup.py build_ext --inplace
 
   - time coverage run --append --include=PIL/* selftest.py
   - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
 
 after_success:
+   # gather the coverage data
+  - lcov --capture --directory . -b . --output-file coverage.info
+   # filter to remove system headers
+  - lcov --remove coverage.info '/usr/*' -o coverage.filtered.info     
+   # convert to json
+  - coveralls-lcov -v -n coverage.filtered.info > coverage.c.json
+
   - coverage report
-  - coveralls
+  - coveralls-merge coverage.c.json
+
 
   - pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
