@@ -392,7 +392,7 @@ def solarize(image, threshold=128):
     """
     Invert all pixel values above a threshold.
 
-    :param image: The image to posterize.
+    :param image: The image to solarize.
     :param threshold: All pixels above this greyscale level are inverted.
     :return: An image.
     """
