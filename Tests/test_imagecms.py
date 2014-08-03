@@ -2,8 +2,11 @@ from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
+from io import BytesIO
+        
 try:
     from PIL import ImageCms
+    from PIL.ImageCms import ImageCmsProfile
     ImageCms.core.profile_open
 except ImportError as v:
     # Skipped via setUp()
@@ -118,7 +121,7 @@ class TestImageCms(PillowTestCase):
 
     def test_extensions(self):
         # extensions
-        from io import BytesIO
+
         i = Image.open("Tests/images/rgb.jpg")
         p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
         self.assertEqual(
@@ -196,6 +199,11 @@ class TestImageCms(PillowTestCase):
         # img_srgb.save('temp.srgb.tif') # visually verified vs ps.
 
         self.assert_image_similar(lena(), img_srgb, 30)
+        self.assertTrue(img_srgb.info['icc_profile'])
+
+        profile = ImageCmsProfile(BytesIO(img_srgb.info['icc_profile']))
+        self.assertTrue('sRGB' in  ImageCms.getProfileDescription(profile))
+
 
     def test_lab_roundtrip(self):
         # check to see if we're at least internally consistent.
@@ -205,11 +213,32 @@ class TestImageCms(PillowTestCase):
         t2 = ImageCms.buildTransform(pLab, SRGB, "LAB", "RGB")
 
         i = ImageCms.applyTransform(lena(), t)
+
+        self.assertEqual(i.info['icc_profile'],
+                         ImageCmsProfile(pLab).tobytes())
+        
         out = ImageCms.applyTransform(i, t2)
 
         self.assert_image_similar(lena(), out, 2)
 
 
+    def test_profile_tobytes(self):
+        from io import BytesIO
+        i = Image.open("Tests/images/rgb.jpg")
+        p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
+
+        p2 = ImageCms.getOpenProfile(BytesIO(p.tobytes()))
+
+        # not the same bytes as the original icc_profile,
+        # but it does roundtrip
+        self.assertEqual(p.tobytes(),p2.tobytes())
+        self.assertEqual(ImageCms.getProfileName(p),
+                         ImageCms.getProfileName(p2))
+        self.assertEqual(ImageCms.getProfileDescription(p),
+                         ImageCms.getProfileDescription(p2))
+        
+
+        
 if __name__ == '__main__':
     unittest.main()
 
