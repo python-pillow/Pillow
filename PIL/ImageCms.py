@@ -150,8 +150,13 @@ for flag in FLAGS.values():
 class ImageCmsProfile:
 
     def __init__(self, profile):
-        # accepts a string (filename), a file-like object, or a low-level
-        # profile object
+        """
+        :param profile: Either a string representing a filename,
+            a file like object containing a profile or a
+            low-level profile object
+            
+        """
+        
         if isStringType(profile):
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
@@ -170,13 +175,22 @@ class ImageCmsProfile:
             self.product_info = None
 
     def tobytes(self):
+        """
+        Returns the profile in a format suitable for embedding in
+        saved images.
+
+        :returns: a bytes object containing the ICC profile.
+        """
+        
         return core.profile_tobytes(self.profile)
 
 class ImageCmsTransform(Image.ImagePointHandler):
 
-    """Transform.  This can be used with the procedural API, or with the
-    standard Image.point() method.
-    """
+    # Transform.  This can be used with the procedural API, or with the
+    # standard Image.point() method.
+    #
+    # Will return the output profile in the output.info['icc_profile'].
+
 
     def __init__(self, input, output, input_mode, output_mode,
                  intent=INTENT_PERCEPTUAL, proof=None,
@@ -576,7 +590,7 @@ def applyTransform(im, transform, inPlace=0):
         with the transform applied is returned (and im is not changed). The
         default is False.
     :returns: Either None, or a new PIL Image object, depending on the value of
-        inPlace
+        inPlace. The profile will be returned in the image's info['icc_profile'].
     :exception PyCMSError:
     """
 
