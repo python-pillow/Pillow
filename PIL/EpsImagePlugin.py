@@ -96,6 +96,27 @@ def Ghostscript(tile, size, fp):
 
     out_fd, outfile = tempfile.mkstemp()
     os.close(out_fd)
+    in_fd, infile = tempfile.mkstemp()
+    os.close(in_fd)
+    
+    # ignore length and offset!
+    # ghostscript can read it   
+    # copy whole file to read in ghostscript
+    with open(infile, 'wb') as f:
+        # fetch length of fp
+        fp.seek(0, 2)
+        fsize = fp.tell()
+        # ensure start position
+        # go back
+        fp.seek(0)
+        lengthfile = fsize
+        while lengthfile > 0:
+            s = fp.read(min(lengthfile, 4*1024*1024))
+            if not s:
+                break
+            length -= len(s)
+            f.write(s)
+
 
     # Build ghostscript command
     command = ["gs",
@@ -107,7 +128,7 @@ def Ghostscript(tile, size, fp):
                "-sOutputFile=%s" % outfile, # output file
                "-c", "%d %d translate" % (-bbox[0], -bbox[1]),
                                             # adjust for image origin
-               "-f", fp.name
+               "-f", infile #fp.name
             ]
 
     if gs_windows_binary is not None:
@@ -145,7 +166,12 @@ class EpsImageFile(ImageFile.ImageFile):
     format_description = "Encapsulated Postscript"
 
     def _open(self):
-        fp = open(self.fp.name, "Ur")
+        try:
+            fp = open(self.fp.name, "Ur")
+        except Exception, err:
+            print err
+            fp = self.fp
+            fp.seek(0)
 
         # HEAD
         s = fp.read(512)
