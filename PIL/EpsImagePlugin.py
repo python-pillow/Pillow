@@ -168,8 +168,7 @@ class EpsImageFile(ImageFile.ImageFile):
     def _open(self):
         try:
             fp = open(self.fp.name, "Ur")
-        except Exception, err:
-            print err
+        except:
             fp = self.fp
             fp.seek(0)
 
