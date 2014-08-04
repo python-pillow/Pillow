@@ -13,6 +13,7 @@ Send a pull request. We'll generally want documentation and tests for new featur
 A few guidelines:
 - Try to keep any code commits clean and separate from reformatting commits.
 - All new code is going to need tests. 
+- Try to follow PEP8. 
 
 ## Bugs
 
