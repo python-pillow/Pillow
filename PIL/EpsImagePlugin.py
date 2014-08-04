@@ -179,6 +179,20 @@ class PSFile:
                 self.char = None
         return s.decode('latin-1') + "\n"
 
+class PSFpWrapper:
+    """ Wrapper for a filepointer that has been opened in universal mode """
+    def __init__(self,fp):
+        self.fp = fp
+
+    def __getattr__(self, attr):
+        """ Delegate everything that we're not wrapping """
+        return getattr(self.fp, attr)
+
+    def read(self, count):
+        return self.fp.read(count)
+
+    readbinary = read
+
 
 def _accept(prefix):
     return prefix[:4] == b"%!PS" or i32(prefix) == 0xC6D3D0C5
@@ -195,7 +209,11 @@ class EpsImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-        fp = PSFile(self.fp)
+        try:
+            fp = PSFpWrapper(open(self.fp.name, "Ur", 'latin-1'))
+        except:
+            print ("fallback to psfile")
+            fp = PSFile(self.fp)
 
         # FIX for: Some EPS file not handled correctly / issue #302 
         # EPS can contain binary data
