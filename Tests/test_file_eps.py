@@ -63,6 +63,17 @@ class TestFileEps(PillowTestCase):
         with io.open(self.tempfile('temp_iobase.eps'), 'wb') as fh:
             image1.save(fh, 'EPS')
 
+    def test_bytesio_object(self):
+        with open(file1, 'rb') as f:
+            img_bytes = io.BytesIO(f.read())
+
+        img = Image.open(img_bytes)
+        img.load()
+
+        image1_scale1_compare = Image.open(file1_compare).convert("RGB")
+        image1_scale1_compare.load()
+        self.assert_image_similar(img, image1_scale1_compare, 5)
+     
     def test_render_scale1(self):
         # We need png support for these render test
         codecs = dir(Image.core)
