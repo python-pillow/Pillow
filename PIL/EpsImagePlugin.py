@@ -189,9 +189,11 @@ class PSFpWrapper:
         return getattr(self.fp, attr)
 
     def read(self, count):
+        return self.fp.read(count).decode('latin-1')
+
+    def readbinary(self, count):
         return self.fp.read(count)
 
-    readbinary = read
 
 
 def _accept(prefix):
@@ -208,39 +210,24 @@ class EpsImageFile(ImageFile.ImageFile):
     format_description = "Encapsulated Postscript"
 
     def _open(self):
+        (length, offset) = self._find_offset(self.fp)
 
+        # Rewrap the open file pointer in something that will
+        # convert line endings and decode to latin-1.
         try:
-            fp = PSFpWrapper(open(self.fp.name, "Ur", 'latin-1'))
-        except:
-            print ("fallback to psfile")
+            if bytes is str:
+                # Python2, need the decode to latin-1 on read. 
+                fp = PSFpWrapper(open(self.fp.name, "Ur"))
+            else:
+                # Python3, can use bare open command. 
+                fp = open(self.fp.name, "Ur", encoding='latin-1')
+        except Exception as msg:
+            # Expect this for bytesio/stringio
             fp = PSFile(self.fp)
 
-        # FIX for: Some EPS file not handled correctly / issue #302 
-        # EPS can contain binary data
-        # or start directly with latin coding
-        # read header in both ways to handle both
-        # file types
-        # more info see http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
-        
-        # for HEAD without binary preview
-        s = fp.read(4)
-        # for HEAD with binary preview
-        fp.seek(0)
-        sb = fp.readbinary(160)
-
-        if s[:4] == "%!PS":
-            fp.seek(0, 2)
-            length = fp.tell()
-            offset = 0
-        elif i32(sb[0:4]) == 0xC6D3D0C5:
-            offset = i32(sb[4:8])
-            length = i32(sb[8:12])
-        else:
-            raise SyntaxError("not an EPS file")
-
-        # go to offset - start of "%!PS" 
+        # go to offset - start of "%!PS"
         fp.seek(offset)
-        
+
         box = None
 
         self.mode = "RGB"
@@ -371,6 +358,27 @@ class EpsImageFile(ImageFile.ImageFile):
 
         if not box:
             raise IOError("cannot determine EPS bounding box")
+
+    def _find_offset(self, fp):
+        
+        s = fp.read(160)
+        
+        if s[:4] == b"%!PS":
+            # for HEAD without binary preview
+            fp.seek(0, 2)
+            length = fp.tell()
+            offset = 0
+        elif i32(s[0:4]) == 0xC6D3D0C5:
+            # FIX for: Some EPS file not handled correctly / issue #302 
+            # EPS can contain binary data
+            # or start directly with latin coding
+            # more info see http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
+            offset = i32(s[4:8])
+            length = i32(s[8:12])
+        else:
+            raise SyntaxError("not an EPS file")
+
+        return (length, offset)
 
     def load(self, scale=1):
         # Load EPS via Ghostscript
