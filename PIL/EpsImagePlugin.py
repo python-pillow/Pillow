@@ -55,7 +55,6 @@ if sys.platform.startswith('win'):
     else:
         gs_windows_binary = False
 
-# UNUSED
 def has_ghostscript():
     if gs_windows_binary:
         return True
@@ -70,7 +69,8 @@ def has_ghostscript():
             pass
     return False
 
-def makeunicode( s, enc="latin-1", normalizer='NFD'):
+def makeunicode( s, enc="latin-1", normalizer='NFC'):
+    """return a normalized unicode string"""
     try:
         if type(s) != unicode:
             s = unicode(s, enc)
