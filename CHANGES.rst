@@ -4,6 +4,15 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Return Profile with Transformed Images #837
+  [wiredfool]
+
+- Changed docstring to refer to the correct function #836
+  [MatMoore]
+
+- Adding coverage support for C code tests #833
+  [wiredfool]
+
 - PyPy performance improvements #821
   [wiredfool]
 
