@@ -27,8 +27,6 @@ import unicodedata
 
 from PIL import Image, ImageFile, _binary
 
-import pdb
-
 #
 # --------------------------------------------------------------------
 
@@ -83,12 +81,12 @@ def makeunicode( s, enc="latin-1", normalizer='NFC'):
 def Ghostscript(tile, size, fp):
     """Render an image using Ghostscript"""
 
-    # size is either pts or pixels
-
     # Unpack decoder tile
     decoder, tile, offset, data = tile[0]
     length, bbox = data
 
+    # bbox is in points == 1/72 inch
+    # size is in pixels, a device unit
     xpointsize = bbox[2] - bbox[0]
     ypointsize = bbox[3] - bbox[1]
     xdpi = size[0] / (xpointsize / 72.0)
@@ -102,21 +100,20 @@ def Ghostscript(tile, size, fp):
     os.close(in_fd)
     
     # ignore length and offset!
-    # ghostscript can read it   
+    # ghostscript can read it
     # copy whole file to read in ghostscript
     with open(infile, 'wb') as f:
         # fetch length of fp
         fp.seek(0, 2)
-        fsize = fp.tell()
+        lengthfile = fp.tell()
         # ensure start position
         # go back
         fp.seek(0)
-        lengthfile = fsize
         while lengthfile > 0:
-            s = fp.read(min(lengthfile, 4*1024*1024))
+            s = fp.read( 4*1024*1024 )
             if not s:
                 break
-            length -= len(s)
+            lengthfile -= len(s)
             f.write(s)
 
     # Build ghostscript command
@@ -222,11 +219,10 @@ class EpsImageFile(ImageFile.ImageFile):
         fp.seek(0)
         sb = fp.readbinary(160)
 
+        offset = 0
         if s[:4] == "%!PS":
-            offset = 0
             fp.seek(0, 2)
             length = fp.tell()
-            offset = 0
         elif i32(sb[0:4]) == 0xC6D3D0C5:
             offset = i32(sb[4:8])
             length = i32(sb[8:12])
