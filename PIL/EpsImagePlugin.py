@@ -27,6 +27,8 @@ import unicodedata
 
 from PIL import Image, ImageFile, _binary
 
+import pdb
+
 #
 # --------------------------------------------------------------------
 
@@ -117,18 +119,17 @@ def Ghostscript(tile, size, fp):
             length -= len(s)
             f.write(s)
 
-
     # Build ghostscript command
     command = ["gs",
                "-q",                        # quiet mode
                "-g%dx%d" % size,            # set output geometry (pixels)
-               "-r%fc%f" % (xdpi,ydpi),     # set input DPI (dots per inch)
+               "-r%fx%f" % (xdpi,ydpi),     # set input DPI (dots per inch)
                "-dNOPAUSE -dSAFER",         # don't pause between pages, safe mode
                "-sDEVICE=ppmraw",           # ppm driver
                "-sOutputFile=%s" % outfile, # output file
                "-c", "%d %d translate" % (-bbox[0], -bbox[1]),
                                             # adjust for image origin
-               "-f", infile #fp.name
+               "-f", infile,                # input file
             ]
 
     if gs_windows_binary is not None:
@@ -147,10 +148,49 @@ def Ghostscript(tile, size, fp):
     finally:
         try:
             os.unlink(outfile)
-        except:
-            pass
-
+            os.unlink(infile)
+        except: pass
+    
     return im
+
+
+class PSFile:
+    """Wrapper that treats either CR or LF as end of line."""
+    def __init__(self, fp):
+        self.fp = fp
+        self.char = None
+    def __getattr__(self, id):
+        v = getattr(self.fp, id)
+        setattr(self, id, v)
+        return v
+    def seek(self, offset, whence=0):
+        self.char = None
+        self.fp.seek(offset, whence)
+    def read(self, count):
+        return self.fp.read(count).decode('latin-1')
+    def readbinary(self, count):
+        return self.fp.read(count)
+    def tell(self):
+        pos = self.fp.tell()
+        if self.char:
+            pos -= 1
+        return pos
+    def readline(self):
+        s = b""
+        if self.char:
+            c = self.char
+            self.char = None
+        else:
+            c = self.fp.read(1)
+        while c not in b"\r\n":
+            s = s + c
+            c = self.fp.read(1)
+        if c == b"\r":
+            self.char = self.fp.read(1)
+            if self.char == b"\n":
+                self.char = None
+        return s.decode('latin-1') + "\n"
+
 
 def _accept(prefix):
     return prefix[:4] == b"%!PS" or i32(prefix) == 0xC6D3D0C5
@@ -166,25 +206,34 @@ class EpsImageFile(ImageFile.ImageFile):
     format_description = "Encapsulated Postscript"
 
     def _open(self):
-        try:
-            fp = open(self.fp.name, "Ur")
-        except:
-            fp = self.fp
-            fp.seek(0)
 
-        # HEAD
-        s = fp.read(512)
+        fp = PSFile(self.fp)
+
+        # FIX for: Some EPS file not handled correctly / issue #302 
+        # EPS can contain binary data
+        # or start directly with latin coding
+        # read header in both ways to handle both
+        # file types
+        # more info see http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
+        
+        # for HEAD without binary preview
+        s = fp.read(4)
+        # for HEAD with binary preview
+        fp.seek(0)
+        sb = fp.readbinary(160)
+
         if s[:4] == "%!PS":
             offset = 0
             fp.seek(0, 2)
             length = fp.tell()
-        elif i32(s) == 0xC6D3D0C5:
-            offset = i32(s[4:])
-            length = i32(s[8:])
-            fp.seek(offset)
+            offset = 0
+        elif i32(sb[0:4]) == 0xC6D3D0C5:
+            offset = i32(sb[4:8])
+            length = i32(sb[8:12])
         else:
             raise SyntaxError("not an EPS file")
 
+        # go to offset - start of "%!PS" 
         fp.seek(offset)
 
         box = None
@@ -276,6 +325,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
         #
         # Scan for an "ImageData" descriptor
+
         while s[0] == "%":
 
             if len(s) > 255:
