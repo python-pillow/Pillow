@@ -2,7 +2,7 @@
 
 ## Fixes, Features and Changes
 
-Send a pull request. We'll generally want documentation and tests for new features. Tests or documentation on their own are also welcomed. Feel free to ask questions as an [issue](https://github.com/python-pillow/Pillow/issues/new) or on IRC (irc.freenode.net, #pil)
+Send a pull request. We'll generally want documentation and [tests](Tests/README.rst) for new features. Tests or documentation on their own are also welcomed. Feel free to ask questions as an [issue](https://github.com/python-pillow/Pillow/issues/new) or on IRC (irc.freenode.net, #pil)
 
 - Fork the repo
 - Make a branch
@@ -17,7 +17,7 @@ A few guidelines:
 
 ## Bugs
 
-When reporting bugs, please include example code that reproduces the issue, and if possible a problem image. The best reproductions are self contained scripts that pull in as few dependencies as possible. An entire Django stack is harder to handle. 
+When reporting bugs, please include example code that reproduces the issue, and if possible a problem image. The best reproductions are self-contained scripts that pull in as few dependencies as possible. An entire Django stack is harder to handle. 
 
 Let us know:
 - What did you do?
