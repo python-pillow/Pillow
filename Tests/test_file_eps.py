@@ -27,13 +27,13 @@ class TestFileEps(PillowTestCase):
     def test_sanity(self):
         # Regular scale
         image1 = Image.open(file1)
-        image1.load()
+        image1.load(scale=1.0)
         self.assertEqual(image1.mode, "RGB")
         self.assertEqual(image1.size, (460, 352))
         self.assertEqual(image1.format, "EPS")
 
         image2 = Image.open(file2)
-        image2.load()
+        image2.load(scale=1.0)
         self.assertEqual(image2.mode, "RGB")
         self.assertEqual(image2.size, (360, 252))
         self.assertEqual(image2.format, "EPS")
@@ -71,14 +71,14 @@ class TestFileEps(PillowTestCase):
 
         # Zero bounding box
         image1_scale1 = Image.open(file1)
-        image1_scale1.load()
+        image1_scale1.load(scale=1.0)
         image1_scale1_compare = Image.open(file1_compare).convert("RGB")
         image1_scale1_compare.load()
         self.assert_image_similar(image1_scale1, image1_scale1_compare, 5)
 
         # Non-Zero bounding box
         image2_scale1 = Image.open(file2)
-        image2_scale1.load()
+        image2_scale1.load(scale=1.0)
         image2_scale1_compare = Image.open(file2_compare).convert("RGB")
         image2_scale1_compare.load()
         self.assert_image_similar(image2_scale1, image2_scale1_compare, 10)
