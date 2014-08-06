@@ -120,6 +120,8 @@ class IcnsFile:
         i = HEADERSIZE
         while i < filesize:
             sig, blocksize = nextheader(fobj)
+            if blocksize <= 0:
+                raise SyntaxError('invalid block header')
             i = i + HEADERSIZE
             blocksize = blocksize - HEADERSIZE
             dct[sig] = (i, blocksize)
