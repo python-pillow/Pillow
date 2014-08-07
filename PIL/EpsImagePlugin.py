@@ -308,7 +308,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 s = s[:-1]
 
             if s[:11] == "%ImageData:":
-
+                # Encoded bitmapped image.
                 [x, y, bi, mo, z3, z4, en, id] =\
                     s[11:].split(None, 7)
 
@@ -335,23 +335,10 @@ class EpsImageFile(ImageFile.ImageFile):
                     self.mode = "RGB"
                 else:
                     break
-
-                if id[:1] == id[-1:] == '"':
-                    id = id[1:-1]
-
-                # Scan forward to the actual image data
-                while True:
-                    s = fp.readline()
-                    if not s:
-                        break
-                    if s[:len(id)] == id:
-                        self.size = x, y
-                        self.tile2 = [(decoder,
-                                       (0, 0, x, y),
-                                       fp.tell(),
-                                       0)]
-                        return
-
+                
+                self.size = (x,y)
+                return
+            
             s = fp.readline()
             if not s:
                 break
