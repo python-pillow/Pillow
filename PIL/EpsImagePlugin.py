@@ -143,58 +143,28 @@ def Ghostscript(tile, size, fp, scale=1):
 
 
 class PSFile:
-    """Wrapper that treats either CR or LF as end of line."""
+    """Wrapper for bytesio object that treats either CR or LF as end of line."""
     def __init__(self, fp):
         self.fp = fp
         self.char = None
-    def __getattr__(self, id):
-        v = getattr(self.fp, id)
-        setattr(self, id, v)
-        return v
     def seek(self, offset, whence=0):
         self.char = None
         self.fp.seek(offset, whence)
-    def read(self, count):
-        return self.fp.read(count).decode('latin-1')
-    def readbinary(self, count):
-        return self.fp.read(count)
-    def tell(self):
-        pos = self.fp.tell()
-        if self.char:
-            pos -= 1
-        return pos
     def readline(self):
-        s = b""
-        if self.char:
-            c = self.char
-            self.char = None
-        else:
-            c = self.fp.read(1)
+        s = self.char or b""
+        self.char = None
+
+        c = self.fp.read(1)
         while c not in b"\r\n":
             s = s + c
             c = self.fp.read(1)
-        if c == b"\r":
-            self.char = self.fp.read(1)
-            if self.char == b"\n":
-                self.char = None
-        return s.decode('latin-1') + "\n"
 
-class PSFpWrapper:
-    """ Wrapper for a filepointer that has been opened in universal mode """
-    def __init__(self,fp):
-        self.fp = fp
-
-    def __getattr__(self, attr):
-        """ Delegate everything that we're not wrapping """
-        return getattr(self.fp, attr)
-
-    def read(self, count):
-        return self.fp.read(count).decode('latin-1')
-
-    def readbinary(self, count):
-        return self.fp.read(count)
-
-
+        self.char = self.fp.read(1)
+        # line endings can be 1 or 2 of \r \n, in either order
+        if self.char in b"\r\n":
+            self.char = None
+            
+        return s.decode('latin-1') 
 
 def _accept(prefix):
     return prefix[:4] == b"%!PS" or i32(prefix) == 0xC6D3D0C5
@@ -209,6 +179,8 @@ class EpsImageFile(ImageFile.ImageFile):
     format = "EPS"
     format_description = "Encapsulated Postscript"
 
+    mode_map = { 1:"L", 2:"LAB", 3:"RGB" }
+
     def _open(self):
         (length, offset) = self._find_offset(self.fp)
 
@@ -216,8 +188,8 @@ class EpsImageFile(ImageFile.ImageFile):
         # convert line endings and decode to latin-1.
         try:
             if bytes is str:
-                # Python2, need the decode to latin-1 on read. 
-                fp = PSFpWrapper(open(self.fp.name, "Ur"))
+                # Python2, no encoding conversion necessary
+                fp = open(self.fp.name, "Ur")
             else:
                 # Python3, can use bare open command. 
                 fp = open(self.fp.name, "Ur", encoding='latin-1')
@@ -236,17 +208,11 @@ class EpsImageFile(ImageFile.ImageFile):
         #
         # Load EPS header
 
-        s = fp.readline()
+        s = fp.readline().strip('\r\n')
         
         while s:
-
             if len(s) > 255:
                 raise SyntaxError("not an EPS file")
-
-            if s[-2:] == '\r\n':
-                s = s[:-2]
-            elif s[-1:] == '\n':
-                s = s[:-1]
 
             try:
                 m = split.match(s)
@@ -269,9 +235,7 @@ class EpsImageFile(ImageFile.ImageFile):
                         pass
 
             else:
-
                 m = field.match(s)
-
                 if m:
                     k = m.group(1)
 
@@ -281,16 +245,16 @@ class EpsImageFile(ImageFile.ImageFile):
                         self.info[k[:8]] = k[9:]
                     else:
                         self.info[k] = ""
-                elif s[0:1] == '%':
+                elif s[0] == '%':
                     # handle non-DSC Postscript comments that some
                     # tools mistakenly put in the Comments section
                     pass
                 else:
                     raise IOError("bad EPS header")
 
-            s = fp.readline()
+            s = fp.readline().strip('\r\n')
 
-            if s[:1] != "%":
+            if s[0] != "%":
                 break
 
 
@@ -302,44 +266,21 @@ class EpsImageFile(ImageFile.ImageFile):
             if len(s) > 255:
                 raise SyntaxError("not an EPS file")
 
-            if s[-2:] == '\r\n':
-                s = s[:-2]
-            elif s[-1:] == '\n':
-                s = s[:-1]
-
             if s[:11] == "%ImageData:":
                 # Encoded bitmapped image.
-                [x, y, bi, mo, z3, z4, en, id] =\
-                    s[11:].split(None, 7)
+                [x, y, bi, mo, z3, z4, en, id] = s[11:].split(None, 7)
 
-                x = int(x); y = int(y)
-
-                bi = int(bi)
-                mo = int(mo)
-
-                en = int(en)
-
-                if en == 1:
-                    decoder = "eps_binary"
-                elif en == 2:
-                    decoder = "eps_hex"
-                else:
+                if int(bi) != 8:
                     break
-                if bi != 8:
-                    break
-                if mo == 1:
-                    self.mode = "L"
-                elif mo == 2:
-                    self.mode = "LAB"
-                elif mo == 3:
-                    self.mode = "RGB"
-                else:
+                try:
+                    self.mode = self.mode_map[int(mo)]
+                except:
                     break
                 
-                self.size = (x,y)
+                self.size = int(x), int(y)
                 return
             
-            s = fp.readline()
+            s = fp.readline().strip('\r\n')
             if not s:
                 break
 
