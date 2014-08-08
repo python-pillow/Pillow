@@ -6,6 +6,8 @@ Test scripts are named ``test_xxx.py`` and use the ``unittest`` module. A base c
 Depedencies
 -----------
 
+Install::
+
     pip install coverage nose
 
 
