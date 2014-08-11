@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- setup.py: Close open file handle before deleting #844
+  [divergentdave]
+
 - Return Profile with Transformed Images #837
   [wiredfool]
 
