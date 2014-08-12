@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+2.5.2 (2014-08-13)
+------------------
+
+- Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin
+  [Andrew Drake]
+
 2.5.1 (2014-07-10)
 ------------------
 
