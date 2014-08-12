@@ -1,6 +1,13 @@
 Changelog (Pillow)
 ==================
 
+2.5.3 (2014-08-18)
+------------------
+
+- Fixed CVE-2014-3598, a DOS in the Jpeg2KImagePlugin
+  [Andrew Drake]
+
+
 2.5.2 (2014-08-13)
 ------------------
 
