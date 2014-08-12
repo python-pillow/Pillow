@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+2.3.2 (2014-08-13)
+------------------
+
+- Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin
+  [Andrew Drake]
+
 2.3.1 (2014-03-14)
 ------------------
 - Fix insecure use of tempfile.mktemp (CVE-2014-1932 CVE-2014-1933)
