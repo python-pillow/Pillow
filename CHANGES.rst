@@ -61,7 +61,8 @@ Changelog (Pillow)
 - Test PalmImagePlugin and method to skip known bad tests #776
   [hugovk, wiredfool]
 
- 2.5.2 (2014-08-13)
+
+2.5.2 (2014-08-13)
 ------------------
 
 - Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin (backport)
