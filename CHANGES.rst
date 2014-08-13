@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin
+  [Andrew Drake]
+
 - setup.py: Close open file handle before deleting #844
   [divergentdave]
 
@@ -57,7 +60,14 @@ Changelog (Pillow)
 
 - Test PalmImagePlugin and method to skip known bad tests #776
   [hugovk, wiredfool]
-  
+
+ 2.5.2 (2014-08-13)
+------------------
+
+- Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin (backport)
+  [Andrew Drake]
+
+ 
 2.5.1 (2014-07-10)
 ------------------
 
@@ -285,6 +295,12 @@ Changelog (Pillow)
 
 - Prefer homebrew freetype over X11 freetype (but still allow both)
   [dmckeone]
+
+2.3.2 (2014-08-13)
+------------------
+
+- Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin (backport)
+  [Andrew Drake]
 
 2.3.1 (2014-03-14)
 ------------------
