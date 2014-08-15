@@ -136,7 +136,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **quality**
     The image quality, on a scale from 1 (worst) to 95 (best). The default is
     75. Values above 95 should be avoided; 100 disables portions of the JPEG
-    compression algorithm, and results in large files with hardly any gain in =
+    compression algorithm, and results in large files with hardly any gain in
     image quality.
 
 **optimize**
