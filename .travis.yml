@@ -7,7 +7,7 @@ env: MAX_CONCURRENCY=4
 
 python:
   - "pypy"
-  - "pypy3"
+  - "pypy3"t
   - 2.6
   - 2.7
   - "2.7_with_system_site_packages" # For PyQt4
@@ -34,7 +34,7 @@ script:
   - python setup.py clean
   - CFLAGS="-coverage" python setup.py build_ext --inplace
 
-  - time coverage run --append --include=PIL/* selftest.py
+  - coverage run --append --include=PIL/* selftest.py
   - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
 
 after_success:
