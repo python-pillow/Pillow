@@ -16,15 +16,12 @@ python:
   - 3.4
 
 install:
-  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick lcov"
+  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick lcov libwebp-dev"
   - "pip install cffi"
   - "pip install coveralls nose coveralls-merge"
   - "gem install coveralls-lcov"
   - travis_retry pip install pyroma
   - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip install unittest2; fi
-
-  # webp
-  - pushd depends && ./install_webp.sh && popd
 
   # openjpeg
   - pushd depends && ./install_openjpeg.sh && popd
