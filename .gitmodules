@@ -3,4 +3,4 @@
 	url = git://github.com/matthew-brett/terryfy.git
 [submodule "Pillow"]
 	path = Pillow
-	url = git://github.com/wiredfool/Pillow.git
+	url = git://github.com/python-Pillow/Pillow.git
