@@ -35,6 +35,14 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(test(0), 800)
         self.assertEqual(test(1), 38)
 
+    def test_optimize_full_L(self):
+        from io import BytesIO
+
+        im = Image.frombytes("L", (16, 16), bytes(range(256)))
+        file = BytesIO()
+        im.save(file, "GIF", optimize=optimize)
+        self.assertEqual(im.mode, "L")
+
     def test_roundtrip(self):
         out = self.tempfile('temp.gif')
         im = lena()
