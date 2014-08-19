@@ -1,5 +1,7 @@
+
 include *.c
 include *.h
+include *.md
 include *.py
 include *.rst
 include *.txt
@@ -25,14 +27,20 @@ recursive-include Images *.xpm
 recursive-include PIL *.md
 recursive-include Sane *.c
 recursive-include Sane *.py
+recursive-include Sane *.rst
 recursive-include Sane *.txt
 recursive-include Sane CHANGES
 recursive-include Sane README
 recursive-include Scripts *.py
+recursive-include Scripts *.rst
+recursive-include Scripts *.sh
 recursive-include Scripts README
 recursive-include Tests *.bdf
 recursive-include Tests *.bin
 recursive-include Tests *.bmp
+recursive-include Tests *.bw
+recursive-include Tests *.cur
+recursive-include Tests *.dcx
 recursive-include Tests *.doc
 recursive-include Tests *.eps
 recursive-include Tests *.fli
@@ -46,6 +54,7 @@ recursive-include Tests *.j2k
 recursive-include Tests *.jp2
 recursive-include Tests *.jpg
 recursive-include Tests *.lut
+recursive-include Tests *.mpo
 recursive-include Tests *.pbm
 recursive-include Tests *.pcf
 recursive-include Tests *.pcx
@@ -55,7 +64,10 @@ recursive-include Tests *.png
 recursive-include Tests *.ppm
 recursive-include Tests *.psd
 recursive-include Tests *.py
+recursive-include Tests *.ras
+recursive-include Tests *.rgb
 recursive-include Tests *.rst
+recursive-include Tests *.sgi
 recursive-include Tests *.spider
 recursive-include Tests *.tar
 recursive-include Tests *.tif
@@ -65,22 +77,20 @@ recursive-include Tests *.txt
 recursive-include Tests *.webp
 recursive-include Tests *.xpm
 recursive-include Tk *.c
-recursive-include Tk *.txt
 recursive-include Tk *.rst
-recursive-include depends *.sh
+recursive-include Tk *.txt
 recursive-include depends *.rst
+recursive-include depends *.sh
 recursive-include docs *.bat
 recursive-include docs *.gitignore
 recursive-include docs *.html
 recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include docs *.txt
-recursive-include docs Guardfile
-recursive-include docs Makefile
 recursive-include docs BUILDME
 recursive-include docs COPYING
+recursive-include docs Guardfile
 recursive-include docs LICENSE
+recursive-include docs Makefile
 recursive-include libImaging *.c
 recursive-include libImaging *.h
-recursive-include Sane *.rst
-recursive-include Scripts *.rst
