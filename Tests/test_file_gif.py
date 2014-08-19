@@ -38,7 +38,7 @@ class TestFileGif(PillowTestCase):
     def test_optimize_full_l(self):
         from io import BytesIO
 
-        im = Image.frombytes("L", (16, 16), bytes(range(256)))
+        im = Image.frombytes("L", (16, 16), bytes(bytearray(range(256))))
         file = BytesIO()
         im.save(file, "GIF", optimize=True)
         self.assertEqual(im.mode, "L")
