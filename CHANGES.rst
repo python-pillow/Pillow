@@ -4,7 +4,7 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
-- Fixed CVE-2014-3598, a DOS in the Jpeg2KImagePlugin (backport)
+- Fixed CVE-2014-3598, a DOS in the Jpeg2KImagePlugin
   [Andrew Drake]
 
 - Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin
