@@ -19,6 +19,7 @@
 
 __version__ = "0.3"
 
+import os
 from PIL import Image, ImageFile, ImagePalette, _binary
 
 
@@ -42,9 +43,6 @@ MODES = {
 }
 
 
-def _accept(prefix):
-    return prefix[0:1] == b"\0"
-
 ##
 # Image plugin for Targa files.
 
@@ -58,7 +56,7 @@ class TgaImageFile(ImageFile.ImageFile):
         # process header
         s = self.fp.read(18)
 
-        id = i8(s[0])
+        idlen = i8(s[0])
 
         colormaptype = i8(s[1])
         imagetype = i8(s[2])
@@ -70,7 +68,7 @@ class TgaImageFile(ImageFile.ImageFile):
         self.size = i16(s[12:]), i16(s[14:])
 
         # validate header fields
-        if id != 0 or colormaptype not in (0, 1) or\
+        if colormaptype not in (0, 1) or\
            self.size[0] <= 0 or self.size[1] <= 0 or\
            depth not in (1, 8, 16, 24, 32):
             raise SyntaxError("not a TGA file")
@@ -102,6 +100,9 @@ class TgaImageFile(ImageFile.ImageFile):
 
         if imagetype & 8:
             self.info["compression"] = "tga_rle"
+
+        if idlen:
+            self.fp.seek(idlen, os.SEEK_CUR)
 
         if colormaptype:
             # read palette
@@ -191,7 +192,7 @@ def _save(im, fp, filename, check=0):
 # --------------------------------------------------------------------
 # Registry
 
-Image.register_open("TGA", TgaImageFile, _accept)
+Image.register_open("TGA", TgaImageFile)
 Image.register_save("TGA", _save)
 
 Image.register_extension("TGA", ".tga")
