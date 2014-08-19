@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Fixed wrong P-mode of small, unoptimized L-mode GIF #843
+  [uvNikita]
+
 - Fixed CVE-2014-3598, a DOS in the Jpeg2KImagePlugin
   [Andrew Drake]
 
