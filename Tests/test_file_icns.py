@@ -57,6 +57,10 @@ class TestFileIcns(PillowTestCase):
         if not enable_jpeg2k:
             return
 
+        self.skipKnownBadTest("Jpeg2000 hangs on Travis on OSX",
+                              platform='darwin',
+                              travis=True)
+
         im = Image.open('Tests/images/pillow3.icns')
         for w, h, r in im.info['sizes']:
             wr = w * r
