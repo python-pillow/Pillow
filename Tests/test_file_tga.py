@@ -3,9 +3,9 @@ from helper import unittest, PillowTestCase
 from PIL import Image
 
 
-class TestFileSun(PillowTestCase):
+class TestFileTga(PillowTestCase):
 
-    def test_sanity(self):
+    def test_id_field(self):
         # tga file with id field
         test_file = "Tests/images/tga_id_field.tga"
 
@@ -18,5 +18,3 @@ class TestFileSun(PillowTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-# End of file
