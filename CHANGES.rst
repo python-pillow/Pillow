@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Fix TGA files with image ID field #856
+  [megabuz]
+
 - Fixed wrong P-mode of small, unoptimized L-mode GIF #843
   [uvNikita]
 
