@@ -52,7 +52,8 @@ class TestFileJpeg2k(PillowTestCase):
     def test_lossless(self):
         im = Image.open('Tests/images/test-card-lossless.jp2')
         im.load()
-        im.save('/tmp/test-card.png')
+        outfile = self.tempfile('temp_test-card.png')
+        im.save(outfile)
         self.assert_image_similar(im, test_card, 1.0e-3)
 
     def test_lossy_tiled(self):
