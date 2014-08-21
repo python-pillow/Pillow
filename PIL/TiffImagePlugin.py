@@ -1122,14 +1122,16 @@ def _save(im, fp, filename):
         # save(load('')) == original file.
         for k, v in itertools.chain(ifd.items(),
                                     getattr(im, 'ifd', {}).items()):
+            # all adobe defined tags are < 1024
             if k not in atts and k not in blocklist and k < 1024:
-                if type(v[0]) == tuple and len(v) > 1:
+                # check len(v) before accessing elements
+                if len(v) > 1 and type(v[0]) == tuple:
                     # A tuple of more than one rational tuples
                     # flatten to floats,
                     # following tiffcp.c->cpTag->TIFF_RATIONAL
                     atts[k] = [float(elt[0])/float(elt[1]) for elt in v]
                     continue
-                if type(v[0]) == tuple and len(v) == 1:
+                if len(v) == 1 and type(v[0]) == tuple:
                     # A tuple of one rational tuples
                     # flatten to floats,
                     # following tiffcp.c->cpTag->TIFF_RATIONAL
