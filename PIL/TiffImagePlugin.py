@@ -744,7 +744,8 @@ class TiffImageFile(ImageFile.ImageFile):
         self.readonly = 0
         # libtiff closed the fp in a, we need to close self.fp, if possible
         if hasattr(self.fp, 'close'):
-            self.fp.close()
+            if not self.__next:
+                self.fp.close()
         self.fp = None  # might be shared
 
         if err < 0:
