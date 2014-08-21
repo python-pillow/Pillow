@@ -442,8 +442,9 @@ PyImaging_LibTiffDecoderNew(PyObject* self, PyObject* args)
     char* rawmode;
     char* compname;
     int fp;
+    int ifdoffset;
 
-    if (! PyArg_ParseTuple(args, "sssi", &mode, &rawmode, &compname, &fp))
+    if (! PyArg_ParseTuple(args, "sssii", &mode, &rawmode, &compname, &fp, &ifdoffset))
         return NULL;
 
     TRACE(("new tiff decoder %s\n", compname));
@@ -455,7 +456,7 @@ PyImaging_LibTiffDecoderNew(PyObject* self, PyObject* args)
     if (get_unpacker(decoder, mode, rawmode) < 0)
         return NULL;
 
-    if (! ImagingLibTiffInit(&decoder->state, fp)) {
+    if (! ImagingLibTiffInit(&decoder->state, fp, ifdoffset)) {
         Py_DECREF(decoder);
         PyErr_SetString(PyExc_RuntimeError, "tiff codec initialization failed");
         return NULL;

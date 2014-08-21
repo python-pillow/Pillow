@@ -26,6 +26,7 @@ typedef struct {
 	toff_t loc;   /* toff_t == uint32 */
 	tsize_t size; /* tsize_t == int32 */
 	int fp;
+    int ifd; /* offset of the ifd, used for multipage */
 	TIFF *tiff; /* Used in write */
 	toff_t eof;
 	int flrealloc; /* may we realloc */
@@ -33,7 +34,7 @@ typedef struct {
 
 
 
-extern int ImagingLibTiffInit(ImagingCodecState state, int fp);
+extern int ImagingLibTiffInit(ImagingCodecState state, int fp, int offset);
 extern int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp);
 extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 
@@ -49,6 +50,5 @@ extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 */
 
 #define TRACE(args)
-
 
 #endif
