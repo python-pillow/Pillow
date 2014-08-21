@@ -1122,7 +1122,7 @@ def _save(im, fp, filename):
         # save(load('')) == original file.
         for k, v in itertools.chain(ifd.items(),
                                     getattr(im, 'ifd', {}).items()):
-            if k not in atts and k not in blocklist:
+            if k not in atts and k not in blocklist and k < 1024:
                 if type(v[0]) == tuple and len(v) > 1:
                     # A tuple of more than one rational tuples
                     # flatten to floats,
