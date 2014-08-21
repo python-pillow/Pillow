@@ -10,6 +10,6 @@ tar -xvzf libwebp-0.4.1.tar.gz
 
 pushd libwebp-0.4.1
 
-./configure --prefix=/usr --enable-libwebpmux --enable-libwebpdemux && make && sudo make install
+./configure --prefix=/usr --enable-libwebpmux --enable-libwebpdemux && make -j4 && sudo make -j4 install
 
 popd
