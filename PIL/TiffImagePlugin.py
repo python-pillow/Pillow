@@ -655,7 +655,9 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__next = self.tag.next
             self.__frame += 1
         self._setup()
-
+        #UNDONE - decompresion bomb
+        self.im = Image.core.new(self.mode, self.size)
+        
     def _tell(self):
 
         return self.__frame
