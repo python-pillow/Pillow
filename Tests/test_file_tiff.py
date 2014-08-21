@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, lena, py3
 
-from PIL import Image
+from PIL import Image, TiffImagePlugin
 
 
 class TestFileTiff(PillowTestCase):
@@ -140,6 +140,32 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.getpixel((0, 0)), -0.4526388943195343)
         self.assertEqual(
             im.getextrema(), (-3.140936851501465, 3.140684127807617))
+
+    def test_multipage(self):
+        # issue #862
+        im = Image.open('Tests/images/multipage.tiff')
+        # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
+
+        im.seek(0)
+        self.assertEqual(im.size, (10,10))
+        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,128,0))
+
+        im.seek(1)
+        im.load()
+        self.assertEqual(im.size, (10,10))
+        self.assertEqual(im.convert('RGB').getpixel((0,0)), (255,0,0))
+
+        im.seek(2)
+        im.load()
+        self.assertEqual(im.size, (20,20))
+        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))      
+
+    def test_multipage_last_frame(self):
+        im = Image.open('Tests/images/multipage-lastframe.tif')
+        im.load()
+        self.assertEqual(im.size, (20,20))
+        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))      
+        
 
     def test___str__(self):
         # Arrange
