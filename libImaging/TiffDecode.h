@@ -26,6 +26,7 @@ typedef struct {
 	toff_t loc;   /* toff_t == uint32 */
 	tsize_t size; /* tsize_t == int32 */
 	int fp;
+    int ifd;
 	TIFF *tiff; /* Used in write */
 	toff_t eof;
 	int flrealloc; /* may we realloc */
@@ -33,7 +34,7 @@ typedef struct {
 
 
 
-extern int ImagingLibTiffInit(ImagingCodecState state, int fp);
+extern int ImagingLibTiffInit(ImagingCodecState state, int fp, int offset);
 extern int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp);
 extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 
@@ -43,12 +44,7 @@ extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
    legacy, don't enable for python 3.x, unicode issues. 
 */
 
-/*
 #define VA_ARGS(...)	__VA_ARGS__
 #define TRACE(args)    fprintf(stderr, VA_ARGS args)
-*/
-
-#define TRACE(args)
-
 
 #endif
