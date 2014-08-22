@@ -118,19 +118,41 @@ endlocal
 """
         
 def nmake_openjpeg(compiler):
+    atts = {'op_ver': '2.1'}
+    atts.update(compiler)
     return r"""
 rem build openjpeg
 setlocal
 @echo on
 cd /D %%OPENJPEG%%%(inc_dir)s
-%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=ON -G "NMake Makefiles" .
+%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -G "NMake Makefiles" .
 nmake -f Makefile clean
 nmake -f Makefile
 copy /Y /B bin\* %%INCLIB%%
-mkdir %%INCLIB%%\openjpeg-2.0
-copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-2.0
+mkdir %%INCLIB%%\openjpeg-%(op_ver)s
+copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-%(op_ver)s
 endlocal
-""" % compiler
+""" % atts
+
+def msbuild_openjpeg(compiler):
+    atts = {'op_ver': '2.1'}
+    atts.update(compiler)
+    return r"""
+rem build openjpeg
+setlocal
+@echo on
+cd /D %%OPENJPEG%%%(inc_dir)s
+
+%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -G "NMake Makefiles" .
+nmake -f Makefile clean
+nmake -f Makefile
+copy /Y /B bin\* %%INCLIB%%
+mkdir %%INCLIB%%\openjpeg-%(op_ver)s
+copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-%(op_ver)s
+endlocal
+""" % atts
+
+
 
 def nmake_libs(compiler):
     # undone -- pre, makes, headers, libs
@@ -184,7 +206,7 @@ endlocal
 """ % compiler
     
       
-def msbuild_libs(compiler):
+def msbuild_freetype(compiler):
     return r"""
 rem Build freetype
 setlocal
@@ -196,32 +218,38 @@ xcopy /Y /E /Q %%FREETYPE%%\include %%INCLIB%%
 xcopy /Y /E /Q %%FREETYPE%%\objs\win32\vc%(vc_version)s %%INCLIB%%
 copy /Y /B %%FREETYPE%%\objs\win32\vc%(vc_version)s\*.lib %%INCLIB%%\freetype.lib
 endlocal
+""" %compiler
 
+def build_lcms2(compiler):
+    return r"""
 rem Build lcms2
 setlocal
-py -3 %%~dp0\fixproj.py %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln %(platform)s
-py -3 %%~dp0\fixproj.py %%LCMS%%\Projects\VC%(vc_version)s\lcms2.vcproj %(platform)s
-rd /S /Q %%LCMS%%\objs
-%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=%(platform)s /m
+rd /S /Q %%LCMS%%\Lib
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=%(platform)s /m
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=%(platform)s /m
 xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
-xcopy /Y /E /Q %%LCMS%%\objs\win32\VC%(vc_version)s %%INCLIB%%
-copy /Y /B %%LCMS%%\objs\win32\VC%(vc_version)s\*.lib %%INCLIB%%\lcms2.lib
+copy /Y /B %%LCMS%%\Projects\VC%(vc_version)s\Release\*.lib %%INCLIB%%
+copy /Y /B %%LCMS%%\Lib\MS\*.lib %%INCLIB%%
 endlocal
 """ % compiler
 
 mkdirs()
 fetch_libs()
-extract_binlib()
+#extract_binlib()
 
 script = [header()] #, cp_tk()]
 
 for compiler in compilers.values():
 #if True:
-#    compiler = compilers[(7,64)]
+#    compiler = compilers[(7,32)]
     script.append(setup_compiler(compiler))
 #    script.append(nmake_libs(compiler))
-    script.append(extract_openjpeg(compiler))
- #   script.append(msbuild_libs(compiler))
+
+#    script.append(extract_openjpeg(compiler))
+#   
+#    script.append(build_freetype(compiler))
+    script.append(build_lcms2(compiler))
+#    script.append(nmake_openjpeg(compiler))
     script.append(end_compiler())
 
 with open('build_deps.cmd', 'w') as f:    
