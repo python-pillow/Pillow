@@ -49,6 +49,18 @@ libs = { 'zlib':{
     'hash':'sha1:326c4b6787a01e5e32a9b30bae76442d18d2d1b6',
     'dir':'libwebp-0.4.0',
     },
+#         'openjpeg':{
+#    'url':'https://openjpeg.googlecode.com/files/openjpeg-2.0.0.tar.gz',
+#    'hash':'sha1:0af78ab2283b43421458f80373422d8029a9f7a7',
+#    'dir':'openjpeg-2.0.0',
+#    },
+
+         'openjpeg':{
+    'url':SF_MIRROR+'/project/openjpeg/openjpeg/2.1.0/openjpeg-2.1.0.tar.gz',
+    'hash':'md5:f6419fcc233df84f9a81eb36633c6db6',
+    'dir':'openjpeg-2.1.0',
+    },
+
      }
 
 bin_libs = {
