@@ -108,8 +108,8 @@ def _save(im, fp, filename):
             r = i8(palette[i*3])
             g = i8(palette[i*3+1])
             b = i8(palette[i*3+2])
-            colorspace = colorspace + "%02x%02x%02x " % (r, g, b)
-        colorspace = colorspace + "> ]"
+            colorspace += "%02x%02x%02x " % (r, g, b)
+        colorspace += "> ]"
         procset = "/ImageI"  # indexed color
     elif im.mode == "RGB":
         filter = "/DCTDecode"

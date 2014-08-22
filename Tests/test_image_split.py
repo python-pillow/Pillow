@@ -1,49 +1,67 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
-def test_split():
-    def split(mode):
-        layers = lena(mode).split()
-        return [(i.mode, i.size[0], i.size[1]) for i in layers]
-    assert_equal(split("1"), [('1', 128, 128)])
-    assert_equal(split("L"), [('L', 128, 128)])
-    assert_equal(split("I"), [('I', 128, 128)])
-    assert_equal(split("F"), [('F', 128, 128)])
-    assert_equal(split("P"), [('P', 128, 128)])
-    assert_equal(split("RGB"), [('L', 128, 128), ('L', 128, 128), ('L', 128, 128)])
-    assert_equal(split("RGBA"), [('L', 128, 128), ('L', 128, 128), ('L', 128, 128), ('L', 128, 128)])
-    assert_equal(split("CMYK"), [('L', 128, 128), ('L', 128, 128), ('L', 128, 128), ('L', 128, 128)])
-    assert_equal(split("YCbCr"), [('L', 128, 128), ('L', 128, 128), ('L', 128, 128)])
 
-def test_split_merge():
-    def split_merge(mode):
-        return Image.merge(mode, lena(mode).split())
-    assert_image_equal(lena("1"), split_merge("1"))
-    assert_image_equal(lena("L"), split_merge("L"))
-    assert_image_equal(lena("I"), split_merge("I"))
-    assert_image_equal(lena("F"), split_merge("F"))
-    assert_image_equal(lena("P"), split_merge("P"))
-    assert_image_equal(lena("RGB"), split_merge("RGB"))
-    assert_image_equal(lena("RGBA"), split_merge("RGBA"))
-    assert_image_equal(lena("CMYK"), split_merge("CMYK"))
-    assert_image_equal(lena("YCbCr"), split_merge("YCbCr"))
+class TestImageSplit(PillowTestCase):
 
-def test_split_open():
-    codecs = dir(Image.core)
+    def test_split(self):
+        def split(mode):
+            layers = lena(mode).split()
+            return [(i.mode, i.size[0], i.size[1]) for i in layers]
+        self.assertEqual(split("1"), [('1', 128, 128)])
+        self.assertEqual(split("L"), [('L', 128, 128)])
+        self.assertEqual(split("I"), [('I', 128, 128)])
+        self.assertEqual(split("F"), [('F', 128, 128)])
+        self.assertEqual(split("P"), [('P', 128, 128)])
+        self.assertEqual(
+            split("RGB"), [('L', 128, 128), ('L', 128, 128), ('L', 128, 128)])
+        self.assertEqual(
+            split("RGBA"),
+            [('L', 128, 128), ('L', 128, 128),
+                ('L', 128, 128), ('L', 128, 128)])
+        self.assertEqual(
+            split("CMYK"),
+            [('L', 128, 128), ('L', 128, 128),
+                ('L', 128, 128), ('L', 128, 128)])
+        self.assertEqual(
+            split("YCbCr"),
+            [('L', 128, 128), ('L', 128, 128), ('L', 128, 128)])
 
-    if 'zip_encoder' in codecs:
-        file = tempfile("temp.png")
-    else:
-        file = tempfile("temp.pcx")
+    def test_split_merge(self):
+        def split_merge(mode):
+            return Image.merge(mode, lena(mode).split())
+        self.assert_image_equal(lena("1"), split_merge("1"))
+        self.assert_image_equal(lena("L"), split_merge("L"))
+        self.assert_image_equal(lena("I"), split_merge("I"))
+        self.assert_image_equal(lena("F"), split_merge("F"))
+        self.assert_image_equal(lena("P"), split_merge("P"))
+        self.assert_image_equal(lena("RGB"), split_merge("RGB"))
+        self.assert_image_equal(lena("RGBA"), split_merge("RGBA"))
+        self.assert_image_equal(lena("CMYK"), split_merge("CMYK"))
+        self.assert_image_equal(lena("YCbCr"), split_merge("YCbCr"))
 
-    def split_open(mode):
-        lena(mode).save(file)
-        im = Image.open(file)
-        return len(im.split())
-    assert_equal(split_open("1"), 1)
-    assert_equal(split_open("L"), 1)
-    assert_equal(split_open("P"), 1)
-    assert_equal(split_open("RGB"), 3)
-    if 'zip_encoder' in codecs:
-        assert_equal(split_open("RGBA"), 4)
+    def test_split_open(self):
+        codecs = dir(Image.core)
+
+        if 'zip_encoder' in codecs:
+            file = self.tempfile("temp.png")
+        else:
+            file = self.tempfile("temp.pcx")
+
+        def split_open(mode):
+            lena(mode).save(file)
+            im = Image.open(file)
+            return len(im.split())
+        self.assertEqual(split_open("1"), 1)
+        self.assertEqual(split_open("L"), 1)
+        self.assertEqual(split_open("P"), 1)
+        self.assertEqual(split_open("RGB"), 3)
+        if 'zip_encoder' in codecs:
+            self.assertEqual(split_open("RGBA"), 4)
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

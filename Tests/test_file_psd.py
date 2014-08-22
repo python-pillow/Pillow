@@ -1,14 +1,23 @@
-from tester import *
+from helper import unittest, PillowTestCase
 
 from PIL import Image
 
 # sample ppm stream
-file = "Images/lena.psd"
+file = "Tests/images/lena.psd"
 data = open(file, "rb").read()
 
-def test_sanity():
-    im = Image.open(file)
-    im.load()
-    assert_equal(im.mode, "RGB")
-    assert_equal(im.size, (128, 128))
-    assert_equal(im.format, "PSD")
+
+class TestImagePsd(PillowTestCase):
+
+    def test_sanity(self):
+        im = Image.open(file)
+        im.load()
+        self.assertEqual(im.mode, "RGB")
+        self.assertEqual(im.size, (128, 128))
+        self.assertEqual(im.format, "PSD")
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

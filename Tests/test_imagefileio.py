@@ -1,24 +1,33 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena, tostring
 
 from PIL import Image
 from PIL import ImageFileIO
 
-def test_fileio():
 
-    class DumbFile:
-        def __init__(self, data):
-            self.data = data
-        def read(self, bytes=None):
-            assert_equal(bytes, None)
-            return self.data
-        def close(self):
-            pass
+class TestImageFileIo(PillowTestCase):
 
-    im1 = lena()
+    def test_fileio(self):
 
-    io = ImageFileIO.ImageFileIO(DumbFile(tostring(im1, "PPM")))
+        class DumbFile:
+            def __init__(self, data):
+                self.data = data
 
-    im2 = Image.open(io)
-    assert_image_equal(im1, im2)
+            def read(self, bytes=None):
+                assert(bytes is None)
+                return self.data
+
+            def close(self):
+                pass
+
+        im1 = lena()
+
+        io = ImageFileIO.ImageFileIO(DumbFile(tostring(im1, "PPM")))
+
+        im2 = Image.open(io)
+        self.assert_image_equal(im1, im2)
 
 
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

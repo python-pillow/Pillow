@@ -1,27 +1,35 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
-def test_sanity():
 
-    im = lena()
+class TestImageQuantize(PillowTestCase):
 
-    im = im.quantize()
-    assert_image(im, "P", im.size)
+    def test_sanity(self):
+        im = lena()
 
-    im = lena()
-    im = im.quantize(palette=lena("P"))
-    assert_image(im, "P", im.size)
+        im = im.quantize()
+        self.assert_image(im, "P", im.size)
 
-def test_octree_quantize():
-    im = lena()
+        im = lena()
+        im = im.quantize(palette=lena("P"))
+        self.assert_image(im, "P", im.size)
 
-    im = im.quantize(100, Image.FASTOCTREE)
-    assert_image(im, "P", im.size)
+    def test_octree_quantize(self):
+        im = lena()
 
-    assert len(im.getcolors()) == 100
+        im = im.quantize(100, Image.FASTOCTREE)
+        self.assert_image(im, "P", im.size)
 
-def test_rgba_quantize():
-    im = lena('RGBA')
-    assert_no_exception(lambda: im.quantize())
-    assert_exception(Exception, lambda: im.quantize(method=0))
+        assert len(im.getcolors()) == 100
+
+    def test_rgba_quantize(self):
+        im = lena('RGBA')
+        im.quantize()
+        self.assertRaises(Exception, lambda: im.quantize(method=0))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

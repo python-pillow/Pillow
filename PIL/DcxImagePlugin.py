@@ -27,12 +27,14 @@ from PIL import Image, _binary
 
 from PIL.PcxImagePlugin import PcxImageFile
 
-MAGIC = 0x3ADE68B1 # QUIZ: what's this value, then?
+MAGIC = 0x3ADE68B1  # QUIZ: what's this value, then?
 
 i32 = _binary.i32le
 
+
 def _accept(prefix):
     return i32(prefix) == MAGIC
+
 
 ##
 # Image plugin for the Intel DCX format.

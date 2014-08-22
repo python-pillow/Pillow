@@ -36,7 +36,9 @@ __version__ = "0.6"
 
 import array
 import struct
-from PIL import Image, ImageFile, _binary
+import io
+from struct import unpack
+from PIL import Image, ImageFile, TiffImagePlugin, _binary
 from PIL.JpegPresets import presets
 from PIL._util import isStringType
 
@@ -110,6 +112,11 @@ def APP(self, marker):
             pass
         else:
             self.info["adobe_transform"] = adobe_transform
+    elif marker == 0xFFE2 and s[:4] == b"MPF\0":
+        # extract MPO information
+        self.info["mp"] = s[4:]
+        # offset is current location minus buffer size plus constant header size
+        self.info["mpoffset"] = self.fp.tell() - n + 4
 
 
 def COM(self, marker):
@@ -354,12 +361,13 @@ class JpegImageFile(ImageFile.ImageFile):
 
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
+        import subprocess
         import tempfile
         import os
         f, path = tempfile.mkstemp()
         os.close(f)
         if os.path.exists(self.filename):
-            os.system("djpeg '%s' >'%s'" % (self.filename, path))
+            subprocess.check_call(["djpeg", "-outfile", path, self.filename])
         else:
             raise ValueError("Invalid Filename")
 
@@ -379,18 +387,22 @@ class JpegImageFile(ImageFile.ImageFile):
     def _getexif(self):
         return _getexif(self)
 
+    def _getmp(self):
+        return _getmp(self)
+
+
+def _fixup(value):
+    # Helper function for _getexif() and _getmp()
+    if len(value) == 1:
+        return value[0]
+    return value
+
 
 def _getexif(self):
     # Extract EXIF information.  This method is highly experimental,
     # and is likely to be replaced with something better in a future
     # version.
-    from PIL import TiffImagePlugin
-    import io
 
-    def fixup(value):
-        if len(value) == 1:
-            return value[0]
-        return value
     # The EXIF record consists of a TIFF file embedded in a JPEG
     # application marker (!).
     try:
@@ -404,7 +416,7 @@ def _getexif(self):
     info = TiffImagePlugin.ImageFileDirectory(head)
     info.load(file)
     for key, value in info.items():
-        exif[key] = fixup(value)
+        exif[key] = _fixup(value)
     # get exif extension
     try:
         file.seek(exif[0x8769])
@@ -414,7 +426,7 @@ def _getexif(self):
         info = TiffImagePlugin.ImageFileDirectory(head)
         info.load(file)
         for key, value in info.items():
-            exif[key] = fixup(value)
+            exif[key] = _fixup(value)
     # get gpsinfo extension
     try:
         file.seek(exif[0x8825])
@@ -425,8 +437,76 @@ def _getexif(self):
         info.load(file)
         exif[0x8825] = gps = {}
         for key, value in info.items():
-            gps[key] = fixup(value)
+            gps[key] = _fixup(value)
     return exif
+
+
+def _getmp(self):
+    # Extract MP information.  This method was inspired by the "highly
+    # experimental" _getexif version that's been in use for years now,
+    # itself based on the ImageFileDirectory class in the TIFF plug-in.
+
+    # The MP record essentially consists of a TIFF file embedded in a JPEG
+    # application marker.
+    try:
+        data = self.info["mp"]
+    except KeyError:
+        return None
+    file = io.BytesIO(data)
+    head = file.read(8)
+    endianness = '>' if head[:4] == b'\x4d\x4d\x00\x2a' else '<'
+    mp = {}
+    # process dictionary
+    info = TiffImagePlugin.ImageFileDirectory(head)
+    info.load(file)
+    for key, value in info.items():
+        mp[key] = _fixup(value)
+    # it's an error not to have a number of images
+    try:
+        quant = mp[0xB001]
+    except KeyError:
+        raise SyntaxError("malformed MP Index (no number of images)")
+    # get MP entries
+    try:
+        mpentries = []
+        for entrynum in range(0, quant):
+            rawmpentry = mp[0xB002][entrynum * 16:(entrynum + 1) * 16]
+            unpackedentry = unpack('{0}LLLHH'.format(endianness), rawmpentry)
+            labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1', 'EntryNo2')
+            mpentry = dict(zip(labels, unpackedentry))
+            mpentryattr = {
+                'DependentParentImageFlag': bool(mpentry['Attribute'] & (1<<31)),
+                'DependentChildImageFlag': bool(mpentry['Attribute'] & (1<<30)),
+                'RepresentativeImageFlag': bool(mpentry['Attribute'] & (1<<29)),
+                'Reserved': (mpentry['Attribute'] & (3<<27)) >> 27,
+                'ImageDataFormat': (mpentry['Attribute'] & (7<<24)) >> 24,
+                'MPType': mpentry['Attribute'] & 0x00FFFFFF
+            }
+            if mpentryattr['ImageDataFormat'] == 0:
+                mpentryattr['ImageDataFormat'] = 'JPEG'
+            else:
+                raise SyntaxError("unsupported picture format in MPO")
+            mptypemap = {
+                0x000000: 'Undefined',
+                0x010001: 'Large Thumbnail (VGA Equivalent)',
+                0x010002: 'Large Thumbnail (Full HD Equivalent)',
+                0x020001: 'Multi-Frame Image (Panorama)',
+                0x020002: 'Multi-Frame Image: (Disparity)',
+                0x020003: 'Multi-Frame Image: (Multi-Angle)',
+                0x030000: 'Baseline MP Primary Image'
+            }
+            mpentryattr['MPType'] = mptypemap.get(mpentryattr['MPType'],
+                'Unknown')
+            mpentry['Attribute'] = mpentryattr
+            mpentries.append(mpentry)
+        mp[0xB002] = mpentries
+    except KeyError:
+        raise SyntaxError("malformed MP Index (bad MP Entry)")
+    # Next we should try and parse the individual image unique ID list;
+    # we don't because I've never seen this actually used in a real MPO
+    # file and so can't test it.
+    return mp
+
 
 # --------------------------------------------------------------------
 # stuff to save JPEG files
@@ -498,7 +578,7 @@ def _save(im, fp, filename):
     else:
         if subsampling in presets:
             subsampling = presets[subsampling].get('subsampling', -1)
-        if qtables in presets:
+        if isStringType(qtables) and qtables in presets:
             qtables = presets[qtables].get('quantization')
 
     if subsampling == "4:4:4":
@@ -561,8 +641,8 @@ def _save(im, fp, filename):
         i = 1
         for marker in markers:
             size = struct.pack(">H", 2 + ICC_OVERHEAD_LEN + len(marker))
-            extra = extra + (b"\xFF\xE2" + size + b"ICC_PROFILE\0" + o8(i) + o8(len(markers)) + marker)
-            i = i + 1
+            extra += b"\xFF\xE2" + size + b"ICC_PROFILE\0" + o8(i) + o8(len(markers)) + marker
+            i += 1
 
     # get keyword arguments
     im.encoderconfig = (
@@ -602,17 +682,35 @@ def _save(im, fp, filename):
 def _save_cjpeg(im, fp, filename):
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
     import os
-    file = im._dump()
-    os.system("cjpeg %s >%s" % (file, filename))
+    import subprocess
+    tempfile = im._dump()
+    subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
     try:
         os.unlink(file)
     except:
         pass
 
+
+##
+# Factory for making JPEG and MPO instances
+def jpeg_factory(fp=None, filename=None):
+    im = JpegImageFile(fp, filename)
+    mpheader = im._getmp()
+    try:
+        if mpheader[45057] > 1:
+            # It's actually an MPO
+            from .MpoImagePlugin import MpoImageFile
+            im = MpoImageFile(fp, filename)
+    except (TypeError, IndexError):
+        # It is really a JPEG
+        pass
+    return im
+
+
 # -------------------------------------------------------------------q-
 # Registry stuff
 
-Image.register_open("JPEG", JpegImageFile, _accept)
+Image.register_open("JPEG", jpeg_factory, _accept)
 Image.register_save("JPEG", _save)
 
 Image.register_extension("JPEG", ".jfif")

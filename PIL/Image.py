@@ -31,10 +31,17 @@ from PIL import VERSION, PILLOW_VERSION, _plugins
 import warnings
 
 
+class DecompressionBombWarning(RuntimeWarning):
+    pass
+
 class _imaging_not_installed:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imaging C module is not installed")
+
+
+# Limit to around a quarter gigabyte for a 24 bit (3 bpp) image
+MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 / 4 / 3)
 
 try:
     # give Tk a chance to set up the environment, in case we're
@@ -213,6 +220,7 @@ _MODEINFO = {
     "CMYK": ("RGB", "L", ("C", "M", "Y", "K")),
     "YCbCr": ("RGB", "L", ("Y", "Cb", "Cr")),
     "LAB": ("RGB", "L", ("L", "A", "B")),
+    "HSV": ("RGB", "L", ("H", "S", "V")),
 
     # Experimental modes include I;16, I;16L, I;16B, RGBa, BGR;15, and
     # BGR;24.  Use these modes only if you know exactly what you're
@@ -448,7 +456,7 @@ def _getscaleoffset(expr):
         (a, b, c) = data  # simplified syntax
         if (a is stub and b == "__mul__" and isinstance(c, numbers.Number)):
             return c, 0.0
-        if (a is stub and b == "__add__" and isinstance(c, numbers.Number)):
+        if a is stub and b == "__add__" and isinstance(c, numbers.Number):
             return 1.0, c
     except TypeError:
         pass
@@ -532,7 +540,7 @@ class Image:
         try:
             self.fp.close()
         except Exception as msg:
-            if Image.DEBUG:
+            if DEBUG:
                 print ("Error closing: %s" % msg)
 
         # Instead of simply setting to None, we're setting up a
@@ -547,7 +555,6 @@ class Image:
         self.readonly = 0
 
     def _dump(self, file=None, format=None):
-        import os
         import tempfile
         suffix = ''
         if format:
@@ -566,6 +573,8 @@ class Image:
         return file
 
     def __eq__(self, other):
+        if self.__class__.__name__ != other.__class__.__name__:
+            return False
         a = (self.mode == other.mode)
         b = (self.size == other.size)
         c = (self.getpalette() == other.getpalette())
@@ -1529,7 +1538,7 @@ class Image:
         clockwise around its centre.
 
         :param angle: In degrees counter clockwise.
-        :param filter: An optional resampling filter.  This can be
+        :param resample: An optional resampling filter.  This can be
            one of :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
            :py:attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
            environment), or :py:attr:`PIL.Image.BICUBIC`
@@ -1550,7 +1559,6 @@ class Image:
                 math.cos(angle), math.sin(angle), 0.0,
                 -math.sin(angle), math.cos(angle), 0.0
                 ]
-            
 
             def transform(x, y, matrix=matrix):
                 (a, b, c, d, e, f) = matrix
@@ -2075,7 +2083,6 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     .. versionadded:: 1.1.4
     """
-    "Load image from bytes or buffer"
 
     # may pass tuple instead of argument list
     if len(args) == 1 and isinstance(args[0], tuple):
@@ -2173,6 +2180,20 @@ _fromarray_typemap[((1, 1), _ENDIAN + "i4")] = ("I", "I")
 _fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
 
 
+def _decompression_bomb_check(size):
+    if MAX_IMAGE_PIXELS is None:
+        return
+
+    pixels = size[0] * size[1]
+
+    if pixels > MAX_IMAGE_PIXELS:
+        warnings.warn(
+            "Image size (%d pixels) exceeds limit of %d pixels, "
+            "could be decompression bomb DOS attack." %
+            (pixels, MAX_IMAGE_PIXELS),
+            DecompressionBombWarning)
+
+
 def open(fp, mode="r"):
     """
     Opens and identifies the given image file.
@@ -2210,7 +2231,9 @@ def open(fp, mode="r"):
             factory, accept = OPEN[i]
             if not accept or accept(prefix):
                 fp.seek(0)
-                return factory(fp, filename)
+                im = factory(fp, filename)
+                _decompression_bomb_check(im.size)
+                return im
         except (SyntaxError, IndexError, TypeError):
             # import traceback
             # traceback.print_exc()
@@ -2223,7 +2246,9 @@ def open(fp, mode="r"):
                 factory, accept = OPEN[i]
                 if not accept or accept(prefix):
                     fp.seek(0)
-                    return factory(fp, filename)
+                    im = factory(fp, filename)
+                    _decompression_bomb_check(im.size)
+                    return im
             except (SyntaxError, IndexError, TypeError):
                 # import traceback
                 # traceback.print_exc()

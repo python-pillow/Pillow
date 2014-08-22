@@ -1,40 +1,72 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
 import sys
 
 from PIL import Image
 
-def test_sanity():
 
-    im1 = lena()
+class TestImagePutData(PillowTestCase):
 
-    data = list(im1.getdata())
+    def test_sanity(self):
 
-    im2 = Image.new(im1.mode, im1.size, 0)
-    im2.putdata(data)
+        im1 = lena()
 
-    assert_image_equal(im1, im2)
+        data = list(im1.getdata())
 
-    # readonly
-    im2 = Image.new(im1.mode, im2.size, 0)
-    im2.readonly = 1
-    im2.putdata(data)
+        im2 = Image.new(im1.mode, im1.size, 0)
+        im2.putdata(data)
 
-    assert_false(im2.readonly)
-    assert_image_equal(im1, im2)
+        self.assert_image_equal(im1, im2)
+
+        # readonly
+        im2 = Image.new(im1.mode, im2.size, 0)
+        im2.readonly = 1
+        im2.putdata(data)
+
+        self.assertFalse(im2.readonly)
+        self.assert_image_equal(im1, im2)
+
+    def test_long_integers(self):
+        # see bug-200802-systemerror
+        def put(value):
+            im = Image.new("RGBA", (1, 1))
+            im.putdata([value])
+            return im.getpixel((0, 0))
+        self.assertEqual(put(0xFFFFFFFF), (255, 255, 255, 255))
+        self.assertEqual(put(0xFFFFFFFF), (255, 255, 255, 255))
+        self.assertEqual(put(-1), (255, 255, 255, 255))
+        self.assertEqual(put(-1), (255, 255, 255, 255))
+        if sys.maxsize > 2**32:
+            self.assertEqual(put(sys.maxsize), (255, 255, 255, 255))
+        else:
+            self.assertEqual(put(sys.maxsize), (255, 255, 255, 127))
 
 
-def test_long_integers():
-    # see bug-200802-systemerror
-    def put(value):
-        im = Image.new("RGBA", (1, 1))
-        im.putdata([value])
-        return im.getpixel((0, 0))
-    assert_equal(put(0xFFFFFFFF), (255, 255, 255, 255))
-    assert_equal(put(0xFFFFFFFF), (255, 255, 255, 255))
-    assert_equal(put(-1), (255, 255, 255, 255))
-    assert_equal(put(-1), (255, 255, 255, 255))
-    if sys.maxsize > 2**32:
-        assert_equal(put(sys.maxsize), (255, 255, 255, 255))
-    else:
-        assert_equal(put(sys.maxsize), (255, 255, 255, 127))
+    def test_pypy_performance(self):
+        im = Image.new('L', (256,256))
+        im.putdata(list(range(256))*256)
+
+    def test_mode_i(self):
+        src = lena('L')
+        data = list(src.getdata())
+        im = Image.new('I', src.size, 0)
+        im.putdata(data, 2, 256)
+
+        target = [2* elt + 256 for elt in data]
+        self.assertEqual(list(im.getdata()), target)
+
+    def test_mode_F(self):
+        src = lena('L')
+        data = list(src.getdata())
+        im = Image.new('F', src.size, 0)
+        im.putdata(data, 2.0, 256.0)
+
+        target = [2.0* float(elt) + 256.0 for elt in data]
+        self.assertEqual(list(im.getdata()), target)
+
+    
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

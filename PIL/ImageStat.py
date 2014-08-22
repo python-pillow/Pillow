@@ -21,7 +21,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
 import operator, math
 from functools import reduce
 
@@ -81,7 +80,7 @@ class Stat:
         for i in range(0, len(self.h), 256):
             sum = 0.0
             for j in range(256):
-                sum = sum + j * self.h[i+j]
+                sum += j * self.h[i + j]
             v.append(sum)
         return v
 
@@ -92,7 +91,7 @@ class Stat:
         for i in range(0, len(self.h), 256):
             sum2 = 0.0
             for j in range(256):
-                sum2 = sum2 + (j ** 2) * float(self.h[i+j])
+                sum2 += (j ** 2) * float(self.h[i + j])
             v.append(sum2)
         return v
 

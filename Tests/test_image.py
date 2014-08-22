@@ -1,39 +1,147 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
-def test_sanity():
 
-    im = Image.new("L", (100, 100))
-    assert_equal(repr(im)[:45], "<PIL.Image.Image image mode=L size=100x100 at")
-    assert_equal(im.mode, "L")
-    assert_equal(im.size, (100, 100))
+class TestImage(PillowTestCase):
 
-    im = Image.new("RGB", (100, 100))
-    assert_equal(repr(im)[:45], "<PIL.Image.Image image mode=RGB size=100x100 ")
-    assert_equal(im.mode, "RGB")
-    assert_equal(im.size, (100, 100))
+    def test_sanity(self):
 
-    im1 = Image.new("L", (100, 100), None)
-    im2 = Image.new("L", (100, 100), 0)
-    im3 = Image.new("L", (100, 100), "black")
+        im = Image.new("L", (100, 100))
+        self.assertEqual(
+            repr(im)[:45], "<PIL.Image.Image image mode=L size=100x100 at")
+        self.assertEqual(im.mode, "L")
+        self.assertEqual(im.size, (100, 100))
 
-    assert_equal(im2.getcolors(), [(10000, 0)])
-    assert_equal(im3.getcolors(), [(10000, 0)])
+        im = Image.new("RGB", (100, 100))
+        self.assertEqual(
+            repr(im)[:45], "<PIL.Image.Image image mode=RGB size=100x100 ")
+        self.assertEqual(im.mode, "RGB")
+        self.assertEqual(im.size, (100, 100))
 
-    assert_exception(ValueError, lambda: Image.new("X", (100, 100)))
-    # assert_exception(MemoryError, lambda: Image.new("L", (1000000, 1000000)))
+        Image.new("L", (100, 100), None)
+        im2 = Image.new("L", (100, 100), 0)
+        im3 = Image.new("L", (100, 100), "black")
 
-def test_internals():
+        self.assertEqual(im2.getcolors(), [(10000, 0)])
+        self.assertEqual(im3.getcolors(), [(10000, 0)])
 
-    im = Image.new("L", (100, 100))
-    im.readonly = 1
-    im._copy()
-    assert_false(im.readonly)
+        self.assertRaises(ValueError, lambda: Image.new("X", (100, 100)))
+        # self.assertRaises(
+        #     MemoryError, lambda: Image.new("L", (1000000, 1000000)))
 
-    im.readonly = 1
-    im.paste(0, (0, 0, 100, 100))
-    assert_false(im.readonly)
+    def test_internals(self):
 
-    file = tempfile("temp.ppm")
-    im._dump(file)
+        im = Image.new("L", (100, 100))
+        im.readonly = 1
+        im._copy()
+        self.assertFalse(im.readonly)
+
+        im.readonly = 1
+        im.paste(0, (0, 0, 100, 100))
+        self.assertFalse(im.readonly)
+
+        file = self.tempfile("temp.ppm")
+        im._dump(file)
+
+    def test_comparison_with_other_type(self):
+        # Arrange
+        item = Image.new('RGB', (25, 25), '#000')
+        num = 12
+
+        # Act/Assert
+        # Shouldn't cause AttributeError (#774)
+        self.assertFalse(item is None)
+        self.assertFalse(item == None)
+        self.assertFalse(item == num)
+
+    def test_expand_x(self):
+        # Arrange
+        im = lena()
+        orig_size = im.size
+        xmargin = 5
+
+        # Act
+        im = im._expand(xmargin)
+
+        # Assert
+        self.assertEqual(im.size[0], orig_size[0] + 2*xmargin)
+        self.assertEqual(im.size[1], orig_size[1] + 2*xmargin)
+
+    def test_expand_xy(self):
+        # Arrange
+        im = lena()
+        orig_size = im.size
+        xmargin = 5
+        ymargin = 3
+
+        # Act
+        im = im._expand(xmargin, ymargin)
+
+        # Assert
+        self.assertEqual(im.size[0], orig_size[0] + 2*xmargin)
+        self.assertEqual(im.size[1], orig_size[1] + 2*ymargin)
+
+    def test_getbands(self):
+        # Arrange
+        im = lena()
+
+        # Act
+        bands = im.getbands()
+
+        # Assert
+        self.assertEqual(bands, ('R', 'G', 'B'))
+
+    def test_getbbox(self):
+        # Arrange
+        im = lena()
+
+        # Act
+        bbox = im.getbbox()
+
+        # Assert
+        self.assertEqual(bbox, (0, 0, 128, 128))
+
+    def test_ne(self):
+        # Arrange
+        im1 = Image.new('RGB', (25, 25), 'black')
+        im2 = Image.new('RGB', (25, 25), 'white')
+
+        # Act / Assert
+        self.assertTrue(im1 != im2)
+
+    def test_alpha_composite(self):
+        # http://stackoverflow.com/questions/3374878
+        # Arrange
+        from PIL import ImageDraw
+
+        expected_colors = sorted([
+            (1122, (128, 127, 0, 255)),
+            (1089, (0, 255, 0, 255)),
+            (3300, (255, 0, 0, 255)),
+            (1156, (170, 85, 0, 192)),
+            (1122, (0, 255, 0, 128)),
+            (1122, (255, 0, 0, 128)),
+            (1089, (0, 255, 0, 0))])
+
+        dst = Image.new('RGBA', size=(100, 100), color=(0, 255, 0, 255))
+        draw = ImageDraw.Draw(dst)
+        draw.rectangle((0, 33, 100, 66), fill=(0, 255, 0, 128))
+        draw.rectangle((0, 67, 100, 100), fill=(0, 255, 0, 0))
+        src = Image.new('RGBA', size=(100, 100), color=(255, 0, 0, 255))
+        draw = ImageDraw.Draw(src)
+        draw.rectangle((33, 0, 66, 100), fill=(255, 0, 0, 128))
+        draw.rectangle((67, 0, 100, 100), fill=(255, 0, 0, 0))
+
+        # Act
+        img = Image.alpha_composite(dst, src)
+
+        # Assert
+        img_colors = sorted(img.getcolors())
+        self.assertEqual(img_colors, expected_colors)
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

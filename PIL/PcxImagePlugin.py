@@ -135,7 +135,7 @@ def _save(im, fp, filename, check=0):
     # bytes per plane
     stride = (im.size[0] * bits + 7) // 8
     # stride should be even
-    stride = stride + (stride % 2)
+    stride += stride % 2
     # Stride needs to be kept in sync with the PcxEncode.c version.
     # Ideally it should be passed in in the state, but the bytes value
     # gets overwritten. 

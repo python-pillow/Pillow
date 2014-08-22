@@ -1,15 +1,24 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
-def test_sanity():
 
-    file = tempfile("temp.msp")
+class TestFileMsp(PillowTestCase):
 
-    lena("1").save(file)
+    def test_sanity(self):
 
-    im = Image.open(file)
-    im.load()
-    assert_equal(im.mode, "1")
-    assert_equal(im.size, (128, 128))
-    assert_equal(im.format, "MSP")
+        file = self.tempfile("temp.msp")
+
+        lena("1").save(file)
+
+        im = Image.open(file)
+        im.load()
+        self.assertEqual(im.mode, "1")
+        self.assertEqual(im.size, (128, 128))
+        self.assertEqual(im.format, "MSP")
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

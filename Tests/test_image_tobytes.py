@@ -1,7 +1,13 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
-from PIL import Image
 
-def test_sanity():
-    data = lena().tobytes()
-    assert_true(isinstance(data, bytes))
+class TestImageToBytes(PillowTestCase):
+
+    def test_sanity(self):
+        data = lena().tobytes()
+        self.assertTrue(isinstance(data, bytes))
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

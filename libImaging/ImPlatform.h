@@ -17,12 +17,12 @@
 #error Sorry, this library requires ANSI header files.
 #endif
 
+#if defined(PIL_NO_INLINE)
+#define inline 
+#else
 #if defined(_MSC_VER) && !defined(__GNUC__)
 #define inline __inline
 #endif
-
-#if !defined(PIL_USE_INLINE)
-#define inline 
 #endif
 
 #ifdef _WIN32
@@ -69,4 +69,6 @@
 #define	FLOAT32 float
 #define	FLOAT64 double
 
-
+#ifdef _MSC_VER
+typedef signed __int64       int64_t;
+#endif

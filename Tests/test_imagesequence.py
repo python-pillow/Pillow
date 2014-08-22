@@ -1,22 +1,29 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
-from PIL import Image
 from PIL import ImageSequence
 
-def test_sanity():
 
-    file = tempfile("temp.im")
+class TestImageSequence(PillowTestCase):
 
-    im = lena("RGB")
-    im.save(file)
+    def test_sanity(self):
 
-    seq = ImageSequence.Iterator(im)
+        file = self.tempfile("temp.im")
 
-    index = 0
-    for frame in seq:
-        assert_image_equal(im, frame)
-        assert_equal(im.tell(), index)
-        index = index + 1
+        im = lena("RGB")
+        im.save(file)
 
-    assert_equal(index, 1)
+        seq = ImageSequence.Iterator(im)
 
+        index = 0
+        for frame in seq:
+            self.assert_image_equal(im, frame)
+            self.assertEqual(im.tell(), index)
+            index += 1
+
+        self.assertEqual(index, 1)
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

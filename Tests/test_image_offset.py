@@ -1,16 +1,25 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
-from PIL import Image
 
-def test_offset():
+class TestImageOffset(PillowTestCase):
 
-    im1 = lena()
+    def test_offset(self):
 
-    im2 = assert_warning(DeprecationWarning, lambda: im1.offset(10))
-    assert_equal(im1.getpixel((0, 0)), im2.getpixel((10, 10)))
+        im1 = lena()
 
-    im2 = assert_warning(DeprecationWarning, lambda: im1.offset(10, 20))
-    assert_equal(im1.getpixel((0, 0)), im2.getpixel((10, 20)))
+        im2 = self.assert_warning(DeprecationWarning, lambda: im1.offset(10))
+        self.assertEqual(im1.getpixel((0, 0)), im2.getpixel((10, 10)))
 
-    im2 = assert_warning(DeprecationWarning, lambda: im1.offset(20, 20))
-    assert_equal(im1.getpixel((0, 0)), im2.getpixel((20, 20)))
+        im2 = self.assert_warning(
+            DeprecationWarning, lambda: im1.offset(10, 20))
+        self.assertEqual(im1.getpixel((0, 0)), im2.getpixel((10, 20)))
+
+        im2 = self.assert_warning(
+            DeprecationWarning, lambda: im1.offset(20, 20))
+        self.assertEqual(im1.getpixel((0, 0)), im2.getpixel((20, 20)))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

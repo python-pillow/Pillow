@@ -8,7 +8,7 @@
  * Copyright (c) 2014 by Alastair Houghton
  */
 
-#include <openjpeg-2.0/openjpeg.h>
+#include <openjpeg.h>
 
 /* -------------------------------------------------------------------- */
 /* Decoder								*/
@@ -19,6 +19,9 @@ typedef struct {
 
     /* File descriptor, if available; otherwise, -1 */
     int fd;
+
+    /* Length of data, if available; otherwise, -1 */
+    off_t length;
 
     /* Specify the desired format */
     OPJ_CODEC_FORMAT format;

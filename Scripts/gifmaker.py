@@ -100,7 +100,7 @@ def makedelta(fp, sequence):
 
         previous = im.copy()
 
-        frames = frames + 1
+        frames += 1
 
     fp.write(";")
 

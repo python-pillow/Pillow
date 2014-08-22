@@ -1,13 +1,14 @@
 import sys
 sys.path.insert(0, ".")
 
-import tester
+import helper
 import timeit
 
+
 def bench(mode):
-    im = tester.lena(mode)
+    im = helper.lena(mode)
     get = im.im.getpixel
-    xy = 50, 50 # position shouldn't really matter
+    xy = 50, 50  # position shouldn't really matter
     t0 = timeit.default_timer()
     for i in range(1000000):
         get(xy)

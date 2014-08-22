@@ -3,18 +3,25 @@ language: python
 notifications:
   irc: "chat.freenode.net#pil"
 
+env: MAX_CONCURRENCY=4
+
 python:
   - "pypy"
+  - "pypy3"
   - 2.6
   - 2.7
+  - "2.7_with_system_site_packages" # For PyQt4
   - 3.2
   - 3.3
   - 3.4
 
 install:
-  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev cmake"
+  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick lcov"
   - "pip install cffi"
-  - "pip install coveralls"
+  - "pip install coveralls nose coveralls-merge"
+  - "gem install coveralls-lcov"
+  - travis_retry pip install pyroma
+  - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip install unittest2; fi
 
   # webp
   - pushd depends && ./install_webp.sh && popd
@@ -25,21 +32,31 @@ install:
 script:
   - coverage erase
   - python setup.py clean
-  - python setup.py build_ext --inplace
+  - CFLAGS="-coverage" python setup.py build_ext --inplace
 
-    # Don't cover PyPy: it fails intermittently and is x5.8 slower (#640)
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then python selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then python Tests/run.py; fi
-
-    # Cover the others
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coverage run --append --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then python Tests/run.py --coverage; fi
+  - coverage run --append --include=PIL/* selftest.py
+  - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
 
 after_success:
+   # gather the coverage data
+  - lcov --capture --directory . -b . --output-file coverage.info
+   # filter to remove system headers
+  - lcov --remove coverage.info '/usr/*' -o coverage.filtered.info     
+   # convert to json
+  - coveralls-lcov -v -n coverage.filtered.info > coverage.c.json
+
   - coverage report
-  - coveralls
+  - coveralls-merge coverage.c.json
+
+
   - pip install pep8 pyflakes
-  - pep8 PIL/*.py
-  - pyflakes PIL/*.py
-  - pep8 Tests/*.py
-  - pyflakes Tests/*.py
+  - pep8 --statistics --count PIL/*.py
+  - pep8  --statistics --count Tests/*.py
+  - pyflakes PIL/*.py   | tee >(wc -l)
+  - pyflakes Tests/*.py | tee >(wc -l)
+
+
+    # Coverage and quality reports on just the latest diff.
+    # (Installation is very slow on Py3, so just do it for Py2.)
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-install.sh; fi
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-run.sh; fi

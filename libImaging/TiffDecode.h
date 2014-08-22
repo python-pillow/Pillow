@@ -44,11 +44,10 @@ extern int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int
 extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 
 
-#if defined(_MSC_VER) && (_MSC_VER == 1310)
-/* VS2003/py2.4 can't use varargs. Skipping trace for now.*/
-#define TRACE(args)
-#else
-
+/* 
+   Trace debugging
+   legacy, don't enable for python 3.x, unicode issues. 
+*/
 
 /*
 #define VA_ARGS(...)	__VA_ARGS__
@@ -56,9 +55,6 @@ extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 */
 
 #define TRACE(args)
-
-#endif /* _MSC_VER */
-
 
 
 #endif

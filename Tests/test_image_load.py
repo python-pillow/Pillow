@@ -1,27 +1,35 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
 import os
 
-def test_sanity():
 
-    im = lena()
+class TestImageLoad(PillowTestCase):
 
-    pix = im.load()
+    def test_sanity(self):
 
-    assert_equal(pix[0, 0], (223, 162, 133))
+        im = lena()
 
-def test_close():    
-    im = Image.open("Images/lena.gif")
-    assert_no_exception(lambda: im.close())
-    assert_exception(ValueError, lambda: im.load())
-    assert_exception(ValueError, lambda: im.getpixel((0,0)))
+        pix = im.load()
 
-def test_contextmanager():
-    fn = None
-    with Image.open("Images/lena.gif") as im:
-        fn = im.fp.fileno()
-        assert_no_exception(lambda: os.fstat(fn))
+        self.assertEqual(pix[0, 0], (223, 162, 133))
 
-    assert_exception(OSError, lambda: os.fstat(fn))    
+    def test_close(self):
+        im = Image.open("Tests/images/lena.gif")
+        im.close()
+        self.assertRaises(ValueError, lambda: im.load())
+        self.assertRaises(ValueError, lambda: im.getpixel((0, 0)))
+
+    def test_contextmanager(self):
+        fn = None
+        with Image.open("Tests/images/lena.gif") as im:
+            fn = im.fp.fileno()
+            os.fstat(fn)
+
+        self.assertRaises(OSError, lambda: os.fstat(fn))
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

@@ -1,4 +1,4 @@
-from tester import *
+from helper import unittest, PillowTestCase
 
 from PIL import Image
 
@@ -25,10 +25,20 @@ static char basic_bits[] = {
 };
 """
 
-def test_pil151():
 
-    im = Image.open(BytesIO(PIL151))
+class TestFileXbm(PillowTestCase):
 
-    assert_no_exception(lambda: im.load())
-    assert_equal(im.mode, '1')
-    assert_equal(im.size, (32, 32))
+    def test_pil151(self):
+        from io import BytesIO
+
+        im = Image.open(BytesIO(PIL151))
+
+        im.load()
+        self.assertEqual(im.mode, '1')
+        self.assertEqual(im.size, (32, 32))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

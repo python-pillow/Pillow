@@ -63,15 +63,12 @@ TAGS = {
     0x0201: "JpegIFOffset",
     0x0202: "JpegIFByteCount",
     0x0211: "YCbCrCoefficients",
-    0x0211: "YCbCrCoefficients",
     0x0212: "YCbCrSubSampling",
     0x0213: "YCbCrPositioning",
-    0x0213: "YCbCrPositioning",
-    0x0214: "ReferenceBlackWhite",
     0x0214: "ReferenceBlackWhite",
     0x1000: "RelatedImageFileFormat",
-    0x1001: "RelatedImageLength",
-    0x1001: "RelatedImageWidth",
+    0x1001: "RelatedImageLength",  # FIXME / Dictionary contains duplicate keys
+    0x1001: "RelatedImageWidth",   # FIXME \ Dictionary contains duplicate keys
     0x828d: "CFARepeatPatternDim",
     0x828e: "CFAPattern",
     0x828f: "BatteryLevel",

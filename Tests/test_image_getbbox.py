@@ -1,36 +1,45 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
-def test_sanity():
 
-    bbox = lena().getbbox()
-    assert_true(isinstance(bbox, tuple))
+class TestImageGetBbox(PillowTestCase):
 
-def test_bbox():
+    def test_sanity(self):
 
-    # 8-bit mode
-    im = Image.new("L", (100, 100), 0)
-    assert_equal(im.getbbox(), None)
+        bbox = lena().getbbox()
+        self.assertIsInstance(bbox, tuple)
 
-    im.paste(255, (10, 25, 90, 75))
-    assert_equal(im.getbbox(), (10, 25, 90, 75))
+    def test_bbox(self):
 
-    im.paste(255, (25, 10, 75, 90))
-    assert_equal(im.getbbox(), (10, 10, 90, 90))
+        # 8-bit mode
+        im = Image.new("L", (100, 100), 0)
+        self.assertEqual(im.getbbox(), None)
 
-    im.paste(255, (-10, -10, 110, 110))
-    assert_equal(im.getbbox(), (0, 0, 100, 100))
+        im.paste(255, (10, 25, 90, 75))
+        self.assertEqual(im.getbbox(), (10, 25, 90, 75))
 
-    # 32-bit mode
-    im = Image.new("RGB", (100, 100), 0)
-    assert_equal(im.getbbox(), None)
+        im.paste(255, (25, 10, 75, 90))
+        self.assertEqual(im.getbbox(), (10, 10, 90, 90))
 
-    im.paste(255, (10, 25, 90, 75))
-    assert_equal(im.getbbox(), (10, 25, 90, 75))
+        im.paste(255, (-10, -10, 110, 110))
+        self.assertEqual(im.getbbox(), (0, 0, 100, 100))
 
-    im.paste(255, (25, 10, 75, 90))
-    assert_equal(im.getbbox(), (10, 10, 90, 90))
+        # 32-bit mode
+        im = Image.new("RGB", (100, 100), 0)
+        self.assertEqual(im.getbbox(), None)
 
-    im.paste(255, (-10, -10, 110, 110))
-    assert_equal(im.getbbox(), (0, 0, 100, 100))
+        im.paste(255, (10, 25, 90, 75))
+        self.assertEqual(im.getbbox(), (10, 25, 90, 75))
+
+        im.paste(255, (25, 10, 75, 90))
+        self.assertEqual(im.getbbox(), (10, 10, 90, 90))
+
+        im.paste(255, (-10, -10, 110, 110))
+        self.assertEqual(im.getbbox(), (0, 0, 100, 100))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

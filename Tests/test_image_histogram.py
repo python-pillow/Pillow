@@ -1,19 +1,26 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
-from PIL import Image
 
-def test_histogram():
+class TestImageHistogram(PillowTestCase):
 
-    def histogram(mode):
-        h = lena(mode).histogram()
-        return len(h), min(h), max(h)
+    def test_histogram(self):
 
-    assert_equal(histogram("1"), (256, 0, 8872))
-    assert_equal(histogram("L"), (256, 0, 199))
-    assert_equal(histogram("I"), (256, 0, 199))
-    assert_equal(histogram("F"), (256, 0, 199))
-    assert_equal(histogram("P"), (256, 0, 2912))
-    assert_equal(histogram("RGB"), (768, 0, 285))
-    assert_equal(histogram("RGBA"), (1024, 0, 16384))
-    assert_equal(histogram("CMYK"), (1024, 0, 16384))
-    assert_equal(histogram("YCbCr"), (768, 0, 741))
+        def histogram(mode):
+            h = lena(mode).histogram()
+            return len(h), min(h), max(h)
+
+        self.assertEqual(histogram("1"), (256, 0, 8872))
+        self.assertEqual(histogram("L"), (256, 0, 199))
+        self.assertEqual(histogram("I"), (256, 0, 199))
+        self.assertEqual(histogram("F"), (256, 0, 199))
+        self.assertEqual(histogram("P"), (256, 0, 2912))
+        self.assertEqual(histogram("RGB"), (768, 0, 285))
+        self.assertEqual(histogram("RGBA"), (1024, 0, 16384))
+        self.assertEqual(histogram("CMYK"), (1024, 0, 16384))
+        self.assertEqual(histogram("YCbCr"), (768, 0, 741))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

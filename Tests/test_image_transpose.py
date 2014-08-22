@@ -1,4 +1,4 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
@@ -8,27 +8,37 @@ ROTATE_90 = Image.ROTATE_90
 ROTATE_180 = Image.ROTATE_180
 ROTATE_270 = Image.ROTATE_270
 
-def test_sanity():
 
-    im = lena()
+class TestImageTranspose(PillowTestCase):
 
-    assert_no_exception(lambda: im.transpose(FLIP_LEFT_RIGHT))
-    assert_no_exception(lambda: im.transpose(FLIP_TOP_BOTTOM))
+    def test_sanity(self):
 
-    assert_no_exception(lambda: im.transpose(ROTATE_90))
-    assert_no_exception(lambda: im.transpose(ROTATE_180))
-    assert_no_exception(lambda: im.transpose(ROTATE_270))
+        im = lena()
 
-def test_roundtrip():
+        im.transpose(FLIP_LEFT_RIGHT)
+        im.transpose(FLIP_TOP_BOTTOM)
 
-    im = lena()
+        im.transpose(ROTATE_90)
+        im.transpose(ROTATE_180)
+        im.transpose(ROTATE_270)
 
-    def transpose(first, second):
-        return im.transpose(first).transpose(second)
+    def test_roundtrip(self):
 
-    assert_image_equal(im, transpose(FLIP_LEFT_RIGHT, FLIP_LEFT_RIGHT))
-    assert_image_equal(im, transpose(FLIP_TOP_BOTTOM, FLIP_TOP_BOTTOM))
+        im = lena()
 
-    assert_image_equal(im, transpose(ROTATE_90, ROTATE_270))
-    assert_image_equal(im, transpose(ROTATE_180, ROTATE_180))
+        def transpose(first, second):
+            return im.transpose(first).transpose(second)
 
+        self.assert_image_equal(
+            im, transpose(FLIP_LEFT_RIGHT, FLIP_LEFT_RIGHT))
+        self.assert_image_equal(
+            im, transpose(FLIP_TOP_BOTTOM, FLIP_TOP_BOTTOM))
+
+        self.assert_image_equal(im, transpose(ROTATE_90, ROTATE_270))
+        self.assert_image_equal(im, transpose(ROTATE_180, ROTATE_180))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

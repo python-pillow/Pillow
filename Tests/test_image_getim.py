@@ -1,14 +1,19 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena, py3
 
-from PIL import Image
 
-def test_sanity():
+class TestImageGetIm(PillowTestCase):
 
-    im = lena()
-    type_repr = repr(type(im.getim()))
+    def test_sanity(self):
+        im = lena()
+        type_repr = repr(type(im.getim()))
 
-    if py3:
-        assert_true("PyCapsule" in type_repr)
+        if py3:
+            self.assertIn("PyCapsule", type_repr)
 
-    assert_true(isinstance(im.im.id, int))
+        self.assertIsInstance(im.im.id, int)
 
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

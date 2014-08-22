@@ -49,6 +49,13 @@
 #define BLEND(mask, in1, in2, tmp1, tmp2)\
         (MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
 
+/*
+ * Rounds around zero (up=away from zero, down=torwards zero)
+ * This guarantees that ROUND_UP|DOWN(f) == -ROUND_UP|DOWN(-f)
+ */
+#define ROUND_UP(f)    ((int) ((f) >= 0.0 ? floor((f) + 0.5F) : -floor(fabs(f) + 0.5F)))
+#define ROUND_DOWN(f)    ((int) ((f) >= 0.0 ? ceil((f) - 0.5F) : -ceil(fabs(f) - 0.5F)))
+
 /* -------------------------------------------------------------------- */
 /* Primitives                                                           */
 /* -------------------------------------------------------------------- */
@@ -60,6 +67,9 @@ typedef struct {
     int xmin, ymin, xmax, ymax;
     float dx;
 } Edge;
+
+/* Type used in "polygon*" functions */
+typedef void (*hline_handler)(Imaging, int, int, int, int);
 
 static inline void
 point8(Imaging im, int x, int y, int ink)
@@ -403,177 +413,100 @@ x_cmp(const void *x0, const void *x1)
         return 0;
 }
 
+
+/*
+ * Filled polygon draw function using scan line algorithm.
+ */
 static inline int
-polygon8(Imaging im, int n, Edge *e, int ink, int eofill)
+polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
+        hline_handler hline)
 {
-    int i, j;
-    float *xx;
-    int ymin, ymax;
-    float y;
 
-    if (n <= 0)
+    Edge** edge_table;
+    float* xx;
+    int edge_count = 0;
+    int ymin = im->ysize - 1;
+    int ymax = 0;
+    int i;
+
+    if (n <= 0) {
         return 0;
-
-    /* Find upper and lower polygon boundary (within image) */
-
-    ymin = e[0].ymin;
-    ymax = e[0].ymax;
-    for (i = 1; i < n; i++) {
-        if (e[i].ymin < ymin) ymin = e[i].ymin;
-        if (e[i].ymax > ymax) ymax = e[i].ymax;
     }
 
-    if (ymin < 0)
-        ymin = 0;
-    if (ymax >= im->ysize)
-        ymax = im->ysize-1;
-
-    /* Process polygon edges */
-
-    xx = malloc(n * sizeof(float));
-    if (!xx)
+    /* Initialize the edge table and find polygon boundaries */
+    edge_table = malloc(sizeof(Edge*) * n);
+    if (!edge_table) {
         return -1;
+    }
 
-    for (;ymin <= ymax; ymin++) {
-        y = ymin+0.5F;
-        for (i = j = 0; i < n; i++)
-            if (y >= e[i].ymin && y <= e[i].ymax) {
-                if (e[i].d == 0)
-                    hline8(im, e[i].xmin, ymin, e[i].xmax, ink);
-                else
-                    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
+    for (i = 0; i < n; i++) {
+        /* This causes that the pixels of horizontal edges are drawn twice :(
+         * but without it there are inconsistencies in ellipses */
+        if (e[i].ymin == e[i].ymax) {
+            (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink);
+            continue;
+        }
+        if (ymin > e[i].ymin) {
+            ymin = e[i].ymin;
+        }
+        if (ymax < e[i].ymax) {
+            ymax = e[i].ymax;
+        }
+        edge_table[edge_count++] = (e + i);
+    }
+    if (ymin < 0) {
+        ymin = 0;
+    }
+    if (ymax >= im->ysize) {
+        ymax = im->ysize - 1;
+    }
+
+    /* Process the edge table with a scan line searching for intersections */
+    xx = malloc(sizeof(float) * edge_count * 2);
+    if (!xx) {
+        free(edge_table);
+        return -1;
+    }
+    for (; ymin <= ymax; ymin++) {
+        int j = 0;
+        for (i = 0; i < edge_count; i++) {
+            Edge* current = edge_table[i];
+            if (ymin >= current->ymin && ymin <= current->ymax) {
+                xx[j++] = (ymin - current->y0) * current->dx + current->x0;
             }
-        if (j == 2) {
-            if (xx[0] < xx[1])
-                hline8(im, CEIL(xx[0]-0.5), ymin, FLOOR(xx[1]+0.5), ink);
-            else
-                hline8(im, CEIL(xx[1]-0.5), ymin, FLOOR(xx[0]+0.5), ink);
-        } else {
-            qsort(xx, j, sizeof(float), x_cmp);
-            for (i = 0; i < j-1 ; i += 2)
-                hline8(im, CEIL(xx[i]-0.5), ymin, FLOOR(xx[i+1]+0.5), ink);
+            /* Needed to draw consistent polygons */
+            if (ymin == current->ymax && ymin < ymax) {
+                xx[j] = xx[j - 1];
+                j++;
+            }
+        }
+        qsort(xx, j, sizeof(float), x_cmp);
+        for (i = 1; i < j; i += 2) {
+            (*hline)(im, ROUND_UP(xx[i - 1]), ymin, ROUND_DOWN(xx[i]), ink);
         }
     }
 
     free(xx);
-
+    free(edge_table);
     return 0;
+}
+
+static inline int
+polygon8(Imaging im, int n, Edge *e, int ink, int eofill)
+{
+    return polygon_generic(im, n, e, ink, eofill, hline8);
 }
 
 static inline int
 polygon32(Imaging im, int n, Edge *e, int ink, int eofill)
 {
-    int i, j;
-    float *xx;
-    int ymin, ymax;
-    float y;
-
-    if (n <= 0)
-        return 0;
-
-    /* Find upper and lower polygon boundary (within image) */
-
-    ymin = e[0].ymin;
-    ymax = e[0].ymax;
-    for (i = 1; i < n; i++) {
-        if (e[i].ymin < ymin) ymin = e[i].ymin;
-        if (e[i].ymax > ymax) ymax = e[i].ymax;
-    }
-
-    if (ymin < 0)
-        ymin = 0;
-    if (ymax >= im->ysize)
-        ymax = im->ysize-1;
-
-    /* Process polygon edges */
-
-    xx = malloc(n * sizeof(float));
-    if (!xx)
-        return -1;
-
-    for (;ymin <= ymax; ymin++) {
-        y = ymin+0.5F;
-        for (i = j = 0; i < n; i++) {
-            if (y >= e[i].ymin && y <= e[i].ymax) {
-                if (e[i].d == 0)
-                    hline32(im, e[i].xmin, ymin, e[i].xmax, ink);
-                else
-                    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
-            }
-        }
-        if (j == 2) {
-            if (xx[0] < xx[1])
-                hline32(im, CEIL(xx[0]-0.5), ymin, FLOOR(xx[1]+0.5), ink);
-            else
-                hline32(im, CEIL(xx[1]-0.5), ymin, FLOOR(xx[0]+0.5), ink);
-        } else {
-            qsort(xx, j, sizeof(float), x_cmp);
-            for (i = 0; i < j-1 ; i += 2)
-                hline32(im, CEIL(xx[i]-0.5), ymin, FLOOR(xx[i+1]+0.5), ink);
-        }
-    }
-
-    free(xx);
-
-    return 0;
+    return polygon_generic(im, n, e, ink, eofill, hline32);
 }
 
 static inline int
 polygon32rgba(Imaging im, int n, Edge *e, int ink, int eofill)
 {
-    int i, j;
-    float *xx;
-    int ymin, ymax;
-    float y;
-
-    if (n <= 0)
-        return 0;
-
-    /* Find upper and lower polygon boundary (within image) */
-
-    ymin = e[0].ymin;
-    ymax = e[0].ymax;
-    for (i = 1; i < n; i++) {
-        if (e[i].ymin < ymin) ymin = e[i].ymin;
-        if (e[i].ymax > ymax) ymax = e[i].ymax;
-    }
-
-    if (ymin < 0)
-        ymin = 0;
-    if (ymax >= im->ysize)
-        ymax = im->ysize-1;
-
-    /* Process polygon edges */
-
-    xx = malloc(n * sizeof(float));
-    if (!xx)
-        return -1;
-
-    for (;ymin <= ymax; ymin++) {
-        y = ymin+0.5F;
-        for (i = j = 0; i < n; i++) {
-            if (y >= e[i].ymin && y <= e[i].ymax) {
-                if (e[i].d == 0)
-                    hline32rgba(im, e[i].xmin, ymin, e[i].xmax, ink);
-                else
-                    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
-            }
-        }
-        if (j == 2) {
-            if (xx[0] < xx[1])
-                hline32rgba(im, CEIL(xx[0]-0.5), ymin, FLOOR(xx[1]+0.5), ink);
-            else
-                hline32rgba(im, CEIL(xx[1]-0.5), ymin, FLOOR(xx[0]+0.5), ink);
-        } else {
-            qsort(xx, j, sizeof(float), x_cmp);
-            for (i = 0; i < j-1 ; i += 2)
-                hline32rgba(im, CEIL(xx[i]-0.5), ymin, FLOOR(xx[i+1]+0.5), ink);
-        }
-    }
-
-    free(xx);
-
-    return 0;
+    return polygon_generic(im, n, e, ink, eofill, hline32rgba);
 }
 
 static inline void
@@ -663,11 +596,11 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
 {
     DRAW* draw;
     INT32 ink;
-
-    Edge e[4];
-
     int dx, dy;
-    double d;
+    double big_hypotenuse, small_hypotenuse, ratio_max, ratio_min;
+    int dxmin, dxmax, dymin, dymax;
+    Edge e[4];
+    int vertices[4][2];
 
     DRAWINIT();
 
@@ -678,24 +611,35 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
 
     dx = x1-x0;
     dy = y1-y0;
-
     if (dx == 0 && dy == 0) {
         draw->point(im, x0, y0, ink);
         return 0;
     }
 
-    d = width / sqrt((float) (dx*dx + dy*dy)) / 2.0;
+    big_hypotenuse = sqrt((double) (dx*dx + dy*dy));
+    small_hypotenuse = (width - 1) / 2.0;
+    ratio_max = ROUND_UP(small_hypotenuse) / big_hypotenuse;
+    ratio_min = ROUND_DOWN(small_hypotenuse) / big_hypotenuse;
 
-    dx = (int) floor(d * (y1-y0) + 0.5);
-    dy = (int) floor(d * (x1-x0) + 0.5);
+    dxmin = ROUND_DOWN(ratio_min * dy);
+    dxmax = ROUND_DOWN(ratio_max * dy);
+    dymin = ROUND_DOWN(ratio_min * dx);
+    dymax = ROUND_DOWN(ratio_max * dx);
+    {
+        int vertices[4][2] = {
+            {x0 - dxmin, y0 + dymax},
+            {x1 - dxmin, y1 + dymax},
+            {x1 + dxmax, y1 - dymin},
+            {x0 + dxmax, y0 - dymin}
+        };
 
-    add_edge(e+0, x0 - dx,  y0 + dy, x1 - dx,  y1 + dy);
-    add_edge(e+1, x1 - dx,  y1 + dy, x1 + dx,  y1 - dy);
-    add_edge(e+2, x1 + dx,  y1 - dy, x0 + dx,  y0 - dy);
-    add_edge(e+3, x0 + dx,  y0 - dy, x0 - dx,  y0 + dy);
+        add_edge(e+0, vertices[0][0], vertices[0][1], vertices[1][0], vertices[1][1]);
+        add_edge(e+1, vertices[1][0], vertices[1][1], vertices[2][0], vertices[2][1]);
+        add_edge(e+2, vertices[2][0], vertices[2][1], vertices[3][0], vertices[3][1]);
+        add_edge(e+3, vertices[3][0], vertices[3][1], vertices[0][0], vertices[0][1]);
 
-    draw->polygon(im, 4, e, ink, 0);
-
+        draw->polygon(im, 4, e, ink, 0);
+    }
     return 0;
 }
 

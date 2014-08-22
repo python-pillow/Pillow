@@ -15,20 +15,21 @@
 
 __version__ = "0.1"
 
-from PIL import Image, ImageFile, _binary
+from PIL import Image, ImageFile
 import struct
 import os
 import io
 
+
 def _parse_codestream(fp):
     """Parse the JPEG 2000 codestream to extract the size and component
     count from the SIZ marker segment, returning a PIL (size, mode) tuple."""
-    
+
     hdr = fp.read(2)
     lsiz = struct.unpack('>H', hdr)[0]
     siz = hdr + fp.read(lsiz - 2)
     lsiz, rsiz, xsiz, ysiz, xosiz, yosiz, xtsiz, ytsiz, \
-    xtosiz, ytosiz, csiz \
+        xtosiz, ytosiz, csiz \
         = struct.unpack('>HHIIIIIIIIH', siz[:38])
     ssiz = [None]*csiz
     xrsiz = [None]*csiz
@@ -39,22 +40,26 @@ def _parse_codestream(fp):
 
     size = (xsiz - xosiz, ysiz - yosiz)
     if csiz == 1:
-        mode = 'L'
+        if (yrsiz[0] & 0x7f) > 8:
+            mode = 'I;16'
+        else:
+            mode = 'L'
     elif csiz == 2:
         mode = 'LA'
     elif csiz == 3:
         mode = 'RGB'
     elif csiz == 4:
-        mode == 'RGBA'
+        mode = 'RGBA'
     else:
         mode = None
-    
+
     return (size, mode)
+
 
 def _parse_jp2_header(fp):
     """Parse the JP2 header box to extract size, component count and
     color space information, returning a PIL (size, mode) tuple."""
-    
+
     # Find the JP2 header box
     header = None
     while True:
@@ -65,6 +70,9 @@ def _parse_jp2_header(fp):
         else:
             hlen = 8
 
+        if lbox < hlen:
+            raise SyntaxError('Invalid JP2 header length')
+        
         if tbox == b'jp2h':
             header = fp.read(lbox - hlen)
             break
@@ -76,7 +84,8 @@ def _parse_jp2_header(fp):
 
     size = None
     mode = None
-    
+    bpc = None
+
     hio = io.BytesIO(header)
     while True:
         lbox, tbox = struct.unpack('>I4s', hio.read(8))
@@ -90,10 +99,12 @@ def _parse_jp2_header(fp):
 
         if tbox == b'ihdr':
             height, width, nc, bpc, c, unkc, ipr \
-              = struct.unpack('>IIHBBBB', content)
+                = struct.unpack('>IIHBBBB', content)
             size = (width, height)
             if unkc:
-                if nc == 1:
+                if nc == 1 and (bpc & 0x7f) > 8:
+                    mode = 'I;16'
+                elif nc == 1:
                     mode = 'L'
                 elif nc == 2:
                     mode = 'LA'
@@ -107,28 +118,35 @@ def _parse_jp2_header(fp):
             if meth == 1:
                 cs = struct.unpack('>I', content[3:7])[0]
                 if cs == 16:   # sRGB
-                    if nc == 3:
+                    if nc == 1 and (bpc & 0x7f) > 8:
+                        mode = 'I;16'
+                    elif nc == 1:
+                        mode = 'L'
+                    elif nc == 3:
                         mode = 'RGB'
                     elif nc == 4:
                         mode = 'RGBA'
                     break
-                elif cs == 17: # grayscale
-                    if nc == 1:
+                elif cs == 17:  # grayscale
+                    if nc == 1 and (bpc & 0x7f) > 8:
+                        mode = 'I;16'
+                    elif nc == 1:
                         mode = 'L'
                     elif nc == 2:
                         mode = 'LA'
                     break
-                elif cs == 18: # sYCC
+                elif cs == 18:  # sYCC
                     if nc == 3:
                         mode = 'RGB'
                     elif nc == 4:
-                        mode == 'RGBA'
+                        mode = 'RGBA'
                     break
 
     return (size, mode)
 
 ##
 # Image plugin for JPEG2000 images.
+
 
 class Jpeg2KImageFile(ImageFile.ImageFile):
     format = "JPEG2000"
@@ -141,29 +159,37 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             self.size, self.mode = _parse_codestream(self.fp)
         else:
             sig = sig + self.fp.read(8)
-        
+
             if sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
                 self.codec = "jp2"
                 self.size, self.mode = _parse_jp2_header(self.fp)
             else:
                 raise SyntaxError('not a JPEG 2000 file')
-        
+
         if self.size is None or self.mode is None:
             raise SyntaxError('unable to determine size/mode')
-        
+
         self.reduce = 0
         self.layers = 0
 
         fd = -1
+        length = -1
 
-        if hasattr(self.fp, "fileno"):
+        try:
+            fd = self.fp.fileno()
+            length = os.fstat(fd).st_size
+        except:
+            fd = -1
             try:
-                fd = self.fp.fileno()
+                pos = self.fp.tell()
+                self.fp.seek(0, 2)
+                length = self.fp.tell()
+                self.fp.seek(pos, 0)
             except:
-                fd = -1
+                length = -1
 
         self.tile = [('jpeg2k', (0, 0) + self.size, 0,
-                      (self.codec, self.reduce, self.layers, fd))]
+                      (self.codec, self.reduce, self.layers, fd, length))]
 
     def load(self):
         if self.reduce:
@@ -175,14 +201,16 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         if self.tile:
             # Update the reduce and layers settings
             t = self.tile[0]
-            t3 = (t[3][0], self.reduce, self.layers, t[3][3])
+            t3 = (t[3][0], self.reduce, self.layers, t[3][3], t[3][4])
             self.tile = [(t[0], (0, 0) + self.size, t[2], t3)]
-        
+
         ImageFile.ImageFile.load(self)
-        
+
+
 def _accept(prefix):
     return (prefix[:4] == b'\xff\x4f\xff\x51'
             or prefix[:12] == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a')
+
 
 # ------------------------------------------------------------
 # Save support
@@ -214,7 +242,7 @@ def _save(im, fp, filename):
             fd = fp.fileno()
         except:
             fd = -1
-    
+
     im.encoderconfig = (
         offset,
         tile_offset,
@@ -228,10 +256,10 @@ def _save(im, fp, filename):
         progression,
         cinema_mode,
         fd
-        )
-        
+    )
+
     ImageFile._save(im, fp, [('jpeg2k', (0, 0)+im.size, 0, kind)])
-    
+
 # ------------------------------------------------------------
 # Registry stuff
 

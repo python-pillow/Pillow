@@ -94,7 +94,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                     cut = cut - h[lo]
                     h[lo] = 0
                 else:
-                    h[lo] = h[lo] - cut
+                    h[lo] -= cut
                     cut = 0
                 if cut <= 0:
                     break
@@ -105,7 +105,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                     cut = cut - h[hi]
                     h[hi] = 0
                 else:
-                    h[hi] = h[hi] - cut
+                    h[hi] -= cut
                     cut = 0
                 if cut <= 0:
                     break
@@ -392,7 +392,7 @@ def solarize(image, threshold=128):
     """
     Invert all pixel values above a threshold.
 
-    :param image: The image to posterize.
+    :param image: The image to solarize.
     :param threshold: All pixels above this greyscale level are inverted.
     :return: An image.
     """

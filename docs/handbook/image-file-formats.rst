@@ -136,7 +136,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **quality**
     The image quality, on a scale from 1 (worst) to 95 (best). The default is
     75. Values above 95 should be avoided; 100 disables portions of the JPEG
-    compression algorithm, and results in large files with hardly any gain in =
+    compression algorithm, and results in large files with hardly any gain in
     image quality.
 
 **optimize**
@@ -146,6 +146,29 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **progressive**
     If present, indicates that this image should be stored as a progressive
     JPEG file.
+
+**subsampling**
+    If present, sets the subsampling for the encoder. 
+    
+    * ``keep``: Only valid for JPEG files, will retain the original image setting.
+    * ``4:4:4``, ``4:2:2``, ``4:1:1``: Specific sampling values
+    * ``-1``: equivalent to ``keep``
+    * ``0``: equivalent to ``4:4:4``
+    * ``1``: equivalent to ``4:2:2``
+    * ``2``: equivalent to ``4:1:1``
+
+**qtables**
+    If present, sets the qtables for the encoder. This is listed as an
+    advanced option for wizards in the JPEG documentation. Use with
+    caution. ``qtables`` can be one of several types of values:
+
+    *  a string, naming a preset, e.g. ``keep``, ``web_low``, or ``web_high``
+    *  a list, tuple, or dictionary (with integer keys =
+       range(len(keys))) of lists of 64 integers. There must be
+       between 2 and 4 tables. 
+
+    .. versionadded:: 2.5.0
+
 
 .. note::
 
@@ -562,6 +585,20 @@ PIL identifies and reads 8-bit McIdas area files.
 MIC (read only)
 
 PIL identifies and reads Microsoft Image Composer (MIC) files. When opened, the
+first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
+:py:meth:`~file.tell` to read other sprites from the file.
+
+MPO
+^^^
+
+Pillow identifies and reads Multi Picture Object (MPO) files, loading the primary
+image when first opened. The :py:meth:`~file.seek` and :py:meth:`~file.tell`
+methods may be used to read other pictures from the file. The pictures are
+zero-indexed and random access is supported.
+
+MIC (read only)
+
+Pillow identifies and reads Microsoft Image Composer (MIC) files. When opened, the
 first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
 :py:meth:`~file.tell` to read other sprites from the file.
 

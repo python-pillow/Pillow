@@ -864,13 +864,6 @@ copy2(UINT8* out, const UINT8* in, int pixels)
 }
 
 static void
-copy3(UINT8* out, const UINT8* in, int pixels)
-{
-    /* LAB triples, 24bit */
-    memcpy(out, in, 3 * pixels);
-}
-
-static void
 copy4(UINT8* out, const UINT8* in, int pixels)
 {
     /* RGBA, CMYK quadruples */
@@ -1165,6 +1158,12 @@ static struct {
     {"LAB",  	"L",            8,      band0},
     {"LAB",  	"A",            8,      band1},
     {"LAB",  	"B",            8,      band2},
+
+    /* HSV Color */
+    {"HSV",	    "HSV",	        24,	    ImagingUnpackRGB},
+    {"HSV",  	"H",            8,      band0},
+    {"HSV",  	"S",            8,      band1},
+    {"HSV",  	"V",            8,      band2},
 
     /* integer variations */
     {"I",       "I",            32,     copy4},

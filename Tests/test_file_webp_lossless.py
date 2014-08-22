@@ -1,33 +1,43 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
-
 
 try:
     from PIL import _webp
 except:
-    skip('webp support not installed')
+    pass
+    # Skip in setUp()
 
 
-if (_webp.WebPDecoderVersion() < 0x0200):
-    skip('lossless not included')
+class TestFileWebpLossless(PillowTestCase):
 
-def test_write_lossless_rgb():
-    temp_file = tempfile("temp.webp")
+    def setUp(self):
+        try:
+            from PIL import _webp
+        except:
+            self.skipTest('WebP support not installed')
 
-    lena("RGB").save(temp_file, lossless=True)
+        if (_webp.WebPDecoderVersion() < 0x0200):
+            self.skipTest('lossless not included')
 
-    image = Image.open(temp_file)
-    image.load()
+    def test_write_lossless_rgb(self):
+        temp_file = self.tempfile("temp.webp")
 
-    assert_equal(image.mode, "RGB")
-    assert_equal(image.size, (128, 128))
-    assert_equal(image.format, "WEBP")
-    assert_no_exception(lambda: image.load())
-    assert_no_exception(lambda: image.getdata())
+        lena("RGB").save(temp_file, lossless=True)
+
+        image = Image.open(temp_file)
+        image.load()
+
+        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.size, (128, 128))
+        self.assertEqual(image.format, "WEBP")
+        image.load()
+        image.getdata()
+
+        self.assert_image_equal(image, lena("RGB"))
 
 
-    assert_image_equal(image, lena("RGB"))
+if __name__ == '__main__':
+    unittest.main()
 
-
-
+# End of file

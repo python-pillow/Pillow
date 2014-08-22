@@ -566,6 +566,12 @@ static struct {
     {"LAB",  	"A",           8,      band1},
     {"LAB",  	"B",           8,      band2},
 
+    /* HSV */
+    {"HSV",	    "HSV",	       24,     ImagingPackRGB},
+    {"HSV",  	"H",           8,      band0},
+    {"HSV",  	"S",           8,      band1},
+    {"HSV",  	"V",           8,      band2},
+
     /* integer */
     {"I", 	"I",		32,	copy4},
     {"I", 	"I;16B",	16,	packI16B},

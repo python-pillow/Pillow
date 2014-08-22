@@ -1,28 +1,29 @@
 #!/usr/local/bin/python
 # -*- coding: latin-1 -*-
-"""
-OleFileIO_PL:
-Module to read Microsoft OLE2 files (also called Structured Storage or
-Microsoft Compound Document File Format), such as Microsoft Office
-documents, Image Composer and FlashPix files, Outlook messages, ...
-This version is compatible with Python 2.6+ and 3.x
+## OleFileIO_PL:
+## Module to read Microsoft OLE2 files (also called Structured Storage or
+## Microsoft Compound Document File Format), such as Microsoft Office
+## documents, Image Composer and FlashPix files, Outlook messages, ...
+## This version is compatible with Python 2.6+ and 3.x
 
-version 0.30 2014-02-04 Philippe Lagadec - http://www.decalage.info
+## version 0.30 2014-02-04 Philippe Lagadec - http://www.decalage.info
 
-Project website: http://www.decalage.info/python/olefileio
+## Project website: http://www.decalage.info/python/olefileio
 
-Improved version of the OleFileIO module from PIL library v1.1.6
-See: http://www.pythonware.com/products/pil/index.htm
+## Improved version of the OleFileIO module from PIL library v1.1.6
+## See: http://www.pythonware.com/products/pil/index.htm
 
-The Python Imaging Library (PIL) is
-    Copyright (c) 1997-2005 by Secret Labs AB
-    Copyright (c) 1995-2005 by Fredrik Lundh
-OleFileIO_PL changes are Copyright (c) 2005-2014 by Philippe Lagadec
+## The Python Imaging Library (PIL) is
 
-See source code and LICENSE.txt for information on usage and redistribution.
+##     Copyright (c) 1997-2005 by Secret Labs AB
+##     Copyright (c) 1995-2005 by Fredrik Lundh
 
-WARNING: THIS IS (STILL) WORK IN PROGRESS.
-"""
+## OleFileIO_PL changes are Copyright (c) 2005-2014 by Philippe Lagadec
+
+## See source code and LICENSE.txt for information on usage and redistribution.
+
+## WARNING: THIS IS (STILL) WORK IN PROGRESS.
+
 
 # Starting with OleFileIO_PL v0.30, only Python 2.6+ and 3.x is supported
 # This import enables print() as a function rather than a keyword
@@ -370,8 +371,9 @@ for key in list(vars().keys()):
 def isOleFile (filename):
     """
     Test if file is an OLE container (according to its header).
-    filename: file name or path (str, unicode)
-    return: True if OLE, False otherwise.
+    
+    :param filename: file name or path (str, unicode)
+    :returns: True if OLE, False otherwise.
     """
     f = open(filename, 'rb')
     header = f.read(len(MAGIC))
@@ -397,8 +399,8 @@ def i16(c, o = 0):
     """
     Converts a 2-bytes (16 bits) string to an integer.
 
-    c: string containing bytes to convert
-    o: offset of bytes to convert in string
+    :param c: string containing bytes to convert
+    :param o: offset of bytes to convert in string
     """
     return i8(c[o]) | (i8(c[o+1])<<8)
 
@@ -407,8 +409,8 @@ def i32(c, o = 0):
     """
     Converts a 4-bytes (32 bits) string to an integer.
 
-    c: string containing bytes to convert
-    o: offset of bytes to convert in string
+    :param c: string containing bytes to convert
+    :param o: offset of bytes to convert in string
     """
 ##    return int(ord(c[o])+(ord(c[o+1])<<8)+(ord(c[o+2])<<16)+(ord(c[o+3])<<24))
 ##    # [PL]: added int() because "<<" gives long int since Python 2.4
@@ -419,7 +421,8 @@ def i32(c, o = 0):
 def _clsid(clsid):
     """
     Converts a CLSID to a human-readable string.
-    clsid: string of length 16.
+
+    :param clsid: string of length 16.
     """
     assert len(clsid) == 16
     # if clsid is only made of null bytes, return an empty string:
@@ -439,8 +442,8 @@ def _unicode(s, errors='replace'):
     """
     Map unicode string to Latin 1. (Python with Unicode support)
 
-    s: UTF-16LE unicode string to convert to Latin-1
-    errors: 'replace', 'ignore' or 'strict'.
+    :param s: UTF-16LE unicode string to convert to Latin-1
+    :param errors: 'replace', 'ignore' or 'strict'.
     """
     #TODO: test if it OleFileIO works with Unicode strings, instead of
     #      converting to Latin-1.
@@ -650,14 +653,14 @@ class _OleStream(io.BytesIO):
         """
         Constructor for _OleStream class.
 
-        fp        : file object, the OLE container or the MiniFAT stream
-        sect      : sector index of first sector in the stream
-        size      : total size of the stream
-        offset    : offset in bytes for the first FAT or MiniFAT sector
-        sectorsize: size of one sector
-        fat       : array/list of sector indexes (FAT or MiniFAT)
-        filesize  : size of OLE file (for debugging)
-        return    : a BytesIO instance containing the OLE stream
+        :param fp        : file object, the OLE container or the MiniFAT stream
+        :param sect      : sector index of first sector in the stream
+        :param size      : total size of the stream
+        :param offset    : offset in bytes for the first FAT or MiniFAT sector
+        :param sectorsize: size of one sector
+        :param fat       : array/list of sector indexes (FAT or MiniFAT)
+        :param filesize  : size of OLE file (for debugging)
+        :returns    : a BytesIO instance containing the OLE stream
         """
         debug('_OleStream.__init__:')
         debug('  sect=%d (%X), size=%d, offset=%d, sectorsize=%d, len(fat)=%d, fp=%s'
@@ -793,9 +796,9 @@ class _OleDirectoryEntry:
         Constructor for an _OleDirectoryEntry object.
         Parses a 128-bytes entry from the OLE Directory stream.
 
-        entry  : string (must be 128 bytes long)
-        sid    : index of this directory entry in the OLE file directory
-        olefile: OleFileIO containing this directory entry
+        :param entry  : string (must be 128 bytes long)
+        :param sid    : index of this directory entry in the OLE file directory
+        :param olefile: OleFileIO containing this directory entry
         """
         self.sid = sid
         # ref to olefile is stored for future use
@@ -989,7 +992,7 @@ class _OleDirectoryEntry:
         """
         Return modification time of a directory entry.
 
-        return: None if modification time is null, a python datetime object
+        :returns: None if modification time is null, a python datetime object
         otherwise (UTC timezone)
 
         new in version 0.26
@@ -1003,7 +1006,7 @@ class _OleDirectoryEntry:
         """
         Return creation time of a directory entry.
 
-        return: None if modification time is null, a python datetime object
+        :returns: None if modification time is null, a python datetime object
         otherwise (UTC timezone)
 
         new in version 0.26
@@ -1020,7 +1023,8 @@ class OleFileIO:
     OLE container object
 
     This class encapsulates the interface to an OLE 2 structured
-    storage file.  Use the {@link listdir} and {@link openstream} methods to
+    storage file.  Use the :py:meth:`~PIL.OleFileIO.OleFileIO.listdir` and
+    :py:meth:`~PIL.OleFileIO.OleFileIO.openstream` methods to
     access the contents of this file.
 
     Object names are given as a list of strings, one for each subentry
@@ -1048,8 +1052,8 @@ class OleFileIO:
         """
         Constructor for OleFileIO class.
 
-        filename: file to open.
-        raise_defects: minimal level for defects to be raised as exceptions.
+        :param filename: file to open.
+        :param raise_defects: minimal level for defects to be raised as exceptions.
         (use DEFECT_FATAL for a typical application, DEFECT_INCORRECT for a
         security-oriented application, see source code for details)
         """
@@ -1068,13 +1072,13 @@ class OleFileIO:
         It may raise an IOError exception according to the minimal level chosen
         for the OleFileIO object.
 
-        defect_level: defect level, possible values are:
+        :param defect_level: defect level, possible values are:
             DEFECT_UNSURE    : a case which looks weird, but not sure it's a defect
             DEFECT_POTENTIAL : a potential defect
             DEFECT_INCORRECT : an error according to specifications, but parsing can go on
             DEFECT_FATAL     : an error which cannot be ignored, parsing is impossible
-        message: string describing the defect, used with raised exception.
-        exception_type: exception class to be raised, IOError by default
+        :param message: string describing the defect, used with raised exception.
+        :param exception_type: exception class to be raised, IOError by default
         """
         # added by [PL]
         if defect_level >= self._raise_defects_level:
@@ -1089,7 +1093,7 @@ class OleFileIO:
         Open an OLE2 file.
         Reads the header, FAT and directory.
 
-        filename: string-like or file-like object
+        :param filename: string-like or file-like object
         """
         #[PL] check if filename is a string-like or file-like object:
         # (it is better to check for a read() method)
@@ -1276,8 +1280,8 @@ class OleFileIO:
         Checks if a stream has not been already referenced elsewhere.
         This method should only be called once for each known stream, and only
         if stream size is not null.
-        first_sect: index of first sector of the stream in FAT
-        minifat: if True, stream is located in the MiniFAT, else in the FAT
+        :param first_sect: index of first sector of the stream in FAT
+        :param minifat: if True, stream is located in the MiniFAT, else in the FAT
         """
         if minifat:
             debug('_check_duplicate_stream: sect=%d in MiniFAT' % first_sect)
@@ -1371,8 +1375,9 @@ class OleFileIO:
     def loadfat_sect(self, sect):
         """
         Adds the indexes of the given sector to the FAT
-        sect: string containing the first FAT sector, or array of long integers
-        return: index of last FAT sector.
+        
+        :param sect: string containing the first FAT sector, or array of long integers
+        :returns: index of last FAT sector.
         """
         # a FAT sector is an array of ulong integers.
         if isinstance(sect, array.array):
@@ -1505,8 +1510,9 @@ class OleFileIO:
     def getsect(self, sect):
         """
         Read given sector from file on disk.
-        sect: sector index
-        returns a string containing the sector data.
+        
+        :param sect: sector index
+        :returns: a string containing the sector data.
         """
         # [PL] this original code was wrong when sectors are 4KB instead of
         # 512 bytes:
@@ -1530,7 +1536,8 @@ class OleFileIO:
     def loaddirectory(self, sect):
         """
         Load the directory.
-        sect: sector index of directory stream.
+        
+        :param sect: sector index of directory stream.
         """
         # The directory is  stored in a standard
         # substream, independent of its size.
@@ -1567,9 +1574,10 @@ class OleFileIO:
         Load a directory entry from the directory.
         This method should only be called once for each storage/stream when
         loading the directory.
-        sid: index of storage/stream in the directory.
-        return: a _OleDirectoryEntry object
-        raise: IOError if the entry has always been referenced.
+
+        :param sid: index of storage/stream in the directory.
+        :returns: a _OleDirectoryEntry object
+        :exception IOError: if the entry has always been referenced.
         """
         # check if SID is OK:
         if sid<0 or sid>=len(self.direntries):
@@ -1598,9 +1606,9 @@ class OleFileIO:
         Open a stream, either in FAT or MiniFAT according to its size.
         (openstream helper)
 
-        start: index of first sector
-        size: size of stream (or nothing if size is unknown)
-        force_FAT: if False (default), stream will be opened in FAT or MiniFAT
+        :param start: index of first sector
+        :param size: size of stream (or nothing if size is unknown)
+        :param force_FAT: if False (default), stream will be opened in FAT or MiniFAT
                    according to size. If True, it will always be opened in FAT.
         """
         debug('OleFileIO.open(): sect=%d, size=%d, force_FAT=%s' %
@@ -1630,11 +1638,11 @@ class OleFileIO:
     def _list(self, files, prefix, node, streams=True, storages=False):
         """
         (listdir helper)
-        files: list of files to fill in
-        prefix: current location in storage tree (list of names)
-        node: current node (_OleDirectoryEntry object)
-        streams: bool, include streams if True (True by default) - new in v0.26
-        storages: bool, include storages if True (False by default) - new in v0.26
+        :param files: list of files to fill in
+        :param prefix: current location in storage tree (list of names)
+        :param node: current node (_OleDirectoryEntry object)
+        :param streams: bool, include streams if True (True by default) - new in v0.26
+        :param storages: bool, include storages if True (False by default) - new in v0.26
         (note: the root storage is never included)
         """
         prefix = prefix + [node.name]
@@ -1657,9 +1665,9 @@ class OleFileIO:
         """
         Return a list of streams stored in this file
 
-        streams: bool, include streams if True (True by default) - new in v0.26
-        storages: bool, include storages if True (False by default) - new in v0.26
-        (note: the root storage is never included)
+        :param streams: bool, include streams if True (True by default) - new in v0.26
+        :param storages: bool, include storages if True (False by default) - new in v0.26
+            (note: the root storage is never included)
         """
         files = []
         self._list(files, [], self.root, streams, storages)
@@ -1671,12 +1679,13 @@ class OleFileIO:
         Returns directory entry of given filename. (openstream helper)
         Note: this method is case-insensitive.
 
-        filename: path of stream in storage tree (except root entry), either:
+        :param filename: path of stream in storage tree (except root entry), either:
+        
             - a string using Unix path syntax, for example:
               'storage_1/storage_1.2/stream'
             - a list of storage filenames, path to the desired stream/storage.
               Example: ['storage_1', 'storage_1.2', 'stream']
-        return: sid of requested filename
+        :returns: sid of requested filename
         raise IOError if file not found
         """
 
@@ -1700,13 +1709,15 @@ class OleFileIO:
         """
         Open a stream as a read-only file object (BytesIO).
 
-        filename: path of stream in storage tree (except root entry), either:
+        :param filename: path of stream in storage tree (except root entry), either:
+        
             - a string using Unix path syntax, for example:
               'storage_1/storage_1.2/stream'
             - a list of storage filenames, path to the desired stream/storage.
               Example: ['storage_1', 'storage_1.2', 'stream']
-        return: file object (read-only)
-        raise IOError if filename not found, or if this is not a stream.
+              
+        :returns: file object (read-only)
+        :exception IOError: if filename not found, or if this is not a stream.
         """
         sid = self._find(filename)
         entry = self.direntries[sid]
@@ -1720,8 +1731,9 @@ class OleFileIO:
         Test if given filename exists as a stream or a storage in the OLE
         container, and return its type.
 
-        filename: path of stream in storage tree. (see openstream for syntax)
-        return: False if object does not exist, its entry type (>0) otherwise:
+        :param filename: path of stream in storage tree. (see openstream for syntax)
+        :returns: False if object does not exist, its entry type (>0) otherwise:
+        
             - STGTY_STREAM: a stream
             - STGTY_STORAGE: a storage
             - STGTY_ROOT: the root entry
@@ -1738,10 +1750,10 @@ class OleFileIO:
         """
         Return modification time of a stream/storage.
 
-        filename: path of stream/storage in storage tree. (see openstream for
-        syntax)
-        return: None if modification time is null, a python datetime object
-        otherwise (UTC timezone)
+        :param filename: path of stream/storage in storage tree. (see openstream for
+            syntax)
+        :returns: None if modification time is null, a python datetime object
+            otherwise (UTC timezone)
 
         new in version 0.26
         """
@@ -1754,10 +1766,10 @@ class OleFileIO:
         """
         Return creation time of a stream/storage.
 
-        filename: path of stream/storage in storage tree. (see openstream for
-        syntax)
-        return: None if creation time is null, a python datetime object
-        otherwise (UTC timezone)
+        :param filename: path of stream/storage in storage tree. (see openstream for
+            syntax)
+        :returns: None if creation time is null, a python datetime object
+            otherwise (UTC timezone)
 
         new in version 0.26
         """
@@ -1771,8 +1783,8 @@ class OleFileIO:
         Test if given filename exists as a stream or a storage in the OLE
         container.
 
-        filename: path of stream in storage tree. (see openstream for syntax)
-        return: True if object exist, else False.
+        :param filename: path of stream in storage tree. (see openstream for syntax)
+        :returns: True if object exist, else False.
         """
         try:
             sid = self._find(filename)
@@ -1785,9 +1797,10 @@ class OleFileIO:
         """
         Return size of a stream in the OLE container, in bytes.
 
-        filename: path of stream in storage tree (see openstream for syntax)
-        return: size in bytes (long integer)
-        raise: IOError if file not found, TypeError if this is not a stream.
+        :param filename: path of stream in storage tree (see openstream for syntax)
+        :returns: size in bytes (long integer)
+        :exception IOError: if file not found
+        :exception TypeError: if this is not a stream
         """
         sid = self._find(filename)
         entry = self.direntries[sid]
@@ -1809,11 +1822,11 @@ class OleFileIO:
         """
         Return properties described in substream.
 
-        filename: path of stream in storage tree (see openstream for syntax)
-        convert_time: bool, if True timestamps will be converted to Python datetime
-        no_conversion: None or list of int, timestamps not to be converted
-                       (for example total editing time is not a real timestamp)
-        return: a dictionary of values indexed by id (integer)
+        :param filename: path of stream in storage tree (see openstream for syntax)
+        :param convert_time: bool, if True timestamps will be converted to Python datetime
+        :param no_conversion: None or list of int, timestamps not to be converted
+            (for example total editing time is not a real timestamp)
+        :returns: a dictionary of values indexed by id (integer)
         """
         # make sure no_conversion is a list, just to simplify code below:
         if no_conversion == None:

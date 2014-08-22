@@ -4,9 +4,11 @@ Reference
 .. toctree::
    :maxdepth: 2
 
+
    Image
    ImageChops
    ImageColor
+   ImageCms
    ImageDraw
    ImageEnhance
    ImageFile
@@ -14,6 +16,7 @@ Reference
    ImageFont
    ImageGrab
    ImageMath
+   ImageMorph
    ImageOps
    ImagePalette
    ImagePath
@@ -22,5 +25,7 @@ Reference
    ImageStat
    ImageTk
    ImageWin
+   ExifTags
+   OleFileIO
    PSDraw
    ../PIL

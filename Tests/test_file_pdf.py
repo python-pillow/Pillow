@@ -1,58 +1,59 @@
-from tester import *
+from helper import unittest, PillowTestCase, lena
+
 import os.path
 
 
-def helper_save_as_pdf(mode):
-    # Arrange
-    im = lena(mode)
-    outfile = tempfile("temp_" + mode + ".pdf")
+class TestFilePdf(PillowTestCase):
 
-    # Act
-    im.save(outfile)
+    def helper_save_as_pdf(self, mode):
+        # Arrange
+        im = lena(mode)
+        outfile = self.tempfile("temp_" + mode + ".pdf")
 
-    # Assert
-    assert_true(os.path.isfile(outfile))
-    assert_greater(os.path.getsize(outfile), 0)
+        # Act
+        im.save(outfile)
+
+        # Assert
+        self.assertTrue(os.path.isfile(outfile))
+        self.assertGreater(os.path.getsize(outfile), 0)
+
+    def test_monochrome(self):
+        # Arrange
+        mode = "1"
+
+        # Act / Assert
+        self.helper_save_as_pdf(mode)
+
+    def test_greyscale(self):
+        # Arrange
+        mode = "L"
+
+        # Act / Assert
+        self.helper_save_as_pdf(mode)
+
+    def test_rgb(self):
+        # Arrange
+        mode = "RGB"
+
+        # Act / Assert
+        self.helper_save_as_pdf(mode)
+
+    def test_p_mode(self):
+        # Arrange
+        mode = "P"
+
+        # Act / Assert
+        self.helper_save_as_pdf(mode)
+
+    def test_cmyk_mode(self):
+        # Arrange
+        mode = "CMYK"
+
+        # Act / Assert
+        self.helper_save_as_pdf(mode)
 
 
-def test_monochrome():
-    # Arrange
-    mode = "1"
-
-    # Act / Assert
-    helper_save_as_pdf(mode)
-
-
-def test_greyscale():
-    # Arrange
-    mode = "L"
-
-    # Act / Assert
-    helper_save_as_pdf(mode)
-
-
-def test_rgb():
-    # Arrange
-    mode = "RGB"
-
-    # Act / Assert
-    helper_save_as_pdf(mode)
-
-
-def test_p_mode():
-    # Arrange
-    mode = "P"
-
-    # Act / Assert
-    helper_save_as_pdf(mode)
-
-
-def test_cmyk_mode():
-    # Arrange
-    mode = "CMYK"
-
-    # Act / Assert
-    helper_save_as_pdf(mode)
-
+if __name__ == '__main__':
+    unittest.main()
 
 # End of file

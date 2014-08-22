@@ -1,110 +1,169 @@
-from tester import *
+from helper import unittest, PillowTestCase
 
 from PIL import Image
-from PIL import ImageFile
+from io import BytesIO
 
 codecs = dir(Image.core)
-
-if "jpeg2k_encoder" not in codecs or "jpeg2k_decoder" not in codecs:
-    skip('JPEG 2000 support not available')
-
-# OpenJPEG 2.0.0 outputs this debugging message sometimes; we should
-# ignore it---it doesn't represent a test failure.
-ignore('Not enough memory to handle tile data')
 
 test_card = Image.open('Tests/images/test-card.png')
 test_card.load()
 
-def roundtrip(im, **options):
-    out = BytesIO()
-    im.save(out, "JPEG2000", **options)
-    bytes = out.tell()
-    out.seek(0)
-    im = Image.open(out)
-    im.bytes = bytes # for testing only
-    im.load()
-    return im
+# OpenJPEG 2.0.0 outputs this debugging message sometimes; we should
+# ignore it---it doesn't represent a test failure.
+# 'Not enough memory to handle tile data'
 
-# ----------------------------------------------------------------------
 
-def test_sanity():
-    # Internal version number
-    assert_match(Image.core.jp2klib_version, '\d+\.\d+\.\d+$')
+class TestFileJpeg2k(PillowTestCase):
 
-    im = Image.open('Tests/images/test-card-lossless.jp2')
-    im.load()
-    assert_equal(im.mode, 'RGB')
-    assert_equal(im.size, (640, 480))
-    assert_equal(im.format, 'JPEG2000')
-    
-# ----------------------------------------------------------------------
+    def setUp(self):
+        if "jpeg2k_encoder" not in codecs or "jpeg2k_decoder" not in codecs:
+            self.skipTest('JPEG 2000 support not available')
 
-# These two test pre-written JPEG 2000 files that were not written with
-# PIL (they were made using Adobe Photoshop)
+    def roundtrip(self, im, **options):
+        out = BytesIO()
+        im.save(out, "JPEG2000", **options)
+        bytes = out.tell()
+        out.seek(0)
+        im = Image.open(out)
+        im.bytes = bytes  # for testing only
+        im.load()
+        return im
 
-def test_lossless():
-    im = Image.open('Tests/images/test-card-lossless.jp2')
-    im.load()
-    im.save('/tmp/test-card.png')
-    assert_image_similar(im, test_card, 1.0e-3)
+    def test_sanity(self):
+        # Internal version number
+        self.assertRegexpMatches(Image.core.jp2klib_version, '\d+\.\d+\.\d+$')
 
-def test_lossy_tiled():
-    im = Image.open('Tests/images/test-card-lossy-tiled.jp2')
-    im.load()
-    assert_image_similar(im, test_card, 2.0)
+        im = Image.open('Tests/images/test-card-lossless.jp2')
+        im.load()
+        self.assertEqual(im.mode, 'RGB')
+        self.assertEqual(im.size, (640, 480))
+        self.assertEqual(im.format, 'JPEG2000')
 
-# ----------------------------------------------------------------------
+    def test_bytesio(self):
+        with open('Tests/images/test-card-lossless.jp2', 'rb') as f:
+            data = BytesIO(f.read())
+        im = Image.open(data)
+        im.load()
+        self.assert_image_similar(im, test_card, 1.0e-3)
 
-def test_lossless_rt():
-    im = roundtrip(test_card)
-    assert_image_equal(im, test_card)
+    # These two test pre-written JPEG 2000 files that were not written with
+    # PIL (they were made using Adobe Photoshop)
 
-def test_lossy_rt():
-    im = roundtrip(test_card, quality_layers=[20])
-    assert_image_similar(im, test_card, 2.0)
+    def test_lossless(self):
+        im = Image.open('Tests/images/test-card-lossless.jp2')
+        im.load()
+        im.save('/tmp/test-card.png')
+        self.assert_image_similar(im, test_card, 1.0e-3)
 
-def test_tiled_rt():
-    im = roundtrip(test_card, tile_size=(128, 128))
-    assert_image_equal(im, test_card)
+    def test_lossy_tiled(self):
+        im = Image.open('Tests/images/test-card-lossy-tiled.jp2')
+        im.load()
+        self.assert_image_similar(im, test_card, 2.0)
 
-def test_tiled_offset_rt():
-    im = roundtrip(test_card, tile_size=(128, 128), tile_offset=(0, 0),
-                   offset=(32, 32))
-    assert_image_equal(im, test_card)
-    
-def test_irreversible_rt():
-    im = roundtrip(test_card, irreversible=True, quality_layers=[20])
-    assert_image_similar(im, test_card, 2.0)
+    def test_lossless_rt(self):
+        im = self.roundtrip(test_card)
+        self.assert_image_equal(im, test_card)
 
-def test_prog_qual_rt():
-    im = roundtrip(test_card, quality_layers=[60, 40, 20], progression='LRCP')
-    assert_image_similar(im, test_card, 2.0)
+    def test_lossy_rt(self):
+        im = self.roundtrip(test_card, quality_layers=[20])
+        self.assert_image_similar(im, test_card, 2.0)
 
-def test_prog_res_rt():
-    im = roundtrip(test_card, num_resolutions=8, progression='RLCP')
-    assert_image_equal(im, test_card)
+    def test_tiled_rt(self):
+        im = self.roundtrip(test_card, tile_size=(128, 128))
+        self.assert_image_equal(im, test_card)
 
-# ----------------------------------------------------------------------
+    def test_tiled_offset_rt(self):
+        im = self.roundtrip(
+            test_card, tile_size=(128, 128),
+            tile_offset=(0, 0), offset=(32, 32))
+        self.assert_image_equal(im, test_card)
 
-def test_reduce():
-    im = Image.open('Tests/images/test-card-lossless.jp2')
-    im.reduce = 2
-    im.load()
-    assert_equal(im.size, (160, 120))
+    def test_irreversible_rt(self):
+        im = self.roundtrip(test_card, irreversible=True, quality_layers=[20])
+        self.assert_image_similar(im, test_card, 2.0)
 
-def test_layers():
-    out = BytesIO()
-    test_card.save(out, 'JPEG2000', quality_layers=[100, 50, 10],
-                   progression='LRCP')
-    out.seek(0)
-    
-    im = Image.open(out)
-    im.layers = 1
-    im.load()
-    assert_image_similar(im, test_card, 13)
+    def test_prog_qual_rt(self):
+        im = self.roundtrip(
+            test_card, quality_layers=[60, 40, 20], progression='LRCP')
+        self.assert_image_similar(im, test_card, 2.0)
 
-    out.seek(0)
-    im = Image.open(out)
-    im.layers = 3
-    im.load()
-    assert_image_similar(im, test_card, 0.4)
+    def test_prog_res_rt(self):
+        im = self.roundtrip(test_card, num_resolutions=8, progression='RLCP')
+        self.assert_image_equal(im, test_card)
+
+    def test_reduce(self):
+        im = Image.open('Tests/images/test-card-lossless.jp2')
+        im.reduce = 2
+        im.load()
+        self.assertEqual(im.size, (160, 120))
+
+    def test_layers(self):
+        out = BytesIO()
+        test_card.save(out, 'JPEG2000', quality_layers=[100, 50, 10],
+                       progression='LRCP')
+        out.seek(0)
+
+        im = Image.open(out)
+        im.layers = 1
+        im.load()
+        self.assert_image_similar(im, test_card, 13)
+
+        out.seek(0)
+        im = Image.open(out)
+        im.layers = 3
+        im.load()
+        self.assert_image_similar(im, test_card, 0.4)
+
+    def test_rgba(self):
+        # Arrange
+        j2k = Image.open('Tests/images/rgb_trns_ycbc.j2k')
+        jp2 = Image.open('Tests/images/rgb_trns_ycbc.jp2')
+
+        # Act
+        j2k.load()
+        jp2.load()
+
+        # Assert
+        self.assertEqual(j2k.mode, 'RGBA')
+        self.assertEqual(jp2.mode, 'RGBA')
+
+    def test_16bit_monochrome_has_correct_mode(self):
+
+        j2k = Image.open('Tests/images/16bit.cropped.j2k')
+        jp2 = Image.open('Tests/images/16bit.cropped.jp2')
+
+        j2k.load()
+        jp2.load()
+
+        self.assertEqual(j2k.mode, 'I;16')
+        self.assertEqual(jp2.mode, 'I;16')
+
+    def test_16bit_monchrome_jp2_like_tiff(self):
+
+        tiff_16bit = Image.open('Tests/images/16bit.cropped.tif')
+        jp2 = Image.open('Tests/images/16bit.cropped.jp2')
+        self.assert_image_similar(jp2, tiff_16bit, 1e-3)
+
+    def test_16bit_monchrome_j2k_like_tiff(self):
+
+        tiff_16bit = Image.open('Tests/images/16bit.cropped.tif')
+        j2k = Image.open('Tests/images/16bit.cropped.j2k')
+        self.assert_image_similar(j2k, tiff_16bit, 1e-3)
+
+    def test_16bit_j2k_roundtrips(self):
+
+        j2k = Image.open('Tests/images/16bit.cropped.j2k')
+        im = self.roundtrip(j2k)
+        self.assert_image_equal(im, j2k)
+
+    def test_16bit_jp2_roundtrips(self):
+
+        jp2 = Image.open('Tests/images/16bit.cropped.jp2')
+        im = self.roundtrip(jp2)
+        self.assert_image_equal(im, jp2)
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

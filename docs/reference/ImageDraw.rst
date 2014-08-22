@@ -74,6 +74,34 @@ To load a OpenType/TrueType font, use the truetype function in the
 :py:mod:`~PIL.ImageFont` module. Note that this function depends on third-party
 libraries, and may not available in all PIL builds.
 
+Example: Draw Partial Opacity Text
+----------------------------------
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw, ImageFont
+    # get an image
+    base = Image.open('Pillow/Tests/images/lena.png').convert('RGBA')  
+
+    # make a blank image for the text, initialized to transparent text color
+    txt = Image.new('RGBA', base.size, (255,255,255,0))
+
+    # get a font
+    fnt = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', 40)
+    # get a drawing context
+    d = ImageDraw.Draw(txt) 
+
+    # draw text, half opacity
+    d.text((10,10), "Hello", font=fnt, fill=(255,255,255,128))
+    # draw text, full opacity
+    d.text((10,60), "World", font=fnt, fill=(255,255,255,255))
+
+    out = Image.alpha_composite(base, txt)
+
+    out.show()
+
+
+
 Functions
 ---------
 
@@ -83,6 +111,13 @@ Functions
 
     Note that the image will be modified in place.
 
+    :param im: The image to draw in.
+    :param mode: Optional mode to use for color values.  For RGB
+        images, this argument can be RGB or RGBA (to blend the
+        drawing into the image).  For all other modes, this argument
+        must be the same as the image mode.  If omitted, the mode
+        defaults to the mode of the image.
+
 Methods
 -------
 
@@ -91,9 +126,12 @@ Methods
     Draws an arc (a portion of a circle outline) between the start and end
     angles, inside the given bounding box.
 
-    :param xy: Four points to define the bounding box. Sequence of either
+    :param xy: Four points to define the bounding box. Sequence of
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
-    :param outline: Color to use for the outline.
+    :param start: Starting angle, in degrees. Angles are measured from
+            3 o'clock, increasing clockwise.
+    :param end: Ending angle, in degrees.
+    :param fill: Color to use for the arc.
 
 .. py:method:: PIL.ImageDraw.Draw.bitmap(xy, bitmap, fill=None)
 
@@ -111,7 +149,7 @@ Methods
     Same as :py:meth:`~PIL.ImageDraw.Draw.arc`, but connects the end points
     with a straight line.
 
-    :param xy: Four points to define the bounding box. Sequence of either
+    :param xy: Four points to define the bounding box. Sequence of
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
@@ -144,7 +182,7 @@ Methods
     Same as arc, but also draws straight lines between the end points and the
     center of the bounding box.
 
-    :param xy: Four points to define the bounding box. Sequence of either
+    :param xy: Four points to define the bounding box. Sequence of
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
