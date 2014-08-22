@@ -268,10 +268,9 @@ def _save(im, fp, filename):
         except IOError:
             pass # write uncompressed file
 
-    try:
-        rawmode = RAWMODE[im.mode]
+    if im.mode in RAWMODE:
         imOut = im
-    except KeyError:
+    else:
         # convert on the fly (EXPERIMENTAL -- I'm not sure PIL
         # should automatically convert images on save...)
         if Image.getmodebase(im.mode) == "RGB":
@@ -279,10 +278,8 @@ def _save(im, fp, filename):
             if im.palette:
                 palette_size = len(im.palette.getdata()[1]) // 3
             imOut = im.convert("P", palette=1, colors=palette_size)
-            rawmode = "P"
         else:
             imOut = im.convert("L")
-            rawmode = "L"
 
     # header
     try:
@@ -290,12 +287,6 @@ def _save(im, fp, filename):
     except KeyError:
         palette = None
         im.encoderinfo["optimize"] = im.encoderinfo.get("optimize", True)
-        if im.encoderinfo["optimize"]:
-            # When the mode is L, and we optimize, we end up with
-            # im.mode == P and rawmode = L, which fails.
-            # If we're optimizing the palette, we're going to be
-            # in a rawmode of P anyway. 
-            rawmode = 'P'
 
     header, usedPaletteColors = getheader(imOut, palette, im.encoderinfo)
     for s in header:
@@ -352,7 +343,7 @@ def _save(im, fp, filename):
              o8(8))                     # bits
 
     imOut.encoderconfig = (8, interlace)
-    ImageFile._save(imOut, fp, [("gif", (0,0)+im.size, 0, rawmode)])
+    ImageFile._save(imOut, fp, [("gif", (0,0)+im.size, 0, RAWMODE[imOut.mode])])
 
     fp.write(b"\0") # end of image data
 
