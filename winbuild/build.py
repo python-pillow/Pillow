@@ -12,6 +12,11 @@ def setup_vms():
         for arch in ('', 'x64'):
             ret.append("virtualenv -p c:/Python%s%s/python.exe --clear %s%s%s" %
                        (py, arch, VIRT_BASE, py, arch))
+            ret.append("%s%s%s\Scripts\pip.exe install nose" %
+                       (VIRT_BASE, py, arch))
+            if py == '26':
+                ret.append("%s%s%s\Scripts\pip.exe install unittest2" %
+                           (VIRT_BASE, py, arch))
     return "\n".join(ret)
 
 def run_script(params):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import subprocess, os, multiprocessing
+import subprocess, os, multiprocessing, glob
 
 from config import *
 
@@ -9,8 +9,11 @@ def test_one(params):
     try:
         print ("Running: %s, %s" %params)
         command = [r'%s\%s%s\Scripts\python.exe' % (VIRT_BASE, python, architecture),
-                   'Tests/run.py',
-                   '--installed']
+                   'test-installed.py',
+                   '--processes=-0',
+                   '--process-timeout=30',
+                   ]
+        command.extend(glob.glob('Tests/test*.py'))
         proc = subprocess.Popen(command, 
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE)
