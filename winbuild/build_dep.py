@@ -162,7 +162,7 @@ setlocal
 cd /D %%JPEG%%
 nmake -f makefile.vc setup-vc6
 nmake -f makefile.vc clean
-nmake -f makefile.vc all
+nmake -f makefile.vc libjpeg.lib
 copy /Y /B *.dll %%INCLIB%%
 copy /Y /B *.lib %%INCLIB%%
 copy /Y /B j*.h %%INCLIB%%
@@ -172,7 +172,7 @@ rem Build zlib
 setlocal
 cd /D %%ZLIB%%
 nmake -f win32\Makefile.msc clean
-nmake -f win32\Makefile.msc
+nmake -f win32\Makefile.msc zlib.lib
 copy /Y /B *.dll %%INCLIB%%
 copy /Y /B *.lib %%INCLIB%%
 copy /Y /B zlib.lib %%INCLIB%%\z.lib
