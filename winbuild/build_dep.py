@@ -197,7 +197,7 @@ copy %%~dp0\nmake.opt %%TIFF%%
 
 cd /D %%TIFF%%
 nmake -f makefile.vc clean
-nmake -f makefile.vc 
+nmake -f makefile.vc lib
 copy /Y /B libtiff\*.dll %%INCLIB%%
 copy /Y /B libtiff\*.lib %%INCLIB%%
 copy /Y /B libtiff\tiff*.h %%INCLIB%%
