@@ -183,10 +183,11 @@ endlocal
 rem Build webp
 setlocal
 cd /D %%WEBP%%
-nmake -f Makefile.vc clean
-nmake -f Makefile.vc CFG=release-static RTLIBCFG=static OBJDIR=output
-copy /Y /B release-static\output\%(platform)s\* %%INCLIB%%
-copy /Y /B src\webp\*.h %%INCLIB%%
+rd /S /Q %%WEBP%%\output\release-static
+nmake -f Makefile.vc CFG=release-static RTLIBCFG=static OBJDIR=output all
+copy /Y /B output\release-static\%(platform)s\lib\* %%INCLIB%%
+mkdir %%INCLIB%%\webp
+copy /Y /B src\webp\*.h %%INCLIB%%\\webp
 endlocal
 
 rem Build libtiff
