@@ -74,7 +74,7 @@ bin_libs = {
 compilers = { (7,64): {
     'env_version':'v7.0',
     'vc_version':'2008',
-    'env_flags': '/x64 /vista',
+    'env_flags': '/x64 /xp',
     'inc_dir': 'msvcr90-x64',
     'platform': 'x64'
     },
@@ -96,7 +96,7 @@ compilers = { (7,64): {
              (7.1,32): {
     'env_version':'v7.1',
     'vc_version':'2010',
-    'env_flags': '/x86 /xp',
+    'env_flags': '/x86 /vista',
     'inc_dir': 'msvcr10-x32',
     'platform': 'Win32',
     },
