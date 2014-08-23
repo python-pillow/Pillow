@@ -226,6 +226,7 @@ def build_lcms2(compiler):
 rem Build lcms2
 setlocal
 rd /S /Q %%LCMS%%\Lib
+rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=%(platform)s /m
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=%(platform)s /m
 xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
