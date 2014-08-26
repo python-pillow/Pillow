@@ -8,7 +8,7 @@ tag_ids = dict(zip(TiffTags.TAGS.values(), TiffTags.TAGS.keys()))
 class TestFileTiffMetadata(PillowTestCase):
 
     def test_rt_metadata(self):
-        """ Test writing arbitray metadata into the tiff image directory
+        """ Test writing arbitrary metadata into the tiff image directory
             Use case is ImageJ private tags, one numeric, one arbitrary
             data.  https://github.com/python-pillow/Pillow/issues/291
             """
@@ -85,6 +85,10 @@ class TestFileTiffMetadata(PillowTestCase):
             if tag not in ignored:
                 self.assertEqual(
                     value, reloaded[tag], "%s didn't roundtrip" % tag)
+
+    def test_no_duplicate_50741_tag(self):
+        self.assertEqual(tag_ids['MakerNoteSafety'], 50741)
+        self.assertEqual(tag_ids['BestQualityScale'], 50780)
 
 
 if __name__ == '__main__':
