@@ -95,7 +95,6 @@ class TestImage(PillowTestCase):
         self.assertEqual(len(palette[0]), 1024)
         self.assertEqual(palette[1], "RGBA")
 
-
     def test_load_1_3_via_imagepalette(self):
         # Arrange
         from PIL import ImagePalette
