@@ -2,8 +2,6 @@ from helper import unittest, PillowTestCase
 
 from PIL import GimpGradientFile
 
-TEST_FILE = "Tests/images/gimp_gradient.ggr"
-
 
 class TestImage(PillowTestCase):
 
@@ -87,9 +85,25 @@ class TestImage(PillowTestCase):
     def test_load_via_imagepalette(self):
         # Arrange
         from PIL import ImagePalette
+        test_file = "Tests/images/gimp_gradient.ggr"
 
         # Act
-        palette = ImagePalette.load(TEST_FILE)
+        palette = ImagePalette.load(test_file)
+
+        # Assert
+        # load returns raw palette information
+        self.assertEqual(len(palette[0]), 1024)
+        self.assertEqual(palette[1], "RGBA")
+
+
+    def test_load_1_3_via_imagepalette(self):
+        # Arrange
+        from PIL import ImagePalette
+        # GIMP 1.3 gradient files contain a name field
+        test_file = "Tests/images/gimp_gradient_with_name.ggr"
+
+        # Act
+        palette = ImagePalette.load(test_file)
 
         # Assert
         # load returns raw palette information
