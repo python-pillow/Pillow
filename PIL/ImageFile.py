@@ -227,6 +227,8 @@ class ImageFile(Image.Image):
                         break
                     b = b[n:]
                     t = t + n
+                # Need to cleanup here to prevent leaks in PyPy
+                d.cleanup()
 
         self.tile = []
         self.readonly = readonly
