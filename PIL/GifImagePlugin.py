@@ -46,6 +46,7 @@ o16 = _binary.o16le
 def _accept(prefix):
     return prefix[:6] in [b"GIF87a", b"GIF89a"]
 
+
 ##
 # Image plugin for GIF images.  This plugin supports both GIF87 and
 # GIF89 images.
@@ -79,16 +80,16 @@ class GifImageFile(ImageFile.ImageFile):
             # get global palette
             self.info["background"] = i8(s[11])
             # check if palette contains colour indices
-            p = self.fp.read(3<<bits)
+            p = self.fp.read(3 << bits)
             for i in range(0, len(p), 3):
                 if not (i//3 == i8(p[i]) == i8(p[i+1]) == i8(p[i+2])):
                     p = ImagePalette.raw("RGB", p)
                     self.global_palette = self.palette = p
                     break
 
-        self.__fp = self.fp # FIXME: hack
+        self.__fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
-        self.seek(0) # get ready to read first frame
+        self.seek(0)  # get ready to read first frame
 
     def seek(self, frame):
 
@@ -96,7 +97,7 @@ class GifImageFile(ImageFile.ImageFile):
             # rewind
             self.__offset = 0
             self.dispose = None
-            self.dispose_extent = [0, 0, 0, 0] #x0, y0, x1, y1
+            self.dispose_extent = [0, 0, 0, 0]  # x0, y0, x1, y1
             self.__frame = -1
             self.__fp.seek(self.__rewind)
             self._prev_im = None
@@ -185,7 +186,7 @@ class GifImageFile(ImageFile.ImageFile):
                 if flags & 128:
                     bits = (flags & 7) + 1
                     self.palette =\
-                        ImagePalette.raw("RGB", self.fp.read(3<<bits))
+                        ImagePalette.raw("RGB", self.fp.read(3 << bits))
 
                 # image data
                 bits = i8(self.fp.read(1))
@@ -219,7 +220,6 @@ class GifImageFile(ImageFile.ImageFile):
         except (AttributeError, KeyError):
             pass
 
-
         if not self.tile:
             # self.__fp = None
             raise EOFError("no more images in GIF file")
@@ -240,7 +240,8 @@ class GifImageFile(ImageFile.ImageFile):
             # we do this by pasting the updated area onto the previous
             # frame which we then use as the current image content
             updated = self.im.crop(self.dispose_extent)
-            self._prev_im.paste(updated, self.dispose_extent, updated.convert('RGBA'))
+            self._prev_im.paste(updated, self.dispose_extent,
+                                updated.convert('RGBA'))
             self.im = self._prev_im
         self._prev_im = self.im.copy()
 
@@ -258,6 +259,7 @@ RAWMODE = {
     "P": "P",
 }
 
+
 def _save(im, fp, filename):
 
     if _imaging_gif:
@@ -266,7 +268,7 @@ def _save(im, fp, filename):
             _imaging_gif.save(im, fp, filename)
             return
         except IOError:
-            pass # write uncompressed file
+            pass  # write uncompressed file
 
     if im.mode in RAWMODE:
         imOut = im
@@ -343,15 +345,17 @@ def _save(im, fp, filename):
              o8(8))                     # bits
 
     imOut.encoderconfig = (8, interlace)
-    ImageFile._save(imOut, fp, [("gif", (0,0)+im.size, 0, RAWMODE[imOut.mode])])
+    ImageFile._save(imOut, fp, [("gif", (0, 0)+im.size, 0,
+                                RAWMODE[imOut.mode])])
 
-    fp.write(b"\0") # end of image data
+    fp.write(b"\0")  # end of image data
 
-    fp.write(b";") # end of file
+    fp.write(b";")  # end of file
 
     try:
         fp.flush()
-    except: pass
+    except:
+        pass
 
 
 def _save_netpbm(im, fp, filename):
@@ -363,7 +367,7 @@ def _save_netpbm(im, fp, filename):
 
     import os
     from subprocess import Popen, check_call, PIPE, CalledProcessError
-    import tempfile    
+    import tempfile
     file = im._dump()
 
     if im.mode != "RGB":
@@ -380,8 +384,9 @@ def _save_netpbm(im, fp, filename):
             stderr = tempfile.TemporaryFile()
             quant_proc = Popen(quant_cmd, stdout=PIPE, stderr=stderr)
             stderr = tempfile.TemporaryFile()
-            togif_proc = Popen(togif_cmd, stdin=quant_proc.stdout, stdout=f, stderr=stderr)
-            
+            togif_proc = Popen(togif_cmd, stdin=quant_proc.stdout, stdout=f,
+                               stderr=stderr)
+
             # Allow ppmquant to receive SIGPIPE if ppmtogif exits
             quant_proc.stdout.close()
 
@@ -420,7 +425,7 @@ def getheader(im, palette=None, info=None):
             sourcePalette = palette[:768]
         else:
             sourcePalette = im.im.getpalette("RGB")[:768]
-    else: # L-mode
+    else:  # L-mode
         if palette and isinstance(palette, bytes):
             sourcePalette = palette[:768]
         else:
@@ -455,9 +460,11 @@ def getheader(im, palette=None, info=None):
             for i in range(len(imageBytes)):
                 imageBytes[i] = newPositions[imageBytes[i]]
             im.frombytes(bytes(imageBytes))
-            newPaletteBytes = paletteBytes + (768 - len(paletteBytes)) * b'\x00'
-            im.putpalette(newPaletteBytes) 
-            im.palette = ImagePalette.ImagePalette("RGB", palette = paletteBytes, size = len(paletteBytes))
+            newPaletteBytes = (paletteBytes +
+                               (768 - len(paletteBytes)) * b'\x00')
+            im.putpalette(newPaletteBytes)
+            im.palette = ImagePalette.ImagePalette("RGB", palette=paletteBytes,
+                                                   size=len(paletteBytes))
 
     if not paletteBytes:
         paletteBytes = sourcePalette
@@ -466,7 +473,8 @@ def getheader(im, palette=None, info=None):
     # calculate the palette size for the header
     import math
     colorTableSize = int(math.ceil(math.log(len(paletteBytes)//3, 2)))-1
-    if colorTableSize < 0: colorTableSize = 0
+    if colorTableSize < 0:
+        colorTableSize = 0
     # size of global color table + global color table flag
     header.append(o8(colorTableSize + 128))
     # background + reserved/aspect
@@ -475,7 +483,7 @@ def getheader(im, palette=None, info=None):
 
     # add the missing amount of bytes
     # the palette has to be 2<<n in size
-    actualTargetSizeDiff = (2<<colorTableSize) - len(paletteBytes)//3
+    actualTargetSizeDiff = (2 << colorTableSize) - len(paletteBytes)//3
     if actualTargetSizeDiff > 0:
         paletteBytes += o8(0) * 3 * actualTargetSizeDiff
 
@@ -484,17 +492,18 @@ def getheader(im, palette=None, info=None):
     return header, usedPaletteColors
 
 
-def getdata(im, offset = (0, 0), **params):
+def getdata(im, offset=(0, 0), **params):
     """Return a list of strings representing this image.
        The first string is a local image header, the rest contains
        encoded image data."""
 
     class collector:
         data = []
+
         def write(self, data):
             self.data.append(data)
 
-    im.load() # make sure raster data is available
+    im.load()  # make sure raster data is available
 
     fp = collector()
 
@@ -510,9 +519,9 @@ def getdata(im, offset = (0, 0), **params):
                  o8(0) +                # flags
                  o8(8))                 # bits
 
-        ImageFile._save(im, fp, [("gif", (0,0)+im.size, 0, RAWMODE[im.mode])])
+        ImageFile._save(im, fp, [("gif", (0, 0)+im.size, 0, RAWMODE[im.mode])])
 
-        fp.write(b"\0") # end of image data
+        fp.write(b"\0")  # end of image data
 
     finally:
         del im.encoderinfo

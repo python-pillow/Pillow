@@ -33,6 +33,7 @@ except ImportError:
 
 i32 = _binary.i32le
 
+
 ##
 # Load texture from a Quake2 WAL texture file.
 # <p>

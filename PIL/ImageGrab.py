@@ -40,7 +40,7 @@ def grab(bbox=None):
 
 
 def grabclipboard():
-    debug = 0 # temporary interface
+    debug = 0  # temporary interface
     data = Image.core.grabclipboard(debug)
     if isinstance(data, bytes):
         from PIL import BmpImagePlugin

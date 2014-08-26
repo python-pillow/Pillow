@@ -31,6 +31,7 @@ from PIL.OleFileIO import *
 def _accept(prefix):
     return prefix[:8] == MAGIC
 
+
 ##
 # Image plugin for Microsoft's Image Composer file format.
 

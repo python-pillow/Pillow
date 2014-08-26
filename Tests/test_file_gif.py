@@ -120,7 +120,7 @@ class TestFileGif(PillowTestCase):
         try:
             while True:
                 framecount += 1
-                img.seek(img.tell() +1)
+                img.seek(img.tell() + 1)
         except EOFError:
             self.assertEqual(framecount, 5)
 
@@ -128,7 +128,7 @@ class TestFileGif(PillowTestCase):
         img = Image.open("Tests/images/dispose_none.gif")
         try:
             while True:
-                img.seek(img.tell() +1)
+                img.seek(img.tell() + 1)
                 self.assertEqual(img.disposal_method, 1)
         except EOFError:
             pass
@@ -137,7 +137,7 @@ class TestFileGif(PillowTestCase):
         img = Image.open("Tests/images/dispose_bgnd.gif")
         try:
             while True:
-                img.seek(img.tell() +1)
+                img.seek(img.tell() + 1)
                 self.assertEqual(img.disposal_method, 2)
         except EOFError:
             pass
@@ -146,7 +146,7 @@ class TestFileGif(PillowTestCase):
         img = Image.open("Tests/images/dispose_prev.gif")
         try:
             while True:
-                img.seek(img.tell() +1)
+                img.seek(img.tell() + 1)
                 self.assertEqual(img.disposal_method, 3)
         except EOFError:
             pass
@@ -154,8 +154,9 @@ class TestFileGif(PillowTestCase):
     def test_iss634(self):
         img = Image.open("Tests/images/iss634.gif")
         # seek to the second frame
-        img.seek(img.tell() +1)
-        # all transparent pixels should be replaced with the color from the first frame
+        img.seek(img.tell() + 1)
+        # all transparent pixels should be replaced with the color from the
+        # first frame
         self.assertEqual(img.histogram()[img.info['transparency']], 0)
 
 
