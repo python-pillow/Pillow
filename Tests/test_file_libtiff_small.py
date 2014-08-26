@@ -2,12 +2,10 @@ from helper import unittest
 
 from PIL import Image
 
-from test_file_libtiff import TestFileLibTiff
+from test_file_libtiff import LibTiffTestCase
 
 
-class TestFileLibTiffSmall(TestFileLibTiff):
-
-    # Inherits TestFileLibTiff's setUp() and self._assert_noerr()
+class TestFileLibTiffSmall(LibTiffTestCase):
 
     """ The small lena image was failing on open in the libtiff
         decoder because the file pointer was set to the wrong place
