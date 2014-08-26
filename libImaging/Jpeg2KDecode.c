@@ -800,6 +800,9 @@ ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
     if (context->decoder)
         ImagingIncrementalCodecDestroy(context->decoder);
 
+    /* Prevent multiple calls to ImagingIncrementalCodecDestroy */
+    context->decoder = NULL;
+
     return -1;
 }
 
