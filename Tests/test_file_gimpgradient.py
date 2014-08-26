@@ -60,6 +60,17 @@ class TestImage(PillowTestCase):
         # Assert
         self.assertEqual(ret, 0.75)
 
+    def test_sine(self):
+        # Arrange
+        middle = 0.5
+        pos = 0.75
+
+        # Act
+        ret = GimpGradientFile.sine(middle, pos)
+
+        # Assert
+        self.assertEqual(ret, 0.8535533905932737)
+
     def test_sphere_increasing(self):
         # Arrange
         middle = 0.5
