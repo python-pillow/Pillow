@@ -109,7 +109,7 @@ class GimpGradientFile(GradientFile):
         line = fp.readline()
 
         # GIMP 1.2 gradient files don't contain a name, but GIMP 1.3 files do
-        if line.startswith("Name: "):
+        if line.startswith(b"Name: "):
             line = fp.readline().strip()
 
         count = int(line)
