@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Windows fixes #871
+  [wiredfool]
+
 - Fix TGA files with image ID field #856
   [megabuz]
 
