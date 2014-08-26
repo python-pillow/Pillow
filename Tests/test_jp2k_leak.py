@@ -2,7 +2,6 @@ from helper import unittest, PillowTestCase, tearDownModule
 import sys
 
 from PIL import Image
-from resource import setrlimit, RLIMIT_AS, RLIMIT_STACK
 
 # Limits for testing the leak
 mem_limit = 512*1048576
@@ -18,6 +17,7 @@ class TestJp2kLeak(PillowTestCase):
             self.skipTest('JPEG 2000 support not available')
 
     def test_leak(self):
+        from resource import setrlimit, RLIMIT_AS, RLIMIT_STACK
         setrlimit(RLIMIT_STACK, (stack_size, stack_size))
         setrlimit(RLIMIT_AS, (mem_limit, mem_limit))
         for count in range(iterations):
