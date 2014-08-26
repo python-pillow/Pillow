@@ -1,18 +1,18 @@
 from helper import unittest, PillowTestCase, tearDownModule
 import sys
-from os import getpid
+from StringIO import StringIO
 
 from PIL import Image
 
 # Limits for testing the leak
-mem_limit = 512*1048576
+mem_limit = 768*1048576
 stack_size = 8*1048576
-iterations = int(mem_limit/stack_size)*2
+iterations = int((mem_limit/stack_size)*20)
 codecs = dir(Image.core)
 test_file = "Tests/images/rgb_trns_ycbc.jp2"
 
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
-class TestJp2kLeak(PillowTestCase):
+class TestJpegLeaks(PillowTestCase):
     def setUp(self):
         if "jpeg2k_encoder" not in codecs or "jpeg2k_decoder" not in codecs:
             self.skipTest('JPEG 2000 support not available')
@@ -24,20 +24,6 @@ class TestJp2kLeak(PillowTestCase):
         for count in range(iterations):
             with Image.open(test_file) as im:
                 im.load()
-                im.close()
-
-    def self_sanity_check(self):
-        # Arrange
-        j2k = Image.open('Tests/images/rgb_trns_ycbc.j2k')
-        jp2 = Image.open('Tests/images/rgb_trns_ycbc.jp2')
-
-        # Act
-        j2k.load()
-        jp2.load()
-
-        # Assert
-        self.assertEqual(j2k.mode, 'RGBA')
-        self.assertEqual(jp2.mode, 'RGBA')
 
 if __name__ == '__main__':
     unittest.main()
