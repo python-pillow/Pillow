@@ -6,7 +6,7 @@ from PIL import Image
 # Limits for testing the leak
 mem_limit = 512*1048576
 stack_size = 8*1048576
-iterations = (mem_limit/stack_size)*2
+iterations = int(mem_limit/stack_size)*2
 codecs = dir(Image.core)
 test_file = "Tests/images/rgb_trns_ycbc.jp2"
 
