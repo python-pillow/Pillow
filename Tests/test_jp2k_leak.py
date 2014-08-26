@@ -26,6 +26,18 @@ class TestJp2kLeak(PillowTestCase):
                 im.load()
                 im.close()
 
+    def self_sanity_check(self):
+        # Arrange
+        j2k = Image.open('Tests/images/rgb_trns_ycbc.j2k')
+        jp2 = Image.open('Tests/images/rgb_trns_ycbc.jp2')
+
+        # Act
+        j2k.load()
+        jp2.load()
+
+        # Assert
+        self.assertEqual(j2k.mode, 'RGBA')
+        self.assertEqual(jp2.mode, 'RGBA')
 
 if __name__ == '__main__':
     unittest.main()
