@@ -46,8 +46,8 @@ TAGS = {
     (262, 5): "CMYK",
     (262, 6): "YCbCr",
     (262, 8): "CieLAB",
-    (262, 32803): "CFA", # TIFF/EP, Adobe DNG
-    (262, 32892): "LinearRaw", # Adobe DNG
+    (262, 32803): "CFA",  # TIFF/EP, Adobe DNG
+    (262, 32892): "LinearRaw",  # Adobe DNG
 
     263: "Thresholding",
     264: "CellWidth",
@@ -281,9 +281,9 @@ TAGS = {
     50741: "MakerNoteSafety",
     50780: "BestQualityScale",
 
-    #ImageJ
-    50838: "ImageJMetaDataByteCounts", # private tag registered with Adobe
-    50839: "ImageJMetaData", # private tag registered with Adobe
+    # ImageJ
+    50838: "ImageJMetaDataByteCounts",  # private tag registered with Adobe
+    50839: "ImageJMetaData",  # private tag registered with Adobe
 }
 
 ##
