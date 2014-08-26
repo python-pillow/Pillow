@@ -99,7 +99,13 @@ class GimpGradientFile(GradientFile):
         if fp.readline()[:13] != b"GIMP Gradient":
             raise SyntaxError("not a GIMP gradient file")
 
-        count = int(fp.readline())
+        line = fp.readline()
+
+        # GIMP 1.2 gradient files don't contain a name, but GIMP 1.3 files do
+        if line.startswith("Name: "):
+            line = fp.readline().strip()
+
+        count = int(line)
 
         gradient = []
 
