@@ -332,7 +332,7 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertFalse(im.tag.next)
         self.assertEqual(im.size, (20,20))
         self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
-        
+   
         TiffImagePlugin.READ_LIBTIFF = False
 
     def test__next(self):
