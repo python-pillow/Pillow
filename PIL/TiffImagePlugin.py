@@ -632,18 +632,20 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def seek(self, frame):
         "Select a given frame as current image"
-
         if frame < 0:
             frame = 0
         self._seek(frame)
+        # Create a new core image object on second and
+        # subsequent frames in the image. Image may be
+        # different size/mode.
+        Image._decompression_bomb_check(self.size)
+        self.im = Image.core.new(self.mode, self.size)
 
     def tell(self):
         "Return the current frame number"
-
         return self._tell()
 
     def _seek(self, frame):
-
         self.fp = self.__fp
         if frame < self.__frame:
             # rewind file
@@ -657,11 +659,8 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__next = self.tag.next
             self.__frame += 1
         self._setup()
-        #UNDONE - decompresion bomb
-        self.im = Image.core.new(self.mode, self.size)
         
     def _tell(self):
-
         return self.__frame
 
     def _decoder(self, rawmode, layer, tile=None):
