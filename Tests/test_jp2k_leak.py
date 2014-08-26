@@ -1,10 +1,13 @@
 from helper import unittest, PillowTestCase, tearDownModule
 import sys
+from platform import python_implementation
 
 from PIL import Image
 
 # Limits for testing the leak
-mem_limit = 2048*1048576
+mem_limit = 1024*1048576
+if python_implementation() == "PyPy":
+    mem_limit = 4096*1048576
 stack_size = 8*1048576
 iterations = int(mem_limit/stack_size)*2
 codecs = dir(Image.core)
