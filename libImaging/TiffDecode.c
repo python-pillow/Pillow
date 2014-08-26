@@ -193,7 +193,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 	dump_state(clientstate);
 	clientstate->size = bytes;
 	clientstate->eof = clientstate->size;
-	//clientstate->loc = 0;
+	clientstate->loc = 0;
 	clientstate->data = (tdata_t)buffer;
 	clientstate->flrealloc = 0;
 	dump_state(clientstate);

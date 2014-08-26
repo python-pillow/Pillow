@@ -903,7 +903,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.tile.append(
                     (self._compression,
                      (0, 0, w, ysize),
-                     self.ifd.offset, a))
+                     0, a))
                 a = None
 
             else:
