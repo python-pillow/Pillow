@@ -103,6 +103,8 @@ PyImaging_DecoderNew(int contextsize)
 static void
 _dealloc(ImagingDecoderObject* decoder)
 {
+    if (decoder->cleanup)
+        decoder->cleanup(&decoder->state);
     free(decoder->state.buffer);
     free(decoder->state.context);
     Py_XDECREF(decoder->lock);
