@@ -59,9 +59,11 @@ try:
     # them.  Note that other modules should not refer to _imaging
     # directly; import Image and use the Image.core variable instead.
     from PIL import _imaging as core
-    if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
+    pillow_version_imported = getattr(core, 'PILLOW_VERSION', None)
+    if PILLOW_VERSION != pillow_version_imported:
         raise ImportError("The _imaging extension was built for another "
-                          " version of Pillow or PIL")
+                          " version of Pillow or PIL - "
+                          " expected %s actual %s" % (PILLOW_VERSION, pillow_version_imported))
 
 except ImportError as v:
     core = _imaging_not_installed()
