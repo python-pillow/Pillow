@@ -60,7 +60,8 @@ class TestFileJpeg(PillowTestCase):
         self.assertGreater(y, 0.8)
         self.assertEqual(k, 0.0)
         # the opposite corner is black
-        c, m, y, k = [x / 255.0 for x in im.getpixel((im.size[0]-1, im.size[1]-1))]
+        c, m, y, k = [x / 255.0 for x in im.getpixel((
+            im.size[0]-1, im.size[1]-1))]
         self.assertGreater(k, 0.9)
         # roundtrip, and check again
         im = self.roundtrip(im)
@@ -69,7 +70,8 @@ class TestFileJpeg(PillowTestCase):
         self.assertGreater(m, 0.8)
         self.assertGreater(y, 0.8)
         self.assertEqual(k, 0.0)
-        c, m, y, k = [x / 255.0 for x in im.getpixel((im.size[0]-1, im.size[1]-1))]
+        c, m, y, k = [x / 255.0 for x in im.getpixel((
+            im.size[0]-1, im.size[1]-1))]
         self.assertGreater(k, 0.9)
 
     def test_dpi(self):
@@ -150,7 +152,8 @@ class TestFileJpeg(PillowTestCase):
         if py3:
             a = bytes(random.randint(0, 255) for _ in range(256 * 256 * 3))
         else:
-            a = b''.join(chr(random.randint(0, 255)) for _ in range(256 * 256 * 3))
+            a = b''.join(chr(random.randint(0, 255)) for _ in range(
+                256 * 256 * 3))
         im = Image.frombuffer("RGB", (256, 256), a, "raw", "RGB", 0, 1)
         # this requires more bytes than pixels in the image
         im.save(f, format="JPEG", progressive=True, quality=100)
@@ -235,11 +238,13 @@ class TestFileJpeg(PillowTestCase):
         qtables = im.quantization
         reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
         self.assertEqual(im.quantization, reloaded.quantization)
-        self.assert_image_similar(im, self.roundtrip(im, qtables='web_low'), 30)
-        self.assert_image_similar(im, self.roundtrip(im, qtables='web_high'), 30)
+        self.assert_image_similar(im, self.roundtrip(im, qtables='web_low'),
+                                  30)
+        self.assert_image_similar(im, self.roundtrip(im, qtables='web_high'),
+                                  30)
         self.assert_image_similar(im, self.roundtrip(im, qtables='keep'), 30)
 
-        #values from wizard.txt in jpeg9-a src package.
+        # values from wizard.txt in jpeg9-a src package.
         standard_l_qtable = [int(s) for s in """
             16  11  10  16  24  40  51  61
             12  12  14  19  26  58  60  55
@@ -251,7 +256,7 @@ class TestFileJpeg(PillowTestCase):
             72  92  95  98 112 100 103  99
             """.split(None)]
 
-        standard_chrominance_qtable= [int(s) for s in """
+        standard_chrominance_qtable = [int(s) for s in """
             17  18  24  47  99  99  99  99
             18  21  26  66  99  99  99  99
             24  26  56  99  99  99  99  99
@@ -276,8 +281,8 @@ class TestFileJpeg(PillowTestCase):
         # dict of qtable lists
         self.assert_image_similar(im,
                                   self.roundtrip(im,
-                                                 qtables={0:standard_l_qtable,
-                                                          1:standard_chrominance_qtable}),
+                                                 qtables={0: standard_l_qtable,
+                                                          1: standard_chrominance_qtable}),
                                   30)
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
