@@ -100,6 +100,18 @@ _dealloc(ImagingEncoderObject* encoder)
 }
 
 static PyObject*
+_encode_cleanup(ImagingEncoderObject* encoder, PyObject* args)
+{
+    int status = 0;
+
+    if (encoder->cleanup){
+        status = encoder->cleanup(&encoder->state);
+    }
+
+    return Py_BuildValue("i", status);
+}
+
+static PyObject*
 _encode(ImagingEncoderObject* encoder, PyObject* args)
 {
     PyObject* buf;
@@ -239,6 +251,7 @@ _setimage(ImagingEncoderObject* encoder, PyObject* args)
 
 static struct PyMethodDef methods[] = {
     {"encode", (PyCFunction)_encode, 1},
+    {"cleanup", (PyCFunction)_encode_cleanup, 1},
     {"encode_to_file", (PyCFunction)_encode_to_file, 1},
     {"setimage", (PyCFunction)_setimage, 1},
     {NULL, NULL} /* sentinel */
