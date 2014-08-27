@@ -306,8 +306,8 @@ class TestFileJpeg(PillowTestCase):
         tag_ids = dict(zip(ExifTags.TAGS.values(), ExifTags.TAGS.keys()))
 
         # Assert
-        self.assertEqual(tag_ids['RelatedImageLength'], 0x1001)
-        self.assertEqual(tag_ids['RelatedImageWidth'], 0x1002)
+        self.assertEqual(tag_ids['RelatedImageWidth'], 0x1001)
+        self.assertEqual(tag_ids['RelatedImageLength'], 0x1002)
 
 
 if __name__ == '__main__':
