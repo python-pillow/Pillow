@@ -1,9 +1,10 @@
 from helper import unittest, PillowTestCase, tearDownModule
 import sys
 from PIL import Image
+from io import BytesIO
 
 # Limits for testing the leak
-mem_limit = 768*1048576
+mem_limit = 1024*1048576
 stack_size = 8*1048576
 iterations = int((mem_limit/stack_size)*2)
 codecs = dir(Image.core)
@@ -26,16 +27,12 @@ class TestJpegLeaks(PillowTestCase):
 
     def test_leak_save(self):
         from resource import setrlimit, RLIMIT_AS, RLIMIT_STACK
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from io import StringIO
         setrlimit(RLIMIT_STACK, (stack_size, stack_size))
         setrlimit(RLIMIT_AS, (mem_limit, mem_limit))
         for count in range(iterations):
             with Image.open(test_file) as im:
                 im.load()
-                test_output = StringIO()
+                test_output = BytesIO()
                 im.save(test_output, "JPEG2000")
                 test_output.seek(0)
                 output = test_output.read()
