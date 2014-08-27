@@ -23,11 +23,13 @@ class TestImageSequence(PillowTestCase):
         self.assertEqual(index, 1)
 
     def _test_multipage_tiff(self):
+        Image.DEBUG=True
         im = Image.open('Tests/images/multipage.tiff')
         for index, frame in enumerate(ImageSequence.Iterator(im)):
             frame.load()
             self.assertEqual(index, im.tell())
             frame.convert('RGB')
+        Image.DEBUG=False
             
     def test_tiff(self):
         return self._test_multipage_tiff()

@@ -314,6 +314,7 @@ class TestFileLibTiff(PillowTestCase):
     def test_multipage(self):
         # issue #862
         TiffImagePlugin.READ_LIBTIFF = True
+        Image.DEBUG=True
         im = Image.open('Tests/images/multipage.tiff')
         # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
 
@@ -331,7 +332,8 @@ class TestFileLibTiff(PillowTestCase):
         self.assertFalse(im.tag.next)
         self.assertEqual(im.size, (20,20))
         self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
-        
+        Image.DEBUG=False
+   
         TiffImagePlugin.READ_LIBTIFF = False
 
     def test__next(self):

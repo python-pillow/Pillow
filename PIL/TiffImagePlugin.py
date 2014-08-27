@@ -448,7 +448,11 @@ class ImageFileDirectory(collections.MutableMapping):
             # Get and expand tag value
             if size > 4:
                 here = fp.tell()
+                if Image.DEBUG:
+                    print ("Tag Location: %s" %here)
                 fp.seek(i32(ifd, 8))
+                if Image.DEBUG:
+                    print ("Data Location: %s" %fp.tell())
                 data = ImageFile._safe_read(fp, size)
                 fp.seek(here)
             else:
@@ -654,7 +658,12 @@ class TiffImageFile(ImageFile.ImageFile):
         while self.__frame < frame:
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
+            if Image.DEBUG:
+                print("Seeking to frame %s, on frame %s, __next %s, location: %s"%
+                      (frame, self.__frame, self.__next, self.fp.tell()))            
             self.fp.seek(self.__next)
+            if Image.DEBUG:
+                print("Loading tags, location: %s"%self.fp.tell())
             self.tag.load(self.fp)
             self.__next = self.tag.next
             self.__frame += 1
