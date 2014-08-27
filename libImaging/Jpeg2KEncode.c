@@ -584,11 +584,11 @@ ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
 
     context->error_msg = NULL;
 
-    if (context->encoder)
-        ImagingIncrementalCodecDestroy(context->encoder);
+    //if (context->encoder)
+     //   ImagingIncrementalCodecDestroy(context->encoder);
 
    /* Prevent multiple calls to ImagingIncrementalCodecDestroy */
-    context->encoder = NULL;
+    //context->encoder = NULL;
 
 
     return -1;
