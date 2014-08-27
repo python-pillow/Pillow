@@ -8,8 +8,6 @@ stack_size = 8*1048576
 iterations = int((mem_limit/stack_size)*2)
 codecs = dir(Image.core)
 test_file = "Tests/images/rgb_trns_ycbc.jp2"
-from commands import getoutput
-from os import getpid
 
 
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
