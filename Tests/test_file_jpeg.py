@@ -295,6 +295,15 @@ class TestFileJpeg(PillowTestCase):
         # Default save quality is 75%, so a tiny bit of difference is alright
         self.assert_image_similar(img, Image.open(tempfile), 1)
 
+    def test_no_duplicate_0x1001_tag(self):
+        # Arrange
+        from PIL import ExifTags
+        tag_ids = dict(zip(ExifTags.TAGS.values(), ExifTags.TAGS.keys()))
+
+        # Assert
+        self.assertEqual(tag_ids['RelatedImageLength'], 0x1001)
+        self.assertEqual(tag_ids['RelatedImageWidth'], 0x1002)
+
 
 if __name__ == '__main__':
     unittest.main()
