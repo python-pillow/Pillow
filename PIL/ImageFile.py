@@ -473,7 +473,7 @@ def _save(im, fp, tile, bufsize=0):
                     break
             if s < 0:
                 raise IOError("encoder error %d when writing image file" % s)
-            e.cleanup()
+            #e.cleanup()
     else:
         # slight speedup: compress to real file object
         for e, b, o, a in tile:
@@ -484,7 +484,7 @@ def _save(im, fp, tile, bufsize=0):
             s = e.encode_to_file(fh, bufsize)
             if s < 0:
                 raise IOError("encoder error %d when writing image file" % s)
-            e.cleanup()
+            #e.cleanup()
     try:
         fp.flush()
     except: pass
