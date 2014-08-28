@@ -17,6 +17,7 @@
 import re
 from PIL._binary import o8
 
+
 ##
 # File handler for GIMP's palette format.
 
@@ -55,7 +56,6 @@ class GimpPaletteFile:
             i += 1
 
         self.palette = b"".join(self.palette)
-
 
     def getpalette(self):
 

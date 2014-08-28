@@ -117,7 +117,8 @@ def Ghostscript(tile, size, fp, scale=1):
                "-q",                         # quiet mode
                "-g%dx%d" % size,             # set output geometry (pixels)
                "-r%fx%f" % res,              # set input DPI (dots per inch)
-               "-dNOPAUSE -dSAFER",          # don't pause between pages, safe mode
+               "-dNOPAUSE -dSAFER",          # don't pause between pages,
+                                             # safe mode
                "-sDEVICE=ppmraw",            # ppm driver
                "-sOutputFile=%s" % outfile,  # output file
                "-c", "%d %d translate" % (-bbox[0], -bbox[1]),
