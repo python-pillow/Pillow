@@ -350,12 +350,15 @@ class TestImageDraw(PillowTestCase):
         expected.load()
         img, draw = self.create_base_image_draw((110, 200))
         draw.line((55, 5, 55, 195), BLACK, 101)
-        self.assert_image_equal(img, expected, 'line straigth vertical 101px wide failed')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_slope1px_w2px.png'))
+        self.assert_image_equal(img, expected,
+                                'line straigth vertical 101px wide failed')
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_vertical_slope1px_w2px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 6, 14), BLACK, 2)
-        self.assert_image_equal(img, expected, 'line vertical 1px slope 2px wide failed')
+        self.assert_image_equal(img, expected,
+                                'line vertical 1px slope 2px wide failed')
 
 
     def test_line_oblique_45(self):
@@ -363,22 +366,26 @@ class TestImageDraw(PillowTestCase):
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 14, 14), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line oblique 45 normal 3px wide A failed')
+        self.assert_image_equal(img, expected,
+            'line oblique 45 normal 3px wide A failed')
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((14, 14, 5, 5), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line oblique 45 inverted 3px wide A failed')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_oblique_45_w3px_b.png'))
+        self.assert_image_equal(img, expected,
+                                'line oblique 45 inverted 3px wide A failed')
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_oblique_45_w3px_b.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((14, 5, 5, 14), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line oblique 45 normal 3px wide B failed')
+        self.assert_image_equal(img, expected,
+                                'line oblique 45 normal 3px wide B failed')
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 14, 14, 5), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line oblique 45 inverted 3px wide B failed')
+        self.assert_image_equal(img, expected,
+                                'line oblique 45 inverted 3px wide B failed')
 
 
 if __name__ == '__main__':
     unittest.main()
 
 # End of file
-

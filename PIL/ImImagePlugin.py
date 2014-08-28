@@ -159,8 +159,8 @@ class ImImageFile(ImageFile.ImageFile):
 
                 k, v = m.group(1, 2)
 
-                # Don't know if this is the correct encoding, but a decent guess
-                # (I guess)
+                # Don't know if this is the correct encoding,
+                # but a decent guess (I guess)
                 k = k.decode('latin-1', 'replace')
                 v = v.decode('latin-1', 'replace')
 

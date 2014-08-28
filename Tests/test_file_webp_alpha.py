@@ -18,7 +18,8 @@ class TestFileWebpAlpha(PillowTestCase):
             self.skipTest('WebP support not installed')
 
         if _webp.WebPDecoderBuggyAlpha(self):
-            self.skipTest("Buggy early version of WebP installed, not testing transparency")
+            self.skipTest("Buggy early version of WebP installed, "
+                          "not testing transparency")
 
     def test_read_rgba(self):
         # Generated with `cwebp transparent.png -o transparent.webp`

@@ -3,7 +3,7 @@ from helper import unittest, PillowTestCase, lena
 from PIL import Image
 
 from io import BytesIO
-        
+
 try:
     from PIL import ImageCms
     from PIL.ImageCms import ImageCmsProfile
@@ -202,8 +202,7 @@ class TestImageCms(PillowTestCase):
         self.assertTrue(img_srgb.info['icc_profile'])
 
         profile = ImageCmsProfile(BytesIO(img_srgb.info['icc_profile']))
-        self.assertTrue('sRGB' in  ImageCms.getProfileDescription(profile))
-
+        self.assertTrue('sRGB' in ImageCms.getProfileDescription(profile))
 
     def test_lab_roundtrip(self):
         # check to see if we're at least internally consistent.
@@ -216,11 +215,10 @@ class TestImageCms(PillowTestCase):
 
         self.assertEqual(i.info['icc_profile'],
                          ImageCmsProfile(pLab).tobytes())
-        
+
         out = ImageCms.applyTransform(i, t2)
 
         self.assert_image_similar(lena(), out, 2)
-
 
     def test_profile_tobytes(self):
         from io import BytesIO
@@ -231,14 +229,13 @@ class TestImageCms(PillowTestCase):
 
         # not the same bytes as the original icc_profile,
         # but it does roundtrip
-        self.assertEqual(p.tobytes(),p2.tobytes())
+        self.assertEqual(p.tobytes(), p2.tobytes())
         self.assertEqual(ImageCms.getProfileName(p),
                          ImageCms.getProfileName(p2))
         self.assertEqual(ImageCms.getProfileDescription(p),
                          ImageCms.getProfileDescription(p2))
-        
 
-        
+
 if __name__ == '__main__':
     unittest.main()
 

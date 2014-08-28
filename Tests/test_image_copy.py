@@ -1,7 +1,5 @@
 from helper import unittest, PillowTestCase, lena
 
-from PIL import Image
-
 
 class TestImageCopy(PillowTestCase):
 

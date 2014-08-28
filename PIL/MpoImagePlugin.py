@@ -46,7 +46,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.mpinfo = self._getmp()
         self.__framecount = self.mpinfo[0xB001]
         self.__mpoffsets = [mpent['DataOffset'] + self.info['mpoffset']
-            for mpent in self.mpinfo[0xB002]]
+                            for mpent in self.mpinfo[0xB002]]
         self.__mpoffsets[0] = 0
         # Note that the following assertion will only be invalid if something
         # gets broken within JpegImagePlugin.

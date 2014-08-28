@@ -1,4 +1,4 @@
-from helper import *
+from helper import unittest, PillowTestCase, lena
 
 # Not running this test by default. No DOS against Travis CI.
 

@@ -38,7 +38,7 @@ class TestFileMpo(PillowTestCase):
             self.assertEqual(im.applist[0][0], 'APP1')
             self.assertEqual(im.applist[1][0], 'APP2')
             self.assertEqual(im.applist[1][1][:16],
-                b'MPF\x00MM\x00*\x00\x00\x00\x08\x00\x03\xb0\x00')
+                             b'MPF\x00MM\x00*\x00\x00\x00\x08\x00\x03\xb0\x00')
             self.assertEqual(len(im.applist), 2)
 
     def test_exif(self):
@@ -55,7 +55,7 @@ class TestFileMpo(PillowTestCase):
             mpinfo = im._getmp()
             self.assertEqual(mpinfo[45056], b'0100')
             self.assertEqual(mpinfo[45057], 2)
-    
+
     def test_mp_attribute(self):
         for test_file in test_files:
             im = Image.open(test_file)
@@ -71,7 +71,7 @@ class TestFileMpo(PillowTestCase):
                 self.assertFalse(mpattr['DependentChildImageFlag'])
                 self.assertEqual(mpattr['ImageDataFormat'], 'JPEG')
                 self.assertEqual(mpattr['MPType'],
-                    'Multi-Frame Image: (Disparity)')
+                                 'Multi-Frame Image: (Disparity)')
                 self.assertEqual(mpattr['Reserved'], 0)
                 frameNumber += 1
 
@@ -82,7 +82,8 @@ class TestFileMpo(PillowTestCase):
             # prior to first image raises an error, both blatant and borderline
             self.assertRaises(EOFError, im.seek, -1)
             self.assertRaises(EOFError, im.seek, -523)
-            # after the final image raises an error, both blatant and borderline
+            # after the final image raises an error,
+            # both blatant and borderline
             self.assertRaises(EOFError, im.seek, 2)
             self.assertRaises(EOFError, im.seek, 523)
             # bad calls shouldn't change the frame
@@ -93,7 +94,7 @@ class TestFileMpo(PillowTestCase):
             # and this one, too
             im.seek(0)
             self.assertEqual(im.tell(), 0)
-    
+
     def test_image_grab(self):
         for test_file in test_files:
             im = Image.open(test_file)

@@ -1,7 +1,5 @@
 from helper import unittest, PillowTestCase, lena
 
-import sys
-
 
 class TestImagePoint(PillowTestCase):
 
@@ -26,7 +24,7 @@ class TestImagePoint(PillowTestCase):
             """
         # This takes _forever_ on PyPy. Open Bug,
         # see https://github.com/python-pillow/Pillow/issues/484
-        #self.skipKnownBadTest(msg="Too Slow on pypy", interpreter='pypy')
+        # self.skipKnownBadTest(msg="Too Slow on pypy", interpreter='pypy')
 
         im = lena("I")
         im.point(list(range(256))*256, 'L')
@@ -40,7 +38,7 @@ class TestImagePoint(PillowTestCase):
 
         int_lut = [x//2 for x in range(256)]
         self.assert_image_equal(out.convert('L'), im.point(int_lut, 'L'))
-        
+
 
 if __name__ == '__main__':
     unittest.main()

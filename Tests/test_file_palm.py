@@ -5,7 +5,7 @@ import os.path
 
 class TestFilePalm(PillowTestCase):
     _roundtrip = imagemagick_available()
-    
+
     def helper_save_as_palm(self, mode):
         # Arrange
         im = lena(mode)
@@ -21,14 +21,13 @@ class TestFilePalm(PillowTestCase):
     def roundtrip(self, mode):
         if not self._roundtrip:
             return
-        
+
         im = lena(mode)
         outfile = self.tempfile("temp.palm")
 
         im.save(outfile)
         converted = self.open_withImagemagick(outfile)
         self.assert_image_equal(converted, im)
-        
 
     def test_monochrome(self):
         # Arrange
@@ -46,7 +45,7 @@ class TestFilePalm(PillowTestCase):
         self.helper_save_as_palm(mode)
         self.skipKnownBadTest("Palm P image is wrong")
         self.roundtrip(mode)
-        
+
     def test_rgb_ioerror(self):
         # Arrange
         mode = "RGB"

@@ -162,7 +162,8 @@ class UnsharpMask(Filter):
     See Wikipedia's entry on `digital unsharp masking`_ for an explanation of
     the parameters.
 
-    .. _digital unsharp masking: https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
+    .. _digital unsharp masking:
+    https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
     """
     name = "UnsharpMask"
 

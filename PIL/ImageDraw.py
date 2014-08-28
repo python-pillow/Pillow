@@ -40,6 +40,7 @@ try:
 except ImportError:
     warnings = None
 
+
 ##
 # A simple 2D drawing interface for PIL images.
 # <p>
