@@ -303,7 +303,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
         prec = 16;
         bpp = 12;
     } else if (strcmp (im->mode, "LA") == 0) {
-        components = 2;
+        components = 2; 
         color_space = OPJ_CLRSPC_GRAY;
         pack = j2k_pack_la;
     } else if (strcmp (im->mode, "RGB") == 0) {
@@ -340,7 +340,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     context->error_msg = NULL;
 
     opj_set_default_encoder_parameters(&params);
-
+    
     params.image_offset_x0 = context->offset_x;
     params.image_offset_y0 = context->offset_y;
 
@@ -546,8 +546,8 @@ ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
         return -1;
 
     if (state->state == J2K_STATE_START) {
-        int seekable = (context->format != OPJ_CODEC_J2K
-                        ? INCREMENTAL_CODEC_SEEKABLE
+        int seekable = (context->format != OPJ_CODEC_J2K 
+                        ? INCREMENTAL_CODEC_SEEKABLE 
                         : INCREMENTAL_CODEC_NOT_SEEKABLE);
 
         context->encoder = ImagingIncrementalCodecCreate(j2k_encode_entry,
@@ -555,6 +555,7 @@ ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
                                                          INCREMENTAL_CODEC_WRITE,
                                                          seekable,
                                                          context->fd);
+
         if (!context->encoder) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
@@ -588,7 +589,6 @@ ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
 
     /* Prevent multiple calls to ImagingIncrementalCodecDestroy */
     context->encoder = NULL;
-
 
     return -1;
 }

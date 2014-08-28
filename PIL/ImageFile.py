@@ -135,8 +135,8 @@ class ImageFile(Image.Image):
         self.map = None
         use_mmap = self.filename and len(self.tile) == 1
         # As of pypy 2.1.0, memory mapping was failing here.
-        use_mmap = use_mmap and not hasattr(sys, 'pypy_version_info')
-
+        use_mmap = use_mmap and not hasattr(sys, 'pypy_version_info') 
+        
         readonly = 0
 
         # look for read/seek overrides
