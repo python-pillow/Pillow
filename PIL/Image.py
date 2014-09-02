@@ -1910,6 +1910,16 @@ class Image:
         im = self.im.transpose(method)
         return self._new(im)
 
+    def effect_spread(self, distance):
+        """
+        Randomly spread pixels in an image.
+
+        :param distance: Distance to spread pixels.
+        """
+        self.load()
+        im = self.im.effect_spread(distance)
+        return self._new(im)
+
 
 # --------------------------------------------------------------------
 # Lazy operations
@@ -2419,3 +2429,32 @@ def _show(image, **options):
 def _showxv(image, title=None, **options):
     from PIL import ImageShow
     ImageShow.show(image, title, **options)
+
+
+# --------------------------------------------------------------------
+# Effects
+
+def effect_mandelbrot(size, extent, quality):
+    """
+    Generate a Mandelbrot set covering the given extent.
+
+    :param size: The requested size in pixels, as a 2-tuple:
+       (width, height).
+    :param extent: The extent to cover, as a 4-tuple:
+       (x0, y0, x1, y2).
+    :param quality: Quality.
+    """
+    return Image()._new(core.effect_mandelbrot(size, extent, quality))
+
+
+def effect_noise(size, sigma):
+    """
+    Generate Gaussian noise centered around 128.
+
+    :param size: The requested size in pixels, as a 2-tuple:
+       (width, height).
+    :param sigma: Standard deviation of noise.
+    """
+    return Image()._new(core.effect_noise(size, sigma))
+
+# End of file

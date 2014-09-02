@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
+import sys
 
 
 class TestImage(PillowTestCase):
@@ -140,6 +141,60 @@ class TestImage(PillowTestCase):
         img_colors = sorted(img.getcolors())
         self.assertEqual(img_colors, expected_colors)
 
+    def test_effect_mandelbrot(self):
+        # Arrange
+        size = (512, 512)
+        extent = (-3, -2.5, 2, 2.5)
+        quality = 100
+
+        # Act
+        im = Image.effect_mandelbrot(size, extent, quality)
+
+        # Assert
+        self.assertEqual(im.size, (512, 512))
+        im2 = Image.open('Tests/images/effect_mandelbrot.png')
+        self.assert_image_equal(im, im2)
+
+    def test_effect_mandelbrot_bad_arguments(self):
+        # Arrange
+        size = (512, 512)
+        # Get coordinates the wrong way round:
+        extent = (+3, +2.5, -2, -2.5)
+        # Quality < 2:
+        quality = 1
+
+        # Act/Assert
+        self.assertRaises(
+            ValueError,
+            lambda: Image.effect_mandelbrot(size, extent, quality))
+
+    @unittest.skipUnless(sys.platform.startswith('win32'),
+                         "Stalls on Travis CI, passes on Windows")
+    def test_effect_noise(self):
+        # Arrange
+        size = (100, 100)
+        sigma = 128
+
+        # Act
+        im = Image.effect_noise(size, sigma)
+
+        # Assert
+        self.assertEqual(im.size, (100, 100))
+        self.assertEqual(im.getpixel((0, 0)), 60)
+        self.assertEqual(im.getpixel((0, 1)), 28)
+
+    def test_effect_spread(self):
+        # Arrange
+        im = lena()
+        distance = 10
+
+        # Act
+        im2 = im.effect_spread(distance)
+
+        # Assert
+        self.assertEqual(im.size, (128, 128))
+        im3 = Image.open('Tests/images/effect_spread.png')
+        self.assert_image_similar(im2, im3, 80)
 
 if __name__ == '__main__':
     unittest.main()
