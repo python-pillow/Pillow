@@ -124,11 +124,11 @@ ImagingEffectSpread(Imaging imIn, int distance)
     imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
 
     if (!imOut)
-	return NULL;
+    return NULL;
 
-#define	SPREAD(type, image)\
+#define SPREAD(type, image)\
     for (y = 0; y < imIn->ysize; y++)\
-	for (x = 0; x < imIn->xsize; x++) {\
+    for (x = 0; x < imIn->xsize; x++) {\
             int xx = x + (rand() % distance) - distance/2;\
             int yy = y + (rand() % distance) - distance/2;\
             if (xx >= 0 && xx < imIn->xsize && yy >= 0 && yy < imIn->ysize) {\
@@ -139,9 +139,9 @@ ImagingEffectSpread(Imaging imIn, int distance)
         }
 
     if (imIn->image8) {
-	SPREAD(UINT8, image8);
+    SPREAD(UINT8, image8);
     } else {
-	SPREAD(INT32, image32);
+    SPREAD(INT32, image32);
     }
 
     ImagingCopyInfo(imOut, imIn);

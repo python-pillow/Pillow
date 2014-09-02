@@ -1910,6 +1910,16 @@ class Image:
         im = self.im.transpose(method)
         return self._new(im)
 
+    def effect_spread(self, distance):
+        """
+        Randomly spread pixels in an image.
+
+        :param distance: Distance to spread pixels.
+        """
+        self.load()
+        im = self.im.effect_spread(distance)
+        return self._new(im)
+
 
 # --------------------------------------------------------------------
 # Lazy operations
@@ -2435,6 +2445,7 @@ def effect_mandelbrot(size, extent, quality):
     :param quality: Quality.
     """
     return Image()._new(core.effect_mandelbrot(size, extent, quality))
+
 
 def effect_noise(size, sigma):
     """

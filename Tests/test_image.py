@@ -152,7 +152,7 @@ class TestImage(PillowTestCase):
 
         # Assert
         self.assertEqual(im.size, (512, 512))
-        im2 = Image.open('Tests/images/mandelbrot.png')
+        im2 = Image.open('Tests/images/effect_mandelbrot.png')
         self.assert_image_equal(im, im2)
 
     @unittest.skipUnless(sys.platform.startswith('win32'),
@@ -169,6 +169,19 @@ class TestImage(PillowTestCase):
         self.assertEqual(im.size, (100, 100))
         self.assertEqual(im.getpixel((0, 0)), 60)
         self.assertEqual(im.getpixel((0, 1)), 28)
+
+    def test_effect_spread(self):
+        # Arrange
+        im = lena()
+        distance = 10
+
+        # Act
+        im2 = im.effect_spread(distance)
+
+        # Assert
+        self.assertEqual(im.size, (128, 128))
+        im3 = Image.open('Tests/images/effect_spread.png')
+        self.assert_image_equal(im2, im3)
 
 if __name__ == '__main__':
     unittest.main()
