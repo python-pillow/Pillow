@@ -661,6 +661,9 @@ class TiffImageFile(ImageFile.ImageFile):
             if Image.DEBUG:
                 print("Seeking to frame %s, on frame %s, __next %s, location: %s"%
                       (frame, self.__frame, self.__next, self.fp.tell()))            
+            # reset python3 buffered io handle in case fp
+            # was passed to libtiff, invalidating the buffer
+            self.fp.tell()
             self.fp.seek(self.__next)
             if Image.DEBUG:
                 print("Loading tags, location: %s"%self.fp.tell())
