@@ -224,7 +224,16 @@ class TestFileJpeg(PillowTestCase):
         self.assertIsNone(im._getmp())
 
     def test_quality_keep(self):
+        # RGB
         im = Image.open("Tests/images/lena.jpg")
+        f = self.tempfile('temp.jpg')
+        im.save(f, quality='keep')
+        # Grayscale
+        im = Image.open("Tests/images/lena_gray.jpg")
+        f = self.tempfile('temp.jpg')
+        im.save(f, quality='keep')
+        # CMYK
+        im = Image.open("Tests/images/pil_sample_cmyk.jpg")
         f = self.tempfile('temp.jpg')
         im.save(f, quality='keep')
 

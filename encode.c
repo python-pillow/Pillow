@@ -540,8 +540,8 @@ static unsigned int** get_qtables_arrays(PyObject* qtables) {
 
     tables = PySequence_Fast(qtables, "expected a sequence");
     num_tables = PySequence_Size(qtables);
-    if (num_tables < 2 || num_tables > NUM_QUANT_TBLS) {
-        PyErr_SetString(PyExc_ValueError, "Not a valid numbers of quantization tables. Should be between 2 and 4.");
+    if (num_tables < 1 || num_tables > NUM_QUANT_TBLS) {
+        PyErr_SetString(PyExc_ValueError, "Not a valid numbers of quantization tables. Should be between 1 and 4.");
         return NULL;
     }
     qarrays = (unsigned int**) PyMem_Malloc(num_tables * sizeof(unsigned int*));
@@ -760,7 +760,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                                                         (ttag_t) PyInt_AsLong(key),
                                                         intav);
                         free(intav);
-                    }       
+                    }
                 } else {
                     TRACE((" %d elements, setting as floats \n", len));
                     floatav = malloc(sizeof(float)*len);
@@ -903,7 +903,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
     j2k_decode_coord_tuple(tile_offset,
                            &context->tile_offset_x,
                            &context->tile_offset_y);
-    j2k_decode_coord_tuple(tile_size, 
+    j2k_decode_coord_tuple(tile_size,
                            &context->tile_size_x,
                            &context->tile_size_y);
 
@@ -918,7 +918,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
 
         if (context->tile_offset_x > context->offset_x
             || context->tile_offset_y > context->offset_y) {
-            PyErr_SetString(PyExc_ValueError, 
+            PyErr_SetString(PyExc_ValueError,
                             "JPEG 2000 tile offset too large to cover image area");
             Py_DECREF(encoder);
             return NULL;
