@@ -155,6 +155,19 @@ class TestImage(PillowTestCase):
         im2 = Image.open('Tests/images/effect_mandelbrot.png')
         self.assert_image_equal(im, im2)
 
+    def test_effect_mandelbrot_bad_arguments(self):
+        # Arrange
+        size = (512, 512)
+        # Get coordinates the wrong way round:
+        extent = (+3, +2.5, -2, -2.5)
+        # Quality < 2:
+        quality = 1
+
+        # Act/Assert
+        self.assertRaises(
+            ValueError,
+            lambda: Image.effect_mandelbrot(size, extent, quality))
+
     @unittest.skipUnless(sys.platform.startswith('win32'),
                          "Stalls on Travis CI, passes on Windows")
     def test_effect_noise(self):

@@ -139,9 +139,9 @@ ImagingEffectSpread(Imaging imIn, int distance)
         }
 
     if (imIn->image8) {
-    SPREAD(UINT8, image8);
+        SPREAD(UINT8, image8);
     } else {
-    SPREAD(INT32, image32);
+        SPREAD(INT32, image32);
     }
 
     ImagingCopyInfo(imOut, imIn);
