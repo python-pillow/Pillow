@@ -16,10 +16,9 @@ python:
   - 3.4
 
 install:
-  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick lcov"
+  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
   - "pip install cffi"
-  - "pip install coveralls nose coveralls-merge"
-  - "gem install coveralls-lcov"
+  - "pip install coverage nose"
 
     # Pyroma installation is slow on Py3, so just do it for Py2.
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then travis_retry pip install pyroma; fi
@@ -42,13 +41,16 @@ script:
 
 after_success:
    # gather the coverage data
+  - sudo apt-get -qq install lcov
   - lcov --capture --directory . -b . --output-file coverage.info
    # filter to remove system headers
-  - lcov --remove coverage.info '/usr/*' -o coverage.filtered.info     
+  - lcov --remove coverage.info '/usr/*' -o coverage.filtered.info
    # convert to json
+  - gem install coveralls-lcov
   - coveralls-lcov -v -n coverage.filtered.info > coverage.c.json
 
   - coverage report
+  - pip install coveralls-merge
   - coveralls-merge coverage.c.json
 
 
