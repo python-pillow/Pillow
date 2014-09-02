@@ -181,7 +181,7 @@ class TestImage(PillowTestCase):
         # Assert
         self.assertEqual(im.size, (128, 128))
         im3 = Image.open('Tests/images/effect_spread.png')
-        self.assert_image_equal(im2, im3)
+        self.assert_image_similar(im2, im3, 10)
 
 if __name__ == '__main__':
     unittest.main()
