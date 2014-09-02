@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Correctly handle saving gray and CMYK JPEGs with quality-keep #857
+  [etienned]
+
 - Correct duplicate Tiff Metadata and Exif tag values
   [hugovk]
 
