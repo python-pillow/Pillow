@@ -4,8 +4,7 @@ import os
 
 from PIL import Image, TiffImagePlugin
 
-
-class TestFileLibTiff(PillowTestCase):
+class LibTiffTestCase(PillowTestCase):
 
     def setUp(self):
         codecs = dir(Image.core)
@@ -31,6 +30,8 @@ class TestFileLibTiff(PillowTestCase):
         # can we write it back out, in a different form.
         out = self.tempfile("temp.png")
         im.save(out)
+
+class TestFileLibTiff(LibTiffTestCase):
 
     def test_g4_tiff(self):
         """Test the ordinary file path load path"""
