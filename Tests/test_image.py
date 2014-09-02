@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
+import sys
 
 
 class TestImage(PillowTestCase):
@@ -140,7 +141,9 @@ class TestImage(PillowTestCase):
         img_colors = sorted(img.getcolors())
         self.assertEqual(img_colors, expected_colors)
 
-    def test_noise(self):
+    @unittest.skipUnless(sys.platform.startswith('win32'),
+                         "Stalls on Travis CI, passes on Windows")
+    def test_effect_noise(self):
         # Arrange
         size = (100, 100)
         sigma = 128
