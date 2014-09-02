@@ -281,6 +281,7 @@ class ImageFileDirectory(collections.MutableMapping):
         self.tagdata = {}
         self.tagtype = {}  # added 2008-06-05 by Florian Hoech
         self.next = None
+        self.offset = None
 
     def __str__(self):
         return str(self.as_dict())
@@ -415,6 +416,7 @@ class ImageFileDirectory(collections.MutableMapping):
         # load tag dictionary
 
         self.reset()
+        self.offset = fp.tell()
 
         i16 = self.i16
         i32 = self.i32
@@ -706,6 +708,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
         ignored, extents, ignored_2, args = self.tile[0]
+        args = args + (self.ifd.offset,)
         decoder = Image._getdecoder(self.mode, 'libtiff', args,
                                     self.decoderconfig)
         try:
@@ -743,9 +746,9 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tile = []
         self.readonly = 0
         # libtiff closed the fp in a, we need to close self.fp, if possible
-        if hasattr(self.fp, 'close'):
-            self.fp.close()
-        self.fp = None  # might be shared
+        #if hasattr(self.fp, 'close'):
+        #    self.fp.close()
+        #self.fp = None  # might be shared
 
         if err < 0:
             raise IOError(err)
@@ -1119,14 +1122,16 @@ def _save(im, fp, filename):
         # save(load('')) == original file.
         for k, v in itertools.chain(ifd.items(),
                                     getattr(im, 'ifd', {}).items()):
-            if k not in atts and k not in blocklist:
-                if type(v[0]) == tuple and len(v) > 1:
+            # all adobe defined tags are < 1024
+            if k not in atts and k not in blocklist and k < 1024:
+                # check len(v) before accessing elements
+                if len(v) > 1 and type(v[0]) == tuple:
                     # A tuple of more than one rational tuples
                     # flatten to floats,
                     # following tiffcp.c->cpTag->TIFF_RATIONAL
                     atts[k] = [float(elt[0])/float(elt[1]) for elt in v]
                     continue
-                if type(v[0]) == tuple and len(v) == 1:
+                if len(v) == 1 and type(v[0]) == tuple:
                     # A tuple of one rational tuples
                     # flatten to floats,
                     # following tiffcp.c->cpTag->TIFF_RATIONAL
