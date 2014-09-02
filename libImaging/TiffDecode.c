@@ -22,7 +22,7 @@
 
 void dump_state(const TIFFSTATE *state){
 	TRACE(("State: Location %u size %d eof %d data: %p \n", (uint)state->loc,
-		   (int)state->size, (uint)state->eof, state->data));
+		   (int)state->size, (uint)state->eof, state->data, state->ifd));
 }
 
 /*
@@ -142,7 +142,7 @@ void _tiffUnmapProc(thandle_t hdata, tdata_t base, toff_t size) {
 	(void) hdata; (void) base; (void) size;
 }
 
-int ImagingLibTiffInit(ImagingCodecState state, int fp) {
+int ImagingLibTiffInit(ImagingCodecState state, int fp, int offset) {
 	TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
 
     TRACE(("initing libtiff\n"));
@@ -158,6 +158,7 @@ int ImagingLibTiffInit(ImagingCodecState state, int fp) {
 	clientstate->size = 0;
 	clientstate->data = 0;
 	clientstate->fp = fp;
+    clientstate->ifd = offset;
 	clientstate->eof = 0;
 
     return 1;
@@ -218,6 +219,16 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 		TRACE(("Error, didn't get the tiff\n"));
 		state->errcode = IMAGING_CODEC_BROKEN;
 		return -1;
+	}
+
+	if (clientstate->ifd){
+		unsigned int ifdoffset = clientstate->ifd;
+		TRACE(("reading tiff ifd %d\n", ifdoffset));
+		int rv = TIFFSetSubDirectory(tiff, ifdoffset);
+		if (!rv){
+			TRACE(("error in TIFFSetSubDirectory"));
+			return -1;
+		}
 	}
 
 	size = TIFFScanlineSize(tiff);
