@@ -74,7 +74,7 @@ ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality)
 Imaging
 ImagingEffectNoise(int xsize, int ysize, float sigma)
 {
-    /* Generate gaussian noise centered around 128 */
+    /* Generate Gaussian noise centered around 128 */
 
     Imaging imOut;
     int x, y;
@@ -83,19 +83,19 @@ ImagingEffectNoise(int xsize, int ysize, float sigma)
 
     imOut = ImagingNew("L", xsize, ysize);
     if (!imOut)
-	return NULL;
+        return NULL;
 
     next = 0.0;
     nextok = 0;
 
     for (y = 0; y < imOut->ysize; y++) {
         UINT8* out = imOut->image8[y];
-	for (x = 0; x < imOut->xsize; x++) {
+    for (x = 0; x < imOut->xsize; x++) {
             if (nextok) {
                 this = next;
                 nextok = 0;
             } else {
-                /* after numerical recepies */
+                /* after numerical recipes */
                 double v1, v2, radius, factor;
                 do {
                     v1 = rand()*(2.0/32767.0) - 1.0;

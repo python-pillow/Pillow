@@ -140,6 +140,19 @@ class TestImage(PillowTestCase):
         img_colors = sorted(img.getcolors())
         self.assertEqual(img_colors, expected_colors)
 
+    def test_noise(self):
+        # Arrange
+        size = (100, 100)
+        sigma = 128
+
+        # Act
+        im = Image.effect_noise(size, sigma)
+
+        # Assert
+        self.assertEqual(im.size, (100, 100))
+        self.assertEqual(im.getpixel((0, 0)), 60)
+        self.assertEqual(im.getpixel((0, 1)), 28)
+
 
 if __name__ == '__main__':
     unittest.main()

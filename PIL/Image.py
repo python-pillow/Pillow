@@ -2419,3 +2419,19 @@ def _show(image, **options):
 def _showxv(image, title=None, **options):
     from PIL import ImageShow
     ImageShow.show(image, title, **options)
+
+
+# --------------------------------------------------------------------
+# Effects
+
+def effect_noise(size, sigma):
+    """
+    Generate Gaussian noise centered around 128
+
+    :param size: The requested size in pixels, as a 2-tuple:
+       (width, height).
+    :param sigma: Standard deviation of noise.
+    """
+    return Image()._new(core.effect_noise(size, sigma))
+
+# End of file
