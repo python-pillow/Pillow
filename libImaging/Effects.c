@@ -48,25 +48,25 @@ ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality)
 
     for (y = 0; y < ysize; y++) {
         UINT8* buf = im->image8[y];
-	for (x = 0; x < xsize; x++) {
-	    x1 = y1 = xi2 = yi2 = 0.0;
-	    cr = x*dr + extent[0];
-	    ci = y*di + extent[1];
-	    for (k = 1;; k++) {
-		y1 = 2*x1*y1 + ci;
-		x1 = xi2 - yi2 + cr;
-		xi2 = x1*x1;
-		yi2 = y1*y1;
-		if ((xi2 + yi2) > radius) {
-		    buf[x] = k*255/quality;
-		    break;
-		}
-		if (k > quality) {
-		    buf[x] = 0;
-		    break;
-		}
-	    }
-	}
+        for (x = 0; x < xsize; x++) {
+            x1 = y1 = xi2 = yi2 = 0.0;
+            cr = x*dr + extent[0];
+            ci = y*di + extent[1];
+            for (k = 1;; k++) {
+                y1 = 2*x1*y1 + ci;
+                x1 = xi2 - yi2 + cr;
+                xi2 = x1*x1;
+                yi2 = y1*y1;
+                if ((xi2 + yi2) > radius) {
+                    buf[x] = k*255/quality;
+                    break;
+                }
+                if (k > quality) {
+                    buf[x] = 0;
+                    break;
+                }
+            }
+        }
     }
     return im;
 }

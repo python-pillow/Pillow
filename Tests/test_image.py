@@ -141,6 +141,20 @@ class TestImage(PillowTestCase):
         img_colors = sorted(img.getcolors())
         self.assertEqual(img_colors, expected_colors)
 
+    def test_effect_mandelbrot(self):
+        # Arrange
+        size = (512, 512)
+        extent = (-3, -2.5, 2, 2.5)
+        quality = 100
+
+        # Act
+        im = Image.effect_mandelbrot(size, extent, quality)
+
+        # Assert
+        self.assertEqual(im.size, (512, 512))
+        im2 = Image.open('Tests/images/mandelbrot.png')
+        self.assert_image_equal(im, im2)
+
     @unittest.skipUnless(sys.platform.startswith('win32'),
                          "Stalls on Travis CI, passes on Windows")
     def test_effect_noise(self):
@@ -155,7 +169,6 @@ class TestImage(PillowTestCase):
         self.assertEqual(im.size, (100, 100))
         self.assertEqual(im.getpixel((0, 0)), 60)
         self.assertEqual(im.getpixel((0, 1)), 28)
-
 
 if __name__ == '__main__':
     unittest.main()
