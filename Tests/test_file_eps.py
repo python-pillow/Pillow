@@ -196,9 +196,9 @@ class TestFileEps(PillowTestCase):
     def test_readline(self):
         # check all the freaking line endings possible from the spec
         #test_string = u'something\r\nelse\n\rbaz\rbif\n'
-        line_endings = [u'\r\n', u'\n']
-        not_working_endings = [u'\n\r', u'\r'] 
-        strings = [u'something', u'else', u'baz', u'bif']
+        line_endings = ['\r\n', '\n']
+        not_working_endings = ['\n\r', '\r'] 
+        strings = ['something', 'else', 'baz', 'bif']
 
         for ending in line_endings:
             s = ending.join(strings)
