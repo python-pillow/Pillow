@@ -86,26 +86,32 @@ def Ghostscript(tile, size, fp, scale=1):
 
     out_fd, outfile = tempfile.mkstemp()
     os.close(out_fd)
-    in_fd, infile = tempfile.mkstemp()
-    os.close(in_fd)
-    
-    # ignore length and offset!
-    # ghostscript can read it   
-    # copy whole file to read in ghostscript
-    with open(infile, 'wb') as f:
-        # fetch length of fp
-        fp.seek(0, 2)
-        fsize = fp.tell()
-        # ensure start position
-        # go back
-        fp.seek(0)
-        lengthfile = fsize
-        while lengthfile > 0:
-            s = fp.read(min(lengthfile, 100*1024))
-            if not s:
-                break
-            length -= len(s)
-            f.write(s)
+
+    infile_temp = None
+    if hasattr(fp, 'name') and os.path.exists(fp.name):
+        infile = fp.name
+    else:
+        in_fd, infile_temp = tempfile.mkstemp()
+        os.close(in_fd)
+        infile = infile_temp
+        
+        # ignore length and offset!
+        # ghostscript can read it   
+        # copy whole file to read in ghostscript
+        with open(infile_temp, 'wb') as f:
+            # fetch length of fp
+            fp.seek(0, 2)
+            fsize = fp.tell()
+            # ensure start position
+            # go back
+            fp.seek(0)
+            lengthfile = fsize
+            while lengthfile > 0:
+                s = fp.read(min(lengthfile, 100*1024))
+                if not s:
+                    break
+                lengthfile -= len(s)
+                f.write(s)
 
     # Build ghostscript command
     command = ["gs",
@@ -136,7 +142,8 @@ def Ghostscript(tile, size, fp, scale=1):
     finally:
         try:
             os.unlink(outfile)
-            os.unlink(infile)
+            if infile_temo:
+                os.unlink(infile_temp)
         except: pass
     
     return im
