@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Fix for reading multipage TIFFs #885
+ [kostrom, wiredfool]
+
 - Correctly handle saving gray and CMYK JPEGs with quality-keep #857
   [etienned]
 
