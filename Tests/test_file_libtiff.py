@@ -312,6 +312,35 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertRaises(OSError, lambda: os.fstat(fn))
         self.assertRaises(OSError, lambda: os.close(fn))
 
+    def test_multipage(self):
+        # issue #862
+        TiffImagePlugin.READ_LIBTIFF = True
+        im = Image.open('Tests/images/multipage.tiff')
+        # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
+
+        im.seek(0)
+        self.assertEqual(im.size, (10,10))
+        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,128,0))
+        self.assertTrue(im.tag.next)
+
+        im.seek(1)
+        self.assertEqual(im.size, (10,10))
+        self.assertEqual(im.convert('RGB').getpixel((0,0)), (255,0,0))
+        self.assertTrue(im.tag.next)
+
+        im.seek(2)
+        self.assertFalse(im.tag.next)
+        self.assertEqual(im.size, (20,20))
+        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
+   
+        TiffImagePlugin.READ_LIBTIFF = False
+
+    def test__next(self):
+        TiffImagePlugin.READ_LIBTIFF = True
+        im = Image.open('Tests/images/lena.tif')
+        self.assertFalse(im.tag.next)
+        im.load()
+        self.assertFalse(im.tag.next)
 
 if __name__ == '__main__':
     unittest.main()
