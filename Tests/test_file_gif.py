@@ -101,7 +101,7 @@ class TestFileGif(PillowTestCase):
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_bmp_mode(self):
-        img = Image.open(file).convert("RGB")
+        img = Image.open(TEST_GIF).convert("RGB")
 
         tempfile = self.tempfile("temp.gif")
         GifImagePlugin._save_netpbm(img, 0, tempfile)
@@ -109,7 +109,7 @@ class TestFileGif(PillowTestCase):
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_l_mode(self):
-        img = Image.open(file).convert("L")
+        img = Image.open(TEST_GIF).convert("L")
 
         tempfile = self.tempfile("temp.gif")
         GifImagePlugin._save_netpbm(img, 0, tempfile)
