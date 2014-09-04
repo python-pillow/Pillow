@@ -180,6 +180,26 @@ def tostring(im, format, **options):
     return out.getvalue()
 
 
+def hopper(mode="RGB", cache={}):
+    from PIL import Image
+    im = None
+    # FIXME: Implement caching to reduce reading from disk but so an original
+    # copy is returned each time and the cached image isn't modified by tests
+    # (for fast, isolated, repeatable tests).
+    # im = cache.get(mode)
+    if im is None:
+        if mode == "RGB":
+            im = Image.open("Tests/images/hopper.ppm")
+        elif mode == "F":
+            im = lena("L").convert(mode)
+        elif mode[:4] == "I;16":
+            im = lena("I").convert(mode)
+        else:
+            im = lena("RGB").convert(mode)
+    # cache[mode] = im
+    return im
+
+
 def lena(mode="RGB", cache={}):
     from PIL import Image
     im = None

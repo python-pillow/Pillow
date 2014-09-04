@@ -6,8 +6,8 @@ import shutil
 
 from PIL import Image, JpegImagePlugin, GifImagePlugin
 
-test_jpg = "Tests/images/lena.jpg"
-test_gif = "Tests/images/lena.gif"
+TEST_JPG = "Tests/images/hopper.jpg"
+TEST_GIF = "Tests/images/hopper.gif"
 
 test_filenames = (
     "temp_';",
@@ -31,24 +31,24 @@ class TestShellInjection(PillowTestCase):
     def test_load_djpeg_filename(self):
         for filename in test_filenames:
             src_file = self.tempfile(filename)
-            shutil.copy(test_jpg, src_file)
+            shutil.copy(TEST_JPG, src_file)
 
             im = Image.open(src_file)
             im.load_djpeg()
 
     @unittest.skipUnless(cjpeg_available(), "cjpeg not available")
     def test_save_cjpeg_filename(self):
-        im = Image.open(test_jpg)
+        im = Image.open(TEST_JPG)
         self.assert_save_filename_check(im, JpegImagePlugin._save_cjpeg)
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_filename_bmp_mode(self):
-        im = Image.open(test_gif).convert("RGB")
+        im = Image.open(TEST_GIF).convert("RGB")
         self.assert_save_filename_check(im, GifImagePlugin._save_netpbm)
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_filename_l_mode(self):
-        im = Image.open(test_gif).convert("L")
+        im = Image.open(TEST_GIF).convert("L")
         self.assert_save_filename_check(im, GifImagePlugin._save_netpbm)
 
 

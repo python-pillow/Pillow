@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 import sys
@@ -58,7 +58,7 @@ class TestImage(PillowTestCase):
 
     def test_expand_x(self):
         # Arrange
-        im = lena()
+        im = hopper()
         orig_size = im.size
         xmargin = 5
 
@@ -71,7 +71,7 @@ class TestImage(PillowTestCase):
 
     def test_expand_xy(self):
         # Arrange
-        im = lena()
+        im = hopper()
         orig_size = im.size
         xmargin = 5
         ymargin = 3
@@ -85,7 +85,7 @@ class TestImage(PillowTestCase):
 
     def test_getbands(self):
         # Arrange
-        im = lena()
+        im = hopper()
 
         # Act
         bands = im.getbands()
@@ -95,7 +95,7 @@ class TestImage(PillowTestCase):
 
     def test_getbbox(self):
         # Arrange
-        im = lena()
+        im = hopper()
 
         # Act
         bbox = im.getbbox()
@@ -185,7 +185,7 @@ class TestImage(PillowTestCase):
 
     def test_effect_spread(self):
         # Arrange
-        im = lena()
+        im = hopper()
         distance = 10
 
         # Act
@@ -194,7 +194,7 @@ class TestImage(PillowTestCase):
         # Assert
         self.assertEqual(im.size, (128, 128))
         im3 = Image.open('Tests/images/effect_spread.png')
-        self.assert_image_similar(im2, im3, 80)
+        self.assert_image_similar(im2, im3, 110)
 
 if __name__ == '__main__':
     unittest.main()
