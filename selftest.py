@@ -89,9 +89,9 @@ def testimage():
     >>> len(im.getdata())
     16384
     >>> im.getextrema()
-    ((61, 255), (26, 234), (44, 223))
+    ((0, 255), (0, 255), (0, 255))
     >>> im.getpixel((0, 0))
-    (223, 162, 133)
+    (20, 20, 70)
     >>> len(im.getprojection())
     2
     >>> len(im.histogram())
