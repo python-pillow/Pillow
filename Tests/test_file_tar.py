@@ -4,8 +4,8 @@ from PIL import Image, TarIO
 
 codecs = dir(Image.core)
 
-# sample ppm stream
-tarfile = "Tests/images/lena.tar"
+# Sample tar archive
+TEST_TAR_FILE = "Tests/images/hopper.tar"
 
 
 class TestFileTar(PillowTestCase):
@@ -16,7 +16,7 @@ class TestFileTar(PillowTestCase):
 
     def test_sanity(self):
         if "zip_decoder" in codecs:
-            tar = TarIO.TarIO(tarfile, 'lena.png')
+            tar = TarIO.TarIO(TEST_TAR_FILE, 'hopper.png')
             im = Image.open(tar)
             im.load()
             self.assertEqual(im.mode, "RGB")
@@ -24,7 +24,7 @@ class TestFileTar(PillowTestCase):
             self.assertEqual(im.format, "PNG")
 
         if "jpeg_decoder" in codecs:
-            tar = TarIO.TarIO(tarfile, 'lena.jpg')
+            tar = TarIO.TarIO(TEST_TAR_FILE, 'hopper.jpg')
             im = Image.open(tar)
             im.load()
             self.assertEqual(im.mode, "RGB")
