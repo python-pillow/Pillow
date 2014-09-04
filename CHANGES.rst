@@ -5,7 +5,7 @@ Changelog (Pillow)
 ------------------
 
 - Fix for reading multipage TIFFs #885
- [kostrom, wiredfool]
+  [kostrom, wiredfool]
 
 - Correctly handle saving gray and CMYK JPEGs with quality-keep #857
   [etienned]
