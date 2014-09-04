@@ -8,8 +8,8 @@ class TestFileSgi(PillowTestCase):
     def test_rgb(self):
         # Arrange
         # Created with ImageMagick then renamed:
-        # convert lena.ppm lena.sgi
-        test_file = "Tests/images/lena.rgb"
+        # convert hopper.ppm hopper.sgi
+        test_file = "Tests/images/hopper.rgb"
 
         # Act / Assert
         self.assertRaises(ValueError, lambda: Image.open(test_file))
@@ -17,8 +17,8 @@ class TestFileSgi(PillowTestCase):
     def test_l(self):
         # Arrange
         # Created with ImageMagick then renamed:
-        # convert lena.ppm -monochrome lena.sgi
-        test_file = "Tests/images/lena.bw"
+        # convert hopper.ppm -monochrome hopper.sgi
+        test_file = "Tests/images/hopper.bw"
 
         # Act / Assert
         self.assertRaises(ValueError, lambda: Image.open(test_file))
