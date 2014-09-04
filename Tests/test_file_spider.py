@@ -1,9 +1,9 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 from PIL import SpiderImagePlugin
 
-TEST_FILE = "Tests/images/lena.spider"
+TEST_FILE = "Tests/images/hopper.spider"
 
 
 class TestImageSpider(PillowTestCase):
@@ -18,7 +18,7 @@ class TestImageSpider(PillowTestCase):
     def test_save(self):
         # Arrange
         temp = self.tempfile('temp.spider')
-        im = lena()
+        im = hopper()
 
         # Act
         im.save(temp, "SPIDER")
@@ -44,7 +44,7 @@ class TestImageSpider(PillowTestCase):
 
     def test_loadImageSeries(self):
         # Arrange
-        not_spider_file = "Tests/images/lena.ppm"
+        not_spider_file = "Tests/images/hopper.ppm"
         file_list = [TEST_FILE, not_spider_file, "path/not_found.ext"]
 
         # Act
