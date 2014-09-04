@@ -7,8 +7,8 @@ class TestFileSun(PillowTestCase):
 
     def test_sanity(self):
         # Arrange
-        # Created with ImageMagick: convert lena.ppm lena.ras
-        test_file = "Tests/images/lena.ras"
+        # Created with ImageMagick: convert hopper.jpg hopper.ras
+        test_file = "Tests/images/hopper.ras"
 
         # Act
         im = Image.open(test_file)
