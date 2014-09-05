@@ -191,11 +191,11 @@ def hopper(mode="RGB", cache={}):
         if mode == "RGB":
             im = Image.open("Tests/images/hopper.ppm")
         elif mode == "F":
-            im = lena("L").convert(mode)
+            im = hopper("L").convert(mode)
         elif mode[:4] == "I;16":
-            im = lena("I").convert(mode)
+            im = hopper("I").convert(mode)
         else:
-            im = lena("RGB").convert(mode)
+            im = hopper("RGB").convert(mode)
     # cache[mode] = im
     return im
 

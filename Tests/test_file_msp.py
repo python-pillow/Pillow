@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -9,7 +9,7 @@ class TestFileMsp(PillowTestCase):
 
         file = self.tempfile("temp.msp")
 
-        lena("1").save(file)
+        hopper("1").save(file)
 
         im = Image.open(file)
         im.load()

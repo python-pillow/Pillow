@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageColor
@@ -34,7 +34,7 @@ POINTS2 = [10, 10, 20, 40, 30, 30]
 class TestImageDraw(PillowTestCase):
 
     def test_sanity(self):
-        im = lena("RGB").copy()
+        im = hopper("RGB").copy()
 
         draw = ImageDraw.ImageDraw(im)
         draw = ImageDraw.Draw(im)
@@ -45,7 +45,7 @@ class TestImageDraw(PillowTestCase):
         draw.rectangle(list(range(4)))
 
     def test_deprecated(self):
-        im = lena().copy()
+        im = hopper().copy()
 
         draw = ImageDraw.Draw(im)
 

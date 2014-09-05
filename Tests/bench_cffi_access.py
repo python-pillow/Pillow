@@ -1,4 +1,4 @@
-from helper import *
+from helper import unittest, PillowTestCase, hopper
 
 # Not running this test by default. No DOS against Travis CI.
 
@@ -39,7 +39,7 @@ def timer(func, label, *args):
 class BenchCffiAccess(PillowTestCase):
 
     def test_direct(self):
-        im = lena()
+        im = hopper()
         im.load()
         # im = Image.new( "RGB", (2000, 2000), (1, 3, 2))
         caccess = im.im.pixel_access(False)

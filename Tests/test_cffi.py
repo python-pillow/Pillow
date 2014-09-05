@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 try:
     import cffi
@@ -62,16 +62,16 @@ class TestCffi(PillowTestCase):
                 self.assertEqual(access[(x, y)], caccess[(x, y)])
 
     def test_get_vs_c(self):
-        rgb = lena('RGB')
+        rgb = hopper('RGB')
         rgb.load()
         self._test_get_access(rgb)
-        self._test_get_access(lena('RGBA'))
-        self._test_get_access(lena('L'))
-        self._test_get_access(lena('LA'))
-        self._test_get_access(lena('1'))
-        self._test_get_access(lena('P'))
-        # self._test_get_access(lena('PA')) # PA   -- how do I make a PA image?
-        self._test_get_access(lena('F'))
+        self._test_get_access(hopper('RGBA'))
+        self._test_get_access(hopper('L'))
+        self._test_get_access(hopper('LA'))
+        self._test_get_access(hopper('1'))
+        self._test_get_access(hopper('P'))
+        # self._test_get_access(hopper('PA')) # PA   -- how do I make a PA image?
+        self._test_get_access(hopper('F'))
 
         im = Image.new('I;16', (10, 10), 40000)
         self._test_get_access(im)
@@ -104,16 +104,16 @@ class TestCffi(PillowTestCase):
                 self.assertEqual(color, caccess[(x, y)])
 
     def test_set_vs_c(self):
-        rgb = lena('RGB')
+        rgb = hopper('RGB')
         rgb.load()
         self._test_set_access(rgb, (255, 128, 0))
-        self._test_set_access(lena('RGBA'), (255, 192, 128, 0))
-        self._test_set_access(lena('L'), 128)
-        self._test_set_access(lena('LA'), (128, 128))
-        self._test_set_access(lena('1'), 255)
-        self._test_set_access(lena('P'), 128)
+        self._test_set_access(hopper('RGBA'), (255, 192, 128, 0))
+        self._test_set_access(hopper('L'), 128)
+        self._test_set_access(hopper('LA'), (128, 128))
+        self._test_set_access(hopper('1'), 255)
+        self._test_set_access(hopper('P'), 128)
         # self._test_set_access(i, (128, 128))  #PA  -- undone how to make
-        self._test_set_access(lena('F'), 1024.0)
+        self._test_set_access(hopper('F'), 1024.0)
 
         im = Image.new('I;16', (10, 10), 40000)
         self._test_set_access(im, 45000)
