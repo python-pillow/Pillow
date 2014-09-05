@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageHistogram(PillowTestCase):
@@ -6,7 +6,7 @@ class TestImageHistogram(PillowTestCase):
     def test_histogram(self):
 
         def histogram(mode):
-            h = lena(mode).histogram()
+            h = hopper(mode).histogram()
             return len(h), min(h), max(h)
 
         self.assertEqual(histogram("1"), (256, 0, 8872))

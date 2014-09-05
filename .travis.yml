@@ -37,6 +37,8 @@ script:
   - CFLAGS="-coverage" python setup.py build_ext --inplace
 
   - coverage run --append --include=PIL/* selftest.py
+  # FIXME: re-add -x option to fail fast
+  # - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
   - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
 
 after_success:

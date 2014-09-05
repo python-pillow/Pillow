@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageGetColors(PillowTestCase):
@@ -6,7 +6,7 @@ class TestImageGetColors(PillowTestCase):
     def test_getcolors(self):
 
         def getcolors(mode, limit=None):
-            im = lena(mode)
+            im = hopper(mode)
             if limit:
                 colors = im.getcolors(limit)
             else:
@@ -41,7 +41,7 @@ class TestImageGetColors(PillowTestCase):
     def test_pack(self):
         # Pack problems for small tables (@PIL209)
 
-        im = lena().quantize(3).convert("RGB")
+        im = hopper().quantize(3).convert("RGB")
 
         expected = [
             (3236, (227, 183, 147)),

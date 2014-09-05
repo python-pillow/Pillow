@@ -1,11 +1,11 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageRotate(PillowTestCase):
 
     def test_rotate(self):
         def rotate(mode):
-            im = lena(mode)
+            im = hopper(mode)
             out = im.rotate(45)
             self.assertEqual(out.mode, mode)
             self.assertEqual(out.size, im.size)  # default rotate clips output

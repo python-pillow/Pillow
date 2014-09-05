@@ -1,10 +1,10 @@
-from helper import unittest, PillowTestCase, lena, py3
+from helper import unittest, PillowTestCase, hopper, py3
 
 
 class TestImageGetIm(PillowTestCase):
 
     def test_sanity(self):
-        im = lena()
+        im = hopper()
         type_repr = repr(type(im.getim()))
 
         if py3:

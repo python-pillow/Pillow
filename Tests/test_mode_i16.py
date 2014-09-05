@@ -1,11 +1,11 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
 
 class TestModeI16(PillowTestCase):
 
-    original = lena().resize((32,32)).convert('I')
+    original = hopper().resize((32,32)).convert('I')
 
     def verify(self, im1):
         im2 = self.original.copy()
@@ -39,10 +39,10 @@ class TestModeI16(PillowTestCase):
             imOut = imIn.transform((w, h), Image.EXTENT, (0, 0, w, h))
             self.verify(imOut)  # transform
 
-            filename = self.tempfile("temp.im")
-            imIn.save(filename)
+            fihopperme = self.tempfile("temp.im")
+            imIn.save(fihopperme)
 
-            imOut = Image.open(filename)
+            imOut = Image.open(fihopperme)
 
             self.verify(imIn)
             self.verify(imOut)

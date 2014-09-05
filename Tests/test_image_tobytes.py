@@ -1,10 +1,10 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageToBytes(PillowTestCase):
 
     def test_sanity(self):
-        data = lena().tobytes()
+        data = hopper().tobytes()
         self.assertTrue(isinstance(data, bytes))
 
 if __name__ == '__main__':

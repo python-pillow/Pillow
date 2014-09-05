@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -19,7 +19,7 @@ import locale
 
 # one of string.whitespace is not freely convertable into ascii.
 
-path = "Tests/images/lena.jpg"
+path = "Tests/images/hopper.jpg"
 
 
 class TestLocale(PillowTestCase):

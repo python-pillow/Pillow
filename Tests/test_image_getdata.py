@@ -1,11 +1,11 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageGetData(PillowTestCase):
 
     def test_sanity(self):
 
-        data = lena().getdata()
+        data = hopper().getdata()
 
         len(data)
         list(data)
@@ -15,7 +15,7 @@ class TestImageGetData(PillowTestCase):
     def test_roundtrip(self):
 
         def getdata(mode):
-            im = lena(mode).resize((32, 30))
+            im = hopper(mode).resize((32, 30))
             data = im.getdata()
             return data[0], len(data), len(list(data))
 

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageGetExtrema(PillowTestCase):
@@ -6,7 +6,7 @@ class TestImageGetExtrema(PillowTestCase):
     def test_extrema(self):
 
         def extrema(mode):
-            return lena(mode).getextrema()
+            return hopper(mode).getextrema()
 
         self.assertEqual(extrema("1"), (0, 255))
         self.assertEqual(extrema("L"), (40, 235))

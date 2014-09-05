@@ -6,20 +6,20 @@ from PIL import Image
 class TestPickle(PillowTestCase):
 
     def helper_pickle_file(self, pickle, protocol=0):
-        im = Image.open('Tests/images/lena.jpg')
-        filename = self.tempfile('temp.pkl')
+        im = Image.open('Tests/images/hopper.jpg')
+        fihopperme = self.tempfile('temp.pkl')
 
         # Act
-        with open(filename, 'wb') as f:
+        with open(fihopperme, 'wb') as f:
             pickle.dump(im, f, protocol)
-        with open(filename, 'rb') as f:
+        with open(fihopperme, 'rb') as f:
             loaded_im = pickle.load(f)
 
         # Assert
         self.assertEqual(im, loaded_im)
 
     def helper_pickle_string(
-            self, pickle, protocol=0, file='Tests/images/lena.jpg'):
+            self, pickle, protocol=0, file='Tests/images/hopper.jpg'):
         im = Image.open(file)
 
         # Act

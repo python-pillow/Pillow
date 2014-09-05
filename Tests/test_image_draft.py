@@ -3,8 +3,8 @@ from helper import unittest, PillowTestCase, fromstring, tostring
 from PIL import Image
 
 codecs = dir(Image.core)
-filename = "Tests/images/lena.jpg"
-data = tostring(Image.open(filename).resize((512, 512)), "JPEG")
+fihopperme = "Tests/images/hopper.jpg"
+data = tostring(Image.open(fihopperme).resize((512, 512)), "JPEG")
 
 
 def draft(mode, size):
