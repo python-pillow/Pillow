@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
 
@@ -13,7 +13,7 @@ class TestFileTiffMetadata(PillowTestCase):
             data.  https://github.com/python-pillow/Pillow/issues/291
             """
 
-        img = lena()
+        img = hopper()
 
         textdata = "This is some arbitrary metadata for a text field"
         info = TiffImagePlugin.ImageFileDirectory()
@@ -63,7 +63,7 @@ class TestFileTiffMetadata(PillowTestCase):
 
     def test_write_metadata(self):
         """ Test metadata writing through the python code """
-        img = Image.open('Tests/images/lena.tif')
+        img = Image.open('Tests/images/hopper.tif')
 
         f = self.tempfile('temp.tiff')
         img.save(f, tiffinfo=img.tag)
