@@ -1514,6 +1514,9 @@ class Image:
 
         self.load()
 
+        if self.size == size:
+            return self._new(self.im)
+
         if self.mode in ("1", "P"):
             resample = NEAREST
 
