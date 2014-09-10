@@ -16,14 +16,14 @@ python:
   - 3.4
 
 install:
-  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
-  - "pip install cffi"
-  - "pip install coverage nose"
+  - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
+  - "travis_retry pip install cffi"
+  - "travis_retry pip install coverage nose"
 
     # Pyroma installation is slow on Py3, so just do it for Py2.
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then travis_retry pip install pyroma; fi
 
-  - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip install unittest2; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then travis_retry pip install unittest2; fi
 
   # webp
   - pushd depends && ./install_webp.sh && popd
@@ -41,20 +41,20 @@ script:
 
 after_success:
    # gather the coverage data
-  - sudo apt-get -qq install lcov
+  - travis_retry sudo apt-get -qq install lcov
   - lcov --capture --directory . -b . --output-file coverage.info
    # filter to remove system headers
   - lcov --remove coverage.info '/usr/*' -o coverage.filtered.info
    # convert to json
-  - gem install coveralls-lcov
+  - travis_retry gem install coveralls-lcov
   - coveralls-lcov -v -n coverage.filtered.info > coverage.c.json
 
   - coverage report
-  - pip install coveralls-merge
+  - travis_retry pip install coveralls-merge
   - coveralls-merge coverage.c.json
 
 
-  - pip install pep8 pyflakes
+  - travis_retry pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
   - pep8  --statistics --count Tests/*.py
   - pyflakes PIL/*.py   | tee >(wc -l)
@@ -65,3 +65,5 @@ after_success:
     # (Installation is very slow on Py3, so just do it for Py2.)
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-install.sh; fi
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-run.sh; fi
+matrix:
+  fast_finish: true
