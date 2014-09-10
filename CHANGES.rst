@@ -4,10 +4,13 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Don't resize if already the right size.
+  [radarhere]
+
 - Fix for reading multipage TIFFs #885
   [kostrom, wiredfool]
 
-- Correctly handle saving gray and CMYK JPEGs with quality-keep #857
+- Correctly handle saving gray and CMYK JPEGs with quality=keep #857
   [etienned]
 
 - Correct duplicate Tiff Metadata and Exif tag values
