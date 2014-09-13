@@ -63,6 +63,17 @@ class TestFileEps(PillowTestCase):
         with io.open(self.tempfile('temp_iobase.eps'), 'wb') as fh:
             image1.save(fh, 'EPS')
 
+    def test_bytesio_object(self):
+        with open(file1, 'rb') as f:
+            img_bytes = io.BytesIO(f.read())
+
+        img = Image.open(img_bytes)
+        img.load()
+
+        image1_scale1_compare = Image.open(file1_compare).convert("RGB")
+        image1_scale1_compare.load()
+        self.assert_image_similar(img, image1_scale1_compare, 5)
+     
     def test_render_scale1(self):
         # We need png support for these render test
         codecs = dir(Image.core)
@@ -136,6 +147,83 @@ class TestFileEps(PillowTestCase):
         # Issue 302
         # open image with binary preview
         Image.open(file3)
+
+    def _test_readline(self,t, ending):
+        ending = "Failure with line ending: %s" %("".join("%s" %ord(s) for s in ending))
+        self.assertEqual(t.readline().strip('\r\n'), 'something', ending)
+        self.assertEqual(t.readline().strip('\r\n'), 'else', ending)
+        self.assertEqual(t.readline().strip('\r\n'), 'baz', ending)
+        self.assertEqual(t.readline().strip('\r\n'), 'bif', ending)
+
+    def _test_readline_stringio(self, test_string, ending):
+        # check all the freaking line endings possible
+        try:
+            import StringIO
+        except:
+            # don't skip, it skips everything in the parent test
+            return
+        t = StringIO.StringIO(test_string)
+        self._test_readline(t, ending)
+        
+    def _test_readline_io(self, test_string, ending):
+        import io
+        if str is bytes:
+            t = io.StringIO(unicode(test_string))            
+        else:
+            t = io.StringIO(test_string)
+        self._test_readline(t, ending)
+
+    def _test_readline_file_universal(self, test_string, ending):
+        f = self.tempfile('temp.txt')
+        with open(f,'wb') as w:
+            if str is bytes:
+                w.write(test_string)
+            else:
+                w.write(test_string.encode('UTF-8'))
+
+        with open(f,'rU') as t:
+            self._test_readline(t, ending)
+
+    def _test_readline_file_psfile(self, test_string, ending):
+        f = self.tempfile('temp.txt')
+        with open(f,'wb') as w:
+            if str is bytes:
+                w.write(test_string)
+            else:
+                w.write(test_string.encode('UTF-8'))
+
+        with open(f,'rb') as r:
+            t = EpsImagePlugin.PSFile(r)
+            self._test_readline(t, ending)
+                                    
+    def test_readline(self):
+        # check all the freaking line endings possible from the spec
+        #test_string = u'something\r\nelse\n\rbaz\rbif\n'
+        line_endings = ['\r\n', '\n']
+        not_working_endings = ['\n\r', '\r'] 
+        strings = ['something', 'else', 'baz', 'bif']
+
+        for ending in line_endings:
+            s = ending.join(strings)
+            # Native python versions will pass these endings.  
+            #self._test_readline_stringio(s, ending)
+            #self._test_readline_io(s, ending)
+            #self._test_readline_file_universal(s, ending)
+            
+            self._test_readline_file_psfile(s, ending)
+
+        for ending in not_working_endings:
+            # these only work with the PSFile, while they're in spec,
+            # they're not likely to be used
+            s = ending.join(strings)
+            
+            # Native python versions may fail on these endings.  
+            #self._test_readline_stringio(s, ending)
+            #self._test_readline_io(s, ending)
+            #self._test_readline_file_universal(s, ending)
+            
+            self._test_readline_file_psfile(s, ending)
+      
 
 if __name__ == '__main__':
     unittest.main()

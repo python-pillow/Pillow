@@ -86,26 +86,32 @@ def Ghostscript(tile, size, fp, scale=1):
 
     out_fd, outfile = tempfile.mkstemp()
     os.close(out_fd)
-    in_fd, infile = tempfile.mkstemp()
-    os.close(in_fd)
-    
-    # ignore length and offset!
-    # ghostscript can read it   
-    # copy whole file to read in ghostscript
-    with open(infile, 'wb') as f:
-        # fetch length of fp
-        fp.seek(0, 2)
-        fsize = fp.tell()
-        # ensure start position
-        # go back
-        fp.seek(0)
-        lengthfile = fsize
-        while lengthfile > 0:
-            s = fp.read(min(lengthfile, 100*1024))
-            if not s:
-                break
-            length -= len(s)
-            f.write(s)
+
+    infile_temp = None
+    if hasattr(fp, 'name') and os.path.exists(fp.name):
+        infile = fp.name
+    else:
+        in_fd, infile_temp = tempfile.mkstemp()
+        os.close(in_fd)
+        infile = infile_temp
+        
+        # ignore length and offset!
+        # ghostscript can read it   
+        # copy whole file to read in ghostscript
+        with open(infile_temp, 'wb') as f:
+            # fetch length of fp
+            fp.seek(0, 2)
+            fsize = fp.tell()
+            # ensure start position
+            # go back
+            fp.seek(0)
+            lengthfile = fsize
+            while lengthfile > 0:
+                s = fp.read(min(lengthfile, 100*1024))
+                if not s:
+                    break
+                lengthfile -= len(s)
+                f.write(s)
 
     # Build ghostscript command
     command = ["gs",
@@ -136,49 +142,36 @@ def Ghostscript(tile, size, fp, scale=1):
     finally:
         try:
             os.unlink(outfile)
-            os.unlink(infile)
+            if infile_temo:
+                os.unlink(infile_temp)
         except: pass
     
     return im
 
 
 class PSFile:
-    """Wrapper that treats either CR or LF as end of line."""
+    """Wrapper for bytesio object that treats either CR or LF as end of line."""
     def __init__(self, fp):
         self.fp = fp
         self.char = None
-    def __getattr__(self, id):
-        v = getattr(self.fp, id)
-        setattr(self, id, v)
-        return v
     def seek(self, offset, whence=0):
         self.char = None
         self.fp.seek(offset, whence)
-    def read(self, count):
-        return self.fp.read(count).decode('latin-1')
-    def readbinary(self, count):
-        return self.fp.read(count)
-    def tell(self):
-        pos = self.fp.tell()
-        if self.char:
-            pos -= 1
-        return pos
     def readline(self):
-        s = b""
-        if self.char:
-            c = self.char
-            self.char = None
-        else:
-            c = self.fp.read(1)
+        s = self.char or b""
+        self.char = None
+
+        c = self.fp.read(1)
         while c not in b"\r\n":
             s = s + c
             c = self.fp.read(1)
-        if c == b"\r":
-            self.char = self.fp.read(1)
-            if self.char == b"\n":
-                self.char = None
-        return s.decode('latin-1') + "\n"
 
+        self.char = self.fp.read(1)
+        # line endings can be 1 or 2 of \r \n, in either order
+        if self.char in b"\r\n":
+            self.char = None
+            
+        return s.decode('latin-1') 
 
 def _accept(prefix):
     return prefix[:4] == b"%!PS" or i32(prefix) == 0xC6D3D0C5
@@ -193,36 +186,27 @@ class EpsImageFile(ImageFile.ImageFile):
     format = "EPS"
     format_description = "Encapsulated Postscript"
 
+    mode_map = { 1:"L", 2:"LAB", 3:"RGB" }
+
     def _open(self):
+        (length, offset) = self._find_offset(self.fp)
 
-        fp = PSFile(self.fp)
+        # Rewrap the open file pointer in something that will
+        # convert line endings and decode to latin-1.
+        try:
+            if bytes is str:
+                # Python2, no encoding conversion necessary
+                fp = open(self.fp.name, "Ur")
+            else:
+                # Python3, can use bare open command. 
+                fp = open(self.fp.name, "Ur", encoding='latin-1')
+        except Exception as msg:
+            # Expect this for bytesio/stringio
+            fp = PSFile(self.fp)
 
-        # FIX for: Some EPS file not handled correctly / issue #302 
-        # EPS can contain binary data
-        # or start directly with latin coding
-        # read header in both ways to handle both
-        # file types
-        # more info see http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
-        
-        # for HEAD without binary preview
-        s = fp.read(4)
-        # for HEAD with binary preview
-        fp.seek(0)
-        sb = fp.readbinary(160)
-
-        if s[:4] == "%!PS":
-            fp.seek(0, 2)
-            length = fp.tell()
-            offset = 0
-        elif i32(sb[0:4]) == 0xC6D3D0C5:
-            offset = i32(sb[4:8])
-            length = i32(sb[8:12])
-        else:
-            raise SyntaxError("not an EPS file")
-
-        # go to offset - start of "%!PS" 
+        # go to offset - start of "%!PS"
         fp.seek(offset)
-        
+
         box = None
 
         self.mode = "RGB"
@@ -231,17 +215,11 @@ class EpsImageFile(ImageFile.ImageFile):
         #
         # Load EPS header
 
-        s = fp.readline()
+        s = fp.readline().strip('\r\n')
         
         while s:
-
             if len(s) > 255:
                 raise SyntaxError("not an EPS file")
-
-            if s[-2:] == '\r\n':
-                s = s[:-2]
-            elif s[-1:] == '\n':
-                s = s[:-1]
 
             try:
                 m = split.match(s)
@@ -264,9 +242,7 @@ class EpsImageFile(ImageFile.ImageFile):
                         pass
 
             else:
-
                 m = field.match(s)
-
                 if m:
                     k = m.group(1)
 
@@ -276,16 +252,16 @@ class EpsImageFile(ImageFile.ImageFile):
                         self.info[k[:8]] = k[9:]
                     else:
                         self.info[k] = ""
-                elif s[0:1] == '%':
+                elif s[0] == '%':
                     # handle non-DSC Postscript comments that some
                     # tools mistakenly put in the Comments section
                     pass
                 else:
                     raise IOError("bad EPS header")
 
-            s = fp.readline()
+            s = fp.readline().strip('\r\n')
 
-            if s[:1] != "%":
+            if s[0] != "%":
                 break
 
 
@@ -297,62 +273,47 @@ class EpsImageFile(ImageFile.ImageFile):
             if len(s) > 255:
                 raise SyntaxError("not an EPS file")
 
-            if s[-2:] == '\r\n':
-                s = s[:-2]
-            elif s[-1:] == '\n':
-                s = s[:-1]
-
             if s[:11] == "%ImageData:":
+                # Encoded bitmapped image.
+                [x, y, bi, mo, z3, z4, en, id] = s[11:].split(None, 7)
 
-                [x, y, bi, mo, z3, z4, en, id] =\
-                    s[11:].split(None, 7)
-
-                x = int(x); y = int(y)
-
-                bi = int(bi)
-                mo = int(mo)
-
-                en = int(en)
-
-                if en == 1:
-                    decoder = "eps_binary"
-                elif en == 2:
-                    decoder = "eps_hex"
-                else:
+                if int(bi) != 8:
                     break
-                if bi != 8:
+                try:
+                    self.mode = self.mode_map[int(mo)]
+                except:
                     break
-                if mo == 1:
-                    self.mode = "L"
-                elif mo == 2:
-                    self.mode = "LAB"
-                elif mo == 3:
-                    self.mode = "RGB"
-                else:
-                    break
-
-                if id[:1] == id[-1:] == '"':
-                    id = id[1:-1]
-
-                # Scan forward to the actual image data
-                while True:
-                    s = fp.readline()
-                    if not s:
-                        break
-                    if s[:len(id)] == id:
-                        self.size = x, y
-                        self.tile2 = [(decoder,
-                                       (0, 0, x, y),
-                                       fp.tell(),
-                                       0)]
-                        return
-
-            s = fp.readline()
+                
+                self.size = int(x), int(y)
+                return
+            
+            s = fp.readline().strip('\r\n')
             if not s:
                 break
 
         if not box:
             raise IOError("cannot determine EPS bounding box")
+
+    def _find_offset(self, fp):
+        
+        s = fp.read(160)
+        
+        if s[:4] == b"%!PS":
+            # for HEAD without binary preview
+            fp.seek(0, 2)
+            length = fp.tell()
+            offset = 0
+        elif i32(s[0:4]) == 0xC6D3D0C5:
+            # FIX for: Some EPS file not handled correctly / issue #302 
+            # EPS can contain binary data
+            # or start directly with latin coding
+            # more info see http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
+            offset = i32(s[4:8])
+            length = i32(s[8:12])
+        else:
+            raise SyntaxError("not an EPS file")
+
+        return (length, offset)
 
     def load(self, scale=1):
         # Load EPS via Ghostscript
