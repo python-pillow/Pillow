@@ -167,7 +167,10 @@ class TestFileEps(PillowTestCase):
         
     def _test_readline_io(self, test_string, ending):
         import io
-        t = io.StringIO(test_string)
+        if str is bytes:
+            t = io.StringIO(unicode(test_string))            
+        else:
+            t = io.StringIO(test_string)
         self._test_readline(t, ending)
 
     def _test_readline_file_universal(self, test_string, ending):
@@ -202,14 +205,23 @@ class TestFileEps(PillowTestCase):
 
         for ending in line_endings:
             s = ending.join(strings)
-            self._test_readline_stringio(s, ending)
-            self._test_readline_io(s, ending)
-            self._test_readline_file_universal(s, ending)
+            # Native python versions will pass these endings.  
+            #self._test_readline_stringio(s, ending)
+            #self._test_readline_io(s, ending)
+            #self._test_readline_file_universal(s, ending)
+            
+            self._test_readline_file_psfile(s, ending)
 
         for ending in not_working_endings:
             # these only work with the PSFile, while they're in spec,
             # they're not likely to be used
-            s = ending.join(strings)             
+            s = ending.join(strings)
+            
+            # Native python versions may fail on these endings.  
+            #self._test_readline_stringio(s, ending)
+            #self._test_readline_io(s, ending)
+            #self._test_readline_file_universal(s, ending)
+            
             self._test_readline_file_psfile(s, ending)
       
 
