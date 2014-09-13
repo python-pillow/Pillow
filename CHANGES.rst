@@ -4,6 +4,12 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Jpeg2k Decode/Encode Memory Leak Fix #898
+  [joshware, wiredfool]
+
+- EpsFilePlugin Speed improvements #886
+  [wiredfool, karstenw]
+
 - Don't resize if already the right size.
   [radarhere]
 
