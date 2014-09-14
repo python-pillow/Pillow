@@ -3,7 +3,7 @@
 
 from multiprocessing import Pool, cpu_count
 from distutils.ccompiler import CCompiler
-import os
+import os, sys
 
 try:
     MAX_PROCS = int(os.environ.get('MAX_CONCURRENCY', cpu_count()))
@@ -50,7 +50,7 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
     return objects
 
 # explicitly don't enable if environment says 1 processor
-if MAX_PROCS != 1:
+if MAX_PROCS != 1 and not sys.platform.startswith('win'):
     try:
         # bug, only enable if we can make a Pool. see issue #790 and
         # http://stackoverflow.com/questions/6033599/oserror-38-errno-38-with-multiprocessing

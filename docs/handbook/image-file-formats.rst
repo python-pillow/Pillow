@@ -670,6 +670,7 @@ files, using either JPEG or HEX encoding depending on the image mode (and
 whether JPEG support is available or not).
 
 PIXAR (read only)
+^^^^
 
 PIL provides limited support for PIXAR raster files. The library can identify
 and read “dumped” RGB files.

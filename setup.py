@@ -487,6 +487,8 @@ class pil_build_ext(build_ext):
                 # In Google's precompiled zip it is call "libwebp":
                 if _find_library_file(self, "webp"):
                     feature.webp = "webp"
+                elif _find_library_file(self, "libwebp"):
+                    feature.webp = "libwebp"
 
         if feature.want('webpmux'):
             if (_find_include_file(self, "webp/mux.h") and
@@ -494,6 +496,9 @@ class pil_build_ext(build_ext):
                 if (_find_library_file(self, "webpmux") and
                         _find_library_file(self, "webpdemux")):
                     feature.webpmux = "webpmux"
+                if (_find_library_file(self, "libwebpmux") and
+                        _find_library_file(self, "libwebpdemux")):
+                    feature.webpmux = "libwebpmux"
 
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
@@ -559,13 +564,13 @@ class pil_build_ext(build_ext):
                 libraries=["lcms2"] + extra))
 
         if os.path.isfile("_webp.c") and feature.webp:
-            libs = ["webp"]
+            libs = [feature.webp]
             defs = []
 
             if feature.webpmux:
                 defs.append(("HAVE_WEBPMUX", None))
-                libs.append("webpmux")
-                libs.append("webpdemux")
+                libs.append(feature.webpmux)
+                libs.append(feature.webpmux.replace('pmux','pdemux'))
 
             exts.append(Extension(
                 "PIL._webp", ["_webp.c"], libraries=libs, define_macros=defs))

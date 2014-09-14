@@ -49,13 +49,13 @@ def testimage():
 
     Or open existing files:
 
-    >>> im = Image.open(os.path.join(ROOT, "Tests/images/lena.gif"))
+    >>> im = Image.open(os.path.join(ROOT, "Tests/images/hopper.gif"))
     >>> _info(im)
     ('GIF', 'P', (128, 128))
-    >>> _info(Image.open(os.path.join(ROOT, "Tests/images/lena.ppm")))
+    >>> _info(Image.open(os.path.join(ROOT, "Tests/images/hopper.ppm")))
     ('PPM', 'RGB', (128, 128))
     >>> try:
-    ...  _info(Image.open(os.path.join(ROOT, "Tests/images/lena.jpg")))
+    ...  _info(Image.open(os.path.join(ROOT, "Tests/images/hopper.jpg")))
     ... except IOError as v:
     ...  print(v)
     ('JPEG', 'RGB', (128, 128))
@@ -63,7 +63,7 @@ def testimage():
     PIL doesn't actually load the image data until it's needed,
     or you call the "load" method:
 
-    >>> im = Image.open(os.path.join(ROOT, "Tests/images/lena.ppm"))
+    >>> im = Image.open(os.path.join(ROOT, "Tests/images/hopper.ppm"))
     >>> print(im.im) # internal image attribute
     None
     >>> a = im.load()
@@ -73,7 +73,7 @@ def testimage():
     You can apply many different operations on images.  Most
     operations return a new image:
 
-    >>> im = Image.open(os.path.join(ROOT, "Tests/images/lena.ppm"))
+    >>> im = Image.open(os.path.join(ROOT, "Tests/images/hopper.ppm"))
     >>> _info(im.convert("L"))
     (None, 'L', (128, 128))
     >>> _info(im.copy())
@@ -89,9 +89,9 @@ def testimage():
     >>> len(im.getdata())
     16384
     >>> im.getextrema()
-    ((61, 255), (26, 234), (44, 223))
+    ((0, 255), (0, 255), (0, 255))
     >>> im.getpixel((0, 0))
-    (223, 162, 133)
+    (20, 20, 70)
     >>> len(im.getprojection())
     2
     >>> len(im.histogram())

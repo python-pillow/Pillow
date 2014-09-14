@@ -234,6 +234,8 @@ class ImageFile(Image.Image):
                         break
                     b = b[n:]
                     t = t + n
+                # Need to cleanup here to prevent leaks in PyPy
+                d.cleanup()
 
         self.tile = []
         self.readonly = readonly
@@ -479,6 +481,7 @@ def _save(im, fp, tile, bufsize=0):
                     break
             if s < 0:
                 raise IOError("encoder error %d when writing image file" % s)
+            e.cleanup()
     else:
         # slight speedup: compress to real file object
         for e, b, o, a in tile:
@@ -489,6 +492,7 @@ def _save(im, fp, tile, bufsize=0):
             s = e.encode_to_file(fh, bufsize)
             if s < 0:
                 raise IOError("encoder error %d when writing image file" % s)
+            e.cleanup()
     try:
         fp.flush()
     except:

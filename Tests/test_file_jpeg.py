@@ -60,8 +60,8 @@ class TestFileJpeg(PillowTestCase):
         self.assertGreater(y, 0.8)
         self.assertEqual(k, 0.0)
         # the opposite corner is black
-        c, m, y, k = [x / 255.0 for x in im.getpixel((im.size[0]-1,
-                                                      im.size[1]-1))]
+        c, m, y, k = [x / 255.0 for x in im.getpixel((
+            im.size[0]-1, im.size[1]-1))]
         self.assertGreater(k, 0.9)
         # roundtrip, and check again
         im = self.roundtrip(im)
@@ -70,8 +70,8 @@ class TestFileJpeg(PillowTestCase):
         self.assertGreater(m, 0.8)
         self.assertGreater(y, 0.8)
         self.assertEqual(k, 0.0)
-        c, m, y, k = [x / 255.0 for x in im.getpixel((im.size[0]-1,
-                                                      im.size[1]-1))]
+        c, m, y, k = [x / 255.0 for x in im.getpixel((
+            im.size[0]-1, im.size[1]-1))]
         self.assertGreater(k, 0.9)
 
     def test_dpi(self):
@@ -152,8 +152,8 @@ class TestFileJpeg(PillowTestCase):
         if py3:
             a = bytes(random.randint(0, 255) for _ in range(256 * 256 * 3))
         else:
-            a = b''.join(chr(random.randint(0, 255)) for _ in
-                         range(256 * 256 * 3))
+            a = b''.join(chr(random.randint(0, 255)) for _ in range(
+                256 * 256 * 3))
         im = Image.frombuffer("RGB", (256, 256), a, "raw", "RGB", 0, 1)
         # this requires more bytes than pixels in the image
         im.save(f, format="JPEG", progressive=True, quality=100)
@@ -224,7 +224,16 @@ class TestFileJpeg(PillowTestCase):
         self.assertIsNone(im._getmp())
 
     def test_quality_keep(self):
+        # RGB
         im = Image.open("Tests/images/lena.jpg")
+        f = self.tempfile('temp.jpg')
+        im.save(f, quality='keep')
+        # Grayscale
+        im = Image.open("Tests/images/lena_gray.jpg")
+        f = self.tempfile('temp.jpg')
+        im.save(f, quality='keep')
+        # CMYK
+        im = Image.open("Tests/images/pil_sample_cmyk.jpg")
         f = self.tempfile('temp.jpg')
         im.save(f, quality='keep')
 
@@ -279,11 +288,11 @@ class TestFileJpeg(PillowTestCase):
             30)
 
         # dict of qtable lists
-        self.assert_image_similar(
-            im, self.roundtrip(
-                im, qtables={
-                    0: standard_l_qtable, 1: standard_chrominance_qtable}),
-            30)
+        self.assert_image_similar(im,
+                                  self.roundtrip(im,
+                                                 qtables={0: standard_l_qtable,
+                                                          1: standard_chrominance_qtable}),
+                                  30)
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
     def test_load_djpeg(self):
@@ -299,6 +308,15 @@ class TestFileJpeg(PillowTestCase):
         JpegImagePlugin._save_cjpeg(img, 0, tempfile)
         # Default save quality is 75%, so a tiny bit of difference is alright
         self.assert_image_similar(img, Image.open(tempfile), 1)
+
+    def test_no_duplicate_0x1001_tag(self):
+        # Arrange
+        from PIL import ExifTags
+        tag_ids = dict(zip(ExifTags.TAGS.values(), ExifTags.TAGS.keys()))
+
+        # Assert
+        self.assertEqual(tag_ids['RelatedImageWidth'], 0x1001)
+        self.assertEqual(tag_ids['RelatedImageLength'], 0x1002)
 
 
 if __name__ == '__main__':

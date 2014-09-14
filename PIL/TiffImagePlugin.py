@@ -281,6 +281,7 @@ class ImageFileDirectory(collections.MutableMapping):
         self.tagdata = {}
         self.tagtype = {}  # added 2008-06-05 by Florian Hoech
         self.next = None
+        self.offset = None
 
     def __str__(self):
         return str(self.as_dict())
@@ -415,6 +416,7 @@ class ImageFileDirectory(collections.MutableMapping):
         # load tag dictionary
 
         self.reset()
+        self.offset = fp.tell()
 
         i16 = self.i16
         i32 = self.i32
@@ -446,7 +448,11 @@ class ImageFileDirectory(collections.MutableMapping):
             # Get and expand tag value
             if size > 4:
                 here = fp.tell()
+                if Image.DEBUG:
+                    print ("Tag Location: %s" %here)
                 fp.seek(i32(ifd, 8))
+                if Image.DEBUG:
+                    print ("Data Location: %s" %fp.tell())
                 data = ImageFile._safe_read(fp, size)
                 fp.seek(here)
             else:
@@ -630,18 +636,20 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def seek(self, frame):
         "Select a given frame as current image"
-
         if frame < 0:
             frame = 0
         self._seek(frame)
+        # Create a new core image object on second and
+        # subsequent frames in the image. Image may be
+        # different size/mode.
+        Image._decompression_bomb_check(self.size)
+        self.im = Image.core.new(self.mode, self.size)
 
     def tell(self):
         "Return the current frame number"
-
         return self._tell()
 
     def _seek(self, frame):
-
         self.fp = self.__fp
         if frame < self.__frame:
             # rewind file
@@ -650,14 +658,21 @@ class TiffImageFile(ImageFile.ImageFile):
         while self.__frame < frame:
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
+            if Image.DEBUG:
+                print("Seeking to frame %s, on frame %s, __next %s, location: %s"%
+                      (frame, self.__frame, self.__next, self.fp.tell()))            
+            # reset python3 buffered io handle in case fp
+            # was passed to libtiff, invalidating the buffer
+            self.fp.tell()
             self.fp.seek(self.__next)
+            if Image.DEBUG:
+                print("Loading tags, location: %s"%self.fp.tell())
             self.tag.load(self.fp)
             self.__next = self.tag.next
             self.__frame += 1
         self._setup()
-
+        
     def _tell(self):
-
         return self.__frame
 
     def _decoder(self, rawmode, layer, tile=None):
@@ -706,6 +721,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
         ignored, extents, ignored_2, args = self.tile[0]
+        args = args + (self.ifd.offset,)
         decoder = Image._getdecoder(self.mode, 'libtiff', args,
                                     self.decoderconfig)
         try:
@@ -744,7 +760,8 @@ class TiffImageFile(ImageFile.ImageFile):
         self.readonly = 0
         # libtiff closed the fp in a, we need to close self.fp, if possible
         if hasattr(self.fp, 'close'):
-            self.fp.close()
+            if not self.__next:
+                self.fp.close()
         self.fp = None  # might be shared
 
         if err < 0:

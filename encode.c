@@ -100,6 +100,18 @@ _dealloc(ImagingEncoderObject* encoder)
 }
 
 static PyObject*
+_encode_cleanup(ImagingEncoderObject* encoder, PyObject* args)
+{
+    int status = 0;
+
+    if (encoder->cleanup){
+        status = encoder->cleanup(&encoder->state);
+    }
+
+    return Py_BuildValue("i", status);
+}
+
+static PyObject*
 _encode(ImagingEncoderObject* encoder, PyObject* args)
 {
     PyObject* buf;
@@ -239,6 +251,7 @@ _setimage(ImagingEncoderObject* encoder, PyObject* args)
 
 static struct PyMethodDef methods[] = {
     {"encode", (PyCFunction)_encode, 1},
+    {"cleanup", (PyCFunction)_encode_cleanup, 1},
     {"encode_to_file", (PyCFunction)_encode_to_file, 1},
     {"setimage", (PyCFunction)_setimage, 1},
     {NULL, NULL} /* sentinel */
@@ -540,8 +553,8 @@ static unsigned int** get_qtables_arrays(PyObject* qtables) {
 
     tables = PySequence_Fast(qtables, "expected a sequence");
     num_tables = PySequence_Size(qtables);
-    if (num_tables < 2 || num_tables > NUM_QUANT_TBLS) {
-        PyErr_SetString(PyExc_ValueError, "Not a valid numbers of quantization tables. Should be between 2 and 4.");
+    if (num_tables < 1 || num_tables > NUM_QUANT_TBLS) {
+        PyErr_SetString(PyExc_ValueError, "Not a valid numbers of quantization tables. Should be between 1 and 4.");
         return NULL;
     }
     qarrays = (unsigned int**) PyMem_Malloc(num_tables * sizeof(unsigned int*));
@@ -760,7 +773,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                                                         (ttag_t) PyInt_AsLong(key),
                                                         intav);
                         free(intav);
-                    }       
+                    }
                 } else {
                     TRACE((" %d elements, setting as floats \n", len));
                     floatav = malloc(sizeof(float)*len);
@@ -903,7 +916,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
     j2k_decode_coord_tuple(tile_offset,
                            &context->tile_offset_x,
                            &context->tile_offset_y);
-    j2k_decode_coord_tuple(tile_size, 
+    j2k_decode_coord_tuple(tile_size,
                            &context->tile_size_x,
                            &context->tile_size_y);
 
@@ -918,7 +931,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
 
         if (context->tile_offset_x > context->offset_x
             || context->tile_offset_y > context->offset_y) {
-            PyErr_SetString(PyExc_ValueError, 
+            PyErr_SetString(PyExc_ValueError,
                             "JPEG 2000 tile offset too large to cover image area");
             Py_DECREF(encoder);
             return NULL;

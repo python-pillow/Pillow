@@ -20,3 +20,6 @@ Pillow is the "friendly" PIL fork by `Alex Clark and Contributors <https://githu
 .. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.png?branch=master
   :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
 
+.. image:: https://landscape.io/github/python-pillow/Pillow/master/landscape.png
+   :target: https://landscape.io/github/python-pillow/Pillow/master
+   :alt: Code Health
