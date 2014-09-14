@@ -180,7 +180,7 @@ def tostring(im, format, **options):
     return out.getvalue()
 
 
-def test_image(filename, mode="RGB", cache={}):
+def image(filename, mode="RGB", cache={}):
     from PIL import Image
     from os import path
     im = None
@@ -192,21 +192,21 @@ def test_image(filename, mode="RGB", cache={}):
         if mode == "RGB":
             im = Image.open(path.join("Tests/images", filename))
         elif mode == "F":
-            im = test_image(filename, "L").convert(mode)
+            im = image(filename, "L").convert(mode)
         elif mode[:4] == "I;16":
-            im = test_image(filename, "I").convert(mode)
+            im = image(filename, "I").convert(mode)
         else:
-            im = test_image(filename, "RGB").convert(mode)
+            im = image(filename, "RGB").convert(mode)
     # cache[mode] = im
     return im
 
 
 def hopper(mode="RGB", cache={}):
-    return test_image("hopper.ppm", mode, cache)
+    return image("hopper.ppm", mode, cache)
 
 
 def lena(mode="RGB", cache={}):
-    return test_image("lena.ppm", mode, cache)
+    return image("lena.ppm", mode, cache)
 
 
 def command_succeeds(cmd):
