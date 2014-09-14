@@ -32,7 +32,7 @@ class TestImageTransform(PillowTestCase):
         scaled = im.resize((w*2, h*2), Image.BILINEAR).crop((0, 0, w, h))
 
         # undone -- precision?
-        self.assert_image_similar(transformed, scaled, 10)
+        self.assert_image_similar(transformed, scaled, 23)
 
     def test_quad(self):
         # one simple quad transform, equivalent to scale & crop upper left quad
