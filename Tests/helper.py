@@ -180,6 +180,7 @@ def tostring(im, format, **options):
     return out.getvalue()
 
 
+# Note: hopper() should be used in place of lena(), which will be removed.
 def hopper(mode="RGB", cache={}):
     from PIL import Image
     im = None
@@ -200,6 +201,7 @@ def hopper(mode="RGB", cache={}):
     return im
 
 
+# Note: hopper() should be used instead lena(), which will be removed.
 def lena(mode="RGB", cache={}):
     from PIL import Image
     im = None
