@@ -35,11 +35,11 @@ class TestImageStat(PillowTestCase):
         st = ImageStat.Stat(im)
 
         # verify a few values
-        self.assertEqual(st.extrema[0], (61, 255))
-        self.assertEqual(st.median[0], 197)
-        self.assertEqual(st.sum[0], 2954416)
-        self.assertEqual(st.sum[1], 2027250)
-        self.assertEqual(st.sum[2], 1727331)
+        self.assertEqual(st.extrema[0], (0, 255))
+        self.assertEqual(st.median[0], 72)
+        self.assertEqual(st.sum[0], 1470218)
+        self.assertEqual(st.sum[1], 1311896)
+        self.assertEqual(st.sum[2], 1563008)
 
     def test_constant(self):
 
