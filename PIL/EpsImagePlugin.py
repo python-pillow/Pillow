@@ -99,9 +99,9 @@ def Ghostscript(tile, size, fp, scale=1):
         in_fd, infile_temp = tempfile.mkstemp()
         os.close(in_fd)
         infile = infile_temp
-        
+
         # ignore length and offset!
-        # ghostscript can read it   
+        # ghostscript can read it
         # copy whole file to read in ghostscript
         with open(infile_temp, 'wb') as f:
             # fetch length of fp
@@ -149,21 +149,26 @@ def Ghostscript(tile, size, fp, scale=1):
     finally:
         try:
             os.unlink(outfile)
-            if infile_temo:
+            if infile_temp:
                 os.unlink(infile_temp)
-        except: pass
-    
+        except:
+            pass
+
     return im
 
 
 class PSFile:
-    """Wrapper for bytesio object that treats either CR or LF as end of line."""
+    """
+    Wrapper for bytesio object that treats either CR or LF as end of line.
+    """
     def __init__(self, fp):
         self.fp = fp
         self.char = None
+
     def seek(self, offset, whence=0):
         self.char = None
         self.fp.seek(offset, whence)
+
     def readline(self):
         s = self.char or b""
         self.char = None
@@ -177,8 +182,9 @@ class PSFile:
         # line endings can be 1 or 2 of \r \n, in either order
         if self.char in b"\r\n":
             self.char = None
-            
-        return s.decode('latin-1') 
+
+        return s.decode('latin-1')
+
 
 def _accept(prefix):
     return prefix[:4] == b"%!PS" or i32(prefix) == 0xC6D3D0C5
@@ -194,7 +200,7 @@ class EpsImageFile(ImageFile.ImageFile):
     format = "EPS"
     format_description = "Encapsulated Postscript"
 
-    mode_map = { 1:"L", 2:"LAB", 3:"RGB" }
+    mode_map = {1: "L", 2: "LAB", 3: "RGB"}
 
     def _open(self):
         (length, offset) = self._find_offset(self.fp)
@@ -206,9 +212,9 @@ class EpsImageFile(ImageFile.ImageFile):
                 # Python2, no encoding conversion necessary
                 fp = open(self.fp.name, "Ur")
             else:
-                # Python3, can use bare open command. 
+                # Python3, can use bare open command.
                 fp = open(self.fp.name, "Ur", encoding='latin-1')
-        except Exception as msg:
+        except:
             # Expect this for bytesio/stringio
             fp = PSFile(self.fp)
 
@@ -224,7 +230,7 @@ class EpsImageFile(ImageFile.ImageFile):
         # Load EPS header
 
         s = fp.readline().strip('\r\n')
-        
+
         while s:
             if len(s) > 255:
                 raise SyntaxError("not an EPS file")
@@ -290,10 +296,10 @@ class EpsImageFile(ImageFile.ImageFile):
                     self.mode = self.mode_map[int(mo)]
                 except:
                     break
-                
+
                 self.size = int(x), int(y)
                 return
-            
+
             s = fp.readline().strip('\r\n')
             if not s:
                 break
@@ -302,19 +308,20 @@ class EpsImageFile(ImageFile.ImageFile):
             raise IOError("cannot determine EPS bounding box")
 
     def _find_offset(self, fp):
-        
+
         s = fp.read(160)
-        
+
         if s[:4] == b"%!PS":
             # for HEAD without binary preview
             fp.seek(0, 2)
             length = fp.tell()
             offset = 0
         elif i32(s[0:4]) == 0xC6D3D0C5:
-            # FIX for: Some EPS file not handled correctly / issue #302 
+            # FIX for: Some EPS file not handled correctly / issue #302
             # EPS can contain binary data
             # or start directly with latin coding
-            # more info see http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
+            # more info see:
+            # http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
             offset = i32(s[4:8])
             length = i32(s[8:12])
         else:
