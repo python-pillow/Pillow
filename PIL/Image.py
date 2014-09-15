@@ -98,11 +98,12 @@ except ImportError:
     import __builtin__
     builtins = __builtin__
 
-from PIL import ImageMode
+from PIL import ImageMode, ImageQt
 from PIL._binary import i8
 from PIL._util import isPath
 from PIL._util import isStringType
 from PIL._util import deferred_error
+
 
 import os
 import sys
@@ -1923,6 +1924,14 @@ class Image:
         im = self.im.effect_spread(distance)
         return self._new(im)
 
+    if ImageQt.qt_is_installed:
+        def toqimage(self):
+            return ImageQt.toqimage(self)
+
+        def toqpixmap(self):
+            return ImageQt.toqpixmap(self)
+
+
 
 # --------------------------------------------------------------------
 # Lazy operations
@@ -2169,6 +2178,11 @@ def fromarray(obj, mode=None):
             obj = obj.tostring()
 
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
+
+
+if ImageQt.qt_is_installed:
+    from PIL.ImageQt import fromqimage, fromqpixmap
+
 
 _fromarray_typemap = {
     # (shape, typestr) => mode, rawmode
