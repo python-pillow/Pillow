@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, image
+from helper import unittest, PillowTestCase, hopper
 from test_imageqt import PillowQtTestCase
 
 from PIL import Image, ImageQt
