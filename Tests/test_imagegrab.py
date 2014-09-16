@@ -1,5 +1,8 @@
 from helper import unittest, PillowTestCase
 
+import exceptions
+import sys
+
 try:
     from PIL import ImageGrab
 
@@ -17,6 +20,28 @@ except ImportError:
     class TestImageGrab(PillowTestCase):
         def test_skip(self):
             self.skipTest("ImportError")
+
+
+class TestImageGrabImport(PillowTestCase):
+
+    def test_import(self):
+        # Arrange
+        exception = None
+
+        # Act
+        try:
+            from PIL import ImageGrab
+            ImageGrab.__name__  # dummy to prevent Pyflakes warning
+        except Exception as exception:
+            pass
+
+        # Assert
+        if sys.platform == 'win32':
+            self.assertIsNone(exception, None)
+        else:
+            self.assertIsInstance(exception, exceptions.ImportError)
+            self.assertEqual(exception.message,
+                             "ImageGrab is Windows only")
 
 
 if __name__ == '__main__':

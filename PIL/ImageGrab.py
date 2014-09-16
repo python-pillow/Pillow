@@ -17,6 +17,9 @@
 
 from PIL import Image
 
+import sys
+if sys.platform != "win32":
+    raise ImportError("ImageGrab is Windows only")
 
 try:
     # built-in driver (1.1.3 and later)
@@ -40,7 +43,7 @@ def grab(bbox=None):
 
 
 def grabclipboard():
-    debug = 0 # temporary interface
+    debug = 0  # temporary interface
     data = Image.core.grabclipboard(debug)
     if isinstance(data, bytes):
         from PIL import BmpImagePlugin
