@@ -1,6 +1,5 @@
 from helper import unittest, PillowTestCase
 
-import exceptions
 import sys
 
 try:
@@ -39,7 +38,7 @@ class TestImageGrabImport(PillowTestCase):
         if sys.platform == 'win32':
             self.assertIsNone(exception, None)
         else:
-            self.assertIsInstance(exception, exceptions.ImportError)
+            self.assertIsInstance(exception, ImportError)
             self.assertEqual(exception.message,
                              "ImageGrab is Windows only")
 
