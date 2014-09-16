@@ -31,8 +31,8 @@ class TestImageGrabImport(PillowTestCase):
         try:
             from PIL import ImageGrab
             ImageGrab.__name__  # dummy to prevent Pyflakes warning
-        except Exception as exception:
-            pass
+        except Exception as e:
+            exception = e
 
         # Assert
         if sys.platform == 'win32':
