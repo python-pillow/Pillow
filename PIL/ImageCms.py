@@ -1,19 +1,19 @@
-"""
-The Python Imaging Library.
-$Id$
+## The Python Imaging Library.
+## $Id$
 
-Optional color managment support, based on Kevin Cazabon's PyCMS
-library.
+## Optional color managment support, based on Kevin Cazabon's PyCMS
+## library.
 
-History:
-2009-03-08 fl   Added to PIL.
+## History:
 
-Copyright (C) 2002-2003 Kevin Cazabon
-Copyright (c) 2009 by Fredrik Lundh
+## 2009-03-08 fl   Added to PIL.
 
-See the README file for information on usage and redistribution.  See
-below for the original description.
-"""
+## Copyright (C) 2002-2003 Kevin Cazabon
+## Copyright (c) 2009 by Fredrik Lundh
+## Copyright (c) 2013 by Eric Soroos
+
+## See the README file for information on usage and redistribution.  See
+## below for the original description.
 
 from __future__ import print_function
 
@@ -150,8 +150,13 @@ for flag in FLAGS.values():
 class ImageCmsProfile:
 
     def __init__(self, profile):
-        # accepts a string (filename), a file-like object, or a low-level
-        # profile object
+        """
+        :param profile: Either a string representing a filename,
+            a file like object containing a profile or a
+            low-level profile object
+            
+        """
+        
         if isStringType(profile):
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
@@ -169,12 +174,23 @@ class ImageCmsProfile:
             self.product_name = None
             self.product_info = None
 
+    def tobytes(self):
+        """
+        Returns the profile in a format suitable for embedding in
+        saved images.
+
+        :returns: a bytes object containing the ICC profile.
+        """
+        
+        return core.profile_tobytes(self.profile)
 
 class ImageCmsTransform(Image.ImagePointHandler):
 
-    """Transform.  This can be used with the procedural API, or with the
-    standard Image.point() method.
-    """
+    # Transform.  This can be used with the procedural API, or with the
+    # standard Image.point() method.
+    #
+    # Will return the output profile in the output.info['icc_profile'].
+
 
     def __init__(self, input, output, input_mode, output_mode,
                  intent=INTENT_PERCEPTUAL, proof=None,
@@ -197,6 +213,8 @@ class ImageCmsTransform(Image.ImagePointHandler):
         self.input_mode = self.inputMode = input_mode
         self.output_mode = self.outputMode = output_mode
 
+        self.output_profile = output
+
     def point(self, im):
         return self.apply(im)
 
@@ -205,6 +223,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         if imOut is None:
             imOut = Image.new(self.output_mode, im.size, None)
         self.transform.apply(im.im.id, imOut.im.id)
+        imOut.info['icc_profile'] = self.output_profile.tobytes()
         return imOut
 
     def apply_in_place(self, im):
@@ -212,6 +231,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         if im.mode != self.output_mode:
             raise ValueError("mode mismatch")  # wrong output mode
         self.transform.apply(im.im.id, im.im.id)
+        im.info['icc_profile'] = self.output_profile.tobytes()
         return im
 
 
@@ -570,7 +590,7 @@ def applyTransform(im, transform, inPlace=0):
         with the transform applied is returned (and im is not changed). The
         default is False.
     :returns: Either None, or a new PIL Image object, depending on the value of
-        inPlace
+        inPlace. The profile will be returned in the image's info['icc_profile'].
     :exception PyCMSError:
     """
 
@@ -637,7 +657,7 @@ def getProfileName(profile):
 
     (pyCMS) Gets the internal product name for the given profile.
 
-     If profile isn't a valid CmsProfile object or filename to a profile,
+    If profile isn't a valid CmsProfile object or filename to a profile,
     a PyCMSError is raised If an error occurs while trying to obtain the
     name tag, a PyCMSError is raised.
 
@@ -876,7 +896,7 @@ def isIntentSupported(profile, intent, direction):
     input/output/proof profile as you desire.
 
     Some profiles are created specifically for one "direction", can cannot
-     be used for others.  Some profiles can only be used for certain
+    be used for others.  Some profiles can only be used for certain
     rendering intents... so it's best to either verify this before trying
     to create a transform with them (using this function), or catch the
     potential PyCMSError that will occur if they don't support the modes

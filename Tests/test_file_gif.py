@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena, netpbm_available
+from helper import unittest, PillowTestCase, hopper, netpbm_available
 
 from PIL import Image
 from PIL import GifImagePlugin
@@ -6,8 +6,9 @@ from PIL import GifImagePlugin
 codecs = dir(Image.core)
 
 # sample gif stream
-file = "Tests/images/lena.gif"
-with open(file, "rb") as f:
+TEST_GIF = "Tests/images/hopper.gif"
+
+with open(TEST_GIF, "rb") as f:
     data = f.read()
 
 
@@ -18,7 +19,7 @@ class TestFileGif(PillowTestCase):
             self.skipTest("gif support not available")  # can this happen?
 
     def test_sanity(self):
-        im = Image.open(file)
+        im = Image.open(TEST_GIF)
         im.load()
         self.assertEqual(im.mode, "P")
         self.assertEqual(im.size, (128, 128))
@@ -35,9 +36,17 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(test(0), 800)
         self.assertEqual(test(1), 38)
 
+    def test_optimize_full_l(self):
+        from io import BytesIO
+
+        im = Image.frombytes("L", (16, 16), bytes(bytearray(range(256))))
+        file = BytesIO()
+        im.save(file, "GIF", optimize=True)
+        self.assertEqual(im.mode, "L")
+
     def test_roundtrip(self):
         out = self.tempfile('temp.gif')
-        im = lena()
+        im = hopper()
         im.save(out)
         reread = Image.open(out)
 
@@ -46,17 +55,17 @@ class TestFileGif(PillowTestCase):
     def test_roundtrip2(self):
         # see https://github.com/python-pillow/Pillow/issues/403
         out = self.tempfile('temp.gif')
-        im = Image.open('Tests/images/lena.gif')
+        im = Image.open(TEST_GIF)
         im2 = im.copy()
         im2.save(out)
         reread = Image.open(out)
 
-        self.assert_image_similar(reread.convert('RGB'), lena(), 50)
+        self.assert_image_similar(reread.convert('RGB'), hopper(), 50)
 
     def test_palette_handling(self):
         # see https://github.com/python-pillow/Pillow/issues/513
 
-        im = Image.open('Tests/images/lena.gif')
+        im = Image.open(TEST_GIF)
         im = im.convert('RGB')
 
         im = im.resize((100, 100), Image.ANTIALIAS)
@@ -92,7 +101,7 @@ class TestFileGif(PillowTestCase):
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_bmp_mode(self):
-        img = Image.open(file).convert("RGB")
+        img = Image.open(TEST_GIF).convert("RGB")
 
         tempfile = self.tempfile("temp.gif")
         GifImagePlugin._save_netpbm(img, 0, tempfile)
@@ -100,11 +109,55 @@ class TestFileGif(PillowTestCase):
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_l_mode(self):
-        img = Image.open(file).convert("L")
+        img = Image.open(TEST_GIF).convert("L")
 
         tempfile = self.tempfile("temp.gif")
         GifImagePlugin._save_netpbm(img, 0, tempfile)
         self.assert_image_similar(img, Image.open(tempfile).convert("L"), 0)
+
+    def test_seek(self):
+        img = Image.open("Tests/images/dispose_none.gif")
+        framecount = 0
+        try:
+            while True:
+                framecount += 1
+                img.seek(img.tell() +1)
+        except EOFError:
+            self.assertEqual(framecount, 5)
+
+    def test_dispose_none(self):
+        img = Image.open("Tests/images/dispose_none.gif")
+        try:
+            while True:
+                img.seek(img.tell() +1)
+                self.assertEqual(img.disposal_method, 1)
+        except EOFError:
+            pass
+
+    def test_dispose_background(self):
+        img = Image.open("Tests/images/dispose_bgnd.gif")
+        try:
+            while True:
+                img.seek(img.tell() +1)
+                self.assertEqual(img.disposal_method, 2)
+        except EOFError:
+            pass
+
+    def test_dispose_previous(self):
+        img = Image.open("Tests/images/dispose_prev.gif")
+        try:
+            while True:
+                img.seek(img.tell() +1)
+                self.assertEqual(img.disposal_method, 3)
+        except EOFError:
+            pass
+
+    def test_iss634(self):
+        img = Image.open("Tests/images/iss634.gif")
+        # seek to the second frame
+        img.seek(img.tell() +1)
+        # all transparent pixels should be replaced with the color from the first frame
+        self.assertEqual(img.histogram()[img.info['transparency']], 0)
 
 
 if __name__ == '__main__':

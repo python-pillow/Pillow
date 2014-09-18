@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena, fromstring, tostring
+from helper import unittest, PillowTestCase, lena, fromstring, tostring
 
 from io import BytesIO
 
@@ -14,7 +14,7 @@ MAXBLOCK = ImageFile.MAXBLOCK
 SAFEBLOCK = ImageFile.SAFEBLOCK
 
 
-class TestImagePutData(PillowTestCase):
+class TestImageFile(PillowTestCase):
 
     def test_parser(self):
 

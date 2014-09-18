@@ -60,3 +60,9 @@ docs/_build/
 \#*#
 .#*
 
+#Komodo
+*.komodoproject
+
+#OS
+.DS_Store
+

@@ -133,11 +133,27 @@ class ImageFile(Image.Image):
             return pixel
 
         self.map = None
-
+        use_mmap = self.filename and len(self.tile) == 1
+        # As of pypy 2.1.0, memory mapping was failing here.
+        use_mmap = use_mmap and not hasattr(sys, 'pypy_version_info') 
+        
         readonly = 0
 
-        if self.filename and len(self.tile) == 1 and not hasattr(sys, 'pypy_version_info'):
-            # As of pypy 2.1.0, memory mapping was failing here.
+        # look for read/seek overrides
+        try:
+            read = self.load_read
+            # don't use mmap if there are custom read/seek functions
+            use_mmap = False
+        except AttributeError:
+            read = self.fp.read
+
+        try:
+            seek = self.load_seek
+            use_mmap = False
+        except AttributeError:
+            seek = self.fp.seek
+
+        if use_mmap:
             # try memory mapping
             d, e, o, a = self.tile[0]
             if d == "raw" and a[0] == self.mode and a[0] in Image._MAPMODES:
@@ -165,19 +181,7 @@ class ImageFile(Image.Image):
 
         self.load_prepare()
 
-        # look for read/seek overrides
-        try:
-            read = self.load_read
-        except AttributeError:
-            read = self.fp.read
-
-        try:
-            seek = self.load_seek
-        except AttributeError:
-            seek = self.fp.seek
-
         if not self.map:
-
             # sort tiles in file order
             self.tile.sort(key=_tilesort)
 
@@ -223,6 +227,8 @@ class ImageFile(Image.Image):
                         break
                     b = b[n:]
                     t = t + n
+                # Need to cleanup here to prevent leaks in PyPy
+                d.cleanup()
 
         self.tile = []
         self.readonly = readonly
@@ -467,6 +473,7 @@ def _save(im, fp, tile, bufsize=0):
                     break
             if s < 0:
                 raise IOError("encoder error %d when writing image file" % s)
+            e.cleanup()
     else:
         # slight speedup: compress to real file object
         for e, b, o, a in tile:
@@ -477,6 +484,7 @@ def _save(im, fp, tile, bufsize=0):
             s = e.encode_to_file(fh, bufsize)
             if s < 0:
                 raise IOError("encoder error %d when writing image file" % s)
+            e.cleanup()
     try:
         fp.flush()
     except: pass

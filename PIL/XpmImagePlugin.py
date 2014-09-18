@@ -29,6 +29,7 @@ xpm_head = re.compile(b"\"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)")
 def _accept(prefix):
     return prefix[:9] == b"/* XPM */"
 
+
 ##
 # Image plugin for X11 pixel maps.
 
@@ -86,9 +87,9 @@ class XpmImageFile(ImageFile.ImageFile):
                     elif rgb[0:1] == b"#":
                         # FIXME: handle colour names (see ImagePalette.py)
                         rgb = int(rgb[1:], 16)
-                        palette[c] = o8((rgb >> 16) & 255) +\
-                                     o8((rgb >> 8) & 255) +\
-                                     o8(rgb & 255)
+                        palette[c] = (o8((rgb >> 16) & 255) +
+                                      o8((rgb >> 8) & 255) +
+                                      o8(rgb & 255))
                     else:
                         # unknown colour
                         raise ValueError("cannot read this XPM file")

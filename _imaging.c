@@ -71,7 +71,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-#define PILLOW_VERSION "2.5.0"
+#define PILLOW_VERSION "2.5.3"
 
 #include "Python.h"
 
@@ -365,9 +365,12 @@ getbands(const char* mode)
 static void*
 getlist(PyObject* arg, int* length, const char* wrong_length, int type)
 {
-    int i, n;
+    int i, n, itemp;
+    double dtemp;
     void* list;
-
+    PyObject* seq;
+    PyObject* op;
+    
     if (!PySequence_Check(arg)) {
         PyErr_SetString(PyExc_TypeError, must_be_sequence);
         return NULL;
@@ -383,71 +386,35 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
     if (!list)
         return PyErr_NoMemory();
 
-    switch (type) {
-    case TYPE_UINT8:
-        if (PyList_Check(arg)) {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PyList_GET_ITEM(arg, i);
-                int temp = PyInt_AsLong(op);
-                ((UINT8*)list)[i] = CLIP(temp);
-            }
-        } else {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(arg, i);
-                int temp = PyInt_AsLong(op);
-                Py_XDECREF(op);
-                ((UINT8*)list)[i] = CLIP(temp);
-            }
+    seq = PySequence_Fast(arg, must_be_sequence);
+    if (!seq) {
+        free(list);
+        PyErr_SetString(PyExc_TypeError, must_be_sequence);
+        return NULL;
+    }
+    
+    for (i = 0; i < n; i++) {
+        op = PySequence_Fast_GET_ITEM(seq, i);
+        // DRY, branch prediction is going to work _really_ well 
+        // on this switch. And 3 fewer loops to copy/paste. 
+        switch (type) {
+        case TYPE_UINT8:
+            itemp = PyInt_AsLong(op);
+            ((UINT8*)list)[i] = CLIP(itemp);
+            break;
+        case TYPE_INT32:
+            itemp = PyInt_AsLong(op);
+            ((INT32*)list)[i] = itemp;
+            break;
+        case TYPE_FLOAT32:
+            dtemp = PyFloat_AsDouble(op);
+            ((FLOAT32*)list)[i] = (FLOAT32) dtemp;
+            break;
+        case TYPE_DOUBLE:
+            dtemp = PyFloat_AsDouble(op);
+            ((double*)list)[i] = (double) dtemp;
+            break;
         }
-        break;
-    case TYPE_INT32:
-        if (PyList_Check(arg)) {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PyList_GET_ITEM(arg, i);
-                int temp = PyInt_AsLong(op);
-                ((INT32*)list)[i] = temp;
-            }
-        } else {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(arg, i);
-                int temp = PyInt_AsLong(op);
-                Py_XDECREF(op);
-                ((INT32*)list)[i] = temp;
-            }
-        }
-        break;
-    case TYPE_FLOAT32:
-        if (PyList_Check(arg)) {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PyList_GET_ITEM(arg, i);
-                double temp = PyFloat_AsDouble(op);
-                ((FLOAT32*)list)[i] = (FLOAT32) temp;
-            }
-        } else {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(arg, i);
-                double temp = PyFloat_AsDouble(op);
-                Py_XDECREF(op);
-                ((FLOAT32*)list)[i] = (FLOAT32) temp;
-            }
-        }
-        break;
-    case TYPE_DOUBLE:
-        if (PyList_Check(arg)) {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PyList_GET_ITEM(arg, i);
-                double temp = PyFloat_AsDouble(op);
-                ((double*)list)[i] = temp;
-            }
-        } else {
-            for (i = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(arg, i);
-                double temp = PyFloat_AsDouble(op);
-                Py_XDECREF(op);
-                ((double*)list)[i] = temp;
-            }
-        }
-        break;
     }
 
     if (length)
@@ -1253,6 +1220,8 @@ _putdata(ImagingObject* self, PyObject* args)
     Py_ssize_t n, i, x, y;
 
     PyObject* data;
+    PyObject* seq;
+    PyObject* op;
     double scale = 1.0;
     double offset = 0.0;
 
@@ -1292,69 +1261,61 @@ _putdata(ImagingObject* self, PyObject* args)
                         x = 0, y++;
                 }
         } else {
-            if (scale == 1.0 && offset == 0.0) {
-                /* Clipped data */
-                if (PyList_Check(data)) {
-                    for (i = x = y = 0; i < n; i++) {
-                        PyObject *op = PyList_GET_ITEM(data, i);
-                        image->image8[y][x] = (UINT8) CLIP(PyInt_AsLong(op));
-                        if (++x >= (int) image->xsize)
-                            x = 0, y++;
-                    }
-                } else {
-                    for (i = x = y = 0; i < n; i++) {
-                        PyObject *op = PySequence_GetItem(data, i);
-                        image->image8[y][x] = (UINT8) CLIP(PyInt_AsLong(op));
-                        Py_XDECREF(op);
-                        if (++x >= (int) image->xsize)
-                            x = 0, y++;
-                    }
-                }
+           seq = PySequence_Fast(data, must_be_sequence);
+           if (!seq) {
+               PyErr_SetString(PyExc_TypeError, must_be_sequence);
+               return NULL;
+           }
+           if (scale == 1.0 && offset == 0.0) {
+               /* Clipped data */
+               for (i = x = y = 0; i < n; i++) {
+                   op = PySequence_Fast_GET_ITEM(data, i);
+                   image->image8[y][x] = (UINT8) CLIP(PyInt_AsLong(op));
+                   if (++x >= (int) image->xsize){
+                       x = 0, y++;
+                   }
+               }
+
             } else {
-                if (PyList_Check(data)) {
-                    /* Scaled and clipped data */
-                    for (i = x = y = 0; i < n; i++) {
-                        PyObject *op = PyList_GET_ITEM(data, i);
-                        image->image8[y][x] = CLIP(
-                            (int) (PyFloat_AsDouble(op) * scale + offset));
-                        if (++x >= (int) image->xsize)
-                            x = 0, y++;
-                    }
-                } else {
-                    for (i = x = y = 0; i < n; i++) {
-                        PyObject *op = PySequence_GetItem(data, i);
-                        image->image8[y][x] = CLIP(
-                            (int) (PyFloat_AsDouble(op) * scale + offset));
-                        Py_XDECREF(op);
-                        if (++x >= (int) image->xsize)
-                            x = 0, y++;
-                    }
-                }
-            }
-            PyErr_Clear(); /* Avoid weird exceptions */
+               /* Scaled and clipped data */
+               for (i = x = y = 0; i < n; i++) {
+                   PyObject *op = PySequence_Fast_GET_ITEM(data, i);
+                   image->image8[y][x] = CLIP(
+                       (int) (PyFloat_AsDouble(op) * scale + offset));
+                   if (++x >= (int) image->xsize){
+                       x = 0, y++;
+                   }
+               }
+           }
+           PyErr_Clear(); /* Avoid weird exceptions */
         }
     } else {
         /* 32-bit images */
+        seq = PySequence_Fast(data, must_be_sequence);
+        if (!seq) {
+            PyErr_SetString(PyExc_TypeError, must_be_sequence);
+            return NULL;
+        }
         switch (image->type) {
         case IMAGING_TYPE_INT32:
             for (i = x = y = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(data, i);
+                op = PySequence_Fast_GET_ITEM(data, i);
                 IMAGING_PIXEL_INT32(image, x, y) =
                     (INT32) (PyFloat_AsDouble(op) * scale + offset);
-                Py_XDECREF(op);
-                if (++x >= (int) image->xsize)
+                if (++x >= (int) image->xsize){
                     x = 0, y++;
+                }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
             break;
         case IMAGING_TYPE_FLOAT32:
             for (i = x = y = 0; i < n; i++) {
-                PyObject *op = PySequence_GetItem(data, i);
+                op = PySequence_Fast_GET_ITEM(data, i);
                 IMAGING_PIXEL_FLOAT32(image, x, y) =
                     (FLOAT32) (PyFloat_AsDouble(op) * scale + offset);
-                Py_XDECREF(op);
-                if (++x >= (int) image->xsize)
+                if (++x >= (int) image->xsize){
                     x = 0, y++;
+                }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
             break;
@@ -1365,16 +1326,15 @@ _putdata(ImagingObject* self, PyObject* args)
                     INT32 inkint;
                 } u;
 
-                PyObject *op = PySequence_GetItem(data, i);
+                op = PySequence_Fast_GET_ITEM(data, i);
                 if (!op || !getink(op, image, u.ink)) {
-                    Py_DECREF(op);
                     return NULL;
                 }
                 /* FIXME: what about scale and offset? */
                 image->image32[y][x] = u.inkint;
-                Py_XDECREF(op);
-                if (++x >= (int) image->xsize)
+                if (++x >= (int) image->xsize){
                     x = 0, y++;
+                }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
             break;

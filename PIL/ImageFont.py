@@ -29,12 +29,14 @@ from __future__ import print_function
 
 from PIL import Image
 from PIL._util import isDirectory, isPath
-import os, sys
+import os
+import sys
 
 try:
     import warnings
 except ImportError:
     warnings = None
+
 
 class _imagingft_not_installed:
     # module placeholder
@@ -90,8 +92,8 @@ class ImageFont:
         # read PILfont header
         if file.readline() != b"PILfont\n":
             raise SyntaxError("Not a PILfont file")
-        d = file.readline().split(b";")
-        self.info = [] # FIXME: should be a dictionary
+        file.readline().split(b";")
+        self.info = []  # FIXME: should be a dictionary
         while True:
             s = file.readline()
             if not s or s == b"DATA\n":
@@ -113,6 +115,7 @@ class ImageFont:
         self.getsize = self.font.getsize
         self.getmask = self.font.getmask
 
+
 ##
 # Wrapper for FreeType fonts.  Application code should use the
 # <b>truetype</b> factory function to create font objects.
@@ -124,14 +127,18 @@ class FreeTypeFont:
         # FIXME: use service provider instead
         if file:
             if warnings:
-                warnings.warn('file parameter deprecated, please use font parameter instead.', DeprecationWarning)
+                warnings.warn(
+                    'file parameter deprecated, '
+                    'please use font parameter instead.',
+                    DeprecationWarning)
             font = file
 
         if isPath(font):
             self.font = core.getfont(font, size, index, encoding)
         else:
             self.font_bytes = font.read()
-            self.font = core.getfont("", size, index, encoding, self.font_bytes)
+            self.font = core.getfont(
+                "", size, index, encoding, self.font_bytes)
 
     def getname(self):
         return self.font.family, self.font.style
@@ -140,7 +147,8 @@ class FreeTypeFont:
         return self.font.ascent, self.font.descent
 
     def getsize(self, text):
-        return self.font.getsize(text)[0]
+        size, offset = self.font.getsize(text)
+        return (size[0] + offset[0], size[1] + offset[1])
 
     def getoffset(self, text):
         return self.font.getsize(text)[1]
@@ -151,7 +159,7 @@ class FreeTypeFont:
     def getmask2(self, text, mode="", fill=Image.core.fill):
         size, offset = self.font.getsize(text)
         im = fill("L", size, 0)
-        self.font.render(text, im.id, mode=="1")
+        self.font.render(text, im.id, mode == "1")
         return im, offset
 
 ##
@@ -163,12 +171,13 @@ class FreeTypeFont:
 #     be one of Image.FLIP_LEFT_RIGHT, Image.FLIP_TOP_BOTTOM,
 #     Image.ROTATE_90, Image.ROTATE_180, or Image.ROTATE_270.
 
+
 class TransposedFont:
     "Wrapper for writing rotated or mirrored text"
 
     def __init__(self, font, orientation=None):
         self.font = font
-        self.orientation = orientation # any 'transpose' argument, or None
+        self.orientation = orientation  # any 'transpose' argument, or None
 
     def getsize(self, text):
         w, h = self.font.getsize(text)
@@ -221,7 +230,10 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
 
     if filename:
         if warnings:
-            warnings.warn('filename parameter deprecated, please use font parameter instead.', DeprecationWarning)
+            warnings.warn(
+                'filename parameter deprecated, '
+                'please use font parameter instead.',
+                DeprecationWarning)
         font = filename
 
     try:
@@ -272,8 +284,8 @@ def load_default():
     import base64
     f = ImageFont()
     f._load_pilfont_data(
-         # courB08
-         BytesIO(base64.decodestring(b'''
+        # courB08
+        BytesIO(base64.decodestring(b'''
 UElMZm9udAo7Ozs7OzsxMDsKREFUQQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -392,15 +404,4 @@ w7IkEbzhVQAAAABJRU5ErkJggg==
 '''))))
     return f
 
-
-if __name__ == "__main__":
-    # create font data chunk for embedding
-    import base64, os, sys
-    font = "../Tests/images/courB08"
-    print("    f._load_pilfont_data(")
-    print("         # %s" % os.path.basename(font))
-    print("         BytesIO(base64.decodestring(b'''")
-    base64.encode(open(font + ".pil", "rb"), sys.stdout)
-    print("''')), Image.open(BytesIO(base64.decodestring(b'''")
-    base64.encode(open(font + ".pbm", "rb"), sys.stdout)
-    print("'''))))")
+# End of file

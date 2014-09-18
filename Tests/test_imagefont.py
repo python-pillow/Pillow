@@ -1,12 +1,12 @@
-from helper import unittest, PillowTestCase, tearDownModule
+from helper import unittest, PillowTestCase
 
 from PIL import Image
 from PIL import ImageDraw
 from io import BytesIO
 import os
 
-font_path = "Tests/fonts/FreeMono.ttf"
-font_size = 20
+FONT_PATH = "Tests/fonts/FreeMono.ttf"
+FONT_SIZE = 20
 
 
 try:
@@ -20,17 +20,17 @@ try:
                 ImageFont.core.freetype2_version, "\d+\.\d+\.\d+$")
 
         def test_font_with_name(self):
-            ImageFont.truetype(font_path, font_size)
-            self._render(font_path)
+            ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            self._render(FONT_PATH)
             self._clean()
 
         def _font_as_bytes(self):
-            with open(font_path, 'rb') as f:
+            with open(FONT_PATH, 'rb') as f:
                 font_bytes = BytesIO(f.read())
             return font_bytes
 
         def test_font_with_filelike(self):
-            ImageFont.truetype(self._font_as_bytes(), font_size)
+            ImageFont.truetype(self._font_as_bytes(), FONT_SIZE)
             self._render(self._font_as_bytes())
             # Usage note:  making two fonts from the same buffer fails.
             # shared_bytes = self._font_as_bytes()
@@ -39,18 +39,18 @@ try:
             self._clean()
 
         def test_font_with_open_file(self):
-            with open(font_path, 'rb') as f:
+            with open(FONT_PATH, 'rb') as f:
                 self._render(f)
             self._clean()
 
         def test_font_old_parameters(self):
             self.assert_warning(
                 DeprecationWarning,
-                lambda: ImageFont.truetype(filename=font_path, size=font_size))
+                lambda: ImageFont.truetype(filename=FONT_PATH, size=FONT_SIZE))
 
         def _render(self, font):
             txt = "Hello World!"
-            ttf = ImageFont.truetype(font, font_size)
+            ttf = ImageFont.truetype(font, FONT_SIZE)
             w, h = ttf.getsize(txt)
             img = Image.new("RGB", (256, 64), "white")
             d = ImageDraw.Draw(img)
@@ -63,19 +63,33 @@ try:
             os.unlink('font.png')
 
         def test_render_equal(self):
-            img_path = self._render(font_path)
-            with open(font_path, 'rb') as f:
+            img_path = self._render(FONT_PATH)
+            with open(FONT_PATH, 'rb') as f:
                 font_filelike = BytesIO(f.read())
             img_filelike = self._render(font_filelike)
 
             self.assert_image_equal(img_path, img_filelike)
             self._clean()
 
+        def test_textsize_equal(self):
+            im = Image.new(mode='RGB', size=(300, 100))
+            draw = ImageDraw.Draw(im)
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+            txt = "Hello World!"
+            size = draw.textsize(txt, ttf)
+            draw.text((10, 10), txt, font=ttf)
+            draw.rectangle((10, 10, 10 + size[0], 10 + size[1]))
+
+            target = 'Tests/images/rectangle_surrounding_text.png'
+            target_img = Image.open(target)
+            self.assert_image_equal(im, target_img)
+
         def test_render_multiline(self):
             im = Image.new(mode='RGB', size=(300, 100))
             draw = ImageDraw.Draw(im)
-            ttf = ImageFont.truetype(font_path, font_size)
-            line_spacing = draw.textsize('A', font=ttf)[1] + 8
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            line_spacing = draw.textsize('A', font=ttf)[1] + 4
             lines = ['hey you', 'you are awesome', 'this looks awkward']
             y = 0
             for line in lines:
@@ -94,7 +108,7 @@ try:
             img_grey = Image.new("L", (100, 100))
             draw = ImageDraw.Draw(img_grey)
             word = "testing"
-            font = ImageFont.truetype(font_path, font_size)
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
             orientation = Image.ROTATE_90
             transposed_font = ImageFont.TransposedFont(
@@ -116,7 +130,7 @@ try:
             img_grey = Image.new("L", (100, 100))
             draw = ImageDraw.Draw(img_grey)
             word = "testing"
-            font = ImageFont.truetype(font_path, font_size)
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
             orientation = None
             transposed_font = ImageFont.TransposedFont(
@@ -132,6 +146,52 @@ try:
 
             # Check boxes a and b are same size
             self.assertEqual(box_size_a, box_size_b)
+
+        def test_free_type_font_get_name(self):
+            # Arrange
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+            # Act
+            name = font.getname()
+
+            # Assert
+            self.assertEqual(('FreeMono', 'Regular'), name)
+
+        def test_free_type_font_get_metrics(self):
+            # Arrange
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+            # Act
+            ascent, descent = font.getmetrics()
+
+            # Assert
+            self.assertIsInstance(ascent, int)
+            self.assertIsInstance(descent, int)
+            self.assertEqual((ascent, descent), (16, 4))  # too exact check?
+
+        def test_load_path_not_found(self):
+            # Arrange
+            filename = "somefilenamethatdoesntexist.ttf"
+
+            # Act/Assert
+            self.assertRaises(IOError, lambda: ImageFont.load_path(filename))
+
+        def test_default_font(self):
+            # Arrange
+            txt = 'This is a "better than nothing" default font.'
+            im = Image.new(mode='RGB', size=(300, 100))
+            draw = ImageDraw.Draw(im)
+
+            target = 'Tests/images/default_font.png'
+            target_img = Image.open(target)
+
+            # Act
+            default_font = ImageFont.load_default()
+            draw.text((10, 10), txt, font=default_font)
+
+            # Assert
+            self.assert_image_equal(im, target_img)
+
 
 except ImportError:
     class TestImageFont(PillowTestCase):

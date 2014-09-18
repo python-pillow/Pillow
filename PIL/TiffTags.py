@@ -46,8 +46,8 @@ TAGS = {
     (262, 5): "CMYK",
     (262, 6): "YCbCr",
     (262, 8): "CieLAB",
-    (262, 32803): "CFA", # TIFF/EP, Adobe DNG
-    (262, 32892): "LinearRaw", # Adobe DNG
+    (262, 32803): "CFA",  # TIFF/EP, Adobe DNG
+    (262, 32892): "LinearRaw",  # Adobe DNG
 
     263: "Thresholding",
     264: "CellWidth",
@@ -147,6 +147,100 @@ TAGS = {
     # ICC Profile
     34675: "ICCProfile",
 
+    # Additional Exif Info
+    33434: "ExposureTime",
+    33437: "FNumber",
+    34850: "ExposureProgram",
+    34852: "SpectralSensitivity",
+    34853: "GPSInfoIFD",
+    34855: "ISOSpeedRatings",
+    34856: "OECF",
+    34864: "SensitivityType",
+    34865: "StandardOutputSensitivity",
+    34866: "RecommendedExposureIndex",
+    34867: "ISOSpeed",
+    34868: "ISOSpeedLatitudeyyy",
+    34869: "ISOSpeedLatitudezzz",
+    36864: "ExifVersion",
+    36867: "DateTimeOriginal",
+    36868: "DateTImeDigitized",
+    37121: "ComponentsConfiguration",
+    37122: "CompressedBitsPerPixel",
+    37377: "ShutterSpeedValue",
+    37378: "ApertureValue",
+    37379: "BrightnessValue",
+    37380: "ExposureBiasValue",
+    37381: "MaxApertureValue",
+    37382: "SubjectDistance",
+    37383: "MeteringMode",
+    37384: "LightSource",
+    37385: "Flash",
+    37386: "FocalLength",
+    37396: "SubjectArea",
+    37500: "MakerNote",
+    37510: "UserComment",
+    37520: "SubSec",
+    37521: "SubSecTimeOriginal",
+    37522: "SubsecTimeDigitized",
+    40960: "FlashPixVersion",
+    40961: "ColorSpace",
+    40962: "PixelXDimension",
+    40963: "PixelYDimension",
+    40964: "RelatedSoundFile",
+    40965: "InteroperabilityIFD",
+    41483: "FlashEnergy",
+    41484: "SpatialFrequencyResponse",
+    41486: "FocalPlaneXResolution",
+    41487: "FocalPlaneYResolution",
+    41488: "FocalPlaneResolutionUnit",
+    41492: "SubjectLocation",
+    41493: "ExposureIndex",
+    41495: "SensingMethod",
+    41728: "FileSource",
+    41729: "SceneType",
+    41730: "CFAPattern",
+    41985: "CustomRendered",
+    41986: "ExposureMode",
+    41987: "WhiteBalance",
+    41988: "DigitalZoomRatio",
+    41989: "FocalLengthIn35mmFilm",
+    41990: "SceneCaptureType",
+    41991: "GainControl",
+    41992: "Contrast",
+    41993: "Saturation",
+    41994: "Sharpness",
+    41995: "DeviceSettingDescription",
+    41996: "SubjectDistanceRange",
+    42016: "ImageUniqueID",
+    42032: "CameraOwnerName",
+    42033: "BodySerialNumber",
+    42034: "LensSpecification",
+    42035: "LensMake",
+    42036: "LensModel",
+    42037: "LensSerialNumber",
+    42240: "Gamma",
+
+    # MP Info
+    45056: "MPFVersion",
+    45057: "NumberOfImages",
+    45058: "MPEntry",
+    45059: "ImageUIDList",
+    45060: "TotalFrames",
+    45313: "MPIndividualNum",
+    45569: "PanOrientation",
+    45570: "PanOverlap_H",
+    45571: "PanOverlap_V",
+    45572: "BaseViewpointNum",
+    45573: "ConvergenceAngle",
+    45574: "BaselineLength",
+    45575: "VerticalDivergence",
+    45576: "AxisDistance_X",
+    45577: "AxisDistance_Y",
+    45578: "AxisDistance_Z",
+    45579: "YawAngle",
+    45580: "PitchAngle",
+    45581: "RollAngle",
+
     # Adobe DNG
     50706: "DNGVersion",
     50707: "DNGBackwardVersion",
@@ -161,7 +255,6 @@ TAGS = {
     50716: "BlackLevelDeltaV",
     50717: "WhiteLevel",
     50718: "DefaultScale",
-    50741: "BestQualityScale",  # FIXME! Dictionary contains duplicate keys 50741
     50719: "DefaultCropOrigin",
     50720: "DefaultCropSize",
     50778: "CalibrationIlluminant1",
@@ -185,11 +278,12 @@ TAGS = {
     50737: "ChromaBlurRadius",
     50738: "AntiAliasStrength",
     50740: "DNGPrivateData",
-    50741: "MakerNoteSafety",  # FIXME! Dictionary contains duplicate keys 50741
+    50741: "MakerNoteSafety",
+    50780: "BestQualityScale",
 
-    #ImageJ
-    50838: "ImageJMetaDataByteCounts", # private tag registered with Adobe
-    50839: "ImageJMetaData", # private tag registered with Adobe
+    # ImageJ
+    50838: "ImageJMetaDataByteCounts",  # private tag registered with Adobe
+    50839: "ImageJMetaData",  # private tag registered with Adobe
 }
 
 ##

@@ -13,8 +13,8 @@
 #include "Imaging.h"
 
 /* use Tests/make_hash.py to calculate these values */
-#define ACCESS_TABLE_SIZE 21
-#define ACCESS_TABLE_HASH 30197
+#define ACCESS_TABLE_SIZE 27
+#define ACCESS_TABLE_HASH 3078
 
 static struct ImagingAccessInstance access_table[ACCESS_TABLE_SIZE];
 
@@ -238,6 +238,7 @@ ImagingAccessInit()
     ADD("CMYK", line_32, get_pixel_32, put_pixel_32);
     ADD("YCbCr", line_32, get_pixel_32, put_pixel_32);
     ADD("LAB", line_32, get_pixel_32, put_pixel_32);
+    ADD("HSV", line_32, get_pixel_32, put_pixel_32);
 }
 
 ImagingAccess

@@ -1,9 +1,9 @@
-from helper import unittest, PillowTestCase, tearDownModule
+from helper import unittest, PillowTestCase
 
 from PIL import Image
 
 
-class TestSanity(PillowTestCase):
+class TestLibImage(PillowTestCase):
 
     def test_setmode(self):
 

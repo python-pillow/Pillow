@@ -1,9 +1,25 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
 
 class TestImageTransform(PillowTestCase):
+
+    def test_sanity(self):
+        from PIL import ImageTransform
+
+        im = Image.new("L", (100, 100))
+
+        seq = tuple(range(10))
+
+        transform = ImageTransform.AffineTransform(seq[:6])
+        im.transform((100, 100), transform)
+        transform = ImageTransform.ExtentTransform(seq[:4])
+        im.transform((100, 100), transform)
+        transform = ImageTransform.QuadTransform(seq[:8])
+        im.transform((100, 100), transform)
+        transform = ImageTransform.MeshTransform([(seq[:4], seq[:8])])
+        im.transform((100, 100), transform)
 
     def test_extent(self):
         im = lena('RGB')

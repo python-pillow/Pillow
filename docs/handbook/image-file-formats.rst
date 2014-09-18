@@ -136,7 +136,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **quality**
     The image quality, on a scale from 1 (worst) to 95 (best). The default is
     75. Values above 95 should be avoided; 100 disables portions of the JPEG
-    compression algorithm, and results in large files with hardly any gain in =
+    compression algorithm, and results in large files with hardly any gain in
     image quality.
 
 **optimize**
@@ -588,6 +588,20 @@ PIL identifies and reads Microsoft Image Composer (MIC) files. When opened, the
 first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
 :py:meth:`~file.tell` to read other sprites from the file.
 
+MPO
+^^^
+
+Pillow identifies and reads Multi Picture Object (MPO) files, loading the primary
+image when first opened. The :py:meth:`~file.seek` and :py:meth:`~file.tell`
+methods may be used to read other pictures from the file. The pictures are
+zero-indexed and random access is supported.
+
+MIC (read only)
+
+Pillow identifies and reads Microsoft Image Composer (MIC) files. When opened, the
+first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
+:py:meth:`~file.tell` to read other sprites from the file.
+
 PCD
 ^^^
 
@@ -656,6 +670,7 @@ files, using either JPEG or HEX encoding depending on the image mode (and
 whether JPEG support is available or not).
 
 PIXAR (read only)
+^^^^
 
 PIL provides limited support for PIXAR raster files. The library can identify
 and read “dumped” RGB files.

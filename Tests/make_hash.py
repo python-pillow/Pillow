@@ -9,6 +9,7 @@ modes = [
     "RGB", "RGBA", "RGBa", "RGBX",
     "CMYK",
     "YCbCr",
+    "LAB", "HSV",
     ]
 
 

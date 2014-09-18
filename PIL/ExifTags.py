@@ -67,8 +67,8 @@ TAGS = {
     0x0213: "YCbCrPositioning",
     0x0214: "ReferenceBlackWhite",
     0x1000: "RelatedImageFileFormat",
-    0x1001: "RelatedImageLength",  # FIXME / Dictionary contains duplicate keys
-    0x1001: "RelatedImageWidth",   # FIXME \ Dictionary contains duplicate keys
+    0x1001: "RelatedImageWidth",
+    0x1002: "RelatedImageLength",
     0x828d: "CFARepeatPatternDim",
     0x828e: "CFAPattern",
     0x828f: "BatteryLevel",

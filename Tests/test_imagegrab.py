@@ -1,9 +1,9 @@
-from helper import unittest, PillowTestCase, tearDownModule
+from helper import unittest, PillowTestCase
 
 try:
     from PIL import ImageGrab
 
-    class TestImageCopy(PillowTestCase):
+    class TestImageGrab(PillowTestCase):
 
         def test_grab(self):
             im = ImageGrab.grab()
@@ -14,7 +14,7 @@ try:
             self.assert_image(im, im.mode, im.size)
 
 except ImportError:
-    class TestImageCopy(PillowTestCase):
+    class TestImageGrab(PillowTestCase):
         def test_skip(self):
             self.skipTest("ImportError")
 

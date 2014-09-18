@@ -4,9 +4,115 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
-- Test PalmImagePlugin and method to skip known bad tests
+- Jpeg2k Decode/Encode Memory Leak Fix #898
+  [joshware, wiredfool]
+
+- EpsFilePlugin Speed improvements #886
+  [wiredfool, karstenw]
+
+- Don't resize if already the right size.
+  [radarhere]
+
+- Fix for reading multipage TIFFs #885
+  [kostrom, wiredfool]
+
+- Correctly handle saving gray and CMYK JPEGs with quality=keep #857
+  [etienned]
+
+- Correct duplicate Tiff Metadata and Exif tag values
+  [hugovk]
+
+- Windows fixes #871
+  [wiredfool]
+
+- Fix TGA files with image ID field #856
+  [megabuz]
+
+- Fixed wrong P-mode of small, unoptimized L-mode GIF #843
+  [uvNikita]
+
+- Fixed CVE-2014-3598, a DOS in the Jpeg2KImagePlugin
+  [Andrew Drake]
+
+- Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin
+  [Andrew Drake]
+
+- setup.py: Close open file handle before deleting #844
+  [divergentdave]
+
+- Return Profile with Transformed Images #837
+  [wiredfool]
+
+- Changed docstring to refer to the correct function #836
+  [MatMoore]
+
+- Adding coverage support for C code tests #833
+  [wiredfool]
+
+- PyPy performance improvements #821
+  [wiredfool]
+
+- Added support for reading MPO files
+  [Feneric]
+  
+- Added support for encoding and decoding iTXt chunks #818
+  [dolda2000]
+
+- HSV Support #816
+  [wiredfool]
+
+- Removed unusable ImagePalette.new()
+  [hugovk]
+
+- Fix Scrambled XPM #808
+  [wiredfool]
+
+- Doc cleanup
+  [wiredfool]
+
+- Fix `ImageStat` docs
+  [akx]
+
+- Added docs for ExifTags
+  [Wintermute3]
+
+- More tests for CurImagePlugin, DcxImagePlugin, Effects.c, GimpGradientFile, ImageFont, ImageMath, ImagePalette, IptcImagePlugin, SpiderImagePlugin, SgiImagePlugin, XpmImagePlugin and _util
+  [hugovk]
+
+- Fix return value of FreeTypeFont.textsize() does not include font offsets
+  [tk0miya]
+
+- Fix dispose calculations for animated GIFs #765
+  [larsjsol]
+
+- Added class checking to Image __eq__ function #775
+  [radarhere, hugovk]
+
+- Test PalmImagePlugin and method to skip known bad tests #776
   [hugovk, wiredfool]
 
+2.5.3 (2014-08-18)
+------------------
+
+- Fixed CVE-2014-3598, a DOS in the Jpeg2KImagePlugin (backport)
+  [Andrew Drake]
+
+
+2.5.2 (2014-08-13)
+------------------
+
+- Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin (backport)
+  [Andrew Drake]
+
+ 
+2.5.1 (2014-07-10)
+------------------
+
+- Fixed install issue if Multiprocessing.Pool is not available
+  [wiredfool]
+
+- 32bit mult overflow fix #782
+  [wiredfool]
 
 2.5.0 (2014-07-01)
 ------------------
@@ -226,6 +332,12 @@ Changelog (Pillow)
 
 - Prefer homebrew freetype over X11 freetype (but still allow both)
   [dmckeone]
+
+2.3.2 (2014-08-13)
+------------------
+
+- Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin (backport)
+  [Andrew Drake]
 
 2.3.1 (2014-03-14)
 ------------------

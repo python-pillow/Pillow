@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
@@ -9,6 +9,27 @@ class TestImageMode(PillowTestCase):
 
         im = lena()
         im.mode
+
+        from PIL import ImageMode
+
+        ImageMode.getmode("1")
+        ImageMode.getmode("L")
+        ImageMode.getmode("P")
+        ImageMode.getmode("RGB")
+        ImageMode.getmode("I")
+        ImageMode.getmode("F")
+
+        m = ImageMode.getmode("1")
+        self.assertEqual(m.mode, "1")
+        self.assertEqual(m.bands, ("1",))
+        self.assertEqual(m.basemode, "L")
+        self.assertEqual(m.basetype, "L")
+
+        m = ImageMode.getmode("RGB")
+        self.assertEqual(m.mode, "RGB")
+        self.assertEqual(m.bands, ("R", "G", "B"))
+        self.assertEqual(m.basemode, "RGB")
+        self.assertEqual(m.basetype, "L")
 
     def test_properties(self):
         def check(mode, *result):

@@ -7,17 +7,23 @@ env: MAX_CONCURRENCY=4
 
 python:
   - "pypy"
+  - "pypy3"
   - 2.6
   - 2.7
+  - "2.7_with_system_site_packages" # For PyQt4
   - 3.2
   - 3.3
   - 3.4
 
 install:
-  - "sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
-  - "pip install cffi"
-  - "pip install coveralls nose pyroma"
-  - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip install unittest2; fi
+  - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
+  - "travis_retry pip install cffi"
+  - "travis_retry pip install coverage nose"
+
+    # Pyroma installation is slow on Py3, so just do it for Py2.
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then travis_retry pip install pyroma; fi
+
+  - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then travis_retry pip install unittest2; fi
 
   # webp
   - pushd depends && ./install_webp.sh && popd
@@ -28,22 +34,27 @@ install:
 script:
   - coverage erase
   - python setup.py clean
-  - python setup.py build_ext --inplace
+  - CFLAGS="-coverage" python setup.py build_ext --inplace
 
-    # Don't cover PyPy: it fails intermittently and is x5.8 slower (#640)
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time python selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then time nosetests Tests/test_*.py; fi
-
-    # Cover the others
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then time coverage run --append --include=PIL/* -m nose Tests/test_*.py; fi
+  - coverage run --append --include=PIL/* selftest.py
+  - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
 
 after_success:
-  - coverage report
-    # No need to send empty coverage to Coveralls for PyPy
-  - if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then coveralls; fi
+   # gather the coverage data
+  - travis_retry sudo apt-get -qq install lcov
+  - lcov --capture --directory . -b . --output-file coverage.info
+   # filter to remove system headers
+  - lcov --remove coverage.info '/usr/*' -o coverage.filtered.info
+   # convert to json
+  - travis_retry gem install coveralls-lcov
+  - coveralls-lcov -v -n coverage.filtered.info > coverage.c.json
 
-  - pip install pep8 pyflakes
+  - coverage report
+  - travis_retry pip install coveralls-merge
+  - coveralls-merge coverage.c.json
+
+
+  - travis_retry pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
   - pep8  --statistics --count Tests/*.py
   - pyflakes PIL/*.py   | tee >(wc -l)
@@ -54,3 +65,5 @@ after_success:
     # (Installation is very slow on Py3, so just do it for Py2.)
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-install.sh; fi
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-run.sh; fi
+matrix:
+  fast_finish: true

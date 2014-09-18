@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, tearDownModule
+from helper import unittest, PillowTestCase
 
 import PIL
 import PIL.Image

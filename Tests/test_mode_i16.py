@@ -1,22 +1,26 @@
-from helper import unittest, PillowTestCase, tearDownModule, lena
+from helper import unittest, PillowTestCase, lena
 
 from PIL import Image
 
 
 class TestModeI16(PillowTestCase):
 
+    original = lena().resize((32,32)).convert('I')
+
     def verify(self, im1):
-        im2 = lena("I")
+        im2 = self.original.copy()
         self.assertEqual(im1.size, im2.size)
         pix1 = im1.load()
         pix2 = im2.load()
         for y in range(im1.size[1]):
             for x in range(im1.size[0]):
                 xy = x, y
+                p1 = pix1[xy]
+                p2 = pix2[xy]
                 self.assertEqual(
-                    pix1[xy], pix2[xy],
+                    p1, p2,
                     ("got %r from mode %s at %s, expected %r" %
-                        (pix1[xy], im1.mode, xy, pix2[xy])))
+                        (p1, im1.mode, xy, p2)))
 
     def test_basic(self):
         # PIL 1.1 has limited support for 16-bit image data.  Check that
@@ -24,7 +28,7 @@ class TestModeI16(PillowTestCase):
 
         def basic(mode):
 
-            imIn = lena("I").convert(mode)
+            imIn = self.original.convert(mode)
             self.verify(imIn)
 
             w, h = imIn.size
@@ -92,7 +96,7 @@ class TestModeI16(PillowTestCase):
 
     def test_convert(self):
 
-        im = lena("I")
+        im = self.original.copy()
 
         self.verify(im.convert("I;16"))
         self.verify(im.convert("I;16").convert("L"))

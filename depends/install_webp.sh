@@ -1,18 +1,15 @@
 #!/bin/bash
 # install webp
 
-
-if [ ! -f libwebp-0.4.0.tar.gz ]; then
-    wget 'https://webp.googlecode.com/files/libwebp-0.4.0.tar.gz'
+if [ ! -f libwebp-0.4.1.tar.gz ]; then
+    wget 'http://downloads.webmproject.org/releases/webp/libwebp-0.4.1.tar.gz'
 fi
 
-rm -r libwebp-0.4.0
-tar -xvzf libwebp-0.4.0.tar.gz
+rm -r libwebp-0.4.1
+tar -xvzf libwebp-0.4.1.tar.gz
 
+pushd libwebp-0.4.1
 
-pushd libwebp-0.4.0 
-
-./configure --prefix=/usr --enable-libwebpmux --enable-libwebpdemux && make && sudo make install
+./configure --prefix=/usr --enable-libwebpmux --enable-libwebpdemux && make -j4 && sudo make -j4 install
 
 popd
-

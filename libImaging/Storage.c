@@ -186,6 +186,13 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
         im->pixelsize = 4;
         im->linesize = xsize * 4;
 
+    } else if (strcmp(mode, "HSV") == 0) {
+        /* 24-bit color, luminance, + 2 color channels */
+        /* L is uint8, a,b are int8 */
+        im->bands = 3;
+        im->pixelsize = 4;
+        im->linesize = xsize * 4;
+
     } else {
         free(im);
         return (Imaging) ImagingError_ValueError("unrecognized mode");
@@ -379,7 +386,7 @@ ImagingNew(const char* mode, int xsize, int ysize)
     } else
         bytes = strlen(mode); /* close enough */
 
-    if ((Py_ssize_t) xsize * ysize * bytes <= THRESHOLD) {
+    if ((int64_t) xsize * (int64_t) ysize * bytes <= THRESHOLD) {
         im = ImagingNewBlock(mode, xsize, ysize);
         if (im)
             return im;

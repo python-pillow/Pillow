@@ -1,7 +1,7 @@
-from helper import unittest, lena
+from helper import unittest, PillowTestCase, lena
 
 
-class TestImageToBytes(unittest.TestCase):
+class TestImageToBytes(PillowTestCase):
 
     def test_sanity(self):
         data = lena().tobytes()

@@ -5,22 +5,23 @@ from __future__ import print_function
 import sys
 import tempfile
 import os
-import glob
 
 if sys.version_info[:2] <= (2, 6):
     import unittest2 as unittest
 else:
     import unittest
 
-def tearDownModule():
-    #remove me later
-    pass
 
 class PillowTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         unittest.TestCase.__init__(self, *args, **kwargs)
-        self.currentResult = None  # holds last result object passed to run method
+        # holds last result object passed to run method:
+        self.currentResult = None
+
+    # Nicer output for --verbose
+    def __str__(self):
+        return self.__class__.__name__ + "." + self._testMethodName
 
     def run(self, result=None):
         self.currentResult = result  # remember result for use later
@@ -40,7 +41,7 @@ class PillowTestCase(unittest.TestCase):
             except OSError:
                 pass  # report?
         else:
-            print("=== orphaned temp file: %s" %path)
+            print("=== orphaned temp file: %s" % path)
 
     def assert_almost_equal(self, a, b, msg=None, eps=1e-6):
         self.assertLess(
@@ -99,7 +100,7 @@ class PillowTestCase(unittest.TestCase):
         ave_diff = float(diff)/(a.size[0]*a.size[1])
         self.assertGreaterEqual(
             epsilon, ave_diff,
-            msg or "average pixel value difference %.4f > epsilon %.4f" % (
+            (msg or '') + " average pixel value difference %.4f > epsilon %.4f" % (
                 ave_diff, epsilon))
 
     def assert_warning(self, warn_class, func):
@@ -123,7 +124,8 @@ class PillowTestCase(unittest.TestCase):
             self.assertTrue(found)
         return result
 
-    def skipKnownBadTest(self, msg=None, platform=None, travis=None):
+    def skipKnownBadTest(self, msg=None, platform=None,
+                         travis=None, interpreter=None):
         # Skip if platform/travis matches, and
         # PILLOW_RUN_KNOWN_BAD is not true in the environment.
         if bool(os.environ.get('PILLOW_RUN_KNOWN_BAD', False)):
@@ -134,7 +136,9 @@ class PillowTestCase(unittest.TestCase):
         if platform is not None:
             skip = sys.platform.startswith(platform)
         if travis is not None:
-            skip = skip and (travis == bool(os.environ.get('TRAVIS',False)))
+            skip = skip and (travis == bool(os.environ.get('TRAVIS', False)))
+        if interpreter is not None:
+            skip = skip and (interpreter == 'pypy' and hasattr(sys, 'pypy_version_info'))
         if skip:
             self.skipTest(msg or "Known Bad Test")
 
@@ -142,8 +146,8 @@ class PillowTestCase(unittest.TestCase):
         assert template[:5] in ("temp.", "temp_")
         (fd, path) = tempfile.mkstemp(template[4:], template[:4])
         os.close(fd)
-        
-        self.addCleanup(self.delete_tempfile, path)      
+
+        self.addCleanup(self.delete_tempfile, path)
         return path
 
     def open_withImagemagick(self, f):
@@ -155,8 +159,8 @@ class PillowTestCase(unittest.TestCase):
             from PIL import Image
             return Image.open(outfile)
         raise IOError()
-    
-        
+
+
 # helpers
 
 import sys
@@ -174,6 +178,26 @@ def tostring(im, format, **options):
     out = BytesIO()
     im.save(out, format, **options)
     return out.getvalue()
+
+
+def hopper(mode="RGB", cache={}):
+    from PIL import Image
+    im = None
+    # FIXME: Implement caching to reduce reading from disk but so an original
+    # copy is returned each time and the cached image isn't modified by tests
+    # (for fast, isolated, repeatable tests).
+    # im = cache.get(mode)
+    if im is None:
+        if mode == "RGB":
+            im = Image.open("Tests/images/hopper.ppm")
+        elif mode == "F":
+            im = lena("L").convert(mode)
+        elif mode[:4] == "I;16":
+            im = lena("I").convert(mode)
+        else:
+            im = lena("RGB").convert(mode)
+    # cache[mode] = im
+    return im
 
 
 def lena(mode="RGB", cache={}):
@@ -210,17 +234,21 @@ def command_succeeds(cmd):
             return False
     return True
 
+
 def djpeg_available():
     return command_succeeds(['djpeg', '--help'])
+
 
 def cjpeg_available():
     return command_succeeds(['cjpeg', '--help'])
 
+
 def netpbm_available():
-    return command_succeeds(["ppmquant", "--help"]) and \
-           command_succeeds(["ppmtogif", "--help"])
+    return (command_succeeds(["ppmquant", "--help"]) and
+            command_succeeds(["ppmtogif", "--help"]))
+
 
 def imagemagick_available():
     return command_succeeds(['convert', '-version'])
-                            
+
 # End of file

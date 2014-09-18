@@ -21,7 +21,8 @@ __version__ = "0.3"
 
 
 from PIL import Image, ImageFile, _binary
-import os, tempfile
+import os
+import tempfile
 
 i8 = _binary.i8
 i16 = _binary.i16be
@@ -35,16 +36,19 @@ COMPRESSION = {
 
 PAD = o8(0) * 4
 
+
 #
 # Helpers
 
 def i(c):
     return i32((PAD + c)[-4:])
 
+
 def dump(c):
     for i in c:
         print("%02x" % i8(i), end=' ')
     print()
+
 
 ##
 # Image plugin for IPTC/NAA datastreams.  To read IPTC/NAA fields
@@ -84,35 +88,13 @@ class IptcImageFile(ImageFile.ImageFile):
 
         return tag, size
 
-    def _is_raw(self, offset, size):
-        #
-        # check if the file can be mapped
-
-        # DISABLED: the following only slows things down...
-        return 0
-
-        self.fp.seek(offset)
-        t, sz = self.field()
-        if sz != size[0]:
-            return 0
-        y = 1
-        while True:
-            self.fp.seek(sz, 1)
-            t, s = self.field()
-            if t != (8, 10):
-                break
-            if s != sz:
-                return 0
-            y += 1
-        return y == size[1]
-
     def _open(self):
 
         # load descriptive fields
         while True:
             offset = self.fp.tell()
             tag, size = self.field()
-            if not tag or tag == (8,10):
+            if not tag or tag == (8, 10):
                 break
             if size:
                 tagdata = self.fp.read(size)
@@ -129,10 +111,10 @@ class IptcImageFile(ImageFile.ImageFile):
             # print tag, self.info[tag]
 
         # mode
-        layers = i8(self.info[(3,60)][0])
-        component = i8(self.info[(3,60)][1])
-        if (3,65) in self.info:
-            id = i8(self.info[(3,65)][0])-1
+        layers = i8(self.info[(3, 60)][0])
+        component = i8(self.info[(3, 60)][1])
+        if (3, 65) in self.info:
+            id = i8(self.info[(3, 65)][0])-1
         else:
             id = 0
         if layers == 1 and not component:
@@ -143,22 +125,18 @@ class IptcImageFile(ImageFile.ImageFile):
             self.mode = "CMYK"[id]
 
         # size
-        self.size = self.getint((3,20)), self.getint((3,30))
+        self.size = self.getint((3, 20)), self.getint((3, 30))
 
         # compression
         try:
-            compression = COMPRESSION[self.getint((3,120))]
+            compression = COMPRESSION[self.getint((3, 120))]
         except KeyError:
             raise IOError("Unknown IPTC image compression")
 
         # tile
-        if tag == (8,10):
-            if compression == "raw" and self._is_raw(offset, self.size):
-                self.tile = [(compression, (offset, size + 5, -1),
-                             (0, 0, self.size[0], self.size[1]))]
-            else:
-                self.tile = [("iptc", (compression, offset),
-                             (0, 0, self.size[0], self.size[1]))]
+        if tag == (8, 10):
+            self.tile = [("iptc", (compression, offset),
+                         (0, 0, self.size[0], self.size[1]))]
 
     def load(self):
 
@@ -200,13 +178,16 @@ class IptcImageFile(ImageFile.ImageFile):
                 im.load()
                 self.im = im.im
         finally:
-            try: os.unlink(outfile)
-            except: pass
+            try:
+                os.unlink(outfile)
+            except:
+                pass
 
 
 Image.register_open("IPTC", IptcImageFile)
 
 Image.register_extension("IPTC", ".iim")
+
 
 ##
 # Get IPTC information from TIFF, JPEG, or IPTC file.
@@ -230,11 +211,11 @@ def getiptcinfo(im):
         # extract the IPTC/NAA resource
         try:
             app = im.app["APP13"]
-            if app[:14] == "Photoshop 3.0\x00":
+            if app[:14] == b"Photoshop 3.0\x00":
                 app = app[14:]
                 # parse the image resource block
                 offset = 0
-                while app[offset:offset+4] == "8BIM":
+                while app[offset:offset+4] == b"8BIM":
                     offset += 4
                     # resource code
                     code = JpegImagePlugin.i16(app, offset)
@@ -267,7 +248,7 @@ def getiptcinfo(im):
             pass
 
     if data is None:
-        return None # no properties
+        return None  # no properties
 
     # create an IptcImagePlugin object without initializing it
     class FakeImage:
@@ -282,6 +263,6 @@ def getiptcinfo(im):
     try:
         im._open()
     except (IndexError, KeyError):
-        pass # expected failure
+        pass  # expected failure
 
     return im.info

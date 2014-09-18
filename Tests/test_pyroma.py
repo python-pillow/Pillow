@@ -7,7 +7,7 @@ except ImportError:
     pass
 
 
-class TestPyroma(unittest.TestCase):
+class TestPyroma(PillowTestCase):
 
     def setUp(self):
         try:
