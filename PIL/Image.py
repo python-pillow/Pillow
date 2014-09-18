@@ -530,7 +530,7 @@ class Image:
         """
         Closes the file pointer, if possible.
 
-        This operation will destroy the image core and release it's memory.
+        This operation will destroy the image core and release its memory.
         The image data will be unusable afterward.
 
         This function is only required to close images that have not
