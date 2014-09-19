@@ -4,13 +4,16 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
-- Jpeg2k Decode/Encode Memory Leak Fix #898
+- Retain alpha in ImageEnhance operations #909
+  [wiredfool]
+
+- Jpeg2k Decode/encode memory leak fix #898
   [joshware, wiredfool]
 
 - EpsFilePlugin Speed improvements #886
   [wiredfool, karstenw]
 
-- Don't resize if already the right size.
+- Don't resize if already the right size #892
   [radarhere]
 
 - Fix for reading multipage TIFFs #885
