@@ -180,8 +180,9 @@ def tostring(im, format, **options):
     return out.getvalue()
 
 
-def hopper(mode="RGB", cache={}):
+def image(filename, mode="RGB", cache={}):
     from PIL import Image
+    from os import path
     im = None
     # FIXME: Implement caching to reduce reading from disk but so an original
     # copy is returned each time and the cached image isn't modified by tests
@@ -189,35 +190,23 @@ def hopper(mode="RGB", cache={}):
     # im = cache.get(mode)
     if im is None:
         if mode == "RGB":
-            im = Image.open("Tests/images/hopper.ppm")
+            im = Image.open(path.join("Tests/images", filename))
         elif mode == "F":
-            im = lena("L").convert(mode)
+            im = image(filename, "L").convert(mode)
         elif mode[:4] == "I;16":
-            im = lena("I").convert(mode)
+            im = image(filename, "I").convert(mode)
         else:
-            im = lena("RGB").convert(mode)
+            im = image(filename, "RGB").convert(mode)
     # cache[mode] = im
     return im
+
+
+def hopper(mode="RGB", cache={}):
+    return image("hopper.ppm", mode, cache)
 
 
 def lena(mode="RGB", cache={}):
-    from PIL import Image
-    im = None
-    # FIXME: Implement caching to reduce reading from disk but so an original
-    # copy is returned each time and the cached image isn't modified by tests
-    # (for fast, isolated, repeatable tests).
-    # im = cache.get(mode)
-    if im is None:
-        if mode == "RGB":
-            im = Image.open("Tests/images/lena.ppm")
-        elif mode == "F":
-            im = lena("L").convert(mode)
-        elif mode[:4] == "I;16":
-            im = lena("I").convert(mode)
-        else:
-            im = lena("RGB").convert(mode)
-    # cache[mode] = im
-    return im
+    return image("lena.ppm", mode, cache)
 
 
 def command_succeeds(cmd):
