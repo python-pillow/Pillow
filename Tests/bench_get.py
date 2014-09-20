@@ -6,7 +6,7 @@ import timeit
 
 
 def bench(mode):
-    im = helper.lena(mode)
+    im = helper.hopper(mode)
     get = im.im.getpixel
     xy = 50, 50  # position shouldn't really matter
     t0 = timeit.default_timer()

@@ -1,11 +1,11 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageResize(PillowTestCase):
 
     def test_resize(self):
         def resize(mode, size):
-            out = lena(mode).resize(size)
+            out = hopper(mode).resize(size)
             self.assertEqual(out.mode, mode)
             self.assertEqual(out.size, size)
         for mode in "1", "P", "L", "RGB", "I", "F":

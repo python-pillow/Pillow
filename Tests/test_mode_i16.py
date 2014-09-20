@@ -1,11 +1,11 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
 
 class TestModeI16(PillowTestCase):
 
-    original = lena().resize((32,32)).convert('I')
+    original = hopper().resize((32,32)).convert('I')
 
     def verify(self, im1):
         im2 = self.original.copy()

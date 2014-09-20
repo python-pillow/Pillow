@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -7,7 +7,7 @@ class TestImageMode(PillowTestCase):
 
     def test_sanity(self):
 
-        im = lena()
+        im = hopper()
         im.mode
 
         from PIL import ImageMode

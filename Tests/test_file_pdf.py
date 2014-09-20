@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 import os.path
 
@@ -7,7 +7,7 @@ class TestFilePdf(PillowTestCase):
 
     def helper_save_as_pdf(self, mode):
         # Arrange
-        im = lena(mode)
+        im = hopper(mode)
         outfile = self.tempfile("temp_" + mode + ".pdf")
 
         # Act

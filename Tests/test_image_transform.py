@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -22,7 +22,7 @@ class TestImageTransform(PillowTestCase):
         im.transform((100, 100), transform)
 
     def test_extent(self):
-        im = lena('RGB')
+        im = hopper('RGB')
         (w, h) = im.size
         transformed = im.transform(im.size, Image.EXTENT,
                                    (0, 0,
@@ -32,11 +32,11 @@ class TestImageTransform(PillowTestCase):
         scaled = im.resize((w*2, h*2), Image.BILINEAR).crop((0, 0, w, h))
 
         # undone -- precision?
-        self.assert_image_similar(transformed, scaled, 10)
+        self.assert_image_similar(transformed, scaled, 23)
 
     def test_quad(self):
         # one simple quad transform, equivalent to scale & crop upper left quad
-        im = lena('RGB')
+        im = hopper('RGB')
         (w, h) = im.size
         transformed = im.transform(im.size, Image.QUAD,
                                    (0, 0, 0, h//2,
@@ -49,8 +49,8 @@ class TestImageTransform(PillowTestCase):
         self.assert_image_equal(transformed, scaled)
 
     def test_mesh(self):
-        # this should be a checkerboard of halfsized lenas in ul, lr
-        im = lena('RGBA')
+        # this should be a checkerboard of halfsized hoppers in ul, lr
+        im = hopper('RGBA')
         (w, h) = im.size
         transformed = im.transform(im.size, Image.MESH,
                                    [((0, 0, w//2, h//2),  # box

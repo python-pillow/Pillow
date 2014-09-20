@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 import sys
 
@@ -6,7 +6,7 @@ import sys
 class TestImagePoint(PillowTestCase):
 
     def test_sanity(self):
-        im = lena()
+        im = hopper()
 
         self.assertRaises(ValueError, lambda: im.point(list(range(256))))
         im.point(list(range(256))*3)
@@ -28,19 +28,19 @@ class TestImagePoint(PillowTestCase):
         # see https://github.com/python-pillow/Pillow/issues/484
         #self.skipKnownBadTest(msg="Too Slow on pypy", interpreter='pypy')
 
-        im = lena("I")
+        im = hopper("I")
         im.point(list(range(256))*256, 'L')
 
     def test_f_lut(self):
         """ Tests for floating point lut of 8bit gray image """
-        im = lena('L')
+        im = hopper('L')
         lut = [0.5 * float(x) for x in range(256)]
 
         out = im.point(lut, 'F')
 
         int_lut = [x//2 for x in range(256)]
         self.assert_image_equal(out.convert('L'), im.point(int_lut, 'L'))
-        
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -23,7 +23,7 @@ class TestFileWebpLossless(PillowTestCase):
     def test_write_lossless_rgb(self):
         temp_file = self.tempfile("temp.webp")
 
-        lena("RGB").save(temp_file, lossless=True)
+        hopper("RGB").save(temp_file, lossless=True)
 
         image = Image.open(temp_file)
         image.load()
@@ -34,7 +34,7 @@ class TestFileWebpLossless(PillowTestCase):
         image.load()
         image.getdata()
 
-        self.assert_image_equal(image, lena("RGB"))
+        self.assert_image_equal(image, hopper("RGB"))
 
 
 if __name__ == '__main__':

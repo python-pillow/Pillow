@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageFilter
@@ -9,7 +9,7 @@ class TestImageFilter(PillowTestCase):
     def test_sanity(self):
 
         def filter(filter):
-            im = lena("L")
+            im = hopper("L")
             out = im.filter(filter)
             self.assertEqual(out.mode, im.mode)
             self.assertEqual(out.size, im.size)

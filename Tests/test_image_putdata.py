@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 import sys
 
@@ -9,7 +9,7 @@ class TestImagePutData(PillowTestCase):
 
     def test_sanity(self):
 
-        im1 = lena()
+        im1 = hopper()
 
         data = list(im1.getdata())
 
@@ -47,7 +47,7 @@ class TestImagePutData(PillowTestCase):
         im.putdata(list(range(256))*256)
 
     def test_mode_i(self):
-        src = lena('L')
+        src = hopper('L')
         data = list(src.getdata())
         im = Image.new('I', src.size, 0)
         im.putdata(data, 2, 256)
@@ -56,7 +56,7 @@ class TestImagePutData(PillowTestCase):
         self.assertEqual(list(im.getdata()), target)
 
     def test_mode_F(self):
-        src = lena('L')
+        src = hopper('L')
         data = list(src.getdata())
         im = Image.new('F', src.size, 0)
         im.putdata(data, 2.0, 256.0)
@@ -64,7 +64,7 @@ class TestImagePutData(PillowTestCase):
         target = [2.0* float(elt) + 256.0 for elt in data]
         self.assertEqual(list(im.getdata()), target)
 
-    
+
 
 if __name__ == '__main__':
     unittest.main()

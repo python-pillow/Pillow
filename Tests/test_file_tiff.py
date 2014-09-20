@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena, py3
+from helper import unittest, PillowTestCase, hopper, py3
 
 from PIL import Image, TiffImagePlugin
 
@@ -9,7 +9,7 @@ class TestFileTiff(PillowTestCase):
 
         file = self.tempfile("temp.tif")
 
-        lena("RGB").save(file)
+        hopper("RGB").save(file)
 
         im = Image.open(file)
         im.load()
@@ -17,19 +17,19 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "TIFF")
 
-        lena("1").save(file)
+        hopper("1").save(file)
         im = Image.open(file)
 
-        lena("L").save(file)
+        hopper("L").save(file)
         im = Image.open(file)
 
-        lena("P").save(file)
+        hopper("P").save(file)
         im = Image.open(file)
 
-        lena("RGB").save(file)
+        hopper("RGB").save(file)
         im = Image.open(file)
 
-        lena("I").save(file)
+        hopper("I").save(file)
         im = Image.open(file)
 
     def test_mac_tiff(self):
@@ -158,14 +158,14 @@ class TestFileTiff(PillowTestCase):
         im.seek(2)
         im.load()
         self.assertEqual(im.size, (20,20))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))      
+        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
 
     def test_multipage_last_frame(self):
         im = Image.open('Tests/images/multipage-lastframe.tif')
         im.load()
         self.assertEqual(im.size, (20,20))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))      
-        
+        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
+
 
     def test___str__(self):
         # Arrange

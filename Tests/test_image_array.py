@@ -1,8 +1,8 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
-im = lena().resize((128, 100))
+im = hopper().resize((128, 100))
 
 
 class TestImageArray(PillowTestCase):
