@@ -347,8 +347,8 @@ class TestFilePng(PillowTestCase):
         im2 = Image.open(f)
         self.assertIn('transparency', im2.info)
 
-        self.assert_image_similar(im2.convert('RGBA'), im.convert('RGBA'),
-                                  16)
+        self.assert_image_equal(im2.convert('RGBA'),
+                                im.convert('RGBA'))
 
     def test_save_icc_profile_none(self):
         # check saving files with an ICC profile set to None (omit profile)
