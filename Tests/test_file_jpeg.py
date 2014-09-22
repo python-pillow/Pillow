@@ -44,8 +44,9 @@ class TestFileJpeg(PillowTestCase):
         im = Image.open(TEST_FILE)
         self.assertEqual(
             im.applist[0],
-            ("APP0", b"JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00"))
-        self.assertEqual(im.applist[1], ("COM", b"Python Imaging Library"))
+            ("APP0", b"JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00"))
+        self.assertEqual(im.applist[1], (
+            "COM", b"File written by Adobe Photoshop\xa8 4.0\x00"))
         self.assertEqual(len(im.applist), 2)
 
     def test_cmyk(self):
