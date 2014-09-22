@@ -308,7 +308,7 @@ class TestFileJpeg(PillowTestCase):
         tempfile = self.tempfile("temp.jpg")
         JpegImagePlugin._save_cjpeg(img, 0, tempfile)
         # Default save quality is 75%, so a tiny bit of difference is alright
-        self.assert_image_similar(img, Image.open(tempfile), 1)
+        self.assert_image_similar(img, Image.open(tempfile), 15)
 
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
