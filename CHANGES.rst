@@ -4,6 +4,15 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- On Windows, do not execute convert.exe without specifying path #912
+  [cgohlke]
+
+- Fix msvc build error #911
+  [cgohlke]
+
+- Fix for handling P + transparency -> RGBA conversions #904
+  [wiredfool]
+
 - Retain alpha in ImageEnhance operations #909
   [wiredfool]
 
