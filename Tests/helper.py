@@ -155,7 +155,7 @@ class PillowTestCase(unittest.TestCase):
             raise IOError()
 
         outfile = self.tempfile("temp.png")
-        if command_succeeds(['convert', f, outfile]):
+        if command_succeeds([IMCONVERT, f, outfile]):
             from PIL import Image
             return Image.open(outfile)
         raise IOError()
@@ -251,6 +251,14 @@ def netpbm_available():
 
 
 def imagemagick_available():
-    return command_succeeds(['convert', '-version'])
+    return IMCONVERT and command_succeeds([IMCONVERT, '-version'])
+
+
+if sys.platform == 'win32':
+    IMCONVERT = os.environ.get('MAGICK_HOME', '')
+    if IMCONVERT:
+        IMCONVERT = os.path.join(IMCONVERT, 'convert.exe')
+else:
+    IMCONVERT = 'convert'
 
 # End of file
