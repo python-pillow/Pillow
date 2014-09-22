@@ -6,13 +6,14 @@ from PIL import Image
 class TestPickle(PillowTestCase):
 
     def helper_pickle_file(self, pickle, protocol=0):
+        # Arrange
         im = Image.open('Tests/images/hopper.jpg')
-        fihopperme = self.tempfile('temp.pkl')
+        filename = self.tempfile('temp.pkl')
 
         # Act
-        with open(fihopperme, 'wb') as f:
+        with open(filename, 'wb') as f:
             pickle.dump(im, f, protocol)
-        with open(fihopperme, 'rb') as f:
+        with open(filename, 'rb') as f:
             loaded_im = pickle.load(f)
 
         # Assert

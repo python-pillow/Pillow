@@ -530,7 +530,7 @@ class Image:
         """
         Closes the file pointer, if possible.
 
-        This operation will destroy the image core and release it's memory.
+        This operation will destroy the image core and release its memory.
         The image data will be unusable afterward.
 
         This function is only required to close images that have not
@@ -867,7 +867,17 @@ class Image:
                     trns = trns_im.getpixel((0,0))
 
             elif self.mode == 'P' and mode == 'RGBA':
+                t = self.info['transparency']
                 delete_trns = True
+                
+                if isinstance(t, bytes):
+                    self.im.putpalettealphas(t)
+                elif isinstance(t, int):
+                    self.im.putpalettealpha(t,0)
+                else:
+                    raise ValueError("Transparency for P mode should" +
+                                     " be bytes or int")
+
 
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
@@ -1513,6 +1523,9 @@ class Image:
             raise ValueError("unknown resampling filter")
 
         self.load()
+
+        if self.size == size:
+            return self._new(self.im)
 
         if self.mode in ("1", "P"):
             resample = NEAREST

@@ -576,14 +576,19 @@ int
 ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
     JPEG2KENCODESTATE *context = (JPEG2KENCODESTATE *)state->context;
 
-    if (context->quality_layers)
+    if (context->quality_layers && context->encoder)
         Py_DECREF(context->quality_layers);
 
     if (context->error_msg)
         free ((void *)context->error_msg);
 
+    context->error_msg = NULL;
+
     if (context->encoder)
         ImagingIncrementalCodecDestroy(context->encoder);
+
+    /* Prevent multiple calls to ImagingIncrementalCodecDestroy */
+    context->encoder = NULL;
 
     return -1;
 }

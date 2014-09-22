@@ -39,10 +39,10 @@ class TestModeI16(PillowTestCase):
             imOut = imIn.transform((w, h), Image.EXTENT, (0, 0, w, h))
             self.verify(imOut)  # transform
 
-            fihopperme = self.tempfile("temp.im")
-            imIn.save(fihopperme)
+            filename = self.tempfile("temp.im")
+            imIn.save(filename)
 
-            imOut = Image.open(fihopperme)
+            imOut = Image.open(filename)
 
             self.verify(imIn)
             self.verify(imOut)

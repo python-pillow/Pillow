@@ -4,10 +4,31 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
-- Fix for reading multipage TIFFs #885
- [kostrom, wiredfool]
+- On Windows, do not execute convert.exe without specifying path #912
+  [cgohlke]
 
-- Correctly handle saving gray and CMYK JPEGs with quality-keep #857
+- Fix msvc build error #911
+  [cgohlke]
+
+- Fix for handling P + transparency -> RGBA conversions #904
+  [wiredfool]
+
+- Retain alpha in ImageEnhance operations #909
+  [wiredfool]
+
+- Jpeg2k Decode/encode memory leak fix #898
+  [joshware, wiredfool]
+
+- EpsFilePlugin Speed improvements #886
+  [wiredfool, karstenw]
+
+- Don't resize if already the right size #892
+  [radarhere]
+
+- Fix for reading multipage TIFFs #885
+  [kostrom, wiredfool]
+
+- Correctly handle saving gray and CMYK JPEGs with quality=keep #857
   [etienned]
 
 - Correct duplicate Tiff Metadata and Exif tag values

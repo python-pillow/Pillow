@@ -7,7 +7,7 @@ Send a pull request. We'll generally want documentation and [tests](Tests/README
 - Fork the repo
 - Make a branch
 - Add your changes + Tests
-- Run the test suite. Try to run on both Python 2.x and 3.x, or you'll get tripped up. You can enable [Travis CI on your repo](https://travis-ci.org/profile/) to catch test failures prior to the pull request. 
+- Run the test suite. Try to run on both Python 2.x and 3.x, or you'll get tripped up. You can enable [Travis CI on your repo](https://travis-ci.org/profile/) to catch test failures prior to the pull request, and [Coveralls](https://coveralls.io/repos/new) to see if the changed code is covered by tests.
 - Push to your fork, and make a pull request. 
 
 A few guidelines:
