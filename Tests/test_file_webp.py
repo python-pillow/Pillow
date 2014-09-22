@@ -46,7 +46,6 @@ class TestFileWebp(PillowTestCase):
         temp_file = self.tempfile("temp.webp")
 
         hopper("RGB").save(temp_file)
-        hopper("RGB").save("temp.webp")
 
         image = Image.open(temp_file)
         image.load()
