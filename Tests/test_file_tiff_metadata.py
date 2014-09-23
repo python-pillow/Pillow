@@ -33,7 +33,7 @@ class TestFileTiffMetadata(PillowTestCase):
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
 
-        known = {'YResolution': ((4294967295L, 113653537),),
+        known = {'YResolution': ((4294967295, 113653537),),
                  'PlanarConfiguration': (1,),
                  'BitsPerSample': (1,),
                  'ImageLength': (128,),
@@ -43,7 +43,7 @@ class TestFileTiffMetadata(PillowTestCase):
                  'ResolutionUnit': (3,),
                  'PhotometricInterpretation': (0,),
                  'PageNumber': (0, 1),
-                 'XResolution': ((4294967295L, 113653537),),
+                 'XResolution': ((4294967295, 113653537),),
                  'ImageWidth': (128,),
                  'Orientation': (1,),
                  'StripByteCounts': (1968,),
