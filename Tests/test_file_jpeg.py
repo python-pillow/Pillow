@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena, py3
+from helper import unittest, PillowTestCase, hopper, py3
 from helper import djpeg_available, cjpeg_available
 
 import random
@@ -10,7 +10,7 @@ from PIL import JpegImagePlugin
 
 codecs = dir(Image.core)
 
-test_file = "Tests/images/lena.jpg"
+TEST_FILE = "Tests/images/hopper.jpg"
 
 
 class TestFileJpeg(PillowTestCase):
@@ -33,7 +33,7 @@ class TestFileJpeg(PillowTestCase):
         # internal version number
         self.assertRegexpMatches(Image.core.jpeglib_version, "\d+\.\d+$")
 
-        im = Image.open(test_file)
+        im = Image.open(TEST_FILE)
         im.load()
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
@@ -41,11 +41,12 @@ class TestFileJpeg(PillowTestCase):
 
     def test_app(self):
         # Test APP/COM reader (@PIL135)
-        im = Image.open(test_file)
+        im = Image.open(TEST_FILE)
         self.assertEqual(
             im.applist[0],
-            ("APP0", b"JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00"))
-        self.assertEqual(im.applist[1], ("COM", b"Python Imaging Library"))
+            ("APP0", b"JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00"))
+        self.assertEqual(im.applist[1], (
+            "COM", b"File written by Adobe Photoshop\xa8 4.0\x00"))
         self.assertEqual(len(im.applist), 2)
 
     def test_cmyk(self):
@@ -76,7 +77,7 @@ class TestFileJpeg(PillowTestCase):
 
     def test_dpi(self):
         def test(xdpi, ydpi=None):
-            im = Image.open(test_file)
+            im = Image.open(TEST_FILE)
             im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
             return im.info.get("dpi")
         self.assertEqual(test(72), (72, 72))
@@ -95,8 +96,8 @@ class TestFileJpeg(PillowTestCase):
         im2 = Image.open(f)
         self.assertEqual(im2.info.get("icc_profile"), icc_profile)
         # Roundtrip via memory buffer.
-        im1 = self.roundtrip(lena())
-        im2 = self.roundtrip(lena(), icc_profile=icc_profile)
+        im1 = self.roundtrip(hopper())
+        im2 = self.roundtrip(hopper(), icc_profile=icc_profile)
         self.assert_image_equal(im1, im2)
         self.assertFalse(im1.info.get("icc_profile"))
         self.assertTrue(im2.info.get("icc_profile"))
@@ -109,7 +110,7 @@ class TestFileJpeg(PillowTestCase):
             # order issues.
             icc_profile = (b"Test"*int(n/4+1))[:n]
             assert len(icc_profile) == n  # sanity
-            im1 = self.roundtrip(lena(), icc_profile=icc_profile)
+            im1 = self.roundtrip(hopper(), icc_profile=icc_profile)
             self.assertEqual(im1.info.get("icc_profile"), icc_profile or None)
         test(0)
         test(1)
@@ -123,8 +124,8 @@ class TestFileJpeg(PillowTestCase):
         test(ImageFile.MAXBLOCK*4+3)  # large block
 
     def test_optimize(self):
-        im1 = self.roundtrip(lena())
-        im2 = self.roundtrip(lena(), optimize=1)
+        im1 = self.roundtrip(hopper())
+        im2 = self.roundtrip(hopper(), optimize=1)
         self.assert_image_equal(im1, im2)
         self.assertGreaterEqual(im1.bytes, im2.bytes)
 
@@ -136,8 +137,8 @@ class TestFileJpeg(PillowTestCase):
         im.save(f, format="JPEG", optimize=True)
 
     def test_progressive(self):
-        im1 = self.roundtrip(lena())
-        im2 = self.roundtrip(lena(), progressive=True)
+        im1 = self.roundtrip(hopper())
+        im2 = self.roundtrip(hopper(), progressive=True)
         self.assert_image_equal(im1, im2)
         self.assertGreaterEqual(im1.bytes, im2.bytes)
 
@@ -161,13 +162,13 @@ class TestFileJpeg(PillowTestCase):
     def test_large_exif(self):
         # https://github.com/python-pillow/Pillow/issues/148
         f = self.tempfile('temp.jpg')
-        im = lena()
+        im = hopper()
         im.save(f, 'JPEG', quality=90, exif=b"1"*65532)
 
     def test_progressive_compat(self):
-        im1 = self.roundtrip(lena())
-        im2 = self.roundtrip(lena(), progressive=1)
-        im3 = self.roundtrip(lena(), progression=1)  # compatibility
+        im1 = self.roundtrip(hopper())
+        im2 = self.roundtrip(hopper(), progressive=1)
+        im3 = self.roundtrip(hopper(), progression=1)  # compatibility
         self.assert_image_equal(im1, im2)
         self.assert_image_equal(im1, im3)
         self.assertFalse(im1.info.get("progressive"))
@@ -178,14 +179,14 @@ class TestFileJpeg(PillowTestCase):
         self.assertTrue(im3.info.get("progression"))
 
     def test_quality(self):
-        im1 = self.roundtrip(lena())
-        im2 = self.roundtrip(lena(), quality=50)
+        im1 = self.roundtrip(hopper())
+        im2 = self.roundtrip(hopper(), quality=50)
         self.assert_image(im1, im2.mode, im2.size)
         self.assertGreaterEqual(im1.bytes, im2.bytes)
 
     def test_smooth(self):
-        im1 = self.roundtrip(lena())
-        im2 = self.roundtrip(lena(), smooth=100)
+        im1 = self.roundtrip(hopper())
+        im2 = self.roundtrip(hopper(), smooth=100)
         self.assert_image(im1, im2.mode, im2.size)
 
     def test_subsampling(self):
@@ -193,26 +194,26 @@ class TestFileJpeg(PillowTestCase):
             layer = im.layer
             return layer[0][1:3] + layer[1][1:3] + layer[2][1:3]
         # experimental API
-        im = self.roundtrip(lena(), subsampling=-1)  # default
+        im = self.roundtrip(hopper(), subsampling=-1)  # default
         self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
-        im = self.roundtrip(lena(), subsampling=0)  # 4:4:4
+        im = self.roundtrip(hopper(), subsampling=0)  # 4:4:4
         self.assertEqual(getsampling(im), (1, 1, 1, 1, 1, 1))
-        im = self.roundtrip(lena(), subsampling=1)  # 4:2:2
+        im = self.roundtrip(hopper(), subsampling=1)  # 4:2:2
         self.assertEqual(getsampling(im), (2, 1, 1, 1, 1, 1))
-        im = self.roundtrip(lena(), subsampling=2)  # 4:1:1
+        im = self.roundtrip(hopper(), subsampling=2)  # 4:1:1
         self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
-        im = self.roundtrip(lena(), subsampling=3)  # default (undefined)
+        im = self.roundtrip(hopper(), subsampling=3)  # default (undefined)
         self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
 
-        im = self.roundtrip(lena(), subsampling="4:4:4")
+        im = self.roundtrip(hopper(), subsampling="4:4:4")
         self.assertEqual(getsampling(im), (1, 1, 1, 1, 1, 1))
-        im = self.roundtrip(lena(), subsampling="4:2:2")
+        im = self.roundtrip(hopper(), subsampling="4:2:2")
         self.assertEqual(getsampling(im), (2, 1, 1, 1, 1, 1))
-        im = self.roundtrip(lena(), subsampling="4:1:1")
+        im = self.roundtrip(hopper(), subsampling="4:1:1")
         self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
 
         self.assertRaises(
-            TypeError, lambda: self.roundtrip(lena(), subsampling="1:1:1"))
+            TypeError, lambda: self.roundtrip(hopper(), subsampling="1:1:1"))
 
     def test_exif(self):
         im = Image.open("Tests/images/pil_sample_rgb.jpg")
@@ -225,11 +226,11 @@ class TestFileJpeg(PillowTestCase):
 
     def test_quality_keep(self):
         # RGB
-        im = Image.open("Tests/images/lena.jpg")
+        im = Image.open("Tests/images/hopper.jpg")
         f = self.tempfile('temp.jpg')
         im.save(f, quality='keep')
         # Grayscale
-        im = Image.open("Tests/images/lena_gray.jpg")
+        im = Image.open("Tests/images/hopper_gray.jpg")
         f = self.tempfile('temp.jpg')
         im.save(f, quality='keep')
         # CMYK
@@ -243,7 +244,7 @@ class TestFileJpeg(PillowTestCase):
         Image.open(filename)
 
     def test_qtables(self):
-        im = Image.open("Tests/images/lena.jpg")
+        im = Image.open("Tests/images/hopper.jpg")
         qtables = im.quantization
         reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
         self.assertEqual(im.quantization, reloaded.quantization)
@@ -296,18 +297,18 @@ class TestFileJpeg(PillowTestCase):
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
     def test_load_djpeg(self):
-        img = Image.open(test_file)
+        img = Image.open(TEST_FILE)
         img.load_djpeg()
-        self.assert_image_similar(img, Image.open(test_file), 0)
+        self.assert_image_similar(img, Image.open(TEST_FILE), 0)
 
     @unittest.skipUnless(cjpeg_available(), "cjpeg not available")
     def test_save_cjpeg(self):
-        img = Image.open(test_file)
+        img = Image.open(TEST_FILE)
 
         tempfile = self.tempfile("temp.jpg")
         JpegImagePlugin._save_cjpeg(img, 0, tempfile)
         # Default save quality is 75%, so a tiny bit of difference is alright
-        self.assert_image_similar(img, Image.open(tempfile), 1)
+        self.assert_image_similar(img, Image.open(tempfile), 15)
 
     def test_no_duplicate_0x1001_tag(self):
         # Arrange

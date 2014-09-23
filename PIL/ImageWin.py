@@ -23,7 +23,7 @@ from PIL import Image
 
 class HDC:
     """
-    Wraps a HDC integer. The resulting object can be passed to the
+    Wraps an HDC integer. The resulting object can be passed to the
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
     methods.
     """
@@ -36,7 +36,7 @@ class HDC:
 
 class HWND:
     """
-    Wraps a HWND integer. The resulting object can be passed to the
+    Wraps an HWND integer. The resulting object can be passed to the
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
     methods, instead of a DC.
     """
@@ -86,8 +86,8 @@ class Dib:
         """
         Copy the bitmap contents to a device context.
 
-        :param handle: Device context (HDC), cast to a Python integer, or a HDC
-                       or HWND instance.  In PythonWin, you can use the
+        :param handle: Device context (HDC), cast to a Python integer, or an
+                       HDC or HWND instance.  In PythonWin, you can use the
                        :py:meth:`CDC.GetHandleAttrib` to get a suitable handle.
         """
         if isinstance(handle, HWND):
