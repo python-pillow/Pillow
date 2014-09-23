@@ -217,6 +217,7 @@ class TestImageCms(PillowTestCase):
                          ImageCmsProfile(pLab).tobytes())
 
         out = ImageCms.applyTransform(i, t2)
+
         self.assert_image_similar(hopper(), out, 2)
 
     def test_profile_tobytes(self):
