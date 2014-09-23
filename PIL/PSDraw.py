@@ -74,8 +74,7 @@ class PSDraw:
 
     def setink(self, ink):
         """
-        .. warning:: This has been in the PIL API for ages but was never
-        implemented.
+        .. warning:: This has been in the PIL API for ages but was never implemented.
 
         """
         print("*** NOT YET IMPLEMENTED ***")
