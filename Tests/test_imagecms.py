@@ -1,9 +1,9 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper, lena
 
 from PIL import Image
 
 from io import BytesIO
-        
+
 try:
     from PIL import ImageCms
     from PIL.ImageCms import ImageCmsProfile
@@ -38,36 +38,36 @@ class TestImageCms(PillowTestCase):
         # internal version number
         self.assertRegexpMatches(ImageCms.core.littlecms_version, "\d+\.\d+$")
 
-        i = ImageCms.profileToProfile(lena(), SRGB, SRGB)
+        i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)
         self.assert_image(i, "RGB", (128, 128))
 
-        i = lena()
+        i = hopper()
         ImageCms.profileToProfile(i, SRGB, SRGB, inPlace=True)
         self.assert_image(i, "RGB", (128, 128))
 
         t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "RGB", (128, 128))
 
-        i = lena()
+        i = hopper()
         t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
-        ImageCms.applyTransform(lena(), t, inPlace=True)
+        ImageCms.applyTransform(hopper(), t, inPlace=True)
         self.assert_image(i, "RGB", (128, 128))
 
         p = ImageCms.createProfile("sRGB")
         o = ImageCms.getOpenProfile(SRGB)
         t = ImageCms.buildTransformFromOpenProfiles(p, o, "RGB", "RGB")
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "RGB", (128, 128))
 
         t = ImageCms.buildProofTransform(SRGB, SRGB, SRGB, "RGB", "RGB")
         self.assertEqual(t.inputMode, "RGB")
         self.assertEqual(t.outputMode, "RGB")
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "RGB", (128, 128))
 
         # test PointTransform convenience API
-        lena().point(t)
+        hopper().point(t)
 
     def test_name(self):
         # get profile information for file
@@ -132,7 +132,7 @@ class TestImageCms(PillowTestCase):
         # the procedural pyCMS API uses PyCMSError for all sorts of errors
         self.assertRaises(
             ImageCms.PyCMSError,
-            lambda: ImageCms.profileToProfile(lena(), "foo", "bar"))
+            lambda: ImageCms.profileToProfile(hopper(), "foo", "bar"))
         self.assertRaises(
             ImageCms.PyCMSError,
             lambda: ImageCms.buildTransform("foo", "bar", "RGB", "RGB"))
@@ -202,8 +202,7 @@ class TestImageCms(PillowTestCase):
         self.assertTrue(img_srgb.info['icc_profile'])
 
         profile = ImageCmsProfile(BytesIO(img_srgb.info['icc_profile']))
-        self.assertTrue('sRGB' in  ImageCms.getProfileDescription(profile))
-
+        self.assertTrue('sRGB' in ImageCms.getProfileDescription(profile))
 
     def test_lab_roundtrip(self):
         # check to see if we're at least internally consistent.
@@ -212,15 +211,14 @@ class TestImageCms(PillowTestCase):
 
         t2 = ImageCms.buildTransform(pLab, SRGB, "LAB", "RGB")
 
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
 
         self.assertEqual(i.info['icc_profile'],
                          ImageCmsProfile(pLab).tobytes())
-        
+
         out = ImageCms.applyTransform(i, t2)
 
-        self.assert_image_similar(lena(), out, 2)
-
+        self.assert_image_similar(hopper(), out, 2)
 
     def test_profile_tobytes(self):
         from io import BytesIO
@@ -231,14 +229,12 @@ class TestImageCms(PillowTestCase):
 
         # not the same bytes as the original icc_profile,
         # but it does roundtrip
-        self.assertEqual(p.tobytes(),p2.tobytes())
+        self.assertEqual(p.tobytes(), p2.tobytes())
         self.assertEqual(ImageCms.getProfileName(p),
                          ImageCms.getProfileName(p2))
         self.assertEqual(ImageCms.getProfileDescription(p),
                          ImageCms.getProfileDescription(p2))
-        
 
-        
 if __name__ == '__main__':
     unittest.main()
 
