@@ -117,7 +117,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_write_metadata(self):
         """ Test metadata writing through libtiff """
-        img = Image.open('Tests/images/lena_g4.tif')
+        img = Image.open('Tests/images/hopper_g4.tif')
         f = self.tempfile('temp.tiff')
 
         img.save(f, tiffinfo=img.tag)
