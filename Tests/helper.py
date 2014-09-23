@@ -180,7 +180,6 @@ def tostring(im, format, **options):
     return out.getvalue()
 
 
-# Note: hopper() should be used in place of lena(), which will be removed.
 def hopper(mode="RGB", cache={}):
     from PIL import Image
     im = None
@@ -197,27 +196,6 @@ def hopper(mode="RGB", cache={}):
             im = hopper("I").convert(mode)
         else:
             im = hopper("RGB").convert(mode)
-    # cache[mode] = im
-    return im
-
-
-# Note: hopper() should be used instead lena(), which will be removed.
-def lena(mode="RGB", cache={}):
-    from PIL import Image
-    im = None
-    # FIXME: Implement caching to reduce reading from disk but so an original
-    # copy is returned each time and the cached image isn't modified by tests
-    # (for fast, isolated, repeatable tests).
-    # im = cache.get(mode)
-    if im is None:
-        if mode == "RGB":
-            im = Image.open("Tests/images/lena.ppm")
-        elif mode == "F":
-            im = lena("L").convert(mode)
-        elif mode[:4] == "I;16":
-            im = lena("I").convert(mode)
-        else:
-            im = lena("RGB").convert(mode)
     # cache[mode] = im
     return im
 
