@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena, py3
+from helper import unittest, PillowTestCase, hopper, py3
 
 import os
 
@@ -268,7 +268,7 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assert_image_equal(im, im2)
 
     def test_compressions(self):
-        im = lena('RGB')
+        im = hopper('RGB')
         out = self.tempfile('temp.tif')
 
         for compression in ('packbits', 'tiff_lzw'):
@@ -281,7 +281,7 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assert_image_similar(im, im2, 30)
 
     def test_cmyk_save(self):
-        im = lena('CMYK')
+        im = hopper('CMYK')
         out = self.tempfile('temp.tif')
 
         im.save(out, compression='tiff_adobe_deflate')
@@ -293,7 +293,7 @@ class TestFileLibTiff(LibTiffTestCase):
             to output on stderr from the error thrown by libtiff. We need to
             capture that but not now"""
 
-        im = lena('RGB')
+        im = hopper('RGB')
         out = self.tempfile('temp.tif')
 
         self.assertRaises(
@@ -332,12 +332,12 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertFalse(im.tag.next)
         self.assertEqual(im.size, (20,20))
         self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
-   
+
         TiffImagePlugin.READ_LIBTIFF = False
 
     def test__next(self):
         TiffImagePlugin.READ_LIBTIFF = True
-        im = Image.open('Tests/images/lena.tif')
+        im = Image.open('Tests/images/hopper.tif')
         self.assertFalse(im.tag.next)
         im.load()
         self.assertFalse(im.tag.next)

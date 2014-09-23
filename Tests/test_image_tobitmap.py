@@ -1,14 +1,14 @@
-from helper import unittest, PillowTestCase, lena, fromstring
+from helper import unittest, PillowTestCase, hopper, fromstring
 
 
 class TestImageToBitmap(PillowTestCase):
 
     def test_sanity(self):
 
-        self.assertRaises(ValueError, lambda: lena().tobitmap())
-        lena().convert("1").tobitmap()
+        self.assertRaises(ValueError, lambda: hopper().tobitmap())
+        hopper().convert("1").tobitmap()
 
-        im1 = lena().convert("1")
+        im1 = hopper().convert("1")
 
         bitmap = im1.tobitmap()
 

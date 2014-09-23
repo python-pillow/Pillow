@@ -11,7 +11,7 @@ try:
 except:
     format = "PNG"
 
-im = Image.open("Tests/images/lena.ppm")
+im = Image.open("Tests/images/hopper.ppm")
 im.load()
 
 queue = queue.Queue()

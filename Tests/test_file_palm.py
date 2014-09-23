@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena, imagemagick_available
+from helper import unittest, PillowTestCase, hopper, imagemagick_available
 
 import os.path
 
@@ -8,7 +8,7 @@ class TestFilePalm(PillowTestCase):
 
     def helper_save_as_palm(self, mode):
         # Arrange
-        im = lena(mode)
+        im = hopper(mode)
         outfile = self.tempfile("temp_" + mode + ".palm")
 
         # Act
@@ -22,7 +22,7 @@ class TestFilePalm(PillowTestCase):
         if not self._roundtrip:
             return
 
-        im = lena(mode)
+        im = hopper(mode)
         outfile = self.tempfile("temp.palm")
 
         im.save(outfile)

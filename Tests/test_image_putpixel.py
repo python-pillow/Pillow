@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -9,7 +9,7 @@ class TestImagePutPixel(PillowTestCase):
 
     def test_sanity(self):
 
-        im1 = lena()
+        im1 = hopper()
         im2 = Image.new(im1.mode, im1.size, 0)
 
         for y in range(im1.size[1]):

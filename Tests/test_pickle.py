@@ -6,7 +6,8 @@ from PIL import Image
 class TestPickle(PillowTestCase):
 
     def helper_pickle_file(self, pickle, protocol=0):
-        im = Image.open('Tests/images/lena.jpg')
+        # Arrange
+        im = Image.open('Tests/images/hopper.jpg')
         filename = self.tempfile('temp.pkl')
 
         # Act
@@ -19,7 +20,7 @@ class TestPickle(PillowTestCase):
         self.assertEqual(im, loaded_im)
 
     def helper_pickle_string(
-            self, pickle, protocol=0, file='Tests/images/lena.jpg'):
+            self, pickle, protocol=0, file='Tests/images/hopper.jpg'):
         im = Image.open(file)
 
         # Act

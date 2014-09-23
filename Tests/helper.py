@@ -157,7 +157,7 @@ class PillowTestCase(unittest.TestCase):
             raise IOError()
 
         outfile = self.tempfile("temp.png")
-        if command_succeeds(['convert', f, outfile]):
+        if command_succeeds([IMCONVERT, f, outfile]):
             from PIL import Image
             return Image.open(outfile)
         raise IOError()
@@ -182,6 +182,7 @@ def tostring(im, format, **options):
     return out.getvalue()
 
 
+# Note: hopper() should be used in place of lena(), which will be removed.
 def hopper(mode="RGB", cache={}):
     from PIL import Image
     im = None
@@ -193,15 +194,16 @@ def hopper(mode="RGB", cache={}):
         if mode == "RGB":
             im = Image.open("Tests/images/hopper.ppm")
         elif mode == "F":
-            im = lena("L").convert(mode)
+            im = hopper("L").convert(mode)
         elif mode[:4] == "I;16":
-            im = lena("I").convert(mode)
+            im = hopper("I").convert(mode)
         else:
-            im = lena("RGB").convert(mode)
+            im = hopper("RGB").convert(mode)
     # cache[mode] = im
     return im
 
 
+# Note: hopper() should be used instead lena(), which will be removed.
 def lena(mode="RGB", cache={}):
     from PIL import Image
     im = None
@@ -251,6 +253,14 @@ def netpbm_available():
 
 
 def imagemagick_available():
-    return command_succeeds(['convert', '-version'])
+    return IMCONVERT and command_succeeds([IMCONVERT, '-version'])
+
+
+if sys.platform == 'win32':
+    IMCONVERT = os.environ.get('MAGICK_HOME', '')
+    if IMCONVERT:
+        IMCONVERT = os.path.join(IMCONVERT, 'convert.exe')
+else:
+    IMCONVERT = 'convert'
 
 # End of file

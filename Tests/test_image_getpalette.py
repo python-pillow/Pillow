@@ -1,11 +1,11 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageGetPalette(PillowTestCase):
 
     def test_palette(self):
         def palette(mode):
-            p = lena(mode).getpalette()
+            p = hopper(mode).getpalette()
             if p:
                 return p[:10]
             return None

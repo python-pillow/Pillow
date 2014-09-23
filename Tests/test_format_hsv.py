@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -128,8 +128,8 @@ class TestFormatHSV(PillowTestCase):
                                   3, "B conversion is wrong")
 
     def test_convert(self):
-        im = lena('RGB').convert('HSV')
-        comparable = self.to_hsv_colorsys(lena('RGB'))
+        im = hopper('RGB').convert('HSV')
+        comparable = self.to_hsv_colorsys(hopper('RGB'))
 
 #        print ([ord(x) for x  in im.split()[0].tobytes()[:80]])
 #        print ([ord(x) for x  in comparable.split()[0].tobytes()[:80]])
@@ -145,7 +145,7 @@ class TestFormatHSV(PillowTestCase):
                                   1, "Value conversion is wrong")
 
     def test_hsv_to_rgb(self):
-        comparable = self.to_hsv_colorsys(lena('RGB'))
+        comparable = self.to_hsv_colorsys(hopper('RGB'))
         converted = comparable.convert('RGB')
         comparable = self.to_rgb_colorsys(comparable)
 

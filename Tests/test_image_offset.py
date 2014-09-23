@@ -1,11 +1,11 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageOffset(PillowTestCase):
 
     def test_offset(self):
 
-        im1 = lena()
+        im1 = hopper()
 
         im2 = self.assert_warning(DeprecationWarning, lambda: im1.offset(10))
         self.assertEqual(im1.getpixel((0, 0)), im2.getpixel((10, 10)))

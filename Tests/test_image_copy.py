@@ -1,11 +1,11 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageCopy(PillowTestCase):
 
     def test_copy(self):
         def copy(mode):
-            im = lena(mode)
+            im = hopper(mode)
             out = im.copy()
             self.assertEqual(out.mode, mode)
             self.assertEqual(out.size, im.size)
