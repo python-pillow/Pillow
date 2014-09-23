@@ -90,6 +90,7 @@ typedef struct {
 
     /* Custom quantization tables () */
     unsigned int **qtables;
+    int qtablesLen;
 
     /* Extra data (to be injected after header) */
     char* extra; int extra_size;
