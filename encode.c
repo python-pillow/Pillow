@@ -579,6 +579,7 @@ static unsigned int* get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
         for (j = 0; j < DCTSIZE2; j++) {
             qarrays[i * DCTSIZE2 + j] = PyInt_AS_LONG(PySequence_Fast_GET_ITEM(table_data, j));
         }
+        Py_DECREF(table_data);
     }
 
     *qtablesLen = num_tables; 
