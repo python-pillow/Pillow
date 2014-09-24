@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -154,8 +154,8 @@ class TestImageCms(PillowTestCase):
     def test_simple_lab(self):
         i = Image.new('RGB', (10, 10), (128, 128, 128))
 
-        pLab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(SRGB, pLab, "RGB", "LAB")
+        p_lab = ImageCms.createProfile("LAB")
+        t = ImageCms.buildTransform(SRGB, p_lab, "RGB", "LAB")
 
         i_lab = ImageCms.applyTransform(i, t)
 
@@ -165,40 +165,40 @@ class TestImageCms(PillowTestCase):
         # not a linear luminance map. so L != 128:
         self.assertEqual(k, (137, 128, 128))
 
-        L = i_lab.getdata(0)
+        l = i_lab.getdata(0)
         a = i_lab.getdata(1)
         b = i_lab.getdata(2)
 
-        self.assertEqual(list(L), [137] * 100)
+        self.assertEqual(list(l), [137] * 100)
         self.assertEqual(list(a), [128] * 100)
         self.assertEqual(list(b), [128] * 100)
 
     def test_lab_color(self):
-        pLab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(SRGB, pLab, "RGB", "LAB")
+        p_lab = ImageCms.createProfile("LAB")
+        t = ImageCms.buildTransform(SRGB, p_lab, "RGB", "LAB")
         # Need to add a type mapping for some PIL type to TYPE_Lab_8 in
         # findLCMSType, and have that mapping work back to a PIL mode
         # (likely RGB).
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "LAB", (128, 128))
 
         # i.save('temp.lab.tif')  # visually verified vs PS.
 
-        target = Image.open('Tests/images/lena.Lab.tif')
+        target = Image.open('Tests/images/hopper.Lab.tif')
 
         self.assert_image_similar(i, target, 30)
 
     def test_lab_srgb(self):
-        pLab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(pLab, SRGB, "LAB", "RGB")
+        p_lab = ImageCms.createProfile("LAB")
+        t = ImageCms.buildTransform(p_lab, SRGB, "LAB", "RGB")
 
-        img = Image.open('Tests/images/lena.Lab.tif')
+        img = Image.open('Tests/images/hopper.Lab.tif')
 
         img_srgb = ImageCms.applyTransform(img, t)
 
         # img_srgb.save('temp.srgb.tif') # visually verified vs ps.
 
-        self.assert_image_similar(lena(), img_srgb, 30)
+        self.assert_image_similar(hopper(), img_srgb, 30)
         self.assertTrue(img_srgb.info['icc_profile'])
 
         profile = ImageCmsProfile(BytesIO(img_srgb.info['icc_profile']))
@@ -206,15 +206,15 @@ class TestImageCms(PillowTestCase):
 
     def test_lab_roundtrip(self):
         # check to see if we're at least internally consistent.
-        pLab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(SRGB, pLab, "RGB", "LAB")
+        p_lab = ImageCms.createProfile("LAB")
+        t = ImageCms.buildTransform(SRGB, p_lab, "RGB", "LAB")
 
-        t2 = ImageCms.buildTransform(pLab, SRGB, "LAB", "RGB")
+        t2 = ImageCms.buildTransform(p_lab, SRGB, "LAB", "RGB")
 
         i = ImageCms.applyTransform(hopper(), t)
 
         self.assertEqual(i.info['icc_profile'],
-                         ImageCmsProfile(pLab).tobytes())
+                         ImageCmsProfile(p_lab).tobytes())
 
         out = ImageCms.applyTransform(i, t2)
 

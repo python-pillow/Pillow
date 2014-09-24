@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -23,7 +23,7 @@ class TestFileWebp(PillowTestCase):
 
     def test_read_rgb(self):
 
-        file_path = "Tests/images/lena.webp"
+        file_path = "Tests/images/hopper.webp"
         image = Image.open(file_path)
 
         self.assertEqual(image.mode, "RGB")
@@ -33,8 +33,8 @@ class TestFileWebp(PillowTestCase):
         image.getdata()
 
         # generated with:
-        # dwebp -ppm ../../Tests/images/lena.webp -o lena_webp_bits.ppm
-        target = Image.open('Tests/images/lena_webp_bits.ppm')
+        # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
+        target = Image.open('Tests/images/hopper_webp_bits.ppm')
         self.assert_image_similar(image, target, 20.0)
 
     def test_write_rgb(self):
@@ -45,7 +45,7 @@ class TestFileWebp(PillowTestCase):
 
         temp_file = self.tempfile("temp.webp")
 
-        lena("RGB").save(temp_file)
+        hopper("RGB").save(temp_file)
 
         image = Image.open(temp_file)
         image.load()
@@ -60,17 +60,17 @@ class TestFileWebp(PillowTestCase):
         # but it doesn't if the WebP is generated on Ubuntu and tested on
         # Fedora.
 
-        # generated with: dwebp -ppm temp.webp -o lena_webp_write.ppm
-        # target = Image.open('Tests/images/lena_webp_write.ppm')
+        # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
+        # target = Image.open('Tests/images/hopper_webp_write.ppm')
         # self.assert_image_equal(image, target)
 
         # This test asserts that the images are similar. If the average pixel
         # difference between the two images is less than the epsilon value,
         # then we're going to accept that it's a reasonable lossy version of
-        # the image. The included lena images for WebP are showing ~16 on
+        # the image. The old lena images for WebP are showing ~16 on
         # Ubuntu, the jpegs are showing ~18.
-        target = lena("RGB")
-        self.assert_image_similar(image, target, 20.0)
+        target = hopper("RGB")
+        self.assert_image_similar(image, target, 12)
 
 
 if __name__ == '__main__':
