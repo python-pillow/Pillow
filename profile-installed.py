@@ -21,6 +21,6 @@ if len(sys.argv) == 1:
 # Make sure that nose doesn't muck with our paths.
 if ('--no-path-adjustment' not in sys.argv) and ('-P' not in sys.argv):
     sys.argv.insert(1, '--no-path-adjustment')
-    
+
 if __name__ == '__main__':
     profile.run("nose.main()", sort=2)

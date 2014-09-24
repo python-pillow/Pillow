@@ -34,6 +34,7 @@ import warnings
 class DecompressionBombWarning(RuntimeWarning):
     pass
 
+
 class _imaging_not_installed:
     # module placeholder
     def __getattr__(self, id):
@@ -851,8 +852,9 @@ class Image:
                 t = self.info['transparency']
                 if isinstance(t, bytes):
                     # Dragons. This can't be represented by a single color
-                    warnings.warn('Palette images with Transparency expressed ' +
-                                  ' in bytes should be converted to RGBA images')
+                    warnings.warn('Palette images with Transparency  ' +
+                                  ' expressed in bytes should be converted ' +
+                                  'to RGBA images')
                     delete_trns = True
                 else:
                     # get the new transparency color.
@@ -868,7 +870,7 @@ class Image:
                         # can't just retrieve the palette number, got to do it
                         # after quantization.
                         trns_im = trns_im.convert('RGB')
-                    trns = trns_im.getpixel((0,0))
+                    trns = trns_im.getpixel((0, 0))
 
             elif self.mode == 'P' and mode == 'RGBA':
                 t = self.info['transparency']

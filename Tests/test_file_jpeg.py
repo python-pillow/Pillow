@@ -277,17 +277,17 @@ class TestFileJpeg(PillowTestCase):
             99  99  99  99  99  99  99  99
             """.split(None)]
         # list of qtable lists
-        self.assert_image_similar(im,
-                                  self.roundtrip(im,
-                                                 qtables=[standard_l_qtable,
-                                                          standard_chrominance_qtable]),
-                                  30)
+        self.assert_image_similar(
+            im, self.roundtrip(
+                im, qtables=[standard_l_qtable, standard_chrominance_qtable]),
+            30)
+
         # tuple of qtable lists
-        self.assert_image_similar(im,
-                                  self.roundtrip(im,
-                                                 qtables=(standard_l_qtable,
-                                                          standard_chrominance_qtable)),
-                                  30)
+        self.assert_image_similar(
+            im, self.roundtrip(
+                im, qtables=(standard_l_qtable, standard_chrominance_qtable)),
+            30)
+
         # dict of qtable lists
         self.assert_image_similar(im,
                                   self.roundtrip(im,

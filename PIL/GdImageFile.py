@@ -36,6 +36,7 @@ except ImportError:
 
 i16 = _binary.i16be
 
+
 ##
 # Image plugin for the GD uncompressed format.  Note that this format
 # is not supported by the standard <b>Image.open</b> function.  To use
@@ -52,7 +53,7 @@ class GdImageFile(ImageFile.ImageFile):
         # Header
         s = self.fp.read(775)
 
-        self.mode = "L" # FIXME: "P"
+        self.mode = "L"  # FIXME: "P"
         self.size = i16(s[0:2]), i16(s[2:4])
 
         # transparency index
@@ -62,7 +63,8 @@ class GdImageFile(ImageFile.ImageFile):
 
         self.palette = ImagePalette.raw("RGB", s[7:])
 
-        self.tile = [("raw", (0,0)+self.size, 775, ("L", 0, -1))]
+        self.tile = [("raw", (0, 0)+self.size, 775, ("L", 0, -1))]
+
 
 ##
 # Load texture from a GD image file.
@@ -73,7 +75,7 @@ class GdImageFile(ImageFile.ImageFile):
 # @return An image instance.
 # @exception IOError If the image could not be read.
 
-def open(fp, mode = "r"):
+def open(fp, mode="r"):
 
     if mode != "r":
         raise ValueError("bad mode")

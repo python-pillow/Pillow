@@ -100,7 +100,8 @@ class PillowTestCase(unittest.TestCase):
         ave_diff = float(diff)/(a.size[0]*a.size[1])
         self.assertGreaterEqual(
             epsilon, ave_diff,
-            (msg or '') + " average pixel value difference %.4f > epsilon %.4f" % (
+            (msg or '') +
+            " average pixel value difference %.4f > epsilon %.4f" % (
                 ave_diff, epsilon))
 
     def assert_warning(self, warn_class, func):
@@ -138,7 +139,8 @@ class PillowTestCase(unittest.TestCase):
         if travis is not None:
             skip = skip and (travis == bool(os.environ.get('TRAVIS', False)))
         if interpreter is not None:
-            skip = skip and (interpreter == 'pypy' and hasattr(sys, 'pypy_version_info'))
+            skip = skip and (interpreter == 'pypy' and
+                             hasattr(sys, 'pypy_version_info'))
         if skip:
             self.skipTest(msg or "Known Bad Test")
 

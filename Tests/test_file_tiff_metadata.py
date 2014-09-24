@@ -50,7 +50,8 @@ class TestFileTiffMetadata(PillowTestCase):
                  'StripByteCounts': (1796,),
                  'SamplesPerPixel': (1,),
                  'StripOffsets': (8,),
-                 'Software': 'ImageMagick 6.5.7-8 2012-08-17 Q16 http://www.imagemagick.org'}
+                 'Software': 'ImageMagick 6.5.7-8 2012-08-17 Q16' +
+                             ' http://www.imagemagick.org'}
 
         # self.assertEqual is equivalent,
         # but less helpful in telling what's wrong.

@@ -29,7 +29,6 @@ class TestFilePalm(PillowTestCase):
         converted = self.open_withImagemagick(outfile)
         self.assert_image_equal(converted, im)
 
-
     def test_monochrome(self):
         # Arrange
         mode = "1"
