@@ -23,23 +23,26 @@ from PIL import Image
 
 class HDC:
     """
-    Wraps a HDC integer. The resulting object can be passed to the
+    Wraps an HDC integer. The resulting object can be passed to the
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
     methods.
     """
     def __init__(self, dc):
         self.dc = dc
+
     def __int__(self):
         return self.dc
 
+
 class HWND:
     """
-    Wraps a HWND integer. The resulting object can be passed to the
+    Wraps an HWND integer. The resulting object can be passed to the
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
     methods, instead of a DC.
     """
     def __init__(self, wnd):
         self.wnd = wnd
+
     def __int__(self):
         return self.wnd
 
@@ -79,13 +82,12 @@ class Dib:
         if image:
             self.paste(image)
 
-
     def expose(self, handle):
         """
         Copy the bitmap contents to a device context.
 
-        :param handle: Device context (HDC), cast to a Python integer, or a HDC
-                       or HWND instance.  In PythonWin, you can use the
+        :param handle: Device context (HDC), cast to a Python integer, or an
+                       HDC or HWND instance.  In PythonWin, you can use the
                        :py:meth:`CDC.GetHandleAttrib` to get a suitable handle.
         """
         if isinstance(handle, HWND):
@@ -109,7 +111,7 @@ class Dib:
         necessary.
         """
         if not src:
-            src = (0,0) + self.size
+            src = (0, 0) + self.size
         if isinstance(handle, HWND):
             dc = self.image.getdc(handle)
             try:
@@ -119,7 +121,6 @@ class Dib:
         else:
             result = self.image.draw(handle, dst, src)
         return result
-
 
     def query_palette(self, handle):
         """
@@ -146,7 +147,6 @@ class Dib:
             result = self.image.query_palette(handle)
         return result
 
-
     def paste(self, im, box=None):
         """
         Paste a PIL image into the bitmap image.
@@ -166,7 +166,6 @@ class Dib:
         else:
             self.image.paste(im.im)
 
-
     def frombytes(self, buffer):
         """
         Load display memory contents from byte data.
@@ -175,7 +174,6 @@ class Dib:
                        data returned from <b>tobytes</b>)
         """
         return self.image.frombytes(buffer)
-
 
     def tobytes(self):
         """
@@ -203,6 +201,7 @@ class Dib:
             stacklevel=2
         )
         return self.tobytes()
+
 
 ##
 # Create a Window with the given title size.
@@ -234,6 +233,7 @@ class Window:
 
     def mainloop(self):
         Image.core.eventloop()
+
 
 ##
 # Create an image window which displays the given image.

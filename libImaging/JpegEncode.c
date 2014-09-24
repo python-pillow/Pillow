@@ -151,7 +151,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    if (context->quality > 0) {
 		quality = context->quality;
 	    }
-	    for (i = 0; i < sizeof(context->qtables)/sizeof(unsigned int); i++) {
+	    for (i = 0; i < context->qtablesLen; i++) {
 		// TODO: Should add support for none baseline
 		jpeg_add_quant_table(&context->cinfo, i, context->qtables[i],
 				     quality, TRUE);

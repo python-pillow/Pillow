@@ -664,6 +664,10 @@ class Image:
 
     # Declare tostring as alias to tobytes
     def tostring(self, *args, **kw):
+        """Deprecated alias to tobytes.
+
+        .. deprecated:: 2.0
+        """
         warnings.warn(
             'tostring() is deprecated. Please call tobytes() instead.',
             DeprecationWarning,

@@ -535,7 +535,7 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
 
 #include "Jpeg.h"
 
-static unsigned int** get_qtables_arrays(PyObject* qtables) {
+static unsigned int** get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
     PyObject* tables;
     PyObject* table;
     PyObject* table_data;
@@ -588,6 +588,7 @@ static unsigned int** get_qtables_arrays(PyObject* qtables) {
     }
 
     Py_DECREF(tables);
+    *qtablesLen = num_tables; 
 
     if (PyErr_Occurred()) {
         PyMem_Free(qarrays);
@@ -614,6 +615,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     int subsampling = -1; /* -1=default, 0=none, 1=medium, 2=high */
     PyObject* qtables=NULL;
     unsigned int **qarrays = NULL;
+    int qtablesLen = 0;
     char* extra = NULL;
     int extra_size;
     char* rawExif = NULL;
@@ -633,7 +635,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     if (get_packer(encoder, mode, rawmode) < 0)
         return NULL;
 
-    qarrays = get_qtables_arrays(qtables);
+    qarrays = get_qtables_arrays(qtables, &qtablesLen);
 
     if (extra && extra_size > 0) {
         char* p = malloc(extra_size);
@@ -657,6 +659,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 
     ((JPEGENCODERSTATE*)encoder->state.context)->quality = quality;
     ((JPEGENCODERSTATE*)encoder->state.context)->qtables = qarrays;
+    ((JPEGENCODERSTATE*)encoder->state.context)->qtablesLen = qtablesLen;
     ((JPEGENCODERSTATE*)encoder->state.context)->subsampling = subsampling;
     ((JPEGENCODERSTATE*)encoder->state.context)->progressive = progressive;
     ((JPEGENCODERSTATE*)encoder->state.context)->smooth = smooth;
