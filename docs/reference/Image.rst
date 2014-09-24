@@ -135,6 +135,7 @@ ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
 .. automethod:: PIL.Image.Image.tell
 .. automethod:: PIL.Image.Image.thumbnail
 .. automethod:: PIL.Image.Image.tobitmap
+.. automethod:: PIL.Image.Image.tobytes
 .. automethod:: PIL.Image.Image.tostring
 .. automethod:: PIL.Image.Image.transform
 .. automethod:: PIL.Image.Image.transpose

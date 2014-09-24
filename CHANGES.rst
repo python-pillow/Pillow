@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.6.0 (unreleased)
 ------------------
 
+- Image.tobytes() and Image.tostring() documentation update #916 #917
+  [mgedmin]
+
 - On Windows, do not execute convert.exe without specifying path #912
   [cgohlke]
 
