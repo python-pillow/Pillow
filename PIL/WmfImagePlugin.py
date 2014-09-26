@@ -24,6 +24,7 @@ _handler = None
 if str != bytes:
     long = int
 
+
 ##
 # Install application-specific WMF image handler.
 #
@@ -43,7 +44,7 @@ if hasattr(Image.core, "drawwmf"):
             self.bbox = im.info["wmf_bbox"]
 
         def load(self, im):
-            im.fp.seek(0) # rewind
+            im.fp.seek(0)  # rewind
             return Image.frombytes(
                 "RGB", im.size,
                 Image.core.drawwmf(im.fp.read(), im.size, self.bbox),
@@ -56,6 +57,7 @@ if hasattr(Image.core, "drawwmf"):
 
 word = _binary.i16le
 
+
 def short(c, o=0):
     v = word(c, o)
     if v >= 32768:
@@ -63,6 +65,7 @@ def short(c, o=0):
     return v
 
 dword = _binary.i32le
+
 
 #
 # --------------------------------------------------------------------
@@ -73,6 +76,7 @@ def _accept(prefix):
         prefix[:6] == b"\xd7\xcd\xc6\x9a\x00\x00" or
         prefix[:4] == b"\x01\x00\x00\x00"
         )
+
 
 ##
 # Image plugin for Windows metafiles.
@@ -95,8 +99,10 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             inch = word(s, 14)
 
             # get bounding box
-            x0 = short(s, 6); y0 = short(s, 8)
-            x1 = short(s, 10); y1 = short(s, 12)
+            x0 = short(s, 6)
+            y0 = short(s, 8)
+            x1 = short(s, 10)
+            y1 = short(s, 12)
 
             # normalize size to 72 dots per inch
             size = (x1 - x0) * 72 // inch, (y1 - y0) * 72 // inch
@@ -115,8 +121,10 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             # enhanced metafile
 
             # get bounding box
-            x0 = dword(s, 8); y0 = dword(s, 12)
-            x1 = dword(s, 16); y1 = dword(s, 20)
+            x0 = dword(s, 8)
+            y0 = dword(s, 12)
+            x1 = dword(s, 16)
+            y1 = dword(s, 20)
 
             # get frame (in 0.01 millimeter units)
             frame = dword(s, 24), dword(s, 28), dword(s, 32), dword(s, 36)

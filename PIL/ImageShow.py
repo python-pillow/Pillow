@@ -15,7 +15,8 @@
 from __future__ import print_function
 
 from PIL import Image
-import os, sys
+import os
+import sys
 
 if sys.version_info >= (3, 3):
     from shlex import quote
@@ -24,16 +25,18 @@ else:
 
 _viewers = []
 
+
 def register(viewer, order=1):
     try:
         if issubclass(viewer, Viewer):
             viewer = viewer()
     except TypeError:
-        pass # raised if viewer wasn't a class
+        pass  # raised if viewer wasn't a class
     if order > 0:
         _viewers.append(viewer)
     elif order < 0:
         _viewers.insert(0, viewer)
+
 
 ##
 # Displays a given image.
@@ -48,6 +51,7 @@ def show(image, title=None, **options):
         if viewer.show(image, title=title, **options):
             return 1
     return 0
+
 
 ##
 # Base class for viewers.
@@ -102,6 +106,7 @@ if sys.platform == "win32":
 
     class WindowsViewer(Viewer):
         format = "BMP"
+
         def get_command(self, file, **options):
             return ('start "Pillow" /WAIT "%s" '
                     '&& ping -n 2 127.0.0.1 >NUL '
@@ -113,11 +118,13 @@ elif sys.platform == "darwin":
 
     class MacViewer(Viewer):
         format = "BMP"
+
         def get_command(self, file, **options):
             # on darwin open returns immediately resulting in the temp
             # file removal while app is opening
             command = "open -a /Applications/Preview.app"
-            command = "(%s %s; sleep 20; rm -f %s)&" % (command, quote(file), quote(file))
+            command = "(%s %s; sleep 20; rm -f %s)&" % (command, quote(file),
+                                                        quote(file))
             return command
 
     register(MacViewer)
@@ -140,7 +147,8 @@ else:
     class UnixViewer(Viewer):
         def show_file(self, file, **options):
             command, executable = self.get_command_ex(file, **options)
-            command = "(%s %s; rm -f %s)&" % (command, quote(file), quote(file))
+            command = "(%s %s; rm -f %s)&" % (command, quote(file),
+                                              quote(file))
             os.system(command)
             return 1
 

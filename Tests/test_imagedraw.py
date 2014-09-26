@@ -255,7 +255,6 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_floodfill2.png"))
 
-
     def create_base_image_draw(self, size,
                                mode=DEFAULT_MODE,
                                background1=WHITE,
@@ -267,23 +266,25 @@ class TestImageDraw(PillowTestCase):
                     img.putpixel((x, y), background2)
         return (img, ImageDraw.Draw(img))
 
-
     def test_square(self):
         expected = Image.open(os.path.join(IMAGES_PATH, 'square.png'))
         expected.load()
         img, draw = self.create_base_image_draw((10, 10))
         draw.polygon([(2, 2), (2, 7), (7, 7), (7, 2)], BLACK)
-        self.assert_image_equal(img, expected, 'square as normal polygon failed')
+        self.assert_image_equal(img, expected,
+                                'square as normal polygon failed')
         img, draw = self.create_base_image_draw((10, 10))
         draw.polygon([(7, 7), (7, 2), (2, 2), (2, 7)], BLACK)
-        self.assert_image_equal(img, expected, 'square as inverted polygon failed')
+        self.assert_image_equal(img, expected,
+                                'square as inverted polygon failed')
         img, draw = self.create_base_image_draw((10, 10))
         draw.rectangle((2, 2, 7, 7), BLACK)
-        self.assert_image_equal(img, expected, 'square as normal rectangle failed')
+        self.assert_image_equal(img, expected,
+                                'square as normal rectangle failed')
         img, draw = self.create_base_image_draw((10, 10))
         draw.rectangle((7, 7, 2, 2), BLACK)
-        self.assert_image_equal(img, expected, 'square as inverted rectangle failed')
-
+        self.assert_image_equal(
+            img, expected, 'square as inverted rectangle failed')
 
     def test_triangle_right(self):
         expected = Image.open(os.path.join(IMAGES_PATH, 'triangle_right.png'))
@@ -292,93 +293,117 @@ class TestImageDraw(PillowTestCase):
         draw.polygon([(3, 5), (17, 5), (10, 12)], BLACK)
         self.assert_image_equal(img, expected, 'triangle right failed')
 
-
     def test_line_horizontal(self):
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_horizontal_w2px_normal.png'))
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_horizontal_w2px_normal.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 14, 5), BLACK, 2)
-        self.assert_image_equal(img, expected, 'line straigth horizontal normal 2px wide failed')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_horizontal_w2px_inverted.png'))
+        self.assert_image_equal(
+            img, expected, 'line straigth horizontal normal 2px wide failed')
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_horizontal_w2px_inverted.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((14, 5, 5, 5), BLACK, 2)
-        self.assert_image_equal(img, expected, 'line straigth horizontal inverted 2px wide failed')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_horizontal_w3px.png'))
+        self.assert_image_equal(
+            img, expected, 'line straigth horizontal inverted 2px wide failed')
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_horizontal_w3px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 14, 5), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line straigth horizontal normal 3px wide failed')
+        self.assert_image_equal(
+            img, expected, 'line straigth horizontal normal 3px wide failed')
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((14, 5, 5, 5), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line straigth horizontal inverted 3px wide failed')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_horizontal_w101px.png'))
+        self.assert_image_equal(
+            img, expected, 'line straigth horizontal inverted 3px wide failed')
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_horizontal_w101px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((200, 110))
         draw.line((5, 55, 195, 55), BLACK, 101)
-        self.assert_image_equal(img, expected, 'line straigth horizontal 101px wide failed')
+        self.assert_image_equal(
+            img, expected, 'line straigth horizontal 101px wide failed')
 
     def test_line_h_s1_w2(self):
         self.skipTest('failing')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_horizontal_slope1px_w2px.png'))
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_horizontal_slope1px_w2px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 14, 6), BLACK, 2)
-        self.assert_image_equal(img, expected, 'line horizontal 1px slope 2px wide failed')
-
+        self.assert_image_equal(
+            img, expected, 'line horizontal 1px slope 2px wide failed')
 
     def test_line_vertical(self):
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_w2px_normal.png'))
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_vertical_w2px_normal.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 5, 14), BLACK, 2)
-        self.assert_image_equal(img, expected, 'line straigth vertical normal 2px wide failed')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_w2px_inverted.png'))
+        self.assert_image_equal(
+            img, expected, 'line straigth vertical normal 2px wide failed')
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_vertical_w2px_inverted.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 14, 5, 5), BLACK, 2)
-        self.assert_image_equal(img, expected, 'line straigth vertical inverted 2px wide failed')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_w3px.png'))
+        self.assert_image_equal(
+            img, expected, 'line straigth vertical inverted 2px wide failed')
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_vertical_w3px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 5, 14), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line straigth vertical normal 3px wide failed')
+        self.assert_image_equal(
+            img, expected, 'line straigth vertical normal 3px wide failed')
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 14, 5, 5), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line straigth vertical inverted 3px wide failed')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_w101px.png'))
+        self.assert_image_equal(
+            img, expected, 'line straigth vertical inverted 3px wide failed')
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_vertical_w101px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((110, 200))
         draw.line((55, 5, 55, 195), BLACK, 101)
-        self.assert_image_equal(img, expected, 'line straigth vertical 101px wide failed')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_vertical_slope1px_w2px.png'))
+        self.assert_image_equal(img, expected,
+                                'line straigth vertical 101px wide failed')
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_vertical_slope1px_w2px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 6, 14), BLACK, 2)
-        self.assert_image_equal(img, expected, 'line vertical 1px slope 2px wide failed')
-
+        self.assert_image_equal(img, expected,
+                                'line vertical 1px slope 2px wide failed')
 
     def test_line_oblique_45(self):
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_oblique_45_w3px_a.png'))
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_oblique_45_w3px_a.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 14, 14), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line oblique 45 normal 3px wide A failed')
+        self.assert_image_equal(img, expected,
+                                'line oblique 45 normal 3px wide A failed')
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((14, 14, 5, 5), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line oblique 45 inverted 3px wide A failed')
-        expected = Image.open(os.path.join(IMAGES_PATH, 'line_oblique_45_w3px_b.png'))
+        self.assert_image_equal(img, expected,
+                                'line oblique 45 inverted 3px wide A failed')
+        expected = Image.open(os.path.join(IMAGES_PATH,
+                              'line_oblique_45_w3px_b.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((14, 5, 5, 14), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line oblique 45 normal 3px wide B failed')
+        self.assert_image_equal(img, expected,
+                                'line oblique 45 normal 3px wide B failed')
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 14, 14, 5), BLACK, 3)
-        self.assert_image_equal(img, expected, 'line oblique 45 inverted 3px wide B failed')
+        self.assert_image_equal(img, expected,
+                                'line oblique 45 inverted 3px wide B failed')
 
 
 if __name__ == '__main__':
     unittest.main()
 
 # End of file
-

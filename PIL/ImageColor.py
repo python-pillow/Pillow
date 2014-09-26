@@ -20,6 +20,7 @@
 from PIL import Image
 import re
 
+
 def getrgb(color):
     """
      Convert a color string to an RGB tuple. If the string cannot be parsed,
@@ -86,7 +87,8 @@ def getrgb(color):
             int(rgb[1] * 255 + 0.5),
             int(rgb[2] * 255 + 0.5)
             )
-    m = re.match("rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
+    m = re.match("rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$",
+                 color)
     if m:
         return (
             int(m.group(1)),
@@ -95,6 +97,7 @@ def getrgb(color):
             int(m.group(4))
             )
     raise ValueError("unknown color specifier: %r" % color)
+
 
 def getcolor(color, mode):
     """

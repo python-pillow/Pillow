@@ -1,4 +1,4 @@
-from helper import *
+from helper import unittest, PillowTestCase
 
 try:
     import pyroma

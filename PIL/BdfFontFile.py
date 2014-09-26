@@ -26,12 +26,12 @@ from PIL import FontFile
 # --------------------------------------------------------------------
 
 bdf_slant = {
-   "R": "Roman",
-   "I": "Italic",
-   "O": "Oblique",
-   "RI": "Reverse Italic",
-   "RO": "Reverse Oblique",
-   "OT": "Other"
+    "R": "Roman",
+    "I": "Italic",
+    "O": "Oblique",
+    "RI": "Reverse Italic",
+    "RO": "Reverse Oblique",
+    "OT": "Other"
 }
 
 bdf_spacing = {
@@ -40,8 +40,8 @@ bdf_spacing = {
     "C": "Cell"
 }
 
-def bdf_char(f):
 
+def bdf_char(f):
     # skip to STARTCHAR
     while True:
         s = f.readline()
@@ -82,6 +82,7 @@ def bdf_char(f):
 
     return id, int(props["ENCODING"]), bbox, im
 
+
 ##
 # Font file plugin for the X11 BDF format.
 
@@ -113,10 +114,10 @@ class BdfFontFile(FontFile.FontFile):
         font[4] = bdf_slant[font[4].upper()]
         font[11] = bdf_spacing[font[11].upper()]
 
-        ascent = int(props["FONT_ASCENT"])
-        descent = int(props["FONT_DESCENT"])
+        # ascent = int(props["FONT_ASCENT"])
+        # descent = int(props["FONT_DESCENT"])
 
-        fontname = ";".join(font[1:])
+        # fontname = ";".join(font[1:])
 
         # print "#", fontname
         # for i in comments:

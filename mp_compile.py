@@ -9,7 +9,7 @@ try:
     MAX_PROCS = int(os.environ.get('MAX_CONCURRENCY', cpu_count()))
 except:
     MAX_PROCS = None
-        
+
 
 # hideous monkeypatching.  but. but. but.
 def _mp_compile_one(tp):
@@ -57,6 +57,7 @@ if MAX_PROCS != 1 and not sys.platform.startswith('win'):
         pool = Pool(2)
         CCompiler.compile = _mp_compile
     except Exception as msg:
-        print("Exception installing mp_compile, proceeding without: %s" %msg)
+        print("Exception installing mp_compile, proceeding without: %s" % msg)
 else:
-    print("Single threaded build, not installing mp_compile: %s processes" %MAX_PROCS)
+    print("Single threaded build, not installing mp_compile: %s processes" %
+          MAX_PROCS)

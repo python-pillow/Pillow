@@ -13,7 +13,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-# This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis <casadebender@gmail.com>.
+# This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis
+# <casadebender@gmail.com>.
 # https://code.google.com/p/casadebender/wiki/Win32IconImagePlugin
 #
 # Icon format references:
@@ -34,6 +35,7 @@ i16 = _binary.i16le
 i32 = _binary.i32le
 
 _MAGIC = b"\0\0\1\0"
+
 
 def _accept(prefix):
     return prefix[:4] == _MAGIC
@@ -63,7 +65,7 @@ class IcoFile:
             icon_header = {
                 'width': i8(s[0]),
                 'height': i8(s[1]),
-                'nb_color': i8(s[2]), # Number of colors in image (0 if >=8bpp)
+                'nb_color': i8(s[2]),  # No. of colors in image (0 if >=8bpp)
                 'reserved': i8(s[3]),
                 'planes': i16(s[4:]),
                 'bpp': i16(s[6:]),
@@ -78,10 +80,14 @@ class IcoFile:
 
             # See Wikipedia notes about color depth.
             # We need this just to differ images with equal sizes
-            icon_header['color_depth'] = (icon_header['bpp'] or (icon_header['nb_color'] != 0 and ceil(log(icon_header['nb_color'],2))) or 256)
+            icon_header['color_depth'] = (icon_header['bpp'] or
+                                          (icon_header['nb_color'] != 0 and
+                                           ceil(log(icon_header['nb_color'],
+                                                    2))) or 256)
 
             icon_header['dim'] = (icon_header['width'], icon_header['height'])
-            icon_header['square'] = icon_header['width'] * icon_header['height']
+            icon_header['square'] = (icon_header['width'] *
+                                     icon_header['height'])
 
             self.entry.append(icon_header)
 
@@ -102,7 +108,7 @@ class IcoFile:
         Get an image from the icon
         """
         for (i, h) in enumerate(self.entry):
-            if size == h['dim'] and (bpp == False or bpp == h['color_depth']):
+            if size == h['dim'] and (bpp is False or bpp == h['color_depth']):
                 return self.frame(i)
         return self.frame(0)
 
@@ -127,7 +133,7 @@ class IcoFile:
             # change tile dimension to only encompass XOR image
             im.size = (im.size[0], int(im.size[1] / 2))
             d, e, o, a = im.tile[0]
-            im.tile[0] = d, (0,0) + im.size, o, a
+            im.tile[0] = d, (0, 0) + im.size, o, a
 
             # figure out where AND mask image starts
             mode = a[0]
@@ -139,8 +145,9 @@ class IcoFile:
 
             if 32 == bpp:
                 # 32-bit color depth icon image allows semitransparent areas
-                # PIL's DIB format ignores transparency bits, recover them
-                # The DIB is packed in BGRX byte order where X is the alpha channel
+                # PIL's DIB format ignores transparency bits, recover them.
+                # The DIB is packed in BGRX byte order where X is the alpha
+                # channel.
 
                 # Back up to start of bmp data
                 self.buf.seek(o)
@@ -162,9 +169,11 @@ class IcoFile:
                     # bitmap row data is aligned to word boundaries
                     w += 32 - (im.size[0] % 32)
 
-                # the total mask data is padded row size * height / bits per char
+                # the total mask data is
+                # padded row size * height / bits per char
 
-                and_mask_offset = o + int(im.size[0] * im.size[1] * (bpp / 8.0))
+                and_mask_offset = o + int(im.size[0] * im.size[1] *
+                                          (bpp / 8.0))
                 total_bytes = int((w * im.size[1]) / 8)
 
                 self.buf.seek(and_mask_offset)
@@ -187,6 +196,7 @@ class IcoFile:
 
         return im
 
+
 ##
 # Image plugin for Windows Icon files.
 
@@ -194,15 +204,16 @@ class IcoImageFile(ImageFile.ImageFile):
     """
     PIL read-only image support for Microsoft Windows .ico files.
 
-    By default the largest resolution image in the file will be loaded. This can
-    be changed by altering the 'size' attribute before calling 'load'.
+    By default the largest resolution image in the file will be loaded. This
+    can be changed by altering the 'size' attribute before calling 'load'.
 
     The info dictionary has a key 'sizes' that is a list of the sizes available
     in the icon file.
 
     Handles classic, XP and Vista icon formats.
 
-    This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis <casadebender@gmail.com>.
+    This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis
+    <casadebender@gmail.com>.
     https://code.google.com/p/casadebender/wiki/Win32IconImagePlugin
     """
     format = "ICO"
@@ -222,9 +233,9 @@ class IcoImageFile(ImageFile.ImageFile):
         self.mode = im.mode
         self.size = im.size
 
-
     def load_seek(self):
-        # Flage the ImageFile.Parser so that it just does all the decode at the end.
+        # Flage the ImageFile.Parser so that it
+        # just does all the decode at the end.
         pass
 #
 # --------------------------------------------------------------------

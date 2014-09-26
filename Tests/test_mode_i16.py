@@ -5,7 +5,7 @@ from PIL import Image
 
 class TestModeI16(PillowTestCase):
 
-    original = hopper().resize((32,32)).convert('I')
+    original = hopper().resize((32, 32)).convert('I')
 
     def verify(self, im1):
         im2 = self.original.copy()

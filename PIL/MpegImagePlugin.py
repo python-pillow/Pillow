@@ -18,6 +18,7 @@ __version__ = "0.1"
 from PIL import Image, ImageFile
 from PIL._binary import i8
 
+
 #
 # Bitstream parser
 
@@ -51,6 +52,7 @@ class BitStream:
         v = self.peek(bits)
         self.bits = self.bits - bits
         return v
+
 
 ##
 # Image plugin for MPEG streams.  This plugin can identify a stream,

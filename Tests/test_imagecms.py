@@ -3,7 +3,8 @@ from helper import unittest, PillowTestCase, hopper
 from PIL import Image
 
 from io import BytesIO
-
+import os
+        
 try:
     from PIL import ImageCms
     from PIL.ImageCms import ImageCmsProfile
@@ -13,8 +14,8 @@ except ImportError as v:
     pass
 
 
-SRGB = "Tests/icc/sRGB.icm"
-
+SRGB = "Tests/icc/sRGB_IEC61966-2-1_black_scaled.icc"
+HAVE_PROFILE = os.path.exists(SRGB)
 
 class TestImageCms(PillowTestCase):
 
@@ -26,8 +27,12 @@ class TestImageCms(PillowTestCase):
         except ImportError as v:
             self.skipTest(v)
 
-    def test_sanity(self):
+    def skip_missing(self):
+        if not HAVE_PROFILE:
+            self.skipTest("SRGB profile not available")
 
+    def test_sanity(self):
+        
         # basic smoke test.
         # this mostly follows the cms_test outline.
 
@@ -38,6 +43,7 @@ class TestImageCms(PillowTestCase):
         # internal version number
         self.assertRegexpMatches(ImageCms.core.littlecms_version, "\d+\.\d+$")
 
+        self.skip_missing()
         i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)
         self.assert_image(i, "RGB", (128, 128))
 
@@ -70,38 +76,45 @@ class TestImageCms(PillowTestCase):
         hopper().point(t)
 
     def test_name(self):
+        self.skip_missing()
         # get profile information for file
         self.assertEqual(
             ImageCms.getProfileName(SRGB).strip(),
-            'IEC 61966-2.1 Default RGB colour space - sRGB')
+            'IEC 61966-2-1 Default RGB Colour Space - sRGB')
 
     def test_info(self):
+        self.skip_missing()
         self.assertEqual(
             ImageCms.getProfileInfo(SRGB).splitlines(), [
-                'sRGB IEC61966-2.1', '',
-                'Copyright (c) 1998 Hewlett-Packard Company', ''])
+                'sRGB IEC61966-2-1 black scaled', '',
+                'Copyright International Color Consortium, 2009', ''])
 
     def test_copyright(self):
+        self.skip_missing()
         self.assertEqual(
             ImageCms.getProfileCopyright(SRGB).strip(),
-            'Copyright (c) 1998 Hewlett-Packard Company')
+            'Copyright International Color Consortium, 2009')
 
     def test_manufacturer(self):
+        self.skip_missing()
         self.assertEqual(
             ImageCms.getProfileManufacturer(SRGB).strip(),
-            'IEC http://www.iec.ch')
+            '')
 
     def test_model(self):
+        self.skip_missing()
         self.assertEqual(
             ImageCms.getProfileModel(SRGB).strip(),
-            'IEC 61966-2.1 Default RGB colour space - sRGB')
+            'IEC 61966-2-1 Default RGB Colour Space - sRGB')
 
     def test_description(self):
+        self.skip_missing()
         self.assertEqual(
             ImageCms.getProfileDescription(SRGB).strip(),
-            'sRGB IEC61966-2.1')
+            'sRGB IEC61966-2-1 black scaled')
 
     def test_intent(self):
+        self.skip_missing()
         self.assertEqual(ImageCms.getDefaultIntent(SRGB), 0)
         self.assertEqual(ImageCms.isIntentSupported(
             SRGB, ImageCms.INTENT_ABSOLUTE_COLORIMETRIC,
@@ -139,6 +152,7 @@ class TestImageCms(PillowTestCase):
         self.assertRaises(
             ImageCms.PyCMSError,
             lambda: ImageCms.getProfileName(None))
+        self.skip_missing()
         self.assertRaises(
             ImageCms.PyCMSError,
             lambda: ImageCms.isIntentSupported(SRGB, None, None))
@@ -154,8 +168,9 @@ class TestImageCms(PillowTestCase):
     def test_simple_lab(self):
         i = Image.new('RGB', (10, 10), (128, 128, 128))
 
-        p_lab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(SRGB, p_lab, "RGB", "LAB")
+        psRGB = ImageCms.createProfile("sRGB")
+        pLab = ImageCms.createProfile("LAB")
+        t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
 
         i_lab = ImageCms.applyTransform(i, t)
 
@@ -174,8 +189,10 @@ class TestImageCms(PillowTestCase):
         self.assertEqual(list(b), [128] * 100)
 
     def test_lab_color(self):
-        p_lab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(SRGB, p_lab, "RGB", "LAB")
+        psRGB = ImageCms.createProfile("sRGB")
+        pLab = ImageCms.createProfile("LAB")
+        t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
+
         # Need to add a type mapping for some PIL type to TYPE_Lab_8 in
         # findLCMSType, and have that mapping work back to a PIL mode
         # (likely RGB).
@@ -189,8 +206,9 @@ class TestImageCms(PillowTestCase):
         self.assert_image_similar(i, target, 30)
 
     def test_lab_srgb(self):
-        p_lab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(p_lab, SRGB, "LAB", "RGB")
+        psRGB = ImageCms.createProfile("sRGB")
+        pLab = ImageCms.createProfile("LAB")
+        t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
 
         img = Image.open('Tests/images/hopper.Lab.tif')
 
@@ -206,15 +224,16 @@ class TestImageCms(PillowTestCase):
 
     def test_lab_roundtrip(self):
         # check to see if we're at least internally consistent.
-        p_lab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(SRGB, p_lab, "RGB", "LAB")
+        psRGB = ImageCms.createProfile("sRGB")
+        pLab = ImageCms.createProfile("LAB")
+        t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
 
-        t2 = ImageCms.buildTransform(p_lab, SRGB, "LAB", "RGB")
+        t2 = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
 
         i = ImageCms.applyTransform(hopper(), t)
 
         self.assertEqual(i.info['icc_profile'],
-                         ImageCmsProfile(p_lab).tobytes())
+                         ImageCmsProfile(pLab).tobytes())
 
         out = ImageCms.applyTransform(i, t2)
 

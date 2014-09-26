@@ -17,6 +17,7 @@ test_filenames = (
     "temp_'\"&&",
 )
 
+
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
 class TestShellInjection(PillowTestCase):
 

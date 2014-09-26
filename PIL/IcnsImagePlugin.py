@@ -16,7 +16,8 @@
 #
 
 from PIL import Image, ImageFile, PngImagePlugin, _binary
-import struct, io
+import io
+import struct
 
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
 if enable_jpeg2k:
@@ -26,8 +27,10 @@ i8 = _binary.i8
 
 HEADERSIZE = 8
 
+
 def nextheader(fobj):
     return struct.unpack('>4sI', fobj.read(HEADERSIZE))
+
 
 def read_32t(fobj, start_length, size):
     # The 128x128 icon seems to have an extra header for some reason.
@@ -37,6 +40,7 @@ def read_32t(fobj, start_length, size):
     if sig != b'\x00\x00\x00\x00':
         raise SyntaxError('Unknown signature, expecting 0x00000000')
     return read_32(fobj, (start + 4, length - 4), size)
+
 
 def read_32(fobj, start_length, size):
     """
@@ -83,6 +87,7 @@ def read_32(fobj, start_length, size):
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
 
+
 def read_mk(fobj, start_length, size):
     # Alpha masks seem to be uncompressed
     (start, length) = start_length
@@ -94,6 +99,7 @@ def read_mk(fobj, start_length, size):
         )
     return {"A": band}
 
+
 def read_png_or_jpeg2000(fobj, start_length, size):
     (start, length) = start_length
     fobj.seek(start)
@@ -103,10 +109,11 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         im = PngImagePlugin.PngImageFile(fobj)
         return {"RGBA": im}
     elif sig[:4] == b'\xff\x4f\xff\x51' \
-        or sig[:4] == b'\x0d\x0a\x87\x0a' \
-        or sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
+            or sig[:4] == b'\x0d\x0a\x87\x0a' \
+            or sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
         if not enable_jpeg2k:
-            raise ValueError('Unsupported icon subimage format (rebuild PIL with JPEG 2000 support to fix this)')
+            raise ValueError('Unsupported icon subimage format (rebuild PIL '
+                             'with JPEG 2000 support to fix this)')
         # j2k, jpc or j2c
         fobj.seek(start)
         jp2kstream = fobj.read(length)
@@ -117,6 +124,7 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         return {"RGBA": im}
     else:
         raise ValueError('Unsupported icon subimage format')
+
 
 class IcnsFile:
 
@@ -225,13 +233,14 @@ class IcnsFile:
         im = channels.get('RGBA', None)
         if im:
             return im
-        
+
         im = channels.get("RGB").copy()
         try:
             im.putalpha(channels["A"])
         except KeyError:
             pass
         return im
+
 
 ##
 # Image plugin for Mac OS icons.
@@ -275,7 +284,7 @@ class IcnsImageFile(ImageFile.ImageFile):
 
         # If this is a PNG or JPEG 2000, it won't be loaded yet
         im.load()
-        
+
         self.im = im.im
         self.mode = im.mode
         self.size = im.size
@@ -288,7 +297,8 @@ Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == b'icns')
 Image.register_extension("ICNS", '.icns')
 
 if __name__ == '__main__':
-    import os, sys
+    import os
+    import sys
     imf = IcnsImageFile(open(sys.argv[1], 'rb'))
     for size in imf.info['sizes']:
         imf.size = size

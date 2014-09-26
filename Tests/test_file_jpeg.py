@@ -277,23 +277,38 @@ class TestFileJpeg(PillowTestCase):
             99  99  99  99  99  99  99  99
             """.split(None)]
         # list of qtable lists
-        self.assert_image_similar(im,
-                                  self.roundtrip(im,
-                                                 qtables=[standard_l_qtable,
-                                                          standard_chrominance_qtable]),
-                                  30)
+        self.assert_image_similar(
+            im, self.roundtrip(
+                im, qtables=[standard_l_qtable, standard_chrominance_qtable]),
+            30)
+
         # tuple of qtable lists
-        self.assert_image_similar(im,
-                                  self.roundtrip(im,
-                                                 qtables=(standard_l_qtable,
-                                                          standard_chrominance_qtable)),
-                                  30)
+        self.assert_image_similar(
+            im, self.roundtrip(
+                im, qtables=(standard_l_qtable, standard_chrominance_qtable)),
+            30)
+
         # dict of qtable lists
         self.assert_image_similar(im,
                                   self.roundtrip(im,
                                                  qtables={0: standard_l_qtable,
                                                           1: standard_chrominance_qtable}),
                                   30)
+
+        # not a sequence
+        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables='a'))
+        # sequence wrong length
+        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[]))
+        # sequence wrong length
+        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1,2,3,4,5]))
+
+        # qtable entry not a sequence
+        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1]))
+        # qtable entry has wrong number of items
+        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[[1,2,3,4]]))
+        
+        
+        
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
     def test_load_djpeg(self):

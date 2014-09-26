@@ -115,7 +115,8 @@ def APP(self, marker):
     elif marker == 0xFFE2 and s[:4] == b"MPF\0":
         # extract MPO information
         self.info["mp"] = s[4:]
-        # offset is current location minus buffer size plus constant header size
+        # offset is current location minus buffer size
+        # plus constant header size
         self.info["mpoffset"] = self.fp.tell() - n + 4
 
 
@@ -321,7 +322,8 @@ class JpegImageFile(ImageFile.ImageFile):
                     rawmode = self.mode
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    self.tile = [("jpeg", (0, 0) + self.size, 0, (rawmode, ""))]
+                    self.tile = [("jpeg", (0, 0) + self.size, 0,
+                                 (rawmode, ""))]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -472,14 +474,18 @@ def _getmp(self):
         for entrynum in range(0, quant):
             rawmpentry = mp[0xB002][entrynum * 16:(entrynum + 1) * 16]
             unpackedentry = unpack('{0}LLLHH'.format(endianness), rawmpentry)
-            labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1', 'EntryNo2')
+            labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1',
+                      'EntryNo2')
             mpentry = dict(zip(labels, unpackedentry))
             mpentryattr = {
-                'DependentParentImageFlag': bool(mpentry['Attribute'] & (1<<31)),
-                'DependentChildImageFlag': bool(mpentry['Attribute'] & (1<<30)),
-                'RepresentativeImageFlag': bool(mpentry['Attribute'] & (1<<29)),
-                'Reserved': (mpentry['Attribute'] & (3<<27)) >> 27,
-                'ImageDataFormat': (mpentry['Attribute'] & (7<<24)) >> 24,
+                'DependentParentImageFlag': bool(mpentry['Attribute'] &
+                                                 (1 << 31)),
+                'DependentChildImageFlag': bool(mpentry['Attribute'] &
+                                                (1 << 30)),
+                'RepresentativeImageFlag': bool(mpentry['Attribute'] &
+                                                (1 << 29)),
+                'Reserved': (mpentry['Attribute'] & (3 << 27)) >> 27,
+                'ImageDataFormat': (mpentry['Attribute'] & (7 << 24)) >> 24,
                 'MPType': mpentry['Attribute'] & 0x00FFFFFF
             }
             if mpentryattr['ImageDataFormat'] == 0:
@@ -496,7 +502,7 @@ def _getmp(self):
                 0x030000: 'Baseline MP Primary Image'
             }
             mpentryattr['MPType'] = mptypemap.get(mpentryattr['MPType'],
-                'Unknown')
+                                                  'Unknown')
             mpentry['Attribute'] = mpentryattr
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
@@ -530,11 +536,10 @@ zigzag_index = ( 0,  1,  5,  6, 14, 15, 27, 28,
                 21, 34, 37, 47, 50, 56, 59, 61,
                 35, 36, 48, 49, 57, 58, 62, 63)
 
-samplings = {
-             (1, 1, 1, 1, 1, 1): 0,
+samplings = {(1, 1, 1, 1, 1, 1): 0,
              (2, 1, 1, 1, 1, 1): 1,
              (2, 2, 1, 1, 1, 1): 2,
-            }
+             }
 
 
 def convert_dict_qtables(qtables):
@@ -598,7 +603,8 @@ def _save(im, fp, filename):
         subsampling = 2
     elif subsampling == "keep":
         if im.format != "JPEG":
-            raise ValueError("Cannot use 'keep' when original image is not a JPEG")
+            raise ValueError(
+                "Cannot use 'keep' when original image is not a JPEG")
         subsampling = get_sampling(im)
 
     def validate_qtables(qtables):
@@ -632,7 +638,8 @@ def _save(im, fp, filename):
 
     if qtables == "keep":
         if im.format != "JPEG":
-            raise ValueError("Cannot use 'keep' when original image is not a JPEG")
+            raise ValueError(
+                "Cannot use 'keep' when original image is not a JPEG")
         qtables = getattr(im, "quantization", None)
     qtables = validate_qtables(qtables)
 
@@ -650,7 +657,8 @@ def _save(im, fp, filename):
         i = 1
         for marker in markers:
             size = struct.pack(">H", 2 + ICC_OVERHEAD_LEN + len(marker))
-            extra += b"\xFF\xE2" + size + b"ICC_PROFILE\0" + o8(i) + o8(len(markers)) + marker
+            extra += (b"\xFF\xE2" + size + b"ICC_PROFILE\0" + o8(i) +
+                      o8(len(markers)) + marker)
             i += 1
 
     # get keyword arguments

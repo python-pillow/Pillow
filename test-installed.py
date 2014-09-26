@@ -24,9 +24,9 @@ if 'NOSE_PROCESSES' not in os.environ:
     for arg in sys.argv:
         if '--processes' in arg:
             break
-    else: #  for
-        sys.argv.insert(1, '--processes=-1') # -1 == number of cores
-        sys.argv.insert(1, '--process-timeout=30') 
-    
+    else:  # for
+        sys.argv.insert(1, '--processes=-1')  # -1 == number of cores
+        sys.argv.insert(1, '--process-timeout=30')
+
 if __name__ == '__main__':
     nose.main()

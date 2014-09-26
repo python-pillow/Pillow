@@ -72,7 +72,7 @@ def _parse_jp2_header(fp):
 
         if lbox < hlen:
             raise SyntaxError('Invalid JP2 header length')
-        
+
         if tbox == b'jp2h':
             header = fp.read(lbox - hlen)
             break

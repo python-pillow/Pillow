@@ -16,6 +16,7 @@
 
 from PIL import ContainerIO
 
+
 ##
 # A file object that provides read access to a given member of a TAR
 # file.

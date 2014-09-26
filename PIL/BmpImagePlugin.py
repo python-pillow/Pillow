@@ -51,8 +51,10 @@ BIT2MODE = {
     32: ("RGB", "BGRX")
 }
 
+
 def _accept(prefix):
     return prefix[:2] == b"BM"
+
 
 ##
 # Image plugin for the Windows BMP format.
@@ -62,8 +64,7 @@ class BmpImageFile(ImageFile.ImageFile):
     format = "BMP"
     format_description = "Windows Bitmap"
 
-    def _bitmap(self, header = 0, offset = 0):
-
+    def _bitmap(self, header=0, offset=0):
         if header:
             self.fp.seek(header)
 
@@ -97,8 +98,9 @@ class BmpImageFile(ImageFile.ImageFile):
                 # upside-down storage
                 self.size = self.size[0], 2**32 - self.size[1]
                 direction = 0
-            
-            self.info["dpi"] = tuple(map(lambda x: math.ceil(x / 39.3701), pxperm))
+
+            self.info["dpi"] = tuple(map(lambda x: math.ceil(x / 39.3701),
+                                         pxperm))
 
         else:
             raise IOError("Unsupported BMP header type (%d)" % len(s))
@@ -137,7 +139,7 @@ class BmpImageFile(ImageFile.ImageFile):
             greyscale = 1
             if colors == 2:
                 indices = (0, 255)
-            elif colors > 2**16 or colors <=0: #We're reading a i32. 
+            elif colors > 2**16 or colors <= 0:  # We're reading a i32.
                 raise IOError("Unsupported BMP Palette size (%d)" % colors)
             else:
                 indices = list(range(colors))
@@ -163,7 +165,8 @@ class BmpImageFile(ImageFile.ImageFile):
         self.tile = [("raw",
                      (0, 0) + self.size,
                      offset,
-                     (rawmode, ((self.size[0]*bits+31)>>3)&(~3), direction))]
+                     (rawmode, ((self.size[0]*bits+31) >> 3) & (~3),
+                      direction))]
 
         self.info["compression"] = compression
 
@@ -197,8 +200,8 @@ SAVE = {
     "RGB": ("BGR", 24, 0),
 }
 
-def _save(im, fp, filename, check=0):
 
+def _save(im, fp, filename, check=0):
     try:
         rawmode, bits, colors = SAVE[im.mode]
     except KeyError:
@@ -214,10 +217,10 @@ def _save(im, fp, filename, check=0):
     # 1 meter == 39.3701 inches
     ppm = tuple(map(lambda x: int(x * 39.3701), dpi))
 
-    stride = ((im.size[0]*bits+7)//8+3)&(~3)
-    header = 40 # or 64 for OS/2 version 2
+    stride = ((im.size[0]*bits+7)//8+3) & (~3)
+    header = 40  # or 64 for OS/2 version 2
     offset = 14 + header + colors * 4
-    image  = stride * im.size[1]
+    image = stride * im.size[1]
 
     # bitmap header
     fp.write(b"BM" +                      # file type (magic)
@@ -248,7 +251,8 @@ def _save(im, fp, filename, check=0):
     elif im.mode == "P":
         fp.write(im.im.getpalette("RGB", "BGRX"))
 
-    ImageFile._save(im, fp, [("raw", (0,0)+im.size, 0, (rawmode, stride, -1))])
+    ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 0,
+                    (rawmode, stride, -1))])
 
 #
 # --------------------------------------------------------------------

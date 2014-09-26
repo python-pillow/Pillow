@@ -13,6 +13,7 @@ from PIL import Image, ImageFile
 
 _handler = None
 
+
 ##
 # Install application-specific GRIB image handler.
 #
@@ -22,11 +23,13 @@ def register_handler(handler):
     global _handler
     _handler = handler
 
+
 # --------------------------------------------------------------------
 # Image adapter
 
 def _accept(prefix):
     return prefix[0:4] == b"GRIB" and prefix[7] == b'\x01'
+
 
 class GribStubImageFile(ImageFile.StubImageFile):
 
@@ -52,6 +55,7 @@ class GribStubImageFile(ImageFile.StubImageFile):
 
     def _load(self):
         return _handler
+
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr("_handler", "save"):

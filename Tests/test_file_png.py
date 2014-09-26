@@ -151,13 +151,16 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.info["spam"].lang, "en")
         self.assertEqual(im.info["spam"].tkey, "Spam")
 
-        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' + zlib.compress(b"egg")[:1]) + TAIL)
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' +
+                               zlib.compress(b"egg")[:1]) + TAIL)
         self.assertEqual(im.info, {})
 
-        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\1en\0Spam\0' + zlib.compress(b"egg")) + TAIL)
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\1en\0Spam\0' +
+                               zlib.compress(b"egg")) + TAIL)
         self.assertEqual(im.info, {})
 
-        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' + zlib.compress(b"egg")) + TAIL)
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' +
+                               zlib.compress(b"egg")) + TAIL)
         self.assertEqual(im.info, {"spam": "egg"})
         self.assertEqual(im.info["spam"].lang, "en")
         self.assertEqual(im.info["spam"].tkey, "Spam")
@@ -271,7 +274,8 @@ class TestFilePng(PillowTestCase):
         im = Image.new("RGB", (32, 32))
         info = PngImagePlugin.PngInfo()
         info.add_itxt("spam", "Eggs", "en", "Spam")
-        info.add_text("eggs", PngImagePlugin.iTXt("Spam", "en", "Eggs"), zip=True)
+        info.add_text("eggs", PngImagePlugin.iTXt("Spam", "en", "Eggs"),
+                      zip=True)
 
         im = roundtrip(im, pnginfo=info)
         self.assertEqual(im.info, {"spam": "Eggs", "eggs": "Spam"})
@@ -303,11 +307,11 @@ class TestFilePng(PillowTestCase):
             self.assertEqual(im.info, {"Text": value})
 
         if str is not bytes:
-            rt_text(" Aa" + chr(0xa0) + chr(0xc4) + chr(0xff)) # Latin1
-            rt_text(chr(0x400) + chr(0x472) + chr(0x4ff))      # Cyrillic
-            rt_text(chr(0x4e00) + chr(0x66f0) +                # CJK
+            rt_text(" Aa" + chr(0xa0) + chr(0xc4) + chr(0xff))  # Latin1
+            rt_text(chr(0x400) + chr(0x472) + chr(0x4ff))       # Cyrillic
+            rt_text(chr(0x4e00) + chr(0x66f0) +                 # CJK
                     chr(0x9fba) + chr(0x3042) + chr(0xac00))
-            rt_text("A" + chr(0xc4) + chr(0x472) + chr(0x3042)) # Combined
+            rt_text("A" + chr(0xc4) + chr(0x472) + chr(0x3042))  # Combined
 
     def test_scary(self):
         # Check reading of evil PNG file.  For information, see:
