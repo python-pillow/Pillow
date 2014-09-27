@@ -1,9 +1,9 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
 # sample ppm stream
-TEST_FILE = "Tests/images/lena.xpm"
+TEST_FILE = "Tests/images/hopper.xpm"
 
 
 class TestFileXpm(PillowTestCase):
@@ -15,8 +15,8 @@ class TestFileXpm(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "XPM")
 
-        # large error due to quantization->44 colors.
-        self.assert_image_similar(im.convert('RGB'), lena('RGB'), 60)
+        #large error due to quantization->44 colors.
+        self.assert_image_similar(im.convert('RGB'), hopper('RGB'), 60)
 
     def test_load_read(self):
         # Arrange

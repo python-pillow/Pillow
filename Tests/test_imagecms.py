@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -167,6 +167,7 @@ class TestImageCms(PillowTestCase):
 
     def test_simple_lab(self):
         i = Image.new('RGB', (10, 10), (128, 128, 128))
+
         psRGB = ImageCms.createProfile("sRGB")
         pLab = ImageCms.createProfile("LAB")
         t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
@@ -179,11 +180,11 @@ class TestImageCms(PillowTestCase):
         # not a linear luminance map. so L != 128:
         self.assertEqual(k, (137, 128, 128))
 
-        L = i_lab.getdata(0)
+        l = i_lab.getdata(0)
         a = i_lab.getdata(1)
         b = i_lab.getdata(2)
 
-        self.assertEqual(list(L), [137] * 100)
+        self.assertEqual(list(l), [137] * 100)
         self.assertEqual(list(a), [128] * 100)
         self.assertEqual(list(b), [128] * 100)
 
@@ -191,15 +192,16 @@ class TestImageCms(PillowTestCase):
         psRGB = ImageCms.createProfile("sRGB")
         pLab = ImageCms.createProfile("LAB")
         t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
+
         # Need to add a type mapping for some PIL type to TYPE_Lab_8 in
         # findLCMSType, and have that mapping work back to a PIL mode
         # (likely RGB).
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "LAB", (128, 128))
 
         # i.save('temp.lab.tif')  # visually verified vs PS.
 
-        target = Image.open('Tests/images/lena.Lab.tif')
+        target = Image.open('Tests/images/hopper.Lab.tif')
 
         self.assert_image_similar(i, target, 30)
 
@@ -208,13 +210,13 @@ class TestImageCms(PillowTestCase):
         pLab = ImageCms.createProfile("LAB")
         t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
 
-        img = Image.open('Tests/images/lena.Lab.tif')
+        img = Image.open('Tests/images/hopper.Lab.tif')
 
         img_srgb = ImageCms.applyTransform(img, t)
 
         # img_srgb.save('temp.srgb.tif') # visually verified vs ps.
 
-        self.assert_image_similar(lena(), img_srgb, 30)
+        self.assert_image_similar(hopper(), img_srgb, 30)
         self.assertTrue(img_srgb.info['icc_profile'])
 
         profile = ImageCmsProfile(BytesIO(img_srgb.info['icc_profile']))
