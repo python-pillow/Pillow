@@ -80,7 +80,7 @@ class TestImage(PillowTestCase):
         ret = GimpGradientFile.sphere_increasing(middle, pos)
 
         # Assert
-        self.assertEqual(ret, 0.9682458365518543)
+        self.assert_almost_equal(ret, 0.9682458365518543)
 
     def test_sphere_decreasing(self):
         # Arrange
