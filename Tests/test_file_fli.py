@@ -3,7 +3,9 @@ from helper import unittest, PillowTestCase
 from PIL import Image
 
 # sample ppm stream
-file = "Tests/images/lena.fli"
+# created as an export of a palette image from Gimp2.6
+# save as...-> hopper.fli, default options.
+file = "Tests/images/hopper.fli"
 data = open(file, "rb").read()
 
 
