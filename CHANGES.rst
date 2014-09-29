@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.6.0 (unreleased)
+2.6.0-rc1 (2014-09-29)
 ------------------
 
 - Use redistributable image for testing #884
