@@ -63,8 +63,8 @@ class TestImageDraw(PillowTestCase):
         del draw
 
         # Assert
-        self.assert_image_equal(
-            im, Image.open("Tests/images/imagedraw_arc.png"))
+        self.assert_image_similar(
+            im, Image.open("Tests/images/imagedraw_arc.png"),1)
 
     def test_arc1(self):
         self.helper_arc(BBOX1)
@@ -96,8 +96,8 @@ class TestImageDraw(PillowTestCase):
         del draw
 
         # Assert
-        self.assert_image_equal(
-            im, Image.open("Tests/images/imagedraw_chord.png"))
+        self.assert_image_similar(
+            im, Image.open("Tests/images/imagedraw_chord.png"),1)
 
     def test_chord1(self):
         self.helper_chord(BBOX1)
@@ -115,8 +115,8 @@ class TestImageDraw(PillowTestCase):
         del draw
 
         # Assert
-        self.assert_image_equal(
-            im, Image.open("Tests/images/imagedraw_ellipse.png"))
+        self.assert_image_similar(
+            im, Image.open("Tests/images/imagedraw_ellipse.png"),1)
 
     def test_ellipse1(self):
         self.helper_ellipse(BBOX1)
@@ -153,8 +153,8 @@ class TestImageDraw(PillowTestCase):
         del draw
 
         # Assert
-        self.assert_image_equal(
-            im, Image.open("Tests/images/imagedraw_pieslice.png"))
+        self.assert_image_similar(
+            im, Image.open("Tests/images/imagedraw_pieslice.png"),1)
 
     def test_pieslice1(self):
         self.helper_pieslice(BBOX1)
