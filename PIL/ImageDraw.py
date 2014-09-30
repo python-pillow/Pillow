@@ -40,6 +40,7 @@ try:
 except ImportError:
     warnings = None
 
+
 ##
 # A simple 2D drawing interface for PIL images.
 # <p>
@@ -61,7 +62,7 @@ class ImageDraw:
     def __init__(self, im, mode=None):
         im.load()
         if im.readonly:
-            im._copy() # make it writable
+            im._copy()  # make it writeable
         blend = 0
         if mode is None:
             mode = im.mode
@@ -85,7 +86,7 @@ class ImageDraw:
             # FIXME: fix Fill2 to properly support matte for I+F images
             self.fontmode = "1"
         else:
-            self.fontmode = "L" # aliasing is okay for other modes
+            self.fontmode = "L"  # aliasing is okay for other modes
         self.fill = 0
         self.font = None
 
@@ -280,6 +281,7 @@ class ImageDraw:
             font = self.getfont()
         return font.getsize(text)
 
+
 ##
 # A simple 2D drawing interface for PIL images.
 #
@@ -301,6 +303,7 @@ try:
     Outline = Image.core.outline
 except:
     Outline = None
+
 
 ##
 # (Experimental) A more advanced 2D drawing interface for PIL images,
@@ -325,6 +328,7 @@ def getdraw(im=None, hints=None):
         im = handler.Draw(im)
     return im, handler
 
+
 ##
 # (experimental) Fills a bounded region with a given color.
 #
@@ -344,10 +348,10 @@ def floodfill(image, xy, value, border=None):
     try:
         background = pixel[x, y]
         if background == value:
-            return # seed point already has fill color
+            return  # seed point already has fill color
         pixel[x, y] = value
     except IndexError:
-        return # seed point outside image
+        return  # seed point outside image
     edge = [(x, y)]
     if border is None:
         while edge:

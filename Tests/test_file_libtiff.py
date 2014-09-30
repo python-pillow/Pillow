@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena, py3
+from helper import unittest, PillowTestCase, hopper, py3
 
 import os
 
@@ -36,7 +36,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_g4_tiff(self):
         """Test the ordinary file path load path"""
 
-        file = "Tests/images/lena_g4_500.tif"
+        file = "Tests/images/hopper_g4_500.tif"
         im = Image.open(file)
 
         self.assertEqual(im.size, (500, 500))
@@ -50,7 +50,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_g4_tiff_file(self):
         """Testing the string load path"""
 
-        file = "Tests/images/lena_g4_500.tif"
+        file = "Tests/images/hopper_g4_500.tif"
         with open(file, 'rb') as f:
             im = Image.open(f)
 
@@ -60,7 +60,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_g4_tiff_bytesio(self):
         """Testing the stringio loading code path"""
         from io import BytesIO
-        file = "Tests/images/lena_g4_500.tif"
+        file = "Tests/images/hopper_g4_500.tif"
         s = BytesIO()
         with open(file, 'rb') as f:
             s.write(f.read())
@@ -72,8 +72,8 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_g4_eq_png(self):
         """ Checking that we're actually getting the data that we expect"""
-        png = Image.open('Tests/images/lena_bw_500.png')
-        g4 = Image.open('Tests/images/lena_g4_500.tif')
+        png = Image.open('Tests/images/hopper_bw_500.png')
+        g4 = Image.open('Tests/images/hopper_g4_500.tif')
 
         self.assert_image_equal(g4, png)
 
@@ -87,7 +87,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_g4_write(self):
         """Checking to see that the saved image is the same as what we wrote"""
-        file = "Tests/images/lena_g4_500.tif"
+        file = "Tests/images/hopper_g4_500.tif"
         orig = Image.open(file)
 
         out = self.tempfile("temp.tif")
@@ -117,7 +117,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_write_metadata(self):
         """ Test metadata writing through libtiff """
-        img = Image.open('Tests/images/lena_g4.tif')
+        img = Image.open('Tests/images/hopper_g4.tif')
         f = self.tempfile('temp.tiff')
 
         img.save(f, tiffinfo=img.tag)
@@ -156,7 +156,7 @@ class TestFileLibTiff(LibTiffTestCase):
                         value, reloaded[tag], "%s didn't roundtrip" % tag)
 
     def test_g3_compression(self):
-        i = Image.open('Tests/images/lena_g4_500.tif')
+        i = Image.open('Tests/images/hopper_g4_500.tif')
         out = self.tempfile("temp.tif")
         i.save(out, compression='group3')
 
@@ -213,7 +213,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_g4_string_info(self):
         """Tests String data in info directory"""
-        file = "Tests/images/lena_g4_500.tif"
+        file = "Tests/images/hopper_g4_500.tif"
         orig = Image.open(file)
 
         out = self.tempfile("temp.tif")
@@ -268,7 +268,7 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assert_image_equal(im, im2)
 
     def test_compressions(self):
-        im = lena('RGB')
+        im = hopper('RGB')
         out = self.tempfile('temp.tif')
 
         for compression in ('packbits', 'tiff_lzw'):
@@ -281,7 +281,7 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assert_image_similar(im, im2, 30)
 
     def test_cmyk_save(self):
-        im = lena('CMYK')
+        im = hopper('CMYK')
         out = self.tempfile('temp.tif')
 
         im.save(out, compression='tiff_adobe_deflate')
@@ -293,7 +293,7 @@ class TestFileLibTiff(LibTiffTestCase):
             to output on stderr from the error thrown by libtiff. We need to
             capture that but not now"""
 
-        im = lena('RGB')
+        im = hopper('RGB')
         out = self.tempfile('temp.tif')
 
         self.assertRaises(
@@ -302,7 +302,7 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertRaises(IOError, lambda: im.save(out, compression='group4'))
 
     def test_fp_leak(self):
-        im = Image.open("Tests/images/lena_g4_500.tif")
+        im = Image.open("Tests/images/hopper_g4_500.tif")
         fn = im.fp.fileno()
 
         os.fstat(fn)
@@ -332,12 +332,12 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertFalse(im.tag.next)
         self.assertEqual(im.size, (20,20))
         self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
-   
+
         TiffImagePlugin.READ_LIBTIFF = False
 
     def test__next(self):
         TiffImagePlugin.READ_LIBTIFF = True
-        im = Image.open('Tests/images/lena.tif')
+        im = Image.open('Tests/images/hopper.tif')
         self.assertFalse(im.tag.next)
         im.load()
         self.assertFalse(im.tag.next)

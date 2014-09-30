@@ -2,7 +2,7 @@ from helper import unittest, PillowTestCase
 
 from PIL import Image
 
-test_file = "Tests/images/lena.ppm"
+TEST_FILE = "Tests/images/hopper.ppm"
 
 ORIGINAL_LIMIT = Image.MAX_IMAGE_PIXELS
 
@@ -15,7 +15,7 @@ class TestDecompressionBomb(PillowTestCase):
     def test_no_warning_small_file(self):
         # Implicit assert: no warning.
         # A warning would cause a failure.
-        Image.open(test_file)
+        Image.open(TEST_FILE)
 
     def test_no_warning_no_limit(self):
         # Arrange
@@ -26,7 +26,7 @@ class TestDecompressionBomb(PillowTestCase):
         # Act / Assert
         # Implicit assert: no warning.
         # A warning would cause a failure.
-        Image.open(test_file)
+        Image.open(TEST_FILE)
 
     def test_warning(self):
         # Arrange
@@ -37,7 +37,7 @@ class TestDecompressionBomb(PillowTestCase):
         # Act / Assert
         self.assert_warning(
             Image.DecompressionBombWarning,
-            lambda: Image.open(test_file))
+            lambda: Image.open(TEST_FILE))
 
 if __name__ == '__main__':
     unittest.main()

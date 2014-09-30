@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, ImageSequence, TiffImagePlugin
 
@@ -9,7 +9,7 @@ class TestImageSequence(PillowTestCase):
 
         file = self.tempfile("temp.im")
 
-        im = lena("RGB")
+        im = hopper("RGB")
         im.save(file)
 
         seq = ImageSequence.Iterator(im)
@@ -31,14 +31,14 @@ class TestImageSequence(PillowTestCase):
             self.assertEqual(index, im.tell())
             frame.convert('RGB')
         Image.DEBUG=False
-            
+
     def test_tiff(self):
         #self._test_multipage_tiff(True)
         self._test_multipage_tiff(False)
 
     def test_libtiff(self):
         codecs = dir(Image.core)
-        
+
         if "libtiff_encoder" not in codecs or "libtiff_decoder" not in codecs:
             self.skipTest("tiff support not available")
 
@@ -46,7 +46,7 @@ class TestImageSequence(PillowTestCase):
         #self._test_multipage_tiff(True)
         self._test_multipage_tiff(False)
         TiffImagePlugin.READ_LIBTIFF = False
-        
+
 if __name__ == '__main__':
     unittest.main()
 

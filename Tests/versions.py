@@ -1,5 +1,6 @@
 from PIL import Image
 
+
 def version(module, version):
     v = getattr(module.core, version + "_version", None)
     if v:

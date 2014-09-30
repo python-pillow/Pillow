@@ -1,8 +1,9 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
 from io import BytesIO
+import os
         
 try:
     from PIL import ImageCms
@@ -13,8 +14,8 @@ except ImportError as v:
     pass
 
 
-SRGB = "Tests/icc/sRGB.icm"
-
+SRGB = "Tests/icc/sRGB_IEC61966-2-1_black_scaled.icc"
+HAVE_PROFILE = os.path.exists(SRGB)
 
 class TestImageCms(PillowTestCase):
 
@@ -26,8 +27,12 @@ class TestImageCms(PillowTestCase):
         except ImportError as v:
             self.skipTest(v)
 
-    def test_sanity(self):
+    def skip_missing(self):
+        if not HAVE_PROFILE:
+            self.skipTest("SRGB profile not available")
 
+    def test_sanity(self):
+        
         # basic smoke test.
         # this mostly follows the cms_test outline.
 
@@ -38,70 +43,78 @@ class TestImageCms(PillowTestCase):
         # internal version number
         self.assertRegexpMatches(ImageCms.core.littlecms_version, "\d+\.\d+$")
 
-        i = ImageCms.profileToProfile(lena(), SRGB, SRGB)
+        self.skip_missing()
+        i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)
         self.assert_image(i, "RGB", (128, 128))
 
-        i = lena()
+        i = hopper()
         ImageCms.profileToProfile(i, SRGB, SRGB, inPlace=True)
         self.assert_image(i, "RGB", (128, 128))
 
         t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "RGB", (128, 128))
 
-        i = lena()
+        i = hopper()
         t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
-        ImageCms.applyTransform(lena(), t, inPlace=True)
+        ImageCms.applyTransform(hopper(), t, inPlace=True)
         self.assert_image(i, "RGB", (128, 128))
 
         p = ImageCms.createProfile("sRGB")
         o = ImageCms.getOpenProfile(SRGB)
         t = ImageCms.buildTransformFromOpenProfiles(p, o, "RGB", "RGB")
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "RGB", (128, 128))
 
         t = ImageCms.buildProofTransform(SRGB, SRGB, SRGB, "RGB", "RGB")
         self.assertEqual(t.inputMode, "RGB")
         self.assertEqual(t.outputMode, "RGB")
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "RGB", (128, 128))
 
         # test PointTransform convenience API
-        lena().point(t)
+        hopper().point(t)
 
     def test_name(self):
+        self.skip_missing()
         # get profile information for file
         self.assertEqual(
             ImageCms.getProfileName(SRGB).strip(),
-            'IEC 61966-2.1 Default RGB colour space - sRGB')
+            'IEC 61966-2-1 Default RGB Colour Space - sRGB')
 
     def test_info(self):
+        self.skip_missing()
         self.assertEqual(
             ImageCms.getProfileInfo(SRGB).splitlines(), [
-                'sRGB IEC61966-2.1', '',
-                'Copyright (c) 1998 Hewlett-Packard Company', ''])
+                'sRGB IEC61966-2-1 black scaled', '',
+                'Copyright International Color Consortium, 2009', ''])
 
     def test_copyright(self):
+        self.skip_missing()
         self.assertEqual(
             ImageCms.getProfileCopyright(SRGB).strip(),
-            'Copyright (c) 1998 Hewlett-Packard Company')
+            'Copyright International Color Consortium, 2009')
 
     def test_manufacturer(self):
+        self.skip_missing()
         self.assertEqual(
             ImageCms.getProfileManufacturer(SRGB).strip(),
-            'IEC http://www.iec.ch')
+            '')
 
     def test_model(self):
+        self.skip_missing()
         self.assertEqual(
             ImageCms.getProfileModel(SRGB).strip(),
-            'IEC 61966-2.1 Default RGB colour space - sRGB')
+            'IEC 61966-2-1 Default RGB Colour Space - sRGB')
 
     def test_description(self):
+        self.skip_missing()
         self.assertEqual(
             ImageCms.getProfileDescription(SRGB).strip(),
-            'sRGB IEC61966-2.1')
+            'sRGB IEC61966-2-1 black scaled')
 
     def test_intent(self):
+        self.skip_missing()
         self.assertEqual(ImageCms.getDefaultIntent(SRGB), 0)
         self.assertEqual(ImageCms.isIntentSupported(
             SRGB, ImageCms.INTENT_ABSOLUTE_COLORIMETRIC,
@@ -132,13 +145,14 @@ class TestImageCms(PillowTestCase):
         # the procedural pyCMS API uses PyCMSError for all sorts of errors
         self.assertRaises(
             ImageCms.PyCMSError,
-            lambda: ImageCms.profileToProfile(lena(), "foo", "bar"))
+            lambda: ImageCms.profileToProfile(hopper(), "foo", "bar"))
         self.assertRaises(
             ImageCms.PyCMSError,
             lambda: ImageCms.buildTransform("foo", "bar", "RGB", "RGB"))
         self.assertRaises(
             ImageCms.PyCMSError,
             lambda: ImageCms.getProfileName(None))
+        self.skip_missing()
         self.assertRaises(
             ImageCms.PyCMSError,
             lambda: ImageCms.isIntentSupported(SRGB, None, None))
@@ -154,8 +168,9 @@ class TestImageCms(PillowTestCase):
     def test_simple_lab(self):
         i = Image.new('RGB', (10, 10), (128, 128, 128))
 
+        psRGB = ImageCms.createProfile("sRGB")
         pLab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(SRGB, pLab, "RGB", "LAB")
+        t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
 
         i_lab = ImageCms.applyTransform(i, t)
 
@@ -165,62 +180,64 @@ class TestImageCms(PillowTestCase):
         # not a linear luminance map. so L != 128:
         self.assertEqual(k, (137, 128, 128))
 
-        L = i_lab.getdata(0)
+        l = i_lab.getdata(0)
         a = i_lab.getdata(1)
         b = i_lab.getdata(2)
 
-        self.assertEqual(list(L), [137] * 100)
+        self.assertEqual(list(l), [137] * 100)
         self.assertEqual(list(a), [128] * 100)
         self.assertEqual(list(b), [128] * 100)
 
     def test_lab_color(self):
+        psRGB = ImageCms.createProfile("sRGB")
         pLab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(SRGB, pLab, "RGB", "LAB")
+        t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
+
         # Need to add a type mapping for some PIL type to TYPE_Lab_8 in
         # findLCMSType, and have that mapping work back to a PIL mode
         # (likely RGB).
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "LAB", (128, 128))
 
         # i.save('temp.lab.tif')  # visually verified vs PS.
 
-        target = Image.open('Tests/images/lena.Lab.tif')
+        target = Image.open('Tests/images/hopper.Lab.tif')
 
         self.assert_image_similar(i, target, 30)
 
     def test_lab_srgb(self):
+        psRGB = ImageCms.createProfile("sRGB")
         pLab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(pLab, SRGB, "LAB", "RGB")
+        t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
 
-        img = Image.open('Tests/images/lena.Lab.tif')
+        img = Image.open('Tests/images/hopper.Lab.tif')
 
         img_srgb = ImageCms.applyTransform(img, t)
 
         # img_srgb.save('temp.srgb.tif') # visually verified vs ps.
 
-        self.assert_image_similar(lena(), img_srgb, 30)
+        self.assert_image_similar(hopper(), img_srgb, 30)
         self.assertTrue(img_srgb.info['icc_profile'])
 
         profile = ImageCmsProfile(BytesIO(img_srgb.info['icc_profile']))
-        self.assertTrue('sRGB' in  ImageCms.getProfileDescription(profile))
-
+        self.assertTrue('sRGB' in ImageCms.getProfileDescription(profile))
 
     def test_lab_roundtrip(self):
         # check to see if we're at least internally consistent.
+        psRGB = ImageCms.createProfile("sRGB")
         pLab = ImageCms.createProfile("LAB")
-        t = ImageCms.buildTransform(SRGB, pLab, "RGB", "LAB")
+        t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
 
-        t2 = ImageCms.buildTransform(pLab, SRGB, "LAB", "RGB")
+        t2 = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
 
-        i = ImageCms.applyTransform(lena(), t)
+        i = ImageCms.applyTransform(hopper(), t)
 
         self.assertEqual(i.info['icc_profile'],
                          ImageCmsProfile(pLab).tobytes())
-        
+
         out = ImageCms.applyTransform(i, t2)
 
-        self.assert_image_similar(lena(), out, 2)
-
+        self.assert_image_similar(hopper(), out, 2)
 
     def test_profile_tobytes(self):
         from io import BytesIO
@@ -231,14 +248,12 @@ class TestImageCms(PillowTestCase):
 
         # not the same bytes as the original icc_profile,
         # but it does roundtrip
-        self.assertEqual(p.tobytes(),p2.tobytes())
+        self.assertEqual(p.tobytes(), p2.tobytes())
         self.assertEqual(ImageCms.getProfileName(p),
                          ImageCms.getProfileName(p2))
         self.assertEqual(ImageCms.getProfileDescription(p),
                          ImageCms.getProfileDescription(p2))
-        
 
-        
 if __name__ == '__main__':
     unittest.main()
 

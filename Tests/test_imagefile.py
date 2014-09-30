@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena, fromstring, tostring
+from helper import unittest, PillowTestCase, hopper, fromstring, tostring
 
 from io import BytesIO
 
@@ -20,7 +20,7 @@ class TestImageFile(PillowTestCase):
 
         def roundtrip(format):
 
-            im = lena("L").resize((1000, 1000))
+            im = hopper("L").resize((1000, 1000))
             if format in ("MSP", "XBM"):
                 im = im.convert("1")
 
@@ -73,7 +73,7 @@ class TestImageFile(PillowTestCase):
 
     def test_safeblock(self):
 
-        im1 = lena()
+        im1 = hopper()
 
         if "zip_encoder" not in codecs:
             self.skipTest("PNG (zlib) encoder not available")

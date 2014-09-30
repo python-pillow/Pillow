@@ -89,7 +89,10 @@ typedef struct {
     int subsampling;
 
     /* Custom quantization tables () */
-    unsigned int **qtables;
+    unsigned int *qtables;
+
+    /* in factors of DCTSIZE2 */
+    int qtablesLen;
 
     /* Extra data (to be injected after header) */
     char* extra; int extra_size;

@@ -16,7 +16,8 @@
 #  * Implements the pixel access object following Access.
 #  * Does not implement the line functions, as they don't appear to be used
 #  * Taking only the tuple form, which is used from python.
-#    * Fill.c uses the integer form, but it's still going to use the old Access.c implementation.
+#    * Fill.c uses the integer form, but it's still going to use the old
+#      Access.c implementation.
 #
 
 from __future__ import print_function
@@ -25,7 +26,7 @@ from cffi import FFI
 import sys
 
 DEBUG = 0
-    
+
 defs = """
 struct Pixel_RGBA {
     unsigned char r,g,b,a;
@@ -39,8 +40,8 @@ ffi.cdef(defs)
 
 
 class PyAccess(object):
-    
-    def __init__(self, img, readonly = False):
+
+    def __init__(self, img, readonly=False):
         vals = dict(img.im.unsafe_ptrs)
         self.readonly = readonly
         self.image8 = ffi.cast('unsigned char **', vals['image8'])
@@ -48,13 +49,14 @@ class PyAccess(object):
         self.image = ffi.cast('unsigned char **', vals['image'])
         self.xsize = vals['xsize']
         self.ysize = vals['ysize']
-        
+
         if DEBUG:
             print (vals)
         self._post_init()
 
-    def _post_init(): pass
-        
+    def _post_init():
+        pass
+
     def __setitem__(self, xy, color):
         """
         Modifies the pixel at x,y. The color is given as a single
@@ -62,11 +64,12 @@ class PyAccess(object):
         multi-band images
 
         :param xy: The pixel coordinate, given as (x, y).
-        :param value: The pixel value.                
+        :param value: The pixel value.
         """
-        if self.readonly: raise ValueError('Attempt to putpixel a read only image') 
-        (x,y) = self.check_xy(xy)
-        return self.set_pixel(x,y,color)
+        if self.readonly:
+            raise ValueError('Attempt to putpixel a read only image')
+        (x, y) = self.check_xy(xy)
+        return self.set_pixel(x, y, color)
 
     def __getitem__(self, xy):
         """
@@ -76,94 +79,98 @@ class PyAccess(object):
 
         :param xy: The pixel coordinate, given as (x, y).
         """
-        
-        (x,y) = self.check_xy(xy)
-        return self.get_pixel(x,y)
+
+        (x, y) = self.check_xy(xy)
+        return self.get_pixel(x, y)
 
     putpixel = __setitem__
     getpixel = __getitem__
 
     def check_xy(self, xy):
-        (x,y) = xy
+        (x, y) = xy
         if not (0 <= x < self.xsize and 0 <= y < self.ysize):
             raise ValueError('pixel location out of range')
         return xy
+
 
 class _PyAccess32_2(PyAccess):
     """ PA, LA, stored in first and last bytes of a 32 bit word """
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
-        
-    def get_pixel(self, x,y):
+
+    def get_pixel(self, x, y):
         pixel = self.pixels[y][x]
         return (pixel.r, pixel.a)
 
-    def set_pixel(self, x,y, color):
+    def set_pixel(self, x, y, color):
         pixel = self.pixels[y][x]
         # tuple
-        pixel.r = min(color[0],255)
-        pixel.a = min(color[1],255)
-        
+        pixel.r = min(color[0], 255)
+        pixel.a = min(color[1], 255)
+
+
 class _PyAccess32_3(PyAccess):
     """ RGB and friends, stored in the first three bytes of a 32 bit word """
-    
+
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
-        
-    def get_pixel(self, x,y):
+
+    def get_pixel(self, x, y):
         pixel = self.pixels[y][x]
         return (pixel.r, pixel.g, pixel.b)
 
-    def set_pixel(self, x,y, color):
+    def set_pixel(self, x, y, color):
         pixel = self.pixels[y][x]
         # tuple
-        pixel.r = min(color[0],255)
-        pixel.g = min(color[1],255)
-        pixel.b = min(color[2],255)
+        pixel.r = min(color[0], 255)
+        pixel.g = min(color[1], 255)
+        pixel.b = min(color[2], 255)
+
 
 class _PyAccess32_4(PyAccess):
     """ RGBA etc, all 4 bytes of a 32 bit word """
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
-        
-    def get_pixel(self, x,y):
+
+    def get_pixel(self, x, y):
         pixel = self.pixels[y][x]
         return (pixel.r, pixel.g, pixel.b, pixel.a)
 
-    def set_pixel(self, x,y, color):
+    def set_pixel(self, x, y, color):
         pixel = self.pixels[y][x]
         # tuple
-        pixel.r = min(color[0],255)
-        pixel.g = min(color[1],255)
-        pixel.b = min(color[2],255)
-        pixel.a = min(color[3],255)
+        pixel.r = min(color[0], 255)
+        pixel.g = min(color[1], 255)
+        pixel.b = min(color[2], 255)
+        pixel.a = min(color[3], 255)
 
-            
+
 class _PyAccess8(PyAccess):
     """ 1, L, P, 8 bit images stored as uint8 """
     def _post_init(self, *args, **kwargs):
         self.pixels = self.image8
-        
-    def get_pixel(self, x,y):
+
+    def get_pixel(self, x, y):
         return self.pixels[y][x]
 
-    def set_pixel(self, x,y, color):
+    def set_pixel(self, x, y, color):
         try:
             # integer
-            self.pixels[y][x] = min(color,255)
+            self.pixels[y][x] = min(color, 255)
         except:
             # tuple
-            self.pixels[y][x] = min(color[0],255)
+            self.pixels[y][x] = min(color[0], 255)
+
 
 class _PyAccessI16_N(PyAccess):
     """ I;16 access, native bitendian without conversion """
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast('unsigned short **', self.image)
 
-    def get_pixel(self, x,y):
+    def get_pixel(self, x, y):
         return self.pixels[y][x]
 
-    def set_pixel(self, x,y, color):
+    def set_pixel(self, x, y, color):
         try:
             # integer
             self.pixels[y][x] = min(color, 65535)
@@ -171,16 +178,17 @@ class _PyAccessI16_N(PyAccess):
             # tuple
             self.pixels[y][x] = min(color[0], 65535)
 
+
 class _PyAccessI16_L(PyAccess):
     """ I;16L access, with conversion """
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast('struct Pixel_I16 **', self.image)
 
-    def get_pixel(self, x,y):
+    def get_pixel(self, x, y):
         pixel = self.pixels[y][x]
         return pixel.l + pixel.r * 256
 
-    def set_pixel(self, x,y, color):
+    def set_pixel(self, x, y, color):
         pixel = self.pixels[y][x]
         try:
             color = min(color, 65535)
@@ -190,16 +198,17 @@ class _PyAccessI16_L(PyAccess):
         pixel.l = color & 0xFF
         pixel.r = color >> 8
 
+
 class _PyAccessI16_B(PyAccess):
     """ I;16B access, with conversion """
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast('struct Pixel_I16 **', self.image)
 
-    def get_pixel(self, x,y):
+    def get_pixel(self, x, y):
         pixel = self.pixels[y][x]
-        return pixel.l *256  + pixel.r
+        return pixel.l * 256 + pixel.r
 
-    def set_pixel(self, x,y, color):
+    def set_pixel(self, x, y, color):
         pixel = self.pixels[y][x]
         try:
             color = min(color, 65535)
@@ -209,16 +218,18 @@ class _PyAccessI16_B(PyAccess):
         pixel.l = color >> 8
         pixel.r = color & 0xFF
 
+
 class _PyAccessI32_N(PyAccess):
     """ Signed Int32 access, native endian """
     def _post_init(self, *args, **kwargs):
         self.pixels = self.image32
 
-    def get_pixel(self, x,y):
+    def get_pixel(self, x, y):
         return self.pixels[y][x]
 
-    def set_pixel(self, x,y, color):
+    def set_pixel(self, x, y, color):
         self.pixels[y][x] = color
+
 
 class _PyAccessI32_Swap(PyAccess):
     """ I;32L/B access, with byteswapping conversion """
@@ -228,24 +239,26 @@ class _PyAccessI32_Swap(PyAccess):
     def reverse(self, i):
         orig = ffi.new('int *', i)
         chars = ffi.cast('unsigned char *', orig)
-        chars[0],chars[1],chars[2],chars[3] = chars[3], chars[2],chars[1],chars[0]
+        chars[0], chars[1], chars[2], chars[3] = chars[3], chars[2], \
+            chars[1], chars[0]
         return ffi.cast('int *', chars)[0]
-        
-    def get_pixel(self, x,y):
+
+    def get_pixel(self, x, y):
         return self.reverse(self.pixels[y][x])
 
-    def set_pixel(self, x,y, color):
+    def set_pixel(self, x, y, color):
         self.pixels[y][x] = self.reverse(color)
+
 
 class _PyAccessF(PyAccess):
     """ 32 bit float access """
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast('float **', self.image32)
 
-    def get_pixel(self, x,y):
+    def get_pixel(self, x, y):
         return self.pixels[y][x]
 
-    def set_pixel(self, x,y, color):
+    def set_pixel(self, x, y, color):
         try:
             # not a tuple
             self.pixels[y][x] = color
@@ -275,7 +288,7 @@ if sys.byteorder == 'little':
     mode_map['I;16'] = _PyAccessI16_N
     mode_map['I;16L'] = _PyAccessI16_N
     mode_map['I;16B'] = _PyAccessI16_B
-    
+
     mode_map['I;32L'] = _PyAccessI32_N
     mode_map['I;32B'] = _PyAccessI32_Swap
 else:
@@ -285,14 +298,16 @@ else:
 
     mode_map['I;32L'] = _PyAccessI32_Swap
     mode_map['I;32B'] = _PyAccessI32_N
-    
-def new(img, readonly=False):
 
+
+def new(img, readonly=False):
     access_type = mode_map.get(img.mode, None)
     if not access_type:
-        if DEBUG: print ("PyAccess Not Implemented: %s" % img.mode)
+        if DEBUG:
+            print("PyAccess Not Implemented: %s" % img.mode)
         return None
-    if DEBUG: print ("New PyAccess: %s" % img.mode)
+    if DEBUG:
+        print("New PyAccess: %s" % img.mode)
     return access_type(img, readonly)
-    
 
+# End of file

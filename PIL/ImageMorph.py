@@ -35,14 +35,14 @@ class LutBuilder:
       returned if no other match is found.
 
       Operations:
-      
+
       - 4 - 4 way rotation
       - N - Negate
       - 1 - Dummy op for no other operation (an op must always be given)
       - M - Mirroring
 
       Example::
-      
+
           lb = LutBuilder(patterns = ["4:(... .1. 111)->1"])
           lut = lb.build_lut()
 

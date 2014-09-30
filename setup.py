@@ -19,7 +19,7 @@ from distutils import sysconfig
 from setuptools import Extension, setup, find_packages
 
 # monkey patch import hook. Even though flake8 says it's not used, it is.
-# comment this out to disable multi threaded builds. 
+# comment this out to disable multi threaded builds.
 import mp_compile
 
 _IMAGING = (
@@ -410,7 +410,7 @@ class pil_build_ext(build_ext):
             for directory in self.compiler.include_dirs:
                 try:
                     listdir = os.listdir(directory)
-                except Exception:  
+                except Exception:
                     # WindowsError, FileNotFoundError
                     continue
                 for name in listdir:

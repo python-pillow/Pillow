@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import ImagePalette
 
@@ -7,7 +7,7 @@ class TestImagePutPalette(PillowTestCase):
 
     def test_putpalette(self):
         def palette(mode):
-            im = lena(mode).copy()
+            im = hopper(mode).copy()
             im.putpalette(list(range(256))*3)
             p = im.getpalette()
             if p:
@@ -23,7 +23,7 @@ class TestImagePutPalette(PillowTestCase):
         self.assertRaises(ValueError, lambda: palette("YCbCr"))
 
     def test_imagepalette(self):
-        im = lena("P")
+        im = hopper("P")
         im.putpalette(ImagePalette.negative())
         im.putpalette(ImagePalette.random())
         im.putpalette(ImagePalette.sepia())

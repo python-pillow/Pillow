@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -13,7 +13,7 @@ class TestImageTranspose(PillowTestCase):
 
     def test_sanity(self):
 
-        im = lena()
+        im = hopper()
 
         im.transpose(FLIP_LEFT_RIGHT)
         im.transpose(FLIP_TOP_BOTTOM)
@@ -24,7 +24,7 @@ class TestImageTranspose(PillowTestCase):
 
     def test_roundtrip(self):
 
-        im = lena()
+        im = hopper()
 
         def transpose(first, second):
             return im.transpose(first).transpose(second)

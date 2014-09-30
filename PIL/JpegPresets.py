@@ -48,8 +48,8 @@ You can get the quantization tables of a JPEG with::
 
   im.quantization
 
-This will return a dict with a number of arrays. You can pass this dict directly
-as the qtables argument when saving a JPEG.
+This will return a dict with a number of arrays. You can pass this dict
+directly as the qtables argument when saving a JPEG.
 
 The tables format between im.quantization and quantization in presets differ in
 3 ways:

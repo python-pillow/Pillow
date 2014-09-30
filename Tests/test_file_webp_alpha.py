@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -18,7 +18,8 @@ class TestFileWebpAlpha(PillowTestCase):
             self.skipTest('WebP support not installed')
 
         if _webp.WebPDecoderBuggyAlpha(self):
-            self.skipTest("Buggy early version of WebP installed, not testing transparency")
+            self.skipTest("Buggy early version of WebP installed, "
+                          "not testing transparency")
 
     def test_read_rgba(self):
         # Generated with `cwebp transparent.png -o transparent.webp`
@@ -40,7 +41,7 @@ class TestFileWebpAlpha(PillowTestCase):
         temp_file = self.tempfile("temp.webp")
         # temp_file = "temp.webp"
 
-        pil_image = lena('RGBA')
+        pil_image = hopper('RGBA')
 
         mask = Image.new("RGBA", (64, 64), (128, 128, 128, 128))
         # Add some partially transparent bits:

@@ -1,19 +1,19 @@
-## The Python Imaging Library.
-## $Id$
+# The Python Imaging Library.
+# $Id$
 
-## Optional color managment support, based on Kevin Cazabon's PyCMS
-## library.
+# Optional color managment support, based on Kevin Cazabon's PyCMS
+# library.
 
-## History:
+# History:
 
-## 2009-03-08 fl   Added to PIL.
+# 2009-03-08 fl   Added to PIL.
 
-## Copyright (C) 2002-2003 Kevin Cazabon
-## Copyright (c) 2009 by Fredrik Lundh
-## Copyright (c) 2013 by Eric Soroos
+# Copyright (C) 2002-2003 Kevin Cazabon
+# Copyright (c) 2009 by Fredrik Lundh
+# Copyright (c) 2013 by Eric Soroos
 
-## See the README file for information on usage and redistribution.  See
-## below for the original description.
+# See the README file for information on usage and redistribution.  See
+# below for the original description.
 
 from __future__ import print_function
 
@@ -154,9 +154,9 @@ class ImageCmsProfile:
         :param profile: Either a string representing a filename,
             a file like object containing a profile or a
             low-level profile object
-            
+
         """
-        
+
         if isStringType(profile):
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
@@ -181,8 +181,9 @@ class ImageCmsProfile:
 
         :returns: a bytes object containing the ICC profile.
         """
-        
+
         return core.profile_tobytes(self.profile)
+
 
 class ImageCmsTransform(Image.ImagePointHandler):
 
@@ -190,7 +191,6 @@ class ImageCmsTransform(Image.ImagePointHandler):
     # standard Image.point() method.
     #
     # Will return the output profile in the output.info['icc_profile'].
-
 
     def __init__(self, input, output, input_mode, output_mode,
                  intent=INTENT_PERCEPTUAL, proof=None,

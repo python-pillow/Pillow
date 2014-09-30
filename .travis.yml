@@ -5,15 +5,18 @@ notifications:
 
 env: MAX_CONCURRENCY=4
 
+# Run slow PyPy* first, to give them a headstart and reduce waiting time.
+# Run latest 3.x and 2.x next, to get quick compatibility results.
+# Then run the remainder.
 python:
   - "pypy"
   - "pypy3"
-  - 2.6
+  - 3.4
   - 2.7
+  - 2.6
   - "2.7_with_system_site_packages" # For PyQt4
   - 3.2
   - 3.3
-  - 3.4
 
 install:
   - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
@@ -57,6 +60,7 @@ after_success:
   - travis_retry pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
   - pep8  --statistics --count Tests/*.py
+  - pyflakes *.py       | tee >(wc -l)
   - pyflakes PIL/*.py   | tee >(wc -l)
   - pyflakes Tests/*.py | tee >(wc -l)
 

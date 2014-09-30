@@ -29,8 +29,10 @@
 
 from PIL import Image
 from PIL._util import isPath
-import traceback, os, sys
 import io
+import os
+import sys
+import traceback
 
 MAXBLOCK = 65536
 
@@ -46,6 +48,7 @@ ERRORS = {
     -9: "out of memory error"
 }
 
+
 def raise_ioerror(error):
     try:
         message = Image.core.getcodecstatus(error)
@@ -55,6 +58,7 @@ def raise_ioerror(error):
         message = "decoder error %d" % error
     raise IOError(message + " when reading image file")
 
+
 #
 # --------------------------------------------------------------------
 # Helpers
@@ -62,6 +66,7 @@ def raise_ioerror(error):
 def _tilesort(t):
     # sort on offset
     return t[2]
+
 
 #
 # --------------------------------------------------------------------
@@ -74,7 +79,7 @@ class ImageFile(Image.Image):
         Image.Image.__init__(self)
 
         self.tile = None
-        self.readonly = 1 # until we know better
+        self.readonly = 1  # until we know better
 
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
@@ -90,19 +95,19 @@ class ImageFile(Image.Image):
 
         try:
             self._open()
-        except IndexError as v: # end of data
+        except IndexError as v:  # end of data
             if Image.DEBUG > 1:
                 traceback.print_exc()
             raise SyntaxError(v)
-        except TypeError as v: # end of data (ord)
+        except TypeError as v:  # end of data (ord)
             if Image.DEBUG > 1:
                 traceback.print_exc()
             raise SyntaxError(v)
-        except KeyError as v: # unsupported mode
+        except KeyError as v:  # unsupported mode
             if Image.DEBUG > 1:
                 traceback.print_exc()
             raise SyntaxError(v)
-        except EOFError as v: # got header but not the first frame
+        except EOFError as v:  # got header but not the first frame
             if Image.DEBUG > 1:
                 traceback.print_exc()
             raise SyntaxError(v)
@@ -135,8 +140,8 @@ class ImageFile(Image.Image):
         self.map = None
         use_mmap = self.filename and len(self.tile) == 1
         # As of pypy 2.1.0, memory mapping was failing here.
-        use_mmap = use_mmap and not hasattr(sys, 'pypy_version_info') 
-        
+        use_mmap = use_mmap and not hasattr(sys, 'pypy_version_info')
+
         readonly = 0
 
         # look for read/seek overrides
@@ -203,23 +208,25 @@ class ImageFile(Image.Image):
                 while True:
                     try:
                         s = read(self.decodermaxblock)
-                    except IndexError as ie: # truncated png/gif
+                    except IndexError as ie:  # truncated png/gif
                         if LOAD_TRUNCATED_IMAGES:
                             break
                         else:
                             raise IndexError(ie)
 
-                    if not s and not d.handles_eof: # truncated jpeg
+                    if not s and not d.handles_eof:  # truncated jpeg
                         self.tile = []
 
                         # JpegDecode needs to clean things up here either way
-                        # If we don't destroy the decompressor, we have a memory leak.
+                        # If we don't destroy the decompressor,
+                        # we have a memory leak.
                         d.cleanup()
 
                         if LOAD_TRUNCATED_IMAGES:
                             break
                         else:
-                            raise IOError("image file is truncated (%d bytes not processed)" % len(b))
+                            raise IOError("image file is truncated "
+                                          "(%d bytes not processed)" % len(b))
 
                     b = b + s
                     n, e = d.decode(b)
@@ -233,7 +240,7 @@ class ImageFile(Image.Image):
         self.tile = []
         self.readonly = readonly
 
-        self.fp = None # might be shared
+        self.fp = None  # might be shared
 
         if not self.map and (not LOAD_TRUNCATED_IMAGES or t == 0) and e < 0:
             # still raised if decoder fails to return anything
@@ -380,10 +387,10 @@ class Parser:
                     fp = io.BytesIO(self.data)
                     im = Image.open(fp)
                 finally:
-                    fp.close() # explicitly close the virtual file
+                    fp.close()  # explicitly close the virtual file
             except IOError:
                 # traceback.print_exc()
-                pass # not enough data
+                pass  # not enough data
             else:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
                 if flag or len(im.tile) != 1:
@@ -433,8 +440,9 @@ class Parser:
                 self.image = Image.open(fp)
             finally:
                 self.image.load()
-                fp.close() # explicitly close the virtual file
+                fp.close()  # explicitly close the virtual file
         return self.image
+
 
 # --------------------------------------------------------------------
 
@@ -452,10 +460,10 @@ def _save(im, fp, tile, bufsize=0):
         im.encoderconfig = ()
     tile.sort(key=_tilesort)
     # FIXME: make MAXBLOCK a configuration parameter
-    # It would be great if we could have the encoder specifiy what it needs
+    # It would be great if we could have the encoder specify what it needs
     # But, it would need at least the image size in most cases. RawEncode is
     # a tricky case.
-    bufsize = max(MAXBLOCK, bufsize, im.size[0] * 4) # see RawEncode.c
+    bufsize = max(MAXBLOCK, bufsize, im.size[0] * 4)  # see RawEncode.c
     try:
         fh = fp.fileno()
         fp.flush()
@@ -487,7 +495,8 @@ def _save(im, fp, tile, bufsize=0):
             e.cleanup()
     try:
         fp.flush()
-    except: pass
+    except:
+        pass
 
 
 def _safe_read(fp, size):

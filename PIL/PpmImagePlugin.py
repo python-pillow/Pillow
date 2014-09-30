@@ -27,12 +27,13 @@ from PIL import Image, ImageFile
 b_whitespace = string.whitespace
 try:
     import locale
-    locale_lang,locale_enc = locale.getlocale()
+    locale_lang, locale_enc = locale.getlocale()
     if locale_enc is None:
-        locale_lang,locale_enc = locale.getdefaultlocale() 
+        locale_lang, locale_enc = locale.getdefaultlocale()
     b_whitespace = b_whitespace.decode(locale_enc)
-except: pass
-b_whitespace = b_whitespace.encode('ascii','ignore')
+except:
+    pass
+b_whitespace = b_whitespace.encode('ascii', 'ignore')
 
 MODES = {
     # standard
@@ -47,8 +48,10 @@ MODES = {
     b"PyCMYK": "CMYK"
 }
 
+
 def _accept(prefix):
     return prefix[0:1] == b"P" and prefix[1] in b"0456y"
+
 
 ##
 # Image plugin for PBM, PGM, and PPM images.
@@ -58,8 +61,8 @@ class PpmImageFile(ImageFile.ImageFile):
     format = "PPM"
     format_description = "Pbmplus image"
 
-    def _token(self, s = b""):
-        while True: # read until next whitespace
+    def _token(self, s=b""):
+        while True:  # read until next whitespace
             c = self.fp.read(1)
             if not c or c in b_whitespace:
                 break
@@ -104,14 +107,14 @@ class PpmImageFile(ImageFile.ImageFile):
                 # maxgrey
                 if s > 255:
                     if not mode == 'L':
-                        raise ValueError("Too many colors for band: %s" %s)
+                        raise ValueError("Too many colors for band: %s" % s)
                     if s < 2**16:
                         self.mode = 'I'
                         rawmode = 'I;16B'
                     else:
-                        self.mode = 'I';
+                        self.mode = 'I'
                         rawmode = 'I;32B'
-                        
+
         self.size = xsize, ysize
         self.tile = [("raw",
                      (0, 0, xsize, ysize),
@@ -122,6 +125,7 @@ class PpmImageFile(ImageFile.ImageFile):
         # self.im = Image.core.open_ppm(self.filename)
         # self.mode = self.im.mode
         # self.size = self.im.size
+
 
 #
 # --------------------------------------------------------------------
@@ -152,7 +156,7 @@ def _save(im, fp, filename):
             fp.write(b"65535\n")
         elif rawmode == "I;32B":
             fp.write(b"2147483648\n")
-    ImageFile._save(im, fp, [("raw", (0,0)+im.size, 0, (rawmode, 0, 1))])
+    ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 0, (rawmode, 0, 1))])
 
     # ALTERNATIVE: save via builtin debug function
     # im._dump(filename)

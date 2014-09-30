@@ -13,6 +13,7 @@ from PIL import Image, ImageFile
 
 _handler = None
 
+
 ##
 # Install application-specific BUFR image handler.
 #
@@ -22,11 +23,13 @@ def register_handler(handler):
     global _handler
     _handler = handler
 
+
 # --------------------------------------------------------------------
 # Image adapter
 
 def _accept(prefix):
     return prefix[:4] == b"BUFR" or prefix[:4] == b"ZCZC"
+
 
 class BufrStubImageFile(ImageFile.StubImageFile):
 
@@ -52,6 +55,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
 
     def _load(self):
         return _handler
+
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr("_handler", "save"):

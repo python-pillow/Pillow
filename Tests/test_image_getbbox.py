@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -7,7 +7,7 @@ class TestImageGetBbox(PillowTestCase):
 
     def test_sanity(self):
 
-        bbox = lena().getbbox()
+        bbox = hopper().getbbox()
         self.assertIsInstance(bbox, tuple)
 
     def test_bbox(self):

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 try:
     from PIL import ImageQt
@@ -44,7 +44,7 @@ class TestImageQt(PillowTestCase):
 
     def test_image(self):
         for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
-            ImageQt.ImageQt(lena(mode))
+            ImageQt.ImageQt(hopper(mode))
 
 
 if __name__ == '__main__':

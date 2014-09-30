@@ -151,9 +151,9 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    if (context->quality > 0) {
 		quality = context->quality;
 	    }
-	    for (i = 0; i < sizeof(context->qtables)/sizeof(unsigned int); i++) {
+	    for (i = 0; i < context->qtablesLen; i++) {
 		// TODO: Should add support for none baseline
-		jpeg_add_quant_table(&context->cinfo, i, context->qtables[i],
+		jpeg_add_quant_table(&context->cinfo, i, &context->qtables[i * DCTSIZE2],
 				     quality, TRUE);
 	    }
 	} else if (context->quality > 0) {
@@ -289,8 +289,19 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	jpeg_finish_compress(&context->cinfo);
 
 	/* Clean up */
-        if (context->extra)
+        if (context->extra) {
             free(context->extra);
+            context->extra = NULL;
+        }
+        if (context->rawExif) {
+            free(context->rawExif);
+            context->rawExif = NULL;
+        }
+        if (context->qtables) {
+            free(context->qtables);
+            context->qtables = NULL;
+        }            
+
 	jpeg_destroy_compress(&context->cinfo);
 	/* if (jerr.pub.num_warnings) return BROKEN; */
 	state->errcode = IMAGING_CODEC_END;

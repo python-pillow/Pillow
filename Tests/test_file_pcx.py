@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -17,7 +17,7 @@ class TestFilePcx(PillowTestCase):
 
     def test_sanity(self):
         for mode in ('1', 'L', 'P', 'RGB'):
-            self._roundtrip(lena(mode))
+            self._roundtrip(hopper(mode))
 
     def test_odd(self):
         # see issue #523, odd sized images should have a stride that's even.
@@ -26,7 +26,7 @@ class TestFilePcx(PillowTestCase):
         for mode in ('1', 'L', 'P', 'RGB'):
             # larger, odd sized images are better here to ensure that
             # we handle interrupted scan lines properly.
-            self._roundtrip(lena(mode).resize((511, 511)))
+            self._roundtrip(hopper(mode).resize((511, 511)))
 
     def test_pil184(self):
         # Check reading of files where xmin/xmax is not zero.

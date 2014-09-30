@@ -22,12 +22,15 @@ __version__ = "0.1"
 
 from PIL import Image, JpegImagePlugin
 
+
 def _accept(prefix):
     return JpegImagePlugin._accept(prefix)
+
 
 def _save(im, fp, filename):
     # Note that we can only save the current frame at present
     return JpegImagePlugin._save(im, fp, filename)
+
 
 ##
 # Image plugin for MPO images.
@@ -38,19 +41,19 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     format_description = "MPO (CIPA DC-007)"
 
     def _open(self):
-        self.fp.seek(0) # prep the fp in order to pass the JPEG test
+        self.fp.seek(0)  # prep the fp in order to pass the JPEG test
         JpegImagePlugin.JpegImageFile._open(self)
         self.mpinfo = self._getmp()
         self.__framecount = self.mpinfo[0xB001]
-        self.__mpoffsets = [mpent['DataOffset'] + self.info['mpoffset'] \
-            for mpent in self.mpinfo[0xB002]]
+        self.__mpoffsets = [mpent['DataOffset'] + self.info['mpoffset']
+                            for mpent in self.mpinfo[0xB002]]
         self.__mpoffsets[0] = 0
         # Note that the following assertion will only be invalid if something
         # gets broken within JpegImagePlugin.
         assert self.__framecount == len(self.__mpoffsets)
-        del self.info['mpoffset'] # no longer needed
-        self.__fp = self.fp # FIXME: hack
-        self.__fp.seek(self.__mpoffsets[0]) # get ready to read first frame
+        del self.info['mpoffset']  # no longer needed
+        self.__fp = self.fp  # FIXME: hack
+        self.__fp.seek(self.__mpoffsets[0])  # get ready to read first frame
         self.__frame = 0
         self.offset = 0
         # for now we can only handle reading and individual frame extraction
@@ -79,7 +82,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
 # Note that since MPO shares a factory with JPEG, we do not need to do a
 # separate registration for it here.
-#Image.register_open("MPO", JpegImagePlugin.jpeg_factory, _accept)
+# Image.register_open("MPO", JpegImagePlugin.jpeg_factory, _accept)
 Image.register_save("MPO", _save)
 
 Image.register_extension("MPO", ".mpo")

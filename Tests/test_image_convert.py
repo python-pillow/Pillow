@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -15,13 +15,13 @@ class TestImageConvert(PillowTestCase):
         modes = "1", "L", "I", "F", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr"
 
         for mode in modes:
-            im = lena(mode)
+            im = hopper(mode)
             for mode in modes:
                 convert(im, mode)
 
     def test_default(self):
 
-        im = lena("P")
+        im = hopper("P")
         self.assert_image(im, "P", im.size)
         im = im.convert()
         self.assert_image(im, "RGB", im.size)
@@ -36,7 +36,7 @@ class TestImageConvert(PillowTestCase):
         self.assertEqual(orig, converted)
 
     def test_8bit(self):
-        im = Image.open('Tests/images/lena.jpg')
+        im = Image.open('Tests/images/hopper.jpg')
         self._test_float_conversion(im.convert('L'))
 
     def test_16bit(self):
@@ -48,8 +48,8 @@ class TestImageConvert(PillowTestCase):
         self._test_float_conversion(im.convert('I'))
 
     def test_rgba_p(self):
-        im = lena('RGBA')
-        im.putalpha(lena('L'))
+        im = hopper('RGBA')
+        im.putalpha(hopper('L'))
 
         converted = im.convert('P')
         comparable = converted.convert('RGBA')
@@ -57,7 +57,7 @@ class TestImageConvert(PillowTestCase):
         self.assert_image_similar(im, comparable, 20)
 
     def test_trns_p(self):
-        im = lena('P')
+        im = hopper('P')
         im.info['transparency'] = 0
 
         f = self.tempfile('temp.png')
@@ -74,7 +74,7 @@ class TestImageConvert(PillowTestCase):
 
     def test_trns_p_rgba(self):
         # Arrange
-        im = lena('P')
+        im = hopper('P')
         im.info['transparency'] = 128
 
         # Act
@@ -84,7 +84,7 @@ class TestImageConvert(PillowTestCase):
         self.assertNotIn('transparency', rgba.info)
 
     def test_trns_l(self):
-        im = lena('L')
+        im = hopper('L')
         im.info['transparency'] = 128
 
         f = self.tempfile('temp.png')
@@ -104,7 +104,7 @@ class TestImageConvert(PillowTestCase):
         p.save(f)
 
     def test_trns_RGB(self):
-        im = lena('RGB')
+        im = hopper('RGB')
         im.info['transparency'] = im.getpixel((0, 0))
 
         f = self.tempfile('temp.png')
