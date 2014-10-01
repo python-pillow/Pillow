@@ -63,7 +63,7 @@ class MorphTests(PillowTestCase):
                 'corner', 'dilation4', 'dilation8',
                 'erosion4', 'erosion8', 'edge'):
             lb = ImageMorph.LutBuilder(op_name=op)
-            lut = lb.build_lut(self)
+            lut = lb.build_lut()
             with open('Tests/images/%s.lut' % op, 'wb') as f:
                 f.write(lut)
 

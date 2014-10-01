@@ -184,7 +184,6 @@ class PngInfo:
             tkey = tkey.encode("utf-8", "strict")
 
         if zip:
-            import zlib
             self.add(b"iTXt", key + b"\0\x01\0" + lang + b"\0" + tkey + b"\0" +
                      zlib.compress(value))
         else:
@@ -206,7 +205,6 @@ class PngInfo:
             key = key.encode('latin-1', 'strict')
 
         if zip:
-            import zlib
             self.add(b"zTXt", key + b"\0\0" + zlib.compress(value))
         else:
             self.add(b"tEXt", key + b"\0" + value)
@@ -359,7 +357,6 @@ class PngStream(ChunkStream):
         if comp_method != 0:
             raise SyntaxError("Unknown compression method %s in zTXt chunk" %
                               comp_method)
-        import zlib
         try:
             v = zlib.decompress(v[1:])
         except zlib.error:
@@ -390,7 +387,6 @@ class PngStream(ChunkStream):
             return s
         if cf != 0:
             if cm == 0:
-                import zlib
                 try:
                     v = zlib.decompress(v)
                 except zlib.error:
