@@ -397,9 +397,9 @@ the output format must be specified explicitly::
     im.save('newimage.spi', format='SPIDER')
 
 For more information about the SPIDER image processing package, see the
-`SPIDER home page`_ at `Wadsworth Center`_.
+`SPIDER homepage`_ at `Wadsworth Center`_.
 
-.. _SPIDER home page: http://www.wadsworth.org/spider_doc/spider/docs/master.html
+.. _SPIDER homepage: http://spider.wadsworth.org/spider_doc/spider/docs/spider.html
 .. _Wadsworth Center: http://www.wadsworth.org/
 
 TIFF
