@@ -298,6 +298,17 @@ class TestFileTiff(PillowTestCase):
         # Assert
         self.assertEqual(ret, [0, 1])
 
+    def test_4bit(self):
+        # Arrange
+        test_file = "Tests/images/flower-minisblack-04.tif"
+
+        # Act
+        im = Image.open(test_file)
+
+        # Assert
+        self.assertEqual(im.size, (73, 43))
+        self.assertEqual(im.mode, "L")
+
 
 if __name__ == '__main__':
     unittest.main()
