@@ -1,8 +1,14 @@
 Changelog (Pillow)
 ==================
 
-2.6.0 (unreleased)
+2.6.0 (2014-10-01)
 ------------------
+
+- Relax precision of ImageDraw tests for x86, GimpGradient for PPC
+  [wiredfool]
+
+2.6.0-rc1 (2014-09-29)
+----------------------
 
 - Use redistributable image for testing #884
   [hugovk]
