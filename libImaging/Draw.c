@@ -600,7 +600,6 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
     double big_hypotenuse, small_hypotenuse, ratio_max, ratio_min;
     int dxmin, dxmax, dymin, dymax;
     Edge e[4];
-    int vertices[4][2];
 
     DRAWINIT();
 
