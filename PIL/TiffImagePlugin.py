@@ -149,6 +149,7 @@ OPEN_INFO = {
     (II, 0, 1, 2, (8,), ()): ("L", "L;IR"),
     (II, 0, 3, 1, (32,), ()): ("F", "F;32F"),
     (II, 1, 1, 1, (1,), ()): ("1", "1"),
+    (II, 1, 1, 1, (4,), ()): ("L", "L;4"),
     (II, 1, 1, 2, (1,), ()): ("1", "1;R"),
     (II, 1, 1, 1, (8,), ()): ("L", "L"),
     (II, 1, 1, 1, (8, 8), (2,)): ("LA", "LA"),
@@ -660,7 +661,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 raise EOFError("no more images in TIFF file")
             if Image.DEBUG:
                 print("Seeking to frame %s, on frame %s, __next %s, location: %s"%
-                      (frame, self.__frame, self.__next, self.fp.tell()))            
+                      (frame, self.__frame, self.__next, self.fp.tell()))
             # reset python3 buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
             self.fp.tell()
@@ -671,7 +672,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__next = self.tag.next
             self.__frame += 1
         self._setup()
-        
+
     def _tell(self):
         return self.__frame
 
