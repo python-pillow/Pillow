@@ -1,10 +1,10 @@
-
 include *.c
 include *.h
 include *.md
 include *.py
 include *.rst
 include *.txt
+include *.yaml
 include .coveragerc
 include .gitattributes
 include .travis.yml
@@ -44,9 +44,11 @@ recursive-include Tests *.dcx
 recursive-include Tests *.doc
 recursive-include Tests *.eps
 recursive-include Tests *.fli
+recursive-include Tests *.ggr
 recursive-include Tests *.gif
 recursive-include Tests *.gnuplot
 recursive-include Tests *.html
+recursive-include Tests *.icc
 recursive-include Tests *.icm
 recursive-include Tests *.icns
 recursive-include Tests *.ico
@@ -70,6 +72,7 @@ recursive-include Tests *.rst
 recursive-include Tests *.sgi
 recursive-include Tests *.spider
 recursive-include Tests *.tar
+recursive-include Tests *.tga
 recursive-include Tests *.tif
 recursive-include Tests *.tiff
 recursive-include Tests *.ttf
