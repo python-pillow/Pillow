@@ -144,28 +144,27 @@ class TestFileTiff(PillowTestCase):
     def test_multipage(self):
         # issue #862
         im = Image.open('Tests/images/multipage.tiff')
-        # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
+        # file is a multipage tiff: 10x10 green, 10x10 red, 20x20 blue
 
         im.seek(0)
-        self.assertEqual(im.size, (10,10))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,128,0))
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 128, 0))
 
         im.seek(1)
         im.load()
-        self.assertEqual(im.size, (10,10))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (255,0,0))
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (255, 0, 0))
 
         im.seek(2)
         im.load()
-        self.assertEqual(im.size, (20,20))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
+        self.assertEqual(im.size, (20, 20))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
 
     def test_multipage_last_frame(self):
         im = Image.open('Tests/images/multipage-lastframe.tif')
         im.load()
-        self.assertEqual(im.size, (20,20))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
-
+        self.assertEqual(im.size, (20, 20))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
 
     def test___str__(self):
         # Arrange
@@ -199,7 +198,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_byte(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abc"
 
@@ -211,7 +209,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_string(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abc\0"
 
@@ -223,7 +220,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_float(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abcdabcd"
 
@@ -235,7 +231,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_double(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abcdefghabcdefgh"
 
@@ -301,6 +296,7 @@ class TestFileTiff(PillowTestCase):
     def test_4bit(self):
         # Arrange
         test_file = "Tests/images/hopper_gray_4bpp.tif"
+        original = hopper("L")
 
         # Act
         im = Image.open(test_file)
@@ -308,6 +304,7 @@ class TestFileTiff(PillowTestCase):
         # Assert
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.mode, "L")
+        self.assert_image_similar(im, original, 7.3)
 
 
 if __name__ == '__main__':
