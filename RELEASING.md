@@ -53,3 +53,7 @@ python setup.py sdist upload
 * [ ] Retrieve the OS X Wheels from Rackspace files, upload to PyPi (Twine?)
 * [ ] Grab Windows binaries, `twine upload dist/*.[whl|egg]`. Manually upload .exe installers.
 * [ ] Announce release availability. [Twitter](https://twitter.com/pythonpillow), web.
+
+## Pre-release check
+
+* [ ] Run pre-release check via `make pre`
