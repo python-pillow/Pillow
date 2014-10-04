@@ -1530,6 +1530,7 @@ class Image:
 
         self.load()
 
+        size=tuple(size)
         if self.size == size:
             return self._new(self.im)
 
