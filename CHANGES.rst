@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+2.7.0 (unreleased)
+------------------
+
+- Fix for regression in SciPy #945
+  [wiredfool]
+
 2.6.0 (2014-10-01)
 ------------------
 
