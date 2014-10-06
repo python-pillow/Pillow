@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 ## OleFileIO_PL:
 ## Module to read Microsoft OLE2 files (also called Structured Storage or
 ## Microsoft Compound Document File Format), such as Microsoft Office
