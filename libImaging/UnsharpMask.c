@@ -79,6 +79,7 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
 
     int radius = 0;
     float remainder = 0.0;
+    int hasAlpha = 0;
 
     int i;
 
@@ -189,6 +190,10 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
         }
     }
 
+    if (strcmp(im->mode, "RGBX") == 0 || strcmp(im->mode, "RGBA") == 0) {
+        hasAlpha = 1;
+    }
+
     /* perform a blur on each column in the buffer, and place in the
        output image */
     for (x = 0; x < im->xsize; x++) {
@@ -204,6 +209,7 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
                     offset = -y;
                 else if (y + offset >= im->ysize)
                     offset = im->ysize - y - 1;
+
                 /* add (neighbor pixel value * maskData[pix]) to the current
                    pixel value */
                 for (channel = 0; channel < channels; channel++) {
@@ -215,9 +221,8 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
             }
             /* if the image is RGBX or RGBA, copy the 4th channel data to
                newPixel, so it gets put in imOut */
-            if (strcmp(im->mode, "RGBX") == 0
-                || strcmp(im->mode, "RGBA") == 0) {
-              newPixel[3] = (float) ((UINT8 *) & line[x + offset])[3];
+            if (hasAlpha) {
+                newPixel[3] = (float) ((UINT8 *) & im->image32[y][x])[3];
             }
 
             /* pack the channels into an INT32 so we can put them back in
