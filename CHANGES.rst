@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Fixes for things rpmlint complains about #942
+  [manisandro]
+
 - Fix for regression in SciPy #945
   [wiredfool]
 
