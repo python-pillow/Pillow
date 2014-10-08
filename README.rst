@@ -1,6 +1,6 @@
-########################
-Pillow OSX wheel builder
-########################
+#########################
+Pillow OS X wheel builder
+#########################
 
 Repository to build Pillow wheels.
 
