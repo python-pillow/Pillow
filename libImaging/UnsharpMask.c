@@ -51,7 +51,7 @@ static inline UINT8 clip(double in)
         return (UINT8) 255;
     if (in <= 0.0)
         return (UINT8) 0;
-    return (UINT8) in;
+    return (UINT8) (in + 0.5);
 }
 
 static Imaging
