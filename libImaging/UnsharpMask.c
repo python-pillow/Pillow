@@ -293,6 +293,7 @@ ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
     int channel = 0;
     int channels = 0;
     int padding = 0;
+    int hasAlpha = 0;
 
     int x = 0;
     int y = 0;
@@ -336,6 +337,10 @@ ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
        percent. */
 
     ImagingSectionEnter(&cookie);
+
+    if (strcmp(im->mode, "RGBX") == 0 || strcmp(im->mode, "RGBA") == 0) {
+        hasAlpha = 1;
+    }
 
     for (y = 0; y < im->ysize; y++) {
         if (channels == 1) {
@@ -385,8 +390,7 @@ ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
                             (channel * 8);
                     }
                 }
-                if (strcmp(im->mode, "RGBX") == 0
-                    || strcmp(im->mode, "RGBA") == 0) {
+                if (hasAlpha) {
                     /* preserve the alpha channel
                        this may not work for little-endian systems, fix it! */
                     newPixel =
