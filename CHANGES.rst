@@ -7,7 +7,7 @@ Changelog (Pillow)
 - Fixes for things rpmlint complains about #942
   [manisandro]
 
-2.6.1 (2041-10-11)
+2.6.1 (2014-10-11)
 ------------------
 
 - Fix SciPy regression in Image.resize #945
