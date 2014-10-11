@@ -20,7 +20,7 @@ static inline UINT8 clip(double in)
 }
 
 static Imaging
-gblur(Imaging im, Imaging imOut, float radius, int channels)
+gblur(Imaging im, Imaging imOut, float radius, float effectiveScale, int channels)
 {
     ImagingSectionCookie cookie;
 
@@ -55,7 +55,7 @@ gblur(Imaging im, Imaging imOut, float radius, int channels)
 
     /* Only pixels in effective radius from source pixel are accounted.
        The Gaussian values outside 3 x radius is near zero. */
-    effectiveRadius = (int) ceil(radius * 2.57);
+    effectiveRadius = (int) ceil(radius * effectiveScale);
     /* Window is number of pixels forming the result pixel on one axis.
        It is source pixel and effective radius in both directions. */
     window = effectiveRadius * 2 + 1;
@@ -197,7 +197,8 @@ gblur(Imaging im, Imaging imOut, float radius, int channels)
     return imOut;
 }
 
-Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius)
+Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius,
+    float effectiveScale)
 {
     int channels = 0;
 
@@ -214,7 +215,7 @@ Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius)
     } else
         return ImagingError_ModeError();
 
-    return gblur(im, imOut, radius, channels);
+    return gblur(im, imOut, radius, effectiveScale, channels);
 }
 
 Imaging
@@ -255,7 +256,7 @@ ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
 
     /* first, do a gaussian blur on the image, putting results in imOut
        temporarily */
-    result = gblur(im, imOut, radius, channels);
+    result = gblur(im, imOut, radius, 2.6, channels);
     if (!result)
         return NULL;
 
