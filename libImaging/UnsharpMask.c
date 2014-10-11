@@ -55,7 +55,7 @@ static inline UINT8 clip(double in)
 }
 
 static Imaging
-gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
+gblur(Imaging im, Imaging imOut, float floatRadius, int channels)
 {
     ImagingSectionCookie cookie;
 
@@ -125,7 +125,7 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
     /* create a temporary memory buffer for the data for the first pass
        memset the buffer to 0 so we can use it directly with += */
 
-    /* don't bother about alpha/padding */
+    /* don't bother about alpha */
     buffer = calloc((size_t) (im->xsize * im->ysize * channels),
                     sizeof(float));
     if (buffer == NULL)
@@ -239,27 +239,21 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
 Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius)
 {
     int channels = 0;
-    int padding = 0;
 
     if (strcmp(im->mode, "RGB") == 0) {
         channels = 3;
-        padding = 1;
     } else if (strcmp(im->mode, "RGBA") == 0) {
         channels = 3;
-        padding = 1;
     } else if (strcmp(im->mode, "RGBX") == 0) {
         channels = 3;
-        padding = 1;
     } else if (strcmp(im->mode, "CMYK") == 0) {
         channels = 4;
-        padding = 0;
     } else if (strcmp(im->mode, "L") == 0) {
         channels = 1;
-        padding = 0;
     } else
         return ImagingError_ModeError();
 
-    return gblur(im, imOut, radius, channels, padding);
+    return gblur(im, imOut, radius, channels);
 }
 
 Imaging
@@ -271,7 +265,6 @@ ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
     Imaging result;
     int channel = 0;
     int channels = 0;
-    int padding = 0;
     int hasAlpha = 0;
 
     int x = 0;
@@ -288,25 +281,20 @@ ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
 
     if (strcmp(im->mode, "RGB") == 0) {
         channels = 3;
-        padding = 1;
     } else if (strcmp(im->mode, "RGBA") == 0) {
         channels = 3;
-        padding = 1;
     } else if (strcmp(im->mode, "RGBX") == 0) {
         channels = 3;
-        padding = 1;
     } else if (strcmp(im->mode, "CMYK") == 0) {
         channels = 4;
-        padding = 0;
     } else if (strcmp(im->mode, "L") == 0) {
         channels = 1;
-        padding = 0;
     } else
         return ImagingError_ModeError();
 
     /* first, do a gaussian blur on the image, putting results in imOut
        temporarily */
-    result = gblur(im, imOut, radius, channels, padding);
+    result = gblur(im, imOut, radius, channels);
     if (!result)
         return NULL;
 
