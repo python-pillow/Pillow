@@ -8,10 +8,13 @@ class TestFileWebpMetadata(PillowTestCase):
     def setUp(self):
         try:
             from PIL import _webp
-            if not _webp.HAVE_WEBPMUX:
-                self.skipTest('webpmux support not installed')
         except:
             self.skipTest('WebP support not installed')
+            return
+
+        if not _webp.HAVE_WEBPMUX:
+            self.skipTest('WebPMux support not installed')
+
 
     def test_read_exif_metadata(self):
 
