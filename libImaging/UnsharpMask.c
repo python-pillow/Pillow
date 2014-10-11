@@ -62,7 +62,7 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
     float *maskData = NULL;
     int y = 0;
     int x = 0;
-    float z = 0;
+    int z = 0;
     float sum = 0.0;
     float dev = 0.0;
 
@@ -78,7 +78,7 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
     INT32 newPixelFinals;
 
     int radius = 0;
-    float remainder = 0.0;
+    int diameter = 0;
     int hasAlpha = 0;
 
     int i;
@@ -92,49 +92,35 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
        radius of 5 instead of 25 lookups).  So, we blur the lines first,
        then we blur the resulting columns. */
 
-    /* first, round radius off to the next higher integer and hold the
-       remainder this is used so we can support float radius values
-       properly. */
-
-    remainder = floatRadius - ((int) floatRadius);
-    floatRadius = ceil(floatRadius);
-
     /* Next, double the radius and offset by 2.0... that way "0" returns
        the original image instead of a black one.  We multiply it by 2.0
        so that it is a true "radius", not a diameter (the results match
        other paint programs closer that way too). */
-    radius = (int) ((floatRadius * 2.0) + 2.0);
+    radius = (int) ceil(floatRadius * 2.57);
+    diameter = radius * 2 + 1;
 
     /* create the maskData for the gaussian curve */
-    maskData = malloc(radius * sizeof(float));
-    /* FIXME: error checking */
-    for (x = 0; x < radius; x++) {
-        z = ((float) (x + 2) / ((float) radius));
-        dev = 0.5 + (((float) (radius * radius)) * 0.001);
-        /* you can adjust this factor to change the shape/center-weighting
-           of the gaussian */
-        maskData[x] = (float) pow((1.0 / sqrt(2.0 * 3.14159265359 * dev)),
-                                  ((-(z - 1.0) * -(x - 1.0)) /
-                                   (2.0 * dev)));
+    maskData = malloc(diameter * sizeof(float));
+    for (x = 0; x < diameter; x++) {
+        z = x - radius;
+        dev = floatRadius * floatRadius;
+        /* http://en.wikipedia.org/wiki/Gaussian_blur
+           "1 / sqrt(2 * pi * dev)" is constant and will be eliminated by
+           normalization. */
+        maskData[x] = pow(2.718281828459, -z * z / (2 * dev));
     }
 
-    /* if there's any remainder, multiply the first/last values in
-       MaskData it.  this allows us to support float radius values. */
-    if (remainder > 0.0) {
-        maskData[0] *= remainder;
-        maskData[radius - 1] *= remainder;
-    }
-
-    for (x = 0; x < radius; x++) {
+    for (x = 0; x < diameter; x++) {
         /* this is done separately now due to the correction for float
            radius values above */
         sum += maskData[x];
     }
 
-    for (i = 0; i < radius; i++) {
+    for (i = 0; i < diameter; i++) {
         maskData[i] *= (1.0 / sum);
-        /* printf("%f\n", maskData[i]); */
+        // printf("%d %f\n", i, maskData[i]);
     }
+    // printf("\n");
 
     /* create a temporary memory buffer for the data for the first pass
        memset the buffer to 0 so we can use it directly with += */
@@ -148,10 +134,6 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
     /* be nice to other threads while you go off to lala land */
     ImagingSectionEnter(&cookie);
 
-    /* memset(buffer, 0, sizeof(buffer)); */
-
-    newPixel[0] = newPixel[1] = newPixel[2] = newPixel[3] = 0;
-
     /* perform a blur on each line, and place in the temporary storage buffer */
     for (y = 0; y < im->ysize; y++) {
         if (channels == 1 && im->image8 != NULL) {
@@ -160,13 +142,11 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
             line = im->image32[y];
         }
         for (x = 0; x < im->xsize; x++) {
-            newPixel[0] = newPixel[1] = newPixel[2] = newPixel[3] = 0;
             /* for each neighbor pixel, factor in its value/weighting to the
                current pixel */
-            for (pix = 0; pix < radius; pix++) {
+            for (pix = 0; pix < diameter; pix++) {
                 /* figure the offset of this neighbor pixel */
-                offset =
-                    (int) ((-((float) radius / 2.0) + (float) pix) + 0.5);
+                offset = pix - radius;
                 if (x + offset < 0)
                     offset = -x;
                 else if (x + offset >= im->xsize)
@@ -201,10 +181,9 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels, int padding)
             newPixel[0] = newPixel[1] = newPixel[2] = newPixel[3] = 0;
             /* for each neighbor pixel, factor in its value/weighting to the
                current pixel */
-            for (pix = 0; pix < radius; pix++) {
+            for (pix = 0; pix < diameter; pix++) {
                 /* figure the offset of this neighbor pixel */
-                offset =
-                    (int) (-((float) radius / 2.0) + (float) pix + 0.5);
+                offset = pix - radius;
                 if (y + offset < 0)
                     offset = -y;
                 else if (y + offset >= im->ysize)
