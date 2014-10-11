@@ -9,41 +9,6 @@
 #include "Python.h"
 #include "Imaging.h"
 
-#define PILUSMVERSION "0.6.1"
-
-/* version history
-
-0.6.1   converted to C and added to PIL 1.1.7
-
-0.6.0   fixed/improved float radius support (oops!)
-        now that radius can be a float (properly), changed radius value to
-            be an actual radius (instead of diameter).  So, you should get
-            similar results from PIL_usm as from other paint programs when
-            using the SAME values (no doubling of radius required any more).
-            Be careful, this may "break" software if you had it set for 2x
-            or 5x the radius as was recommended with earlier versions.
-        made PILusm thread-friendly (release GIL before lengthly operations,
-            and re-acquire it before returning to Python).  This makes a huge
-            difference with multi-threaded applications on dual-processor
-            or "Hyperthreading"-enabled systems (Pentium4, Xeon, etc.)
-
-0.5.0   added support for float radius values!
-
-0.4.0   tweaked gaussian curve calculation to be closer to consistent shape
-            across a wide range of radius values
-
-0.3.0   changed deviation calculation in gausian algorithm to be dynamic
-        _gblur now adds 1 to the user-supplied radius before using it so
-            that a value of "0" returns the original image instead of a
-            black one.
-        fixed handling of alpha channel in RGBX, RGBA images
-        improved speed of gblur by reducing unnecessary checks and assignments
-
-0.2.0   fixed L-mode image support
-
-0.1.0   initial release
-
-*/
 
 static inline UINT8 clip(double in)
 {
