@@ -1,6 +1,15 @@
 Changelog (Pillow)
 ==================
 
+2.6.1 (2014-10-11)
+------------------
+
+- Fix SciPy regression for in Image.resize #945
+  [wiredfool]
+
+- Fix manifest to include all test files
+  [aclark]
+
 2.6.0 (2014-10-01)
 ------------------
 
