@@ -7,8 +7,14 @@ Changelog (Pillow)
 - Fixes for things rpmlint complains about #942
   [manisandro]
 
-- Fix for regression in SciPy #945
+2.6.1 (2041-10-11)
+------------------
+
+- Fix SciPy regression in Image.resize #945
   [wiredfool]
+  
+- Fix manifest to include all test files.
+  [aclark]
 
 2.6.0 (2014-10-01)
 ------------------
