@@ -20,16 +20,14 @@ static inline UINT8 clip(double in)
 }
 
 static Imaging
-gblur(Imaging im, Imaging imOut, float floatRadius, int channels)
+gblur(Imaging im, Imaging imOut, float radius, int channels)
 {
     ImagingSectionCookie cookie;
 
     float *maskData = NULL;
     int y = 0;
     int x = 0;
-    int z = 0;
     float sum = 0.0;
-    float dev = 0.0;
 
     float *buffer = NULL;
 
@@ -42,11 +40,9 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels)
     int offset = 0;
     INT32 newPixelFinals;
 
-    int radius = 0;
-    int diameter = 0;
+    int effectiveRadius = 0;
+    int window = 0;
     int hasAlpha = 0;
-
-    int i;
 
     /* Do the gaussian blur */
 
@@ -57,33 +53,33 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels)
        radius of 5 instead of 25 lookups).  So, we blur the lines first,
        then we blur the resulting columns. */
 
-    /* Next, double the radius and offset by 2.0... that way "0" returns
-       the original image instead of a black one.  We multiply it by 2.0
-       so that it is a true "radius", not a diameter (the results match
-       other paint programs closer that way too). */
-    radius = (int) ceil(floatRadius * 2.57);
-    diameter = radius * 2 + 1;
+    /* Only pixels in effective radius from source pixel are accounted.
+       The Gaussian values outside 3 x radius is near zero. */
+    effectiveRadius = (int) ceil(radius * 2.57);
+    /* Window is number of pixels forming the result pixel on one axis.
+       It is source pixel and effective radius in both directions. */
+    window = effectiveRadius * 2 + 1;
 
     /* create the maskData for the gaussian curve */
-    maskData = malloc(diameter * sizeof(float));
-    for (x = 0; x < diameter; x++) {
-        z = x - radius;
-        dev = floatRadius * floatRadius;
+    maskData = malloc(window * sizeof(float));
+    for (pix = 0; pix < window; pix++) {
+        offset = pix - effectiveRadius;
         /* http://en.wikipedia.org/wiki/Gaussian_blur
            "1 / sqrt(2 * pi * dev)" is constant and will be eliminated by
            normalization. */
-        maskData[x] = pow(2.718281828459, -z * z / (2 * dev));
+        maskData[pix] = pow(2.718281828459,
+                            -offset * offset / (2 * radius * radius));
     }
 
-    for (x = 0; x < diameter; x++) {
+    for (pix = 0; pix < window; pix++) {
         /* this is done separately now due to the correction for float
            radius values above */
-        sum += maskData[x];
+        sum += maskData[pix];
     }
 
-    for (i = 0; i < diameter; i++) {
-        maskData[i] *= (1.0 / sum);
-        // printf("%d %f\n", i, maskData[i]);
+    for (pix = 0; pix < window; pix++) {
+        maskData[pix] *= (1.0 / sum);
+        // printf("%d %f\n", pix, maskData[pix]);
     }
     // printf("\n");
 
@@ -109,9 +105,9 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels)
         for (x = 0; x < im->xsize; x++) {
             /* for each neighbor pixel, factor in its value/weighting to the
                current pixel */
-            for (pix = 0; pix < diameter; pix++) {
+            for (pix = 0; pix < window; pix++) {
                 /* figure the offset of this neighbor pixel */
-                offset = pix - radius;
+                offset = pix - effectiveRadius;
                 if (x + offset < 0)
                     offset = -x;
                 else if (x + offset >= im->xsize)
@@ -146,9 +142,9 @@ gblur(Imaging im, Imaging imOut, float floatRadius, int channels)
             newPixel[0] = newPixel[1] = newPixel[2] = newPixel[3] = 0;
             /* for each neighbor pixel, factor in its value/weighting to the
                current pixel */
-            for (pix = 0; pix < diameter; pix++) {
+            for (pix = 0; pix < window; pix++) {
                 /* figure the offset of this neighbor pixel */
-                offset = pix - radius;
+                offset = pix - effectiveRadius;
                 if (y + offset < 0)
                     offset = -y;
                 else if (y + offset >= im->ysize)
