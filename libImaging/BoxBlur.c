@@ -59,21 +59,21 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
 
         /* Substract pixel from left ("0").
            Add pixels from radius. */
-        for (x = 0; x <= radius; x++) {
+        for (x = 0; x < radius + 1; x++) {
             MOVE_ACC(acc, 0, x + radius);
             ADD_FAR(bulk, acc, 0, x+radius+1);
             imOut->image32[x][y] = SAVE(bulk);
         }
         /* Substract previous pixel from "-radius".
            Add pixels from radius. */
-        for (x = radius + 1; x < im->xsize - radius; x++) {
+        for (x = radius + 1; x < im->xsize - radius - 1; x++) {
             MOVE_ACC(acc, x - radius - 1, x + radius);
             ADD_FAR(bulk, acc, x-radius-1, x+radius+1);
             imOut->image32[x][y] = SAVE(bulk);
         }
         /* Substract previous pixel from "-radius".
            Add last pixel. */
-        for (x = im->xsize - radius; x < im->xsize; x++) {
+        for (x = im->xsize - radius - 1; x < im->xsize; x++) {
             MOVE_ACC(acc, x - radius - 1, lastx);
             ADD_FAR(bulk, acc, x-radius-1, lastx);
             imOut->image32[x][y] = SAVE(bulk);
@@ -113,17 +113,17 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
             acc += line[pix];
         }
 
-        for (x = 0; x <= radius; x++) {
+        for (x = 0; x < radius + 1; x++) {
             acc = acc + line[x + radius] - line[0];
             bulk = (acc << 8) + (line[0] + line[x + radius + 1]) * rem;
             imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
         }
-        for (x = radius + 1; x < im->xsize - radius; x++) {
+        for (x = radius + 1; x < im->xsize - radius - 1; x++) {
             acc = acc + line[x + radius] - line[x - radius - 1];
             bulk = (acc << 8) + (line[x - radius - 1] + line[x + radius + 1]) * rem;
             imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
         }
-        for (x = im->xsize - radius; x < im->xsize; x++) {
+        for (x = im->xsize - radius - 1; x < im->xsize; x++) {
             acc = acc + line[lastx] - line[x - radius - 1];
             bulk = (acc << 8) + (line[x - radius - 1] + line[lastx]) * rem;
             imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
