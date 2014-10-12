@@ -38,21 +38,21 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
            Add pixels from radius. */
         for (x = 0; x <= radius; x++) {
             acc = acc + line[x + radius] - line[0];
-            bulk = (acc << 8) + line[0] * rem + line[x + radius + 1] * rem;
+            bulk = (acc << 8) + (line[0] + line[x + radius + 1]) * rem;
             imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
         }
         /* Substract previous pixel from "-radius".
            Add pixels from radius. */
         for (x = radius + 1; x < im->xsize - radius; x++) {
             acc = acc + line[x + radius] - line[x - radius - 1];
-            bulk = (acc << 8) + line[x - radius - 1] * rem + line[x + radius + 1] * rem;
+            bulk = (acc << 8) + (line[x - radius - 1] + line[x + radius + 1]) * rem;
             imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
         }
         /* Substract previous pixel from "-radius".
            Add last pixel. */
         for (x = im->xsize - radius; x < im->xsize; x++) {
             acc = acc + line[lastx] - line[x - radius - 1];
-            bulk = (acc << 8) + line[x - radius - 1] * rem + line[lastx] * rem;
+            bulk = (acc << 8) + (line[x - radius - 1] + line[lastx]) * rem;
             imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
         }
     }
@@ -84,20 +84,16 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
     // printf("%d %d %d\n", rem, w, w2);
 
     #define MOVE_ACC(acc, substract, add) \
-        acc[0] -= line[substract][0]; \
-        acc[1] -= line[substract][1]; \
-        acc[2] -= line[substract][2]; \
-        acc[3] -= line[substract][3]; \
-        acc[0] += line[add][0]; \
-        acc[1] += line[add][1]; \
-        acc[2] += line[add][2]; \
-        acc[3] += line[add][3];
+        acc[0] += line[add][0] - line[substract][0]; \
+        acc[1] += line[add][1] - line[substract][1]; \
+        acc[2] += line[add][2] - line[substract][2]; \
+        acc[3] += line[add][3] - line[substract][3];
 
     #define ADD_FAR(bulk, acc, left, right) \
-        bulk[0] = (acc[0] << 8) + line[left][0] * rem + line[right][0] * rem; \
-        bulk[1] = (acc[1] << 8) + line[left][1] * rem + line[right][1] * rem; \
-        bulk[2] = (acc[2] << 8) + line[left][2] * rem + line[right][2] * rem; \
-        bulk[3] = (acc[3] << 8) + line[left][3] * rem + line[right][3] * rem;
+        bulk[0] = (acc[0] << 8) + (line[left][0] + line[right][0]) * rem; \
+        bulk[1] = (acc[1] << 8) + (line[left][1] + line[right][1]) * rem; \
+        bulk[2] = (acc[2] << 8) + (line[left][2] + line[right][2]) * rem; \
+        bulk[3] = (acc[3] << 8) + (line[left][3] + line[right][3]) * rem;
 
     #define SAVE(acc) \
         (UINT8)((acc[0] + w2) / w) << 0  | (UINT8)((acc[1] + w2) / w) << 8 | \
