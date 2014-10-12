@@ -9,17 +9,15 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
 
     int x, y, pix;
     int acc[4];
+    float bulk[4];
 
     typedef UINT8 pixel[4];
     pixel *line;
     int lastx = im->xsize - 1;
 
     int radius = (int) floatRadius;
-    int window = radius * 2 + 1;
-
-    #define SAVE(acc) \
-        (UINT8)(acc[0] / window) | (UINT8)(acc[1] / window) << 8 | \
-        (UINT8)(acc[2] / window) << 16 | (UINT8)(acc[3] / window) << 24
+    float rem = floatRadius - radius;
+    float window = floatRadius * 2 + 1;
 
     #define MOVE_ACC(acc, substract, add) \
         acc[0] -= line[substract][0]; \
@@ -31,6 +29,16 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
         acc[2] += line[add][2]; \
         acc[3] += line[add][3];
 
+    #define ADD_FAR(bulk, acc, left, right) \
+        bulk[0] = acc[0] + line[left][0] * rem + line[right][0] * rem; \
+        bulk[1] = acc[1] + line[left][1] * rem + line[right][1] * rem; \
+        bulk[2] = acc[2] + line[left][2] * rem + line[right][2] * rem; \
+        bulk[3] = acc[3] + line[left][3] * rem + line[right][3] * rem;
+
+    #define SAVE(acc) \
+        (UINT8)((acc[0] + .5) / window) | (UINT8)((acc[1] + .5) / window) << 8 | \
+        (UINT8)((acc[2] + .5) / window) << 16 | (UINT8)((acc[3] + .5) / window) << 24
+
     ImagingSectionEnter(&cookie);
 
     for (y = 0; y < im->ysize; y++) {
@@ -39,11 +47,11 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
         /* Compute acc for -1 pixel (outside of image):
            From "-radius-1" to "0" get first pixel,
            then from "1" to "radius-1". */
-        acc[0] = line[0][0] * (radius + 2);
-        acc[1] = line[0][1] * (radius + 2);
-        acc[2] = line[0][2] * (radius + 2);
-        acc[3] = line[0][3] * (radius + 2);
-        for (pix = 1; pix < radius; pix++) {
+        acc[0] = line[0][0] * (radius + 1);
+        acc[1] = line[0][1] * (radius + 1);
+        acc[2] = line[0][2] * (radius + 1);
+        acc[3] = line[0][3] * (radius + 1);
+        for (pix = 0; pix < radius; pix++) {
             acc[0] += line[pix][0];
             acc[1] += line[pix][1];
             acc[2] += line[pix][2];
@@ -54,19 +62,22 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
            Add pixels from radius. */
         for (x = 0; x <= radius; x++) {
             MOVE_ACC(acc, 0, x + radius);
-            imOut->image32[x][y] = SAVE(acc);
+            ADD_FAR(bulk, acc, 0, x+radius+1);
+            imOut->image32[x][y] = SAVE(bulk);
         }
         /* Substract previous pixel from "-radius".
            Add pixels from radius. */
         for (x = radius + 1; x < im->xsize - radius; x++) {
             MOVE_ACC(acc, x - radius - 1, x + radius);
-            imOut->image32[x][y] = SAVE(acc);
+            ADD_FAR(bulk, acc, x-radius-1, x+radius+1);
+            imOut->image32[x][y] = SAVE(bulk);
         }
         /* Substract previous pixel from "-radius".
            Add last pixel. */
         for (x = im->xsize - radius; x < im->xsize; x++) {
             MOVE_ACC(acc, x - radius - 1, lastx);
-            imOut->image32[x][y] = SAVE(acc);
+            ADD_FAR(bulk, acc, x-radius-1, lastx);
+            imOut->image32[x][y] = SAVE(bulk);
         }
     }
 
