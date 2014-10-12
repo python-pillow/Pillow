@@ -7,36 +7,65 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, int radius)
 {
     ImagingSectionCookie cookie;
 
-    int x, y, pix, offset;
+    int x, y, pix;
     int acc[4];
 
     typedef UINT8 pixel[4];
     pixel *line;
+    int lastx = im->xsize - 1;
 
     int window = radius * 2 + 1;
+
+    #define SAVE(acc) \
+        (UINT8)(acc[0] / window) | (UINT8)(acc[1] / window) << 8 | \
+        (UINT8)(acc[2] / window) << 16 | (UINT8)(acc[3] / window) << 24
+
+    #define MOVE_ACC(acc, substract, add) \
+        acc[0] -= line[substract][0]; \
+        acc[1] -= line[substract][1]; \
+        acc[2] -= line[substract][2]; \
+        acc[3] -= line[substract][3]; \
+        acc[0] += line[add][0]; \
+        acc[1] += line[add][1]; \
+        acc[2] += line[add][2]; \
+        acc[3] += line[add][3];
 
     ImagingSectionEnter(&cookie);
 
     for (y = 0; y < im->ysize; y++) {
         line = (pixel *) im->image32[y];
-        for (x = 0; x < im->xsize; x++) {
-            acc[0] = acc[1] = acc[2] = acc[3] = 0;
-            for (pix = x - radius; pix <= x + radius; pix++) {
-                offset = pix;
-                if (pix < 0) {
-                    offset = 0;
-                } else if (pix >= im->xsize) {
-                    offset = im->xsize - 1;
-                }
-                acc[0] += line[offset][0];
-                acc[1] += line[offset][1];
-                acc[2] += line[offset][2];
-                acc[3] += line[offset][3];
-            }
 
-            imOut->image32[y][x] =
-                (UINT8)(acc[0] / window) | (UINT8)(acc[1] / window) << 8 |
-                (UINT8)(acc[2] / window) << 16 | (UINT8)(acc[3] / window) << 24;
+        /* Compute acc for -1 pixel (outside of image):
+           From "-radius-1" to "0" get first pixel,
+           then from "1" to "radius-1". */
+        acc[0] = line[0][0] * (radius + 2);
+        acc[1] = line[0][1] * (radius + 2);
+        acc[2] = line[0][2] * (radius + 2);
+        acc[3] = line[0][3] * (radius + 2);
+        for (pix = 1; pix < radius; pix++) {
+            acc[0] += line[pix][0];
+            acc[1] += line[pix][1];
+            acc[2] += line[pix][2];
+            acc[3] += line[pix][3];
+        }
+
+        /* Substract pixel from left ("0").
+           Add pixels from radius. */
+        for (x = 0; x <= radius; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            imOut->image32[y][x] = SAVE(acc);
+        }
+        /* Substract previous pixel from "-radius".
+           Add pixels from radius. */
+        for (x = radius + 1; x < im->xsize - radius; x++) {
+            MOVE_ACC(acc, x - radius - 1, x + radius);
+            imOut->image32[y][x] = SAVE(acc);
+        }
+        /* Substract previous pixel from "-radius".
+           Add last pixel. */
+        for (x = im->xsize - radius; x < im->xsize; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            imOut->image32[y][x] = SAVE(acc);
         }
     }
 
