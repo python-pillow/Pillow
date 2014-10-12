@@ -10,15 +10,6 @@
 #include "Imaging.h"
 
 
-static inline UINT8 clip(double in)
-{
-    if (in >= 255.0)
-        return (UINT8) 255;
-    if (in <= 0.0)
-        return (UINT8) 0;
-    return (UINT8) (in + 0.5);
-}
-
 static Imaging
 gblur(Imaging im, Imaging imOut, float radius, float effectiveScale, int channels)
 {
@@ -138,7 +129,7 @@ gblur(Imaging im, Imaging imOut, float radius, float effectiveScale, int channel
        output image */
     for (x = 0; x < im->xsize; x++) {
         for (y = 0; y < im->ysize; y++) {
-            newPixel[0] = newPixel[1] = newPixel[2] = newPixel[3] = 0;
+            newPixel[0] = newPixel[1] = newPixel[2] = newPixel[3] = .5;
             /* for each neighbor pixel, factor in its value/weighting to the
                current pixel */
             for (pix = 0; pix < window; pix++) {
@@ -158,31 +149,23 @@ gblur(Imaging im, Imaging imOut, float radius, float effectiveScale, int channel
                           (x * channels) + channel]) * (maskData[pix]);
                 }
             }
-            /* if the image is RGBX or RGBA, copy the 4th channel data to
-               newPixel, so it gets put in imOut */
-            if (hasAlpha) {
-                newPixel[3] = (float) ((UINT8 *) & im->image32[y][x])[3];
-            }
 
-            /* pack the channels into an INT32 so we can put them back in
-               the PIL image */
-            newPixelFinals = 0;
             if (channels == 1) {
-                newPixelFinals = clip(newPixel[0]);
+                imOut->image8[y][x] = (UINT8)(newPixel[0]);
             } else {
+                /* if the image is RGBX or RGBA, copy the 4th channel data to
+                   newPixel, so it gets put in imOut */
+                if (hasAlpha) {
+                    newPixel[3] = (float) ((UINT8 *) & im->image32[y][x])[3];
+                }
+
                 /* for RGB, the fourth channel isn't used anyways, so just
                    pack a 0 in there, this saves checking the mode for each
                    pixel. */
-                /* this doesn't work on little-endian machines... fix it! */
-                newPixelFinals =
-                    clip(newPixel[0]) | clip(newPixel[1]) << 8 |
-                    clip(newPixel[2]) << 16 | clip(newPixel[3]) << 24;
-            }
-            /* set the resulting pixel in imOut */
-            if (channels == 1) {
-                imOut->image8[y][x] = (UINT8) newPixelFinals;
-            } else {
-                imOut->image32[y][x] = newPixelFinals;
+                /* this might don't work on little-endian machines... fix it! */
+                imOut->image32[y][x] =
+                    (UINT8)(newPixel[0]) | (UINT8)(newPixel[1]) << 8 |
+                    (UINT8)(newPixel[2]) << 16 | (UINT8)(newPixel[3]) << 24;
             }
         }
     }
@@ -194,6 +177,15 @@ gblur(Imaging im, Imaging imOut, float radius, float effectiveScale, int channel
     ImagingSectionLeave(&cookie);
 
     return imOut;
+}
+
+static inline UINT8 clip(double in)
+{
+    if (in >= 255.0)
+        return (UINT8) 255;
+    if (in <= 0.0)
+        return (UINT8) 0;
+    return (UINT8) (in + 0.5);
 }
 
 Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius,
