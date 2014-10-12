@@ -3,6 +3,67 @@
 
 
 Imaging
+HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
+{
+    ImagingSectionCookie cookie;
+
+    int x, y, pix;
+    unsigned int acc;
+    unsigned int bulk;
+
+    UINT8 *line;
+    int lastx = im->xsize - 1;
+
+    int radius = (int) floatRadius;
+    UINT8 rem = (UINT8) (256 * (floatRadius - radius));
+    int w = (int) (256 * (floatRadius * 2 + 1));
+    int w2 = w / 2;
+
+    // printf("%d %d %d\n", rem, w, w2);
+
+    ImagingSectionEnter(&cookie);
+
+    for (y = 0; y < im->ysize; y++) {
+        line = im->image8[y];
+
+        /* Compute acc for -1 pixel (outside of image):
+           From "-radius-1" to "0" get first pixel,
+           then from "1" to "radius-1". */
+        acc = line[0] * (radius + 1);
+        for (pix = 0; pix < radius; pix++) {
+            acc += line[pix];
+        }
+
+        /* Substract pixel from left ("0").
+           Add pixels from radius. */
+        for (x = 0; x <= radius; x++) {
+            acc = acc + line[x + radius] - line[0];
+            bulk = (acc << 8) + line[0] * rem + line[x + radius + 1] * rem;
+            imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+        }
+        /* Substract previous pixel from "-radius".
+           Add pixels from radius. */
+        for (x = radius + 1; x < im->xsize - radius; x++) {
+            acc = acc + line[x + radius] - line[x - radius - 1];
+            bulk = (acc << 8) + line[x - radius - 1] * rem + line[x + radius + 1] * rem;
+            imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+        }
+        /* Substract previous pixel from "-radius".
+           Add last pixel. */
+        for (x = im->xsize - radius; x < im->xsize; x++) {
+            acc = acc + line[lastx] - line[x - radius - 1];
+            bulk = (acc << 8) + line[x - radius - 1] * rem + line[lastx] * rem;
+            imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+        }
+    }
+
+    ImagingSectionLeave(&cookie);
+
+    return imOut;
+}
+
+
+Imaging
 HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
 {
     ImagingSectionCookie cookie;
@@ -100,17 +161,19 @@ ImagingBoxBlur(Imaging im, Imaging imOut, float radius)
 
     /* Apply one-dimensional blur.
        HorizontalBoxBlur32 transposes image at same time. */
-    if ( ! HorizontalBoxBlur32(im, temp, radius)) {
-        ImagingDelete(temp);
-        return NULL;
+    if (strcmp(im->mode, "L") == 0) {
+        HorizontalBoxBlur8(im, temp, radius);
+    } else {
+        HorizontalBoxBlur32(im, temp, radius);
     }
 
     /* Blur in same direction transposed result from previout step.
        Reseult will be transposes again. We'll get original image
        blurred in both directions. */
-    if ( ! HorizontalBoxBlur32(temp, imOut, radius)) {
-        ImagingDelete(temp);
-        return NULL;
+    if (strcmp(im->mode, "L") == 0) {
+        HorizontalBoxBlur8(temp, imOut, radius);
+    } else {
+        HorizontalBoxBlur32(temp, imOut, radius);
     }
 
     ImagingDelete(temp);
