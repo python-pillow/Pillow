@@ -139,6 +139,16 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
 Imaging
 ImagingBoxBlur(Imaging im, Imaging imOut, float radius)
 {
+    if (strcmp(im->mode, imOut->mode) ||
+        im->type  != imOut->type  ||
+        im->bands != imOut->bands ||
+        im->xsize != imOut->xsize ||
+        im->ysize != imOut->ysize)
+        return ImagingError_Mismatch();
+
+    if (im->type != IMAGING_TYPE_UINT8)
+        return ImagingError_ModeError();
+
     /* Create transposed temp image (im->ysize x im->xsize). */
     Imaging temp = ImagingNew(im->mode, im->ysize, im->xsize);
     if ( ! temp)
