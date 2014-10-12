@@ -66,15 +66,15 @@ class TestImageOpsUsm(PillowTestCase):
 
     def test_blur_accuracy(self):
 
-        i = snakes._new(ImageOps.gaussian_blur(snakes, 1))
+        i = snakes._new(ImageOps.gaussian_blur(snakes, .7))
         # Alpha channel must match whole.
         self.assertEqual(i.split()[3], snakes.split()[3])
         # These pixels surrounded with pixels with 255 intensity.
-        # They must be 255.
+        # They must be very close to 255.
         for x, y, c in [(1, 0, 1), (2, 0, 1), (7, 8, 1), (8, 8, 1), (2, 9, 1),
                         (7, 3, 0), (8, 3, 0), (5, 8, 0), (5, 9, 0), (1, 3, 0),
                         (4, 3, 2), (4, 2, 2)]:
-            self.assertEqual(i.im.getpixel((x, y))[c], 255)
+            self.assertGreaterEqual(i.im.getpixel((x, y))[c], 250)
         # Fuzzy match.
         gp = lambda x, y: i.im.getpixel((x, y))
         self.assertTrue(211 <= gp(7, 4)[0] <= 213)
