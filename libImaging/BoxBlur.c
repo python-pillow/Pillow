@@ -36,8 +36,8 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
         bulk[3] = acc[3] + line[left][3] * rem + line[right][3] * rem;
 
     #define SAVE(acc) \
-        (UINT8)((acc[0] + .5) / window) | (UINT8)((acc[1] + .5) / window) << 8 | \
-        (UINT8)((acc[2] + .5) / window) << 16 | (UINT8)((acc[3] + .5) / window) << 24
+        (UINT8)(acc[0] / window + .5) << 0  | (UINT8)(acc[1] / window + .5) << 8 | \
+        (UINT8)(acc[2] / window + .5) << 16 | (UINT8)(acc[3] / window + .5) << 24
 
     ImagingSectionEnter(&cookie);
 
