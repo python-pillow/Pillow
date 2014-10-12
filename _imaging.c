@@ -1809,8 +1809,8 @@ _box_blur(ImagingObject* self, PyObject* args)
     Imaging imIn;
     Imaging imOut;
 
-    int radius;
-    if (!PyArg_ParseTuple(args, "i", &radius))
+    float radius;
+    if (!PyArg_ParseTuple(args, "f", &radius))
         return NULL;
 
     imIn = self->image;

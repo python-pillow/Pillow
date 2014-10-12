@@ -3,7 +3,7 @@
 
 
 Imaging
-HorizontalBoxBlur32(Imaging im, Imaging imOut, int radius)
+HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
 {
     ImagingSectionCookie cookie;
 
@@ -14,6 +14,7 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, int radius)
     pixel *line;
     int lastx = im->xsize - 1;
 
+    int radius = (int) floatRadius;
     int window = radius * 2 + 1;
 
     #define SAVE(acc) \
@@ -76,7 +77,7 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, int radius)
 
 
 Imaging
-ImagingBoxBlur(Imaging im, Imaging imOut, int radius)
+ImagingBoxBlur(Imaging im, Imaging imOut, float radius)
 {
     /* Create transposed temp image (im->ysize x im->xsize). */
     Imaging temp = ImagingNew(im->mode, im->ysize, im->xsize);
