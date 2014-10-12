@@ -8,16 +8,19 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
     ImagingSectionCookie cookie;
 
     int x, y, pix;
-    int acc[4];
-    float bulk[4];
+    unsigned int acc[4];
+    unsigned int bulk[4];
 
     typedef UINT8 pixel[4];
     pixel *line;
     int lastx = im->xsize - 1;
 
     int radius = (int) floatRadius;
-    float rem = floatRadius - radius;
-    float window = floatRadius * 2 + 1;
+    UINT8 rem = (UINT8) (256 * (floatRadius - radius));
+    int w = (int) (256 * (floatRadius * 2 + 1));
+    int w2 = w / 2;
+
+    // printf("%d %d %d\n", rem, w, w2);
 
     #define MOVE_ACC(acc, substract, add) \
         acc[0] -= line[substract][0]; \
@@ -30,14 +33,14 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
         acc[3] += line[add][3];
 
     #define ADD_FAR(bulk, acc, left, right) \
-        bulk[0] = acc[0] + line[left][0] * rem + line[right][0] * rem; \
-        bulk[1] = acc[1] + line[left][1] * rem + line[right][1] * rem; \
-        bulk[2] = acc[2] + line[left][2] * rem + line[right][2] * rem; \
-        bulk[3] = acc[3] + line[left][3] * rem + line[right][3] * rem;
+        bulk[0] = (acc[0] << 8) + line[left][0] * rem + line[right][0] * rem; \
+        bulk[1] = (acc[1] << 8) + line[left][1] * rem + line[right][1] * rem; \
+        bulk[2] = (acc[2] << 8) + line[left][2] * rem + line[right][2] * rem; \
+        bulk[3] = (acc[3] << 8) + line[left][3] * rem + line[right][3] * rem;
 
     #define SAVE(acc) \
-        (UINT8)(acc[0] / window + .5) << 0  | (UINT8)(acc[1] / window + .5) << 8 | \
-        (UINT8)(acc[2] / window + .5) << 16 | (UINT8)(acc[3] / window + .5) << 24
+        (UINT8)((acc[0] + w2) / w) << 0  | (UINT8)((acc[1] + w2) / w) << 8 | \
+        (UINT8)((acc[2] + w2) / w) << 16 | (UINT8)((acc[3] + w2) / w) << 24
 
     ImagingSectionEnter(&cookie);
 
