@@ -73,11 +73,6 @@ gblur(Imaging im, Imaging imOut, float radius, float effectiveScale, int channel
         } else {
             maskData[pix] = 1;
         }
-    }
-
-    for (pix = 0; pix < window; pix++) {
-        /* this is done separately now due to the correction for float
-           radius values above */
         sum += maskData[pix];
     }
 
