@@ -37,7 +37,7 @@ _LIB_IMAGING = (
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
     "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
     "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Incremental",
-    "Jpeg2KDecode", "Jpeg2KEncode")
+    "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur")
 
 
 def _add_directory(path, dir, where=None):

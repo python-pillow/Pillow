@@ -1791,7 +1791,6 @@ _unsharp_mask(ImagingObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "fii", &radius, &percent, &threshold))
         return NULL;
 
-
     imIn = self->image;
     imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
     if (!imOut)
@@ -1803,6 +1802,27 @@ _unsharp_mask(ImagingObject* self, PyObject* args)
     return PyImagingNew(imOut);
 }
 #endif
+
+static PyObject*
+_box_blur(ImagingObject* self, PyObject* args)
+{
+    Imaging imIn;
+    Imaging imOut;
+
+    int radius;
+    if (!PyArg_ParseTuple(args, "i", &radius))
+        return NULL;
+
+    imIn = self->image;
+    imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
+    if (!imOut)
+        return NULL;
+
+    if (!ImagingBoxBlur(imIn, imOut, radius))
+        return NULL;
+
+    return PyImagingNew(imOut);
+}
 
 /* -------------------------------------------------------------------- */
 
@@ -3077,6 +3097,8 @@ static struct PyMethodDef methods[] = {
     {"gaussian_blur", (PyCFunction)_gaussian_blur, 1},
     {"unsharp_mask", (PyCFunction)_unsharp_mask, 1},
 #endif
+
+    {"box_blur", (PyCFunction)_box_blur, 1},    
 
 #ifdef WITH_EFFECTS
     /* Special effects */

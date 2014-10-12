@@ -308,6 +308,7 @@ extern Imaging ImagingTransform(
     int fill);
 extern Imaging ImagingUnsharpMask(
     Imaging im, Imaging imOut, float radius, int percent, int threshold);
+extern Imaging ImagingBoxBlur(Imaging im, Imaging imOut, int radius);
 
 extern Imaging ImagingCopy2(Imaging imOut, Imaging imIn);
 extern Imaging ImagingConvert2(Imaging imOut, Imaging imIn);
