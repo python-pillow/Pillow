@@ -53,19 +53,19 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, int radius)
            Add pixels from radius. */
         for (x = 0; x <= radius; x++) {
             MOVE_ACC(acc, 0, x + radius);
-            imOut->image32[y][x] = SAVE(acc);
+            imOut->image32[x][y] = SAVE(acc);
         }
         /* Substract previous pixel from "-radius".
            Add pixels from radius. */
         for (x = radius + 1; x < im->xsize - radius; x++) {
             MOVE_ACC(acc, x - radius - 1, x + radius);
-            imOut->image32[y][x] = SAVE(acc);
+            imOut->image32[x][y] = SAVE(acc);
         }
         /* Substract previous pixel from "-radius".
            Add last pixel. */
         for (x = im->xsize - radius; x < im->xsize; x++) {
             MOVE_ACC(acc, x - radius - 1, lastx);
-            imOut->image32[y][x] = SAVE(acc);
+            imOut->image32[x][y] = SAVE(acc);
         }
     }
 
@@ -78,6 +78,27 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, int radius)
 Imaging
 ImagingBoxBlur(Imaging im, Imaging imOut, int radius)
 {
-    HorizontalBoxBlur32(im, imOut, radius);
+    /* Create transposed temp image (im->ysize x im->xsize). */
+    Imaging temp = ImagingNew(im->mode, im->ysize, im->xsize);
+    if ( ! temp)
+        return NULL;
+
+    /* Apply one-dimensional blur.
+       HorizontalBoxBlur32 transposes image at same time. */
+    if ( ! HorizontalBoxBlur32(im, temp, radius)) {
+        ImagingDelete(temp);
+        return NULL;
+    }
+
+    /* Blur in same direction transposed result from previout step.
+       Reseult will be transposes again. We'll get original image
+       blurred in both directions. */
+    if ( ! HorizontalBoxBlur32(temp, imOut, radius)) {
+        ImagingDelete(temp);
+        return NULL;
+    }
+
+    ImagingDelete(temp);
+
     return imOut;
 }
