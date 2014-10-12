@@ -64,11 +64,15 @@ gblur(Imaging im, Imaging imOut, float radius, float effectiveScale, int channel
     maskData = malloc(window * sizeof(float));
     for (pix = 0; pix < window; pix++) {
         offset = pix - effectiveRadius;
-        /* http://en.wikipedia.org/wiki/Gaussian_blur
-           "1 / sqrt(2 * pi * dev)" is constant and will be eliminated by
-           normalization. */
-        maskData[pix] = pow(2.718281828459,
-                            -offset * offset / (2 * radius * radius));
+        if (radius) {
+            /* http://en.wikipedia.org/wiki/Gaussian_blur
+               "1 / sqrt(2 * pi * dev)" is constant and will be eliminated
+               by normalization. */
+            maskData[pix] = pow(2.718281828459,
+                                -offset * offset / (2 * radius * radius));
+        } else {
+            maskData[pix] = 1;
+        }
     }
 
     for (pix = 0; pix < window; pix++) {
