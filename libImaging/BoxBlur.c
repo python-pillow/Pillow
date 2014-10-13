@@ -2,6 +2,10 @@
 #include "Imaging.h"
 
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+
 Imaging
 HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
 {
@@ -20,8 +24,8 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
     int w = 256 * (radius * 2 + 1) + rem * 2;
     int w2 = w / 2;
 
-    int cornerA = radius + 1;
-    int cornerB = im->xsize - radius - 1;
+    int edgeA = MIN(radius + 1, im->xsize);
+    int edgeB = MAX(im->xsize - radius - 1, 0);
 
     // printf("%d %d %d\n", rem, w, w2);
 
@@ -60,26 +64,47 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
             acc[3] += line[pix][3];
         }
 
-        /* Substract pixel from left ("0").
-           Add pixels from radius. */
-        for (x = 0; x < cornerA; x++) {
-            MOVE_ACC(acc, 0, x + radius);
-            ADD_FAR(bulk, acc, 0, x + radius + 1);
-            imOut->image32[x][y] = SAVE(bulk);
+        if (edgeA <= edgeB)
+        {
+            /* Substract pixel from left ("0").
+               Add pixels from radius. */
+            for (x = 0; x < edgeA; x++) {
+                MOVE_ACC(acc, 0, x + radius);
+                ADD_FAR(bulk, acc, 0, x + radius + 1);
+                imOut->image32[x][y] = SAVE(bulk);
+            }
+            /* Substract previous pixel from "-radius".
+               Add pixels from radius. */
+            for (x = edgeA; x < edgeB; x++) {
+                MOVE_ACC(acc, x - radius - 1, x + radius);
+                ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
+                imOut->image32[x][y] = SAVE(bulk);
+            }
+            /* Substract previous pixel from "-radius".
+               Add last pixel. */
+            for (x = edgeB; x < im->xsize; x++) {
+                MOVE_ACC(acc, x - radius - 1, lastx);
+                ADD_FAR(bulk, acc, x - radius - 1, lastx);
+                imOut->image32[x][y] = SAVE(bulk);
+            }
         }
-        /* Substract previous pixel from "-radius".
-           Add pixels from radius. */
-        for (x = cornerA; x < cornerB; x++) {
-            MOVE_ACC(acc, x - radius - 1, x + radius);
-            ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
-            imOut->image32[x][y] = SAVE(bulk);
-        }
-        /* Substract previous pixel from "-radius".
-           Add last pixel. */
-        for (x = cornerB; x < im->xsize; x++) {
-            MOVE_ACC(acc, x - radius - 1, lastx);
-            ADD_FAR(bulk, acc, x - radius - 1, lastx);
-            imOut->image32[x][y] = SAVE(bulk);
+        else
+        {
+            for (x = 0; x < edgeB; x++) {
+                MOVE_ACC(acc, 0, x + radius);
+                ADD_FAR(bulk, acc, 0, x + radius + 1);
+                imOut->image32[x][y] = SAVE(bulk);
+            }
+            for (x = edgeB; x < edgeA; x++) {
+                MOVE_ACC(acc, 0, lastx);
+                ADD_FAR(bulk, acc, 0, lastx);
+                imOut->image32[x][y] = SAVE(bulk);
+            }
+            for (x = edgeA; x < im->xsize; x++) {
+                MOVE_ACC(acc, x - radius - 1, lastx);
+                ADD_FAR(bulk, acc, x - radius - 1, lastx);
+                imOut->image32[x][y] = SAVE(bulk);
+            }
         }
     }
 
@@ -106,8 +131,8 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
     int w = 256 * (radius * 2 + 1) + rem * 2;
     int w2 = w / 2;
 
-    int cornerA = radius + 1;
-    int cornerB = im->xsize - radius - 1;
+    int edgeA = MIN(radius + 1, im->xsize);
+    int edgeB = MAX(im->xsize - radius - 1, 0);
 
     ImagingSectionEnter(&cookie);
 
@@ -119,20 +144,41 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
             acc += line[pix];
         }
 
-        for (x = 0; x < cornerA; x++) {
-            acc = acc + line[x + radius] - line[0];
-            bulk = (acc << 8) + (line[0] + line[x + radius + 1]) * rem;
-            imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+        if (edgeA <= edgeB)
+        {
+            for (x = 0; x < edgeA; x++) {
+                acc = acc + line[x + radius] - line[0];
+                bulk = (acc << 8) + (line[0] + line[x + radius + 1]) * rem;
+                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+            }
+            for (x = edgeA; x < edgeB; x++) {
+                acc = acc + line[x + radius] - line[x - radius - 1];
+                bulk = (acc << 8) + (line[x - radius - 1] + line[x + radius + 1]) * rem;
+                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+            }
+            for (x = edgeB; x < im->xsize; x++) {
+                acc = acc + line[lastx] - line[x - radius - 1];
+                bulk = (acc << 8) + (line[x - radius - 1] + line[lastx]) * rem;
+                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+            }
         }
-        for (x = cornerA; x < cornerB; x++) {
-            acc = acc + line[x + radius] - line[x - radius - 1];
-            bulk = (acc << 8) + (line[x - radius - 1] + line[x + radius + 1]) * rem;
-            imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
-        }
-        for (x = cornerB; x < im->xsize; x++) {
-            acc = acc + line[lastx] - line[x - radius - 1];
-            bulk = (acc << 8) + (line[x - radius - 1] + line[lastx]) * rem;
-            imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+        else
+        {
+            for (x = 0; x < edgeB; x++) {
+                acc = acc + line[x + radius] - line[0];
+                bulk = (acc << 8) + (line[0] + line[x + radius + 1]) * rem;
+                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+            }
+            for (x = edgeB; x < edgeA; x++) {
+                acc = acc + line[lastx] - line[0];
+                bulk = (acc << 8) + (line[0] + line[lastx]) * rem;
+                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+            }
+            for (x = edgeA; x < im->xsize; x++) {
+                acc = acc + line[lastx] - line[x - radius - 1];
+                bulk = (acc << 8) + (line[x - radius - 1] + line[lastx]) * rem;
+                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+            }
         }
     }
 
