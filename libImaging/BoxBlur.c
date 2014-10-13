@@ -20,6 +20,9 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
     int w = 256 * (radius * 2 + 1) + rem * 2;
     int w2 = w / 2;
 
+    int cornerA = radius + 1;
+    int cornerB = im->xsize - radius - 1;
+
     // printf("%d %d %d\n", rem, w, w2);
 
     #define MOVE_ACC(acc, substract, add) \
@@ -44,8 +47,8 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
         line = (pixel *) im->image32[y];
 
         /* Compute acc for -1 pixel (outside of image):
-           From "-radius-1" to "0" get first pixel,
-           then from "1" to "radius-1". */
+           From "-radius-1" to "-1" get first pixel,
+           then from "0" to "radius-1". */
         acc[0] = line[0][0] * (radius + 1);
         acc[1] = line[0][1] * (radius + 1);
         acc[2] = line[0][2] * (radius + 1);
@@ -59,23 +62,23 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
 
         /* Substract pixel from left ("0").
            Add pixels from radius. */
-        for (x = 0; x < radius + 1; x++) {
+        for (x = 0; x < cornerA; x++) {
             MOVE_ACC(acc, 0, x + radius);
-            ADD_FAR(bulk, acc, 0, x+radius+1);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
             imOut->image32[x][y] = SAVE(bulk);
         }
         /* Substract previous pixel from "-radius".
            Add pixels from radius. */
-        for (x = radius + 1; x < im->xsize - radius - 1; x++) {
+        for (x = cornerA; x < cornerB; x++) {
             MOVE_ACC(acc, x - radius - 1, x + radius);
-            ADD_FAR(bulk, acc, x-radius-1, x+radius+1);
+            ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
             imOut->image32[x][y] = SAVE(bulk);
         }
         /* Substract previous pixel from "-radius".
            Add last pixel. */
-        for (x = im->xsize - radius - 1; x < im->xsize; x++) {
+        for (x = cornerB; x < im->xsize; x++) {
             MOVE_ACC(acc, x - radius - 1, lastx);
-            ADD_FAR(bulk, acc, x-radius-1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
             imOut->image32[x][y] = SAVE(bulk);
         }
     }
@@ -103,6 +106,9 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
     int w = 256 * (radius * 2 + 1) + rem * 2;
     int w2 = w / 2;
 
+    int cornerA = radius + 1;
+    int cornerB = im->xsize - radius - 1;
+
     ImagingSectionEnter(&cookie);
 
     for (y = 0; y < im->ysize; y++) {
@@ -113,17 +119,17 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
             acc += line[pix];
         }
 
-        for (x = 0; x < radius + 1; x++) {
+        for (x = 0; x < cornerA; x++) {
             acc = acc + line[x + radius] - line[0];
             bulk = (acc << 8) + (line[0] + line[x + radius + 1]) * rem;
             imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
         }
-        for (x = radius + 1; x < im->xsize - radius - 1; x++) {
+        for (x = cornerA; x < cornerB; x++) {
             acc = acc + line[x + radius] - line[x - radius - 1];
             bulk = (acc << 8) + (line[x - radius - 1] + line[x + radius + 1]) * rem;
             imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
         }
-        for (x = im->xsize - radius - 1; x < im->xsize; x++) {
+        for (x = cornerB; x < im->xsize; x++) {
             acc = acc + line[lastx] - line[x - radius - 1];
             bulk = (acc << 8) + (line[x - radius - 1] + line[lastx]) * rem;
             imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
