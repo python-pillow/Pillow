@@ -6,6 +6,8 @@ Changelog (Pillow)
 
 - Fixes for things rpmlint complains about #942
   [manisandro]
+- Webp Metadata Skip Test comments
+  [wiredfool]
 
 2.6.1 (2014-10-11)
 ------------------
