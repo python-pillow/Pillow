@@ -883,6 +883,10 @@ class TiffImageFile(ImageFile.ImageFile):
                 try:
                     fp = hasattr(self.fp, "fileno") and \
                         os.dup(self.fp.fileno())
+                    # flush the file descriptor, prevents error on pypy 2.4+
+                    # should also eliminate the need for fp.tell for py3
+                    # in _seek
+                    self.fp.flush()
                 except IOError:
                     # io.BytesIO have a fileno, but returns an IOError if
                     # it doesn't use a file descriptor.
