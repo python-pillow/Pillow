@@ -57,12 +57,18 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
         acc[1] = line[0][1] * (radius + 1);
         acc[2] = line[0][2] * (radius + 1);
         acc[3] = line[0][3] * (radius + 1);
-        for (pix = 0; pix < radius; pix++) {
+        /* As radius can be bigger than xsize, iterate to edgeA -1. */
+        for (pix = 0; pix < edgeA - 1; pix++) {
             acc[0] += line[pix][0];
             acc[1] += line[pix][1];
             acc[2] += line[pix][2];
             acc[3] += line[pix][3];
         }
+        /* Then multiply remainder to last x. */
+        acc[0] += line[lastx][0] * (radius - edgeA + 1);
+        acc[1] += line[lastx][1] * (radius - edgeA + 1);
+        acc[2] += line[lastx][2] * (radius - edgeA + 1);
+        acc[3] += line[lastx][3] * (radius - edgeA + 1);
 
         if (edgeA <= edgeB)
         {
@@ -140,9 +146,10 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
         line = im->image8[y];
 
         acc = line[0] * (radius + 1);
-        for (pix = 0; pix < radius; pix++) {
+        for (pix = 0; pix < edgeA - 1; pix++) {
             acc += line[pix];
         }
+        acc += line[lastx] * (radius - edgeA + 1);
 
         if (edgeA <= edgeB)
         {
