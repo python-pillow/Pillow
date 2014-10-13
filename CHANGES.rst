@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.6.1 (2014-10-11)
+2.6.1 (2014-10-13)
 ------------------
 
 - Fix SciPy regression for in Image.resize #945
