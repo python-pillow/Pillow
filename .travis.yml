@@ -72,6 +72,6 @@ after_success:
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-run.sh; fi
 
 matrix:
-  - fast_finish: true
-  - allow_failures:
-     - python: pypy
+  fast_finish: true
+  allow_failures:
+   - python: pypy
