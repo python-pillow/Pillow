@@ -17,7 +17,7 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
 
     int radius = (int) floatRadius;
     UINT8 rem = (UINT8) (256 * (floatRadius - radius));
-    int w = (int) (256 * (floatRadius * 2 + 1));
+    int w = 256 * (radius * 2 + 1) + rem * 2;
     int w2 = w / 2;
 
     // printf("%d %d %d\n", rem, w, w2);
@@ -100,7 +100,7 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
 
     int radius = (int) floatRadius;
     UINT8 rem = (UINT8) (256 * (floatRadius - radius));
-    int w = (int) (256 * (floatRadius * 2 + 1));
+    int w = 256 * (radius * 2 + 1) + rem * 2;
     int w2 = w / 2;
 
     ImagingSectionEnter(&cookie);
