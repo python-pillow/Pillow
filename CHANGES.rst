@@ -4,10 +4,17 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Updated manifest #957
+  [wiredfool]
+
+- Fix PyPy 2.4 regression #952
+ [wiredfool]
+
+- Webp Metadata Skip Test comments #954
+  [wiredfool]
+  
 - Fixes for things rpmlint complains about #942
   [manisandro]
-- Webp Metadata Skip Test comments
-  [wiredfool]
 
 2.6.1 (2014-10-11)
 ------------------
