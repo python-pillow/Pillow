@@ -208,6 +208,14 @@ ImagingBoxBlur(Imaging im, Imaging imOut, float radius)
     if (im->type != IMAGING_TYPE_UINT8)
         return ImagingError_ModeError();
 
+    if ( ! (strcmp(im->mode, "RGB") == 0 ||
+            strcmp(im->mode, "RGBA") == 0 ||
+            strcmp(im->mode, "RGBX") == 0 ||
+            strcmp(im->mode, "CMYK") == 0 ||
+            strcmp(im->mode, "L") == 0 ||
+            strcmp(im->mode, "LA") == 0))
+        return ImagingError_ModeError();
+
     /* Create transposed temp image (im->ysize x im->xsize). */
     Imaging temp = ImagingNew(im->mode, im->ysize, im->xsize);
     if ( ! temp)

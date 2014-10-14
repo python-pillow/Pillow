@@ -13,11 +13,14 @@ sample.putdata(sum([
  ], []))
 
 
-def box_blur(self, radius):
-    return self._new(self.im.box_blur(radius))
+class TestBoxBlurApi(PillowTestCase):
+    pass
 
 
 class TestBoxBlur(PillowTestCase):
+
+    def box_blur(self, image, radius=1):
+        return image._new(image.im.box_blur(radius))
 
     def assertImage(self, im, data, delta=0):
         it = iter(im.getdata())
@@ -30,9 +33,21 @@ class TestBoxBlur(PillowTestCase):
                 self.assertEqual(im_row, data_row)
         self.assertRaises(StopIteration, next, it)
 
+    def test_color_modes(self):
+        self.assertRaises(ValueError, self.box_blur, sample.convert("1"))
+        self.assertRaises(ValueError, self.box_blur, sample.convert("P"))
+        self.box_blur(sample.convert("L"))
+        self.box_blur(sample.convert("LA"))
+        self.assertRaises(ValueError, self.box_blur, sample.convert("I"))
+        self.assertRaises(ValueError, self.box_blur, sample.convert("F"))
+        self.box_blur(sample.convert("RGB"))
+        self.box_blur(sample.convert("RGBA"))
+        self.box_blur(sample.convert("CMYK"))
+        self.assertRaises(ValueError, self.box_blur, sample.convert("YCbCr"))
+
     def test_radius_0(self):
         self.assertImage(
-            box_blur(sample, 0),
+            self.box_blur(sample, 0),
             [
                 [210, 50,  20,  10,  220, 230, 80 ],
                 [190, 210, 20,  180, 170, 40,  110],
@@ -44,7 +59,7 @@ class TestBoxBlur(PillowTestCase):
 
     def test_radius_0_02(self):
         self.assertImage(
-            box_blur(sample, 0.02),
+            self.box_blur(sample, 0.02),
             [
                 [206, 55,  20,  17,  215, 223, 83 ],
                 [189, 203, 31,  171, 169, 46,  110],
@@ -57,7 +72,7 @@ class TestBoxBlur(PillowTestCase):
 
     def test_radius_0_05(self):
         self.assertImage(
-            box_blur(sample, 0.05),
+            self.box_blur(sample, 0.05),
             [
                 [202, 62,  22,  27,  209, 215, 88 ],
                 [188, 194, 44,  161, 168, 56,  111],
@@ -70,7 +85,7 @@ class TestBoxBlur(PillowTestCase):
 
     def test_radius_0_1(self):
         self.assertImage(
-            box_blur(sample, 0.1),
+            self.box_blur(sample, 0.1),
             [
                 [196, 72,  24,  40,  200, 203, 93 ],
                 [187, 183, 62,  148, 166, 68,  111],
@@ -83,7 +98,7 @@ class TestBoxBlur(PillowTestCase):
 
     def test_radius_0_5(self):
         self.assertImage(
-            box_blur(sample, 0.5),
+            self.box_blur(sample, 0.5),
             [
                 [176, 101, 46,  83,  163, 165, 111],
                 [176, 149, 108, 122, 144, 120, 117],
@@ -96,7 +111,7 @@ class TestBoxBlur(PillowTestCase):
 
     def test_radius_1(self):
         self.assertImage(
-            box_blur(sample, 1),
+            self.box_blur(sample, 1),
             [
                 [170, 109, 63,  97,  146, 153, 116],
                 [168, 142, 112, 128, 126, 143, 121],
@@ -109,7 +124,7 @@ class TestBoxBlur(PillowTestCase):
 
     def test_radius_1_5(self):
         self.assertImage(
-            box_blur(sample, 1.5),
+            self.box_blur(sample, 1.5),
             [
                 [155, 120, 105, 112, 124, 137, 130],
                 [160, 136, 124, 125, 127, 134, 130],
@@ -122,7 +137,7 @@ class TestBoxBlur(PillowTestCase):
 
     def test_radius_bigger_then_half(self):
         self.assertImage(
-            box_blur(sample, 3),
+            self.box_blur(sample, 3),
             [
                 [144, 145, 142, 128, 114, 115, 117],
                 [148, 145, 137, 122, 109, 111, 112],
@@ -135,7 +150,7 @@ class TestBoxBlur(PillowTestCase):
 
     def test_radius_bigger_then_width(self):
         self.assertImage(
-            box_blur(sample, 10),
+            self.box_blur(sample, 10),
             [
                 [158, 153, 147, 141, 135, 129, 123],
                 [159, 153, 147, 141, 136, 130, 124],
@@ -148,7 +163,7 @@ class TestBoxBlur(PillowTestCase):
 
     def test_exteme_large_radius(self):
         self.assertImage(
-            box_blur(sample, 600),
+            self.box_blur(sample, 600),
             [
                 [162, 162, 162, 162, 162, 162, 162],
                 [162, 162, 162, 162, 162, 162, 162],
