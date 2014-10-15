@@ -229,8 +229,8 @@ ImagingBoxBlur(Imaging im, Imaging imOut, float radius)
         HorizontalBoxBlur32(im, temp, radius);
     }
 
-    /* Blur in same direction transposed result from previout step.
-       Reseult will be transposes again. We'll get original image
+    /* Blur transposed result from previout step in same direction.
+       Reseult will be transposed again. We'll get original image
        blurred in both directions. */
     if (strcmp(im->mode, "L") == 0) {
         HorizontalBoxBlur8(temp, imOut, radius);
