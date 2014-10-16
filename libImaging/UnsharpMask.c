@@ -29,7 +29,6 @@ gblur(Imaging im, Imaging imOut, float radius, float effectiveScale, int channel
     float newPixel[4];
     int channel = 0;
     int offset = 0;
-    INT32 newPixelFinals;
 
     int effectiveRadius = 0;
     int window = 0;
