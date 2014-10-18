@@ -195,7 +195,7 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
         for (y = 0; y < im->ysize; y++) {
             LineBoxBlur8(
                 im->image8[y],
-                (UINT8 *)lineOut,
+                (UINT8 *) lineOut,
                 im->xsize - 1,
                 radius, edgeA, edgeB,
                 ww, fw
@@ -268,8 +268,16 @@ TransposeImage(Imaging im, Imaging imOut)
 
 
 Imaging
-ImagingBoxBlur(Imaging im, Imaging imOut, float radius)
+ImagingBoxBlur(Imaging im, Imaging imOut, float radius, int n)
 {
+    int i;
+
+    if (n < 1) {
+        return ImagingError_ValueError(
+            "number of passes must be greater than zero"
+        );
+    }
+
     if (strcmp(im->mode, imOut->mode) ||
         im->type  != imOut->type  ||
         im->bands != imOut->bands ||
@@ -294,14 +302,19 @@ ImagingBoxBlur(Imaging im, Imaging imOut, float radius)
         return NULL;
 
     /* Apply one-dimensional blur.
-       HorizontalBoxBlur32 transposes image at same time. */
+       HorizontalBoxBlur transposes image at same time. */
     HorizontalBoxBlur(im, imOut, radius);
+    for (i = 1; i < n; i ++) {
+        HorizontalBoxBlur(imOut, imOut, radius);
+    }
     TransposeImage(imOut, temp);
 
     /* Blur transposed result from previout step in same direction.
        Reseult will be transposed again. We'll get original image
        blurred in both directions. */
-    HorizontalBoxBlur(temp, temp, radius);
+    for (i = 0; i < n; i ++) {
+        HorizontalBoxBlur(temp, temp, radius);
+    }
     TransposeImage(temp, imOut);
 
     ImagingDelete(temp);
