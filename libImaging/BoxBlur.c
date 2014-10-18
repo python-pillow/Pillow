@@ -6,27 +6,15 @@
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 
-Imaging
-HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
-{
-    ImagingSectionCookie cookie;
+typedef UINT8 pixel[4];
 
-    int x, y, pix;
+void
+LineBoxBlur32(pixel *line, UINT32 *lineOut, int lastx, int radius, int edgeA,
+    int edgeB, UINT32 ww, UINT32 fw)
+{
+    int x;
     UINT32 acc[4];
     UINT32 bulk[4];
-
-    typedef UINT8 pixel[4];
-    pixel *line;
-    int lastx = im->xsize - 1;
-
-    int radius = (int) floatRadius;
-    UINT32 ww = (UINT32) (1 << 24) / (floatRadius * 2 + 1);
-    UINT32 fw = ((1 << 24) - (radius * 2 + 1) * ww) / 2;
-
-    int edgeA = MIN(radius + 1, im->xsize);
-    int edgeB = MAX(im->xsize - radius - 1, 0);
-
-    // printf(">>> %d %d %d\n", radius, ww, fw);
 
     #define MOVE_ACC(acc, substract, add) \
         acc[0] += line[add][0] - line[substract][0]; \
@@ -44,104 +32,82 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
         (UINT8)((acc[0] + (1 << 23)) >> 24) << 0  | (UINT8)((acc[1] + (1 << 23)) >> 24) << 8 | \
         (UINT8)((acc[2] + (1 << 23)) >> 24) << 16 | (UINT8)((acc[3] + (1 << 23)) >> 24) << 24
 
-    ImagingSectionEnter(&cookie);
+    /* Compute acc for -1 pixel (outside of image):
+       From "-radius-1" to "-1" get first pixel,
+       then from "0" to "radius-1". */
+    acc[0] = line[0][0] * (radius + 1);
+    acc[1] = line[0][1] * (radius + 1);
+    acc[2] = line[0][2] * (radius + 1);
+    acc[3] = line[0][3] * (radius + 1);
+    /* As radius can be bigger than xsize, iterate to edgeA -1. */
+    for (x = 0; x < edgeA - 1; x++) {
+        acc[0] += line[x][0];
+        acc[1] += line[x][1];
+        acc[2] += line[x][2];
+        acc[3] += line[x][3];
+    }
+    /* Then multiply remainder to last x. */
+    acc[0] += line[lastx][0] * (radius - edgeA + 1);
+    acc[1] += line[lastx][1] * (radius - edgeA + 1);
+    acc[2] += line[lastx][2] * (radius - edgeA + 1);
+    acc[3] += line[lastx][3] * (radius - edgeA + 1);
 
-    for (y = 0; y < im->ysize; y++) {
-        line = (pixel *) im->image32[y];
-
-        /* Compute acc for -1 pixel (outside of image):
-           From "-radius-1" to "-1" get first pixel,
-           then from "0" to "radius-1". */
-        acc[0] = line[0][0] * (radius + 1);
-        acc[1] = line[0][1] * (radius + 1);
-        acc[2] = line[0][2] * (radius + 1);
-        acc[3] = line[0][3] * (radius + 1);
-        /* As radius can be bigger than xsize, iterate to edgeA -1. */
-        for (pix = 0; pix < edgeA - 1; pix++) {
-            acc[0] += line[pix][0];
-            acc[1] += line[pix][1];
-            acc[2] += line[pix][2];
-            acc[3] += line[pix][3];
+    if (edgeA <= edgeB)
+    {
+        /* Substract pixel from left ("0").
+           Add pixels from radius. */
+        for (x = 0; x < edgeA; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
+            lineOut[x] = SAVE(bulk);
         }
-        /* Then multiply remainder to last x. */
-        acc[0] += line[lastx][0] * (radius - edgeA + 1);
-        acc[1] += line[lastx][1] * (radius - edgeA + 1);
-        acc[2] += line[lastx][2] * (radius - edgeA + 1);
-        acc[3] += line[lastx][3] * (radius - edgeA + 1);
-
-        if (edgeA <= edgeB)
-        {
-            /* Substract pixel from left ("0").
-               Add pixels from radius. */
-            for (x = 0; x < edgeA; x++) {
-                MOVE_ACC(acc, 0, x + radius);
-                ADD_FAR(bulk, acc, 0, x + radius + 1);
-                imOut->image32[x][y] = SAVE(bulk);
-            }
-            /* Substract previous pixel from "-radius".
-               Add pixels from radius. */
-            for (x = edgeA; x < edgeB; x++) {
-                MOVE_ACC(acc, x - radius - 1, x + radius);
-                ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
-                imOut->image32[x][y] = SAVE(bulk);
-            }
-            /* Substract previous pixel from "-radius".
-               Add last pixel. */
-            for (x = edgeB; x < im->xsize; x++) {
-                MOVE_ACC(acc, x - radius - 1, lastx);
-                ADD_FAR(bulk, acc, x - radius - 1, lastx);
-                imOut->image32[x][y] = SAVE(bulk);
-            }
+        /* Substract previous pixel from "-radius".
+           Add pixels from radius. */
+        for (x = edgeA; x < edgeB; x++) {
+            MOVE_ACC(acc, x - radius - 1, x + radius);
+            ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
+            lineOut[x] = SAVE(bulk);
         }
-        else
-        {
-            for (x = 0; x < edgeB; x++) {
-                MOVE_ACC(acc, 0, x + radius);
-                ADD_FAR(bulk, acc, 0, x + radius + 1);
-                imOut->image32[x][y] = SAVE(bulk);
-            }
-            for (x = edgeB; x < edgeA; x++) {
-                MOVE_ACC(acc, 0, lastx);
-                ADD_FAR(bulk, acc, 0, lastx);
-                imOut->image32[x][y] = SAVE(bulk);
-            }
-            for (x = edgeA; x < im->xsize; x++) {
-                MOVE_ACC(acc, x - radius - 1, lastx);
-                ADD_FAR(bulk, acc, x - radius - 1, lastx);
-                imOut->image32[x][y] = SAVE(bulk);
-            }
+        /* Substract previous pixel from "-radius".
+           Add last pixel. */
+        for (x = edgeB; x <= lastx; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
+            lineOut[x] = SAVE(bulk);
         }
     }
-
-    ImagingSectionLeave(&cookie);
+    else
+    {
+        for (x = 0; x < edgeB; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
+            lineOut[x] = SAVE(bulk);
+        }
+        for (x = edgeB; x < edgeA; x++) {
+            MOVE_ACC(acc, 0, lastx);
+            ADD_FAR(bulk, acc, 0, lastx);
+            lineOut[x] = SAVE(bulk);
+        }
+        for (x = edgeA; x <= lastx; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
+            lineOut[x] = SAVE(bulk);
+        }
+    }
 
     #undef MOVE_ACC
     #undef ADD_FAR
     #undef SAVE
-
-    return imOut;
 }
 
 
-Imaging
-HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
+void
+LineBoxBlur8(UINT8 *line, UINT8 *lineOut, int lastx, int radius, int edgeA,
+    int edgeB, UINT32 ww, UINT32 fw)
 {
-    ImagingSectionCookie cookie;
-
-    int x, y, pix;
-    unsigned int acc;
-    unsigned int bulk;
-
-    UINT8 *line;
-    int lastx = im->xsize - 1;
-
-    int radius = (int) floatRadius;
-    UINT32 ww = (UINT32) (1 << 24) / (floatRadius * 2 + 1);
-    UINT32 fw = ((1 << 24) - (radius * 2 + 1) * ww) / 2;
-
-    int edgeA = MIN(radius + 1, im->xsize);
-    int edgeB = MAX(im->xsize - radius - 1, 0);
-
+    int x;
+    UINT32 acc;
+    UINT32 bulk;
 
     #define MOVE_ACC(acc, substract, add) \
         acc += line[add] - line[substract];
@@ -152,60 +118,114 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
     #define SAVE(acc) \
         (UINT8)((acc + (1 << 23)) >> 24)
 
+    acc = line[0] * (radius + 1);
+    for (x = 0; x < edgeA - 1; x++) {
+        acc += line[x];
+    }
+    acc += line[lastx] * (radius - edgeA + 1);
+
+    if (edgeA <= edgeB)
+    {
+        for (x = 0; x < edgeA; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
+            lineOut[x] = SAVE(bulk);
+        }
+        for (x = edgeA; x < edgeB; x++) {
+            MOVE_ACC(acc, x - radius - 1, x + radius);
+            ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
+            lineOut[x] = SAVE(bulk);
+        }
+        for (x = edgeB; x <= lastx; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
+            lineOut[x] = SAVE(bulk);
+        }
+    }
+    else
+    {
+        for (x = 0; x < edgeB; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
+            lineOut[x] = SAVE(bulk);
+        }
+        for (x = edgeB; x < edgeA; x++) {
+            MOVE_ACC(acc, 0, lastx);
+            ADD_FAR(bulk, acc, 0, lastx);
+            lineOut[x] = SAVE(bulk);
+        }
+        for (x = edgeA; x <= lastx; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
+            lineOut[x] = SAVE(bulk);
+        }
+    }
+
+    #undef MOVE_ACC
+    #undef ADD_FAR
+    #undef SAVE
+}
+
+
+
+Imaging
+HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
+{
+    ImagingSectionCookie cookie;
+
+    int y, x;
+
+    int radius = (int) floatRadius;
+    UINT32 ww = (UINT32) (1 << 24) / (floatRadius * 2 + 1);
+    UINT32 fw = ((1 << 24) - (radius * 2 + 1) * ww) / 2;
+
+    int edgeA = MIN(radius + 1, im->xsize);
+    int edgeB = MAX(im->xsize - radius - 1, 0);
+
+    UINT32 *lineOut = calloc(im->xsize, sizeof(UINT32));
+    if (lineOut == NULL)
+        return ImagingError_MemoryError();
+
+    // printf(">>> %d %d %d\n", radius, ww, fw);
+
     ImagingSectionEnter(&cookie);
 
-    for (y = 0; y < im->ysize; y++) {
-        line = im->image8[y];
-
-        acc = line[0] * (radius + 1);
-        for (pix = 0; pix < edgeA - 1; pix++) {
-            acc += line[pix];
-        }
-        acc += line[lastx] * (radius - edgeA + 1);
-
-        if (edgeA <= edgeB)
-        {
-            for (x = 0; x < edgeA; x++) {
-                MOVE_ACC(acc, 0, x + radius);
-                ADD_FAR(bulk, acc, 0, x + radius + 1);
-                imOut->image8[x][y] = SAVE(bulk);
-            }
-            for (x = edgeA; x < edgeB; x++) {
-                MOVE_ACC(acc, x - radius - 1, x + radius);
-                ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
-                imOut->image8[x][y] = SAVE(bulk);
-            }
-            for (x = edgeB; x < im->xsize; x++) {
-                MOVE_ACC(acc, x - radius - 1, lastx);
-                ADD_FAR(bulk, acc, x - radius - 1, lastx);
-                imOut->image8[x][y] = SAVE(bulk);
+    if (im->image8)
+    {
+        for (y = 0; y < im->ysize; y++) {
+            LineBoxBlur8(
+                im->image8[y],
+                (UINT8 *)lineOut,
+                im->xsize - 1,
+                radius, edgeA, edgeB,
+                ww, fw
+            );
+            // Commit.
+            for (x = 0; x < im->xsize; x++) {
+                imOut->image8[x][y] = ((UINT8 *)lineOut)[x];
             }
         }
-        else
-        {
-            for (x = 0; x < edgeB; x++) {
-                MOVE_ACC(acc, 0, x + radius);
-                ADD_FAR(bulk, acc, 0, x + radius + 1);
-                imOut->image8[x][y] = SAVE(bulk);
-            }
-            for (x = edgeB; x < edgeA; x++) {
-                MOVE_ACC(acc, 0, lastx);
-                ADD_FAR(bulk, acc, 0, lastx);
-                imOut->image8[x][y] = SAVE(bulk);
-            }
-            for (x = edgeA; x < im->xsize; x++) {
-                MOVE_ACC(acc, x - radius - 1, lastx);
-                ADD_FAR(bulk, acc, x - radius - 1, lastx);
-                imOut->image8[x][y] = SAVE(bulk);
+    }
+    else
+    {
+        for (y = 0; y < im->ysize; y++) {
+            LineBoxBlur32(
+                (pixel *) im->image32[y],
+                lineOut,
+                im->xsize - 1,
+                radius, edgeA, edgeB,
+                ww, fw
+            );
+            // Commit.
+            for (x = 0; x < im->xsize; x++) {
+                imOut->image32[x][y] = lineOut[x];
             }
         }
     }
 
     ImagingSectionLeave(&cookie);
 
-    #undef MOVE_ACC
-    #undef ADD_FAR
-    #undef SAVE
+    free(lineOut);
 
     return imOut;
 }
@@ -239,20 +259,12 @@ ImagingBoxBlur(Imaging im, Imaging imOut, float radius)
 
     /* Apply one-dimensional blur.
        HorizontalBoxBlur32 transposes image at same time. */
-    if (strcmp(im->mode, "L") == 0) {
-        HorizontalBoxBlur8(im, temp, radius);
-    } else {
-        HorizontalBoxBlur32(im, temp, radius);
-    }
+    HorizontalBoxBlur(im, temp, radius);
 
     /* Blur transposed result from previout step in same direction.
        Reseult will be transposed again. We'll get original image
        blurred in both directions. */
-    if (strcmp(im->mode, "L") == 0) {
-        HorizontalBoxBlur8(temp, imOut, radius);
-    } else {
-        HorizontalBoxBlur32(temp, imOut, radius);
-    }
+    HorizontalBoxBlur(temp, imOut, radius);
 
     ImagingDelete(temp);
 
