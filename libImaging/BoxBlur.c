@@ -202,7 +202,7 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
             );
             // Commit.
             for (x = 0; x < im->xsize; x++) {
-                imOut->image8[x][y] = ((UINT8 *)lineOut)[x];
+                imOut->image8[y][x] = ((UINT8 *)lineOut)[x];
             }
         }
     }
@@ -218,7 +218,7 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
             );
             // Commit.
             for (x = 0; x < im->xsize; x++) {
-                imOut->image32[x][y] = lineOut[x];
+                imOut->image32[y][x] = lineOut[x];
             }
         }
     }
@@ -228,6 +228,42 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
     free(lineOut);
 
     return imOut;
+}
+
+void
+TransposeImage(Imaging im, Imaging imOut)
+{
+    int x, y, xx, yy, xxsize, yysize;
+    int size = 64;
+
+    if (im->image8)
+    {
+        for (y = 0; y < im->ysize; y += size) {
+            for (x = 0; x < im->xsize; x += size) {
+                yysize = MIN(size, im->ysize - y);
+                xxsize = MIN(size, im->xsize - x);
+                for (yy = 0; yy < yysize; yy++) {
+                    for (xx = 0; xx < xxsize; xx++) {
+                        imOut->image8[x + xx][y + yy] = im->image8[y + yy][x + xx];
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        for (y = 0; y < im->ysize; y += size) {
+            for (x = 0; x < im->xsize; x += size) {
+                yysize = MIN(size, im->ysize - y);
+                xxsize = MIN(size, im->xsize - x);
+                for (yy = 0; yy < yysize; yy++) {
+                    for (xx = 0; xx < xxsize; xx++) {
+                        imOut->image32[x + xx][y + yy] = im->image32[y + yy][x + xx];
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -259,12 +295,14 @@ ImagingBoxBlur(Imaging im, Imaging imOut, float radius)
 
     /* Apply one-dimensional blur.
        HorizontalBoxBlur32 transposes image at same time. */
-    HorizontalBoxBlur(im, temp, radius);
+    HorizontalBoxBlur(im, imOut, radius);
+    TransposeImage(imOut, temp);
 
     /* Blur transposed result from previout step in same direction.
        Reseult will be transposed again. We'll get original image
        blurred in both directions. */
-    HorizontalBoxBlur(temp, imOut, radius);
+    HorizontalBoxBlur(temp, temp, radius);
+    TransposeImage(temp, imOut);
 
     ImagingDelete(temp);
 
