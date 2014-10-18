@@ -38,6 +38,13 @@ class TestBoxBlur(PillowTestCase):
                 self.assertEqual(im_row, data_row)
         self.assertRaises(StopIteration, next, it)
 
+    def assertBlur(self, im, radius, data, delta=0):
+        # check grayscale image
+        self.assertImage(self.box_blur(im, radius), data, delta)
+        rgba = Image.merge('RGBA', (im, im, im, im))
+        for band in self.box_blur(rgba, radius).split():
+            self.assertImage(band, data, delta)
+
     def test_color_modes(self):
         self.assertRaises(ValueError, self.box_blur, sample.convert("1"))
         self.assertRaises(ValueError, self.box_blur, sample.convert("P"))
@@ -51,8 +58,8 @@ class TestBoxBlur(PillowTestCase):
         self.assertRaises(ValueError, self.box_blur, sample.convert("YCbCr"))
 
     def test_radius_0(self):
-        self.assertImage(
-            self.box_blur(sample, 0),
+        self.assertBlur(
+            sample, 0,
             [
                 [210, 50,  20,  10,  220, 230, 80],
                 [190, 210, 20,  180, 170, 40,  110],
@@ -63,8 +70,8 @@ class TestBoxBlur(PillowTestCase):
         )
 
     def test_radius_0_02(self):
-        self.assertImage(
-            self.box_blur(sample, 0.02),
+        self.assertBlur(
+            sample, 0.02,
             [
                 [206, 55,  20,  17,  215, 223, 83],
                 [189, 203, 31,  171, 169, 46,  110],
@@ -76,8 +83,8 @@ class TestBoxBlur(PillowTestCase):
         )
 
     def test_radius_0_05(self):
-        self.assertImage(
-            self.box_blur(sample, 0.05),
+        self.assertBlur(
+            sample, 0.05,
             [
                 [202, 62,  22,  27,  209, 215, 88],
                 [188, 194, 44,  161, 168, 56,  111],
@@ -89,8 +96,8 @@ class TestBoxBlur(PillowTestCase):
         )
 
     def test_radius_0_1(self):
-        self.assertImage(
-            self.box_blur(sample, 0.1),
+        self.assertBlur(
+            sample, 0.1,
             [
                 [196, 72,  24,  40,  200, 203, 93],
                 [187, 183, 62,  148, 166, 68,  111],
@@ -102,8 +109,8 @@ class TestBoxBlur(PillowTestCase):
         )
 
     def test_radius_0_5(self):
-        self.assertImage(
-            self.box_blur(sample, 0.5),
+        self.assertBlur(
+            sample, 0.5,
             [
                 [176, 101, 46,  83,  163, 165, 111],
                 [176, 149, 108, 122, 144, 120, 117],
@@ -115,8 +122,8 @@ class TestBoxBlur(PillowTestCase):
         )
 
     def test_radius_1(self):
-        self.assertImage(
-            self.box_blur(sample, 1),
+        self.assertBlur(
+            sample, 1,
             [
                 [170, 109, 63,  97,  146, 153, 116],
                 [168, 142, 112, 128, 126, 143, 121],
@@ -128,8 +135,8 @@ class TestBoxBlur(PillowTestCase):
         )
 
     def test_radius_1_5(self):
-        self.assertImage(
-            self.box_blur(sample, 1.5),
+        self.assertBlur(
+            sample, 1.5,
             [
                 [155, 120, 105, 112, 124, 137, 130],
                 [160, 136, 124, 125, 127, 134, 130],
@@ -141,8 +148,8 @@ class TestBoxBlur(PillowTestCase):
         )
 
     def test_radius_bigger_then_half(self):
-        self.assertImage(
-            self.box_blur(sample, 3),
+        self.assertBlur(
+            sample, 3,
             [
                 [144, 145, 142, 128, 114, 115, 117],
                 [148, 145, 137, 122, 109, 111, 112],
@@ -154,8 +161,8 @@ class TestBoxBlur(PillowTestCase):
         )
 
     def test_radius_bigger_then_width(self):
-        self.assertImage(
-            self.box_blur(sample, 10),
+        self.assertBlur(
+            sample, 10,
             [
                 [158, 153, 147, 141, 135, 129, 123],
                 [159, 153, 147, 141, 136, 130, 124],
@@ -167,8 +174,8 @@ class TestBoxBlur(PillowTestCase):
         )
 
     def test_exteme_large_radius(self):
-        self.assertImage(
-            self.box_blur(sample, 600),
+        self.assertBlur(
+            sample, 600,
             [
                 [162, 162, 162, 162, 162, 162, 162],
                 [162, 162, 162, 162, 162, 162, 162],
