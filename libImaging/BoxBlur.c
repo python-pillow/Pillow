@@ -195,14 +195,16 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
         for (y = 0; y < im->ysize; y++) {
             LineBoxBlur8(
                 im->image8[y],
-                (UINT8 *) lineOut,
+                (im == imOut ? (UINT8 *) lineOut : imOut->image8[y]),
                 im->xsize - 1,
                 radius, edgeA, edgeB,
                 ww, fw
             );
-            // Commit.
-            for (x = 0; x < im->xsize; x++) {
-                imOut->image8[y][x] = ((UINT8 *)lineOut)[x];
+            if (im == imOut) {
+                // Commit.
+                for (x = 0; x < im->xsize; x++) {
+                    imOut->image8[y][x] = ((UINT8 *)lineOut)[x];
+                }
             }
         }
     }
@@ -211,14 +213,16 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
         for (y = 0; y < im->ysize; y++) {
             LineBoxBlur32(
                 (pixel *) im->image32[y],
-                lineOut,
+                im == imOut ? lineOut : (UINT32 *) imOut->image32[y],
                 im->xsize - 1,
                 radius, edgeA, edgeB,
                 ww, fw
             );
-            // Commit.
-            for (x = 0; x < im->xsize; x++) {
-                imOut->image32[y][x] = lineOut[x];
+            if (im == imOut) {
+                // Commit.
+                for (x = 0; x < im->xsize; x++) {
+                    imOut->image32[y][x] = lineOut[x];
+                }
             }
         }
     }
