@@ -12,22 +12,21 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
     ImagingSectionCookie cookie;
 
     int x, y, pix;
-    unsigned int acc[4];
-    unsigned int bulk[4];
+    UINT32 acc[4];
+    UINT32 bulk[4];
 
     typedef UINT8 pixel[4];
     pixel *line;
     int lastx = im->xsize - 1;
 
     int radius = (int) floatRadius;
-    UINT8 rem = (UINT8) (256 * (floatRadius - radius));
-    int w = 256 * (radius * 2 + 1) + rem * 2;
-    int w2 = w / 2;
+    UINT32 ww = (UINT32) (1 << 24) / (floatRadius * 2 + 1);
+    UINT32 fw = ((1 << 24) - (radius * 2 + 1) * ww) / 2;
 
     int edgeA = MIN(radius + 1, im->xsize);
     int edgeB = MAX(im->xsize - radius - 1, 0);
 
-    // printf("%d %d %d\n", rem, w, w2);
+    // printf(">>> %d %d %d\n", radius, ww, fw);
 
     #define MOVE_ACC(acc, substract, add) \
         acc[0] += line[add][0] - line[substract][0]; \
@@ -36,14 +35,14 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
         acc[3] += line[add][3] - line[substract][3];
 
     #define ADD_FAR(bulk, acc, left, right) \
-        bulk[0] = (acc[0] << 8) + (line[left][0] + line[right][0]) * rem; \
-        bulk[1] = (acc[1] << 8) + (line[left][1] + line[right][1]) * rem; \
-        bulk[2] = (acc[2] << 8) + (line[left][2] + line[right][2]) * rem; \
-        bulk[3] = (acc[3] << 8) + (line[left][3] + line[right][3]) * rem;
+        bulk[0] = (acc[0] * ww) + (line[left][0] + line[right][0]) * fw; \
+        bulk[1] = (acc[1] * ww) + (line[left][1] + line[right][1]) * fw; \
+        bulk[2] = (acc[2] * ww) + (line[left][2] + line[right][2]) * fw; \
+        bulk[3] = (acc[3] * ww) + (line[left][3] + line[right][3]) * fw;
 
     #define SAVE(acc) \
-        (UINT8)((acc[0] + w2) / w) << 0  | (UINT8)((acc[1] + w2) / w) << 8 | \
-        (UINT8)((acc[2] + w2) / w) << 16 | (UINT8)((acc[3] + w2) / w) << 24
+        (UINT8)((acc[0] + (1 << 23)) >> 24) << 0  | (UINT8)((acc[1] + (1 << 23)) >> 24) << 8 | \
+        (UINT8)((acc[2] + (1 << 23)) >> 24) << 16 | (UINT8)((acc[3] + (1 << 23)) >> 24) << 24
 
     ImagingSectionEnter(&cookie);
 
@@ -116,6 +115,10 @@ HorizontalBoxBlur32(Imaging im, Imaging imOut, float floatRadius)
 
     ImagingSectionLeave(&cookie);
 
+    #undef MOVE_ACC
+    #undef ADD_FAR
+    #undef SAVE
+
     return imOut;
 }
 
@@ -133,12 +136,21 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
     int lastx = im->xsize - 1;
 
     int radius = (int) floatRadius;
-    UINT8 rem = (UINT8) (256 * (floatRadius - radius));
-    int w = 256 * (radius * 2 + 1) + rem * 2;
-    int w2 = w / 2;
+    UINT32 ww = (UINT32) (1 << 24) / (floatRadius * 2 + 1);
+    UINT32 fw = ((1 << 24) - (radius * 2 + 1) * ww) / 2;
 
     int edgeA = MIN(radius + 1, im->xsize);
     int edgeB = MAX(im->xsize - radius - 1, 0);
+
+
+    #define MOVE_ACC(acc, substract, add) \
+        acc += line[add] - line[substract];
+
+    #define ADD_FAR(bulk, acc, left, right) \
+        bulk = (acc * ww) + (line[left] + line[right]) * fw;
+
+    #define SAVE(acc) \
+        (UINT8)((acc + (1 << 23)) >> 24)
 
     ImagingSectionEnter(&cookie);
 
@@ -154,42 +166,46 @@ HorizontalBoxBlur8(Imaging im, Imaging imOut, float floatRadius)
         if (edgeA <= edgeB)
         {
             for (x = 0; x < edgeA; x++) {
-                acc = acc + line[x + radius] - line[0];
-                bulk = (acc << 8) + (line[0] + line[x + radius + 1]) * rem;
-                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+                MOVE_ACC(acc, 0, x + radius);
+                ADD_FAR(bulk, acc, 0, x + radius + 1);
+                imOut->image8[x][y] = SAVE(bulk);
             }
             for (x = edgeA; x < edgeB; x++) {
-                acc = acc + line[x + radius] - line[x - radius - 1];
-                bulk = (acc << 8) + (line[x - radius - 1] + line[x + radius + 1]) * rem;
-                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+                MOVE_ACC(acc, x - radius - 1, x + radius);
+                ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
+                imOut->image8[x][y] = SAVE(bulk);
             }
             for (x = edgeB; x < im->xsize; x++) {
-                acc = acc + line[lastx] - line[x - radius - 1];
-                bulk = (acc << 8) + (line[x - radius - 1] + line[lastx]) * rem;
-                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+                MOVE_ACC(acc, x - radius - 1, lastx);
+                ADD_FAR(bulk, acc, x - radius - 1, lastx);
+                imOut->image8[x][y] = SAVE(bulk);
             }
         }
         else
         {
             for (x = 0; x < edgeB; x++) {
-                acc = acc + line[x + radius] - line[0];
-                bulk = (acc << 8) + (line[0] + line[x + radius + 1]) * rem;
-                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+                MOVE_ACC(acc, 0, x + radius);
+                ADD_FAR(bulk, acc, 0, x + radius + 1);
+                imOut->image8[x][y] = SAVE(bulk);
             }
             for (x = edgeB; x < edgeA; x++) {
-                acc = acc + line[lastx] - line[0];
-                bulk = (acc << 8) + (line[0] + line[lastx]) * rem;
-                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+                MOVE_ACC(acc, 0, lastx);
+                ADD_FAR(bulk, acc, 0, lastx);
+                imOut->image8[x][y] = SAVE(bulk);
             }
             for (x = edgeA; x < im->xsize; x++) {
-                acc = acc + line[lastx] - line[x - radius - 1];
-                bulk = (acc << 8) + (line[x - radius - 1] + line[lastx]) * rem;
-                imOut->image8[x][y] = (UINT8)((bulk + w2) / w);
+                MOVE_ACC(acc, x - radius - 1, lastx);
+                ADD_FAR(bulk, acc, x - radius - 1, lastx);
+                imOut->image8[x][y] = SAVE(bulk);
             }
         }
     }
 
     ImagingSectionLeave(&cookie);
+
+    #undef MOVE_ACC
+    #undef ADD_FAR
+    #undef SAVE
 
     return imOut;
 }
