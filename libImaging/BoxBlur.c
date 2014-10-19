@@ -173,7 +173,7 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
 {
     ImagingSectionCookie cookie;
 
-    int y, x;
+    int y;
 
     int radius = (int) floatRadius;
     UINT32 ww = (UINT32) (1 << 24) / (floatRadius * 2 + 1);
@@ -202,9 +202,7 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
             );
             if (im == imOut) {
                 // Commit.
-                for (x = 0; x < im->xsize; x++) {
-                    imOut->image8[y][x] = ((UINT8 *)lineOut)[x];
-                }
+                memcpy(imOut->image8[y], lineOut, im->xsize);
             }
         }
     }
@@ -220,9 +218,7 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
             );
             if (im == imOut) {
                 // Commit.
-                for (x = 0; x < im->xsize; x++) {
-                    imOut->image32[y][x] = lineOut[x];
-                }
+                memcpy(imOut->image32[y], lineOut, im->xsize * 4);
             }
         }
     }
