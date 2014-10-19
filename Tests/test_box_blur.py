@@ -24,8 +24,8 @@ class TestBoxBlurApi(PillowTestCase):
 
 class TestBoxBlur(PillowTestCase):
 
-    def box_blur(self, image, radius=1):
-        return image._new(image.im.box_blur(radius))
+    def box_blur(self, image, radius=1, n=1):
+        return image._new(image.im.box_blur(radius, n))
 
     def assertImage(self, im, data, delta=0):
         it = iter(im.getdata())
@@ -38,11 +38,11 @@ class TestBoxBlur(PillowTestCase):
                 self.assertEqual(im_row, data_row)
         self.assertRaises(StopIteration, next, it)
 
-    def assertBlur(self, im, radius, data, delta=0):
+    def assertBlur(self, im, radius, data, passes=1, delta=0):
         # check grayscale image
-        self.assertImage(self.box_blur(im, radius), data, delta)
+        self.assertImage(self.box_blur(im, radius, passes), data, delta)
         rgba = Image.merge('RGBA', (im, im, im, im))
-        for band in self.box_blur(rgba, radius).split():
+        for band in self.box_blur(rgba, radius, passes).split():
             self.assertImage(band, data, delta)
 
     def test_color_modes(self):
@@ -183,5 +183,33 @@ class TestBoxBlur(PillowTestCase):
                 [162, 162, 162, 162, 162, 162, 162],
                 [162, 162, 162, 162, 162, 162, 162],
             ],
+            delta=1,
+        )
+
+    def test_two_passes(self):
+        self.assertBlur(
+            sample, 1,
+            [
+                [153, 123, 102, 109, 132, 135, 129],
+                [159, 138, 123, 121, 133, 131, 126],
+                [162, 147, 136, 124, 127, 121, 121],
+                [159, 140, 125, 108, 111, 106, 108],
+                [154, 126, 105, 87,  94,  93,  97],
+            ],
+            passes=2,
+            delta=1,
+        )
+
+    def test_three_passes(self):
+        self.assertBlur(
+            sample, 1,
+            [
+                [146, 131, 116, 118, 126, 131, 130],
+                [151, 138, 125, 123, 126, 128, 127],
+                [154, 143, 129, 123, 120, 120, 119],
+                [152, 139, 122, 113, 108, 108, 108],
+                [148, 132, 112, 102, 97,  99,  100],
+            ],
+            passes=3,
             delta=1,
         )
