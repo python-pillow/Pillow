@@ -20,6 +20,7 @@
 from PIL import Image
 from PIL._util import isStringType
 import operator
+import math
 from functools import reduce
 
 
@@ -458,3 +459,18 @@ def box_blur(image, radius):
     image.load()
 
     return image._new(image.im.box_blur(radius))
+
+
+def extended_box_blur(image, radius, n=3):
+    sigma2 = float(radius) * radius / n
+    # http://www.mia.uni-saarland.de/Publications/gwosdek-ssvm11.pdf
+    # [7] Box length.
+    L = math.sqrt(12.0 * sigma2 + 1.0)
+    # [11] Integer part of box radius.
+    l = math.floor((L - 1.0) / 2.0)
+    # [14], [Fig. 2] Fractional part of box radius.
+    a = (2 * l + 1) * (l * (l + 1) - 3 * sigma2)
+    a /= 6 * (sigma2 - (l + 1) * (l + 1))
+
+    image.load()
+    return image._new(image.im.box_blur(l + a, n))
