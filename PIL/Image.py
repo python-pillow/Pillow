@@ -1010,8 +1010,6 @@ class Image:
 
     def draft(self, mode, size):
         """
-        NYI
-
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
         size.  For example, you can use this method to convert a color
