@@ -93,7 +93,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
 
     /* check modes */
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     /* check filter */
     switch (filter) {
@@ -122,7 +122,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
         /* prepare for vertical stretch */
         filterscale = scale = (float) imIn->ysize / imOut->ysize;
     } else
-	return (Imaging) ImagingError_Mismatch();
+        return (Imaging) ImagingError_Mismatch();
 
     /* determine support size (length of resampling filter) */
     support = filterp->support;
@@ -151,7 +151,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                 ymin = 0.0;
             ymax = ceil(center + support);
             if (ymax > (float) imIn->ysize)
-		ymax = (float) imIn->ysize;
+                ymax = (float) imIn->ysize;
             for (y = (int) ymin; y < (int) ymax; y++) {
                 float w = filterp->filter((y - center + 0.5) * ss) * ss;
                 k[y - (int) ymin] = w;
@@ -227,7 +227,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                 xmin = 0.0;
             xmax = ceil(center + support);
             if (xmax > (float) imIn->xsize)
-		xmax = (float) imIn->xsize;
+                xmax = (float) imIn->xsize;
             for (x = (int) xmin; x < (int) xmax; x++) {
                 float w = filterp->filter((x - center + 0.5) * ss) * ss;
                 k[x - (int) xmin] = w;
