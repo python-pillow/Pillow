@@ -230,42 +230,6 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
     return imOut;
 }
 
-void
-TransposeImage(Imaging im, Imaging imOut)
-{
-    int x, y, xx, yy, xxsize, yysize;
-    int size = 64;
-
-    if (im->image8)
-    {
-        for (y = 0; y < im->ysize; y += size) {
-            for (x = 0; x < im->xsize; x += size) {
-                yysize = MIN(size, im->ysize - y);
-                xxsize = MIN(size, im->xsize - x);
-                for (yy = 0; yy < yysize; yy++) {
-                    for (xx = 0; xx < xxsize; xx++) {
-                        imOut->image8[x + xx][y + yy] = im->image8[y + yy][x + xx];
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        for (y = 0; y < im->ysize; y += size) {
-            for (x = 0; x < im->xsize; x += size) {
-                yysize = MIN(size, im->ysize - y);
-                xxsize = MIN(size, im->xsize - x);
-                for (yy = 0; yy < yysize; yy++) {
-                    for (xx = 0; xx < xxsize; xx++) {
-                        imOut->image32[x + xx][y + yy] = im->image32[y + yy][x + xx];
-                    }
-                }
-            }
-        }
-    }
-}
-
 
 Imaging
 ImagingBoxBlur(Imaging im, Imaging imOut, float radius, int n)
@@ -307,7 +271,7 @@ ImagingBoxBlur(Imaging im, Imaging imOut, float radius, int n)
     for (i = 1; i < n; i ++) {
         HorizontalBoxBlur(imOut, imOut, radius);
     }
-    TransposeImage(imOut, temp);
+    ImagingTranspose(temp, imOut);
 
     /* Blur transposed result from previout step in same direction.
        Reseult will be transposed again. We'll get original image
@@ -315,7 +279,7 @@ ImagingBoxBlur(Imaging im, Imaging imOut, float radius, int n)
     for (i = 0; i < n; i ++) {
         HorizontalBoxBlur(temp, temp, radius);
     }
-    TransposeImage(temp, imOut);
+    ImagingTranspose(imOut, temp);
 
     ImagingDelete(temp);
 
