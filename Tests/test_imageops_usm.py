@@ -66,7 +66,7 @@ class TestImageOpsUsm(PillowTestCase):
 
     def test_blur_accuracy(self):
 
-        i = snakes._new(ImageOps.gaussian_blur(snakes, .7))
+        i = snakes._new(ImageOps.gaussian_blur(snakes, .4))
         # These pixels surrounded with pixels with 255 intensity.
         # They must be very close to 255.
         for x, y, c in [(1, 0, 1), (2, 0, 1), (7, 8, 1), (8, 8, 1), (2, 9, 1),
@@ -75,14 +75,14 @@ class TestImageOpsUsm(PillowTestCase):
             self.assertGreaterEqual(i.im.getpixel((x, y))[c], 250)
         # Fuzzy match.
         gp = lambda x, y: i.im.getpixel((x, y))
-        self.assertTrue(211 <= gp(7, 4)[0] <= 213)
-        self.assertTrue(211 <= gp(7, 5)[2] <= 213)
-        self.assertTrue(211 <= gp(7, 6)[2] <= 213)
-        self.assertTrue(211 <= gp(7, 7)[1] <= 213)
-        self.assertTrue(211 <= gp(8, 4)[0] <= 213)
-        self.assertTrue(211 <= gp(8, 5)[2] <= 213)
-        self.assertTrue(211 <= gp(8, 6)[2] <= 213)
-        self.assertTrue(211 <= gp(8, 7)[1] <= 213)
+        self.assertTrue(236 <= gp(7, 4)[0] <= 239)
+        self.assertTrue(236 <= gp(7, 5)[2] <= 239)
+        self.assertTrue(236 <= gp(7, 6)[2] <= 239)
+        self.assertTrue(236 <= gp(7, 7)[1] <= 239)
+        self.assertTrue(236 <= gp(8, 4)[0] <= 239)
+        self.assertTrue(236 <= gp(8, 5)[2] <= 239)
+        self.assertTrue(236 <= gp(8, 6)[2] <= 239)
+        self.assertTrue(236 <= gp(8, 7)[1] <= 239)
 
 if __name__ == '__main__':
     unittest.main()
