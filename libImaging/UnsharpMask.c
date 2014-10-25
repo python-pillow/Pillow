@@ -19,24 +19,6 @@ static inline UINT8 clip(double in)
     return (UINT8) (in + 0.5);
 }
 
-Imaging ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius,
-    int passes)
-{
-    float sigma2, L, l, a;
-
-    sigma2 = radius * radius / passes;
-    // from http://www.mia.uni-saarland.de/Publications/gwosdek-ssvm11.pdf
-    // [7] Box length.
-    L = sqrt(12.0 * sigma2 + 1.0);
-    // [11] Integer part of box radius.
-    l = floor((L - 1.0) / 2.0);
-    // [14], [Fig. 2] Fractional part of box radius.
-    a = (2 * l + 1) * (l * (l + 1) - 3 * sigma2);
-    a /= 6 * (sigma2 - (l + 1) * (l + 1));
-
-    return ImagingBoxBlur(imOut, imIn, l + a, passes);
-}
-
 
 Imaging
 ImagingUnsharpMask(Imaging imOut, Imaging imIn, float radius, int percent,
