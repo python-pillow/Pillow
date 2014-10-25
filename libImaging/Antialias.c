@@ -79,7 +79,7 @@ static inline float bicubic_filter(float x)
 static struct filter BICUBIC = { bicubic_filter, 2.0 };
 
 Imaging
-ImagingStretch(Imaging imOut, Imaging imIn, int filter)
+ImagingStretchPass(Imaging imOut, Imaging imIn, int filter)
 {
     /* FIXME: this is a quick and straightforward translation from a
        python prototype.  might need some further C-ification... */
@@ -93,9 +93,6 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
 
     /* check modes */
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-        return (Imaging) ImagingError_ModeError();
-
-    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
         return (Imaging) ImagingError_ModeError();
 
     /* check filter */
@@ -302,6 +299,42 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
     ImagingSectionLeave(&cookie);
 
     free(k);
+
+    return imOut;
+}
+
+
+Imaging
+ImagingStretch(Imaging imOut, Imaging imIn, int filter)
+{
+    Imaging imTemp;
+    int xsize = imOut->xsize;
+    int ysize = imOut->ysize;
+
+    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
+        return (Imaging) ImagingError_ModeError();
+
+    /* two-pass resize: minimize size of intermediate image */
+    if ((Py_ssize_t) imIn->xsize * ysize < (Py_ssize_t) xsize * imIn->ysize)
+        imTemp = ImagingNew(imIn->mode, imIn->xsize, ysize);
+    else
+        imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
+    if ( ! imTemp)
+        return NULL;
+
+    /* first pass */
+    if ( ! ImagingStretchPass(imTemp, imIn, filter)) {
+        ImagingDelete(imTemp);
+        return NULL;
+    }
+
+    /* second pass */
+    if ( ! ImagingStretchPass(imOut, imTemp, filter)) {
+        ImagingDelete(imTemp);
+        return NULL;
+    }
+
+    ImagingDelete(imTemp);
 
     return imOut;
 }

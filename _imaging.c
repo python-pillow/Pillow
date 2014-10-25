@@ -1613,7 +1613,6 @@ static PyObject*
 _stretch(ImagingObject* self, PyObject* args)
 {
     Imaging imIn;
-    Imaging imTemp;
     Imaging imOut;
 
     int xsize, ysize;
@@ -1623,34 +1622,14 @@ _stretch(ImagingObject* self, PyObject* args)
 
     imIn = self->image;
 
-    /* two-pass resize: minimize size of intermediate image */
-    if ((Py_ssize_t) imIn->xsize * ysize < (Py_ssize_t) xsize * imIn->ysize)
-        imTemp = ImagingNew(imIn->mode, imIn->xsize, ysize);
-    else
-        imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
-    if (!imTemp)
-        return NULL;
-
-    /* first pass */
-    if (!ImagingStretch(imTemp, imIn, filter)) {
-        ImagingDelete(imTemp);
-        return NULL;
-    }
-
     imOut = ImagingNew(imIn->mode, xsize, ysize);
-    if (!imOut) {
-        ImagingDelete(imTemp);
+    if ( ! imOut)
         return NULL;
-    }
 
-    /* second pass */
-    if (!ImagingStretch(imOut, imTemp, filter)) {
+    if (!ImagingStretch(imOut, imIn, filter)) {
         ImagingDelete(imOut);
-        ImagingDelete(imTemp);
         return NULL;
     }
-
-    ImagingDelete(imTemp);
 
     return PyImagingNew(imOut);
 }
