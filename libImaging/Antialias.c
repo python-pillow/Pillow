@@ -91,27 +91,19 @@ static inline UINT8 clip8(float in)
 
 
 Imaging
-ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
+ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
 {
     /* FIXME: this is a quick and straightforward translation from a
        python prototype.  might need some further C-ification... */
 
     ImagingSectionCookie cookie;
+    Imaging imOut;
     struct filter *filterp;
     float support, scale, filterscale;
     float center, ww, ss;
     int xx, yy, x, b, kmax, xmin, xmax;
     int *xbounds;
     float *k, *kk;
-
-    /* check modes */
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-        return (Imaging) ImagingError_ModeError();
-
-    if (imOut->ysize != imIn->ysize)
-        return (Imaging) ImagingError_ValueError(
-            "ImagingStretchHorizaontal requires equal heights"
-        );
 
     /* check filter */
     switch (filter) {
@@ -134,7 +126,7 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
     }
 
     /* prepare for horizontal stretch */
-    filterscale = scale = (float) imIn->xsize / imOut->xsize;
+    filterscale = scale = (float) imIn->xsize / xsize;
 
     /* determine support size (length of resampling filter) */
     support = filterp->support;
@@ -149,17 +141,17 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
     kmax = (int) ceil(support) * 2 + 1;
 
     /* coefficient buffer (with rounding safety margin) */
-    kk = malloc(imOut->xsize * kmax * sizeof(float));
+    kk = malloc(xsize * kmax * sizeof(float));
     if ( ! kk)
         return (Imaging) ImagingError_MemoryError();
 
-    xbounds = malloc(imOut->xsize * 2 * sizeof(int));
+    xbounds = malloc(xsize * 2 * sizeof(int));
     if ( ! xbounds) {
         free(kk);
         return (Imaging) ImagingError_MemoryError();
     }
 
-    for (xx = 0; xx < imOut->xsize; xx++) {
+    for (xx = 0; xx < xsize; xx++) {
         k = &kk[xx * kmax];
         center = (xx + 0.5) * scale;
         ww = 0.0;
@@ -183,12 +175,19 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
         xbounds[xx * 2 + 1] = xmax;
     }
 
+    imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
+    if ( ! imOut) {
+        free(kk);
+        free(xbounds);
+        return NULL;
+    }
+
     ImagingSectionEnter(&cookie);
     /* horizontal stretch */
     for (yy = 0; yy < imOut->ysize; yy++) {
         if (imIn->image8) {
             /* 8-bit grayscale */
-            for (xx = 0; xx < imOut->xsize; xx++) {
+            for (xx = 0; xx < xsize; xx++) {
                 xmin = xbounds[xx * 2 + 0];
                 xmax = xbounds[xx * 2 + 1];
                 k = &kk[xx * kmax];
@@ -201,7 +200,7 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
             switch(imIn->type) {
             case IMAGING_TYPE_UINT8:
                 /* n-bit grayscale */
-                for (xx = 0; xx < imOut->xsize; xx++) {
+                for (xx = 0; xx < xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
@@ -217,7 +216,7 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
                 break;
             case IMAGING_TYPE_INT32:
                 /* 32-bit integer */
-                for (xx = 0; xx < imOut->xsize; xx++) {
+                for (xx = 0; xx < xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
@@ -229,7 +228,7 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
                 break;
             case IMAGING_TYPE_FLOAT32:
                 /* 32-bit float */
-                for (xx = 0; xx < imOut->xsize; xx++) {
+                for (xx = 0; xx < xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
@@ -254,60 +253,51 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
 
 
 Imaging
-ImagingStretch(Imaging imOut, Imaging imIn, int filter)
+ImagingTransposeToNew(Imaging imIn)
+{
+    Imaging imTemp = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
+    if ( ! imTemp)
+        return NULL;
+
+    if ( ! ImagingTranspose(imTemp, imIn)) {
+        ImagingDelete(imTemp);
+        return NULL;
+    }
+    return imTemp;
+}
+
+
+Imaging
+ImagingStretch(Imaging imIn, int xsize, int ysize, int filter)
 {
     Imaging imTemp1, imTemp2, imTemp3;
-    int xsize = imOut->xsize;
-    int ysize = imOut->ysize;
+    Imaging imOut;
 
     if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
         return (Imaging) ImagingError_ModeError();
 
-    /* two-pass resize */
-    imTemp1 = ImagingNew(imIn->mode, xsize, imIn->ysize);
+    /* two-pass resize, first pass */
+    imTemp1 = ImagingStretchHorizaontal(imIn, xsize, filter);
     if ( ! imTemp1)
         return NULL;
 
-    /* first pass */
-    if ( ! ImagingStretchHorizaontal(imTemp1, imIn, filter)) {
-        ImagingDelete(imTemp1);
-        return NULL;
-    }
-
-    imTemp2 = ImagingNew(imIn->mode, imIn->ysize, xsize);
-    if ( ! imTemp2) {
-        ImagingDelete(imTemp1);
-        return NULL;
-    }
-
     /* transpose image once */
-    if ( ! ImagingTranspose(imTemp2, imTemp1)) {
-        ImagingDelete(imTemp1);
-        ImagingDelete(imTemp2);
-        return NULL;
-    }
+    imTemp2 = ImagingTransposeToNew(imTemp1);
     ImagingDelete(imTemp1);
-
-    imTemp3 = ImagingNew(imIn->mode, ysize, xsize);
-    if ( ! imTemp3) {
-        ImagingDelete(imTemp2);
+    if ( ! imTemp2)
         return NULL;
-    }
 
     /* second pass */
-    if ( ! ImagingStretchHorizaontal(imTemp3, imTemp2, filter)) {
-        ImagingDelete(imTemp2);
-        ImagingDelete(imTemp3);
-        return NULL;
-    }
+    imTemp3 = ImagingStretchHorizaontal(imTemp2, ysize, filter);
     ImagingDelete(imTemp2);
+    if ( ! imTemp3)
+        return NULL;
 
     /* transpose result */
-    if ( ! ImagingTranspose(imOut, imTemp3)) {
-        ImagingDelete(imTemp3);
-        return NULL;
-    }
+    imOut = ImagingTransposeToNew(imTemp3);
     ImagingDelete(imTemp3);
+    if ( ! imOut)
+        return NULL;
 
     return imOut;
 }

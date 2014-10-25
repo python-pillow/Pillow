@@ -1612,22 +1612,17 @@ im_setmode(ImagingObject* self, PyObject* args)
 static PyObject*
 _stretch(ImagingObject* self, PyObject* args)
 {
-    Imaging imIn;
-    Imaging imOut;
+    Imaging imIn, imOut;
 
     int xsize, ysize;
     int filter = IMAGING_TRANSFORM_NEAREST;
     if (!PyArg_ParseTuple(args, "(ii)|i", &xsize, &ysize, &filter))
-    return NULL;
+        return NULL;
 
     imIn = self->image;
 
-    imOut = ImagingNew(imIn->mode, xsize, ysize);
-    if ( ! imOut)
-        return NULL;
-
-    if (!ImagingStretch(imOut, imIn, filter)) {
-        ImagingDelete(imOut);
+    imOut = ImagingStretch(imIn, xsize, ysize, filter);
+    if ( ! imOut) {
         return NULL;
     }
 
