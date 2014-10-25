@@ -263,7 +263,8 @@ extern Imaging ImagingFilter(
     FLOAT32 offset, FLOAT32 divisor);
 extern Imaging ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
 extern Imaging ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
-extern Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius);
+extern Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius,
+    float effectiveScale);
 extern Imaging ImagingGetBand(Imaging im, int band);
 extern int ImagingGetBBox(Imaging im, int bbox[4]);
 typedef struct { int x, y; INT32 count; INT32 pixel; } ImagingColorItem;

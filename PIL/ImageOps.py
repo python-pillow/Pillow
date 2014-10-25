@@ -413,15 +413,18 @@ def solarize(image, threshold=128):
 # --------------------------------------------------------------------
 # PIL USM components, from Kevin Cazabon.
 
-def gaussian_blur(im, radius=None):
-    """ PIL_usm.gblur(im, [radius])"""
+def gaussian_blur(im, radius=None, effective_scale=None):
+    """ PIL_usm.gblur(im, [radius], [effective_scale])"""
 
     if radius is None:
         radius = 5.0
 
+    if effective_scale is None:
+        effective_scale = 2.6
+
     im.load()
 
-    return im.im.gaussian_blur(radius)
+    return im.im.gaussian_blur(radius, effective_scale)
 
 gblur = gaussian_blur
 
