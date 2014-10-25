@@ -95,6 +95,9 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
 
+    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
+        return (Imaging) ImagingError_ModeError();
+
     /* check filter */
     switch (filter) {
     case IMAGING_TRANSFORM_NEAREST:
