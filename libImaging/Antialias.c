@@ -140,7 +140,7 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
     if ( ! kk)
         return (Imaging) ImagingError_MemoryError();
 
-    xbounds = malloc(imOut->xsize * 3 * sizeof(float));
+    xbounds = malloc(imOut->xsize * 2 * sizeof(float));
     if ( ! xbounds) {
         free(kk);
         return (Imaging) ImagingError_MemoryError();
@@ -160,15 +160,14 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
         for (x = (int) xmin; x < (int) xmax; x++) {
             float w = filterp->filter((x - center + 0.5) * ss) * ss;
             k[x - (int) xmin] = w;
-            ww = ww + w;
+            ww += w;
         }
-        if (ww == 0.0)
-            ww = 1.0;
-        else
-            ww = 1.0 / ww;
-        xbounds[xx * 3 + 0] = xmin;
-        xbounds[xx * 3 + 1] = xmax;
-        xbounds[xx * 3 + 2] = ww;
+        for (x = 0; x < (int) xmax - (int) xmin; x++) {
+            if (ww != 0.0)
+                k[x] /= ww;
+        }
+        xbounds[xx * 2 + 0] = xmin;
+        xbounds[xx * 2 + 1] = xmax;
     }
 
     ImagingSectionEnter(&cookie);
@@ -177,14 +176,12 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
         if (imIn->image8) {
             /* 8-bit grayscale */
             for (xx = 0; xx < imOut->xsize; xx++) {
-                xmin = xbounds[xx * 3 + 0];
-                xmax = xbounds[xx * 3 + 1];
-                ww = xbounds[xx * 3 + 2];
+                xmin = xbounds[xx * 2 + 0];
+                xmax = xbounds[xx * 2 + 1];
                 k = &kk[xx * kmax];
-                ss = 0.0;
+                ss = 0.5;
                 for (x = (int) xmin; x < (int) xmax; x++)
                     ss = ss + imIn->image8[yy][x] * k[x - (int) xmin];
-                ss = ss * ww + 0.5;
                 if (ss < 0.5)
                     imOut->image8[yy][xx] = (UINT8) 0;
                 else if (ss >= 255.0)
@@ -197,17 +194,15 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
             case IMAGING_TYPE_UINT8:
                 /* n-bit grayscale */
                 for (xx = 0; xx < imOut->xsize; xx++) {
-                    xmin = xbounds[xx * 3 + 0];
-                    xmax = xbounds[xx * 3 + 1];
-                    ww = xbounds[xx * 3 + 2];
+                    xmin = xbounds[xx * 2 + 0];
+                    xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     for (b = 0; b < imIn->bands; b++) {
                         if (imIn->bands == 2 && b)
                             b = 3; /* hack to deal with LA images */
-                        ss = 0.0;
+                        ss = 0.5;
                         for (x = (int) xmin; x < (int) xmax; x++)
                             ss = ss + (UINT8) imIn->image[yy][x*4+b] * k[x - (int) xmin];
-                        ss = ss * ww + 0.5;
                         if (ss < 0.5)
                             imOut->image[yy][xx*4+b] = (UINT8) 0;
                         else if (ss >= 255.0)
@@ -220,27 +215,25 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
             case IMAGING_TYPE_INT32:
                 /* 32-bit integer */
                 for (xx = 0; xx < imOut->xsize; xx++) {
-                    xmin = xbounds[xx * 3 + 0];
-                    xmax = xbounds[xx * 3 + 1];
-                    ww = xbounds[xx * 3 + 2];
+                    xmin = xbounds[xx * 2 + 0];
+                    xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     ss = 0.0;
                     for (x = (int) xmin; x < (int) xmax; x++)
                         ss = ss + IMAGING_PIXEL_I(imIn, x, yy) * k[x - (int) xmin];
-                    IMAGING_PIXEL_I(imOut, xx, yy) = (int) ss * ww;
+                    IMAGING_PIXEL_I(imOut, xx, yy) = (int) ss;
                 }
                 break;
             case IMAGING_TYPE_FLOAT32:
                 /* 32-bit float */
                 for (xx = 0; xx < imOut->xsize; xx++) {
-                    xmin = xbounds[xx * 3 + 0];
-                    xmax = xbounds[xx * 3 + 1];
-                    ww = xbounds[xx * 3 + 2];
+                    xmin = xbounds[xx * 2 + 0];
+                    xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     ss = 0.0;
                     for (x = (int) xmin; x < (int) xmax; x++)
                         ss = ss + IMAGING_PIXEL_F(imIn, x, yy) * k[x - (int) xmin];
-                    IMAGING_PIXEL_F(imOut, xx, yy) = ss * ww;
+                    IMAGING_PIXEL_F(imOut, xx, yy) = ss;
                 }
                 break;
             default:
