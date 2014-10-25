@@ -87,9 +87,10 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
     ImagingSectionCookie cookie;
     struct filter *filterp;
     float support, scale, filterscale;
-    float center, ww, ss, xmin, xmax;
-    int xx, yy, x, b, kmax;
-    float *k, *kk, *xbounds;
+    float center, ww, ss;
+    int xx, yy, x, b, kmax, xmin, xmax;
+    int *xbounds;
+    float *k, *kk;
 
     /* check modes */
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
@@ -140,7 +141,7 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
     if ( ! kk)
         return (Imaging) ImagingError_MemoryError();
 
-    xbounds = malloc(imOut->xsize * 2 * sizeof(float));
+    xbounds = malloc(imOut->xsize * 2 * sizeof(int));
     if ( ! xbounds) {
         free(kk);
         return (Imaging) ImagingError_MemoryError();
@@ -151,18 +152,18 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
         center = (xx + 0.5) * scale;
         ww = 0.0;
         ss = 1.0 / filterscale;
-        xmin = floor(center - support);
-        if (xmin < 0.0)
-            xmin = 0.0;
-        xmax = ceil(center + support);
-        if (xmax > (float) imIn->xsize)
-            xmax = (float) imIn->xsize;
-        for (x = (int) xmin; x < (int) xmax; x++) {
+        xmin = (int) floor(center - support);
+        if (xmin < 0)
+            xmin = 0;
+        xmax = (int) ceil(center + support);
+        if (xmax > imIn->xsize)
+            xmax = imIn->xsize;
+        for (x = xmin; x < xmax; x++) {
             float w = filterp->filter((x - center + 0.5) * ss) * ss;
-            k[x - (int) xmin] = w;
+            k[x - xmin] = w;
             ww += w;
         }
-        for (x = 0; x < (int) xmax - (int) xmin; x++) {
+        for (x = 0; x < xmax - xmin; x++) {
             if (ww != 0.0)
                 k[x] /= ww;
         }
@@ -180,8 +181,8 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
                 xmax = xbounds[xx * 2 + 1];
                 k = &kk[xx * kmax];
                 ss = 0.5;
-                for (x = (int) xmin; x < (int) xmax; x++)
-                    ss = ss + imIn->image8[yy][x] * k[x - (int) xmin];
+                for (x = xmin; x < xmax; x++)
+                    ss = ss + imIn->image8[yy][x] * k[x - xmin];
                 if (ss < 0.5)
                     imOut->image8[yy][xx] = (UINT8) 0;
                 else if (ss >= 255.0)
@@ -201,8 +202,8 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
                         if (imIn->bands == 2 && b)
                             b = 3; /* hack to deal with LA images */
                         ss = 0.5;
-                        for (x = (int) xmin; x < (int) xmax; x++)
-                            ss = ss + (UINT8) imIn->image[yy][x*4+b] * k[x - (int) xmin];
+                        for (x = xmin; x < xmax; x++)
+                            ss = ss + (UINT8) imIn->image[yy][x*4+b] * k[x - xmin];
                         if (ss < 0.5)
                             imOut->image[yy][xx*4+b] = (UINT8) 0;
                         else if (ss >= 255.0)
@@ -219,8 +220,8 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     ss = 0.0;
-                    for (x = (int) xmin; x < (int) xmax; x++)
-                        ss = ss + IMAGING_PIXEL_I(imIn, x, yy) * k[x - (int) xmin];
+                    for (x = xmin; x < xmax; x++)
+                        ss = ss + IMAGING_PIXEL_I(imIn, x, yy) * k[x - xmin];
                     IMAGING_PIXEL_I(imOut, xx, yy) = (int) ss;
                 }
                 break;
@@ -231,8 +232,8 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     ss = 0.0;
-                    for (x = (int) xmin; x < (int) xmax; x++)
-                        ss = ss + IMAGING_PIXEL_F(imIn, x, yy) * k[x - (int) xmin];
+                    for (x = xmin; x < xmax; x++)
+                        ss = ss + IMAGING_PIXEL_F(imIn, x, yy) * k[x - xmin];
                     IMAGING_PIXEL_F(imOut, xx, yy) = ss;
                 }
                 break;
