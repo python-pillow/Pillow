@@ -128,6 +128,44 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 
 
 Imaging
+ImagingTranspose(Imaging imOut, Imaging imIn)
+{
+    ImagingSectionCookie cookie;
+    int x, y, xx, yy, xxsize, yysize;
+    int size = 64;
+
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
+        return (Imaging) ImagingError_ModeError();
+    if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize)
+        return (Imaging) ImagingError_Mismatch();
+
+#define TRANSPOSE(image) \
+    for (y = 0; y < imIn->ysize; y += size) { \
+        for (x = 0; x < imIn->xsize; x += size) { \
+            yysize = size < (imIn->ysize - y) ? size : (imIn->ysize - y); \
+            xxsize = size < (imIn->xsize - x) ? size : (imIn->xsize - x); \
+            for (yy = 0; yy < yysize; yy++) { \
+                for (xx = 0; xx < xxsize; xx++) { \
+                    imOut->image[x + xx][y + yy] = imIn->image[y + yy][x + xx]; \
+                } \
+            } \
+        } \
+    }
+
+    ImagingCopyInfo(imOut, imIn);
+
+    ImagingSectionEnter(&cookie);
+    if (imIn->image8)
+        TRANSPOSE(image8)
+    else
+        TRANSPOSE(image32)
+    ImagingSectionLeave(&cookie);
+
+    return imOut;
+}
+
+
+Imaging
 ImagingRotate180(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
