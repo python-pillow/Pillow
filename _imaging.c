@@ -863,7 +863,8 @@ _gaussian_blur(ImagingObject* self, PyObject* args)
     Imaging imOut;
 
     float radius = 0;
-    if (!PyArg_ParseTuple(args, "f", &radius))
+    float effectiveScale = 2.6;
+    if (!PyArg_ParseTuple(args, "f|f", &radius, &effectiveScale))
         return NULL;
 
     imIn = self->image;
@@ -871,7 +872,7 @@ _gaussian_blur(ImagingObject* self, PyObject* args)
     if (!imOut)
         return NULL;
 
-    if (!ImagingGaussianBlur(imIn, imOut, radius))
+    if (!ImagingGaussianBlur(imIn, imOut, radius, effectiveScale))
         return NULL;
 
     return PyImagingNew(imOut);
