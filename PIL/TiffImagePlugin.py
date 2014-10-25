@@ -1153,8 +1153,11 @@ def _save(im, fp, filename):
                     # following tiffcp.c->cpTag->TIFF_RATIONAL
                     atts[k] = float(v[0][0])/float(v[0][1])
                     continue
-                if type(v) == tuple and len(v) > 2:
+                if (type(v) == tuple and
+                        (len(v) > 2 or
+                            (len(v) == 2 and v[1] == 0))):
                     # List of ints?
+                    # Avoid divide by zero in next if-clause
                     if type(v[0]) in (int, float):
                         atts[k] = list(v)
                     continue
