@@ -173,28 +173,14 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
 
     ImagingSectionEnter(&cookie);
     /* horizontal stretch */
-    for (xx = 0; xx < imOut->xsize; xx++) {
-        center = (xx + 0.5) * scale;
-        ww = 0.0;
-        ss = 1.0 / filterscale;
-        xmin = floor(center - support);
-        if (xmin < 0.0)
-            xmin = 0.0;
-        xmax = ceil(center + support);
-        if (xmax > (float) imIn->xsize)
-            xmax = (float) imIn->xsize;
-        for (x = (int) xmin; x < (int) xmax; x++) {
-            float w = filterp->filter((x - center + 0.5) * ss) * ss;
-            k[x - (int) xmin] = w;
-            ww = ww + w;
-        }
-        if (ww == 0.0)
-            ww = 1.0;
-        else
-            ww = 1.0 / ww;
+    for (yy = 0; yy < imOut->ysize; yy++) {
         if (imIn->image8) {
             /* 8-bit grayscale */
-            for (yy = 0; yy < imOut->ysize; yy++) {
+            for (xx = 0; xx < imOut->xsize; xx++) {
+                xmin = xbounds[xx * 3 + 0];
+                xmax = xbounds[xx * 3 + 1];
+                ww = xbounds[xx * 3 + 2];
+                k = &kk[xx * kmax];
                 ss = 0.0;
                 for (x = (int) xmin; x < (int) xmax; x++)
                     ss = ss + imIn->image8[yy][x] * k[x - (int) xmin];
@@ -210,7 +196,11 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
             switch(imIn->type) {
             case IMAGING_TYPE_UINT8:
                 /* n-bit grayscale */
-                for (yy = 0; yy < imOut->ysize; yy++) {
+                for (xx = 0; xx < imOut->xsize; xx++) {
+                    xmin = xbounds[xx * 3 + 0];
+                    xmax = xbounds[xx * 3 + 1];
+                    ww = xbounds[xx * 3 + 2];
+                    k = &kk[xx * kmax];
                     for (b = 0; b < imIn->bands; b++) {
                         if (imIn->bands == 2 && b)
                             b = 3; /* hack to deal with LA images */
@@ -229,7 +219,11 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
                 break;
             case IMAGING_TYPE_INT32:
                 /* 32-bit integer */
-                for (yy = 0; yy < imOut->ysize; yy++) {
+                for (xx = 0; xx < imOut->xsize; xx++) {
+                    xmin = xbounds[xx * 3 + 0];
+                    xmax = xbounds[xx * 3 + 1];
+                    ww = xbounds[xx * 3 + 2];
+                    k = &kk[xx * kmax];
                     ss = 0.0;
                     for (x = (int) xmin; x < (int) xmax; x++)
                         ss = ss + IMAGING_PIXEL_I(imIn, x, yy) * k[x - (int) xmin];
@@ -238,7 +232,11 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
                 break;
             case IMAGING_TYPE_FLOAT32:
                 /* 32-bit float */
-                for (yy = 0; yy < imOut->ysize; yy++) {
+                for (xx = 0; xx < imOut->xsize; xx++) {
+                    xmin = xbounds[xx * 3 + 0];
+                    xmax = xbounds[xx * 3 + 1];
+                    ww = xbounds[xx * 3 + 2];
+                    k = &kk[xx * kmax];
                     ss = 0.0;
                     for (x = (int) xmin; x < (int) xmax; x++)
                         ss = ss + IMAGING_PIXEL_F(imIn, x, yy) * k[x - (int) xmin];
