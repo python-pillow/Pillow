@@ -1819,7 +1819,7 @@ _box_blur(ImagingObject* self, PyObject* args)
     if (!imOut)
         return NULL;
 
-    if (!ImagingBoxBlur(imIn, imOut, radius, n))
+    if (!ImagingBoxBlur(imOut, imIn, radius, n))
         return NULL;
 
     return PyImagingNew(imOut);

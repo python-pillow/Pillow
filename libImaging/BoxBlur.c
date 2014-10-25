@@ -232,7 +232,7 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
 
 
 Imaging
-ImagingBoxBlur(Imaging im, Imaging imOut, float radius, int n)
+ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n)
 {
     int i;
 
@@ -242,32 +242,32 @@ ImagingBoxBlur(Imaging im, Imaging imOut, float radius, int n)
         );
     }
 
-    if (strcmp(im->mode, imOut->mode) ||
-        im->type  != imOut->type  ||
-        im->bands != imOut->bands ||
-        im->xsize != imOut->xsize ||
-        im->ysize != imOut->ysize)
+    if (strcmp(imIn->mode, imOut->mode) ||
+        imIn->type  != imOut->type  ||
+        imIn->bands != imOut->bands ||
+        imIn->xsize != imOut->xsize ||
+        imIn->ysize != imOut->ysize)
         return ImagingError_Mismatch();
 
-    if (im->type != IMAGING_TYPE_UINT8)
+    if (imIn->type != IMAGING_TYPE_UINT8)
         return ImagingError_ModeError();
 
-    if ( ! (strcmp(im->mode, "RGB") == 0 ||
-            strcmp(im->mode, "RGBA") == 0 ||
-            strcmp(im->mode, "RGBX") == 0 ||
-            strcmp(im->mode, "CMYK") == 0 ||
-            strcmp(im->mode, "L") == 0 ||
-            strcmp(im->mode, "LA") == 0))
+    if ( ! (strcmp(imIn->mode, "RGB") == 0 ||
+            strcmp(imIn->mode, "RGBA") == 0 ||
+            strcmp(imIn->mode, "RGBX") == 0 ||
+            strcmp(imIn->mode, "CMYK") == 0 ||
+            strcmp(imIn->mode, "L") == 0 ||
+            strcmp(imIn->mode, "LA") == 0))
         return ImagingError_ModeError();
 
-    /* Create transposed temp image (im->ysize x im->xsize). */
-    Imaging temp = ImagingNew(im->mode, im->ysize, im->xsize);
+    /* Create transposed temp image (imIn->ysize x imIn->xsize). */
+    Imaging temp = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
     if ( ! temp)
         return NULL;
 
     /* Apply one-dimensional blur.
        HorizontalBoxBlur transposes image at same time. */
-    HorizontalBoxBlur(im, imOut, radius);
+    HorizontalBoxBlur(imIn, imOut, radius);
     for (i = 1; i < n; i ++) {
         HorizontalBoxBlur(imOut, imOut, radius);
     }
