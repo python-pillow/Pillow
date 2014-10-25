@@ -10,174 +10,6 @@
 #include "Imaging.h"
 
 
-static Imaging
-gblur(Imaging im, Imaging imOut, float radius, float effectiveScale, int channels)
-{
-    ImagingSectionCookie cookie;
-
-    float *maskData = NULL;
-    int y = 0;
-    int x = 0;
-    float sum = 0.0;
-
-    float *buffer = NULL;
-
-    int *line = NULL;
-    UINT8 *line8 = NULL;
-
-    int pix = 0;
-    float newPixel[4];
-    int channel = 0;
-    int offset = 0;
-
-    int effectiveRadius = 0;
-    int window = 0;
-    int hasAlpha = 0;
-
-    /* Do the gaussian blur */
-
-    /* For a symmetrical gaussian blur, instead of doing a radius*radius
-       matrix lookup, you get the EXACT same results by doing a radius*1
-       transform, followed by a 1*radius transform.  This reduces the
-       number of lookups exponentially (10 lookups per pixel for a
-       radius of 5 instead of 25 lookups).  So, we blur the lines first,
-       then we blur the resulting columns. */
-
-    /* Only pixels in effective radius from source pixel are accounted.
-       The Gaussian values outside 3 x radius is near zero. */
-    effectiveRadius = (int) ceil(radius * effectiveScale);
-    /* Window is number of pixels forming the result pixel on one axis.
-       It is source pixel and effective radius in both directions. */
-    window = effectiveRadius * 2 + 1;
-
-    /* create the maskData for the gaussian curve */
-    maskData = malloc(window * sizeof(float));
-    for (pix = 0; pix < window; pix++) {
-        offset = pix - effectiveRadius;
-        if (radius) {
-            /* http://en.wikipedia.org/wiki/Gaussian_blur
-               "1 / sqrt(2 * pi * dev)" is constant and will be eliminated
-               by normalization. */
-            maskData[pix] = pow(2.718281828459,
-                                -offset * offset / (2 * radius * radius));
-        } else {
-            maskData[pix] = 1;
-        }
-        sum += maskData[pix];
-    }
-
-    for (pix = 0; pix < window; pix++) {
-        maskData[pix] *= (1.0 / sum);
-        // printf("%d %f\n", pix, maskData[pix]);
-    }
-    // printf("\n");
-
-    /* create a temporary memory buffer for the data for the first pass
-       memset the buffer to 0 so we can use it directly with += */
-
-    /* don't bother about alpha */
-    buffer = calloc((size_t) (im->xsize * im->ysize * channels),
-                    sizeof(float));
-    if (buffer == NULL)
-        return ImagingError_MemoryError();
-
-    /* be nice to other threads while you go off to lala land */
-    ImagingSectionEnter(&cookie);
-
-    /* perform a blur on each line, and place in the temporary storage buffer */
-    for (y = 0; y < im->ysize; y++) {
-        if (channels == 1 && im->image8 != NULL) {
-            line8 = (UINT8 *) im->image8[y];
-        } else {
-            line = im->image32[y];
-        }
-        for (x = 0; x < im->xsize; x++) {
-            /* for each neighbor pixel, factor in its value/weighting to the
-               current pixel */
-            for (pix = 0; pix < window; pix++) {
-                /* figure the offset of this neighbor pixel */
-                offset = pix - effectiveRadius;
-                if (x + offset < 0)
-                    offset = -x;
-                else if (x + offset >= im->xsize)
-                    offset = im->xsize - x - 1;
-
-                /* add (neighbor pixel value * maskData[pix]) to the current
-                   pixel value */
-                if (channels == 1) {
-                    buffer[(y * im->xsize) + x] +=
-                        ((float) ((UINT8 *) & line8[x + offset])[0]) *
-                        (maskData[pix]);
-                } else {
-                    for (channel = 0; channel < channels; channel++) {
-                        buffer[(y * im->xsize * channels) +
-                               (x * channels) + channel] +=
-                            ((float) ((UINT8 *) & line[x + offset])
-                             [channel]) * (maskData[pix]);
-                    }
-                }
-            }
-        }
-    }
-
-    if (strcmp(im->mode, "RGBX") == 0 || strcmp(im->mode, "RGBA") == 0) {
-        hasAlpha = 1;
-    }
-
-    /* perform a blur on each column in the buffer, and place in the
-       output image */
-    for (x = 0; x < im->xsize; x++) {
-        for (y = 0; y < im->ysize; y++) {
-            newPixel[0] = newPixel[1] = newPixel[2] = newPixel[3] = .5;
-            /* for each neighbor pixel, factor in its value/weighting to the
-               current pixel */
-            for (pix = 0; pix < window; pix++) {
-                /* figure the offset of this neighbor pixel */
-                offset = pix - effectiveRadius;
-                if (y + offset < 0)
-                    offset = -y;
-                else if (y + offset >= im->ysize)
-                    offset = im->ysize - y - 1;
-
-                /* add (neighbor pixel value * maskData[pix]) to the current
-                   pixel value */
-                for (channel = 0; channel < channels; channel++) {
-                    newPixel[channel] +=
-                        (buffer
-                         [((y + offset) * im->xsize * channels) +
-                          (x * channels) + channel]) * (maskData[pix]);
-                }
-            }
-
-            if (channels == 1) {
-                imOut->image8[y][x] = (UINT8)(newPixel[0]);
-            } else {
-                /* if the image is RGBX or RGBA, copy the 4th channel data to
-                   newPixel, so it gets put in imOut */
-                if (hasAlpha) {
-                    newPixel[3] = (float) ((UINT8 *) & im->image32[y][x])[3];
-                }
-
-                /* for RGB, the fourth channel isn't used anyways, so just
-                   pack a 0 in there, this saves checking the mode for each
-                   pixel. */
-                /* this might don't work on little-endian machines... fix it! */
-                imOut->image32[y][x] =
-                    (UINT8)(newPixel[0]) | (UINT8)(newPixel[1]) << 8 |
-                    (UINT8)(newPixel[2]) << 16 | (UINT8)(newPixel[3]) << 24;
-            }
-        }
-    }
-
-    /* free the buffer */
-    free(buffer);
-
-    /* get the GIL back so Python knows who you are */
-    ImagingSectionLeave(&cookie);
-
-    return imOut;
-}
-
 static inline UINT8 clip(double in)
 {
     if (in >= 255.0)
@@ -188,25 +20,23 @@ static inline UINT8 clip(double in)
 }
 
 Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius,
-    float effectiveScale)
+    int passes)
 {
-    int channels = 0;
+    float sigma2, L, l, a;
 
-    if (strcmp(im->mode, "RGB") == 0) {
-        channels = 3;
-    } else if (strcmp(im->mode, "RGBA") == 0) {
-        channels = 3;
-    } else if (strcmp(im->mode, "RGBX") == 0) {
-        channels = 3;
-    } else if (strcmp(im->mode, "CMYK") == 0) {
-        channels = 4;
-    } else if (strcmp(im->mode, "L") == 0) {
-        channels = 1;
-    } else
-        return ImagingError_ModeError();
+    sigma2 = radius * radius / passes;
+    // from http://www.mia.uni-saarland.de/Publications/gwosdek-ssvm11.pdf
+    // [7] Box length.
+    L = sqrt(12.0 * sigma2 + 1.0);
+    // [11] Integer part of box radius.
+    l = floor((L - 1.0) / 2.0);
+    // [14], [Fig. 2] Fractional part of box radius.
+    a = (2 * l + 1) * (l * (l + 1) - 3 * sigma2);
+    a /= 6 * (sigma2 - (l + 1) * (l + 1));
 
-    return gblur(im, imOut, radius, effectiveScale, channels);
+    return ImagingBoxBlur(imOut, im, l + a, passes);
 }
+
 
 Imaging
 ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
@@ -246,7 +76,7 @@ ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
 
     /* first, do a gaussian blur on the image, putting results in imOut
        temporarily */
-    result = gblur(im, imOut, radius, 2.6, channels);
+    result = ImagingGaussianBlur(im, imOut, radius, 3);
     if (!result)
         return NULL;
 

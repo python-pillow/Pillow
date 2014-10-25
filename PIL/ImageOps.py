@@ -414,18 +414,15 @@ def solarize(image, threshold=128):
 # --------------------------------------------------------------------
 # PIL USM components, from Kevin Cazabon.
 
-def gaussian_blur(im, radius=None, effective_scale=None):
-    """ PIL_usm.gblur(im, [radius], [effective_scale])"""
+def gaussian_blur(im, radius=None):
+    """ PIL_usm.gblur(im, [radius])"""
 
     if radius is None:
         radius = 5.0
 
-    if effective_scale is None:
-        effective_scale = 2.6
-
     im.load()
 
-    return im.im.gaussian_blur(radius, effective_scale)
+    return im.im.gaussian_blur(radius)
 
 gblur = gaussian_blur
 
@@ -462,18 +459,3 @@ def box_blur(image, radius):
     image.load()
 
     return image._new(image.im.box_blur(radius))
-
-
-def extended_box_blur(image, radius, n=3):
-    sigma2 = float(radius) * radius / n
-    # http://www.mia.uni-saarland.de/Publications/gwosdek-ssvm11.pdf
-    # [7] Box length.
-    L = math.sqrt(12.0 * sigma2 + 1.0)
-    # [11] Integer part of box radius.
-    l = math.floor((L - 1.0) / 2.0)
-    # [14], [Fig. 2] Fractional part of box radius.
-    a = (2 * l + 1) * (l * (l + 1) - 3 * sigma2)
-    a /= 6 * (sigma2 - (l + 1) * (l + 1))
-
-    image.load()
-    return image._new(image.im.box_blur(l + a, n))

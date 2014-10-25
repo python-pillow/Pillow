@@ -35,21 +35,6 @@ class TestBoxBlurApi(PillowTestCase):
         self.assertEqual(i.size, sample.size)
         self.assertIsInstance(i, Image.Image)
 
-    def test_imageops_extended_box_blur(self):
-        i = ImageOps.extended_box_blur(sample, 1)
-        self.assertEqual(i.mode, sample.mode)
-        self.assertEqual(i.size, sample.size)
-        self.assertIsInstance(i, Image.Image)
-
-    def test_extended_box_blur_radius(self):
-        mock = ImageMock()
-        self.assertEqual((0.25, 3), ImageOps.extended_box_blur(mock, 1))
-        self.assertEqual((0.25, 3), ImageOps.extended_box_blur(mock, 1, 3))
-        self.assertAlmostEqual(ImageOps.extended_box_blur(mock, .5, 3)[0],
-                               0.0455, delta=0.0001)
-        self.assertAlmostEqual(ImageOps.extended_box_blur(mock, 35, 3)[0],
-                               34.49, delta=0.01)
-
 
 class TestBoxBlur(PillowTestCase):
 

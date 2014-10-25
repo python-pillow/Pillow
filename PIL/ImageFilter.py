@@ -149,12 +149,11 @@ class GaussianBlur(Filter):
     """
     name = "GaussianBlur"
 
-    def __init__(self, radius=2, effective_scale=None):
+    def __init__(self, radius=2):
         self.radius = radius
-        self.effective_scale = effective_scale
 
     def filter(self, image):
-        return image.gaussian_blur(self.radius, self.effective_scale or 2.6)
+        return image.gaussian_blur(self.radius)
 
 
 class UnsharpMask(Filter):
