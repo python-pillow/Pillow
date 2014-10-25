@@ -263,7 +263,7 @@ extern Imaging ImagingFilter(
     FLOAT32 offset, FLOAT32 divisor);
 extern Imaging ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
 extern Imaging ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
-extern Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius,
+extern Imaging ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius,
     int passes);
 extern Imaging ImagingGetBand(Imaging im, int band);
 extern int ImagingGetBBox(Imaging im, int bbox[4]);
@@ -309,7 +309,7 @@ extern Imaging ImagingTransform(
     ImagingTransformFilter filter, void* filter_data,
     int fill);
 extern Imaging ImagingUnsharpMask(
-    Imaging im, Imaging imOut, float radius, int percent, int threshold);
+    Imaging imOut, Imaging im, float radius, int percent, int threshold);
 extern Imaging ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n);
 
 extern Imaging ImagingCopy2(Imaging imOut, Imaging imIn);

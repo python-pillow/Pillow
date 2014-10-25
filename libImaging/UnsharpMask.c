@@ -19,7 +19,7 @@ static inline UINT8 clip(double in)
     return (UINT8) (in + 0.5);
 }
 
-Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius,
+Imaging ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius,
     int passes)
 {
     float sigma2, L, l, a;
@@ -34,12 +34,12 @@ Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius,
     a = (2 * l + 1) * (l * (l + 1) - 3 * sigma2);
     a /= 6 * (sigma2 - (l + 1) * (l + 1));
 
-    return ImagingBoxBlur(imOut, im, l + a, passes);
+    return ImagingBoxBlur(imOut, imIn, l + a, passes);
 }
 
 
 Imaging
-ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
+ImagingUnsharpMask(Imaging imOut, Imaging imIn, float radius, int percent,
                    int threshold)
 {
     ImagingSectionCookie cookie;
@@ -61,22 +61,22 @@ ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
 
     INT32 newPixel = 0;
 
-    if (strcmp(im->mode, "RGB") == 0) {
+    if (strcmp(imIn->mode, "RGB") == 0) {
         channels = 3;
-    } else if (strcmp(im->mode, "RGBA") == 0) {
+    } else if (strcmp(imIn->mode, "RGBA") == 0) {
         channels = 3;
-    } else if (strcmp(im->mode, "RGBX") == 0) {
+    } else if (strcmp(imIn->mode, "RGBX") == 0) {
         channels = 3;
-    } else if (strcmp(im->mode, "CMYK") == 0) {
+    } else if (strcmp(imIn->mode, "CMYK") == 0) {
         channels = 4;
-    } else if (strcmp(im->mode, "L") == 0) {
+    } else if (strcmp(imIn->mode, "L") == 0) {
         channels = 1;
     } else
         return ImagingError_ModeError();
 
     /* first, do a gaussian blur on the image, putting results in imOut
        temporarily */
-    result = ImagingGaussianBlur(im, imOut, radius, 3);
+    result = ImagingGaussianBlur(imOut, imIn, radius, 3);
     if (!result)
         return NULL;
 
@@ -87,19 +87,19 @@ ImagingUnsharpMask(Imaging im, Imaging imOut, float radius, int percent,
 
     ImagingSectionEnter(&cookie);
 
-    if (strcmp(im->mode, "RGBX") == 0 || strcmp(im->mode, "RGBA") == 0) {
+    if (strcmp(imIn->mode, "RGBX") == 0 || strcmp(imIn->mode, "RGBA") == 0) {
         hasAlpha = 1;
     }
 
-    for (y = 0; y < im->ysize; y++) {
+    for (y = 0; y < imIn->ysize; y++) {
         if (channels == 1) {
-            lineIn8 = im->image8[y];
+            lineIn8 = imIn->image8[y];
             lineOut8 = imOut->image8[y];
         } else {
-            lineIn = im->image32[y];
+            lineIn = imIn->image32[y];
             lineOut = imOut->image32[y];
         }
-        for (x = 0; x < im->xsize; x++) {
+        for (x = 0; x < imIn->xsize; x++) {
             newPixel = 0;
             /* compare in/out pixels, apply sharpening */
             if (channels == 1) {

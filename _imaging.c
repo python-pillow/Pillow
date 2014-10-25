@@ -872,7 +872,7 @@ _gaussian_blur(ImagingObject* self, PyObject* args)
     if (!imOut)
         return NULL;
 
-    if ( ! ImagingGaussianBlur(imIn, imOut, radius, passes))
+    if ( ! ImagingGaussianBlur(imOut, imIn, radius, passes))
         return NULL;
 
     return PyImagingNew(imOut);
@@ -1797,7 +1797,7 @@ _unsharp_mask(ImagingObject* self, PyObject* args)
     if (!imOut)
         return NULL;
 
-    if (!ImagingUnsharpMask(imIn, imOut, radius, percent, threshold))
+    if ( ! ImagingUnsharpMask(imOut, imIn, radius, percent, threshold))
         return NULL;
 
     return PyImagingNew(imOut);
