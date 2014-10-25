@@ -65,7 +65,7 @@ static struct filter BILINEAR = { bilinear_filter, 1.0 };
 static inline float bicubic_filter(float x)
 {
     /* http://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm */
-#define a -1.0
+#define a -0.5
     if (x < 0.0)
         x = -x;
     if (x < 1.0)
@@ -129,7 +129,6 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
 
     if (filterscale < 1.0) {
         filterscale = 1.0;
-        support = 0.5;
     }
 
     support = support * filterscale;
