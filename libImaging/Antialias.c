@@ -88,8 +88,8 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
     struct filter *filterp;
     float support, scale, filterscale;
     float center, ww, ss, xmin, xmax;
-    int xx, yy, x, b;
-    float *k;
+    int xx, yy, x, b, kmax;
+    float *k, *kk, *xbounds;
 
     /* check modes */
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
@@ -132,10 +132,44 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
 
     support = support * filterscale;
 
+    /* maximum number of coofs */
+    kmax = (int) ceil(support) * 2 + 1;
+
     /* coefficient buffer (with rounding safety margin) */
-    k = malloc(((int) support * 2 + 10) * sizeof(float));
-    if (!k)
+    kk = malloc(imOut->xsize * kmax * sizeof(float));
+    if ( ! kk)
         return (Imaging) ImagingError_MemoryError();
+
+    xbounds = malloc(imOut->xsize * 3 * sizeof(float));
+    if ( ! xbounds) {
+        free(kk);
+        return (Imaging) ImagingError_MemoryError();
+    }
+
+    for (xx = 0; xx < imOut->xsize; xx++) {
+        k = &kk[xx * kmax];
+        center = (xx + 0.5) * scale;
+        ww = 0.0;
+        ss = 1.0 / filterscale;
+        xmin = floor(center - support);
+        if (xmin < 0.0)
+            xmin = 0.0;
+        xmax = ceil(center + support);
+        if (xmax > (float) imIn->xsize)
+            xmax = (float) imIn->xsize;
+        for (x = (int) xmin; x < (int) xmax; x++) {
+            float w = filterp->filter((x - center + 0.5) * ss) * ss;
+            k[x - (int) xmin] = w;
+            ww = ww + w;
+        }
+        if (ww == 0.0)
+            ww = 1.0;
+        else
+            ww = 1.0 / ww;
+        xbounds[xx * 3 + 0] = xmin;
+        xbounds[xx * 3 + 1] = xmax;
+        xbounds[xx * 3 + 2] = ww;
+    }
 
     ImagingSectionEnter(&cookie);
     /* horizontal stretch */
@@ -218,7 +252,8 @@ ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
     }
     ImagingSectionLeave(&cookie);
 
-    free(k);
+    free(kk);
+    free(xbounds);
 
     return imOut;
 }
