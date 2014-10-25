@@ -100,8 +100,8 @@ ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
     Imaging imOut;
     struct filter *filterp;
     float support, scale, filterscale;
-    float center, ww, ss;
-    int xx, yy, x, b, kmax, xmin, xmax;
+    float center, ww, ss, ss4[4];
+    int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
     float *k, *kk;
 
@@ -204,13 +204,27 @@ ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
-                    for (b = 0; b < imIn->bands; b++) {
-                        if (imIn->bands == 2 && b)
-                            b = 3; /* hack to deal with LA images */
-                        ss = 0.5;
-                        for (x = xmin; x < xmax; x++)
-                            ss = ss + (UINT8) imIn->image[yy][x*4+b] * k[x - xmin];
-                        imOut->image[yy][xx*4+b] = clip8(ss);
+                    if (imIn->bands == 3) {
+                        ss4[0] = ss4[1] = ss4[2] = 0.5;
+                        for (x = xmin; x < xmax; x++) {
+                            ss4[0] += (UINT8) imIn->image[yy][x*4 + 0] * k[x - xmin];
+                            ss4[1] += (UINT8) imIn->image[yy][x*4 + 1] * k[x - xmin];
+                            ss4[2] += (UINT8) imIn->image[yy][x*4 + 2] * k[x - xmin];
+                        }
+                        imOut->image32[yy][xx] =
+                            clip8(ss4[0]) | clip8(ss4[1]) << 8 |
+                            clip8(ss4[2]) << 16;
+                    } else {
+                        ss4[0] = ss4[1] = ss4[2] = ss4[3] = 0.5;
+                        for (x = xmin; x < xmax; x++) {
+                            ss4[0] += (UINT8) imIn->image[yy][x*4 + 0] * k[x - xmin];
+                            ss4[1] += (UINT8) imIn->image[yy][x*4 + 1] * k[x - xmin];
+                            ss4[2] += (UINT8) imIn->image[yy][x*4 + 2] * k[x - xmin];
+                            ss4[3] += (UINT8) imIn->image[yy][x*4 + 3] * k[x - xmin];
+                        }
+                        imOut->image32[yy][xx] =
+                            clip8(ss4[0]) | clip8(ss4[1]) << 8 |
+                            clip8(ss4[2]) << 16 | clip8(ss4[3]) << 24;
                     }
                 }
                 break;
