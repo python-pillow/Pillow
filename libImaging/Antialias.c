@@ -79,7 +79,7 @@ static inline float bicubic_filter(float x)
 static struct filter BICUBIC = { bicubic_filter, 2.0 };
 
 Imaging
-ImagingStretchPass(Imaging imOut, Imaging imIn, int filter)
+ImagingStretchHorizaontal(Imaging imOut, Imaging imIn, int filter)
 {
     /* FIXME: this is a quick and straightforward translation from a
        python prototype.  might need some further C-ification... */
@@ -87,13 +87,18 @@ ImagingStretchPass(Imaging imOut, Imaging imIn, int filter)
     ImagingSectionCookie cookie;
     struct filter *filterp;
     float support, scale, filterscale;
-    float center, ww, ss, ymin, ymax, xmin, xmax;
-    int xx, yy, x, y, b;
+    float center, ww, ss, xmin, xmax;
+    int xx, yy, x, b;
     float *k;
 
     /* check modes */
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
+
+    if (imOut->ysize != imIn->ysize)
+        return (Imaging) ImagingError_ValueError(
+            "ImagingStretchHorizaontal requires equal heights"
+        );
 
     /* check filter */
     switch (filter) {
@@ -115,14 +120,8 @@ ImagingStretchPass(Imaging imOut, Imaging imIn, int filter)
             );
     }
 
-    if (imIn->ysize == imOut->ysize) {
-        /* prepare for horizontal stretch */
-        filterscale = scale = (float) imIn->xsize / imOut->xsize;
-    } else if (imIn->xsize == imOut->xsize) {
-        /* prepare for vertical stretch */
-        filterscale = scale = (float) imIn->ysize / imOut->ysize;
-    } else
-        return (Imaging) ImagingError_Mismatch();
+    /* prepare for horizontal stretch */
+    filterscale = scale = (float) imIn->xsize / imOut->xsize;
 
     /* determine support size (length of resampling filter) */
     support = filterp->support;
@@ -139,162 +138,83 @@ ImagingStretchPass(Imaging imOut, Imaging imIn, int filter)
         return (Imaging) ImagingError_MemoryError();
 
     ImagingSectionEnter(&cookie);
-    if (imIn->xsize == imOut->xsize) {
-        /* vertical stretch */
-        for (yy = 0; yy < imOut->ysize; yy++) {
-            center = (yy + 0.5) * scale;
-            ww = 0.0;
-            ss = 1.0 / filterscale;
-            /* calculate filter weights */
-            ymin = floor(center - support);
-            if (ymin < 0.0)
-                ymin = 0.0;
-            ymax = ceil(center + support);
-            if (ymax > (float) imIn->ysize)
-                ymax = (float) imIn->ysize;
-            for (y = (int) ymin; y < (int) ymax; y++) {
-                float w = filterp->filter((y - center + 0.5) * ss) * ss;
-                k[y - (int) ymin] = w;
-                ww = ww + w;
+    /* horizontal stretch */
+    for (xx = 0; xx < imOut->xsize; xx++) {
+        center = (xx + 0.5) * scale;
+        ww = 0.0;
+        ss = 1.0 / filterscale;
+        xmin = floor(center - support);
+        if (xmin < 0.0)
+            xmin = 0.0;
+        xmax = ceil(center + support);
+        if (xmax > (float) imIn->xsize)
+            xmax = (float) imIn->xsize;
+        for (x = (int) xmin; x < (int) xmax; x++) {
+            float w = filterp->filter((x - center + 0.5) * ss) * ss;
+            k[x - (int) xmin] = w;
+            ww = ww + w;
+        }
+        if (ww == 0.0)
+            ww = 1.0;
+        else
+            ww = 1.0 / ww;
+        if (imIn->image8) {
+            /* 8-bit grayscale */
+            for (yy = 0; yy < imOut->ysize; yy++) {
+                ss = 0.0;
+                for (x = (int) xmin; x < (int) xmax; x++)
+                    ss = ss + imIn->image8[yy][x] * k[x - (int) xmin];
+                ss = ss * ww + 0.5;
+                if (ss < 0.5)
+                    imOut->image8[yy][xx] = (UINT8) 0;
+                else if (ss >= 255.0)
+                    imOut->image8[yy][xx] = (UINT8) 255;
+                else
+                    imOut->image8[yy][xx] = (UINT8) ss;
             }
-            if (ww == 0.0)
-                ww = 1.0;
-            else
-                ww = 1.0 / ww;
-            if (imIn->image8) {
-                /* 8-bit grayscale */
-                for (xx = 0; xx < imOut->xsize; xx++) {
-                    ss = 0.0;
-                    for (y = (int) ymin; y < (int) ymax; y++)
-                        ss = ss + imIn->image8[y][xx] * k[y - (int) ymin];
-                    ss = ss * ww + 0.5;
-                    if (ss < 0.5)
-                        imOut->image8[yy][xx] = 0;
-                    else if (ss >= 255.0)
-                        imOut->image8[yy][xx] = 255;
-                    else
-                        imOut->image8[yy][xx] = (UINT8) ss;
-                }
-            } else
-                switch(imIn->type) {
-                case IMAGING_TYPE_UINT8:
-                    /* n-bit grayscale */
-                    for (xx = 0; xx < imOut->xsize*4; xx++) {
-                        /* FIXME: skip over unused pixels */
+        } else
+            switch(imIn->type) {
+            case IMAGING_TYPE_UINT8:
+                /* n-bit grayscale */
+                for (yy = 0; yy < imOut->ysize; yy++) {
+                    for (b = 0; b < imIn->bands; b++) {
+                        if (imIn->bands == 2 && b)
+                            b = 3; /* hack to deal with LA images */
                         ss = 0.0;
-                        for (y = (int) ymin; y < (int) ymax; y++)
-                            ss = ss + (UINT8) imIn->image[y][xx] * k[y-(int) ymin];
+                        for (x = (int) xmin; x < (int) xmax; x++)
+                            ss = ss + (UINT8) imIn->image[yy][x*4+b] * k[x - (int) xmin];
                         ss = ss * ww + 0.5;
                         if (ss < 0.5)
-                            imOut->image[yy][xx] = (UINT8) 0;
+                            imOut->image[yy][xx*4+b] = (UINT8) 0;
                         else if (ss >= 255.0)
-                            imOut->image[yy][xx] = (UINT8) 255;
+                            imOut->image[yy][xx*4+b] = (UINT8) 255;
                         else
-                            imOut->image[yy][xx] = (UINT8) ss;
+                            imOut->image[yy][xx*4+b] = (UINT8) ss;
                     }
-                    break;
-                case IMAGING_TYPE_INT32:
-                    /* 32-bit integer */
-                    for (xx = 0; xx < imOut->xsize; xx++) {
-                        ss = 0.0;
-                        for (y = (int) ymin; y < (int) ymax; y++)
-                            ss = ss + IMAGING_PIXEL_I(imIn, xx, y) * k[y - (int) ymin];
-                        IMAGING_PIXEL_I(imOut, xx, yy) = (int) ss * ww;
-                    }
-                    break;
-                case IMAGING_TYPE_FLOAT32:
-                    /* 32-bit float */
-                    for (xx = 0; xx < imOut->xsize; xx++) {
-                        ss = 0.0;
-                        for (y = (int) ymin; y < (int) ymax; y++)
-                            ss = ss + IMAGING_PIXEL_F(imIn, xx, y) * k[y - (int) ymin];
-                        IMAGING_PIXEL_F(imOut, xx, yy) = ss * ww;
-                    }
-                    break;
-                default:
-                    ImagingSectionLeave(&cookie);
-                    return (Imaging) ImagingError_ModeError();
                 }
-        }
-    } else {
-        /* horizontal stretch */
-        for (xx = 0; xx < imOut->xsize; xx++) {
-            center = (xx + 0.5) * scale;
-            ww = 0.0;
-            ss = 1.0 / filterscale;
-            xmin = floor(center - support);
-            if (xmin < 0.0)
-                xmin = 0.0;
-            xmax = ceil(center + support);
-            if (xmax > (float) imIn->xsize)
-                xmax = (float) imIn->xsize;
-            for (x = (int) xmin; x < (int) xmax; x++) {
-                float w = filterp->filter((x - center + 0.5) * ss) * ss;
-                k[x - (int) xmin] = w;
-                ww = ww + w;
-            }
-            if (ww == 0.0)
-                ww = 1.0;
-            else
-                ww = 1.0 / ww;
-            if (imIn->image8) {
-                /* 8-bit grayscale */
+                break;
+            case IMAGING_TYPE_INT32:
+                /* 32-bit integer */
                 for (yy = 0; yy < imOut->ysize; yy++) {
                     ss = 0.0;
                     for (x = (int) xmin; x < (int) xmax; x++)
-                        ss = ss + imIn->image8[yy][x] * k[x - (int) xmin];
-                    ss = ss * ww + 0.5;
-                    if (ss < 0.5)
-                        imOut->image8[yy][xx] = (UINT8) 0;
-                    else if (ss >= 255.0)
-                        imOut->image8[yy][xx] = (UINT8) 255;
-                    else
-                        imOut->image8[yy][xx] = (UINT8) ss;
+                        ss = ss + IMAGING_PIXEL_I(imIn, x, yy) * k[x - (int) xmin];
+                    IMAGING_PIXEL_I(imOut, xx, yy) = (int) ss * ww;
                 }
-            } else
-                switch(imIn->type) {
-                case IMAGING_TYPE_UINT8:
-                    /* n-bit grayscale */
-                    for (yy = 0; yy < imOut->ysize; yy++) {
-                        for (b = 0; b < imIn->bands; b++) {
-                            if (imIn->bands == 2 && b)
-                                b = 3; /* hack to deal with LA images */
-                            ss = 0.0;
-                            for (x = (int) xmin; x < (int) xmax; x++)
-                                ss = ss + (UINT8) imIn->image[yy][x*4+b] * k[x - (int) xmin];
-                            ss = ss * ww + 0.5;
-                            if (ss < 0.5)
-                                imOut->image[yy][xx*4+b] = (UINT8) 0;
-                            else if (ss >= 255.0)
-                                imOut->image[yy][xx*4+b] = (UINT8) 255;
-                            else
-                                imOut->image[yy][xx*4+b] = (UINT8) ss;
-                        }
-                    }
-                    break;
-                case IMAGING_TYPE_INT32:
-                    /* 32-bit integer */
-                    for (yy = 0; yy < imOut->ysize; yy++) {
-                        ss = 0.0;
-                        for (x = (int) xmin; x < (int) xmax; x++)
-                            ss = ss + IMAGING_PIXEL_I(imIn, x, yy) * k[x - (int) xmin];
-                        IMAGING_PIXEL_I(imOut, xx, yy) = (int) ss * ww;
-                    }
-                    break;
-                case IMAGING_TYPE_FLOAT32:
-                    /* 32-bit float */
-                    for (yy = 0; yy < imOut->ysize; yy++) {
-                        ss = 0.0;
-                        for (x = (int) xmin; x < (int) xmax; x++)
-                            ss = ss + IMAGING_PIXEL_F(imIn, x, yy) * k[x - (int) xmin];
-                        IMAGING_PIXEL_F(imOut, xx, yy) = ss * ww;
-                    }
-                    break;
-                default:
-                    ImagingSectionLeave(&cookie);
-                    return (Imaging) ImagingError_ModeError();
+                break;
+            case IMAGING_TYPE_FLOAT32:
+                /* 32-bit float */
+                for (yy = 0; yy < imOut->ysize; yy++) {
+                    ss = 0.0;
+                    for (x = (int) xmin; x < (int) xmax; x++)
+                        ss = ss + IMAGING_PIXEL_F(imIn, x, yy) * k[x - (int) xmin];
+                    IMAGING_PIXEL_F(imOut, xx, yy) = ss * ww;
                 }
-        }
+                break;
+            default:
+                ImagingSectionLeave(&cookie);
+                return (Imaging) ImagingError_ModeError();
+            }
     }
     ImagingSectionLeave(&cookie);
 
@@ -307,34 +227,58 @@ ImagingStretchPass(Imaging imOut, Imaging imIn, int filter)
 Imaging
 ImagingStretch(Imaging imOut, Imaging imIn, int filter)
 {
-    Imaging imTemp;
+    Imaging imTemp1, imTemp2, imTemp3;
     int xsize = imOut->xsize;
     int ysize = imOut->ysize;
 
     if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
         return (Imaging) ImagingError_ModeError();
 
-    /* two-pass resize: minimize size of intermediate image */
-    if ((Py_ssize_t) imIn->xsize * ysize < (Py_ssize_t) xsize * imIn->ysize)
-        imTemp = ImagingNew(imIn->mode, imIn->xsize, ysize);
-    else
-        imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
-    if ( ! imTemp)
+    /* two-pass resize */
+    imTemp1 = ImagingNew(imIn->mode, xsize, imIn->ysize);
+    if ( ! imTemp1)
         return NULL;
 
     /* first pass */
-    if ( ! ImagingStretchPass(imTemp, imIn, filter)) {
-        ImagingDelete(imTemp);
+    if ( ! ImagingStretchHorizaontal(imTemp1, imIn, filter)) {
+        ImagingDelete(imTemp1);
+        return NULL;
+    }
+
+    imTemp2 = ImagingNew(imIn->mode, imIn->ysize, xsize);
+    if ( ! imTemp2) {
+        ImagingDelete(imTemp1);
+        return NULL;
+    }
+
+    /* transpose image once */
+    if ( ! ImagingTranspose(imTemp2, imTemp1)) {
+        ImagingDelete(imTemp1);
+        ImagingDelete(imTemp2);
+        return NULL;
+    }
+    ImagingDelete(imTemp1);
+
+    imTemp3 = ImagingNew(imIn->mode, ysize, xsize);
+    if ( ! imTemp3) {
+        ImagingDelete(imTemp2);
         return NULL;
     }
 
     /* second pass */
-    if ( ! ImagingStretchPass(imOut, imTemp, filter)) {
-        ImagingDelete(imTemp);
+    if ( ! ImagingStretchHorizaontal(imTemp3, imTemp2, filter)) {
+        ImagingDelete(imTemp2);
+        ImagingDelete(imTemp3);
         return NULL;
     }
+    ImagingDelete(imTemp2);
 
-    ImagingDelete(imTemp);
+    /* transpose result */
+    if ( ! ImagingTranspose(imOut, imTemp3)) {
+        ImagingDelete(imTemp3);
+        return NULL;
+    }
+    ImagingDelete(imTemp3);
 
     return imOut;
 }
