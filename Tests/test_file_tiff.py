@@ -298,6 +298,19 @@ class TestFileTiff(PillowTestCase):
         # Assert
         self.assertEqual(ret, [0, 1])
 
+    def test_save_tiff_with_jpegtables(self):
+        # Arrange
+        outfile = self.tempfile("temp.tif")
+
+        # Created with ImageMagick: convert hopper.jpg hopper_jpg.tif
+        # Contains JPEGTables (347) tag
+        infile = "Tests/images/hopper_jpg.tif"
+        im = Image.open(infile)
+
+        # Act / Assert
+        # Should not raise UnicodeDecodeError or anything else
+        im.save(outfile)
+
 
 if __name__ == '__main__':
     unittest.main()
