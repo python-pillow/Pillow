@@ -299,6 +299,26 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(ret, [0, 1])
 
 
+    def test_page_number_x_0(self):
+        # Issue 973
+        # Test TIFF with tag 297 (Page Number) having value of 0 0.
+        # The first number is the current page number.
+        # The second is the total number of pages, zero means not available.
+
+        # Arrange
+        outfile = self.tempfile("temp.tif")
+
+        # Created by printing a page in Chrome to PDF, then:
+        # /usr/bin/gs -q -sDEVICE=tiffg3 -sOutputFile=total-pages-zero.tif
+        # -dNOPAUSE /tmp/test.pdf -c quit
+        infile = "Tests/images/total-pages-zero.tif"
+        im = Image.open(infile)
+
+        # Act / Assert
+        # Should not divide by zero
+        im.save("test.tif")
+
+
 if __name__ == '__main__':
     unittest.main()
 
