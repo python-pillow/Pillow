@@ -147,25 +147,24 @@ class TestFileTiff(PillowTestCase):
         # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
 
         im.seek(0)
-        self.assertEqual(im.size, (10,10))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,128,0))
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 128, 0))
 
         im.seek(1)
         im.load()
-        self.assertEqual(im.size, (10,10))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (255,0,0))
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (255, 0, 0))
 
         im.seek(2)
         im.load()
-        self.assertEqual(im.size, (20,20))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
+        self.assertEqual(im.size, (20, 20))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
 
     def test_multipage_last_frame(self):
         im = Image.open('Tests/images/multipage-lastframe.tif')
         im.load()
-        self.assertEqual(im.size, (20,20))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
-
+        self.assertEqual(im.size, (20, 20))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
 
     def test___str__(self):
         # Arrange
@@ -199,7 +198,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_byte(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abc"
 
@@ -223,7 +221,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_float(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abcdabcd"
 
@@ -235,7 +232,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_double(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abcdefghabcdefgh"
 
