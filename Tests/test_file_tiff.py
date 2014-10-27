@@ -316,7 +316,7 @@ class TestFileTiff(PillowTestCase):
 
         # Act / Assert
         # Should not divide by zero
-        im.save("test.tif")
+        im.save(outfile)
 
 
 if __name__ == '__main__':
