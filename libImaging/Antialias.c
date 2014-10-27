@@ -90,6 +90,21 @@ static inline UINT8 clip8(float in)
 }
 
 
+/* This is work around bug in GCC prior 4.9 in 64 bit mode.
+   GCC generates code with partial dependency which 3 times slower.
+   See: http://stackoverflow.com/a/26588074/253146 */
+#if defined(__x86_64__) && defined(__SSE__) && \
+    ! defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900)
+static float __attribute__((always_inline)) i2f(int v) {
+    float x;
+    __asm__("xorps %0, %0; cvtsi2ss %1, %0" : "=X"(x) : "r"(v) );
+    return x;
+}
+#else
+static float inline i2f(int v) { return (float) v; }
+#endif
+
+
 Imaging
 ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
 {
@@ -100,7 +115,7 @@ ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
     Imaging imOut;
     struct filter *filterp;
     float support, scale, filterscale;
-    float center, ww, ss, ss4[4];
+    float center, ww, ss, ss0, ss1, ss2, ss3;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
     float *k, *kk;
@@ -193,7 +208,7 @@ ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
                 k = &kk[xx * kmax];
                 ss = 0.5;
                 for (x = xmin; x < xmax; x++)
-                    ss = ss + imIn->image8[yy][x] * k[x - xmin];
+                    ss += i2f(imIn->image8[yy][x]) * k[x - xmin];
                 imOut->image8[yy][xx] = clip8(ss);
             }
         } else
@@ -205,26 +220,25 @@ ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     if (imIn->bands == 3) {
-                        ss4[0] = ss4[1] = ss4[2] = 0.5;
+                        ss0 = ss1 = ss2 = 0.5;
                         for (x = xmin; x < xmax; x++) {
-                            ss4[0] += (UINT8) imIn->image[yy][x*4 + 0] * k[x - xmin];
-                            ss4[1] += (UINT8) imIn->image[yy][x*4 + 1] * k[x - xmin];
-                            ss4[2] += (UINT8) imIn->image[yy][x*4 + 2] * k[x - xmin];
+                            ss0 += i2f((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
+                            ss1 += i2f((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
+                            ss2 += i2f((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
                         }
                         imOut->image32[yy][xx] =
-                            clip8(ss4[0]) | clip8(ss4[1]) << 8 |
-                            clip8(ss4[2]) << 16;
+                            clip8(ss0) | clip8(ss1) << 8 | clip8(ss2) << 16;
                     } else {
-                        ss4[0] = ss4[1] = ss4[2] = ss4[3] = 0.5;
+                        ss0 = ss1 = ss2 = ss3 = 0.5;
                         for (x = xmin; x < xmax; x++) {
-                            ss4[0] += (UINT8) imIn->image[yy][x*4 + 0] * k[x - xmin];
-                            ss4[1] += (UINT8) imIn->image[yy][x*4 + 1] * k[x - xmin];
-                            ss4[2] += (UINT8) imIn->image[yy][x*4 + 2] * k[x - xmin];
-                            ss4[3] += (UINT8) imIn->image[yy][x*4 + 3] * k[x - xmin];
+                            ss0 += i2f((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
+                            ss1 += i2f((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
+                            ss2 += i2f((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
+                            ss3 += i2f((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
                         }
                         imOut->image32[yy][xx] =
-                            clip8(ss4[0]) | clip8(ss4[1]) << 8 |
-                            clip8(ss4[2]) << 16 | clip8(ss4[3]) << 24;
+                            clip8(ss0) | clip8(ss1) << 8 |
+                            clip8(ss2) << 16 | clip8(ss3) << 24;
                     }
                 }
                 break;
@@ -236,7 +250,7 @@ ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
                     k = &kk[xx * kmax];
                     ss = 0.0;
                     for (x = xmin; x < xmax; x++)
-                        ss = ss + IMAGING_PIXEL_I(imIn, x, yy) * k[x - xmin];
+                        ss += i2f(IMAGING_PIXEL_I(imIn, x, yy)) * k[x - xmin];
                     IMAGING_PIXEL_I(imOut, xx, yy) = (int) ss;
                 }
                 break;
@@ -248,7 +262,7 @@ ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
                     k = &kk[xx * kmax];
                     ss = 0.0;
                     for (x = xmin; x < xmax; x++)
-                        ss = ss + IMAGING_PIXEL_F(imIn, x, yy) * k[x - xmin];
+                        ss += IMAGING_PIXEL_F(imIn, x, yy) * k[x - xmin];
                     IMAGING_PIXEL_F(imOut, xx, yy) = ss;
                 }
                 break;
