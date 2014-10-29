@@ -342,6 +342,24 @@ class TestFileLibTiff(LibTiffTestCase):
         im.load()
         self.assertFalse(im.tag.next)
 
+    def test_4bit(self):
+        # Arrange
+        test_file = "Tests/images/hopper_gray_4bpp.tif"
+        original = hopper("L")
+
+        # Act
+        TiffImagePlugin.READ_LIBTIFF = True
+        im = Image.open(test_file)
+        TiffImagePlugin.READ_LIBTIFF = False
+
+        # Assert
+        self.assertEqual(im.size, (128, 128))
+        self.assertEqual(im.mode, "L")
+        self.assert_image_similar(im, original, 7.3)
+
+
+
+
 if __name__ == '__main__':
     unittest.main()
 
