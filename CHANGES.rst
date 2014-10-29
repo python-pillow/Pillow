@@ -4,11 +4,14 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Support for 4-bit greyscale TIFF images #980
+  [hugovk, wiredfool]
+
 - Updated manifest #957
   [wiredfool]
 
 - Fix PyPy 2.4 regression #952
- [wiredfool]
+  [wiredfool]
 
 - Webp Metadata Skip Test comments #954
   [wiredfool]
