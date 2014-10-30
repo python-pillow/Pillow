@@ -446,14 +446,16 @@ usm = unsharp_mask
 
 def box_blur(image, radius):
     """
-    Apply box blur to given image. Box blur is operation where
-    each pixel becomes the average value of pixels in given radius.
-    Supports float radius and very large ones. Fast implementation,
-    works in linear time relative to the radius.
+    Blur the image by setting each pixel to the average value of the pixels
+    in a square box extending radius pixels in each direction.
+    Supports float radius of arbitrary size. Uses an optimized implementation
+    which runs in linear time relative to the size of the image
+    for any radius value.
 
     :param image: The image to blur.
     :param radius: Size of the box in one direction. Radius 0 does not blur,
-    radius 1 takes 1 pixel in all directions, i.e. 9 pixels in total.
+                   returns an identical image. Radius 1 takes 1 pixel
+                   in each direction, i.e. 9 pixels in total.
     :return: An image.
     """
     image.load()

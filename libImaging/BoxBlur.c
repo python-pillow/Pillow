@@ -16,11 +16,11 @@ LineBoxBlur32(pixel *line, UINT32 *lineOut, int lastx, int radius, int edgeA,
     UINT32 acc[4];
     UINT32 bulk[4];
 
-    #define MOVE_ACC(acc, substract, add) \
-        acc[0] += line[add][0] - line[substract][0]; \
-        acc[1] += line[add][1] - line[substract][1]; \
-        acc[2] += line[add][2] - line[substract][2]; \
-        acc[3] += line[add][3] - line[substract][3];
+    #define MOVE_ACC(acc, subtract, add) \
+        acc[0] += line[add][0] - line[subtract][0]; \
+        acc[1] += line[add][1] - line[subtract][1]; \
+        acc[2] += line[add][2] - line[subtract][2]; \
+        acc[3] += line[add][3] - line[subtract][3];
 
     #define ADD_FAR(bulk, acc, left, right) \
         bulk[0] = (acc[0] * ww) + (line[left][0] + line[right][0]) * fw; \
@@ -28,9 +28,9 @@ LineBoxBlur32(pixel *line, UINT32 *lineOut, int lastx, int radius, int edgeA,
         bulk[2] = (acc[2] * ww) + (line[left][2] + line[right][2]) * fw; \
         bulk[3] = (acc[3] * ww) + (line[left][3] + line[right][3]) * fw;
 
-    #define SAVE(acc) \
-        (UINT8)((acc[0] + (1 << 23)) >> 24) << 0  | (UINT8)((acc[1] + (1 << 23)) >> 24) << 8 | \
-        (UINT8)((acc[2] + (1 << 23)) >> 24) << 16 | (UINT8)((acc[3] + (1 << 23)) >> 24) << 24
+    #define SAVE(bulk) \
+        (UINT8)((bulk[0] + (1 << 23)) >> 24) << 0  | (UINT8)((bulk[1] + (1 << 23)) >> 24) << 8 | \
+        (UINT8)((bulk[2] + (1 << 23)) >> 24) << 16 | (UINT8)((bulk[3] + (1 << 23)) >> 24) << 24
 
     /* Compute acc for -1 pixel (outside of image):
        From "-radius-1" to "-1" get first pixel,
@@ -54,21 +54,21 @@ LineBoxBlur32(pixel *line, UINT32 *lineOut, int lastx, int radius, int edgeA,
 
     if (edgeA <= edgeB)
     {
-        /* Substract pixel from left ("0").
+        /* Subtract pixel from left ("0").
            Add pixels from radius. */
         for (x = 0; x < edgeA; x++) {
             MOVE_ACC(acc, 0, x + radius);
             ADD_FAR(bulk, acc, 0, x + radius + 1);
             lineOut[x] = SAVE(bulk);
         }
-        /* Substract previous pixel from "-radius".
+        /* Subtract previous pixel from "-radius".
            Add pixels from radius. */
         for (x = edgeA; x < edgeB; x++) {
             MOVE_ACC(acc, x - radius - 1, x + radius);
             ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
             lineOut[x] = SAVE(bulk);
         }
-        /* Substract previous pixel from "-radius".
+        /* Subtract previous pixel from "-radius".
            Add last pixel. */
         for (x = edgeB; x <= lastx; x++) {
             MOVE_ACC(acc, x - radius - 1, lastx);
@@ -109,14 +109,14 @@ LineBoxBlur8(UINT8 *line, UINT8 *lineOut, int lastx, int radius, int edgeA,
     UINT32 acc;
     UINT32 bulk;
 
-    #define MOVE_ACC(acc, substract, add) \
-        acc += line[add] - line[substract];
+    #define MOVE_ACC(acc, subtract, add) \
+        acc += line[add] - line[subtract];
 
     #define ADD_FAR(bulk, acc, left, right) \
         bulk = (acc * ww) + (line[left] + line[right]) * fw;
 
-    #define SAVE(acc) \
-        (UINT8)((acc + (1 << 23)) >> 24)
+    #define SAVE(bulk) \
+        (UINT8)((bulk + (1 << 23)) >> 24)
 
     acc = line[0] * (radius + 1);
     for (x = 0; x < edgeA - 1; x++) {
@@ -252,17 +252,17 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n)
     if (imIn->type != IMAGING_TYPE_UINT8)
         return ImagingError_ModeError();
 
-    if ( ! (strcmp(imIn->mode, "RGB") == 0 ||
-            strcmp(imIn->mode, "RGBA") == 0 ||
-            strcmp(imIn->mode, "RGBX") == 0 ||
-            strcmp(imIn->mode, "CMYK") == 0 ||
-            strcmp(imIn->mode, "L") == 0 ||
-            strcmp(imIn->mode, "LA") == 0))
+    if (!(strcmp(imIn->mode, "RGB") == 0 ||
+          strcmp(imIn->mode, "RGBA") == 0 ||
+          strcmp(imIn->mode, "RGBX") == 0 ||
+          strcmp(imIn->mode, "CMYK") == 0 ||
+          strcmp(imIn->mode, "L") == 0 ||
+          strcmp(imIn->mode, "LA") == 0))
         return ImagingError_ModeError();
 
     /* Create transposed temp image (imIn->ysize x imIn->xsize). */
     Imaging temp = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
-    if ( ! temp)
+    if (!temp)
         return NULL;
 
     /* Apply one-dimensional blur.
