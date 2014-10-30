@@ -9,7 +9,7 @@
 typedef UINT8 pixel[4];
 
 void
-LineBoxBlur32(pixel *line, UINT32 *lineOut, int lastx, int radius, int edgeA,
+ImagingLineBoxBlur32(UINT32 *lineOut, pixel *lineIn, int lastx, int radius, int edgeA,
     int edgeB, UINT32 ww, UINT32 fw)
 {
     int x;
@@ -17,16 +17,16 @@ LineBoxBlur32(pixel *line, UINT32 *lineOut, int lastx, int radius, int edgeA,
     UINT32 bulk[4];
 
     #define MOVE_ACC(acc, subtract, add) \
-        acc[0] += line[add][0] - line[subtract][0]; \
-        acc[1] += line[add][1] - line[subtract][1]; \
-        acc[2] += line[add][2] - line[subtract][2]; \
-        acc[3] += line[add][3] - line[subtract][3];
+        acc[0] += lineIn[add][0] - lineIn[subtract][0]; \
+        acc[1] += lineIn[add][1] - lineIn[subtract][1]; \
+        acc[2] += lineIn[add][2] - lineIn[subtract][2]; \
+        acc[3] += lineIn[add][3] - lineIn[subtract][3];
 
     #define ADD_FAR(bulk, acc, left, right) \
-        bulk[0] = (acc[0] * ww) + (line[left][0] + line[right][0]) * fw; \
-        bulk[1] = (acc[1] * ww) + (line[left][1] + line[right][1]) * fw; \
-        bulk[2] = (acc[2] * ww) + (line[left][2] + line[right][2]) * fw; \
-        bulk[3] = (acc[3] * ww) + (line[left][3] + line[right][3]) * fw;
+        bulk[0] = (acc[0] * ww) + (lineIn[left][0] + lineIn[right][0]) * fw; \
+        bulk[1] = (acc[1] * ww) + (lineIn[left][1] + lineIn[right][1]) * fw; \
+        bulk[2] = (acc[2] * ww) + (lineIn[left][2] + lineIn[right][2]) * fw; \
+        bulk[3] = (acc[3] * ww) + (lineIn[left][3] + lineIn[right][3]) * fw;
 
     #define SAVE(bulk) \
         (UINT8)((bulk[0] + (1 << 23)) >> 24) << 0  | (UINT8)((bulk[1] + (1 << 23)) >> 24) << 8 | \
@@ -35,22 +35,22 @@ LineBoxBlur32(pixel *line, UINT32 *lineOut, int lastx, int radius, int edgeA,
     /* Compute acc for -1 pixel (outside of image):
        From "-radius-1" to "-1" get first pixel,
        then from "0" to "radius-1". */
-    acc[0] = line[0][0] * (radius + 1);
-    acc[1] = line[0][1] * (radius + 1);
-    acc[2] = line[0][2] * (radius + 1);
-    acc[3] = line[0][3] * (radius + 1);
+    acc[0] = lineIn[0][0] * (radius + 1);
+    acc[1] = lineIn[0][1] * (radius + 1);
+    acc[2] = lineIn[0][2] * (radius + 1);
+    acc[3] = lineIn[0][3] * (radius + 1);
     /* As radius can be bigger than xsize, iterate to edgeA -1. */
     for (x = 0; x < edgeA - 1; x++) {
-        acc[0] += line[x][0];
-        acc[1] += line[x][1];
-        acc[2] += line[x][2];
-        acc[3] += line[x][3];
+        acc[0] += lineIn[x][0];
+        acc[1] += lineIn[x][1];
+        acc[2] += lineIn[x][2];
+        acc[3] += lineIn[x][3];
     }
     /* Then multiply remainder to last x. */
-    acc[0] += line[lastx][0] * (radius - edgeA + 1);
-    acc[1] += line[lastx][1] * (radius - edgeA + 1);
-    acc[2] += line[lastx][2] * (radius - edgeA + 1);
-    acc[3] += line[lastx][3] * (radius - edgeA + 1);
+    acc[0] += lineIn[lastx][0] * (radius - edgeA + 1);
+    acc[1] += lineIn[lastx][1] * (radius - edgeA + 1);
+    acc[2] += lineIn[lastx][2] * (radius - edgeA + 1);
+    acc[3] += lineIn[lastx][3] * (radius - edgeA + 1);
 
     if (edgeA <= edgeB)
     {
@@ -102,7 +102,7 @@ LineBoxBlur32(pixel *line, UINT32 *lineOut, int lastx, int radius, int edgeA,
 
 
 void
-LineBoxBlur8(UINT8 *line, UINT8 *lineOut, int lastx, int radius, int edgeA,
+ImagingLineBoxBlur8(UINT8 *lineOut, UINT8 *lineIn, int lastx, int radius, int edgeA,
     int edgeB, UINT32 ww, UINT32 fw)
 {
     int x;
@@ -110,19 +110,19 @@ LineBoxBlur8(UINT8 *line, UINT8 *lineOut, int lastx, int radius, int edgeA,
     UINT32 bulk;
 
     #define MOVE_ACC(acc, subtract, add) \
-        acc += line[add] - line[subtract];
+        acc += lineIn[add] - lineIn[subtract];
 
     #define ADD_FAR(bulk, acc, left, right) \
-        bulk = (acc * ww) + (line[left] + line[right]) * fw;
+        bulk = (acc * ww) + (lineIn[left] + lineIn[right]) * fw;
 
     #define SAVE(bulk) \
         (UINT8)((bulk + (1 << 23)) >> 24)
 
-    acc = line[0] * (radius + 1);
+    acc = lineIn[0] * (radius + 1);
     for (x = 0; x < edgeA - 1; x++) {
-        acc += line[x];
+        acc += lineIn[x];
     }
-    acc += line[lastx] * (radius - edgeA + 1);
+    acc += lineIn[lastx] * (radius - edgeA + 1);
 
     if (edgeA <= edgeB)
     {
@@ -169,7 +169,7 @@ LineBoxBlur8(UINT8 *line, UINT8 *lineOut, int lastx, int radius, int edgeA,
 
 
 Imaging
-HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
+HorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius)
 {
     ImagingSectionCookie cookie;
 
@@ -179,10 +179,10 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
     UINT32 ww = (UINT32) (1 << 24) / (floatRadius * 2 + 1);
     UINT32 fw = ((1 << 24) - (radius * 2 + 1) * ww) / 2;
 
-    int edgeA = MIN(radius + 1, im->xsize);
-    int edgeB = MAX(im->xsize - radius - 1, 0);
+    int edgeA = MIN(radius + 1, imIn->xsize);
+    int edgeB = MAX(imIn->xsize - radius - 1, 0);
 
-    UINT32 *lineOut = calloc(im->xsize, sizeof(UINT32));
+    UINT32 *lineOut = calloc(imIn->xsize, sizeof(UINT32));
     if (lineOut == NULL)
         return ImagingError_MemoryError();
 
@@ -190,35 +190,35 @@ HorizontalBoxBlur(Imaging im, Imaging imOut, float floatRadius)
 
     ImagingSectionEnter(&cookie);
 
-    if (im->image8)
+    if (imIn->image8)
     {
-        for (y = 0; y < im->ysize; y++) {
-            LineBoxBlur8(
-                im->image8[y],
-                (im == imOut ? (UINT8 *) lineOut : imOut->image8[y]),
-                im->xsize - 1,
+        for (y = 0; y < imIn->ysize; y++) {
+            ImagingLineBoxBlur8(
+                (imIn == imOut ? (UINT8 *) lineOut : imOut->image8[y]),
+                imIn->image8[y],
+                imIn->xsize - 1,
                 radius, edgeA, edgeB,
                 ww, fw
             );
-            if (im == imOut) {
+            if (imIn == imOut) {
                 // Commit.
-                memcpy(imOut->image8[y], lineOut, im->xsize);
+                memcpy(imOut->image8[y], lineOut, imIn->xsize);
             }
         }
     }
     else
     {
-        for (y = 0; y < im->ysize; y++) {
-            LineBoxBlur32(
-                (pixel *) im->image32[y],
-                im == imOut ? lineOut : (UINT32 *) imOut->image32[y],
-                im->xsize - 1,
+        for (y = 0; y < imIn->ysize; y++) {
+            ImagingLineBoxBlur32(
+                imIn == imOut ? lineOut : (UINT32 *) imOut->image32[y],
+                (pixel *) imIn->image32[y],
+                imIn->xsize - 1,
                 radius, edgeA, edgeB,
                 ww, fw
             );
-            if (im == imOut) {
+            if (imIn == imOut) {
                 // Commit.
-                memcpy(imOut->image32[y], lineOut, im->xsize * 4);
+                memcpy(imOut->image32[y], lineOut, imIn->xsize * 4);
             }
         }
     }
@@ -267,7 +267,7 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n)
 
     /* Apply one-dimensional blur.
        HorizontalBoxBlur transposes image at same time. */
-    HorizontalBoxBlur(imIn, imOut, radius);
+    HorizontalBoxBlur(imOut, imIn, radius);
     for (i = 1; i < n; i ++) {
         HorizontalBoxBlur(imOut, imOut, radius);
     }
