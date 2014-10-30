@@ -169,7 +169,7 @@ ImagingLineBoxBlur8(UINT8 *lineOut, UINT8 *lineIn, int lastx, int radius, int ed
 
 
 Imaging
-HorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius)
+ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius)
 {
     ImagingSectionCookie cookie;
 
@@ -260,28 +260,28 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n)
           strcmp(imIn->mode, "LA") == 0))
         return ImagingError_ModeError();
 
-    /* Create transposed temp image (imIn->ysize x imIn->xsize). */
-    Imaging temp = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
-    if (!temp)
+    Imaging imTransposed = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
+    if (!imTransposed)
         return NULL;
 
-    /* Apply one-dimensional blur.
-       HorizontalBoxBlur transposes image at same time. */
-    HorizontalBoxBlur(imOut, imIn, radius);
+    /* Apply blur in one dimension.
+       Use imOut as a destination at first pass,
+       then use imOut as a source too. */
+    ImagingHorizontalBoxBlur(imOut, imIn, radius);
     for (i = 1; i < n; i ++) {
-        HorizontalBoxBlur(imOut, imOut, radius);
+        ImagingHorizontalBoxBlur(imOut, imOut, radius);
     }
-    ImagingTranspose(temp, imOut);
+    /* Transpose result for blur in another direction. */
+    ImagingTranspose(imTransposed, imOut);
 
-    /* Blur transposed result from previout step in same direction.
-       Reseult will be transposed again. We'll get original image
-       blurred in both directions. */
+    /* Reuse imTransposed as a source and destination there. */
     for (i = 0; i < n; i ++) {
-        HorizontalBoxBlur(temp, temp, radius);
+        ImagingHorizontalBoxBlur(imTransposed, imTransposed, radius);
     }
-    ImagingTranspose(imOut, temp);
+    /* Restore original orientation. */
+    ImagingTranspose(imOut, imTransposed);
 
-    ImagingDelete(temp);
+    ImagingDelete(imTransposed);
 
     return imOut;
 }
