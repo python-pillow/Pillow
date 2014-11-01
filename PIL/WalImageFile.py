@@ -1,5 +1,3 @@
-# -*- coding: iso-8859-1 -*-
-#
 # The Python Imaging Library.
 # $Id$
 #
@@ -76,7 +74,7 @@ def open(filename):
 
 
 quake2palette = (
-    # default palette taken from piffo 0.93 by Hans Häggström
+    # default palette taken from piffo 0.93 by Hans HÃ¤ggstrÃ¶m
     b"\x01\x01\x01\x0b\x0b\x0b\x12\x12\x12\x17\x17\x17\x1b\x1b\x1b\x1e"
     b"\x1e\x1e\x22\x22\x22\x26\x26\x26\x29\x29\x29\x2c\x2c\x2c\x2f\x2f"
     b"\x2f\x32\x32\x32\x35\x35\x35\x37\x37\x37\x3a\x3a\x3a\x3c\x3c\x3c"

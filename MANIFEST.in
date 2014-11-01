@@ -1,40 +1,26 @@
-
 include *.c
 include *.h
 include *.md
 include *.py
 include *.rst
 include *.txt
+include *.yaml
 include .coveragerc
 include .gitattributes
 include .travis.yml
 include Makefile
 include tox.ini
-recursive-include Images *.bdf
-recursive-include Images *.fli
-recursive-include Images *.gif
-recursive-include Images *.icns
-recursive-include Images *.ico
-recursive-include Images *.jpg
-recursive-include Images *.pbm
-recursive-include Images *.pil
-recursive-include Images *.png
-recursive-include Images *.ppm
-recursive-include Images *.psd
-recursive-include Images *.tar
-recursive-include Images *.webp
-recursive-include Images *.xpm
 recursive-include PIL *.md
 recursive-include Sane *.c
 recursive-include Sane *.py
 recursive-include Sane *.rst
 recursive-include Sane *.txt
 recursive-include Sane CHANGES
-recursive-include Sane README
+recursive-include Sane README.rst
 recursive-include Scripts *.py
 recursive-include Scripts *.rst
 recursive-include Scripts *.sh
-recursive-include Scripts README
+recursive-include Scripts README.rst
 recursive-include Tests *.bdf
 recursive-include Tests *.bin
 recursive-include Tests *.bmp
@@ -44,10 +30,11 @@ recursive-include Tests *.dcx
 recursive-include Tests *.doc
 recursive-include Tests *.eps
 recursive-include Tests *.fli
+recursive-include Tests *.ggr
 recursive-include Tests *.gif
 recursive-include Tests *.gnuplot
 recursive-include Tests *.html
-recursive-include Tests *.icm
+recursive-include Tests *.icc
 recursive-include Tests *.icns
 recursive-include Tests *.ico
 recursive-include Tests *.j2k
@@ -70,6 +57,7 @@ recursive-include Tests *.rst
 recursive-include Tests *.sgi
 recursive-include Tests *.spider
 recursive-include Tests *.tar
+recursive-include Tests *.tga
 recursive-include Tests *.tif
 recursive-include Tests *.tiff
 recursive-include Tests *.ttf
@@ -78,7 +66,6 @@ recursive-include Tests *.webp
 recursive-include Tests *.xpm
 recursive-include Tk *.c
 recursive-include Tk *.rst
-recursive-include Tk *.txt
 recursive-include depends *.rst
 recursive-include depends *.sh
 recursive-include docs *.bat

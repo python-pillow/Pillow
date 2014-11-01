@@ -6,6 +6,7 @@ Released quarterly.
 
 * [ ] Get master to the appropriate code release state. [Travis CI](https://travis-ci.org/python-pillow/Pillow) should be running cleanly for all merges to master.
 * [ ] Update version in `PIL/__init__.py`, `setup.py`, `_imaging.c`, Update date in `CHANGES.rst`.
+* [ ] Run pre-release check via `make pre`
 * [ ] Tag and push to release branch in python-pillow repo.
 * [ ] Upload binaries.
 
@@ -16,6 +17,7 @@ Released as required for security or installation fixes.
 * [ ] Make necessary changes in master.
 * [ ] Cherry pick individual commits. Touch up `CHANGES.rst` to reflect reality.
 * [ ] Update version in `PIL/__init__.py`, `setup.py`, `_imaging.c`
+* [ ] Run pre-release check via `make pre`
 * [ ] Push to release branch in personal repo. Let Travis run cleanly.
 * [ ] Tag and push to release branch in python-pillow repo.
 * [ ] Upload binaries.
@@ -28,6 +30,7 @@ Security fixes that need to be pushed to the distros prior to public release.
 * [ ] Commit against master, cherry pick to affected release branches.
 * [ ] Run local test matrix on each release & Python version.
 * [ ] Privately send to distros.
+* [ ] Run pre-release check via `make pre`
 * [ ] Amend any commits with the CVE #
 * [ ] On release date, tag and push to GitHub.
 ```
@@ -53,3 +56,4 @@ python setup.py sdist upload
 * [ ] Retrieve the OS X Wheels from Rackspace files, upload to PyPi (Twine?)
 * [ ] Grab Windows binaries, `twine upload dist/*.[whl|egg]`. Manually upload .exe installers.
 * [ ] Announce release availability. [Twitter](https://twitter.com/pythonpillow), web.
+

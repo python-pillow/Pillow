@@ -1,8 +1,41 @@
 Changelog (Pillow)
 ==================
 
-2.6.0 (unreleased)
+2.7.0 (unreleased)
 ------------------
+
+- Support for 4-bit greyscale TIFF images #980
+  [hugovk, wiredfool]
+
+- Updated manifest #957
+  [wiredfool]
+
+- Fix PyPy 2.4 regression #952
+  [wiredfool]
+
+- Webp Metadata Skip Test comments #954
+  [wiredfool]
+  
+- Fixes for things rpmlint complains about #942
+  [manisandro]
+
+2.6.1 (2014-10-11)
+------------------
+
+- Fix SciPy regression in Image.resize #945
+  [wiredfool]
+  
+- Fix manifest to include all test files.
+  [aclark]
+
+2.6.0 (2014-10-01)
+------------------
+
+- Relax precision of ImageDraw tests for x86, GimpGradient for PPC
+  [wiredfool]
+
+2.6.0-rc1 (2014-09-29)
+----------------------
 
 - Use redistributable image for testing #884
   [hugovk]

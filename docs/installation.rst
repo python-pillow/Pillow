@@ -67,10 +67,10 @@ Many of Pillow's features require external libraries:
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
     above uses liblcms2. Tested with **1.19** and **2.2**.
 
-* **libwebp** provides the Webp format.
+* **libwebp** provides the WebP format.
 
   * Pillow has been tested with version **0.1.3**, which does not read
-    transparent webp files. Versions **0.3.0** and **0.4.0** support
+    transparent WebP files. Versions **0.3.0** and **0.4.0** support
     transparency.
 
 * **tcl/tk** provides support for tkinter bitmap and photo images.
@@ -121,11 +121,16 @@ Prerequisites are installed on **Ubuntu 10.04 LTS** with::
     $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev \
         libfreetype6-dev tcl8.5-dev tk8.5-dev python-tk
 
-Prerequisites are installed with on **Ubuntu 12.04 LTS** or **Raspian Wheezy
+Prerequisites are installed on **Ubuntu 12.04 LTS** or **Raspian Wheezy
 7.0** with::
 
     $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev \
         libfreetype6-dev liblcms2-dev libwebp-dev tcl8.5-dev tk8.5-dev python-tk
+
+Prerequisites are installed on **Ubuntu 14.04 LTS** with::
+
+    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev \
+        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python-tk
 
 Prerequisites are installed on **Fedora 20** with::
 

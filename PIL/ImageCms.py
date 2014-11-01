@@ -90,8 +90,8 @@ try:
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
-    from _util import import_err
-    _imagingcms = import_err(ex)
+    from _util import deferred_error
+    _imagingcms = deferred_error(ex)
 from PIL._util import isStringType
 
 core = _imagingcms

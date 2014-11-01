@@ -144,28 +144,27 @@ class TestFileTiff(PillowTestCase):
     def test_multipage(self):
         # issue #862
         im = Image.open('Tests/images/multipage.tiff')
-        # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
+        # file is a multipage tiff: 10x10 green, 10x10 red, 20x20 blue
 
         im.seek(0)
-        self.assertEqual(im.size, (10,10))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,128,0))
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 128, 0))
 
         im.seek(1)
         im.load()
-        self.assertEqual(im.size, (10,10))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (255,0,0))
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (255, 0, 0))
 
         im.seek(2)
         im.load()
-        self.assertEqual(im.size, (20,20))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
+        self.assertEqual(im.size, (20, 20))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
 
     def test_multipage_last_frame(self):
         im = Image.open('Tests/images/multipage-lastframe.tif')
         im.load()
-        self.assertEqual(im.size, (20,20))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
-
+        self.assertEqual(im.size, (20, 20))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
 
     def test___str__(self):
         # Arrange
@@ -293,6 +292,39 @@ class TestFileTiff(PillowTestCase):
 
         # Assert
         self.assertEqual(ret, [0, 1])
+
+    def test_4bit(self):
+        # Arrange
+        test_file = "Tests/images/hopper_gray_4bpp.tif"
+        original = hopper("L")
+
+        # Act
+        im = Image.open(test_file)
+
+        # Assert
+        self.assertEqual(im.size, (128, 128))
+        self.assertEqual(im.mode, "L")
+        self.assert_image_similar(im, original, 7.3)
+
+
+    def test_page_number_x_0(self):
+        # Issue 973
+        # Test TIFF with tag 297 (Page Number) having value of 0 0.
+        # The first number is the current page number.
+        # The second is the total number of pages, zero means not available.
+
+        # Arrange
+        outfile = self.tempfile("temp.tif")
+
+        # Created by printing a page in Chrome to PDF, then:
+        # /usr/bin/gs -q -sDEVICE=tiffg3 -sOutputFile=total-pages-zero.tif
+        # -dNOPAUSE /tmp/test.pdf -c quit
+        infile = "Tests/images/total-pages-zero.tif"
+        im = Image.open(infile)
+
+        # Act / Assert
+        # Should not divide by zero
+        im.save(outfile)
 
 
 if __name__ == '__main__':

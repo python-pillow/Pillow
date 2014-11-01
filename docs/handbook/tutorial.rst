@@ -296,7 +296,7 @@ Point Operations
 
 The :py:meth:`~PIL.Image.Image.point` method can be used to translate the pixel
 values of an image (e.g. image contrast manipulation). In most cases, a
-function object expecting one argument can be passed to the this method. Each
+function object expecting one argument can be passed to this method. Each
 pixel is processed according to that function:
 
 Applying point transforms
@@ -397,7 +397,7 @@ Note that most drivers in the current version of the library only allow you to
 seek to the next frame (as in the above example). To rewind the file, you may
 have to reopen it.
 
-The following iterator class lets you to use the for-statement to loop over the
+The following iterator class lets you use the for-statement to loop over the
 sequence:
 
 A sequence iterator class

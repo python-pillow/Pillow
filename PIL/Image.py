@@ -1010,8 +1010,6 @@ class Image:
 
     def draft(self, mode, size):
         """
-        NYI
-
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
         size.  For example, you can use this method to convert a color
@@ -1530,6 +1528,7 @@ class Image:
 
         self.load()
 
+        size=tuple(size)
         if self.size == size:
             return self._new(self.im)
 
@@ -2335,7 +2334,7 @@ def composite(image1, image2, mask):
     :param image1: The first image.
     :param image2: The second image.  Must have the same mode and
        size as the first image.
-    :param mask: A mask image.  This image can can have mode
+    :param mask: A mask image.  This image can have mode
        "1", "L", or "RGBA", and must have the same size as the
        other two images.
     """

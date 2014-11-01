@@ -149,6 +149,7 @@ OPEN_INFO = {
     (II, 0, 1, 2, (8,), ()): ("L", "L;IR"),
     (II, 0, 3, 1, (32,), ()): ("F", "F;32F"),
     (II, 1, 1, 1, (1,), ()): ("1", "1"),
+    (II, 1, 1, 1, (4,), ()): ("L", "L;4"),
     (II, 1, 1, 2, (1,), ()): ("1", "1;R"),
     (II, 1, 1, 1, (8,), ()): ("L", "L"),
     (II, 1, 1, 1, (8, 8), (2,)): ("LA", "LA"),
@@ -449,10 +450,10 @@ class ImageFileDirectory(collections.MutableMapping):
             if size > 4:
                 here = fp.tell()
                 if Image.DEBUG:
-                    print ("Tag Location: %s" %here)
+                    print("Tag Location: %s" % here)
                 fp.seek(i32(ifd, 8))
                 if Image.DEBUG:
-                    print ("Data Location: %s" %fp.tell())
+                    print("Data Location: %s" % fp.tell())
                 data = ImageFile._safe_read(fp, size)
                 fp.seek(here)
             else:
@@ -659,19 +660,19 @@ class TiffImageFile(ImageFile.ImageFile):
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
             if Image.DEBUG:
-                print("Seeking to frame %s, on frame %s, __next %s, location: %s"%
-                      (frame, self.__frame, self.__next, self.fp.tell()))            
+                print("Seeking to frame %s, on frame %s, __next %s, location: %s" %
+                      (frame, self.__frame, self.__next, self.fp.tell()))
             # reset python3 buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
             self.fp.tell()
             self.fp.seek(self.__next)
             if Image.DEBUG:
-                print("Loading tags, location: %s"%self.fp.tell())
+                print("Loading tags, location: %s" % self.fp.tell())
             self.tag.load(self.fp)
             self.__next = self.tag.next
             self.__frame += 1
         self._setup()
-        
+
     def _tell(self):
         return self.__frame
 
@@ -883,6 +884,10 @@ class TiffImageFile(ImageFile.ImageFile):
                 try:
                     fp = hasattr(self.fp, "fileno") and \
                         os.dup(self.fp.fileno())
+                    # flush the file descriptor, prevents error on pypy 2.4+
+                    # should also eliminate the need for fp.tell for py3
+                    # in _seek
+                    self.fp.flush()
                 except IOError:
                     # io.BytesIO have a fileno, but returns an IOError if
                     # it doesn't use a file descriptor.
@@ -1149,8 +1154,11 @@ def _save(im, fp, filename):
                     # following tiffcp.c->cpTag->TIFF_RATIONAL
                     atts[k] = float(v[0][0])/float(v[0][1])
                     continue
-                if type(v) == tuple and len(v) > 2:
+                if (type(v) == tuple and
+                        (len(v) > 2 or
+                            (len(v) == 2 and v[1] == 0))):
                     # List of ints?
+                    # Avoid divide by zero in next if-clause
                     if type(v[0]) in (int, float):
                         atts[k] = list(v)
                     continue
