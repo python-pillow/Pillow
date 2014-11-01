@@ -27,13 +27,13 @@ class TestFileMsp(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
         self.assert_image_similar(im, hopper("1"), 4)
 
-    def test_cannot_save_save_wrong_mode(self):
+    def test_cannot_save_wrong_mode(self):
         # Arrange
         im = hopper()
-        file = self.tempfile("temp.msp")
+        filename = self.tempfile("temp.msp")
 
         # Act/Assert
-        self.assertRaises(IOError, lambda: im.save(file))
+        self.assertRaises(IOError, lambda: im.save(filename))
 
 
 if __name__ == '__main__':
