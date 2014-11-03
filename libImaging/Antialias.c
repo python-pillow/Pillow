@@ -106,11 +106,8 @@ static float inline i2f(int v) { return (float) v; }
 
 
 Imaging
-ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
+ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
 {
-    /* FIXME: this is a quick and straightforward translation from a
-       python prototype.  might need some further C-ification... */
-
     ImagingSectionCookie cookie;
     Imaging imOut;
     struct filter *filterp;
@@ -268,14 +265,15 @@ ImagingStretchHorizaontal(Imaging imIn, int xsize, int filter)
                 break;
             default:
                 ImagingSectionLeave(&cookie);
+                ImagingDelete(imOut);
+                free(kk);
+                free(xbounds);
                 return (Imaging) ImagingError_ModeError();
             }
     }
     ImagingSectionLeave(&cookie);
-
     free(kk);
     free(xbounds);
-
     return imOut;
 }
 
@@ -305,7 +303,7 @@ ImagingStretch(Imaging imIn, int xsize, int ysize, int filter)
         return (Imaging) ImagingError_ModeError();
 
     /* two-pass resize, first pass */
-    imTemp1 = ImagingStretchHorizaontal(imIn, xsize, filter);
+    imTemp1 = ImagingStretchHorizontal(imIn, xsize, filter);
     if ( ! imTemp1)
         return NULL;
 
@@ -316,7 +314,7 @@ ImagingStretch(Imaging imIn, int xsize, int ysize, int filter)
         return NULL;
 
     /* second pass */
-    imTemp3 = ImagingStretchHorizaontal(imTemp2, ysize, filter);
+    imTemp3 = ImagingStretchHorizontal(imTemp2, ysize, filter);
     ImagingDelete(imTemp2);
     if ( ! imTemp3)
         return NULL;
