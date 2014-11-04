@@ -876,7 +876,7 @@ class Image:
             elif self.mode == 'P' and mode == 'RGBA':
                 t = self.info['transparency']
                 delete_trns = True
-                
+
                 if isinstance(t, bytes):
                     self.im.putpalettealphas(t)
                 elif isinstance(t, int):
@@ -1539,16 +1539,7 @@ class Image:
         if self.mode == 'RGBA':
             return self.convert('RGBa').resize(size, resample).convert('RGBA')
 
-        if resample == ANTIALIAS:
-            # requires stretch support (imToolkit & PIL 1.1.3)
-            try:
-                im = self.im.stretch(size, resample)
-            except AttributeError:
-                raise ValueError("unsupported resampling filter")
-        else:
-            im = self.im.resize(size, resample)
-
-        return self._new(im)
+        return self._new(self.im.resize(size, resample))
 
     def rotate(self, angle, resample=NEAREST, expand=0):
         """

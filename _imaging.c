@@ -1513,9 +1513,26 @@ _resize(ImagingObject* self, PyObject* args)
 
     imIn = self->image;
 
-    imOut = ImagingNew(imIn->mode, xsize, ysize);
-    if (imOut)
-        (void) ImagingResize(imOut, imIn, filter);
+    if (imIn->xsize == xsize && imIn->ysize == ysize) {
+        imOut = ImagingCopy(imIn);
+    }
+    else if ( ! filter) {
+        double a[6];
+
+        memset(a, 0, sizeof a);
+        a[1] = (double) imIn->xsize / xsize;
+        a[5] = (double) imIn->ysize / ysize;
+
+        imOut = ImagingNew(imIn->mode, xsize, ysize);
+
+        imOut = ImagingTransformAffine(
+            imOut, imIn,
+            0, 0, xsize, ysize,
+            a, filter, 1);
+    }
+    else {
+        imOut = ImagingStretch(imIn, xsize, ysize, filter);
+    }
 
     return PyImagingNew(imOut);
 }
