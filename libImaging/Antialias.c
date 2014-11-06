@@ -64,16 +64,14 @@ static struct filter BILINEAR = { bilinear_filter, 1.0 };
 
 static inline float bicubic_filter(float x)
 {
-    /* FIXME: double-check this algorithm */
-    /* FIXME: for best results, "a" should be -0.5 to -1.0, but we'll
-       set it to zero for now, to match the 1.1 magnifying filter */
-#define a 0.0
+    /* http://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm */
+#define a -0.5
     if (x < 0.0)
         x = -x;
     if (x < 1.0)
-        return (((a + 2.0) * x) - (a + 3.0)) * x*x + 1;
+        return ((a + 2.0) * x - (a + 3.0)) * x*x + 1;
     if (x < 2.0)
-        return (((a * x) - 5*a) * x + 8) * x - 4*a;
+        return (((x - 5) * x + 8) * x - 4) * a;
     return 0.0;
 #undef a
 }
@@ -95,7 +93,10 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
 
     /* check modes */
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
+
+    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
+        return (Imaging) ImagingError_ModeError();
 
     /* check filter */
     switch (filter) {
@@ -124,14 +125,13 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
         /* prepare for vertical stretch */
         filterscale = scale = (float) imIn->ysize / imOut->ysize;
     } else
-	return (Imaging) ImagingError_Mismatch();
+        return (Imaging) ImagingError_Mismatch();
 
     /* determine support size (length of resampling filter) */
     support = filterp->support;
 
     if (filterscale < 1.0) {
         filterscale = 1.0;
-        support = 0.5;
     }
 
     support = support * filterscale;
@@ -154,7 +154,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                 ymin = 0.0;
             ymax = ceil(center + support);
             if (ymax > (float) imIn->ysize)
-		ymax = (float) imIn->ysize;
+                ymax = (float) imIn->ysize;
             for (y = (int) ymin; y < (int) ymax; y++) {
                 float w = filterp->filter((y - center + 0.5) * ss) * ss;
                 k[y - (int) ymin] = w;
@@ -230,7 +230,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                 xmin = 0.0;
             xmax = ceil(center + support);
             if (xmax > (float) imIn->xsize)
-		xmax = (float) imIn->xsize;
+                xmax = (float) imIn->xsize;
             for (x = (int) xmin; x < (int) xmax; x++) {
                 float w = filterp->filter((x - center + 0.5) * ss) * ss;
                 k[x - (int) xmin] = w;
