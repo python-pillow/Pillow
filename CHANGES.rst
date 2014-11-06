@@ -3,9 +3,11 @@ Changelog (Pillow)
 
 2.7.0 (unreleased)
 ------------------
+- Fix Bicubic interpolation #970
+  [homm]
 
 - Support for 4-bit greyscale TIFF images #980
-  [hugovk, wiredfool]
+  [hugovk]
 
 - Updated manifest #957
   [wiredfool]
