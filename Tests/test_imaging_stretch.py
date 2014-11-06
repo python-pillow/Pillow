@@ -38,3 +38,9 @@ class TestImagingStretch(PillowTestCase):
             r = im.im.stretch((764, 414), f)
             self.assertEqual(r.mode, "RGB")
             self.assertEqual(r.size, (764, 414))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file
