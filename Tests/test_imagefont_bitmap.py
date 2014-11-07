@@ -13,8 +13,9 @@ class TestImageFontBitmap(PillowTestCase):
         im_bitmap = Image.new('RGB', size_final, (255, 255, 255))
         im_outline = im_bitmap.copy()
         draw_bitmap, draw_outline = ImageDraw.Draw(im_bitmap), ImageDraw.Draw(im_outline)
-        # Don't know why, but bitmap version is always vertical 1 pixel longer than outline one.
+        # Don't know why, but bitmap version is always vertical 1 pixel longer than outline one on my PC.
+        # Revert back to both 0, 0
         draw_bitmap.text((0, 0), text, fill=(0, 0, 0), font=font_bitmap)
-        draw_outline.text((0, 1), text, fill=(0, 0, 0), font=font_outline)
+        draw_outline.text((0, 0), text, fill=(0, 0, 0), font=font_outline)
         self.assert_image_similar(im_bitmap, im_outline, 0.01)
 
