@@ -30,11 +30,11 @@
 /* Undef if you don't need resampling filters */
 #define WITH_FILTERS
 
-/* Large images rotation is inefficient operation in terms of CPU cache.
-   One row in source image affects each column in destination.
-   Rotating in small chunks can speed up up to 8 times on modern CPU.
-   Chunk size of 128 requires only 65k of CPU cache and high enougth
-   for overhead from extra loop have not been manifested. */
+/* For large images rotation is an inefficient operation in terms of CPU cache.
+   One row in the source image affects each column in destination.
+   Rotating in chunks that fit in the cache can speed up rotation
+   8x on a modern CPU. A chunk size of 128 requires only 65k and is large enough
+   that the overhead from the extra loops are not apparent. */
 #define ROTATE_CHUNK 128
 
 #define COORD(v) ((v) < 0.0 ? -1 : ((int)(v)))
