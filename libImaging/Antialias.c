@@ -223,8 +223,13 @@ ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
                             ss1 += i2f((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
                             ss2 += i2f((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
                         }
+#ifdef WORDS_BIGENDIAN
+                        imOut->image32[yy][xx] =
+                            clip8(ss2) << 8 | clip8(ss1) << 16 | clip8(ss0) << 24;
+#else
                         imOut->image32[yy][xx] =
                             clip8(ss0) | clip8(ss1) << 8 | clip8(ss2) << 16;
+#endif
                     } else {
                         ss0 = ss1 = ss2 = ss3 = 0.5;
                         for (x = xmin; x < xmax; x++) {
@@ -233,9 +238,15 @@ ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
                             ss2 += i2f((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
                             ss3 += i2f((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
                         }
+#ifdef WORDS_BIGENDIAN
+                        imOut->image32[yy][xx] =
+                            clip8(ss3) | clip8(ss2) << 8 |
+                            clip8(ss1) << 16 | clip8(ss0) << 24;
+#else
                         imOut->image32[yy][xx] =
                             clip8(ss0) | clip8(ss1) << 8 |
                             clip8(ss2) << 16 | clip8(ss3) << 24;
+#endif
                     }
                 }
                 break;
