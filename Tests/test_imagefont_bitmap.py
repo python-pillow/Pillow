@@ -1,6 +1,4 @@
 from helper import unittest, PillowTestCase
-import StringIO
-
 from PIL import Image, ImageFont, ImageDraw
 
 class TestImageFontBitmap(PillowTestCase):
