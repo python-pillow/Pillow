@@ -132,7 +132,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xxsize, yysize;
-    int size = 64;
+    int size = 128;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -142,11 +142,11 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 #define TRANSPOSE(image) \
     for (y = 0; y < imIn->ysize; y += size) { \
         for (x = 0; x < imIn->xsize; x += size) { \
-            yysize = size < (imIn->ysize - y) ? size : (imIn->ysize - y); \
-            xxsize = size < (imIn->xsize - x) ? size : (imIn->xsize - x); \
-            for (yy = 0; yy < yysize; yy++) { \
-                for (xx = 0; xx < xxsize; xx++) { \
-                    imOut->image[x + xx][y + yy] = imIn->image[y + yy][x + xx]; \
+            yysize = y + size < imIn->ysize ? y + size : imIn->ysize; \
+            xxsize = x + size < imIn->xsize ? x + size : imIn->xsize; \
+            for (yy = y; yy < yysize; yy++) { \
+                for (xx = x; xx < xxsize; xx++) { \
+                    imOut->image[xx][yy] = imIn->image[yy][xx]; \
                 } \
             } \
         } \
