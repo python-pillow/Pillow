@@ -4,7 +4,7 @@ from PIL import Image
 
 try:
     from PIL import _webp
-except:
+except ImportError:
     # Skip in setUp()
     pass
 
@@ -14,7 +14,7 @@ class TestFileWebp(PillowTestCase):
     def setUp(self):
         try:
             from PIL import _webp
-        except:
+        except ImportError:
             self.skipTest('WebP support not installed')
 
     def test_version(self):

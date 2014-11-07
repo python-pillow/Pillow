@@ -175,10 +175,10 @@ def fromstring(data):
     return Image.open(BytesIO(data))
 
 
-def tostring(im, format, **options):
+def tostring(im, string_format, **options):
     from io import BytesIO
     out = BytesIO()
-    im.save(out, format, **options)
+    im.save(out, string_format, **options)
     return out.getvalue()
 
 
@@ -207,7 +207,6 @@ def command_succeeds(cmd):
     Runs the command, which must be a list of strings. Returns True if the
     command succeeds, or False if an OSError was raised by subprocess.Popen.
     """
-    import os
     import subprocess
     with open(os.devnull, 'w') as f:
         try:

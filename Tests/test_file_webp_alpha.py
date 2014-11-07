@@ -4,7 +4,7 @@ from PIL import Image
 
 try:
     from PIL import _webp
-except:
+except ImportError:
     pass
     # Skip in setUp()
 
@@ -14,7 +14,7 @@ class TestFileWebpAlpha(PillowTestCase):
     def setUp(self):
         try:
             from PIL import _webp
-        except:
+        except ImportError:
             self.skipTest('WebP support not installed')
 
         if _webp.WebPDecoderBuggyAlpha(self):
@@ -80,8 +80,8 @@ class TestFileWebpAlpha(PillowTestCase):
         self.assertEqual(image.mode, "RGBA")
         self.assertEqual(image.size, (10, 10))
         self.assertEqual(image.format, "WEBP")
-        image.load
-        image.getdata
+        image.load()
+        image.getdata()
 
         self.assert_image_similar(image, pil_image, 1.0)
 
