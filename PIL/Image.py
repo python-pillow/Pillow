@@ -150,6 +150,7 @@ FLIP_TOP_BOTTOM = 1
 ROTATE_90 = 2
 ROTATE_180 = 3
 ROTATE_270 = 4
+TRANSPOSE = 5
 
 # transforms
 AFFINE = 0
@@ -1920,13 +1921,13 @@ class Image:
 
         :param method: One of :py:attr:`PIL.Image.FLIP_LEFT_RIGHT`,
           :py:attr:`PIL.Image.FLIP_TOP_BOTTOM`, :py:attr:`PIL.Image.ROTATE_90`,
-          :py:attr:`PIL.Image.ROTATE_180`, or :py:attr:`PIL.Image.ROTATE_270`.
+          :py:attr:`PIL.Image.ROTATE_180`, :py:attr:`PIL.Image.ROTATE_270` or
+          :py:attr:`PIL.Image.TRANSPOSE`.
         :returns: Returns a flipped or rotated copy of this image.
         """
 
         self.load()
-        im = self.im.transpose(method)
-        return self._new(im)
+        return self._new(self.im.transpose(method))
 
     def effect_spread(self, distance):
         """

@@ -1750,6 +1750,7 @@ _transpose(ImagingObject* self, PyObject* args)
         break;
     case 2: /* rotate 90 */
     case 4: /* rotate 270 */
+    case 5: /* transpose */
         imOut = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
         break;
     default:
@@ -1773,6 +1774,9 @@ _transpose(ImagingObject* self, PyObject* args)
             break;
         case 4:
             (void) ImagingRotate270(imOut, imIn);
+            break;
+        case 5:
+            (void) ImagingTranspose(imOut, imIn);
             break;
         }
 
