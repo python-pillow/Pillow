@@ -30,6 +30,13 @@
 /* Undef if you don't need resampling filters */
 #define WITH_FILTERS
 
+/* Large images rotation is inefficient operation in terms of CPU cache.
+   One row in source image affects each column in destination.
+   Rotating in small chunks can speed up up to 8 times on modern CPU.
+   Chunk size of 128 requires only 65k of CPU cache and high enougth
+   for overhead from extra loop have not been manifested. */
+#define ROTATE_CHUNK 128
+
 #define COORD(v) ((v) < 0.0 ? -1 : ((int)(v)))
 #define FLOOR(v) ((v) < 0.0 ? ((int)floor(v)) : ((int)(v)))
 
@@ -99,7 +106,6 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xr, xxsize, yysize;
-    int size = 128;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -109,10 +115,10 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
     ImagingCopyInfo(imOut, imIn);
 
 #define ROTATE_90(image) \
-    for (y = 0; y < imIn->ysize; y += size) { \
-        for (x = 0; x < imIn->xsize; x += size) { \
-            yysize = y + size < imIn->ysize ? y + size : imIn->ysize; \
-            xxsize = x + size < imIn->xsize ? x + size : imIn->xsize; \
+    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
+        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) { \
+            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
+            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
             for (yy = y; yy < yysize; yy++) { \
                 xr = imIn->xsize - 1 - x; \
                 for (xx = x; xx < xxsize; xx++, xr--) { \
@@ -140,7 +146,6 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xxsize, yysize;
-    int size = 128;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -148,10 +153,10 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
         return (Imaging) ImagingError_Mismatch();
 
 #define TRANSPOSE(image) \
-    for (y = 0; y < imIn->ysize; y += size) { \
-        for (x = 0; x < imIn->xsize; x += size) { \
-            yysize = y + size < imIn->ysize ? y + size : imIn->ysize; \
-            xxsize = x + size < imIn->xsize ? x + size : imIn->xsize; \
+    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
+        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) { \
+            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
+            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
             for (yy = y; yy < yysize; yy++) { \
                 for (xx = x; xx < xxsize; xx++) { \
                     imOut->image[xx][yy] = imIn->image[yy][xx]; \
@@ -213,7 +218,6 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, yr, xxsize, yysize;
-    int size = 128;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -223,10 +227,10 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
     ImagingCopyInfo(imOut, imIn);
 
 #define ROTATE_270(image) \
-    for (y = 0; y < imIn->ysize; y += size) { \
-        for (x = 0; x < imIn->xsize; x += size) { \
-            yysize = y + size < imIn->ysize ? y + size : imIn->ysize; \
-            xxsize = x + size < imIn->xsize ? x + size : imIn->xsize; \
+    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
+        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) { \
+            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
+            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
             yr = imIn->ysize - 1 - y; \
             for (yy = y; yy < yysize; yy++, yr--) { \
                 for (xx = x; xx < xxsize; xx++) { \
