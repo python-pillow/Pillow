@@ -98,7 +98,8 @@ Imaging
 ImagingRotate90(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
-    int x, y, xr;
+    int x, y, xx, yy, xr, xxsize, yysize;
+    int size = 128;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -107,11 +108,18 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
-#define ROTATE_90(image)\
-    for (y = 0; y < imIn->ysize; y++) {\
-        xr = imIn->xsize-1;\
-        for (x = 0; x < imIn->xsize; x++, xr--)\
-            imOut->image[xr][y] = imIn->image[y][x];\
+#define ROTATE_90(image) \
+    for (y = 0; y < imIn->ysize; y += size) { \
+        for (x = 0; x < imIn->xsize; x += size) { \
+            yysize = y + size < imIn->ysize ? y + size : imIn->ysize; \
+            xxsize = x + size < imIn->xsize ? x + size : imIn->xsize; \
+            for (yy = y; yy < yysize; yy++) { \
+                xr = imIn->xsize - 1 - x; \
+                for (xx = x; xx < xxsize; xx++, xr--) { \
+                    imOut->image[xr][yy] = imIn->image[yy][xx]; \
+                } \
+            } \
+        } \
     }
 
     ImagingSectionEnter(&cookie);
@@ -204,7 +212,8 @@ Imaging
 ImagingRotate270(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
-    int x, y, yr;
+    int x, y, xx, yy, yr, xxsize, yysize;
+    int size = 128;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -213,12 +222,19 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
-    yr = imIn->ysize - 1;
-
-#define ROTATE_270(image)\
-    for (y = 0; y < imIn->ysize; y++, yr--)\
-        for (x = 0; x < imIn->xsize; x++)\
-            imOut->image[x][y] = imIn->image[yr][x];
+#define ROTATE_270(image) \
+    for (y = 0; y < imIn->ysize; y += size) { \
+        for (x = 0; x < imIn->xsize; x += size) { \
+            yysize = y + size < imIn->ysize ? y + size : imIn->ysize; \
+            xxsize = x + size < imIn->xsize ? x + size : imIn->xsize; \
+            yr = imIn->ysize - 1 - y; \
+            for (yy = y; yy < yysize; yy++, yr--) { \
+                for (xx = x; xx < xxsize; xx++) { \
+                    imOut->image[xx][yr] = imIn->image[yy][xx]; \
+                } \
+            } \
+        } \
+    }
 
     ImagingSectionEnter(&cookie);
 
