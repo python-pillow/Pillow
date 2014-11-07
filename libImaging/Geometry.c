@@ -34,7 +34,7 @@
 #define FLOOR(v) ((v) < 0.0 ? ((int)floor(v)) : ((int)(v)))
 
 /* -------------------------------------------------------------------- */
-/* Transpose operations							*/
+/* Transpose operations                                                 */
 
 Imaging
 ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
@@ -43,25 +43,25 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
     int x, y, xr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize)
-	return (Imaging) ImagingError_Mismatch();
+        return (Imaging) ImagingError_Mismatch();
 
     ImagingCopyInfo(imOut, imIn);
 
-#define	FLIP_HORIZ(image)\
+#define FLIP_HORIZ(image)\
     for (y = 0; y < imIn->ysize; y++) {\
-	xr = imIn->xsize-1;\
-	for (x = 0; x < imIn->xsize; x++, xr--)\
-	    imOut->image[y][x] = imIn->image[y][xr];\
+        xr = imIn->xsize-1;\
+        for (x = 0; x < imIn->xsize; x++, xr--)\
+            imOut->image[y][x] = imIn->image[y][xr];\
     }
 
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8)
-	FLIP_HORIZ(image8)
+        FLIP_HORIZ(image8)
     else
-	FLIP_HORIZ(image32)
+        FLIP_HORIZ(image32)
 
     ImagingSectionLeave(&cookie);
 
@@ -76,9 +76,9 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn)
     int y, yr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize)
-	return (Imaging) ImagingError_Mismatch();
+        return (Imaging) ImagingError_Mismatch();
 
     ImagingCopyInfo(imOut, imIn);
 
@@ -86,7 +86,7 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn)
 
     yr = imIn->ysize-1;
     for (y = 0; y < imIn->ysize; y++, yr--)
-	memcpy(imOut->image[yr], imIn->image[y], imIn->linesize);
+        memcpy(imOut->image[yr], imIn->image[y], imIn->linesize);
 
     ImagingSectionLeave(&cookie);
 
@@ -101,25 +101,25 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
     int x, y, xr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize)
-	return (Imaging) ImagingError_Mismatch();
+        return (Imaging) ImagingError_Mismatch();
 
     ImagingCopyInfo(imOut, imIn);
 
-#define	ROTATE_90(image)\
+#define ROTATE_90(image)\
     for (y = 0; y < imIn->ysize; y++) {\
-	xr = imIn->xsize-1;\
-	for (x = 0; x < imIn->xsize; x++, xr--)\
-	    imOut->image[xr][y] = imIn->image[y][x];\
+        xr = imIn->xsize-1;\
+        for (x = 0; x < imIn->xsize; x++, xr--)\
+            imOut->image[xr][y] = imIn->image[y][x];\
     }
 
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8)
-	ROTATE_90(image8)
+        ROTATE_90(image8)
     else
-	ROTATE_90(image32)
+        ROTATE_90(image32)
 
     ImagingSectionLeave(&cookie);
 
@@ -172,27 +172,27 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
     int x, y, xr, yr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize)
-	return (Imaging) ImagingError_Mismatch();
+        return (Imaging) ImagingError_Mismatch();
 
     ImagingCopyInfo(imOut, imIn);
 
     yr = imIn->ysize-1;
 
-#define	ROTATE_180(image)\
+#define ROTATE_180(image)\
     for (y = 0; y < imIn->ysize; y++, yr--) {\
-	xr = imIn->xsize-1;\
-	for (x = 0; x < imIn->xsize; x++, xr--)\
-	    imOut->image[y][x] = imIn->image[yr][xr];\
+        xr = imIn->xsize-1;\
+        for (x = 0; x < imIn->xsize; x++, xr--)\
+            imOut->image[y][x] = imIn->image[yr][xr];\
     }
 
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8)
-	ROTATE_180(image8)
+        ROTATE_180(image8)
     else
-	ROTATE_180(image32)
+        ROTATE_180(image32)
 
     ImagingSectionLeave(&cookie);
 
@@ -207,25 +207,25 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
     int x, y, yr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize)
-	return (Imaging) ImagingError_Mismatch();
+        return (Imaging) ImagingError_Mismatch();
 
     ImagingCopyInfo(imOut, imIn);
 
     yr = imIn->ysize - 1;
 
-#define	ROTATE_270(image)\
+#define ROTATE_270(image)\
     for (y = 0; y < imIn->ysize; y++, yr--)\
-	for (x = 0; x < imIn->xsize; x++)\
-	    imOut->image[x][y] = imIn->image[yr][x];
+        for (x = 0; x < imIn->xsize; x++)\
+            imOut->image[x][y] = imIn->image[yr][x];
 
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8)
-	ROTATE_270(image8)
+        ROTATE_270(image8)
     else
-	ROTATE_270(image32)
+        ROTATE_270(image32)
 
     ImagingSectionLeave(&cookie);
 
@@ -234,7 +234,7 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
 
 
 /* -------------------------------------------------------------------- */
-/* Transforms								*/
+/* Transforms                                                           */
 
 /* transform primitives (ImagingTransformMap) */
 
@@ -635,7 +635,7 @@ ImagingTransform(
     double xx, yy;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     ImagingCopyInfo(imOut, imIn);
 
@@ -651,15 +651,15 @@ ImagingTransform(
         y1 = imOut->ysize;
 
     for (y = y0; y < y1; y++) {
-	out = imOut->image[y] + x0*imOut->pixelsize;
-	for (x = x0; x < x1; x++) {
-	    if (!transform(&xx, &yy, x-x0, y-y0, transform_data) ||
+        out = imOut->image[y] + x0*imOut->pixelsize;
+        for (x = x0; x < x1; x++) {
+            if (!transform(&xx, &yy, x-x0, y-y0, transform_data) ||
                 !filter(out, imIn, xx, yy, filter_data)) {
                 if (fill)
                     memset(out, 0, imOut->pixelsize);
             }
             out += imOut->pixelsize;
-	}
+        }
     }
 
     ImagingSectionLeave(&cookie);
@@ -682,7 +682,7 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
     int *xintab;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     ImagingCopyInfo(imOut, imIn);
 
@@ -697,8 +697,8 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
 
     xintab = (int*) malloc(imOut->xsize * sizeof(int));
     if (!xintab) {
-	ImagingDelete(imOut);
-	return (Imaging) ImagingError_MemoryError();
+        ImagingDelete(imOut);
+        return (Imaging) ImagingError_MemoryError();
     }
 
     xo = a[0];
@@ -709,29 +709,29 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
 
     /* Pretabulate horizontal pixel positions */
     for (x = x0; x < x1; x++) {
-	xin = COORD(xo);
-	if (xin >= 0 && xin < (int) imIn->xsize) {
-	    xmax = x+1;
-	    if (x < xmin)
-		xmin = x;
-	    xintab[x] = xin;
-	}
-	xo += a[1];
+        xin = COORD(xo);
+        if (xin >= 0 && xin < (int) imIn->xsize) {
+            xmax = x+1;
+            if (x < xmin)
+                xmin = x;
+            xintab[x] = xin;
+        }
+        xo += a[1];
     }
 
-#define	AFFINE_SCALE(pixel, image)\
+#define AFFINE_SCALE(pixel, image)\
     for (y = y0; y < y1; y++) {\
-	int yi = COORD(yo);\
-	pixel *in, *out;\
-	out = imOut->image[y];\
+        int yi = COORD(yo);\
+        pixel *in, *out;\
+        out = imOut->image[y];\
         if (fill && x1 > x0)\
             memset(out+x0, 0, (x1-x0)*sizeof(pixel));\
-	if (yi >= 0 && yi < imIn->ysize) {\
-	    in = imIn->image[yi];\
-	    for (x = xmin; x < xmax; x++)\
-		out[x] = in[xintab[x]];\
-	}\
-	yo += a[5];\
+        if (yi >= 0 && yi < imIn->ysize) {\
+            in = imIn->image[yi];\
+            for (x = xmin; x < xmax; x++)\
+                out[x] = in[xintab[x]];\
+        }\
+        yo += a[5];\
     }
 
     ImagingSectionEnter(&cookie);
@@ -781,32 +781,32 @@ affine_fixed(Imaging imOut, Imaging imIn,
     a0 = FIX(a[0]); a1 = FIX(a[1]); a2 = FIX(a[2]);
     a3 = FIX(a[3]); a4 = FIX(a[4]); a5 = FIX(a[5]);
 
-#define	AFFINE_TRANSFORM_FIXED(pixel, image)\
+#define AFFINE_TRANSFORM_FIXED(pixel, image)\
     for (y = y0; y < y1; y++) {\
-	pixel *out;\
-	xx = a0;\
-	yy = a3;\
-	out = imOut->image[y];\
+        pixel *out;\
+        xx = a0;\
+        yy = a3;\
+        out = imOut->image[y];\
         if (fill && x1 > x0)\
             memset(out+x0, 0, (x1-x0)*sizeof(pixel));\
         for (x = x0; x < x1; x++, out++) {\
-	    xin = xx >> 16;\
-	    if (xin >= 0 && xin < xsize) {\
-	        yin = yy >> 16;\
-		if (yin >= 0 && yin < ysize)\
+            xin = xx >> 16;\
+            if (xin >= 0 && xin < xsize) {\
+                yin = yy >> 16;\
+                if (yin >= 0 && yin < ysize)\
                     *out = imIn->image[yin][xin];\
             }\
-	    xx += a1;\
-	    yy += a4;\
-	}\
-	a0 += a2;\
-	a3 += a5;\
+            xx += a1;\
+            yy += a4;\
+        }\
+        a0 += a2;\
+        a3 += a5;\
     }
 
     if (imIn->image8)
-	AFFINE_TRANSFORM_FIXED(UINT8, image8)
+        AFFINE_TRANSFORM_FIXED(UINT8, image8)
     else
-	AFFINE_TRANSFORM_FIXED(INT32, image32)
+        AFFINE_TRANSFORM_FIXED(INT32, image32)
 
     return imOut;
 }
@@ -839,11 +839,11 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
     }
 
     if (a[2] == 0 && a[4] == 0)
-	/* Scaling */
-	return ImagingScaleAffine(imOut, imIn, x0, y0, x1, y1, a, fill);
+        /* Scaling */
+        return ImagingScaleAffine(imOut, imIn, x0, y0, x1, y1, a, fill);
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     if (x0 < 0)
         x0 = 0;
@@ -873,34 +873,34 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
     xo = a[0];
     yo = a[3];
 
-#define	AFFINE_TRANSFORM(pixel, image)\
+#define AFFINE_TRANSFORM(pixel, image)\
     for (y = y0; y < y1; y++) {\
-	pixel *out;\
-	xx = xo;\
-	yy = yo;\
-	out = imOut->image[y];\
+        pixel *out;\
+        xx = xo;\
+        yy = yo;\
+        out = imOut->image[y];\
         if (fill && x1 > x0)\
             memset(out+x0, 0, (x1-x0)*sizeof(pixel));\
         for (x = x0; x < x1; x++, out++) {\
-	    xin = COORD(xx);\
-	    if (xin >= 0 && xin < xsize) {\
-	        yin = COORD(yy);\
-		if (yin >= 0 && yin < ysize)\
+            xin = COORD(xx);\
+            if (xin >= 0 && xin < xsize) {\
+                yin = COORD(yy);\
+                if (yin >= 0 && yin < ysize)\
                     *out = imIn->image[yin][xin];\
             }\
-	    xx += a[1];\
-	    yy += a[4];\
-	}\
-	xo += a[2];\
-	yo += a[5];\
+            xx += a[1];\
+            yy += a[4];\
+        }\
+        xo += a[2];\
+        yo += a[5];\
     }
 
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8)
-	AFFINE_TRANSFORM(UINT8, image8)
+        AFFINE_TRANSFORM(UINT8, image8)
     else
-	AFFINE_TRANSFORM(INT32, image32)
+        AFFINE_TRANSFORM(INT32, image32)
 
     ImagingSectionLeave(&cookie);
 
@@ -950,7 +950,7 @@ ImagingResize(Imaging imOut, Imaging imIn, int filterid)
     double a[6];
 
     if (imOut->xsize == imIn->xsize && imOut->ysize == imIn->ysize)
-	return ImagingCopy2(imOut, imIn);
+        return ImagingCopy2(imOut, imIn);
 
     memset(a, 0, sizeof a);
     a[1] = (double) imIn->xsize / imOut->xsize;
