@@ -25,10 +25,7 @@
 __version__ = "0.1"
 
 import struct
-try:
-    from io import BytesIO
-except ImportError:
-    from cStringIO import StringIO as BytesIO
+from io import BytesIO
 
 from PIL import Image, ImageFile, BmpImagePlugin, PngImagePlugin, _binary
 from math import log, ceil
@@ -51,7 +48,7 @@ def _save(im, fp, filename):
     width, height = im.size
     filter(lambda x: False if (x[0] > width or x[1] > height or
                                x[0] > 255 or x[1] > 255) else True, sizes)
-    sizes = sorted(sizes, key=lambda x: x[0], reverse=True)
+    sizes = sorted(sizes, key=lambda x: x[0])
     fp.write(struct.pack("H", len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes)*16
     for size in sizes:
@@ -64,8 +61,9 @@ def _save(im, fp, filename):
         fp.write(struct.pack("H", 32))  # wBitCount(2)
 
         image_io = BytesIO()
-        im.thumbnail(size, Image.ANTIALIAS)
-        im.save(image_io, "png")
+        tmp = im.copy()
+        tmp.thumbnail(size, Image.ANTIALIAS)
+        tmp.save(image_io, "png")
         image_io.seek(0)
         image_bytes = image_io.read()
         bytes_len = len(image_bytes)
