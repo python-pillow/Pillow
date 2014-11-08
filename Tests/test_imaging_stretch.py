@@ -1,6 +1,7 @@
 """
 Tests for ImagingCore.stretch functionality.
 """
+from itertools import permutations
 
 from helper import unittest, PillowTestCase
 
@@ -11,6 +12,9 @@ im = Image.open("Tests/images/hopper.ppm").copy()
 
 
 class TestImagingStretch(PillowTestCase):
+
+    def stretch(self, im, size, f):
+        return im._new(im.im.stretch(size, f))
 
     def test_modes(self):
         self.assertRaises(ValueError, im.convert("1").im.stretch,
@@ -46,65 +50,34 @@ class TestImagingStretch(PillowTestCase):
         # The R and A channels should not swap, which is indicitive of
         # an endianess issues
 
-        im = Image.new('L', (2,2), 0)
-        im.putpixel((1,1),128)
-
-        blank = Image.new('L', (4,4), 0)
-        alpha = Image.new('L', (4,4), 255)
+        samples = {
+            'blank': Image.new('L', (2, 2), 0),
+            'filled': Image.new('L', (2, 2), 255),
+            'dirty': Image.new('L', (2, 2), 0),
+        }
+        samples['dirty'].putpixel((1, 1), 128)
 
         for f in [Image.BILINEAR, Image.BICUBIC, Image.ANTIALIAS]:
+            # samples resized with current filter
+            resized = dict(
+                (name, self.stretch(ch, (4, 4), f))
+                for name, ch in samples.items()
+            )
 
-            im_r = Image.new('RGBA', (2,2), (0,0,0,255))
-            im_r.putpixel((1,1),(128,0,0,255))
+            for mode, channels_set in [
+                ('RGB', ('blank', 'filled', 'dirty')),
+                ('RGBA', ('blank', 'blank', 'filled', 'dirty')),
+                ('LA', ('filled', 'dirty')),
+            ]:
+                for channels in set(permutations(channels_set)):
+                    # compile image from different channels permutations
+                    im = Image.merge(mode, [samples[ch] for ch in channels])
+                    stretched = self.stretch(im, (4, 4), f)
 
-            target = im._new(im.im.stretch((4,4), f))
-            stretched = im_r._new(im_r.im.stretch((4,4),f))
-
-            self.assert_image_equal(stretched.split()[0],target)
-            self.assert_image_equal(stretched.split()[1],blank)
-            self.assert_image_equal(stretched.split()[2],blank)
-            self.assert_image_equal(stretched.split()[3],alpha)
-
-
-            im_r = Image.new('RGB', (2,2), (0,0,0))
-            im_r.putpixel((1,1),(128,0,0))
-
-            target = im._new(im.im.stretch((4,4), f))
-            stretched = im_r._new(im_r.im.stretch((4,4),f))
-
-            #print " ".join(hex(ord(s)) for s in stretched.split()[0].tobytes())
-            #print " ".join(hex(ord(s)) for s in stretched.split()[1].tobytes())
-            #print " ".join(hex(ord(s)) for s in stretched.split()[2].tobytes())
-
-            #print " ".join(hex(ord(s)) for s in target.tobytes())
-
-            #print
-
-            self.assert_image_equal(stretched.split()[0],target, 'rxRGB R channel fail')
-            self.assert_image_equal(stretched.split()[1],blank, 'rxRGB G channel fail')
-            self.assert_image_equal(stretched.split()[2],blank, 'rxRGB B channel fail')
-
-
-            im_g = Image.new('RGBA', (2,2), (0,0,0,255))
-            im_g.putpixel((1,1),(0,128,0,255))
-
-            stretched = im_g._new(im_g.im.stretch((4,4),f))
-
-            self.assert_image_equal(stretched.split()[0],blank)
-            self.assert_image_equal(stretched.split()[1],target)
-            self.assert_image_equal(stretched.split()[2],blank)
-            self.assert_image_equal(stretched.split()[3],alpha)
-
-
-            im_g = Image.new('RGB', (2,2), (0,0,0))
-            im_g.putpixel((1,1),(0,128,0))
-
-            target = im._new(im.im.stretch((4,4), f))
-            stretched = im_g._new(im_g.im.stretch((4,4),f))
-
-            self.assert_image_equal(stretched.split()[0],blank, 'gxRGB R channel fail')
-            self.assert_image_equal(stretched.split()[1],target, 'gxRGB G channel fail')
-            self.assert_image_equal(stretched.split()[2],blank, 'gxRGB B channel fail')
+                    for i, ch in enumerate(stretched.split()):
+                        # check what resized channel in image is the same
+                        # as separately resized channel
+                        self.assert_image_equal(ch, resized[channels[i]])
 
 
 if __name__ == '__main__':
