@@ -11,12 +11,6 @@ include .travis.yml
 include Makefile
 include tox.ini
 recursive-include PIL *.md
-recursive-include Sane *.c
-recursive-include Sane *.py
-recursive-include Sane *.rst
-recursive-include Sane *.txt
-recursive-include Sane CHANGES
-recursive-include Sane README.rst
 recursive-include Scripts *.py
 recursive-include Scripts *.rst
 recursive-include Scripts *.sh
@@ -64,6 +58,7 @@ recursive-include Tests *.ttf
 recursive-include Tests *.txt
 recursive-include Tests *.webp
 recursive-include Tests *.xpm
+recursive-include Tests *.msp
 recursive-include Tk *.c
 recursive-include Tk *.rst
 recursive-include depends *.rst
