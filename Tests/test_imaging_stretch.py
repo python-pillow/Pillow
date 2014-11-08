@@ -43,12 +43,12 @@ class TestImagingStretch(PillowTestCase):
             self.assertEqual(r.mode, "RGB")
             self.assertEqual(r.size, (764, 414))
 
-    def test_endianess(self):
+    def test_endianness(self):
         # Make an image with one colored pixel, in one channel.
         # When stretched, that channel should be the same as a GS image.
         # Other channels should be unaffected.
         # The R and A channels should not swap, which is indicitive of
-        # an endianess issues
+        # an endianness issues.
 
         samples = {
             'blank': Image.new('L', (2, 2), 0),
