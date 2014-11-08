@@ -216,7 +216,18 @@ ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
-                    if (imIn->bands == 3) {
+                    if (imIn->bands == 2) {
+                        ss0 = ss1 = 0.5;
+                        for (x = xmin; x < xmax; x++) {
+                            ss0 += i2f((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
+                            ss1 += i2f((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
+                        }
+#ifdef WORDS_BIGENDIAN
+                        imOut->image32[yy][xx] = clip8(ss1) | clip8(ss0) << 24;
+#else
+                        imOut->image32[yy][xx] = clip8(ss0) | clip8(ss1) << 24;
+#endif
+                    } else if (imIn->bands == 3) {
                         ss0 = ss1 = ss2 = 0.5;
                         for (x = xmin; x < xmax; x++) {
                             ss0 += i2f((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
