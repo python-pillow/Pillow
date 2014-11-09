@@ -1789,14 +1789,7 @@ class Image:
 
         self.draft(None, size)
 
-        self.load()
-
-        try:
-            im = self.resize(size, resample)
-        except ValueError:
-            if resample != ANTIALIAS:
-                raise
-            im = self.resize(size, NEAREST)  # fallback
+        im = self.resize(size, resample)
 
         self.im = im.im
         self.mode = im.mode
