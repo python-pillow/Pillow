@@ -44,7 +44,9 @@ class TestImageTransform(PillowTestCase):
                                     w//2, h//2, w//2, 0),
                                    Image.BILINEAR)
 
-        scaled = im.resize((w*2, h*2), Image.BILINEAR).crop((0, 0, w, h))
+        scaled = im.transform((w, h), Image.AFFINE,
+                              (.5, 0, 0, 0, .5, 0),
+                              Image.BILINEAR)
 
         self.assert_image_equal(transformed, scaled)
 
@@ -61,9 +63,9 @@ class TestImageTransform(PillowTestCase):
                                      w, h, w, 0))],  # ul -> ccw around quad
                                    Image.BILINEAR)
 
-        # transformed.save('transformed.png')
-
-        scaled = im.resize((w//2, h//2), Image.BILINEAR)
+        scaled = im.transform((w//2, h//2), Image.AFFINE,
+                              (2, 0, 0, 0, 2, 0),
+                              Image.BILINEAR)
 
         checker = Image.new('RGBA', im.size)
         checker.paste(scaled, (0, 0))
@@ -128,7 +130,8 @@ class TestImageTransform(PillowTestCase):
 
         foo = [
             Image.new('RGBA', (1024, 1024), (a, a, a, a))
-            for a in range(1, 65)]
+            for a in range(1, 65)
+        ]
 
         # Yeah. Watch some JIT optimize this out.
         foo = None
