@@ -179,6 +179,21 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 
 
 Imaging
+ImagingTransposeToNew(Imaging imIn)
+{
+    Imaging imTemp = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
+    if ( ! imTemp)
+        return NULL;
+
+    if ( ! ImagingTranspose(imTemp, imIn)) {
+        ImagingDelete(imTemp);
+        return NULL;
+    }
+    return imTemp;
+}
+
+
+Imaging
 ImagingRotate180(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
