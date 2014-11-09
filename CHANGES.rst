@@ -3,6 +3,9 @@ Changelog (Pillow)
 
 2.7.0 (unreleased)
 ------------------
+- Optimize stretch implementation. #977
+  [homm]
+
 - Speed up rotation by using cache aware loops, added transpose to rotations. #994
   [homm]
 
