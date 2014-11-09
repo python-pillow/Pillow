@@ -299,21 +299,6 @@ ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
 
 
 Imaging
-ImagingTransposeToNew(Imaging imIn)
-{
-    Imaging imTemp = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
-    if ( ! imTemp)
-        return NULL;
-
-    if ( ! ImagingTranspose(imTemp, imIn)) {
-        ImagingDelete(imTemp);
-        return NULL;
-    }
-    return imTemp;
-}
-
-
-Imaging
 ImagingStretch(Imaging imIn, int xsize, int ysize, int filter)
 {
     Imaging imTemp1, imTemp2, imTemp3;
