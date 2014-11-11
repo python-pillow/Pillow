@@ -20,7 +20,7 @@ extern "C" {
 
 
 #ifndef M_PI
-#define	M_PI	3.14159265359
+#define	M_PI	3.1415926535897932384626433832795
 #endif
 
 
@@ -248,6 +248,7 @@ extern Imaging ImagingCopy(Imaging im);
 extern Imaging ImagingConvert(Imaging im, const char* mode, ImagingPalette palette, int dither);
 extern Imaging ImagingConvertInPlace(Imaging im, const char* mode);
 extern Imaging ImagingConvertMatrix(Imaging im, const char *mode, float m[]);
+extern Imaging ImagingConvertTransparent(Imaging im, const char *mode, int r, int g, int b);
 extern Imaging ImagingCrop(Imaging im, int x0, int y0, int x1, int y1);
 extern Imaging ImagingExpand(Imaging im, int x, int y, int mode);
 extern Imaging ImagingFill(Imaging im, const void* ink);
@@ -290,7 +291,9 @@ extern Imaging ImagingRotate(
 extern Imaging ImagingRotate90(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
-extern Imaging ImagingStretch(Imaging imOut, Imaging imIn, int filter);
+extern Imaging ImagingStretch(Imaging imIn, int xsize, int ysize, int filter);
+extern Imaging ImagingTranspose(Imaging imOut, Imaging imIn);
+extern Imaging ImagingTransposeToNew(Imaging imIn);
 extern Imaging ImagingTransformPerspective(
     Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     double a[8], int filter, int fill);
@@ -423,6 +426,14 @@ extern int ImagingJpegDecodeCleanup(ImagingCodecState state);
 extern int ImagingJpegEncode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);
 #endif
+#ifdef HAVE_OPENJPEG
+extern int ImagingJpeg2KDecode(Imaging im, ImagingCodecState state,
+                               UINT8* buffer, int bytes);
+extern int ImagingJpeg2KDecodeCleanup(ImagingCodecState state);
+extern int ImagingJpeg2KEncode(Imaging im, ImagingCodecState state,
+                               UINT8* buffer, int bytes);
+extern int ImagingJpeg2KEncodeCleanup(ImagingCodecState state);
+#endif
 extern int ImagingLzwDecode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
 #ifdef	HAVE_LIBTIFF
@@ -495,6 +506,32 @@ struct ImagingCodecStateInstance {
     UINT8 *buffer;
     void *context;
 };
+
+/* Incremental encoding/decoding support */
+typedef struct ImagingIncrementalCodecStruct *ImagingIncrementalCodec;
+
+typedef int (*ImagingIncrementalCodecEntry)(Imaging im, 
+                                            ImagingCodecState state,
+                                            ImagingIncrementalCodec codec);
+
+enum {
+  INCREMENTAL_CODEC_READ = 1,
+  INCREMENTAL_CODEC_WRITE = 2
+};
+
+enum {
+  INCREMENTAL_CODEC_NOT_SEEKABLE = 0,
+  INCREMENTAL_CODEC_SEEKABLE = 1
+};
+
+extern ImagingIncrementalCodec ImagingIncrementalCodecCreate(ImagingIncrementalCodecEntry codec_entry, Imaging im, ImagingCodecState state, int read_or_write, int seekable, int fd);
+extern void ImagingIncrementalCodecDestroy(ImagingIncrementalCodec codec);
+extern int ImagingIncrementalCodecPushBuffer(ImagingIncrementalCodec codec, UINT8 *buf, int bytes);
+extern ssize_t ImagingIncrementalCodecRead(ImagingIncrementalCodec codec, void *buffer, size_t bytes);
+extern off_t ImagingIncrementalCodecSkip(ImagingIncrementalCodec codec, off_t bytes);
+extern ssize_t ImagingIncrementalCodecWrite(ImagingIncrementalCodec codec, const void *buffer, size_t bytes);
+extern off_t ImagingIncrementalCodecSeek(ImagingIncrementalCodec codec, off_t bytes);
+extern size_t ImagingIncrementalCodecBytesInBuffer(ImagingIncrementalCodec codec);
 
 /* Errcodes */
 #define	IMAGING_CODEC_END	 1

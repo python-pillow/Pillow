@@ -15,6 +15,7 @@
 
 ##
 
+
 class Iterator:
     """
     This class implements an iterator object that can be used to loop
@@ -38,4 +39,4 @@ class Iterator:
                 self.im.seek(ix)
             return self.im
         except EOFError:
-            raise IndexError # end of sequence
+            raise IndexError  # end of sequence

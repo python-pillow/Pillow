@@ -1,24 +1,27 @@
 from PIL import Image
 
-import sys, time
 import io
-import threading, queue
+import queue
+import sys
+import threading
+import time
 
 try:
     format = sys.argv[1]
 except:
     format = "PNG"
 
-im = Image.open("Images/lena.ppm")
+im = Image.open("Tests/images/hopper.ppm")
 im.load()
 
 queue = queue.Queue()
 
 result = []
 
+
 class Worker(threading.Thread):
     def run(self):
-        while 1:
+        while True:
             im = queue.get()
             if im is None:
                 queue.task_done()

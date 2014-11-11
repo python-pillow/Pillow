@@ -21,14 +21,6 @@ from PIL import Image
 import re
 
 
-##
-# Convert color string to RGB tuple.
-#
-# @param color A CSS3-style colour string.
-# @return An RGB-tuple.
-# @exception ValueError If the color string could not be interpreted
-#    as an RGB value.
-
 def getrgb(color):
     """
      Convert a color string to an RGB tuple. If the string cannot be parsed,
@@ -37,7 +29,7 @@ def getrgb(color):
     .. versionadded:: 1.1.4
 
     :param color: A color string
-    :return: ``(red, green, blue)``
+    :return: ``(red, green, blue[, alpha])``
     """
     try:
         rgb = colormap[color]
@@ -95,7 +87,8 @@ def getrgb(color):
             int(rgb[1] * 255 + 0.5),
             int(rgb[2] * 255 + 0.5)
             )
-    m = re.match("rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
+    m = re.match("rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$",
+                 color)
     if m:
         return (
             int(m.group(1)),
@@ -104,6 +97,7 @@ def getrgb(color):
             int(m.group(4))
             )
     raise ValueError("unknown color specifier: %r" % color)
+
 
 def getcolor(color, mode):
     """
@@ -114,20 +108,21 @@ def getcolor(color, mode):
     .. versionadded:: 1.1.4
 
     :param color: A color string
-    :return: ``(red, green, blue)``
+    :return: ``(graylevel [, alpha]) or (red, green, blue[, alpha])``
     """
     # same as getrgb, but converts the result to the given mode
-    color = getrgb(color)
-    if mode == "RGB":
-        return color
-    if mode == "RGBA":
-        if len(color) == 3:
-          color = (color + (255,))
-        r, g, b, a = color
-        return r, g, b, a
+    color, alpha = getrgb(color), 255
+    if len(color) == 4:
+        color, alpha = color[0:3], color[3]
+
     if Image.getmodebase(mode) == "L":
         r, g, b = color
-        return (r*299 + g*587 + b*114)//1000
+        color = (r*299 + g*587 + b*114)//1000
+        if mode[-1] == 'A':
+            return (color, alpha)
+    else:
+        if mode[-1] == 'A':
+            return color + (alpha,)
     return color
 
 colormap = {

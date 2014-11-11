@@ -13,8 +13,8 @@
 #include "Imaging.h"
 
 /* use Tests/make_hash.py to calculate these values */
-#define ACCESS_TABLE_SIZE 21
-#define ACCESS_TABLE_HASH 30197
+#define ACCESS_TABLE_SIZE 27
+#define ACCESS_TABLE_HASH 3078
 
 static struct ImagingAccessInstance access_table[ACCESS_TABLE_SIZE];
 
@@ -94,11 +94,11 @@ static void
 get_pixel_16L(Imaging im, int x, int y, void* color)
 {
     UINT8* in = (UINT8*) &im->image[y][x+x];
-    INT16* out = color;
+    UINT16* out = color;
 #ifdef WORDS_BIGENDIAN
     out[0] = in[0] + (in[1]<<8);
 #else
-    out[0] = *(INT16*) in;
+    out[0] = *(UINT16*) in;
 #endif
 }
 
@@ -106,9 +106,9 @@ static void
 get_pixel_16B(Imaging im, int x, int y, void* color)
 {
     UINT8* in = (UINT8*) &im->image[y][x+x];
-    INT16* out = color;
+    UINT16* out = color;
 #ifdef WORDS_BIGENDIAN
-    out[0] = *(INT16*) in;
+    out[0] = *(UINT16*) in;
 #else
     out[0] = in[1] + (in[0]<<8);
 #endif
@@ -238,6 +238,7 @@ ImagingAccessInit()
     ADD("CMYK", line_32, get_pixel_32, put_pixel_32);
     ADD("YCbCr", line_32, get_pixel_32, put_pixel_32);
     ADD("LAB", line_32, get_pixel_32, put_pixel_32);
+    ADD("HSV", line_32, get_pixel_32, put_pixel_32);
 }
 
 ImagingAccess

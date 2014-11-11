@@ -1,6 +1,9 @@
-from tester import *
+from helper import unittest, PillowTestCase
 
 from PIL import Image
+
+Image.USE_CFFI_ACCESS = False
+
 
 def color(mode):
     bands = Image.getmodebands(mode)
@@ -9,49 +12,42 @@ def color(mode):
     else:
         return tuple(range(1, bands+1))
 
-def test_pixel():
 
-    def pixel(mode):
-        c = color(mode)
+class TestImageGetPixel(PillowTestCase):
+
+    def check(self, mode, c=None):
+        if not c:
+            c = color(mode)
+
+        # check putpixel
         im = Image.new(mode, (1, 1), None)
         im.putpixel((0, 0), c)
-        return im.getpixel((0, 0))
+        self.assertEqual(
+            im.getpixel((0, 0)), c,
+            "put/getpixel roundtrip failed for mode %s, color %s" % (mode, c))
 
-    assert_equal(pixel("1"), 1)
-    assert_equal(pixel("L"), 1)
-    assert_equal(pixel("LA"), (1, 2))
-    assert_equal(pixel("I"), 1)
-    assert_equal(pixel("I;16"), 1)
-    assert_equal(pixel("I;16B"), 1)
-    assert_equal(pixel("F"), 1.0)
-    assert_equal(pixel("P"), 1)
-    assert_equal(pixel("PA"), (1, 2))
-    assert_equal(pixel("RGB"), (1, 2, 3))
-    assert_equal(pixel("RGBA"), (1, 2, 3, 4))
-    assert_equal(pixel("RGBX"), (1, 2, 3, 4))
-    assert_equal(pixel("CMYK"), (1, 2, 3, 4))
-    assert_equal(pixel("YCbCr"), (1, 2, 3))
+        # check inital color
+        im = Image.new(mode, (1, 1), c)
+        self.assertEqual(
+            im.getpixel((0, 0)), c,
+            "initial color failed for mode %s, color %s " % (mode, color))
 
-def test_image():
+    def test_basic(self):
+        for mode in ("1", "L", "LA", "I", "I;16", "I;16B", "F",
+                     "P", "PA", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr"):
+            self.check(mode)
 
-    def pixel(mode):
-        im = Image.new(mode, (1, 1), color(mode))
-        return im.getpixel((0, 0))
-
-    assert_equal(pixel("1"), 1)
-    assert_equal(pixel("L"), 1)
-    assert_equal(pixel("LA"), (1, 2))
-    assert_equal(pixel("I"), 1)
-    assert_equal(pixel("I;16"), 1)
-    assert_equal(pixel("I;16B"), 1)
-    assert_equal(pixel("F"), 1.0)
-    assert_equal(pixel("P"), 1)
-    assert_equal(pixel("PA"), (1, 2))
-    assert_equal(pixel("RGB"), (1, 2, 3))
-    assert_equal(pixel("RGBA"), (1, 2, 3, 4))
-    assert_equal(pixel("RGBX"), (1, 2, 3, 4))
-    assert_equal(pixel("CMYK"), (1, 2, 3, 4))
-    assert_equal(pixel("YCbCr"), (1, 2, 3))
+    def test_signedness(self):
+        # see https://github.com/python-pillow/Pillow/issues/452
+        # pixelaccess is using signed int* instead of uint*
+        for mode in ("I;16", "I;16B"):
+            self.check(mode, 2**15-1)
+            self.check(mode, 2**15)
+            self.check(mode, 2**15+1)
+            self.check(mode, 2**16-1)
 
 
+if __name__ == '__main__':
+    unittest.main()
 
+# End of file

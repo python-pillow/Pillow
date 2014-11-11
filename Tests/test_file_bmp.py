@@ -1,27 +1,56 @@
-from tester import *
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
+import io
 
-def test_sanity():
 
-    file = tempfile("temp.bmp")
+class TestFileBmp(PillowTestCase):
 
-    lena().save(file)
+    def roundtrip(self, im):
+        outfile = self.tempfile("temp.bmp")
 
-    im = Image.open(file)
-    im.load()
-    assert_equal(im.mode, "RGB")
-    assert_equal(im.size, (128, 128))
-    assert_equal(im.format, "BMP")
+        im.save(outfile, 'BMP')
 
-    lena("1").save(file)
-    im = Image.open(file)
+        reloaded = Image.open(outfile)
+        reloaded.load()
+        self.assertEqual(im.mode, reloaded.mode)
+        self.assertEqual(im.size, reloaded.size)
+        self.assertEqual(reloaded.format, "BMP")
 
-    lena("L").save(file)
-    im = Image.open(file)
+    def test_sanity(self):
+        self.roundtrip(hopper())
 
-    lena("P").save(file)
-    im = Image.open(file)
+        self.roundtrip(hopper("1"))
+        self.roundtrip(hopper("L"))
+        self.roundtrip(hopper("P"))
+        self.roundtrip(hopper("RGB"))
 
-    lena("RGB").save(file)
-    im = Image.open(file)
+    def test_save_to_bytes(self):
+        output = io.BytesIO()
+        im = hopper()
+        im.save(output, "BMP")
+
+        output.seek(0)
+        reloaded = Image.open(output)
+
+        self.assertEqual(im.mode, reloaded.mode)
+        self.assertEqual(im.size, reloaded.size)
+        self.assertEqual(reloaded.format, "BMP")
+
+    def test_dpi(self):
+        dpi = (72, 72)
+
+        output = io.BytesIO()
+        im = hopper()
+        im.save(output, "BMP", dpi=dpi)
+
+        output.seek(0)
+        reloaded = Image.open(output)
+
+        self.assertEqual(reloaded.info["dpi"], dpi)
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file

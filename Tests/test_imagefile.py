@@ -1,7 +1,11 @@
-from tester import *
+from helper import unittest, PillowTestCase, hopper, fromstring, tostring
+
+from io import BytesIO
 
 from PIL import Image
 from PIL import ImageFile
+from PIL import EpsImagePlugin
+
 
 codecs = dir(Image.core)
 
@@ -9,63 +13,87 @@ codecs = dir(Image.core)
 MAXBLOCK = ImageFile.MAXBLOCK
 SAFEBLOCK = ImageFile.SAFEBLOCK
 
-def test_parser():
 
-    def roundtrip(format):
+class TestImageFile(PillowTestCase):
 
-        im = lena("L").resize((1000, 1000))
-        if format in ("MSP", "XBM"):
-            im = im.convert("1")
+    def test_parser(self):
 
-        file = BytesIO()
+        def roundtrip(format):
 
-        im.save(file, format)
+            im = hopper("L").resize((1000, 1000))
+            if format in ("MSP", "XBM"):
+                im = im.convert("1")
 
-        data = file.getvalue()
+            file = BytesIO()
 
-        parser = ImageFile.Parser()
-        parser.feed(data)
-        imOut = parser.close()
+            im.save(file, format)
 
-        return im, imOut
+            data = file.getvalue()
 
-    assert_image_equal(*roundtrip("BMP"))
-    assert_image_equal(*roundtrip("GIF"))
-    assert_image_equal(*roundtrip("IM"))
-    assert_image_equal(*roundtrip("MSP"))
-    if "zip_encoder" in codecs:
+            parser = ImageFile.Parser()
+            parser.feed(data)
+            imOut = parser.close()
+
+            return im, imOut
+
+        self.assert_image_equal(*roundtrip("BMP"))
+        self.assert_image_equal(*roundtrip("GIF"))
+        self.assert_image_equal(*roundtrip("IM"))
+        self.assert_image_equal(*roundtrip("MSP"))
+        if "zip_encoder" in codecs:
+            try:
+                # force multiple blocks in PNG driver
+                ImageFile.MAXBLOCK = 8192
+                self.assert_image_equal(*roundtrip("PNG"))
+            finally:
+                ImageFile.MAXBLOCK = MAXBLOCK
+        self.assert_image_equal(*roundtrip("PPM"))
+        self.assert_image_equal(*roundtrip("TIFF"))
+        self.assert_image_equal(*roundtrip("XBM"))
+        self.assert_image_equal(*roundtrip("TGA"))
+        self.assert_image_equal(*roundtrip("PCX"))
+
+        if EpsImagePlugin.has_ghostscript():
+            im1, im2 = roundtrip("EPS")
+            # This test fails on Ubuntu 12.04, PPC (Bigendian) It
+            # appears to be a ghostscript 9.05 bug, since the
+            # ghostscript rendering is wonky and the file is identical
+            # to that written on ubuntu 12.04 x64 
+            # md5sum: ba974835ff2d6f3f2fd0053a23521d4a
+
+            # EPS comes back in RGB:
+            self.assert_image_similar(im1, im2.convert('L'), 20)
+
+        if "jpeg_encoder" in codecs:
+            im1, im2 = roundtrip("JPEG")  # lossy compression
+            self.assert_image(im1, im2.mode, im2.size)
+
+        self.assertRaises(IOError, lambda: roundtrip("PDF"))
+
+    def test_ico(self):
+        with open('Tests/images/python.ico', 'rb') as f:
+            data = f.read()
+        p = ImageFile.Parser()
+        p.feed(data)
+        self.assertEqual((48, 48), p.image.size)
+
+    def test_safeblock(self):
+
+        im1 = hopper()
+
+        if "zip_encoder" not in codecs:
+            self.skipTest("PNG (zlib) encoder not available")
+
         try:
-            # force multiple blocks in PNG driver
-            ImageFile.MAXBLOCK = 8192
-            assert_image_equal(*roundtrip("PNG"))
+            ImageFile.SAFEBLOCK = 1
+            im2 = fromstring(tostring(im1, "PNG"))
         finally:
-            ImageFile.MAXBLOCK = MAXBLOCK
-    assert_image_equal(*roundtrip("PPM"))
-    assert_image_equal(*roundtrip("TIFF"))
-    assert_image_equal(*roundtrip("XBM"))
-    #assert_image_equal(*roundtrip("EPS"))      #no eps_decoder
-    assert_image_equal(*roundtrip("TGA"))
-    assert_image_equal(*roundtrip("PCX"))
+            ImageFile.SAFEBLOCK = SAFEBLOCK
 
-    if "jpeg_encoder" in codecs:
-        im1, im2 = roundtrip("JPEG") # lossy compression
-        assert_image(im1, im2.mode, im2.size)
+        self.assert_image_equal(im1, im2)
 
-    # XXX Why assert exception and why does it fail?
-    # https://github.com/python-imaging/Pillow/issues/78
-    #assert_exception(IOError, lambda: roundtrip("PDF"))
 
-def test_safeblock():
+if __name__ == '__main__':
+    unittest.main()
 
-    im1 = lena()
-
-    if "zip_encoder" not in codecs:
-        skip("PNG (zlib) encoder not available")
-
-    try:
-        ImageFile.SAFEBLOCK = 1
-        im2 = fromstring(tostring(im1, "PNG"))
-    finally:
-        ImageFile.SAFEBLOCK = SAFEBLOCK
-
-    assert_image_equal(im1, im2)
+# End of file

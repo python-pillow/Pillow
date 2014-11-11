@@ -1,7 +1,5 @@
 # brute-force search for access descriptor hash table
 
-import random
-
 modes = [
     "1",
     "L", "LA",
@@ -11,13 +9,16 @@ modes = [
     "RGB", "RGBA", "RGBa", "RGBX",
     "CMYK",
     "YCbCr",
+    "LAB", "HSV",
     ]
+
 
 def hash(s, i):
     # djb2 hash: multiply by 33 and xor character
     for c in s:
-        i = (((i<<5) + i) ^ ord(c)) & 0xffffffff
+        i = (((i << 5) + i) ^ ord(c)) & 0xffffffff
     return i
+
 
 def check(size, i0):
     h = [None] * size

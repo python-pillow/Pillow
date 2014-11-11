@@ -52,6 +52,7 @@ typedef struct {
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject* lock;
+    int     handles_eof;
 } ImagingDecoderObject;
 
 static PyTypeObject ImagingDecoderType;
@@ -93,12 +94,17 @@ PyImaging_DecoderNew(int contextsize)
     /* Initialize the cleanup function pointer */
     decoder->cleanup = NULL;
 
+    /* Most decoders don't want to handle EOF themselves */
+    decoder->handles_eof = 0;
+
     return decoder;
 }
 
 static void
 _dealloc(ImagingDecoderObject* decoder)
 {
+    if (decoder->cleanup)
+        decoder->cleanup(&decoder->state);
     free(decoder->state.buffer);
     free(decoder->state.context);
     Py_XDECREF(decoder->lock);
@@ -194,11 +200,24 @@ _setimage(ImagingDecoderObject* decoder, PyObject* args)
     return Py_None;
 }
 
+static PyObject *
+_get_handles_eof(ImagingDecoderObject *decoder)
+{
+    return PyBool_FromLong(decoder->handles_eof);
+}
+
 static struct PyMethodDef methods[] = {
     {"decode", (PyCFunction)_decode, 1},
     {"cleanup", (PyCFunction)_decode_cleanup, 1},
     {"setimage", (PyCFunction)_setimage, 1},
     {NULL, NULL} /* sentinel */
+};
+
+static struct PyGetSetDef getseters[] = {
+    {"handles_eof", (getter)_get_handles_eof, NULL,
+     "True if this decoder expects to handle EOF itself.",
+     NULL},
+    {NULL, NULL, NULL, NULL, NULL} /* sentinel */
 };
 
 static PyTypeObject ImagingDecoderType = {
@@ -232,7 +251,7 @@ static PyTypeObject ImagingDecoderType = {
     0,                          /*tp_iternext*/
     methods,                    /*tp_methods*/
     0,                          /*tp_members*/
-    0,                          /*tp_getset*/
+    getseters,                  /*tp_getset*/
 };
 
 /* -------------------------------------------------------------------- */
@@ -416,9 +435,6 @@ PyImaging_TiffLzwDecoderNew(PyObject* self, PyObject* args)
 #include "TiffDecode.h"
 
 #include <string.h>
-#ifdef __WIN32__
-#define strcasecmp(s1, s2) stricmp(s1, s2)
-#endif
 
 PyObject*
 PyImaging_LibTiffDecoderNew(PyObject* self, PyObject* args)
@@ -427,53 +443,13 @@ PyImaging_LibTiffDecoderNew(PyObject* self, PyObject* args)
     char* mode;
     char* rawmode;
     char* compname;
-    int compression;
     int fp;
+    int ifdoffset;
 
-    if (! PyArg_ParseTuple(args, "sssi", &mode, &rawmode, &compname, &fp))
+    if (! PyArg_ParseTuple(args, "sssii", &mode, &rawmode, &compname, &fp, &ifdoffset))
         return NULL;
 
     TRACE(("new tiff decoder %s\n", compname));
-
-    /* UNDONE -- we can probably do almost any arbitrary compression here,
-     * since we're effective passing in the whole file in one shot and
-     * getting back the data row by row. V2 maybe
-     */
-
-    if (strcasecmp(compname, "tiff_ccitt") == 0) {
-        compression = COMPRESSION_CCITTRLE;
-
-    } else if (strcasecmp(compname, "group3") == 0) {
-        compression = COMPRESSION_CCITTFAX3;
-
-    } else if (strcasecmp(compname, "group4") == 0) {
-        compression = COMPRESSION_CCITTFAX4;
-
-    } else if (strcasecmp(compname, "tiff_jpeg") == 0) {
-        compression = COMPRESSION_OJPEG;
-
-    } else if (strcasecmp(compname, "tiff_adobe_deflate") == 0) {
-        compression = COMPRESSION_ADOBE_DEFLATE;
-
-    } else if (strcasecmp(compname, "tiff_thunderscan") == 0) {
-        compression = COMPRESSION_THUNDERSCAN;
-
-    } else if (strcasecmp(compname, "tiff_deflate") == 0) {
-        compression = COMPRESSION_DEFLATE;
-
-    } else if (strcasecmp(compname, "tiff_sgilog") == 0) {
-        compression = COMPRESSION_SGILOG;
-
-    } else if (strcasecmp(compname, "tiff_sgilog24") == 0) {
-        compression = COMPRESSION_SGILOG24;
-
-    } else if (strcasecmp(compname, "tiff_raw_16") == 0) {
-        compression = COMPRESSION_CCITTRLEW;
-
-    } else {
-        PyErr_SetString(PyExc_ValueError, "unknown compession");
-        return NULL;
-    }
 
     decoder = PyImaging_DecoderNew(sizeof(TIFFSTATE));
     if (decoder == NULL)
@@ -482,7 +458,7 @@ PyImaging_LibTiffDecoderNew(PyObject* self, PyObject* args)
     if (get_unpacker(decoder, mode, rawmode) < 0)
         return NULL;
 
-    if (! ImagingLibTiffInit(&decoder->state, compression, fp)) {
+    if (! ImagingLibTiffInit(&decoder->state, fp, ifdoffset)) {
         Py_DECREF(decoder);
         PyErr_SetString(PyExc_RuntimeError, "tiff codec initialization failed");
         return NULL;
@@ -803,3 +779,57 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
     return (PyObject*) decoder;
 }
 #endif
+
+/* -------------------------------------------------------------------- */
+/* JPEG 2000                                                            */
+/* -------------------------------------------------------------------- */
+
+#ifdef HAVE_OPENJPEG
+
+#include "Jpeg2K.h"
+
+PyObject*
+PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
+{
+    ImagingDecoderObject* decoder;
+    JPEG2KDECODESTATE *context;
+
+    char* mode;
+    char* format;
+    OPJ_CODEC_FORMAT codec_format;
+    int reduce = 0;
+    int layers = 0;
+    int fd = -1;
+    PY_LONG_LONG length = -1;
+    if (!PyArg_ParseTuple(args, "ss|iiiL", &mode, &format,
+                          &reduce, &layers, &fd, &length))
+        return NULL;
+
+    if (strcmp(format, "j2k") == 0)
+        codec_format = OPJ_CODEC_J2K;
+    else if (strcmp(format, "jpt") == 0)
+        codec_format = OPJ_CODEC_JPT;
+    else if (strcmp(format, "jp2") == 0)
+        codec_format = OPJ_CODEC_JP2;
+    else
+        return NULL;
+
+    decoder = PyImaging_DecoderNew(sizeof(JPEG2KDECODESTATE));
+    if (decoder == NULL)
+        return NULL;
+
+    decoder->handles_eof = 1;
+    decoder->decode = ImagingJpeg2KDecode;
+    decoder->cleanup = ImagingJpeg2KDecodeCleanup;
+
+    context = (JPEG2KDECODESTATE *)decoder->state.context;
+
+    context->fd = fd;
+    context->length = (off_t)length;
+    context->format = codec_format;
+    context->reduce = reduce;
+    context->layers = layers;
+
+    return (PyObject*) decoder;
+}
+#endif /* HAVE_OPENJPEG */

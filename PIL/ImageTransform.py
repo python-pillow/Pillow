@@ -15,15 +15,19 @@
 
 from PIL import Image
 
+
 class Transform(Image.ImageTransformHandler):
     def __init__(self, data):
         self.data = data
+
     def getdata(self):
         return self.method, self.data
+
     def transform(self, size, image, **options):
         # can be overridden
         method, data = self.getdata()
         return image.transform(size, method, data, **options)
+
 
 ##
 # Define an affine image transform.
@@ -43,8 +47,10 @@ class Transform(Image.ImageTransformHandler):
 #    the first two rows from an affine transform matrix.
 # @see Image#Image.transform
 
+
 class AffineTransform(Transform):
     method = Image.AFFINE
+
 
 ##
 # Define a transform to extract a subregion from an image.
@@ -68,6 +74,7 @@ class AffineTransform(Transform):
 class ExtentTransform(Transform):
     method = Image.EXTENT
 
+
 ##
 # Define an quad image transform.
 # <p>
@@ -82,6 +89,7 @@ class ExtentTransform(Transform):
 
 class QuadTransform(Transform):
     method = Image.QUAD
+
 
 ##
 # Define an mesh image transform.  A mesh transform consists of one

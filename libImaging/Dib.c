@@ -22,7 +22,7 @@
 
 #include "Imaging.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "ImDib.h"
 
@@ -308,4 +308,4 @@ ImagingDeleteDIB(ImagingDIB dib)
     free(dib->info);
 }
 
-#endif /* WIN32 */
+#endif /* _WIN32 */

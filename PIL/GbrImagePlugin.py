@@ -17,8 +17,10 @@ from PIL import Image, ImageFile, _binary
 
 i32 = _binary.i32be
 
+
 def _accept(prefix):
     return i32(prefix) >= 20 and i32(prefix[4:8]) == 1
+
 
 ##
 # Image plugin for the GIMP brush format.

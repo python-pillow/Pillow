@@ -1,11 +1,11 @@
-Pillow: a modern fork of PIL
-============================
+Pillow
+======
 
-Pillow is the "friendly" PIL fork by Alex Clark and Contributors. PIL is the
-Python Imaging Library by Fredrik Lundh and Contributors.
+Pillow is the 'friendly' PIL fork by Alex Clark and Contributors. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 
-.. image:: https://travis-ci.org/python-imaging/Pillow.png
-   :target: https://travis-ci.org/python-imaging/Pillow
+.. image:: https://travis-ci.org/python-pillow/Pillow.svg?branch=master
+   :target: https://travis-ci.org/python-pillow/Pillow
+   :alt: Travis CI build status
 
 .. image:: https://pypip.in/v/Pillow/badge.png
     :target: https://pypi.python.org/pypi/Pillow/
@@ -15,15 +15,11 @@ Python Imaging Library by Fredrik Lundh and Contributors.
     :target: https://pypi.python.org/pypi/Pillow/
     :alt: Number of PyPI downloads
 
-To start using Pillow, read the :doc:`installation
-instructions <installation>`.
+.. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.png?branch=master
+    :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
+    :alt: Test coverage
 
-If you can't find the information you need, try the old `PIL Handbook`_, but be
-aware that it was last updated for PIL 1.1.5. You can download archives and old
-versions from `PyPI <https://pypi.python.org/pypi/Pillow>`_. You can get the
-source and contribute at https://github.com/python-imaging/Pillow.
-
-.. _PIL Handbook: http://effbot.org/imagingbook/pil-index.htm
+To install Pillow, please follow the :doc:`installation instructions <installation>`. To download source and/or contribute to development of Pillow please see: https://github.com/python-pillow/Pillow. 
 
 .. toctree::
    :maxdepth: 2
@@ -34,30 +30,6 @@ source and contribute at https://github.com/python-imaging/Pillow.
    reference/index.rst
    handbook/appendices
    original-readme
-
-Support Pillow!
-===============
-
-PIL needs you! Please help us maintain the Python Imaging Library here:
-
-- `GitHub <https://github.com/python-imaging/Pillow>`_
-- `Freenode <irc://irc.freenode.net#pil>`_
-- `Image-SIG <http://mail.python.org/mailman/listinfo/image-sig>`_
-
-Financial
----------
-
-Pillow is a volunteer effort led by Alex Clark. If you can't help with
-development, please help us financially; your assistance is very much needed
-and appreciated!
-
-.. note:: Contributors: please add your name and donation preference here. 
-
-======================================= =======================================
-**Developer**                           **Preference**
-======================================= =======================================
-Alex Clark (fork author)                http://gittip.com/aclark4life
-======================================= =======================================
 
 Indices and tables
 ==================

@@ -22,6 +22,7 @@ from PIL import Image, ImageFile, _binary
 
 i8 = _binary.i8
 
+
 ##
 # Image plugin for PhotoCD images.  This plugin only reads the 768x512
 # image from the file; higher resolutions are encoded in a proprietary
@@ -43,13 +44,13 @@ class PcdImageFile(ImageFile.ImageFile):
 
         orientation = i8(s[1538]) & 3
         if orientation == 1:
-            self.tile_post_rotate = 90 # hack
+            self.tile_post_rotate = 90  # hack
         elif orientation == 3:
             self.tile_post_rotate = -90
 
         self.mode = "RGB"
-        self.size = 768, 512 # FIXME: not correct for rotated images!
-        self.tile = [("pcd", (0,0)+self.size, 96*2048, None)]
+        self.size = 768, 512  # FIXME: not correct for rotated images!
+        self.tile = [("pcd", (0, 0)+self.size, 96*2048, None)]
 
     def draft(self, mode, size):
 
@@ -60,7 +61,7 @@ class PcdImageFile(ImageFile.ImageFile):
 
         if size:
             scale = max(self.size[0] / size[0], self.size[1] / size[1])
-            for s, o in [(4,0*2048), (2,0*2048), (1,96*2048)]:
+            for s, o in [(4, 0*2048), (2, 0*2048), (1, 96*2048)]:
                 if scale >= s:
                     break
             # e = e[0], e[1], (e[2]-e[0]+s-1)/s+e[0], (e[3]-e[1]+s-1)/s+e[1]

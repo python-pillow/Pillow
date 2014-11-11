@@ -1,0 +1,82 @@
+Scripts
+=======
+
+This directory contains a number of more or less trivial utilities
+and demo programs.
+
+Comments and contributions are welcome.
+
+</F>
+
+pildriver.py (by Eric S. Raymond)
+--------------------------------------------------------------------
+
+A class implementing an image-processing calculator for scripts.
+Parses lists of commnds (or, called interactively, command-line
+arguments) into image loads, transformations, and saves.
+
+viewer.py
+--------------------------------------------------------------------
+
+A simple image viewer.  Can display all file formats handled by
+PIL.  Transparent images are properly handled.
+
+thresholder.py
+--------------------------------------------------------------------
+
+A simple utility that demonstrates how a transparent 1-bit overlay
+can be used to show the current thresholding of an 8-bit image.
+
+enhancer.py
+--------------------------------------------------------------------
+
+Illustrates the ImageEnhance module.  Drag the sliders to modify the
+images.  This might be very slow on some platforms, depending on the
+Tk version.
+
+painter.py
+--------------------------------------------------------------------
+
+Illustrates how a painting program could be based on PIL and Tk.
+Press the left mouse button and drag over the image to remove the
+colour.  Some clever tricks have been used to get decent performance
+when updating the screen; see the sources for details.
+
+player.py
+--------------------------------------------------------------------
+
+A simple image sequence player.  You can use either a sequence format
+like FLI/FLC, GIF, or ARG, or give a number of images which are
+interpreted as frames in a sequence.  All frames must have the same
+size.
+
+gifmaker.py
+--------------------------------------------------------------------
+
+Convert a sequence file to a GIF animation.
+
+Note that the GIF encoder provided with this release of PIL writes
+uncompressed GIF files only, so the resulting animations are rather
+large compared with these created by other tools.
+
+explode.py
+--------------------------------------------------------------------
+
+Split a sequence file into individual frames.
+
+image2py.py
+--------------------------------------------------------------------
+
+Convert an image to a Python module containing an IMAGE variable.
+Note that the module using the module must include JPEG and ZIP
+decoders, unless the -u option is used.
+
+olesummary.py
+--------------------------------------------------------------------
+
+Uses the OleFileIO module to dump the summary information from an OLE
+structured storage file.  This works with most OLE files, including
+Word documents, FlashPix images, etc.
+
+Note that datetime fields currently show the number of seconds since
+January 1st, 1601.

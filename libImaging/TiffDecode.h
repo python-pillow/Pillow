@@ -13,11 +13,6 @@
 #include <tiff.h>
 #endif
 
-#ifndef _UNISTD_H
-#include <unistd.h>
-#endif
-
-
 #ifndef min
 #define min(x,y) (( x > y ) ? y : x )
 #define max(x,y) (( x < y ) ? y : x )
@@ -31,6 +26,7 @@ typedef struct {
 	toff_t loc;   /* toff_t == uint32 */
 	tsize_t size; /* tsize_t == int32 */
 	int fp;
+    int ifd; /* offset of the ifd, used for multipage */
 	TIFF *tiff; /* Used in write */
 	toff_t eof;
 	int flrealloc; /* may we realloc */
@@ -38,16 +34,15 @@ typedef struct {
 
 
 
-extern int ImagingLibTiffInit(ImagingCodecState state, int compression, int fp);
+extern int ImagingLibTiffInit(ImagingCodecState state, int fp, int offset);
 extern int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp);
 extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 
 
-#if defined(_MSC_VER) && (_MSC_VER == 1310)
-/* VS2003/py2.4 can't use varargs. Skipping trace for now.*/
-#define TRACE(args)
-#else
-
+/* 
+   Trace debugging
+   legacy, don't enable for python 3.x, unicode issues. 
+*/
 
 /*
 #define VA_ARGS(...)	__VA_ARGS__
@@ -55,9 +50,5 @@ extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 */
 
 #define TRACE(args)
-
-#endif /* _MSC_VER */
-
-
 
 #endif

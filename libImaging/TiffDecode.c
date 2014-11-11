@@ -21,8 +21,8 @@
 #include "TiffDecode.h"
 
 void dump_state(const TIFFSTATE *state){
-	TRACE(("State: Location %u size %d eof %d data: %p \n", (uint)state->loc,
-		   (int)state->size, (uint)state->eof, state->data));
+	TRACE(("State: Location %u size %d eof %d data: %p ifd: %d\n", (uint)state->loc,
+		   (int)state->size, (uint)state->eof, state->data, state->ifd));
 }
 
 /*
@@ -142,11 +142,11 @@ void _tiffUnmapProc(thandle_t hdata, tdata_t base, toff_t size) {
 	(void) hdata; (void) base; (void) size;
 }
 
-int ImagingLibTiffInit(ImagingCodecState state, int compression, int fp) {
+int ImagingLibTiffInit(ImagingCodecState state, int fp, int offset) {
 	TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
 
     TRACE(("initing libtiff\n"));
-	TRACE(("Compression: %d, filepointer: %d \n", compression, fp));
+	TRACE(("filepointer: %d \n",  fp));
 	TRACE(("State: count %d, state %d, x %d, y %d, ystep %d\n", state->count, state->state,
 		   state->x, state->y, state->ystep));
 	TRACE(("State: xsize %d, ysize %d, xoff %d, yoff %d \n", state->xsize, state->ysize,
@@ -158,6 +158,7 @@ int ImagingLibTiffInit(ImagingCodecState state, int compression, int fp) {
 	clientstate->size = 0;
 	clientstate->data = 0;
 	clientstate->fp = fp;
+    clientstate->ifd = offset;
 	clientstate->eof = 0;
 
     return 1;
@@ -195,7 +196,6 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 	clientstate->loc = 0;
 	clientstate->data = (tdata_t)buffer;
 	clientstate->flrealloc = 0;
-
 	dump_state(clientstate);
 
     TIFFSetWarningHandler(NULL);
@@ -218,6 +218,17 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 		TRACE(("Error, didn't get the tiff\n"));
 		state->errcode = IMAGING_CODEC_BROKEN;
 		return -1;
+	}
+
+    if (clientstate->ifd){
+		int rv;
+		unsigned int ifdoffset = clientstate->ifd;
+		TRACE(("reading tiff ifd %d\n", ifdoffset));
+		rv = TIFFSetSubDirectory(tiff, ifdoffset);
+		if (!rv){
+			TRACE(("error in TIFFSetSubDirectory"));
+			return -1;
+		}
 	}
 
 	size = TIFFScanlineSize(tiff);

@@ -22,6 +22,7 @@ from PIL._util import isStringType
 import operator
 from functools import reduce
 
+
 #
 # helpers
 
@@ -35,11 +36,13 @@ def _border(border):
         left = top = right = bottom = border
     return left, top, right, bottom
 
+
 def _color(color, mode):
     if isStringType(color):
         from PIL import ImageColor
         color = ImageColor.getcolor(color, mode)
     return color
+
 
 def _lut(image, lut):
     if image.mode == "P":
@@ -94,7 +97,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                     cut = cut - h[lo]
                     h[lo] = 0
                 else:
-                    h[lo] = h[lo] - cut
+                    h[lo] -= cut
                     cut = 0
                 if cut <= 0:
                     break
@@ -105,7 +108,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                     cut = cut - h[hi]
                     h[hi] = 0
                 else:
-                    h[hi] = h[hi] - cut
+                    h[hi] -= cut
                     cut = 0
                 if cut <= 0:
                     break
@@ -147,7 +150,9 @@ def colorize(image, black, white):
     assert image.mode == "L"
     black = _color(black, "RGB")
     white = _color(white, "RGB")
-    red = []; green = []; blue = []
+    red = []
+    green = []
+    blue = []
     for i in range(256):
         red.append(black[0]+i*(white[0]-black[0])//255)
         green.append(black[1]+i*(white[1]-black[1])//255)
@@ -273,7 +278,7 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
         centering = [centering[0], centering[1]]
 
     if centering[0] > 1.0 or centering[0] < 0.0:
-        centering [0] = 0.50
+        centering[0] = 0.50
     if centering[1] > 1.0 or centering[1] < 0.0:
         centering[1] = 0.50
 
@@ -392,7 +397,7 @@ def solarize(image, threshold=128):
     """
     Invert all pixel values above a threshold.
 
-    :param image: The image to posterize.
+    :param image: The image to solarize.
     :param threshold: All pixels above this greyscale level are inverted.
     :return: An image.
     """
@@ -403,6 +408,7 @@ def solarize(image, threshold=128):
         else:
             lut.append(255-i)
     return _lut(image, lut)
+
 
 # --------------------------------------------------------------------
 # PIL USM components, from Kevin Cazabon.
@@ -418,6 +424,7 @@ def gaussian_blur(im, radius=None):
     return im.im.gaussian_blur(radius)
 
 gblur = gaussian_blur
+
 
 def unsharp_mask(im, radius=None, percent=None, threshold=None):
     """ PIL_usm.usm(im, [radius, percent, threshold])"""

@@ -105,7 +105,6 @@ Create JPEG thumbnails
             except IOError:
                 print("cannot create thumbnail for", infile)
 
-
 It is important to note that the library doesn’t decode or load the raster data
 unless it really has to. When you open a file, the file header is read to
 determine the file format and extract things like mode, size, and other
@@ -127,8 +126,8 @@ Identify Image Files
 
     for infile in sys.argv[1:]:
         try:
-            im = Image.open(infile)
-            print(infile, im.format, "%dx%d" % im.size, im.mode)
+            with Image.open(infile) as im:
+                print(infile, im.format, "%dx%d" % im.size, im.mode)
         except IOError:
             pass
 
@@ -297,7 +296,7 @@ Point Operations
 
 The :py:meth:`~PIL.Image.Image.point` method can be used to translate the pixel
 values of an image (e.g. image contrast manipulation). In most cases, a
-function object expecting one argument can be passed to the this method. Each
+function object expecting one argument can be passed to this method. Each
 pixel is processed according to that function:
 
 Applying point transforms
@@ -398,7 +397,7 @@ Note that most drivers in the current version of the library only allow you to
 seek to the next frame (as in the above example). To rewind the file, you may
 have to reopen it.
 
-The following iterator class lets you to use the for-statement to loop over the
+The following iterator class lets you use the for-statement to loop over the
 sequence:
 
 A sequence iterator class

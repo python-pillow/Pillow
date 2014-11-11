@@ -1,5 +1,3 @@
-# -*- coding: iso-8859-1 -*-
-#
 # The Python Imaging Library.
 # $Id$
 #
@@ -14,11 +12,11 @@
 #
 
 # NOTE: This format cannot be automatically recognized, so the reader
-# is not registered for use with Image.open().  To open a WEL file, use
+# is not registered for use with Image.open().  To open a WAL file, use
 # the WalImageFile.open() function instead.
 
 # This reader is based on the specification available from:
-#    http://www.flipcode.com/tutorials/tut_q2levels.shtml
+#    http://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
 # and has been tested with a few sample files found using google.
 
 from __future__ import print_function
@@ -32,6 +30,7 @@ except ImportError:
     builtins = __builtin__
 
 i32 = _binary.i32le
+
 
 ##
 # Load texture from a Quake2 WAL texture file.
@@ -75,7 +74,7 @@ def open(filename):
 
 
 quake2palette = (
-    # default palette taken from piffo 0.93 by Hans Häggström
+    # default palette taken from piffo 0.93 by Hans HÃ¤ggstrÃ¶m
     b"\x01\x01\x01\x0b\x0b\x0b\x12\x12\x12\x17\x17\x17\x1b\x1b\x1b\x1e"
     b"\x1e\x1e\x22\x22\x22\x26\x26\x26\x29\x29\x29\x2c\x2c\x2c\x2f\x2f"
     b"\x2f\x32\x32\x32\x35\x35\x35\x37\x37\x37\x3a\x3a\x3a\x3c\x3c\x3c"

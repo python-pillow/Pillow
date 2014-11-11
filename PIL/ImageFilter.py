@@ -43,7 +43,7 @@ class Kernel(Filter):
     def __init__(self, size, kernel, scale=None, offset=0):
         if scale is None:
             # default scale is sum of kernel
-            scale = reduce(lambda a,b: a+b, kernel)
+            scale = reduce(lambda a, b: a+b, kernel)
         if size[0] * size[1] != len(kernel):
             raise ValueError("not enough coefficients in kernel")
         self.filterargs = size, scale, offset, kernel
@@ -162,7 +162,8 @@ class UnsharpMask(Filter):
     See Wikipedia's entry on `digital unsharp masking`_ for an explanation of
     the parameters.
 
-    .. _digital unsharp masking: https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
+    .. _digital unsharp masking:
+    https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
     """
     name = "UnsharpMask"
 

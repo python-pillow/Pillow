@@ -1,10 +1,13 @@
 Writing your own file decoder
 =============================
 
-The Python Imaging Library uses a plug-in model which allows you to add your
-own decoders to the library, without any changes to the library itself. Such
-plug-ins have names like :file:`XxxImagePlugin.py`, where ``Xxx`` is a unique
-format name (usually an abbreviation).
+The Python Imaging Library uses a plug-in model which allows you to
+add your own decoders to the library, without any changes to the
+library itself. Such plug-ins usually have names like
+:file:`XxxImagePlugin.py`, where ``Xxx`` is a unique format name
+(usually an abbreviation).
+
+.. warning:: Pillow >= 2.1.0 no longer automatically imports any file in the Python path with a name ending in :file:`ImagePlugin.py`.  You will need to import your decoder manually. 
 
 A decoder plug-in should contain a decoder class, based on the
 :py:class:`PIL.ImageFile.ImageFile` base class. This class should provide an

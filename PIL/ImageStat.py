@@ -21,21 +21,21 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-import operator, math
+import math
+import operator
 from functools import reduce
 
 
 class Stat:
 
-    def __init__(self, image_or_list, mask = None):
+    def __init__(self, image_or_list, mask=None):
         try:
             if mask:
                 self.h = image_or_list.histogram(mask)
             else:
                 self.h = image_or_list.histogram()
         except AttributeError:
-            self.h = image_or_list # assume it to be a histogram list
+            self.h = image_or_list  # assume it to be a histogram list
         if not isinstance(self.h, list):
             raise TypeError("first argument must be image or list")
         self.bands = list(range(len(self.h) // 256))
@@ -59,7 +59,7 @@ class Stat:
                 if histogram[i]:
                     n = min(n, i)
                     x = max(x, i)
-            return n, x # returns (255, 0) if there's no data in the histogram
+            return n, x  # returns (255, 0) if there's no data in the histogram
 
         v = []
         for i in range(0, len(self.h), 256):
@@ -81,7 +81,7 @@ class Stat:
         for i in range(0, len(self.h), 256):
             sum = 0.0
             for j in range(256):
-                sum = sum + j * self.h[i+j]
+                sum += j * self.h[i + j]
             v.append(sum)
         return v
 
@@ -92,7 +92,7 @@ class Stat:
         for i in range(0, len(self.h), 256):
             sum2 = 0.0
             for j in range(256):
-                sum2 = sum2 + (j ** 2) * float(self.h[i+j])
+                sum2 += (j ** 2) * float(self.h[i + j])
             v.append(sum2)
         return v
 
@@ -127,7 +127,6 @@ class Stat:
             v.append(math.sqrt(self.sum2[i] / self.count[i]))
         return v
 
-
     def _getvar(self):
         "Get variance for each layer"
 
@@ -145,4 +144,4 @@ class Stat:
             v.append(math.sqrt(self.var[i]))
         return v
 
-Global = Stat # compatibility
+Global = Stat  # compatibility

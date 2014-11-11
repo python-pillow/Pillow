@@ -1,14 +1,23 @@
-from tester import *
+from helper import unittest, PillowTestCase
 
 from PIL import Image
 
 # sample ppm stream
-file = "Images/lena.ico"
-data = open(file, "rb").read()
+TEST_ICO_FILE = "Tests/images/hopper.ico"
+TEST_DATA = open(TEST_ICO_FILE, "rb").read()
 
-def test_sanity():
-    im = Image.open(file)
-    im.load()
-    assert_equal(im.mode, "RGBA")
-    assert_equal(im.size, (16, 16))
-    assert_equal(im.format, "ICO")
+
+class TestFileIco(PillowTestCase):
+
+    def test_sanity(self):
+        im = Image.open(TEST_ICO_FILE)
+        im.load()
+        self.assertEqual(im.mode, "RGBA")
+        self.assertEqual(im.size, (16, 16))
+        self.assertEqual(im.format, "ICO")
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file
