@@ -589,6 +589,14 @@ ICO
 
 ICO is used to store icons on Windows. The largest available icon is read.
 
+The :py:meth:`~PIL.Image.Image.save` method supports the following options:
+
+**sizes**
+    A list of sizes including in this ico file; these are a 2-tuple,
+    ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
+    (64, 64), (128, 128), (255, 255)]``. Any size is bigger then the original
+    size or 255 will be ignored.
+
 ICNS
 ^^^^
 
