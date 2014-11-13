@@ -94,7 +94,8 @@ static inline UINT8 clip8(float in)
    GCC generates code with partial dependency which 3 times slower.
    See: http://stackoverflow.com/a/26588074/253146 */
 #if defined(__x86_64__) && defined(__SSE__) && \
-    ! defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900)
+    ! defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900) && \
+    ! defined(Py_DEBUG)
 static float __attribute__((always_inline)) i2f(int v) {
     float x;
     __asm__("xorps %0, %0; cvtsi2ss %1, %0" : "=X"(x) : "r"(v) );
