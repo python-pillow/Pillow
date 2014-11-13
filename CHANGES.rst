@@ -3,6 +3,10 @@ Changelog (Pillow)
 
 2.7.0 (unreleased)
 ------------------
+
+- Ico save, additional tests #1007
+  [exherb]
+
 - Use PyQt4 if it has already been imported, otherwise prefer PyQt5. #1003
   [AurelienBallier]
   
