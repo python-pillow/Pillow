@@ -22,13 +22,27 @@ class TestFileIco(PillowTestCase):
         im = hopper()
         im.save(output, "ico", sizes=[(32, 32), (64, 64)])
 
+        # the default image
         output.seek(0)
         reloaded = Image.open(output)
+        self.assertEqual(reloaded.info['sizes'],set([(32, 32), (64, 64)]))
 
         self.assertEqual(im.mode, reloaded.mode)
         self.assertEqual((64, 64), reloaded.size)
         self.assertEqual(reloaded.format, "ICO")
+        self.assert_image_equal(reloaded, hopper().resize((64,64), Image.ANTIALIAS))
 
+        # the other one
+        output.seek(0)
+        reloaded = Image.open(output)
+        reloaded.size = (32,32)
+
+        self.assertEqual(im.mode, reloaded.mode)
+        self.assertEqual((32, 32), reloaded.size)
+        self.assertEqual(reloaded.format, "ICO")
+        self.assert_image_equal(reloaded, hopper().resize((32,32), Image.ANTIALIAS))
+        
+        
 
 if __name__ == '__main__':
     unittest.main()
