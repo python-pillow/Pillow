@@ -24,6 +24,9 @@
 
 __version__ = "0.1"
 
+import struct
+from io import BytesIO
+
 from PIL import Image, ImageFile, BmpImagePlugin, PngImagePlugin, _binary
 from math import log, ceil
 
@@ -35,6 +38,42 @@ i16 = _binary.i16le
 i32 = _binary.i32le
 
 _MAGIC = b"\0\0\1\0"
+
+
+def _save(im, fp, filename):
+    fp.write(_MAGIC)  # (2+2)
+    sizes = im.encoderinfo.get("sizes",
+                               [(16, 16), (24, 24), (32, 32), (48, 48),
+                                (64, 64), (128, 128), (255, 255)])
+    width, height = im.size
+    filter(lambda x: False if (x[0] > width or x[1] > height or
+                               x[0] > 255 or x[1] > 255) else True, sizes)
+    sizes = sorted(sizes, key=lambda x: x[0])
+    fp.write(struct.pack("H", len(sizes)))  # idCount(2)
+    offset = fp.tell() + len(sizes)*16
+    for size in sizes:
+        width, height = size
+        fp.write(struct.pack("B", width))  # bWidth(1)
+        fp.write(struct.pack("B", height))  # bHeight(1)
+        fp.write(b"\0")  # bColorCount(1)
+        fp.write(b"\0")  # bReserved(1)
+        fp.write(b"\0\0")  # wPlanes(2)
+        fp.write(struct.pack("H", 32))  # wBitCount(2)
+
+        image_io = BytesIO()
+        tmp = im.copy()
+        tmp.thumbnail(size, Image.ANTIALIAS)
+        tmp.save(image_io, "png")
+        image_io.seek(0)
+        image_bytes = image_io.read()
+        bytes_len = len(image_bytes)
+        fp.write(struct.pack("I", bytes_len))  # dwBytesInRes(4)
+        fp.write(struct.pack("I", offset))  # dwImageOffset(4)
+        current = fp.tell()
+        fp.seek(offset)
+        fp.write(image_bytes)
+        offset = offset + bytes_len
+        fp.seek(current)
 
 
 def _accept(prefix):
@@ -241,4 +280,5 @@ class IcoImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 
 Image.register_open("ICO", IcoImageFile, _accept)
+Image.register_save("ICO", _save)
 Image.register_extension("ICO", ".ico")
