@@ -1269,7 +1269,7 @@ _putdata(ImagingObject* self, PyObject* args)
            if (scale == 1.0 && offset == 0.0) {
                /* Clipped data */
                for (i = x = y = 0; i < n; i++) {
-                   op = PySequence_Fast_GET_ITEM(data, i);
+                   op = PySequence_Fast_GET_ITEM(seq, i);
                    image->image8[y][x] = (UINT8) CLIP(PyInt_AsLong(op));
                    if (++x >= (int) image->xsize){
                        x = 0, y++;
@@ -1279,7 +1279,7 @@ _putdata(ImagingObject* self, PyObject* args)
             } else {
                /* Scaled and clipped data */
                for (i = x = y = 0; i < n; i++) {
-                   PyObject *op = PySequence_Fast_GET_ITEM(data, i);
+                   PyObject *op = PySequence_Fast_GET_ITEM(seq, i);
                    image->image8[y][x] = CLIP(
                        (int) (PyFloat_AsDouble(op) * scale + offset));
                    if (++x >= (int) image->xsize){
@@ -1299,7 +1299,7 @@ _putdata(ImagingObject* self, PyObject* args)
         switch (image->type) {
         case IMAGING_TYPE_INT32:
             for (i = x = y = 0; i < n; i++) {
-                op = PySequence_Fast_GET_ITEM(data, i);
+                op = PySequence_Fast_GET_ITEM(seq, i);
                 IMAGING_PIXEL_INT32(image, x, y) =
                     (INT32) (PyFloat_AsDouble(op) * scale + offset);
                 if (++x >= (int) image->xsize){
@@ -1310,7 +1310,7 @@ _putdata(ImagingObject* self, PyObject* args)
             break;
         case IMAGING_TYPE_FLOAT32:
             for (i = x = y = 0; i < n; i++) {
-                op = PySequence_Fast_GET_ITEM(data, i);
+                op = PySequence_Fast_GET_ITEM(seq, i);
                 IMAGING_PIXEL_FLOAT32(image, x, y) =
                     (FLOAT32) (PyFloat_AsDouble(op) * scale + offset);
                 if (++x >= (int) image->xsize){
@@ -1326,7 +1326,7 @@ _putdata(ImagingObject* self, PyObject* args)
                     INT32 inkint;
                 } u;
 
-                op = PySequence_Fast_GET_ITEM(data, i);
+                op = PySequence_Fast_GET_ITEM(seq, i);
                 if (!op || !getink(op, image, u.ink)) {
                     return NULL;
                 }
