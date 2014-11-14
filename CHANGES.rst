@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Fix for Image.putdata segfault #1009
+  [wiredfool]
+
 - Ico save, additional tests #1007
   [exherb]
 
