@@ -1128,8 +1128,12 @@ def _save(im, fp, filename):
             print (ifd.items())
         _fp = 0
         if hasattr(fp, "fileno"):
-            fp.seek(0)
-            _fp = os.dup(fp.fileno())
+            import io
+            try:
+                fp.seek(0)
+                _fp = os.dup(fp.fileno())
+            except io.UnsupportedOperation:
+                pass
 
         # ICC Profile crashes.
         blocklist = [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE]
