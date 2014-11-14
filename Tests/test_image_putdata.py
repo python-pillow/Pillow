@@ -1,4 +1,5 @@
 from helper import unittest, PillowTestCase, hopper
+from array import array
 
 import sys
 
@@ -63,6 +64,25 @@ class TestImagePutData(PillowTestCase):
         target = [2.0 * float(elt) + 256.0 for elt in data]
         self.assertEqual(list(im.getdata()), target)
 
+    def test_array_B(self):
+        # shouldn't segfault
+        # see https://github.com/python-pillow/Pillow/issues/1008
+
+        arr = array('B', [0])*15000
+        im = Image.new('L', (150, 100))
+        im.putdata(arr)
+
+        self.assertEqual(len(im.getdata()),len(arr))
+        
+    def test_array_F(self):
+        # shouldn't segfault
+        # see https://github.com/python-pillow/Pillow/issues/1008
+
+        im = Image.new('F', (150, 100))
+        arr = array('f', [0.0])*15000
+        im.putdata(arr)
+
+        self.assertEqual(len(im.getdata()),len(arr))
 
 if __name__ == '__main__':
     unittest.main()
