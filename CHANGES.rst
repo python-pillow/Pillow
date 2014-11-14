@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Fix antialias compilation on debug versions of Python #1010
+  [wiredfool]
+
 - Fix for Image.putdata segfault #1009
   [wiredfool]
 
