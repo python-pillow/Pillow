@@ -326,7 +326,34 @@ class TestFileTiff(PillowTestCase):
         # Should not divide by zero
         im.save(outfile)
 
+    def test_save_bytesio(self):
+        # PR 1011
+        # Test TIFF saving to io.BytesIO() object.
+        
+        # Generate test image
+        pilim = Image.new('F', (100, 100), 0)
+        def save_bytesio(compression=None):
+            import io
+            
+            testfile = self.tempfile("temp_.tiff".format(compression))
+                        
+            buffer_io = io.BytesIO()
+            pilim.save(buffer_io, format="tiff", compression=compression)
+            buffer_io.seek(0)
+            data = buffer_io.read()
+            buffer_io.close()
 
+            with open(testfile, "wb") as fd:
+                fd.write(data)
+
+            pilim_load = Image.open(testfile)
+            self.assert_image_similar(pilim, pilim_load, 0)
+        
+        # save_bytesio()
+        save_bytesio("packbits")
+        save_bytesio("tiff_lzw")
+        
+        
 if __name__ == '__main__':
     unittest.main()
 
