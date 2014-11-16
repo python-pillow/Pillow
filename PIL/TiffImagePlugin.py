@@ -54,6 +54,7 @@ import sys
 import collections
 import itertools
 import os
+import io
 
 # Set these to true to force use of libtiff for reading or writing.
 READ_LIBTIFF = False
@@ -1128,7 +1129,6 @@ def _save(im, fp, filename):
             print (ifd.items())
         _fp = 0
         if hasattr(fp, "fileno"):
-            import io
             try:
                 fp.seek(0)
                 _fp = os.dup(fp.fileno())

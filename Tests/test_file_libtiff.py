@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, hopper, py3
 
 import os
+import io
 
 from PIL import Image, TiffImagePlugin
 
@@ -59,9 +60,8 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_g4_tiff_bytesio(self):
         """Testing the stringio loading code path"""
-        from io import BytesIO
         file = "Tests/images/hopper_g4_500.tif"
-        s = BytesIO()
+        s = io.BytesIO()
         with open(file, 'rb') as f:
             s.write(f.read())
             s.seek(0)
@@ -357,6 +357,34 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertEqual(im.mode, "L")
         self.assert_image_similar(im, original, 7.3)
 
+    def test_save_bytesio(self):
+        # PR 1011
+        # Test TIFF saving to io.BytesIO() object.
+        
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        TiffImagePlugin.READ_LIBTIFF = True
+
+        # Generate test image
+        pilim = hopper()
+
+        def save_bytesio(compression=None):
+            
+            testfile = self.tempfile("temp_.tiff".format(compression))
+                        
+            buffer_io = io.BytesIO()
+            pilim.save(buffer_io, format="tiff", compression=compression)
+            buffer_io.seek(0)
+
+            pilim_load = Image.open(buffer_io)
+            self.assert_image_similar(pilim, pilim_load, 0)
+        
+        # save_bytesio()
+        save_bytesio('raw')
+        save_bytesio("packbits")
+        save_bytesio("tiff_lzw")
+        
+        TiffImagePlugin.WRITE_LIBTIFF = False
+        TiffImagePlugin.READ_LIBTIFF = False
 
 
 
