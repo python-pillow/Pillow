@@ -3,7 +3,9 @@ Changelog (Pillow)
 
 2.7.0 (unreleased)
 ------------------
-
+- Fix for saving TIFF image into an io.BytesIO buffer #1011
+  [mfergie]
+  
 - Fix antialias compilation on debug versions of Python #1010
   [wiredfool]
 
