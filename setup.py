@@ -141,7 +141,7 @@ def _pkg_config(name):
 class pil_build_ext(build_ext):
     class feature:
         features = ['zlib', 'jpeg', 'tiff', 'freetype', 'raqm', 'lcms', 'webp',
-                    'webpmux', 'jpeg2000', 'imagequant']
+                    'webpmux', 'jpeg2000', 'imagequant', 'openmp']
 
         required = {'jpeg', 'zlib'}
 
@@ -179,9 +179,6 @@ class pil_build_ext(build_ext):
 
     def finalize_options(self):
         build_ext.finalize_options(self)
-        if self.debug:
-            global DEBUG
-            DEBUG = True
         for x in self.feature:
             if getattr(self, 'disable_%s' % x):
                 setattr(self.feature, x, False)
@@ -199,7 +196,8 @@ class pil_build_ext(build_ext):
 
         library_dirs = []
         include_dirs = []
-
+        extra_compile_args = []
+        
         _add_directory(include_dirs, "libImaging")
 
         pkg_config = None
@@ -571,6 +569,10 @@ class pil_build_ext(build_ext):
                         _find_library_file(self, "libwebpdemux")):
                     feature.webpmux = "libwebpmux"
 
+        if feature.require('openmp'):
+            extra_compile_args.append('-fopenmp')
+            feature.openmp = 'gomp'
+
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
                 if f in ('jpeg', 'zlib'):
@@ -609,6 +611,8 @@ class pil_build_ext(build_ext):
             libs.extend(["kernel32", "user32", "gdi32"])
         if struct.unpack("h", "\0\1".encode('ascii'))[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
+        if feature.openmp:
+            libs.append(feature.openmp)
 
         if sys.platform == "win32" and not (PLATFORM_PYPY or PLATFORM_MINGW):
             defs.append(("PILLOW_VERSION", '"\\"%s\\""'%PILLOW_VERSION))
@@ -697,7 +701,8 @@ class pil_build_ext(build_ext):
             (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"),
-        ]
+            (feature.openmp, "OpenMP"),
+            ]
 
         all = 1
         for option in options:
