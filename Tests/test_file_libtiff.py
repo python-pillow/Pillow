@@ -5,6 +5,7 @@ import io
 
 from PIL import Image, TiffImagePlugin
 
+
 class LibTiffTestCase(PillowTestCase):
 
     def setUp(self):
@@ -31,6 +32,7 @@ class LibTiffTestCase(PillowTestCase):
         # can we write it back out, in a different form.
         out = self.tempfile("temp.png")
         im.save(out)
+
 
 class TestFileLibTiff(LibTiffTestCase):
 
@@ -288,7 +290,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im2 = Image.open(out)
         self.assert_image_equal(im, im2)
 
-    def xtest_bw_compression_wRGB(self):
+    def xtest_bw_compression_w_rgb(self):
         """ This test passes, but when running all tests causes a failure due
             to output on stderr from the error thrown by libtiff. We need to
             capture that but not now"""
@@ -319,19 +321,19 @@ class TestFileLibTiff(LibTiffTestCase):
         # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
 
         im.seek(0)
-        self.assertEqual(im.size, (10,10))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,128,0))
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 128, 0))
         self.assertTrue(im.tag.next)
 
         im.seek(1)
-        self.assertEqual(im.size, (10,10))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (255,0,0))
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (255, 0, 0))
         self.assertTrue(im.tag.next)
 
         im.seek(2)
         self.assertFalse(im.tag.next)
-        self.assertEqual(im.size, (20,20))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
+        self.assertEqual(im.size, (20, 20))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
 
         TiffImagePlugin.READ_LIBTIFF = False
 
@@ -360,7 +362,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_save_bytesio(self):
         # PR 1011
         # Test TIFF saving to io.BytesIO() object.
-        
+
         TiffImagePlugin.WRITE_LIBTIFF = True
         TiffImagePlugin.READ_LIBTIFF = True
 
@@ -368,24 +370,21 @@ class TestFileLibTiff(LibTiffTestCase):
         pilim = hopper()
 
         def save_bytesio(compression=None):
-            
-            testfile = self.tempfile("temp_.tiff".format(compression))
-                        
+
             buffer_io = io.BytesIO()
             pilim.save(buffer_io, format="tiff", compression=compression)
             buffer_io.seek(0)
 
             pilim_load = Image.open(buffer_io)
             self.assert_image_similar(pilim, pilim_load, 0)
-        
+
         # save_bytesio()
         save_bytesio('raw')
         save_bytesio("packbits")
         save_bytesio("tiff_lzw")
-        
+
         TiffImagePlugin.WRITE_LIBTIFF = False
         TiffImagePlugin.READ_LIBTIFF = False
-
 
 
 if __name__ == '__main__':
