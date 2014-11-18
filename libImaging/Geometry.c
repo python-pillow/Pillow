@@ -5,6 +5,7 @@
    Rotating in chunks that fit in the cache can speed up rotation
    8x on a modern CPU. A chunk size of 128 requires only 65k and is large enough
    that the overhead from the extra loops are not apparent. */
+
 #define ROTATE_CHUNK 512
 #define ROTATE_SMALL_CHUNK 8
 
@@ -163,11 +164,13 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
+    if (imIn->image8){
+#pragma omp parallel for private(x,y,xx,yy,yysize,xxsize) shared(imIn,imOut) default(none) collapse(2)
         TRANSPOSE(UINT8, image8)
-    else
+    } else {
+#pragma omp parallel for private(x,y,xx,yy,yysize,xxsize) shared(imIn,imOut) default(none) collapse(2)
         TRANSPOSE(INT32, image32)
-
+    }
     ImagingSectionLeave(&cookie);
 
 #undef TRANSPOSE
