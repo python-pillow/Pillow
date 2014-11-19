@@ -164,7 +164,7 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     Image mode. This is a string specifying the pixel format used by the image.
     Typical values are “1”, “L”, “RGB”, or “CMYK.” See
-    :doc:`../handbook/concepts` for a full list.
+    :ref:`concept-modes` for a full list.
 
     :type: :py:class:`string`
 
