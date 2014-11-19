@@ -14,8 +14,10 @@ same dimensions and depth.
 To get the number and names of bands in an image, use the
 :py:meth:`~PIL.Image.Image.getbands` method.
 
-Mode
-----
+.. _concept-modes:
+
+Modes
+-----
 
 The :term:`mode` of an image defines the type and depth of a pixel in the
 image. The current release supports the following standard modes:
