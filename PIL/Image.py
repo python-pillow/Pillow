@@ -55,10 +55,11 @@ except ImportError:
     pass
 
 try:
-    # If the _imaging C module is not present, you can still use
-    # the "open" function to identify files, but you cannot load
-    # them.  Note that other modules should not refer to _imaging
-    # directly; import Image and use the Image.core variable instead.
+    # If the _imaging C module is not present, Pillow will not load.
+    # Note that other modules should not refer to _imaging directly;
+    # import Image and use the Image.core variable instead.
+    # Also note that Image.core is not a publicly documented interface,
+    # and should be considered private and subject to change. 
     from PIL import _imaging as core
     if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
         raise ImportError("The _imaging extension was built for another "
@@ -91,6 +92,7 @@ except ImportError as v:
             RuntimeWarning
             )
     # Fail here anyway. Don't let people run with a mostly broken Pillow.
+    # see docs/porting-pil-to-pillow.rst
     raise
 
 try:
