@@ -804,7 +804,7 @@ class Image:
         use other thresholds, use the :py:meth:`~PIL.Image.Image.point`
         method.
 
-        :param mode: The requested mode.
+        :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
            should be 4- or 16-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
@@ -2007,7 +2007,8 @@ def new(mode, size, color=0):
     """
     Creates a new image with the given mode and size.
 
-    :param mode: The mode to use for the new image.
+    :param mode: The mode to use for the new image. See:
+       :ref:`concept-modes`.
     :param size: A 2-tuple, containing (width, height) in pixels.
     :param color: What color to use for the image.  Default is black.
        If given, this should be a single integer or floating point value
@@ -2047,7 +2048,7 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
     :py:class:`~io.BytesIO` object, and use :py:func:`~PIL.Image.open` to load
     it.
 
-    :param mode: The image mode.
+    :param mode: The image mode. See: :ref:`concept-modes`.
     :param size: The image size.
     :param data: A byte buffer containing raw data for the given mode.
     :param decoder_name: What decoder to use.
@@ -2099,7 +2100,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     issues a warning if you do this; to disable the warning, you should provide
     the full set of parameters.  See below for details.
 
-    :param mode: The image mode.
+    :param mode: The image mode. See: :ref:`concept-modes`.
     :param size: The image size.
     :param data: A bytes or other buffer object containing raw
         data for the given mode.
@@ -2150,7 +2151,8 @@ def fromarray(obj, mode=None):
 
     :param obj: Object with array interface
     :param mode: Mode to use (will be determined from type if None)
-    :returns: An image memory.
+      See: :ref:`concept-modes`.
+    :returns: An image object.
 
     .. versionadded:: 1.1.6
     """
@@ -2367,7 +2369,8 @@ def merge(mode, bands):
     """
     Merge a set of single band images into a new multiband image.
 
-    :param mode: The mode to use for the output image.
+    :param mode: The mode to use for the output image. See:
+        :ref:`concept-modes`.
     :param bands: A sequence containing one single-band image for
         each band in the output image.  All bands must have the
         same size.
