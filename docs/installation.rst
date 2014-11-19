@@ -52,11 +52,11 @@ Many of Pillow's features require external libraries:
 
 * **libjpeg** provides JPEG functionality.
 
-  * Pillow has been tested with libjpeg versions **6b**, **8**, and **9**
+  * Pillow has been tested with libjpeg versions **6b**, **8**, and **9** and libjpeg-turbo version **8**.
 
 * **zlib** provides access to compressed PNGs
 
-* **libtiff** provides group4 tiff functionality
+* **libtiff** provides compressed TIFF functionality
 
   * Pillow has been tested with libtiff versions **3.x** and **4.0**
 
@@ -93,6 +93,35 @@ line::
 
     $ CFLAGS="-I/usr/pkg/include" pip install pillow
 
+Build Options
+-------------
+
+* Environment Variable: ``MAX_CONCURRENCY=n``. By default, Pillow will
+  use multiprocessing to build the extension in parallel. This may not
+  be ideal for machines that report a large number of cores compared
+  to the actual processor power. Set ``MAX_CONCURRENCY`` to 1 to disable
+  parallel building, or to a larger number to limit to that number of
+  parallel tasks.
+
+* Build flags: ``--disable-zlib``, ``--disable-jpeg``,
+  ``--disable-tiff``, ``--disable-freetype``, ``--disable-tcl``,
+  ``--disable-tk``, ``--disable-lcms``, ``--disable-webp``,
+  ``--disable-webpmux``, ``--disable-jpeg2000``. Disable building the
+  corresponding feature even if the development libraries are present
+  on the building machine.
+
+* Build flags: ``--enable-zlib``, ``--enable-jpeg``,
+  ``--enable-tiff``, ``--enable-freetype``, ``--enable-tcl``,
+  ``--enable-tk``, ``--enable-lcms``, ``--enable-webp``,
+  ``--enable-webpmux``, ``--enable-jpeg2000``. Require that the
+  corresponding feature is built. The build will raise an exception if
+  the libraries are not found. Webpmux (WebP metadata) relies on WebP
+  support. Tcl and Tk also must be used together.
+
+Sample Usage::
+
+    $ MAX_CONCURRENCY=1 python setup.py build-ext --enable-[feature] install
+
 
 Linux installation
 ------------------
@@ -115,11 +144,6 @@ Or for Python 3::
 In Fedora, the command is::
 
     $ sudo yum install python-devel
-
-Prerequisites are installed on **Ubuntu 10.04 LTS** with::
-
-    $ sudo apt-get install libtiff4-dev libjpeg62-dev zlib1g-dev \
-        libfreetype6-dev tcl8.5-dev tk8.5-dev python-tk
 
 Prerequisites are installed on **Ubuntu 12.04 LTS** or **Raspian Wheezy
 7.0** with::
@@ -184,7 +208,7 @@ to a specific version:
 
 ::
 
-    $ pip install --use-wheel Pillow==2.3.0
+    $ pip install --use-wheel Pillow==2.6.1
 
 FreeBSD installation
 ---------------------
