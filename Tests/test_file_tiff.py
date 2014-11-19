@@ -326,7 +326,7 @@ class TestFileTiff(PillowTestCase):
         # Should not divide by zero
         im.save(outfile)
 
-
+        
 if __name__ == '__main__':
     unittest.main()
 

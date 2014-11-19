@@ -3,6 +3,24 @@ Changelog (Pillow)
 
 2.7.0 (unreleased)
 ------------------
+- Fix for saving TIFF image into an io.BytesIO buffer #1011
+  [mfergie]
+  
+- Fix antialias compilation on debug versions of Python #1010
+  [wiredfool]
+
+- Fix for Image.putdata segfault #1009
+  [wiredfool]
+
+- Ico save, additional tests #1007
+  [exherb]
+
+- Use PyQt4 if it has already been imported, otherwise prefer PyQt5. #1003
+  [AurelienBallier]
+  
+- Speedup stretch implementation up to 2.5 times. #977
+  [homm]
+
 - Speed up rotation by using cache aware loops, added transpose to rotations. #994
   [homm]
 
