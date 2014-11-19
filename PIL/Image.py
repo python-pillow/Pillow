@@ -745,6 +745,7 @@ class Image:
         associated with the image.
 
         :returns: An image access object.
+        :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess` 
         """
         if self.im and self.palette and self.palette.dirty:
             # realize palette
