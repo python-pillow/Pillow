@@ -290,7 +290,7 @@ extern Imaging ImagingRotate(
 extern Imaging ImagingRotate90(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
-extern Imaging ImagingStretch(Imaging imIn, int xsize, int ysize, int filter);
+extern Imaging ImagingResample(Imaging imIn, int xsize, int ysize, int filter);
 extern Imaging ImagingTranspose(Imaging imOut, Imaging imIn);
 extern Imaging ImagingTransposeToNew(Imaging imIn);
 extern Imaging ImagingTransformPerspective(

@@ -2,7 +2,7 @@
  * The Python Imaging Library
  * $Id$
  *
- * pilopen antialiasing support
+ * Pillow image resamling support
  *
  * history:
  * 2002-03-09 fl  Created (for PIL 1.1.3)
@@ -16,8 +16,6 @@
 #include "Imaging.h"
 
 #include <math.h>
-
-/* resampling filters (from antialias.py) */
 
 struct filter {
     float (*filter)(float x);
@@ -41,15 +39,6 @@ static inline float antialias_filter(float x)
 }
 
 static struct filter ANTIALIAS = { antialias_filter, 3.0 };
-
-static inline float nearest_filter(float x)
-{
-    if (-0.5 <= x && x < 0.5)
-        return 1.0;
-    return 0.0;
-}
-
-static struct filter NEAREST = { nearest_filter, 0.5 };
 
 static inline float bilinear_filter(float x)
 {
@@ -106,7 +95,7 @@ static float inline i2f(int v) { return (float) v; }
 
 
 Imaging
-ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
+ImagingResampleHorizontal(Imaging imIn, int xsize, int filter)
 {
     ImagingSectionCookie cookie;
     Imaging imOut;
@@ -119,9 +108,6 @@ ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
 
     /* check filter */
     switch (filter) {
-    case IMAGING_TRANSFORM_NEAREST:
-        filterp = &NEAREST;
-        break;
     case IMAGING_TRANSFORM_ANTIALIAS:
         filterp = &ANTIALIAS;
         break;
@@ -152,7 +138,7 @@ ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
     /* maximum number of coofs */
     kmax = (int) ceil(support) * 2 + 1;
 
-    /* coefficient buffer (with rounding safety margin) */
+    /* coefficient buffer */
     kk = malloc(xsize * kmax * sizeof(float));
     if ( ! kk)
         return (Imaging) ImagingError_MemoryError();
@@ -294,7 +280,7 @@ ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
 
 
 Imaging
-ImagingStretch(Imaging imIn, int xsize, int ysize, int filter)
+ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
 {
     Imaging imTemp1, imTemp2, imTemp3;
     Imaging imOut;
@@ -306,7 +292,7 @@ ImagingStretch(Imaging imIn, int xsize, int ysize, int filter)
         return (Imaging) ImagingError_ModeError();
 
     /* two-pass resize, first pass */
-    imTemp1 = ImagingStretchHorizontal(imIn, xsize, filter);
+    imTemp1 = ImagingResampleHorizontal(imIn, xsize, filter);
     if ( ! imTemp1)
         return NULL;
 
@@ -317,7 +303,7 @@ ImagingStretch(Imaging imIn, int xsize, int ysize, int filter)
         return NULL;
 
     /* second pass */
-    imTemp3 = ImagingStretchHorizontal(imTemp2, ysize, filter);
+    imTemp3 = ImagingResampleHorizontal(imTemp2, ysize, filter);
     ImagingDelete(imTemp2);
     if ( ! imTemp3)
         return NULL;
