@@ -939,14 +939,19 @@ class Image:
         return new_im
 
     def quantize(self, colors=256, method=None, kmeans=0, palette=None):
+        """
+        Convert the image to 'P' mode with the specified number
+        of colors.
+        
+        :param colors: The desired number of colors, <= 256
+        :param method: 0 = median cut
+                       1 = maximum coverage
+                       2 = fast octree
+        :param kmeans: Integer
+        :param palette: Quantize to the :py:class:`PIL.ImagingPalette` palette.
+        :returns: A new image                        
 
-        # methods:
-        #    0 = median cut
-        #    1 = maximum coverage
-        #    2 = fast octree
-
-        # NOTE: this functionality will be moved to the extended
-        # quantizer interface in a later version of PIL.
+        """
 
         self.load()
 
