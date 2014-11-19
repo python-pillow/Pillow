@@ -3,6 +3,10 @@ Changelog (Pillow)
 
 2.7.0 (unreleased)
 ------------------
+
+- Better docs explaining import _imaging failure #1016
+  [wiredfool]
+
 - Fix for saving TIFF image into an io.BytesIO buffer #1011
   [mfergie]
   
