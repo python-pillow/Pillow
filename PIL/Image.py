@@ -1621,15 +1621,16 @@ class Image:
 
         Keyword options can be used to provide additional instructions
         to the writer. If a writer doesn't recognise an option, it is
-        silently ignored. The available options are described later in
-        this handbook.
+        silently ignored. The available options are described in the
+        :doc:`image format documentation
+        <../handbook/image-file-formats>` for each writer.
 
         You can use a file object instead of a filename. In this case,
         you must always specify the format. The file object must
-        implement the **seek**, **tell**, and **write**
+        implement the ``seek``, ``tell``, and ``write``
         methods, and be opened in binary mode.
 
-        :param file: File name or file object.
+        :param fp: File name or file object.
         :param format: Optional format override.  If omitted, the
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
