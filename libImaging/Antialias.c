@@ -208,7 +208,7 @@ ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
                     ss += i2f(imIn->image8[yy][x]) * k[x - xmin];
                 imOut->image8[yy][xx] = clip8(ss);
             }
-        } else
+        } else {
             switch(imIn->type) {
             case IMAGING_TYPE_UINT8:
                 /* n-bit grayscale */
@@ -283,13 +283,8 @@ ImagingStretchHorizontal(Imaging imIn, int xsize, int filter)
                     IMAGING_PIXEL_F(imOut, xx, yy) = ss;
                 }
                 break;
-            default:
-                ImagingSectionLeave(&cookie);
-                ImagingDelete(imOut);
-                free(kk);
-                free(xbounds);
-                return (Imaging) ImagingError_ModeError();
             }
+        }
     }
     ImagingSectionLeave(&cookie);
     free(kk);
@@ -305,6 +300,9 @@ ImagingStretch(Imaging imIn, int xsize, int ysize, int filter)
     Imaging imOut;
 
     if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
+        return (Imaging) ImagingError_ModeError();
+
+    if (imIn->type == IMAGING_TYPE_SPECIAL)
         return (Imaging) ImagingError_ModeError();
 
     /* two-pass resize, first pass */
