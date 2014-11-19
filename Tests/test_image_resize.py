@@ -11,7 +11,7 @@ from PIL import Image
 class TestImagingCoreResize(PillowTestCase):
 
     def resize(self, im, size, f):
-        # Image class independend version of resize.
+        # Image class independent version of resize.
         im.load()
         return im._new(im.im.resize(size, f))
 

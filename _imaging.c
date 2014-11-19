@@ -3007,8 +3007,8 @@ static struct PyMethodDef methods[] = {
     {"rankfilter", (PyCFunction)_rankfilter, 1},
 #endif
     {"resize", (PyCFunction)_resize, 1},
-    // There was two methods for image resize before.
-    // Starting from 2.7 stretch is obsolete.
+    // There were two methods for image resize before.
+    // Starting from Pillow 2.7.0 stretch is depreciated.
     {"stretch", (PyCFunction)_resize, 1},
     {"rotate", (PyCFunction)_rotate, 1},
     {"transpose", (PyCFunction)_transpose, 1},
