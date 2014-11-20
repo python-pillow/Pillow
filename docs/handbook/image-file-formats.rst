@@ -332,6 +332,9 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     Transparency color index. This key is omitted if the image is not a
     transparent palette image.
 
+``Open`` also sets ``Image.text`` to a list of the values of the
+``tEXt``, ``zTXt``, and ``iTXt`` chunks of the PNG image.
+
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **optimize**
@@ -342,6 +345,12 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **transparency** 
     For ``P``, ``L``, and ``RGB`` images, this option controls what
     color image to mark as transparent.
+
+**dpi**
+    A tuple of two numbers corresponding to the desired dpi in each direction. 
+
+**pnginfo**
+    A :py:class:`PIL.PngImagePlugin.PngInfo` instance containing text tags.
 
 **bits (experimental)**
     For ``P`` images, this option controls how many bits to store. If omitted,

@@ -193,4 +193,6 @@ Instances of the :py:class:`Image` class have the following attributes:
     operation affects the dictionary. If you need the information later on,
     keep a reference to the info dictionary returned from the open method.
 
+    Unless noted elsewhere, this dictionary does not affect saving files. 
+
     :type: :py:class:`dict`

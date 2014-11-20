@@ -149,31 +149,56 @@ class ChunkStream:
         return cids
 
 
-# --------------------------------------------------------------------
-# Subclass of string to allow iTXt chunks to look like strings while
-# keeping their extra information
-
 class iTXt(str):
+    """
+    Subclass of string to allow iTXt chunks to look like strings while
+    keeping their extra information
+
+    """
     @staticmethod
     def __new__(cls, text, lang, tkey):
+        """
+        :param value: value for this key
+        :param lang: language code
+        :param tkey: UTF-8 version of the key name
+        """
+        
         self = str.__new__(cls, text)
         self.lang = lang
         self.tkey = tkey
         return self
 
 
-# --------------------------------------------------------------------
-# PNG chunk container (for use with save(pnginfo=))
-
 class PngInfo:
+    """
+    PNG chunk container (for use with save(pnginfo=))
+
+    """
 
     def __init__(self):
         self.chunks = []
 
     def add(self, cid, data):
+        """Appends an arbitrary chunk. Use with caution.
+
+        :param cid: a byte string, 4 bytes long.
+        :param data: a byte string of the encoded data
+
+        """
+        
         self.chunks.append((cid, data))
 
     def add_itxt(self, key, value, lang="", tkey="", zip=False):
+        """Appends an iTXt chunk.
+
+        :param key: latin-1 encodable text key name
+        :param value: value for this key
+        :param lang: language code
+        :param tkey: UTF-8 version of the key name
+        :param zip: compression flag
+
+        """
+        
         if not isinstance(key, bytes):
             key = key.encode("latin-1", "strict")
         if not isinstance(value, bytes):
@@ -191,6 +216,14 @@ class PngInfo:
                      value)
 
     def add_text(self, key, value, zip=0):
+        """Appends a text chunk.
+
+        :param key: latin-1 encodable text key name
+        :param value: value for this key, text or an
+           :py:class:`PIL.PngImagePlugin.iTXt` instance
+        :param zip: compression flag
+        
+        """
         if isinstance(value, iTXt):
             return self.add_itxt(key, value, value.lang, value.tkey, bool(zip))
 
