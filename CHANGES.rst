@@ -4,7 +4,7 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
-- Better docs explaining import _imaging failure #1016, build #1017 and mode #1018
+- Better docs explaining import _imaging failure #1016, build #1017, mode #1018, PyAccess, PixelAccess objects #1019 Image.quantize #1020 and Image.save #1021
   [wiredfool]
 
 - Fix for saving TIFF image into an io.BytesIO buffer #1011
