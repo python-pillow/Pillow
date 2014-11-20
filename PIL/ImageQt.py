@@ -24,7 +24,11 @@ if 'PyQt4.QtGui' not in sys.modules:
   try:
     from PyQt5.QtGui import QImage, qRgba
   except:
-    from PyQt4.QtGui import QImage, qRgba
+    try:
+        from PyQt4.QtGui import QImage, qRgba
+    except:
+        from PySide.QtGui import QImage, qRgba
+
 else: #PyQt4 is used
   from PyQt4.QtGui import QImage, qRgba
 
