@@ -78,6 +78,8 @@ class PyAccess(object):
         images
 
         :param xy: The pixel coordinate, given as (x, y).
+        :returns: a pixel value for single band images, a tuple of
+          pixel values for multiband images.
         """
 
         (x, y) = self.check_xy(xy)
