@@ -8,8 +8,8 @@
 
 typedef UINT8 pixel[4];
 
-void
-ImagingLineBoxBlur32(UINT32 *lineOut, pixel *lineIn, int lastx, int radius, int edgeA,
+void inline
+ImagingLineBoxBlur32(pixel *lineOut, pixel *lineIn, int lastx, int radius, int edgeA,
     int edgeB, UINT32 ww, UINT32 fw)
 {
     int x;
@@ -28,9 +28,11 @@ ImagingLineBoxBlur32(UINT32 *lineOut, pixel *lineIn, int lastx, int radius, int 
         bulk[2] = (acc[2] * ww) + (lineIn[left][2] + lineIn[right][2]) * fw; \
         bulk[3] = (acc[3] * ww) + (lineIn[left][3] + lineIn[right][3]) * fw;
 
-    #define SAVE(bulk) \
-        (UINT8)((bulk[0] + (1 << 23)) >> 24) << 0  | (UINT8)((bulk[1] + (1 << 23)) >> 24) << 8 | \
-        (UINT8)((bulk[2] + (1 << 23)) >> 24) << 16 | (UINT8)((bulk[3] + (1 << 23)) >> 24) << 24
+    #define SAVE(x, bulk) \
+        lineOut[x][0] = (UINT8)((bulk[0] + (1 << 23)) >> 24); \
+        lineOut[x][1] = (UINT8)((bulk[1] + (1 << 23)) >> 24); \
+        lineOut[x][2] = (UINT8)((bulk[2] + (1 << 23)) >> 24); \
+        lineOut[x][3] = (UINT8)((bulk[3] + (1 << 23)) >> 24);
 
     /* Compute acc for -1 pixel (outside of image):
        From "-radius-1" to "-1" get first pixel,
@@ -59,21 +61,21 @@ ImagingLineBoxBlur32(UINT32 *lineOut, pixel *lineIn, int lastx, int radius, int 
         for (x = 0; x < edgeA; x++) {
             MOVE_ACC(acc, 0, x + radius);
             ADD_FAR(bulk, acc, 0, x + radius + 1);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
         /* Subtract previous pixel from "-radius".
            Add pixels from radius. */
         for (x = edgeA; x < edgeB; x++) {
             MOVE_ACC(acc, x - radius - 1, x + radius);
             ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
         /* Subtract previous pixel from "-radius".
            Add last pixel. */
         for (x = edgeB; x <= lastx; x++) {
             MOVE_ACC(acc, x - radius - 1, lastx);
             ADD_FAR(bulk, acc, x - radius - 1, lastx);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
     }
     else
@@ -81,17 +83,17 @@ ImagingLineBoxBlur32(UINT32 *lineOut, pixel *lineIn, int lastx, int radius, int 
         for (x = 0; x < edgeB; x++) {
             MOVE_ACC(acc, 0, x + radius);
             ADD_FAR(bulk, acc, 0, x + radius + 1);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
         for (x = edgeB; x < edgeA; x++) {
             MOVE_ACC(acc, 0, lastx);
             ADD_FAR(bulk, acc, 0, lastx);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
         for (x = edgeA; x <= lastx; x++) {
             MOVE_ACC(acc, x - radius - 1, lastx);
             ADD_FAR(bulk, acc, x - radius - 1, lastx);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
     }
 
@@ -101,7 +103,7 @@ ImagingLineBoxBlur32(UINT32 *lineOut, pixel *lineIn, int lastx, int radius, int 
 }
 
 
-void
+void inline
 ImagingLineBoxBlur8(UINT8 *lineOut, UINT8 *lineIn, int lastx, int radius, int edgeA,
     int edgeB, UINT32 ww, UINT32 fw)
 {
@@ -115,8 +117,8 @@ ImagingLineBoxBlur8(UINT8 *lineOut, UINT8 *lineIn, int lastx, int radius, int ed
     #define ADD_FAR(bulk, acc, left, right) \
         bulk = (acc * ww) + (lineIn[left] + lineIn[right]) * fw;
 
-    #define SAVE(bulk) \
-        (UINT8)((bulk + (1 << 23)) >> 24)
+    #define SAVE(x, bulk) \
+        lineOut[x] = (UINT8)((bulk + (1 << 23)) >> 24)
 
     acc = lineIn[0] * (radius + 1);
     for (x = 0; x < edgeA - 1; x++) {
@@ -129,17 +131,17 @@ ImagingLineBoxBlur8(UINT8 *lineOut, UINT8 *lineIn, int lastx, int radius, int ed
         for (x = 0; x < edgeA; x++) {
             MOVE_ACC(acc, 0, x + radius);
             ADD_FAR(bulk, acc, 0, x + radius + 1);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
         for (x = edgeA; x < edgeB; x++) {
             MOVE_ACC(acc, x - radius - 1, x + radius);
             ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
         for (x = edgeB; x <= lastx; x++) {
             MOVE_ACC(acc, x - radius - 1, lastx);
             ADD_FAR(bulk, acc, x - radius - 1, lastx);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
     }
     else
@@ -147,17 +149,17 @@ ImagingLineBoxBlur8(UINT8 *lineOut, UINT8 *lineIn, int lastx, int radius, int ed
         for (x = 0; x < edgeB; x++) {
             MOVE_ACC(acc, 0, x + radius);
             ADD_FAR(bulk, acc, 0, x + radius + 1);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
         for (x = edgeB; x < edgeA; x++) {
             MOVE_ACC(acc, 0, lastx);
             ADD_FAR(bulk, acc, 0, lastx);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
         for (x = edgeA; x <= lastx; x++) {
             MOVE_ACC(acc, x - radius - 1, lastx);
             ADD_FAR(bulk, acc, x - radius - 1, lastx);
-            lineOut[x] = SAVE(bulk);
+            SAVE(x, bulk);
         }
     }
 
@@ -210,7 +212,7 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius)
     {
         for (y = 0; y < imIn->ysize; y++) {
             ImagingLineBoxBlur32(
-                imIn == imOut ? lineOut : (UINT32 *) imOut->image32[y],
+                imIn == imOut ? (pixel *) lineOut : (pixel *) imOut->image32[y],
                 (pixel *) imIn->image32[y],
                 imIn->xsize - 1,
                 radius, edgeA, edgeB,
