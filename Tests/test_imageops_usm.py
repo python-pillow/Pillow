@@ -60,9 +60,10 @@ class TestImageOpsUsm(PillowTestCase):
 
     def test_usm_accuracy(self):
 
-        i = snakes._new(ImageOps.unsharp_mask(snakes, 5, 1024, 0))
+        src = snakes.convert('RGB')
+        i = src._new(ImageOps.unsharp_mask(src, 5, 1024, 0))
         # Image should not be changed because it have only 0 and 255 levels.
-        self.assertEqual(i.tobytes(), snakes.tobytes())
+        self.assertEqual(i.tobytes(), src.tobytes())
 
     def test_blur_accuracy(self):
 
