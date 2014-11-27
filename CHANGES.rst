@@ -3,6 +3,9 @@ Changelog (Pillow)
 
 2.7.0 (unreleased)
 ------------------
+- Replace affine-based im.resize implementation with convolution-based im.stretch #997
+  [homm]
+
 - Replace Gaussian Blur implementation with iterated fast box blur. #961  Note: Radius parameter is interpreted differently than before.
   [homm]
 
