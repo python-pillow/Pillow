@@ -3,6 +3,8 @@ Changelog (Pillow)
 
 2.7.0 (unreleased)
 ------------------
+- Replace Gaussian Blur implementation with iterated fast box blur. #961  Note: Radius parameter is interpreted differently than before.
+  [homm]
 
 - Better docs explaining import _imaging failure #1016, build #1017, mode #1018, PyAccess, PixelAccess objects #1019 Image.quantize #1020 and Image.save #1021
   [wiredfool]
