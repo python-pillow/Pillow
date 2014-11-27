@@ -62,7 +62,7 @@ def _save(im, fp, filename):
 
         image_io = BytesIO()
         tmp = im.copy()
-        tmp.thumbnail(size, Image.ANTIALIAS)
+        tmp.thumbnail(size, Image.LANCZOS)
         tmp.save(image_io, "png")
         image_io.seek(0)
         image_bytes = image_io.read()

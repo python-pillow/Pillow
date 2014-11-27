@@ -30,15 +30,15 @@ static inline float sinc_filter(float x)
     return sin(x) / x;
 }
 
-static inline float antialias_filter(float x)
+static inline float lanczos_filter(float x)
 {
-    /* lanczos (truncated sinc) */
+    /* truncated sinc */
     if (-3.0 <= x && x < 3.0)
         return sinc_filter(x) * sinc_filter(x/3);
     return 0.0;
 }
 
-static struct filter ANTIALIAS = { antialias_filter, 3.0 };
+static struct filter LANCZOS = { lanczos_filter, 3.0 };
 
 static inline float bilinear_filter(float x)
 {
@@ -108,8 +108,8 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, int filter)
 
     /* check filter */
     switch (filter) {
-    case IMAGING_TRANSFORM_ANTIALIAS:
-        filterp = &ANTIALIAS;
+    case IMAGING_TRANSFORM_LANCZOS:
+        filterp = &LANCZOS;
         break;
     case IMAGING_TRANSFORM_BILINEAR:
         filterp = &BILINEAR;

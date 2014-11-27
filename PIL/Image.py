@@ -162,11 +162,10 @@ QUAD = 3
 MESH = 4
 
 # resampling filters
-NONE = 0
-NEAREST = 0
-ANTIALIAS = 1  # 3-lobed lanczos
-LINEAR = BILINEAR = 2
-CUBIC = BICUBIC = 3
+NEAREST = NONE = 0
+LANCZOS = ANTIALIAS = 1
+BILINEAR = LINEAR = 2
+BICUBIC = CUBIC = 3
 
 # dithers
 NONE = 0
@@ -1525,13 +1524,13 @@ class Image:
            one of :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
            :py:attr:`PIL.Image.BILINEAR` (linear interpolation),
            :py:attr:`PIL.Image.BICUBIC` (cubic spline interpolation), or
-           :py:attr:`PIL.Image.ANTIALIAS` (a high-quality downsampling filter).
+           :py:attr:`PIL.Image.LANCZOS` (a high-quality downsampling filter).
            If omitted, or if the image has mode "1" or "P", it is
            set :py:attr:`PIL.Image.NEAREST`.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if resample not in (NEAREST, BILINEAR, BICUBIC, ANTIALIAS):
+        if resample not in (NEAREST, BILINEAR, BICUBIC, LANCZOS):
             raise ValueError("unknown resampling filter")
 
         self.load()
@@ -1753,7 +1752,7 @@ class Image:
         """
         return 0
 
-    def thumbnail(self, size, resample=ANTIALIAS):
+    def thumbnail(self, size, resample=LANCZOS):
         """
         Make this image into a thumbnail.  This method modifies the
         image to contain a thumbnail version of itself, no larger than
@@ -1770,8 +1769,8 @@ class Image:
         :param size: Requested size.
         :param resample: Optional resampling filter.  This can be one
            of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
-           :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.ANTIALIAS`.
-           If omitted, it defaults to :py:attr:`PIL.Image.ANTIALIAS`.
+           :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.LANCZOS`.
+           If omitted, it defaults to :py:attr:`PIL.Image.LANCZOS`.
            (was :py:attr:`PIL.Image.NEAREST` prior to version 2.5.0)
         :returns: None
         """

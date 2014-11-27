@@ -100,7 +100,7 @@ pixel, the Python Imaging Library provides four different resampling *filters*.
     For other transformations cubic interpolation over a 4x4 environment
     in the input image is used.
 
-``ANTIALIAS``
+``LANCZOS``
     Calculate the output pixel value using a high-quality Lanczos filter (a
     truncated sinc) on all pixels that may contribute to the output value. In
     the current version of PIL, this filter can only be used with the resize
