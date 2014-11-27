@@ -20,7 +20,6 @@
 from PIL import Image
 from PIL._util import isStringType
 import operator
-import math
 from functools import reduce
 
 

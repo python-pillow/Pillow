@@ -30,9 +30,9 @@ class TestFileGif(PillowTestCase):
 
         def test_grayscale(optimize):
             im = Image.new("L", (1, 1), 0)
-            file = BytesIO()
-            im.save(file, "GIF", optimize=optimize)
-            return len(file.getvalue())
+            filename = BytesIO()
+            im.save(filename, "GIF", optimize=optimize)
+            return len(filename.getvalue())
 
         def test_bilevel(optimize):
             im = Image.new("1", (1, 1), 0)
