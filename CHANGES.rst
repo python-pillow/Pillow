@@ -3,6 +3,10 @@ Changelog (Pillow)
 
 2.7.0 (unreleased)
 ------------------
+
+- Use PySide as an alernative to PyQt4/5.
+  [holg]
+
 - Replace affine-based im.resize implementation with convolution-based im.stretch #997
   [homm]
 
