@@ -433,7 +433,7 @@ def getheader(im, palette=None, info=None):
 
     usedPaletteColors = paletteBytes = None
 
-    if optimize:
+    if im.mode in ("P", "L") and optimize:
         usedPaletteColors = []
 
         # check which colors are used
