@@ -980,30 +980,6 @@ ImagingTransformQuad(Imaging imOut, Imaging imIn,
 /* Convenience functions */
 
 Imaging
-ImagingResize(Imaging imOut, Imaging imIn, int filterid)
-{
-    double a[6];
-
-    if (imOut->xsize == imIn->xsize && imOut->ysize == imIn->ysize)
-        return ImagingCopy2(imOut, imIn);
-
-    memset(a, 0, sizeof a);
-    a[1] = (double) imIn->xsize / imOut->xsize;
-    a[5] = (double) imIn->ysize / imOut->ysize;
-
-    if (!filterid && imIn->type != IMAGING_TYPE_SPECIAL)
-        return ImagingScaleAffine(
-            imOut, imIn,
-            0, 0, imOut->xsize, imOut->ysize,
-            a, 1);
-
-    return ImagingTransformAffine(
-        imOut, imIn,
-        0, 0, imOut->xsize, imOut->ysize,
-        a, filterid, 1);
-}
-
-Imaging
 ImagingRotate(Imaging imOut, Imaging imIn, double theta, int filterid)
 {
     int xsize, ysize;

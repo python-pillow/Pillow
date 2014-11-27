@@ -879,7 +879,7 @@ class Image:
             elif self.mode == 'P' and mode == 'RGBA':
                 t = self.info['transparency']
                 delete_trns = True
-                
+
                 if isinstance(t, bytes):
                     self.im.putpalettealphas(t)
                 elif isinstance(t, int):
@@ -1523,9 +1523,8 @@ class Image:
            (width, height).
         :param resample: An optional resampling filter.  This can be
            one of :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
-           :py:attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
-           environment), :py:attr:`PIL.Image.BICUBIC` (cubic spline
-           interpolation in a 4x4 environment), or
+           :py:attr:`PIL.Image.BILINEAR` (linear interpolation),
+           :py:attr:`PIL.Image.BICUBIC` (cubic spline interpolation), or
            :py:attr:`PIL.Image.ANTIALIAS` (a high-quality downsampling filter).
            If omitted, or if the image has mode "1" or "P", it is
            set :py:attr:`PIL.Image.NEAREST`.
@@ -1547,16 +1546,7 @@ class Image:
         if self.mode == 'RGBA':
             return self.convert('RGBa').resize(size, resample).convert('RGBA')
 
-        if resample == ANTIALIAS:
-            # requires stretch support (imToolkit & PIL 1.1.3)
-            try:
-                im = self.im.stretch(size, resample)
-            except AttributeError:
-                raise ValueError("unsupported resampling filter")
-        else:
-            im = self.im.resize(size, resample)
-
-        return self._new(im)
+        return self._new(self.im.resize(size, resample))
 
     def rotate(self, angle, resample=NEAREST, expand=0):
         """
@@ -1772,12 +1762,7 @@ class Image:
         :py:meth:`~PIL.Image.Image.draft` method to configure the file reader
         (where applicable), and finally resizes the image.
 
-        Note that the bilinear and bicubic filters in the current
-        version of PIL are not well-suited for thumbnail generation.
-        You should use :py:attr:`PIL.Image.ANTIALIAS` unless speed is much more
-        important than quality.
-
-        Also note that this function modifies the :py:class:`~PIL.Image.Image`
+        Note that this function modifies the :py:class:`~PIL.Image.Image`
         object in place.  If you need to use the full resolution image as well,
         apply this method to a :py:meth:`~PIL.Image.Image.copy` of the original
         image.
@@ -1785,10 +1770,9 @@ class Image:
         :param size: Requested size.
         :param resample: Optional resampling filter.  This can be one
            of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
-           :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.ANTIALIAS`
-           (best quality).  If omitted, it defaults to
-           :py:attr:`PIL.Image.ANTIALIAS`. (was :py:attr:`PIL.Image.NEAREST`
-           prior to version 2.5.0)
+           :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.ANTIALIAS`.
+           If omitted, it defaults to :py:attr:`PIL.Image.ANTIALIAS`.
+           (was :py:attr:`PIL.Image.NEAREST` prior to version 2.5.0)
         :returns: None
         """
 
@@ -1807,14 +1791,7 @@ class Image:
 
         self.draft(None, size)
 
-        self.load()
-
-        try:
-            im = self.resize(size, resample)
-        except ValueError:
-            if resample != ANTIALIAS:
-                raise
-            im = self.resize(size, NEAREST)  # fallback
+        im = self.resize(size, resample)
 
         self.im = im.im
         self.mode = im.mode

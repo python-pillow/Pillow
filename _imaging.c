@@ -1514,9 +1514,26 @@ _resize(ImagingObject* self, PyObject* args)
 
     imIn = self->image;
 
-    imOut = ImagingNew(imIn->mode, xsize, ysize);
-    if (imOut)
-        (void) ImagingResize(imOut, imIn, filter);
+    if (imIn->xsize == xsize && imIn->ysize == ysize) {
+        imOut = ImagingCopy(imIn);
+    }
+    else if ( ! filter) {
+        double a[6];
+
+        memset(a, 0, sizeof a);
+        a[1] = (double) imIn->xsize / xsize;
+        a[5] = (double) imIn->ysize / ysize;
+
+        imOut = ImagingNew(imIn->mode, xsize, ysize);
+
+        imOut = ImagingTransformAffine(
+            imOut, imIn,
+            0, 0, xsize, ysize,
+            a, filter, 1);
+    }
+    else {
+        imOut = ImagingResample(imIn, xsize, ysize, filter);
+    }
 
     return PyImagingNew(imOut);
 }
@@ -1610,25 +1627,6 @@ im_setmode(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject*
-_stretch(ImagingObject* self, PyObject* args)
-{
-    Imaging imIn, imOut;
-
-    int xsize, ysize;
-    int filter = IMAGING_TRANSFORM_NEAREST;
-    if (!PyArg_ParseTuple(args, "(ii)|i", &xsize, &ysize, &filter))
-        return NULL;
-
-    imIn = self->image;
-
-    imOut = ImagingStretch(imIn, xsize, ysize, filter);
-    if ( ! imOut) {
-        return NULL;
-    }
-
-    return PyImagingNew(imOut);
-}
 
 static PyObject*
 _transform2(ImagingObject* self, PyObject* args)
@@ -3031,8 +3029,10 @@ static struct PyMethodDef methods[] = {
     {"rankfilter", (PyCFunction)_rankfilter, 1},
 #endif
     {"resize", (PyCFunction)_resize, 1},
+    // There were two methods for image resize before.
+    // Starting from Pillow 2.7.0 stretch is depreciated.
+    {"stretch", (PyCFunction)_resize, 1},
     {"rotate", (PyCFunction)_rotate, 1},
-    {"stretch", (PyCFunction)_stretch, 1},
     {"transpose", (PyCFunction)_transpose, 1},
     {"transform2", (PyCFunction)_transform2, 1},
 

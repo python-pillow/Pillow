@@ -24,7 +24,7 @@ Changelog (Pillow)
 - Use PyQt4 if it has already been imported, otherwise prefer PyQt5. #1003
   [AurelienBallier]
   
-- Speedup stretch implementation up to 2.5 times. #977
+- Speedup resample implementation up to 2.5 times. #977
   [homm]
 
 - Speed up rotation by using cache aware loops, added transpose to rotations. #994

@@ -286,13 +286,12 @@ extern Imaging ImagingPointTransform(
     Imaging imIn, double scale, double offset);
 extern Imaging ImagingPutBand(Imaging im, Imaging imIn, int band);
 extern Imaging ImagingRankFilter(Imaging im, int size, int rank);
-extern Imaging ImagingResize(Imaging imOut, Imaging imIn, int filter);
 extern Imaging ImagingRotate(
     Imaging imOut, Imaging imIn, double theta, int filter);
 extern Imaging ImagingRotate90(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
-extern Imaging ImagingStretch(Imaging imIn, int xsize, int ysize, int filter);
+extern Imaging ImagingResample(Imaging imIn, int xsize, int ysize, int filter);
 extern Imaging ImagingTranspose(Imaging imOut, Imaging imIn);
 extern Imaging ImagingTransposeToNew(Imaging imIn);
 extern Imaging ImagingTransformPerspective(
