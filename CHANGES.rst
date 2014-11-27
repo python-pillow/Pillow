@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- The GIF Palette optimization algorithm is only applicable to mode='P' or 'L' #993
+  [moriyoshi]
+
 - Use PySide as an alernative to PyQt4/5.
   [holg]
 
