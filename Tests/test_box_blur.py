@@ -227,3 +227,9 @@ class TestBoxBlur(PillowTestCase):
             passes=3,
             delta=1,
         )
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+# End of file
