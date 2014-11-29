@@ -10,6 +10,18 @@ Bicubic and Bilinear downscalling
 Antialias renamed to Lanczos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+New :py:attr:`PIL.Image.LANCZOS` constant was added instead of 
+:py:attr:`PIL.Image.ANTIALIAS`.
+
+When :py:attr:`~PIL.Image.ANTIALIAS` was initially added, it was the only
+high-qality filter based on convolutions. It's name was supposed to reflect
+this. Starting from 2.7 all resize method are based on convolutions. All of them
+are antialias from now. And the real name of :py:attr:`~PIL.Image.ANTIALIAS`
+filter is Lanczos filter.
+
+:py:attr:`~PIL.Image.ANTIALIAS` constant is leaved for backward compatibility
+and is an alias for :py:attr:`~PIL.Image.LANCZOS`.
+
 Lanczos upscaling quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -22,8 +34,27 @@ Resize performance
 Default filter for thumbnails
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+In Pillow 2.5 default filter for :py:meth:`~PIL.Image.Image.thumbnail` was
+changed from :py:attr:`~PIL.Image.NEAREST` to :py:attr:`~PIL.Image.ANTIALIAS`.
+Antialias was chosen because all other filters gave poor quality for reduction.
+Starting from Pillow 2.7 :py:attr:`~PIL.Image.ANTIALIAS` replaced with
+:py:attr:`~PIL.Image.BICUBIC`, because bicubic is faster and
+:py:attr:`~PIL.Image.ANTIALIAS` doesn't give any advantages after
+downscaling with libJPEG, which uses supersampling internaly, not convolutions.
+
 Image transposing
 -----------------
+
+New method :py:attr:`PIL.Image.TRANSPOSE` was added for
+:py:meth:`~PIL.Image.Image.transpose` operation in addition to
+:py:attr:`~PIL.Image.FLIP_LEFT_RIGHT`, :py:attr:`~PIL.Image.FLIP_TOP_BOTTOM`,
+:py:attr:`~PIL.Image.ROTATE_90`, :py:attr:`~PIL.Image.ROTATE_180`,
+:py:attr:`~PIL.Image.ROTATE_270`. :py:attr:`~PIL.Image.TRANSPOSE` is algebra
+transpose, when image reflected over its main diagonal.
+
+Speed of :py:attr:`~PIL.Image.ROTATE_90`, :py:attr:`~PIL.Image.ROTATE_270`
+and :py:attr:`~PIL.Image.TRANSPOSE` was significantly improved for large images,
+which doesn't fit in processor cache.
 
 Gaussian blur and unsharp mask
 ------------------------------
