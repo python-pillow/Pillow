@@ -29,6 +29,7 @@ To install Pillow, please follow the :doc:`installation instructions <installati
    guides
    reference/index.rst
    handbook/appendices
+   releasenotes/index.rst
    original-readme
 
 Indices and tables

@@ -1,0 +1,39 @@
+Pillow 2.7
+==========
+
+Image resizing filters
+----------------------
+
+Bicubic and Bilinear downscalling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Antialias renamed to Lanczos
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Lanczos upscaling quality
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Bicubic upscaling quality
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Resize performance
+^^^^^^^^^^^^^^^^^^
+
+Default filter for thumbnails
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Image transposing
+-----------------
+
+Gaussian blur and unsharp mask
+------------------------------
+
+Blur radius
+^^^^^^^^^^^
+
+Blur Performance
+^^^^^^^^^^^^^^^^
+
+Blur quality
+^^^^^^^^^^^^
+
