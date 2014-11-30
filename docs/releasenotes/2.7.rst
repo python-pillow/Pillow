@@ -103,12 +103,42 @@ which doesn't fit in processor cache.
 Gaussian blur and unsharp mask
 ------------------------------
 
+:py:meth:`~PIL.ImageFilter.GaussianBlur` implementation was replaced with
+sequential applying of series of box filters. New implementation is based on
+"Theoretical foundations of Gaussian convolution by extended box filtering" from
+Mathematical Image Analysis Group. As :py:meth:`~PIL.ImageFilter.UnsharpMask`
+implementations uses Gaussian blur internally, all changes from this chapter
+alse applyable to it.
+
 Blur radius
 ^^^^^^^^^^^
+
+There was an error in previous version of PIL, when blur radius (the standard
+deviation of Gaussian) is actually meant blur diameter.
+For example for blurring image with actual radius 5 you were forced
+to use value 10. This was fixed. For now the meaning of the radius
+is the same as in other software.
+
+If you used a Gaussian blur with some radius value, you need to devide this
+value by two.
 
 Blur Performance
 ^^^^^^^^^^^^^^^^
 
+Box filter computation time is constant relative to the radius and depends
+on source image size only. Because new Gaussian blur implementation
+is based on box filter, it's computation time is also doesn't depends on blur
+radius.
+
+If before execution time for the same test image was 1 second for radius 1,
+3.6 seconds for radius 10, 17 seconds for 50. Now blur with any radius on same
+image is executed for 0.2 seconds.
+
 Blur quality
 ^^^^^^^^^^^^
 
+Previous implementation takes in account only source pixels within
+2 * standard deviation radius for every destination pixel. This was not enought,
+so qulity was worse compared to other Gaussian blur software.
+
+The new implementation does not have this drawback.
