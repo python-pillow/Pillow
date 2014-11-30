@@ -15,11 +15,11 @@ Bicubic and Bilinear downscaling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 From very begining :py:attr:`~PIL.Image.BILINEAR` and
-:py:attr:`~PIL.Image.BICUBIC` filters was based on afine transformations
+:py:attr:`~PIL.Image.BICUBIC` filters was based on affine transformations
 and uses fixed number of pixels from source image for every destination pixel
 (that was 2x2 pixels for :py:attr:`~PIL.Image.BILINEAR` and 4x4 for
 :py:attr:`~PIL.Image.BICUBIC`). This gave an unsatisfied result for downscaling.
-At the same time high quality convolutions-based algorithm with flexeible kernel
+At the same time high quality convolutions-based algorithm with flexible kernel
 was used for :py:attr:`~PIL.Image.ANTIALIAS` filter).
 
 Starting from 2.7 high quality convolutions-based algorithm is used for all of
@@ -36,7 +36,7 @@ New :py:attr:`PIL.Image.LANCZOS` constant was added instead of
 :py:attr:`~PIL.Image.ANTIALIAS`.
 
 When :py:attr:`~PIL.Image.ANTIALIAS` was initially added, it was the only
-high-qality filter based on convolutions. It's name was supposed to reflect
+high-quality filter based on convolutions. It's name was supposed to reflect
 this. Starting from 2.7 all resize method are based on convolutions. All of them
 are antialias from now. And the real name of :py:attr:`~PIL.Image.ANTIALIAS`
 filter is Lanczos filter.
@@ -53,7 +53,7 @@ the same as :py:attr:`~PIL.Image.BILINEAR` due to bug. This was fixed.
 Bicubic upscaling quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:py:attr:`~PIL.Image.BICUBIC` filter for affine trnsformations was producing
+:py:attr:`~PIL.Image.BICUBIC` filter for affine transformations produced
 sharp, slightly pixelated image for upscaling. Bicubic for convolutions is
 more soft.
 
@@ -61,7 +61,7 @@ Resize performance
 ^^^^^^^^^^^^^^^^^^
 
 In most cases convolution is more expensive algorithm for downscaling because
-it tekes in account all pixels of source image. Therefore 
+it takes in account all pixels of source image. Therefore 
 :py:attr:`~PIL.Image.BILINEAR` and :py:attr:`~PIL.Image.BICUBIC` filters
 performance can be lower than before. On the other hand quality of
 :py:attr:`~PIL.Image.BILINEAR` and :py:attr:`~PIL.Image.BICUBIC` was close to
@@ -84,7 +84,7 @@ Antialias was chosen because all other filters gave poor quality for reduction.
 Starting from Pillow 2.7 :py:attr:`~PIL.Image.ANTIALIAS` replaced with
 :py:attr:`~PIL.Image.BICUBIC`, because it faster and
 :py:attr:`~PIL.Image.ANTIALIAS` doesn't give any advantages after
-downscaling with libJPEG, which uses supersampling internaly, not convolutions.
+downscaling with libJPEG, which uses supersampling internally, not convolutions.
 
 Image transposing
 -----------------
@@ -108,7 +108,7 @@ sequential applying of series of box filters. New implementation is based on
 "Theoretical foundations of Gaussian convolution by extended box filtering" from
 Mathematical Image Analysis Group. As :py:meth:`~PIL.ImageFilter.UnsharpMask`
 implementations uses Gaussian blur internally, all changes from this chapter
-alse applyable to it.
+also applicable to it.
 
 Blur radius
 ^^^^^^^^^^^
@@ -119,7 +119,7 @@ For example for blurring image with actual radius 5 you were forced
 to use value 10. This was fixed. For now the meaning of the radius
 is the same as in other software.
 
-If you used a Gaussian blur with some radius value, you need to devide this
+If you used a Gaussian blur with some radius value, you need to divide this
 value by two.
 
 Blur Performance
@@ -138,7 +138,7 @@ Blur quality
 ^^^^^^^^^^^^
 
 Previous implementation takes in account only source pixels within
-2 * standard deviation radius for every destination pixel. This was not enought,
-so qulity was worse compared to other Gaussian blur software.
+2 * standard deviation radius for every destination pixel. This was not enough,
+so quality was worse compared to other Gaussian blur software.
 
 The new implementation does not have this drawback.
