@@ -47,8 +47,8 @@ and is an alias for :py:attr:`~PIL.Image.LANCZOS`.
 Lanczos upscaling quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Image upscaling quality with :py:attr:`PIL.Image.LANCZOS` filter was almost
-the same as :py:attr:`PIL.Image.BILINEAR` due to bug. This was fixed.
+Image upscaling quality with :py:attr:`~PIL.Image.LANCZOS` filter was almost
+the same as :py:attr:`~PIL.Image.BILINEAR` due to bug. This was fixed.
 
 Bicubic upscaling quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -60,6 +60,21 @@ more soft.
 Resize performance
 ^^^^^^^^^^^^^^^^^^
 
+In most cases convolution is more expensive algorithm for downscaling because
+it tekes in account all pixels of source image. Therefore 
+:py:attr:`~PIL.Image.BILINEAR` and :py:attr:`~PIL.Image.BICUBIC` filters
+performance can be lower than before. On the other hand quality of
+:py:attr:`~PIL.Image.BILINEAR` and :py:attr:`~PIL.Image.BICUBIC` was close to
+:py:attr:`~PIL.Image.NEAREST`. So if such quality is suitable for your task
+you can switch to :py:attr:`~PIL.Image.NEAREST` filter for downscaling,
+that will give huge win in performance.
+
+At the same time performance of convolution resampling for downscaling was
+improved in about two times compared to previous version.
+Upscaling performance of :py:attr:`~PIL.Image.LANCZOS` filter remained the same.
+For :py:attr:`~PIL.Image.BILINEAR` filter it grew in 1.5 times and
+for :py:attr:`~PIL.Image.BICUBIC` in 4 times.
+
 Default filter for thumbnails
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -67,7 +82,7 @@ In Pillow 2.5 default filter for :py:meth:`~PIL.Image.Image.thumbnail` was
 changed from :py:attr:`~PIL.Image.NEAREST` to :py:attr:`~PIL.Image.ANTIALIAS`.
 Antialias was chosen because all other filters gave poor quality for reduction.
 Starting from Pillow 2.7 :py:attr:`~PIL.Image.ANTIALIAS` replaced with
-:py:attr:`~PIL.Image.BICUBIC`, because bicubic is faster and
+:py:attr:`~PIL.Image.BICUBIC`, because it faster and
 :py:attr:`~PIL.Image.ANTIALIAS` doesn't give any advantages after
 downscaling with libJPEG, which uses supersampling internaly, not convolutions.
 
