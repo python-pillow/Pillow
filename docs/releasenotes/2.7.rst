@@ -4,14 +4,36 @@ Pillow 2.7
 Image resizing filters
 ----------------------
 
-Bicubic and Bilinear downscalling
+Image resizing methods :py:meth:`~PIL.Image.Image.resize` and
+:py:meth:`~PIL.Image.Image.thumbnail` takes `resample` argument, which tells
+what filter should be used for resampling. Possible values are:
+:py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
+:py:attr:`PIL.Image.BICUBIC` and :py:attr:`PIL.Image.ANTIALIAS`.
+Almost all of them was changed in this version.
+
+Bicubic and Bilinear downscaling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+From very begining :py:attr:`~PIL.Image.BILINEAR` and
+:py:attr:`~PIL.Image.BICUBIC` filters was based on afine transformations
+and uses fixed number of pixels from source image for every destination pixel
+(that was 2x2 pixels for :py:attr:`~PIL.Image.BILINEAR` and 4x4 for
+:py:attr:`~PIL.Image.BICUBIC`). This gave an unsatisfied result for downscaling.
+At the same time high quality convolutions-based algorithm with flexeible kernel
+was used for :py:attr:`~PIL.Image.ANTIALIAS` filter).
+
+Starting from 2.7 high quality convolutions-based algorithm is used for all of
+these three filters.
+
+If you have previously used any tricks to maintain quality when downscaling with
+:py:attr:`~PIL.Image.BILINEAR` and :py:attr:`~PIL.Image.BICUBIC` filters
+(for example, reducing within several steps), they a unnecessary now.
 
 Antialias renamed to Lanczos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 New :py:attr:`PIL.Image.LANCZOS` constant was added instead of 
-:py:attr:`PIL.Image.ANTIALIAS`.
+:py:attr:`~PIL.Image.ANTIALIAS`.
 
 When :py:attr:`~PIL.Image.ANTIALIAS` was initially added, it was the only
 high-qality filter based on convolutions. It's name was supposed to reflect
@@ -25,8 +47,15 @@ and is an alias for :py:attr:`~PIL.Image.LANCZOS`.
 Lanczos upscaling quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Image upscaling quality with :py:attr:`PIL.Image.LANCZOS` filter was almost
+the same as :py:attr:`PIL.Image.BILINEAR` due to bug. This was fixed.
+
 Bicubic upscaling quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:attr:`~PIL.Image.BICUBIC` filter for affine trnsformations was producing
+sharp, slightly pixelated image for upscaling. Bicubic for convolutions is
+more soft.
 
 Resize performance
 ^^^^^^^^^^^^^^^^^^
