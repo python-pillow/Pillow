@@ -72,6 +72,13 @@ _MODES = {
 
 _simple_palette = re.compile(b'^\xff+\x00\xff*$')
 
+def _safe_zlib_decompress(s):
+    dobj = zlib.decompressobj()
+    plaintext = dobj.decompress(s, ImageFile.SAFEBLOCK)
+    if dobj.unconsumed_tail:
+        raise ValueError("Decompressed Data Too Large")
+    return plaintext
+
 
 # --------------------------------------------------------------------
 # Support classes.  Suitable for PNG and related formats like MNG etc.
@@ -278,7 +285,7 @@ class PngStream(ChunkStream):
             raise SyntaxError("Unknown compression method %s in iCCP chunk" %
                               comp_method)
         try:
-            icc_profile = zlib.decompress(s[i+2:])
+            icc_profile = _safe_zlib_decompress(s[i+2:])
         except zlib.error:
             icc_profile = None  # FIXME
         self.im_info["icc_profile"] = icc_profile
@@ -391,7 +398,7 @@ class PngStream(ChunkStream):
             raise SyntaxError("Unknown compression method %s in zTXt chunk" %
                               comp_method)
         try:
-            v = zlib.decompress(v[1:])
+            v = _safe_zlib_decompress(v[1:])
         except zlib.error:
             v = b""
 
@@ -421,7 +428,7 @@ class PngStream(ChunkStream):
         if cf != 0:
             if cm == 0:
                 try:
-                    v = zlib.decompress(v)
+                    v = _safe_zlib_decompress(v)
                 except zlib.error:
                     return s
             else:
