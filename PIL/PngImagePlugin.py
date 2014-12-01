@@ -72,6 +72,13 @@ _MODES = {
 
 _simple_palette = re.compile(b'^\xff+\x00\xff*$')
 
+def _safe_zlib_decompress(s):
+    dobj = zlib.decompressobj()
+    plaintext = dobj.decompress(s, ImageFile.SAFEBLOCK)
+    if dobj.unconsumed_tail:
+        raise ValueError("Decompressed Data Too Large")
+    return plaintext
+
 
 # --------------------------------------------------------------------
 # Support classes.  Suitable for PNG and related formats like MNG etc.
@@ -184,7 +191,6 @@ class PngInfo:
             tkey = tkey.encode("utf-8", "strict")
 
         if zip:
-            import zlib
             self.add(b"iTXt", key + b"\0\x01\0" + lang + b"\0" + tkey + b"\0" +
                      zlib.compress(value))
         else:
@@ -206,7 +212,6 @@ class PngInfo:
             key = key.encode('latin-1', 'strict')
 
         if zip:
-            import zlib
             self.add(b"zTXt", key + b"\0\0" + zlib.compress(value))
         else:
             self.add(b"tEXt", key + b"\0" + value)
@@ -247,7 +252,7 @@ class PngStream(ChunkStream):
             raise SyntaxError("Unknown compression method %s in iCCP chunk" %
                               comp_method)
         try:
-            icc_profile = zlib.decompress(s[i+2:])
+            icc_profile = _safe_zlib_decompress(s[i+2:])
         except zlib.error:
             icc_profile = None  # FIXME
         self.im_info["icc_profile"] = icc_profile
@@ -359,9 +364,8 @@ class PngStream(ChunkStream):
         if comp_method != 0:
             raise SyntaxError("Unknown compression method %s in zTXt chunk" %
                               comp_method)
-        import zlib
         try:
-            v = zlib.decompress(v[1:])
+            v = _safe_zlib_decompress(v[1:])
         except zlib.error:
             v = b""
 
@@ -390,9 +394,8 @@ class PngStream(ChunkStream):
             return s
         if cf != 0:
             if cm == 0:
-                import zlib
                 try:
-                    v = zlib.decompress(v)
+                    v = _safe_zlib_decompress(v)
                 except zlib.error:
                     return s
             else:
