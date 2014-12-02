@@ -8,7 +8,7 @@
 
 typedef UINT8 pixel[4];
 
-void inline
+void static inline
 ImagingLineBoxBlur32(pixel *lineOut, pixel *lineIn, int lastx, int radius, int edgeA,
     int edgeB, UINT32 ww, UINT32 fw)
 {
@@ -103,7 +103,7 @@ ImagingLineBoxBlur32(pixel *lineOut, pixel *lineIn, int lastx, int radius, int e
 }
 
 
-void inline
+void static inline
 ImagingLineBoxBlur8(UINT8 *lineOut, UINT8 *lineIn, int lastx, int radius, int edgeA,
     int edgeB, UINT32 ww, UINT32 fw)
 {
