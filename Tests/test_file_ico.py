@@ -30,7 +30,7 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(im.mode, reloaded.mode)
         self.assertEqual((64, 64), reloaded.size)
         self.assertEqual(reloaded.format, "ICO")
-        self.assert_image_equal(reloaded, hopper().resize((64,64), Image.ANTIALIAS))
+        self.assert_image_equal(reloaded, hopper().resize((64,64), Image.LANCZOS))
 
         # the other one
         output.seek(0)
@@ -40,9 +40,9 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(im.mode, reloaded.mode)
         self.assertEqual((32, 32), reloaded.size)
         self.assertEqual(reloaded.format, "ICO")
-        self.assert_image_equal(reloaded, hopper().resize((32,32), Image.ANTIALIAS))
-        
-        
+        self.assert_image_equal(reloaded, hopper().resize((32,32), Image.LANCZOS))
+
+
 
 if __name__ == '__main__':
     unittest.main()

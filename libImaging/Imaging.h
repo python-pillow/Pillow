@@ -229,7 +229,7 @@ extern void ImagingError_Clear(void);
 
 /* standard filters */
 #define IMAGING_TRANSFORM_NEAREST 0
-#define IMAGING_TRANSFORM_ANTIALIAS 1
+#define IMAGING_TRANSFORM_LANCZOS 1
 #define IMAGING_TRANSFORM_BILINEAR 2
 #define IMAGING_TRANSFORM_BICUBIC 3
 

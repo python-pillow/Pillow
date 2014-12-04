@@ -77,7 +77,7 @@ class TestFileGif(PillowTestCase):
         im = Image.open(TEST_GIF)
         im = im.convert('RGB')
 
-        im = im.resize((100, 100), Image.ANTIALIAS)
+        im = im.resize((100, 100), Image.LANCZOS)
         im2 = im.convert('P', palette=Image.ADAPTIVE, colors=256)
 
         f = self.tempfile('temp.gif')
