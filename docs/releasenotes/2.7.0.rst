@@ -20,7 +20,7 @@ and used a fixed number of pixels from the source image for every destination
 pixel (2x2 pixels for :py:attr:`~PIL.Image.BILINEAR` and 4x4 for
 :py:attr:`~PIL.Image.BICUBIC`). This gave an unsatisfactory result for
 downscaling. At the same time, a high quality convolutions-based algorithm with
-flexible kernel was used for :py:attr:`~PIL.Image.ANTIALIAS` filter).
+flexible kernel was used for :py:attr:`~PIL.Image.ANTIALIAS` filter.
 
 Starting from Pillow 2.7.0, a high quality convolutions-based algorithm is used
 for all of these three filters.
