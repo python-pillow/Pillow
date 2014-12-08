@@ -97,7 +97,7 @@ Build Options
 -------------
 
 * Environment Variable: ``MAX_CONCURRENCY=n``. By default, Pillow will
-  use multiprocessing to build the extension on all available CPU,
+  use multiprocessing to build the extension on all available CPUs,
   but not more than 4. Setting ``MAX_CONCURRENCY`` to 1 will disable
   parallel building.
 
