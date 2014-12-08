@@ -97,11 +97,9 @@ Build Options
 -------------
 
 * Environment Variable: ``MAX_CONCURRENCY=n``. By default, Pillow will
-  use multiprocessing to build the extension in parallel. This may not
-  be ideal for machines that report a large number of cores compared
-  to the actual processor power. Set ``MAX_CONCURRENCY`` to 1 to disable
-  parallel building, or to a larger number to limit to that number of
-  parallel tasks.
+  use multiprocessing to build the extension on all available CPU,
+  but not more than 4. Setting ``MAX_CONCURRENCY`` to 1 will disable
+  parallel building.
 
 * Build flags: ``--disable-zlib``, ``--disable-jpeg``,
   ``--disable-tiff``, ``--disable-freetype``, ``--disable-tcl``,
