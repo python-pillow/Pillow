@@ -6,8 +6,8 @@ from distutils.ccompiler import CCompiler
 import os, sys
 
 try:
-    MAX_PROCS = int(os.environ.get('MAX_CONCURRENCY', cpu_count()))
-except:
+    MAX_PROCS = int(os.environ.get('MAX_CONCURRENCY', min(4, cpu_count())))
+except NotImplementedError:
     MAX_PROCS = None
 
 
