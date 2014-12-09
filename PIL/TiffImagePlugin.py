@@ -1068,31 +1068,25 @@ def _save(im, fp, filename):
         if "icc_profile" in im.info:
             ifd[ICCPROFILE] = im.info["icc_profile"]
 
-    if "description" in im.encoderinfo:
-        ifd[IMAGEDESCRIPTION] = im.encoderinfo["description"]
-    if "resolution" in im.encoderinfo:
-        ifd[X_RESOLUTION] = ifd[Y_RESOLUTION] \
-            = _cvt_res(im.encoderinfo["resolution"])
-    if "x resolution" in im.encoderinfo:
-        ifd[X_RESOLUTION] = _cvt_res(im.encoderinfo["x resolution"])
-    if "y resolution" in im.encoderinfo:
-        ifd[Y_RESOLUTION] = _cvt_res(im.encoderinfo["y resolution"])
-    if "resolution unit" in im.encoderinfo:
-        unit = im.encoderinfo["resolution unit"]
-        if unit == "inch":
-            ifd[RESOLUTION_UNIT] = 2
-        elif unit == "cm" or unit == "centimeter":
-            ifd[RESOLUTION_UNIT] = 3
-        else:
-            ifd[RESOLUTION_UNIT] = 1
-    if "software" in im.encoderinfo:
-        ifd[SOFTWARE] = im.encoderinfo["software"]
-    if "date time" in im.encoderinfo:
-        ifd[DATE_TIME] = im.encoderinfo["date time"]
-    if "artist" in im.encoderinfo:
-        ifd[ARTIST] = im.encoderinfo["artist"]
-    if "copyright" in im.encoderinfo:
-        ifd[COPYRIGHT] = im.encoderinfo["copyright"]
+    for key, name, cvt in [
+            (IMAGEDESCRIPTION, "description", lambda x: x),
+            (X_RESOLUTION, "resolution", _cvt_res),
+            (Y_RESOLUTION, "resolution", _cvt_res),
+            (X_RESOLUTION, "x_resolution", _cvt_res),
+            (Y_RESOLUTION, "y_resolution", _cvt_res),
+            (RESOLUTION_UNIT, "resolution_unit",
+             lambda x: {"inch": 2, "cm": 3, "centimeter": 3}.get(x, 1)),
+            (SOFTWARE, "software", lambda x: x),
+            (DATE_TIME, "date_time", lambda x: x),
+            (ARTIST, "artist", lambda x: x),
+            (COPYRIGHT, "copyright", lambda x: x)]:
+        name_with_spaces = name.replace("_", " ")
+        if "_" in name and name_with_spaces in im.encoderinfo:
+            warnings.warn("%r is deprecated; use %r instead" %
+                          (name_with_spaces, name), DeprecationWarning)
+            ifd[key] = cvt(im.encoderinfo[name.replace("_", " ")])
+        if name in im.encoderinfo:
+            ifd[key] = cvt(im.encoderinfo[name])
 
     dpi = im.encoderinfo.get("dpi")
     if dpi:
