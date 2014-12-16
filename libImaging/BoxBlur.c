@@ -237,6 +237,7 @@ Imaging
 ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n)
 {
     int i;
+    Imaging imTransposed;
 
     if (n < 1) {
         return ImagingError_ValueError(
@@ -262,7 +263,7 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n)
           strcmp(imIn->mode, "LA") == 0))
         return ImagingError_ModeError();
 
-    Imaging imTransposed = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
+    imTransposed = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
     if (!imTransposed)
         return NULL;
 
