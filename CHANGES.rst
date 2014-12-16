@@ -4,6 +4,8 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Fix compiler error: MSVC needs varaibles defined at the start of the block #1048
+
 - The GIF Palette optimization algorithm is only applicable to mode='P' or 'L' #993
   [moriyoshi]
 
