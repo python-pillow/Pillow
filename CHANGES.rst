@@ -4,7 +4,11 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Fix MSVC compiler error: Use Py_ssize_t instead of ssize_t #1051
+  [cgohlke]
+
 - Fix compiler error: MSVC needs varaibles defined at the start of the block #1048
+  [cgohlke]
 
 - The GIF Palette optimization algorithm is only applicable to mode='P' or 'L' #993
   [moriyoshi]
