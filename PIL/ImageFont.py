@@ -239,6 +239,10 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
     try:
         return FreeTypeFont(font, size, index, encoding)
     except IOError:
+        if font.endswith(".ttf"):
+            ttf_filename = font
+        else:
+            ttf_filename = "%s.ttf" % font
         if sys.platform == "win32":
             # check the windows font repository
             # NOTE: must use uppercase WINDIR, to work around bugs in
@@ -247,6 +251,12 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
             if windir:
                 filename = os.path.join(windir, "fonts", font)
                 return FreeTypeFont(filename, size, index, encoding)
+        elif sys.platform == 'darwin':
+            macdirs = ['/Library/Fonts/', '/System/Library/Fonts/', os.path.expanduser('~/Library/Fonts/')]
+            for macdir in macdirs:
+                filepath = os.path.join(macdir, ttf_filename)
+                if os.path.exists(filepath):
+                    return FreeTypeFont(filepath, size, index, encoding)
         raise
 
 
