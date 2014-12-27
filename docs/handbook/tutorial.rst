@@ -445,10 +445,9 @@ Drawing Postscript
     ps.image(box, im, 75)
     ps.rectangle(box)
 
-    # draw centered title
+    # draw title
     ps.setfont("HelveticaNarrow-Bold", 36)
-    w, h, b = ps.textsize(title)
-    ps.text((4*72-w/2, 1*72-h), title)
+    ps.text((3*72, 4*72), title)
 
     ps.end_document()
 
