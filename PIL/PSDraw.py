@@ -45,10 +45,10 @@ class PSDraw:
         """Set up printing of a document. (Write Postscript DSC header.)"""
         # FIXME: incomplete
         self._fp_write("%!PS-Adobe-3.0\n"
-                      "save\n"
-                      "/showpage { } def\n"
-                      "%%EndComments\n"
-                      "%%BeginDocument\n")
+                       "save\n"
+                       "/showpage { } def\n"
+                       "%%EndComments\n"
+                       "%%BeginDocument\n")
         # self.fp_write(ERROR_PS)  # debugging!
         self._fp_write(EDROFF_PS)
         self._fp_write(VDI_PS)
@@ -58,8 +58,8 @@ class PSDraw:
     def end_document(self):
         """Ends printing. (Write Postscript DSC footer.)"""
         self._fp_write("%%EndDocument\n"
-                      "restore showpage\n"
-                      "%%End\n")
+                       "restore showpage\n"
+                       "%%End\n")
         if hasattr(self.fp, "flush"):
             self.fp.flush()
 
@@ -73,7 +73,7 @@ class PSDraw:
         if font not in self.isofont:
             # reencode font
             self._fp_write("/PSDraw-%s ISOLatin1Encoding /%s E\n" %
-                          (font, font))
+                           (font, font))
             self.isofont[font] = 1
         # rough
         self._fp_write("/F0 %d /PSDraw-%s F\n" % (size, font))
