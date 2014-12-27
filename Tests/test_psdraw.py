@@ -1,11 +1,11 @@
-from helper import unittest, PillowTestCase, hopper
+from helper import unittest, PillowTestCase
 
 
 class TestPsDraw(PillowTestCase):
 
     def test_draw_postscript(self):
 
-        # Taken from Pillow tutorial:
+        # Based on Pillow tutorial, but there is no textsize:
         # http://pillow.readthedocs.org/en/latest/handbook/tutorial.html
 
         # Arrange
@@ -16,7 +16,7 @@ class TestPsDraw(PillowTestCase):
 
         im = Image.open("Tests/images/hopper.ppm")
         title = "hopper"
-        box = (1*72, 2*72, 7*72, 10*72) # in points
+        box = (1*72, 2*72, 7*72, 10*72)  # in points
 
         # Act
         ps = PSDraw.PSDraw(fp)
@@ -26,16 +26,18 @@ class TestPsDraw(PillowTestCase):
         ps.image(box, im, 75)
         ps.rectangle(box)
 
-        # draw centered title
-        ps.setfont("HelveticaNarrow-Bold", 36)
-        w, h, b = ps.textsize(title)
-        ps.text((4*72-w/2, 1*72-h), title)
+        # draw title
+        ps.setfont("Courier", 36)
+        ps.text((3*72, 4*72), title)
 
         ps.end_document()
         fp.close()
 
         # Assert
-        # TODO
+        # Check non-zero file was created
+        import os
+        self.assertTrue(os.path.isfile(tempfile))
+        self.assertGreater(os.path.getsize(tempfile), 0)
 
 
 if __name__ == '__main__':
