@@ -22,6 +22,10 @@ class TestPsDraw(PillowTestCase):
         ps = PSDraw.PSDraw(fp)
         ps.begin_document(title)
 
+        # draw diagonal lines in a cross
+        ps.line((1*72, 2*72), (7*72, 10*72))
+        ps.line((7*72, 2*72), (1*72, 10*72))
+
         # draw the image (75 dpi)
         ps.image(box, im, 75)
         ps.rectangle(box)
