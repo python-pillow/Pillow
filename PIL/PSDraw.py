@@ -78,13 +78,6 @@ class PSDraw:
         # rough
         self._fp_write("/F0 %d /PSDraw-%s F\n" % (size, font))
 
-    def setink(self, ink):
-        """
-        .. warning:: This has been in the PIL API for ages but was never implemented.
-
-        """
-        print("*** NOT YET IMPLEMENTED ***")
-
     def line(self, xy0, xy1):
         """
         Draws a line between the two points. Coordinates are given in
