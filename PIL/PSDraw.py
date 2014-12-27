@@ -35,23 +35,29 @@ class PSDraw:
             fp = sys.stdout
         self.fp = fp
 
+    def _fp_write(self, to_write):
+        if bytes is str:
+            self.fp.write(to_write)
+        else:
+            self.fp.write(bytes(to_write, 'UTF-8'))
+
     def begin_document(self, id=None):
         """Set up printing of a document. (Write Postscript DSC header.)"""
         # FIXME: incomplete
-        self.fp.write("%!PS-Adobe-3.0\n"
+        self._fp_write("%!PS-Adobe-3.0\n"
                       "save\n"
                       "/showpage { } def\n"
                       "%%EndComments\n"
                       "%%BeginDocument\n")
-        # self.fp.write(ERROR_PS)  # debugging!
-        self.fp.write(EDROFF_PS)
-        self.fp.write(VDI_PS)
-        self.fp.write("%%EndProlog\n")
+        # self.fp_write(ERROR_PS)  # debugging!
+        self._fp_write(EDROFF_PS)
+        self._fp_write(VDI_PS)
+        self._fp_write("%%EndProlog\n")
         self.isofont = {}
 
     def end_document(self):
         """Ends printing. (Write Postscript DSC footer.)"""
-        self.fp.write("%%EndDocument\n"
+        self._fp_write("%%EndDocument\n"
                       "restore showpage\n"
                       "%%End\n")
         if hasattr(self.fp, "flush"):
@@ -66,11 +72,11 @@ class PSDraw:
         """
         if font not in self.isofont:
             # reencode font
-            self.fp.write("/PSDraw-%s ISOLatin1Encoding /%s E\n" %
+            self._fp_write("/PSDraw-%s ISOLatin1Encoding /%s E\n" %
                           (font, font))
             self.isofont[font] = 1
         # rough
-        self.fp.write("/F0 %d /PSDraw-%s F\n" % (size, font))
+        self._fp_write("/F0 %d /PSDraw-%s F\n" % (size, font))
 
     def setink(self, ink):
         """
@@ -86,7 +92,7 @@ class PSDraw:
         left corner of the page).
         """
         xy = xy0 + xy1
-        self.fp.write("%d %d %d %d Vl\n" % xy)
+        self._fp_write("%d %d %d %d Vl\n" % xy)
 
     def rectangle(self, box):
         """
@@ -101,7 +107,7 @@ class PSDraw:
 
                         %d %d M %d %d 0 Vr\n
         """
-        self.fp.write("%d %d M %d %d 0 Vr\n" % box)
+        self._fp_write("%d %d M %d %d 0 Vr\n" % box)
 
     def text(self, xy, text):
         """
@@ -111,7 +117,7 @@ class PSDraw:
         text = "\\(".join(text.split("("))
         text = "\\)".join(text.split(")"))
         xy = xy + (text,)
-        self.fp.write("%d %d M (%s) S\n" % xy)
+        self._fp_write("%d %d M (%s) S\n" % xy)
 
     def image(self, box, im, dpi=None):
         """Draw a PIL image, centered in the given box."""
@@ -135,14 +141,14 @@ class PSDraw:
             y = ymax
         dx = (xmax - x) / 2 + box[0]
         dy = (ymax - y) / 2 + box[1]
-        self.fp.write("gsave\n%f %f translate\n" % (dx, dy))
+        self._fp_write("gsave\n%f %f translate\n" % (dx, dy))
         if (x, y) != im.size:
             # EpsImagePlugin._save prints the image at (0,0,xsize,ysize)
             sx = x / im.size[0]
             sy = y / im.size[1]
-            self.fp.write("%f %f scale\n" % (sx, sy))
+            self._fp_write("%f %f scale\n" % (sx, sy))
         EpsImagePlugin._save(im, self.fp, None, 0)
-        self.fp.write("\ngrestore\n")
+        self._fp_write("\ngrestore\n")
 
 # --------------------------------------------------------------------
 # Postscript driver
