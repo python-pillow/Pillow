@@ -306,7 +306,6 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.mode, "L")
         self.assert_image_similar(im, original, 7.3)
 
-
     def test_page_number_x_0(self):
         # Issue 973
         # Test TIFF with tag 297 (Page Number) having value of 0 0.
@@ -326,7 +325,40 @@ class TestFileTiff(PillowTestCase):
         # Should not divide by zero
         im.save(outfile)
 
-        
+    def test_with_underscores(self):
+        # Arrange: use underscores
+        kwargs = {'resolution_unit': 'inch',
+                  'x_resolution': 72,
+                  'y_resolution': 36}
+        filename = self.tempfile("temp.tif")
+
+        # Act
+        hopper("RGB").save(filename, **kwargs)
+
+        # Assert
+        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
+        im = Image.open(filename)
+        self.assertEqual(im.tag.tags[X_RESOLUTION][0][0], 72)
+        self.assertEqual(im.tag.tags[Y_RESOLUTION][0][0], 36)
+
+    def test_deprecation_warning_with_spaces(self):
+        # Arrange: use spaces
+        kwargs = {'resolution unit': 'inch',
+                  'x resolution': 36,
+                  'y resolution': 72}
+        filename = self.tempfile("temp.tif")
+
+        # Act
+        self.assert_warning(DeprecationWarning,
+                            lambda: hopper("RGB").save(filename, **kwargs))
+
+        # Assert
+        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
+        im = Image.open(filename)
+        self.assertEqual(im.tag.tags[X_RESOLUTION][0][0], 36)
+        self.assertEqual(im.tag.tags[Y_RESOLUTION][0][0], 72)
+
+
 if __name__ == '__main__':
     unittest.main()
 
