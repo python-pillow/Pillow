@@ -770,7 +770,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                         }
                         status = ImagingLibTiffSetField(&encoder->state,
                                                         (ttag_t) PyInt_AsLong(key),
-                                                        intav);
+                                                        len, intav);
                         free(intav);
                     }
                 } else {
@@ -782,7 +782,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                         }
                         status = ImagingLibTiffSetField(&encoder->state,
                                                         (ttag_t) PyInt_AsLong(key),
-                                                        floatav);
+                                                        len, floatav);
                         free(floatav);
                     }
                 }
