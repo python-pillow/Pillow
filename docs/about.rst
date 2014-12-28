@@ -17,7 +17,7 @@ The fork authors' goal is to foster active development of PIL through:
 License
 -------
 
-like PIL itself, Pillow is licensed under the MIT-like `PIL Software License <http://www.pythonware.com/products/pil/license.htm>`::
+Like PIL itself, Pillow is licensed under the MIT-like `PIL Software License <http://www.pythonware.com/products/pil/license.htm>`::
 
     Software License
 
