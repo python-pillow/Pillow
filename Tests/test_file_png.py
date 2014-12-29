@@ -153,7 +153,7 @@ class TestFilePng(PillowTestCase):
 
         im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' +
                                zlib.compress(b"egg")[:1]) + TAIL)
-        self.assertEqual(im.info, {})
+        self.assertEqual(im.info, {'spam':''})
 
         im = load(HEAD + chunk(b'iTXt', b'spam\0\1\1en\0Spam\0' +
                                zlib.compress(b"egg")) + TAIL)
