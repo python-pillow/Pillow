@@ -470,21 +470,21 @@ These arguments to set the tiff header fields are an alternative to using the ge
 
 **software**
 
-**date time**
+**date_time**
 
 **artist**
 
 **copyright**
     Strings
 
-**resolution unit**
+**resolution_unit**
     A string of "inch", "centimeter" or "cm" 
 
 **resolution**
 
-**x resolution**
+**x_resolution**
 
-**y resolution**
+**y_resolution**
 
 **dpi**
     Either a Float, Integer, or 2 tuple of (numerator,
