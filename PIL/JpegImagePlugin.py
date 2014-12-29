@@ -355,7 +355,7 @@ class JpegImageFile(ImageFile.ImageFile):
             scale = s
 
         self.tile = [(d, e, o, a)]
-        self.decoderconfig = (scale, 1)
+        self.decoderconfig = (scale, 0)
 
         return self
 
