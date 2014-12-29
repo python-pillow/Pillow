@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Use underscores, not spaces, in TIFF tag kwargs. #1044, #1058
+  [anntzer, hugovk]
+  
 - Update PSDraw for Python3, add tests. #1055
   [hugovk]
 
