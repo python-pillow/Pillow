@@ -4,10 +4,10 @@ language:
 env:
     # global: LATEST_TAG=1
   matrix:
-    - VERSION=2.7.8
+    - VERSION=2.7.9
     - VERSION=3.2.5
     - VERSION=3.3.5
-    - VERSION=3.4.1
+    - VERSION=3.4.2
 
 install:
     - source run_install.sh
