@@ -74,11 +74,9 @@ class TestFileTiff(PillowTestCase):
         from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         filename = "Tests/images/pil168.tif"
         im = Image.open(filename)
-        assert isinstance(im.tag.tags[X_RESOLUTION][0], tuple)
-        assert isinstance(im.tag.tags[Y_RESOLUTION][0], tuple)
         # Try to read a file where X,Y_RESOLUTION are ints
-        im.tag.tags[X_RESOLUTION] = (72,)
-        im.tag.tags[Y_RESOLUTION] = (72,)
+        im.tag[X_RESOLUTION] = (72,)
+        im.tag[Y_RESOLUTION] = (72,)
         im._setup()
         self.assertEqual(im.info['dpi'], (72., 72.))
 
@@ -228,10 +226,9 @@ class TestFileTiff(PillowTestCase):
         self.assertIsInstance(ret, dict)
 
         self.assertEqual(
-            ret, {256: (55,), 257: (43,), 258: (8, 8, 8, 8), 259: (1,),
-                  262: (2,), 296: (2,), 273: (8,), 338: (1,), 277: (4,),
-                  279: (9460,), 282: ((720000, 10000),),
-                  283: ((720000, 10000),), 284: (1,)})
+            ret, {256: 55, 257: 43, 258: (8, 8, 8, 8), 259: 1, 262: 2, 296: 2,
+                  273: (8,), 338: (1,), 277: 4, 279: (9460,),
+                  282: 72.0, 283: 72.0, 284: 1})
 
     def test__delitem__(self):
         # Arrange
@@ -255,7 +252,7 @@ class TestFileTiff(PillowTestCase):
         ret = ifd.load_byte(data)
 
         # Assert
-        self.assertEqual(ret, b"abc")
+        self.assertEqual(ret, (97, 98, 99))
 
     def test_load_string(self):
         # Arrange
@@ -310,38 +307,27 @@ class TestFileTiff(PillowTestCase):
         # Act / Assert
         self.assertRaises(EOFError, lambda: im.seek(1))
 
-    def test__cvt_res_int(self):
+    def test__limit_rational_int(self):
         # Arrange
-        from PIL.TiffImagePlugin import _cvt_res
+        from PIL.TiffImagePlugin import _limit_rational
         value = 34
 
         # Act
-        ret = _cvt_res(value)
+        ret = _limit_rational(value, 65536)
 
         # Assert
         self.assertEqual(ret, (34, 1))
 
-    def test__cvt_res_float(self):
+    def test__limit_rational_float(self):
         # Arrange
-        from PIL.TiffImagePlugin import _cvt_res
+        from PIL.TiffImagePlugin import _limit_rational
         value = 22.3
 
         # Act
-        ret = _cvt_res(value)
+        ret = _limit_rational(value, 65536)
 
         # Assert
-        self.assertEqual(ret, (1461452, 65536))
-
-    def test__cvt_res_sequence(self):
-        # Arrange
-        from PIL.TiffImagePlugin import _cvt_res
-        value = [0, 1]
-
-        # Act
-        ret = _cvt_res(value)
-
-        # Assert
-        self.assertEqual(ret, [0, 1])
+        self.assertEqual(ret, (223, 10))
 
     def test_4bit(self):
         # Arrange
@@ -388,8 +374,8 @@ class TestFileTiff(PillowTestCase):
         # Assert
         from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         im = Image.open(filename)
-        self.assertEqual(im.tag.tags[X_RESOLUTION][0][0], 72)
-        self.assertEqual(im.tag.tags[Y_RESOLUTION][0][0], 36)
+        self.assertEqual(im.tag[X_RESOLUTION], 72)
+        self.assertEqual(im.tag[Y_RESOLUTION], 36)
 
     def test_deprecation_warning_with_spaces(self):
         # Arrange: use spaces
@@ -405,8 +391,8 @@ class TestFileTiff(PillowTestCase):
         # Assert
         from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         im = Image.open(filename)
-        self.assertEqual(im.tag.tags[X_RESOLUTION][0][0], 36)
-        self.assertEqual(im.tag.tags[Y_RESOLUTION][0][0], 72)
+        self.assertEqual(im.tag[X_RESOLUTION], 36)
+        self.assertEqual(im.tag[Y_RESOLUTION], 72)
 
 
 if __name__ == '__main__':

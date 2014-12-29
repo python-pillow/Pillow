@@ -1,8 +1,10 @@
+from __future__ import division
+
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
 
-tag_ids = dict(zip(TiffTags.TAGS.values(), TiffTags.TAGS.keys()))
+tag_ids = {info.name: info.value for info in TiffTags.TAGS.values()}
 
 
 class TestFileTiffMetadata(PillowTestCase):
@@ -19,7 +21,6 @@ class TestFileTiffMetadata(PillowTestCase):
         textdata = basetextdata + " \xff"
         floatdata = 12.345
         doubledata = 67.89
-
         info = TiffImagePlugin.ImageFileDirectory()
 
         info[tag_ids['ImageJMetaDataByteCounts']] = len(textdata)
@@ -45,32 +46,25 @@ class TestFileTiffMetadata(PillowTestCase):
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
 
-        known = {'YResolution': ((4294967295, 113653537),),
-                 'PlanarConfiguration': (1,),
+        known = {'YResolution': 4294967295 / 113653537,
+                 'PlanarConfiguration': 1,
                  'BitsPerSample': (1,),
-                 'ImageLength': (128,),
-                 'Compression': (4,),
-                 'FillOrder': (1,),
-                 'RowsPerStrip': (128,),
-                 'ResolutionUnit': (3,),
-                 'PhotometricInterpretation': (0,),
+                 'ImageLength': 128,
+                 'Compression': 4,
+                 'FillOrder': 1,
+                 'RowsPerStrip': 128,
+                 'ResolutionUnit': 3,
+                 'PhotometricInterpretation': 0,
                  'PageNumber': (0, 1),
-                 'XResolution': ((4294967295, 113653537),),
-                 'ImageWidth': (128,),
-                 'Orientation': (1,),
+                 'XResolution': 4294967295 / 113653537,
+                 'ImageWidth': 128,
+                 'Orientation': 1,
                  'StripByteCounts': (1968,),
-                 'SamplesPerPixel': (1,),
-                 'StripOffsets': (8,),
+                 'SamplesPerPixel': 1,
+                 'StripOffsets': (8,)
                  }
 
-        # self.assertEqual is equivalent,
-        # but less helpful in telling what's wrong.
-        named = img.tag.named()
-        for tag, value in named.items():
-            self.assertEqual(known[tag], value)
-
-        for tag, value in known.items():
-            self.assertEqual(value, named[tag])
+        self.assertEqual(known, img.tag.named())
 
     def test_write_metadata(self):
         """ Test metadata writing through the python code """

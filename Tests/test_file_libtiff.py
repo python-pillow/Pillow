@@ -142,9 +142,8 @@ class TestFileLibTiff(LibTiffTestCase):
         for tag, value in reloaded.items():
             if tag not in ignored:
                 if tag.endswith('Resolution'):
-                    val = original[tag]
                     self.assert_almost_equal(
-                        val[0][0]/val[0][1], value[0][0]/value[0][1],
+                        original[tag], value,
                         msg="%s didn't roundtrip" % tag)
                 else:
                     self.assertEqual(
@@ -153,9 +152,8 @@ class TestFileLibTiff(LibTiffTestCase):
         for tag, value in original.items():
             if tag not in ignored:
                 if tag.endswith('Resolution'):
-                    val = reloaded[tag]
                     self.assert_almost_equal(
-                        val[0][0]/val[0][1], value[0][0]/value[0][1],
+                        original[tag], value,
                         msg="%s didn't roundtrip" % tag)
                 else:
                     self.assertEqual(
