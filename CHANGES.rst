@@ -4,6 +4,12 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Update PSDraw for Python3, add tests. #1055
+  [hugovk]
+
+- Use Bicubic filtering by default for thumbnails. Don't use Jpeg Draft mode for thumbnails. #1029
+  [homm]
+  
 - Fix MSVC compiler error: Use Py_ssize_t instead of ssize_t #1051
   [cgohlke]
 
