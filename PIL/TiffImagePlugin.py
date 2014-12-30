@@ -253,18 +253,28 @@ class ImageFileDirectory(collections.MutableMapping):
     really sure what they're doing.
     """
 
-    def __init__(self, prefix=II):
+    def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None):
+        """Initialize an ImageFileDirectory.
+
+        To construct an ImageFileDirectory from a real file, pass the 8-byte
+        magic header to the constructor.  To only set the endianness, pass it
+        as the 'prefix' keyword argument.
+
+        :ifh: One of the accepted magic headers (cf. PREFIXES); also sets
+              endianness.
+        :prefix: Override the endianness of the file.
         """
-        :prefix: "II"|"MM"  tiff endianness
-        """
-        self._prefix = prefix
-        if prefix == MM:
+        if ifh[:4] not in PREFIXES:
+            raise SyntaxError("not a TIFF file (header %r not valid)" % ifh)
+        self._prefix = prefix if prefix is not None else ifh[:2]
+        if self._prefix == MM:
             self._endian = ">"
-        elif prefix == II:
+        elif self._prefix == II:
             self._endian = "<"
         else:
-            raise ValueError("not a TIFF IFD")
+            raise SyntaxError("not a TIFF IFD")
         self.reset()
+        self.next, = self._unpack("L", ifh[4:])
 
     prefix = property(lambda self: self._prefix)
     offset = property(lambda self: self._offset)
@@ -360,10 +370,10 @@ class ImageFileDirectory(collections.MutableMapping):
     def __iter__(self):
         return itertools.chain(list(self._tags), list(self._tagdata))
 
-    def unpack(self, fmt, data):
+    def _unpack(self, fmt, data):
         return struct.unpack(self._endian + fmt, data)
 
-    def pack(self, fmt, *values):
+    def _pack(self, fmt, *values):
         return struct.pack(self._endian + fmt, *values)
 
     def _register_loader(idx, size):
@@ -387,9 +397,9 @@ class ImageFileDirectory(collections.MutableMapping):
         TYPES[idx] = name
         size = struct.calcsize("=" + fmt)
         _load_dispatch[idx] = size, lambda self, data: (
-            self.unpack("{}{}".format(len(data) // size, fmt), data))
+            self._unpack("{}{}".format(len(data) // size, fmt), data))
         _write_dispatch[idx] = lambda self, *values: (
-            b"".join(self.pack(fmt, value) for value in values))
+            b"".join(self._pack(fmt, value) for value in values))
 
     list(map(_register_basic,
              [(1, "B", "byte"), (3, "H", "short"), (4, "L", "long"),
@@ -411,12 +421,12 @@ class ImageFileDirectory(collections.MutableMapping):
 
     @_register_loader(5, 8)
     def load_rational(self, data):
-        vals = self.unpack("{}L".format(len(data) // 4), data)
+        vals = self._unpack("{}L".format(len(data) // 4), data)
         return tuple(num / denom for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(5)
     def write_rational(self, *values):
-        return b"".join(self.pack("2L", *_limit_rational(frac, 2 ** 31))
+        return b"".join(self._pack("2L", *_limit_rational(frac, 2 ** 31))
                         for frac in values)
 
     @_register_loader(7, 1)
@@ -429,12 +439,12 @@ class ImageFileDirectory(collections.MutableMapping):
 
     @_register_loader(10, 8)
     def load_signed_rational(self, data):
-        vals = self.unpack("{}l".format(len(data) // 4), data)
+        vals = self._unpack("{}l".format(len(data) // 4), data)
         return tuple(num / denom for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(10)
     def write_signed_rational(self, *values):
-        return b"".join(self.pack("2L", *_limit_rational(frac, 2 ** 30))
+        return b"".join(self._pack("2L", *_limit_rational(frac, 2 ** 30))
                         for frac in values)
 
     def load(self, fp):
@@ -442,9 +452,9 @@ class ImageFileDirectory(collections.MutableMapping):
         self.reset()
         self._offset = fp.tell()
 
-        for i in range(self.unpack("H", fp.read(2))[0]):
-            tag, typ, count, data = self.unpack("HHL4s", fp.read(12))
-            if DEBUG:
+        for i in range(self._unpack("H", fp.read(2))[0]):
+            tag, typ, count, data = self._unpack("HHL4s", fp.read(12))
+            if Image.DEBUG:
                 tagname = TAGS.get(tag, TagInfo()).name
                 typname = TYPES.get(typ, "unknown")
                 print("tag: %s (%d) - type: %s (%d)" %
@@ -459,8 +469,8 @@ class ImageFileDirectory(collections.MutableMapping):
             size = count * unit_size
             if size > 4:
                 here = fp.tell()
-                offset, = self.unpack("L", data)
-                if DEBUG:
+                offset, = self._unpack("L", data)
+                if Image.DEBUG:
                     print("Tag Location: %s - Data Location: %s" %
                           (here, offset), end=" ")
                 fp.seek(offset)
@@ -484,12 +494,16 @@ class ImageFileDirectory(collections.MutableMapping):
                 else:
                     print("- value:", self[tag])
 
-        self.next, = self.unpack("L", fp.read(4))
+        self.next, = self._unpack("L", fp.read(4))
 
     def save(self, fp):
 
+        if fp.tell() == 0:  # skip TIFF header on subsequent pages
+            # tiff header -- PIL always starts the first IFD at offset 8
+            fp.write(self._prefix + self._pack("HL", 42, 8))
+
         # FIXME What about tagdata?
-        fp.write(self.pack("H", len(self._tags)))
+        fp.write(self._pack("H", len(self._tags)))
 
         entries = []
         offset = fp.tell() + len(self._tags) * 12 + 4
@@ -521,7 +535,7 @@ class ImageFileDirectory(collections.MutableMapping):
             if len(data) <= 4:
                 entries.append((tag, typ, count, data.ljust(4, b"\0"), b""))
             else:
-                entries.append((tag, typ, count, self.pack("L", offset), data))
+                entries.append((tag, typ, count, self._pack("L", offset), data))
                 offset += (len(data) + 1) // 2 * 2 # pad to word
 
         # update strip offset data to point beyond auxiliary data
@@ -530,14 +544,14 @@ class ImageFileDirectory(collections.MutableMapping):
             if data:
                 raise NotImplementedError(
                     "multistrip support not yet implemented")
-            value = self.pack("L", self.unpack("L", value)[0] + offset)
+            value = self._pack("L", self._unpack("L", value)[0] + offset)
             entries[stripoffsets] = tag, typ, count, value, data
 
         # pass 2: write entries to file
         for tag, typ, count, value, data in entries:
             if DEBUG > 1:
                 print(tag, typ, count, repr(value), repr(data))
-            fp.write(self.pack("HHL4s", tag, typ, count, value))
+            fp.write(self._pack("HHL4s", tag, typ, count, value))
 
         # -- overwrite here for multi-page --
         fp.write(b"\0\0\0\0")  # end of entries
@@ -573,14 +587,11 @@ class TiffImageFile(ImageFile.ImageFile):
         # Header
         ifh = self.fp.read(8)
 
-        if ifh[:4] not in PREFIXES:
-            raise SyntaxError("not a TIFF file")
-
         # image file directory (tag dictionary)
-        self.tag = self.ifd = ImageFileDirectory(ifh[:2])
+        self.tag = self.ifd = ImageFileDirectory(ifh)
 
         # setup frame pointers
-        self.__first, = self.__next, = self.ifd.unpack("L", ifh[4:])
+        self.__first = self.__next = self.ifd.next
         self.__frame = -1
         self.__fp = self.fp
         self._frame_pos = []
@@ -991,7 +1002,7 @@ def _save(im, fp, filename):
     except KeyError:
         raise IOError("cannot write mode %s as TIFF" % im.mode)
 
-    ifd = ImageFileDirectory(prefix)
+    ifd = ImageFileDirectory(prefix=prefix)
 
     compression = im.encoderinfo.get('compression', im.info.get('compression',
                                      'raw'))
@@ -1000,12 +1011,6 @@ def _save(im, fp, filename):
 
     # required for color libtiff images
     ifd[PLANAR_CONFIGURATION] = getattr(im, '_planar_configuration', 1)
-
-    # -- multi-page -- skip TIFF header on subsequent pages
-    if not libtiff and fp.tell() == 0:
-        # tiff header (write via IFD to get everything right)
-        # PIL always starts the first IFD at offset 8
-        fp.write(ifd.prefix + ifd.pack("HL", 42, 8))
 
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]

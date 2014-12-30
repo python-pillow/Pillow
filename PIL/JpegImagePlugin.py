@@ -394,13 +394,6 @@ class JpegImageFile(ImageFile.ImageFile):
         return _getmp(self)
 
 
-def _fixup(value):
-    # Helper function for _getexif() and _getmp()
-    if len(value) == 1:
-        return value[0]
-    return value
-
-
 def _getexif(self):
     # Extract EXIF information.  This method is highly experimental,
     # and is likely to be replaced with something better in a future
@@ -414,12 +407,10 @@ def _getexif(self):
         return None
     file = io.BytesIO(data[6:])
     head = file.read(8)
-    exif = {}
     # process dictionary
     info = TiffImagePlugin.ImageFileDirectory(head)
     info.load(file)
-    for key, value in info.items():
-        exif[key] = _fixup(value)
+    exif = dict(info)
     # get exif extension
     try:
         # exif field 0x8769 is an offset pointer to the location
@@ -431,8 +422,7 @@ def _getexif(self):
     else:
         info = TiffImagePlugin.ImageFileDirectory(head)
         info.load(file)
-        for key, value in info.items():
-            exif[key] = _fixup(value)
+        exif.update(info)
     # get gpsinfo extension
     try:
         # exif field 0x8825 is an offset pointer to the location
@@ -444,9 +434,7 @@ def _getexif(self):
     else:
         info = TiffImagePlugin.ImageFileDirectory(head)
         info.load(file)
-        exif[0x8825] = gps = {}
-        for key, value in info.items():
-            gps[key] = _fixup(value)
+        exif[0x8825] = dict(info)
     return exif
 
 
@@ -464,12 +452,10 @@ def _getmp(self):
     file_contents = io.BytesIO(data)
     head = file_contents.read(8)
     endianness = '>' if head[:4] == b'\x4d\x4d\x00\x2a' else '<'
-    mp = {}
     # process dictionary
     info = TiffImagePlugin.ImageFileDirectory(head)
     info.load(file_contents)
-    for key, value in info.items():
-        mp[key] = _fixup(value)
+    mp = dict(info)
     # it's an error not to have a number of images
     try:
         quant = mp[0xB001]
