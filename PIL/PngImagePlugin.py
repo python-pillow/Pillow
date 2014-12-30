@@ -72,9 +72,15 @@ _MODES = {
 
 _simple_palette = re.compile(b'^\xff+\x00\xff*$')
 
+# Maximum decompressed size for a iTXt or zTXt chunk.
+# Eliminates decompression bombs where compressed chunks can expand 1000x
+MAX_TEXT_CHUNK = ImageFile.SAFEBLOCK
+# Set the maximum total text chunk size.
+MAX_TEXT_MEMORY = 64 * MAX_TEXT_CHUNK
+
 def _safe_zlib_decompress(s):
     dobj = zlib.decompressobj()
-    plaintext = dobj.decompress(s, ImageFile.SAFEBLOCK)
+    plaintext = dobj.decompress(s, MAX_TEXT_CHUNK)
     if dobj.unconsumed_tail:
         raise ValueError("Decompressed Data Too Large")
     return plaintext
@@ -267,6 +273,14 @@ class PngStream(ChunkStream):
         self.im_tile = None
         self.im_palette = None
 
+        self.text_memory = 0
+
+    def check_text_memory(self, chunklen):
+        self.text_memory += chunklen
+        if self.text_memory > MAX_TEXT_MEMORY:
+            raise ValueError("Too much memory used in text chunks: %s>MAX_TEXT_MEMORY" %
+                             self.text_memory)
+
     def chunk_iCCP(self, pos, length):
 
         # ICC profile
@@ -379,6 +393,8 @@ class PngStream(ChunkStream):
                 v = v.decode('latin-1', 'replace')
 
             self.im_info[k] = self.im_text[k] = v
+            self.check_text_memory(len(v))
+
         return s
 
     def chunk_zTXt(self, pos, length):
@@ -408,6 +424,8 @@ class PngStream(ChunkStream):
                 v = v.decode('latin-1', 'replace')
 
             self.im_info[k] = self.im_text[k] = v
+            self.check_text_memory(len(v))
+
         return s
 
     def chunk_iTXt(self, pos, length):
@@ -443,7 +461,8 @@ class PngStream(ChunkStream):
                 return s
 
         self.im_info[k] = self.im_text[k] = iTXt(v, lang, tk)
-
+        self.check_text_memory(len(v))
+            
         return s
 
 
