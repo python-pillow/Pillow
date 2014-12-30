@@ -237,6 +237,16 @@ class TestImage(PillowTestCase):
         im3 = Image.open('Tests/images/effect_spread.png')
         self.assert_image_similar(im2, im3, 110)
 
+    def test_no_resource_warning_on_save(self):
+        # https://github.com/python-pillow/Pillow/issues/835
+        # Arrange
+        test_file = 'Tests/images/hopper.png'
+
+        # Act/Assert
+        with Image.open(test_file) as im:
+            self.assert_warning(None, lambda: im.save('test_img.jpg'))
+
+
 if __name__ == '__main__':
     unittest.main()
 
