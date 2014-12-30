@@ -122,7 +122,9 @@ class PillowTestCase(unittest.TestCase):
 
             # Verify some things.
             if warn_class is None:
-                self.assertEqual(len(w), 0)
+                self.assertEqual(len(w), 0,
+                                 "Expected no warnings, got %s" %
+                                 list(v.category for v in w))
             else:
                 self.assertGreaterEqual(len(w), 1)
                 found = False
