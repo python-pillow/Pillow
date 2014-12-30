@@ -252,7 +252,12 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                 filename = os.path.join(windir, "fonts", font)
                 return FreeTypeFont(filename, size, index, encoding)
         elif sys.platform in ('linux', 'linux2'):
-            lindirs = os.environ.get("XDG_DATA_DIRS", "").split(":")
+            lindirs = os.environ.get("XDG_DATA_DIRS", "")
+            if not lindirs:
+                #According to the freedesktop spec, XDG_DATA_DIRS should
+                #default to /usr/share
+                lindirs = '/usr/share'
+            lindirs = lindirs.split(":")
             for lindir in lindirs:
                 parentpath = os.path.join(lindir, "fonts")
                 for walkroot, walkdir, walkfilenames in os.walk(parentpath):
