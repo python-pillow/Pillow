@@ -121,13 +121,16 @@ class PillowTestCase(unittest.TestCase):
             result = func(*args, **kwargs)
 
             # Verify some things.
-            self.assertGreaterEqual(len(w), 1)
-            found = False
-            for v in w:
-                if issubclass(v.category, warn_class):
-                    found = True
-                    break
-            self.assertTrue(found)
+            if warn_class is None:
+                self.assertEqual(len(w), 0)
+            else:
+                self.assertGreaterEqual(len(w), 1)
+                found = False
+                for v in w:
+                    if issubclass(v.category, warn_class):
+                        found = True
+                        break
+                self.assertTrue(found)
         return result
 
     def skipKnownBadTest(self, msg=None, platform=None,
