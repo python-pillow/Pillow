@@ -129,9 +129,9 @@ TAGS = {
     33432: ("Copyright", 2, 1),
 
     # FIXME add more tags here
+    34665: ("ExifIFD", 3, 1),
     50741: ("MakerNoteSafety", 3, 1, {0: "Unsafe", 1: "Safe"}),
     50780: ("BestQualityScale", 5, 1),
-    # private tags registered with Adobe
     50838: ("ImageJMetaDataByteCounts", 4, 1),
     50839: ("ImageJMetaData", 7, 1)
 }
