@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Fix potential PNG decompression DOS #1060
+  [wiredfool]
+
 - Use underscores, not spaces, in TIFF tag kwargs. #1044, #1058
   [anntzer, hugovk]
   
