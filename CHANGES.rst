@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+2.6.2 (2015-01-01)
+------------------
+
+- Fix potential PNG decompression DOS #1060 
+  [wiredfool]
+
 2.6.1 (2014-10-13)
 ------------------
 
