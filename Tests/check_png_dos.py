@@ -1,23 +1,22 @@
 from helper import unittest, PillowTestCase
-import sys
 from PIL import Image, PngImagePlugin
 from io import BytesIO
 import zlib
 
-test_file = "Tests/images/png_decompression_dos.png"
+TEST_FILE = "Tests/images/png_decompression_dos.png"
 
 class TestPngDos(PillowTestCase):
     def test_dos_text(self):
 
         try:
-            im = Image.open(test_file)
+            im = Image.open(TEST_FILE)
             im.load()
         except ValueError as msg:
-            self.assert_(msg, "Decompressed Data Too Large")
+            self.assertTrue(msg, "Decompressed Data Too Large")
             return
 
         for s in im.text.values():
-            self.assert_(len(s) < 1024*1024, "Text chunk larger than 1M")
+            self.assertLess(len(s), 1024*1024, "Text chunk larger than 1M")
 
     def test_dos_total_memory(self):
         im = Image.new('L',(1,1))
@@ -36,13 +35,13 @@ class TestPngDos(PillowTestCase):
         try:
             im2 = Image.open(b)
         except ValueError as msg:
-            self.assert_("Too much memory" in msg)
+            self.assertIn("Too much memory", msg)
             return
 
         total_len = 0
         for txt in im2.text.values():
             total_len += len(txt)
-        self.assert_(total_len < 64*1024*1024)
+        self.assertLess(total_len, 64*1024*1024, "Total text chunks greater than 64M")
         
 if __name__ == '__main__':
     unittest.main()
