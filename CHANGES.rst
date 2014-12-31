@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.7.0 (unreleased)
 ------------------
 
+- Look for OSX and Linux fonts in common places. #1054
+  [charleslaw]
+
 - Fix potential PNG decompression DOS #1060
   [wiredfool]
 
