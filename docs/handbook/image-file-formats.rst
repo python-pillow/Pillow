@@ -333,7 +333,12 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     transparent palette image.
 
 ``Open`` also sets ``Image.text`` to a list of the values of the
-``tEXt``, ``zTXt``, and ``iTXt`` chunks of the PNG image.
+``tEXt``, ``zTXt``, and ``iTXt`` chunks of the PNG image. Individual
+compressed chunks are limited to a decompressed size of
+``PngImagePlugin.MAX_TEXT_CHUNK``, by default 1MB, to prevent
+decompression bombs. Additionally, the total size of all of the text
+chunks is limited to ``PngImagePlugin.MAX_TEXT_MEMORY``, defaulting to
+64MB.
 
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
