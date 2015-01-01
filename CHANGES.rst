@@ -7,6 +7,9 @@ Changelog (Pillow)
 - Fix potential PNG decompression DOS #1060 
   [wiredfool]
 
+- Fix Regression in PyPy 2.4 in streamio  #958
+  [wiredfool]
+
 2.6.1 (2014-10-13)
 ------------------
 
