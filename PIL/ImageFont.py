@@ -239,6 +239,10 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
     try:
         return FreeTypeFont(font, size, index, encoding)
     except IOError:
+        if font.endswith(".ttf"):
+            ttf_filename = font
+        else:
+            ttf_filename = "%s.ttf" % font
         if sys.platform == "win32":
             # check the windows font repository
             # NOTE: must use uppercase WINDIR, to work around bugs in
@@ -247,6 +251,25 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
             if windir:
                 filename = os.path.join(windir, "fonts", font)
                 return FreeTypeFont(filename, size, index, encoding)
+        elif sys.platform in ('linux', 'linux2'):
+            lindirs = os.environ.get("XDG_DATA_DIRS", "")
+            if not lindirs:
+                #According to the freedesktop spec, XDG_DATA_DIRS should
+                #default to /usr/share
+                lindirs = '/usr/share'
+            lindirs = lindirs.split(":")
+            for lindir in lindirs:
+                parentpath = os.path.join(lindir, "fonts")
+                for walkroot, walkdir, walkfilenames in os.walk(parentpath):
+                    if ttf_filename in walkfilenames:
+                        filepath = os.path.join(walkroot, ttf_filename)
+                        return FreeTypeFont(filepath, size, index, encoding)
+        elif sys.platform == 'darwin':
+            macdirs = ['/Library/Fonts/', '/System/Library/Fonts/', os.path.expanduser('~/Library/Fonts/')]
+            for macdir in macdirs:
+                filepath = os.path.join(macdir, ttf_filename)
+                if os.path.exists(filepath):
+                    return FreeTypeFont(filepath, size, index, encoding)
         raise
 
 
