@@ -1,6 +1,21 @@
 Pillow 2.7.0
 ============
 
+Png text chunk size limits
+--------------------------
+
+To prevent potential denial of service attacks using compressed text
+chunks, there are now limits to the decompressed size of text chunks
+decoded from PNG images. If the limits are exceeded when opening a PNG
+image a ``ValueError`` will be raised. 
+
+Individual text chunks are limited to
+:py:attr:`PIL.PngImagePlugin.MAX_TEXT_CHUNK`, set to 1MB by
+default. The total decompressed size of all text chunks is limited to
+:py:attr:`PIL.PngImagePlugin.MAX_TEXT_MEMORY`, which defaults to
+64MB. These values can be changed prior to opening PNG images if you
+know that there are large text blocks that are desired.
+
 Image resizing filters
 ----------------------
 
@@ -141,3 +156,13 @@ The previous implementation takes into account only source pixels within
 so the quality was worse compared to other Gaussian blur software.
 
 The new implementation does not have this drawback.
+
+TFF Parameter Changes
+----------------------
+
+Several kwarg parameters for saving TIFF images were previously
+specified as strings with included spaces (e.g. 'x resolution'). This
+was difficult to use as kwargs without constructing and passing a
+dictionary. These parameters now use the underscore character instead
+of space. (e.g. 'x_resolution')
+
