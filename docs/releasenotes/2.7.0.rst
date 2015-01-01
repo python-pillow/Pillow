@@ -157,7 +157,7 @@ so the quality was worse compared to other Gaussian blur software.
 
 The new implementation does not have this drawback.
 
-TFF Parameter Changes
+TIFF Parameter Changes
 ----------------------
 
 Several kwarg parameters for saving TIFF images were previously
