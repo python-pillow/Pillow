@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.7.0 (unreleased)
+2.7.0 (2015-01-01)
 ------------------
 
 - Look for OSX and Linux fonts in common places. #1054
@@ -78,6 +78,15 @@ Changelog (Pillow)
   
 - Fixes for things rpmlint complains about #942
   [manisandro]
+
+2.6.2 (2015-01-01)
+------------------
+
+- Fix potential PNG decompression DOS #1060 
+  [wiredfool]
+
+- Fix Regression in PyPy 2.4 in streamio  #958
+  [wiredfool]
 
 2.6.1 (2014-10-11)
 ------------------
