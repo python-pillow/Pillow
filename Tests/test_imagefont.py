@@ -231,6 +231,8 @@ try:
                     name = font.getname()
                     self.assertEqual(('FreeMono', 'Regular'), name)
 
+
+        @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
         def test_find_linux_font(self):
             #A lot of mocking here - this is more for hitting code and catching
             #syntax like errors
@@ -245,6 +247,7 @@ try:
                     with SimplePatcher(os, 'walk', fake_walker):
                         self._test_fake_loading_font('/usr/local/share/fonts/Arial.ttf')
 
+        @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
         def test_find_osx_font(self):
             #Like the linux test, more cover hitting code rather than testing
             #correctness.
