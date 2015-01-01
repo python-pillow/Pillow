@@ -212,7 +212,6 @@ class TestNumpy(PillowTestCase):
 
         self.assertEqual(im.size, (0, 0))
 
-
     def test_bool(self):
         # https://github.com/python-pillow/Pillow/issues/2044
         a = numpy.zeros((10,2), dtype=numpy.bool)
@@ -220,6 +219,17 @@ class TestNumpy(PillowTestCase):
 
         im2 = Image.fromarray(a)
         self.assertEqual(im2.getdata()[0], 255)
+
+    def test_no_resource_warning_for_numpy_array(self):
+        # https://github.com/python-pillow/Pillow/issues/835
+        # Arrange
+        from numpy import array
+        test_file = 'Tests/images/hopper.png'
+        im = Image.open(test_file)
+
+        # Act/Assert
+        self.assert_warning(None, lambda: array(im))
+
 
 if __name__ == '__main__':
     unittest.main()

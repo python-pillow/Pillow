@@ -514,16 +514,6 @@ class TestImage(PillowTestCase):
         with Image.open(test_file) as im:
             self.assert_warning(None, lambda: im.save('test_img.jpg'))
 
-    def test_no_resource_warning_for_numpy_array(self):
-        # https://github.com/python-pillow/Pillow/issues/835
-        # Arrange
-        from numpy import array
-        test_file = 'Tests/images/hopper.png'
-        im = Image.open(test_file)
-
-        # Act/Assert
-        self.assert_warning(None, lambda: array(im))
-
 
 class MockEncoder(object):
     pass
