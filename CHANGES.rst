@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.7.0 (2015-01-01)
 ------------------
 
+- Split Sane into a separate repo: https://github.com/python-pillow/Sane
+  [hugovk]
+
 - Look for OSX and Linux fonts in common places. #1054
   [charleslaw]
 
