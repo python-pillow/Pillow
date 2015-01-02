@@ -28,7 +28,7 @@ Changelog (Pillow)
 - The GIF Palette optimization algorithm is only applicable to mode='P' or 'L' #993
   [moriyoshi]
 
-- Use PySide as an alernative to PyQt4/5.
+- Use PySide as an alternative to PyQt4/5.
   [holg]
 
 - Replace affine-based im.resize implementation with convolution-based im.stretch #997
