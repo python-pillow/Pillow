@@ -1,6 +1,13 @@
 Pillow 2.7.0
 ============
 
+Sane Plugin
+-----------
+
+The Sane plugin has now been split into its own repo: 
+https://github.com/python-pillow/Sane . 
+
+
 Png text chunk size limits
 --------------------------
 
