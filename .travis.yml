@@ -62,6 +62,8 @@ after_success:
   - pyflakes PIL/*.py   | tee >(wc -l)
   - pyflakes Tests/*.py | tee >(wc -l)
 
+  # Trigger an OS X build at the pillow-wheels repo
+  - ./build_children.sh
 
     # Coverage and quality reports on just the latest diff.
     # (Installation is very slow on Py3, so just do it for Py2.)
@@ -69,3 +71,8 @@ after_success:
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-run.sh; fi
 matrix:
   fast_finish: true
+
+env:
+  global:
+    # travis encrypt AUTH_TOKEN=
+    secure: yC1RcYF932ICXcw8hR3MHKfw9G9030+w8SgGXhhH2htgsCvKrGtb7kA4pqN7eGS31QsGatj6NmYVOdut3jIqbtP+5Pd3xceGoeo3HMWfS5RPmgbrGmiVYeDH9ZZDDZMH85oRnMU/vfI3T8SdYdyYM3hXAPzXeU6jWxQA48ft4D4=
