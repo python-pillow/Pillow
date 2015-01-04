@@ -110,4 +110,4 @@ matrix:
 env:
   global:
     # travis encrypt AUTH_TOKEN=
-    secure: yC1RcYF932ICXcw8hR3MHKfw9G9030+w8SgGXhhH2htgsCvKrGtb7kA4pqN7eGS31QsGatj6NmYVOdut3jIqbtP+5Pd3xceGoeo3HMWfS5RPmgbrGmiVYeDH9ZZDDZMH85oRnMU/vfI3T8SdYdyYM3hXAPzXeU6jWxQA48ft4D4=
+    secure: "Vzm7aG1Qv0SDQcqiPzZMedNLn5ZmpL7IzF0DYnqcD+/l+zmKU22SnJBcX0uVXumo+r7eZfpsShpqfcdsZvMlvmQnwz+Y6AGKQru9tCKZbTMnuRjWKKXekC+tr8Xt9CKvRVtte5PyXW31paxUI3/e+fQGBwoFjEEC+6EpEOjeRfE="
