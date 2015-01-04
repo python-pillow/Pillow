@@ -100,7 +100,7 @@ after_failure:
 
 after_script:
   - |
-      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         echo leader=$BUILD_LEADER status=$BUILD_AGGREGATE_STATUS
       fi
 
