@@ -33,6 +33,7 @@ install:
   - pushd depends && ./install_openjpeg.sh && popd
 
 script:
+  - curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
   - coverage erase
   - python setup.py clean
   - CFLAGS="-coverage" python setup.py build_ext --inplace
@@ -62,13 +63,40 @@ after_success:
   - pyflakes PIL/*.py   | tee >(wc -l)
   - pyflakes Tests/*.py | tee >(wc -l)
 
-  # Trigger an OS X build at the pillow-wheels repo
-  - ./build_children.sh
+  # after_all
+  - python travis_after_all.py
+  - export $(cat .to_export_back)
+  - |
+      if [ "$BUILD_LEADER" = "YES" ]; then
+        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
+          echo "All jobs succeded! Triggering OS X build..."
+          # Trigger an OS X build at the pillow-wheels repo
+          ./build_children.sh
+        else
+          echo "Some jobs failed"
+        fi
+      fi
 
     # Coverage and quality reports on just the latest diff.
     # (Installation is very slow on Py3, so just do it for Py2.)
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-install.sh; fi
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-run.sh; fi
+
+after_failure:
+  - python travis_after_all.py
+  - export $(cat .to_export_back)
+  - |
+      if [ "$BUILD_LEADER" = "YES" ]; then
+        if [ "$BUILD_AGGREGATE_STATUS" = "others_failed" ]; then
+          echo "All jobs failed"
+        else
+          echo "Some jobs failed"
+        fi
+      fi
+
+after_script:
+  - echo leader=$BUILD_LEADER status=$BUILD_AGGREGATE_STATUS
+
 matrix:
   fast_finish: true
 
