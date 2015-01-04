@@ -68,7 +68,7 @@ after_success:
 
   # after_all
   - |
-      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
+      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
         python travis_after_all.py
         export $(cat .to_export_back)
@@ -85,7 +85,7 @@ after_success:
 
 after_failure:
   - |
-      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
+      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
         python travis_after_all.py
         export $(cat .to_export_back)
@@ -100,7 +100,7 @@ after_failure:
 
 after_script:
   - |
-      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
+      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         echo leader=$BUILD_LEADER status=$BUILD_AGGREGATE_STATUS
       fi
 
