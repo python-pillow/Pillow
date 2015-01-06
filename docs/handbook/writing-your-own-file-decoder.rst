@@ -116,7 +116,8 @@ The fields are used as follows:
 Note that the :py:attr:`tile` attribute contains a list of tile descriptors,
 not just a single descriptor.
 
-The ``raw`` decoder
+The raw decoder
+---------------
 
 The ``raw`` decoder is used to read uncompressed data from an image file. It
 can be used with most uncompressed file formats, such as PPM, BMP, uncompressed
