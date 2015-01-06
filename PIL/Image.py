@@ -2024,7 +2024,7 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
     You can also use any pixel decoder supported by PIL.  For more
     information on available decoders, see the section
-    **Writing Your Own File Decoder**.
+    :ref:`Writing Your Own File Decoder <file-decoders>`.
 
     Note that this function decodes pixel data only, not entire images.
     If you have an entire image in a string, wrap it in a
