@@ -1,4 +1,6 @@
-Writing your own file decoder
+.. _file-decoders:
+
+Writing Your Own File Decoder
 =============================
 
 The Python Imaging Library uses a plug-in model which allows you to
@@ -7,7 +9,7 @@ library itself. Such plug-ins usually have names like
 :file:`XxxImagePlugin.py`, where ``Xxx`` is a unique format name
 (usually an abbreviation).
 
-.. warning:: Pillow >= 2.1.0 no longer automatically imports any file in the Python path with a name ending in :file:`ImagePlugin.py`.  You will need to import your decoder manually. 
+.. warning:: Pillow >= 2.1.0 no longer automatically imports any file in the Python path with a name ending in :file:`ImagePlugin.py`.  You will need to import your decoder manually.
 
 A decoder plug-in should contain a decoder class, based on the
 :py:class:`PIL.ImageFile.ImageFile` base class. This class should provide an
@@ -68,7 +70,7 @@ true color.
             ]
 
     Image.register_open("SPAM", SpamImageFile)
-            
+
     Image.register_extension("SPAM", ".spam")
     Image.register_extension("SPAM", ".spa") # dos version
 
@@ -125,7 +127,7 @@ TIFF, and many others. To use the raw decoder with the
 :py:func:`PIL.Image.fromstring` function, use the following syntax::
 
     image = Image.fromstring(
-        mode, size, data, "raw", 
+        mode, size, data, "raw",
         raw mode, stride, orientation
         )
 
