@@ -18,17 +18,6 @@
  * Copyright (c) 1998-2007 by Secret Labs AB
  */
 
-/*
- * Notes:
- *   Currently, embedded bitmap fonts within truetype fonts do not work
- *   properly (see issue #891), truetype fonts are loaded with 
- *   FT_LOAD_NO_BITMAP load flags, resulting in embedded bitmap fonts
- *   not being used.
- *
- * Yifu Yu<root@jackyyf.com>
- * 2014-10-15
- */
-
 #include "Python.h"
 #include "Imaging.h"
 
@@ -254,6 +243,10 @@ font_getsize(FontObject* self, PyObject* args)
                            &delta);
             x += delta.x;
         }
+
+	/* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 
+	 *   Yifu Yu<root@jackyyf.com>, 2014-10-15 
+	 */
         error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
         if (error)
             return geterror(error);
@@ -327,6 +320,7 @@ font_getabc(FontObject* self, PyObject* args)
         int index, error;
         face = self->face;
         index = FT_Get_Char_Index(face, ch);
+	/* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
         error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
         if (error)
             return geterror(error);
@@ -374,7 +368,7 @@ font_render(FontObject* self, PyObject* args)
     }
 
     im = (Imaging) id;
-
+    /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
     load_flags = FT_LOAD_RENDER|FT_LOAD_NO_BITMAP;
     if (mask)
         load_flags |= FT_LOAD_TARGET_MONO;
