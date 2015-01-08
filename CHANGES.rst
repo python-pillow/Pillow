@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+2.8.0 (unreleased)
+------------------
+
+- Fix for corrupted bitmaps embedded in truetype fonts. #1072 
+  [jackyyf, wiredfool]
+
 2.7.0 (2015-01-01)
 ------------------
 
