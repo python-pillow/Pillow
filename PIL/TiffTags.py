@@ -130,6 +130,13 @@ TAGS = {
 
     # FIXME add more tags here
     34665: ("ExifIFD", 3, 1),
+
+    45056: ("MPFVersion", 7, 1),
+    45057: ("NumberOfImages", 4, 1),
+    45058: ("MPEntry", 7, 1),
+    45059: ("ImageUIDList", 7, 0),
+    45060: ("TotalFrames", 4, 1),
+
     50741: ("MakerNoteSafety", 3, 1, {0: "Unsafe", 1: "Safe"}),
     50780: ("BestQualityScale", 5, 1),
     50838: ("ImageJMetaDataByteCounts", 4, 1),
