@@ -36,7 +36,7 @@ import array
 import struct
 import io
 import warnings
-from struct import unpack
+from struct import unpack_from
 from PIL import Image, ImageFile, TiffImagePlugin, _binary
 from PIL.JpegPresets import presets
 from PIL._util import isStringType
@@ -462,11 +462,12 @@ def _getmp(self):
     except KeyError:
         raise SyntaxError("malformed MP Index (no number of images)")
     # get MP entries
+    mpentries = []
     try:
-        mpentries = []
+        rawmpentries = mp[0xB002]
         for entrynum in range(0, quant):
-            rawmpentry = mp[0xB002][entrynum * 16:(entrynum + 1) * 16]
-            unpackedentry = unpack('{0}LLLHH'.format(endianness), rawmpentry)
+            unpackedentry = unpack_from(
+                '{0}LLLHH'.format(endianness), rawmpentries, entrynum * 16)
             labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1',
                       'EntryNo2')
             mpentry = dict(zip(labels, unpackedentry))

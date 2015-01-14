@@ -279,10 +279,6 @@ class ImageFileDirectory(collections.MutableMapping):
     prefix = property(lambda self: self._prefix)
     offset = property(lambda self: self._offset)
 
-    @property
-    def offset(self):
-        return self._offset
-
     def reset(self):
         self._tags = {}
         self._tagdata = {}
@@ -302,8 +298,8 @@ class ImageFileDirectory(collections.MutableMapping):
         """
         Returns the complete tag dictionary, with named tags where possible.
         """
-        return {TAGS.get(code, TagInfo()).name: value
-                for code, value in self.items()}
+        return dict((TAGS.get(code, TagInfo()).name, value)
+                    for code, value in self.items())
 
     def __len__(self):
         return len(self._tagdata) + len(self._tags)
@@ -397,7 +393,7 @@ class ImageFileDirectory(collections.MutableMapping):
         TYPES[idx] = name
         size = struct.calcsize("=" + fmt)
         _load_dispatch[idx] = size, lambda self, data: (
-            self._unpack("{}{}".format(len(data) // size, fmt), data))
+            self._unpack("{0}{1}".format(len(data) // size, fmt), data))
         _write_dispatch[idx] = lambda self, *values: (
             b"".join(self._pack(fmt, value) for value in values))
 
@@ -421,7 +417,7 @@ class ImageFileDirectory(collections.MutableMapping):
 
     @_register_loader(5, 8)
     def load_rational(self, data):
-        vals = self._unpack("{}L".format(len(data) // 4), data)
+        vals = self._unpack("{0}L".format(len(data) // 4), data)
         return tuple(num / denom for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(5)
@@ -439,7 +435,7 @@ class ImageFileDirectory(collections.MutableMapping):
 
     @_register_loader(10, 8)
     def load_signed_rational(self, data):
-        vals = self._unpack("{}l".format(len(data) // 4), data)
+        vals = self._unpack("{0}l".format(len(data) // 4), data)
         return tuple(num / denom for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(10)
