@@ -125,7 +125,7 @@ The :py:meth:`~PIL.Image.Image.open` method may set the following
     not present.
 
 **jfif_version**
-    A tuple representing the jfif version, (major version, minor version). 
+    A tuple representing the jfif version, (major version, minor version).
 
 **jfif_density**
     A tuple representing the pixel density of the image, in units specified
@@ -139,8 +139,8 @@ The :py:meth:`~PIL.Image.Image.open` method may set the following
     * 2 - Pixels per Centimeter
 
 **dpi**
-    A tuple representing the reported pixel density in pixels per inch, if 
-    the file is a jfif file and the units are in inches. 
+    A tuple representing the reported pixel density in pixels per inch, if
+    the file is a jfif file and the units are in inches.
 
 **adobe**
     Adobe application marker found. If the file is not an Adobe JPEG file, this
@@ -153,10 +153,10 @@ The :py:meth:`~PIL.Image.Image.open` method may set the following
     Indicates that this is a progressive JPEG file.
 
 **icc-profile**
-    The ICC color profile for the image.  
+    The ICC color profile for the image.
 
 **exif**
-    Raw EXIF data from the image. 
+    Raw EXIF data from the image.
 
 
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
@@ -178,7 +178,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **dpi**
     A tuple of integers representing the pixel density, ``(x,y)``.
 
-**icc-profile** 
+**icc-profile**
     If present, the image is stored with the provided ICC profile. If
     this parameter is not provided, the image will be saved with no
     profile attached. To preserve the existing profile::
@@ -186,11 +186,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
         im.save(filename, 'jpeg', icc_profile=im.info.get('icc_profile'))
 
 **exif**
-    If present, the image will be stored with the provided raw EXIF data. 
+    If present, the image will be stored with the provided raw EXIF data.
 
 **subsampling**
-    If present, sets the subsampling for the encoder. 
-    
+    If present, sets the subsampling for the encoder.
+
     * ``keep``: Only valid for JPEG files, will retain the original image setting.
     * ``4:4:4``, ``4:2:2``, ``4:1:1``: Specific sampling values
     * ``-1``: equivalent to ``keep``
@@ -206,7 +206,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     *  a string, naming a preset, e.g. ``keep``, ``web_low``, or ``web_high``
     *  a list, tuple, or dictionary (with integer keys =
        range(len(keys))) of lists of 64 integers. There must be
-       between 2 and 4 tables. 
+       between 2 and 4 tables.
 
     .. versionadded:: 2.5.0
 
@@ -347,15 +347,21 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     possible. This includes extra processing in order to find optimal encoder
     settings.
 
-**transparency** 
+**transparency**
     For ``P``, ``L``, and ``RGB`` images, this option controls what
     color image to mark as transparent.
 
 **dpi**
-    A tuple of two numbers corresponding to the desired dpi in each direction. 
+    A tuple of two numbers corresponding to the desired dpi in each direction.
 
 **pnginfo**
     A :py:class:`PIL.PngImagePlugin.PngInfo` instance containing text tags.
+
+**compress_level**
+    ZLIB compression level, a number between 0 and 9: 1 gives best speed,
+    9 gives best compression, 0 gives no compression at all. Default is 6.
+    When ``optimize`` option is True ``compress_level`` has no effect
+    (it is set to 9 regardless of a value passed).
 
 **bits (experimental)**
     For ``P`` images, this option controls how many bits to store. If omitted,
@@ -450,7 +456,7 @@ Saving Tiff Images
 
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
-**tiffinfo** 
+**tiffinfo**
     A :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory` object or dict
     object containing tiff tags and values. The TIFF field type is
     autodetected for Numeric and string values, any other types
@@ -459,7 +465,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory.tagtype` with
     the appropriate numerical value from
     ``TiffTags.TYPES``.
- 
+
     .. versionadded:: 2.3.0
 
 **compression**
@@ -471,7 +477,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 These arguments to set the tiff header fields are an alternative to using the general tags available through tiffinfo.
 
-**description** 
+**description**
 
 **software**
 
@@ -483,7 +489,7 @@ These arguments to set the tiff header fields are an alternative to using the ge
     Strings
 
 **resolution_unit**
-    A string of "inch", "centimeter" or "cm" 
+    A string of "inch", "centimeter" or "cm"
 
 **resolution**
 
