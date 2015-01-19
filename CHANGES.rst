@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Adjust buffer size when quality=keep, fixes #148 (again)
+  [wiredfool]
+
 - Fix for corrupted bitmaps embedded in truetype fonts. #1072 
   [jackyyf, wiredfool]
 
