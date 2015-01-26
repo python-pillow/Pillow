@@ -19,7 +19,7 @@ Changelog (Pillow)
 - Look for OSX and Linux fonts in common places. #1054
   [charleslaw]
 
-- Fix potential PNG decompression DOS #1060
+- Fix CVE-2014-9601, potential PNG decompression DOS #1060
   [wiredfool]
 
 - Use underscores, not spaces, in TIFF tag kwargs. #1044, #1058
@@ -94,7 +94,7 @@ Changelog (Pillow)
 2.6.2 (2015-01-01)
 ------------------
 
-- Fix potential PNG decompression DOS #1060 
+- Fix CVE-2014-9601, potential PNG decompression DOS #1060 
   [wiredfool]
 
 - Fix Regression in PyPy 2.4 in streamio  #958
