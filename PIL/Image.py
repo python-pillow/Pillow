@@ -598,7 +598,7 @@ class Image:
             id(self)
             )
 
-    def _repr_png(self):
+    def _repr_png_(self):
         """ iPython display hook support
         
         :returns: png version of the image as bytes

@@ -377,7 +377,7 @@ class TestFilePng(PillowTestCase):
     def test_repr_png(self):
         im = hopper()
 
-        repr_png = Image.open(BytesIO(im._repr_png()))
+        repr_png = Image.open(BytesIO(im._repr_png_()))
         self.assertEqual(repr_png.format, 'PNG')
         self.assert_image_equal(im, repr_png)
         
