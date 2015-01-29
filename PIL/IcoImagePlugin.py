@@ -273,7 +273,7 @@ class IcoImageFile(ImageFile.ImageFile):
         self.size = im.size
 
     def load_seek(self):
-        # Flage the ImageFile.Parser so that it
+        # Flag the ImageFile.Parser so that it
         # just does all the decode at the end.
         pass
 #
