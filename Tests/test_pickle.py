@@ -5,10 +5,12 @@ from PIL import Image
 
 class TestPickle(PillowTestCase):
 
-    def helper_pickle_file(self, pickle, protocol=0):
+    def helper_pickle_file(self, pickle, protocol=0, mode=None):
         # Arrange
         im = Image.open('Tests/images/hopper.jpg')
         filename = self.tempfile('temp.pkl')
+        if mode:
+            im = im.convert(mode)
 
         # Act
         with open(filename, 'wb') as f:
@@ -19,9 +21,11 @@ class TestPickle(PillowTestCase):
         # Assert
         self.assertEqual(im, loaded_im)
 
-    def helper_pickle_string(
-            self, pickle, protocol=0, file='Tests/images/hopper.jpg'):
+    def helper_pickle_string(self, pickle, protocol=0,
+                             file='Tests/images/hopper.jpg', mode=None):
         im = Image.open(file)
+        if mode:
+            im = im.convert(mode)
 
         # Act
         dumped_string = pickle.dumps(im, protocol)
@@ -67,6 +71,26 @@ class TestPickle(PillowTestCase):
         ]:
             self.helper_pickle_string(pickle, file=file)
 
+    def test_pickle_l_mode(self):
+        # Arrange
+        import pickle
+
+        # Act / Assert
+        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
+            self.helper_pickle_string(pickle, protocol, mode="L")
+            self.helper_pickle_file(pickle, protocol, mode="L")
+
+    def test_cpickle_l_mode(self):
+        # Arrange
+        try:
+            import cPickle
+        except ImportError:
+            return
+
+        # Act / Assert
+        for protocol in range(0, cPickle.HIGHEST_PROTOCOL + 1):
+            self.helper_pickle_string(cPickle, protocol, mode="L")
+            self.helper_pickle_file(cPickle, protocol, mode="L")
 
 if __name__ == '__main__':
     unittest.main()

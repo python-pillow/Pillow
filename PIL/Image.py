@@ -635,7 +635,7 @@ class Image:
         self.mode = mode
         self.size = size
         self.im = core.new(mode, size)
-        if mode in ("L", "P"):
+        if mode in ("L", "P") and palette:
             self.putpalette(palette)
         self.frombytes(data)
 
