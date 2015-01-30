@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Fix pickling L mode images with no palette, #1095
+  [hugovk]
+  
 - iPython display hook #1091
   [wiredfool]
 
