@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- iPython display hook #1091
+  [wiredfool]
+
 - Adjust buffer size when quality=keep, fixes #148 (again)
   [wiredfool]
 
