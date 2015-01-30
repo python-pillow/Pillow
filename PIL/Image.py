@@ -598,6 +598,16 @@ class Image:
             id(self)
             )
 
+    def _repr_png_(self):
+        """ iPython display hook support
+        
+        :returns: png version of the image as bytes
+        """
+        from io import BytesIO
+        b = BytesIO()
+        self.save(b, 'PNG')
+        return b.getvalue()
+
     def __getattr__(self, name):
         if name == "__array_interface__":
             # numpy array interface support

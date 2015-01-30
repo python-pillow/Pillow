@@ -374,6 +374,14 @@ class TestFilePng(PillowTestCase):
         im = roundtrip(im)
         self.assertEqual(im.info['icc_profile'], expected_icc)
 
+    def test_repr_png(self):
+        im = hopper()
+
+        repr_png = Image.open(BytesIO(im._repr_png_()))
+        self.assertEqual(repr_png.format, 'PNG')
+        self.assert_image_equal(im, repr_png)
+        
+
 
 if __name__ == '__main__':
     unittest.main()
