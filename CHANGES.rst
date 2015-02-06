@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Enable basic support for 'RGBa' raw encoding/decoding
+  [immerrr]
+
 - Fix pickling L mode images with no palette, #1095
   [hugovk]
   
