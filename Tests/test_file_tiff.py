@@ -1,9 +1,12 @@
 from __future__ import print_function
+import logging
+import struct
+
 from helper import unittest, PillowTestCase, hopper, py3
 
 from PIL import Image, TiffImagePlugin
 
-import struct
+logger = logging.getLogger(__name__)
 
 
 class TestFileTiff(PillowTestCase):
@@ -118,7 +121,6 @@ class TestFileTiff(PillowTestCase):
         """ Are we generating the same interpretation
         of the image as Imagemagick is? """
 
-        # Image.DEBUG = True
         im = Image.open('Tests/images/12bit.cropped.tif')
 
         # to make the target --
@@ -129,14 +131,8 @@ class TestFileTiff(PillowTestCase):
 
         im2 = Image.open('Tests/images/12in16bit.tif')
 
-        if Image.DEBUG:
-            print(im.getpixel((0, 0)))
-            print(im.getpixel((0, 1)))
-            print(im.getpixel((0, 2)))
-
-            print(im2.getpixel((0, 0)))
-            print(im2.getpixel((0, 1)))
-            print(im2.getpixel((0, 2)))
+        logger.debug("%s", [img.getpixel((0, idx))
+                            for img in [im, im2] for idx in range(3)])
 
         self.assert_image_equal(im, im2)
 
