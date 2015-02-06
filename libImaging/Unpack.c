@@ -1114,6 +1114,12 @@ static struct {
     {"RGBA",    "B",            8,      band2},
     {"RGBA",    "A",            8,      band3},
 
+    /* true colour w. alpha premultiplied */
+    {"RGBa",    "RGBa",         32,     copy4},
+    {"RGBa",    "BGRa",         32,     unpackBGRA},
+    {"RGBa",    "aRGB",         32,     unpackARGB},
+    {"RGBa",    "aBGR",         32,     unpackABGR},
+
     /* true colour w. padding */
     {"RGBX",    "RGB",          24,     ImagingUnpackRGB},
     {"RGBX",    "RGB;L",        24,     unpackRGBL},
