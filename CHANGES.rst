@@ -4,7 +4,10 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
-- Enable basic support for 'RGBa' raw encoding/decoding
+- Fast path for opaque pixels in RGBa unpacker #1088
+  [bgilbert]
+  
+- Enable basic support for 'RGBa' raw encoding/decoding #1096
   [immerrr]
 
 - Fix pickling L mode images with no palette, #1095
