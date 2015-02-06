@@ -19,8 +19,11 @@
 
 from __future__ import print_function
 
+import getopt
+import glob
+import logging
 import site
-import getopt, glob, sys
+import sys
 
 from PIL import Image
 
@@ -41,6 +44,7 @@ except getopt.error as v:
     sys.exit(1)
 
 verbose = quiet = verify = 0
+logging_level = "WARNING"
 
 for o, a in opt:
     if o == "-f":
@@ -57,7 +61,9 @@ for o, a in opt:
     elif o == "-v":
         verify = 1
     elif o == "-D":
-        Image.DEBUG += 1
+        logging_level = "DEBUG"
+
+logging.basicConfig(level=logging_level)
 
 def globfix(files):
     # expand wildcards where necessary
