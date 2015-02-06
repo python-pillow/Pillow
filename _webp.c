@@ -228,14 +228,10 @@ PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
 
 /*
  * The version of webp that ships with (0.1.3) Ubuntu 12.04 doesn't handle alpha well.
- * Files that are valid with 0.3 are reported as being invalid. 
- * 0.2.1, that ships with openSUSE 12.3 fails consistently with:
- *        AssertionError:  average pixel value difference 3.0000 > epsilon 1.0000
- * therefor, we're suppressing alpha channel tests for webp <= 0.2.1, and users of this
- * part of the lib are being warned
+ * Files that are valid with 0.3 are reported as being invalid.
  */
 PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
-    return Py_BuildValue("i", WebPGetDecoderVersion()<=0x0201);
+    return Py_BuildValue("i", WebPGetDecoderVersion()==0x0103);
 }
 
 static PyMethodDef webpMethods[] =
