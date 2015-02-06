@@ -638,7 +638,12 @@ unpackRGBa(UINT8* out, const UINT8* in, int pixels)
         int a = in[3];
         if (!a)
             out[R] = out[G] = out[B] = out[A] = 0;
-        else {
+        else if (a == 255) {
+            out[R] = in[0];
+            out[G] = in[1];
+            out[B] = in[2];
+            out[A] = a;
+        } else {
             out[R] = CLIP(in[0] * 255 / a);
             out[G] = CLIP(in[1] * 255 / a);
             out[B] = CLIP(in[2] * 255 / a);
