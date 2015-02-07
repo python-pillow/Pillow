@@ -106,6 +106,8 @@ after_script:
 
 matrix:
   fast_finish: true
+  allow_failures:
+    - python: pypy
 
 env:
   global:
