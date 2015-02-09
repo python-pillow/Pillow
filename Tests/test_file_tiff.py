@@ -176,12 +176,23 @@ class TestFileTiff(PillowTestCase):
 
         # Assert
         self.assertIsInstance(ret, str)
+
+    def test_as_dict(self):
+        # Arrange
+        filename = "Tests/images/pil136.tiff"
+        im = Image.open(filename)
+
+        # Act
+        ret = im.ifd.as_dict()
+
+        # Assert
+        self.assertIsInstance(ret, dict)
+
         self.assertEqual(
-            ret,
-            '{256: (55,), 257: (43,), 258: (8, 8, 8, 8), 259: (1,), '
-            '262: (2,), 296: (2,), 273: (8,), 338: (1,), 277: (4,), '
-            '279: (9460,), 282: ((720000, 10000),), '
-            '283: ((720000, 10000),), 284: (1,)}')
+            ret, {256: (55,), 257: (43,), 258: (8, 8, 8, 8), 259: (1,),
+                  262: (2,), 296: (2,), 273: (8,), 338: (1,), 277: (4,),
+                  279: (9460,), 282: ((720000, 10000),),
+                  283: ((720000, 10000),), 284: (1,)})
 
     def test__delitem__(self):
         # Arrange
