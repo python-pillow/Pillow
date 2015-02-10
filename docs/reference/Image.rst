@@ -49,7 +49,14 @@ Functions
 
 .. autofunction:: open
 
-    .. warning:: To protect against potential DOS attacks caused by "`decompression bombs`_" (i.e. malicious files which decompress into a huge amount of data and are designed to crash or cause disruption by using up a lot of memory), Pillow will issue a `DecompressionBombWarning` if the image is over a certain limit. If desired, the warning can be turned into an error with `warnings.simplefilter('error', Image.DecompressionBombWarning)` or suppressed entirely with `warnings.simplefilter('ignore', Image.DecompressionBombWarning)`. See also `the logging documentation`_ to have warnings output to the logging facility instead of stderr.
+    .. warning::
+        To protect against potential DOS attacks caused by "`decompression bombs`_" (i.e. malicious files
+        which decompress into a huge amount of data and are designed to crash or cause disruption by using up
+        a lot of memory), Pillow will issue a `DecompressionBombWarning` if the image is over a certain
+        limit. If desired, the warning can be turned into an error with
+        ``warnings.simplefilter('error', Image.DecompressionBombWarning)`` or suppressed entirely with
+        ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See also `the logging
+        documentation`_ to have warnings output to the logging facility instead of stderr.
 
 	.. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
 	.. _the logging documentation: https://docs.python.org/2/library/logging.html?highlight=logging#integration-with-the-warnings-module
@@ -193,6 +200,6 @@ Instances of the :py:class:`Image` class have the following attributes:
     operation affects the dictionary. If you need the information later on,
     keep a reference to the info dictionary returned from the open method.
 
-    Unless noted elsewhere, this dictionary does not affect saving files. 
+    Unless noted elsewhere, this dictionary does not affect saving files.
 
     :type: :py:class:`dict`
