@@ -136,7 +136,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 {
     PyBytesObject *webp_string;
-    uint8_t *webp;
+    const uint8_t *webp;
     Py_ssize_t size;
     PyObject *ret, *bytes, *pymode, *icc_profile = Py_None, *exif = Py_None;
     WebPDecoderConfig config;
@@ -174,7 +174,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 
         WebPMux* mux = WebPMuxCreate(&data, copy_data);
         WebPMuxGetFrame(mux, 1, &image);
-        webp = (uint8_t*)image.bitstream.bytes;
+        webp = image.bitstream.bytes;
         size = image.bitstream.size;
 
         vp8_status_code = WebPDecode(webp, size, &config);
