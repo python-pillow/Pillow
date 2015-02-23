@@ -224,6 +224,7 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                      Symbol), "ADOB" (Adobe Standard), "ADBE" (Adobe Expert),
                      and "armn" (Apple Roman). See the FreeType documentation
                      for more information.
+    :param filename: Deprecated. Please use font instead.
     :return: A font object.
     :exception IOError: If the file could not be read.
     """
