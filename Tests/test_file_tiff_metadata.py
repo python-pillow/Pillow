@@ -26,7 +26,7 @@ class TestFileTiffMetadata(PillowTestCase):
         info[tag_ids['RollAngle']] = floatdata
         info.tagtype[tag_ids['RollAngle']] = 11
 
-        info[tag_ids['YawAngle'] = doubledata
+        info[tag_ids['YawAngle']] = doubledata
         info.tagtype[tag_ids['YawAngle']] = 12
 
         f = self.tempfile("temp.tif")
