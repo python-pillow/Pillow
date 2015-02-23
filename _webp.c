@@ -189,6 +189,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
             exif = PyBytes_FromStringAndSize((const char*)exif_data.bytes, exif_data.size);
         }
 
+        WebPDataClear(&image.bitstream);
         WebPMuxDelete(mux);
         }
 #endif
