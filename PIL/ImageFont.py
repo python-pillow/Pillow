@@ -214,7 +214,7 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
 
     This function requires the _imagingft service.
 
-    :param filename: A truetype font file. Under Windows, if the file
+    :param font: A truetype font file. Under Windows, if the file
                      is not found in this filename, the loader also looks in
                      Windows :file:`fonts/` directory.
     :param size: The requested size, in points.
