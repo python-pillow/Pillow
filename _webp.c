@@ -173,21 +173,25 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
         WebPData exif_data = {0};
 
         WebPMux* mux = WebPMuxCreate(&data, copy_data);
-        WebPMuxGetFrame(mux, 1, &image);
+        if (NULL == mux)
+            goto end;
+
+        if (WEBP_MUX_OK != WebPMuxGetFrame(mux, 1, &image))
+        {
+            WebPMuxDelete(mux);
+            goto end;
+        }
+
         webp = image.bitstream.bytes;
         size = image.bitstream.size;
 
         vp8_status_code = WebPDecode(webp, size, &config);
 
-        WebPMuxGetChunk(mux, "ICCP", &icc_profile_data);
-        if (icc_profile_data.size > 0) {
+        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "ICCP", &icc_profile_data))
             icc_profile = PyBytes_FromStringAndSize((const char*)icc_profile_data.bytes, icc_profile_data.size);
-        }
 
-        WebPMuxGetChunk(mux, "EXIF", &exif_data);
-        if (exif_data.size > 0) {
+        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "EXIF", &exif_data))
             exif = PyBytes_FromStringAndSize((const char*)exif_data.bytes, exif_data.size);
-        }
 
         WebPDataClear(&image.bitstream);
         WebPMuxDelete(mux);
