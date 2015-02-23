@@ -517,6 +517,15 @@ class ImageFileDirectory(collections.MutableMapping):
             elif typ == 7:
                 # untyped data
                 data = value = b"".join(value)
+            elif typ in (11, 12):
+                # float value
+                tmap = {11: 'f', 12: 'd'}
+                if not isinstance(value, tuple):
+                    value = (value,)
+                a = array.array(tmap[typ], value)
+                if self.prefix != native_prefix:
+                    a.byteswap()
+                data = a.tostring()
             elif isStringType(value[0]):
                 # string data
                 if isinstance(value, tuple):
