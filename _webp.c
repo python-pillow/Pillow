@@ -138,7 +138,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
     PyBytesObject *webp_string;
     const uint8_t *webp;
     Py_ssize_t size;
-    PyObject *ret, *bytes, *pymode, *icc_profile = Py_None, *exif = Py_None;
+    PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL, *icc_profile = NULL, *exif = NULL;
     WebPDecoderConfig config;
     VP8StatusCode vp8_status_code = VP8_STATUS_OK;
     char* mode = "RGB";
@@ -194,10 +194,8 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 #endif
     }
 
-    if (vp8_status_code != VP8_STATUS_OK) {
-        WebPFreeDecBuffer(&config.output);
-        Py_RETURN_NONE;
-    }
+    if (vp8_status_code != VP8_STATUS_OK)
+        goto end;
 
     if (config.output.colorspace < MODE_YUV) {
         bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba,
@@ -215,8 +213,21 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
     pymode = PyString_FromString(mode);
 #endif
     ret = Py_BuildValue("SiiSSS", bytes, config.output.width,
-                        config.output.height, pymode, icc_profile, exif);
+                        config.output.height, pymode,
+                        NULL == icc_profile ? Py_None : icc_profile,
+                        NULL == exif ? Py_None : exif);
+
+end:
     WebPFreeDecBuffer(&config.output);
+
+    Py_XDECREF(bytes);
+    Py_XDECREF(pymode);
+    Py_XDECREF(icc_profile);
+    Py_XDECREF(exif);
+
+    if (Py_None == ret)
+        Py_RETURN_NONE;
+
     return ret;
 }
 
