@@ -9,7 +9,7 @@
 #include <webp/mux.h>
 #endif
 
-PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
+static PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 {
     int width;
     int height;
@@ -132,113 +132,9 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
-
-PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
-{
-    PyBytesObject *webp_string;
-    const uint8_t *webp;
-    Py_ssize_t size;
-    PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL, *icc_profile = NULL, *exif = NULL;
-    WebPDecoderConfig config;
-    VP8StatusCode vp8_status_code = VP8_STATUS_OK;
-    char* mode = "RGB";
-
-    if (!PyArg_ParseTuple(args, "S", &webp_string)) {
-        Py_RETURN_NONE;
-    }
-
-    if (!WebPInitDecoderConfig(&config)) {
-        Py_RETURN_NONE;
-    }
-
-    PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
-
-    vp8_status_code = WebPGetFeatures(webp, size, &config.input);
-    if (vp8_status_code == VP8_STATUS_OK) {
-        // If we don't set it, we don't get alpha.
-        // Initialized to MODE_RGB
-        if (config.input.has_alpha) {
-            config.output.colorspace = MODE_RGBA;
-            mode = "RGBA";
-        }
-
-#ifndef HAVE_WEBPMUX
-        vp8_status_code = WebPDecode(webp, size, &config);
-#else
-       {
-        int copy_data = 0;
-        WebPData data = { webp, size };
-        WebPMuxFrameInfo image;
-        WebPData icc_profile_data = {0};
-        WebPData exif_data = {0};
-
-        WebPMux* mux = WebPMuxCreate(&data, copy_data);
-        if (NULL == mux)
-            goto end;
-
-        if (WEBP_MUX_OK != WebPMuxGetFrame(mux, 1, &image))
-        {
-            WebPMuxDelete(mux);
-            goto end;
-        }
-
-        webp = image.bitstream.bytes;
-        size = image.bitstream.size;
-
-        vp8_status_code = WebPDecode(webp, size, &config);
-
-        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "ICCP", &icc_profile_data))
-            icc_profile = PyBytes_FromStringAndSize((const char*)icc_profile_data.bytes, icc_profile_data.size);
-
-        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "EXIF", &exif_data))
-            exif = PyBytes_FromStringAndSize((const char*)exif_data.bytes, exif_data.size);
-
-        WebPDataClear(&image.bitstream);
-        WebPMuxDelete(mux);
-        }
-#endif
-    }
-
-    if (vp8_status_code != VP8_STATUS_OK)
-        goto end;
-
-    if (config.output.colorspace < MODE_YUV) {
-        bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba,
-                                          config.output.u.RGBA.size);
-    } else {
-        // Skipping YUV for now. Need Test Images.
-        // UNDONE -- unclear if we'll ever get here if we set mode_rgb*
-        bytes = PyBytes_FromStringAndSize((char *)config.output.u.YUVA.y,
-                                          config.output.u.YUVA.y_size);
-    }
-
-#if PY_VERSION_HEX >= 0x03000000
-    pymode = PyUnicode_FromString(mode);
-#else
-    pymode = PyString_FromString(mode);
-#endif
-    ret = Py_BuildValue("SiiSSS", bytes, config.output.width,
-                        config.output.height, pymode,
-                        NULL == icc_profile ? Py_None : icc_profile,
-                        NULL == exif ? Py_None : exif);
-
-end:
-    WebPFreeDecBuffer(&config.output);
-
-    Py_XDECREF(bytes);
-    Py_XDECREF(pymode);
-    Py_XDECREF(icc_profile);
-    Py_XDECREF(exif);
-
-    if (Py_None == ret)
-        Py_RETURN_NONE;
-
-    return ret;
-}
-
 // Return the decoder's version number, packed in hexadecimal using 8bits for
 // each of major/minor/revision. E.g: v2.5.7 is 0x020507.
-PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
+static PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
     return Py_BuildValue("i", WebPGetDecoderVersion());
 }
 
@@ -246,20 +142,19 @@ PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
  * The version of webp that ships with (0.1.3) Ubuntu 12.04 doesn't handle alpha well.
  * Files that are valid with 0.3 are reported as being invalid.
  */
-PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
+static PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
     return Py_BuildValue("i", WebPGetDecoderVersion()==0x0103);
 }
 
 static PyMethodDef webpMethods[] =
 {
     {"WebPEncode", WebPEncode_wrapper, METH_VARARGS, "WebPEncode"},
-    {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
     {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_VARARGS, "WebPVersion"},
     {"WebPDecoderBuggyAlpha", WebPDecoderBuggyAlpha_wrapper, METH_VARARGS, "WebPDecoderBuggyAlpha"},
     {NULL, NULL}
 };
 
-void addMuxFlagToModule(PyObject* m) {
+static void addMuxFlagToModule(PyObject* m) {
 #ifdef HAVE_WEBPMUX
     PyModule_AddObject(m, "HAVE_WEBPMUX", Py_True);
 #else

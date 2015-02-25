@@ -37,7 +37,7 @@ _LIB_IMAGING = (
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
     "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
     "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Incremental",
-    "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur")
+    "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur", "WebPDecode")
 
 
 def _add_directory(path, dir, where=None):
@@ -535,6 +535,14 @@ class pil_build_ext(build_ext):
             libs.extend(["kernel32", "user32", "gdi32"])
         if struct.unpack("h", "\0\1".encode('ascii'))[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
+        if os.path.isfile("_webp.c") and feature.webp:
+            webp_defs = [("HAVE_LIBWEBP", None)]
+            webp_libs = [feature.webp]
+            if feature.webpmux:
+                webp_defs.append(("HAVE_WEBPMUX", None))
+                webp_libs.append(feature.webpmux)
+            libs.extend(webp_libs)
+            defs.extend(webp_defs)
 
         exts = [(Extension(
             "PIL._imaging", files, libraries=libs, define_macros=defs))]
@@ -564,16 +572,8 @@ class pil_build_ext(build_ext):
                 libraries=["lcms2"] + extra))
 
         if os.path.isfile("_webp.c") and feature.webp:
-            libs = [feature.webp]
-            defs = []
-
-            if feature.webpmux:
-                defs.append(("HAVE_WEBPMUX", None))
-                libs.append(feature.webpmux)
-                libs.append(feature.webpmux.replace('pmux','pdemux'))
-
             exts.append(Extension(
-                "PIL._webp", ["_webp.c"], libraries=libs, define_macros=defs))
+                "PIL._webp", ["_webp.c"], libraries=webp_libs, define_macros=webp_defs))
 
         if sys.platform == "darwin":
             # locate Tcl/Tk frameworks

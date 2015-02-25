@@ -723,6 +723,54 @@ PyImaging_ZipDecoderNew(PyObject* self, PyObject* args)
 
 
 /* -------------------------------------------------------------------- */
+/* WebP                                                                 */
+/* -------------------------------------------------------------------- */
+
+#ifdef HAVE_LIBWEBP
+
+#include "WebP.h"
+
+PyObject*
+PyImaging_WebPDecoderNew(PyObject* self, PyObject* args)
+{
+    ImagingDecoderObject* decoder;
+    WEBPSTATE* context;
+
+    char* mode;
+    char* rawmode; /* what we wan't from the decoder */
+    int has_alpha;
+    int width, height;
+
+    if (!PyArg_ParseTuple(args, "ssiii",
+                          &mode, &rawmode,
+                          &has_alpha, &width, &height))
+        return NULL;
+
+    decoder = PyImaging_DecoderNew(sizeof(WEBPSTATE));
+    if (decoder == NULL)
+        return NULL;
+
+    if (get_unpacker(decoder, mode, rawmode) < 0)
+        return NULL;
+
+    decoder->decode = ImagingWebPDecode;
+    decoder->cleanup = ImagingWebPDecodeCleanup;
+
+    context = (WEBPSTATE*)decoder->state.context;
+
+    strncpy(context->rawmode, rawmode, IMAGING_MODE_LENGTH - 1);
+    context->rawmode[IMAGING_MODE_LENGTH - 1] = '\0';
+    context->has_alpha = has_alpha;
+    context->width = width;
+    context->height = height;
+    context->decoder = NULL;
+
+    return (PyObject*) decoder;
+}
+
+#endif
+
+/* -------------------------------------------------------------------- */
 /* JPEG                                                                 */
 /* -------------------------------------------------------------------- */
 

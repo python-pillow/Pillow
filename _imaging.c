@@ -3343,6 +3343,7 @@ extern PyObject* PyImaging_BitDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_FliDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_GifDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_HexDecoderNew(PyObject* self, PyObject* args);
+extern PyObject* PyImaging_WebPDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_JpegDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_TiffLzwDecoderNew(PyObject* self, PyObject* args);
@@ -3411,6 +3412,9 @@ static PyMethodDef functions[] = {
     {"gif_encoder", (PyCFunction)PyImaging_GifEncoderNew, 1},
     {"hex_decoder", (PyCFunction)PyImaging_HexDecoderNew, 1},
     {"hex_encoder", (PyCFunction)PyImaging_EpsEncoderNew, 1}, /* EPS=HEX! */
+#ifdef HAVE_LIBWEBP
+    {"webp_decoder", (PyCFunction)PyImaging_WebPDecoderNew, 1},
+#endif
 #ifdef HAVE_LIBJPEG
     {"jpeg_decoder", (PyCFunction)PyImaging_JpegDecoderNew, 1},
     {"jpeg_encoder", (PyCFunction)PyImaging_JpegEncoderNew, 1},
