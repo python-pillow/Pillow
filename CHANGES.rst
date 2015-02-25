@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Fix webp decode memory leak #1114
+  [benoit-pierre]
+
 - Fast path for opaque pixels in RGBa unpacker #1088
   [bgilbert]
   
