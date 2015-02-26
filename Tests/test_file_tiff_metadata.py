@@ -26,7 +26,6 @@ class TestFileTiffMetadata(PillowTestCase):
         info[tag_ids['ImageJMetaData']] = textdata
         info[tag_ids['RollAngle']] = floatdata
         info.tagtype[tag_ids['RollAngle']] = 11
-
         info[tag_ids['YawAngle']] = doubledata
         info.tagtype[tag_ids['YawAngle']] = 12
 
@@ -38,9 +37,9 @@ class TestFileTiffMetadata(PillowTestCase):
 
         self.assertEqual(loaded.tag[50838], len(textdata))
         self.assertEqual(loaded.tag[50839], textdata)
-        self.assertAlmostEqual(loaded.tag[tag_ids['RollAngle']][0], floatdata,
+        self.assertAlmostEqual(loaded.tag[tag_ids['RollAngle']], floatdata,
                                places=5)
-        self.assertAlmostEqual(loaded.tag[tag_ids['YawAngle']][0], doubledata)
+        self.assertAlmostEqual(loaded.tag[tag_ids['YawAngle']], doubledata)
 
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')

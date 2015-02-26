@@ -131,11 +131,26 @@ TAGS = {
     # FIXME add more tags here
     34665: ("ExifIFD", 3, 1),
 
+    # MPInfo
     45056: ("MPFVersion", 7, 1),
     45057: ("NumberOfImages", 4, 1),
     45058: ("MPEntry", 7, 1),
     45059: ("ImageUIDList", 7, 0),
     45060: ("TotalFrames", 4, 1),
+    45313: ("MPIndividualNum", 4, 1),
+    45569: ("PanOrientation", 4, 1),
+    45570: ("PanOverlap_H", 5, 1),
+    45571: ("PanOverlap_V", 5, 1),
+    45572: ("BaseViewpointNum", 4, 1),
+    45573: ("ConvergenceAngle", 10, 1),
+    45574: ("BaselineLength", 5, 1),
+    45575: ("VerticalDivergence", 10, 1),
+    45576: ("AxisDistance_X", 10, 1),
+    45577: ("AxisDistance_Y", 10, 1),
+    45578: ("AxisDistance_Z", 10, 1),
+    45579: ("YawAngle", 10, 1),
+    45580: ("PitchAngle", 10, 1),
+    45581: ("RollAngle", 10, 1),
 
     50741: ("MakerNoteSafety", 3, 1, {0: "Unsafe", 1: "Safe"}),
     50780: ("BestQualityScale", 5, 1),
