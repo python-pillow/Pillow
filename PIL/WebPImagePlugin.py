@@ -162,6 +162,13 @@ class WebPImageFile(ImageFile.ImageFile):
             self.decodermaxblock = 12 + i32le(header[4:8])
             self.decoderconfig = (1,)
 
+    def load_prepare(self):
+        if not self.im:
+            # Hackety hack hack hack...
+            im = Image.core.new(self.mode, (0,0))
+            self.im = im.new_block(self.mode, self.size)
+        ImageFile.ImageFile.load_prepare(self)
+
     def draft(self, mode, size):
 
         if 1 != len(self.tile):
