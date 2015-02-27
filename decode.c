@@ -740,10 +740,12 @@ PyImaging_WebPDecoderNew(PyObject* self, PyObject* args)
     char* rawmode; /* what we wan't from the decoder */
     int has_alpha;
     int width, height;
+    int onepass = 0;
 
-    if (!PyArg_ParseTuple(args, "ssiii",
+    if (!PyArg_ParseTuple(args, "ssiii|i",
                           &mode, &rawmode,
-                          &has_alpha, &width, &height))
+                          &has_alpha, &width, &height,
+                          &onepass))
         return NULL;
 
     decoder = PyImaging_DecoderNew(sizeof(WEBPSTATE));
@@ -763,6 +765,7 @@ PyImaging_WebPDecoderNew(PyObject* self, PyObject* args)
     context->has_alpha = has_alpha;
     context->width = width;
     context->height = height;
+    context->onepass = onepass;
     context->output = NULL;
     context->decoder = NULL;
 

@@ -22,6 +22,9 @@ typedef struct {
     int has_alpha;
     int width, height;
 
+    /* Decoder will receive and decode the data in one pass. */
+    int onepass;
+
     /* PRIVATE CONTEXT (set by decoder) */
 
     WebPDecoderConfig  config;

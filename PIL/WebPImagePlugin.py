@@ -157,6 +157,11 @@ class WebPImageFile(ImageFile.ImageFile):
                       # Decoder params: rawmode, has_alpha, width, height.
                       (mode, 1 if 'RGBA' == mode else 0, size[0], size[1]))]
 
+        if not lossy:
+            # Incremental decoding on lossless is *really* slow, disable it.
+            self.decodermaxblock = 12 + i32le(header[4:8])
+            self.decoderconfig = (1,)
+
     def draft(self, mode, size):
 
         if 1 != len(self.tile):

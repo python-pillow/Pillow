@@ -81,24 +81,39 @@ int ImagingWebPDecode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes
             config->options.use_scaling = 1;
         }
 
-        context->decoder = WebPIDecode(NULL, 0, config);
-        if (NULL == context->decoder)
+        if (!context->onepass)
         {
-            state->errcode = _vp8_status_to_codec_status(vp8_status_code);
-            return -1;
+            context->decoder = WebPIDecode(NULL, 0, config);
+            if (NULL == context->decoder)
+            {
+                state->errcode = _vp8_status_to_codec_status(vp8_status_code);
+                return -1;
+            }
         }
 
         state->state = 1;
     }
 
-    /* Consume the buffer, decoding as much as possible. */
-    vp8_status_code = WebPIAppend(context->decoder, buf, bytes);
-    if (VP8_STATUS_NOT_ENOUGH_DATA != vp8_status_code &&
-        VP8_STATUS_SUSPENDED != vp8_status_code &&
-        VP8_STATUS_OK != vp8_status_code)
+    if (context->onepass)
     {
-        state->errcode = _vp8_status_to_codec_status(vp8_status_code);
-        return -1;
+        vp8_status_code = WebPDecode(buf, bytes, config);
+        if (VP8_STATUS_OK != vp8_status_code)
+        {
+            state->errcode = _vp8_status_to_codec_status(vp8_status_code);
+            return -1;
+        }
+    }
+    else
+    {
+        /* Consume the buffer, decoding as much as possible. */
+        vp8_status_code = WebPIAppend(context->decoder, buf, bytes);
+        if (VP8_STATUS_NOT_ENOUGH_DATA != vp8_status_code &&
+            VP8_STATUS_SUSPENDED != vp8_status_code &&
+            VP8_STATUS_OK != vp8_status_code)
+        {
+            state->errcode = _vp8_status_to_codec_status(vp8_status_code);
+            return -1;
+        }
     }
 
     if (VP8_STATUS_NOT_ENOUGH_DATA != vp8_status_code)
@@ -111,7 +126,19 @@ int ImagingWebPDecode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes
         int            height;
         int            stride;
 
-        rgba = WebPIDecGetRGB(context->decoder, &last_y, &width, &height, &stride);
+        if (context->onepass)
+        {
+            rgba = config->output.u.RGBA.rgba;
+            last_y = state->ysize;
+            width = state->xsize;
+            height = state->ysize;
+            stride = config->output.u.RGBA.stride;
+        }
+        else
+        {
+            rgba = WebPIDecGetRGB(context->decoder, &last_y, &width, &height, &stride);
+        }
+
         if (NULL != rgba)
         {
             assert(width == state->xsize);
