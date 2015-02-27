@@ -269,7 +269,11 @@ try:
             #correctness.
             with SimplePatcher(sys, 'platform', 'darwin'):
                 fake_font_path = '/System/Library/Fonts/Arial.ttf'
-                with SimplePatcher(os.path, 'exists', lambda x: x == fake_font_path):
+                def fake_walker(path):
+                    if path == '/System/Library/Fonts/':
+                        return [(path, [], ['Arial.ttf'], )]
+                    return [(path, [], ['some_random_font.ttf'], )]
+                with SimplePatcher(os, 'walk', fake_walker):
                     self._test_fake_loading_font(fake_font_path)
 
 
