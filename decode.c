@@ -763,6 +763,7 @@ PyImaging_WebPDecoderNew(PyObject* self, PyObject* args)
     context->has_alpha = has_alpha;
     context->width = width;
     context->height = height;
+    context->output = NULL;
     context->decoder = NULL;
 
     return (PyObject*) decoder;

@@ -39,13 +39,12 @@ static int _vp8_status_to_codec_status(VP8StatusCode code)
 
 int ImagingWebPDecode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
 {
-    WEBPSTATE     *context = (WEBPSTATE *)state->context;
-    VP8StatusCode  vp8_status_code;
+    WEBPSTATE         *context = (WEBPSTATE *)state->context;
+    WebPDecoderConfig *config = &context->config;
+    VP8StatusCode      vp8_status_code;
 
     if (!state->state)
     {
-        WebPDecoderConfig *config = &context->config;
-
         if (!WebPInitDecoderConfig(config))
         {
             /* Mismatched version. */
@@ -57,6 +56,23 @@ int ImagingWebPDecode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes
             config->output.colorspace = MODE_RGBA;
         else
             config->output.colorspace = MODE_RGB;
+
+        /* If block storage is used, and we're not stripping alpha, then directly decode to it. */
+        if (NULL != im->block && (MODE_RGBA == config->output.colorspace || !context->has_alpha))
+        {
+            assert(4 == im->pixelsize);
+
+            /* Force RGBA so RGB is correctly unpacked. */
+            config->output.colorspace = MODE_RGBA;
+            config->output.is_external_memory = 1;
+            config->output.u.RGBA.stride = im->linesize;
+            config->output.u.RGBA.size = config->output.u.RGBA.stride * state->ysize;
+            config->output.u.RGBA.rgba = (uint8_t *)im->block + state->xoff * 4 + state->yoff * im->linesize;
+        }
+        else
+        {
+            context->output = &config->output;
+        }
 
         if (state->xsize != context->width || state->ysize != context->height)
         {
@@ -102,10 +118,14 @@ int ImagingWebPDecode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes
             assert(height == state->ysize);
             assert(last_y <= state->ysize);
 
-            for (; state->y < last_y; ++state->y)
+            if (config->output.is_external_memory)
+            {
+                state->y = last_y;
+            }
+            else for (; state->y < last_y; ++state->y)
             {
                 assert(state->y < state->ysize);
-                state->shuffle((UINT8*) im->image[state->y + state->yoff] +
+                state->shuffle((UINT8 *)im->image[state->y + state->yoff] +
                                state->xoff * im->pixelsize,
                                rgba + state->y * stride, state->xsize);
             }
@@ -131,9 +151,14 @@ int ImagingWebPDecodeCleanup(ImagingCodecState state)
 {
     WEBPSTATE* context = (WEBPSTATE*) state->context;
 
+    if (NULL != context->output)
+    {
+        WebPFreeDecBuffer(context->output);
+        context->output = NULL;
+    }
+
     if (NULL != context->decoder)
     {
-        WebPFreeDecBuffer(&context->config.output);
         WebPIDelete(context->decoder);
         context->decoder = NULL;
     }

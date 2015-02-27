@@ -25,6 +25,9 @@ typedef struct {
     /* PRIVATE CONTEXT (set by decoder) */
 
     WebPDecoderConfig  config;
+    /* Non-NULL when a temporary output buffer is in use. */
+    WebPDecBuffer     *output;
+    /* Non-NULL when an incremental decoder is in use. */
     WebPIDecoder      *decoder;
 
 } WEBPSTATE;
