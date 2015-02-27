@@ -57,8 +57,8 @@ int ImagingWebPDecode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes
         else
             config->output.colorspace = MODE_RGB;
 
-        /* If block storage is used, and we're not stripping alpha, then directly decode to it. */
-        if (NULL != im->block && (MODE_RGBA == config->output.colorspace || !context->has_alpha))
+        /* If block storage is used, then directly decode to it. */
+        if (NULL != im->block)
         {
             assert(4 == im->pixelsize);
 
