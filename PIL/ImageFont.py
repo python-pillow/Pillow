@@ -283,12 +283,21 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                      os.path.expanduser('~/Library/Fonts/')]
         
         ext = os.path.splitext(ttf_filename)[1]
+        firstFontWithADifferentExtension = None
         for dir in dirs:
             for walkroot, walkdir, walkfilenames in os.walk(dir):
                 for walkfilename in walkfilenames:
-                    if (ext and walkfilename == ttf_filename) or (not ext and os.path.splitext(walkfilename)[0] == ttf_filename):
+                    if ext and walkfilename == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
                         return FreeTypeFont(fontpath, size, index, encoding)
+                    elif not ext and os.path.splitext(walkfilename)[0] == ttf_filename:
+                        fontpath = os.path.join(walkroot, walkfilename)
+                        if os.path.splitext(fontpath)[1] == '.ttf':
+                            return FreeTypeFont(fontpath, size, index, encoding)
+                        if not ext and firstFontWithADifferentExtension == None:
+                            firstFontWithADifferentExtension = fontpath
+        if firstFontWithADifferentExtension:
+            return FreeTypeFont(firstFontWithADifferentExtension, size, index, encoding)
         raise
 
 
