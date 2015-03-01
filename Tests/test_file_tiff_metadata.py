@@ -34,36 +34,64 @@ class TestFileTiffMetadata(PillowTestCase):
 
         img.save(f, tiffinfo=info)
 
-        loaded = Image.open(f)
+        for legacy_api in [False, True]:
+            loaded = Image.open(f)
+            loaded.tag.legacy_api = legacy_api
 
-        self.assertEqual(loaded.tag[50838], (len(basetextdata + " ?"),))
-        self.assertEqual(loaded.tag[50839], basetextdata + " ?")
-        self.assertAlmostEqual(loaded.tag[tag_ids['RollAngle']][0], floatdata,
-                               places=5)
-        self.assertAlmostEqual(loaded.tag[tag_ids['YawAngle']], doubledata)
+            self.assertEqual(loaded.tag[50838],
+                             (len(basetextdata + " ?"),) if legacy_api else len(basetextdata + " ?"))
+            self.assertEqual(loaded.tag[50839], basetextdata + " ?")
+            loaded_float = loaded.tag[tag_ids['RollAngle']]
+            if legacy_api:
+                loaded_float = loaded_float[0]
+            self.assertAlmostEqual(loaded_float, floatdata, places=5)
+            loaded_double = loaded.tag[tag_ids['YawAngle']]
+            if legacy_api:
+                loaded_double = loaded_double[0]
+            self.assertAlmostEqual(loaded_double, doubledata)
+
 
     def test_read_metadata(self):
-        img = Image.open('Tests/images/hopper_g4.tif')
+        for legacy_api in [False, True]:
+            img = Image.open('Tests/images/hopper_g4.tif')
+            img.tag.legacy_api = legacy_api
 
-        known = {'YResolution': 4294967295 / 113653537,
-                 'PlanarConfiguration': 1,
-                 'BitsPerSample': (1,),
-                 'ImageLength': 128,
-                 'Compression': 4,
-                 'FillOrder': 1,
-                 'RowsPerStrip': 128,
-                 'ResolutionUnit': 3,
-                 'PhotometricInterpretation': 0,
-                 'PageNumber': (0, 1),
-                 'XResolution': 4294967295 / 113653537,
-                 'ImageWidth': 128,
-                 'Orientation': 1,
-                 'StripByteCounts': (1968,),
-                 'SamplesPerPixel': 1,
-                 'StripOffsets': (8,)
-                 }
+            known = {'YResolution': ((4294967295, 113653537),),
+                     'PlanarConfiguration': (1,),
+                     'BitsPerSample': (1,),
+                     'ImageLength': (128,),
+                     'Compression': (4,),
+                     'FillOrder': (1,),
+                     'RowsPerStrip': (128,),
+                     'ResolutionUnit': (3,),
+                     'PhotometricInterpretation': (0,),
+                     'PageNumber': (0, 1),
+                     'XResolution': ((4294967295, 113653537),),
+                     'ImageWidth': (128,),
+                     'Orientation': (1,),
+                     'StripByteCounts': (1968,),
+                     'SamplesPerPixel': (1,),
+                     'StripOffsets': (8,)
+                    } if legacy_api else {
+                     'YResolution': 4294967295 / 113653537,
+                     'PlanarConfiguration': 1,
+                     'BitsPerSample': (1,),
+                     'ImageLength': 128,
+                     'Compression': 4,
+                     'FillOrder': 1,
+                     'RowsPerStrip': 128,
+                     'ResolutionUnit': 3,
+                     'PhotometricInterpretation': 0,
+                     'PageNumber': (0, 1),
+                     'XResolution': 4294967295 / 113653537,
+                     'ImageWidth': 128,
+                     'Orientation': 1,
+                     'StripByteCounts': (1968,),
+                     'SamplesPerPixel': 1,
+                     'StripOffsets': (8,)
+                    }
 
-        self.assertEqual(known, img.tag.named())
+            self.assertEqual(known, img.tag.named())
 
     def test_write_metadata(self):
         """ Test metadata writing through the python code """

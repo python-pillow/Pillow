@@ -73,12 +73,18 @@ class TestFileTiff(PillowTestCase):
     def test_xyres_tiff(self):
         from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         filename = "Tests/images/pil168.tif"
-        im = Image.open(filename)
-        # Try to read a file where X,Y_RESOLUTION are ints
-        im.tag[X_RESOLUTION] = (72,)
-        im.tag[Y_RESOLUTION] = (72,)
-        im._setup()
-        self.assertEqual(im.info['dpi'], (72., 72.))
+        for legacy_api in [False, True]:
+            im = Image.open(filename)
+            im.tag.legacy_api = legacy_api
+            if legacy_api:
+                assert isinstance(im.tag[X_RESOLUTION][0], tuple)
+                assert isinstance(im.tag[Y_RESOLUTION][0], tuple)
+            # Try to read a file where X,Y_RESOLUTION are ints
+            im.tag[X_RESOLUTION] = (72,)
+            im.tag[Y_RESOLUTION] = (72,)
+            im.tag.legacy_api = False # _setup assumes the new API.
+            im._setup()
+            self.assertEqual(im.info['dpi'], (72., 72.))
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -204,7 +210,6 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
 
     def test___str__(self):
-        # Arrange
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
 
@@ -217,127 +222,81 @@ class TestFileTiff(PillowTestCase):
     def test_as_dict(self):
         # Arrange
         filename = "Tests/images/pil136.tiff"
-        im = Image.open(filename)
-
-        # Act
-        ret = im.ifd.as_dict()
-
-        # Assert
-        self.assertIsInstance(ret, dict)
-
-        self.assertEqual(
-            ret, {256: 55, 257: 43, 258: (8, 8, 8, 8), 259: 1, 262: 2, 296: 2,
-                  273: (8,), 338: (1,), 277: 4, 279: (9460,),
-                  282: 72.0, 283: 72.0, 284: 1})
+        for legacy_api in [False, True]:
+            im = Image.open(filename)
+            im.tag.legacy_api = legacy_api
+            self.assertEqual(
+                im.tag.as_dict(),
+                {256: (55,), 257: (43,), 258: (8, 8, 8, 8), 259: (1,),
+                 262: (2,), 296: (2,), 273: (8,), 338: (1,), 277: (4,),
+                 279: (9460,), 282: ((720000, 10000),),
+                 283: ((720000, 10000),), 284: (1,)} if legacy_api else
+                {256: 55, 257: 43, 258: (8, 8, 8, 8), 259: 1,
+                 262: 2, 296: 2, 273: (8,), 338: (1,), 277: 4,
+                 279: (9460,), 282: 72.0, 283: 72.0, 284: 1})
 
     def test__delitem__(self):
-        # Arrange
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
         len_before = len(im.ifd.as_dict())
-
-        # Act
         del im.ifd[256]
-
-        # Assert
         len_after = len(im.ifd.as_dict())
         self.assertEqual(len_before, len_after + 1)
 
     def test_load_byte(self):
-        # Arrange
-        ifd = TiffImagePlugin.ImageFileDirectory()
-        data = b"abc"
-
-        # Act
-        ret = ifd.load_byte(data)
-
-        # Assert
-        self.assertEqual(ret, (97, 98, 99))
+        for legacy_api in [False, True]:
+            ifd = TiffImagePlugin.ImageFileDirectory()
+            ifd.legacy_api = legacy_api
+            data = b"abc"
+            ret = ifd.load_byte(data)
+            self.assertEqual(ret, b"abc" if legacy_api else (97, 98, 99))
 
     def test_load_string(self):
-        # Arrange
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abc\0"
-
-        # Act
         ret = ifd.load_string(data)
-
-        # Assert
         self.assertEqual(ret, "abc")
 
     def test_load_float(self):
-        # Arrange
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abcdabcd"
-
-        # Act
         ret = ifd.load_float(data)
-
-        # Assert
         self.assertEqual(ret, (1.6777999408082104e+22, 1.6777999408082104e+22))
 
     def test_load_double(self):
-        # Arrange
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abcdefghabcdefgh"
-
-        # Act
         ret = ifd.load_double(data)
-
-        # Assert
         self.assertEqual(ret, (8.540883223036124e+194, 8.540883223036124e+194))
 
     def test_seek(self):
-        # Arrange
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
-
-        # Act
         im.seek(-1)
-
-        # Assert
         self.assertEqual(im.tell(), 0)
 
     def test_seek_eof(self):
-        # Arrange
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
         self.assertEqual(im.tell(), 0)
-
-        # Act / Assert
         self.assertRaises(EOFError, lambda: im.seek(1))
 
     def test__limit_rational_int(self):
-        # Arrange
         from PIL.TiffImagePlugin import _limit_rational
         value = 34
-
-        # Act
         ret = _limit_rational(value, 65536)
-
-        # Assert
         self.assertEqual(ret, (34, 1))
 
     def test__limit_rational_float(self):
-        # Arrange
         from PIL.TiffImagePlugin import _limit_rational
         value = 22.3
-
-        # Act
         ret = _limit_rational(value, 65536)
-
-        # Assert
         self.assertEqual(ret, (223, 10))
 
     def test_4bit(self):
-        # Arrange
         test_file = "Tests/images/hopper_gray_4bpp.tif"
         original = hopper("L")
-
-        # Act
         im = Image.open(test_file)
-
-        # Assert
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.mode, "L")
         self.assert_image_similar(im, original, 7.3)
@@ -347,52 +306,45 @@ class TestFileTiff(PillowTestCase):
         # Test TIFF with tag 297 (Page Number) having value of 0 0.
         # The first number is the current page number.
         # The second is the total number of pages, zero means not available.
-
-        # Arrange
         outfile = self.tempfile("temp.tif")
-
         # Created by printing a page in Chrome to PDF, then:
         # /usr/bin/gs -q -sDEVICE=tiffg3 -sOutputFile=total-pages-zero.tif
         # -dNOPAUSE /tmp/test.pdf -c quit
         infile = "Tests/images/total-pages-zero.tif"
         im = Image.open(infile)
-
-        # Act / Assert
         # Should not divide by zero
         im.save(outfile)
 
     def test_with_underscores(self):
-        # Arrange: use underscores
         kwargs = {'resolution_unit': 'inch',
                   'x_resolution': 72,
                   'y_resolution': 36}
         filename = self.tempfile("temp.tif")
-
-        # Act
         hopper("RGB").save(filename, **kwargs)
-
-        # Assert
         from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
-        im = Image.open(filename)
-        self.assertEqual(im.tag[X_RESOLUTION], 72)
-        self.assertEqual(im.tag[Y_RESOLUTION], 36)
+        for legacy_api in [False, True]:
+            im = Image.open(filename)
+            im.tag.legacy_api = legacy_api
+            self.assertEqual(im.tag[X_RESOLUTION][0][0] if legacy_api
+                             else im.tag[X_RESOLUTION], 72)
+            self.assertEqual(im.tag[Y_RESOLUTION][0][0] if legacy_api
+                             else im.tag[Y_RESOLUTION], 36)
 
     def test_deprecation_warning_with_spaces(self):
-        # Arrange: use spaces
         kwargs = {'resolution unit': 'inch',
                   'x resolution': 36,
                   'y resolution': 72}
         filename = self.tempfile("temp.tif")
-
-        # Act
         self.assert_warning(DeprecationWarning,
                             lambda: hopper("RGB").save(filename, **kwargs))
-
-        # Assert
         from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
-        im = Image.open(filename)
-        self.assertEqual(im.tag[X_RESOLUTION], 36)
-        self.assertEqual(im.tag[Y_RESOLUTION], 72)
+        for legacy_api in [False, True]:
+            im = Image.open(filename)
+            im.tag.legacy_api = legacy_api
+            self.assertEqual(im.tag[X_RESOLUTION][0][0] if legacy_api
+                             else im.tag[X_RESOLUTION], 36)
+            self.assertEqual(im.tag[Y_RESOLUTION][0][0] if legacy_api
+                             else im.tag[Y_RESOLUTION], 72)
 
 
 if __name__ == '__main__':

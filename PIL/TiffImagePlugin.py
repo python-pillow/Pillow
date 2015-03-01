@@ -247,10 +247,8 @@ class ImageFileDirectory(collections.MutableMapping):
         * self._tagdata = {} Key: numerical tiff tag number
                              Value: undecoded byte string from file
 
-    Tags will be found in either self._tags or self._tagdata, but not
-    both.  The union of the two should contain all the tags from the Tiff
-    image file.  External classes shouldn't reference these unless they're
-    really sure what they're doing.
+    Tags will be found in the private attributes self._tagdata, and in
+    self._tags once decoded.
     """
 
     def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None):
@@ -275,9 +273,17 @@ class ImageFileDirectory(collections.MutableMapping):
             raise SyntaxError("not a TIFF IFD")
         self.reset()
         self.next, = self._unpack("L", ifh[4:])
+        self._legacy_api = False
 
     prefix = property(lambda self: self._prefix)
     offset = property(lambda self: self._offset)
+    legacy_api = property(lambda self: self._legacy_api)
+
+    @legacy_api.setter
+    def legacy_api(self, value):
+        if value != self._legacy_api:
+            self._tags.clear()
+        self._legacy_api = value
 
     def reset(self):
         self._tags = {}
@@ -302,18 +308,18 @@ class ImageFileDirectory(collections.MutableMapping):
                     for code, value in self.items())
 
     def __len__(self):
-        return len(self._tagdata) + len(self._tags)
+        return len(set(self._tagdata) | set(self._tags))
 
     def __getitem__(self, tag):
-        try:
-            return self._tags[tag]
-        except KeyError:  # unpack on the fly
+        if tag not in self._tags:  # unpack on the fly
             data = self._tagdata[tag]
             typ = self.tagtype[tag]
             size, handler = self._load_dispatch[typ]
             self[tag] = handler(self, data)  # check type
-            del self._tagdata[tag]
-            return self[tag]
+        val = self._tags[tag]
+        if self.legacy_api and not isinstance(val, (tuple, bytes)):
+            val = val,
+        return val
 
     def __contains__(self, tag):
         return tag in self._tags or tag in self._tagdata
@@ -355,6 +361,8 @@ class ImageFileDirectory(collections.MutableMapping):
                       for value in values]
         values = tuple(info.cvt_enum(value) for value in values)
         if info.length == 1:
+            if self.legacy_api and self.tagtype[tag] in [5, 10]:
+                values = values,
             self._tags[tag], = values
         else:
             self._tags[tag] = values
@@ -364,7 +372,7 @@ class ImageFileDirectory(collections.MutableMapping):
         self._tagdata.pop(tag, None)
 
     def __iter__(self):
-        return itertools.chain(list(self._tags), list(self._tagdata))
+        return iter(set(self._tagdata) | set(self._tags))
 
     def _unpack(self, fmt, data):
         return struct.unpack(self._endian + fmt, data)
@@ -398,9 +406,18 @@ class ImageFileDirectory(collections.MutableMapping):
             b"".join(self._pack(fmt, value) for value in values))
 
     list(map(_register_basic,
-             [(1, "B", "byte"), (3, "H", "short"), (4, "L", "long"),
+             [(3, "H", "short"), (4, "L", "long"),
               (6, "b", "signed byte"), (8, "h", "signed short"),
               (9, "l", "signed long"), (11, "f", "float"), (12, "d", "double")]))
+
+    @_register_loader(1, 1) # Basic type, except for the legacy API.
+    def load_byte(self, data):
+        return (data if self.legacy_api else
+                tuple(map(ord, data) if bytes is str else data))
+
+    @_register_writer(1) # Basic type, except for the legacy API.
+    def write_byte(self, data):
+        return data
 
     @_register_loader(2, 1)
     def load_string(self, data):
@@ -418,7 +435,9 @@ class ImageFileDirectory(collections.MutableMapping):
     @_register_loader(5, 8)
     def load_rational(self, data):
         vals = self._unpack("{0}L".format(len(data) // 4), data)
-        return tuple(num / denom for num, denom in zip(vals[::2], vals[1::2]))
+        combine = lambda a, b: (a, b) if self.legacy_api else a / b
+        return tuple(combine(num, denom)
+                     for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(5)
     def write_rational(self, *values):
@@ -436,7 +455,9 @@ class ImageFileDirectory(collections.MutableMapping):
     @_register_loader(10, 8)
     def load_signed_rational(self, data):
         vals = self._unpack("{0}l".format(len(data) // 4), data)
-        return tuple(num / denom for num, denom in zip(vals[::2], vals[1::2]))
+        combine = lambda a, b: (a, b) if self.legacy_api else a / b
+        return tuple(combine(num, denom)
+                     for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(10)
     def write_signed_rational(self, *values):
@@ -1026,11 +1047,14 @@ def _save(im, fp, filename):
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
     if hasattr(im, 'tag'):
         # preserve tags from original TIFF image file
+        orig_api = im.tag.legacy_api
+        im.tag.legacy_api = False
         for key in (RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION,
                     IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK, XMP):
             if key in im.tag:
                 ifd[key] = im.tag[key]
             ifd.tagtype[key] = im.tag.tagtype.get(key, None)
+        im.tag.legacy_api = orig_api
 
         # preserve ICC profile (should also work when saving other formats
         # which support profiles as TIFF) -- 2008-06-06 Florian Hoech

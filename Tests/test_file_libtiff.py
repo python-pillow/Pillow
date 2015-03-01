@@ -2,7 +2,11 @@ from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper, py3
 
 import io
+<<<<<<< HEAD
 import logging
+=======
+import itertools
+>>>>>>> Restore legacy TIFF API.
 import os
 
 from PIL import Image, TiffImagePlugin
@@ -123,41 +127,27 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_write_metadata(self):
         """ Test metadata writing through libtiff """
-        img = Image.open('Tests/images/hopper_g4.tif')
-        f = self.tempfile('temp.tiff')
+        for legacy_api in [False, True]:
+            img = Image.open('Tests/images/hopper_g4.tif')
+            img.tag.legacy_api = legacy_api
+            f = self.tempfile('temp.tiff')
 
-        img.save(f, tiffinfo=img.tag)
+            img.save(f, tiffinfo=img.tag)
+            original = img.tag.named()
 
-        loaded = Image.open(f)
+            # PhotometricInterpretation is set from SAVE_INFO,
+            # not the original image.
+            ignored = ['StripByteCounts', 'RowsPerStrip', 'PageNumber',
+                       'PhotometricInterpretation']
 
-        original = img.tag.named()
-        reloaded = loaded.tag.named()
+            loaded = Image.open(f)
+            loaded.tag.legacy_api = legacy_api
+            reloaded = loaded.tag.named()
 
-        # PhotometricInterpretation is set from SAVE_INFO,
-        # not the original image.
-        ignored = [
-            'StripByteCounts', 'RowsPerStrip',
-            'PageNumber', 'PhotometricInterpretation']
-
-        for tag, value in reloaded.items():
-            if tag not in ignored:
-                if tag.endswith('Resolution'):
-                    self.assert_almost_equal(
-                        original[tag], value,
-                        msg="%s didn't roundtrip" % tag)
-                else:
-                    self.assertEqual(
-                        original[tag], value, "%s didn't roundtrip" % tag)
-
-        for tag, value in original.items():
-            if tag not in ignored:
-                if tag.endswith('Resolution'):
-                    self.assert_almost_equal(
-                        original[tag], value,
-                        msg="%s didn't roundtrip" % tag)
-                else:
-                    self.assertEqual(
-                        value, reloaded[tag], "%s didn't roundtrip" % tag)
+            for tag, value in itertools.chain(reloaded.items(), original.items()):
+                if tag not in ignored:
+                    val = original[tag]
+                    self.assertEqual(val, value, msg="%s didn't roundtrip" % tag)
 
     def test_g3_compression(self):
         i = Image.open('Tests/images/hopper_g4_500.tif')
