@@ -153,6 +153,7 @@ class WebPImageFile(ImageFile.ImageFile):
 
         self.mode = mode
         self.size = size
+        self.info['compression'] = 'lossy' if lossy else 'lossless'
         self.tile = [('webp', (0, 0) + size, 0,
                       # Decoder params: rawmode, has_alpha, width, height.
                       (mode, 1 if 'RGBA' == mode else 0, size[0], size[1]))]

@@ -31,6 +31,7 @@ class TestFileWebpLossless(PillowTestCase):
         self.assertEqual(image.mode, "RGB")
         self.assertEqual(image.size, (128, 128))
         self.assertEqual(image.format, "WEBP")
+        self.assertEqual(image.info['compression'], 'lossless')
         image.load()
         image.getdata()
 
