@@ -43,11 +43,6 @@ class PillowTestCase(unittest.TestCase):
         else:
             print("=== orphaned temp file: %s" % path)
 
-    def assert_almost_equal(self, a, b, msg=None, eps=1e-6):
-        self.assertLess(
-            abs(a-b), eps,
-            msg or "got %r, expected %r" % (a, b))
-
     def assert_deep_equal(self, a, b, msg=None):
         try:
             self.assertEqual(
