@@ -11,6 +11,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from struct import unpack, pack
+
 if bytes is str:
     def i8(c):
         return ord(c)
@@ -34,7 +36,7 @@ def i16le(c, o=0):
     c: string containing bytes to convert
     o: offset of bytes to convert in string
     """
-    return i8(c[o]) | (i8(c[o+1]) << 8)
+    return unpack("<H", c[o:o+2])[0]
 
 
 def i32le(c, o=0):
@@ -44,33 +46,31 @@ def i32le(c, o=0):
     c: string containing bytes to convert
     o: offset of bytes to convert in string
     """
-    return (i8(c[o]) | (i8(c[o+1]) << 8) | (i8(c[o+2]) << 16) |
-            (i8(c[o+3]) << 24))
+    return unpack("<I", c[o:o+4])[0]
 
 
 def i16be(c, o=0):
-    return (i8(c[o]) << 8) | i8(c[o+1])
+    return unpack(">H", c[o:o+2])[0]
 
 
 def i32be(c, o=0):
-    return ((i8(c[o]) << 24) | (i8(c[o+1]) << 16) |
-            (i8(c[o+2]) << 8) | i8(c[o+3]))
+    return unpack(">I", c[o:o+4])[0]
 
 
 # Output, le = little endian, be = big endian
 def o16le(i):
-    return o8(i) + o8(i >> 8)
+    return pack("<H", i)
 
 
 def o32le(i):
-    return o8(i) + o8(i >> 8) + o8(i >> 16) + o8(i >> 24)
+    return pack("<I", i)
 
 
 def o16be(i):
-    return o8(i >> 8) + o8(i)
+    return pack(">H", i)
 
 
 def o32be(i):
-    return o8(i >> 24) + o8(i >> 16) + o8(i >> 8) + o8(i)
+    return pack(">I", i)
 
 # End of file
