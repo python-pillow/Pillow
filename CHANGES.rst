@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Let Python do the endian stuff + tests #1121
+  [amoibos, radarhere]
+
 - Fix webp decode memory leak #1114
   [benoit-pierre]
 
