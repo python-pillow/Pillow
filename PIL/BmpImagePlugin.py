@@ -171,8 +171,13 @@ class BmpImageFile(ImageFile.ImageFile):
             else:
                 padding = file_info['palette_padding']
                 palette = read(padding * file_info['colors'])
+                greyscale = True
+                indices = (0, 255) if file_info['colors'] == 2 else list(range(file_info['colors']))
                 #------------------- Check if greyscale and ignore palette if so
-                greyscale = all([palette[ind] == palette[ind+1] == palette[ind+2] == ind / padding for ind in range(0, len(palette), padding)])
+                for ind in indices:
+                    rgb = palette[ind*padding:ind*padding + 3]
+                    if rgb != o8(ind) * 3:
+                        greyscale = False
                 #--------- If all colors are grey, white or black, ditch palette
                 if greyscale:
                     self.mode = "1" if file_info['colors'] == 2 else "L"
