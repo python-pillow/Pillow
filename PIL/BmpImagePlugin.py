@@ -171,7 +171,7 @@ class BmpImageFile(ImageFile.ImageFile):
         
         #------------------------------ Finally set the tile data for the plugin
         self.info['compression'] = file_info['compression']
-        self.tile = [('raw', (0, 0, file_info['width'], file_info['height']), self.fp.tell(),
+        self.tile = [('raw', (0, 0, file_info['width'], file_info['height']), file_info['image_offset'],
                       (raw_mode, ((file_info['width'] * file_info['bits'] + 31) >> 3) & (~3), file_info['direction'])  
                       )]
 
