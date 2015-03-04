@@ -202,7 +202,6 @@ SAVE = {
 
 def _save(im, fp, filename, check=0):
     try:
-        print im.mode
         rawmode, bits, colors = SAVE[im.mode]
     except KeyError:
         raise IOError("cannot write mode %s as BMP" % im.mode)
