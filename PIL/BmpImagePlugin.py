@@ -162,7 +162,7 @@ class BmpImageFile(ImageFile.ImageFile):
                 #--------- If all colors are grey, white or black, ditch palette
                 if greyscale:
                     self.mode = "1" if file_info['colors'] == 2 else "L"
-                    raw_mode = self.mode
+                    raw_mode = self.mode if self.mode != "1" else "1;I" # rule for 1bpp : 1=b, 0=w
                 else:
                     self.mode = "P"
                     self.palette = ImagePalette.raw("BGRX", b"".join(palette))
