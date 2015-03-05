@@ -91,6 +91,7 @@ class BmpImageFile(ImageFile.ImageFile):
         file_info['header_size'] = i32(read(4)) # read bmp header size @offset 14 (this is part of the header size)
         file_info['direction'] = -1
         header_data = ImageFile._safe_read(self.fp, file_info['header_size'] - 4) # read the rest of the bmp header, without its size
+        file_info['header_size'] = len(header_data) + 4
         #---------------------------------------------------- IBM OS/2 Bitmap v1
         #------- This format has different offsets because of width/height types
         if file_info['header_size'] == 12:
@@ -101,7 +102,7 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info['compression'] = self.RAW
             file_info['palette_padding'] = 3
         #----------------------------------------------- Windows Bitmap v2 to v5
-        elif file_info['header_size'] in {40, 64, 108, 124}: # v3, OS/2 v2, v4, v5
+        elif file_info['header_size'] in (40, 64, 108, 124): # v3, OS/2 v2, v4, v5
             if file_info['header_size'] >= 64:
                 file_info['r_mask'] = i32(header_data[36:40])
                 file_info['g_mask'] = i32(header_data[40:44])
