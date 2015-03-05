@@ -126,7 +126,6 @@ class BmpImageFile(ImageFile.ImageFile):
         self.mode, raw_mode = BIT2MODE.get(file_info['bits'], (None, None))
         if self.mode is None:
             raise IOError("Unsupported BMP pixel depth (%d)" % file_info['bits'])
-        
         #------------------ Process BMP with Bitfields compression (not palette)
         if file_info['compression'] == self.BITFIELDS:
             SUPPORTED = {32: [(0xff0000, 0xff00, 0xff, 0x0), (0xff0000, 0xff00, 0xff, 0xff000000), (0x0, 0x0, 0x0, 0x0)], 24: [(0xff0000, 0xff00, 0xff)], 16: [(0xf800, 0x7e0, 0x1f), (0x7c00, 0x3e0, 0x1f)]}
@@ -167,7 +166,7 @@ class BmpImageFile(ImageFile.ImageFile):
                     raw_mode = self.mode
                 else:
                     self.mode = "P"
-                    self.palette = ImagePalette.raw("BGRX" if padding == 4 else "BGR", b"".join(palette))
+                    self.palette = ImagePalette.raw("BGRX" if padding == 4 else "BGR", palette)
         
         #------------------------------ Finally set the tile data for the plugin
         self.info['compression'] = file_info['compression']
