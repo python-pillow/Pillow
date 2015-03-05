@@ -91,7 +91,6 @@ class BmpImageFile(ImageFile.ImageFile):
         file_info['header_size'] = i32(read(4)) # read bmp header size @offset 14 (this is part of the header size)
         file_info['direction'] = -1
         header_data = ImageFile._safe_read(self.fp, file_info['header_size'] - 4) # read the rest of the bmp header, without its size
-        file_info['header_size'] = len(header_data) + 4
         #---------------------------------------------------- IBM OS/2 Bitmap v1
         #------- This format has different offsets because of width/height types
         if file_info['header_size'] == 12:
@@ -134,18 +133,18 @@ class BmpImageFile(ImageFile.ImageFile):
                     
                 self.info["dpi"] = tuple(map(lambda x: math.ceil(x / 39.3701), file_info['pixels_per_meter']))
         else:
-            raise IOError("BMP images with a {0} byte header are not supported".format(file_info['header_size']))
+            raise IOError("Unsupported BMP header type (%d)" % file_info['header_size'])
         self.size = file_info['width'], file_info['height']
         #--------- If color count was not found in the header, compute from bits
         file_info['colors'] = file_info['colors'] if file_info.get('colors', 0) else (1 << file_info['bits'])
         #--------------------------------- Check abnormal values for DOS attacks
         if file_info['width'] * file_info['height'] > 2**31:
-            raise IOError("BMP images with more than 2 billion pixels are not supported (here {0} pixels)".format(file_info['width'] * file_info['height']))
+            raise IOError("Unsupported BMP Size: (%dx%d)" % self.size)
         
         #------------------------ Check bit depth for unusual unsupported values
         self.mode, raw_mode = BIT2MODE.get(file_info['bits'], (None, None))
         if self.mode is None:
-            raise IOError("BMP images with a {0}-bit pixel depth are not supported".format(file_info['bits']))
+            raise IOError("Unsupported BMP pixel depth (%d)" % file_info['bits'])
         
         #------------------ Process BMP with Bitfields compression (not palette)
         if file_info['compression'] == self.BITFIELDS:
@@ -158,17 +157,17 @@ class BmpImageFile(ImageFile.ImageFile):
                 elif file_info['bits'] in (24, 16) and file_info['rgb_mask'] in SUPPORTED[file_info['bits']]:
                     raw_mode = MASK_MODES[(file_info['bits'], file_info['rgb_mask'])]
                 else:
-                    raise IOError("BMP images with the provided bitfield mask are not supported")
+                    raise IOError("Unsupported BMP bitfields layout")
             else:
-                raise IOError("BMP images with the provided bitfield information are not supported")
+                raise IOError("Unsupported BMP bitfields layout")
         elif file_info['compression'] != self.RAW:
-            raise IOError("BMP files with RLE (1/2), JPEG (4) and PNG (5) compression are not supported")
+            raise IOError("Unsupported BMP compression (%d)" % compression)
         
         #----------------- Once the header is processed, process the palette/LUT
         if self.mode == "P":  # Paletted for 1, 4 and 8 bit images
             #------------------------------------------------------ 1-bit images
             if not (0 < file_info['colors'] <= 65536):
-                raise IOError("BMP palette must have between 1 and 256 colors")
+                raise IOError("Unsupported BMP Palette size (%d)" % file_info['colors'])
             else:
                 padding = file_info['palette_padding']
                 palette = read(padding * file_info['colors'])
