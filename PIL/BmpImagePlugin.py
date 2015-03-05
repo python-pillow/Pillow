@@ -81,18 +81,15 @@ class BmpImageFile(ImageFile.ImageFile):
         self._bitmap(offset=offset)
 
     def _bitmap(self, header=0, offset=0):
+        print offset, header
         """ Read relevant info about the BMP """
         read, seek = self.fp.read, self.fp.seek
-        seek(2)
-        start_data = read(12)
+        if header:
+            seek(header)
         file_info = dict()
-        file_info['filesize'] = i32(start_data[0:4]) # file size @offset 2 (offsets 4, 12 are reserved for OS/2 Icons)
-        file_info['image_offset'] = i32(start_data[8:12]) # file size @offset 2 (offsets 4, 12 are reserved for OS/2 Icons)
         file_info['header_size'] = i32(read(4)) # read bmp header size @offset 14 (this is part of the header size)
         file_info['direction'] = -1
         #---------------------- If requested, read header at a specific position
-        if header:
-            seek(header)
         header_data = ImageFile._safe_read(self.fp, file_info['header_size'] - 4) # read the rest of the bmp header, without its size
         #---------------------------------------------------- IBM OS/2 Bitmap v1
         #------- This format has different offsets because of width/height types
@@ -105,13 +102,6 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info['palette_padding'] = 3
         #----------------------------------------------- Windows Bitmap v2 to v5
         elif file_info['header_size'] in (40, 64, 108, 124): # v3, OS/2 v2, v4, v5
-            if file_info['header_size'] >= 64:
-                file_info['r_mask'] = i32(header_data[36:40])
-                file_info['g_mask'] = i32(header_data[40:44])
-                file_info['b_mask'] = i32(header_data[44:48])
-                file_info['a_mask'] = i32(header_data[48:52])
-                file_info['rgb_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'])
-                file_info['rgba_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'], file_info['a_mask'])
             if file_info['header_size'] >= 40:  # v3 and OS/2
                 file_info['y_flip'] = i8(header_data[7]) == 0xff
                 file_info['direction'] = 1 if file_info['y_flip'] else -1
@@ -124,26 +114,25 @@ class BmpImageFile(ImageFile.ImageFile):
                 file_info['pixels_per_meter'] = (i32(header_data[20:24]), i32(header_data[24:28])) 
                 file_info['colors'] = i32(header_data[28:32])
                 file_info['palette_padding'] = 4
-                #------------------- Special case : header is reported 40, which
-                #----------------------- is shorter than real size for bpp >= 16
-                if file_info['header_size'] < 64 and file_info['bits'] >= 16:
-                    file_info['r_mask'] = i32(read(4))
-                    file_info['g_mask'] = i32(read(4))
-                    file_info['b_mask'] = i32(read(4))
-                    file_info['a_mask'] = i32(read(4))
-                    file_info['rgb_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'])
-                    file_info['rgba_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'], file_info['a_mask'])
-                    
                 self.info["dpi"] = tuple(map(lambda x: math.ceil(x / 39.3701), file_info['pixels_per_meter']))
         else:
             raise IOError("Unsupported BMP header type (%d)" % file_info['header_size'])
+        #------------------- Special case : header is reported 40, which
+        #----------------------- is shorter than real size for bpp >= 16
+        if file_info['compression'] == self.BITFIELDS:
+            file_info['r_mask'] = i32(read(4))
+            file_info['g_mask'] = i32(read(4))
+            file_info['b_mask'] = i32(read(4))
+            file_info['a_mask'] = i32(read(4))
+            file_info['rgb_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'])
+            file_info['rgba_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'], file_info['a_mask'])
+                    
         self.size = file_info['width'], file_info['height']
         #--------- If color count was not found in the header, compute from bits
         file_info['colors'] = file_info['colors'] if file_info.get('colors', 0) else (1 << file_info['bits'])
         #--------------------------------- Check abnormal values for DOS attacks
         if file_info['width'] * file_info['height'] > 2**31:
             raise IOError("Unsupported BMP Size: (%dx%d)" % self.size)
-        
         #------------------------ Check bit depth for unusual unsupported values
         self.mode, raw_mode = BIT2MODE.get(file_info['bits'], (None, None))
         if self.mode is None:
@@ -151,8 +140,8 @@ class BmpImageFile(ImageFile.ImageFile):
         
         #------------------ Process BMP with Bitfields compression (not palette)
         if file_info['compression'] == self.BITFIELDS:
-            SUPPORTED = {32: [(0xff0000, 0xff00, 0xff, 0x0), (0xff0000, 0xff00, 0xff, 0xff000000)], 24: [(0xff0000, 0xff00, 0xff)], 16: [(0xf800, 0x7e0, 0x1f), (0x7c00, 0x3e0, 0x1f)]}
-            MASK_MODES = {(32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX", (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA", (24, (0xff0000, 0xff00, 0xff)): "BGR", (16, (0xf800, 0x7e0, 0x1f)): "BGR;16", (16, (0x7c00, 0x3e0, 0x1f)): "BGR;15"}
+            SUPPORTED = {32: [(0xff0000, 0xff00, 0xff, 0x0), (0xff0000, 0xff00, 0xff, 0xff000000), (0x0, 0x0, 0x0, 0x0)], 24: [(0xff0000, 0xff00, 0xff)], 16: [(0xf800, 0x7e0, 0x1f), (0x7c00, 0x3e0, 0x1f)]}
+            MASK_MODES = {(32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX", (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA", (32, (0x0, 0x0, 0x0, 0x0)): "BGRA", (24, (0xff0000, 0xff00, 0xff)): "BGR", (16, (0xf800, 0x7e0, 0x1f)): "BGR;16", (16, (0x7c00, 0x3e0, 0x1f)): "BGR;15"}
             if file_info['bits'] in SUPPORTED:
                 if file_info['bits'] == 32 and file_info['rgba_mask'] in SUPPORTED[file_info['bits']]:
                     raw_mode = MASK_MODES[(file_info['bits'], file_info['rgba_mask'])]
@@ -163,9 +152,11 @@ class BmpImageFile(ImageFile.ImageFile):
                     raise IOError("Unsupported BMP bitfields layout")
             else:
                 raise IOError("Unsupported BMP bitfields layout")
-        elif file_info['compression'] != self.RAW:
-            raise IOError("Unsupported BMP compression (%d)" % compression)
-        
+        elif file_info['compression'] == self.RAW:
+            if file_info['bits'] == 32 and header == 22:  # 32-bit .cur offset
+                raw_mode, self.mode = "BGRA", "RGBA"
+        else:
+            raise IOError("Unsupported BMP compression (%d)" % file_info['compression'])
         #----------------- Once the header is processed, process the palette/LUT
         if self.mode == "P":  # Paletted for 1, 4 and 8 bit images
             #------------------------------------------------------ 1-bit images
@@ -189,9 +180,10 @@ class BmpImageFile(ImageFile.ImageFile):
                     self.mode = "P"
                     self.palette = ImagePalette.raw("BGRX" if padding == 4 else "BGR", b"".join(palette))
         
+        print file_info, self.mode, raw_mode, self.fp.tell()
         #------------------------------ Finally set the tile data for the plugin
         self.info['compression'] = file_info['compression']
-        self.tile = [('raw', (0, 0, file_info['width'], file_info['height']), file_info['image_offset'],
+        self.tile = [('raw', (0, 0, file_info['width'], file_info['height']), offset or self.fp.tell(),
                       (raw_mode, ((file_info['width'] * file_info['bits'] + 31) >> 3) & (~3), file_info['direction'])  
                       )]
 
