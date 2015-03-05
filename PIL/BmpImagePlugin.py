@@ -81,7 +81,6 @@ class BmpImageFile(ImageFile.ImageFile):
         self._bitmap(offset=offset)
 
     def _bitmap(self, header=0, offset=0):
-        print offset, header
         """ Read relevant info about the BMP """
         read, seek = self.fp.read, self.fp.seek
         if header:
@@ -180,7 +179,6 @@ class BmpImageFile(ImageFile.ImageFile):
                     self.mode = "P"
                     self.palette = ImagePalette.raw("BGRX" if padding == 4 else "BGR", b"".join(palette))
         
-        print file_info, self.mode, raw_mode, self.fp.tell()
         #------------------------------ Finally set the tile data for the plugin
         self.info['compression'] = file_info['compression']
         self.tile = [('raw', (0, 0, file_info['width'], file_info['height']), offset or self.fp.tell(),
