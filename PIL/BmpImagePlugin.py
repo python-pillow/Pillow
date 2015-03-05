@@ -90,6 +90,9 @@ class BmpImageFile(ImageFile.ImageFile):
         file_info['image_offset'] = i32(start_data[8:12]) # file size @offset 2 (offsets 4, 12 are reserved for OS/2 Icons)
         file_info['header_size'] = i32(read(4)) # read bmp header size @offset 14 (this is part of the header size)
         file_info['direction'] = -1
+        #---------------------- If requested, read header at a specific position
+        if header:
+            seek(header)
         header_data = ImageFile._safe_read(self.fp, file_info['header_size'] - 4) # read the rest of the bmp header, without its size
         #---------------------------------------------------- IBM OS/2 Bitmap v1
         #------- This format has different offsets because of width/height types
