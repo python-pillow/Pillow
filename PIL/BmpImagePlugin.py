@@ -23,7 +23,9 @@
 # See the README file for information on usage and redistribution.
 #
 
+
 __version__ = "0.7"
+
 
 from PIL import Image, ImageFile, ImagePalette, _binary
 import math
@@ -47,7 +49,7 @@ BIT2MODE = {
     8: ("P", "P"),
     16: ("RGB", "BGR;15"),
     24: ("RGB", "BGR"),
-    32: ("RGB", "BGRX")
+    32: ("RGB", "BGRX"),
 }
 
 
@@ -68,28 +70,16 @@ class BmpImageFile(ImageFile.ImageFile):
     COMPRESSIONS = {'RAW': 0, 'RLE8': 1, 'RLE4': 2, 'BITFIELDS': 3, 'JPEG': 4, 'PNG': 5}
     RAW, RLE8, RLE4, BITFIELDS, JPEG, PNG = 0, 1, 2, 3, 4, 5
 
-    def _open(self):
-        """ Open file, check magic number and read header """
-        # read 14 bytes: magic number, filesize, reserved, header final offset
-        head_data = self.fp.read(14)
-        # choke if the file does not have the required magic bytes
-        if head_data[0:2] != b"BM":
-            raise SyntaxError("Expected a BMP file.")
-        # read the start position of the BMP image data (u32) 
-        offset = i32(head_data[10:14])
-        # load bitmap information (offset=raster info)
-        self._bitmap(offset=offset)
-
     def _bitmap(self, header=0, offset=0):
         """ Read relevant info about the BMP """
         read, seek = self.fp.read, self.fp.seek
         if header:
             seek(header)
         file_info = dict()
-        file_info['header_size'] = i32(read(4)) # read bmp header size @offset 14 (this is part of the header size)
+        file_info['header_size'] = i32(read(4))  # read bmp header size @offset 14 (this is part of the header size)
         file_info['direction'] = -1
         #---------------------- If requested, read header at a specific position
-        header_data = ImageFile._safe_read(self.fp, file_info['header_size'] - 4) # read the rest of the bmp header, without its size
+        header_data = ImageFile._safe_read(self.fp, file_info['header_size'] - 4)  # read the rest of the bmp header, without its size
         #---------------------------------------------------- IBM OS/2 Bitmap v1
         #------- This format has different offsets because of width/height types
         if file_info['header_size'] == 12:
@@ -184,6 +174,19 @@ class BmpImageFile(ImageFile.ImageFile):
         self.tile = [('raw', (0, 0, file_info['width'], file_info['height']), offset or self.fp.tell(),
                       (raw_mode, ((file_info['width'] * file_info['bits'] + 31) >> 3) & (~3), file_info['direction'])  
                       )]
+
+    def _open(self):
+        """ Open file, check magic number and read header """
+        # read 14 bytes: magic number, filesize, reserved, header final offset
+        head_data = self.fp.read(14)
+        # choke if the file does not have the required magic bytes
+        if head_data[0:2] != b"BM":
+            raise SyntaxError("Not a BMP file")
+        # read the start position of the BMP image data (u32) 
+        offset = i32(head_data[10:14])
+        # load bitmap information (offset=raster info)
+        self._bitmap(offset=offset)
+
 
 
 #===============================================================================
