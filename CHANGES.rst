@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Remove unreachable code
+  [hugovk]
+
 - Let Python do the endian stuff + tests #1121
   [amoibos, radarhere]
 
