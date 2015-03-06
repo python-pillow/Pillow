@@ -175,7 +175,7 @@ class iTXt(str):
         :param lang: language code
         :param tkey: UTF-8 version of the key name
         """
-        
+
         self = str.__new__(cls, text)
         self.lang = lang
         self.tkey = tkey
@@ -198,7 +198,7 @@ class PngInfo:
         :param data: a byte string of the encoded data
 
         """
-        
+
         self.chunks.append((cid, data))
 
     def add_itxt(self, key, value, lang="", tkey="", zip=False):
@@ -211,7 +211,7 @@ class PngInfo:
         :param zip: compression flag
 
         """
-        
+
         if not isinstance(key, bytes):
             key = key.encode("latin-1", "strict")
         if not isinstance(value, bytes):
@@ -235,7 +235,7 @@ class PngInfo:
         :param value: value for this key, text or an
            :py:class:`PIL.PngImagePlugin.iTXt` instance
         :param zip: compression flag
-        
+
         """
         if isinstance(value, iTXt):
             return self.add_itxt(key, value, value.lang, value.tkey, bool(zip))
@@ -462,7 +462,7 @@ class PngStream(ChunkStream):
 
         self.im_info[k] = self.im_text[k] = iTXt(v, lang, tk)
         self.check_text_memory(len(v))
-            
+
         return s
 
 
@@ -728,10 +728,6 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
             alpha = im.im.getpalette("RGBA", "A")
             alpha_bytes = 2**bits
             chunk(fp, b"tRNS", alpha[:alpha_bytes])
-
-    if 0:
-        # FIXME: to be supported some day
-        chunk(fp, b"gAMA", o32(int(gamma * 100000.0)))
 
     dpi = im.encoderinfo.get("dpi")
     if dpi:
