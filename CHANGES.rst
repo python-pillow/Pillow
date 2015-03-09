@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Fix ImagingEffectNoise #1128
+  [hugovk]
+  
 - Remove unreachable code
   [hugovk]
 
