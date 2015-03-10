@@ -58,7 +58,7 @@ Changelog (Pillow)
 - Fix MSVC compiler error: Use Py_ssize_t instead of ssize_t #1051
   [cgohlke]
 
-- Fix compiler error: MSVC needs varaibles defined at the start of the block #1048
+- Fix compiler error: MSVC needs variables defined at the start of the block #1048
   [cgohlke]
 
 - The GIF Palette optimization algorithm is only applicable to mode='P' or 'L' #993
@@ -1793,7 +1793,7 @@ Changelog (Pillow)
     (1.1.2c1 and 1.1.2 final released)
 
     + Adapted to Python 2.1.  Among other things, all uses of the
-      "regex" module has been repleased with "re".
+      "regex" module have been replaced with "re".
 
     + Fixed attribute error when reading large PNG files (this bug
       was introduced in maintenance code released after the 1.1.1
@@ -2417,7 +2417,7 @@ Changelog (Pillow)
                     the default value is 75.
 
           JPEG	smooth		smooth dithered images.  value
-                    is strengh (1-100).  default is
+                    is strength (1-100).  default is
                     off (0).
 
           PNG	optimize	minimize output file at the
