@@ -7,6 +7,11 @@ _VALID_WEBP_MODES = ("RGB", "RGBA")
 
 _VP8_MODES_BY_IDENTIFIER = (b"VP8 ", b"VP8X", b"VP8L")
 
+_INFO_CHUNKS = {
+    b'EXIF': 'exif',
+    b'ICCP': 'icc_profile',
+}
+
 
 def _accept(prefix):
     is_riff_file_format = prefix[:4] == b"RIFF"
@@ -96,9 +101,8 @@ class WebPImageFile(ImageFile.ImageFile):
         while True:
 
             chunk_header = self.fp.read(8)
-            if 8 != len(chunk_header):
-                if first_chunk:
-                    raise SyntaxError("not a WebP file")
+            if len(chunk_header) < 8:
+                # EOF.
                 break
 
             chunk_fourcc = chunk_header[0:4]
@@ -125,26 +129,19 @@ class WebPImageFile(ImageFile.ImageFile):
             elif b'ALPH' == chunk_fourcc:
                 mode = 'RGBA'
 
-            elif b'EXIF' == chunk_fourcc:
-                exif = self.fp.read(chunk_size)
-                if chunk_size != len(exif):
-                    raise SyntaxError("bad EXIF chunk")
-                self.info["exif"] = exif
+            elif chunk_fourcc in _INFO_CHUNKS:
+                data = self.fp.read(chunk_size)
+                if len(data) < chunk_size:
+                    if ImageFile.LOAD_TRUNCATED_IMAGES:
+                        # Simulate EOF.
+                        break
+                    msg = "image file is truncated: incomplete %s chunk" % chunk_fourcc
+                    raise IOError(msg)
+                self.info[_INFO_CHUNKS[chunk_fourcc]] = data
                 chunk_size = 0
 
-            elif b'ICCP' == chunk_fourcc:
-                icc_profile = self.fp.read(chunk_size)
-                if chunk_size != len(icc_profile):
-                    raise SyntaxError("bad ICCP chunk")
-                self.info["icc_profile"] = icc_profile
-                chunk_size = 0
-
-            if chunk_size > 0:
-                # Skip to next chunk.
-                pos = self.fp.tell()
-                self.fp.seek(chunk_size, os.SEEK_CUR)
-                if self.fp.tell() != (pos + chunk_size):
-                    raise SyntaxError("not a WebP file")
+            # Skip to next chunk.
+            self.fp.seek(chunk_size, os.SEEK_CUR)
 
             first_chunk = False
 

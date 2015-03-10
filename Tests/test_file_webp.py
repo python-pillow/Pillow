@@ -1,6 +1,8 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
+from PIL import Image, ImageFile
+
+from io import BytesIO
 
 try:
     from PIL import _webp
@@ -71,6 +73,40 @@ class TestFileWebp(PillowTestCase):
         # Ubuntu, the jpegs are showing ~18.
         target = hopper("RGB")
         self.assert_image_similar(image, target, 12)
+
+    def test_truncated(self):
+        assert False == ImageFile.LOAD_TRUNCATED_IMAGES
+        with open('Tests/images/flower.webp', 'rb') as fp:
+            full_data = fp.read()
+        # Truncate in the middle (VP8 chunk).
+        half_data = full_data[:len(full_data)//2]
+        im = Image.open(BytesIO(half_data))
+        self.assertRaises(IOError, im.load)
+        im = Image.open(BytesIO(half_data))
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        try:
+            im.load()
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        original = Image.open(BytesIO(full_data))
+        width, height = original.size
+        # Check we decoded at least part of the image (top).
+        top_area = (0, 0, width-1, 31)
+        self.assert_image_equal(im.crop(top_area), original.crop(top_area))
+        # Bottom should be blank.
+        bottom_area = (width-33, height-33, width-1, height-1)
+        self.assert_image_equal(im.crop(bottom_area), Image.new(original.mode, (32, 32)))
+        # Truncate at the end (EXIF chunk).
+        most_data = full_data[:-4*1024]
+        self.assertRaises(IOError, Image.open, BytesIO(most_data))
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        try:
+            im = Image.open(BytesIO(most_data))
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        im.load()
+        # Check we decoded the whole image.
+        self.assert_image_equal(im, original)
 
     def test_info_compression(self):
         for name, compression in (
