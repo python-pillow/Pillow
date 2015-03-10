@@ -104,18 +104,19 @@ class BmpImageFile(ImageFile.ImageFile):
                 file_info['colors'] = i32(header_data[28:32])
                 file_info['palette_padding'] = 4
                 self.info["dpi"] = tuple(map(lambda x: math.ceil(x / 39.3701), file_info['pixels_per_meter']))
+                if file_info['compression'] == self.BITFIELDS:
+                    if len(header_data) >= 52:
+                        for idx, mask in enumerate(['r_mask', 'g_mask', 'b_mask', 'a_mask']):
+                            file_info[mask] = i32(header_data[36+idx*4:40+idx*4])
+                    else:
+                        for mask in ['r_mask', 'g_mask', 'b_mask', 'a_mask']:
+                            file_info[mask] = i32(read(4))
+                    file_info['rgb_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'])
+                    file_info['rgba_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'], file_info['a_mask'])
         else:
             raise IOError("Unsupported BMP header type (%d)" % file_info['header_size'])
         #------------------- Special case : header is reported 40, which
         #----------------------- is shorter than real size for bpp >= 16
-        if file_info['compression'] == self.BITFIELDS:
-            file_info['r_mask'] = i32(read(4))
-            file_info['g_mask'] = i32(read(4))
-            file_info['b_mask'] = i32(read(4))
-            file_info['a_mask'] = i32(read(4))
-            file_info['rgb_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'])
-            file_info['rgba_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'], file_info['a_mask'])
-                    
         self.size = file_info['width'], file_info['height']
         #--------- If color count was not found in the header, compute from bits
         file_info['colors'] = file_info['colors'] if file_info.get('colors', 0) else (1 << file_info['bits'])
@@ -128,8 +129,14 @@ class BmpImageFile(ImageFile.ImageFile):
             raise IOError("Unsupported BMP pixel depth (%d)" % file_info['bits'])
         #------------------ Process BMP with Bitfields compression (not palette)
         if file_info['compression'] == self.BITFIELDS:
-            SUPPORTED = {32: [(0xff0000, 0xff00, 0xff, 0x0), (0xff0000, 0xff00, 0xff, 0xff000000), (0x0, 0x0, 0x0, 0x0)], 24: [(0xff0000, 0xff00, 0xff)], 16: [(0xf800, 0x7e0, 0x1f), (0x7c00, 0x3e0, 0x1f)]}
-            MASK_MODES = {(32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX", (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA", (32, (0x0, 0x0, 0x0, 0x0)): "BGRA", (24, (0xff0000, 0xff00, 0xff)): "BGR", (16, (0xf800, 0x7e0, 0x1f)): "BGR;16", (16, (0x7c00, 0x3e0, 0x1f)): "BGR;15"}
+            SUPPORTED = {
+            32: [(0xff0000, 0xff00, 0xff, 0x0), (0xff0000, 0xff00, 0xff, 0xff000000), (0x0, 0x0, 0x0, 0x0)], 
+            24: [(0xff0000, 0xff00, 0xff)], 
+            16: [(0xf800, 0x7e0, 0x1f), (0x7c00, 0x3e0, 0x1f)]}
+            MASK_MODES = {
+            (32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX", (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA", (32, (0x0, 0x0, 0x0, 0x0)): "BGRA", 
+            (24, (0xff0000, 0xff00, 0xff)): "BGR", 
+            (16, (0xf800, 0x7e0, 0x1f)): "BGR;16", (16, (0x7c00, 0x3e0, 0x1f)): "BGR;15"}
             if file_info['bits'] in SUPPORTED:
                 if file_info['bits'] == 32 and file_info['rgba_mask'] in SUPPORTED[file_info['bits']]:
                     raw_mode = MASK_MODES[(file_info['bits'], file_info['rgba_mask'])]
