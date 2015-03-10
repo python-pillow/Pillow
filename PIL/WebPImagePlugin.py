@@ -165,7 +165,9 @@ class WebPImageFile(ImageFile.ImageFile):
 
     def load_prepare(self):
         if not self.im:
-            # Hackety hack hack hack...
+            # Hackety hack hack hack... force block storage (one continuous
+            # buffer), so we don't need to allocate a temporary output buffer
+            # for the decoder.
             im = Image.core.new(self.mode, (0,0))
             self.im = im.new_block(self.mode, self.size)
         ImageFile.ImageFile.load_prepare(self)
