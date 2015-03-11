@@ -202,6 +202,7 @@ class ImageFile(Image.Image):
                 try:
                     d.setimage(self.im, e)
                 except ValueError:
+                    t = None
                     continue
                 b = prefix
                 t = len(b)
