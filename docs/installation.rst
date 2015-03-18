@@ -194,11 +194,11 @@ Python Eggs
 Python Wheels
 ^^^^^^^^^^^^^
 
-.. Note:: Experimental. Requires setuptools >=0.8 and pip >=1.4.1
+.. Note:: requires setuptools >=0.8 and pip >=1.4.1. Some older versions of pip required the ``--use-wheel`` flag.
 
 ::
 
-    $ pip install --use-wheel Pillow
+    $ pip install Pillow
 
 If the above does not work, it's likely because we haven't uploaded a
 wheel for the latest version of Pillow. In that case, try pinning it
@@ -206,7 +206,7 @@ to a specific version:
 
 ::
 
-    $ pip install --use-wheel Pillow==2.6.1
+    $ pip install Pillow==2.6.1
 
 FreeBSD Installation
 --------------------
