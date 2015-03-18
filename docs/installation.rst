@@ -163,7 +163,7 @@ Prerequisites are installed on **Fedora 20** with::
 OS X Installation
 -----------------
 
-We provide binaries for OS X in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow with with XCode.
+We provide binaries for OS X in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow from soure with XCode.
 
 The easiest way to install external libraries is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run::
 
@@ -194,7 +194,7 @@ Python Eggs
 Python Wheels
 ^^^^^^^^^^^^^
 
-.. Note:: requires setuptools >=0.8 and pip >=1.4.1. Some older versions of pip required the ``--use-wheel`` flag.
+.. Note:: Requires setuptools >=0.8 and pip >=1.4.1. Some older versions of pip required the ``--use-wheel`` flag.
 
 ::
 
