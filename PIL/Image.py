@@ -2239,14 +2239,20 @@ def open(fp, mode="r"):
        opened and identified.
     """
 
+    should_close = False
     if mode != "r":
         raise ValueError("bad mode %r" % mode)
 
     if isPath(fp):
         filename = fp
         fp = builtins.open(fp, "rb")
+        should_close = True
     else:
         filename = ""
+
+    def finalize():
+        if should_close:
+            fp.close()
 
     prefix = fp.read(16)
 
@@ -2259,6 +2265,7 @@ def open(fp, mode="r"):
                 fp.seek(0)
                 im = factory(fp, filename)
                 _decompression_bomb_check(im.size)
+                finalize()
                 return im
         except (SyntaxError, IndexError, TypeError):
             # import traceback
@@ -2274,12 +2281,14 @@ def open(fp, mode="r"):
                     fp.seek(0)
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
+                    finalize()
                     return im
             except (SyntaxError, IndexError, TypeError):
                 # import traceback
                 # traceback.print_exc()
                 pass
 
+    finalize()
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
 
