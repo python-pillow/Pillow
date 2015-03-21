@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Added copy method font_variant() and accessible properties to truetype() #1123
+  [radarhere]
+
 - Fix ImagingEffectNoise #1128
   [hugovk]
   
