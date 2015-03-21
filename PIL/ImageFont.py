@@ -133,6 +133,11 @@ class FreeTypeFont:
                     DeprecationWarning)
             font = file
 
+        self.path = font
+        self.size = size
+        self.index = index
+        self.encoding = encoding
+
         if isPath(font):
             self.font = core.getfont(font, size, index, encoding)
         else:
@@ -161,6 +166,22 @@ class FreeTypeFont:
         im = fill("L", size, 0)
         self.font.render(text, im.id, mode == "1")
         return im, offset
+
+    def font_variant(self, font=None, size=None, index=None, encoding=None):
+        """
+        Create a copy of this FreeTypeFont object,
+        using any specified arguments to override the settings.
+
+        Parameters are identical to the parameters used to initialize this
+        object, minus the deprecated 'file' argument.
+
+        :return: A FreeTypeFont object.
+        """
+        return FreeTypeFont(font=self.path if font is None else font,
+                            size=self.size if size is None else size,
+                            index=self.index if index is None else index,
+                            encoding=self.encoding if encoding is None else
+                            encoding)
 
 ##
 # Wrapper that creates a transposed font from any existing font
@@ -255,8 +276,8 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
         elif sys.platform in ('linux', 'linux2'):
             lindirs = os.environ.get("XDG_DATA_DIRS", "")
             if not lindirs:
-                #According to the freedesktop spec, XDG_DATA_DIRS should
-                #default to /usr/share
+                # According to the freedesktop spec, XDG_DATA_DIRS should
+                # default to /usr/share
                 lindirs = '/usr/share'
             lindirs = lindirs.split(":")
             for lindir in lindirs:
@@ -266,7 +287,8 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                         filepath = os.path.join(walkroot, ttf_filename)
                         return FreeTypeFont(filepath, size, index, encoding)
         elif sys.platform == 'darwin':
-            macdirs = ['/Library/Fonts/', '/System/Library/Fonts/', os.path.expanduser('~/Library/Fonts/')]
+            macdirs = ['/Library/Fonts/', '/System/Library/Fonts/',
+                       os.path.expanduser('~/Library/Fonts/')]
             for macdir in macdirs:
                 filepath = os.path.join(macdir, ttf_filename)
                 if os.path.exists(filepath):

@@ -44,6 +44,22 @@ try:
             self.assertRegexpMatches(
                 ImageFont.core.freetype2_version, "\d+\.\d+\.\d+$")
 
+        def test_font_properties(self):
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            self.assertEqual(ttf.path, FONT_PATH)
+            self.assertEqual(ttf.size, FONT_SIZE)
+            
+            ttf_copy = ttf.font_variant()
+            self.assertEqual(ttf_copy.path, FONT_PATH)
+            self.assertEqual(ttf_copy.size, FONT_SIZE)
+            
+            ttf_copy = ttf.font_variant(size=FONT_SIZE+1)
+            self.assertEqual(ttf_copy.size, FONT_SIZE+1)
+            
+            second_font_path = "Tests/fonts/DejaVuSans.ttf"
+            ttf_copy = ttf.font_variant(font=second_font_path)
+            self.assertEqual(ttf_copy.path, second_font_path)
+
         def test_font_with_name(self):
             ImageFont.truetype(FONT_PATH, FONT_SIZE)
             self._render(FONT_PATH)
