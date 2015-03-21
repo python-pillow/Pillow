@@ -133,6 +133,11 @@ class FreeTypeFont:
                     DeprecationWarning)
             font = file
 
+        self.path = font
+        self.size = size
+        self.index = index
+        self.encoding = encoding
+
         if isPath(font):
             self.font = core.getfont(font, size, index, encoding)
         else:
@@ -161,6 +166,21 @@ class FreeTypeFont:
         im = fill("L", size, 0)
         self.font.render(text, im.id, mode == "1")
         return im, offset
+
+    def font_variant(self, font=None, size=None, index=None, encoding=None):
+		"""
+		Create a copy of this FreeTypeFont object,
+		using any specified arguments to override the settings.
+		
+		Parameters are identical to the parameters used to initialize this object,
+		minus the deprecated 'file' argument.
+		
+		:return: A FreeTypeFont object.
+		"""
+        return FreeTypeFont(font = self.path if font == None else font,
+                            size = self.size if size == None else size,
+                            index = self.index if index == None else index,
+                            encoding = self.encoding if encoding == None else encoding)
 
 ##
 # Wrapper that creates a transposed font from any existing font
