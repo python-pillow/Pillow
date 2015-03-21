@@ -2244,10 +2244,15 @@ def open(fp, mode="r"):
 
     if isPath(fp):
         filename = fp
-        fp = builtins.open(fp, "rb")
+        with builtins.open(fp, "rb") as fp:
+            return _open(fp, filename, mode)
     else:
         filename = ""
+        return _open(fp, filename, mode)
 
+
+
+def _open(fp, filename, mode):
     prefix = fp.read(16)
 
     preinit()
