@@ -39,5 +39,5 @@ More Information
 
   - `About <http://pillow.readthedocs.org/about.html>`_
   - `Guides <http://pillow.readthedocs.org/guides.html>`_
-  - `Install <http://pillow.readthedocs.org/installation.html>`_
+  - `Installation <http://pillow.readthedocs.org/installation.html>`_
   - `Reference <http://pillow.readthedocs.org/reference/index.html>`_
