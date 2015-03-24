@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Improve reference docs for PIL.ImageDraw.Draw.pieslice() #1145
+  [audreyr]
+
 - Added copy method font_variant() and accessible properties to truetype() #1123
   [radarhere]
 
