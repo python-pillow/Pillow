@@ -184,8 +184,11 @@ Methods
 
     :param xy: Four points to define the bounding box. Sequence of
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
-    :param outline: Color to use for the outline.
+    :param start: Starting angle, in degrees. Angles are measured from
+            3 o'clock, increasing clockwise.
+    :param end: Ending angle, in degrees.
     :param fill: Color to use for the fill.
+    :param outline: Color to use for the outline.
 
 .. py:method:: PIL.ImageDraw.Draw.point(xy, fill=None)
 
