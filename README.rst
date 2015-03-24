@@ -4,7 +4,7 @@ Pillow
 Python Imaging Library (Fork)
 -----------------------------
 
-Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the **Python Imaging Library** by Fredrik Lundh and Contributors.
+Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 
 .. image:: https://travis-ci.org/python-pillow/Pillow.svg?branch=master
    :target: https://travis-ci.org/python-pillow/Pillow
