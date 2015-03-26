@@ -275,13 +275,13 @@ class EpsImageFile(ImageFile.ImageFile):
 
             s = fp.readline().strip('\r\n')
 
-            if s[0] != "%":
+            if s[:1] != "%":
                 break
 
         #
         # Scan for an "ImageData" descriptor
 
-        while s[0] == "%":
+        while s[:1] == "%":
 
             if len(s) > 255:
                 raise SyntaxError("not an EPS file")
