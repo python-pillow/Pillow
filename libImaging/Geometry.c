@@ -304,23 +304,6 @@ perspective_transform(double* xin, double* yin, int x, int y, void* data)
     return 1;
 }
 
-#if 0
-static int
-quadratic_transform(double* xin, double* yin, int x, int y, void* data)
-{
-    double* a = (double*) data;
-
-    double a0 = a[0]; double a1 = a[1]; double a2 = a[2]; double a3 = a[3];
-    double a4 = a[4]; double a5 = a[5]; double a6 = a[6]; double a7 = a[7];
-    double a8 = a[8]; double a9 = a[9]; double a10 = a[10]; double a11 = a[11];
-
-    xin[0] = a0 + a1*x + a2*y + a3*x*x + a4*x*y + a5*y*y;
-    yin[0] = a6 + a7*x + a8*y + a9*x*x + a10*x*y + a11*y*y;
-
-    return 1;
-}
-#endif
-
 static int
 quad_transform(double* xin, double* yin, int x, int y, void* data)
 {

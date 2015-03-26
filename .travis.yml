@@ -54,7 +54,6 @@ after_success:
   - travis_retry pip install coveralls-merge
   - coveralls-merge coverage.c.json
 
-
   - travis_retry pip install pep8 pyflakes
   - pep8 --statistics --count PIL/*.py
   - pep8  --statistics --count Tests/*.py
@@ -62,10 +61,53 @@ after_success:
   - pyflakes PIL/*.py   | tee >(wc -l)
   - pyflakes Tests/*.py | tee >(wc -l)
 
-
     # Coverage and quality reports on just the latest diff.
     # (Installation is very slow on Py3, so just do it for Py2.)
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-install.sh; fi
   - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then Scripts/diffcover-run.sh; fi
+
+  # after_all
+  - |
+      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+        curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
+        python travis_after_all.py
+        export $(cat .to_export_back)
+        if [ "$BUILD_LEADER" = "YES" ]; then
+          if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
+            echo "All jobs succeded! Triggering OS X build..."
+            # Trigger an OS X build at the pillow-wheels repo
+            ./build_children.sh
+          else
+            echo "Some jobs failed"
+          fi
+        fi
+      fi
+
+after_failure:
+  - |
+      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+        curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
+        python travis_after_all.py
+        export $(cat .to_export_back)
+        if [ "$BUILD_LEADER" = "YES" ]; then
+          if [ "$BUILD_AGGREGATE_STATUS" = "others_failed" ]; then
+            echo "All jobs failed"
+          else
+            echo "Some jobs failed"
+          fi
+        fi
+      fi
+
+after_script:
+  - |
+      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+        echo leader=$BUILD_LEADER status=$BUILD_AGGREGATE_STATUS
+      fi
+
 matrix:
   fast_finish: true
+
+env:
+  global:
+    # travis encrypt AUTH_TOKEN=
+    secure: "Vzm7aG1Qv0SDQcqiPzZMedNLn5ZmpL7IzF0DYnqcD+/l+zmKU22SnJBcX0uVXumo+r7eZfpsShpqfcdsZvMlvmQnwz+Y6AGKQru9tCKZbTMnuRjWKKXekC+tr8Xt9CKvRVtte5PyXW31paxUI3/e+fQGBwoFjEEC+6EpEOjeRfE="

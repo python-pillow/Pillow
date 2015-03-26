@@ -638,7 +638,12 @@ unpackRGBa(UINT8* out, const UINT8* in, int pixels)
         int a = in[3];
         if (!a)
             out[R] = out[G] = out[B] = out[A] = 0;
-        else {
+        else if (a == 255) {
+            out[R] = in[0];
+            out[G] = in[1];
+            out[B] = in[2];
+            out[A] = a;
+        } else {
             out[R] = CLIP(in[0] * 255 / a);
             out[G] = CLIP(in[1] * 255 / a);
             out[B] = CLIP(in[2] * 255 / a);
@@ -1113,6 +1118,12 @@ static struct {
     {"RGBA",    "G",            8,      band1},
     {"RGBA",    "B",            8,      band2},
     {"RGBA",    "A",            8,      band3},
+
+    /* true colour w. alpha premultiplied */
+    {"RGBa",    "RGBa",         32,     copy4},
+    {"RGBa",    "BGRa",         32,     unpackBGRA},
+    {"RGBa",    "aRGB",         32,     unpackARGB},
+    {"RGBa",    "aBGR",         32,     unpackABGR},
 
     /* true colour w. padding */
     {"RGBX",    "RGB",          24,     ImagingUnpackRGB},

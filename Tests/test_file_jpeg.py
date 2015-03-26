@@ -3,6 +3,7 @@ from helper import djpeg_available, cjpeg_available
 
 import random
 from io import BytesIO
+import os
 
 from PIL import Image
 from PIL import ImageFile
@@ -333,6 +334,24 @@ class TestFileJpeg(PillowTestCase):
         # Assert
         self.assertEqual(tag_ids['RelatedImageWidth'], 0x1001)
         self.assertEqual(tag_ids['RelatedImageLength'], 0x1002)
+
+    def test_MAXBLOCK_scaling(self):
+        def gen_random_image(size):
+            """ Generates a very hard to compress file
+            :param size: tuple
+            """
+            return Image.frombytes('RGB',size, os.urandom(size[0]*size[1] *3))
+
+        im = gen_random_image((512,512))
+        f = self.tempfile("temp.jpeg")
+        im.save(f, quality=100, optimize=True)
+
+        reloaded = Image.open(f)
+
+        # none of these should crash
+        reloaded.save(f, quality='keep')
+        reloaded.save(f, quality='keep', progressive=True)
+        reloaded.save(f, quality='keep', optimize=True)
 
 
 if __name__ == '__main__':

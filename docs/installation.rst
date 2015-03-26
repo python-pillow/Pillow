@@ -12,7 +12,7 @@ Installation
 
 .. note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7.
 
-Simple installation
+Simple Installation
 -------------------
 
 .. note::
@@ -121,7 +121,7 @@ Sample Usage::
     $ MAX_CONCURRENCY=1 python setup.py build-ext --enable-[feature] install
 
 
-Linux installation
+Linux Installation
 ------------------
 
 .. note::
@@ -160,10 +160,10 @@ Prerequisites are installed on **Fedora 20** with::
         lcms2-devel libwebp-devel tcl-devel tk-devel
 
 
-Mac OS X installation
----------------------
+OS X Installation
+-----------------
 
-We provide binaries for OS X in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow with with XCode.
+We provide binaries for OS X in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow from soure with XCode.
 
 The easiest way to install external libraries is via `Homebrew <http://mxcl.github.com/homebrew/>`_. After you install Homebrew, run::
 
@@ -173,7 +173,7 @@ Install Pillow with::
 
     $ pip install Pillow
 
-Windows installation
+Windows Installation
 --------------------
 
 We provide binaries for Windows in the form of Python Eggs and `Python Wheels
@@ -194,11 +194,11 @@ Python Eggs
 Python Wheels
 ^^^^^^^^^^^^^
 
-.. Note:: Experimental. Requires setuptools >=0.8 and pip >=1.4.1
+.. Note:: Requires setuptools >=0.8 and pip >=1.4.1. Some older versions of pip required the ``--use-wheel`` flag.
 
 ::
 
-    $ pip install --use-wheel Pillow
+    $ pip install Pillow
 
 If the above does not work, it's likely because we haven't uploaded a
 wheel for the latest version of Pillow. In that case, try pinning it
@@ -206,10 +206,10 @@ to a specific version:
 
 ::
 
-    $ pip install --use-wheel Pillow==2.6.1
+    $ pip install Pillow==2.6.1
 
-FreeBSD installation
----------------------
+FreeBSD Installation
+--------------------
 
 .. Note:: Only FreeBSD 10 tested
 

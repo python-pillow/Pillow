@@ -598,6 +598,16 @@ class Image:
             id(self)
             )
 
+    def _repr_png_(self):
+        """ iPython display hook support
+        
+        :returns: png version of the image as bytes
+        """
+        from io import BytesIO
+        b = BytesIO()
+        self.save(b, 'PNG')
+        return b.getvalue()
+
     def __getattr__(self, name):
         if name == "__array_interface__":
             # numpy array interface support
@@ -625,7 +635,7 @@ class Image:
         self.mode = mode
         self.size = size
         self.im = core.new(mode, size)
-        if mode in ("L", "P"):
+        if mode in ("L", "P") and palette:
             self.putpalette(palette)
         self.frombytes(data)
 
@@ -2024,7 +2034,7 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
     You can also use any pixel decoder supported by PIL.  For more
     information on available decoders, see the section
-    **Writing Your Own File Decoder**.
+    :ref:`Writing Your Own File Decoder <file-decoders>`.
 
     Note that this function decodes pixel data only, not entire images.
     If you have an entire image in a string, wrap it in a

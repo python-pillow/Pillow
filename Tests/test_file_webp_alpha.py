@@ -83,7 +83,11 @@ class TestFileWebpAlpha(PillowTestCase):
         image.load()
         image.getdata()
 
-        self.assert_image_similar(image, pil_image, 1.0)
+        # early versions of webp are known to produce higher deviations: deal with it
+        if _webp.WebPDecoderVersion(self) <= 0x201:
+            self.assert_image_similar(image, pil_image, 3.0)
+        else:
+            self.assert_image_similar(image, pil_image, 1.0)
 
 
 if __name__ == '__main__':

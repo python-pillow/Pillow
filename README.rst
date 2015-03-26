@@ -1,14 +1,19 @@
 Pillow
 ======
 
-*Python Imaging Library (Fork)*
+Python Imaging Library (Fork)
+-----------------------------
 
-Pillow is the "friendly" PIL fork by `Alex Clark and Contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and Contributors. For more information, please `read the documentation <http://pillow.readthedocs.org/>`_,  `check the changelog <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst>`_ and `find out how to contribute <https://github.com/python-pillow/Pillow/blob/master/CONTRIBUTING.md>`_.
+Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 
 .. image:: https://travis-ci.org/python-pillow/Pillow.svg?branch=master
    :target: https://travis-ci.org/python-pillow/Pillow
-   :alt: Travis CI build status
+   :alt: Travis CI build status (Linux)
 
+.. image:: https://travis-ci.org/python-pillow/pillow-wheels.svg?branch=latest
+   :target: https://travis-ci.org/python-pillow/pillow-wheels
+   :alt: Travis CI build status (OS X)
+   
 .. image:: https://pypip.in/v/Pillow/badge.png
     :target: https://pypi.python.org/pypi/Pillow/
     :alt: Latest PyPI version
@@ -24,3 +29,15 @@ Pillow is the "friendly" PIL fork by `Alex Clark and Contributors <https://githu
 .. image:: https://landscape.io/github/python-pillow/Pillow/master/landscape.png
    :target: https://landscape.io/github/python-pillow/Pillow/master
    :alt: Code health
+
+More Information
+----------------
+
+- `Changelog <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst>`_
+- `Contribute <https://github.com/python-pillow/Pillow/blob/master/CONTRIBUTING.md>`_
+- `Documentation <http://pillow.readthedocs.org/>`_
+
+  - `About <http://pillow.readthedocs.org/about.html>`_
+  - `Guides <http://pillow.readthedocs.org/guides.html>`_
+  - `Installation <http://pillow.readthedocs.org/installation.html>`_
+  - `Reference <http://pillow.readthedocs.org/reference/index.html>`_
