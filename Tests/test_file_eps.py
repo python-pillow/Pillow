@@ -223,6 +223,21 @@ class TestFileEps(PillowTestCase):
 
             self._test_readline_file_psfile(s, ending)
 
+    def test_open_eps(self):
+        # https://github.com/python-pillow/Pillow/issues/1104
+        # Arrange
+        FILES = ["Tests/images/illu10_no_preview.eps",
+                 "Tests/images/illu10_preview.eps",
+                 "Tests/images/illuCS6_no_preview.eps",
+                 "Tests/images/illuCS6_preview.eps"]
+
+        # Act
+        for filename in FILES:
+            img = Image.open(filename)
+
+        # Assert
+        self.assertEqual(img.mode, "RGB")
+
 
 if __name__ == '__main__':
     unittest.main()
