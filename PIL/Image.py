@@ -109,6 +109,7 @@ from PIL._util import deferred_error
 
 import os
 import sys
+import io
 
 # type stuff
 import collections
@@ -2247,6 +2248,11 @@ def open(fp, mode="r"):
         fp = builtins.open(fp, "rb")
     else:
         filename = ""
+
+    try:
+        fp.seek(0)
+    except (AttributeError, io.UnsupportedOperation):
+        fp = io.BytesIO(fp.read())
 
     prefix = fp.read(16)
 
