@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Add support for HTTP response objects to Image.open()
+  [mfitzp]
+
 - Improve reference docs for PIL.ImageDraw.Draw.pieslice() #1145
   [audreyr]
 
