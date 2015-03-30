@@ -2250,9 +2250,11 @@ def open(fp, mode="r"):
         filename = ""
 
     try:
-        fp.seek(0)
-    except (AttributeError, io.UnsupportedOperation):
-        fp = io.BytesIO(fp.read())
+        requires_iobytes_wrapper = not fp.seekable() 
+    except AttributeError:
+        # Not a subclass of io.IOBase; probably Python 2.7 file (or urllib object)
+        # Check we have a seek fn on the object
+        requires_iobytes_wrapper = not callable( getattr(fp, "seek", None) )
 
     prefix = fp.read(16)
 
@@ -2262,6 +2264,9 @@ def open(fp, mode="r"):
         try:
             factory, accept = OPEN[i]
             if not accept or accept(prefix):
+                if requires_iobytes_wrapper:
+                    fp = io.BytesIO(prefix + fp.read())
+                    requires_iobytes_wrapper = False  # Wrapping once is enough
                 fp.seek(0)
                 im = factory(fp, filename)
                 _decompression_bomb_check(im.size)
@@ -2277,6 +2282,9 @@ def open(fp, mode="r"):
             try:
                 factory, accept = OPEN[i]
                 if not accept or accept(prefix):
+                    if requires_iobytes_wrapper:
+                        fp = io.BytesIO(prefix + fp.read())
+                        requires_iobytes_wrapper = False  # Wrapping once is enough
                     fp.seek(0)
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
