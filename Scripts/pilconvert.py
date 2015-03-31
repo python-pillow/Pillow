@@ -15,7 +15,6 @@
 
 from __future__ import print_function
 
-import site
 import getopt, string, sys
 
 from PIL import Image

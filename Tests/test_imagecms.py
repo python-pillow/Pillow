@@ -240,7 +240,6 @@ class TestImageCms(PillowTestCase):
         self.assert_image_similar(hopper(), out, 2)
 
     def test_profile_tobytes(self):
-        from io import BytesIO
         i = Image.open("Tests/images/rgb.jpg")
         p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
 

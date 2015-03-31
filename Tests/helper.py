@@ -165,7 +165,6 @@ class PillowTestCase(unittest.TestCase):
 
 # helpers
 
-import sys
 py3 = (sys.version_info >= (3, 0))
 
 

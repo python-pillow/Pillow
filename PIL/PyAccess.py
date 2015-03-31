@@ -54,7 +54,7 @@ class PyAccess(object):
             print (vals)
         self._post_init()
 
-    def _post_init():
+    def _post_init(self):
         pass
 
     def __setitem__(self, xy, color):
