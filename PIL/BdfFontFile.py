@@ -69,8 +69,8 @@ def bdf_char(f):
         bitmap.append(s[:-1])
     bitmap = b"".join(bitmap)
 
-    [x, y, l, d] = [int(s) for s in props["BBX"].split()]
-    [dx, dy] = [int(s) for s in props["DWIDTH"].split()]
+    [x, y, l, d] = [int(p) for p in props["BBX"].split()]
+    [dx, dy] = [int(p) for p in props["DWIDTH"].split()]
 
     bbox = (dx, dy), (l, -d-y, x+l, -d), (0, 0, x, y)
 

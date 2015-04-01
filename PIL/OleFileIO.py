@@ -1243,7 +1243,7 @@ class OleFileIO:
         debug( "Number of sectors in the file: %d" % self.nb_sect )
 
         # file clsid (probably never used, so we don't store it)
-        clsid = _clsid(header[8:24])
+        #clsid = _clsid(header[8:24])
         self.sectorsize = self.SectorSize #1 << i16(header, 30)
         self.minisectorsize = self.MiniSectorSize  #1 << i16(header, 32)
         self.minisectorcutoff = self.MiniSectorCutoff # i32(header, 56)
@@ -1561,7 +1561,7 @@ class OleFileIO:
 ##                break
 ##            self.direntries.append(_OleDirectoryEntry(entry, sid, self))
         # load root entry:
-        root_entry = self._load_direntry(0)
+        self._load_direntry(0)
         # Root entry is the first entry:
         self.root = self.direntries[0]
         # read and build all storage trees, starting from the root:
@@ -1786,7 +1786,7 @@ class OleFileIO:
         :returns: True if object exist, else False.
         """
         try:
-            sid = self._find(filename)
+            self._find(filename)
             return True
         except:
             return False
@@ -1842,11 +1842,11 @@ class OleFileIO:
         try:
             # header
             s = fp.read(28)
-            clsid = _clsid(s[8:24])
+            #clsid = _clsid(s[8:24])
 
             # format id
             s = fp.read(20)
-            fmtid = _clsid(s[:16])
+            #fmtid = _clsid(s[:16])
             fp.seek(i32(s, 16))
 
             # get section
@@ -1983,8 +1983,6 @@ class OleFileIO:
 
 if __name__ == "__main__":
 
-    import sys
-
     # [PL] display quick usage info if launched from command-line
     if len(sys.argv) <= 1:
         print(__doc__)
@@ -2001,89 +1999,89 @@ Options:
 
     check_streams = False
     for filename in sys.argv[1:]:
-##      try:
-            # OPTIONS:
-            if filename == '-d':
-                # option to switch debug mode on:
-                set_debug_mode(True)
-                continue
-            if filename == '-c':
-                # option to switch check streams mode on:
-                check_streams = True
-                continue
+        #try:
+        # OPTIONS:
+        if filename == '-d':
+            # option to switch debug mode on:
+            set_debug_mode(True)
+            continue
+        if filename == '-c':
+            # option to switch check streams mode on:
+            check_streams = True
+            continue
 
-            ole = OleFileIO(filename)#, raise_defects=DEFECT_INCORRECT)
-            print("-" * 68)
-            print(filename)
-            print("-" * 68)
-            ole.dumpdirectory()
+        ole = OleFileIO(filename)#, raise_defects=DEFECT_INCORRECT)
+        print("-" * 68)
+        print(filename)
+        print("-" * 68)
+        ole.dumpdirectory()
+        for streamname in ole.listdir():
+            if streamname[-1][0] == "\005":
+                print(streamname, ": properties")
+                props = ole.getproperties(streamname, convert_time=True)
+                props = sorted(props.items())
+                for k, v in props:
+                    #[PL]: avoid to display too large or binary values:
+                    if isinstance(v, (basestring, bytes)):
+                        if len(v) > 50:
+                            v = v[:50]
+                    if isinstance(v, bytes):
+                        # quick and dirty binary check:
+                        for c in (1,2,3,4,5,6,7,11,12,14,15,16,17,18,19,20,
+                            21,22,23,24,25,26,27,28,29,30,31):
+                            if c in bytearray(v):
+                                v = '(binary data)'
+                                break
+                    print("   ", k, v)
+
+        if check_streams:
+            # Read all streams to check if there are errors:
+            print('\nChecking streams...')
             for streamname in ole.listdir():
-                if streamname[-1][0] == "\005":
-                    print(streamname, ": properties")
-                    props = ole.getproperties(streamname, convert_time=True)
-                    props = sorted(props.items())
-                    for k, v in props:
-                        #[PL]: avoid to display too large or binary values:
-                        if isinstance(v, (basestring, bytes)):
-                            if len(v) > 50:
-                                v = v[:50]
-                        if isinstance(v, bytes):
-                            # quick and dirty binary check:
-                            for c in (1,2,3,4,5,6,7,11,12,14,15,16,17,18,19,20,
-                                21,22,23,24,25,26,27,28,29,30,31):
-                                if c in bytearray(v):
-                                    v = '(binary data)'
-                                    break
-                        print("   ", k, v)
-
-            if check_streams:
-                # Read all streams to check if there are errors:
-                print('\nChecking streams...')
-                for streamname in ole.listdir():
-                    # print name using repr() to convert binary chars to \xNN:
-                    print('-', repr('/'.join(streamname)),'-', end=' ')
-                    st_type = ole.get_type(streamname)
-                    if st_type == STGTY_STREAM:
-                        print('size %d' % ole.get_size(streamname))
-                        # just try to read stream in memory:
-                        ole.openstream(streamname)
-                    else:
-                        print('NOT a stream : type=%d' % st_type)
-                print()
-
-##            for streamname in ole.listdir():
-##                # print name using repr() to convert binary chars to \xNN:
-##                print('-', repr('/'.join(streamname)),'-', end=' ')
-##                print(ole.getmtime(streamname))
-##            print()
-
-            print('Modification/Creation times of all directory entries:')
-            for entry in ole.direntries:
-                if entry is not None:
-                    print('- %s: mtime=%s ctime=%s' % (entry.name,
-                        entry.getmtime(), entry.getctime()))
+                # print name using repr() to convert binary chars to \xNN:
+                print('-', repr('/'.join(streamname)),'-', end=' ')
+                st_type = ole.get_type(streamname)
+                if st_type == STGTY_STREAM:
+                    print('size %d' % ole.get_size(streamname))
+                    # just try to read stream in memory:
+                    ole.openstream(streamname)
+                else:
+                    print('NOT a stream : type=%d' % st_type)
             print()
 
-            # parse and display metadata:
-            meta = ole.get_metadata()
-            meta.dump()
-            print()
-            #[PL] Test a few new methods:
-            root = ole.get_rootentry_name()
-            print('Root entry name: "%s"' % root)
-            if ole.exists('worddocument'):
-                print("This is a Word document.")
-                print("type of stream 'WordDocument':", ole.get_type('worddocument'))
-                print("size :", ole.get_size('worddocument'))
-                if ole.exists('macros/vba'):
-                    print("This document may contain VBA macros.")
+##        for streamname in ole.listdir():
+##            # print name using repr() to convert binary chars to \xNN:
+##            print('-', repr('/'.join(streamname)),'-', end=' ')
+##            print(ole.getmtime(streamname))
+##        print()
 
-            # print parsing issues:
-            print('\nNon-fatal issues raised during parsing:')
-            if ole.parsing_issues:
-                for exctype, msg in ole.parsing_issues:
-                    print('- %s: %s' % (exctype.__name__, msg))
-            else:
-                print('None')
+        print('Modification/Creation times of all directory entries:')
+        for entry in ole.direntries:
+            if entry is not None:
+                print('- %s: mtime=%s ctime=%s' % (entry.name,
+                    entry.getmtime(), entry.getctime()))
+        print()
+
+        # parse and display metadata:
+        meta = ole.get_metadata()
+        meta.dump()
+        print()
+        #[PL] Test a few new methods:
+        root = ole.get_rootentry_name()
+        print('Root entry name: "%s"' % root)
+        if ole.exists('worddocument'):
+            print("This is a Word document.")
+            print("type of stream 'WordDocument':", ole.get_type('worddocument'))
+            print("size :", ole.get_size('worddocument'))
+            if ole.exists('macros/vba'):
+                print("This document may contain VBA macros.")
+
+        # print parsing issues:
+        print('\nNon-fatal issues raised during parsing:')
+        if ole.parsing_issues:
+            for exctype, msg in ole.parsing_issues:
+                print('- %s: %s' % (exctype.__name__, msg))
+        else:
+            print('None')
 ##      except IOError as v:
 ##          print("***", "cannot read", file, "-", v)
