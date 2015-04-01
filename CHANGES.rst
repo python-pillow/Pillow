@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Fix: Cannot identify EPS images, fixes #1104
+  [hugovk]
+
 - Configure setuptools to run nosetests, fixes #729
   [aclark]
 
