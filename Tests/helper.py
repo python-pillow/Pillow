@@ -181,24 +181,26 @@ def tostring(im, string_format, **options):
     return out.getvalue()
 
 
-def hopper(mode="RGB", cache={}):
+def hopper(mode=None, cache={}):
     from PIL import Image
-    im = None
-    # FIXME: Implement caching to reduce reading from disk but so an original
-    # copy is returned each time and the cached image isn't modified by tests
+    if mode is None:
+        # Always return fresh not-yet-loaded version of image.
+        # Operations on not-yet-loaded images is separate class of errors
+        # what we should catch.
+        return Image.open("Tests/images/hopper.ppm")
+    # Use caching to reduce reading from disk but so an original copy is
+    # returned each time and the cached image isn't modified by tests
     # (for fast, isolated, repeatable tests).
-    # im = cache.get(mode)
+    im = cache.get(mode)
     if im is None:
-        if mode == "RGB":
-            im = Image.open("Tests/images/hopper.ppm")
-        elif mode == "F":
+        if mode == "F":
             im = hopper("L").convert(mode)
         elif mode[:4] == "I;16":
             im = hopper("I").convert(mode)
         else:
-            im = hopper("RGB").convert(mode)
-    # cache[mode] = im
-    return im
+            im = hopper().convert(mode)
+        cache[mode] = im
+    return im.copy()
 
 
 def command_succeeds(cmd):
