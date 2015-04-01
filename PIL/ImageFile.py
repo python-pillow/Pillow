@@ -196,13 +196,15 @@ class ImageFile(Image.Image):
             except AttributeError:
                 prefix = b""
 
+            # Buffer length read; assign a default value
+            t = 0
+
             for d, e, o, a in self.tile:
                 d = Image._getdecoder(self.mode, d, a, self.decoderconfig)
                 seek(o)
                 try:
                     d.setimage(self.im, e)
                 except ValueError:
-                    t = None
                     continue
                 b = prefix
                 t = len(b)
