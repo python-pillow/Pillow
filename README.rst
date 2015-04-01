@@ -35,11 +35,12 @@ More Information
 
 - `Changelog <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst>`_
 - `Contribute <https://github.com/python-pillow/Pillow/blob/master/CONTRIBUTING.md>`_
+
+  - `Issues <https://github.com/python-pillow/Pillow/issues>`_
+
 - `Documentation <http://pillow.readthedocs.org/>`_
 
   - `About <http://pillow.readthedocs.org/about.html>`_
   - `Guides <http://pillow.readthedocs.org/guides.html>`_
   - `Installation <http://pillow.readthedocs.org/installation.html>`_
   - `Reference <http://pillow.readthedocs.org/reference/index.html>`_
-
-- `Issues <https://github.com/python-pillow/Pillow/issues>`_

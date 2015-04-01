@@ -958,6 +958,9 @@ Changelog (Pillow)
 
 .. Note:: What follows is the original PIL 1.1.7 CHANGES
 
+0.2b5 - 1.1.7 (1995-2010)
+-------------------------
+
 ::
 
     -*- coding: utf-8 -*-
