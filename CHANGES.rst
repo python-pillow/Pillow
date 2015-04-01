@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (2015-04-01)
 ------------------
 
+- Fix 32-bit BMP loading (RGBA or RGBX)
+  [artscoop]
+
 - Fix UnboundLocalError in ImageFile #1131
   [davarisg]
 
