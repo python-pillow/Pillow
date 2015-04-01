@@ -11,7 +11,7 @@ Changelog (Pillow)
   [hugovk]
 
 - Configure setuptools to run nosetests, fixes #729
-  [aclark]
+  [aclark4life]
 
 - Various code health fixes
   [radarhere]
@@ -152,7 +152,7 @@ Changelog (Pillow)
   [wiredfool]
   
 - Fix manifest to include all test files.
-  [aclark]
+  [aclark4life]
 
 2.6.0 (2014-10-01)
 ------------------
@@ -322,7 +322,7 @@ Changelog (Pillow)
   [wirefool]
 
 - Top level flake8 fixes #741
-  [aclark]
+  [aclark4life]
 
 - Remove obsolete Animated Raster Graphics (ARG) support
   [hugovk]
@@ -451,7 +451,7 @@ Changelog (Pillow)
   [larsmans]
 
 - Avoid conflicting _expand functions in PIL & MINGW, fixes #538
-  [aclark]
+  [aclark4life]
 
 - Merge from Philippe Lagadec’s OleFileIO_PL fork
   [vadmium]
@@ -866,13 +866,13 @@ Changelog (Pillow)
   [blueyed]
 
 - Package cleanup and additional documentation
-  [aclark]
+  [aclark4life]
 
 1.7.4 (2011-07-21)
 ------------------
 
 - Fix brown bag release
-  [aclark]
+  [aclark4life]
 
 1.7.3 (2011-07-20)
 ------------------
@@ -884,19 +884,19 @@ Changelog (Pillow)
 ------------------
 
 - Bug fix: Python 2.4 compat
-  [aclark]
+  [aclark4life]
 
 1.7.1 (2011-05-31)
 ------------------
 
 - More multi-arch support
-  [SteveM, regebro, barry, aclark]
+  [SteveM, regebro, barry, aclark4life]
 
 1.7.0 (2011-05-27)
 ------------------
 
 - Add support for multi-arch library directory /usr/lib/x86_64-linux-gnu
-  [aclark]
+  [aclark4life]
 
 1.6 (12/01/2010)
 ----------------
@@ -905,28 +905,28 @@ Changelog (Pillow)
   [elro]
 
 - Doc fixes
-  [aclark]
+  [aclark4life]
 
 1.5 (11/28/2010)
 ----------------
 
 - Module and package fixes
-  [aclark]
+  [aclark4life]
 
 1.4 (11/28/2010)
 ----------------
 
 - Doc fixes
-  [aclark]
+  [aclark4life]
 
 1.3 (11/28/2010)
 ----------------
 
 - Add support for /lib64 and /usr/lib64 library directories on Linux
-  [aclark]
+  [aclark4life]
 
 - Doc fixes
-  [aclark]
+  [aclark4life]
 
 1.2 (08/02/2010)
 ----------------
@@ -935,23 +935,23 @@ Changelog (Pillow)
   [jezdez]
 
 - Doc fixes
-  [aclark]
+  [aclark4life]
 
 1.1 (07/31/2010)
 ----------------
 
 - Removed setuptools_hg requirement
-  [aclark]
+  [aclark4life]
 
 - Doc fixes
-  [aclark]
+  [aclark4life]
 
 1.0 (07/30/2010)
 ----------------
 
 - Remove support for ``import Image``, etc. from the standard namespace. ``from PIL import Image`` etc. now required.
 - Forked PIL based on `Hanno Schlichting's re-packaging <http://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz>`_
-  [aclark]
+  [aclark4life]
 
 .. Note:: What follows is the original PIL 1.1.7 CHANGES
 
