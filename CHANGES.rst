@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Various code health fixes
+  [radarhere]
+
 - Add support for HTTP response objects to Image.open()
   [mfitzp]
 
