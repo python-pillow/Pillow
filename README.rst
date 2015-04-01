@@ -34,6 +34,9 @@ More Information
 ----------------
 
 - `Changelog <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst>`_
+
+  - `Pre-fork <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst#02b5---117-1995-2010>`_
+
 - `Contribute <https://github.com/python-pillow/Pillow/blob/master/CONTRIBUTING.md>`_
 
   - `Issues <https://github.com/python-pillow/Pillow/issues>`_
