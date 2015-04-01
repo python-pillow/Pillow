@@ -1243,7 +1243,7 @@ class OleFileIO:
         debug( "Number of sectors in the file: %d" % self.nb_sect )
 
         # file clsid (probably never used, so we don't store it)
-        clsid = _clsid(header[8:24])
+        #clsid = _clsid(header[8:24])
         self.sectorsize = self.SectorSize #1 << i16(header, 30)
         self.minisectorsize = self.MiniSectorSize  #1 << i16(header, 32)
         self.minisectorcutoff = self.MiniSectorCutoff # i32(header, 56)
@@ -1561,7 +1561,7 @@ class OleFileIO:
 ##                break
 ##            self.direntries.append(_OleDirectoryEntry(entry, sid, self))
         # load root entry:
-        root_entry = self._load_direntry(0)
+        self._load_direntry(0)
         # Root entry is the first entry:
         self.root = self.direntries[0]
         # read and build all storage trees, starting from the root:
@@ -1786,7 +1786,7 @@ class OleFileIO:
         :returns: True if object exist, else False.
         """
         try:
-            sid = self._find(filename)
+            self._find(filename)
             return True
         except:
             return False
@@ -1842,11 +1842,11 @@ class OleFileIO:
         try:
             # header
             s = fp.read(28)
-            clsid = _clsid(s[8:24])
+            #clsid = _clsid(s[8:24])
 
             # format id
             s = fp.read(20)
-            fmtid = _clsid(s[:16])
+            #fmtid = _clsid(s[:16])
             fp.seek(i32(s, 16))
 
             # get section
