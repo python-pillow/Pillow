@@ -49,6 +49,10 @@ git push origin --tags
 ```
 python setup.py sdist --format=zip upload
 ```
+Or
+```
+make sdistup
+```
 (Debian requests a tarball, everyone else would just prefer that we choose one and stick to it. So both it is)
 * [ ] Push a commit to https://github.com/python-pillow/pillow-wheels to build OSX versions (UNDONE latest tag or specific release???)
 * [ ] Retrieve the OS X Wheels from Rackspace files, upload to PyPi (Twine?)
