@@ -262,7 +262,7 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
         return FreeTypeFont(font, size, index, encoding)
     except IOError:
         ttf_filename = os.path.basename(font)
-        
+
         dirs = []
         if sys.platform == "win32":
             # check the windows font repository
@@ -281,11 +281,11 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
         elif sys.platform == 'darwin':
             dirs += ['/Library/Fonts', '/System/Library/Fonts',
                      os.path.expanduser('~/Library/Fonts')]
-        
+
         ext = os.path.splitext(ttf_filename)[1]
-        firstFontWithADifferentExtension = None
-        for dir in dirs:
-            for walkroot, walkdir, walkfilenames in os.walk(dir):
+        first_font_with_a_different_extension = None
+        for directory in dirs:
+            for walkroot, walkdir, walkfilenames in os.walk(directory):
                 for walkfilename in walkfilenames:
                     if ext and walkfilename == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
@@ -294,10 +294,11 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                         fontpath = os.path.join(walkroot, walkfilename)
                         if os.path.splitext(fontpath)[1] == '.ttf':
                             return FreeTypeFont(fontpath, size, index, encoding)
-                        if not ext and firstFontWithADifferentExtension == None:
-                            firstFontWithADifferentExtension = fontpath
-        if firstFontWithADifferentExtension:
-            return FreeTypeFont(firstFontWithADifferentExtension, size, index, encoding)
+                        if not ext and first_font_with_a_different_extension is None:
+                            first_font_with_a_different_extension = fontpath
+        if first_font_with_a_different_extension:
+            return FreeTypeFont(first_font_with_a_different_extension, size,
+                                index, encoding)
         raise
 
 
@@ -310,15 +311,15 @@ def load_path(filename):
     :return: A font object.
     :exception IOError: If the file could not be read.
     """
-    for dir in sys.path:
-        if isDirectory(dir):
+    for directory in sys.path:
+        if isDirectory(directory):
             if not isinstance(filename, str):
                 if bytes is str:
                     filename = filename.encode("utf-8")
                 else:
                     filename = filename.decode("utf-8")
             try:
-                return load(os.path.join(dir, filename))
+                return load(os.path.join(directory, filename))
             except IOError:
                 pass
     raise IOError("cannot find font file")
