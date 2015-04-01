@@ -19,7 +19,7 @@
 __version__ = "0.1"
 
 
-from PIL import Image, ImageFile
+from PIL import Image, ImageFile, OleFileIO
 from PIL.OleFileIO import i8, i32, MAGIC
 
 
