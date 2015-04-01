@@ -233,7 +233,6 @@ def expand(image, border=0, fill=0):
     :param fill: Pixel fill value (a color value).  Default is 0 (black).
     :return: An image.
     """
-    "Add border to image"
     left, top, right, bottom = _border(border)
     width = left + image.size[0] + right
     height = top + image.size[1] + bottom
