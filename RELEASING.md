@@ -48,7 +48,6 @@ git push origin --tags
 * [ ] From a clean source directory with no extra temp files:
 ```
 python setup.py sdist --format=zip upload
-python setup.py sdist upload
 ```
 (Debian requests a tarball, everyone else would just prefer that we choose one and stick to it. So both it is)
 * [ ] Push a commit to https://github.com/python-pillow/pillow-wheels to build OSX versions (UNDONE latest tag or specific release???)
