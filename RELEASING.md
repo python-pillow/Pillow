@@ -20,7 +20,7 @@ Released as required for security or installation fixes.
 * [ ] Run pre-release check via `make pre`
 * [ ] Push to release branch in personal repo. Let Travis run cleanly.
 * [ ] Tag and push to release branch in python-pillow repo.
-* [ ] Upload binaries.
+* [ ] Upload source and binaries.
 
 ## Embargoed Release
 
@@ -42,7 +42,7 @@ git push origin --tags
 * [ ] Upload binaries
 
 
-## Binary Upload Process
+## Upload Process
 
 * [ ] Ping cgohlke for Windows binaries
 * [ ] From a clean source directory with no extra temp files:
