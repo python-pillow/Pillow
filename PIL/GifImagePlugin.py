@@ -24,11 +24,9 @@
 # See the README file for information on usage and redistribution.
 #
 
+from PIL import Image, ImageFile, ImagePalette, _binary
 
 __version__ = "0.9"
-
-
-from PIL import Image, ImageFile, ImagePalette, _binary
 
 
 # --------------------------------------------------------------------
@@ -271,7 +269,7 @@ def _save(im, fp, filename):
             pass  # write uncompressed file
 
     if im.mode in RAWMODE:
-        imOut = im
+        im_out = im
     else:
         # convert on the fly (EXPERIMENTAL -- I'm not sure PIL
         # should automatically convert images on save...)
@@ -279,9 +277,9 @@ def _save(im, fp, filename):
             palette_size = 256
             if im.palette:
                 palette_size = len(im.palette.getdata()[1]) // 3
-            imOut = im.convert("P", palette=1, colors=palette_size)
+            im_out = im.convert("P", palette=1, colors=palette_size)
         else:
-            imOut = im.convert("L")
+            im_out = im.convert("L")
 
     # header
     try:
@@ -290,7 +288,7 @@ def _save(im, fp, filename):
         palette = None
         im.encoderinfo["optimize"] = im.encoderinfo.get("optimize", True)
 
-    header, usedPaletteColors = getheader(imOut, palette, im.encoderinfo)
+    header, used_palette_colors = getheader(im_out, palette, im.encoderinfo)
     for s in header:
         fp.write(s)
 
@@ -315,26 +313,26 @@ def _save(im, fp, filename):
     else:
         transparency = int(transparency)
         # optimize the block away if transparent color is not used
-        transparentColorExists = True
+        transparent_color_exists = True
         # adjust the transparency index after optimize
-        if usedPaletteColors is not None and len(usedPaletteColors) < 256:
-            for i in range(len(usedPaletteColors)):
-                if usedPaletteColors[i] == transparency:
+        if used_palette_colors is not None and len(used_palette_colors) < 256:
+            for i in range(len(used_palette_colors)):
+                if used_palette_colors[i] == transparency:
                     transparency = i
-                    transparentColorExists = True
+                    transparent_color_exists = True
                     break
                 else:
-                    transparentColorExists = False
+                    transparent_color_exists = False
 
         # transparency extension block
-        if transparentColorExists:
+        if transparent_color_exists:
             fp.write(b"!" +
                      o8(249) +              # extension intro
                      o8(4) +                # length
                      o8(1) +                # transparency info present
                      o16(0) +               # duration
-                     o8(transparency)       # transparency index
-                     + o8(0))
+                     o8(transparency) +     # transparency index
+                     o8(0))
 
     # local image header
     fp.write(b"," +
@@ -344,9 +342,9 @@ def _save(im, fp, filename):
              o8(flags) +                # flags
              o8(8))                     # bits
 
-    imOut.encoderconfig = (8, interlace)
-    ImageFile._save(imOut, fp, [("gif", (0, 0)+im.size, 0,
-                                RAWMODE[imOut.mode])])
+    im_out.encoderconfig = (8, interlace)
+    ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
+                                  RAWMODE[im_out.mode])])
 
     fp.write(b"\0")  # end of image data
 
@@ -422,74 +420,75 @@ def getheader(im, palette=None, info=None):
 
     if im.mode == "P":
         if palette and isinstance(palette, bytes):
-            sourcePalette = palette[:768]
+            source_palette = palette[:768]
         else:
-            sourcePalette = im.im.getpalette("RGB")[:768]
+            source_palette = im.im.getpalette("RGB")[:768]
     else:  # L-mode
         if palette and isinstance(palette, bytes):
-            sourcePalette = palette[:768]
+            source_palette = palette[:768]
         else:
-            sourcePalette = bytearray([i//3 for i in range(768)])
+            source_palette = bytearray([i//3 for i in range(768)])
 
-    usedPaletteColors = paletteBytes = None
+    used_palette_colors = palette_bytes = None
 
     if im.mode in ("P", "L") and optimize:
-        usedPaletteColors = []
+        used_palette_colors = []
 
         # check which colors are used
         i = 0
         for count in im.histogram():
             if count:
-                usedPaletteColors.append(i)
+                used_palette_colors.append(i)
             i += 1
 
         # create the new palette if not every color is used
-        if len(usedPaletteColors) < 256:
-            paletteBytes = b""
-            newPositions = {}
+        if len(used_palette_colors) < 256:
+            palette_bytes = b""
+            new_positions = {}
 
             i = 0
             # pick only the used colors from the palette
-            for oldPosition in usedPaletteColors:
-                paletteBytes += sourcePalette[oldPosition*3:oldPosition*3+3]
-                newPositions[oldPosition] = i
+            for oldPosition in used_palette_colors:
+                palette_bytes += source_palette[oldPosition*3:oldPosition*3+3]
+                new_positions[oldPosition] = i
                 i += 1
 
             # replace the palette color id of all pixel with the new id
-            imageBytes = bytearray(im.tobytes())
-            for i in range(len(imageBytes)):
-                imageBytes[i] = newPositions[imageBytes[i]]
-            im.frombytes(bytes(imageBytes))
-            newPaletteBytes = (paletteBytes +
-                               (768 - len(paletteBytes)) * b'\x00')
-            im.putpalette(newPaletteBytes)
-            im.palette = ImagePalette.ImagePalette("RGB", palette=paletteBytes,
-                                                   size=len(paletteBytes))
+            image_bytes = bytearray(im.tobytes())
+            for i in range(len(image_bytes)):
+                image_bytes[i] = new_positions[image_bytes[i]]
+            im.frombytes(bytes(image_bytes))
+            new_palette_bytes = (palette_bytes +
+                                 (768 - len(palette_bytes)) * b'\x00')
+            im.putpalette(new_palette_bytes)
+            im.palette = ImagePalette.ImagePalette("RGB",
+                                                   palette=palette_bytes,
+                                                   size=len(palette_bytes))
 
-    if not paletteBytes:
-        paletteBytes = sourcePalette
+    if not palette_bytes:
+        palette_bytes = source_palette
 
     # Logical Screen Descriptor
     # calculate the palette size for the header
     import math
-    colorTableSize = int(math.ceil(math.log(len(paletteBytes)//3, 2)))-1
-    if colorTableSize < 0:
-        colorTableSize = 0
+    color_table_size = int(math.ceil(math.log(len(palette_bytes)//3, 2)))-1
+    if color_table_size < 0:
+        color_table_size = 0
     # size of global color table + global color table flag
-    header.append(o8(colorTableSize + 128))
+    header.append(o8(color_table_size + 128))
     # background + reserved/aspect
     header.append(o8(0) + o8(0))
     # end of Logical Screen Descriptor
 
     # add the missing amount of bytes
     # the palette has to be 2<<n in size
-    actualTargetSizeDiff = (2 << colorTableSize) - len(paletteBytes)//3
-    if actualTargetSizeDiff > 0:
-        paletteBytes += o8(0) * 3 * actualTargetSizeDiff
+    actual_target_size_diff = (2 << color_table_size) - len(palette_bytes)//3
+    if actual_target_size_diff > 0:
+        palette_bytes += o8(0) * 3 * actual_target_size_diff
 
     # Header + Logical Screen Descriptor + Global Color Table
-    header.append(paletteBytes)
-    return header, usedPaletteColors
+    header.append(palette_bytes)
+    return header, used_palette_colors
 
 
 def getdata(im, offset=(0, 0), **params):
@@ -497,7 +496,7 @@ def getdata(im, offset=(0, 0), **params):
        The first string is a local image header, the rest contains
        encoded image data."""
 
-    class collector:
+    class Collector:
         data = []
 
         def write(self, data):
@@ -505,7 +504,7 @@ def getdata(im, offset=(0, 0), **params):
 
     im.load()  # make sure raster data is available
 
-    fp = collector()
+    fp = Collector()
 
     try:
         im.encoderinfo = params
