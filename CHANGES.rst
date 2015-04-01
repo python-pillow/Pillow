@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Re-enable test image caching
+  [hugovk, homm]
+
 - Fix: Cannot identify EPS images, fixes #1104
   [hugovk]
 
