@@ -233,7 +233,7 @@ try:
             # Assert
             self.assert_image_equal(im, target_img)
 
-        def _test_fake_loading_font(self, path_to_fake):
+        def _test_fake_loading_font(self, path_to_fake, fontname):
             #Make a copy of FreeTypeFont so we can patch the original
             free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)
             with SimplePatcher(ImageFont, '_FreeTypeFont', free_type_font):
@@ -242,7 +242,7 @@ try:
                         return ImageFont._FreeTypeFont(FONT_PATH, size, index, encoding)
                     return ImageFont._FreeTypeFont(filepath, size, index, encoding)
                 with SimplePatcher(ImageFont, 'FreeTypeFont', loadable_font):
-                    font = ImageFont.truetype('Arial')
+                    font = ImageFont.truetype(fontname)
                     #Make sure it's loaded
                     name = font.getname()
                     self.assertEqual(('FreeMono', 'Regular'), name)
@@ -252,25 +252,43 @@ try:
         def test_find_linux_font(self):
             #A lot of mocking here - this is more for hitting code and catching
             #syntax like errors
+            fontDirectory = '/usr/local/share/fonts'
             with SimplePatcher(sys, 'platform', 'linux'):
                 patched_env = copy.deepcopy(os.environ)
                 patched_env['XDG_DATA_DIRS'] = '/usr/share/:/usr/local/share/'
                 with SimplePatcher(os, 'environ', patched_env):
                     def fake_walker(path):
-                        if path == '/usr/local/share/fonts':
-                            return [(path, [], ['Arial.ttf'], )]
+                        if path == fontDirectory:
+                            return [(path, [], ['Arial.ttf', 'Single.otf', 'Duplicate.otf', 'Duplicate.ttf'], )]
                         return [(path, [], ['some_random_font.ttf'], )]
                     with SimplePatcher(os, 'walk', fake_walker):
-                        self._test_fake_loading_font('/usr/local/share/fonts/Arial.ttf')
+                        # Test that the font loads both with and without the extension
+                        self._test_fake_loading_font(fontDirectory+'/Arial.ttf', 'Arial.ttf')
+                        self._test_fake_loading_font(fontDirectory+'/Arial.ttf', 'Arial')
+                        
+                        # Test that non-ttf fonts can be found without the extension
+                        self._test_fake_loading_font(fontDirectory+'/Single.otf', 'Single')
+                        
+                        # Test that ttf fonts are preferred if the extension is not specified
+                        self._test_fake_loading_font(fontDirectory+'/Duplicate.ttf', 'Duplicate')
 
         @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
         def test_find_osx_font(self):
             #Like the linux test, more cover hitting code rather than testing
             #correctness.
+            fontDirectory = '/System/Library/Fonts'
             with SimplePatcher(sys, 'platform', 'darwin'):
-                fake_font_path = '/System/Library/Fonts/Arial.ttf'
-                with SimplePatcher(os.path, 'exists', lambda x: x == fake_font_path):
-                    self._test_fake_loading_font(fake_font_path)
+                def fake_walker(path):
+                    if path == fontDirectory:
+                        return [(path, [], ['Arial.ttf', 'Single.otf', 'Duplicate.otf', 'Duplicate.ttf'], )]
+                    return [(path, [], ['some_random_font.ttf'], )]
+                with SimplePatcher(os, 'walk', fake_walker):
+                        self._test_fake_loading_font(fontDirectory+'/Arial.ttf', 'Arial.ttf')
+                        self._test_fake_loading_font(fontDirectory+'/Arial.ttf', 'Arial')
+                        
+                        self._test_fake_loading_font(fontDirectory+'/Single.otf', 'Single')
+                        
+                        self._test_fake_loading_font(fontDirectory+'/Duplicate.ttf', 'Duplicate')
 
 
 except ImportError:
