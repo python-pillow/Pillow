@@ -47,7 +47,6 @@ git push origin --tags
 * [ ] Ping cgohlke for Windows binaries
 * [ ] From a clean source directory with no extra temp files:
 ```
-python setup.py register
 python setup.py sdist --format=zip upload
 python setup.py sdist upload
 ```
