@@ -1983,8 +1983,6 @@ class OleFileIO:
 
 if __name__ == "__main__":
 
-    import sys
-
     # [PL] display quick usage info if launched from command-line
     if len(sys.argv) <= 1:
         print(__doc__)
