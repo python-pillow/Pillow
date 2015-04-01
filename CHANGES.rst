@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (unreleased)
 ------------------
 
+- Configure setuptools to run nosetests, fixes #729
+  [aclark]
+
 - Various code health fixes
   [radarhere]
 
