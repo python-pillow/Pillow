@@ -261,7 +261,7 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
     try:
         return FreeTypeFont(font, size, index, encoding)
     except IOError:
-        if font.endswith(".ttf"):
+        if font.endswith(".ttf") or font.endswith(".otf"):
             ttf_filename = font
         else:
             ttf_filename = "%s.ttf" % font
