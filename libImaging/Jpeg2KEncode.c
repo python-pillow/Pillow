@@ -257,7 +257,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     opj_image_cmptparm_t image_params[4];
     unsigned xsiz, ysiz;
     unsigned tile_width, tile_height;
-    unsigned tiles_x, tiles_y, num_tiles;
+    unsigned tiles_x, tiles_y;
     unsigned x, y, tile_ndx;
     unsigned n;
     j2k_pack_tile_t pack;
@@ -470,8 +470,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
                + tile_width - 1) / tile_width;
     tiles_y = (im->ysize + (params.image_offset_y0 - params.cp_ty0)
                + tile_height - 1) / tile_height;
-
-    num_tiles = tiles_x * tiles_y;
 
     state->buffer = malloc (tile_width * tile_height * components * prec / 8);
 
