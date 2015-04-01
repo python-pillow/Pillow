@@ -11,8 +11,8 @@
 # 0.3   2003-05-06 fl   Fixed a typo or two.
 #
 
-import getopt, os, sys
 from __future__ import print_function
+import getopt, os, sys
 
 VERSION = "pilprint 0.3/2003-05-05"
 
