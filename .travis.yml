@@ -2,7 +2,7 @@ language:
   - objective-c
 
 env:
-    # global: LATEST_TAG=1
+  global: PILLOW_COMMIT=latest-tag
   matrix:
     - VERSION=2.7.9
     - VERSION=3.2.5
@@ -13,7 +13,9 @@ install:
     - source run_install.sh
     - get_python_environment macpython $VERSION venv
     - pip install delocate
-    - if [ -n "$LATEST_TAG" ]; then checkout_closest_tag Pillow; fi
+    - if [ -n "$PILLOW_COMMIT" ]; then
+        checkout_commit Pillow $PILLOW_COMMIT;
+      fi
     - cd Pillow
     - python setup.py bdist_wheel
     - delocate-wheel dist/*.whl
