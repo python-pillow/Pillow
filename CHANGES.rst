@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.8.0 (2015-04-01)
 ------------------
 
+- Fix UnboundLocalError in ImageFile #1131
+  [davarisg]
+
 - Re-enable test image caching
   [hugovk, homm]
 
