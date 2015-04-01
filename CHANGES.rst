@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-2.8.0 (unreleased)
+2.8.0 (2015-04-01)
 ------------------
 
 - Re-enable test image caching
