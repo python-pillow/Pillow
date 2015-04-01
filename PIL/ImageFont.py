@@ -279,8 +279,8 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                 lindirs = '/usr/share'
             dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
         elif sys.platform == 'darwin':
-            dirs += ['/Library/Fonts/', '/System/Library/Fonts/',
-                     os.path.expanduser('~/Library/Fonts/')]
+            dirs += ['/Library/Fonts', '/System/Library/Fonts',
+                     os.path.expanduser('~/Library/Fonts')]
         
         ext = os.path.splitext(ttf_filename)[1]
         firstFontWithADifferentExtension = None
