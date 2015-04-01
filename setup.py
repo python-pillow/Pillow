@@ -730,7 +730,7 @@ setup(
     version=PILLOW_VERSION,
     description='Python Imaging Library (Fork)',
     long_description=_read('README.rst').decode('utf-8'),
-    author='Alex Clark (fork author)',
+    author='Alex Clark (Fork Author)',
     author_email='aclark@aclark.net',
     url='http://python-pillow.github.io/',
     classifiers=[
