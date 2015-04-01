@@ -42,4 +42,4 @@ More Information
   - `Installation <http://pillow.readthedocs.org/installation.html>`_
   - `Reference <http://pillow.readthedocs.org/reference/index.html>`_
 
-- `Issues <https://github.com/python-pillow/Pillow/issues`_
+- `Issues <https://github.com/python-pillow/Pillow/issues>`_
