@@ -16,8 +16,8 @@ Changelog (Pillow)
 - Configure setuptools to run nosetests, fixes #729
   [aclark4life]
 
-- Various code health fixes
-  [radarhere]
+- Style/health fixes
+  [radarhere, hugovk]
 
 - Add support for HTTP response objects to Image.open()
   [mfitzp]
