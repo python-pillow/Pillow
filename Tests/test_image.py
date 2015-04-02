@@ -1,7 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
-import sys
 
 
 class TestImage(PillowTestCase):

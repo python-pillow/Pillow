@@ -19,7 +19,6 @@
 
 from __future__ import print_function
 
-import site
 import getopt
 import glob
 import sys

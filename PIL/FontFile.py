@@ -17,11 +17,6 @@
 import os
 from PIL import Image, _binary
 
-try:
-    import zlib
-except ImportError:
-    zlib = None
-
 WIDTH = 800
 
 
