@@ -104,6 +104,7 @@ from PIL._util import deferred_error
 import os
 import sys
 import io
+import struct
 
 # type stuff
 import collections
@@ -589,7 +590,7 @@ class Image:
 
     def _repr_png_(self):
         """ iPython display hook support
-        
+
         :returns: png version of the image as bytes
         """
         from io import BytesIO
@@ -882,8 +883,8 @@ class Image:
                 elif isinstance(t, int):
                     self.im.putpalettealpha(t, 0)
                 else:
-                    raise ValueError(
-                        "Transparency for P mode should" + " be bytes or int")
+                    raise ValueError("Transparency for P mode should" +
+                                     " be bytes or int")
 
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
@@ -2243,7 +2244,7 @@ def open(fp, mode="r"):
                 im = factory(fp, filename)
                 _decompression_bomb_check(im.size)
                 return im
-        except (SyntaxError, IndexError, TypeError):
+        except (SyntaxError, IndexError, TypeError, struct.error):
             # import traceback
             # traceback.print_exc()
             pass
@@ -2258,7 +2259,7 @@ def open(fp, mode="r"):
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
-            except (SyntaxError, IndexError, TypeError):
+            except (SyntaxError, IndexError, TypeError, struct.error):
                 # import traceback
                 # traceback.print_exc()
                 pass

@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+2.8.1 (2015-04-02)
+------------------
+
+- Bug fix: Catch struct.error on invalid JPEG, fixes #1163
+  [wiredfool, hugovk]
+
 2.8.0 (2015-04-01)
 ------------------
 
