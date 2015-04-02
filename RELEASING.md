@@ -4,23 +4,34 @@
 
 Released quarterly.
 
-* [ ] Get master to the appropriate code release state. [Travis CI](https://travis-ci.org/python-pillow/Pillow) should be running cleanly for all merges to master.
-* [ ] Update version in `PIL/__init__.py`, `setup.py`, `_imaging.c`, Update date in `CHANGES.rst`.
+* [ ] Get master to appropriate code release state. [Travis CI](https://travis-ci.org/python-pillow/Pillow) should be running cleanly for all merges to master.
+* [ ] Update version in:
+
+```
+    PIL/__init__.py setup.py _imaging.c
+```
+
+* [ ] Update `CHANGES.rst`.
 * [ ] Run pre-release check via `make pre`
 * [ ] Tag and push to release branch in python-pillow repo.
-* [ ] Upload binaries.
+* [ ] Upload source and binary distributions.
 
 ## Point Release
 
-Released as required for security or installation fixes.
+Released as required for security, installation or critical bug fixes.
 
 * [ ] Make necessary changes in master.
-* [ ] Cherry pick individual commits. Touch up `CHANGES.rst` to reflect reality.
-* [ ] Update version in `PIL/__init__.py`, `setup.py`, `_imaging.c`
+* [ ] Cherry pick individual commits.
+* [ ] Update version in:
+
+```
+    PIL/__init__.py setup.py _imaging.c
+```
+* [ ] Update `CHANGES.rst`. 
 * [ ] Run pre-release check via `make pre`
 * [ ] Push to release branch in personal repo. Let Travis run cleanly.
 * [ ] Tag and push to release branch in python-pillow repo.
-* [ ] Upload source and binaries.
+* [ ] Upload source and binary distributions.
 
 ## Embargoed Release
 
@@ -39,12 +50,12 @@ git tag 2.5.3
 git push origin 2.5.x
 git push origin --tags
 ```
-* [ ] Upload binaries
+* [ ] Upload source and binary distributions.
 
 
 ## Upload Process
 
-* [ ] Ping cgohlke for Windows binaries
+* [ ] Contact @cgohlke for Windows binaries.
 * [ ] From a clean source directory with no extra temp files:
 ```
 python setup.py sdist --format=zip upload
@@ -58,4 +69,3 @@ make sdistup
 * [ ] Retrieve the OS X Wheels from Rackspace files, upload to PyPi (Twine?)
 * [ ] Grab Windows binaries, `twine upload dist/*.[whl|egg]`. Manually upload .exe installers.
 * [ ] Announce release availability. [Twitter](https://twitter.com/pythonpillow), web.
-
