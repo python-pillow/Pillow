@@ -32,7 +32,7 @@ class UI(Frame):
         self.canvas.pack()
 
         scale = Scale(self, orient=HORIZONTAL, from_=0, to=255,
-                      resolution=1, command=self.update, length=256)
+                      resolution=1, command=self.update_scale, length=256)
         scale.set(value)
         scale.bind("<ButtonRelease-1>", self.redraw)
         scale.pack()
@@ -41,7 +41,7 @@ class UI(Frame):
         # be too slow on some platforms)
         # self.redraw()
 
-    def update(self, value):
+    def update_scale(self, value):
         self.value = eval(value)
 
         self.redraw()
