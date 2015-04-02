@@ -40,12 +40,12 @@ try:
 except ImportError:
     warnings = None
 
-
 ##
 # A simple 2D drawing interface for PIL images.
 # <p>
 # Application code should use the <b>Draw</b> factory, instead of
 # directly.
+
 
 class ImageDraw:
 
@@ -98,8 +98,8 @@ class ImageDraw:
         if warnings:
             warnings.warn(
                 "'setink' is deprecated; use keyword arguments instead",
-                DeprecationWarning, stacklevel=2
-                )
+                DeprecationWarning,
+                stacklevel=2)
         if isStringType(ink):
             ink = ImageColor.getcolor(ink, self.mode)
         if self.palette and not isinstance(ink, numbers.Number):
@@ -114,8 +114,8 @@ class ImageDraw:
         if warnings:
             warnings.warn(
                 "'setfill' is deprecated; use keyword arguments instead",
-                DeprecationWarning, stacklevel=2
-                )
+                DeprecationWarning,
+                stacklevel=2)
         self.fill = onoff
 
     ##
@@ -281,7 +281,6 @@ class ImageDraw:
             font = self.getfont()
         return font.getsize(text)
 
-
 ##
 # A simple 2D drawing interface for PIL images.
 #
@@ -291,6 +290,7 @@ class ImageDraw:
 #    drawing into the image).  For all other modes, this argument
 #    must be the same as the image mode.  If omitted, the mode
 #    defaults to the mode of the image.
+
 
 def Draw(im, mode=None):
     try:
@@ -304,7 +304,6 @@ try:
 except:
     Outline = None
 
-
 ##
 # (Experimental) A more advanced 2D drawing interface for PIL images,
 # based on the WCK interface.
@@ -312,6 +311,7 @@ except:
 # @param im The image to draw in.
 # @param hints An optional list of hints.
 # @return A (drawing context, drawing resource factory) tuple.
+
 
 def getdraw(im=None, hints=None):
     # FIXME: this needs more work!
@@ -328,7 +328,6 @@ def getdraw(im=None, hints=None):
         im = handler.Draw(im)
     return im, handler
 
-
 ##
 # (experimental) Fills a bounded region with a given color.
 #
@@ -339,6 +338,7 @@ def getdraw(im=None, hints=None):
 #     pixels with a color different from the border color.  If not given,
 #     the region consists of pixels having the same color as the seed
 #     pixel.
+
 
 def floodfill(image, xy, value, border=None):
     "Fill bounded region."
@@ -357,7 +357,7 @@ def floodfill(image, xy, value, border=None):
         while edge:
             newedge = []
             for (x, y) in edge:
-                for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+                for (s, t) in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
                     try:
                         p = pixel[s, t]
                     except IndexError:
@@ -371,7 +371,7 @@ def floodfill(image, xy, value, border=None):
         while edge:
             newedge = []
             for (x, y) in edge:
-                for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+                for (s, t) in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
                     try:
                         p = pixel[s, t]
                     except IndexError:

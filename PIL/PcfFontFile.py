@@ -35,12 +35,10 @@ PCF_SWIDTHS = (1 << 6)
 PCF_GLYPH_NAMES = (1 << 7)
 PCF_BDF_ACCELERATORS = (1 << 8)
 
-BYTES_PER_ROW = [
-    lambda bits: ((bits+7) >> 3),
-    lambda bits: ((bits+15) >> 3) & ~1,
-    lambda bits: ((bits+31) >> 3) & ~3,
-    lambda bits: ((bits+63) >> 3) & ~7,
-]
+BYTES_PER_ROW = [lambda bits: ((bits + 7) >> 3),
+                 lambda bits: ((bits + 15) >> 3) & ~1,
+                 lambda bits: ((bits + 31) >> 3) & ~3,
+                 lambda bits: ((bits + 63) >> 3) & ~7, ]
 
 i8 = _binary.i8
 l16 = _binary.i16le
@@ -52,9 +50,9 @@ b32 = _binary.i32be
 def sz(s, o):
     return s[o:s.index(b"\0", o)]
 
-
 ##
 # Font file plugin for the X11 PCF format.
+
 
 class PcfFontFile(FontFile.FontFile):
 
@@ -89,7 +87,7 @@ class PcfFontFile(FontFile.FontFile):
             ix = encoding[ch]
             if ix is not None:
                 x, y, l, r, w, a, d, f = metrics[ix]
-                glyph = (w, 0), (l, d-y, x+l, d), (0, 0, x, y), bitmaps[ix]
+                glyph = (w, 0), (l, d - y, x + l, d), (0, 0, x, y), bitmaps[ix]
                 self.glyph[ch] = glyph
 
     def _getformat(self, tag):
@@ -158,10 +156,7 @@ class PcfFontFile(FontFile.FontFile):
                 descent = i8(fp.read(1)) - 128
                 xsize = right - left
                 ysize = ascent + descent
-                append(
-                    (xsize, ysize, left, right, width,
-                     ascent, descent, 0)
-                    )
+                append((xsize, ysize, left, right, width, ascent, descent, 0))
 
         else:
 
@@ -175,10 +170,8 @@ class PcfFontFile(FontFile.FontFile):
                 attributes = i16(fp.read(2))
                 xsize = right - left
                 ysize = ascent + descent
-                append(
-                    (xsize, ysize, left, right, width,
-                     ascent, descent, attributes)
-                    )
+                append((xsize, ysize, left, right, width, ascent, descent,
+                        attributes))
 
         return metrics
 
@@ -205,7 +198,7 @@ class PcfFontFile(FontFile.FontFile):
             bitmapSizes.append(i32(fp.read(4)))
 
         byteorder = format & 4  # non-zero => MSB
-        bitorder = format & 8   # non-zero => MSB
+        bitorder = format & 8  # non-zero => MSB
         padindex = format & 3
 
         bitmapsize = bitmapSizes[padindex]
@@ -220,10 +213,9 @@ class PcfFontFile(FontFile.FontFile):
 
         for i in range(nbitmaps):
             x, y, l, r, w, a, d, f = metrics[i]
-            b, e = offsets[i], offsets[i+1]
+            b, e = offsets[i], offsets[i + 1]
             bitmaps.append(
-                Image.frombytes("1", (x, y), data[b:e], "raw", mode, pad(x))
-                )
+                Image.frombytes("1", (x, y), data[b:e], "raw", mode, pad(x)))
 
         return bitmaps
 
@@ -245,7 +237,7 @@ class PcfFontFile(FontFile.FontFile):
             encodingOffset = i16(fp.read(2))
             if encodingOffset != 0xFFFF:
                 try:
-                    encoding[i+firstCol] = encodingOffset
+                    encoding[i + firstCol] = encodingOffset
                 except IndexError:
                     break  # only load ISO-8859-1 glyphs
 

@@ -43,6 +43,7 @@ class _imagingft_not_installed:
     def __getattr__(self, id):
         raise ImportError("The _imagingft C module is not installed")
 
+
 try:
     from PIL import _imagingft as core
 except ImportError:
@@ -101,7 +102,7 @@ class ImageFont:
             self.info.append(s)
 
         # read PILfont metrics
-        data = file.read(256*20)
+        data = file.read(256 * 20)
 
         # check image
         if image.mode not in ("1", "L"):
@@ -115,10 +116,10 @@ class ImageFont:
         self.getsize = self.font.getsize
         self.getmask = self.font.getmask
 
-
 ##
 # Wrapper for FreeType fonts.  Application code should use the
 # <b>truetype</b> factory function to create font objects.
+
 
 class FreeTypeFont:
     "FreeType font wrapper (requires _imagingft service)"
@@ -127,10 +128,9 @@ class FreeTypeFont:
         # FIXME: use service provider instead
         if file:
             if warnings:
-                warnings.warn(
-                    'file parameter deprecated, '
-                    'please use font parameter instead.',
-                    DeprecationWarning)
+                warnings.warn('file parameter deprecated, '
+                              'please use font parameter instead.',
+                              DeprecationWarning)
             font = file
 
         self.path = font
@@ -142,8 +142,8 @@ class FreeTypeFont:
             self.font = core.getfont(font, size, index, encoding)
         else:
             self.font_bytes = font.read()
-            self.font = core.getfont(
-                "", size, index, encoding, self.font_bytes)
+            self.font = core.getfont("", size, index, encoding,
+                                     self.font_bytes)
 
     def getname(self):
         return self.font.family, self.font.style
@@ -177,11 +177,11 @@ class FreeTypeFont:
 
         :return: A FreeTypeFont object.
         """
-        return FreeTypeFont(font=self.path if font is None else font,
-                            size=self.size if size is None else size,
-                            index=self.index if index is None else index,
-                            encoding=self.encoding if encoding is None else
-                            encoding)
+        return FreeTypeFont(
+            font=self.path if font is None else font,
+            size=self.size if size is None else size,
+            index=self.index if index is None else index,
+            encoding=self.encoding if encoding is None else encoding)
 
 ##
 # Wrapper that creates a transposed font from any existing font
@@ -252,10 +252,9 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
 
     if filename:
         if warnings:
-            warnings.warn(
-                'filename parameter deprecated, '
-                'please use font parameter instead.',
-                DeprecationWarning)
+            warnings.warn('filename parameter deprecated, '
+                          'please use font parameter instead.',
+                          DeprecationWarning)
         font = filename
 
     try:
@@ -277,7 +276,8 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                 # According to the freedesktop spec, XDG_DATA_DIRS should
                 # default to /usr/share
                 lindirs = '/usr/share'
-            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+            dirs += [os.path.join(lindir, "fonts")
+                     for lindir in lindirs.split(":")]
         elif sys.platform == 'darwin':
             dirs += ['/Library/Fonts', '/System/Library/Fonts',
                      os.path.expanduser('~/Library/Fonts')]
@@ -290,7 +290,8 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                     if ext and walkfilename == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
                         return FreeTypeFont(fontpath, size, index, encoding)
-                    elif not ext and os.path.splitext(walkfilename)[0] == ttf_filename:
+                    elif not ext and os.path.splitext(
+                        walkfilename)[0] == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
                         if os.path.splitext(fontpath)[1] == '.ttf':
                             return FreeTypeFont(fontpath, size, index, encoding)
@@ -335,8 +336,7 @@ def load_default():
     from io import BytesIO
     import base64
     f = ImageFont()
-    f._load_pilfont_data(
-        # courB08
+    f._load_pilfont_data(  # courB08
         BytesIO(base64.decodestring(b'''
 UElMZm9udAo7Ozs7OzsxMDsKREFUQQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

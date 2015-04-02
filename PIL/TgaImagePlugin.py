@@ -16,11 +16,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-
 __version__ = "0.3"
 
 from PIL import Image, ImageFile, ImagePalette, _binary
-
 
 #
 # --------------------------------------------------------------------
@@ -30,20 +28,19 @@ i8 = _binary.i8
 i16 = _binary.i16le
 i32 = _binary.i32le
 
-
 MODES = {
     # map imagetype/depth to rawmode
-    (1, 8):  "P",
-    (3, 1):  "1",
-    (3, 8):  "L",
+    (1, 8): "P",
+    (3, 1): "1",
+    (3, 8): "L",
     (2, 16): "BGR;5",
     (2, 24): "BGR",
     (2, 32): "BGRA",
 }
 
-
 ##
 # Image plugin for Targa files.
+
 
 class TgaImageFile(ImageFile.ImageFile):
 
@@ -108,24 +105,24 @@ class TgaImageFile(ImageFile.ImageFile):
             start, size, mapdepth = i16(s[3:]), i16(s[5:]), i16(s[7:])
             if mapdepth == 16:
                 self.palette = ImagePalette.raw(
-                    "BGR;16", b"\0"*2*start + self.fp.read(2*size))
+                    "BGR;16", b"\0" * 2 * start + self.fp.read(2 * size))
             elif mapdepth == 24:
                 self.palette = ImagePalette.raw(
-                    "BGR", b"\0"*3*start + self.fp.read(3*size))
+                    "BGR", b"\0" * 3 * start + self.fp.read(3 * size))
             elif mapdepth == 32:
                 self.palette = ImagePalette.raw(
-                    "BGRA", b"\0"*4*start + self.fp.read(4*size))
+                    "BGRA", b"\0" * 4 * start + self.fp.read(4 * size))
 
         # setup tile descriptor
         try:
             rawmode = MODES[(imagetype & 7, depth)]
             if imagetype & 8:
                 # compressed
-                self.tile = [("tga_rle", (0, 0)+self.size,
-                              self.fp.tell(), (rawmode, orientation, depth))]
+                self.tile = [("tga_rle", (0, 0) + self.size, self.fp.tell(),
+                              (rawmode, orientation, depth))]
             else:
-                self.tile = [("raw", (0, 0)+self.size,
-                              self.fp.tell(), (rawmode, 0, orientation))]
+                self.tile = [("raw", (0, 0) + self.size, self.fp.tell(),
+                              (rawmode, 0, orientation))]
         except KeyError:
             pass  # cannot decode
 
@@ -170,24 +167,15 @@ def _save(im, fp, filename, check=0):
     if orientation > 0:
         flags = flags | 0x20
 
-    fp.write(b"\000" +
-             o8(colormaptype) +
-             o8(imagetype) +
-             o16(colormapfirst) +
-             o16(colormaplength) +
-             o8(colormapentry) +
-             o16(0) +
-             o16(0) +
-             o16(im.size[0]) +
-             o16(im.size[1]) +
-             o8(bits) +
-             o8(flags))
+    fp.write(b"\000" + o8(colormaptype) + o8(imagetype) + o16(colormapfirst) +
+             o16(colormaplength) + o8(colormapentry) + o16(0) + o16(0) +
+             o16(im.size[0]) + o16(im.size[1]) + o8(bits) + o8(flags))
 
     if colormaptype:
         fp.write(im.im.getpalette("RGB", "BGR"))
 
-    ImageFile._save(
-        im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
+    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0,
+                              (rawmode, 0, orientation))])
 
 #
 # --------------------------------------------------------------------

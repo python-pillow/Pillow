@@ -24,21 +24,21 @@ _handler = None
 if str != bytes:
     long = int
 
-
 ##
 # Install application-specific WMF image handler.
 #
 # @param handler Handler object.
 
+
 def register_handler(handler):
     global _handler
     _handler = handler
+
 
 if hasattr(Image.core, "drawwmf"):
     # install default handler (windows only)
 
     class WmfHandler:
-
         def open(self, im):
             im.mode = "RGB"
             self.bbox = im.info["wmf_bbox"]
@@ -47,9 +47,8 @@ if hasattr(Image.core, "drawwmf"):
             im.fp.seek(0)  # rewind
             return Image.frombytes(
                 "RGB", im.size,
-                Image.core.drawwmf(im.fp.read(), im.size, self.bbox),
-                "raw", "BGR", (im.size[0]*3 + 3) & -4, -1
-                )
+                Image.core.drawwmf(im.fp.read(), im.size, self.bbox), "raw",
+                "BGR", (im.size[0] * 3 + 3) & -4, -1)
 
     register_handler(WmfHandler())
 
@@ -64,22 +63,21 @@ def short(c, o=0):
         v -= 65536
     return v
 
-dword = _binary.i32le
 
+dword = _binary.i32le
 
 #
 # --------------------------------------------------------------------
 # Read WMF file
 
-def _accept(prefix):
-    return (
-        prefix[:6] == b"\xd7\xcd\xc6\x9a\x00\x00" or
-        prefix[:4] == b"\x01\x00\x00\x00"
-        )
 
+def _accept(prefix):
+    return (prefix[:6] == b"\xd7\xcd\xc6\x9a\x00\x00" or
+            prefix[:4] == b"\x01\x00\x00\x00")
 
 ##
 # Image plugin for Windows metafiles.
+
 
 class WmfStubImageFile(ImageFile.StubImageFile):
 

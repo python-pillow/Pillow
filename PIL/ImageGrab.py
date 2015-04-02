@@ -32,11 +32,9 @@ except AttributeError:
 
 def grab(bbox=None):
     size, data = grabber()
-    im = Image.frombytes(
-        "RGB", size, data,
-        # RGB, 32-bit line padding, origo in lower left corner
-        "raw", "BGR", (size[0]*3 + 3) & -4, -1
-        )
+    im = Image.frombytes("RGB", size, data,
+                         # RGB, 32-bit line padding, origo in lower left corner
+                         "raw", "BGR", (size[0] * 3 + 3) & -4, -1)
     if bbox:
         im = im.crop(bbox)
     return im

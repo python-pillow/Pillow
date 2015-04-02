@@ -22,9 +22,9 @@ from PIL._util import isStringType
 import operator
 from functools import reduce
 
-
 #
 # helpers
+
 
 def _border(border):
     if isinstance(border, tuple):
@@ -75,7 +75,7 @@ def autocontrast(image, cutoff=0, ignore=None):
     histogram = image.histogram()
     lut = []
     for layer in range(0, len(histogram), 256):
-        h = histogram[layer:layer+256]
+        h = histogram[layer:layer + 256]
         if ignore is not None:
             # get rid of outliers
             try:
@@ -154,9 +154,9 @@ def colorize(image, black, white):
     green = []
     blue = []
     for i in range(256):
-        red.append(black[0]+i*(white[0]-black[0])//255)
-        green.append(black[1]+i*(white[1]-black[1])//255)
-        blue.append(black[2]+i*(white[2]-black[2])//255)
+        red.append(black[0] + i * (white[0] - black[0]) // 255)
+        green.append(black[1] + i * (white[1] - black[1]) // 255)
+        blue.append(black[2] + i * (white[2] - black[2]) // 255)
     image = image.convert("RGB")
     return _lut(image, red + green + blue)
 
@@ -174,8 +174,7 @@ def crop(image, border=0):
     """
     left, top, right, bottom = _border(border)
     return image.crop(
-        (left, top, image.size[0]-right, image.size[1]-bottom)
-        )
+        (left, top, image.size[0] - right, image.size[1] - bottom))
 
 
 def deform(image, deformer, resample=Image.BILINEAR):
@@ -188,9 +187,8 @@ def deform(image, deformer, resample=Image.BILINEAR):
     :param resample: What resampling filter to use.
     :return: An image.
     """
-    return image.transform(
-        image.size, Image.MESH, deformer.getmesh(image), resample
-        )
+    return image.transform(image.size, Image.MESH, deformer.getmesh(image),
+                           resample)
 
 
 def equalize(image, mask=None):
@@ -209,7 +207,7 @@ def equalize(image, mask=None):
     h = image.histogram(mask)
     lut = []
     for b in range(0, len(h), 256):
-        histo = [_f for _f in h[b:b+256] if _f]
+        histo = [_f for _f in h[b:b + 256] if _f]
         if len(histo) <= 1:
             lut.extend(list(range(256)))
         else:
@@ -220,7 +218,7 @@ def equalize(image, mask=None):
                 n = step // 2
                 for i in range(256):
                     lut.append(n // step)
-                    n = n + h[i+b]
+                    n = n + h[i + b]
     return _lut(image, lut)
 
 
@@ -289,22 +287,19 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     # the 'bleed' around the edges
 
     # number of pixels to trim off on Top and Bottom, Left and Right
-    bleedPixels = (
-        int((float(bleed) * float(image.size[0])) + 0.5),
-        int((float(bleed) * float(image.size[1])) + 0.5)
-        )
+    bleedPixels = (int((float(bleed) * float(image.size[0])) + 0.5),
+                   int((float(bleed) * float(image.size[1])) + 0.5))
 
     liveArea = (0, 0, image.size[0], image.size[1])
     if bleed > 0.0:
-        liveArea = (
-            bleedPixels[0], bleedPixels[1], image.size[0] - bleedPixels[0] - 1,
-            image.size[1] - bleedPixels[1] - 1
-            )
+        liveArea = (bleedPixels[0], bleedPixels[1],
+                    image.size[0] - bleedPixels[0] - 1,
+                    image.size[1] - bleedPixels[1] - 1)
 
     liveSize = (liveArea[2] - liveArea[0], liveArea[3] - liveArea[1])
 
     # calculate the aspect ratio of the liveArea
-    liveAreaAspectRatio = float(liveSize[0])/float(liveSize[1])
+    liveAreaAspectRatio = float(liveSize[0]) / float(liveSize[1])
 
     # calculate the aspect ratio of the output image
     aspectRatio = float(size[0]) / float(size[1])
@@ -317,19 +312,20 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     else:
         # liveArea is taller than what's needed, crop the top and bottom
         cropWidth = liveSize[0]
-        cropHeight = int((float(liveSize[0])/aspectRatio) + 0.5)
+        cropHeight = int((float(liveSize[0]) / aspectRatio) + 0.5)
 
     # make the crop
-    leftSide = int(liveArea[0] + (float(liveSize[0]-cropWidth) * centering[0]))
+    leftSide = int(liveArea[0] +
+                   (float(liveSize[0] - cropWidth) * centering[0]))
     if leftSide < 0:
         leftSide = 0
-    topSide = int(liveArea[1] + (float(liveSize[1]-cropHeight) * centering[1]))
+    topSide = int(liveArea[1] +
+                  (float(liveSize[1] - cropHeight) * centering[1]))
     if topSide < 0:
         topSide = 0
 
     out = image.crop(
-        (leftSide, topSide, leftSide + cropWidth, topSide + cropHeight)
-        )
+        (leftSide, topSide, leftSide + cropWidth, topSide + cropHeight))
 
     # resize the image and return it
     return out.resize(size, method)
@@ -364,7 +360,7 @@ def invert(image):
     """
     lut = []
     for i in range(256):
-        lut.append(255-i)
+        lut.append(255 - i)
     return _lut(image, lut)
 
 
@@ -387,7 +383,7 @@ def posterize(image, bits):
     :return: An image.
     """
     lut = []
-    mask = ~(2**(8-bits)-1)
+    mask = ~(2 ** (8 - bits) - 1)
     for i in range(256):
         lut.append(i & mask)
     return _lut(image, lut)
@@ -406,12 +402,12 @@ def solarize(image, threshold=128):
         if i < threshold:
             lut.append(i)
         else:
-            lut.append(255-i)
+            lut.append(255 - i)
     return _lut(image, lut)
-
 
 # --------------------------------------------------------------------
 # PIL USM components, from Kevin Cazabon.
+
 
 def gaussian_blur(im, radius=None):
     """ PIL_usm.gblur(im, [radius])"""
@@ -422,6 +418,7 @@ def gaussian_blur(im, radius=None):
     im.load()
 
     return im.im.gaussian_blur(radius)
+
 
 gblur = gaussian_blur
 
@@ -439,6 +436,7 @@ def unsharp_mask(im, radius=None, percent=None, threshold=None):
     im.load()
 
     return im.im.unsharp_mask(radius, percent, threshold)
+
 
 usm = unsharp_mask
 

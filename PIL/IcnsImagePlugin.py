@@ -79,11 +79,9 @@ def read_32(fobj, start_length, size):
                     break
             if bytesleft != 0:
                 raise SyntaxError(
-                    "Error reading channel [%r left]" % bytesleft
-                    )
-            band = Image.frombuffer(
-                "L", pixel_size, b"".join(data), "raw", "L", 0, 1
-                )
+                    "Error reading channel [%r left]" % bytesleft)
+            band = Image.frombuffer("L", pixel_size, b"".join(data), "raw",
+                                    "L", 0, 1)
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
 
@@ -94,9 +92,8 @@ def read_mk(fobj, start_length, size):
     fobj.seek(start)
     pixel_size = (size[0] * size[2], size[1] * size[2])
     sizesq = pixel_size[0] * pixel_size[1]
-    band = Image.frombuffer(
-        "L", pixel_size, fobj.read(sizesq), "raw", "L", 0, 1
-        )
+    band = Image.frombuffer("L", pixel_size, fobj.read(sizesq), "raw", "L", 0,
+                            1)
     return {"A": band}
 
 
@@ -129,49 +126,25 @@ def read_png_or_jpeg2000(fobj, start_length, size):
 class IcnsFile:
 
     SIZES = {
-        (512, 512, 2): [
-            (b'ic10', read_png_or_jpeg2000),
-        ],
-        (512, 512, 1): [
-            (b'ic09', read_png_or_jpeg2000),
-        ],
-        (256, 256, 2): [
-            (b'ic14', read_png_or_jpeg2000),
-        ],
-        (256, 256, 1): [
-            (b'ic08', read_png_or_jpeg2000),
-        ],
-        (128, 128, 2): [
-            (b'ic13', read_png_or_jpeg2000),
-        ],
-        (128, 128, 1): [
-            (b'ic07', read_png_or_jpeg2000),
-            (b'it32', read_32t),
-            (b't8mk', read_mk),
-        ],
-        (64, 64, 1): [
-            (b'icp6', read_png_or_jpeg2000),
-        ],
-        (32, 32, 2): [
-            (b'ic12', read_png_or_jpeg2000),
-        ],
-        (48, 48, 1): [
-            (b'ih32', read_32),
-            (b'h8mk', read_mk),
-        ],
-        (32, 32, 1): [
-            (b'icp5', read_png_or_jpeg2000),
-            (b'il32', read_32),
-            (b'l8mk', read_mk),
-        ],
-        (16, 16, 2): [
-            (b'ic11', read_png_or_jpeg2000),
-        ],
-        (16, 16, 1): [
-            (b'icp4', read_png_or_jpeg2000),
-            (b'is32', read_32),
-            (b's8mk', read_mk),
-        ],
+        (512, 512, 2): [(b'ic10', read_png_or_jpeg2000), ],
+        (512, 512, 1): [(b'ic09', read_png_or_jpeg2000), ],
+        (256, 256, 2): [(b'ic14', read_png_or_jpeg2000), ],
+        (256, 256, 1): [(b'ic08', read_png_or_jpeg2000), ],
+        (128, 128, 2): [(b'ic13', read_png_or_jpeg2000), ],
+        (128, 128, 1): [(b'ic07', read_png_or_jpeg2000),
+                        (b'it32', read_32t),
+                        (b't8mk', read_mk), ],
+        (64, 64, 1): [(b'icp6', read_png_or_jpeg2000), ],
+        (32, 32, 2): [(b'ic12', read_png_or_jpeg2000), ],
+        (48, 48, 1): [(b'ih32', read_32),
+                      (b'h8mk', read_mk), ],
+        (32, 32, 1): [(b'icp5', read_png_or_jpeg2000),
+                      (b'il32', read_32),
+                      (b'l8mk', read_mk), ],
+        (16, 16, 2): [(b'ic11', read_png_or_jpeg2000), ],
+        (16, 16, 1): [(b'icp4', read_png_or_jpeg2000),
+                      (b'is32', read_32),
+                      (b's8mk', read_mk), ],
     }
 
     def __init__(self, fobj):
@@ -241,9 +214,9 @@ class IcnsFile:
             pass
         return im
 
-
 ##
 # Image plugin for Mac OS icons.
+
 
 class IcnsImageFile(ImageFile.ImageFile):
     """
@@ -267,7 +240,7 @@ class IcnsImageFile(ImageFile.ImageFile):
                      self.best_size[1] * self.best_size[2])
         self.info['sizes'] = self.icns.itersizes()
         # Just use this to see if it's loaded or not yet.
-        self.tile = ('',)
+        self.tile = ('', )
 
     def load(self):
         if len(self.size) == 3:
@@ -292,6 +265,7 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.icns = None
         self.tile = ()
         self.load_end()
+
 
 Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == b'icns')
 Image.register_extension("ICNS", '.icns')

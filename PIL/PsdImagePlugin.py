@@ -40,16 +40,16 @@ i8 = _binary.i8
 i16 = _binary.i16be
 i32 = _binary.i32be
 
-
 # --------------------------------------------------------------------.
 # read PSD images
+
 
 def _accept(prefix):
     return prefix[:4] == b"8BPS"
 
-
 ##
 # Image plugin for Photoshop images.
+
 
 class PsdImageFile(ImageFile.ImageFile):
 
@@ -139,7 +139,7 @@ class PsdImageFile(ImageFile.ImageFile):
         try:
             if layer <= 0:
                 raise IndexError
-            name, mode, bbox, tile = self.layers[layer-1]
+            name, mode, bbox, tile = self.layers[layer - 1]
             self.mode = mode
             self.tile = tile
             self.frame = layer
@@ -187,7 +187,7 @@ def _layerinfo(file):
             if type == 65535:
                 m = "A"
             else:
-                m = "RGBA"[type]
+                m = "RGBA" [type]
 
             mode.append(m)
             size = i32(read(4))
@@ -269,7 +269,7 @@ def _maketile(file, mode, bbox, channels):
             if mode == "CMYK":
                 layer += ";I"
             tile.append(("raw", bbox, offset, layer))
-            offset = offset + xsize*ysize
+            offset = offset + xsize * ysize
 
     elif compression == 1:
         #
@@ -282,11 +282,9 @@ def _maketile(file, mode, bbox, channels):
             layer = mode[channel]
             if mode == "CMYK":
                 layer += ";I"
-            tile.append(
-                ("packbits", bbox, offset, layer)
-                )
+            tile.append(("packbits", bbox, offset, layer))
             for y in range(ysize):
-                offset = offset + i16(bytecount[i:i+2])
+                offset = offset + i16(bytecount[i:i + 2])
                 i += 2
 
     file.seek(offset)

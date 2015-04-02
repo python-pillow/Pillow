@@ -16,12 +16,10 @@
 
 from PIL import Image
 
-
 # the Python class below is overridden by the C implementation.
 
 
 class Path:
-
     def __init__(self, xy):
         pass
 
@@ -60,7 +58,6 @@ class Path:
 
     def transform(self, matrix):
         pass
-
 
 # override with C implementation
 Path = Image.core.path

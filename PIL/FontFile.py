@@ -32,9 +32,9 @@ def puti16(fp, values):
             v += 65536
         fp.write(_binary.o16be(v))
 
-
 ##
 # Base class for raster font file handlers.
+
 
 class FontFile:
 

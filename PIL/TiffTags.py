@@ -21,13 +21,11 @@
 # Map tag numbers (or tag number, tag value tuples) to tag names.
 
 TAGS = {
-
     254: "NewSubfileType",
     255: "SubfileType",
     256: "ImageWidth",
     257: "ImageLength",
     258: "BitsPerSample",
-
     259: "Compression",
     (259, 1): "Uncompressed",
     (259, 2): "CCITT 1d",
@@ -36,7 +34,6 @@ TAGS = {
     (259, 5): "LZW",
     (259, 6): "JPEG",
     (259, 32773): "PackBits",
-
     262: "PhotometricInterpretation",
     (262, 0): "WhiteIsZero",
     (262, 1): "BlackIsZero",
@@ -48,13 +45,11 @@ TAGS = {
     (262, 8): "CieLAB",
     (262, 32803): "CFA",  # TIFF/EP, Adobe DNG
     (262, 32892): "LinearRaw",  # Adobe DNG
-
     263: "Thresholding",
     264: "CellWidth",
     265: "CellHeight",
     266: "FillOrder",
     269: "DocumentName",
-
     270: "ImageDescription",
     271: "Make",
     272: "Model",
@@ -63,7 +58,6 @@ TAGS = {
     277: "SamplesPerPixel",
     278: "RowsPerStrip",
     279: "StripByteCounts",
-
     280: "MinSampleValue",
     281: "MaxSampleValue",
     282: "XResolution",
@@ -71,37 +65,31 @@ TAGS = {
     284: "PlanarConfiguration",
     (284, 1): "Contigous",
     (284, 2): "Separate",
-
     285: "PageName",
     286: "XPosition",
     287: "YPosition",
     288: "FreeOffsets",
     289: "FreeByteCounts",
-
     290: "GrayResponseUnit",
     291: "GrayResponseCurve",
     292: "T4Options",
     293: "T6Options",
     296: "ResolutionUnit",
     297: "PageNumber",
-
     301: "TransferFunction",
     305: "Software",
     306: "DateTime",
-
     315: "Artist",
     316: "HostComputer",
     317: "Predictor",
     318: "WhitePoint",
     319: "PrimaryChromaticies",
-
     320: "ColorMap",
     321: "HalftoneHints",
     322: "TileWidth",
     323: "TileLength",
     324: "TileOffsets",
     325: "TileByteCounts",
-
     332: "InkSet",
     333: "InkNames",
     334: "NumberOfInks",
@@ -109,14 +97,10 @@ TAGS = {
     337: "TargetPrinter",
     338: "ExtraSamples",
     339: "SampleFormat",
-
     340: "SMinSampleValue",
     341: "SMaxSampleValue",
     342: "TransferRange",
-
-    347: "JPEGTables",
-
-    # obsolete JPEG tags
+    347: "JPEGTables",  # obsolete JPEG tags
     512: "JPEGProc",
     513: "JPEGInterchangeFormat",
     514: "JPEGInterchangeFormatLength",
@@ -126,28 +110,16 @@ TAGS = {
     519: "JPEGQTables",
     520: "JPEGDCTables",
     521: "JPEGACTables",
-
     529: "YCbCrCoefficients",
     530: "YCbCrSubSampling",
     531: "YCbCrPositioning",
-    532: "ReferenceBlackWhite",
-
-    # XMP
+    532: "ReferenceBlackWhite",  # XMP
     700: "XMP",
-
-    33432: "Copyright",
-
-    # various extensions (should check specs for "official" names)
+    33432: "Copyright",  # various extensions (should check specs for "official" names)
     33723: "IptcNaaInfo",
-    34377: "PhotoshopInfo",
-
-    # Exif IFD
-    34665: "ExifIFD",
-
-    # ICC Profile
-    34675: "ICCProfile",
-
-    # Additional Exif Info
+    34377: "PhotoshopInfo",  # Exif IFD
+    34665: "ExifIFD",  # ICC Profile
+    34675: "ICCProfile",  # Additional Exif Info
     33434: "ExposureTime",
     33437: "FNumber",
     34850: "ExposureProgram",
@@ -218,9 +190,7 @@ TAGS = {
     42035: "LensMake",
     42036: "LensModel",
     42037: "LensSerialNumber",
-    42240: "Gamma",
-
-    # MP Info
+    42240: "Gamma",  # MP Info
     45056: "MPFVersion",
     45057: "NumberOfImages",
     45058: "MPEntry",
@@ -239,9 +209,7 @@ TAGS = {
     45578: "AxisDistance_Z",
     45579: "YawAngle",
     45580: "PitchAngle",
-    45581: "RollAngle",
-
-    # Adobe DNG
+    45581: "RollAngle",  # Adobe DNG
     50706: "DNGVersion",
     50707: "DNGBackwardVersion",
     50708: "UniqueCameraModel",
@@ -279,9 +247,7 @@ TAGS = {
     50738: "AntiAliasStrength",
     50740: "DNGPrivateData",
     50741: "MakerNoteSafety",
-    50780: "BestQualityScale",
-
-    # ImageJ
+    50780: "BestQualityScale",  # ImageJ
     50838: "ImageJMetaDataByteCounts",  # private tag registered with Adobe
     50839: "ImageJMetaData",  # private tag registered with Adobe
 }
@@ -290,7 +256,6 @@ TAGS = {
 # Map type numbers to type names.
 
 TYPES = {
-
     1: "byte",
     2: "ascii",
     3: "short",
@@ -303,5 +268,4 @@ TYPES = {
     10: "signed rational",
     11: "float",
     12: "double",
-
 }

@@ -34,7 +34,6 @@ except ImportError:
 
 from PIL import Image
 
-
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
 
@@ -52,9 +51,9 @@ def _pilbitmap_check():
             _pilbitmap_ok = 0
     return _pilbitmap_ok
 
-
 # --------------------------------------------------------------------
 # PhotoImage
+
 
 class PhotoImage:
     """
@@ -269,20 +268,21 @@ def getimage(photo):
     """Copies the contents of a PhotoImage to a PIL image memory."""
     photo.tk.call("PyImagingPhotoGet", photo)
 
-
 # --------------------------------------------------------------------
 # Helper for the Image.show method.
 
-def _show(image, title):
 
+def _show(image, title):
     class UI(tkinter.Label):
         def __init__(self, master, im):
             if im.mode == "1":
                 self.image = BitmapImage(im, foreground="white", master=master)
             else:
                 self.image = PhotoImage(im, master=master)
-            tkinter.Label.__init__(self, master, image=self.image,
-                                   bg="black", bd=0)
+            tkinter.Label.__init__(self, master,
+                                   image=self.image,
+                                   bg="black",
+                                   bd=0)
 
     if not tkinter._default_root:
         raise IOError("tkinter not initialized")
