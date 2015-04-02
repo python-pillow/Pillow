@@ -114,7 +114,7 @@ class TestImageWinDib(PillowTestCase):
         buffer = dib.tobytes()
 
         # Act/Assert
-        self.assert_warning(DeprecationWarning, lambda: dib.tostring())
+        self.assert_warning(DeprecationWarning, dib.tostring)
         self.assert_warning(DeprecationWarning, lambda: dib.fromstring(buffer))
 
 

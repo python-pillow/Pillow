@@ -245,7 +245,7 @@ class TestFilePng(PillowTestCase):
 
         im = Image.open(TEST_PNG_FILE)
         im.load()
-        self.assertRaises(RuntimeError, lambda: im.verify())
+        self.assertRaises(RuntimeError, im.verify)
 
     def test_roundtrip_dpi(self):
         # Check dpi roundtripping
