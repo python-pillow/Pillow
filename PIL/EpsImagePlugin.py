@@ -248,7 +248,7 @@ class EpsImageFile(ImageFile.ImageFile):
                         # Note: The DSC spec says that BoundingBox
                         # fields should be integers, but some drivers
                         # put floating point values there anyway.
-                        box = [int(float(s)) for s in v.split()]
+                        box = [int(float(i)) for i in v.split()]
                         self.size = box[2] - box[0], box[3] - box[1]
                         self.tile = [("eps", (0, 0) + self.size, offset,
                                       (length, box))]

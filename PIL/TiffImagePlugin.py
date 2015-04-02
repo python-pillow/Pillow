@@ -978,7 +978,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # fixup palette descriptor
 
         if self.mode == "P":
-            palette = [o8(a // 256) for a in self.tag[COLORMAP]]
+            palette = [o8(b // 256) for b in self.tag[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
 #
 # --------------------------------------------------------------------
