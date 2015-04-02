@@ -23,7 +23,7 @@
 
 import math
 import operator
-from functools import reduce
+import functools
 
 
 class Stat:
@@ -71,7 +71,7 @@ class Stat:
 
         v = []
         for i in range(0, len(self.h), 256):
-            v.append(reduce(operator.add, self.h[i:i+256]))
+            v.append(functools.reduce(operator.add, self.h[i:i+256]))
         return v
 
     def _getsum(self):
@@ -79,10 +79,10 @@ class Stat:
 
         v = []
         for i in range(0, len(self.h), 256):
-            sum = 0.0
+            layerSum = 0.0
             for j in range(256):
-                sum += j * self.h[i + j]
-            v.append(sum)
+                layerSum += j * self.h[i + j]
+            v.append(layerSum)
         return v
 
     def _getsum2(self):

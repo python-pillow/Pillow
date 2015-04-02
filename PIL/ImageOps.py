@@ -20,7 +20,7 @@
 from PIL import Image
 from PIL._util import isStringType
 import operator
-from functools import reduce
+import functools
 
 
 #
@@ -213,7 +213,7 @@ def equalize(image, mask=None):
         if len(histo) <= 1:
             lut.extend(list(range(256)))
         else:
-            step = (reduce(operator.add, histo) - histo[-1]) // 255
+            step = (functools.reduce(operator.add, histo) - histo[-1]) // 255
             if not step:
                 lut.extend(list(range(256)))
             else:
