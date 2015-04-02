@@ -70,5 +70,6 @@ sdisttest:
 	python setup.py sdist --format=zip upload -r test
 sdistup:
 	python setup.py sdist --format=zip upload
+	python setup.py sdist upload
 sdist:
 	python setup.py sdist --format=zip
