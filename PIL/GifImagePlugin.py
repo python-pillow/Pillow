@@ -340,7 +340,7 @@ def get_local_header(fp, im, offset=(0, 0)):
                 else:
                     transparent_color_exists = False
 
-    if 'duration' in im.encoderinfo:
+    if "duration" in im.encoderinfo:
         duration = im.encoderinfo["duration"] / 10
     else:
         duration = 0
@@ -355,6 +355,16 @@ def get_local_header(fp, im, offset=(0, 0)):
                  o8(transparency_flag) + # transparency info present
                  o16(duration) +         # duration
                  o8(transparency) +      # transparency index
+                 o8(0))
+
+    if "loop" in im.encoderinfo:
+        number_of_loops = im.encoderinfo["loop"]
+        fp.write(b"!" +
+                 o8(255) + o8(11) +      # extension intro
+                 b"NETSCAPE2.0" +
+                 o8(3) +
+                 o8(1) +
+                 o16(number_of_loops) +  # number of loops
                  o8(0))
 
     flags = 0
