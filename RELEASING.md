@@ -78,9 +78,3 @@ make sdistup
 * [ ] Retrieve the OS X Wheels from Rackspace files, upload to PyPi (Twine?)
 * [ ] Grab Windows binaries, `twine upload dist/*.[whl|egg]`. Manually upload .exe installers.
 * [ ] Announce release availability. [Twitter](https://twitter.com/pythonpillow), web.
-
-
-Footnotes[^1] have a label[^@#$%] and the footnote's content.
-
-[^1]: This is a footnote content.
-[^@#$%]: A footnote on the label: "@#$%".
