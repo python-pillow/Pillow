@@ -4,7 +4,8 @@
 
 Released quarterly.
 
-* [ ] Get master to appropriate code release state. [Travis CI](https://travis-ci.org/python-pillow/Pillow) should be running cleanly for all merges to master.
+* [ ] Develop and prepare release in ``master`` branch.
+* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
 * [ ] Update version in:
 
 ```
