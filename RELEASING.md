@@ -33,6 +33,10 @@ Released as needed for security, installation or critical bug fixes.
 * [ ] Update `CHANGES.rst`. 
 * [ ] Cherry pick individual commits from ``master`` branch to release branch e.g. ``2.9.x``.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in release branch e.g. ``2.9.x``.
+* [ ] Checkout release branch e.g.:
+```
+    git checkout -t remotes/origin/2.9.x
+```
 * [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in: 
 ```
     PIL/__init__.py setup.py _imaging.c
@@ -40,7 +44,7 @@ Released as needed for security, installation or critical bug fixes.
 * [ ] Run pre-release check via `make pre`.
 * [ ] Create tag for release e.g.:
 ```
-    $ git tag 2.9.0
+    $ git tag 2.9.1
     $ git push --tags
 ```
 * [ ] Create and upload source distributions e.g.:
