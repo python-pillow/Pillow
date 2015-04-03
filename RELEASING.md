@@ -79,10 +79,25 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Binary Distributions
 
-* [ ] Contact @cgohlke for Windows binaries.
+### Windows
+* [ ] Contact @cgohlke for Windows binaries via release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174.
+* [ ] Download and extract tarball from @cgohlke and ``twine upload *``.
 
-(Debian requests a tarball, everyone else would just prefer that we choose one and stick to it. So both it is)
-* [ ] Push a commit to https://github.com/python-pillow/pillow-wheels to build OSX versions (UNDONE latest tag or specific release???)
-* [ ] Retrieve the OS X Wheels from Rackspace files, upload to PyPi (Twine?)
-* [ ] Grab Windows binaries, `twine upload dist/*.[whl|egg]`. Manually upload .exe installers.
+### OS X
+* [ ] Use the [Pillow OS X Wheel Builder](https://github.com/python-pillow/pillow-wheels):
+```
+    $ git checkout https://github.com/python-pillow/pillow-wheels
+    $ cd pillow-wheels
+    $ git submodule init
+    $ git submodule update
+    $ cd Pillow
+    $ git fetch --all
+    $ git commit -a -m "Pillow -> 2.9.0"
+    $ git push
+* [ ] Download distributions from the [Pillow OS X Wheel Builder container](http://cdf58691c5cf45771290-6a3b6a0f5f6ab91aadc447b2a897dd9a.r50.cf2.rackcdn.com/) and ``twine upload *``.
+
+### Linux
+
+## Publicize Release
+
 * [ ] Announce release availability. [Twitter](https://twitter.com/pythonpillow), web.
