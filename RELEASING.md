@@ -55,7 +55,7 @@ Released as needed for security, installation or critical bug fixes.
 
 ## Embargoed Release
 
-Security fixes that need to be pushed to the distros prior to public release.
+Released as needed to vendors before public for critical security-related bug fixes.
 
 * [ ] Prepare patch for all versions that will get a fix. Test against local installations.
 * [ ] Commit against master, cherry pick to affected release branches.
@@ -70,8 +70,11 @@ Security fixes that need to be pushed to the distros prior to public release.
     git push origin 2.5.x
     git push origin --tags
 ```
-* [ ] Upload source and binary distributions.
-
+* [ ] Create and upload source distributions e.g.:
+```
+    $ make sdistup
+```
+* [ ] Create and upload [binary distributions](#binary-distributions)
 
 ## Binary Distributions
 
