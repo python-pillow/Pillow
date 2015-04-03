@@ -360,12 +360,12 @@ WORD_CLSID = "00020900-0000-0000-C000-000000000046"
 #TODO: check Excel, PPT, ...
 
 #[PL]: Defect levels to classify parsing errors - see OleFileIO._raise_defect()
-DEFECT_UNSURE =    10    # a case which looks weird, but not sure it's a defect
-DEFECT_POTENTIAL = 20    # a potential defect
-DEFECT_INCORRECT = 30    # an error according to specifications, but parsing
-                         # can go on
-DEFECT_FATAL =     40    # an error which cannot be ignored, parsing is
-                         # impossible
+DEFECT_UNSURE =    10   # a case which looks weird, but not sure it's a defect
+DEFECT_POTENTIAL = 20   # a potential defect
+DEFECT_INCORRECT = 30   # an error according to specifications, but parsing
+                        # can go on
+DEFECT_FATAL =     40   # an error which cannot be ignored, parsing is
+                        # impossible
 
 #[PL] add useful constants to __all__:
 for key in list(vars().keys()):
@@ -468,14 +468,14 @@ def _unicode(s, errors='replace'):
 
 
 def filetime2datetime(filetime):
-        """
-        convert FILETIME (64 bits int) to Python datetime.datetime
-        """
-        # TODO: manage exception when microseconds is too large
-        # inspired from http://code.activestate.com/recipes/511425-filetime-to-datetime/
-        _FILETIME_null_date = datetime.datetime(1601, 1, 1, 0, 0, 0)
-        #debug('timedelta days=%d' % (filetime//(10*1000000*3600*24)))
-        return _FILETIME_null_date + datetime.timedelta(microseconds=filetime//10)
+    """
+    convert FILETIME (64 bits int) to Python datetime.datetime
+    """
+    # TODO: manage exception when microseconds is too large
+    # inspired from http://code.activestate.com/recipes/511425-filetime-to-datetime/
+    _FILETIME_null_date = datetime.datetime(1601, 1, 1, 0, 0, 0)
+    #debug('timedelta days=%d' % (filetime//(10*1000000*3600*24)))
+    return _FILETIME_null_date + datetime.timedelta(microseconds=filetime//10)
 
 
 #=== CLASSES ==================================================================
