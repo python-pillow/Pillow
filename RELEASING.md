@@ -23,7 +23,7 @@ Released quarterly on the first day of January, April, July, October.
 ```
     $ make sdistup
 ```
-* [ ] Create and upload binary distributions (see below).
+* [ ] Create and upload [binary distributions](#binary-distributions)
 
 ## Point Release
 
@@ -43,7 +43,7 @@ Released as needed for security, installation or critical bug fixes.
 ```
     $ make sdistup
 ```
-* [ ] Create and upload binary distributions (see below).
+* [ ] Create and upload [binary distributions](#binary-distributions)
 ## Embargoed Release
 
 Security fixes that need to be pushed to the distros prior to public release.
