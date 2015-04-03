@@ -101,4 +101,4 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Publicize Release
 
-* [ ] Announce release availability. [Twitter](https://twitter.com/pythonpillow), web.
+* [ ] Announce release availability via [Twitter](https://twitter.com/pythonpillow) e.g. https://twitter.com/aclark4life/status/583366798302691328.
