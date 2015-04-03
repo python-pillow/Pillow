@@ -292,8 +292,23 @@ def _save(im, fp, filename):
     for s in header:
         fp.write(s)
 
-    flags = 0
+    # local image header
+    get_local_header(fp, im)
 
+    im_out.encoderconfig = (8, get_interlace(im))
+    ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
+                                  RAWMODE[im_out.mode])])
+
+    fp.write(b"\0")  # end of image data
+
+    fp.write(b";")  # end of file
+
+    try:
+        fp.flush()
+    except:
+        pass
+
+def get_interlace(im):
     try:
         interlace = im.encoderinfo["interlace"]
     except KeyError:
@@ -302,10 +317,11 @@ def _save(im, fp, filename):
     # workaround for @PIL153
     if min(im.size) < 16:
         interlace = 0
+    
+    return interlace
 
-    if interlace:
-        flags = flags | 64
-
+def get_local_header(fp, im, offset=(0, 0)):
+    transparent_color_exists = False
     try:
         transparency = im.encoderinfo["transparency"]
     except KeyError:
@@ -324,37 +340,35 @@ def _save(im, fp, filename):
                 else:
                     transparent_color_exists = False
 
-        # transparency extension block
-        if transparent_color_exists:
-            fp.write(b"!" +
-                     o8(249) +              # extension intro
-                     o8(4) +                # length
-                     o8(1) +                # transparency info present
-                     o16(0) +               # duration
-                     o8(transparency) +     # transparency index
-                     o8(0))
+    if 'duration' in im.encoderinfo:
+        duration = im.encoderinfo["duration"] / 10
+    else:
+        duration = 0
+    if transparent_color_exists or duration != 0:
+        transparency_flag = 1 if transparent_color_exists else 0
+        if not transparent_color_exists:
+            transparency = 0
+        
+        fp.write(b"!" +
+                 o8(249) +               # extension intro
+                 o8(4) +                 # length
+                 o8(transparency_flag) + # transparency info present
+                 o16(duration) +         # duration
+                 o8(transparency) +      # transparency index
+                 o8(0))
 
-    # local image header
+    flags = 0
+
+    if get_interlace(im):
+        flags = flags | 64
+    
     fp.write(b"," +
-             o16(0) + o16(0) +          # bounding box
+             o16(offset[0]) +           # offset
+             o16(offset[1]) +
              o16(im.size[0]) +          # size
              o16(im.size[1]) +
              o8(flags) +                # flags
              o8(8))                     # bits
-
-    im_out.encoderconfig = (8, interlace)
-    ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
-                                  RAWMODE[im_out.mode])])
-
-    fp.write(b"\0")  # end of image data
-
-    fp.write(b";")  # end of file
-
-    try:
-        fp.flush()
-    except:
-        pass
-
 
 def _save_netpbm(im, fp, filename):
 
@@ -510,13 +524,7 @@ def getdata(im, offset=(0, 0), **params):
         im.encoderinfo = params
 
         # local image header
-        fp.write(b"," +
-                 o16(offset[0]) +       # offset
-                 o16(offset[1]) +
-                 o16(im.size[0]) +      # size
-                 o16(im.size[1]) +
-                 o8(0) +                # flags
-                 o8(8))                 # bits
+        get_local_header(fp, im, offset)
 
         ImageFile._save(im, fp, [("gif", (0, 0)+im.size, 0, RAWMODE[im.mode])])
 

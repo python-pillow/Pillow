@@ -72,8 +72,8 @@ def makedelta(fp, sequence):
 
     for im in sequence:
 
-        #
-        # FIXME: write graphics control block before each frame
+        # To specify duration, add the time in milliseconds to getdata(),
+        # e.g. getdata(im, duration=1000)
 
         if not previous:
 
