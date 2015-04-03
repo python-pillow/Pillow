@@ -55,7 +55,7 @@ Released as needed for security, installation or critical bug fixes.
 
 ## Embargoed Release
 
-Released as needed to vendors before public for critical security-related bug fixes.
+Released as needed privately to individual vendors before public for critical security-related bug fixes.
 
 * [ ] Prepare patch for all versions that will get a fix. Test against local installations.
 * [ ] Commit against master, cherry pick to affected release branches.
