@@ -6,7 +6,7 @@ Released quarterly on the first day of January, April, July, October.
 
 * [ ] Develop and prepare release in ``master`` branch.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
-* [ ] Update version in:
+* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in: 
 ```
     PIL/__init__.py setup.py _imaging.c
 ```
@@ -27,21 +27,23 @@ Released quarterly on the first day of January, April, July, October.
 
 ## Point Release
 
-Released as required for security, installation or critical bug fixes.
+Released as needed for security, installation or critical bug fixes.
 
-* [ ] Make necessary changes in master.
-* [ ] Cherry pick individual commits.
-* [ ] Update version in:
-
+* [ ] Make necessary changes in ``master`` branch.
+* [ ] Cherry pick individual commits from ``master`` branch to release branch e.g. ``2.8.x``.
+* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in: 
 ```
     PIL/__init__.py setup.py _imaging.c
 ```
 * [ ] Update `CHANGES.rst`. 
-* [ ] Run pre-release check via `make pre`
+* [ ] Run pre-release check via `make pre`.
 * [ ] Push to release branch in personal repo. Let Travis run cleanly.
 * [ ] Tag and push to release branch in python-pillow repo.
-* [ ] Upload source and binary distributions.
-
+* [ ] Create and upload source distributions e.g.:
+```
+    $ make sdistup
+```
+* [ ] Create and upload binary distributions (see below).
 ## Embargoed Release
 
 Security fixes that need to be pushed to the distros prior to public release.
@@ -62,7 +64,7 @@ Security fixes that need to be pushed to the distros prior to public release.
 * [ ] Upload source and binary distributions.
 
 
-## Upload Process
+## Binary Distributions
 
 * [ ] Contact @cgohlke for Windows binaries.
 * [ ] From a clean source directory with no extra temp files:
