@@ -22,7 +22,7 @@ Released quarterly.
 * [ ] Create and upload source distributions e.g.:
 ```
     $ make sdistup
-
+```
 * [ ] Create and upload binary distributions (see below).
 
 ## Point Release
