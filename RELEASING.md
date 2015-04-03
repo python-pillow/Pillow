@@ -94,6 +94,7 @@ Released as needed privately to individual vendors for critical security-related
     $ git fetch --all
     $ git commit -a -m "Pillow -> 2.9.0"
     $ git push
+```
 * [ ] Download distributions from the [Pillow OS X Wheel Builder container](http://cdf58691c5cf45771290-6a3b6a0f5f6ab91aadc447b2a897dd9a.r50.cf2.rackcdn.com/) and ``twine upload *``.
 
 ### Linux
