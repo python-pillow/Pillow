@@ -2,7 +2,7 @@
 
 ## Main Release
 
-Released quarterly.
+Released quarterly on the first day of January, April, July, October.
 
 * [ ] Develop and prepare release in ``master`` branch.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
