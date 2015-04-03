@@ -225,8 +225,8 @@ def load(filename):
             p = PaletteFile.PaletteFile(fp)
             lut = p.getpalette()
         except (SyntaxError, ValueError):
-            import traceback
-            traceback.print_exc()
+            #import traceback
+            #traceback.print_exc()
             pass
 
     if not lut:

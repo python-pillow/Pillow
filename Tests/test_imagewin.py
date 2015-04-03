@@ -8,7 +8,6 @@ class TestImageWin(PillowTestCase):
 
     def test_sanity(self):
         dir(ImageWin)
-        pass
 
     def test_hdc(self):
         # Arrange
