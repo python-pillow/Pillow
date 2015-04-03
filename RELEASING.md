@@ -30,20 +30,25 @@ Released quarterly on the first day of January, April, July, October.
 Released as needed for security, installation or critical bug fixes.
 
 * [ ] Make necessary changes in ``master`` branch.
-* [ ] Cherry pick individual commits from ``master`` branch to release branch e.g. ``2.8.x``.
+* [ ] Update `CHANGES.rst`. 
+* [ ] Cherry pick individual commits from ``master`` branch to release branch e.g. ``2.9.x``.
+* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in release branch e.g. ``2.9.x``.
 * [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in: 
 ```
     PIL/__init__.py setup.py _imaging.c
 ```
-* [ ] Update `CHANGES.rst`. 
 * [ ] Run pre-release check via `make pre`.
-* [ ] Push to release branch in personal repo. Let Travis run cleanly.
-* [ ] Tag and push to release branch in python-pillow repo.
+* [ ] Create tag for release e.g.:
+```
+    $ git tag 2.9.0
+    $ git push --tags
+```
 * [ ] Create and upload source distributions e.g.:
 ```
     $ make sdistup
 ```
 * [ ] Create and upload [binary distributions](#binary-distributions)
+
 ## Embargoed Release
 
 Security fixes that need to be pushed to the distros prior to public release.
