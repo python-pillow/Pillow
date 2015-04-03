@@ -7,15 +7,23 @@ Released quarterly.
 * [ ] Develop and prepare release in ``master`` branch.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
 * [ ] Update version in:
-
 ```
     PIL/__init__.py setup.py _imaging.c
 ```
-
 * [ ] Update `CHANGES.rst`.
-* [ ] Run pre-release check via `make pre`
-* [ ] Tag and push to release branch in python-pillow repo.
-* [ ] Upload source and binary distributions.
+* [ ] Run pre-release check via `make pre`.
+* [ ] Create branch and tag for release e.g.:
+```
+    $ git branch 2.9.x
+    $ git tag 2.9.0
+    $ git push --all
+    $ git push --tags
+```
+* [ ] Create and upload source distributions e.g.:
+```
+    $ make sdistup
+
+* [ ] Create and upload binary distributions (see below).
 
 ## Point Release
 
