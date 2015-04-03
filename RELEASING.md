@@ -54,10 +54,10 @@ Security fixes that need to be pushed to the distros prior to public release.
 * [ ] Amend any commits with the CVE #
 * [ ] On release date, tag and push to GitHub.
 ```
-git checkout 2.5.x
-git tag 2.5.3
-git push origin 2.5.x
-git push origin --tags
+    git checkout 2.5.x
+    git tag 2.5.3
+    git push origin 2.5.x
+    git push origin --tags
 ```
 * [ ] Upload source and binary distributions.
 
@@ -71,7 +71,7 @@ python setup.py sdist --format=zip upload
 ```
 Or
 ```
-make sdistup
+    make sdistup
 ```
 (Debian requests a tarball, everyone else would just prefer that we choose one and stick to it. So both it is)
 * [ ] Push a commit to https://github.com/python-pillow/pillow-wheels to build OSX versions (UNDONE latest tag or specific release???)
