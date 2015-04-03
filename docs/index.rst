@@ -5,8 +5,12 @@ Pillow is the 'friendly' PIL fork by Alex Clark and Contributors. PIL is the Pyt
 
 .. image:: https://travis-ci.org/python-pillow/Pillow.svg?branch=master
    :target: https://travis-ci.org/python-pillow/Pillow
-   :alt: Travis CI build status
+   :alt: Travis CI build status (Linux)
 
+.. image:: https://travis-ci.org/python-pillow/pillow-wheels.svg?branch=latest
+   :target: https://travis-ci.org/python-pillow/pillow-wheels
+   :alt: Travis CI build status (OS X)
+   
 .. image:: https://pypip.in/v/Pillow/badge.png
     :target: https://pypi.python.org/pypi/Pillow/
     :alt: Latest PyPI version
@@ -16,8 +20,12 @@ Pillow is the 'friendly' PIL fork by Alex Clark and Contributors. PIL is the Pyt
     :alt: Number of PyPI downloads
 
 .. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.png?branch=master
-    :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
-    :alt: Test coverage
+  :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
+   :alt: Code coverage
+
+.. image:: https://landscape.io/github/python-pillow/Pillow/master/landscape.png
+   :target: https://landscape.io/github/python-pillow/Pillow/master
+   :alt: Code health
 
 To install Pillow, please follow the :doc:`installation instructions <installation>`. To download source and/or contribute to development of Pillow please see: https://github.com/python-pillow/Pillow. 
 
