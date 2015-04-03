@@ -118,7 +118,7 @@ Build Options
 
 Sample Usage::
 
-    $ MAX_CONCURRENCY=1 python setup.py build-ext --enable-[feature] install
+    $ MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
 
 
 Linux Installation
