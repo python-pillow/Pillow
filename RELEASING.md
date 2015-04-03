@@ -4,6 +4,7 @@
 
 Released quarterly on the first day of January, April, July, October.
 
+* [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174
 * [ ] Develop and prepare release in ``master`` branch.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
 * [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in: 
@@ -79,14 +80,7 @@ Released as needed privately to individual vendors for critical security-related
 ## Binary Distributions
 
 * [ ] Contact @cgohlke for Windows binaries.
-* [ ] From a clean source directory with no extra temp files:
-```
-python setup.py sdist --format=zip upload
-```
-Or
-```
-    make sdistup
-```
+
 (Debian requests a tarball, everyone else would just prefer that we choose one and stick to it. So both it is)
 * [ ] Push a commit to https://github.com/python-pillow/pillow-wheels to build OSX versions (UNDONE latest tag or specific release???)
 * [ ] Retrieve the OS X Wheels from Rackspace files, upload to PyPi (Twine?)
