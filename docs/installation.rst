@@ -1,39 +1,32 @@
 Installation
 ============
 
-.. warning:: Pillow >= 2.1.0 no longer supports "import _imaging". Please use "from PIL.Image import core as _imaging" instead.
+.. warning:: Pillow and PIL cannot co-exist in the same environment. Before installing Pillow, please uninstall PIL.
 
 .. warning:: Pillow >= 1.0 no longer supports "import Image". Please use "from PIL import Image" instead.
 
-.. warning:: PIL and Pillow currently cannot co-exist in the same environment.
-    If you want to use Pillow, please remove PIL first.
-
-.. note:: Pillow >= 2.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3, 3.4
+.. warning:: Pillow >= 2.1.0 no longer supports "import _imaging". Please use "from PIL.Image import core as _imaging" instead.
 
 .. note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7.
 
-Simple Installation
--------------------
+.. note:: Pillow >= 2.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3, 3.4
+
+Basic Installation
+------------------
 
 .. note::
 
-    The following instructions will install Pillow with support for most formats.
-    See :ref:`external-libraries` for the features you would gain by installing
-    the external libraries first. This page probably also include specific
-    instructions for your platform.
+    The following instructions will install Pillow with support for most common image formats. See :ref:`external-libraries` for a full list of external libraries supported.
 
-You can install Pillow with :command:`pip`::
+Install Pillow with :command:`pip`::
 
     $ pip install Pillow
 
-Or :command:`easy_install` (for installing `Python Eggs
-<http://peak.telecommunity.com/DevCenter/PythonEggs>`_, as :command:`pip` does
-not support them)::
+Or use :command:`easy_install` for installing `Python Eggs <http://peak.telecommunity.com/DevCenter/PythonEggs>`_ as :command:`pip` does not support them::
 
     $ easy_install Pillow
 
-Or download the `compressed archive from PyPI`_, extract it, and inside it
-run::
+Or download and extract the `compressed archive from PyPI`_ and inside it run::
 
     $ python setup.py install
 
@@ -46,7 +39,7 @@ External libraries
 
 .. note::
 
-    You *do not* need to install all of the external libraries to use Pillow's basic features.
+    You **do not need to install all external libraries supported** to use Pillow's basic features.
 
 Many of Pillow's features require external libraries:
 
@@ -120,46 +113,6 @@ Sample Usage::
 
     $ MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
 
-
-Linux Installation
-------------------
-
-.. note::
-
-    Fedora, Debian/Ubuntu, and ArchLinux include Pillow (instead of PIL) with
-    their distributions. Consider using those instead of installing manually.
-
-**We do not provide binaries for Linux.** If you didn't build Python from
-source, make sure you have Python's development libraries installed. In Debian
-or Ubuntu::
-
-    $ sudo apt-get install python-dev python-setuptools
-
-Or for Python 3::
-
-    $ sudo apt-get install python3-dev python3-setuptools
-
-In Fedora, the command is::
-
-    $ sudo yum install python-devel
-
-Prerequisites are installed on **Ubuntu 12.04 LTS** or **Raspian Wheezy
-7.0** with::
-
-    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev \
-        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.5-dev tk8.5-dev python-tk
-
-Prerequisites are installed on **Ubuntu 14.04 LTS** with::
-
-    $ sudo apt-get install libtiff5-dev libjpeg8-dev zlib1g-dev \
-        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python-tk
-
-Prerequisites are installed on **Fedora 20** with::
-
-    $ sudo yum install libtiff-devel libjpeg-devel libzip-devel freetype-devel \
-        lcms2-devel libwebp-devel tcl-devel tk-devel
-
-
 OS X Installation
 -----------------
 
@@ -213,7 +166,6 @@ FreeBSD Installation
 
 .. Note:: Only FreeBSD 10 tested
 
-
 Make sure you have Python's development libraries installed.::
 
     $ sudo pkg install python2
@@ -225,6 +177,45 @@ Or for Python 3::
 Prerequisites are installed on **FreeBSD 10** with::
 
     $ sudo pkg install jpeg tiff webp lcms2 freetype2
+
+Linux Installation
+------------------
+
+.. note::
+
+    Most major Linux distributions, including Fedora, Debian/Ubuntu and ArchLinux include Pillow in packages that previously contained PIL e.g. ``python-imaging``. Please consider using native operating system packages first to avoid installation problems and/or missing library support later.
+
+**We do not provide binaries for Linux.** If you didn't build Python from
+source, make sure you have Python's development libraries installed. In Debian
+or Ubuntu::
+
+    $ sudo apt-get install python-dev python-setuptools
+
+Or for Python 3::
+
+    $ sudo apt-get install python3-dev python3-setuptools
+
+In Fedora, the command is::
+
+    $ sudo yum install python-devel
+
+Prerequisites are installed on **Ubuntu 12.04 LTS** or **Raspian Wheezy
+7.0** with::
+
+    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev \
+        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.5-dev tk8.5-dev python-tk
+
+Prerequisites are installed on **Ubuntu 14.04 LTS** with::
+
+    $ sudo apt-get install libtiff5-dev libjpeg8-dev zlib1g-dev \
+        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python-tk
+
+Prerequisites are installed on **Fedora 20** with::
+
+    $ sudo yum install libtiff-devel libjpeg-devel libzip-devel freetype-devel \
+        lcms2-devel libwebp-devel tcl-devel tk-devel
+
+
 
 
 
@@ -238,8 +229,7 @@ current versions of Linux, OS X, and Windows.
 
 .. note::
 
-    Contributors please test on your platform, edit this document, and send a
-    pull request.
+    Contributors please test Pillow on your platform then update this document and send a pull request.
 
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 |**Operating system**              |**Supported**|**Tested Python versions**    |**Tested Pillow versions**    |**Tested processors**  |

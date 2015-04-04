@@ -25,6 +25,7 @@ Released quarterly on the first day of January, April, July, October.
     $ make sdistup
 ```
 * [ ] Create and upload [binary distributions](#binary-distributions)
+* [ ] Manually hide old versions on PyPI as needed, such that only the latest main release is visible when viewing https://pypi.python.org/pypi/Pillow
 
 ## Point Release
 

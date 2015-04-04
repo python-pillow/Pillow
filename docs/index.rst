@@ -1,7 +1,7 @@
 Pillow
 ======
 
-Pillow is the 'friendly' PIL fork by Alex Clark and Contributors. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
+Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 
 .. image:: https://travis-ci.org/python-pillow/Pillow.svg?branch=master
    :target: https://travis-ci.org/python-pillow/Pillow
@@ -27,18 +27,16 @@ Pillow is the 'friendly' PIL fork by Alex Clark and Contributors. PIL is the Pyt
    :target: https://landscape.io/github/python-pillow/Pillow/master
    :alt: Code health
 
-To install Pillow, please follow the :doc:`installation instructions <installation>`. To download source and/or contribute to development of Pillow please see: https://github.com/python-pillow/Pillow. 
-
 .. toctree::
    :maxdepth: 2
 
    installation
-   about
    guides
    reference/index.rst
    handbook/appendices
    releasenotes/index.rst
-   original-readme
+   about
+   pre-fork-readme
 
 Indices and tables
 ==================
