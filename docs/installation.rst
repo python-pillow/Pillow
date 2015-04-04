@@ -231,8 +231,7 @@ current versions of Linux, OS X, and Windows.
 
 .. note::
 
-    Contributors please test on your platform, edit this document, and send a
-    pull request.
+    Contributors please test Pillow on your platform then update this document and send a pull request.
 
 +----------------------------------+-------------+------------------------------+------------------------------+-----------------------+
 |**Operating system**              |**Supported**|**Tested Python versions**    |**Tested Pillow versions**    |**Tested processors**  |
