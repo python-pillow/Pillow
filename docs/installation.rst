@@ -18,15 +18,15 @@ Basic Installation
 
     The following instructions will install Pillow with support for most common image formats. See :ref:`external-libraries` for a full list of external libraries supported.
 
-You can install Pillow with :command:`pip`::
+Install Pillow with :command:`pip`::
 
     $ pip install Pillow
 
-Or :command:`easy_install` (for installing `Python Eggs <http://peak.telecommunity.com/DevCenter/PythonEggs>`_, as :command:`pip` does not support them)::
+Or use :command:`easy_install` for installing `Python Eggs <http://peak.telecommunity.com/DevCenter/PythonEggs>`_, as :command:`pip` does not support them::
 
     $ easy_install Pillow
 
-Or download the `compressed archive from PyPI`_, extract it, and inside it run::
+Or download and extract the `compressed archive from PyPI`_ and inside it run::
 
     $ python setup.py install
 
