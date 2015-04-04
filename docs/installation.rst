@@ -39,7 +39,7 @@ External libraries
 
 .. note::
 
-    You *do not* need to install all of the external libraries to use Pillow's basic features.
+    You **do not need to install all external libraries supported** to use Pillow's basic features.
 
 Many of Pillow's features require external libraries:
 
