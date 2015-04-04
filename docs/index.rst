@@ -36,7 +36,7 @@ Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://githu
    handbook/appendices
    releasenotes/index.rst
    about
-   original-readme
+   pre-fork-readme
 
 Indices and tables
 ==================
