@@ -119,8 +119,7 @@ Linux Installation
 
 .. note::
 
-    Fedora, Debian/Ubuntu, and ArchLinux include Pillow (instead of PIL) with
-    their distributions. Consider using those instead of installing manually.
+    Most major Linux distributions, including Fedora, Debian/Ubuntu and ArchLinux include Pillow in packages that previously contained PIL e.g. ``python-imaging``. Please consider using native operating system packages first to avoid installation problems and/or missing library support later.
 
 **We do not provide binaries for Linux.** If you didn't build Python from
 source, make sure you have Python's development libraries installed. In Debian
