@@ -11,28 +11,22 @@ Installation
 
 .. note:: Pillow >= 2.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3, 3.4
 
-Simple Installation
--------------------
+Basic Installation
+------------------
 
 .. note::
 
-    The following instructions will install Pillow with support for most formats.
-    See :ref:`external-libraries` for the features you would gain by installing
-    the external libraries first. This page probably also include specific
-    instructions for your platform.
+    The following instructions will install Pillow with support for most formats.  See :ref:`external-libraries` for the features you would gain by installing the external libraries first. This page probably also include specific instructions for your platform.
 
 You can install Pillow with :command:`pip`::
 
     $ pip install Pillow
 
-Or :command:`easy_install` (for installing `Python Eggs
-<http://peak.telecommunity.com/DevCenter/PythonEggs>`_, as :command:`pip` does
-not support them)::
+Or :command:`easy_install` (for installing `Python Eggs <http://peak.telecommunity.com/DevCenter/PythonEggs>`_, as :command:`pip` does not support them)::
 
     $ easy_install Pillow
 
-Or download the `compressed archive from PyPI`_, extract it, and inside it
-run::
+Or download the `compressed archive from PyPI`_, extract it, and inside it run::
 
     $ python setup.py install
 
