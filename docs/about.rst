@@ -4,7 +4,7 @@ About Pillow
 Goals
 -----
 
-The fork author's goal is to foster active development of PIL through:
+The fork author's goal is to foster and support active development of PIL through:
 
 - Continuous integration testing via `Travis CI`_
 - Publicized development activity on `GitHub`_
