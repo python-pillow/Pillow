@@ -31,11 +31,11 @@ Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://githu
    :maxdepth: 2
 
    installation
-   about
    guides
    reference/index.rst
    handbook/appendices
    releasenotes/index.rst
+   about
    original-readme
 
 Indices and tables
