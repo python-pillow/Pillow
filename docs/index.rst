@@ -27,8 +27,6 @@ Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://githu
    :target: https://landscape.io/github/python-pillow/Pillow/master
    :alt: Code health
 
-To install Pillow, please follow the :doc:`installation instructions <installation>`. To download source and/or contribute to development of Pillow please see: https://github.com/python-pillow/Pillow. 
-
 .. toctree::
    :maxdepth: 2
 
