@@ -113,45 +113,6 @@ Sample Usage::
 
     $ MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
 
-
-Linux Installation
-------------------
-
-.. note::
-
-    Most major Linux distributions, including Fedora, Debian/Ubuntu and ArchLinux include Pillow in packages that previously contained PIL e.g. ``python-imaging``. Please consider using native operating system packages first to avoid installation problems and/or missing library support later.
-
-**We do not provide binaries for Linux.** If you didn't build Python from
-source, make sure you have Python's development libraries installed. In Debian
-or Ubuntu::
-
-    $ sudo apt-get install python-dev python-setuptools
-
-Or for Python 3::
-
-    $ sudo apt-get install python3-dev python3-setuptools
-
-In Fedora, the command is::
-
-    $ sudo yum install python-devel
-
-Prerequisites are installed on **Ubuntu 12.04 LTS** or **Raspian Wheezy
-7.0** with::
-
-    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev \
-        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.5-dev tk8.5-dev python-tk
-
-Prerequisites are installed on **Ubuntu 14.04 LTS** with::
-
-    $ sudo apt-get install libtiff5-dev libjpeg8-dev zlib1g-dev \
-        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python-tk
-
-Prerequisites are installed on **Fedora 20** with::
-
-    $ sudo yum install libtiff-devel libjpeg-devel libzip-devel freetype-devel \
-        lcms2-devel libwebp-devel tcl-devel tk-devel
-
-
 OS X Installation
 -----------------
 
@@ -205,7 +166,6 @@ FreeBSD Installation
 
 .. Note:: Only FreeBSD 10 tested
 
-
 Make sure you have Python's development libraries installed.::
 
     $ sudo pkg install python2
@@ -217,6 +177,45 @@ Or for Python 3::
 Prerequisites are installed on **FreeBSD 10** with::
 
     $ sudo pkg install jpeg tiff webp lcms2 freetype2
+
+Linux Installation
+------------------
+
+.. note::
+
+    Most major Linux distributions, including Fedora, Debian/Ubuntu and ArchLinux include Pillow in packages that previously contained PIL e.g. ``python-imaging``. Please consider using native operating system packages first to avoid installation problems and/or missing library support later.
+
+**We do not provide binaries for Linux.** If you didn't build Python from
+source, make sure you have Python's development libraries installed. In Debian
+or Ubuntu::
+
+    $ sudo apt-get install python-dev python-setuptools
+
+Or for Python 3::
+
+    $ sudo apt-get install python3-dev python3-setuptools
+
+In Fedora, the command is::
+
+    $ sudo yum install python-devel
+
+Prerequisites are installed on **Ubuntu 12.04 LTS** or **Raspian Wheezy
+7.0** with::
+
+    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev \
+        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.5-dev tk8.5-dev python-tk
+
+Prerequisites are installed on **Ubuntu 14.04 LTS** with::
+
+    $ sudo apt-get install libtiff5-dev libjpeg8-dev zlib1g-dev \
+        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python-tk
+
+Prerequisites are installed on **Fedora 20** with::
+
+    $ sudo yum install libtiff-devel libjpeg-devel libzip-devel freetype-devel \
+        lcms2-devel libwebp-devel tcl-devel tk-devel
+
+
 
 
 
