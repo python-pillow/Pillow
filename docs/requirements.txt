@@ -1,1 +1,2 @@
 Sphinx
+sphinx-rtd-theme
