@@ -16,7 +16,7 @@ Basic Installation
 
 .. note::
 
-    The following instructions will install Pillow with support for most image formats. See :ref:`external-libraries` for additional libraries and corresponding feature support.
+    The following instructions will install Pillow with support for most common image formats. See :ref:`external-libraries` for a full list of external libraries supported.
 
 You can install Pillow with :command:`pip`::
 
