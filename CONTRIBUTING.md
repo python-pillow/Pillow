@@ -2,26 +2,28 @@
 
 Contributions of bug fixes, feature additions, tests, documentation and more can be made via [issues](https://github.com/python-pillow/Pillow/issues) and/or [pull requests](https://github.com/python-pillow/Pillow/issues).
 
-## Fixes, Features and Changes
+## Bug fixes, feature additions, etc.
 
-Send a pull request to the master branch. We'll generally want documentation and [tests](Tests/README.rst) for new features. Tests or documentation on their own are also welcomed. Feel free to ask questions as an [issue](https://github.com/python-pillow/Pillow/issues/new) or on IRC (irc.freenode.net, #pil)
+Please send a pull request to the master branch. Please include documentation and [tests](Tests/README.rst) for new features. Tests or documentation on their own are also welcomed. Feel free to ask questions as an [issue](https://github.com/python-pillow/Pillow/issues/new) or on IRC (irc.freenode.net, #pil)
 
-- Fork the repo
-- Make a branch from master
-- Add your changes + Tests
-- Run the test suite. Try to run on both Python 2.x and 3.x, or you'll get tripped up. You can enable [Travis CI on your repo](https://travis-ci.org/profile/) to catch test failures prior to the pull request, and [Coveralls](https://coveralls.io/repos/new) to see if the changed code is covered by tests.
-- Push to your fork, and make a pull request onto master. 
+- Fork the Pillow repository.
+- Create a branch from master.
+- Develop bug fixes, features, tests, etc.
+- Run the test suite on both Python 2.x and 3.x. You can enable [Travis CI on your repo](https://travis-ci.org/profile/) to catch test failures prior to the pull request, and [Coveralls](https://coveralls.io/repos/new) to see if the changed code is covered by tests.
+- Create a pull request to pull the changes from your branch to the Pillow master.
 
-A few guidelines:
+### Guidelines
+
 - Try to keep any code commits clean and separate from reformatting commits.
-- All new code is going to need tests. 
-- Try to follow PEP8. 
+- Provide tests for any newly added code.
+- Follow PEP8.
 
-## Bugs
+## Reporting Issues
 
-When reporting bugs, please include example code that reproduces the issue, and if possible a problem image. The best reproductions are self-contained scripts that pull in as few dependencies as possible. An entire Django stack is harder to handle. 
+When reporting issues, please include example code that reproduces the issue, and if possible a problem image. The best reproductions are self-contained scripts that pull in as few dependencies as possible. An entire Django stack is harder to reproduce.
 
-Let us know:
+### Provide details
+
 - What did you do?
 - What did you expect to happen?
 - What actually happened?
