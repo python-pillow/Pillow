@@ -47,6 +47,7 @@ class LutBuilder:
           lut = lb.build_lut()
 
     """
+
     def __init__(self, patterns=None, op_name=None):
         if patterns is not None:
             self.patterns = patterns
@@ -55,20 +56,16 @@ class LutBuilder:
         self.lut = None
         if op_name is not None:
             known_patterns = {
-                'corner': ['1:(... ... ...)->0',
-                           '4:(00. 01. ...)->1'],
+                'corner': ['1:(... ... ...)->0', '4:(00. 01. ...)->1'],
                 'dilation4': ['4:(... .0. .1.)->1'],
-                'dilation8': ['4:(... .0. .1.)->1',
-                              '4:(... .0. ..1)->1'],
+                'dilation8': ['4:(... .0. .1.)->1', '4:(... .0. ..1)->1'],
                 'erosion4': ['4:(... .1. .0.)->0'],
-                'erosion8': ['4:(... .1. .0.)->0',
-                             '4:(... .1. ..0)->0'],
-                'edge': ['1:(... ... ...)->0',
-                         '4:(.0. .1. ...)->1',
+                'erosion8': ['4:(... .1. .0.)->0', '4:(... .1. ..0)->0'],
+                'edge': ['1:(... ... ...)->0', '4:(.0. .1. ...)->1',
                          '4:(01. .1. ...)->1']
             }
             if op_name not in known_patterns:
-                raise Exception('Unknown pattern '+op_name+'!')
+                raise Exception('Unknown pattern ' + op_name + '!')
 
             self.patterns = known_patterns[op_name]
 
@@ -87,7 +84,7 @@ class LutBuilder:
         """string_permute takes a pattern and a permutation and returns the
         string permuted according to the permutation list.
         """
-        assert(len(permutation) == 9)
+        assert (len(permutation) == 9)
         return ''.join([pattern[p] for p in permutation])
 
     def _pattern_permute(self, basic_pattern, options, basic_result):
@@ -100,29 +97,25 @@ class LutBuilder:
         if '4' in options:
             res = patterns[-1][1]
             for i in range(4):
-                patterns.append(
-                    (self._string_permute(patterns[-1][0], [6, 3, 0,
-                                                            7, 4, 1,
-                                                            8, 5, 2]), res))
+                patterns.append((self._string_permute(patterns[-1][0],
+                                                      [6, 3, 0, 7, 4, 1, 8, 5,
+                                                       2]), res))
         # mirror
         if 'M' in options:
             n = len(patterns)
             for pattern, res in patterns[0:n]:
-                patterns.append(
-                    (self._string_permute(pattern, [2, 1, 0,
-                                                    5, 4, 3,
-                                                    8, 7, 6]), res))
+                patterns.append((self._string_permute(pattern, [2, 1, 0, 5, 4,
+                                                                3, 8, 7, 6]),
+                                 res))
 
         # negate
         if 'N' in options:
             n = len(patterns)
             for pattern, res in patterns[0:n]:
                 # Swap 0 and 1
-                pattern = (pattern
-                           .replace('0', 'Z')
-                           .replace('1', '0')
-                           .replace('Z', '1'))
-                res = '%d' % (1-int(res))
+                pattern = (pattern.replace('0', 'Z').replace('1', '0').replace(
+                    'Z', '1'))
+                res = '%d' % (1 - int(res))
                 patterns.append((pattern, res))
 
         return patterns
@@ -137,10 +130,10 @@ class LutBuilder:
 
         # Parse and create symmetries of the patterns strings
         for p in self.patterns:
-            m = re.search(
-                r'(\w*):?\s*\((.+?)\)\s*->\s*(\d)', p.replace('\n', ''))
+            m = re.search(r'(\w*):?\s*\((.+?)\)\s*->\s*(\d)',
+                          p.replace('\n', ''))
             if not m:
-                raise Exception('Syntax error in pattern "'+p+'"')
+                raise Exception('Syntax error in pattern "' + p + '"')
             options = m.group(1)
             pattern = m.group(2)
             result = int(m.group(3))
@@ -155,7 +148,7 @@ class LutBuilder:
 #            print p,r
 #        print '--'
 
-        # compile the patterns into regular expressions for speed
+# compile the patterns into regular expressions for speed
         for i in range(len(patterns)):
             p = patterns[i][0].replace('.', 'X').replace('X', '[01]')
             p = re.compile(p)
@@ -167,7 +160,7 @@ class LutBuilder:
         for i in range(LUT_SIZE):
             # Build the bit pattern
             bitpattern = bin(i)[2:]
-            bitpattern = ('0'*(9-len(bitpattern)) + bitpattern)[::-1]
+            bitpattern = ('0' * (9 - len(bitpattern)) + bitpattern)[::-1]
 
             for p, r in patterns:
                 if p.match(bitpattern):
@@ -179,10 +172,7 @@ class LutBuilder:
 class MorphOp:
     """A class for binary morphological operators"""
 
-    def __init__(self,
-                 lut=None,
-                 op_name=None,
-                 patterns=None):
+    def __init__(self, lut=None, op_name=None, patterns=None):
         """Create a binary morphological operator"""
         self.lut = lut
         if op_name is not None:
@@ -199,8 +189,8 @@ class MorphOp:
             raise Exception('No operator loaded')
 
         outimage = Image.new(image.mode, image.size, None)
-        count = _imagingmorph.apply(
-            bytes(self.lut), image.im.id, outimage.im.id)
+        count = _imagingmorph.apply(bytes(self.lut), image.im.id,
+                                    outimage.im.id)
         return count, outimage
 
     def match(self, image):

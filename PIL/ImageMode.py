@@ -16,12 +16,11 @@
 # mode descriptor cache
 _modes = {}
 
-
 ##
 # Wrapper for mode strings.
 
-class ModeDescriptor:
 
+class ModeDescriptor:
     def __init__(self, mode, bands, basemode, basetype):
         self.mode = mode
         self.bands = bands
@@ -31,9 +30,9 @@ class ModeDescriptor:
     def __str__(self):
         return self.mode
 
-
 ##
 # Gets a mode descriptor for the given mode.
+
 
 def getmode(mode):
     if not _modes:

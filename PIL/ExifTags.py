@@ -18,7 +18,6 @@
 # Maps EXIF tags to tag names.
 
 TAGS = {
-
     # possibly incomplete
     0x00fe: "NewSubfileType",
     0x00ff: "SubfileType",
@@ -151,7 +150,6 @@ TAGS = {
     0xa434: "LensModel",
     0xa435: "LensSerialNumber",
     0xa500: "Gamma",
-
 }
 
 ##

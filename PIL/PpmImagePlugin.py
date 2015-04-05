@@ -14,7 +14,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-
 __version__ = "0.2"
 
 import string
@@ -37,24 +36,18 @@ b_whitespace = b_whitespace.encode('ascii', 'ignore')
 
 MODES = {
     # standard
-    b"P4": "1",
-    b"P5": "L",
-    b"P6": "RGB",
-    # extensions
-    b"P0CMYK": "CMYK",
-    # PIL extensions (for test purposes only)
-    b"PyP": "P",
-    b"PyRGBA": "RGBA",
-    b"PyCMYK": "CMYK"
+    b"P4": "1", b"P5": "L", b"P6": "RGB",  # extensions
+    b"P0CMYK": "CMYK",  # PIL extensions (for test purposes only)
+    b"PyP": "P", b"PyRGBA": "RGBA", b"PyCMYK": "CMYK"
 }
 
 
 def _accept(prefix):
     return prefix[0:1] == b"P" and prefix[1] in b"0456y"
 
-
 ##
 # Image plugin for PBM, PGM, and PPM images.
+
 
 class PpmImageFile(ImageFile.ImageFile):
 
@@ -108,7 +101,7 @@ class PpmImageFile(ImageFile.ImageFile):
                 if s > 255:
                     if not mode == 'L':
                         raise ValueError("Too many colors for band: %s" % s)
-                    if s < 2**16:
+                    if s < 2 ** 16:
                         self.mode = 'I'
                         rawmode = 'I;16B'
                     else:
@@ -116,19 +109,17 @@ class PpmImageFile(ImageFile.ImageFile):
                         rawmode = 'I;32B'
 
         self.size = xsize, ysize
-        self.tile = [("raw",
-                     (0, 0, xsize, ysize),
-                     self.fp.tell(),
-                     (rawmode, 0, 1))]
+        self.tile = [("raw", (0, 0, xsize, ysize), self.fp.tell(),
+                      (rawmode, 0, 1))]
 
         # ALTERNATIVE: load via builtin debug function
         # self.im = Image.core.open_ppm(self.filename)
         # self.mode = self.im.mode
         # self.size = self.im.size
 
+        #
+        # --------------------------------------------------------------------
 
-#
-# --------------------------------------------------------------------
 
 def _save(im, fp, filename):
     if im.mode == "1":
@@ -136,7 +127,7 @@ def _save(im, fp, filename):
     elif im.mode == "L":
         rawmode, head = "L", b"P5"
     elif im.mode == "I":
-        if im.getextrema()[1] < 2**16:
+        if im.getextrema()[1] < 2 ** 16:
             rawmode, head = "I;16B", b"P5"
         else:
             rawmode, head = "I;32B", b"P5"
@@ -156,13 +147,14 @@ def _save(im, fp, filename):
             fp.write(b"65535\n")
         elif rawmode == "I;32B":
             fp.write(b"2147483648\n")
-    ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 0, (rawmode, 0, 1))])
+    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
     # ALTERNATIVE: save via builtin debug function
     # im._dump(filename)
 
-#
-# --------------------------------------------------------------------
+    #
+    # --------------------------------------------------------------------
+
 
 Image.register_open("PPM", PpmImageFile, _accept)
 Image.register_save("PPM", _save)

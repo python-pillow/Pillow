@@ -40,7 +40,6 @@ ffi.cdef(defs)
 
 
 class PyAccess(object):
-
     def __init__(self, img, readonly=False):
         vals = dict(img.im.unsafe_ptrs)
         self.readonly = readonly
@@ -51,7 +50,7 @@ class PyAccess(object):
         self.ysize = vals['ysize']
 
         if DEBUG:
-            print (vals)
+            print(vals)
         self._post_init()
 
     def _post_init(self):
@@ -97,6 +96,7 @@ class PyAccess(object):
 
 class _PyAccess32_2(PyAccess):
     """ PA, LA, stored in first and last bytes of a 32 bit word """
+
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
 
@@ -131,6 +131,7 @@ class _PyAccess32_3(PyAccess):
 
 class _PyAccess32_4(PyAccess):
     """ RGBA etc, all 4 bytes of a 32 bit word """
+
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
 
@@ -149,6 +150,7 @@ class _PyAccess32_4(PyAccess):
 
 class _PyAccess8(PyAccess):
     """ 1, L, P, 8 bit images stored as uint8 """
+
     def _post_init(self, *args, **kwargs):
         self.pixels = self.image8
 
@@ -166,6 +168,7 @@ class _PyAccess8(PyAccess):
 
 class _PyAccessI16_N(PyAccess):
     """ I;16 access, native bitendian without conversion """
+
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast('unsigned short **', self.image)
 
@@ -183,6 +186,7 @@ class _PyAccessI16_N(PyAccess):
 
 class _PyAccessI16_L(PyAccess):
     """ I;16L access, with conversion """
+
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast('struct Pixel_I16 **', self.image)
 
@@ -203,6 +207,7 @@ class _PyAccessI16_L(PyAccess):
 
 class _PyAccessI16_B(PyAccess):
     """ I;16B access, with conversion """
+
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast('struct Pixel_I16 **', self.image)
 
@@ -223,6 +228,7 @@ class _PyAccessI16_B(PyAccess):
 
 class _PyAccessI32_N(PyAccess):
     """ Signed Int32 access, native endian """
+
     def _post_init(self, *args, **kwargs):
         self.pixels = self.image32
 
@@ -235,6 +241,7 @@ class _PyAccessI32_N(PyAccess):
 
 class _PyAccessI32_Swap(PyAccess):
     """ I;32L/B access, with byteswapping conversion """
+
     def _post_init(self, *args, **kwargs):
         self.pixels = self.image32
 
@@ -254,6 +261,7 @@ class _PyAccessI32_Swap(PyAccess):
 
 class _PyAccessF(PyAccess):
     """ 32 bit float access """
+
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast('float **', self.image32)
 
@@ -269,22 +277,23 @@ class _PyAccessF(PyAccess):
             self.pixels[y][x] = color[0]
 
 
-mode_map = {'1': _PyAccess8,
-            'L': _PyAccess8,
-            'P': _PyAccess8,
-            'LA': _PyAccess32_2,
-            'PA': _PyAccess32_2,
-            'RGB': _PyAccess32_3,
-            'LAB': _PyAccess32_3,
-            'HSV': _PyAccess32_3,
-            'YCbCr': _PyAccess32_3,
-            'RGBA': _PyAccess32_4,
-            'RGBa': _PyAccess32_4,
-            'RGBX': _PyAccess32_4,
-            'CMYK': _PyAccess32_4,
-            'F': _PyAccessF,
-            'I': _PyAccessI32_N,
-            }
+mode_map = {
+    '1': _PyAccess8,
+    'L': _PyAccess8,
+    'P': _PyAccess8,
+    'LA': _PyAccess32_2,
+    'PA': _PyAccess32_2,
+    'RGB': _PyAccess32_3,
+    'LAB': _PyAccess32_3,
+    'HSV': _PyAccess32_3,
+    'YCbCr': _PyAccess32_3,
+    'RGBA': _PyAccess32_4,
+    'RGBa': _PyAccess32_4,
+    'RGBX': _PyAccess32_4,
+    'CMYK': _PyAccess32_4,
+    'F': _PyAccessF,
+    'I': _PyAccessI32_N,
+}
 
 if sys.byteorder == 'little':
     mode_map['I;16'] = _PyAccessI16_N

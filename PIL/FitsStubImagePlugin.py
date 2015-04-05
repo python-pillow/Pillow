@@ -18,6 +18,7 @@ _handler = None
 #
 # @param handler Handler object.
 
+
 def register_handler(handler):
     global _handler
     _handler = handler
@@ -25,8 +26,10 @@ def register_handler(handler):
 # --------------------------------------------------------------------
 # Image adapter
 
+
 def _accept(prefix):
     return prefix[:6] == b"SIMPLE"
+
 
 class FITSStubImageFile(ImageFile.StubImageFile):
 
@@ -61,7 +64,6 @@ def _save(im, fp, filename):
     if _handler is None or not hasattr("_handler", "save"):
         raise IOError("FITS save handler not installed")
     _handler.save(im, fp, filename)
-
 
 # --------------------------------------------------------------------
 # Registry

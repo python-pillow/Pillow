@@ -31,7 +31,6 @@ except ImportError:
 
 i32 = _binary.i32le
 
-
 ##
 # Load texture from a Quake2 WAL texture file.
 # <p>
@@ -40,6 +39,7 @@ i32 = _binary.i32le
 #
 # @param filename WAL file name, or an opened file handle.
 # @return An image instance.
+
 
 def open(filename):
     # FIXME: modify to return a WalImageFile instance instead of
@@ -51,7 +51,7 @@ def open(filename):
         fp = builtins.open(filename, "rb")
 
     # read header fields
-    header = fp.read(32+24+32+12)
+    header = fp.read(32 + 24 + 32 + 12)
     size = i32(header, 32), i32(header, 36)
     offset = i32(header, 40)
 
@@ -66,15 +66,14 @@ def open(filename):
 
     # strings are null-terminated
     im.info["name"] = header[:32].split(b"\0", 1)[0]
-    next_name = header[56:56+32].split(b"\0", 1)[0]
+    next_name = header[56:56 + 32].split(b"\0", 1)[0]
     if next_name:
         im.info["next_name"] = next_name
 
     return im
 
 
-quake2palette = (
-    # default palette taken from piffo 0.93 by Hans Häggström
+quake2palette = (  # default palette taken from piffo 0.93 by Hans Häggström
     b"\x01\x01\x01\x0b\x0b\x0b\x12\x12\x12\x17\x17\x17\x1b\x1b\x1b\x1e"
     b"\x1e\x1e\x22\x22\x22\x26\x26\x26\x29\x29\x29\x2c\x2c\x2c\x2f\x2f"
     b"\x2f\x32\x32\x32\x35\x35\x35\x37\x37\x37\x3a\x3a\x3a\x3c\x3c\x3c"
@@ -122,8 +121,7 @@ quake2palette = (
     b"\x01\x27\x07\x01\x23\x01\x01\x1d\x01\x01\x17\x01\x01\x10\x01\x01"
     b"\x3d\x01\x01\x19\x19\x3f\x3f\x01\x01\x01\x01\x3f\x16\x16\x13\x10"
     b"\x10\x0f\x0d\x0d\x0b\x3c\x2e\x2a\x36\x27\x20\x30\x21\x18\x29\x1b"
-    b"\x10\x3c\x39\x37\x37\x32\x2f\x31\x2c\x28\x2b\x26\x21\x30\x22\x20"
-)
+    b"\x10\x3c\x39\x37\x37\x32\x2f\x31\x2c\x28\x2b\x26\x21\x30\x22\x20")
 
 if __name__ == "__main__":
     im = open("../hacks/sample.wal")

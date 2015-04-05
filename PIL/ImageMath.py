@@ -61,7 +61,7 @@ class _Operand:
             out = Image.new(mode or im1.mode, im1.size, None)
             im1.load()
             try:
-                op = getattr(_imagingmath, op+"_"+im1.mode)
+                op = getattr(_imagingmath, op + "_" + im1.mode)
             except AttributeError:
                 raise TypeError("bad operand type for '%s'" % op)
             _imagingmath.unop(op, out.im.id, im1.im.id)
@@ -90,7 +90,7 @@ class _Operand:
             im1.load()
             im2.load()
             try:
-                op = getattr(_imagingmath, op+"_"+im1.mode)
+                op = getattr(_imagingmath, op + "_" + im1.mode)
             except AttributeError:
                 raise TypeError("bad operand type for '%s'" % op)
             _imagingmath.binop(op, out.im.id, im1.im.id, im2.im.id)
@@ -235,6 +235,7 @@ def imagemath_max(self, other):
 
 def imagemath_convert(self, mode):
     return _Operand(self.im.convert(mode))
+
 
 ops = {}
 for k, v in list(globals().items()):

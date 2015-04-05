@@ -30,9 +30,9 @@ def _parse_codestream(fp):
     lsiz, rsiz, xsiz, ysiz, xosiz, yosiz, xtsiz, ytsiz, \
         xtosiz, ytosiz, csiz \
         = struct.unpack('>HHIIIIIIIIH', siz[:38])
-    ssiz = [None]*csiz
-    xrsiz = [None]*csiz
-    yrsiz = [None]*csiz
+    ssiz = [None] * csiz
+    xrsiz = [None] * csiz
+    yrsiz = [None] * csiz
     for i in range(csiz):
         ssiz[i], xrsiz[i], yrsiz[i] \
             = struct.unpack('>BBB', siz[36 + 3 * i:39 + 3 * i])
@@ -116,7 +116,7 @@ def _parse_jp2_header(fp):
             meth, prec, approx = struct.unpack('>BBB', content[:3])
             if meth == 1:
                 cs = struct.unpack('>I', content[3:7])[0]
-                if cs == 16:   # sRGB
+                if cs == 16:  # sRGB
                     if nc == 1 and (bpc & 0x7f) > 8:
                         mode = 'I;16'
                     elif nc == 1:
@@ -210,9 +210,9 @@ def _accept(prefix):
     return (prefix[:4] == b'\xff\x4f\xff\x51' or
             prefix[:12] == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a')
 
-
 # ------------------------------------------------------------
 # Save support
+
 
 def _save(im, fp, filename):
     if filename.endswith('.j2k'):
@@ -242,22 +242,12 @@ def _save(im, fp, filename):
         except:
             fd = -1
 
-    im.encoderconfig = (
-        offset,
-        tile_offset,
-        tile_size,
-        quality_mode,
-        quality_layers,
-        num_resolutions,
-        cblk_size,
-        precinct_size,
-        irreversible,
-        progression,
-        cinema_mode,
-        fd
-    )
+    im.encoderconfig = (offset, tile_offset, tile_size, quality_mode,
+                        quality_layers, num_resolutions, cblk_size,
+                        precinct_size, irreversible, progression, cinema_mode,
+                        fd)
 
-    ImageFile._save(im, fp, [('jpeg2k', (0, 0)+im.size, 0, kind)])
+    ImageFile._save(im, fp, [('jpeg2k', (0, 0) + im.size, 0, kind)])
 
 # ------------------------------------------------------------
 # Registry stuff

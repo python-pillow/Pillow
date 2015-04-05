@@ -13,7 +13,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-
 # NOTE: This format cannot be automatically recognized, so the
 # class is not registered for use with Image.open().  To open a
 # gd file, use the GdImageFile.open() function instead.
@@ -21,7 +20,6 @@
 # THE GD FORMAT IS NOT DESIGNED FOR DATA INTERCHANGE.  This
 # implementation is provided for convenience and demonstrational
 # purposes only.
-
 
 __version__ = "0.1"
 
@@ -36,12 +34,12 @@ except ImportError:
 
 i16 = _binary.i16be
 
-
 ##
 # Image plugin for the GD uncompressed format.  Note that this format
 # is not supported by the standard <b>Image.open</b> function.  To use
 # this plugin, you have to import the <b>GdImageFile</b> module and
 # use the <b>GdImageFile.open</b> function.
+
 
 class GdImageFile(ImageFile.ImageFile):
 
@@ -63,8 +61,7 @@ class GdImageFile(ImageFile.ImageFile):
 
         self.palette = ImagePalette.raw("RGB", s[7:])
 
-        self.tile = [("raw", (0, 0)+self.size, 775, ("L", 0, -1))]
-
+        self.tile = [("raw", (0, 0) + self.size, 775, ("L", 0, -1))]
 
 ##
 # Load texture from a GD image file.
@@ -74,6 +71,7 @@ class GdImageFile(ImageFile.ImageFile):
 #     is given, it must be "r".
 # @return An image instance.
 # @exception IOError If the image could not be read.
+
 
 def open(fp, mode="r"):
 

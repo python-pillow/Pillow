@@ -27,11 +27,11 @@ class ImagePalette:
     def __init__(self, mode="RGB", palette=None, size=0):
         self.mode = mode
         self.rawmode = None  # if set, palette contains raw data
-        self.palette = palette or list(range(256))*len(self.mode)
+        self.palette = palette or list(range(256)) * len(self.mode)
         self.colors = {}
         self.dirty = None
-        if ((size == 0 and len(self.mode)*256 != len(self.palette)) or
-                (size != 0 and size != len(self.palette))):
+        if ((size == 0 and len(self.mode) * 256 != len(self.palette)) or
+            (size != 0 and size != len(self.palette))):
             raise ValueError("wrong palette size")
 
     def getdata(self):
@@ -82,8 +82,8 @@ class ImagePalette:
                     raise ValueError("cannot allocate more than 256 colors")
                 self.colors[color] = index
                 self.palette[index] = color[0]
-                self.palette[index+256] = color[1]
-                self.palette[index+512] = color[2]
+                self.palette[index + 256] = color[1]
+                self.palette[index + 512] = color[2]
                 self.dirty = 1
                 return index
         else:
@@ -102,7 +102,7 @@ class ImagePalette:
         fp.write("# Mode: %s\n" % self.mode)
         for i in range(256):
             fp.write("%d" % i)
-            for j in range(i*len(self.mode), (i+1)*len(self.mode)):
+            for j in range(i * len(self.mode), (i + 1) * len(self.mode)):
                 try:
                     fp.write(" %d" % self.palette[j])
                 except IndexError:
@@ -110,9 +110,9 @@ class ImagePalette:
             fp.write("\n")
         fp.close()
 
-
 # --------------------------------------------------------------------
 # Internal
+
 
 def raw(rawmode, data):
     palette = ImagePalette()
@@ -121,27 +121,21 @@ def raw(rawmode, data):
     palette.dirty = 1
     return palette
 
-
 # --------------------------------------------------------------------
 # Factories
 
+
 def _make_linear_lut(black, white):
-    warnings.warn(
-        '_make_linear_lut() is deprecated. '
-        'Please call make_linear_lut() instead.',
-        DeprecationWarning,
-        stacklevel=2
-    )
+    warnings.warn('_make_linear_lut() is deprecated. '
+                  'Please call make_linear_lut() instead.', DeprecationWarning,
+                  stacklevel=2)
     return make_linear_lut(black, white)
 
 
 def _make_gamma_lut(exp):
-    warnings.warn(
-        '_make_gamma_lut() is deprecated. '
-        'Please call make_gamma_lut() instead.',
-        DeprecationWarning,
-        stacklevel=2
-    )
+    warnings.warn('_make_gamma_lut() is deprecated. '
+                  'Please call make_gamma_lut() instead.', DeprecationWarning,
+                  stacklevel=2)
     return make_gamma_lut(exp)
 
 
@@ -149,7 +143,7 @@ def make_linear_lut(black, white):
     lut = []
     if black == 0:
         for i in range(256):
-            lut.append(white*i//255)
+            lut.append(white * i // 255)
     else:
         raise NotImplementedError  # FIXME
     return lut
@@ -171,7 +165,7 @@ def negative(mode="RGB"):
 def random(mode="RGB"):
     from random import randint
     palette = []
-    for i in range(256*len(mode)):
+    for i in range(256 * len(mode)):
         palette.append(randint(0, 255))
     return ImagePalette(mode, palette)
 

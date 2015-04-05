@@ -13,19 +13,19 @@ from PIL import Image, ImageFile
 
 _handler = None
 
-
 ##
 # Install application-specific HDF5 image handler.
 #
 # @param handler Handler object.
 
+
 def register_handler(handler):
     global _handler
     _handler = handler
 
-
 # --------------------------------------------------------------------
 # Image adapter
+
 
 def _accept(prefix):
     return prefix[:8] == b"\x89HDF\r\n\x1a\n"
@@ -61,7 +61,6 @@ def _save(im, fp, filename):
     if _handler is None or not hasattr("_handler", "save"):
         raise IOError("HDF5 save handler not installed")
     _handler.save(im, fp, filename)
-
 
 # --------------------------------------------------------------------
 # Registry

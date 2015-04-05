@@ -31,9 +31,9 @@ def _save(im, fp, filename):
     # Note that we can only save the current frame at present
     return JpegImagePlugin._save(im, fp, filename)
 
-
 ##
 # Image plugin for MPO images.
+
 
 class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
@@ -68,14 +68,12 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         else:
             self.fp = self.__fp
             self.offset = self.__mpoffsets[frame]
-            self.tile = [
-                ("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))
-            ]
+            self.tile = [("jpeg", (0, 0) + self.size, self.offset,
+                          (self.mode, ""))]
         self.__frame = frame
 
     def tell(self):
         return self.__frame
-
 
 # -------------------------------------------------------------------q-
 # Registry stuff

@@ -28,7 +28,6 @@ from PIL import Image, ImageFile, ImagePalette, _binary
 
 __version__ = "0.9"
 
-
 # --------------------------------------------------------------------
 # Helpers
 
@@ -37,17 +36,17 @@ i16 = _binary.i16le
 o8 = _binary.o8
 o16 = _binary.o16le
 
-
 # --------------------------------------------------------------------
 # Identify/read GIF files
+
 
 def _accept(prefix):
     return prefix[:6] in [b"GIF87a", b"GIF89a"]
 
-
 ##
 # Image plugin for GIF images.  This plugin supports both GIF87 and
 # GIF89 images.
+
 
 class GifImageFile(ImageFile.ImageFile):
 
@@ -80,7 +79,7 @@ class GifImageFile(ImageFile.ImageFile):
             # check if palette contains colour indices
             p = self.fp.read(3 << bits)
             for i in range(0, len(p), 3):
-                if not (i//3 == i8(p[i]) == i8(p[i+1]) == i8(p[i+2])):
+                if not (i // 3 == i8(p[i]) == i8(p[i + 1]) == i8(p[i + 2])):
                     p = ImagePalette.raw("RGB", p)
                     self.global_palette = self.palette = p
                     break
@@ -189,10 +188,8 @@ class GifImageFile(ImageFile.ImageFile):
                 # image data
                 bits = i8(self.fp.read(1))
                 self.__offset = self.fp.tell()
-                self.tile = [("gif",
-                             (x0, y0, x1, y1),
-                             self.__offset,
-                             (bits, interlace))]
+                self.tile = [("gif", (x0, y0, x1, y1), self.__offset,
+                              (bits, interlace))]
                 break
 
             else:
@@ -251,11 +248,7 @@ try:
 except ImportError:
     _imaging_gif = None
 
-RAWMODE = {
-    "1": "L",
-    "L": "L",
-    "P": "P",
-}
+RAWMODE = {"1": "L", "L": "L", "P": "P", }
 
 
 def _save(im, fp, filename):
@@ -326,24 +319,21 @@ def _save(im, fp, filename):
 
         # transparency extension block
         if transparent_color_exists:
-            fp.write(b"!" +
-                     o8(249) +              # extension intro
-                     o8(4) +                # length
-                     o8(1) +                # transparency info present
-                     o16(0) +               # duration
-                     o8(transparency) +     # transparency index
+            fp.write(b"!" + o8(249) +  # extension intro
+                     o8(4) +  # length
+                     o8(1) +  # transparency info present
+                     o16(0) +  # duration
+                     o8(transparency) +  # transparency index
                      o8(0))
 
     # local image header
-    fp.write(b"," +
-             o16(0) + o16(0) +          # bounding box
-             o16(im.size[0]) +          # size
-             o16(im.size[1]) +
-             o8(flags) +                # flags
-             o8(8))                     # bits
+    fp.write(b"," + o16(0) + o16(0) +  # bounding box
+             o16(im.size[0]) +  # size
+             o16(im.size[1]) + o8(flags) +  # flags
+             o8(8))  # bits
 
     im_out.encoderconfig = (8, interlace)
-    ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
+    ImageFile._save(im_out, fp, [("gif", (0, 0) + im.size, 0,
                                   RAWMODE[im_out.mode])])
 
     fp.write(b"\0")  # end of image data
@@ -382,7 +372,9 @@ def _save_netpbm(im, fp, filename):
             stderr = tempfile.TemporaryFile()
             quant_proc = Popen(quant_cmd, stdout=PIPE, stderr=stderr)
             stderr = tempfile.TemporaryFile()
-            togif_proc = Popen(togif_cmd, stdin=quant_proc.stdout, stdout=f,
+            togif_proc = Popen(togif_cmd,
+                               stdin=quant_proc.stdout,
+                               stdout=f,
                                stderr=stderr)
 
             # Allow ppmquant to receive SIGPIPE if ppmtogif exits
@@ -401,9 +393,9 @@ def _save_netpbm(im, fp, filename):
     except:
         pass
 
-
 # --------------------------------------------------------------------
 # GIF utilities
+
 
 def getheader(im, palette=None, info=None):
     """Return a list of strings representing a GIF header"""
@@ -412,11 +404,10 @@ def getheader(im, palette=None, info=None):
 
     # Header Block
     # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
-    header = [
-        b"GIF87a" +             # signature + version
-        o16(im.size[0]) +       # canvas width
-        o16(im.size[1])         # canvas height
-    ]
+    header = [b"GIF87a" +  # signature + version
+              o16(im.size[0]) +  # canvas width
+              o16(im.size[1])  # canvas height
+             ]
 
     if im.mode == "P":
         if palette and isinstance(palette, bytes):
@@ -427,7 +418,7 @@ def getheader(im, palette=None, info=None):
         if palette and isinstance(palette, bytes):
             source_palette = palette[:768]
         else:
-            source_palette = bytearray([i//3 for i in range(768)])
+            source_palette = bytearray([i // 3 for i in range(768)])
 
     used_palette_colors = palette_bytes = None
 
@@ -449,7 +440,8 @@ def getheader(im, palette=None, info=None):
             i = 0
             # pick only the used colors from the palette
             for oldPosition in used_palette_colors:
-                palette_bytes += source_palette[oldPosition*3:oldPosition*3+3]
+                palette_bytes += source_palette[oldPosition * 3:oldPosition * 3
+                                                + 3]
                 new_positions[oldPosition] = i
                 i += 1
 
@@ -471,7 +463,7 @@ def getheader(im, palette=None, info=None):
     # Logical Screen Descriptor
     # calculate the palette size for the header
     import math
-    color_table_size = int(math.ceil(math.log(len(palette_bytes)//3, 2)))-1
+    color_table_size = int(math.ceil(math.log(len(palette_bytes) // 3, 2))) - 1
     if color_table_size < 0:
         color_table_size = 0
     # size of global color table + global color table flag
@@ -482,7 +474,7 @@ def getheader(im, palette=None, info=None):
 
     # add the missing amount of bytes
     # the palette has to be 2<<n in size
-    actual_target_size_diff = (2 << color_table_size) - len(palette_bytes)//3
+    actual_target_size_diff = (2 << color_table_size) - len(palette_bytes) // 3
     if actual_target_size_diff > 0:
         palette_bytes += o8(0) * 3 * actual_target_size_diff
 
@@ -510,15 +502,13 @@ def getdata(im, offset=(0, 0), **params):
         im.encoderinfo = params
 
         # local image header
-        fp.write(b"," +
-                 o16(offset[0]) +       # offset
-                 o16(offset[1]) +
-                 o16(im.size[0]) +      # size
-                 o16(im.size[1]) +
-                 o8(0) +                # flags
-                 o8(8))                 # bits
+        fp.write(b"," + o16(offset[0]) +  # offset
+                 o16(offset[1]) + o16(im.size[0]) +  # size
+                 o16(im.size[1]) + o8(0) +  # flags
+                 o8(8))  # bits
 
-        ImageFile._save(im, fp, [("gif", (0, 0)+im.size, 0, RAWMODE[im.mode])])
+        ImageFile._save(im, fp, [("gif",
+                                  (0, 0) + im.size, 0, RAWMODE[im.mode])])
 
         fp.write(b"\0")  # end of image data
 
@@ -526,7 +516,6 @@ def getdata(im, offset=(0, 0), **params):
         del im.encoderinfo
 
     return fp.data
-
 
 # --------------------------------------------------------------------
 # Registry
@@ -539,5 +528,4 @@ Image.register_mime(GifImageFile.format, "image/gif")
 #
 # Uncomment the following line if you wish to use NETPBM/PBMPLUS
 # instead of the built-in "uncompressed" GIF encoder
-
 # Image.register_save(GifImageFile.format, _save_netpbm)

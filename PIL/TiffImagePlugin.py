@@ -144,75 +144,73 @@ COMPRESSION_INFO_REV = dict([(v, k) for (k, v) in COMPRESSION_INFO.items()])
 OPEN_INFO = {
     # (ByteOrder, PhotoInterpretation, SampleFormat, FillOrder, BitsPerSample,
     #  ExtraSamples) => mode, rawmode
-    (II, 0, 1, 1, (1,), ()): ("1", "1;I"),
-    (II, 0, 1, 2, (1,), ()): ("1", "1;IR"),
-    (II, 0, 1, 1, (8,), ()): ("L", "L;I"),
-    (II, 0, 1, 2, (8,), ()): ("L", "L;IR"),
-    (II, 0, 3, 1, (32,), ()): ("F", "F;32F"),
-    (II, 1, 1, 1, (1,), ()): ("1", "1"),
-    (II, 1, 1, 1, (4,), ()): ("L", "L;4"),
-    (II, 1, 1, 2, (1,), ()): ("1", "1;R"),
-    (II, 1, 1, 1, (8,), ()): ("L", "L"),
-    (II, 1, 1, 1, (8, 8), (2,)): ("LA", "LA"),
-    (II, 1, 1, 2, (8,), ()): ("L", "L;R"),
-    (II, 1, 1, 1, (12,), ()): ("I;16", "I;12"),
-    (II, 1, 1, 1, (16,), ()): ("I;16", "I;16"),
-    (II, 1, 2, 1, (16,), ()): ("I;16S", "I;16S"),
-    (II, 1, 1, 1, (32,), ()): ("I", "I;32N"),
-    (II, 1, 2, 1, (32,), ()): ("I", "I;32S"),
-    (II, 1, 3, 1, (32,), ()): ("F", "F;32F"),
+    (II, 0, 1, 1, (1, ), ()): ("1", "1;I"),
+    (II, 0, 1, 2, (1, ), ()): ("1", "1;IR"),
+    (II, 0, 1, 1, (8, ), ()): ("L", "L;I"),
+    (II, 0, 1, 2, (8, ), ()): ("L", "L;IR"),
+    (II, 0, 3, 1, (32, ), ()): ("F", "F;32F"),
+    (II, 1, 1, 1, (1, ), ()): ("1", "1"),
+    (II, 1, 1, 1, (4, ), ()): ("L", "L;4"),
+    (II, 1, 1, 2, (1, ), ()): ("1", "1;R"),
+    (II, 1, 1, 1, (8, ), ()): ("L", "L"),
+    (II, 1, 1, 1, (8, 8), (2, )): ("LA", "LA"),
+    (II, 1, 1, 2, (8, ), ()): ("L", "L;R"),
+    (II, 1, 1, 1, (12, ), ()): ("I;16", "I;12"),
+    (II, 1, 1, 1, (16, ), ()): ("I;16", "I;16"),
+    (II, 1, 2, 1, (16, ), ()): ("I;16S", "I;16S"),
+    (II, 1, 1, 1, (32, ), ()): ("I", "I;32N"),
+    (II, 1, 2, 1, (32, ), ()): ("I", "I;32S"),
+    (II, 1, 3, 1, (32, ), ()): ("F", "F;32F"),
     (II, 2, 1, 1, (8, 8, 8), ()): ("RGB", "RGB"),
     (II, 2, 1, 2, (8, 8, 8), ()): ("RGB", "RGB;R"),
     (II, 2, 1, 1, (8, 8, 8, 8), ()): ("RGBA", "RGBA"),  # missing ExtraSamples
-    (II, 2, 1, 1, (8, 8, 8, 8), (0,)): ("RGBX", "RGBX"),
-    (II, 2, 1, 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBa"),
-    (II, 2, 1, 1, (8, 8, 8, 8), (2,)): ("RGBA", "RGBA"),
-    (II, 2, 1, 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
-    (II, 3, 1, 1, (1,), ()): ("P", "P;1"),
-    (II, 3, 1, 2, (1,), ()): ("P", "P;1R"),
-    (II, 3, 1, 1, (2,), ()): ("P", "P;2"),
-    (II, 3, 1, 2, (2,), ()): ("P", "P;2R"),
-    (II, 3, 1, 1, (4,), ()): ("P", "P;4"),
-    (II, 3, 1, 2, (4,), ()): ("P", "P;4R"),
-    (II, 3, 1, 1, (8,), ()): ("P", "P"),
-    (II, 3, 1, 1, (8, 8), (2,)): ("PA", "PA"),
-    (II, 3, 1, 2, (8,), ()): ("P", "P;R"),
+    (II, 2, 1, 1, (8, 8, 8, 8), (0, )): ("RGBX", "RGBX"),
+    (II, 2, 1, 1, (8, 8, 8, 8), (1, )): ("RGBA", "RGBa"),
+    (II, 2, 1, 1, (8, 8, 8, 8), (2, )): ("RGBA", "RGBA"),
+    (II, 2, 1, 1, (8, 8, 8, 8), (999, )): ("RGBA", "RGBA"),  # Corel Draw 10
+    (II, 3, 1, 1, (1, ), ()): ("P", "P;1"),
+    (II, 3, 1, 2, (1, ), ()): ("P", "P;1R"),
+    (II, 3, 1, 1, (2, ), ()): ("P", "P;2"),
+    (II, 3, 1, 2, (2, ), ()): ("P", "P;2R"),
+    (II, 3, 1, 1, (4, ), ()): ("P", "P;4"),
+    (II, 3, 1, 2, (4, ), ()): ("P", "P;4R"),
+    (II, 3, 1, 1, (8, ), ()): ("P", "P"),
+    (II, 3, 1, 1, (8, 8), (2, )): ("PA", "PA"),
+    (II, 3, 1, 2, (8, ), ()): ("P", "P;R"),
     (II, 5, 1, 1, (8, 8, 8, 8), ()): ("CMYK", "CMYK"),
     (II, 6, 1, 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
     (II, 8, 1, 1, (8, 8, 8), ()): ("LAB", "LAB"),
-
-    (MM, 0, 1, 1, (1,), ()): ("1", "1;I"),
-    (MM, 0, 1, 2, (1,), ()): ("1", "1;IR"),
-    (MM, 0, 1, 1, (8,), ()): ("L", "L;I"),
-    (MM, 0, 1, 2, (8,), ()): ("L", "L;IR"),
-    (MM, 1, 1, 1, (1,), ()): ("1", "1"),
-    (MM, 1, 1, 2, (1,), ()): ("1", "1;R"),
-    (MM, 1, 1, 1, (8,), ()): ("L", "L"),
-    (MM, 1, 1, 1, (8, 8), (2,)): ("LA", "LA"),
-    (MM, 1, 1, 2, (8,), ()): ("L", "L;R"),
-    (MM, 1, 1, 1, (16,), ()): ("I;16B", "I;16B"),
-    (MM, 1, 2, 1, (16,), ()): ("I;16BS", "I;16BS"),
-    (MM, 1, 2, 1, (32,), ()): ("I;32BS", "I;32BS"),
-    (MM, 1, 3, 1, (32,), ()): ("F", "F;32BF"),
+    (MM, 0, 1, 1, (1, ), ()): ("1", "1;I"),
+    (MM, 0, 1, 2, (1, ), ()): ("1", "1;IR"),
+    (MM, 0, 1, 1, (8, ), ()): ("L", "L;I"),
+    (MM, 0, 1, 2, (8, ), ()): ("L", "L;IR"),
+    (MM, 1, 1, 1, (1, ), ()): ("1", "1"),
+    (MM, 1, 1, 2, (1, ), ()): ("1", "1;R"),
+    (MM, 1, 1, 1, (8, ), ()): ("L", "L"),
+    (MM, 1, 1, 1, (8, 8), (2, )): ("LA", "LA"),
+    (MM, 1, 1, 2, (8, ), ()): ("L", "L;R"),
+    (MM, 1, 1, 1, (16, ), ()): ("I;16B", "I;16B"),
+    (MM, 1, 2, 1, (16, ), ()): ("I;16BS", "I;16BS"),
+    (MM, 1, 2, 1, (32, ), ()): ("I;32BS", "I;32BS"),
+    (MM, 1, 3, 1, (32, ), ()): ("F", "F;32BF"),
     (MM, 2, 1, 1, (8, 8, 8), ()): ("RGB", "RGB"),
     (MM, 2, 1, 2, (8, 8, 8), ()): ("RGB", "RGB;R"),
-    (MM, 2, 1, 1, (8, 8, 8, 8), (0,)): ("RGBX", "RGBX"),
-    (MM, 2, 1, 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBa"),
-    (MM, 2, 1, 1, (8, 8, 8, 8), (2,)): ("RGBA", "RGBA"),
-    (MM, 2, 1, 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
-    (MM, 3, 1, 1, (1,), ()): ("P", "P;1"),
-    (MM, 3, 1, 2, (1,), ()): ("P", "P;1R"),
-    (MM, 3, 1, 1, (2,), ()): ("P", "P;2"),
-    (MM, 3, 1, 2, (2,), ()): ("P", "P;2R"),
-    (MM, 3, 1, 1, (4,), ()): ("P", "P;4"),
-    (MM, 3, 1, 2, (4,), ()): ("P", "P;4R"),
-    (MM, 3, 1, 1, (8,), ()): ("P", "P"),
-    (MM, 3, 1, 1, (8, 8), (2,)): ("PA", "PA"),
-    (MM, 3, 1, 2, (8,), ()): ("P", "P;R"),
+    (MM, 2, 1, 1, (8, 8, 8, 8), (0, )): ("RGBX", "RGBX"),
+    (MM, 2, 1, 1, (8, 8, 8, 8), (1, )): ("RGBA", "RGBa"),
+    (MM, 2, 1, 1, (8, 8, 8, 8), (2, )): ("RGBA", "RGBA"),
+    (MM, 2, 1, 1, (8, 8, 8, 8), (999, )): ("RGBA", "RGBA"),  # Corel Draw 10
+    (MM, 3, 1, 1, (1, ), ()): ("P", "P;1"),
+    (MM, 3, 1, 2, (1, ), ()): ("P", "P;1R"),
+    (MM, 3, 1, 1, (2, ), ()): ("P", "P;2"),
+    (MM, 3, 1, 2, (2, ), ()): ("P", "P;2R"),
+    (MM, 3, 1, 1, (4, ), ()): ("P", "P;4"),
+    (MM, 3, 1, 2, (4, ), ()): ("P", "P;4R"),
+    (MM, 3, 1, 1, (8, ), ()): ("P", "P"),
+    (MM, 3, 1, 1, (8, 8), (2, )): ("PA", "PA"),
+    (MM, 3, 1, 2, (8, ), ()): ("P", "P;R"),
     (MM, 5, 1, 1, (8, 8, 8, 8), ()): ("CMYK", "CMYK"),
     (MM, 6, 1, 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
     (MM, 8, 1, 1, (8, 8, 8), ()): ("LAB", "LAB"),
-
 }
 
 PREFIXES = [b"MM\000\052", b"II\052\000", b"II\xBC\000"]
@@ -221,9 +219,9 @@ PREFIXES = [b"MM\000\052", b"II\052\000", b"II\xBC\000"]
 def _accept(prefix):
     return prefix[:4] in PREFIXES
 
-
 ##
 # Wrapper for TIFF IFDs.
+
 
 class ImageFileDirectory(collections.MutableMapping):
     """ This class represents a TIFF tag directory.  To speed things
@@ -338,6 +336,7 @@ class ImageFileDirectory(collections.MutableMapping):
         return tag in self.tags or tag in self.tagdata
 
     if bytes is str:
+
         def has_key(self, tag):
             return tag in self
 
@@ -346,7 +345,7 @@ class ImageFileDirectory(collections.MutableMapping):
         # tags are not tuples for byte, string, and undefined data.
         # see load_*
         if not isinstance(value, tuple):
-            value = (value,)
+            value = (value, )
         self.tags[tag] = value
 
     def __delitem__(self, tag):
@@ -366,12 +365,14 @@ class ImageFileDirectory(collections.MutableMapping):
 
     def load_byte(self, data):
         return data
+
     load_dispatch[1] = (1, load_byte)
 
     def load_string(self, data):
         if data[-1:] == b'\0':
             data = data[:-1]
         return data.decode('latin-1', 'replace')
+
     load_dispatch[2] = (1, load_string)
 
     def load_short(self, data):
@@ -379,6 +380,7 @@ class ImageFileDirectory(collections.MutableMapping):
         for i in range(0, len(data), 2):
             l.append(self.i16(data, i))
         return tuple(l)
+
     load_dispatch[3] = (2, load_short)
 
     def load_long(self, data):
@@ -386,13 +388,15 @@ class ImageFileDirectory(collections.MutableMapping):
         for i in range(0, len(data), 4):
             l.append(self.i32(data, i))
         return tuple(l)
+
     load_dispatch[4] = (4, load_long)
 
     def load_rational(self, data):
         l = []
         for i in range(0, len(data), 8):
-            l.append((self.i32(data, i), self.i32(data, i+4)))
+            l.append((self.i32(data, i), self.i32(data, i + 4)))
         return tuple(l)
+
     load_dispatch[5] = (8, load_rational)
 
     def load_float(self, data):
@@ -400,6 +404,7 @@ class ImageFileDirectory(collections.MutableMapping):
         if self.prefix != native_prefix:
             a.byteswap()
         return tuple(a)
+
     load_dispatch[11] = (4, load_float)
 
     def load_double(self, data):
@@ -407,11 +412,13 @@ class ImageFileDirectory(collections.MutableMapping):
         if self.prefix != native_prefix:
             a.byteswap()
         return tuple(a)
+
     load_dispatch[12] = (8, load_double)
 
     def load_undefined(self, data):
         # Untyped data
         return data
+
     load_dispatch[7] = (1, load_undefined)
 
     def load(self, fp):
@@ -458,7 +465,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 data = ImageFile._safe_read(fp, size)
                 fp.seek(here)
             else:
-                data = ifd[8:8+size]
+                data = ifd[8:8 + size]
 
             if len(data) != size:
                 warnings.warn("Possibly corrupt EXIF data.  "
@@ -506,7 +513,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 typ = self.tagtype[tag]
 
             if Image.DEBUG:
-                print ("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
+                print("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
 
             if typ == 1:
                 # byte data
@@ -567,11 +574,12 @@ class ImageFileDirectory(collections.MutableMapping):
             if len(data) == 4:
                 append((tag, typ, len(value), data, b""))
             elif len(data) < 4:
-                append((tag, typ, len(value), data + (4-len(data))*b"\0", b""))
+                append((tag, typ, len(value), data +
+                        (4 - len(data)) * b"\0", b""))
             else:
                 count = len(value)
                 if typ == 5:
-                    count = count // 2        # adjust for rational data field
+                    count = count // 2  # adjust for rational data field
 
                 append((tag, typ, count, o32(offset), data))
                 offset += len(data)
@@ -602,9 +610,9 @@ class ImageFileDirectory(collections.MutableMapping):
 
         return offset
 
-
 ##
 # Image plugin for TIFF files.
+
 
 class TiffImageFile(ImageFile.ImageFile):
 
@@ -629,9 +637,9 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
 
         if Image.DEBUG:
-            print ("*** TiffImageFile._open ***")
-            print ("- __first:", self.__first)
-            print ("- ifh: ", ifh)
+            print("*** TiffImageFile._open ***")
+            print("- __first:", self.__first)
+            print("- ifh: ", ifh)
 
         # and load the first frame
         self._seek(0)
@@ -661,8 +669,9 @@ class TiffImageFile(ImageFile.ImageFile):
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
             if Image.DEBUG:
-                print("Seeking to frame %s, on frame %s, __next %s, location: %s" %
-                      (frame, self.__frame, self.__next, self.fp.tell()))
+                print(
+                    "Seeking to frame %s, on frame %s, __next %s, location: %s" %
+                    (frame, self.__frame, self.__next, self.fp.tell()))
             # reset python3 buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
             self.fp.tell()
@@ -697,7 +706,7 @@ class TiffImageFile(ImageFile.ImageFile):
             args = rawmode
             if 317 in self.tag:
                 # Section 14: Differencing Predictor
-                self.decoderconfig = (self.tag[PREDICTOR][0],)
+                self.decoderconfig = (self.tag[PREDICTOR][0], )
 
         if ICCPROFILE in self.tag:
             self.info['icc_profile'] = self.tag[ICCPROFILE]
@@ -723,7 +732,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
         ignored, extents, ignored_2, args = self.tile[0]
-        args = args + (self.ifd.offset,)
+        args = args + (self.ifd.offset, )
         decoder = Image._getdecoder(self.mode, 'libtiff', args,
                                     self.decoderconfig)
         try:
@@ -742,19 +751,19 @@ class TiffImageFile(ImageFile.ImageFile):
             # that returns an IOError if there's no underlying fp. Easier to
             # dea. with here by reordering.
             if Image.DEBUG:
-                print ("have getvalue. just sending in a string from getvalue")
+                print("have getvalue. just sending in a string from getvalue")
             n, err = decoder.decode(self.fp.getvalue())
         elif hasattr(self.fp, "fileno"):
             # we've got a actual file on disk, pass in the fp.
             if Image.DEBUG:
-                print ("have fileno, calling fileno version of the decoder.")
+                print("have fileno, calling fileno version of the decoder.")
             self.fp.seek(0)
             # 4 bytes, otherwise the trace might error out
             n, err = decoder.decode(b"fpfp")
         else:
             # we have something else.
             if Image.DEBUG:
-                print ("don't have fileno or getvalue. just reading")
+                print("don't have fileno or getvalue. just reading")
             # UNDONE -- so much for that buffer size thing.
             n, err = decoder.decode(self.fp.read())
 
@@ -809,11 +818,9 @@ class TiffImageFile(ImageFile.ImageFile):
         format = getscalar(SAMPLEFORMAT, 1)
 
         # mode: check photometric interpretation and bits per pixel
-        key = (
-            self.tag.prefix, photo, format, fillorder,
-            self.tag.get(BITSPERSAMPLE, (1,)),
-            self.tag.get(EXTRASAMPLES, ())
-            )
+        key = (self.tag.prefix, photo, format, fillorder,
+               self.tag.get(BITSPERSAMPLE,
+                            (1, )), self.tag.get(EXTRASAMPLES, ()))
         if Image.DEBUG:
             print("format key:", key)
         try:
@@ -855,14 +862,11 @@ class TiffImageFile(ImageFile.ImageFile):
             offsets = self.tag[STRIPOFFSETS]
             h = getscalar(ROWSPERSTRIP, ysize)
             w = self.size[0]
-            if READ_LIBTIFF or self._compression in ["tiff_ccitt", "group3",
-                                                     "group4", "tiff_jpeg",
-                                                     "tiff_adobe_deflate",
-                                                     "tiff_thunderscan",
-                                                     "tiff_deflate",
-                                                     "tiff_sgilog",
-                                                     "tiff_sgilog24",
-                                                     "tiff_raw_16"]:
+            if READ_LIBTIFF or self._compression in [
+                "tiff_ccitt", "group3", "group4", "tiff_jpeg",
+                "tiff_adobe_deflate", "tiff_thunderscan", "tiff_deflate",
+                "tiff_sgilog", "tiff_sgilog24", "tiff_raw_16"
+            ]:
                 # if Image.DEBUG:
                 #     print "Activating g4 compression for whole file"
 
@@ -899,11 +903,9 @@ class TiffImageFile(ImageFile.ImageFile):
                 # bits, so stripes of the image are reversed.  See
                 # https://github.com/python-pillow/Pillow/issues/279
                 if fillorder == 2:
-                    key = (
-                        self.tag.prefix, photo, format, 1,
-                        self.tag.get(BITSPERSAMPLE, (1,)),
-                        self.tag.get(EXTRASAMPLES, ())
-                        )
+                    key = (self.tag.prefix, photo, format, 1,
+                           self.tag.get(BITSPERSAMPLE,
+                                        (1, )), self.tag.get(EXTRASAMPLES, ()))
                     if Image.DEBUG:
                         print("format key:", key)
                     # this should always work, since all the
@@ -920,21 +922,17 @@ class TiffImageFile(ImageFile.ImageFile):
                 # Offset in the tile tuple is 0, we go from 0,0 to
                 # w,h, and we only do this once -- eds
                 a = (rawmode, self._compression, fp)
-                self.tile.append(
-                    (self._compression,
-                     (0, 0, w, ysize),
-                     0, a))
+                self.tile.append((self._compression, (0, 0, w, ysize), 0, a))
                 a = None
 
             else:
                 for i in range(len(offsets)):
                     a = self._decoder(rawmode, l, i)
-                    self.tile.append(
-                        (self._compression,
-                            (0, min(y, ysize), w, min(y+h, ysize)),
-                            offsets[i], a))
+                    self.tile.append((self._compression,
+                                      (0, min(y, ysize), w, min(y + h, ysize)),
+                                      offsets[i], a))
                     if Image.DEBUG:
-                        print ("tiles: ", self.tile)
+                        print("tiles: ", self.tile)
                     y = y + h
                     if y >= self.size[1]:
                         x = y = 0
@@ -950,10 +948,8 @@ class TiffImageFile(ImageFile.ImageFile):
                     a = self._decoder(rawmode, l)
                 # FIXME: this doesn't work if the image size
                 # is not a multiple of the tile size...
-                self.tile.append(
-                    (self._compression,
-                        (x, y, x+w, y+h),
-                        o, a))
+                self.tile.append((self._compression, (x, y, x + w, y + h), o,
+                                  a))
                 x = x + w
                 if x >= self.size[0]:
                     x, y = 0, y + h
@@ -981,33 +977,32 @@ class TiffImageFile(ImageFile.ImageFile):
 SAVE_INFO = {
     # mode => rawmode, byteorder, photometrics,
     #           sampleformat, bitspersample, extra
-    "1": ("1", II, 1, 1, (1,), None),
-    "L": ("L", II, 1, 1, (8,), None),
+    "1": ("1", II, 1, 1, (1, ), None),
+    "L": ("L", II, 1, 1, (8, ), None),
     "LA": ("LA", II, 1, 1, (8, 8), 2),
-    "P": ("P", II, 3, 1, (8,), None),
+    "P": ("P", II, 3, 1, (8, ), None),
     "PA": ("PA", II, 3, 1, (8, 8), 2),
-    "I": ("I;32S", II, 1, 2, (32,), None),
-    "I;16": ("I;16", II, 1, 1, (16,), None),
-    "I;16S": ("I;16S", II, 1, 2, (16,), None),
-    "F": ("F;32F", II, 1, 3, (32,), None),
+    "I": ("I;32S", II, 1, 2, (32, ), None),
+    "I;16": ("I;16", II, 1, 1, (16, ), None),
+    "I;16S": ("I;16S", II, 1, 2, (16, ), None),
+    "F": ("F;32F", II, 1, 3, (32, ), None),
     "RGB": ("RGB", II, 2, 1, (8, 8, 8), None),
     "RGBX": ("RGBX", II, 2, 1, (8, 8, 8, 8), 0),
     "RGBA": ("RGBA", II, 2, 1, (8, 8, 8, 8), 2),
     "CMYK": ("CMYK", II, 5, 1, (8, 8, 8, 8), None),
     "YCbCr": ("YCbCr", II, 6, 1, (8, 8, 8), None),
     "LAB": ("LAB", II, 8, 1, (8, 8, 8), None),
-
-    "I;32BS": ("I;32BS", MM, 1, 2, (32,), None),
-    "I;16B": ("I;16B", MM, 1, 1, (16,), None),
-    "I;16BS": ("I;16BS", MM, 1, 2, (16,), None),
-    "F;32BF": ("F;32BF", MM, 1, 3, (32,), None),
+    "I;32BS": ("I;32BS", MM, 1, 2, (32, ), None),
+    "I;16B": ("I;16B", MM, 1, 1, (16, ), None),
+    "I;16BS": ("I;16BS", MM, 1, 2, (16, ), None),
+    "F;32BF": ("F;32BF", MM, 1, 3, (32, ), None),
 }
 
 
 def _cvt_res(value):
     # convert value to TIFF rational number -- (numerator, denominator)
     if isinstance(value, collections.Sequence):
-        assert(len(value) % 2 == 0)
+        assert (len(value) % 2 == 0)
         return value
     if isinstance(value, int):
         return (value, 1)
@@ -1025,7 +1020,7 @@ def _save(im, fp, filename):
     ifd = ImageFileDirectory(prefix)
 
     compression = im.encoderinfo.get('compression', im.info.get('compression',
-                                     'raw'))
+                                                                'raw'))
 
     libtiff = WRITE_LIBTIFF or compression != 'raw'
 
@@ -1069,17 +1064,19 @@ def _save(im, fp, filename):
             ifd[ICCPROFILE] = im.info["icc_profile"]
 
     for key, name, cvt in [
-            (IMAGEDESCRIPTION, "description", lambda x: x),
-            (X_RESOLUTION, "resolution", _cvt_res),
-            (Y_RESOLUTION, "resolution", _cvt_res),
-            (X_RESOLUTION, "x_resolution", _cvt_res),
-            (Y_RESOLUTION, "y_resolution", _cvt_res),
-            (RESOLUTION_UNIT, "resolution_unit",
-             lambda x: {"inch": 2, "cm": 3, "centimeter": 3}.get(x, 1)),
-            (SOFTWARE, "software", lambda x: x),
-            (DATE_TIME, "date_time", lambda x: x),
-            (ARTIST, "artist", lambda x: x),
-            (COPYRIGHT, "copyright", lambda x: x)]:
+        (IMAGEDESCRIPTION, "description", lambda x: x),
+        (X_RESOLUTION, "resolution", _cvt_res),
+        (Y_RESOLUTION, "resolution", _cvt_res),
+        (X_RESOLUTION, "x_resolution", _cvt_res),
+        (Y_RESOLUTION, "y_resolution", _cvt_res), (
+            RESOLUTION_UNIT, "resolution_unit",
+            lambda x: {"inch": 2,
+                       "cm": 3,
+                       "centimeter": 3}.get(x, 1)
+        ), (SOFTWARE, "software", lambda x: x),
+        (DATE_TIME, "date_time", lambda x: x), (ARTIST, "artist", lambda x: x),
+        (COPYRIGHT, "copyright", lambda x: x)
+    ]:
         name_with_spaces = name.replace("_", " ")
         if "_" in name and name_with_spaces in im.encoderinfo:
             warnings.warn("%r is deprecated; use %r instead" %
@@ -1094,7 +1091,7 @@ def _save(im, fp, filename):
         ifd[X_RESOLUTION] = _cvt_res(dpi[0])
         ifd[Y_RESOLUTION] = _cvt_res(dpi[1])
 
-    if bits != (1,):
+    if bits != (1, ):
         ifd[BITSPERSAMPLE] = bits
         if len(bits) != 1:
             ifd[SAMPLESPERPIXEL] = len(bits)
@@ -1110,7 +1107,7 @@ def _save(im, fp, filename):
         ifd[COLORMAP] = tuple(i8(v) * 256 for v in lut)
 
     # data orientation
-    stride = len(bits) * ((im.size[0]*bits[0]+7)//8)
+    stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     ifd[ROWSPERSTRIP] = im.size[1]
     ifd[STRIPBYTECOUNTS] = stride * im.size[1]
     ifd[STRIPOFFSETS] = 0  # this is adjusted by IFD writer
@@ -1119,8 +1116,8 @@ def _save(im, fp, filename):
 
     if libtiff:
         if Image.DEBUG:
-            print ("Saving using libtiff encoder")
-            print (ifd.items())
+            print("Saving using libtiff encoder")
+            print(ifd.items())
         _fp = 0
         if hasattr(fp, "fileno"):
             try:
@@ -1144,17 +1141,16 @@ def _save(im, fp, filename):
                     # A tuple of more than one rational tuples
                     # flatten to floats,
                     # following tiffcp.c->cpTag->TIFF_RATIONAL
-                    atts[k] = [float(elt[0])/float(elt[1]) for elt in v]
+                    atts[k] = [float(elt[0]) / float(elt[1]) for elt in v]
                     continue
                 if type(v[0]) == tuple and len(v) == 1:
                     # A tuple of one rational tuples
                     # flatten to floats,
                     # following tiffcp.c->cpTag->TIFF_RATIONAL
-                    atts[k] = float(v[0][0])/float(v[0][1])
+                    atts[k] = float(v[0][0]) / float(v[0][1])
                     continue
-                if (type(v) == tuple and
-                        (len(v) > 2 or
-                            (len(v) == 2 and v[1] == 0))):
+                if (type(v) == tuple and (len(v) > 2 or
+                                          (len(v) == 2 and v[1] == 0))):
                     # List of ints?
                     # Avoid divide by zero in next if-clause
                     if type(v[0]) in (int, float):
@@ -1164,7 +1160,7 @@ def _save(im, fp, filename):
                     # one rational tuple
                     # flatten to float,
                     # following tiffcp.c->cpTag->TIFF_RATIONAL
-                    atts[k] = float(v[0])/float(v[1])
+                    atts[k] = float(v[0]) / float(v[1])
                     continue
                 if type(v) == tuple and len(v) == 1:
                     v = v[0]
@@ -1177,7 +1173,7 @@ def _save(im, fp, filename):
                     atts[k] = v
 
         if Image.DEBUG:
-            print (atts)
+            print(atts)
 
         # libtiff always expects the bytes in native order.
         # we're storing image byte order. So, if the rawmode
@@ -1189,10 +1185,10 @@ def _save(im, fp, filename):
         a = (rawmode, compression, _fp, filename, atts)
         # print (im.mode, compression, a, im.encoderconfig)
         e = Image._getencoder(im.mode, 'libtiff', a, im.encoderconfig)
-        e.setimage(im.im, (0, 0)+im.size)
+        e.setimage(im.im, (0, 0) + im.size)
         while True:
             # undone, change to self.decodermaxblock:
-            l, s, d = e.encode(16*1024)
+            l, s, d = e.encode(16 * 1024)
             if not _fp:
                 fp.write(d)
             if s:
@@ -1203,9 +1199,8 @@ def _save(im, fp, filename):
     else:
         offset = ifd.save(fp)
 
-        ImageFile._save(im, fp, [
-            ("raw", (0, 0)+im.size, offset, (rawmode, stride, 1))
-            ])
+        ImageFile._save(im, fp, [("raw", (0, 0) + im.size, offset,
+                                  (rawmode, stride, 1))])
 
     # -- helper for multi-page save --
     if "_debug_multipage" in im.encoderinfo:

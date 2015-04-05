@@ -3,17 +3,13 @@ from PIL import ImageFile
 from io import BytesIO
 from PIL import _webp
 
-
-_VALID_WEBP_MODES = {
-    "RGB": True,
-    "RGBA": True,
-    }
+_VALID_WEBP_MODES = {"RGB": True, "RGBA": True, }
 
 _VP8_MODES_BY_IDENTIFIER = {
     b"VP8 ": "RGB",
     b"VP8X": "RGBA",
     b"VP8L": "RGBA",  # lossless
-    }
+}
 
 
 def _accept(prefix):
@@ -57,16 +53,8 @@ def _save(im, fp, filename):
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
 
-    data = _webp.WebPEncode(
-        im.tobytes(),
-        im.size[0],
-        im.size[1],
-        lossless,
-        float(quality),
-        im.mode,
-        icc_profile,
-        exif
-    )
+    data = _webp.WebPEncode(im.tobytes(), im.size[0], im.size[1], lossless,
+                            float(quality), im.mode, icc_profile, exif)
     if data is None:
         raise IOError("cannot write file as WEBP (encoder returned None)")
 
