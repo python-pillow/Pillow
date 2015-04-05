@@ -14,7 +14,7 @@ Please send a pull request to the master branch. Please include [documentation](
 
 ### Guidelines
 
-- Try to keep any code commits clean and separate from reformatting commits.
+- Separate code commits from reformatting commits.
 - Provide tests for any newly added code.
 - Follow PEP8.
 
