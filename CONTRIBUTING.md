@@ -20,7 +20,7 @@ Please send a pull request to the master branch. Please include [documentation](
 
 ## Reporting Issues
 
-When reporting issues, please include example code that reproduces the issue, and if possible a problem image. The best reproductions are self-contained scripts that pull in as few dependencies as possible. An entire Django stack is harder to reproduce.
+When reporting issues, please include code that reproduces the issue and whenever possible, an image that demonstrates the issue. The best reproductions are self-contained scripts with minimal dependencies.
 
 ### Provide details
 
