@@ -10,7 +10,7 @@ def bench(mode):
     get = im.im.getpixel
     xy = 50, 50  # position shouldn't really matter
     t0 = timeit.default_timer()
-    for i in range(1000000):
+    for _ in range(1000000):
         get(xy)
     print(mode, timeit.default_timer() - t0, "us")
 

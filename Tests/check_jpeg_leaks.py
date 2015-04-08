@@ -101,7 +101,7 @@ post-patch:
         qtables = [standard_l_qtable,
                    standard_chrominance_qtable]
 
-        for count in range(iterations):
+        for _ in range(iterations):
             test_output = BytesIO()
             im.save(test_output, "JPEG", qtables=qtables)
 
@@ -165,7 +165,7 @@ post patch:
         im = hopper('RGB')
         exif = b'12345678'*4096
 
-        for count in range(iterations):
+        for _ in range(iterations):
             test_output = BytesIO()
             im.save(test_output, "JPEG", exif=exif)
 
@@ -199,7 +199,7 @@ base case:
     def test_base_save(self):
         im = hopper('RGB')
 
-        for count in range(iterations):
+        for _ in range(iterations):
             test_output = BytesIO()
             im.save(test_output, "JPEG")
 

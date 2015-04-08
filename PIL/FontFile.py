@@ -78,7 +78,8 @@ class FontFile:
             glyph = self[i]
             if glyph:
                 d, dst, src, im = glyph
-                xx, yy = src[2] - src[0], src[3] - src[1]
+                xx = src[2] - src[0]
+                # yy = src[3] - src[1]
                 x0, y0 = x, y
                 x = x + xx
                 if x > WIDTH:
