@@ -1294,10 +1294,6 @@ class Image:
         See :py:meth:`~PIL.Image.Image.alpha_composite` if you want to
         combine images with respect to their alpha channels.
 
-        Note that if you paste an "RGBA" image, the alpha band is
-        ignored.  You can work around this by using the same image as
-        both source image and mask.
-
         :param im: Source image or pixel value (integer or tuple).
         :param box: An optional 4-tuple giving the region to paste into.
            If a 2-tuple is used instead, it's treated as the upper left
