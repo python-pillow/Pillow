@@ -1288,9 +1288,8 @@ class Image:
         images (in the latter case, the alpha band is used as mask).
         Where the mask is 255, the given image is copied as is.  Where
         the mask is 0, the current value is preserved.  Intermediate
-        values will mix the two images together.  If this image has an
-        alpha channel, intermediate values will also set the alpha
-        channel to themselves.
+        values will mix the two images together, including their alpha
+        channels if they have them.
 
         See :py:meth:`~PIL.Image.Image.alpha_composite` if you want to
         combine images with a partial mask without setting the alpha
