@@ -2,6 +2,8 @@ from helper import unittest, PillowTestCase
 
 from PIL import Image
 
+import sys
+
 # sample icon file
 file = "Tests/images/pillow.icns"
 data = open(file, "rb").read()
@@ -19,6 +21,20 @@ class TestFileIcns(PillowTestCase):
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (1024, 1024))
         self.assertEqual(im.format, "ICNS")
+
+    @unittest.skipIf(sys.platform != 'darwin',
+                     "requires MacOS")
+    def test_save(self):
+        im = Image.open(file)
+        
+        test_file = self.tempfile("temp.icns")
+        im.save(test_file)
+        
+        reread = Image.open(test_file)
+        
+        self.assertEqual(reread.mode, "RGBA")
+        self.assertEqual(reread.size, (1024, 1024))
+        self.assertEqual(reread.format, "ICNS")
 
     def test_sizes(self):
         # Check that we can load all of the sizes, and that the final pixel
