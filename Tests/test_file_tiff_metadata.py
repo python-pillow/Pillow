@@ -16,10 +16,18 @@ class TestFileTiffMetadata(PillowTestCase):
         img = hopper()
 
         textdata = "This is some arbitrary metadata for a text field"
+        floatdata = 12.345
+        doubledata = 67.89
+
         info = TiffImagePlugin.ImageFileDirectory()
 
         info[tag_ids['ImageJMetaDataByteCounts']] = len(textdata)
         info[tag_ids['ImageJMetaData']] = textdata
+        info[tag_ids['RollAngle']] = floatdata
+        info.tagtype[tag_ids['RollAngle']] = 11
+
+        info[tag_ids['YawAngle']] = doubledata
+        info.tagtype[tag_ids['YawAngle']] = 12
 
         f = self.tempfile("temp.tif")
 
@@ -29,6 +37,9 @@ class TestFileTiffMetadata(PillowTestCase):
 
         self.assertEqual(loaded.tag[50838], (len(textdata),))
         self.assertEqual(loaded.tag[50839], textdata)
+        self.assertAlmostEqual(loaded.tag[tag_ids['RollAngle']][0], floatdata, 
+                               places=5)
+        self.assertAlmostEqual(loaded.tag[tag_ids['YawAngle']][0], doubledata)
 
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
