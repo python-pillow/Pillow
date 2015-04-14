@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Tiff: allow writing floating point tag values #1113
+  [bpedersen2]
+
 2.8.1 (2015-04-02)
 ------------------
 
