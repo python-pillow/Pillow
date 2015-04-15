@@ -127,12 +127,12 @@ class SpiderImageFile(ImageFile.ImageFile):
         if self.istack == 0 and self.imgnumber == 0:
             # stk=0, img=0: a regular 2D image
             offset = hdrlen
-            self.nimages = 1
+            self._nimages = 1
         elif self.istack > 0 and self.imgnumber == 0:
             # stk>0, img=0: Opening the stack for the first time
             self.imgbytes = int(h[12]) * int(h[2]) * 4
             self.hdrlen = hdrlen
-            self.nimages = int(h[26])
+            self._nimages = int(h[26])
             # Point to the first image in the stack
             offset = hdrlen * 2
             self.imgnumber = 1
@@ -154,6 +154,10 @@ class SpiderImageFile(ImageFile.ImageFile):
                 (self.rawmode, 0, 1))]
         self.__fp = self.fp  # FIXME: hack
 
+    @property
+    def n_frames(self):
+        return self._nimages
+
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
     def tell(self):
         if self.imgnumber < 1:
@@ -164,7 +168,7 @@ class SpiderImageFile(ImageFile.ImageFile):
     def seek(self, frame):
         if self.istack == 0:
             return
-        if frame >= self.nimages:
+        if frame >= self._nimages:
             raise EOFError("attempt to seek past end of file")
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
         self.fp = self.__fp

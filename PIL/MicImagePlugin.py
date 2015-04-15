@@ -71,6 +71,10 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
         self.seek(0)
 
+    @property
+    def n_frames(self):
+        return len(self.images)
+
     def seek(self, frame):
 
         try:
