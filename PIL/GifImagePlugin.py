@@ -87,9 +87,30 @@ class GifImageFile(ImageFile.ImageFile):
 
         self.__fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
-        self.seek(0)  # get ready to read first frame
+        self._n_frames = None
+        self._seek(0)  # get ready to read first frame
+
+    @property
+    def n_frames(self):
+        if self._n_frames is None:
+            current = self.tell()
+            try:
+                while True:
+                    self.seek(self.tell() + 1)
+            except EOFError:
+                self._n_frames = self.tell() + 1
+            self.seek(current)
+        return self._n_frames
 
     def seek(self, frame):
+        if frame == self.__frame:
+            return
+        if frame < self.__frame:
+            self._seek(0)
+        for f in range(self.__frame + 1, frame + 1):
+            self._seek(f)
+
+    def _seek(self, frame):
 
         if frame == 0:
             # rewind
