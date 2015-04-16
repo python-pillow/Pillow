@@ -421,6 +421,7 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
         *length = n;
 
     PyErr_Clear();
+    Py_DECREF(seq);
 
     return list;
 }
@@ -1221,7 +1222,7 @@ _putdata(ImagingObject* self, PyObject* args)
     Py_ssize_t n, i, x, y;
 
     PyObject* data;
-    PyObject* seq;
+    PyObject* seq = NULL;
     PyObject* op;
     double scale = 1.0;
     double offset = 0.0;
@@ -1329,6 +1330,7 @@ _putdata(ImagingObject* self, PyObject* args)
 
                 op = PySequence_Fast_GET_ITEM(seq, i);
                 if (!op || !getink(op, image, u.ink)) {
+                    Py_DECREF(seq);
                     return NULL;
                 }
                 /* FIXME: what about scale and offset? */
@@ -1341,6 +1343,8 @@ _putdata(ImagingObject* self, PyObject* args)
             break;
         }
     }
+
+    Py_XDECREF(seq);
 
     Py_INCREF(Py_None);
     return Py_None;
