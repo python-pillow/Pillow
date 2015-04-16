@@ -422,6 +422,7 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
 
     PyErr_Clear();
 
+    Py_DECREF(seq);
     return list;
 }
 
@@ -1289,6 +1290,7 @@ _putdata(ImagingObject* self, PyObject* args)
                }
            }
            PyErr_Clear(); /* Avoid weird exceptions */
+           Py_DECREF(seq);
         }
     } else {
         /* 32-bit images */
@@ -1340,6 +1342,7 @@ _putdata(ImagingObject* self, PyObject* args)
             PyErr_Clear(); /* Avoid weird exceptions */
             break;
         }
+        Py_DECREF(seq);
     }
 
     Py_INCREF(Py_None);
