@@ -34,7 +34,7 @@ Or download and extract the `compressed archive from PyPI`_ and inside it run::
 
 .. _external-libraries:
 
-External libraries
+External Libraries
 ------------------
 
 .. note::
@@ -219,7 +219,7 @@ Prerequisites are installed on **Fedora 20** with::
 
 
 
-Platform support
+Platform Support
 ----------------
 
 Current platform support for Pillow. Binary distributions are contributed for
