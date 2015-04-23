@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Added icns save #1185
+  [radarhere]
+
 - Fix putdata memory leak #1196
   [benoit-pierre]
 
