@@ -332,15 +332,19 @@ def get_local_header(fp, im, offset=(0, 0)):
         transparency = int(transparency)
         # optimize the block away if transparent color is not used
         transparent_color_exists = True
-        # adjust the transparency index after optimize
-        if used_palette_colors is not None and len(used_palette_colors) < 256:
-            for i in range(len(used_palette_colors)):
-                if used_palette_colors[i] == transparency:
-                    transparency = i
-                    transparent_color_exists = True
-                    break
-                else:
-                    transparent_color_exists = False
+
+        if _get_optimize(im, im.encoderinfo):
+            used_palette_colors = _get_used_palette_colors(im)
+
+            # adjust the transparency index after optimize
+            if len(used_palette_colors) < 256:
+                for i in range(len(used_palette_colors)):
+                    if used_palette_colors[i] == transparency:
+                        transparency = i
+                        transparent_color_exists = True
+                        break
+                    else:
+                        transparent_color_exists = False
 
     if "duration" in im.encoderinfo:
         duration = int(im.encoderinfo["duration"] / 10)
@@ -433,10 +437,25 @@ def _save_netpbm(im, fp, filename):
 # --------------------------------------------------------------------
 # GIF utilities
 
+def _get_optimize(im, info):
+    return im.mode in ("P", "L") and info and info.get("optimize", 0)
+
+
+def _get_used_palette_colors(im):
+    used_palette_colors = []
+
+    # check which colors are used
+    i = 0
+    for count in im.histogram():
+        if count:
+            used_palette_colors.append(i)
+        i += 1
+
+    return used_palette_colors
+
+
 def getheader(im, palette=None, info=None):
     """Return a list of strings representing a GIF header"""
-
-    optimize = info and info.get("optimize", 0)
 
     # Header Block
     # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
@@ -459,15 +478,8 @@ def getheader(im, palette=None, info=None):
 
     used_palette_colors = palette_bytes = None
 
-    if im.mode in ("P", "L") and optimize:
-        used_palette_colors = []
-
-        # check which colors are used
-        i = 0
-        for count in im.histogram():
-            if count:
-                used_palette_colors.append(i)
-            i += 1
+    if _get_optimize(im, info):
+        used_palette_colors = _get_used_palette_colors(im)
 
         # create the new palette if not every color is used
         if len(used_palette_colors) < 256:
