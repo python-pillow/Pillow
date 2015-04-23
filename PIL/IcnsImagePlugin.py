@@ -18,6 +18,7 @@
 from PIL import Image, ImageFile, PngImagePlugin, _binary
 import io
 import struct
+import tempfile, shutil, os, sys
 
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
 if enable_jpeg2k:
@@ -247,7 +248,7 @@ class IcnsFile:
 
 class IcnsImageFile(ImageFile.ImageFile):
     """
-    PIL read-only image support for Mac OS .icns files.
+    PIL image support for Mac OS .icns files.
     Chooses the best resolution, but will possibly load
     a different size image if you mutate the size attribute
     before calling 'load'.
@@ -293,12 +294,63 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.tile = ()
         self.load_end()
 
+def _save(im, fp, filename):
+    """
+    Saves the image as a series of PNG files,
+    that are then converted to a .icns file
+    using the OS X command line utility 'iconutil'.
+    
+    OS X only.
+    """
+    try:
+        fp.flush()
+    except:
+        pass
+    
+    # create the temporary set of pngs
+    iconset = tempfile.mkdtemp('.iconset')
+    last_w = None
+    last_im = None
+    for w in [16,32,128,256,512]:
+        prefix = 'icon_{}x{}'.format(w,w)
+        
+        if last_w == w:
+            im_scaled = last_im
+        else:
+            im_scaled = im.resize((w,w), Image.LANCZOS)
+        im_scaled.save(os.path.join(iconset, prefix+'.png'))
+        
+        im_scaled = im.resize((w*2,w*2), Image.LANCZOS)
+        im_scaled.save(os.path.join(iconset, prefix+'@2x.png'))
+        last_im = im_scaled
+    
+    # iconutil -c icns -o {} {}
+    from subprocess import Popen, PIPE, CalledProcessError
+
+    convert_cmd = ["iconutil","-c","icns","-o",filename,iconset]
+    stderr = tempfile.TemporaryFile()
+    convert_proc = Popen(convert_cmd, stdout=PIPE, stderr=stderr)
+
+    convert_proc.stdout.close()
+
+    retcode = convert_proc.wait()
+
+    # remove the temporary files
+    shutil.rmtree(iconset)
+    
+    if retcode:
+        raise CalledProcessError(retcode, convert_cmd)
+
 Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == b'icns')
 Image.register_extension("ICNS", '.icns')
 
+if sys.platform == 'darwin':
+    Image.register_save("ICNS", _save)
+
+    Image.register_mime("ICNS", "image/icns")
+
+
 if __name__ == '__main__':
-    import os
-    import sys
     imf = IcnsImageFile(open(sys.argv[1], 'rb'))
     for size in imf.info['sizes']:
         imf.size = size
