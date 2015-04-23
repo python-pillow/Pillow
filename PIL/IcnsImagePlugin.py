@@ -248,7 +248,7 @@ class IcnsFile:
 
 class IcnsImageFile(ImageFile.ImageFile):
     """
-    PIL read-only image support for Mac OS .icns files.
+    PIL image support for Mac OS .icns files.
     Chooses the best resolution, but will possibly load
     a different size image if you mutate the size attribute
     before calling 'load'.
@@ -295,6 +295,13 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.load_end()
 
 def _save(im, fp, filename):
+    """
+    Saves the image as a series of PNG files,
+    that are then converted to a .icns file
+    using the OS X command line utility 'iconutil'.
+    
+    OS X only.
+    """
     try:
         fp.flush()
     except:
