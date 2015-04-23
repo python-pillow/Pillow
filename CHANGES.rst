@@ -4,6 +4,8 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Keep user-specified ordering of icon sizes #1193
+  [karimbahgat]
 - Tiff: allow writing floating point tag values #1113
   [bpedersen2]
 
