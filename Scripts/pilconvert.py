@@ -15,9 +15,12 @@
 
 from __future__ import print_function
 
-import getopt, string, sys
+import getopt
+import string
+import sys
 
 from PIL import Image
+
 
 def usage():
     print("PIL Convert 0.5/1998-12-30 -- convert image files")
@@ -49,7 +52,7 @@ except getopt.error as v:
 format = None
 convert = None
 
-options = { }
+options = {}
 
 for o, a in opt:
 

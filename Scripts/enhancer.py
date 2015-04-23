@@ -18,6 +18,7 @@ import sys
 #
 # enhancer widget
 
+
 class Enhance(Frame):
     def __init__(self, master, image, name, enhancer, lo, hi):
         Frame.__init__(self, master)
@@ -25,7 +26,7 @@ class Enhance(Frame):
         # set up the image
         self.tkim = ImageTk.PhotoImage(image.mode, image.size)
         self.enhancer = enhancer(image)
-        self.update("1.0") # normalize
+        self.update("1.0")  # normalize
 
         # image window
         Label(self, image=self.tkim).pack()

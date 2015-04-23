@@ -49,19 +49,22 @@ from PIL.GifImagePlugin import getheader, getdata
 # --------------------------------------------------------------------
 # sequence iterator
 
+
 class image_sequence:
     def __init__(self, im):
         self.im = im
+
     def __getitem__(self, ix):
         try:
             if ix:
                 self.im.seek(ix)
             return self.im
         except EOFError:
-            raise IndexError # end of sequence
+            raise IndexError  # end of sequence
 
 # --------------------------------------------------------------------
 # straightforward delta encoding
+
 
 def makedelta(fp, sequence):
     """Convert list of image frames to a GIF animation file"""
@@ -91,7 +94,7 @@ def makedelta(fp, sequence):
             if bbox:
 
                 # compress difference
-                for s in getdata(im.crop(bbox), offset = bbox[:2]):
+                for s in getdata(im.crop(bbox), offset=bbox[:2]):
                     fp.write(s)
 
             else:
@@ -108,6 +111,7 @@ def makedelta(fp, sequence):
 
 # --------------------------------------------------------------------
 # main hack
+
 
 def compress(infile, outfile):
 
