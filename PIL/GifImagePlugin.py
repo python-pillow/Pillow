@@ -308,6 +308,7 @@ def _save(im, fp, filename):
     except:
         pass
 
+
 def get_interlace(im):
     try:
         interlace = im.encoderinfo["interlace"]
@@ -317,8 +318,9 @@ def get_interlace(im):
     # workaround for @PIL153
     if min(im.size) < 16:
         interlace = 0
-    
+
     return interlace
+
 
 def get_local_header(fp, im, offset=(0, 0)):
     transparent_color_exists = False
@@ -348,38 +350,39 @@ def get_local_header(fp, im, offset=(0, 0)):
         transparency_flag = 1 if transparent_color_exists else 0
         if not transparent_color_exists:
             transparency = 0
-        
+
         fp.write(b"!" +
-                 o8(249) +               # extension intro
-                 o8(4) +                 # length
-                 o8(transparency_flag) + # transparency info present
-                 o16(duration) +         # duration
-                 o8(transparency) +      # transparency index
+                 o8(249) +                # extension intro
+                 o8(4) +                  # length
+                 o8(transparency_flag) +  # transparency info present
+                 o16(duration) +          # duration
+                 o8(transparency) +       # transparency index
                  o8(0))
 
     if "loop" in im.encoderinfo:
         number_of_loops = im.encoderinfo["loop"]
         fp.write(b"!" +
-                 o8(255) +               # extension intro
+                 o8(255) +                # extension intro
                  o8(11) +
                  b"NETSCAPE2.0" +
                  o8(3) +
                  o8(1) +
-                 o16(number_of_loops) +  # number of loops
+                 o16(number_of_loops) +   # number of loops
                  o8(0))
 
     flags = 0
 
     if get_interlace(im):
         flags = flags | 64
-    
+
     fp.write(b"," +
-             o16(offset[0]) +           # offset
+             o16(offset[0]) +             # offset
              o16(offset[1]) +
-             o16(im.size[0]) +          # size
+             o16(im.size[0]) +            # size
              o16(im.size[1]) +
-             o8(flags) +                # flags
-             o8(8))                     # bits
+             o8(flags) +                  # flags
+             o8(8))                       # bits
+
 
 def _save_netpbm(im, fp, filename):
 

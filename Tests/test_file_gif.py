@@ -174,7 +174,7 @@ class TestFileGif(PillowTestCase):
 
         out = self.tempfile('temp.gif')
         fp = open(out, "wb")
-        im = Image.new('L',(100,100),'#000')
+        im = Image.new('L', (100, 100), '#000')
         for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, duration=duration):
             fp.write(s)
         fp.write(b";")
@@ -188,7 +188,7 @@ class TestFileGif(PillowTestCase):
 
         out = self.tempfile('temp.gif')
         fp = open(out, "wb")
-        im = Image.new('L',(100,100),'#000')
+        im = Image.new('L', (100, 100), '#000')
         for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, loop=number_of_loops):
             fp.write(s)
         fp.write(b";")
