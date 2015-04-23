@@ -4,8 +4,12 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Fix putdata memory leak #1196
+  [benoit-pierre]
+
 - Keep user-specified ordering of icon sizes #1193
   [karimbahgat]
+
 - Tiff: allow writing floating point tag values #1113
   [bpedersen2]
 
