@@ -673,9 +673,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def seek(self, frame):
         "Select a given frame as current image"
-        if frame < 0:
-            raise ValueError("invalid seek")
-        self._seek(frame)
+        self._seek(max(frame, 0))  # Questionable backwards compatibility.
         # Create a new core image object on second and
         # subsequent frames in the image. Image may be
         # different size/mode.
