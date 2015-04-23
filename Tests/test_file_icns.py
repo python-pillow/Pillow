@@ -1,5 +1,6 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, hopper
 
+import io
 from PIL import Image
 
 # sample icon file
@@ -62,6 +63,27 @@ class TestFileIcns(PillowTestCase):
             wr = w * r
             hr = h * r
             im2 = Image.open('Tests/images/pillow3.icns')
+            im2.size = (w, h, r)
+            im2.load()
+            self.assertEqual(im2.mode, 'RGBA')
+            self.assertEqual(im2.size, (wr, hr))
+
+    def test_save_to_bytes(self):
+        output = io.BytesIO()
+        im = hopper()
+        sizes = [(16, 16, 1), (16, 16, 2),
+                 (32, 32, 1), (32, 32, 2),
+                 (128, 128, 1)]
+        im.save(output, "icns", sizes=sizes)
+        output.seek(0)
+        reloaded = Image.open(output)
+        self.assertEqual(reloaded.mode, "RGBA")
+        self.assertEqual(reloaded.format, "ICNS")
+        self.assertEqual(set(reloaded.info['sizes']), set(sizes))
+        for w, h, r in reloaded.info['sizes']:
+            wr = w * r
+            hr = h * r
+            im2 = Image.open(file)
             im2.size = (w, h, r)
             im2.load()
             self.assertEqual(im2.mode, 'RGBA')

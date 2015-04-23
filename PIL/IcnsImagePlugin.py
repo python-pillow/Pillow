@@ -17,7 +17,17 @@
 
 from PIL import Image, ImageFile, PngImagePlugin, _binary
 import io
+import sys
+import os
 import struct
+import tempfile
+import subprocess
+import shutil
+
+try:
+    import warnings
+except ImportError:
+    warnings = None
 
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
 if enable_jpeg2k:
@@ -26,6 +36,49 @@ if enable_jpeg2k:
 i8 = _binary.i8
 
 HEADERSIZE = 8
+
+
+def _save(im, fp, filename):
+    if sys.platform == 'darwin':
+        tmp_icons_dir = tempfile.mkdtemp(suffix='.iconset')
+        tmp_targe_handle, tmp_targe_path = tempfile.mkstemp(suffix='.icns')
+        tmp_targe_file = None
+        os.close(tmp_targe_handle)
+        try:
+            sizes = im.encoderinfo.get("sizes",
+                                       [(16, 16, 1), (16, 16, 2),
+                                        (32, 32, 1), (32, 32, 2),
+                                        (128, 128, 1), (128, 128, 2),
+                                        (256, 256, 1), (256, 256, 2),
+                                        (512, 512, 1), (512, 512, 2)])
+            for size in sizes:
+                width, height, scale = size
+                size_name = '%sx%s%s' % (width, height,
+                                         '' if scale == 1 else
+                                         ('@%sx' % scale))
+                if im.size[0] < width*scale or im.size[1] < height*scale:
+                    if warnings:
+                        warnings.warn(('Skip %s because original image ' +
+                                       'size(%sx%s) is too small') %
+                                      (size_name, im.size[0], im.size[1]))
+                    continue
+                png_path = os.path.join(tmp_icons_dir,
+                                        'icon_%s.png' % size_name)
+                with open(png_path, 'wb') as png_file:
+                    tmp = im.copy()
+                    tmp.thumbnail((width*scale, height*scale), Image.LANCZOS)
+                    tmp.save(png_file, "png")
+            subprocess.call(['iconutil', '--convert', 'icns', '--output',
+                             tmp_targe_path, tmp_icons_dir])
+            with open(tmp_targe_path, 'rb') as tmp_targe_file:
+                fp.write(tmp_targe_file.read())
+        finally:
+            if tmp_targe_file:
+                tmp_targe_file.close()
+            os.remove(tmp_targe_path)
+            shutil.rmtree(tmp_icons_dir)
+    else:
+        raise RuntimeError("Unsupported in non-darwin platform")
 
 
 def nextheader(fobj):
@@ -294,7 +347,9 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.load_end()
 
 Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == b'icns')
+Image.register_save("ICNS", _save)
 Image.register_extension("ICNS", '.icns')
+
 
 if __name__ == '__main__':
     import os
