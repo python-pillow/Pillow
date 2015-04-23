@@ -301,15 +301,12 @@ class TestFileJpeg(PillowTestCase):
         # sequence wrong length
         self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[]))
         # sequence wrong length
-        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1,2,3,4,5]))
+        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1, 2, 3, 4, 5]))
 
         # qtable entry not a sequence
         self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1]))
         # qtable entry has wrong number of items
-        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[[1,2,3,4]]))
-        
-        
-        
+        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[[1, 2, 3, 4]]))
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
     def test_load_djpeg(self):
@@ -340,9 +337,9 @@ class TestFileJpeg(PillowTestCase):
             """ Generates a very hard to compress file
             :param size: tuple
             """
-            return Image.frombytes('RGB',size, os.urandom(size[0]*size[1] *3))
+            return Image.frombytes('RGB', size, os.urandom(size[0]*size[1] * 3))
 
-        im = gen_random_image((512,512))
+        im = gen_random_image((512, 512))
         f = self.tempfile("temp.jpeg")
         im.save(f, quality=100, optimize=True)
 

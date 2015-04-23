@@ -4,7 +4,7 @@ from PIL import Image
 
 from io import BytesIO
 import os
-        
+
 try:
     from PIL import ImageCms
     from PIL.ImageCms import ImageCmsProfile
@@ -16,6 +16,7 @@ except ImportError as v:
 
 SRGB = "Tests/icc/sRGB_IEC61966-2-1_black_scaled.icc"
 HAVE_PROFILE = os.path.exists(SRGB)
+
 
 class TestImageCms(PillowTestCase):
 
@@ -32,7 +33,7 @@ class TestImageCms(PillowTestCase):
             self.skipTest("SRGB profile not available")
 
     def test_sanity(self):
-        
+
         # basic smoke test.
         # this mostly follows the cms_test outline.
 

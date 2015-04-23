@@ -58,7 +58,7 @@ class TestImageFile(PillowTestCase):
             # This test fails on Ubuntu 12.04, PPC (Bigendian) It
             # appears to be a ghostscript 9.05 bug, since the
             # ghostscript rendering is wonky and the file is identical
-            # to that written on ubuntu 12.04 x64 
+            # to that written on ubuntu 12.04 x64
             # md5sum: ba974835ff2d6f3f2fd0053a23521d4a
 
             # EPS comes back in RGB:

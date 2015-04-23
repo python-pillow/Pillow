@@ -17,11 +17,11 @@ class TestImagingCoreResize(PillowTestCase):
 
     def test_nearest_mode(self):
         for mode in ["1", "P", "L", "I", "F", "RGB", "RGBA", "CMYK", "YCbCr",
-                     "I;16"]: # exotic mode
+                     "I;16"]:  # exotic mode
             im = hopper(mode)
             r = self.resize(im, (15, 12), Image.NEAREST)
             self.assertEqual(r.mode, mode)
-            self.assertEqual(r.size, (15, 12) )
+            self.assertEqual(r.size, (15, 12))
             self.assertEqual(r.im.bands, im.im.bands)
 
     def test_convolution_modes(self):
@@ -35,7 +35,7 @@ class TestImagingCoreResize(PillowTestCase):
             im = hopper(mode)
             r = self.resize(im, (15, 12), Image.BILINEAR)
             self.assertEqual(r.mode, mode)
-            self.assertEqual(r.size, (15, 12) )
+            self.assertEqual(r.size, (15, 12))
             self.assertEqual(r.im.bands, im.im.bands)
 
     def test_reduce_filters(self):

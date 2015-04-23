@@ -26,12 +26,12 @@ class TestFileIcns(PillowTestCase):
                      "requires MacOS")
     def test_save(self):
         im = Image.open(file)
-        
+
         test_file = self.tempfile("temp.icns")
         im.save(test_file)
-        
+
         reread = Image.open(test_file)
-        
+
         self.assertEqual(reread.mode, "RGBA")
         self.assertEqual(reread.size, (1024, 1024))
         self.assertEqual(reread.format, "ICNS")

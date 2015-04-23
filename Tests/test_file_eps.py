@@ -148,8 +148,8 @@ class TestFileEps(PillowTestCase):
         # open image with binary preview
         Image.open(file3)
 
-    def _test_readline(self,t, ending):
-        ending = "Failure with line ending: %s" %("".join("%s" %ord(s) for s in ending))
+    def _test_readline(self, t, ending):
+        ending = "Failure with line ending: %s" % ("".join("%s" % ord(s) for s in ending))
         self.assertEqual(t.readline().strip('\r\n'), 'something', ending)
         self.assertEqual(t.readline().strip('\r\n'), 'else', ending)
         self.assertEqual(t.readline().strip('\r\n'), 'baz', ending)
@@ -174,30 +174,30 @@ class TestFileEps(PillowTestCase):
 
     def _test_readline_file_universal(self, test_string, ending):
         f = self.tempfile('temp.txt')
-        with open(f,'wb') as w:
+        with open(f, 'wb') as w:
             if str is bytes:
                 w.write(test_string)
             else:
                 w.write(test_string.encode('UTF-8'))
 
-        with open(f,'rU') as t:
+        with open(f, 'rU') as t:
             self._test_readline(t, ending)
 
     def _test_readline_file_psfile(self, test_string, ending):
         f = self.tempfile('temp.txt')
-        with open(f,'wb') as w:
+        with open(f, 'wb') as w:
             if str is bytes:
                 w.write(test_string)
             else:
                 w.write(test_string.encode('UTF-8'))
 
-        with open(f,'rb') as r:
+        with open(f, 'rb') as r:
             t = EpsImagePlugin.PSFile(r)
             self._test_readline(t, ending)
 
     def test_readline(self):
         # check all the freaking line endings possible from the spec
-        #test_string = u'something\r\nelse\n\rbaz\rbif\n'
+        # test_string = u'something\r\nelse\n\rbaz\rbif\n'
         line_endings = ['\r\n', '\n']
         not_working_endings = ['\n\r', '\r']
         strings = ['something', 'else', 'baz', 'bif']
@@ -205,9 +205,9 @@ class TestFileEps(PillowTestCase):
         for ending in line_endings:
             s = ending.join(strings)
             # Native Python versions will pass these endings.
-            #self._test_readline_stringio(s, ending)
-            #self._test_readline_io(s, ending)
-            #self._test_readline_file_universal(s, ending)
+            # self._test_readline_stringio(s, ending)
+            # self._test_readline_io(s, ending)
+            # self._test_readline_file_universal(s, ending)
 
             self._test_readline_file_psfile(s, ending)
 
@@ -217,9 +217,9 @@ class TestFileEps(PillowTestCase):
             s = ending.join(strings)
 
             # Native Python versions may fail on these endings.
-            #self._test_readline_stringio(s, ending)
-            #self._test_readline_io(s, ending)
-            #self._test_readline_file_universal(s, ending)
+            # self._test_readline_stringio(s, ending)
+            # self._test_readline_io(s, ending)
+            # self._test_readline_file_universal(s, ending)
 
             self._test_readline_file_psfile(s, ending)
 

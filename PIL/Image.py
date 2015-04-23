@@ -387,7 +387,7 @@ def init():
     for plugin in _plugins:
         try:
             if DEBUG:
-                print ("Importing %s" % plugin)
+                print("Importing %s" % plugin)
             __import__("PIL.%s" % plugin, globals(), locals(), [])
         except ImportError:
             if DEBUG:
@@ -546,7 +546,7 @@ class Image:
             self.fp.close()
         except Exception as msg:
             if DEBUG:
-                print ("Error closing: %s" % msg)
+                print("Error closing: %s" % msg)
 
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image

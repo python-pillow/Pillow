@@ -71,9 +71,8 @@ post-patch:
      | :@:@@: :#:::@ :::@::::@ : :: : @ :::::: :@:: ::: :::: @:: @:::::::@::::
    0 +----------------------------------------------------------------------->Gi
      0                                                                   8.421
- 
-"""
 
+"""
 
     def test_qtables_leak(self):
         im = hopper('RGB')
@@ -103,7 +102,6 @@ post-patch:
         qtables = [standard_l_qtable,
                    standard_chrominance_qtable]
 
-        
         for count in range(iterations):
             test_output = BytesIO()
             im.save(test_output, "JPEG", qtables=qtables)
@@ -135,7 +133,7 @@ pre patch:
    0 +----------------------------------------------------------------------->Gi
      0                                                                   11.37
 
-    
+
 post patch:
 
     MB
@@ -171,7 +169,6 @@ post patch:
         for count in range(iterations):
             test_output = BytesIO()
             im.save(test_output, "JPEG", exif=exif)
-
 
     """
 base case:

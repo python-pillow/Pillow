@@ -136,9 +136,9 @@ class FpxImageFile(ImageFile.ImageFile):
         s = fp.read(36)
 
         size = i32(s, 4), i32(s, 8)
-        #tilecount = i32(s, 12)
+        # tilecount = i32(s, 12)
         tilesize = i32(s, 16), i32(s, 20)
-        #channels = i32(s, 24)
+        # channels = i32(s, 24)
         offset = i32(s, 28)
         length = i32(s, 32)
 

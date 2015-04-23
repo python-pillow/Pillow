@@ -29,11 +29,12 @@ if 'PyQt4.QtGui' not in sys.modules:
         except:
             from PySide.QtGui import QImage, qRgba
 
-else: #PyQt4 is used
+else:  #PyQt4 is used
     from PyQt4.QtGui import QImage, qRgba
 
 ##
 # (Internal) Turns an RGB color into a Qt compatible color integer.
+
 
 def rgb(r, g, b, a=255):
     # use qRgb to pack the colors, and then turn the resulting long

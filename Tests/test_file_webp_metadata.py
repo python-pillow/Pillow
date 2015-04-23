@@ -15,7 +15,6 @@ class TestFileWebpMetadata(PillowTestCase):
         if not _webp.HAVE_WEBPMUX:
             self.skipTest('WebPMux support not installed')
 
-
     def test_read_exif_metadata(self):
 
         file_path = "Tests/images/flower.webp"

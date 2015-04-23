@@ -8,6 +8,7 @@ from PIL import Image, ImageFilter
 min_iterations = 100
 max_iterations = 10000
 
+
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
 class TestImagingLeaks(PillowTestCase):
 
@@ -40,4 +41,3 @@ class TestImagingLeaks(PillowTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
