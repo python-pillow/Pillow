@@ -130,7 +130,7 @@ class FliImageFile(ImageFile.ImageFile):
         for f in range(self.__frame + 1, frame + 1):
             self._seek(f)
 
-    def seek(self, frame):
+    def _seek(self, frame):
 
         if frame == 0:
             self.__frame = -1
