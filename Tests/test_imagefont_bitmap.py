@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase
 from PIL import Image, ImageFont, ImageDraw
 
+
 class TestImageFontBitmap(PillowTestCase):
     def test_similar(self):
         text = 'EmbeddedBitmap'
@@ -13,10 +14,10 @@ class TestImageFontBitmap(PillowTestCase):
         draw_bitmap, draw_outline = ImageDraw.Draw(im_bitmap), ImageDraw.Draw(im_outline)
 
         # Metrics are different on the bitmap and ttf fonts, more so on some platforms
-        # and versions of freetype than others. Mac has a 1px difference, linux doesn't. 
-        draw_bitmap.text((0, size_final[1] - size_bitmap[1]), 
+        # and versions of freetype than others. Mac has a 1px difference, linux doesn't.
+        draw_bitmap.text((0, size_final[1] - size_bitmap[1]),
                          text, fill=(0, 0, 0), font=font_bitmap)
-        draw_outline.text((0, size_final[1] - size_outline[1]), 
+        draw_outline.text((0, size_final[1] - size_outline[1]),
                           text, fill=(0, 0, 0), font=font_outline)
         self.assert_image_similar(im_bitmap, im_outline, 20)
 

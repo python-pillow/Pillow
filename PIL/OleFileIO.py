@@ -28,7 +28,7 @@
 # This import enables print() as a function rather than a keyword
 # (main requirement to be compatible with Python 3.x)
 # The comment on the line below should be printed on Python 2.5 or older:
-from __future__ import print_function # This version of OleFileIO_PL requires Python 2.6+ or 3.x.
+from __future__ import print_function  # This version of OleFileIO_PL requires Python 2.6+ or 3.x.
 
 
 __author__  = "Philippe Lagadec, Fredrik Lundh (Secret Labs AB)"
@@ -234,7 +234,10 @@ __version__ = '0.30'
 
 import io
 import sys
-import struct, array, os.path, datetime
+import struct
+import array
+import os.path
+import datetime
 
 #[PL] Define explicitly the public API to avoid private objects in pydoc:
 __all__ = ['OleFileIO', 'isOleFile', 'MAGIC']
@@ -283,11 +286,16 @@ KEEP_UNICODE_NAMES = False
 #[PL] DEBUG display mode: False by default, use set_debug_mode() or "-d" on
 # command line to change it.
 DEBUG_MODE = False
+
+
 def debug_print(msg):
     print(msg)
+
+
 def debug_pass(msg):
     pass
 debug = debug_pass
+
 
 def set_debug_mode(debug_mode):
     """
@@ -303,24 +311,24 @@ def set_debug_mode(debug_mode):
 
 MAGIC = b'\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1'
 
-#[PL]: added constants for Sector IDs (from AAF specifications)
+# [PL]: added constants for Sector IDs (from AAF specifications)
 MAXREGSECT = 0xFFFFFFFA; # maximum SECT
 DIFSECT    = 0xFFFFFFFC; # (-4) denotes a DIFAT sector in a FAT
 FATSECT    = 0xFFFFFFFD; # (-3) denotes a FAT sector in a FAT
 ENDOFCHAIN = 0xFFFFFFFE; # (-2) end of a virtual stream chain
 FREESECT   = 0xFFFFFFFF; # (-1) unallocated sector
 
-#[PL]: added constants for Directory Entry IDs (from AAF specifications)
+# [PL]: added constants for Directory Entry IDs (from AAF specifications)
 MAXREGSID  = 0xFFFFFFFA; # maximum directory entry ID
 NOSTREAM   = 0xFFFFFFFF; # (-1) unallocated directory entry
 
-#[PL] object types in storage (from AAF specifications)
-STGTY_EMPTY     = 0 # empty directory entry (according to OpenOffice.org doc)
-STGTY_STORAGE   = 1 # element is a storage object
-STGTY_STREAM    = 2 # element is a stream object
-STGTY_LOCKBYTES = 3 # element is an ILockBytes object
-STGTY_PROPERTY  = 4 # element is an IPropertyStorage object
-STGTY_ROOT      = 5 # element is a root storage
+# [PL] object types in storage (from AAF specifications)
+STGTY_EMPTY     = 0  # empty directory entry (according to OpenOffice.org doc)
+STGTY_STORAGE   = 1  # element is a storage object
+STGTY_STREAM    = 2  # element is a stream object
+STGTY_LOCKBYTES = 3  # element is an ILockBytes object
+STGTY_PROPERTY  = 4  # element is an IPropertyStorage object
+STGTY_ROOT      = 5  # element is a root storage
 
 
 #
@@ -370,7 +378,7 @@ for key in list(vars().keys()):
 def isOleFile (filename):
     """
     Test if file is an OLE container (according to its header).
-    
+
     :param filename: file name or path (str, unicode)
     :returns: True if OLE, False otherwise.
     """
@@ -433,7 +441,6 @@ def _clsid(clsid):
             tuple(map(i8, clsid[8:16]))))
 
 
-
 # UNICODE support:
 # (necessary to handle storages/streams names which use Unicode)
 
@@ -469,7 +476,6 @@ def filetime2datetime(filetime):
         _FILETIME_null_date = datetime.datetime(1601, 1, 1, 0, 0, 0)
         #debug('timedelta days=%d' % (filetime//(10*1000000*3600*24)))
         return _FILETIME_null_date + datetime.timedelta(microseconds=filetime//10)
-
 
 
 #=== CLASSES ==================================================================
@@ -579,7 +585,6 @@ class OleMetadata:
         self.language = None
         self.doc_version = None
 
-
     def parse_properties(self, olefile):
         """
         Parse standard properties of an OLE file, from the streams
@@ -663,7 +668,7 @@ class _OleStream(io.BytesIO):
         """
         debug('_OleStream.__init__:')
         debug('  sect=%d (%X), size=%d, offset=%d, sectorsize=%d, len(fat)=%d, fp=%s'
-            %(sect,sect,size,offset,sectorsize,len(fat), repr(fp)))
+            %(sect, sect, size, offset, sectorsize, len(fat), repr(fp)))
         #[PL] To detect malformed documents with FAT loops, we compute the
         # expected number of sectors in the stream:
         unknown_size = False
@@ -789,7 +794,6 @@ class _OleDirectoryEntry:
     DIRENTRY_SIZE = 128
     assert struct.calcsize(STRUCT_DIRENTRY) == DIRENTRY_SIZE
 
-
     def __init__(self, entry, sid, olefile):
         """
         Constructor for an _OleDirectoryEntry object.
@@ -882,8 +886,6 @@ class _OleDirectoryEntry:
                 minifat = False
             olefile._check_duplicate_stream(self.isectStart, minifat)
 
-
-
     def build_storage_tree(self):
         """
         Read and build the red-black tree attached to this _OleDirectoryEntry
@@ -907,7 +909,6 @@ class _OleDirectoryEntry:
             # (see rich comparison methods in this class)
             self.kids.sort()
 
-
     def append_kids(self, child_sid):
         """
         Walk through red-black tree of children of this directory entry to add
@@ -916,7 +917,7 @@ class _OleDirectoryEntry:
         child_sid : index of child directory entry to use, or None when called
                     first time for the root. (only used during recursion)
         """
-        #[PL] this method was added to use simple recursion instead of a complex
+        # [PL] this method was added to use simple recursion instead of a complex
         # algorithm.
         # if this is not a storage or a leaf of the tree, nothing to do:
         if child_sid == NOSTREAM:
@@ -951,7 +952,6 @@ class _OleDirectoryEntry:
         # Afterwards build kid's own tree if it's also a storage:
         child.build_storage_tree()
 
-
     def __eq__(self, other):
         "Compare entries by name"
         return self.name == other.name
@@ -971,7 +971,6 @@ class _OleDirectoryEntry:
     #TODO: replace by the same function as MS implementation ?
     # (order by name length first, then case-insensitive order)
 
-
     def dump(self, tab = 0):
         "Dump this entry, and all its subentries (for debug purposes only)"
         TYPES = ["(invalid)", "(storage)", "(stream)", "(lockbytes)",
@@ -986,7 +985,6 @@ class _OleDirectoryEntry:
         for kid in self.kids:
             kid.dump(tab + 2)
 
-
     def getmtime(self):
         """
         Return modification time of a directory entry.
@@ -999,7 +997,6 @@ class _OleDirectoryEntry:
         if self.modifyTime == 0:
             return None
         return filetime2datetime(self.modifyTime)
-
 
     def getctime(self):
         """
@@ -1064,7 +1061,6 @@ class OleFileIO:
         if filename:
             self.open(filename)
 
-
     def _raise_defect(self, defect_level, message, exception_type=IOError):
         """
         This method should be called for any defect found during file parsing.
@@ -1085,7 +1081,6 @@ class OleFileIO:
         else:
             # just record the issue, no exception raised:
             self.parsing_issues.append((exception_type, message))
-
 
     def open(self, filename):
         """
@@ -1189,7 +1184,7 @@ class OleFileIO:
             self.sectDifStart,
             self.csectDif
         ) = struct.unpack(fmt_header, header1)
-        debug( struct.unpack(fmt_header,    header1))
+        debug(struct.unpack(fmt_header, header1))
 
         if self.Sig != MAGIC:
             # OLE signature should always be present
@@ -1231,11 +1226,11 @@ class OleFileIO:
         # rule => only a potential defect:
         if self.signature != 0:
             self._raise_defect(DEFECT_POTENTIAL, "incorrect OLE header (signature>0)")
-        debug( "MiniSectorCutoff = %d" % self.MiniSectorCutoff )
-        debug( "MiniFatStart     = %X" % self.MiniFatStart )
-        debug( "csectMiniFat     = %d" % self.csectMiniFat )
-        debug( "sectDifStart     = %X" % self.sectDifStart )
-        debug( "csectDif         = %d" % self.csectDif )
+        debug("MiniSectorCutoff = %d" % self.MiniSectorCutoff)
+        debug("MiniFatStart     = %X" % self.MiniFatStart)
+        debug("csectMiniFat     = %d" % self.csectMiniFat)
+        debug("sectDifStart     = %X" % self.sectDifStart)
+        debug("csectDif         = %d" % self.csectDif)
 
         # calculate the number of sectors in the file
         # (-1 because header doesn't count)
@@ -1266,13 +1261,11 @@ class OleFileIO:
         self.ministream = None
         self.minifatsect = self.MiniFatStart #i32(header, 60)
 
-
     def close(self):
         """
         close the OLE file, to release the file object
         """
         self.fp.close()
-
 
     def _check_duplicate_stream(self, first_sect, minifat=False):
         """
@@ -1297,7 +1290,6 @@ class OleFileIO:
             self._raise_defect(DEFECT_INCORRECT, 'Stream referenced twice')
         else:
             used_streams.append(first_sect)
-
 
     def dumpfat(self, fat, firstindex=0):
         "Displays a part of FAT in human-readable form for debugging purpose"
@@ -1335,7 +1327,6 @@ class OleFileIO:
                 print(nom, end=" ")
             print()
 
-
     def dumpsect(self, sector, firstindex=0):
         "Displays a sector in a human-readable form, for debugging purpose."
         if not DEBUG_MODE:
@@ -1370,11 +1361,10 @@ class OleFileIO:
             a.byteswap()
         return a
 
-
     def loadfat_sect(self, sect):
         """
         Adds the indexes of the given sector to the FAT
-        
+
         :param sect: string containing the first FAT sector, or array of long integers
         :returns: index of last FAT sector.
         """
@@ -1399,7 +1389,6 @@ class OleFileIO:
             nextfat = self.sect2array(s)
             self.fat = self.fat + nextfat
         return isect
-
 
     def loadfat(self, header):
         """
@@ -1436,16 +1425,16 @@ class OleFileIO:
             if self.sectDifStart >= self.nb_sect:
                 # initial DIFAT block index must be valid
                 self._raise_defect(DEFECT_FATAL, 'incorrect DIFAT, first index out of range')
-            debug( "DIFAT analysis..." )
+            debug("DIFAT analysis...")
             # We compute the necessary number of DIFAT sectors :
             # (each DIFAT sector = 127 pointers + 1 towards next DIFAT sector)
             nb_difat = (self.csectFat-109 + 126)//127
-            debug( "nb_difat = %d" % nb_difat )
+            debug("nb_difat = %d" % nb_difat)
             if self.csectDif != nb_difat:
                 raise IOError('incorrect DIFAT')
             isect_difat = self.sectDifStart
             for i in iterrange(nb_difat):
-                debug( "DIFAT block %d, sector %X" % (i, isect_difat) )
+                debug("DIFAT block %d, sector %X" % (i, isect_difat))
                 #TODO: check if corresponding FAT SID = DIFSECT
                 sector_difat = self.getsect(isect_difat)
                 difat = self.sect2array(sector_difat)
@@ -1453,7 +1442,7 @@ class OleFileIO:
                 self.loadfat_sect(difat[:127])
                 # last DIFAT pointer is next DIFAT sector:
                 isect_difat = difat[127]
-                debug( "next DIFAT sector: %X" % isect_difat )
+                debug("next DIFAT sector: %X" % isect_difat)
             # checks:
             if isect_difat not in [ENDOFCHAIN, FREESECT]:
                 # last DIFAT pointer value must be ENDOFCHAIN or FREESECT
@@ -1470,7 +1459,6 @@ class OleFileIO:
             self.fat = self.fat[:self.nb_sect]
         debug('\nFAT:')
         self.dumpfat(self.fat)
-
 
     def loadminifat(self):
         """
@@ -1509,7 +1497,7 @@ class OleFileIO:
     def getsect(self, sect):
         """
         Read given sector from file on disk.
-        
+
         :param sect: sector index
         :returns: a string containing the sector data.
         """
@@ -1531,11 +1519,10 @@ class OleFileIO:
             self._raise_defect(DEFECT_FATAL, 'incomplete OLE sector')
         return sector
 
-
     def loaddirectory(self, sect):
         """
         Load the directory.
-        
+
         :param sect: sector index of directory stream.
         """
         # The directory is  stored in a standard
@@ -1567,7 +1554,6 @@ class OleFileIO:
         # read and build all storage trees, starting from the root:
         self.root.build_storage_tree()
 
-
     def _load_direntry (self, sid):
         """
         Load a directory entry from the directory.
@@ -1592,13 +1578,11 @@ class OleFileIO:
         self.direntries[sid] = _OleDirectoryEntry(entry, sid, self)
         return self.direntries[sid]
 
-
     def dumpdirectory(self):
         """
         Dump directory (for debugging only)
         """
         self.root.dump()
-
 
     def _open(self, start, size = 0x7FFFFFFF, force_FAT=False):
         """
@@ -1633,7 +1617,6 @@ class OleFileIO:
             return _OleStream(self.fp, start, size, 512,
                               self.sectorsize, self.fat, self._filesize)
 
-
     def _list(self, files, prefix, node, streams=True, storages=False):
         """
         (listdir helper)
@@ -1659,7 +1642,6 @@ class OleFileIO:
                     # add it to the list
                     files.append(prefix[1:] + [entry.name])
 
-
     def listdir(self, streams=True, storages=False):
         """
         Return a list of streams stored in this file
@@ -1672,14 +1654,13 @@ class OleFileIO:
         self._list(files, [], self.root, streams, storages)
         return files
 
-
     def _find(self, filename):
         """
         Returns directory entry of given filename. (openstream helper)
         Note: this method is case-insensitive.
 
         :param filename: path of stream in storage tree (except root entry), either:
-        
+
             - a string using Unix path syntax, for example:
               'storage_1/storage_1.2/stream'
             - a list of storage filenames, path to the desired stream/storage.
@@ -1703,18 +1684,17 @@ class OleFileIO:
             node = kid
         return node.sid
 
-
     def openstream(self, filename):
         """
         Open a stream as a read-only file object (BytesIO).
 
         :param filename: path of stream in storage tree (except root entry), either:
-        
+
             - a string using Unix path syntax, for example:
               'storage_1/storage_1.2/stream'
             - a list of storage filenames, path to the desired stream/storage.
               Example: ['storage_1', 'storage_1.2', 'stream']
-              
+
         :returns: file object (read-only)
         :exception IOError: if filename not found, or if this is not a stream.
         """
@@ -1724,7 +1704,6 @@ class OleFileIO:
             raise IOError("this file is not a stream")
         return self._open(entry.isectStart, entry.size)
 
-
     def get_type(self, filename):
         """
         Test if given filename exists as a stream or a storage in the OLE
@@ -1732,7 +1711,7 @@ class OleFileIO:
 
         :param filename: path of stream in storage tree. (see openstream for syntax)
         :returns: False if object does not exist, its entry type (>0) otherwise:
-        
+
             - STGTY_STREAM: a stream
             - STGTY_STORAGE: a storage
             - STGTY_ROOT: the root entry
@@ -1743,7 +1722,6 @@ class OleFileIO:
             return entry.entry_type
         except:
             return False
-
 
     def getmtime(self, filename):
         """
@@ -1760,7 +1738,6 @@ class OleFileIO:
         entry = self.direntries[sid]
         return entry.getmtime()
 
-
     def getctime(self, filename):
         """
         Return creation time of a stream/storage.
@@ -1776,7 +1753,6 @@ class OleFileIO:
         entry = self.direntries[sid]
         return entry.getctime()
 
-
     def exists(self, filename):
         """
         Test if given filename exists as a stream or a storage in the OLE
@@ -1790,7 +1766,6 @@ class OleFileIO:
             return True
         except:
             return False
-
 
     def get_size(self, filename):
         """
@@ -1808,14 +1783,12 @@ class OleFileIO:
             raise TypeError('object is not an OLE stream')
         return entry.size
 
-
     def get_rootentry_name(self):
         """
         Return root entry name. Should usually be 'Root Entry' or 'R' in most
         implementations.
         """
         return self.root.name
-
 
     def getproperties(self, filename, convert_time=False, no_conversion=None):
         """
@@ -1828,7 +1801,7 @@ class OleFileIO:
         :returns: a dictionary of values indexed by id (integer)
         """
         # make sure no_conversion is a list, just to simplify code below:
-        if no_conversion == None:
+        if no_conversion is None:
             no_conversion = []
         # stream path as a string to report exceptions:
         streampath = filename
@@ -1842,11 +1815,11 @@ class OleFileIO:
         try:
             # header
             s = fp.read(28)
-            #clsid = _clsid(s[8:24])
+            # clsid = _clsid(s[8:24])
 
             # format id
             s = fp.read(20)
-            #fmtid = _clsid(s[:16])
+            # fmtid = _clsid(s[:16])
             fp.seek(i32(s, 16))
 
             # get section
@@ -1864,34 +1837,34 @@ class OleFileIO:
 
         for i in range(num_props):
             try:
-                id = 0 # just in case of an exception
+                id = 0  # just in case of an exception
                 id = i32(s, 8+i*8)
                 offset = i32(s, 12+i*8)
                 type = i32(s, offset)
 
-                debug ('property id=%d: type=%d offset=%X' % (id, type, offset))
+                debug('property id=%d: type=%d offset=%X' % (id, type, offset))
 
                 # test for common types first (should perhaps use
                 # a dictionary instead?)
 
-                if type == VT_I2: # 16-bit signed integer
+                if type == VT_I2:  # 16-bit signed integer
                     value = i16(s, offset+4)
                     if value >= 32768:
                         value = value - 65536
-                elif type == VT_UI2: # 2-byte unsigned integer
+                elif type == VT_UI2:  # 2-byte unsigned integer
                     value = i16(s, offset+4)
                 elif type in (VT_I4, VT_INT, VT_ERROR):
                     # VT_I4: 32-bit signed integer
                     # VT_ERROR: HRESULT, similar to 32-bit signed integer,
                     # see http://msdn.microsoft.com/en-us/library/cc230330.aspx
                     value = i32(s, offset+4)
-                elif type in (VT_UI4, VT_UINT): # 4-byte unsigned integer
-                    value = i32(s, offset+4) # FIXME
+                elif type in (VT_UI4, VT_UINT):  # 4-byte unsigned integer
+                    value = i32(s, offset+4)  # FIXME
                 elif type in (VT_BSTR, VT_LPSTR):
                     # CodePageString, see http://msdn.microsoft.com/en-us/library/dd942354.aspx
                     # size is a 32 bits integer, including the null terminator, and
                     # possibly trailing or embedded null chars
-                    #TODO: if codepage is unicode, the string should be converted as such
+                    # TODO: if codepage is unicode, the string should be converted as such
                     count = i32(s, offset+4)
                     value = s[offset+8:offset+8+count-1]
                     # remove all null chars:
@@ -1909,7 +1882,7 @@ class OleFileIO:
                     count = i32(s, offset+4)
                     value = _unicode(s[offset+8:offset+8+count*2])
                 elif type == VT_FILETIME:
-                    value = long(i32(s, offset+4)) + (long(i32(s, offset+8))<<32)
+                    value = long(i32(s, offset+4)) + (long(i32(s, offset+8)) << 32)
                     # FILETIME is a 64-bit int: "number of 100ns periods
                     # since Jan 1,1601".
                     if convert_time and id not in no_conversion:
@@ -1923,8 +1896,8 @@ class OleFileIO:
                     else:
                         # legacy code kept for backward compatibility: returns a
                         # number of seconds since Jan 1,1601
-                        value = value // 10000000 # seconds
-                elif type == VT_UI1: # 1-byte unsigned integer
+                        value = value // 10000000  # seconds
+                elif type == VT_UI1:  # 1-byte unsigned integer
                     value = i8(s[offset+4])
                 elif type == VT_CLSID:
                     value = _clsid(s[offset+4:offset+20])
@@ -1938,8 +1911,8 @@ class OleFileIO:
                     # see http://msdn.microsoft.com/en-us/library/cc237864.aspx
                     value = bool(i16(s, offset+4))
                 else:
-                    value = None # everything else yields "None"
-                    debug ('property id=%d: type=%d not implemented in parser yet' % (id, type))
+                    value = None  # everything else yields "None"
+                    debug('property id=%d: type=%d not implemented in parser yet' % (id, type))
 
                 # missing: VT_EMPTY, VT_NULL, VT_R4, VT_R8, VT_CY, VT_DATE,
                 # VT_DECIMAL, VT_I1, VT_I8, VT_UI8,
@@ -1951,8 +1924,8 @@ class OleFileIO:
                 # type of items, e.g. VT_VECTOR|VT_BSTR
                 # see http://msdn.microsoft.com/en-us/library/dd942011.aspx
 
-                #print("%08x" % id, repr(value), end=" ")
-                #print("(%s)" % VT[i32(s, offset) & 0xFFF])
+                # print("%08x" % id, repr(value), end=" ")
+                # print("(%s)" % VT[i32(s, offset) & 0xFFF])
 
                 data[id] = value
             except BaseException as exc:
@@ -1999,7 +1972,7 @@ Options:
 
     check_streams = False
     for filename in sys.argv[1:]:
-        #try:
+        # try:
         # OPTIONS:
         if filename == '-d':
             # option to switch debug mode on:
@@ -2010,7 +1983,7 @@ Options:
             check_streams = True
             continue
 
-        ole = OleFileIO(filename)#, raise_defects=DEFECT_INCORRECT)
+        ole = OleFileIO(filename)  #, raise_defects=DEFECT_INCORRECT)
         print("-" * 68)
         print(filename)
         print("-" * 68)
@@ -2027,8 +2000,8 @@ Options:
                             v = v[:50]
                     if isinstance(v, bytes):
                         # quick and dirty binary check:
-                        for c in (1,2,3,4,5,6,7,11,12,14,15,16,17,18,19,20,
-                            21,22,23,24,25,26,27,28,29,30,31):
+                        for c in (1, 2, 3, 4, 5, 6, 7, 11, 12, 14, 15, 16, 17, 18, 19, 20,
+                            21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31):
                             if c in bytearray(v):
                                 v = '(binary data)'
                                 break
@@ -2039,7 +2012,7 @@ Options:
             print('\nChecking streams...')
             for streamname in ole.listdir():
                 # print name using repr() to convert binary chars to \xNN:
-                print('-', repr('/'.join(streamname)),'-', end=' ')
+                print('-', repr('/'.join(streamname)), '-', end=' ')
                 st_type = ole.get_type(streamname)
                 if st_type == STGTY_STREAM:
                     print('size %d' % ole.get_size(streamname))
@@ -2066,7 +2039,7 @@ Options:
         meta = ole.get_metadata()
         meta.dump()
         print()
-        #[PL] Test a few new methods:
+        # [PL] Test a few new methods:
         root = ole.get_rootentry_name()
         print('Root entry name: "%s"' % root)
         if ole.exists('worddocument'):

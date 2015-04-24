@@ -27,7 +27,7 @@ class LibTiffTestCase(PillowTestCase):
             self.assertEqual(im._compression, 'group4')
         except:
             print("No _compression")
-            print (dir(im))
+            print(dir(im))
 
         # can we write it back out, in a different form.
         out = self.tempfile("temp.png")
@@ -243,13 +243,13 @@ class TestFileLibTiff(LibTiffTestCase):
         im2 = Image.open('Tests/images/12in16bit.tif')
 
         if Image.DEBUG:
-            print (im.getpixel((0, 0)))
-            print (im.getpixel((0, 1)))
-            print (im.getpixel((0, 2)))
+            print(im.getpixel((0, 0)))
+            print(im.getpixel((0, 1)))
+            print(im.getpixel((0, 2)))
 
-            print (im2.getpixel((0, 0)))
-            print (im2.getpixel((0, 1)))
-            print (im2.getpixel((0, 2)))
+            print(im2.getpixel((0, 0)))
+            print(im2.getpixel((0, 1)))
+            print(im2.getpixel((0, 2)))
 
         self.assert_image_equal(im, im2)
 

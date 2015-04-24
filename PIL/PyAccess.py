@@ -51,7 +51,7 @@ class PyAccess(object):
         self.ysize = vals['ysize']
 
         if DEBUG:
-            print (vals)
+            print(vals)
         self._post_init()
 
     def _post_init(self):

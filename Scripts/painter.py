@@ -20,6 +20,7 @@ import sys
 #
 # painter widget
 
+
 class PaintCanvas(Canvas):
     def __init__(self, master, image):
         Canvas.__init__(self, master, width=image.size[0], height=image.size[1])
@@ -33,7 +34,7 @@ class PaintCanvas(Canvas):
                 box = x, y, min(xsize, x+tilesize), min(ysize, y+tilesize)
                 tile = ImageTk.PhotoImage(image.crop(box))
                 self.create_image(x, y, image=tile, anchor=NW)
-                self.tile[(x,y)] = box, tile
+                self.tile[(x, y)] = box, tile
 
         self.image = image
 
@@ -59,7 +60,7 @@ class PaintCanvas(Canvas):
                     xy, tile = self.tile[(x, y)]
                     tile.paste(self.image.crop(xy))
                 except KeyError:
-                    pass # outside the image
+                    pass  # outside the image
         self.update_idletasks()
 
 #

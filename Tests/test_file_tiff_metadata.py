@@ -37,7 +37,7 @@ class TestFileTiffMetadata(PillowTestCase):
 
         self.assertEqual(loaded.tag[50838], (len(textdata),))
         self.assertEqual(loaded.tag[50839], textdata)
-        self.assertAlmostEqual(loaded.tag[tag_ids['RollAngle']][0], floatdata, 
+        self.assertAlmostEqual(loaded.tag[tag_ids['RollAngle']][0], floatdata,
                                places=5)
         self.assertAlmostEqual(loaded.tag[tag_ids['YawAngle']][0], doubledata)
 

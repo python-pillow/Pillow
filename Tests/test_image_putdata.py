@@ -72,8 +72,8 @@ class TestImagePutData(PillowTestCase):
         im = Image.new('L', (150, 100))
         im.putdata(arr)
 
-        self.assertEqual(len(im.getdata()),len(arr))
-        
+        self.assertEqual(len(im.getdata()), len(arr))
+
     def test_array_F(self):
         # shouldn't segfault
         # see https://github.com/python-pillow/Pillow/issues/1008
@@ -82,7 +82,7 @@ class TestImagePutData(PillowTestCase):
         arr = array('f', [0.0])*15000
         im.putdata(arr)
 
-        self.assertEqual(len(im.getdata()),len(arr))
+        self.assertEqual(len(im.getdata()), len(arr))
 
 if __name__ == '__main__':
     unittest.main()

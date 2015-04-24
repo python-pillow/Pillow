@@ -53,6 +53,7 @@ class Color(_Enhance):
 
         self.degenerate = image.convert(self.intermediate_mode).convert(image.mode)
 
+
 class Contrast(_Enhance):
     """Adjust image contrast.
 

@@ -506,7 +506,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 typ = self.tagtype[tag]
 
             if Image.DEBUG:
-                print ("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
+                print("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
 
             if typ == 1:
                 # byte data
@@ -638,9 +638,9 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
 
         if Image.DEBUG:
-            print ("*** TiffImageFile._open ***")
-            print ("- __first:", self.__first)
-            print ("- ifh: ", ifh)
+            print("*** TiffImageFile._open ***")
+            print("- __first:", self.__first)
+            print("- ifh: ", ifh)
 
         # and load the first frame
         self._seek(0)
@@ -751,19 +751,19 @@ class TiffImageFile(ImageFile.ImageFile):
             # that returns an IOError if there's no underlying fp. Easier to
             # dea. with here by reordering.
             if Image.DEBUG:
-                print ("have getvalue. just sending in a string from getvalue")
+                print("have getvalue. just sending in a string from getvalue")
             n, err = decoder.decode(self.fp.getvalue())
         elif hasattr(self.fp, "fileno"):
             # we've got a actual file on disk, pass in the fp.
             if Image.DEBUG:
-                print ("have fileno, calling fileno version of the decoder.")
+                print("have fileno, calling fileno version of the decoder.")
             self.fp.seek(0)
             # 4 bytes, otherwise the trace might error out
             n, err = decoder.decode(b"fpfp")
         else:
             # we have something else.
             if Image.DEBUG:
-                print ("don't have fileno or getvalue. just reading")
+                print("don't have fileno or getvalue. just reading")
             # UNDONE -- so much for that buffer size thing.
             n, err = decoder.decode(self.fp.read())
 
@@ -943,7 +943,7 @@ class TiffImageFile(ImageFile.ImageFile):
                             (0, min(y, ysize), w, min(y+h, ysize)),
                             offsets[i], a))
                     if Image.DEBUG:
-                        print ("tiles: ", self.tile)
+                        print("tiles: ", self.tile)
                     y = y + h
                     if y >= self.size[1]:
                         x = y = 0
@@ -1128,8 +1128,8 @@ def _save(im, fp, filename):
 
     if libtiff:
         if Image.DEBUG:
-            print ("Saving using libtiff encoder")
-            print (ifd.items())
+            print("Saving using libtiff encoder")
+            print(ifd.items())
         _fp = 0
         if hasattr(fp, "fileno"):
             try:
@@ -1186,7 +1186,7 @@ def _save(im, fp, filename):
                     atts[k] = v
 
         if Image.DEBUG:
-            print (atts)
+            print(atts)
 
         # libtiff always expects the bytes in native order.
         # we're storing image byte order. So, if the rawmode

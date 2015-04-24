@@ -5,7 +5,7 @@ from PIL import Image
 from io import BytesIO
 
 # Limits for testing the leak
-mem_limit = 16 # max increase in MB
+mem_limit = 16  # max increase in MB
 iterations = 5000
 test_file = "Tests/images/hopper.webp"
 

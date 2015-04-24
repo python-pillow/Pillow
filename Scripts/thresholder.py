@@ -18,8 +18,9 @@ import sys
 #
 # an image viewer
 
+
 class UI(Frame):
-    def __init__(self, master, im, value = 128):
+    def __init__(self, master, im, value=128):
         Frame.__init__(self, master)
 
         self.image = im
@@ -45,16 +46,16 @@ class UI(Frame):
 
         self.redraw()
 
-    def redraw(self, event = None):
+    def redraw(self, event=None):
 
         # create overlay (note the explicit conversion to mode "1")
-        im = self.image.point(lambda v,t=self.value: v>=t, "1")
+        im = self.image.point(lambda v, t=self.value: v >= t, "1")
         self.overlay = ImageTk.BitmapImage(im, foreground="green")
 
         # update canvas
         self.canvas.delete("overlay")
         self.canvas.create_image(0, 0, image=self.overlay, anchor=NW,
-                tags="overlay")
+                                 tags="overlay")
 
 # --------------------------------------------------------------------
 # main

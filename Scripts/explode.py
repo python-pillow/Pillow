@@ -9,11 +9,13 @@
 from __future__ import print_function
 
 from PIL import Image
-import os, sys
+import os
+import sys
+
 
 class Interval:
 
-    def __init__(self, interval = "0"):
+    def __init__(self, interval="0"):
 
         self.setinterval(interval)
 

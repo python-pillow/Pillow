@@ -78,6 +78,7 @@ MAX_TEXT_CHUNK = ImageFile.SAFEBLOCK
 # Set the maximum total text chunk size.
 MAX_TEXT_MEMORY = 64 * MAX_TEXT_CHUNK
 
+
 def _safe_zlib_decompress(s):
     dobj = zlib.decompressobj()
     plaintext = dobj.decompress(s, MAX_TEXT_CHUNK)

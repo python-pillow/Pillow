@@ -129,8 +129,8 @@ class TestNumpy(PillowTestCase):
         arr = numpy.zeros((15000,), numpy.float32)
         im.putdata(arr)
 
-        self.assertEqual(len(im.getdata()),len(arr))
-   
+        self.assertEqual(len(im.getdata()), len(arr))
+
 
 if __name__ == '__main__':
     unittest.main()

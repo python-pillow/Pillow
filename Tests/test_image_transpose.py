@@ -1,7 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL.Image import (FLIP_LEFT_RIGHT, FLIP_TOP_BOTTOM, ROTATE_90, ROTATE_180,
-    ROTATE_270, TRANSPOSE)
+                       ROTATE_270, TRANSPOSE)
 
 
 class TestImageTranspose(PillowTestCase):
