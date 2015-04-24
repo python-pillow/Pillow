@@ -3,7 +3,8 @@
 
 from multiprocessing import Pool, cpu_count
 from distutils.ccompiler import CCompiler
-import os, sys
+import os
+import sys
 
 try:
     MAX_PROCS = int(os.environ.get('MAX_CONCURRENCY', min(4, cpu_count())))
@@ -38,7 +39,7 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
 
     pool = Pool(MAX_PROCS)
     try:
-        print ("Building using %d processes" % pool._processes)
+        print("Building using %d processes" % pool._processes)
     except:
         pass
     arr = [(self, obj, build, cc_args, extra_postargs, pp_opts)

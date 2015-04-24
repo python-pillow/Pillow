@@ -570,7 +570,7 @@ class pil_build_ext(build_ext):
             if feature.webpmux:
                 defs.append(("HAVE_WEBPMUX", None))
                 libs.append(feature.webpmux)
-                libs.append(feature.webpmux.replace('pmux','pdemux'))
+                libs.append(feature.webpmux.replace('pmux', 'pdemux'))
 
             exts.append(Extension(
                 "PIL._webp", ["_webp.c"], libraries=libs, define_macros=defs))
@@ -757,6 +757,6 @@ setup(
     test_suite='nose.collector',
     keywords=["Imaging", ],
     license='Standard PIL License',
-    zip_safe= not debug_build(),
+    zip_safe=not debug_build(),
 )
 # End of file
