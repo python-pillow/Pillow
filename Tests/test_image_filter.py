@@ -76,10 +76,10 @@ class TestImageFilter(PillowTestCase):
             #   0 1 2
             #   3 4 5
             #   6 7 8
-            min = im.filter(ImageFilter.MinFilter).getpixel((1, 1))
+            minimum = im.filter(ImageFilter.MinFilter).getpixel((1, 1))
             med = im.filter(ImageFilter.MedianFilter).getpixel((1, 1))
-            max = im.filter(ImageFilter.MaxFilter).getpixel((1, 1))
-            return min, med, max
+            maximum = im.filter(ImageFilter.MaxFilter).getpixel((1, 1))
+            return minimum, med, maximum
 
         self.assertEqual(rankfilter("1"), (0, 4, 8))
         self.assertEqual(rankfilter("L"), (0, 4, 8))

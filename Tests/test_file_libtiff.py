@@ -46,8 +46,8 @@ class TestFileLibTiff(LibTiffTestCase):
         self._assert_noerr(im)
 
     def test_g4_large(self):
-        file = "Tests/images/pport_g4.tif"
-        im = Image.open(file)
+        test_file = "Tests/images/pport_g4.tif"
+        im = Image.open(test_file)
         self._assert_noerr(im)
 
     def test_g4_tiff_file(self):

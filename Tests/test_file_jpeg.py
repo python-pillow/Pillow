@@ -23,10 +23,10 @@ class TestFileJpeg(PillowTestCase):
     def roundtrip(self, im, **options):
         out = BytesIO()
         im.save(out, "JPEG", **options)
-        bytes = out.tell()
+        test_bytes = out.tell()
         out.seek(0)
         im = Image.open(out)
-        im.bytes = bytes  # for testing only
+        im.bytes = test_bytes  # for testing only
         return im
 
     def test_sanity(self):

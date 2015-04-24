@@ -24,11 +24,11 @@ class TestImageFile(PillowTestCase):
             if format in ("MSP", "XBM"):
                 im = im.convert("1")
 
-            file = BytesIO()
+            test_file = BytesIO()
 
-            im.save(file, format)
+            im.save(test_file, format)
 
-            data = file.getvalue()
+            data = test_file.getvalue()
 
             parser = ImageFile.Parser()
             parser.feed(data)

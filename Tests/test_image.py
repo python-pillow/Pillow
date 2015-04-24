@@ -41,8 +41,8 @@ class TestImage(PillowTestCase):
         im.paste(0, (0, 0, 100, 100))
         self.assertFalse(im.readonly)
 
-        file = self.tempfile("temp.ppm")
-        im._dump(file)
+        test_file = self.tempfile("temp.ppm")
+        im._dump(test_file)
 
     def test_comparison_with_other_type(self):
         # Arrange

@@ -288,7 +288,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
             if s[:11] == "%ImageData:":
                 # Encoded bitmapped image.
-                [x, y, bi, mo, z3, z4, en, id] = s[11:].split(None, 7)
+                x, y, bi, mo = s[11:].split(None, 7)[:4]
 
                 if int(bi) != 8:
                     break

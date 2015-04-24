@@ -10,9 +10,9 @@
 #
 
 try:
-    from tkinter import *
+    from tkinter import Tk, Canvas, NW
 except ImportError:
-    from Tkinter import *
+    from Tkinter import Tk, Canvas, NW
 
 from PIL import Image, ImageTk
 import sys

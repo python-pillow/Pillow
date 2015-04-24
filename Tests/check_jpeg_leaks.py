@@ -169,7 +169,8 @@ post patch:
             test_output = BytesIO()
             im.save(test_output, "JPEG", exif=exif)
 
-    """
+    def test_base_save(self):
+        """
 base case:
     MB
 20.99^           :::::         :::::::::::::::::::::::::::::::::::::::::::@:::
@@ -195,8 +196,6 @@ base case:
    0 +----------------------------------------------------------------------->Gi
      0                                                                   7.882
 """
-
-    def test_base_save(self):
         im = hopper('RGB')
 
         for _ in range(iterations):

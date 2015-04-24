@@ -36,9 +36,9 @@ class TestFileGif(PillowTestCase):
 
         def test_bilevel(optimize):
             im = Image.new("1", (1, 1), 0)
-            file = BytesIO()
-            im.save(file, "GIF", optimize=optimize)
-            return len(file.getvalue())
+            test_file = BytesIO()
+            im.save(test_file, "GIF", optimize=optimize)
+            return len(test_file.getvalue())
 
         self.assertEqual(test_grayscale(0), 800)
         self.assertEqual(test_grayscale(1), 38)
@@ -49,8 +49,8 @@ class TestFileGif(PillowTestCase):
         from io import BytesIO
 
         im = Image.frombytes("L", (16, 16), bytes(bytearray(range(256))))
-        file = BytesIO()
-        im.save(file, "GIF", optimize=True)
+        test_file = BytesIO()
+        im.save(test_file, "GIF", optimize=True)
         self.assertEqual(im.mode, "L")
 
     def test_roundtrip(self):

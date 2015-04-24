@@ -94,7 +94,8 @@ try:
         def _render(self, font):
             txt = "Hello World!"
             ttf = ImageFont.truetype(font, FONT_SIZE)
-            w, h = ttf.getsize(txt)
+            ttf.getsize(txt)
+            
             img = Image.new("RGB", (256, 64), "white")
             d = ImageDraw.Draw(img)
             d.text((10, 10), txt, font=ttf, fill='black')

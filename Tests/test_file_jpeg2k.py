@@ -22,10 +22,10 @@ class TestFileJpeg2k(PillowTestCase):
     def roundtrip(self, im, **options):
         out = BytesIO()
         im.save(out, "JPEG2000", **options)
-        bytes = out.tell()
+        test_bytes = out.tell()
         out.seek(0)
         im = Image.open(out)
-        im.bytes = bytes  # for testing only
+        im.bytes = test_bytes  # for testing only
         im.load()
         return im
 
