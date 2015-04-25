@@ -7,10 +7,10 @@ class TestImageSequence(PillowTestCase):
 
     def test_sanity(self):
 
-        file = self.tempfile("temp.im")
+        test_file = self.tempfile("temp.im")
 
         im = hopper("RGB")
-        im.save(file)
+        im.save(test_file)
 
         seq = ImageSequence.Iterator(im)
 

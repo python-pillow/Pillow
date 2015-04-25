@@ -49,7 +49,7 @@ except getopt.error as v:
     print(v)
     sys.exit(1)
 
-format = None
+output_format = None
 convert = None
 
 options = {}
@@ -68,7 +68,7 @@ for o, a in opt:
         sys.exit(1)
 
     elif o == "-c":
-        format = a
+        output_format = a
 
     if o == "-g":
         convert = "L"
@@ -90,8 +90,8 @@ try:
     if convert and im.mode != convert:
         im.draft(convert, im.size)
         im = im.convert(convert)
-    if format:
-        im.save(argv[1], format, **options)
+    if output_format:
+        im.save(argv[1], output_format, **options)
     else:
         im.save(argv[1], **options)
 except:

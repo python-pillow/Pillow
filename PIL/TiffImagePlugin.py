@@ -731,8 +731,8 @@ class TiffImageFile(ImageFile.ImageFile):
 
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
-        ignored, extents, ignored_2, args = self.tile[0]
-        args = args + (self.ifd.offset,)
+        extents = self.tile[0][1]
+        args = self.tile[0][3] + (self.ifd.offset,)
         decoder = Image._getdecoder(self.mode, 'libtiff', args,
                                     self.decoderconfig)
         try:
@@ -978,7 +978,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # fixup palette descriptor
 
         if self.mode == "P":
-            palette = [o8(a // 256) for a in self.tag[COLORMAP]]
+            palette = [o8(b // 256) for b in self.tag[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
 #
 # --------------------------------------------------------------------

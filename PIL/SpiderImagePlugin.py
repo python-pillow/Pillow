@@ -48,7 +48,7 @@ def isInt(f):
             return 1
         else:
             return 0
-    except:
+    except ValueError:
         return 0
 
 iforms = [1, 3, -11, -12, -21, -22]
@@ -173,11 +173,11 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     # returns a byte image after rescaling to 0..255
     def convert2byte(self, depth=255):
-        (min, max) = self.getextrema()
+        (minimum, maximum) = self.getextrema()
         m = 1
-        if max != min:
-            m = depth / (max-min)
-        b = -m * min
+        if maximum != minimum:
+            m = depth / (maximum-minimum)
+        b = -m * minimum
         return self.point(lambda i, m=m, b=b: i * m + b).convert("L")
 
     # returns a ImageTk.PhotoImage object, after rescaling to 0..255
@@ -271,7 +271,7 @@ def _save(im, fp, filename):
 
 def _save_spider(im, fp, filename):
     # get the filename extension and register it with Image
-    fn, ext = os.path.splitext(filename)
+    ext = os.path.splitext(filename)[1]
     Image.register_extension("SPIDER", ext)
     _save(im, fp, filename)
 

@@ -45,13 +45,13 @@ class TestImageSplit(PillowTestCase):
         codecs = dir(Image.core)
 
         if 'zip_encoder' in codecs:
-            file = self.tempfile("temp.png")
+            test_file = self.tempfile("temp.png")
         else:
-            file = self.tempfile("temp.pcx")
+            test_file = self.tempfile("temp.pcx")
 
         def split_open(mode):
-            hopper(mode).save(file)
-            im = Image.open(file)
+            hopper(mode).save(test_file)
+            im = Image.open(test_file)
             return len(im.split())
         self.assertEqual(split_open("1"), 1)
         self.assertEqual(split_open("L"), 1)

@@ -17,8 +17,8 @@ class TestFontPcf(PillowTestCase):
             self.skipTest("zlib support not available")
 
     def save_font(self):
-        file = open(fontname, "rb")
-        font = PcfFontFile.PcfFontFile(file)
+        test_file = open(fontname, "rb")
+        font = PcfFontFile.PcfFontFile(test_file)
         self.assertIsInstance(font, FontFile.FontFile)
         self.assertEqual(len([_f for _f in font.glyph if _f]), 192)
 

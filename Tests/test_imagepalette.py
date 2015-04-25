@@ -17,11 +17,11 @@ class TestImagePalette(PillowTestCase):
 
         palette = ImagePalette()
 
-        map = {}
+        test_map = {}
         for i in range(256):
-            map[palette.getcolor((i, i, i))] = i
+            test_map[palette.getcolor((i, i, i))] = i
 
-        self.assertEqual(len(map), 256)
+        self.assertEqual(len(test_map), 256)
         self.assertRaises(ValueError, lambda: palette.getcolor((1, 2, 3)))
 
     def test_file(self):
@@ -117,7 +117,7 @@ class TestImagePalette(PillowTestCase):
         palette = raw("RGB", list(range(256))*3)
 
         # Act / Assert
-        self.assertRaises(ValueError, lambda: palette.tobytes())
+        self.assertRaises(ValueError, palette.tobytes)
         self.assertRaises(ValueError, lambda: palette.getcolor((1, 2, 3)))
         f = self.tempfile("temp.lut")
         self.assertRaises(ValueError, lambda: palette.save(f))

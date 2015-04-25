@@ -204,7 +204,7 @@ class PcfFontFile(FontFile.FontFile):
         for i in range(4):
             bitmapSizes.append(i32(fp.read(4)))
 
-        byteorder = format & 4  # non-zero => MSB
+        # byteorder = format & 4  # non-zero => MSB
         bitorder = format & 8   # non-zero => MSB
         padindex = format & 3
 

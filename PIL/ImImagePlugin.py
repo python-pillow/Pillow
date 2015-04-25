@@ -313,7 +313,7 @@ SAVE = {
 def _save(im, fp, filename, check=0):
 
     try:
-        type, rawmode = SAVE[im.mode]
+        image_type, rawmode = SAVE[im.mode]
     except KeyError:
         raise ValueError("Cannot save %s images as IM" % im.mode)
 
@@ -325,7 +325,7 @@ def _save(im, fp, filename, check=0):
     if check:
         return check
 
-    fp.write(("Image type: %s image\r\n" % type).encode('ascii'))
+    fp.write(("Image type: %s image\r\n" % image_type).encode('ascii'))
     if filename:
         fp.write(("Name: %s\r\n" % filename).encode('ascii'))
     fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode('ascii'))

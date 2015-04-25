@@ -8,9 +8,9 @@
 #
 
 try:
-    from tkinter import *
+    from tkinter import Tk, Toplevel, Frame, Label, Scale, HORIZONTAL
 except ImportError:
-    from Tkinter import *
+    from Tkinter import Tk, Toplevel, Frame, Label, Scale, HORIZONTAL
 
 from PIL import Image, ImageTk, ImageEnhance
 import sys

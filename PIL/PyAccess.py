@@ -194,7 +194,7 @@ class _PyAccessI16_L(PyAccess):
         pixel = self.pixels[y][x]
         try:
             color = min(color, 65535)
-        except:
+        except TypeError:
             color = min(color[0], 65535)
 
         pixel.l = color & 0xFF

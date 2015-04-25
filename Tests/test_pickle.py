@@ -60,7 +60,7 @@ class TestPickle(PillowTestCase):
         import pickle
 
         # Act / Assert
-        for file in [
+        for test_file in [
                 "Tests/images/test-card.png",
                 "Tests/images/zero_bb.png",
                 "Tests/images/zero_bb_scale2.png",
@@ -69,7 +69,7 @@ class TestPickle(PillowTestCase):
                 "Tests/images/p_trns_single.png",
                 "Tests/images/pil123p.png"
         ]:
-            self.helper_pickle_string(pickle, file=file)
+            self.helper_pickle_string(pickle, file=test_file)
 
     def test_pickle_l_mode(self):
         # Arrange

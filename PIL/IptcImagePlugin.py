@@ -222,7 +222,7 @@ def getiptcinfo(im):
                     offset += 2
                     # resource name (usually empty)
                     name_len = i8(app[offset])
-                    name = app[offset+1:offset+1+name_len]
+                    # name = app[offset+1:offset+1+name_len]
                     offset = 1 + offset + name_len
                     if offset & 1:
                         offset += 1

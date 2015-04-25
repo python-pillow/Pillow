@@ -28,7 +28,7 @@ class TestWebPLeaks(PillowTestCase):
         with open(test_file, 'rb') as f:
             im_data = f.read()
         start_mem = self._get_mem_usage()
-        for count in range(iterations):
+        for _ in range(iterations):
             with Image.open(BytesIO(im_data)) as im:
                 im.load()
             mem = (self._get_mem_usage() - start_mem)

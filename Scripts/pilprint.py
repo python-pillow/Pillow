@@ -24,8 +24,8 @@ from PIL import PSDraw
 letter = (1.0*72, 1.0*72, 7.5*72, 10.0*72)
 
 
-def description(file, image):
-    title = os.path.splitext(os.path.split(file)[1])[0]
+def description(filepath, image):
+    title = os.path.splitext(os.path.split(filepath)[1])[0]
     format = " (%dx%d "
     if image.format:
         format = " (" + image.format + " %dx%d "
@@ -65,12 +65,12 @@ for o, a in opt:
         # printer channel
         printer = "lpr -P%s" % a
 
-for file in argv:
+for filepath in argv:
     try:
 
-        im = Image.open(file)
+        im = Image.open(filepath)
 
-        title = description(file, im)
+        title = description(filepath, im)
 
         if monochrome and im.mode not in ["1", "L"]:
             im.draft("L", im.size)

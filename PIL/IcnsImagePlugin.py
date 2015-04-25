@@ -94,7 +94,7 @@ def read_32(fobj, start_length, size):
 
 def read_mk(fobj, start_length, size):
     # Alpha masks seem to be uncompressed
-    (start, length) = start_length
+    start = start_length[0]
     fobj.seek(start)
     pixel_size = (size[0] * size[2], size[1] * size[2])
     sizesq = pixel_size[0] * pixel_size[1]

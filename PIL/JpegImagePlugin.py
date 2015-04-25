@@ -454,13 +454,13 @@ def _getmp(self):
         data = self.info["mp"]
     except KeyError:
         return None
-    file = io.BytesIO(data)
-    head = file.read(8)
+    file_contents = io.BytesIO(data)
+    head = file_contents.read(8)
     endianness = '>' if head[:4] == b'\x4d\x4d\x00\x2a' else '<'
     mp = {}
     # process dictionary
     info = TiffImagePlugin.ImageFileDirectory(head)
-    info.load(file)
+    info.load(file_contents)
     for key, value in info.items():
         mp[key] = _fixup(value)
     # it's an error not to have a number of images

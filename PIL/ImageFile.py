@@ -322,6 +322,7 @@ class Parser:
     image = None
     data = None
     decoder = None
+    offset = 0
     finished = 0
 
     def reset(self):

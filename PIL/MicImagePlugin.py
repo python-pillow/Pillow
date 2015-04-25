@@ -21,7 +21,7 @@ __version__ = "0.1"
 
 
 from PIL import Image, TiffImagePlugin
-from PIL.OleFileIO import *
+from PIL.OleFileIO import MAGIC, OleFileIO
 
 
 #
@@ -54,9 +54,9 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         # best way to identify MIC files, but what the... ;-)
 
         self.images = []
-        for file in self.ole.listdir():
-            if file[1:] and file[0][-4:] == ".ACI" and file[1] == "Image":
-                self.images.append(file)
+        for path in self.ole.listdir():
+            if path[1:] and path[0][-4:] == ".ACI" and path[1] == "Image":
+                self.images.append(path)
 
         # if we didn't find any images, this is probably not
         # an MIC file.
