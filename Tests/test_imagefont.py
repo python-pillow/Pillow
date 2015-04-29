@@ -126,7 +126,7 @@ try:
 
             target = 'Tests/images/rectangle_surrounding_text.png'
             target_img = Image.open(target)
-            self.assert_image_equal(im, target_img)
+            self.assert_image_similar(im, target_img, .5)
 
         def test_render_multiline(self):
             im = Image.new(mode='RGB', size=(300, 100))
