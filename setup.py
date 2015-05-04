@@ -748,6 +748,8 @@ setup(
         "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
         ],
     cmdclass={"build_ext": pil_build_ext},
     ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
