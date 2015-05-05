@@ -1288,11 +1288,11 @@ class Image:
         images (in the latter case, the alpha band is used as mask).
         Where the mask is 255, the given image is copied as is.  Where
         the mask is 0, the current value is preserved.  Intermediate
-        values can be used for transparency effects.
+        values will mix the two images together, including their alpha
+        channels if they have them.
 
-        Note that if you paste an "RGBA" image, the alpha band is
-        ignored.  You can work around this by using the same image as
-        both source image and mask.
+        See :py:meth:`~PIL.Image.Image.alpha_composite` if you want to
+        combine images with respect to their alpha channels.
 
         :param im: Source image or pixel value (integer or tuple).
         :param box: An optional 4-tuple giving the region to paste into.
