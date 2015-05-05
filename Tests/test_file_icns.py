@@ -27,10 +27,10 @@ class TestFileIcns(PillowTestCase):
     def test_save(self):
         im = Image.open(TEST_FILE)
 
-        TEST_FILE = self.tempfile("temp.icns")
-        im.save(TEST_FILE)
+        temp_file = self.tempfile("temp.icns")
+        im.save(temp_file)
 
-        reread = Image.open(TEST_FILE)
+        reread = Image.open(temp_file)
 
         self.assertEqual(reread.mode, "RGBA")
         self.assertEqual(reread.size, (1024, 1024))
