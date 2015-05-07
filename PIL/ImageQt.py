@@ -22,18 +22,18 @@ import sys
 
 qt_is_installed = True
 try:
-	from PyQt5.QtGui import QGuiApplication, QImage, qRgb, qRgba, QPixmap
-	from PyQt5.QtCore import QBuffer, QIODevice
+    from PyQt5.QtGui import QGuiApplication, QImage, qRgb, qRgba, QPixmap
+    from PyQt5.QtCore import QBuffer, QIODevice
 except ImportError:
-	try:
-		from PyQt4.QtGui import QGuiApplication, QImage, qRgb, qRgba, QPixmap
-		from PyQt4.QtCore import QBuffer, QIODevice
-	except ImportError:
-		try:
-			from PySide.QtGui import QGuiApplication, QImage, qRgb, qRgba, QPixmap
-			from PySide.QtCore import QBuffer, QIODevice
-		except ImportError:
-			qt_is_installed = False
+    try:
+        from PyQt4.QtGui import QGuiApplication, QImage, qRgb, qRgba, QPixmap
+        from PyQt4.QtCore import QBuffer, QIODevice
+    except ImportError:
+        try:
+            from PySide.QtGui import QGuiApplication, QImage, qRgb, qRgba, QPixmap
+            from PySide.QtCore import QBuffer, QIODevice
+        except ImportError:
+            qt_is_installed = False
 
 from io import BytesIO
 
@@ -147,13 +147,14 @@ def toqpixmap(im):
 # @param im A PIL Image object, or a file name (given either as Python
 #     string or a PyQt string object).
 
-class ImageQt(QImage):
+if qt_is_installed:
+    class ImageQt(QImage):
 
-    def __init__(self, im):
-        im_data = _toqclass_helper(im)
-        QImage.__init__(self,
-            im_data['data'], im_data['im'].size[0], im_data['im'].size[1],
-            im_data['format']
-        )
-        if im_data['colortable']:
-            self.setColorTable(im_data['colortable'])
+        def __init__(self, im):
+            im_data = _toqclass_helper(im)
+            QImage.__init__(self,
+                im_data['data'], im_data['im'].size[0], im_data['im'].size[1],
+                im_data['format']
+            )
+            if im_data['colortable']:
+                self.setColorTable(im_data['colortable'])
