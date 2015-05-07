@@ -125,14 +125,7 @@ def _toqclass_helper(im):
 
 
 def toqimage(im):
-    im_data = _toqclass_helper(im)
-    result = QImage(
-        im_data['data'], im_data['im'].size[0], im_data['im'].size[1],
-        im_data['format']
-    )
-    if im_data['colortable']:
-        result.setColorTable(im_data['colortable'])
-    return result
+    return ImageQt(im)
 
 
 def toqpixmap(im):
@@ -146,3 +139,21 @@ def toqpixmap(im):
     qimage = im.toqimage()
     qimage.save('/tmp/hopper_{}_qpixmap_qimage.png'.format(im.mode))
     return QPixmap.fromImage(qimage)
+
+##
+# An PIL image wrapper for Qt.  This is a subclass of PyQt4's QImage
+# class.
+#
+# @param im A PIL Image object, or a file name (given either as Python
+#     string or a PyQt string object).
+
+class ImageQt(QImage):
+
+    def __init__(self, im):
+        im_data = _toqclass_helper(im)
+        QImage.__init__(self,
+            im_data['data'], im_data['im'].size[0], im_data['im'].size[1],
+            im_data['format']
+        )
+        if im_data['colortable']:
+            self.setColorTable(im_data['colortable'])
