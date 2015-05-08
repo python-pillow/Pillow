@@ -704,7 +704,7 @@ def _save_cjpeg(im, fp, filename):
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
     try:
-        os.unlink(file)
+        os.unlink(tempfile)
     except:
         pass
 

@@ -5,8 +5,8 @@ from PIL import Image
 import sys
 
 # sample icon file
-test_file = "Tests/images/pillow.icns"
-data = open(test_file, "rb").read()
+TEST_FILE = "Tests/images/pillow.icns"
+data = open(TEST_FILE, "rb").read()
 
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
 
@@ -16,7 +16,7 @@ class TestFileIcns(PillowTestCase):
     def test_sanity(self):
         # Loading this icon by default should result in the largest size
         # (512x512@2x) being loaded
-        im = Image.open(test_file)
+        im = Image.open(TEST_FILE)
         im.load()
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (1024, 1024))
@@ -25,12 +25,12 @@ class TestFileIcns(PillowTestCase):
     @unittest.skipIf(sys.platform != 'darwin',
                      "requires MacOS")
     def test_save(self):
-        im = Image.open(file)
+        im = Image.open(TEST_FILE)
 
-        test_file = self.tempfile("temp.icns")
-        im.save(test_file)
+        temp_file = self.tempfile("temp.icns")
+        im.save(temp_file)
 
-        reread = Image.open(test_file)
+        reread = Image.open(temp_file)
 
         self.assertEqual(reread.mode, "RGBA")
         self.assertEqual(reread.size, (1024, 1024))
@@ -39,11 +39,11 @@ class TestFileIcns(PillowTestCase):
     def test_sizes(self):
         # Check that we can load all of the sizes, and that the final pixel
         # dimensions are as expected
-        im = Image.open(test_file)
+        im = Image.open(TEST_FILE)
         for w, h, r in im.info['sizes']:
             wr = w * r
             hr = h * r
-            im2 = Image.open(test_file)
+            im2 = Image.open(TEST_FILE)
             im2.size = (w, h, r)
             im2.load()
             self.assertEqual(im2.mode, 'RGBA')
