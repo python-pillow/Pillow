@@ -1,11 +1,17 @@
 Installation
 ============
 
+Warnings
+--------
+
 .. warning:: Pillow and PIL cannot co-exist in the same environment. Before installing Pillow, please uninstall PIL.
 
 .. warning:: Pillow >= 1.0 no longer supports "import Image". Please use "from PIL import Image" instead.
 
 .. warning:: Pillow >= 2.1.0 no longer supports "import _imaging". Please use "from PIL.Image import core as _imaging" instead.
+
+Notes
+-----
 
 .. note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7.
 
