@@ -267,17 +267,10 @@ else:
 
 #[PL] These workarounds were inspired from the Path module
 # (see http://www.jorendorff.com/articles/python/path/)
-#TODO: test with old Python versions
-
-# Pre-2.3 workaround for basestring.
 try:
     basestring
 except NameError:
-    try:
-        # is Unicode supported (Python >2.0 or >1.6 ?)
-        basestring = (str, unicode)
-    except NameError:
-        basestring = str
+    basestring = str
 
 #[PL] Experimental setting: if True, OLE filenames will be kept in Unicode
 # if False (default PIL behaviour), all filenames are converted to Latin-1.
