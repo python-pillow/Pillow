@@ -498,10 +498,6 @@ class PILDriver:
 
 if __name__ == '__main__':
     import sys
-    try:
-        import readline
-    except ImportError:
-        pass  # not available on all platforms
 
     # If we see command-line arguments, interpret them as a stack state
     # and execute.  Otherwise go interactive.
