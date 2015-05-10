@@ -399,12 +399,12 @@ WORD_CLSID = "00020900-0000-0000-C000-000000000046"
 #TODO: check Excel, PPT, ...
 
 #[PL]: Defect levels to classify parsing errors - see OleFileIO._raise_defect()
-DEFECT_UNSURE =    10    # a case which looks weird, but not sure it's a defect
-DEFECT_POTENTIAL = 20    # a potential defect
-DEFECT_INCORRECT = 30    # an error according to specifications, but parsing
-                         # can go on
-DEFECT_FATAL =     40    # an error which cannot be ignored, parsing is
-                         # impossible
+DEFECT_UNSURE =    10   # a case which looks weird, but not sure it's a defect
+DEFECT_POTENTIAL = 20   # a potential defect
+DEFECT_INCORRECT = 30   # an error according to specifications, but parsing
+                        # can go on
+DEFECT_FATAL =     40   # an error which cannot be ignored, parsing is
+                        # impossible
 
 # Minimal size of an empty OLE file, with 512-bytes sectors = 1536 bytes
 # (this is used in isOleFile and OleFile.open)
@@ -504,20 +504,20 @@ def _clsid(clsid):
 
 
 def filetime2datetime(filetime):
-        """
-        convert FILETIME (64 bits int) to Python datetime.datetime
-        """
-        # TODO: manage exception when microseconds is too large
-        # inspired from http://code.activestate.com/recipes/511425-filetime-to-datetime/
-        _FILETIME_null_date = datetime.datetime(1601, 1, 1, 0, 0, 0)
-        #debug('timedelta days=%d' % (filetime//(10*1000000*3600*24)))
-        return _FILETIME_null_date + datetime.timedelta(microseconds=filetime//10)
+    """
+    convert FILETIME (64 bits int) to Python datetime.datetime
+    """
+    # TODO: manage exception when microseconds is too large
+    # inspired from http://code.activestate.com/recipes/511425-filetime-to-datetime/
+    _FILETIME_null_date = datetime.datetime(1601, 1, 1, 0, 0, 0)
+    #debug('timedelta days=%d' % (filetime//(10*1000000*3600*24)))
+    return _FILETIME_null_date + datetime.timedelta(microseconds=filetime//10)
 
 
 
 #=== CLASSES ==================================================================
 
-class OleMetadata:
+class OleMetadata(object):
     """
     class to parse and store metadata from standard properties of OLE files.
 
@@ -803,7 +803,7 @@ class _OleStream(io.BytesIO):
 
 #--- _OleDirectoryEntry -------------------------------------------------------
 
-class _OleDirectoryEntry:
+class _OleDirectoryEntry(object):
 
     """
     OLE2 Directory Entry
@@ -1064,7 +1064,7 @@ class _OleDirectoryEntry:
 
 #--- OleFileIO ----------------------------------------------------------------
 
-class OleFileIO:
+class OleFileIO(object):
     """
     OLE container object
 
@@ -1935,12 +1935,12 @@ class OleFileIO:
         nb_sectors = (size + (self.sectorsize-1)) // self.sectorsize
         debug('nb_sectors = %d' % nb_sectors)
         for i in range(nb_sectors):
-##            try:
-##                self.fp.seek(offset + self.sectorsize * sect)
-##            except:
-##                debug('sect=%d, seek=%d' %
-##                    (sect, offset+self.sectorsize*sect))
-##                raise IOError('OLE sector index out of range')
+            # try:
+            #     self.fp.seek(offset + self.sectorsize * sect)
+            # except:
+            #     debug('sect=%d, seek=%d' %
+            #         (sect, offset+self.sectorsize*sect))
+            #     raise IOError('OLE sector index out of range')
             # extract one sector from data, the last one being smaller:
             if i<(nb_sectors-1):
                 data_sector = data [i*self.sectorsize : (i+1)*self.sectorsize]
@@ -2071,7 +2071,7 @@ class OleFileIO:
         """
         #REFERENCE: [MS-OLEPS] https://msdn.microsoft.com/en-us/library/dd942421.aspx
         # make sure no_conversion is a list, just to simplify code below:
-        if no_conversion == None:
+        if no_conversion is None:
             no_conversion = []
         # stream path as a string to report exceptions:
         streampath = filename
@@ -2226,8 +2226,6 @@ class OleFileIO:
 
 if __name__ == "__main__":
 
-    import sys
-
     # [PL] display quick usage info if launched from command-line
     if len(sys.argv) <= 1:
         print('olefile version %s %s - %s' % (__version__, __date__, __author__))
@@ -2247,55 +2245,55 @@ For more information, see http://www.decalage.info/olefile
 
     check_streams = False
     for filename in sys.argv[1:]:
-##      try:
-            # OPTIONS:
-            if filename == '-d':
-                # option to switch debug mode on:
-                set_debug_mode(True)
-                continue
-            if filename == '-c':
-                # option to switch check streams mode on:
-                check_streams = True
-                continue
+        # try:
+        # OPTIONS:
+        if filename == '-d':
+            # option to switch debug mode on:
+            set_debug_mode(True)
+            continue
+        if filename == '-c':
+            # option to switch check streams mode on:
+            check_streams = True
+            continue
 
-            ole = OleFileIO(filename)#, raise_defects=DEFECT_INCORRECT)
-            print("-" * 68)
-            print(filename)
-            print("-" * 68)
-            ole.dumpdirectory()
+        ole = OleFileIO(filename)#, raise_defects=DEFECT_INCORRECT)
+        print("-" * 68)
+        print(filename)
+        print("-" * 68)
+        ole.dumpdirectory()
+        for streamname in ole.listdir():
+            if streamname[-1][0] == "\005":
+                print(streamname, ": properties")
+                props = ole.getproperties(streamname, convert_time=True)
+                props = sorted(props.items())
+                for k, v in props:
+                    #[PL]: avoid to display too large or binary values:
+                    if isinstance(v, (basestring, bytes)):
+                        if len(v) > 50:
+                            v = v[:50]
+                    if isinstance(v, bytes):
+                        # quick and dirty binary check:
+                        for c in (1,2,3,4,5,6,7,11,12,14,15,16,17,18,19,20,
+                            21,22,23,24,25,26,27,28,29,30,31):
+                            if c in bytearray(v):
+                                v = '(binary data)'
+                                break
+                    print("   ", k, v)
+
+        if check_streams:
+            # Read all streams to check if there are errors:
+            print('\nChecking streams...')
             for streamname in ole.listdir():
-                if streamname[-1][0] == "\005":
-                    print(streamname, ": properties")
-                    props = ole.getproperties(streamname, convert_time=True)
-                    props = sorted(props.items())
-                    for k, v in props:
-                        #[PL]: avoid to display too large or binary values:
-                        if isinstance(v, (basestring, bytes)):
-                            if len(v) > 50:
-                                v = v[:50]
-                        if isinstance(v, bytes):
-                            # quick and dirty binary check:
-                            for c in (1,2,3,4,5,6,7,11,12,14,15,16,17,18,19,20,
-                                21,22,23,24,25,26,27,28,29,30,31):
-                                if c in bytearray(v):
-                                    v = '(binary data)'
-                                    break
-                        print("   ", k, v)
-
-            if check_streams:
-                # Read all streams to check if there are errors:
-                print('\nChecking streams...')
-                for streamname in ole.listdir():
-                    # print name using repr() to convert binary chars to \xNN:
-                    print('-', repr('/'.join(streamname)),'-', end=' ')
-                    st_type = ole.get_type(streamname)
-                    if st_type == STGTY_STREAM:
-                        print('size %d' % ole.get_size(streamname))
-                        # just try to read stream in memory:
-                        ole.openstream(streamname)
-                    else:
-                        print('NOT a stream : type=%d' % st_type)
-                print()
+                # print name using repr() to convert binary chars to \xNN:
+                print('-', repr('/'.join(streamname)),'-', end=' ')
+                st_type = ole.get_type(streamname)
+                if st_type == STGTY_STREAM:
+                    print('size %d' % ole.get_size(streamname))
+                    # just try to read stream in memory:
+                    ole.openstream(streamname)
+                else:
+                    print('NOT a stream : type=%d' % st_type)
+            print()
 
 ##            for streamname in ole.listdir():
 ##                # print name using repr() to convert binary chars to \xNN:
@@ -2303,34 +2301,34 @@ For more information, see http://www.decalage.info/olefile
 ##                print(ole.getmtime(streamname))
 ##            print()
 
-            print('Modification/Creation times of all directory entries:')
-            for entry in ole.direntries:
-                if entry is not None:
-                    print('- %s: mtime=%s ctime=%s' % (entry.name,
-                        entry.getmtime(), entry.getctime()))
-            print()
+        print('Modification/Creation times of all directory entries:')
+        for entry in ole.direntries:
+            if entry is not None:
+                print('- %s: mtime=%s ctime=%s' % (entry.name,
+                    entry.getmtime(), entry.getctime()))
+        print()
 
-            # parse and display metadata:
-            meta = ole.get_metadata()
-            meta.dump()
-            print()
-            #[PL] Test a few new methods:
-            root = ole.get_rootentry_name()
-            print('Root entry name: "%s"' % root)
-            if ole.exists('worddocument'):
-                print("This is a Word document.")
-                print("type of stream 'WordDocument':", ole.get_type('worddocument'))
-                print("size :", ole.get_size('worddocument'))
-                if ole.exists('macros/vba'):
-                    print("This document may contain VBA macros.")
+        # parse and display metadata:
+        meta = ole.get_metadata()
+        meta.dump()
+        print()
+        #[PL] Test a few new methods:
+        root = ole.get_rootentry_name()
+        print('Root entry name: "%s"' % root)
+        if ole.exists('worddocument'):
+            print("This is a Word document.")
+            print("type of stream 'WordDocument':", ole.get_type('worddocument'))
+            print("size :", ole.get_size('worddocument'))
+            if ole.exists('macros/vba'):
+                print("This document may contain VBA macros.")
 
-            # print parsing issues:
-            print('\nNon-fatal issues raised during parsing:')
-            if ole.parsing_issues:
-                for exctype, msg in ole.parsing_issues:
-                    print('- %s: %s' % (exctype.__name__, msg))
-            else:
-                print('None')
+        # print parsing issues:
+        print('\nNon-fatal issues raised during parsing:')
+        if ole.parsing_issues:
+            for exctype, msg in ole.parsing_issues:
+                print('- %s: %s' % (exctype.__name__, msg))
+        else:
+            print('None')
 ##      except IOError as v:
 ##          print("***", "cannot read", file, "-", v)
 
