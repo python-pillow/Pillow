@@ -874,17 +874,17 @@ class _OleDirectoryEntry(object):
             sizeHigh
         ) = struct.unpack(_OleDirectoryEntry.STRUCT_DIRENTRY, entry)
         if self.entry_type not in [STGTY_ROOT, STGTY_STORAGE, STGTY_STREAM, STGTY_EMPTY]:
-            olefile._raise_defect(DEFECT_INCORRECT, 'unhandled OLE storage type')
+            olefile.raise_defect(DEFECT_INCORRECT, 'unhandled OLE storage type')
         # only first directory entry can (and should) be root:
         if self.entry_type == STGTY_ROOT and sid != 0:
-            olefile._raise_defect(DEFECT_INCORRECT, 'duplicate OLE root entry')
+            olefile.raise_defect(DEFECT_INCORRECT, 'duplicate OLE root entry')
         if sid == 0 and self.entry_type != STGTY_ROOT:
-            olefile._raise_defect(DEFECT_INCORRECT, 'incorrect OLE root entry')
+            olefile.raise_defect(DEFECT_INCORRECT, 'incorrect OLE root entry')
         #debug (struct.unpack(fmt_entry, entry[:len_entry]))
         # name should be at most 31 unicode characters + null character,
         # so 64 bytes in total (31*2 + 2):
         if namelength>64:
-            olefile._raise_defect(DEFECT_INCORRECT, 'incorrect DirEntry name length')
+            olefile.raise_defect(DEFECT_INCORRECT, 'incorrect DirEntry name length')
             # if exception not raised, namelength is set to the maximum value:
             namelength = 64
         # only characters without ending null char are kept:
@@ -908,7 +908,7 @@ class _OleDirectoryEntry(object):
             if sizeHigh != 0 and sizeHigh != 0xFFFFFFFF:
                 debug('sectorsize=%d, sizeLow=%d, sizeHigh=%d (%X)' %
                     (olefile.sectorsize, sizeLow, sizeHigh, sizeHigh))
-                olefile._raise_defect(DEFECT_UNSURE, 'incorrect OLE stream size')
+                olefile.raise_defect(DEFECT_UNSURE, 'incorrect OLE stream size')
             self.size = sizeLow
         else:
             self.size = sizeLow + (long(sizeHigh)<<32)
@@ -918,7 +918,7 @@ class _OleDirectoryEntry(object):
         # a storage should have a null size, BUT some implementations such as
         # Word 8 for Mac seem to allow non-null values => Potential defect:
         if self.entry_type == STGTY_STORAGE and self.size != 0:
-            olefile._raise_defect(DEFECT_POTENTIAL, 'OLE storage with size>0')
+            olefile.raise_defect(DEFECT_POTENTIAL, 'OLE storage with size>0')
         # check if stream is not already referenced elsewhere:
         if self.entry_type in (STGTY_ROOT, STGTY_STREAM) and self.size>0:
             if self.size < olefile.minisectorcutoff \
@@ -970,7 +970,7 @@ class _OleDirectoryEntry(object):
             return
         # check if child SID is in the proper range:
         if child_sid<0 or child_sid>=len(self.olefile.direntries):
-            self.olefile._raise_defect(DEFECT_FATAL, 'OLE DirEntry index out of range')
+            self.olefile.raise_defect(DEFECT_FATAL, 'OLE DirEntry index out of range')
         # get child direntry:
         child = self.olefile._load_direntry(child_sid) #direntries[child_sid]
         debug('append_kids: child_sid=%d - %s - sid_left=%d, sid_right=%d, sid_child=%d'
@@ -982,7 +982,7 @@ class _OleDirectoryEntry(object):
         # Check if its name is not already used (case-insensitive):
         name_lower = child.name.lower()
         if name_lower in self.kids_dict:
-            self.olefile._raise_defect(DEFECT_INCORRECT,
+            self.olefile.raise_defect(DEFECT_INCORRECT,
                 "Duplicate filename in OLE storage")
         # Then the child_sid _OleDirectoryEntry object is appended to the
         # kids list and dictionary:
@@ -990,7 +990,7 @@ class _OleDirectoryEntry(object):
         self.kids_dict[name_lower] = child
         # Check if kid was not already referenced in a storage:
         if child.used:
-            self.olefile._raise_defect(DEFECT_INCORRECT,
+            self.olefile.raise_defect(DEFECT_INCORRECT,
                 'OLE Entry referenced more than once')
         child.used = True
         # Finally walk through right side of the tree:
@@ -1135,7 +1135,7 @@ class OleFileIO(object):
             self.open(filename, write_mode=write_mode)
 
 
-    def _raise_defect(self, defect_level, message, exception_type=IOError):
+    def raise_defect(self, defect_level, message, exception_type=IOError):
         """
         This method should be called for any defect found during file parsing.
         It may raise an IOError exception according to the minimal level chosen
@@ -1237,7 +1237,7 @@ class OleFileIO(object):
         header = self.fp.read(512)
 
         if len(header) != 512 or header[:8] != MAGIC:
-            self._raise_defect(DEFECT_FATAL, "not an OLE2 structured storage file")
+            self.raise_defect(DEFECT_FATAL, "not an OLE2 structured storage file")
 
         # [PL] header structure according to AAF specifications:
         ##Header
@@ -1303,39 +1303,39 @@ class OleFileIO(object):
 
         if self.Sig != MAGIC:
             # OLE signature should always be present
-            self._raise_defect(DEFECT_FATAL, "incorrect OLE signature")
+            self.raise_defect(DEFECT_FATAL, "incorrect OLE signature")
         if self.clsid != bytearray(16):
             # according to AAF specs, CLSID should always be zero
-            self._raise_defect(DEFECT_INCORRECT, "incorrect CLSID in OLE header")
+            self.raise_defect(DEFECT_INCORRECT, "incorrect CLSID in OLE header")
         debug( "MinorVersion = %d" % self.MinorVersion )
         debug( "DllVersion   = %d" % self.DllVersion )
         if self.DllVersion not in [3, 4]:
             # version 3: usual format, 512 bytes per sector
             # version 4: large format, 4K per sector
-            self._raise_defect(DEFECT_INCORRECT, "incorrect DllVersion in OLE header")
+            self.raise_defect(DEFECT_INCORRECT, "incorrect DllVersion in OLE header")
         debug( "ByteOrder    = %X" % self.ByteOrder )
         if self.ByteOrder != 0xFFFE:
             # For now only common little-endian documents are handled correctly
-            self._raise_defect(DEFECT_FATAL, "incorrect ByteOrder in OLE header")
+            self.raise_defect(DEFECT_FATAL, "incorrect ByteOrder in OLE header")
             # TODO: add big-endian support for documents created on Mac ?
             # But according to [MS-CFB] ? v20140502, ByteOrder MUST be 0xFFFE.
         self.SectorSize = 2**self.SectorShift
         debug( "SectorSize   = %d" % self.SectorSize )
         if self.SectorSize not in [512, 4096]:
-            self._raise_defect(DEFECT_INCORRECT, "incorrect SectorSize in OLE header")
+            self.raise_defect(DEFECT_INCORRECT, "incorrect SectorSize in OLE header")
         if (self.DllVersion==3 and self.SectorSize!=512) \
         or (self.DllVersion==4 and self.SectorSize!=4096):
-            self._raise_defect(DEFECT_INCORRECT, "SectorSize does not match DllVersion in OLE header")
+            self.raise_defect(DEFECT_INCORRECT, "SectorSize does not match DllVersion in OLE header")
         self.MiniSectorSize = 2**self.MiniSectorShift
         debug( "MiniSectorSize   = %d" % self.MiniSectorSize )
         if self.MiniSectorSize not in [64]:
-            self._raise_defect(DEFECT_INCORRECT, "incorrect MiniSectorSize in OLE header")
+            self.raise_defect(DEFECT_INCORRECT, "incorrect MiniSectorSize in OLE header")
         if self.Reserved != 0 or self.Reserved1 != 0:
-            self._raise_defect(DEFECT_INCORRECT, "incorrect OLE header (non-null reserved bytes)")
+            self.raise_defect(DEFECT_INCORRECT, "incorrect OLE header (non-null reserved bytes)")
         debug( "csectDir     = %d" % self.csectDir )
         # Number of directory sectors (only allowed if DllVersion != 3)
         if self.SectorSize==512 and self.csectDir!=0:
-            self._raise_defect(DEFECT_INCORRECT, "incorrect csectDir in OLE header")
+            self.raise_defect(DEFECT_INCORRECT, "incorrect csectDir in OLE header")
         debug( "csectFat     = %d" % self.csectFat )
         # csectFat = number of FAT sectors in the file
         debug( "sectDirStart = %X" % self.sectDirStart )
@@ -1346,7 +1346,7 @@ class OleFileIO(object):
         # (according to MS-CFB, may be != 0 for applications supporting file
         # transactions)
         if self.signature != 0:
-            self._raise_defect(DEFECT_POTENTIAL, "incorrect OLE header (signature>0)")
+            self.raise_defect(DEFECT_POTENTIAL, "incorrect OLE header (signature>0)")
         debug( "MiniSectorCutoff = %d" % self.MiniSectorCutoff )
         # MS-CFB: This integer field MUST be set to 0x00001000. This field
         # specifies the maximum size of a user-defined data stream allocated
@@ -1354,7 +1354,7 @@ class OleFileIO(object):
         # Any user-defined data stream larger than or equal to this cutoff size
         # must be allocated as normal sectors from the FAT.
         if self.MiniSectorCutoff != 0x1000:
-            self._raise_defect(DEFECT_INCORRECT, "incorrect MiniSectorCutoff in OLE header")
+            self.raise_defect(DEFECT_INCORRECT, "incorrect MiniSectorCutoff in OLE header")
         debug( "MiniFatStart     = %X" % self.MiniFatStart )
         debug( "csectMiniFat     = %d" % self.csectMiniFat )
         debug( "sectDifStart     = %X" % self.sectDifStart )
@@ -1422,7 +1422,7 @@ class OleFileIO(object):
         #TODO: would it be more efficient using a dict or hash values, instead
         #      of a list of long ?
         if first_sect in used_streams:
-            self._raise_defect(DEFECT_INCORRECT, 'Stream referenced twice')
+            self.raise_defect(DEFECT_INCORRECT, 'Stream referenced twice')
         else:
             used_streams.append(first_sect)
 
@@ -1566,10 +1566,10 @@ class OleFileIO(object):
             if self.csectFat <= 109:
                 # there must be at least 109 blocks in header and the rest in
                 # DIFAT, so number of sectors must be >109.
-                self._raise_defect(DEFECT_INCORRECT, 'incorrect DIFAT, not enough sectors')
+                self.raise_defect(DEFECT_INCORRECT, 'incorrect DIFAT, not enough sectors')
             if self.sectDifStart >= self.nb_sect:
                 # initial DIFAT block index must be valid
-                self._raise_defect(DEFECT_FATAL, 'incorrect DIFAT, first index out of range')
+                self.raise_defect(DEFECT_FATAL, 'incorrect DIFAT, first index out of range')
             debug( "DIFAT analysis..." )
             # We compute the necessary number of DIFAT sectors :
             # Number of pointers per DIFAT sector = (sectorsize/4)-1
@@ -1630,7 +1630,7 @@ class OleFileIO(object):
             (self.minifatsect, self.csectMiniFat, used_size, stream_size, nb_minisectors))
         if used_size > stream_size:
             # This is not really a problem, but may indicate a wrong implementation:
-            self._raise_defect(DEFECT_INCORRECT, 'OLE MiniStream is larger than MiniFAT')
+            self.raise_defect(DEFECT_INCORRECT, 'OLE MiniStream is larger than MiniFAT')
         # In any case, first read stream_size:
         s = self._open(self.minifatsect, stream_size, force_FAT=True).read()
         #[PL] Old code replaced by an array:
@@ -1666,12 +1666,12 @@ class OleFileIO(object):
         except:
             debug('getsect(): sect=%X, seek=%d, filesize=%d' %
                 (sect, self.sectorsize*(sect+1), self._filesize))
-            self._raise_defect(DEFECT_FATAL, 'OLE sector index out of range')
+            self.raise_defect(DEFECT_FATAL, 'OLE sector index out of range')
         sector = self.fp.read(self.sectorsize)
         if len(sector) != self.sectorsize:
             debug('getsect(): sect=%X, read=%d, sectorsize=%d' %
                 (sect, len(sector), self.sectorsize))
-            self._raise_defect(DEFECT_FATAL, 'incomplete OLE sector')
+            self.raise_defect(DEFECT_FATAL, 'incomplete OLE sector')
         return sector
 
 
@@ -1693,7 +1693,7 @@ class OleFileIO(object):
         except:
             debug('write_sect(): sect=%X, seek=%d, filesize=%d' %
                 (sect, self.sectorsize*(sect+1), self._filesize))
-            self._raise_defect(DEFECT_FATAL, 'OLE sector index out of range')
+            self.raise_defect(DEFECT_FATAL, 'OLE sector index out of range')
         if len(data) < self.sectorsize:
             # add padding
             data += padding * (self.sectorsize - len(data))
@@ -1751,10 +1751,10 @@ class OleFileIO(object):
         """
         # check if SID is OK:
         if sid<0 or sid>=len(self.direntries):
-            self._raise_defect(DEFECT_FATAL, "OLE directory index out of range")
+            self.raise_defect(DEFECT_FATAL, "OLE directory index out of range")
         # check if entry was already referenced:
         if self.direntries[sid] is not None:
-            self._raise_defect(DEFECT_INCORRECT,
+            self.raise_defect(DEFECT_INCORRECT,
                 "double reference for OLE stream/storage")
             # if exception not raised, return the object
             return self.direntries[sid]
@@ -1833,7 +1833,7 @@ class OleFileIO(object):
                     # add it to the list
                     files.append(prefix[1:] + [entry.name])
             else:
-                self._raise_defect(DEFECT_INCORRECT, 'The directory tree contains an entry which is not a stream nor a storage.')
+                self.raise_defect(DEFECT_INCORRECT, 'The directory tree contains an entry which is not a stream nor a storage.')
 
 
     def listdir(self, streams=True, storages=False):
@@ -2102,7 +2102,7 @@ class OleFileIO(object):
             # a fatal error when parsing the whole file
             msg = 'Error while parsing properties header in stream %s: %s' % (
                 repr(streampath), exc)
-            self._raise_defect(DEFECT_INCORRECT, msg, type(exc))
+            self.raise_defect(DEFECT_INCORRECT, msg, type(exc))
             return data
 
         for i in range(num_props):
@@ -2203,7 +2203,7 @@ class OleFileIO(object):
                 # a DEFECT_INCORRECT, because parsing can go on
                 msg = 'Error while parsing property id %d in stream %s: %s' % (
                     id, repr(streampath), exc)
-                self._raise_defect(DEFECT_INCORRECT, msg, type(exc))
+                self.raise_defect(DEFECT_INCORRECT, msg, type(exc))
 
         return data
 
