@@ -51,7 +51,7 @@ class TestFileXbm(PillowTestCase):
 
     def test_open_filename_with_underscore(self):
         # Arrange
-        # Created with `cp hopper.xbm hopper_underscore.xbm`
+        # Created with `convert hopper.png hopper_underscore.xbm`
         filename = "Tests/images/hopper_underscore.xbm"
 
         # Act
