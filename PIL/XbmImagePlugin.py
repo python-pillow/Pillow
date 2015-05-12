@@ -26,8 +26,8 @@ from PIL import Image, ImageFile
 
 # XBM header
 xbm_head = re.compile(
-    b"\s*#define[ \t]+[^_]*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
-    b"#define[ \t]+[^_]*_height[ \t]+(?P<height>[0-9]+)[\r\n]+"
+    b"\s*#define[ \t]+.*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
+    b"#define[ \t]+.*_height[ \t]+(?P<height>[0-9]+)[\r\n]+"
     b"(?P<hotspot>"
     b"#define[ \t]+[^_]*_x_hot[ \t]+(?P<xhot>[0-9]+)[\r\n]+"
     b"#define[ \t]+[^_]*_y_hot[ \t]+(?P<yhot>[0-9]+)[\r\n]+"
