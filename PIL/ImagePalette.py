@@ -34,6 +34,18 @@ class ImagePalette:
                 (size != 0 and size != len(self.palette))):
             raise ValueError("wrong palette size")
 
+    def copy(self):
+        new = ImagePalette()
+
+        new.mode = self.mode
+        new.rawmode = self.rawmode
+        if self.palette is not None:
+            new.palette = self.palette[:]
+        new.colors = self.colors.copy()
+        new.dirty = self.dirty
+
+        return new
+
     def getdata(self):
         """
         Get palette contents in format suitable # for the low-level

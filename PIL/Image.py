@@ -509,7 +509,8 @@ class Image:
         new.im = im
         new.mode = im.mode
         new.size = im.size
-        new.palette = self.palette
+        if self.palette:
+            new.palette = self.palette.copy()
         if im.mode == "P" and not new.palette:
             from PIL import ImagePalette
             new.palette = ImagePalette.ImagePalette()
