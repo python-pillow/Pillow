@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Release GIL during image load (decode) #1224
+  [lkesteloot]
+
 - Added icns save #1185
   [radarhere]
 
