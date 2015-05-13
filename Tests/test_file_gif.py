@@ -92,20 +92,20 @@ class TestFileGif(PillowTestCase):
 
         def roundtrip(im, *args, **kwargs):
             out = self.tempfile('temp.gif')
-            im.save(out, *args, **kwargs)
+            im.copy().save(out, *args, **kwargs)
             reloaded = Image.open(out)
 
-            return [im, reloaded]
+            return reloaded
 
         orig = "Tests/images/test.colors.gif"
         im = Image.open(orig)
 
-        self.assert_image_equal(*roundtrip(im))
-        self.assert_image_equal(*roundtrip(im, optimize=True))
+        self.assert_image_similar(im, roundtrip(im), 1)
+        self.assert_image_similar(im, roundtrip(im, optimize=True), 1)
 
         im = im.convert("RGB")
         # check automatic P conversion
-        reloaded = roundtrip(im)[1].convert('RGB')
+        reloaded = roundtrip(im).convert('RGB')
         self.assert_image_equal(im, reloaded)
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")

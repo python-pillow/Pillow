@@ -269,7 +269,7 @@ def _save(im, fp, filename):
             pass  # write uncompressed file
 
     if im.mode in RAWMODE:
-        im_out = im
+        im_out = im.copy()
     else:
         # convert on the fly (EXPERIMENTAL -- I'm not sure PIL
         # should automatically convert images on save...)
