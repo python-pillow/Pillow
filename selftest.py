@@ -194,7 +194,7 @@ if __name__ == "__main__":
             print("***", feature, "support not installed")
     for name, feature in [
         ("jpg", "JPEG"),
-        ("jpg_2000", "JPEG 2000"),
+        ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),
         ("libtiff", "LIBTIFF")
     ]:
