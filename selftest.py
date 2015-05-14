@@ -174,8 +174,15 @@ if __name__ == "__main__":
     print("Python modules loaded from", os.path.dirname(Image.__file__))
     print("Binary modules loaded from", os.path.dirname(Image.core.__file__))
     print("-"*68)
-    for feature in features.get_all_modules():
-        supported = features.check_module(feature)
+    for name, feature in [
+        ("pil", "PIL CORE"),
+        ("tkinter", "TKINTER"),
+        ("freetype2", "FREETYPE2"),
+        ("littlecms2", "LITTLECMS2"),
+        ("webp", "WEBP"),
+        ("transp_webp", "Transparent WEBP")
+    ]:
+        supported = features.check_module(name)
 
         if supported is None:
             # A method was being tested, but the module required
@@ -185,8 +192,13 @@ if __name__ == "__main__":
             print("---", feature, "support ok")
         else:
             print("***", feature, "support not installed")
-    for feature in features.get_all_codecs():
-        if features.check_codec(feature):
+    for name, feature in [
+        ("jpg", "JPEG"),
+        ("jpg_2000", "JPEG 2000"),
+        ("zlib", "ZLIB (PNG/ZIP)"),
+        ("libtiff", "LIBTIFF")
+    ]:
+        if features.check_codec(name):
             print("---", feature, "support ok")
         else:
             print("***", feature, "support not installed")

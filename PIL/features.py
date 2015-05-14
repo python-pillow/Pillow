@@ -1,16 +1,19 @@
 from PIL import Image
 
 modules = {
-    "PIL CORE": "PIL._imaging",
-    "TKINTER": "PIL._imagingtk",
-    "FREETYPE2": "PIL._imagingft",
-    "LITTLECMS2": "PIL._imagingcms",
-    "WEBP": "PIL._webp",
-    "Transparent WEBP": ("WEBP", "WebPDecoderBuggyAlpha")
+    "pil": "PIL._imaging",
+    "tkinter": "PIL._imagingtk",
+    "freetype2": "PIL._imagingft",
+    "littlecms2": "PIL._imagingcms",
+    "webp": "PIL._webp",
+    "transp_webp": ("WEBP", "WebPDecoderBuggyAlpha")
 }
 
 
 def check_module(feature):
+    if feature not in modules:
+        raise ValueError("Unknown module %s" % feature)
+
     module = modules[feature]
 
     method_to_call = None
@@ -34,38 +37,31 @@ def check_module(feature):
 
 def get_supported_modules():
     supported_modules = []
-    for feature in get_all_modules():
+    for feature in modules:
         if check_module(feature):
             supported_modules.append(feature)
     return supported_modules
 
-
-def get_all_modules():
-    # While the dictionary keys could be used here,
-    # a static list is used to maintain order
-    return ["PIL CORE", "TKINTER", "FREETYPE2",
-            "LITTLECMS2", "WEBP", "Transparent WEBP"]
-
 codecs = {
-    "JPEG": "jpeg",
-    "JPEG 2000": "jpeg2k",
-    "ZLIB (PNG/ZIP)": "zip",
-    "LIBTIFF": "libtiff"
+    "jpg": "jpeg",
+    "jpg_2000": "jpeg2k",
+    "zlib": "zip",
+    "libtiff": "libtiff"
 }
 
 
 def check_codec(feature):
+    if feature not in codecs:
+        raise ValueError("Unknown codec %s" % feature)
+
     codec = codecs[feature]
+
     return codec + "_encoder" in dir(Image.core)
 
 
 def get_supported_codecs():
     supported_codecs = []
-    for feature in get_all_codecs():
+    for feature in codecs:
         if check_codec(feature):
             supported_codecs.append(feature)
     return supported_codecs
-
-
-def get_all_codecs():
-    return ["JPEG", "JPEG 2000", "ZLIB (PNG/ZIP)", "LIBTIFF"]
