@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Update WebP from 0.4.1 to 0.4.3 #1235
+  [radarhere]
+
 - Release GIL during image load (decode) #1224
   [lkesteloot]
 
