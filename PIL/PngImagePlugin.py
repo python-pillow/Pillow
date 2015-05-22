@@ -71,6 +71,7 @@ _MODES = {
 
 
 _simple_palette = re.compile(b'^\xff+\x00\xff*$')
+_null_palette = re.compile(b'^\x00*$')
 
 # Maximum decompressed size for a iTXt or zTXt chunk.
 # Eliminates decompression bombs where compressed chunks can expand 1000x
@@ -350,6 +351,8 @@ class PngStream(ChunkStream):
                 i = s.find(b"\0")
                 if i >= 0:
                     self.im_info["transparency"] = i
+            elif _null_palette.match(s):
+                self.im_info["transparency"] = 0
             else:
                 self.im_info["transparency"] = s
         elif self.im_mode == "L":
