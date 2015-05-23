@@ -1,3 +1,4 @@
+from __future__ import print_function
 import base64
 import os
 import sys

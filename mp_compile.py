@@ -1,6 +1,7 @@
 # A monkey patch of the base distutils.ccompiler to use parallel builds
 # Tested on 2.7, looks to be identical to 3.3.
 
+from __future__ import print_function
 from multiprocessing import Pool, cpu_count
 from distutils.ccompiler import CCompiler
 import os

@@ -25,13 +25,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.6"
+from __future__ import print_function
 
 from PIL import Image, ImageFile, ImagePalette, _binary
 
 i8 = _binary.i8
 i16 = _binary.i16le
 o8 = _binary.o8
+
+__version__ = "0.6"
 
 
 def _accept(prefix):
