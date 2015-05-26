@@ -63,7 +63,7 @@ def _save(im, fp, filename):
 
     xref = [0]*(5+1)  # placeholders
 
-    class TextWriter:
+    class TextWriter(object):
         def __init__(self, fp):
             self.fp = fp
 

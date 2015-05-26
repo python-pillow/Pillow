@@ -251,7 +251,7 @@ def getiptcinfo(im):
         return None  # no properties
 
     # create an IptcImagePlugin object without initializing it
-    class FakeImage:
+    class FakeImage(object):
         pass
     im = FakeImage()
     im.__class__ = IptcImageFile

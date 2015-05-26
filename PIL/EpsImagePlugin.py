@@ -157,7 +157,7 @@ def Ghostscript(tile, size, fp, scale=1):
     return im
 
 
-class PSFile:
+class PSFile(object):
     """
     Wrapper for bytesio object that treats either CR or LF as end of line.
     """
@@ -365,7 +365,7 @@ def _save(im, fp, filename, eps=1):
     else:
         raise ValueError("image mode is not supported")
 
-    class NoCloseStream:
+    class NoCloseStream(object):
         def __init__(self, fp):
             self.fp = fp
 

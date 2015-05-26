@@ -147,7 +147,7 @@ for flag in FLAGS.values():
 ##
 # Profile.
 
-class ImageCmsProfile:
+class ImageCmsProfile(object):
 
     def __init__(self, profile):
         """

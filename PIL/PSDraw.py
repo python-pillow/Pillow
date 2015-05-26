@@ -23,7 +23,7 @@ from PIL import EpsImagePlugin
 ##
 # Simple Postscript graphics interface.
 
-class PSDraw:
+class PSDraw(object):
     """
     Sets up printing to the given file. If **file** is omitted,
     :py:attr:`sys.stdout` is assumed.

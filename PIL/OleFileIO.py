@@ -473,7 +473,7 @@ def filetime2datetime(filetime):
 
 #=== CLASSES ==================================================================
 
-class OleMetadata:
+class OleMetadata(object):
     """
     class to parse and store metadata from standard properties of OLE files.
 
@@ -757,7 +757,7 @@ class _OleStream(io.BytesIO):
 
 #--- _OleDirectoryEntry -------------------------------------------------------
 
-class _OleDirectoryEntry:
+class _OleDirectoryEntry(object):
 
     """
     OLE2 Directory Entry
@@ -1007,7 +1007,7 @@ class _OleDirectoryEntry:
 
 #--- OleFileIO ----------------------------------------------------------------
 
-class OleFileIO:
+class OleFileIO(object):
     """
     OLE container object
 

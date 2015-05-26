@@ -16,7 +16,7 @@
 ##
 
 
-class Iterator:
+class Iterator(object):
     """
     This class implements an iterator object that can be used to loop
     over an image sequence.

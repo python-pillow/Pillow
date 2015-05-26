@@ -12,7 +12,7 @@ import re
 LUT_SIZE = 1 << 9
 
 
-class LutBuilder:
+class LutBuilder(object):
     """A class for building a MorphLut from a descriptive language
 
       The input patterns is a list of a strings sequences like these::
@@ -176,7 +176,7 @@ class LutBuilder:
         return self.lut
 
 
-class MorphOp:
+class MorphOp(object):
     """A class for binary morphological operators"""
 
     def __init__(self,
