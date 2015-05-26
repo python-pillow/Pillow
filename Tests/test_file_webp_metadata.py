@@ -8,7 +8,7 @@ class TestFileWebpMetadata(PillowTestCase):
     def setUp(self):
         try:
             from PIL import _webp
-        except:
+        except ImportError:
             self.skipTest('WebP support not installed')
             return
 

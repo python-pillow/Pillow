@@ -121,7 +121,7 @@ USE_CFFI_ACCESS = hasattr(sys, 'pypy_version_info')
 try:
     import cffi
     HAS_CFFI = True
-except:
+except ImportError:
     HAS_CFFI = False
 
 
