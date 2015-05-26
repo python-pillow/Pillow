@@ -105,7 +105,9 @@ post-patch:
             test_output = BytesIO()
             im.save(test_output, "JPEG", qtables=qtables)
 
-    """
+
+    def test_exif_leak(self):
+        """
 pre patch:
 
     MB
@@ -160,8 +162,6 @@ post patch:
      0                                                                   11.33
 
 """
-
-    def test_exif_leak(self):
         im = hopper('RGB')
         exif = b'12345678'*4096
 
