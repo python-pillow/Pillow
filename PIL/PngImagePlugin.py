@@ -90,7 +90,7 @@ def _safe_zlib_decompress(s):
 # --------------------------------------------------------------------
 # Support classes.  Suitable for PNG and related formats like MNG etc.
 
-class ChunkStream:
+class ChunkStream(object):
 
     def __init__(self, fp):
 
@@ -183,7 +183,7 @@ class iTXt(str):
         return self
 
 
-class PngInfo:
+class PngInfo(object):
     """
     PNG chunk container (for use with save(pnginfo=))
 
@@ -620,7 +620,7 @@ def putchunk(fp, cid, *data):
     fp.write(o16(hi) + o16(lo))
 
 
-class _idat:
+class _idat(object):
     # wrap output from the encoder in IDAT chunks
 
     def __init__(self, fp, chunk):
@@ -771,7 +771,7 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 def getchunks(im, **params):
     """Return a list of PNG chunks representing this image."""
 
-    class collector:
+    class collector(object):
         data = []
 
         def write(self, data):

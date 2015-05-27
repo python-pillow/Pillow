@@ -26,7 +26,7 @@ import operator
 import functools
 
 
-class Stat:
+class Stat(object):
 
     def __init__(self, image_or_list, mask=None):
         try:

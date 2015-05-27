@@ -31,7 +31,7 @@ def puti16(fp, values):
 ##
 # Base class for raster font file handlers.
 
-class FontFile:
+class FontFile(object):
 
     bitmap = None
 

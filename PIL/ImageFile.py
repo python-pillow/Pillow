@@ -311,7 +311,7 @@ class StubImageFile(ImageFile):
             )
 
 
-class Parser:
+class Parser(object):
     """
     Incremental image parser.  This class implements the standard
     feed/close consumer interface.

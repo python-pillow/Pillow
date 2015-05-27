@@ -21,7 +21,7 @@
 from PIL import Image, ImageFilter, ImageStat
 
 
-class _Enhance:
+class _Enhance(object):
 
     def enhance(self, factor):
         """

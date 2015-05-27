@@ -21,7 +21,7 @@ import warnings
 from PIL import Image
 
 
-class HDC:
+class HDC(object):
     """
     Wraps an HDC integer. The resulting object can be passed to the
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
@@ -34,7 +34,7 @@ class HDC:
         return self.dc
 
 
-class HWND:
+class HWND(object):
     """
     Wraps an HWND integer. The resulting object can be passed to the
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
@@ -47,7 +47,7 @@ class HWND:
         return self.wnd
 
 
-class Dib:
+class Dib(object):
     """
     A Windows bitmap with the given mode and size.  The mode can be one of "1",
     "L", "P", or "RGB".
@@ -206,7 +206,7 @@ class Dib:
 ##
 # Create a Window with the given title size.
 
-class Window:
+class Window(object):
 
     def __init__(self, title="PIL", width=None, height=None):
         self.hwnd = Image.core.createwindow(

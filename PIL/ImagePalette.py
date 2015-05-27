@@ -21,7 +21,7 @@ import warnings
 from PIL import ImageColor
 
 
-class ImagePalette:
+class ImagePalette(object):
     "Color palette for palette mapped images"
 
     def __init__(self, mode="RGB", palette=None, size=0):

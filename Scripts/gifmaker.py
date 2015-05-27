@@ -50,7 +50,7 @@ from PIL.GifImagePlugin import getheader, getdata
 # sequence iterator
 
 
-class image_sequence:
+class image_sequence(object):
     def __init__(self, im):
         self.im = im
 

@@ -15,7 +15,7 @@ try:
     from PIL import ImageFont
     ImageFont.core.getfont  # check if freetype is available
 
-    class SimplePatcher():
+    class SimplePatcher(object):
         def __init__(self, parent_obj, attr_name, value):
             self._parent_obj = parent_obj
             self._attr_name = attr_name

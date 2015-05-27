@@ -19,7 +19,7 @@
 # file (for example a TAR file).
 
 
-class ContainerIO:
+class ContainerIO(object):
 
     ##
     # Create file object.

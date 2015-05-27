@@ -13,7 +13,7 @@ import os
 import sys
 
 
-class Interval:
+class Interval(object):
 
     def __init__(self, interval="0"):
 
