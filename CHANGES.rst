@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Setting transparency value to 0 when the tRNS contains only null byte(s) #1239
+  [juztin]
+ 
 - Separated out feature checking from selftest #1233
   [radarhere]
 
