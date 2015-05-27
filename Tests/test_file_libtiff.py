@@ -1,3 +1,4 @@
+from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper, py3
 
 import os
