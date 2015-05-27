@@ -4,6 +4,12 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Separated out feature checking from selftest #1233
+  [radarhere]
+
+- Style/health fixes
+  [radarhere]
+
 - Update WebP from 0.4.1 to 0.4.3 #1235
   [radarhere]
 
