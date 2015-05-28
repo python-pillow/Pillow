@@ -477,23 +477,20 @@ def i16(c, o = 0):
     """
     Converts a 2-bytes (16 bits) string to an integer.
 
-    :param c: string containing bytes to convert
-    :param o: offset of bytes to convert in string
+    c: string containing bytes to convert
+    o: offset of bytes to convert in string
     """
-    return i8(c[o]) | (i8(c[o+1])<<8)
+    return struct.unpack("<H", c[o:o+2])[0]
 
 
 def i32(c, o = 0):
     """
     Converts a 4-bytes (32 bits) string to an integer.
 
-    :param c: string containing bytes to convert
-    :param o: offset of bytes to convert in string
+    c: string containing bytes to convert
+    o: offset of bytes to convert in string
     """
-##    return int(ord(c[o])+(ord(c[o+1])<<8)+(ord(c[o+2])<<16)+(ord(c[o+3])<<24))
-##    # [PL]: added int() because "<<" gives long int since Python 2.4
-    # copied from Pillow's _binary:
-    return i8(c[o]) | (i8(c[o+1])<<8) | (i8(c[o+2])<<16) | (i8(c[o+3])<<24)
+    return struct.unpack("<I", c[o:o+4])[0]
 
 
 def _clsid(clsid):
