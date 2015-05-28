@@ -73,7 +73,7 @@ class Contrast(_Enhance):
 class Brightness(_Enhance):
     """Adjust image brightness.
 
-    This class can be used to control the brighntess of an image.  An
+    This class can be used to control the brightness of an image.  An
     enhancement factor of 0.0 gives a black image. A factor of 1.0 gives the
     original image.
     """
