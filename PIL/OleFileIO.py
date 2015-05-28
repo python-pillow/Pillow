@@ -1384,7 +1384,7 @@ class OleFileIO(object):
 
         # Load file allocation tables
         self.loadfat(header)
-        # Load direcory.  This sets both the direntries list (ordered by sid)
+        # Load directory.  This sets both the direntries list (ordered by sid)
         # and the root (ordered by hierarchy) members.
         self.loaddirectory(self.sectDirStart)#i32(header, 48))
         self.ministream = None
