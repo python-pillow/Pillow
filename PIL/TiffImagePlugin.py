@@ -294,7 +294,7 @@ class ImageFileDirectory(collections.MutableMapping):
 
     def named(self):
         """
-        Returns the complete tag dictionary, with named tags where posible.
+        Returns the complete tag dictionary, with named tags where possible.
         """
         from PIL import TiffTags
         result = {}
@@ -749,7 +749,7 @@ class TiffImageFile(ImageFile.ImageFile):
             #
             # Rearranging for supporting byteio items, since they have a fileno
             # that returns an IOError if there's no underlying fp. Easier to
-            # dea. with here by reordering.
+            # deal with here by reordering.
             if Image.DEBUG:
                 print("have getvalue. just sending in a string from getvalue")
             n, err = decoder.decode(self.fp.getvalue())
@@ -985,7 +985,7 @@ class TiffImageFile(ImageFile.ImageFile):
 # Write TIFF files
 
 # little endian is default except for image modes with
-# explict big endian byte-order
+# explicit big endian byte-order
 
 SAVE_INFO = {
     # mode => rawmode, byteorder, photometrics,
