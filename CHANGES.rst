@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Ico files are little endian #1232
+  [wiredfool]
+
 - Upgrade olefile from 0.30 to 0.42b #1226
   [radarhere, decalage2]
 
