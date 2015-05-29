@@ -48,7 +48,7 @@ def _save(im, fp, filename):
     width, height = im.size
     filter(lambda x: False if (x[0] > width or x[1] > height or
                                x[0] > 255 or x[1] > 255) else True, sizes)
-    fp.write(struct.pack("H", len(sizes)))  # idCount(2)
+    fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes)*16
     for size in sizes:
         width, height = size
@@ -57,7 +57,7 @@ def _save(im, fp, filename):
         fp.write(b"\0")  # bColorCount(1)
         fp.write(b"\0")  # bReserved(1)
         fp.write(b"\0\0")  # wPlanes(2)
-        fp.write(struct.pack("H", 32))  # wBitCount(2)
+        fp.write(struct.pack("<H", 32))  # wBitCount(2)
 
         image_io = BytesIO()
         tmp = im.copy()
@@ -66,8 +66,8 @@ def _save(im, fp, filename):
         image_io.seek(0)
         image_bytes = image_io.read()
         bytes_len = len(image_bytes)
-        fp.write(struct.pack("I", bytes_len))  # dwBytesInRes(4)
-        fp.write(struct.pack("I", offset))  # dwImageOffset(4)
+        fp.write(struct.pack("<I", bytes_len))  # dwBytesInRes(4)
+        fp.write(struct.pack("<I", offset))  # dwImageOffset(4)
         current = fp.tell()
         fp.seek(offset)
         fp.write(image_bytes)
