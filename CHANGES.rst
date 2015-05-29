@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Upgrade olefile from 0.30 to 0.42b #1226
+  [radarhere, decalage2]
+
 - Setting transparency value to 0 when the tRNS contains only null byte(s) #1239
   [juztin]
  
