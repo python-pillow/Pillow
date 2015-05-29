@@ -300,32 +300,32 @@ class TestImageDraw(PillowTestCase):
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 14, 5), BLACK, 2)
         self.assert_image_equal(
-            img, expected, 'line straigth horizontal normal 2px wide failed')
+            img, expected, 'line straight horizontal normal 2px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_horizontal_w2px_inverted.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((14, 5, 5, 5), BLACK, 2)
         self.assert_image_equal(
-            img, expected, 'line straigth horizontal inverted 2px wide failed')
+            img, expected, 'line straight horizontal inverted 2px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_horizontal_w3px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 14, 5), BLACK, 3)
         self.assert_image_equal(
-            img, expected, 'line straigth horizontal normal 3px wide failed')
+            img, expected, 'line straight horizontal normal 3px wide failed')
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((14, 5, 5, 5), BLACK, 3)
         self.assert_image_equal(
-            img, expected, 'line straigth horizontal inverted 3px wide failed')
+            img, expected, 'line straight horizontal inverted 3px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_horizontal_w101px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((200, 110))
         draw.line((5, 55, 195, 55), BLACK, 101)
         self.assert_image_equal(
-            img, expected, 'line straigth horizontal 101px wide failed')
+            img, expected, 'line straight horizontal 101px wide failed')
 
     def test_line_h_s1_w2(self):
         self.skipTest('failing')
@@ -344,32 +344,32 @@ class TestImageDraw(PillowTestCase):
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 5, 14), BLACK, 2)
         self.assert_image_equal(
-            img, expected, 'line straigth vertical normal 2px wide failed')
+            img, expected, 'line straight vertical normal 2px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_vertical_w2px_inverted.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 14, 5, 5), BLACK, 2)
         self.assert_image_equal(
-            img, expected, 'line straigth vertical inverted 2px wide failed')
+            img, expected, 'line straight vertical inverted 2px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_vertical_w3px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 5, 14), BLACK, 3)
         self.assert_image_equal(
-            img, expected, 'line straigth vertical normal 3px wide failed')
+            img, expected, 'line straight vertical normal 3px wide failed')
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 14, 5, 5), BLACK, 3)
         self.assert_image_equal(
-            img, expected, 'line straigth vertical inverted 3px wide failed')
+            img, expected, 'line straight vertical inverted 3px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_vertical_w101px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((110, 200))
         draw.line((55, 5, 55, 195), BLACK, 101)
         self.assert_image_equal(img, expected,
-                                'line straigth vertical 101px wide failed')
+                                'line straight vertical 101px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_vertical_slope1px_w2px.png'))
         expected.load()

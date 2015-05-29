@@ -54,7 +54,7 @@ class TestImagingCoreResize(PillowTestCase):
         # Make an image with one colored pixel, in one channel.
         # When resized, that channel should be the same as a GS image.
         # Other channels should be unaffected.
-        # The R and A channels should not swap, which is indicitive of
+        # The R and A channels should not swap, which is indicative of
         # an endianness issues.
 
         samples = {

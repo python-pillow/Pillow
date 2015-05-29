@@ -1810,7 +1810,7 @@ class Image(object):
         self.readonly = 0
         self.pyaccess = None
 
-    # FIXME: the different tranform methods need further explanation
+    # FIXME: the different transform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
     def transform(self, size, method, data=None, resample=NEAREST, fill=1):
         """
