@@ -137,10 +137,10 @@ def autocontrast(image, cutoff=0, ignore=None):
 
 def autocontrast_preserve(image, cutoff=0, ignore=None):
     """
-    Maximize (normalize) image contrast while preserving image tone. 
-    This function calculates a histogram of the input image, removes 
-    **cutoff** percent of the lightest and darkest pixels from the 
-    histogram, and remaps the image so that the darkest pixel becomes 
+    Maximize (normalize) image contrast while preserving image tone.
+    This function calculates a histogram of the input image, removes
+    **cutoff** percent of the lightest and darkest pixels from the
+    histogram, and remaps the image so that the darkest pixel becomes
     black (0), and the lightest becomes white (255).
     :param image: The image to process.
     :param cutoff: How many percent to cut off from the histogram.

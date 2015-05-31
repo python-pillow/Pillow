@@ -20,6 +20,12 @@ class TestImageOps(PillowTestCase):
         ImageOps.autocontrast(hopper("L"), cutoff=10)
         ImageOps.autocontrast(hopper("L"), ignore=[0, 255])
 
+        ImageOps.autocontrast_preserve(hopper("L"))
+        ImageOps.autocontrast_preserve(hopper("RGB"))
+
+        ImageOps.autocontrast_preserve(hopper("L"), cutoff=10)
+        ImageOps.autocontrast_preserve(hopper("L"), ignore=[0, 255])
+
         ImageOps.colorize(hopper("L"), (0, 0, 0), (255, 255, 255))
         ImageOps.colorize(hopper("L"), "black", "white")
 
