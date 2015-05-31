@@ -207,7 +207,7 @@ def autocontrast_preserve(image, cutoff=0, ignore=None):
     else:
         scale = 255.0 / (hi - lo)
         offset = -lo * scale
-        for layer in range(len(histogram) / 256):
+        for layer in range(len(histogram) // 256):
             for ix in range(256):
                 ix = int(ix * scale + offset)
                 if ix < 0:
