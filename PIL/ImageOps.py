@@ -135,6 +135,89 @@ def autocontrast(image, cutoff=0, ignore=None):
     return _lut(image, lut)
 
 
+def autocontrast_preserve(image, cutoff=0, ignore=None):
+    """
+    Maximize (normalize) image contrast while preserving image tone. 
+    This function calculates a histogram of the input image, removes 
+    **cutoff** percent of the lightest and darkest pixels from the 
+    histogram, and remaps the image so that the darkest pixel becomes 
+    black (0), and the lightest becomes white (255).
+    :param image: The image to process.
+    :param cutoff: How many percent to cut off from the histogram.
+    :param ignore: The background pixel value (use None for no background).
+    :return: An image.
+    """
+    histogram = image.histogram()
+    lut = []
+    los = []
+    his = []
+    for layer in range(0, len(histogram), 256):
+        h = histogram[layer:layer+256]
+        if ignore is not None:
+            # get rid of outliers
+            try:
+                h[ignore] = 0
+            except TypeError:
+                # assume sequence
+                for ix in ignore:
+                    h[ix] = 0
+        if cutoff:
+            # cut off pixels from both ends of the histogram
+            # get number of pixels
+            n = 0
+            for ix in range(256):
+                n = n + h[ix]
+            # remove cutoff% pixels from the low end
+            cut = n * cutoff // 100
+            for lo in range(256):
+                if cut > h[lo]:
+                    cut = cut - h[lo]
+                    h[lo] = 0
+                else:
+                    h[lo] -= cut
+                    cut = 0
+                if cut <= 0:
+                    break
+            # remove cutoff% samples from the hi end
+            cut = n * cutoff // 100
+            for hi in range(255, -1, -1):
+                if cut > h[hi]:
+                    cut = cut - h[hi]
+                    h[hi] = 0
+                else:
+                    h[hi] -= cut
+                    cut = 0
+                if cut <= 0:
+                    break
+        # find lowest/highest samples after preprocessing
+        for lo in range(256):
+            if h[lo]:
+                los.append(lo)
+                break
+        for hi in range(255, -1, -1):
+            if h[hi]:
+                his.append(hi)
+                break
+    # get lowest/highest samples across all layers
+    lo = min(los)
+    hi = max(his)
+    if hi <= lo:
+        # don't bother
+        lut.extend(list(range(len(histogram))))
+    else:
+        scale = 255.0 / (hi - lo)
+        offset = -lo * scale
+        for layer in range(len(histogram) / 256):
+            for ix in range(256):
+                ix = int(ix * scale + offset)
+                if ix < 0:
+                    ix = 0
+                elif ix > 255:
+                    ix = 255
+                lut.append(ix)
+    return _lut(image, lut)
+
+
 def colorize(image, black, white):
     """
     Colorize grayscale image.  The **black** and **white**
