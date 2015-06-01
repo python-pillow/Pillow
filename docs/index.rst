@@ -11,11 +11,11 @@ Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://githu
    :target: https://travis-ci.org/python-pillow/pillow-wheels
    :alt: Travis CI build status (OS X)
 
-.. image:: https://pypip.in/v/Pillow/badge.png
+.. image:: https://img.shields.io/pypi/v/pillow.svg
     :target: https://pypi.python.org/pypi/Pillow/
     :alt: Latest PyPI version
 
-.. image:: https://pypip.in/d/Pillow/badge.png
+.. image:: https://img.shields.io/pypi/dm/pillow.svg
     :target: https://pypi.python.org/pypi/Pillow/
     :alt: Number of PyPI downloads
 
