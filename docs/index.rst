@@ -19,11 +19,11 @@ Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://githu
     :target: https://pypi.python.org/pypi/Pillow/
     :alt: Number of PyPI downloads
 
-.. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.png?branch=master
+.. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.svg?branch=master
   :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
    :alt: Code coverage
 
-.. image:: https://landscape.io/github/python-pillow/Pillow/master/landscape.png
+.. image:: https://landscape.io/github/python-pillow/Pillow/master/landscape.svg
    :target: https://landscape.io/github/python-pillow/Pillow/master
    :alt: Code health
 
