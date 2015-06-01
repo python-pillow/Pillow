@@ -67,7 +67,7 @@ class ImageFont(object):
 
     def _load_pilfont(self, filename):
 
-        file = open(filename, "rb")
+        fp = open(filename, "rb")
 
         for ext in (".png", ".gif", ".pbm"):
             try:
@@ -83,7 +83,7 @@ class ImageFont(object):
 
         self.file = fullname
 
-        return self._load_pilfont_data(file, image)
+        return self._load_pilfont_data(fp, image)
 
     def _load_pilfont_data(self, file, image):
 
