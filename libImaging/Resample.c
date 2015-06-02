@@ -2,7 +2,7 @@
  * The Python Imaging Library
  * $Id$
  *
- * Pillow image resamling support
+ * Pillow image resampling support
  *
  * history:
  * 2002-03-09 fl  Created (for PIL 1.1.3)

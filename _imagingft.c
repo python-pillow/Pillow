@@ -572,7 +572,7 @@ setup_module(PyObject* m) {
     PyType_Ready(&Font_Type);
 
     if (FT_Init_FreeType(&library))
-        return 0; /* leave it uninitalized */
+        return 0; /* leave it uninitialized */
 
     FT_Library_Version(library, &major, &minor, &patch);
 
