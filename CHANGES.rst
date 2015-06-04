@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Add duration and loop set to GifImagePlugin #1172
+  [radarhere]
+
 - Ico files are little endian #1232
   [wiredfool]
 
