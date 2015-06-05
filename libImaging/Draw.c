@@ -457,8 +457,8 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     if (ymin < 0) {
         ymin = 0;
     }
-    if (ymax >= im->ysize) {
-        ymax = im->ysize - 1;
+    if (ymax > im->ysize) {
+        ymax = im->ysize;
     }
 
     /* Process the edge table with a scan line searching for intersections */
