@@ -124,6 +124,19 @@ class TestImageDraw(PillowTestCase):
     def test_ellipse2(self):
         self.helper_ellipse(BBOX2)
 
+    def test_ellipse_edge(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+
+        # Act
+        draw.ellipse(((0, 0), (W-1, H)), fill="white")
+        del draw
+
+        # Assert
+        self.assert_image_similar(
+            im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
+
     def helper_line(self, points):
         # Arrange
         im = Image.new("RGB", (W, H))
