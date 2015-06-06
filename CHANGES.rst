@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+2.8.2 (2015-06-06)
+------------------
+
+- Bug fix: Fixed Tiff handling of bad EXIF data
+  [radarhere]
+
 2.8.1 (2015-04-02)
 ------------------
 
