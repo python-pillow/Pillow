@@ -426,6 +426,11 @@ class ImageFileDirectory(collections.MutableMapping):
         for i in range(i16(fp.read(2))):
 
             ifd = fp.read(12)
+            if len(ifd) != 12:
+                warnings.warn("Possibly corrupt EXIF data.  "
+                              "Expecting to read 12 bytes but only got %d."
+                              % (len(ifd)))
+                continue
 
             tag, typ = i16(ifd), i16(ifd, 2)
 
@@ -476,7 +481,14 @@ class ImageFileDirectory(collections.MutableMapping):
                 else:
                     print("- value:", self[tag])
 
-        self.next = i32(fp.read(4))
+        ifd = fp.read(4)
+        if len(ifd) != 4:
+            warnings.warn("Possibly corrupt EXIF data.  "
+                          "Expecting to read 4 bytes but only got %d."
+                          % (len(ifd)))
+            return
+
+        self.next = i32(ifd)
 
     # save primitives
 
