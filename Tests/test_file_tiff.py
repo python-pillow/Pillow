@@ -3,6 +3,8 @@ from helper import unittest, PillowTestCase, hopper, py3
 
 from PIL import Image, TiffImagePlugin
 
+import struct
+
 
 class TestFileTiff(PillowTestCase):
 
@@ -76,6 +78,12 @@ class TestFileTiff(PillowTestCase):
         im.tag.tags[Y_RESOLUTION] = (72,)
         im._setup()
         self.assertEqual(im.info['dpi'], (72., 72.))
+
+    def test_bad_exif(self):
+        try:
+            Image.open('Tests/images/hopper_bad_exif.jpg')._getexif()
+        except struct.error:
+            self.fail("Bad EXIF data should not pass incorrect values to _binary unpack")
 
     def test_little_endian(self):
         im = Image.open('Tests/images/16bit.cropped.tif')
