@@ -135,6 +135,7 @@ class FliImageFile(ImageFile.ImageFile):
         if frame == 0:
             self.__frame = -1
             self.__fp.seek(self.__rewind)
+            self.__offset = 128
 
         if frame != self.__frame + 1:
             raise ValueError("cannot seek to frame %d" % frame)
@@ -153,7 +154,7 @@ class FliImageFile(ImageFile.ImageFile):
         self.decodermaxblock = framesize
         self.tile = [("fli", (0, 0)+self.size, self.__offset, None)]
 
-        self.__offset = self.__offset + framesize
+        self.__offset += framesize
 
     def tell(self):
 
