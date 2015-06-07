@@ -67,9 +67,8 @@ docserver:
 # password:
 # repository = http://test.pythonpackages.com
 sdisttest:
-	python setup.py sdist --format=zip upload -r test
+	python setup.py sdist --format=gztar,zip upload -r test
 sdistup:
-	python setup.py sdist --format=zip upload
-	python setup.py sdist upload
+	python setup.py sdist --format=gztar,zip upload
 sdist:
-	python setup.py sdist --format=zip
+	python setup.py sdist --format=gztar,zip
