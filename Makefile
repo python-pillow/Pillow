@@ -11,6 +11,8 @@ help:
 	@echo "  docs		make html docs"
 	@echo "  docserver	run an http server on the docs directory"
 	@echo "  install-req	install documentation and test dependencies"
+	@echo "  upload	    upload sdists to PyPI" 
+	@echo "  upload-test    upload sdists to test.pythonpackages.com"
 
 pre:
 	virtualenv .
@@ -67,9 +69,9 @@ docserver:
 #    password:
 #    repository = http://test.pythonpackages.com
 #
-sdisttest:
+upload-test:
 	python setup.py sdist --format=gztar,zip upload -r test
-sdistup:
+upload:
 	python setup.py sdist --format=gztar,zip upload
 sdist:
 	python setup.py sdist --format=gztar,zip
