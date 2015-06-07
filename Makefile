@@ -1,5 +1,4 @@
 # https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
-# XXX Do we need all these phony targets?
 .PHONY: clean coverage doc docserve help inplace install install-req release-test sdist test upload upload-test
 
 clean:
@@ -9,12 +8,10 @@ clean:
 	find . -name __pycache__ | xargs rm -r || true
 
 coverage: 
-# requires nose-cov
 	coverage erase
 	coverage run --parallel-mode --include=PIL/* selftest.py
 	nosetests --with-cov --cov='PIL/' --cov-report=html Tests/test_*.py
-# doesn't combine properly before report, 
-# writing report instead of displaying invalid report
+# XXX Doesn't combine properly before report, writing report instead of displaying invalid report.
 	rm -r htmlcov || true
 	coverage combine
 	coverage report
@@ -29,8 +26,8 @@ help:
 	@echo "Welcome to Pillow development. Please use \`make <target>' where <target> is one of"
 	@echo "  clean          remove build products"
 	@echo "  coverage       run coverage test (in progress)"
-	@echo "  doc           make html docs"
-	@echo "  docserve      run an http server on the docs directory"
+	@echo "  doc            make html docs"
+	@echo "  docserve       run an http server on the docs directory"
 	@echo "  html           to make standalone HTML files"
 	@echo "  inplace        make inplace extension" 
 	@echo "  install        make and install"
