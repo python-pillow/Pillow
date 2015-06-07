@@ -1,4 +1,4 @@
-.PHONY: pre clean install test inplace coverage test-dep help docs livedocs
+.PHONY: pre clean install install-req test inplace coverage help docs livedocs
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -10,7 +10,7 @@ help:
 	@echo "  coverage	run coverage test (in progress)"
 	@echo "  docs		make html docs"
 	@echo "  docserver	run an http server on the docs directory"
-	@echo "  test-dep	install coveraget and test dependencies"
+	@echo "  install-req	install documentation and test dependencies"
 
 pre:
 	virtualenv .
@@ -34,6 +34,9 @@ install:
 	python setup.py install
 	python selftest.py --installed
 
+install-req:
+	pip install -r requirements.txt
+
 test:
 	python test-installed.py
 
@@ -50,9 +53,6 @@ coverage:
 	rm -r htmlcov || true
 	coverage combine
 	coverage report
-
-test-dep:
-	pip install -r requirements.txt
 
 docs:
 	$(MAKE) -C docs html
