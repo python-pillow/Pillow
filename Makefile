@@ -66,10 +66,10 @@ test:
 
 # https://docs.python.org/2/distutils/packageindex.html#the-pypirc-file
 upload-test:
-#   [test]
-#   username:
-#   password:
-#   repository = http://test.pythonpackages.com
+#       [test]
+#       username:
+#       password:
+#       repository = http://test.pythonpackages.com
 	python setup.py sdist --format=gztar,zip upload -r test
 
 upload:
