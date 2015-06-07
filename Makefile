@@ -1,6 +1,6 @@
 # https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
 # XXX Do we need all these phony targets?
-.PHONY: clean coverage docs docserver help inplace install install-req release-test sdist test upload upload-test
+.PHONY: clean coverage doc docserve help inplace install install-req release-test sdist test upload upload-test
 
 clean:
 	python setup.py clean
@@ -19,18 +19,18 @@ coverage:
 	coverage combine
 	coverage report
 
-docs:
+doc:
 	$(MAKE) -C docs html
 
-docserver:
+docserve:
 	cd docs/_build/html && python -mSimpleHTTPServer 2> /dev/null&
 
 help:
 	@echo "Welcome to Pillow development. Please use \`make <target>' where <target> is one of"
 	@echo "  clean          remove build products"
 	@echo "  coverage       run coverage test (in progress)"
-	@echo "  docs           make html docs"
-	@echo "  docserver      run an http server on the docs directory"
+	@echo "  doc           make html docs"
+	@echo "  docserve      run an http server on the docs directory"
 	@echo "  html           to make standalone HTML files"
 	@echo "  inplace        make inplace extension" 
 	@echo "  install        make and install"
