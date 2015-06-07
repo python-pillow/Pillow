@@ -18,6 +18,10 @@ class TestFileFli(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "FLI")
 
+    def test_n_frames(self):
+        im = Image.open(test_file)
+        self.assertEqual(im.n_frames, 2)
+
 
 if __name__ == '__main__':
     unittest.main()

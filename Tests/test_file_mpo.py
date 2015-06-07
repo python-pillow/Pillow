@@ -95,6 +95,10 @@ class TestFileMpo(PillowTestCase):
             im.seek(0)
             self.assertEqual(im.tell(), 0)
 
+    def test_n_frames(self):
+        im = Image.open("Tests/images/sugarshack.mpo")
+        self.assertEqual(im.n_frames, 2)
+
     def test_image_grab(self):
         for test_file in test_files:
             im = Image.open(test_file)

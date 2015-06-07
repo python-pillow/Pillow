@@ -131,7 +131,6 @@ class FliImageFile(ImageFile.ImageFile):
             self._seek(f)
 
     def _seek(self, frame):
-
         if frame == 0:
             self.__frame = -1
             self.__fp.seek(self.__rewind)
@@ -157,7 +156,6 @@ class FliImageFile(ImageFile.ImageFile):
         self.__offset += framesize
 
     def tell(self):
-
         return self.__frame
 
 #
