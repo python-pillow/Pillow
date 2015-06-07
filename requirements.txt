@@ -1,3 +1,8 @@
-# Testing reqs
+# Testing and documentation requirements
 -e .
+-r docs/requirements.txt
+coveralls
 nose
+nose-cov
+pep8
+pyflakes

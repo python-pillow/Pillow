@@ -14,12 +14,12 @@ help:
 
 pre:
 	virtualenv .
-	bin/pip install -r requirements.txt
-	bin/python setup.py develop
-	bin/python selftest.py
-	bin/nosetests Tests/test_*.py
-	bin/python setup.py install
-	bin/python test-installed.py
+	pip install -r requirements.txt
+	python setup.py develop
+	python selftest.py
+	nosetests Tests/test_*.py
+	python setup.py install
+	python test-installed.py
 	check-manifest
 	pyroma .
 	viewdoc
@@ -52,7 +52,7 @@ coverage:
 	coverage report
 
 test-dep:
-	pip install coveralls nose nose-cov pep8 pyflakes
+	pip install -r requirements.txt
 
 docs:
 	$(MAKE) -C docs html
