@@ -11,7 +11,7 @@ coverage:
 	coverage erase
 	coverage run --parallel-mode --include=PIL/* selftest.py
 	nosetests --with-cov --cov='PIL/' --cov-report=html Tests/test_*.py
-# XXX Doesn't combine properly before report, writing report instead of displaying invalid report.
+# Doesn't combine properly before report, writing report instead of displaying invalid report.
 	rm -r htmlcov || true
 	coverage combine
 	coverage report
@@ -64,14 +64,12 @@ sdist:
 test:
 	python test-installed.py
 
-# Test sdist upload via test.pythonpackages.com. Create .pypirc first:
-#
-#    [test]
-#    username:
-#    password:
-#    repository = http://test.pythonpackages.com
-#
+# https://docs.python.org/2/distutils/packageindex.html#the-pypirc-file
 upload-test:
+#   [test]
+#   username:
+#   password:
+#   repository = http://test.pythonpackages.com
 	python setup.py sdist --format=gztar,zip upload -r test
 
 upload:
