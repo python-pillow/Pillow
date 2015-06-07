@@ -1,4 +1,6 @@
-.PHONY: release-test clean install install-req test inplace coverage help docs livedocs
+# https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
+# XXX Do we need all these phony targets?
+.PHONY: clean coverage docs docserver help inplace install install-req release-test sdist test upload upload-test
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
