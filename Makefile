@@ -60,12 +60,13 @@ docs:
 docserver:
 	cd docs/_build/html && python -mSimpleHTTPServer 2> /dev/null&
 
-# Test sdist upload via test.pythonpackages.com, no creds required
-# .pypirc:
-# [test]
-# username:
-# password:
-# repository = http://test.pythonpackages.com
+# Test sdist upload via test.pythonpackages.com. Create .pypirc first:
+#
+#    [test]
+#    username:
+#    password:
+#    repository = http://test.pythonpackages.com
+#
 sdisttest:
 	python setup.py sdist --format=gztar,zip upload -r test
 sdistup:
