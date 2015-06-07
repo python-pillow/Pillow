@@ -2,50 +2,11 @@
 # XXX Do we need all these phony targets?
 .PHONY: clean coverage docs docserver help inplace install install-req release-test sdist test upload upload-test
 
-help:
-	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  html       to make standalone HTML files"
-	@echo "  clean		remove build products"
-	@echo "  install	make and install"
-	@echo "  test		run tests on installed pillow"
-	@echo "  inplace	make inplace extension" 
-	@echo "  coverage	run coverage test (in progress)"
-	@echo "  docs		make html docs"
-	@echo "  docserver	run an http server on the docs directory"
-	@echo "  install-req	install documentation and test dependencies"
-	@echo "  upload	    build and upload sdists to PyPI" 
-	@echo "  upload-test    build and upload sdists to test.pythonpackages.com"
-	@echo "  release-test    run code and package tests before release"
-
-release-test:
-	$(MAKE) install-req
-	python setup.py develop
-	python selftest.py
-	nosetests Tests/test_*.py
-	python setup.py install
-	python test-installed.py
-	check-manifest
-	pyroma .
-	viewdoc
-
 clean:
 	python setup.py clean
 	rm PIL/*.so || true
 	rm -r build || true
 	find . -name __pycache__ | xargs rm -r || true
-
-install:
-	python setup.py install
-	python selftest.py --installed
-
-install-req:
-	pip install -r requirements.txt
-
-test:
-	python test-installed.py
-
-inplace: clean
-	python setup.py build_ext --inplace
 
 coverage: 
 # requires nose-cov
@@ -64,6 +25,48 @@ docs:
 docserver:
 	cd docs/_build/html && python -mSimpleHTTPServer 2> /dev/null&
 
+help:
+	@echo "Welcome to Pillow development. Please use \`make <target>' where <target> is one of"
+	@echo "  clean          remove build products"
+	@echo "  coverage       run coverage test (in progress)"
+	@echo "  docs           make html docs"
+	@echo "  docserver      run an http server on the docs directory"
+	@echo "  html           to make standalone HTML files"
+	@echo "  inplace        make inplace extension" 
+	@echo "  install        make and install"
+	@echo "  install-req    install documentation and test dependencies"
+	@echo "  release-test   run code and package tests before release"
+	@echo "  test           run tests on installed pillow"
+	@echo "  upload         build and upload sdists to PyPI" 
+	@echo "  upload-test    build and upload sdists to test.pythonpackages.com"
+
+inplace: clean
+	python setup.py build_ext --inplace
+
+install:
+	python setup.py install
+	python selftest.py --installed
+
+install-req:
+	pip install -r requirements.txt
+
+release-test:
+	$(MAKE) install-req
+	python setup.py develop
+	python selftest.py
+	nosetests Tests/test_*.py
+	python setup.py install
+	python test-installed.py
+	check-manifest
+	pyroma .
+	viewdoc
+
+sdist:
+	python setup.py sdist --format=gztar,zip
+
+test:
+	python test-installed.py
+
 # Test sdist upload via test.pythonpackages.com. Create .pypirc first:
 #
 #    [test]
@@ -73,7 +76,6 @@ docserver:
 #
 upload-test:
 	python setup.py sdist --format=gztar,zip upload -r test
+
 upload:
 	python setup.py sdist --format=gztar,zip upload
-sdist:
-	python setup.py sdist --format=gztar,zip
