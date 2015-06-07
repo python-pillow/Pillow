@@ -1,4 +1,4 @@
-.PHONY: pre clean install install-req test inplace coverage help docs livedocs
+.PHONY: release-test clean install install-req test inplace coverage help docs livedocs
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -11,12 +11,12 @@ help:
 	@echo "  docs		make html docs"
 	@echo "  docserver	run an http server on the docs directory"
 	@echo "  install-req	install documentation and test dependencies"
-	@echo "  upload	    upload sdists to PyPI" 
-	@echo "  upload-test    upload sdists to test.pythonpackages.com"
+	@echo "  upload	    build and upload sdists to PyPI" 
+	@echo "  upload-test    build and upload sdists to test.pythonpackages.com"
+	@echo "  release-test    run code and package tests before release"
 
-pre:
-	virtualenv .
-	pip install -r requirements.txt
+release-test:
+	$(MAKE) install-req
 	python setup.py develop
 	python selftest.py
 	nosetests Tests/test_*.py
