@@ -808,7 +808,7 @@ unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
 
         FillOrder = 2 should be used only when BitsPerSample = 1 and
         the data is either uncompressed or compressed using CCITT 1D
-        or 2D compression, to avoid potentially ambigous situations.
+        or 2D compression, to avoid potentially ambiguous situations.
 
         Yeah. I thought so. We'll see how well people read the spec. 
         We've got several fillorder=2 modes in TiffImagePlugin.py
