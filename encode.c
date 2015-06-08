@@ -737,7 +737,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
         return NULL;
     }
 
-        // While failes on 64 bit machines, complains that pos is an int instead of a Py_ssize_t
+        // While fails on 64 bit machines, complains that pos is an int instead of a Py_ssize_t
         //    while (PyDict_Next(dir, &pos, &key, &value)) {
         for (pos=0;pos<d_size;pos++){
                 key = PyList_GetItem(keys,pos);

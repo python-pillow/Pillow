@@ -3,6 +3,8 @@ from helper import unittest, PillowTestCase, hopper, py3
 
 from PIL import Image, TiffImagePlugin
 
+import struct
+
 
 class TestFileTiff(PillowTestCase):
 
@@ -77,6 +79,12 @@ class TestFileTiff(PillowTestCase):
         im._setup()
         self.assertEqual(im.info['dpi'], (72., 72.))
 
+    def test_bad_exif(self):
+        try:
+            Image.open('Tests/images/hopper_bad_exif.jpg')._getexif()
+        except struct.error:
+            self.fail("Bad EXIF data should not pass incorrect values to _binary unpack")
+
     def test_little_endian(self):
         im = Image.open('Tests/images/16bit.cropped.tif')
         self.assertEqual(im.getpixel((0, 0)), 480)
@@ -141,6 +149,13 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.getpixel((0, 0)), -0.4526388943195343)
         self.assertEqual(
             im.getextrema(), (-3.140936851501465, 3.140684127807617))
+
+    def test_n_frames(self):
+        im = Image.open('Tests/images/multipage-lastframe.tif')
+        self.assertEqual(im.n_frames, 1)
+
+        im = Image.open('Tests/images/multipage.tiff')
+        self.assertEqual(im.n_frames, 3)
 
     def test_multipage(self):
         # issue #862

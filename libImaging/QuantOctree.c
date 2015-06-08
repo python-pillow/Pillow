@@ -345,7 +345,7 @@ int quantize_octree(Pixel *pixelData,
    /*
    Create two color cubes, one fine grained with 8x16x8=1024
    colors buckets and a coarse with 4x4x4=64 color buckets.
-   The coarse one guarantes that there are color buckets available for
+   The coarse one guarantees that there are color buckets available for
    the whole color range (assuming nQuantPixels > 64).
 
    For a quantization to 256 colors all 64 coarse colors will be used
@@ -421,7 +421,7 @@ int quantize_octree(Pixel *pixelData,
    /* add fine colors to the lookup cube */
    add_lookup_buckets(lookupCube, paletteBuckets, nFineColors, nCoarseColors);
 
-   /* create result pixles and map palatte indices */
+   /* create result pixels and map palette indices */
    qp = malloc(sizeof(Pixel)*nPixels);
    if (!qp) goto error;
    map_image_pixels(pixelData, nPixels, lookupCube, qp);

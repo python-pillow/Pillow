@@ -134,6 +134,10 @@ class TestFileGif(PillowTestCase):
         except EOFError:
             self.assertEqual(framecount, 5)
 
+    def test_n_frames(self):
+        im = Image.open("Tests/images/iss634.gif")
+        self.assertEqual(im.n_frames, 43)
+
     def test_dispose_none(self):
         img = Image.open("Tests/images/dispose_none.gif")
         try:
@@ -169,6 +173,33 @@ class TestFileGif(PillowTestCase):
         # first frame
         self.assertEqual(img.histogram()[img.info['transparency']], 0)
 
+    def test_duration(self):
+        duration = 1000
+
+        out = self.tempfile('temp.gif')
+        fp = open(out, "wb")
+        im = Image.new('L', (100, 100), '#000')
+        for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, duration=duration):
+            fp.write(s)
+        fp.write(b";")
+        fp.close()
+        reread = Image.open(out)
+
+        self.assertEqual(reread.info['duration'], duration)
+
+    def test_number_of_loops(self):
+        number_of_loops = 2
+
+        out = self.tempfile('temp.gif')
+        fp = open(out, "wb")
+        im = Image.new('L', (100, 100), '#000')
+        for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, loop=number_of_loops):
+            fp.write(s)
+        fp.write(b";")
+        fp.close()
+        reread = Image.open(out)
+
+        self.assertEqual(reread.info['loop'], number_of_loops)
 
 if __name__ == '__main__':
     unittest.main()
