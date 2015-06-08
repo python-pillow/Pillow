@@ -22,7 +22,7 @@ from PIL._binary import i8
 #
 # Bitstream parser
 
-class BitStream:
+class BitStream(object):
 
     def __init__(self, fp):
         self.fp = fp

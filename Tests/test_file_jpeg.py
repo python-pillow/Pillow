@@ -3,6 +3,7 @@ from helper import djpeg_available, cjpeg_available
 
 import random
 from io import BytesIO
+import os
 
 from PIL import Image
 from PIL import ImageFile
@@ -22,10 +23,10 @@ class TestFileJpeg(PillowTestCase):
     def roundtrip(self, im, **options):
         out = BytesIO()
         im.save(out, "JPEG", **options)
-        bytes = out.tell()
+        test_bytes = out.tell()
         out.seek(0)
         im = Image.open(out)
-        im.bytes = bytes  # for testing only
+        im.bytes = test_bytes  # for testing only
         return im
 
     def test_sanity(self):
@@ -300,15 +301,12 @@ class TestFileJpeg(PillowTestCase):
         # sequence wrong length
         self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[]))
         # sequence wrong length
-        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1,2,3,4,5]))
+        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1, 2, 3, 4, 5]))
 
         # qtable entry not a sequence
         self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1]))
         # qtable entry has wrong number of items
-        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[[1,2,3,4]]))
-        
-        
-        
+        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[[1, 2, 3, 4]]))
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
     def test_load_djpeg(self):
@@ -333,6 +331,24 @@ class TestFileJpeg(PillowTestCase):
         # Assert
         self.assertEqual(tag_ids['RelatedImageWidth'], 0x1001)
         self.assertEqual(tag_ids['RelatedImageLength'], 0x1002)
+
+    def test_MAXBLOCK_scaling(self):
+        def gen_random_image(size):
+            """ Generates a very hard to compress file
+            :param size: tuple
+            """
+            return Image.frombytes('RGB', size, os.urandom(size[0]*size[1] * 3))
+
+        im = gen_random_image((512, 512))
+        f = self.tempfile("temp.jpeg")
+        im.save(f, quality=100, optimize=True)
+
+        reloaded = Image.open(f)
+
+        # none of these should crash
+        reloaded.save(f, quality='keep')
+        reloaded.save(f, quality='keep', progressive=True)
+        reloaded.save(f, quality='keep', optimize=True)
 
 
 if __name__ == '__main__':

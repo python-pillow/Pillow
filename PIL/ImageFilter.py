@@ -15,7 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from functools import reduce
+import functools
 
 
 class Filter(object):
@@ -43,7 +43,7 @@ class Kernel(Filter):
     def __init__(self, size, kernel, scale=None, offset=0):
         if scale is None:
             # default scale is sum of kernel
-            scale = reduce(lambda a, b: a+b, kernel)
+            scale = functools.reduce(lambda a, b: a+b, kernel)
         if size[0] * size[1] != len(kernel):
             raise ValueError("not enough coefficients in kernel")
         self.filterargs = size, scale, offset, kernel
@@ -162,8 +162,13 @@ class UnsharpMask(Filter):
     See Wikipedia's entry on `digital unsharp masking`_ for an explanation of
     the parameters.
 
-    .. _digital unsharp masking:
-    https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
+    :param radius: Blur Radius
+    :param percent: Unsharp strength, in percent
+    :param threshold: Threshold controls the minimum brightness change that
+      will be sharpened
+
+    .. _digital unsharp masking: https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
+
     """
     name = "UnsharpMask"
 

@@ -15,7 +15,6 @@ class TestFileWebpMetadata(PillowTestCase):
         if not _webp.HAVE_WEBPMUX:
             self.skipTest('WebPMux support not installed')
 
-
     def test_read_exif_metadata(self):
 
         file_path = "Tests/images/flower.webp"
@@ -42,12 +41,12 @@ class TestFileWebpMetadata(PillowTestCase):
         image = Image.open(file_path)
         expected_exif = image.info['exif']
 
-        buffer = BytesIO()
+        test_buffer = BytesIO()
 
-        image.save(buffer, "webp", exif=expected_exif)
+        image.save(test_buffer, "webp", exif=expected_exif)
 
-        buffer.seek(0)
-        webp_image = Image.open(buffer)
+        test_buffer.seek(0)
+        webp_image = Image.open(test_buffer)
 
         webp_exif = webp_image.info.get('exif', None)
         self.assertTrue(webp_exif)
@@ -77,12 +76,12 @@ class TestFileWebpMetadata(PillowTestCase):
         image = Image.open(file_path)
         expected_icc_profile = image.info['icc_profile']
 
-        buffer = BytesIO()
+        test_buffer = BytesIO()
 
-        image.save(buffer, "webp", icc_profile=expected_icc_profile)
+        image.save(test_buffer, "webp", icc_profile=expected_icc_profile)
 
-        buffer.seek(0)
-        webp_image = Image.open(buffer)
+        test_buffer.seek(0)
+        webp_image = Image.open(test_buffer)
 
         webp_icc_profile = webp_image.info.get('icc_profile', None)
 
@@ -97,14 +96,14 @@ class TestFileWebpMetadata(PillowTestCase):
 
         file_path = "Tests/images/flower.jpg"
         image = Image.open(file_path)
-        image.info['exif']
+        self.assertTrue('exif' in image.info)
 
-        buffer = BytesIO()
+        test_buffer = BytesIO()
 
-        image.save(buffer, "webp")
+        image.save(test_buffer, "webp")
 
-        buffer.seek(0)
-        webp_image = Image.open(buffer)
+        test_buffer.seek(0)
+        webp_image = Image.open(test_buffer)
 
         self.assertFalse(webp_image._getexif())
 

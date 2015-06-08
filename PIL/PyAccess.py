@@ -51,10 +51,10 @@ class PyAccess(object):
         self.ysize = vals['ysize']
 
         if DEBUG:
-            print (vals)
+            print(vals)
         self._post_init()
 
-    def _post_init():
+    def _post_init(self):
         pass
 
     def __setitem__(self, xy, color):
@@ -78,6 +78,8 @@ class PyAccess(object):
         images
 
         :param xy: The pixel coordinate, given as (x, y).
+        :returns: a pixel value for single band images, a tuple of
+          pixel values for multiband images.
         """
 
         (x, y) = self.check_xy(xy)
@@ -192,7 +194,7 @@ class _PyAccessI16_L(PyAccess):
         pixel = self.pixels[y][x]
         try:
             color = min(color, 65535)
-        except:
+        except TypeError:
             color = min(color[0], 65535)
 
         pixel.l = color & 0xFF

@@ -113,6 +113,29 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
+:class:`PngImagePlugin.iTXt` Class
+----------------------------------
+
+.. autoclass:: PIL.PngImagePlugin.iTXt
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+    .. method:: __new__(cls, text, lang, tkey)
+
+        :param value: value for this key
+        :param lang: language code
+        :param tkey: UTF-8 version of the key name
+
+:class:`PngImagePlugin.PngInfo` Class
+-------------------------------------
+
+.. autoclass:: PIL.PngImagePlugin.PngInfo
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 :mod:`TarIO` Module
 -------------------
 

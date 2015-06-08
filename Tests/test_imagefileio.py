@@ -8,7 +8,7 @@ class TestImageFileIo(PillowTestCase):
 
     def test_fileio(self):
 
-        class DumbFile:
+        class DumbFile(object):
             def __init__(self, data):
                 self.data = data
 

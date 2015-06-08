@@ -1,0 +1,22 @@
+2.8.0
+=====
+
+Open HTTP response objects with Image.open
+------------------------------------------
+
+HTTP response objects returned from `urllib2.urlopen(url)` or `requests.get(url, stream=True).raw` are 'file-like' but do not support `.seek()` operations. As a result PIL was unable to open them as images, requiring a wrap in `cStringIO` or `BytesIO`.
+
+Now new functionality has been added to `Image.open()` by way of an `.seek(0)` check and catch on exception `AttributeError` or `io.UnsupportedOperation`. If this is caught we attempt to wrap the object using `io.BytesIO` (which will only work on buffer-file-like objects).
+
+This allows opening of files using both `urllib2` and `requests`, e.g.::
+
+    Image.open(urllib2.urlopen(url))
+    Image.open(requests.get(url, stream=True).raw)
+
+If the response uses content-encoding (compression, either gzip or deflate) then this will fail as both the urllib2 and requests raw file object will produce compressed data in that case. Using Content-Encoding on images is rather non-sensical as most images are already compressed, but it can still happen.
+
+For requests the work-around is to set the decode_content attribute on the raw object to True::
+
+    response = requests.get(url, stream=True)
+    response.raw.decode_content = True
+    image = Image.open(response.raw)

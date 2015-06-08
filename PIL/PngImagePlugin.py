@@ -71,12 +71,27 @@ _MODES = {
 
 
 _simple_palette = re.compile(b'^\xff+\x00\xff*$')
+_null_palette = re.compile(b'^\x00*$')
+
+# Maximum decompressed size for a iTXt or zTXt chunk.
+# Eliminates decompression bombs where compressed chunks can expand 1000x
+MAX_TEXT_CHUNK = ImageFile.SAFEBLOCK
+# Set the maximum total text chunk size.
+MAX_TEXT_MEMORY = 64 * MAX_TEXT_CHUNK
+
+
+def _safe_zlib_decompress(s):
+    dobj = zlib.decompressobj()
+    plaintext = dobj.decompress(s, MAX_TEXT_CHUNK)
+    if dobj.unconsumed_tail:
+        raise ValueError("Decompressed Data Too Large")
+    return plaintext
 
 
 # --------------------------------------------------------------------
 # Support classes.  Suitable for PNG and related formats like MNG etc.
 
-class ChunkStream:
+class ChunkStream(object):
 
     def __init__(self, fp):
 
@@ -149,31 +164,56 @@ class ChunkStream:
         return cids
 
 
-# --------------------------------------------------------------------
-# Subclass of string to allow iTXt chunks to look like strings while
-# keeping their extra information
-
 class iTXt(str):
+    """
+    Subclass of string to allow iTXt chunks to look like strings while
+    keeping their extra information
+
+    """
     @staticmethod
     def __new__(cls, text, lang, tkey):
+        """
+        :param value: value for this key
+        :param lang: language code
+        :param tkey: UTF-8 version of the key name
+        """
+
         self = str.__new__(cls, text)
         self.lang = lang
         self.tkey = tkey
         return self
 
 
-# --------------------------------------------------------------------
-# PNG chunk container (for use with save(pnginfo=))
+class PngInfo(object):
+    """
+    PNG chunk container (for use with save(pnginfo=))
 
-class PngInfo:
+    """
 
     def __init__(self):
         self.chunks = []
 
     def add(self, cid, data):
+        """Appends an arbitrary chunk. Use with caution.
+
+        :param cid: a byte string, 4 bytes long.
+        :param data: a byte string of the encoded data
+
+        """
+
         self.chunks.append((cid, data))
 
     def add_itxt(self, key, value, lang="", tkey="", zip=False):
+        """Appends an iTXt chunk.
+
+        :param key: latin-1 encodable text key name
+        :param value: value for this key
+        :param lang: language code
+        :param tkey: UTF-8 version of the key name
+        :param zip: compression flag
+
+        """
+
         if not isinstance(key, bytes):
             key = key.encode("latin-1", "strict")
         if not isinstance(value, bytes):
@@ -184,7 +224,6 @@ class PngInfo:
             tkey = tkey.encode("utf-8", "strict")
 
         if zip:
-            import zlib
             self.add(b"iTXt", key + b"\0\x01\0" + lang + b"\0" + tkey + b"\0" +
                      zlib.compress(value))
         else:
@@ -192,6 +231,14 @@ class PngInfo:
                      value)
 
     def add_text(self, key, value, zip=0):
+        """Appends a text chunk.
+
+        :param key: latin-1 encodable text key name
+        :param value: value for this key, text or an
+           :py:class:`PIL.PngImagePlugin.iTXt` instance
+        :param zip: compression flag
+
+        """
         if isinstance(value, iTXt):
             return self.add_itxt(key, value, value.lang, value.tkey, bool(zip))
 
@@ -206,7 +253,6 @@ class PngInfo:
             key = key.encode('latin-1', 'strict')
 
         if zip:
-            import zlib
             self.add(b"zTXt", key + b"\0\0" + zlib.compress(value))
         else:
             self.add(b"tEXt", key + b"\0" + value)
@@ -229,6 +275,14 @@ class PngStream(ChunkStream):
         self.im_tile = None
         self.im_palette = None
 
+        self.text_memory = 0
+
+    def check_text_memory(self, chunklen):
+        self.text_memory += chunklen
+        if self.text_memory > MAX_TEXT_MEMORY:
+            raise ValueError("Too much memory used in text chunks: %s>MAX_TEXT_MEMORY" %
+                             self.text_memory)
+
     def chunk_iCCP(self, pos, length):
 
         # ICC profile
@@ -247,7 +301,7 @@ class PngStream(ChunkStream):
             raise SyntaxError("Unknown compression method %s in iCCP chunk" %
                               comp_method)
         try:
-            icc_profile = zlib.decompress(s[i+2:])
+            icc_profile = _safe_zlib_decompress(s[i+2:])
         except zlib.error:
             icc_profile = None  # FIXME
         self.im_info["icc_profile"] = icc_profile
@@ -297,6 +351,8 @@ class PngStream(ChunkStream):
                 i = s.find(b"\0")
                 if i >= 0:
                     self.im_info["transparency"] = i
+            elif _null_palette.match(s):
+                self.im_info["transparency"] = 0
             else:
                 self.im_info["transparency"] = s
         elif self.im_mode == "L":
@@ -341,6 +397,8 @@ class PngStream(ChunkStream):
                 v = v.decode('latin-1', 'replace')
 
             self.im_info[k] = self.im_text[k] = v
+            self.check_text_memory(len(v))
+
         return s
 
     def chunk_zTXt(self, pos, length):
@@ -359,9 +417,8 @@ class PngStream(ChunkStream):
         if comp_method != 0:
             raise SyntaxError("Unknown compression method %s in zTXt chunk" %
                               comp_method)
-        import zlib
         try:
-            v = zlib.decompress(v[1:])
+            v = _safe_zlib_decompress(v[1:])
         except zlib.error:
             v = b""
 
@@ -371,6 +428,8 @@ class PngStream(ChunkStream):
                 v = v.decode('latin-1', 'replace')
 
             self.im_info[k] = self.im_text[k] = v
+            self.check_text_memory(len(v))
+
         return s
 
     def chunk_iTXt(self, pos, length):
@@ -390,9 +449,8 @@ class PngStream(ChunkStream):
             return s
         if cf != 0:
             if cm == 0:
-                import zlib
                 try:
-                    v = zlib.decompress(v)
+                    v = _safe_zlib_decompress(v)
                 except zlib.error:
                     return s
             else:
@@ -407,6 +465,7 @@ class PngStream(ChunkStream):
                 return s
 
         self.im_info[k] = self.im_text[k] = iTXt(v, lang, tk)
+        self.check_text_memory(len(v))
 
         return s
 
@@ -564,7 +623,7 @@ def putchunk(fp, cid, *data):
     fp.write(o16(hi) + o16(lo))
 
 
-class _idat:
+class _idat(object):
     # wrap output from the encoder in IDAT chunks
 
     def __init__(self, fp, chunk):
@@ -674,10 +733,6 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
             alpha_bytes = 2**bits
             chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
-    if 0:
-        # FIXME: to be supported some day
-        chunk(fp, b"gAMA", o32(int(gamma * 100000.0)))
-
     dpi = im.encoderinfo.get("dpi")
     if dpi:
         chunk(fp, b"pHYs",
@@ -719,7 +774,7 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 def getchunks(im, **params):
     """Return a list of PNG chunks representing this image."""
 
-    class collector:
+    class collector(object):
         data = []
 
         def write(self, data):

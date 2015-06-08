@@ -11,7 +11,7 @@ class TestFileIptc(PillowTestCase):
 
     def dummy_IptcImagePlugin(self):
         # Create an IptcImagePlugin object without initializing it
-        class FakeImage:
+        class FakeImage(object):
             pass
         im = FakeImage()
         im.__class__ = IptcImagePlugin.IptcImageFile

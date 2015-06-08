@@ -56,7 +56,7 @@ def show(image, title=None, **options):
 ##
 # Base class for viewers.
 
-class Viewer:
+class Viewer(object):
 
     # main api
 

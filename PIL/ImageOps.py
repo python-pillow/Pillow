@@ -20,7 +20,7 @@
 from PIL import Image
 from PIL._util import isStringType
 import operator
-from functools import reduce
+import functools
 
 
 #
@@ -213,7 +213,7 @@ def equalize(image, mask=None):
         if len(histo) <= 1:
             lut.extend(list(range(256)))
         else:
-            step = (reduce(operator.add, histo) - histo[-1]) // 255
+            step = (functools.reduce(operator.add, histo) - histo[-1]) // 255
             if not step:
                 lut.extend(list(range(256)))
             else:
@@ -233,7 +233,6 @@ def expand(image, border=0, fill=0):
     :param fill: Pixel fill value (a color value).  Default is 0 (black).
     :return: An image.
     """
-    "Add border to image"
     left, top, right, bottom = _border(border)
     width = left + image.size[0] + right
     height = top + image.size[1] + bottom
@@ -441,3 +440,22 @@ def unsharp_mask(im, radius=None, percent=None, threshold=None):
     return im.im.unsharp_mask(radius, percent, threshold)
 
 usm = unsharp_mask
+
+
+def box_blur(image, radius):
+    """
+    Blur the image by setting each pixel to the average value of the pixels
+    in a square box extending radius pixels in each direction.
+    Supports float radius of arbitrary size. Uses an optimized implementation
+    which runs in linear time relative to the size of the image
+    for any radius value.
+
+    :param image: The image to blur.
+    :param radius: Size of the box in one direction. Radius 0 does not blur,
+                   returns an identical image. Radius 1 takes 1 pixel
+                   in each direction, i.e. 9 pixels in total.
+    :return: An image.
+    """
+    image.load()
+
+    return image._new(image.im.box_blur(radius))

@@ -17,10 +17,10 @@ class TestFileMpo(PillowTestCase):
         # Note that for now, there is no MPO saving functionality
         out = BytesIO()
         im.save(out, "MPO", **options)
-        bytes = out.tell()
+        test_bytes = out.tell()
         out.seek(0)
         im = Image.open(out)
-        im.bytes = bytes  # for testing only
+        im.bytes = test_bytes  # for testing only
         return im
 
     def test_sanity(self):
@@ -94,6 +94,10 @@ class TestFileMpo(PillowTestCase):
             # and this one, too
             im.seek(0)
             self.assertEqual(im.tell(), 0)
+
+    def test_n_frames(self):
+        im = Image.open("Tests/images/sugarshack.mpo")
+        self.assertEqual(im.n_frames, 2)
 
     def test_image_grab(self):
         for test_file in test_files:

@@ -1,7 +1,7 @@
-Original PIL README
-===================
+Pre-fork README
+===============
 
-What follows is the original PIL 1.1.7 README file contents.
+What follows is the untouched, original pre-fork PIL 1.1.7 README file contents.
 
 ::
 

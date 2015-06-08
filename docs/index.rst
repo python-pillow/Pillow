@@ -1,11 +1,11 @@
 Pillow
 ======
 
-Pillow is the 'friendly' PIL fork by Alex Clark and Contributors. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
+Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 
 .. image:: https://travis-ci.org/python-pillow/Pillow.svg?branch=master
    :target: https://travis-ci.org/python-pillow/Pillow
-   :alt: Travis CI build status
+   :alt: Travis CI build status (Linux)
 
 .. image:: https://pypip.in/v/Pillow/badge.png
     :target: https://pypi.python.org/pypi/Pillow/
@@ -16,20 +16,23 @@ Pillow is the 'friendly' PIL fork by Alex Clark and Contributors. PIL is the Pyt
     :alt: Number of PyPI downloads
 
 .. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.png?branch=master
-    :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
-    :alt: Test coverage
+  :target: https://coveralls.io/r/python-pillow/Pillow?branch=master
+   :alt: Code coverage
 
-To install Pillow, please follow the :doc:`installation instructions <installation>`. To download source and/or contribute to development of Pillow please see: https://github.com/python-pillow/Pillow. 
+.. image:: https://landscape.io/github/python-pillow/Pillow/master/landscape.png
+   :target: https://landscape.io/github/python-pillow/Pillow/master
+   :alt: Code health
 
 .. toctree::
    :maxdepth: 2
 
    installation
-   about
    guides
    reference/index.rst
    handbook/appendices
-   original-readme
+   releasenotes/index.rst
+   about
+   pre-fork-readme
 
 Indices and tables
 ==================

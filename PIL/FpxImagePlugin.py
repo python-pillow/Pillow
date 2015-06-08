@@ -20,7 +20,7 @@ __version__ = "0.1"
 
 
 from PIL import Image, ImageFile
-from PIL.OleFileIO import *
+from PIL.OleFileIO import i8, i32, MAGIC, OleFileIO
 
 
 # we map from colour field tuples to (mode, rawmode) descriptors
@@ -130,15 +130,15 @@ class FpxImageFile(ImageFile.ImageFile):
         fp = self.ole.openstream(stream)
 
         # skip prefix
-        p = fp.read(28)
+        fp.read(28)
 
         # header stream
         s = fp.read(36)
 
         size = i32(s, 4), i32(s, 8)
-        tilecount = i32(s, 12)
+        # tilecount = i32(s, 12)
         tilesize = i32(s, 16), i32(s, 20)
-        channels = i32(s, 24)
+        # channels = i32(s, 24)
         offset = i32(s, 28)
         length = i32(s, 32)
 

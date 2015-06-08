@@ -1,13 +1,15 @@
 # A monkey patch of the base distutils.ccompiler to use parallel builds
 # Tested on 2.7, looks to be identical to 3.3.
 
+from __future__ import print_function
 from multiprocessing import Pool, cpu_count
 from distutils.ccompiler import CCompiler
-import os, sys
+import os
+import sys
 
 try:
-    MAX_PROCS = int(os.environ.get('MAX_CONCURRENCY', cpu_count()))
-except:
+    MAX_PROCS = int(os.environ.get('MAX_CONCURRENCY', min(4, cpu_count())))
+except NotImplementedError:
     MAX_PROCS = None
 
 
@@ -38,7 +40,7 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
 
     pool = Pool(MAX_PROCS)
     try:
-        print ("Building using %d processes" % pool._processes)
+        print("Building using %d processes" % pool._processes)
     except:
         pass
     arr = [(self, obj, build, cc_args, extra_postargs, pp_opts)

@@ -8,7 +8,6 @@ class TestImageWin(PillowTestCase):
 
     def test_sanity(self):
         dir(ImageWin)
-        pass
 
     def test_hdc(self):
         # Arrange
@@ -101,8 +100,8 @@ class TestImageWinDib(PillowTestCase):
 
         # Act
         # Make one the same as the using tobytes()/frombytes()
-        buffer = dib1.tobytes()
-        dib2.frombytes(buffer)
+        test_buffer = dib1.tobytes()
+        dib2.frombytes(test_buffer)
 
         # Assert
         # Confirm they're the same
@@ -112,11 +111,11 @@ class TestImageWinDib(PillowTestCase):
         # Arrange
         im = hopper()
         dib = ImageWin.Dib(im)
-        buffer = dib.tobytes()
+        test_buffer = dib.tobytes()
 
         # Act/Assert
-        self.assert_warning(DeprecationWarning, lambda: dib.tostring())
-        self.assert_warning(DeprecationWarning, lambda: dib.fromstring(buffer))
+        self.assert_warning(DeprecationWarning, dib.tostring)
+        self.assert_warning(DeprecationWarning, lambda: dib.fromstring(test_buffer))
 
 
 if __name__ == '__main__':

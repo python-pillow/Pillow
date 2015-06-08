@@ -7,8 +7,11 @@ except:
     try:
         from PyQt4.QtGui import QImage, qRgb, qRgba
     except:
-        # Will be skipped in setUp
-        pass
+        try:
+            from PySide.QtGui import QImage, qRgb, qRgba
+        except:
+            # Will be skipped in setUp
+            pass
 
 
 class TestImageQt(PillowTestCase):
@@ -20,7 +23,10 @@ class TestImageQt(PillowTestCase):
             try:
                 from PyQt4.QtGui import QImage, qRgb, qRgba
             except:
-                self.skipTest('PyQt4 or 5 not installed')
+                try:
+                    from PySide.QtGui import QImage, qRgb, qRgba
+                except:
+                    self.skipTest('PyQt4 or 5 or PySide not installed')
 
     def test_rgb(self):
         # from https://qt-project.org/doc/qt-4.8/qcolor.html

@@ -157,7 +157,7 @@ def Ghostscript(tile, size, fp, scale=1):
     return im
 
 
-class PSFile:
+class PSFile(object):
     """
     Wrapper for bytesio object that treats either CR or LF as end of line.
     """
@@ -248,7 +248,7 @@ class EpsImageFile(ImageFile.ImageFile):
                         # Note: The DSC spec says that BoundingBox
                         # fields should be integers, but some drivers
                         # put floating point values there anyway.
-                        box = [int(float(s)) for s in v.split()]
+                        box = [int(float(i)) for i in v.split()]
                         self.size = box[2] - box[0], box[3] - box[1]
                         self.tile = [("eps", (0, 0) + self.size, offset,
                                       (length, box))]
@@ -275,20 +275,20 @@ class EpsImageFile(ImageFile.ImageFile):
 
             s = fp.readline().strip('\r\n')
 
-            if s[0] != "%":
+            if s[:1] != "%":
                 break
 
         #
         # Scan for an "ImageData" descriptor
 
-        while s[0] == "%":
+        while s[:1] == "%":
 
             if len(s) > 255:
                 raise SyntaxError("not an EPS file")
 
             if s[:11] == "%ImageData:":
                 # Encoded bitmapped image.
-                [x, y, bi, mo, z3, z4, en, id] = s[11:].split(None, 7)
+                x, y, bi, mo = s[11:].split(None, 7)[:4]
 
                 if int(bi) != 8:
                     break
@@ -365,7 +365,7 @@ def _save(im, fp, filename, eps=1):
     else:
         raise ValueError("image mode is not supported")
 
-    class NoCloseStream:
+    class NoCloseStream(object):
         def __init__(self, fp):
             self.fp = fp
 

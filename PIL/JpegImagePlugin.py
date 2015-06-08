@@ -4,7 +4,7 @@
 #
 # JPEG (JFIF) file handling
 #
-# See "Digital Compression and Coding of Continous-Tone Still Images,
+# See "Digital Compression and Coding of Continuous-Tone Still Images,
 # Part 1, Requirements and Guidelines" (CCITT T.81 / ISO 10918-1)
 #
 # History:
@@ -355,7 +355,7 @@ class JpegImageFile(ImageFile.ImageFile):
             scale = s
 
         self.tile = [(d, e, o, a)]
-        self.decoderconfig = (scale, 1)
+        self.decoderconfig = (scale, 0)
 
         return self
 
@@ -454,13 +454,13 @@ def _getmp(self):
         data = self.info["mp"]
     except KeyError:
         return None
-    file = io.BytesIO(data)
-    head = file.read(8)
+    file_contents = io.BytesIO(data)
+    head = file_contents.read(8)
     endianness = '>' if head[:4] == b'\x4d\x4d\x00\x2a' else '<'
     mp = {}
     # process dictionary
     info = TiffImagePlugin.ImageFileDirectory(head)
-    info.load(file)
+    info.load(file_contents)
     for key, value in info.items():
         mp[key] = _fixup(value)
     # it's an error not to have a number of images
@@ -684,7 +684,8 @@ def _save(im, fp, filename):
     # https://github.com/jdriscoll/django-imagekit/issues/50
     bufsize = 0
     if "optimize" in info or "progressive" in info or "progression" in info:
-        if quality >= 95:
+        # keep sets quality to 0, but the actual value may be high.
+        if quality >= 95 or quality == 0:
             bufsize = 2 * im.size[0] * im.size[1]
         else:
             bufsize = im.size[0] * im.size[1]
@@ -703,7 +704,7 @@ def _save_cjpeg(im, fp, filename):
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
     try:
-        os.unlink(file)
+        os.unlink(tempfile)
     except:
         pass
 

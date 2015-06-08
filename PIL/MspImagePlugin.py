@@ -49,10 +49,10 @@ class MspImageFile(ImageFile.ImageFile):
             raise SyntaxError("not an MSP file")
 
         # Header checksum
-        sum = 0
+        checksum = 0
         for i in range(0, 32, 2):
-            sum = sum ^ i16(s[i:i+2])
-        if sum != 0:
+            checksum = checksum ^ i16(s[i:i+2])
+        if checksum != 0:
             raise SyntaxError("bad MSP checksum")
 
         self.mode = "1"
@@ -83,10 +83,10 @@ def _save(im, fp, filename):
     header[6], header[7] = 1, 1
     header[8], header[9] = im.size
 
-    sum = 0
+    checksum = 0
     for h in header:
-        sum = sum ^ h
-    header[12] = sum  # FIXME: is this the right field?
+        checksum = checksum ^ h
+    header[12] = checksum  # FIXME: is this the right field?
 
     # header
     for h in header:

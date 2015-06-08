@@ -20,7 +20,7 @@ from PIL import Image
 # the Python class below is overridden by the C implementation.
 
 
-class Path:
+class Path(object):
 
     def __init__(self, xy):
         pass

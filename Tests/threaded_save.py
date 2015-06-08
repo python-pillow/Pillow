@@ -1,3 +1,4 @@
+from __future__ import print_function
 from PIL import Image
 
 import io
@@ -6,10 +7,7 @@ import sys
 import threading
 import time
 
-try:
-    format = sys.argv[1]
-except:
-    format = "PNG"
+test_format = sys.argv[1] if len(sys.argv) > 1 else "PNG"
 
 im = Image.open("Tests/images/hopper.ppm")
 im.load()
@@ -28,7 +26,7 @@ class Worker(threading.Thread):
                 sys.stdout.write("x")
                 break
             f = io.BytesIO()
-            im.save(f, format, optimize=1)
+            im.save(f, test_format, optimize=1)
             data = f.getvalue()
             result.append(len(data))
             im = Image.open(io.BytesIO(data))

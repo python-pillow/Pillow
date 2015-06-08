@@ -49,10 +49,10 @@ class TestCffi(PillowTestCase):
             self.skipTest("No cffi")
 
     def _test_get_access(self, im):
-        """ Do we get the same thing as the old pixel access """
+        """Do we get the same thing as the old pixel access
 
-        """ Using private interfaces, forcing a capi access and
-        a pyaccess for the same image """
+        Using private interfaces, forcing a capi access and
+        a pyaccess for the same image"""
         caccess = im.im.pixel_access(False)
         access = PyAccess.new(im, False)
 
@@ -90,10 +90,10 @@ class TestCffi(PillowTestCase):
         # self._test_get_access(im)
 
     def _test_set_access(self, im, color):
-        """ Are we writing the correct bits into the image? """
+        """Are we writing the correct bits into the image?
 
-        """ Using private interfaces, forcing a capi access and
-        a pyaccess for the same image """
+        Using private interfaces, forcing a capi access and
+        a pyaccess for the same image"""
         caccess = im.im.pixel_access(False)
         access = PyAccess.new(im, False)
 

@@ -48,7 +48,7 @@ def isInt(f):
             return 1
         else:
             return 0
-    except:
+    except ValueError:
         return 0
 
 iforms = [1, 3, -11, -12, -21, -22]
@@ -127,12 +127,12 @@ class SpiderImageFile(ImageFile.ImageFile):
         if self.istack == 0 and self.imgnumber == 0:
             # stk=0, img=0: a regular 2D image
             offset = hdrlen
-            self.nimages = 1
+            self._nimages = 1
         elif self.istack > 0 and self.imgnumber == 0:
             # stk>0, img=0: Opening the stack for the first time
             self.imgbytes = int(h[12]) * int(h[2]) * 4
             self.hdrlen = hdrlen
-            self.nimages = int(h[26])
+            self._nimages = int(h[26])
             # Point to the first image in the stack
             offset = hdrlen * 2
             self.imgnumber = 1
@@ -154,6 +154,10 @@ class SpiderImageFile(ImageFile.ImageFile):
                 (self.rawmode, 0, 1))]
         self.__fp = self.fp  # FIXME: hack
 
+    @property
+    def n_frames(self):
+        return self._nimages
+
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
     def tell(self):
         if self.imgnumber < 1:
@@ -164,7 +168,7 @@ class SpiderImageFile(ImageFile.ImageFile):
     def seek(self, frame):
         if self.istack == 0:
             return
-        if frame >= self.nimages:
+        if frame >= self._nimages:
             raise EOFError("attempt to seek past end of file")
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
         self.fp = self.__fp
@@ -173,11 +177,11 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     # returns a byte image after rescaling to 0..255
     def convert2byte(self, depth=255):
-        (min, max) = self.getextrema()
+        (minimum, maximum) = self.getextrema()
         m = 1
-        if max != min:
-            m = depth / (max-min)
-        b = -m * min
+        if maximum != minimum:
+            m = depth / (maximum-minimum)
+        b = -m * minimum
         return self.point(lambda i, m=m, b=b: i * m + b).convert("L")
 
     # returns a ImageTk.PhotoImage object, after rescaling to 0..255
@@ -271,7 +275,7 @@ def _save(im, fp, filename):
 
 def _save_spider(im, fp, filename):
     # get the filename extension and register it with Image
-    fn, ext = os.path.splitext(filename)
+    ext = os.path.splitext(filename)[1]
     Image.register_extension("SPIDER", ext)
     _save(im, fp, filename)
 

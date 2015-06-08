@@ -98,8 +98,8 @@ ImagingEffectNoise(int xsize, int ysize, float sigma)
                 /* after numerical recipes */
                 double v1, v2, radius, factor;
                 do {
-                    v1 = rand()*(2.0/32767.0) - 1.0;
-                    v2 = rand()*(2.0/32767.0) - 1.0;
+                    v1 = rand()*(2.0/RAND_MAX) - 1.0;
+                    v2 = rand()*(2.0/RAND_MAX) - 1.0;
                     radius= v1*v1 + v2*v2;
                 } while (radius >= 1.0);
                 factor = sqrt(-2.0*log(radius)/radius);

@@ -63,20 +63,3 @@ explode.py
 --------------------------------------------------------------------
 
 Split a sequence file into individual frames.
-
-image2py.py
---------------------------------------------------------------------
-
-Convert an image to a Python module containing an IMAGE variable.
-Note that the module using the module must include JPEG and ZIP
-decoders, unless the -u option is used.
-
-olesummary.py
---------------------------------------------------------------------
-
-Uses the OleFileIO module to dump the summary information from an OLE
-structured storage file.  This works with most OLE files, including
-Word documents, FlashPix images, etc.
-
-Note that datetime fields currently show the number of seconds since
-January 1st, 1601.

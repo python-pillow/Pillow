@@ -42,6 +42,10 @@ class TestImageSpider(PillowTestCase):
         # Assert
         self.assertEqual(index, 0)
 
+    def test_n_frames(self):
+        im = Image.open(TEST_FILE)
+        self.assertEqual(im.n_frames, 1)
+
     def test_loadImageSeries(self):
         # Arrange
         not_spider_file = "Tests/images/hopper.ppm"

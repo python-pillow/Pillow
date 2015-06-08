@@ -25,13 +25,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.6"
+from __future__ import print_function
 
 from PIL import Image, ImageFile, ImagePalette, _binary
 
 i8 = _binary.i8
 i16 = _binary.i16le
 o8 = _binary.o8
+
+__version__ = "0.6"
 
 
 def _accept(prefix):
@@ -58,7 +60,7 @@ class PcxImageFile(ImageFile.ImageFile):
         if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
             raise SyntaxError("bad PCX image size")
         if Image.DEBUG:
-            print ("BBox: %s %s %s %s" % bbox)
+            print("BBox: %s %s %s %s" % bbox)
 
         # format
         version = i8(s[1])
@@ -66,8 +68,8 @@ class PcxImageFile(ImageFile.ImageFile):
         planes = i8(s[65])
         stride = i16(s, 66)
         if Image.DEBUG:
-            print ("PCX version %s, bits %s, planes %s, stride %s" %
-                   (version, bits, planes, stride))
+            print("PCX version %s, bits %s, planes %s, stride %s" %
+                  (version, bits, planes, stride))
 
         self.info["dpi"] = i16(s, 12), i16(s, 14)
 
@@ -106,7 +108,7 @@ class PcxImageFile(ImageFile.ImageFile):
 
         bbox = (0, 0) + self.size
         if Image.DEBUG:
-            print ("size: %sx%s" % self.size)
+            print("size: %sx%s" % self.size)
 
         self.tile = [("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))]
 
@@ -143,7 +145,7 @@ def _save(im, fp, filename, check=0):
     # gets overwritten.
 
     if Image.DEBUG:
-        print ("PcxImagePlugin._save: xwidth: %d, bits: %d, stride: %d" % (
+        print("PcxImagePlugin._save: xwidth: %d, bits: %d, stride: %d" % (
             im.size[0], bits, stride))
 
     # under windows, we could determine the current screen size with

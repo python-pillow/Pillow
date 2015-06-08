@@ -13,7 +13,7 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
 
 .. code-block:: python
 
-    import Image, ImageMath
+    from PIL import Image, ImageMath
 
     im1 = Image.open("image1.jpg")
     im2 = Image.open("image2.jpg")

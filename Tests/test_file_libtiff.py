@@ -1,8 +1,11 @@
+from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper, py3
 
 import os
+import io
 
 from PIL import Image, TiffImagePlugin
+
 
 class LibTiffTestCase(PillowTestCase):
 
@@ -25,33 +28,34 @@ class LibTiffTestCase(PillowTestCase):
             self.assertEqual(im._compression, 'group4')
         except:
             print("No _compression")
-            print (dir(im))
+            print(dir(im))
 
         # can we write it back out, in a different form.
         out = self.tempfile("temp.png")
         im.save(out)
+
 
 class TestFileLibTiff(LibTiffTestCase):
 
     def test_g4_tiff(self):
         """Test the ordinary file path load path"""
 
-        file = "Tests/images/hopper_g4_500.tif"
-        im = Image.open(file)
+        test_file = "Tests/images/hopper_g4_500.tif"
+        im = Image.open(test_file)
 
         self.assertEqual(im.size, (500, 500))
         self._assert_noerr(im)
 
     def test_g4_large(self):
-        file = "Tests/images/pport_g4.tif"
-        im = Image.open(file)
+        test_file = "Tests/images/pport_g4.tif"
+        im = Image.open(test_file)
         self._assert_noerr(im)
 
     def test_g4_tiff_file(self):
         """Testing the string load path"""
 
-        file = "Tests/images/hopper_g4_500.tif"
-        with open(file, 'rb') as f:
+        test_file = "Tests/images/hopper_g4_500.tif"
+        with open(test_file, 'rb') as f:
             im = Image.open(f)
 
             self.assertEqual(im.size, (500, 500))
@@ -59,10 +63,9 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_g4_tiff_bytesio(self):
         """Testing the stringio loading code path"""
-        from io import BytesIO
-        file = "Tests/images/hopper_g4_500.tif"
-        s = BytesIO()
-        with open(file, 'rb') as f:
+        test_file = "Tests/images/hopper_g4_500.tif"
+        s = io.BytesIO()
+        with open(test_file, 'rb') as f:
             s.write(f.read())
             s.seek(0)
         im = Image.open(s)
@@ -87,8 +90,8 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_g4_write(self):
         """Checking to see that the saved image is the same as what we wrote"""
-        file = "Tests/images/hopper_g4_500.tif"
-        orig = Image.open(file)
+        test_file = "Tests/images/hopper_g4_500.tif"
+        orig = Image.open(test_file)
 
         out = self.tempfile("temp.tif")
         rot = orig.transpose(Image.ROTATE_90)
@@ -106,8 +109,8 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertNotEqual(orig.tobytes(), reread.tobytes())
 
     def test_adobe_deflate_tiff(self):
-        file = "Tests/images/tiff_adobe_deflate.tif"
-        im = Image.open(file)
+        test_file = "Tests/images/tiff_adobe_deflate.tif"
+        im = Image.open(test_file)
 
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (278, 374))
@@ -213,8 +216,8 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_g4_string_info(self):
         """Tests String data in info directory"""
-        file = "Tests/images/hopper_g4_500.tif"
-        orig = Image.open(file)
+        test_file = "Tests/images/hopper_g4_500.tif"
+        orig = Image.open(test_file)
 
         out = self.tempfile("temp.tif")
 
@@ -241,13 +244,13 @@ class TestFileLibTiff(LibTiffTestCase):
         im2 = Image.open('Tests/images/12in16bit.tif')
 
         if Image.DEBUG:
-            print (im.getpixel((0, 0)))
-            print (im.getpixel((0, 1)))
-            print (im.getpixel((0, 2)))
+            print(im.getpixel((0, 0)))
+            print(im.getpixel((0, 1)))
+            print(im.getpixel((0, 2)))
 
-            print (im2.getpixel((0, 0)))
-            print (im2.getpixel((0, 1)))
-            print (im2.getpixel((0, 2)))
+            print(im2.getpixel((0, 0)))
+            print(im2.getpixel((0, 1)))
+            print(im2.getpixel((0, 2)))
 
         self.assert_image_equal(im, im2)
 
@@ -288,7 +291,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im2 = Image.open(out)
         self.assert_image_equal(im, im2)
 
-    def xtest_bw_compression_wRGB(self):
+    def xtest_bw_compression_w_rgb(self):
         """ This test passes, but when running all tests causes a failure due
             to output on stderr from the error thrown by libtiff. We need to
             capture that but not now"""
@@ -319,19 +322,19 @@ class TestFileLibTiff(LibTiffTestCase):
         # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
 
         im.seek(0)
-        self.assertEqual(im.size, (10,10))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,128,0))
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 128, 0))
         self.assertTrue(im.tag.next)
 
         im.seek(1)
-        self.assertEqual(im.size, (10,10))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (255,0,0))
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (255, 0, 0))
         self.assertTrue(im.tag.next)
 
         im.seek(2)
         self.assertFalse(im.tag.next)
-        self.assertEqual(im.size, (20,20))
-        self.assertEqual(im.convert('RGB').getpixel((0,0)), (0,0,255))
+        self.assertEqual(im.size, (20, 20))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
 
         TiffImagePlugin.READ_LIBTIFF = False
 
@@ -341,6 +344,49 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertFalse(im.tag.next)
         im.load()
         self.assertFalse(im.tag.next)
+
+    def test_4bit(self):
+        # Arrange
+        test_file = "Tests/images/hopper_gray_4bpp.tif"
+        original = hopper("L")
+
+        # Act
+        TiffImagePlugin.READ_LIBTIFF = True
+        im = Image.open(test_file)
+        TiffImagePlugin.READ_LIBTIFF = False
+
+        # Assert
+        self.assertEqual(im.size, (128, 128))
+        self.assertEqual(im.mode, "L")
+        self.assert_image_similar(im, original, 7.3)
+
+    def test_save_bytesio(self):
+        # PR 1011
+        # Test TIFF saving to io.BytesIO() object.
+
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        TiffImagePlugin.READ_LIBTIFF = True
+
+        # Generate test image
+        pilim = hopper()
+
+        def save_bytesio(compression=None):
+
+            buffer_io = io.BytesIO()
+            pilim.save(buffer_io, format="tiff", compression=compression)
+            buffer_io.seek(0)
+
+            pilim_load = Image.open(buffer_io)
+            self.assert_image_similar(pilim, pilim_load, 0)
+
+        # save_bytesio()
+        save_bytesio('raw')
+        save_bytesio("packbits")
+        save_bytesio("tiff_lzw")
+
+        TiffImagePlugin.WRITE_LIBTIFF = False
+        TiffImagePlugin.READ_LIBTIFF = False
+
 
 if __name__ == '__main__':
     unittest.main()

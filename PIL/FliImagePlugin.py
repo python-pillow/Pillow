@@ -86,9 +86,10 @@ class FliImageFile(ImageFile.ImageFile):
         self.palette = ImagePalette.raw("RGB", b"".join(palette))
 
         # set things up to decode first frame
-        self.frame = -1
+        self.__frame = -1
         self.__fp = self.fp
-
+        self.__rewind = self.fp.tell()
+        self._n_frames = None
         self.seek(0)
 
     def _palette(self, palette, shift):
@@ -109,11 +110,35 @@ class FliImageFile(ImageFile.ImageFile):
                 palette[i] = (r, g, b)
                 i += 1
 
-    def seek(self, frame):
+    @property
+    def n_frames(self):
+        if self._n_frames is None:
+            current = self.tell()
+            try:
+                while True:
+                    self.seek(self.tell() + 1)
+            except EOFError:
+                self._n_frames = self.tell() + 1
+            self.seek(current)
+        return self._n_frames
 
-        if frame != self.frame + 1:
+    def seek(self, frame):
+        if frame == self.__frame:
+            return
+        if frame < self.__frame:
+            self._seek(0)
+        for f in range(self.__frame + 1, frame + 1):
+            self._seek(f)
+
+    def _seek(self, frame):
+        if frame == 0:
+            self.__frame = -1
+            self.__fp.seek(self.__rewind)
+            self.__offset = 128
+
+        if frame != self.__frame + 1:
             raise ValueError("cannot seek to frame %d" % frame)
-        self.frame = frame
+        self.__frame = frame
 
         # move to next frame
         self.fp = self.__fp
@@ -128,11 +153,10 @@ class FliImageFile(ImageFile.ImageFile):
         self.decodermaxblock = framesize
         self.tile = [("fli", (0, 0)+self.size, self.__offset, None)]
 
-        self.__offset = self.__offset + framesize
+        self.__offset += framesize
 
     def tell(self):
-
-        return self.frame
+        return self.__frame
 
 #
 # registry

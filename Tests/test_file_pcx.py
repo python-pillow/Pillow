@@ -31,8 +31,8 @@ class TestFilePcx(PillowTestCase):
     def test_pil184(self):
         # Check reading of files where xmin/xmax is not zero.
 
-        file = "Tests/images/pil184.pcx"
-        im = Image.open(file)
+        test_file = "Tests/images/pil184.pcx"
+        im = Image.open(test_file)
 
         self.assertEqual(im.size, (447, 144))
         self.assertEqual(im.tile[0][1], (0, 0, 447, 144))

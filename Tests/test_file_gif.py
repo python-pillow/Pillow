@@ -28,20 +28,29 @@ class TestFileGif(PillowTestCase):
     def test_optimize(self):
         from io import BytesIO
 
-        def test(optimize):
+        def test_grayscale(optimize):
             im = Image.new("L", (1, 1), 0)
-            file = BytesIO()
-            im.save(file, "GIF", optimize=optimize)
-            return len(file.getvalue())
-        self.assertEqual(test(0), 800)
-        self.assertEqual(test(1), 38)
+            filename = BytesIO()
+            im.save(filename, "GIF", optimize=optimize)
+            return len(filename.getvalue())
+
+        def test_bilevel(optimize):
+            im = Image.new("1", (1, 1), 0)
+            test_file = BytesIO()
+            im.save(test_file, "GIF", optimize=optimize)
+            return len(test_file.getvalue())
+
+        self.assertEqual(test_grayscale(0), 800)
+        self.assertEqual(test_grayscale(1), 38)
+        self.assertEqual(test_bilevel(0), 800)
+        self.assertEqual(test_bilevel(1), 800)
 
     def test_optimize_full_l(self):
         from io import BytesIO
 
         im = Image.frombytes("L", (16, 16), bytes(bytearray(range(256))))
-        file = BytesIO()
-        im.save(file, "GIF", optimize=True)
+        test_file = BytesIO()
+        im.save(test_file, "GIF", optimize=True)
         self.assertEqual(im.mode, "L")
 
     def test_roundtrip(self):
@@ -68,7 +77,7 @@ class TestFileGif(PillowTestCase):
         im = Image.open(TEST_GIF)
         im = im.convert('RGB')
 
-        im = im.resize((100, 100), Image.ANTIALIAS)
+        im = im.resize((100, 100), Image.LANCZOS)
         im2 = im.convert('P', palette=Image.ADAPTIVE, colors=256)
 
         f = self.tempfile('temp.gif')
@@ -125,6 +134,10 @@ class TestFileGif(PillowTestCase):
         except EOFError:
             self.assertEqual(framecount, 5)
 
+    def test_n_frames(self):
+        im = Image.open("Tests/images/iss634.gif")
+        self.assertEqual(im.n_frames, 43)
+
     def test_dispose_none(self):
         img = Image.open("Tests/images/dispose_none.gif")
         try:
@@ -160,6 +173,33 @@ class TestFileGif(PillowTestCase):
         # first frame
         self.assertEqual(img.histogram()[img.info['transparency']], 0)
 
+    def test_duration(self):
+        duration = 1000
+
+        out = self.tempfile('temp.gif')
+        fp = open(out, "wb")
+        im = Image.new('L', (100, 100), '#000')
+        for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, duration=duration):
+            fp.write(s)
+        fp.write(b";")
+        fp.close()
+        reread = Image.open(out)
+
+        self.assertEqual(reread.info['duration'], duration)
+
+    def test_number_of_loops(self):
+        number_of_loops = 2
+
+        out = self.tempfile('temp.gif')
+        fp = open(out, "wb")
+        im = Image.new('L', (100, 100), '#000')
+        for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, loop=number_of_loops):
+            fp.write(s)
+        fp.write(b";")
+        fp.close()
+        reread = Image.open(out)
+
+        self.assertEqual(reread.info['loop'], number_of_loops)
 
 if __name__ == '__main__':
     unittest.main()

@@ -136,9 +136,9 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 {
     PyBytesObject *webp_string;
-    uint8_t *webp;
+    const uint8_t *webp;
     Py_ssize_t size;
-    PyObject *ret, *bytes, *pymode, *icc_profile = Py_None, *exif = Py_None;
+    PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL, *icc_profile = NULL, *exif = NULL;
     WebPDecoderConfig config;
     VP8StatusCode vp8_status_code = VP8_STATUS_OK;
     char* mode = "RGB";
@@ -173,31 +173,34 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
         WebPData exif_data = {0};
 
         WebPMux* mux = WebPMuxCreate(&data, copy_data);
-        WebPMuxGetFrame(mux, 1, &image);
-        webp = (uint8_t*)image.bitstream.bytes;
+        if (NULL == mux)
+            goto end;
+
+        if (WEBP_MUX_OK != WebPMuxGetFrame(mux, 1, &image))
+        {
+            WebPMuxDelete(mux);
+            goto end;
+        }
+
+        webp = image.bitstream.bytes;
         size = image.bitstream.size;
 
         vp8_status_code = WebPDecode(webp, size, &config);
 
-        WebPMuxGetChunk(mux, "ICCP", &icc_profile_data);
-        if (icc_profile_data.size > 0) {
+        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "ICCP", &icc_profile_data))
             icc_profile = PyBytes_FromStringAndSize((const char*)icc_profile_data.bytes, icc_profile_data.size);
-        }
 
-        WebPMuxGetChunk(mux, "EXIF", &exif_data);
-        if (exif_data.size > 0) {
+        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "EXIF", &exif_data))
             exif = PyBytes_FromStringAndSize((const char*)exif_data.bytes, exif_data.size);
-        }
 
+        WebPDataClear(&image.bitstream);
         WebPMuxDelete(mux);
         }
 #endif
     }
 
-    if (vp8_status_code != VP8_STATUS_OK) {
-        WebPFreeDecBuffer(&config.output);
-        Py_RETURN_NONE;
-    }
+    if (vp8_status_code != VP8_STATUS_OK)
+        goto end;
 
     if (config.output.colorspace < MODE_YUV) {
         bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba,
@@ -215,8 +218,21 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
     pymode = PyString_FromString(mode);
 #endif
     ret = Py_BuildValue("SiiSSS", bytes, config.output.width,
-                        config.output.height, pymode, icc_profile, exif);
+                        config.output.height, pymode,
+                        NULL == icc_profile ? Py_None : icc_profile,
+                        NULL == exif ? Py_None : exif);
+
+end:
     WebPFreeDecBuffer(&config.output);
+
+    Py_XDECREF(bytes);
+    Py_XDECREF(pymode);
+    Py_XDECREF(icc_profile);
+    Py_XDECREF(exif);
+
+    if (Py_None == ret)
+        Py_RETURN_NONE;
+
     return ret;
 }
 
