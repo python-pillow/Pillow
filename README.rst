@@ -1,12 +1,11 @@
 Pillow OS X Wheel Builder
 =========================
 
-This repository builds the most recent tagged version of the Pillow repository.
-
 Build
 -----
 
-::
+This repository builds the most recent tagged version of the Pillow repository::
+
     git submodule init
     git submodule update
     git add Pillow
