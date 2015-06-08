@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Provide n_frames attribute to multi-frame formats #1261
+  [anntzer, radarhere]
+
 - Add duration and loop set to GifImagePlugin #1172
   [radarhere]
 
