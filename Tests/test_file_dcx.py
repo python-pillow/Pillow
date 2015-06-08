@@ -30,6 +30,10 @@ class TestFileDcx(PillowTestCase):
         # Assert
         self.assertEqual(frame, 0)
 
+    def test_n_frames(self):
+        im = Image.open(TEST_FILE)
+        self.assertEqual(im.n_frames, 1)
+
     def test_seek_too_far(self):
         # Arrange
         im = Image.open(TEST_FILE)

@@ -150,6 +150,13 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(
             im.getextrema(), (-3.140936851501465, 3.140684127807617))
 
+    def test_n_frames(self):
+        im = Image.open('Tests/images/multipage-lastframe.tif')
+        self.assertEqual(im.n_frames, 1)
+
+        im = Image.open('Tests/images/multipage.tiff')
+        self.assertEqual(im.n_frames, 3)
+
     def test_multipage(self):
         # issue #862
         im = Image.open('Tests/images/multipage.tiff')

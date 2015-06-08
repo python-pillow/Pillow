@@ -260,6 +260,10 @@ class ImImageFile(ImageFile.ImageFile):
             self.tile = [("raw", (0, 0)+self.size, offs,
                          (self.rawmode, 0, -1))]
 
+    @property
+    def n_frames(self):
+        return self.info[FRAMES]
+
     def seek(self, frame):
 
         if frame < 0 or frame >= self.info[FRAMES]:

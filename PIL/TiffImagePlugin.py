@@ -648,6 +648,8 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__first = self.__next = self.ifd.i32(ifh, 4)
         self.__frame = -1
         self.__fp = self.fp
+        self._frame_pos = []
+        self._n_frames = None
 
         if Image.DEBUG:
             print("*** TiffImageFile._open ***")
@@ -657,28 +659,30 @@ class TiffImageFile(ImageFile.ImageFile):
         # and load the first frame
         self._seek(0)
 
+    @property
+    def n_frames(self):
+        if self._n_frames is None:
+            current = self.tell()
+            try:
+                while True:
+                    self._seek(self.tell() + 1)
+            except EOFError:
+                self._n_frames = self.tell() + 1
+            self.seek(current)
+        return self._n_frames
+
     def seek(self, frame):
         "Select a given frame as current image"
-        if frame < 0:
-            frame = 0
-        self._seek(frame)
+        self._seek(max(frame, 0))  # Questionable backwards compatibility.
         # Create a new core image object on second and
         # subsequent frames in the image. Image may be
         # different size/mode.
         Image._decompression_bomb_check(self.size)
         self.im = Image.core.new(self.mode, self.size)
 
-    def tell(self):
-        "Return the current frame number"
-        return self._tell()
-
     def _seek(self, frame):
         self.fp = self.__fp
-        if frame < self.__frame:
-            # rewind file
-            self.__frame = -1
-            self.__next = self.__first
-        while self.__frame < frame:
+        while len(self._frame_pos) <= frame:
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
             if Image.DEBUG:
@@ -688,14 +692,19 @@ class TiffImageFile(ImageFile.ImageFile):
             # was passed to libtiff, invalidating the buffer
             self.fp.tell()
             self.fp.seek(self.__next)
+            self._frame_pos.append(self.__next)
             if Image.DEBUG:
                 print("Loading tags, location: %s" % self.fp.tell())
             self.tag.load(self.fp)
             self.__next = self.tag.next
             self.__frame += 1
+        self.fp.seek(self._frame_pos[frame])
+        self.tag.load(self.fp)
+        self.__frame = frame
         self._setup()
 
-    def _tell(self):
+    def tell(self):
+        "Return the current frame number"
         return self.__frame
 
     def _decoder(self, rawmode, layer, tile=None):
