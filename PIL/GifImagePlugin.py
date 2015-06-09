@@ -313,8 +313,13 @@ def _save(im, fp, filename):
     for s in header:
         fp.write(s)
 
+    flags = 0
+
+    if get_interlace(im):
+        flags = flags | 64
+
     # local image header
-    get_local_header(fp, im)
+    get_local_header(fp, im, (0, 0), flags)
 
     im_out.encoderconfig = (8, get_interlace(im))
     ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
@@ -343,7 +348,7 @@ def get_interlace(im):
     return interlace
 
 
-def get_local_header(fp, im, offset=(0, 0)):
+def get_local_header(fp, im, offset, flags):
     transparent_color_exists = False
     try:
         transparency = im.encoderinfo["transparency"]
@@ -394,12 +399,6 @@ def get_local_header(fp, im, offset=(0, 0)):
                  o8(1) +
                  o16(number_of_loops) +   # number of loops
                  o8(0))
-
-    flags = 0
-
-    if get_interlace(im):
-        flags = flags | 64
-
     fp.write(b"," +
              o16(offset[0]) +             # offset
              o16(offset[1]) +
@@ -571,7 +570,7 @@ def getdata(im, offset=(0, 0), **params):
         im.encoderinfo = params
 
         # local image header
-        get_local_header(fp, im, offset)
+        get_local_header(fp, im, offset, 0)
 
         ImageFile._save(im, fp, [("gif", (0, 0)+im.size, 0, RAWMODE[im.mode])])
 
