@@ -7,7 +7,7 @@ Changelog (Pillow)
 - Provide n_frames attribute to multi-frame formats #1261
   [anntzer, radarhere]
 
-- Add duration and loop set to GifImagePlugin #1172
+- Add duration and loop set to GifImagePlugin #1172, #1269
   [radarhere]
 
 - Ico files are little endian #1232
