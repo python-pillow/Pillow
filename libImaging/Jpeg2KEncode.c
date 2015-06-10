@@ -257,7 +257,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     opj_image_cmptparm_t image_params[4];
     unsigned xsiz, ysiz;
     unsigned tile_width, tile_height;
-    unsigned tiles_x, tiles_y, num_tiles;
+    unsigned tiles_x, tiles_y;
     unsigned x, y, tile_ndx;
     unsigned n;
     j2k_pack_tile_t pack;
@@ -471,8 +471,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     tiles_y = (im->ysize + (params.image_offset_y0 - params.cp_ty0)
                + tile_height - 1) / tile_height;
 
-    num_tiles = tiles_x * tiles_y;
-
     state->buffer = malloc (tile_width * tile_height * components * prec / 8);
 
     tile_ndx = 0;
@@ -576,14 +574,19 @@ int
 ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
     JPEG2KENCODESTATE *context = (JPEG2KENCODESTATE *)state->context;
 
-    if (context->quality_layers)
+    if (context->quality_layers && context->encoder)
         Py_DECREF(context->quality_layers);
 
     if (context->error_msg)
         free ((void *)context->error_msg);
 
+    context->error_msg = NULL;
+
     if (context->encoder)
         ImagingIncrementalCodecDestroy(context->encoder);
+
+    /* Prevent multiple calls to ImagingIncrementalCodecDestroy */
+    context->encoder = NULL;
 
     return -1;
 }

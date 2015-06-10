@@ -2,13 +2,13 @@ from helper import unittest, PillowTestCase, fromstring, tostring
 
 from PIL import Image
 
-codecs = dir(Image.core)
-filename = "Tests/images/lena.jpg"
-data = tostring(Image.open(filename).resize((512, 512)), "JPEG")
+CODECS = dir(Image.core)
+FILENAME = "Tests/images/hopper.jpg"
+DATA = tostring(Image.open(FILENAME).resize((512, 512)), "JPEG")
 
 
 def draft(mode, size):
-    im = fromstring(data)
+    im = fromstring(DATA)
     im.draft(mode, size)
     return im
 
@@ -16,7 +16,7 @@ def draft(mode, size):
 class TestImageDraft(PillowTestCase):
 
     def setUp(self):
-        if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
+        if "jpeg_encoder" not in CODECS or "jpeg_decoder" not in CODECS:
             self.skipTest("jpeg support not available")
 
     def test_size(self):

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
 
@@ -8,18 +8,26 @@ tag_ids = dict(zip(TiffTags.TAGS.values(), TiffTags.TAGS.keys()))
 class TestFileTiffMetadata(PillowTestCase):
 
     def test_rt_metadata(self):
-        """ Test writing arbitray metadata into the tiff image directory
+        """ Test writing arbitrary metadata into the tiff image directory
             Use case is ImageJ private tags, one numeric, one arbitrary
             data.  https://github.com/python-pillow/Pillow/issues/291
             """
 
-        img = lena()
+        img = hopper()
 
         textdata = "This is some arbitrary metadata for a text field"
+        floatdata = 12.345
+        doubledata = 67.89
+
         info = TiffImagePlugin.ImageFileDirectory()
 
         info[tag_ids['ImageJMetaDataByteCounts']] = len(textdata)
         info[tag_ids['ImageJMetaData']] = textdata
+        info[tag_ids['RollAngle']] = floatdata
+        info.tagtype[tag_ids['RollAngle']] = 11
+
+        info[tag_ids['YawAngle']] = doubledata
+        info.tagtype[tag_ids['YawAngle']] = 12
 
         f = self.tempfile("temp.tif")
 
@@ -29,28 +37,30 @@ class TestFileTiffMetadata(PillowTestCase):
 
         self.assertEqual(loaded.tag[50838], (len(textdata),))
         self.assertEqual(loaded.tag[50839], textdata)
+        self.assertAlmostEqual(loaded.tag[tag_ids['RollAngle']][0], floatdata,
+                               places=5)
+        self.assertAlmostEqual(loaded.tag[tag_ids['YawAngle']][0], doubledata)
 
     def test_read_metadata(self):
-        img = Image.open('Tests/images/lena_g4.tif')
+        img = Image.open('Tests/images/hopper_g4.tif')
 
-        known = {'YResolution': ((1207959552, 16777216),),
+        known = {'YResolution': ((4294967295, 113653537),),
                  'PlanarConfiguration': (1,),
                  'BitsPerSample': (1,),
                  'ImageLength': (128,),
                  'Compression': (4,),
                  'FillOrder': (1,),
-                 'DocumentName': 'lena.g4.tif',
                  'RowsPerStrip': (128,),
-                 'ResolutionUnit': (1,),
+                 'ResolutionUnit': (3,),
                  'PhotometricInterpretation': (0,),
                  'PageNumber': (0, 1),
-                 'XResolution': ((1207959552, 16777216),),
+                 'XResolution': ((4294967295, 113653537),),
                  'ImageWidth': (128,),
                  'Orientation': (1,),
-                 'StripByteCounts': (1796,),
+                 'StripByteCounts': (1968,),
                  'SamplesPerPixel': (1,),
                  'StripOffsets': (8,),
-                 'Software': 'ImageMagick 6.5.7-8 2012-08-17 Q16 http://www.imagemagick.org'}
+                 }
 
         # self.assertEqual is equivalent,
         # but less helpful in telling what's wrong.
@@ -63,7 +73,7 @@ class TestFileTiffMetadata(PillowTestCase):
 
     def test_write_metadata(self):
         """ Test metadata writing through the python code """
-        img = Image.open('Tests/images/lena.tif')
+        img = Image.open('Tests/images/hopper.tif')
 
         f = self.tempfile('temp.tiff')
         img.save(f, tiffinfo=img.tag)
@@ -85,6 +95,10 @@ class TestFileTiffMetadata(PillowTestCase):
             if tag not in ignored:
                 self.assertEqual(
                     value, reloaded[tag], "%s didn't roundtrip" % tag)
+
+    def test_no_duplicate_50741_tag(self):
+        self.assertEqual(tag_ids['MakerNoteSafety'], 50741)
+        self.assertEqual(tag_ids['BestQualityScale'], 50780)
 
 
 if __name__ == '__main__':

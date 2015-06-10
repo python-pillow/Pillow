@@ -56,7 +56,7 @@ class UI(Label):
                 del self.im[0]
                 self.image.paste(im)
             except IndexError:
-                return # end of list
+                return  # end of list
 
         else:
 
@@ -65,7 +65,7 @@ class UI(Label):
                 im.seek(im.tell() + 1)
                 self.image.paste(im)
             except EOFError:
-                return # end of file
+                return  # end of file
 
         try:
             duration = im.info["duration"]

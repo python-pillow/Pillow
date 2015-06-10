@@ -4,6 +4,8 @@ from PIL import Image
 from PIL import ImageDraw
 from io import BytesIO
 import os
+import sys
+import copy
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20
@@ -13,11 +15,52 @@ try:
     from PIL import ImageFont
     ImageFont.core.getfont  # check if freetype is available
 
+    class SimplePatcher(object):
+        def __init__(self, parent_obj, attr_name, value):
+            self._parent_obj = parent_obj
+            self._attr_name = attr_name
+            self._saved = None
+            self._is_saved = False
+            self._value = value
+
+        def __enter__(self):
+            # Patch the attr on the object
+            if hasattr(self._parent_obj, self._attr_name):
+                self._saved = getattr(self._parent_obj, self._attr_name)
+                setattr(self._parent_obj, self._attr_name, self._value)
+                self._is_saved = True
+            else:
+                setattr(self._parent_obj, self._attr_name, self._value)
+                self._is_saved = False
+
+        def __exit__(self, type, value, traceback):
+            # Restore the original value
+            if self._is_saved:
+                setattr(self._parent_obj, self._attr_name, self._saved)
+            else:
+                delattr(self._parent_obj, self._attr_name)
+
     class TestImageFont(PillowTestCase):
 
         def test_sanity(self):
             self.assertRegexpMatches(
                 ImageFont.core.freetype2_version, "\d+\.\d+\.\d+$")
+
+        def test_font_properties(self):
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            self.assertEqual(ttf.path, FONT_PATH)
+            self.assertEqual(ttf.size, FONT_SIZE)
+
+            ttf_copy = ttf.font_variant()
+            self.assertEqual(ttf_copy.path, FONT_PATH)
+            self.assertEqual(ttf_copy.size, FONT_SIZE)
+
+            ttf_copy = ttf.font_variant(size=FONT_SIZE+1)
+            self.assertEqual(ttf_copy.size, FONT_SIZE+1)
+
+            second_font_path = "Tests/fonts/DejaVuSans.ttf"
+            ttf_copy = ttf.font_variant(font=second_font_path)
+            self.assertEqual(ttf_copy.path, second_font_path)
 
         def test_font_with_name(self):
             ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -51,7 +94,8 @@ try:
         def _render(self, font):
             txt = "Hello World!"
             ttf = ImageFont.truetype(font, FONT_SIZE)
-            w, h = ttf.getsize(txt)
+            ttf.getsize(txt)
+            
             img = Image.new("RGB", (256, 64), "white")
             d = ImageDraw.Draw(img)
             d.text((10, 10), txt, font=ttf, fill='black')
@@ -83,7 +127,7 @@ try:
 
             target = 'Tests/images/rectangle_surrounding_text.png'
             target_img = Image.open(target)
-            self.assert_image_equal(im, target_img)
+            self.assert_image_similar(im, target_img, .5)
 
         def test_render_multiline(self):
             im = Image.new(mode='RGB', size=(300, 100))
@@ -191,6 +235,79 @@ try:
 
             # Assert
             self.assert_image_equal(im, target_img)
+
+        def _test_fake_loading_font(self, path_to_fake, fontname):
+            # Make a copy of FreeTypeFont so we can patch the original
+            free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)
+            with SimplePatcher(ImageFont, '_FreeTypeFont', free_type_font):
+                def loadable_font(filepath, size, index, encoding):
+                    if filepath == path_to_fake:
+                        return ImageFont._FreeTypeFont(FONT_PATH, size, index,
+                                                       encoding)
+                    return ImageFont._FreeTypeFont(filepath, size, index,
+                                                   encoding)
+                with SimplePatcher(ImageFont, 'FreeTypeFont', loadable_font):
+                    font = ImageFont.truetype(fontname)
+                    # Make sure it's loaded
+                    name = font.getname()
+                    self.assertEqual(('FreeMono', 'Regular'), name)
+
+        @unittest.skipIf(sys.platform.startswith('win32'),
+                         "requires Unix or MacOS")
+        def test_find_linux_font(self):
+            # A lot of mocking here - this is more for hitting code and
+            # catching syntax like errors
+            font_directory = '/usr/local/share/fonts'
+            with SimplePatcher(sys, 'platform', 'linux'):
+                patched_env = copy.deepcopy(os.environ)
+                patched_env['XDG_DATA_DIRS'] = '/usr/share/:/usr/local/share/'
+                with SimplePatcher(os, 'environ', patched_env):
+                    def fake_walker(path):
+                        if path == font_directory:
+                            return [(path, [], [
+                                'Arial.ttf', 'Single.otf', 'Duplicate.otf',
+                                'Duplicate.ttf'], )]
+                        return [(path, [], ['some_random_font.ttf'], )]
+                    with SimplePatcher(os, 'walk', fake_walker):
+                        # Test that the font loads both with and without the
+                        # extension
+                        self._test_fake_loading_font(
+                            font_directory+'/Arial.ttf', 'Arial.ttf')
+                        self._test_fake_loading_font(
+                            font_directory+'/Arial.ttf', 'Arial')
+
+                        # Test that non-ttf fonts can be found without the
+                        # extension
+                        self._test_fake_loading_font(
+                            font_directory+'/Single.otf', 'Single')
+
+                        # Test that ttf fonts are preferred if the extension is
+                        # not specified
+                        self._test_fake_loading_font(
+                            font_directory+'/Duplicate.ttf', 'Duplicate')
+
+        @unittest.skipIf(sys.platform.startswith('win32'),
+                         "requires Unix or MacOS")
+        def test_find_osx_font(self):
+            # Like the linux test, more cover hitting code rather than testing
+            # correctness.
+            font_directory = '/System/Library/Fonts'
+            with SimplePatcher(sys, 'platform', 'darwin'):
+                def fake_walker(path):
+                    if path == font_directory:
+                        return [(path, [],
+                                ['Arial.ttf', 'Single.otf',
+                                 'Duplicate.otf', 'Duplicate.ttf'], )]
+                    return [(path, [], ['some_random_font.ttf'], )]
+                with SimplePatcher(os, 'walk', fake_walker):
+                    self._test_fake_loading_font(
+                        font_directory+'/Arial.ttf', 'Arial.ttf')
+                    self._test_fake_loading_font(
+                        font_directory+'/Arial.ttf', 'Arial')
+                    self._test_fake_loading_font(
+                        font_directory+'/Single.otf', 'Single')
+                    self._test_fake_loading_font(
+                        font_directory+'/Duplicate.ttf', 'Duplicate')
 
 
 except ImportError:

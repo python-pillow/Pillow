@@ -22,10 +22,10 @@ class TestFileJpeg2k(PillowTestCase):
     def roundtrip(self, im, **options):
         out = BytesIO()
         im.save(out, "JPEG2000", **options)
-        bytes = out.tell()
+        test_bytes = out.tell()
         out.seek(0)
         im = Image.open(out)
-        im.bytes = bytes  # for testing only
+        im.bytes = test_bytes  # for testing only
         im.load()
         return im
 
@@ -52,7 +52,8 @@ class TestFileJpeg2k(PillowTestCase):
     def test_lossless(self):
         im = Image.open('Tests/images/test-card-lossless.jp2')
         im.load()
-        im.save('/tmp/test-card.png')
+        outfile = self.tempfile('temp_test-card.png')
+        im.save(outfile)
         self.assert_image_similar(im, test_card, 1.0e-3)
 
     def test_lossy_tiled(self):

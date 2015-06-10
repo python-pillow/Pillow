@@ -19,14 +19,14 @@ from distutils import sysconfig
 from setuptools import Extension, setup, find_packages
 
 # monkey patch import hook. Even though flake8 says it's not used, it is.
-# comment this out to disable multi threaded builds. 
+# comment this out to disable multi threaded builds.
 import mp_compile
 
 _IMAGING = (
     "decode", "encode", "map", "display", "outline", "path")
 
 _LIB_IMAGING = (
-    "Access", "AlphaComposite", "Antialias", "Bands", "BitDecode", "Blend",
+    "Access", "AlphaComposite", "Resample", "Bands", "BitDecode", "Blend",
     "Chops", "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop", "Dib", "Draw",
     "Effects", "EpsEncode", "File", "Fill", "Filter", "FliDecode",
     "Geometry", "GetBBox", "GifDecode", "GifEncode", "HexDecode",
@@ -37,7 +37,7 @@ _LIB_IMAGING = (
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
     "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
     "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Incremental",
-    "Jpeg2KDecode", "Jpeg2KEncode")
+    "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur")
 
 
 def _add_directory(path, dir, where=None):
@@ -90,7 +90,7 @@ except (ImportError, OSError):
 
 
 NAME = 'Pillow'
-PILLOW_VERSION = '2.5.3'
+PILLOW_VERSION = '2.9.0.dev0'
 TCL_ROOT = None
 JPEG_ROOT = None
 JPEG2K_ROOT = None
@@ -410,7 +410,7 @@ class pil_build_ext(build_ext):
             for directory in self.compiler.include_dirs:
                 try:
                     listdir = os.listdir(directory)
-                except Exception:  
+                except Exception:
                     # WindowsError, FileNotFoundError
                     continue
                 for name in listdir:
@@ -573,7 +573,7 @@ class pil_build_ext(build_ext):
             if feature.webpmux:
                 defs.append(("HAVE_WEBPMUX", None))
                 libs.append(feature.webpmux)
-                libs.append(feature.webpmux.replace('pmux','pdemux'))
+                libs.append(feature.webpmux.replace('pmux', 'pdemux'))
 
             exts.append(Extension(
                 "PIL._webp", ["_webp.c"], libraries=libs, define_macros=defs))
@@ -725,12 +725,15 @@ class pil_build_ext(build_ext):
             os.unlink(tmpfile)
 
 
+def debug_build():
+    return hasattr(sys, 'gettotalrefcount')
+
 setup(
     name=NAME,
     version=PILLOW_VERSION,
     description='Python Imaging Library (Fork)',
     long_description=_read('README.rst').decode('utf-8'),
-    author='Alex Clark (fork author)',
+    author='Alex Clark (Fork Author)',
     author_email='aclark@aclark.net',
     url='http://python-pillow.github.io/',
     classifiers=[
@@ -754,8 +757,10 @@ setup(
     include_package_data=True,
     packages=find_packages(),
     scripts=glob.glob("Scripts/pil*.py"),
-    test_suite='PIL.tests',
+    test_suite='nose.collector',
     keywords=["Imaging", ],
     license='Standard PIL License',
-    zip_safe=False,
-    )
+    zip_safe=not debug_build(),
+)
+# End of file
+

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageChops
@@ -8,7 +8,7 @@ class TestImageChops(PillowTestCase):
 
     def test_sanity(self):
 
-        im = lena("L")
+        im = hopper("L")
 
         ImageChops.constant(im, 128)
         ImageChops.duplicate(im)

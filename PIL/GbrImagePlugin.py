@@ -17,8 +17,10 @@ from PIL import Image, ImageFile, _binary
 
 i32 = _binary.i32be
 
+
 def _accept(prefix):
     return i32(prefix) >= 20 and i32(prefix[4:8]) == 1
+
 
 ##
 # Image plugin for the GIMP brush format.
@@ -37,8 +39,8 @@ class GbrImageFile(ImageFile.ImageFile):
 
         width = i32(self.fp.read(4))
         height = i32(self.fp.read(4))
-        bytes = i32(self.fp.read(4))
-        if width <= 0 or height <= 0 or bytes != 1:
+        color_depth = i32(self.fp.read(4))
+        if width <= 0 or height <= 0 or color_depth != 1:
             raise SyntaxError("not a GIMP brush")
 
         comment = self.fp.read(header_size - 20)[:-1]

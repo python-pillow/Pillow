@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena, tostring
+from helper import unittest, PillowTestCase, hopper, tostring
 
 from PIL import Image
 from PIL import ImageFileIO
@@ -8,7 +8,7 @@ class TestImageFileIo(PillowTestCase):
 
     def test_fileio(self):
 
-        class DumbFile:
+        class DumbFile(object):
             def __init__(self, data):
                 self.data = data
 
@@ -19,7 +19,7 @@ class TestImageFileIo(PillowTestCase):
             def close(self):
                 pass
 
-        im1 = lena()
+        im1 = hopper()
 
         io = ImageFileIO.ImageFileIO(DumbFile(tostring(im1, "PPM")))
 

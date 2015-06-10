@@ -19,8 +19,9 @@
 
 from __future__ import print_function
 
-import site
-import getopt, glob, sys
+import getopt
+import glob
+import sys
 
 from PIL import Image
 
@@ -58,6 +59,7 @@ for o, a in opt:
         verify = 1
     elif o == "-D":
         Image.DEBUG += 1
+
 
 def globfix(files):
     # expand wildcards where necessary

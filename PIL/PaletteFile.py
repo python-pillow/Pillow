@@ -15,10 +15,11 @@
 
 from PIL._binary import o8
 
+
 ##
 # File handler for Teragon-style palette files.
 
-class PaletteFile:
+class PaletteFile(object):
 
     rawmode = "RGB"
 
@@ -48,7 +49,6 @@ class PaletteFile:
                 self.palette[i] = o8(r) + o8(g) + o8(b)
 
         self.palette = b"".join(self.palette)
-
 
     def getpalette(self):
 

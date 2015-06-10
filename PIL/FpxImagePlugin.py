@@ -20,7 +20,7 @@ __version__ = "0.1"
 
 
 from PIL import Image, ImageFile
-from PIL.OleFileIO import *
+from PIL.OleFileIO import i8, i32, MAGIC, OleFileIO
 
 
 # we map from colour field tuples to (mode, rawmode) descriptors
@@ -34,15 +34,17 @@ MODES = {
     (0x00020000, 0x00020001, 0x00020002): ("RGB", "YCC;P"),
     (0x00028000, 0x00028001, 0x00028002, 0x00027ffe): ("RGBA", "YCCA;P"),
     # standard RGB (NIFRGB)
-    (0x00030000, 0x00030001, 0x00030002): ("RGB","RGB"),
-    (0x00038000, 0x00038001, 0x00038002, 0x00037ffe): ("RGBA","RGBA"),
+    (0x00030000, 0x00030001, 0x00030002): ("RGB", "RGB"),
+    (0x00038000, 0x00038001, 0x00038002, 0x00037ffe): ("RGBA", "RGBA"),
 }
+
 
 #
 # --------------------------------------------------------------------
 
 def _accept(prefix):
     return prefix[:8] == MAGIC
+
 
 ##
 # Image plugin for the FlashPix images.
@@ -67,7 +69,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         self._open_index(1)
 
-    def _open_index(self, index = 1):
+    def _open_index(self, index=1):
         #
         # get the Image Contents Property Set
 
@@ -95,7 +97,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         id = self.maxid << 16
 
-        s = prop[0x2000002|id]
+        s = prop[0x2000002 | id]
 
         colors = []
         for i in range(i32(s, 4)):
@@ -107,7 +109,7 @@ class FpxImageFile(ImageFile.ImageFile):
         # load JPEG tables, if any
         self.jpeg = {}
         for i in range(256):
-            id = 0x3000001|(i << 16)
+            id = 0x3000001 | (i << 16)
             if id in prop:
                 self.jpeg[i] = prop[id]
 
@@ -115,7 +117,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         self._open_subimage(1, self.maxid)
 
-    def _open_subimage(self, index = 1, subimage = 0):
+    def _open_subimage(self, index=1, subimage=0):
         #
         # setup tile descriptors for a given subimage
 
@@ -128,15 +130,15 @@ class FpxImageFile(ImageFile.ImageFile):
         fp = self.ole.openstream(stream)
 
         # skip prefix
-        p = fp.read(28)
+        fp.read(28)
 
         # header stream
         s = fp.read(36)
 
         size = i32(s, 4), i32(s, 8)
-        tilecount = i32(s, 12)
+        # tilecount = i32(s, 12)
         tilesize = i32(s, 16), i32(s, 20)
-        channels = i32(s, 24)
+        # channels = i32(s, 24)
         offset = i32(s, 28)
         length = i32(s, 32)
 
@@ -159,14 +161,14 @@ class FpxImageFile(ImageFile.ImageFile):
             compression = i32(s, i+8)
 
             if compression == 0:
-                self.tile.append(("raw", (x,y,x+xtile,y+ytile),
-                        i32(s, i) + 28, (self.rawmode)))
+                self.tile.append(("raw", (x, y, x+xtile, y+ytile),
+                                 i32(s, i) + 28, (self.rawmode)))
 
             elif compression == 1:
 
                 # FIXME: the fill decoder is not implemented
-                self.tile.append(("fill", (x,y,x+xtile,y+ytile),
-                        i32(s, i) + 28, (self.rawmode, s[12:16])))
+                self.tile.append(("fill", (x, y, x+xtile, y+ytile),
+                                 i32(s, i) + 28, (self.rawmode, s[12:16])))
 
             elif compression == 2:
 
@@ -182,14 +184,14 @@ class FpxImageFile(ImageFile.ImageFile):
                         # this problem :
                         jpegmode, rawmode = "YCbCrK", "CMYK"
                     else:
-                        jpegmode = None # let the decoder decide
+                        jpegmode = None  # let the decoder decide
 
                 else:
                     # The image is stored as defined by rawmode
                     jpegmode = rawmode
 
-                self.tile.append(("jpeg", (x,y,x+xtile,y+ytile),
-                        i32(s, i) + 28, (rawmode, jpegmode)))
+                self.tile.append(("jpeg", (x, y, x+xtile, y+ytile),
+                                 i32(s, i) + 28, (rawmode, jpegmode)))
 
                 # FIXME: jpeg tables are tile dependent; the prefix
                 # data must be placed in the tile descriptor itself!
@@ -204,7 +206,7 @@ class FpxImageFile(ImageFile.ImageFile):
             if x >= xsize:
                 x, y = 0, y + ytile
                 if y >= ysize:
-                    break # isn't really required
+                    break  # isn't really required
 
         self.stream = stream
         self.fp = None
@@ -212,7 +214,8 @@ class FpxImageFile(ImageFile.ImageFile):
     def load(self):
 
         if not self.fp:
-            self.fp = self.ole.openstream(self.stream[:2] + ["Subimage 0000 Data"])
+            self.fp = self.ole.openstream(self.stream[:2] +
+                                          ["Subimage 0000 Data"])
 
         ImageFile.ImageFile.load(self)
 

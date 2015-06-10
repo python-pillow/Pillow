@@ -34,7 +34,8 @@ import warnings
 class DecompressionBombWarning(RuntimeWarning):
     pass
 
-class _imaging_not_installed:
+
+class _imaging_not_installed(object):
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imaging C module is not installed")
@@ -54,10 +55,11 @@ except ImportError:
     pass
 
 try:
-    # If the _imaging C module is not present, you can still use
-    # the "open" function to identify files, but you cannot load
-    # them.  Note that other modules should not refer to _imaging
-    # directly; import Image and use the Image.core variable instead.
+    # If the _imaging C module is not present, Pillow will not load.
+    # Note that other modules should not refer to _imaging directly;
+    # import Image and use the Image.core variable instead.
+    # Also note that Image.core is not a publicly documented interface,
+    # and should be considered private and subject to change.
     from PIL import _imaging as core
     if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
         raise ImportError("The _imaging extension was built for another "
@@ -90,6 +92,7 @@ except ImportError as v:
             RuntimeWarning
             )
     # Fail here anyway. Don't let people run with a mostly broken Pillow.
+    # see docs/porting-pil-to-pillow.rst
     raise
 
 try:
@@ -106,6 +109,8 @@ from PIL._util import deferred_error
 
 import os
 import sys
+import io
+import struct
 
 # type stuff
 import collections
@@ -149,6 +154,7 @@ FLIP_TOP_BOTTOM = 1
 ROTATE_90 = 2
 ROTATE_180 = 3
 ROTATE_270 = 4
+TRANSPOSE = 5
 
 # transforms
 AFFINE = 0
@@ -158,11 +164,10 @@ QUAD = 3
 MESH = 4
 
 # resampling filters
-NONE = 0
-NEAREST = 0
-ANTIALIAS = 1  # 3-lobed lanczos
-LINEAR = BILINEAR = 2
-CUBIC = BICUBIC = 3
+NEAREST = NONE = 0
+LANCZOS = ANTIALIAS = 1
+BILINEAR = LINEAR = 2
+BICUBIC = CUBIC = 3
 
 # dithers
 NONE = 0
@@ -382,7 +387,7 @@ def init():
     for plugin in _plugins:
         try:
             if DEBUG:
-                print ("Importing %s" % plugin)
+                print("Importing %s" % plugin)
             __import__("PIL.%s" % plugin, globals(), locals(), [])
         except ImportError:
             if DEBUG:
@@ -438,7 +443,7 @@ def coerce_e(value):
     return value if isinstance(value, _E) else _E(value)
 
 
-class _E:
+class _E(object):
     def __init__(self, data):
         self.data = data
 
@@ -473,7 +478,7 @@ def _getscaleoffset(expr):
 # --------------------------------------------------------------------
 # Implementation wrapper
 
-class Image:
+class Image(object):
     """
     This class represents an image object.  To create
     :py:class:`~PIL.Image.Image` objects, use the appropriate factory
@@ -530,7 +535,7 @@ class Image:
         """
         Closes the file pointer, if possible.
 
-        This operation will destroy the image core and release it's memory.
+        This operation will destroy the image core and release its memory.
         The image data will be unusable afterward.
 
         This function is only required to close images that have not
@@ -541,7 +546,7 @@ class Image:
             self.fp.close()
         except Exception as msg:
             if DEBUG:
-                print ("Error closing: %s" % msg)
+                print("Error closing: %s" % msg)
 
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
@@ -595,6 +600,16 @@ class Image:
             id(self)
             )
 
+    def _repr_png_(self):
+        """ iPython display hook support
+
+        :returns: png version of the image as bytes
+        """
+        from io import BytesIO
+        b = BytesIO()
+        self.save(b, 'PNG')
+        return b.getvalue()
+
     def __getattr__(self, name):
         if name == "__array_interface__":
             # numpy array interface support
@@ -622,7 +637,7 @@ class Image:
         self.mode = mode
         self.size = size
         self.im = core.new(mode, size)
-        if mode in ("L", "P"):
+        if mode in ("L", "P") and palette:
             self.putpalette(palette)
         self.frombytes(data)
 
@@ -664,6 +679,10 @@ class Image:
 
     # Declare tostring as alias to tobytes
     def tostring(self, *args, **kw):
+        """Deprecated alias to tobytes.
+
+        .. deprecated:: 2.0
+        """
         warnings.warn(
             'tostring() is deprecated. Please call tobytes() instead.',
             DeprecationWarning,
@@ -737,6 +756,7 @@ class Image:
         associated with the image.
 
         :returns: An image access object.
+        :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess`
         """
         if self.im and self.palette and self.palette.dirty:
             # realize palette
@@ -796,7 +816,7 @@ class Image:
         use other thresholds, use the :py:meth:`~PIL.Image.Image.point`
         method.
 
-        :param mode: The requested mode.
+        :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
            should be 4- or 16-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
@@ -847,8 +867,9 @@ class Image:
                 t = self.info['transparency']
                 if isinstance(t, bytes):
                     # Dragons. This can't be represented by a single color
-                    warnings.warn('Palette images with Transparency expressed ' +
-                                  ' in bytes should be converted to RGBA images')
+                    warnings.warn('Palette images with Transparency  ' +
+                                  ' expressed in bytes should be converted ' +
+                                  'to RGBA images')
                     delete_trns = True
                 else:
                     # get the new transparency color.
@@ -864,10 +885,19 @@ class Image:
                         # can't just retrieve the palette number, got to do it
                         # after quantization.
                         trns_im = trns_im.convert('RGB')
-                    trns = trns_im.getpixel((0,0))
+                    trns = trns_im.getpixel((0, 0))
 
             elif self.mode == 'P' and mode == 'RGBA':
+                t = self.info['transparency']
                 delete_trns = True
+
+                if isinstance(t, bytes):
+                    self.im.putpalettealphas(t)
+                elif isinstance(t, int):
+                    self.im.putpalettealpha(t, 0)
+                else:
+                    raise ValueError("Transparency for P mode should" +
+                                     " be bytes or int")
 
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
@@ -920,14 +950,19 @@ class Image:
         return new_im
 
     def quantize(self, colors=256, method=None, kmeans=0, palette=None):
+        """
+        Convert the image to 'P' mode with the specified number
+        of colors.
 
-        # methods:
-        #    0 = median cut
-        #    1 = maximum coverage
-        #    2 = fast octree
+        :param colors: The desired number of colors, <= 256
+        :param method: 0 = median cut
+                       1 = maximum coverage
+                       2 = fast octree
+        :param kmeans: Integer
+        :param palette: Quantize to the :py:class:`PIL.ImagingPalette` palette.
+        :returns: A new image
 
-        # NOTE: this functionality will be moved to the extended
-        # quantizer interface in a later version of PIL.
+        """
 
         self.load()
 
@@ -994,8 +1029,6 @@ class Image:
 
     def draft(self, mode, size):
         """
-        NYI
-
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
         size.  For example, you can use this method to convert a color
@@ -1255,11 +1288,11 @@ class Image:
         images (in the latter case, the alpha band is used as mask).
         Where the mask is 255, the given image is copied as is.  Where
         the mask is 0, the current value is preserved.  Intermediate
-        values can be used for transparency effects.
+        values will mix the two images together, including their alpha
+        channels if they have them.
 
-        Note that if you paste an "RGBA" image, the alpha band is
-        ignored.  You can work around this by using the same image as
-        both source image and mask.
+        See :py:meth:`~PIL.Image.Image.alpha_composite` if you want to
+        combine images with respect to their alpha channels.
 
         :param im: Source image or pixel value (integer or tuple).
         :param box: An optional 4-tuple giving the region to paste into.
@@ -1500,19 +1533,22 @@ class Image:
            (width, height).
         :param resample: An optional resampling filter.  This can be
            one of :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
-           :py:attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
-           environment), :py:attr:`PIL.Image.BICUBIC` (cubic spline
-           interpolation in a 4x4 environment), or
-           :py:attr:`PIL.Image.ANTIALIAS` (a high-quality downsampling filter).
+           :py:attr:`PIL.Image.BILINEAR` (linear interpolation),
+           :py:attr:`PIL.Image.BICUBIC` (cubic spline interpolation), or
+           :py:attr:`PIL.Image.LANCZOS` (a high-quality downsampling filter).
            If omitted, or if the image has mode "1" or "P", it is
            set :py:attr:`PIL.Image.NEAREST`.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if resample not in (NEAREST, BILINEAR, BICUBIC, ANTIALIAS):
+        if resample not in (NEAREST, BILINEAR, BICUBIC, LANCZOS):
             raise ValueError("unknown resampling filter")
 
         self.load()
+
+        size = tuple(size)
+        if self.size == size:
+            return self._new(self.im)
 
         if self.mode in ("1", "P"):
             resample = NEAREST
@@ -1520,16 +1556,7 @@ class Image:
         if self.mode == 'RGBA':
             return self.convert('RGBa').resize(size, resample).convert('RGBA')
 
-        if resample == ANTIALIAS:
-            # requires stretch support (imToolkit & PIL 1.1.3)
-            try:
-                im = self.im.stretch(size, resample)
-            except AttributeError:
-                raise ValueError("unsupported resampling filter")
-        else:
-            im = self.im.resize(size, resample)
-
-        return self._new(im)
+        return self._new(self.im.resize(size, resample))
 
     def rotate(self, angle, resample=NEAREST, expand=0):
         """
@@ -1600,15 +1627,16 @@ class Image:
 
         Keyword options can be used to provide additional instructions
         to the writer. If a writer doesn't recognise an option, it is
-        silently ignored. The available options are described later in
-        this handbook.
+        silently ignored. The available options are described in the
+        :doc:`image format documentation
+        <../handbook/image-file-formats>` for each writer.
 
         You can use a file object instead of a filename. In this case,
         you must always specify the format. The file object must
-        implement the **seek**, **tell**, and **write**
+        implement the ``seek``, ``tell``, and ``write``
         methods, and be opened in binary mode.
 
-        :param file: File name or file object.
+        :param fp: File name or file object.
         :param format: Optional format override.  If omitted, the
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
@@ -1735,7 +1763,7 @@ class Image:
         """
         return 0
 
-    def thumbnail(self, size, resample=ANTIALIAS):
+    def thumbnail(self, size, resample=BICUBIC):
         """
         Make this image into a thumbnail.  This method modifies the
         image to contain a thumbnail version of itself, no larger than
@@ -1744,12 +1772,7 @@ class Image:
         :py:meth:`~PIL.Image.Image.draft` method to configure the file reader
         (where applicable), and finally resizes the image.
 
-        Note that the bilinear and bicubic filters in the current
-        version of PIL are not well-suited for thumbnail generation.
-        You should use :py:attr:`PIL.Image.ANTIALIAS` unless speed is much more
-        important than quality.
-
-        Also note that this function modifies the :py:class:`~PIL.Image.Image`
+        Note that this function modifies the :py:class:`~PIL.Image.Image`
         object in place.  If you need to use the full resolution image as well,
         apply this method to a :py:meth:`~PIL.Image.Image.copy` of the original
         image.
@@ -1757,10 +1780,9 @@ class Image:
         :param size: Requested size.
         :param resample: Optional resampling filter.  This can be one
            of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
-           :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.ANTIALIAS`
-           (best quality).  If omitted, it defaults to
-           :py:attr:`PIL.Image.ANTIALIAS`. (was :py:attr:`PIL.Image.NEAREST`
-           prior to version 2.5.0)
+           :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.LANCZOS`.
+           If omitted, it defaults to :py:attr:`PIL.Image.BICUBIC`.
+           (was :py:attr:`PIL.Image.NEAREST` prior to version 2.5.0)
         :returns: None
         """
 
@@ -1779,14 +1801,7 @@ class Image:
 
         self.draft(None, size)
 
-        self.load()
-
-        try:
-            im = self.resize(size, resample)
-        except ValueError:
-            if resample != ANTIALIAS:
-                raise
-            im = self.resize(size, NEAREST)  # fallback
+        im = self.resize(size, resample)
 
         self.im = im.im
         self.mode = im.mode
@@ -1795,7 +1810,7 @@ class Image:
         self.readonly = 0
         self.pyaccess = None
 
-    # FIXME: the different tranform methods need further explanation
+    # FIXME: the different transform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
     def transform(self, size, method, data=None, resample=NEAREST, fill=1):
         """
@@ -1902,12 +1917,22 @@ class Image:
 
         :param method: One of :py:attr:`PIL.Image.FLIP_LEFT_RIGHT`,
           :py:attr:`PIL.Image.FLIP_TOP_BOTTOM`, :py:attr:`PIL.Image.ROTATE_90`,
-          :py:attr:`PIL.Image.ROTATE_180`, or :py:attr:`PIL.Image.ROTATE_270`.
+          :py:attr:`PIL.Image.ROTATE_180`, :py:attr:`PIL.Image.ROTATE_270` or
+          :py:attr:`PIL.Image.TRANSPOSE`.
         :returns: Returns a flipped or rotated copy of this image.
         """
 
         self.load()
-        im = self.im.transpose(method)
+        return self._new(self.im.transpose(method))
+
+    def effect_spread(self, distance):
+        """
+        Randomly spread pixels in an image.
+
+        :param distance: Distance to spread pixels.
+        """
+        self.load()
+        im = self.im.effect_spread(distance)
         return self._new(im)
 
 
@@ -1950,12 +1975,12 @@ class _ImageCrop(Image):
 # --------------------------------------------------------------------
 # Abstract handlers.
 
-class ImagePointHandler:
+class ImagePointHandler(object):
     # used as a mixin by point transforms (for use with im.point)
     pass
 
 
-class ImageTransformHandler:
+class ImageTransformHandler(object):
     # used as a mixin by geometry transforms (for use with im.transform)
     pass
 
@@ -1976,7 +2001,8 @@ def new(mode, size, color=0):
     """
     Creates a new image with the given mode and size.
 
-    :param mode: The mode to use for the new image.
+    :param mode: The mode to use for the new image. See:
+       :ref:`concept-modes`.
     :param size: A 2-tuple, containing (width, height) in pixels.
     :param color: What color to use for the image.  Default is black.
        If given, this should be a single integer or floating point value
@@ -2009,14 +2035,14 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
     You can also use any pixel decoder supported by PIL.  For more
     information on available decoders, see the section
-    **Writing Your Own File Decoder**.
+    :ref:`Writing Your Own File Decoder <file-decoders>`.
 
     Note that this function decodes pixel data only, not entire images.
     If you have an entire image in a string, wrap it in a
     :py:class:`~io.BytesIO` object, and use :py:func:`~PIL.Image.open` to load
     it.
 
-    :param mode: The image mode.
+    :param mode: The image mode. See: :ref:`concept-modes`.
     :param size: The image size.
     :param data: A byte buffer containing raw data for the given mode.
     :param decoder_name: What decoder to use.
@@ -2068,7 +2094,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     issues a warning if you do this; to disable the warning, you should provide
     the full set of parameters.  See below for details.
 
-    :param mode: The image mode.
+    :param mode: The image mode. See: :ref:`concept-modes`.
     :param size: The image size.
     :param data: A bytes or other buffer object containing raw
         data for the given mode.
@@ -2119,7 +2145,8 @@ def fromarray(obj, mode=None):
 
     :param obj: Object with array interface
     :param mode: Mode to use (will be determined from type if None)
-    :returns: An image memory.
+      See: :ref:`concept-modes`.
+    :returns: An image object.
 
     .. versionadded:: 1.1.6
     """
@@ -2222,6 +2249,11 @@ def open(fp, mode="r"):
     else:
         filename = ""
 
+    try:
+        fp.seek(0)
+    except (AttributeError, io.UnsupportedOperation):
+        fp = io.BytesIO(fp.read())
+
     prefix = fp.read(16)
 
     preinit()
@@ -2234,7 +2266,7 @@ def open(fp, mode="r"):
                 im = factory(fp, filename)
                 _decompression_bomb_check(im.size)
                 return im
-        except (SyntaxError, IndexError, TypeError):
+        except (SyntaxError, IndexError, TypeError, struct.error):
             # import traceback
             # traceback.print_exc()
             pass
@@ -2249,7 +2281,7 @@ def open(fp, mode="r"):
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
-            except (SyntaxError, IndexError, TypeError):
+            except (SyntaxError, IndexError, TypeError, struct.error):
                 # import traceback
                 # traceback.print_exc()
                 pass
@@ -2306,7 +2338,7 @@ def composite(image1, image2, mask):
     :param image1: The first image.
     :param image2: The second image.  Must have the same mode and
        size as the first image.
-    :param mask: A mask image.  This image can can have mode
+    :param mask: A mask image.  This image can have mode
        "1", "L", or "RGBA", and must have the same size as the
        other two images.
     """
@@ -2336,7 +2368,8 @@ def merge(mode, bands):
     """
     Merge a set of single band images into a new multiband image.
 
-    :param mode: The mode to use for the output image.
+    :param mode: The mode to use for the output image. See:
+        :ref:`concept-modes`.
     :param bands: A sequence containing one single-band image for
         each band in the output image.  All bands must have the
         same size.
@@ -2419,3 +2452,32 @@ def _show(image, **options):
 def _showxv(image, title=None, **options):
     from PIL import ImageShow
     ImageShow.show(image, title, **options)
+
+
+# --------------------------------------------------------------------
+# Effects
+
+def effect_mandelbrot(size, extent, quality):
+    """
+    Generate a Mandelbrot set covering the given extent.
+
+    :param size: The requested size in pixels, as a 2-tuple:
+       (width, height).
+    :param extent: The extent to cover, as a 4-tuple:
+       (x0, y0, x1, y2).
+    :param quality: Quality.
+    """
+    return Image()._new(core.effect_mandelbrot(size, extent, quality))
+
+
+def effect_noise(size, sigma):
+    """
+    Generate Gaussian noise centered around 128.
+
+    :param size: The requested size in pixels, as a 2-tuple:
+       (width, height).
+    :param sigma: Standard deviation of noise.
+    """
+    return Image()._new(core.effect_noise(size, sigma))
+
+# End of file

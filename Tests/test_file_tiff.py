@@ -1,42 +1,45 @@
-from helper import unittest, PillowTestCase, lena, py3
+from __future__ import print_function
+from helper import unittest, PillowTestCase, hopper, py3
 
-from PIL import Image
+from PIL import Image, TiffImagePlugin
+
+import struct
 
 
 class TestFileTiff(PillowTestCase):
 
     def test_sanity(self):
 
-        file = self.tempfile("temp.tif")
+        filename = self.tempfile("temp.tif")
 
-        lena("RGB").save(file)
+        hopper("RGB").save(filename)
 
-        im = Image.open(file)
+        im = Image.open(filename)
         im.load()
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "TIFF")
 
-        lena("1").save(file)
-        im = Image.open(file)
+        hopper("1").save(filename)
+        im = Image.open(filename)
 
-        lena("L").save(file)
-        im = Image.open(file)
+        hopper("L").save(filename)
+        im = Image.open(filename)
 
-        lena("P").save(file)
-        im = Image.open(file)
+        hopper("P").save(filename)
+        im = Image.open(filename)
 
-        lena("RGB").save(file)
-        im = Image.open(file)
+        hopper("RGB").save(filename)
+        im = Image.open(filename)
 
-        lena("I").save(file)
-        im = Image.open(file)
+        hopper("I").save(filename)
+        im = Image.open(filename)
 
     def test_mac_tiff(self):
         # Read RGBa images from Mac OS X [@PIL136]
 
-        file = "Tests/images/pil136.tiff"
-        im = Image.open(file)
+        filename = "Tests/images/pil136.tiff"
+        im = Image.open(filename)
 
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (55, 43))
@@ -50,8 +53,8 @@ class TestFileTiff(PillowTestCase):
         if "jpeg_decoder" not in codecs:
             self.skipTest("jpeg support not available")
 
-        file = "Tests/images/pil168.tif"
-        im = Image.open(file)
+        filename = "Tests/images/pil168.tif"
+        im = Image.open(filename)
 
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (256, 256))
@@ -66,8 +69,8 @@ class TestFileTiff(PillowTestCase):
 
     def test_xyres_tiff(self):
         from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
-        file = "Tests/images/pil168.tif"
-        im = Image.open(file)
+        filename = "Tests/images/pil168.tif"
+        im = Image.open(filename)
         assert isinstance(im.tag.tags[X_RESOLUTION][0], tuple)
         assert isinstance(im.tag.tags[Y_RESOLUTION][0], tuple)
         # Try to read a file where X,Y_RESOLUTION are ints
@@ -75,6 +78,12 @@ class TestFileTiff(PillowTestCase):
         im.tag.tags[Y_RESOLUTION] = (72,)
         im._setup()
         self.assertEqual(im.info['dpi'], (72., 72.))
+
+    def test_bad_exif(self):
+        try:
+            Image.open('Tests/images/hopper_bad_exif.jpg')._getexif()
+        except struct.error:
+            self.fail("Bad EXIF data should not pass incorrect values to _binary unpack")
 
     def test_little_endian(self):
         im = Image.open('Tests/images/16bit.cropped.tif')
@@ -121,13 +130,13 @@ class TestFileTiff(PillowTestCase):
         im2 = Image.open('Tests/images/12in16bit.tif')
 
         if Image.DEBUG:
-            print (im.getpixel((0, 0)))
-            print (im.getpixel((0, 1)))
-            print (im.getpixel((0, 2)))
+            print(im.getpixel((0, 0)))
+            print(im.getpixel((0, 1)))
+            print(im.getpixel((0, 2)))
 
-            print (im2.getpixel((0, 0)))
-            print (im2.getpixel((0, 1)))
-            print (im2.getpixel((0, 2)))
+            print(im2.getpixel((0, 0)))
+            print(im2.getpixel((0, 1)))
+            print(im2.getpixel((0, 2)))
 
         self.assert_image_equal(im, im2)
 
@@ -141,27 +150,70 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(
             im.getextrema(), (-3.140936851501465, 3.140684127807617))
 
+    def test_n_frames(self):
+        im = Image.open('Tests/images/multipage-lastframe.tif')
+        self.assertEqual(im.n_frames, 1)
+
+        im = Image.open('Tests/images/multipage.tiff')
+        self.assertEqual(im.n_frames, 3)
+
+    def test_multipage(self):
+        # issue #862
+        im = Image.open('Tests/images/multipage.tiff')
+        # file is a multipage tiff: 10x10 green, 10x10 red, 20x20 blue
+
+        im.seek(0)
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 128, 0))
+
+        im.seek(1)
+        im.load()
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (255, 0, 0))
+
+        im.seek(2)
+        im.load()
+        self.assertEqual(im.size, (20, 20))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
+
+    def test_multipage_last_frame(self):
+        im = Image.open('Tests/images/multipage-lastframe.tif')
+        im.load()
+        self.assertEqual(im.size, (20, 20))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
+
     def test___str__(self):
         # Arrange
-        file = "Tests/images/pil136.tiff"
-        im = Image.open(file)
+        filename = "Tests/images/pil136.tiff"
+        im = Image.open(filename)
 
         # Act
         ret = str(im.ifd)
 
         # Assert
         self.assertIsInstance(ret, str)
+
+    def test_as_dict(self):
+        # Arrange
+        filename = "Tests/images/pil136.tiff"
+        im = Image.open(filename)
+
+        # Act
+        ret = im.ifd.as_dict()
+
+        # Assert
+        self.assertIsInstance(ret, dict)
+
         self.assertEqual(
-            ret,
-            '{256: (55,), 257: (43,), 258: (8, 8, 8, 8), 259: (1,), '
-            '262: (2,), 296: (2,), 273: (8,), 338: (1,), 277: (4,), '
-            '279: (9460,), 282: ((720000, 10000),), '
-            '283: ((720000, 10000),), 284: (1,)}')
+            ret, {256: (55,), 257: (43,), 258: (8, 8, 8, 8), 259: (1,),
+                  262: (2,), 296: (2,), 273: (8,), 338: (1,), 277: (4,),
+                  279: (9460,), 282: ((720000, 10000),),
+                  283: ((720000, 10000),), 284: (1,)})
 
     def test__delitem__(self):
         # Arrange
-        file = "Tests/images/pil136.tiff"
-        im = Image.open(file)
+        filename = "Tests/images/pil136.tiff"
+        im = Image.open(filename)
         len_before = len(im.ifd.as_dict())
 
         # Act
@@ -173,7 +225,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_byte(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abc"
 
@@ -185,7 +236,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_string(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abc\0"
 
@@ -197,7 +247,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_float(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abcdabcd"
 
@@ -209,7 +258,6 @@ class TestFileTiff(PillowTestCase):
 
     def test_load_double(self):
         # Arrange
-        from PIL import TiffImagePlugin
         ifd = TiffImagePlugin.ImageFileDirectory()
         data = b"abcdefghabcdefgh"
 
@@ -221,8 +269,8 @@ class TestFileTiff(PillowTestCase):
 
     def test_seek(self):
         # Arrange
-        file = "Tests/images/pil136.tiff"
-        im = Image.open(file)
+        filename = "Tests/images/pil136.tiff"
+        im = Image.open(filename)
 
         # Act
         im.seek(-1)
@@ -232,8 +280,8 @@ class TestFileTiff(PillowTestCase):
 
     def test_seek_eof(self):
         # Arrange
-        file = "Tests/images/pil136.tiff"
-        im = Image.open(file)
+        filename = "Tests/images/pil136.tiff"
+        im = Image.open(filename)
         self.assertEqual(im.tell(), 0)
 
         # Act / Assert
@@ -271,6 +319,71 @@ class TestFileTiff(PillowTestCase):
 
         # Assert
         self.assertEqual(ret, [0, 1])
+
+    def test_4bit(self):
+        # Arrange
+        test_file = "Tests/images/hopper_gray_4bpp.tif"
+        original = hopper("L")
+
+        # Act
+        im = Image.open(test_file)
+
+        # Assert
+        self.assertEqual(im.size, (128, 128))
+        self.assertEqual(im.mode, "L")
+        self.assert_image_similar(im, original, 7.3)
+
+    def test_page_number_x_0(self):
+        # Issue 973
+        # Test TIFF with tag 297 (Page Number) having value of 0 0.
+        # The first number is the current page number.
+        # The second is the total number of pages, zero means not available.
+
+        # Arrange
+        outfile = self.tempfile("temp.tif")
+
+        # Created by printing a page in Chrome to PDF, then:
+        # /usr/bin/gs -q -sDEVICE=tiffg3 -sOutputFile=total-pages-zero.tif
+        # -dNOPAUSE /tmp/test.pdf -c quit
+        infile = "Tests/images/total-pages-zero.tif"
+        im = Image.open(infile)
+
+        # Act / Assert
+        # Should not divide by zero
+        im.save(outfile)
+
+    def test_with_underscores(self):
+        # Arrange: use underscores
+        kwargs = {'resolution_unit': 'inch',
+                  'x_resolution': 72,
+                  'y_resolution': 36}
+        filename = self.tempfile("temp.tif")
+
+        # Act
+        hopper("RGB").save(filename, **kwargs)
+
+        # Assert
+        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
+        im = Image.open(filename)
+        self.assertEqual(im.tag.tags[X_RESOLUTION][0][0], 72)
+        self.assertEqual(im.tag.tags[Y_RESOLUTION][0][0], 36)
+
+    def test_deprecation_warning_with_spaces(self):
+        # Arrange: use spaces
+        kwargs = {'resolution unit': 'inch',
+                  'x resolution': 36,
+                  'y resolution': 72}
+        filename = self.tempfile("temp.tif")
+
+        # Act
+        self.assert_warning(DeprecationWarning,
+                            lambda: hopper("RGB").save(filename, **kwargs))
+
+        # Assert
+        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
+        im = Image.open(filename)
+        self.assertEqual(im.tag.tags[X_RESOLUTION][0][0], 36)
+        self.assertEqual(im.tag.tags[Y_RESOLUTION][0][0], 72)
 
 
 if __name__ == '__main__':

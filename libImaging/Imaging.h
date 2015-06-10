@@ -229,7 +229,7 @@ extern void ImagingError_Clear(void);
 
 /* standard filters */
 #define IMAGING_TRANSFORM_NEAREST 0
-#define IMAGING_TRANSFORM_ANTIALIAS 1
+#define IMAGING_TRANSFORM_LANCZOS 1
 #define IMAGING_TRANSFORM_BILINEAR 2
 #define IMAGING_TRANSFORM_BICUBIC 3
 
@@ -263,7 +263,8 @@ extern Imaging ImagingFilter(
     FLOAT32 offset, FLOAT32 divisor);
 extern Imaging ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
 extern Imaging ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
-extern Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius);
+extern Imaging ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius,
+    int passes);
 extern Imaging ImagingGetBand(Imaging im, int band);
 extern int ImagingGetBBox(Imaging im, int bbox[4]);
 typedef struct { int x, y; INT32 count; INT32 pixel; } ImagingColorItem;
@@ -285,13 +286,14 @@ extern Imaging ImagingPointTransform(
     Imaging imIn, double scale, double offset);
 extern Imaging ImagingPutBand(Imaging im, Imaging imIn, int band);
 extern Imaging ImagingRankFilter(Imaging im, int size, int rank);
-extern Imaging ImagingResize(Imaging imOut, Imaging imIn, int filter);
 extern Imaging ImagingRotate(
     Imaging imOut, Imaging imIn, double theta, int filter);
 extern Imaging ImagingRotate90(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
-extern Imaging ImagingStretch(Imaging imOut, Imaging imIn, int filter);
+extern Imaging ImagingResample(Imaging imIn, int xsize, int ysize, int filter);
+extern Imaging ImagingTranspose(Imaging imOut, Imaging imIn);
+extern Imaging ImagingTransposeToNew(Imaging imIn);
 extern Imaging ImagingTransformPerspective(
     Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     double a[8], int filter, int fill);
@@ -307,7 +309,8 @@ extern Imaging ImagingTransform(
     ImagingTransformFilter filter, void* filter_data,
     int fill);
 extern Imaging ImagingUnsharpMask(
-    Imaging im, Imaging imOut, float radius, int percent, int threshold);
+    Imaging imOut, Imaging im, float radius, int percent, int threshold);
+extern Imaging ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n);
 
 extern Imaging ImagingCopy2(Imaging imOut, Imaging imIn);
 extern Imaging ImagingConvert2(Imaging imOut, Imaging imIn);
@@ -525,9 +528,9 @@ enum {
 extern ImagingIncrementalCodec ImagingIncrementalCodecCreate(ImagingIncrementalCodecEntry codec_entry, Imaging im, ImagingCodecState state, int read_or_write, int seekable, int fd);
 extern void ImagingIncrementalCodecDestroy(ImagingIncrementalCodec codec);
 extern int ImagingIncrementalCodecPushBuffer(ImagingIncrementalCodec codec, UINT8 *buf, int bytes);
-extern ssize_t ImagingIncrementalCodecRead(ImagingIncrementalCodec codec, void *buffer, size_t bytes);
+extern Py_ssize_t ImagingIncrementalCodecRead(ImagingIncrementalCodec codec, void *buffer, size_t bytes);
 extern off_t ImagingIncrementalCodecSkip(ImagingIncrementalCodec codec, off_t bytes);
-extern ssize_t ImagingIncrementalCodecWrite(ImagingIncrementalCodec codec, const void *buffer, size_t bytes);
+extern Py_ssize_t ImagingIncrementalCodecWrite(ImagingIncrementalCodec codec, const void *buffer, size_t bytes);
 extern off_t ImagingIncrementalCodecSeek(ImagingIncrementalCodec codec, off_t bytes);
 extern size_t ImagingIncrementalCodecBytesInBuffer(ImagingIncrementalCodec codec);
 

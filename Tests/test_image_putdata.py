@@ -1,4 +1,5 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
+from array import array
 
 import sys
 
@@ -9,7 +10,7 @@ class TestImagePutData(PillowTestCase):
 
     def test_sanity(self):
 
-        im1 = lena()
+        im1 = hopper()
 
         data = list(im1.getdata())
 
@@ -41,30 +42,47 @@ class TestImagePutData(PillowTestCase):
         else:
             self.assertEqual(put(sys.maxsize), (255, 255, 255, 127))
 
-
     def test_pypy_performance(self):
-        im = Image.new('L', (256,256))
+        im = Image.new('L', (256, 256))
         im.putdata(list(range(256))*256)
 
     def test_mode_i(self):
-        src = lena('L')
+        src = hopper('L')
         data = list(src.getdata())
         im = Image.new('I', src.size, 0)
         im.putdata(data, 2, 256)
 
-        target = [2* elt + 256 for elt in data]
+        target = [2 * elt + 256 for elt in data]
         self.assertEqual(list(im.getdata()), target)
 
     def test_mode_F(self):
-        src = lena('L')
+        src = hopper('L')
         data = list(src.getdata())
         im = Image.new('F', src.size, 0)
         im.putdata(data, 2.0, 256.0)
 
-        target = [2.0* float(elt) + 256.0 for elt in data]
+        target = [2.0 * float(elt) + 256.0 for elt in data]
         self.assertEqual(list(im.getdata()), target)
 
-    
+    def test_array_B(self):
+        # shouldn't segfault
+        # see https://github.com/python-pillow/Pillow/issues/1008
+
+        arr = array('B', [0])*15000
+        im = Image.new('L', (150, 100))
+        im.putdata(arr)
+
+        self.assertEqual(len(im.getdata()), len(arr))
+
+    def test_array_F(self):
+        # shouldn't segfault
+        # see https://github.com/python-pillow/Pillow/issues/1008
+
+        im = Image.new('F', (150, 100))
+        arr = array('f', [0.0])*15000
+        im.putdata(arr)
+
+        self.assertEqual(len(im.getdata()), len(arr))
 
 if __name__ == '__main__':
     unittest.main()

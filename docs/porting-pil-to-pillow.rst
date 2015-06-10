@@ -21,3 +21,7 @@ automatically imports any file in the Python path with a name ending
 in :file:`ImagePlugin.py`. You will need to import your image plugin
 manually.
 
+Pillow will raise an exception if the core extension can't be loaded
+for any reason, including a version mismatch between the Python and
+extension code. Previously PIL allowed Python only code to run if the
+core extension was not available.

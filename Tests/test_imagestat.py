@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageStat
@@ -8,7 +8,7 @@ class TestImageStat(PillowTestCase):
 
     def test_sanity(self):
 
-        im = lena()
+        im = hopper()
 
         st = ImageStat.Stat(im)
         st = ImageStat.Stat(im.histogram())
@@ -28,18 +28,18 @@ class TestImageStat(PillowTestCase):
 
         self.assertRaises(TypeError, lambda: ImageStat.Stat(1))
 
-    def test_lena(self):
+    def test_hopper(self):
 
-        im = lena()
+        im = hopper()
 
         st = ImageStat.Stat(im)
 
         # verify a few values
-        self.assertEqual(st.extrema[0], (61, 255))
-        self.assertEqual(st.median[0], 197)
-        self.assertEqual(st.sum[0], 2954416)
-        self.assertEqual(st.sum[1], 2027250)
-        self.assertEqual(st.sum[2], 1727331)
+        self.assertEqual(st.extrema[0], (0, 255))
+        self.assertEqual(st.median[0], 72)
+        self.assertEqual(st.sum[0], 1470218)
+        self.assertEqual(st.sum[1], 1311896)
+        self.assertEqual(st.sum[2], 1563008)
 
     def test_constant(self):
 

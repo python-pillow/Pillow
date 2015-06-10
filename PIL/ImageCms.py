@@ -1,19 +1,19 @@
-## The Python Imaging Library.
-## $Id$
+# The Python Imaging Library.
+# $Id$
 
-## Optional color managment support, based on Kevin Cazabon's PyCMS
-## library.
+# Optional color managment support, based on Kevin Cazabon's PyCMS
+# library.
 
-## History:
+# History:
 
-## 2009-03-08 fl   Added to PIL.
+# 2009-03-08 fl   Added to PIL.
 
-## Copyright (C) 2002-2003 Kevin Cazabon
-## Copyright (c) 2009 by Fredrik Lundh
-## Copyright (c) 2013 by Eric Soroos
+# Copyright (C) 2002-2003 Kevin Cazabon
+# Copyright (c) 2009 by Fredrik Lundh
+# Copyright (c) 2013 by Eric Soroos
 
-## See the README file for information on usage and redistribution.  See
-## below for the original description.
+# See the README file for information on usage and redistribution.  See
+# below for the original description.
 
 from __future__ import print_function
 
@@ -64,7 +64,7 @@ pyCMS
 
         0.0.2 alpha     Jan 6, 2002
 
-                        Added try/except statements arount type() checks of
+                        Added try/except statements around type() checks of
                         potential CObjects... Python won't let you use type()
                         on them, and raises a TypeError (stupid, if you ask
                         me!)
@@ -90,8 +90,8 @@ try:
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
-    from _util import import_err
-    _imagingcms = import_err(ex)
+    from _util import deferred_error
+    _imagingcms = deferred_error(ex)
 from PIL._util import isStringType
 
 core = _imagingcms
@@ -123,8 +123,8 @@ FLAGS = {
     "NOTCACHE": 64,  # Inhibit 1-pixel cache
     "NOTPRECALC": 256,
     "NULLTRANSFORM": 512,  # Don't transform anyway
-    "HIGHRESPRECALC": 1024,  # Use more memory to give better accurancy
-    "LOWRESPRECALC": 2048,  # Use less memory to minimize resouces
+    "HIGHRESPRECALC": 1024,  # Use more memory to give better accuracy
+    "LOWRESPRECALC": 2048,  # Use less memory to minimize resources
     "WHITEBLACKCOMPENSATION": 8192,
     "BLACKPOINTCOMPENSATION": 8192,
     "GAMUTCHECK": 4096,  # Out of Gamut alarm
@@ -147,16 +147,16 @@ for flag in FLAGS.values():
 ##
 # Profile.
 
-class ImageCmsProfile:
+class ImageCmsProfile(object):
 
     def __init__(self, profile):
         """
         :param profile: Either a string representing a filename,
             a file like object containing a profile or a
             low-level profile object
-            
+
         """
-        
+
         if isStringType(profile):
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
@@ -181,8 +181,9 @@ class ImageCmsProfile:
 
         :returns: a bytes object containing the ICC profile.
         """
-        
+
         return core.profile_tobytes(self.profile)
+
 
 class ImageCmsTransform(Image.ImagePointHandler):
 
@@ -190,7 +191,6 @@ class ImageCmsTransform(Image.ImagePointHandler):
     # standard Image.point() method.
     #
     # Will return the output profile in the output.info['icc_profile'].
-
 
     def __init__(self, input, output, input_mode, output_mode,
                  intent=INTENT_PERCEPTUAL, proof=None,
@@ -573,7 +573,7 @@ def applyTransform(im, transform, inPlace=0):
     This function applies a pre-calculated transform (from
     ImageCms.buildTransform() or ImageCms.buildTransformFromOpenProfiles())
     to an image.  The transform can be used for multiple images, saving
-    considerable calcuation time if doing the same conversion multiple times.
+    considerable calculation time if doing the same conversion multiple times.
 
     If you want to modify im in-place instead of receiving a new image as
     the return value, set inPlace to TRUE.  This can only be done if
@@ -858,7 +858,7 @@ def getDefaultIntent(profile):
     If an error occurs while trying to obtain the default intent, a
     PyCMSError is raised.
 
-    Use this function to determine the default (and usually best optomized)
+    Use this function to determine the default (and usually best optimized)
     rendering intent for this profile.  Most profiles support multiple
     rendering intents, but are intended mostly for one type of conversion.
     If you wish to use a different intent than returned, use
@@ -914,7 +914,7 @@ def isIntentSupported(profile, intent, direction):
 
         see the pyCMS documentation for details on rendering intents and what
             they do.
-    :param direction: Integer specifing if the profile is to be used for input,
+    :param direction: Integer specifying if the profile is to be used for input,
         output, or proof
 
             INPUT  = 0 (or use ImageCms.DIRECTION_INPUT)

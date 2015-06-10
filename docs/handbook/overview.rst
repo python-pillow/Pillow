@@ -16,7 +16,7 @@ Let’s look at a few possible uses of this library.
 Image Archives
 --------------
 
-The Python Imaging Library is ideal for for image archival and batch processing
+The Python Imaging Library is ideal for image archival and batch processing
 applications. You can use the library to create thumbnails, convert between
 file formats, print images, etc.
 

@@ -100,7 +100,8 @@ class PillowTestCase(unittest.TestCase):
         ave_diff = float(diff)/(a.size[0]*a.size[1])
         self.assertGreaterEqual(
             epsilon, ave_diff,
-            (msg or '') + " average pixel value difference %.4f > epsilon %.4f" % (
+            (msg or '') +
+            " average pixel value difference %.4f > epsilon %.4f" % (
                 ave_diff, epsilon))
 
     def assert_warning(self, warn_class, func):
@@ -129,7 +130,7 @@ class PillowTestCase(unittest.TestCase):
         # Skip if platform/travis matches, and
         # PILLOW_RUN_KNOWN_BAD is not true in the environment.
         if bool(os.environ.get('PILLOW_RUN_KNOWN_BAD', False)):
-            print (os.environ.get('PILLOW_RUN_KNOWN_BAD', False))
+            print(os.environ.get('PILLOW_RUN_KNOWN_BAD', False))
             return
 
         skip = True
@@ -138,7 +139,8 @@ class PillowTestCase(unittest.TestCase):
         if travis is not None:
             skip = skip and (travis == bool(os.environ.get('TRAVIS', False)))
         if interpreter is not None:
-            skip = skip and (interpreter == 'pypy' and hasattr(sys, 'pypy_version_info'))
+            skip = skip and (interpreter == 'pypy' and
+                             hasattr(sys, 'pypy_version_info'))
         if skip:
             self.skipTest(msg or "Known Bad Test")
 
@@ -155,7 +157,7 @@ class PillowTestCase(unittest.TestCase):
             raise IOError()
 
         outfile = self.tempfile("temp.png")
-        if command_succeeds(['convert', f, outfile]):
+        if command_succeeds([IMCONVERT, f, outfile]):
             from PIL import Image
             return Image.open(outfile)
         raise IOError()
@@ -163,7 +165,6 @@ class PillowTestCase(unittest.TestCase):
 
 # helpers
 
-import sys
 py3 = (sys.version_info >= (3, 0))
 
 
@@ -173,31 +174,33 @@ def fromstring(data):
     return Image.open(BytesIO(data))
 
 
-def tostring(im, format, **options):
+def tostring(im, string_format, **options):
     from io import BytesIO
     out = BytesIO()
-    im.save(out, format, **options)
+    im.save(out, string_format, **options)
     return out.getvalue()
 
 
-def lena(mode="RGB", cache={}):
+def hopper(mode=None, cache={}):
     from PIL import Image
-    im = None
-    # FIXME: Implement caching to reduce reading from disk but so an original
-    # copy is returned each time and the cached image isn't modified by tests
+    if mode is None:
+        # Always return fresh not-yet-loaded version of image.
+        # Operations on not-yet-loaded images is separate class of errors
+        # what we should catch.
+        return Image.open("Tests/images/hopper.ppm")
+    # Use caching to reduce reading from disk but so an original copy is
+    # returned each time and the cached image isn't modified by tests
     # (for fast, isolated, repeatable tests).
-    # im = cache.get(mode)
+    im = cache.get(mode)
     if im is None:
-        if mode == "RGB":
-            im = Image.open("Tests/images/lena.ppm")
-        elif mode == "F":
-            im = lena("L").convert(mode)
+        if mode == "F":
+            im = hopper("L").convert(mode)
         elif mode[:4] == "I;16":
-            im = lena("I").convert(mode)
+            im = hopper("I").convert(mode)
         else:
-            im = lena("RGB").convert(mode)
-    # cache[mode] = im
-    return im
+            im = hopper().convert(mode)
+        cache[mode] = im
+    return im.copy()
 
 
 def command_succeeds(cmd):
@@ -205,7 +208,6 @@ def command_succeeds(cmd):
     Runs the command, which must be a list of strings. Returns True if the
     command succeeds, or False if an OSError was raised by subprocess.Popen.
     """
-    import os
     import subprocess
     with open(os.devnull, 'w') as f:
         try:
@@ -229,6 +231,14 @@ def netpbm_available():
 
 
 def imagemagick_available():
-    return command_succeeds(['convert', '-version'])
+    return IMCONVERT and command_succeeds([IMCONVERT, '-version'])
+
+
+if sys.platform == 'win32':
+    IMCONVERT = os.environ.get('MAGICK_HOME', '')
+    if IMCONVERT:
+        IMCONVERT = os.path.join(IMCONVERT, 'convert.exe')
+else:
+    IMCONVERT = 'convert'
 
 # End of file

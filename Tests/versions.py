@@ -1,4 +1,6 @@
+from __future__ import print_function
 from PIL import Image
+
 
 def version(module, version):
     v = getattr(module.core, version + "_version", None)

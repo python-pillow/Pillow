@@ -28,4 +28,6 @@ Reference
    ExifTags
    OleFileIO
    PSDraw
+   PixelAccess
+   PyAccess
    ../PIL

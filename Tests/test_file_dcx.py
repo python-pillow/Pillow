@@ -1,9 +1,9 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, DcxImagePlugin
 
-# Created with ImageMagick: convert lena.ppm lena.dcx
-TEST_FILE = "Tests/images/lena.dcx"
+# Created with ImageMagick: convert hopper.ppm hopper.dcx
+TEST_FILE = "Tests/images/hopper.dcx"
 
 
 class TestFileDcx(PillowTestCase):
@@ -17,7 +17,7 @@ class TestFileDcx(PillowTestCase):
         # Assert
         self.assertEqual(im.size, (128, 128))
         self.assertIsInstance(im, DcxImagePlugin.DcxImageFile)
-        orig = lena()
+        orig = hopper()
         self.assert_image_equal(im, orig)
 
     def test_tell(self):
@@ -29,6 +29,10 @@ class TestFileDcx(PillowTestCase):
 
         # Assert
         self.assertEqual(frame, 0)
+
+    def test_n_frames(self):
+        im = Image.open(TEST_FILE)
+        self.assertEqual(im.n_frames, 1)
 
     def test_seek_too_far(self):
         # Arrange

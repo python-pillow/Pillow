@@ -16,7 +16,12 @@
 #
 
 from PIL import Image, ImageFile, PngImagePlugin, _binary
-import struct, io
+import io
+import os
+import shutil
+import struct
+import sys
+import tempfile
 
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
 if enable_jpeg2k:
@@ -26,8 +31,10 @@ i8 = _binary.i8
 
 HEADERSIZE = 8
 
+
 def nextheader(fobj):
     return struct.unpack('>4sI', fobj.read(HEADERSIZE))
+
 
 def read_32t(fobj, start_length, size):
     # The 128x128 icon seems to have an extra header for some reason.
@@ -37,6 +44,7 @@ def read_32t(fobj, start_length, size):
     if sig != b'\x00\x00\x00\x00':
         raise SyntaxError('Unknown signature, expecting 0x00000000')
     return read_32(fobj, (start + 4, length - 4), size)
+
 
 def read_32(fobj, start_length, size):
     """
@@ -83,9 +91,10 @@ def read_32(fobj, start_length, size):
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
 
+
 def read_mk(fobj, start_length, size):
     # Alpha masks seem to be uncompressed
-    (start, length) = start_length
+    start = start_length[0]
     fobj.seek(start)
     pixel_size = (size[0] * size[2], size[1] * size[2])
     sizesq = pixel_size[0] * pixel_size[1]
@@ -93,6 +102,7 @@ def read_mk(fobj, start_length, size):
         "L", pixel_size, fobj.read(sizesq), "raw", "L", 0, 1
         )
     return {"A": band}
+
 
 def read_png_or_jpeg2000(fobj, start_length, size):
     (start, length) = start_length
@@ -103,10 +113,11 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         im = PngImagePlugin.PngImageFile(fobj)
         return {"RGBA": im}
     elif sig[:4] == b'\xff\x4f\xff\x51' \
-        or sig[:4] == b'\x0d\x0a\x87\x0a' \
-        or sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
+            or sig[:4] == b'\x0d\x0a\x87\x0a' \
+            or sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
         if not enable_jpeg2k:
-            raise ValueError('Unsupported icon subimage format (rebuild PIL with JPEG 2000 support to fix this)')
+            raise ValueError('Unsupported icon subimage format (rebuild PIL '
+                             'with JPEG 2000 support to fix this)')
         # j2k, jpc or j2c
         fobj.seek(start)
         jp2kstream = fobj.read(length)
@@ -118,7 +129,8 @@ def read_png_or_jpeg2000(fobj, start_length, size):
     else:
         raise ValueError('Unsupported icon subimage format')
 
-class IcnsFile:
+
+class IcnsFile(object):
 
     SIZES = {
         (512, 512, 2): [
@@ -225,7 +237,7 @@ class IcnsFile:
         im = channels.get('RGBA', None)
         if im:
             return im
-        
+
         im = channels.get("RGB").copy()
         try:
             im.putalpha(channels["A"])
@@ -233,12 +245,13 @@ class IcnsFile:
             pass
         return im
 
+
 ##
 # Image plugin for Mac OS icons.
 
 class IcnsImageFile(ImageFile.ImageFile):
     """
-    PIL read-only image support for Mac OS .icns files.
+    PIL image support for Mac OS .icns files.
     Chooses the best resolution, but will possibly load
     a different size image if you mutate the size attribute
     before calling 'load'.
@@ -275,7 +288,7 @@ class IcnsImageFile(ImageFile.ImageFile):
 
         # If this is a PNG or JPEG 2000, it won't be loaded yet
         im.load()
-        
+
         self.im = im.im
         self.mode = im.mode
         self.size = im.size
@@ -284,11 +297,64 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.tile = ()
         self.load_end()
 
+
+def _save(im, fp, filename):
+    """
+    Saves the image as a series of PNG files,
+    that are then converted to a .icns file
+    using the OS X command line utility 'iconutil'.
+
+    OS X only.
+    """
+    try:
+        fp.flush()
+    except:
+        pass
+
+    # create the temporary set of pngs
+    iconset = tempfile.mkdtemp('.iconset')
+    last_w = None
+    last_im = None
+    for w in [16, 32, 128, 256, 512]:
+        prefix = 'icon_{}x{}'.format(w, w)
+
+        if last_w == w:
+            im_scaled = last_im
+        else:
+            im_scaled = im.resize((w, w), Image.LANCZOS)
+        im_scaled.save(os.path.join(iconset, prefix+'.png'))
+
+        im_scaled = im.resize((w*2, w*2), Image.LANCZOS)
+        im_scaled.save(os.path.join(iconset, prefix+'@2x.png'))
+        last_im = im_scaled
+
+    # iconutil -c icns -o {} {}
+    from subprocess import Popen, PIPE, CalledProcessError
+
+    convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
+    stderr = tempfile.TemporaryFile()
+    convert_proc = Popen(convert_cmd, stdout=PIPE, stderr=stderr)
+
+    convert_proc.stdout.close()
+
+    retcode = convert_proc.wait()
+
+    # remove the temporary files
+    shutil.rmtree(iconset)
+
+    if retcode:
+        raise CalledProcessError(retcode, convert_cmd)
+
 Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == b'icns')
 Image.register_extension("ICNS", '.icns')
 
+if sys.platform == 'darwin':
+    Image.register_save("ICNS", _save)
+
+    Image.register_mime("ICNS", "image/icns")
+
+
 if __name__ == '__main__':
-    import os, sys
     imf = IcnsImageFile(open(sys.argv[1], 'rb'))
     for size in imf.info['sizes']:
         imf.size = size

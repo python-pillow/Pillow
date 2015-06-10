@@ -44,9 +44,6 @@ struct _HashTable {
 #define RESIZE_FACTOR 3
 
 static int _hashtable_insert_node(HashTable *,HashNode *,int,int,CollisionFunc);
-#if 0
-static int _hashtable_test(HashTable *);
-#endif
 
 HashTable *hashtable_new(HashFunc hf,HashCmpFunc cf) {
    HashTable *h;
@@ -131,22 +128,6 @@ static void _hashtable_resize(HashTable *h) {
       _hashtable_rehash(h,NULL,newSize);
    }
 }
-
-#if 0
-static int _hashtable_test(HashTable *h) {
-   uint32_t i;
-   int j;
-   HashNode *n;
-   for (i=0;i<h->length;i++) {
-      for (n=h->table[i];n&&n->next;n=n->next) {
-         j=h->cmpFunc(h,n->key,n->next->key);
-         printf ("%c",j?(j<0?'-':'+'):'=');
-      }
-      printf ("\n");
-   }
-   return 0;
-}
-#endif
 
 static int _hashtable_insert_node(HashTable *h,HashNode *node,int resize,int update,CollisionFunc cf) {
    uint32_t hash=h->hashFunc(h,node->key)%h->length;

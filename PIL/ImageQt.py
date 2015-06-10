@@ -18,19 +18,29 @@
 
 from PIL import Image
 from PIL._util import isPath
+import sys
 
-try:
-    from PyQt5.QtGui import QImage, qRgba
-except:
+if 'PyQt4.QtGui' not in sys.modules:
+    try:
+        from PyQt5.QtGui import QImage, qRgba
+    except:
+        try:
+            from PyQt4.QtGui import QImage, qRgba
+        except:
+            from PySide.QtGui import QImage, qRgba
+
+else:  #PyQt4 is used
     from PyQt4.QtGui import QImage, qRgba
 
 ##
 # (Internal) Turns an RGB color into a Qt compatible color integer.
 
+
 def rgb(r, g, b, a=255):
     # use qRgb to pack the colors, and then turn the resulting long
     # into a negative integer with the same bitpattern.
     return (qRgba(r, g, b, a) & 0xffffffff)
+
 
 ##
 # An PIL image wrapper for Qt.  This is a subclass of PyQt4's QImage

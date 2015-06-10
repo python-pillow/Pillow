@@ -1,6 +1,6 @@
 import sys
 
-from helper import *
+from helper import unittest, PillowTestCase
 
 # This test is not run automatically.
 #
@@ -14,7 +14,7 @@ from PIL import Image
 try:
     import numpy as np
 except:
-    sys.exit("Skipping: Numpy not installed")
+    raise unittest.SkipTest("numpy not installed")
 
 YDIM = 32769
 XDIM = 48000

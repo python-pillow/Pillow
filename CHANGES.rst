@@ -1,10 +1,283 @@
 Changelog (Pillow)
 ==================
 
-2.6.0 (unreleased)
+2.9.0 (Unreleased)
 ------------------
 
-- Fixed CVE-2014-3598, a DOS in the Jpeg2KImagePlugin (backport)
+- Provide n_frames attribute to multi-frame formats #1261
+  [anntzer, radarhere]
+
+- Add duration and loop set to GifImagePlugin #1172, #1269
+  [radarhere]
+
+- Ico files are little endian #1232
+  [wiredfool]
+
+- Upgrade olefile from 0.30 to 0.42b #1226
+  [radarhere, decalage2]
+
+- Setting transparency value to 0 when the tRNS contains only null byte(s) #1239
+  [juztin]
+ 
+- Separated out feature checking from selftest #1233
+  [radarhere]
+
+- Style/health fixes
+  [radarhere]
+
+- Update WebP from 0.4.1 to 0.4.3 #1235
+  [radarhere]
+
+- Release GIL during image load (decode) #1224
+  [lkesteloot]
+
+- Added icns save #1185
+  [radarhere]
+
+- Fix putdata memory leak #1196
+  [benoit-pierre]
+
+- Keep user-specified ordering of icon sizes #1193
+  [karimbahgat]
+
+- Tiff: allow writing floating point tag values #1113
+  [bpedersen2]
+
+2.8.2 (2015-06-06)
+------------------
+
+- Bug fix: Fixed Tiff handling of bad EXIF data
+  [radarhere]
+
+2.8.1 (2015-04-02)
+------------------
+
+- Bug fix: Catch struct.error on invalid JPEG, fixes #1163
+  [wiredfool, hugovk]
+
+2.8.0 (2015-04-01)
+------------------
+
+- Fix 32-bit BMP loading (RGBA or RGBX)
+  [artscoop]
+
+- Fix UnboundLocalError in ImageFile #1131
+  [davarisg]
+
+- Re-enable test image caching
+  [hugovk, homm]
+
+- Fix: Cannot identify EPS images, fixes #1104
+  [hugovk]
+
+- Configure setuptools to run nosetests, fixes #729
+  [aclark4life]
+
+- Style/health fixes
+  [radarhere, hugovk]
+
+- Add support for HTTP response objects to Image.open()
+  [mfitzp]
+
+- Improve reference docs for PIL.ImageDraw.Draw.pieslice() #1145
+  [audreyr]
+
+- Added copy method font_variant() and accessible properties to truetype() #1123
+  [radarhere]
+
+- Fix ImagingEffectNoise #1128
+  [hugovk]
+  
+- Remove unreachable code
+  [hugovk]
+
+- Let Python do the endian stuff + tests #1121
+  [amoibos, radarhere]
+
+- Fix webp decode memory leak #1114
+  [benoit-pierre]
+
+- Fast path for opaque pixels in RGBa unpacker #1088
+  [bgilbert]
+  
+- Enable basic support for 'RGBa' raw encoding/decoding #1096
+  [immerrr]
+
+- Fix pickling L mode images with no palette, #1095
+  [hugovk]
+  
+- iPython display hook #1091
+  [wiredfool]
+
+- Adjust buffer size when quality=keep, fixes #148 (again)
+  [wiredfool]
+
+- Fix for corrupted bitmaps embedded in truetype fonts. #1072 
+  [jackyyf, wiredfool]
+
+2.7.0 (2015-01-01)
+------------------
+
+- Split Sane into a separate repo: https://github.com/python-pillow/Sane
+  [hugovk]
+
+- Look for OSX and Linux fonts in common places. #1054
+  [charleslaw]
+
+- Fix CVE-2014-9601, potential PNG decompression DOS #1060
+  [wiredfool]
+
+- Use underscores, not spaces, in TIFF tag kwargs. #1044, #1058
+  [anntzer, hugovk]
+  
+- Update PSDraw for Python3, add tests. #1055
+  [hugovk]
+
+- Use Bicubic filtering by default for thumbnails. Don't use Jpeg Draft mode for thumbnails. #1029
+  [homm]
+  
+- Fix MSVC compiler error: Use Py_ssize_t instead of ssize_t #1051
+  [cgohlke]
+
+- Fix compiler error: MSVC needs variables defined at the start of the block #1048
+  [cgohlke]
+
+- The GIF Palette optimization algorithm is only applicable to mode='P' or 'L' #993
+  [moriyoshi]
+
+- Use PySide as an alternative to PyQt4/5.
+  [holg]
+
+- Replace affine-based im.resize implementation with convolution-based im.stretch #997
+  [homm]
+
+- Replace Gaussian Blur implementation with iterated fast box blur. #961  Note: Radius parameter is interpreted differently than before.
+  [homm]
+
+- Better docs explaining import _imaging failure #1016, build #1017, mode #1018, PyAccess, PixelAccess objects #1019 Image.quantize #1020 and Image.save #1021
+  [wiredfool]
+
+- Fix for saving TIFF image into an io.BytesIO buffer #1011
+  [mfergie]
+  
+- Fix antialias compilation on debug versions of Python #1010
+  [wiredfool]
+
+- Fix for Image.putdata segfault #1009
+  [wiredfool]
+
+- Ico save, additional tests #1007
+  [exherb]
+
+- Use PyQt4 if it has already been imported, otherwise prefer PyQt5. #1003
+  [AurelienBallier]
+  
+- Speedup resample implementation up to 2.5 times. #977
+  [homm]
+
+- Speed up rotation by using cache aware loops, added transpose to rotations. #994
+  [homm]
+
+- Fix Bicubic interpolation #970
+  [homm]
+
+- Support for 4-bit greyscale TIFF images #980
+  [hugovk]
+
+- Updated manifest #957
+  [wiredfool]
+
+- Fix PyPy 2.4 regression #952
+  [wiredfool]
+
+- Webp Metadata Skip Test comments #954
+  [wiredfool]
+  
+- Fixes for things rpmlint complains about #942
+  [manisandro]
+
+2.6.2 (2015-01-01)
+------------------
+
+- Fix CVE-2014-9601, potential PNG decompression DOS #1060 
+  [wiredfool]
+
+- Fix Regression in PyPy 2.4 in streamio  #958
+  [wiredfool]
+
+2.6.1 (2014-10-11)
+------------------
+
+- Fix SciPy regression in Image.resize #945
+  [wiredfool]
+  
+- Fix manifest to include all test files.
+  [aclark4life]
+
+2.6.0 (2014-10-01)
+------------------
+
+- Relax precision of ImageDraw tests for x86, GimpGradient for PPC
+  [wiredfool]
+
+2.6.0-rc1 (2014-09-29)
+----------------------
+
+- Use redistributable image for testing #884
+  [hugovk]
+
+- Use redistributable ICC profiles for testing, skip if not available #923
+  [wiredfool]
+  
+- Additional documentation for JPEG info and save options #890
+  [wiredfool]
+
+- Fix JPEG Encoding memory leak when exif or qtables were specified
+  [wiredfool]
+  
+- Image.tobytes() and Image.tostring() documentation update #916 #917
+  [mgedmin]
+
+- On Windows, do not execute convert.exe without specifying path #912
+  [cgohlke]
+
+- Fix msvc build error #911
+  [cgohlke]
+
+- Fix for handling P + transparency -> RGBA conversions #904
+  [wiredfool]
+
+- Retain alpha in ImageEnhance operations #909
+  [wiredfool]
+
+- Jpeg2k Decode/encode memory leak fix #898
+  [joshware, wiredfool]
+
+- EpsFilePlugin Speed improvements #886
+  [wiredfool, karstenw]
+
+- Don't resize if already the right size #892
+  [radarhere]
+
+- Fix for reading multipage TIFFs #885
+  [kostrom, wiredfool]
+
+- Correctly handle saving gray and CMYK JPEGs with quality=keep #857
+  [etienned]
+
+- Correct duplicate Tiff Metadata and Exif tag values
+  [hugovk]
+
+- Windows fixes #871
+  [wiredfool]
+
+- Fix TGA files with image ID field #856
+  [megabuz]
+
+- Fixed wrong P-mode of small, unoptimized L-mode GIF #843
+  [uvNikita]
+
+- Fixed CVE-2014-3598, a DOS in the Jpeg2KImagePlugin
   [Andrew Drake]
 
 - Fixed CVE-2014-3589, a DOS in the IcnsImagePlugin
@@ -49,7 +322,7 @@ Changelog (Pillow)
 - Added docs for ExifTags
   [Wintermute3]
 
-- More tests for CurImagePlugin, DcxImagePlugin, ImageFont, ImageMath, ImagePalette, IptcImagePlugin, SpiderImagePlugin, SgiImagePlugin, XpmImagePlugin and _util
+- More tests for CurImagePlugin, DcxImagePlugin, Effects.c, GimpGradientFile, ImageFont, ImageMath, ImagePalette, IptcImagePlugin, SpiderImagePlugin, SgiImagePlugin, XpmImagePlugin and _util
   [hugovk]
 
 - Fix return value of FreeTypeFont.textsize() does not include font offsets
@@ -109,7 +382,7 @@ Changelog (Pillow)
   [wirefool]
 
 - Top level flake8 fixes #741
-  [aclark]
+  [aclark4life]
 
 - Remove obsolete Animated Raster Graphics (ARG) support
   [hugovk]
@@ -238,7 +511,7 @@ Changelog (Pillow)
   [larsmans]
 
 - Avoid conflicting _expand functions in PIL & MINGW, fixes #538
-  [aclark]
+  [aclark4life]
 
 - Merge from Philippe Lagadec’s OleFileIO_PL fork
   [vadmium]
@@ -653,13 +926,13 @@ Changelog (Pillow)
   [blueyed]
 
 - Package cleanup and additional documentation
-  [aclark]
+  [aclark4life]
 
 1.7.4 (2011-07-21)
 ------------------
 
 - Fix brown bag release
-  [aclark]
+  [aclark4life]
 
 1.7.3 (2011-07-20)
 ------------------
@@ -671,19 +944,19 @@ Changelog (Pillow)
 ------------------
 
 - Bug fix: Python 2.4 compat
-  [aclark]
+  [aclark4life]
 
 1.7.1 (2011-05-31)
 ------------------
 
 - More multi-arch support
-  [SteveM, regebro, barry, aclark]
+  [SteveM, regebro, barry, aclark4life]
 
 1.7.0 (2011-05-27)
 ------------------
 
 - Add support for multi-arch library directory /usr/lib/x86_64-linux-gnu
-  [aclark]
+  [aclark4life]
 
 1.6 (12/01/2010)
 ----------------
@@ -692,28 +965,28 @@ Changelog (Pillow)
   [elro]
 
 - Doc fixes
-  [aclark]
+  [aclark4life]
 
 1.5 (11/28/2010)
 ----------------
 
 - Module and package fixes
-  [aclark]
+  [aclark4life]
 
 1.4 (11/28/2010)
 ----------------
 
 - Doc fixes
-  [aclark]
+  [aclark4life]
 
 1.3 (11/28/2010)
 ----------------
 
 - Add support for /lib64 and /usr/lib64 library directories on Linux
-  [aclark]
+  [aclark4life]
 
 - Doc fixes
-  [aclark]
+  [aclark4life]
 
 1.2 (08/02/2010)
 ----------------
@@ -722,25 +995,28 @@ Changelog (Pillow)
   [jezdez]
 
 - Doc fixes
-  [aclark]
+  [aclark4life]
 
 1.1 (07/31/2010)
 ----------------
 
 - Removed setuptools_hg requirement
-  [aclark]
+  [aclark4life]
 
 - Doc fixes
-  [aclark]
+  [aclark4life]
 
 1.0 (07/30/2010)
 ----------------
 
 - Remove support for ``import Image``, etc. from the standard namespace. ``from PIL import Image`` etc. now required.
 - Forked PIL based on `Hanno Schlichting's re-packaging <http://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz>`_
-  [aclark]
+  [aclark4life]
 
 .. Note:: What follows is the original PIL 1.1.7 CHANGES
+
+0.2b5 - 1.1.7 (1995-2010)
+-------------------------
 
 ::
 
@@ -1601,7 +1877,7 @@ Changelog (Pillow)
     (1.1.2c1 and 1.1.2 final released)
 
     + Adapted to Python 2.1.  Among other things, all uses of the
-      "regex" module has been repleased with "re".
+      "regex" module have been replaced with "re".
 
     + Fixed attribute error when reading large PNG files (this bug
       was introduced in maintenance code released after the 1.1.1
@@ -2225,7 +2501,7 @@ Changelog (Pillow)
                     the default value is 75.
 
           JPEG	smooth		smooth dithered images.  value
-                    is strengh (1-100).  default is
+                    is strength (1-100).  default is
                     off (0).
 
           PNG	optimize	minimize output file at the

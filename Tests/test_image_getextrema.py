@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageGetExtrema(PillowTestCase):
@@ -6,19 +6,19 @@ class TestImageGetExtrema(PillowTestCase):
     def test_extrema(self):
 
         def extrema(mode):
-            return lena(mode).getextrema()
+            return hopper(mode).getextrema()
 
         self.assertEqual(extrema("1"), (0, 255))
-        self.assertEqual(extrema("L"), (40, 235))
-        self.assertEqual(extrema("I"), (40, 235))
-        self.assertEqual(extrema("F"), (40.0, 235.0))
-        self.assertEqual(extrema("P"), (11, 218))  # fixed palette
+        self.assertEqual(extrema("L"), (0, 255))
+        self.assertEqual(extrema("I"), (0, 255))
+        self.assertEqual(extrema("F"), (0, 255))
+        self.assertEqual(extrema("P"), (0, 225))  # fixed palette
         self.assertEqual(
-            extrema("RGB"), ((61, 255), (26, 234), (44, 223)))
+            extrema("RGB"), ((0, 255), (0, 255), (0, 255)))
         self.assertEqual(
-            extrema("RGBA"), ((61, 255), (26, 234), (44, 223), (255, 255)))
+            extrema("RGBA"), ((0, 255), (0, 255), (0, 255), (255, 255)))
         self.assertEqual(
-            extrema("CMYK"), ((0, 194), (21, 229), (32, 211), (0, 0)))
+            extrema("CMYK"), (((0, 255), (0, 255), (0, 255), (0, 0))))
 
 
 if __name__ == '__main__':

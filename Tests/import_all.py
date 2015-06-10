@@ -1,7 +1,9 @@
+from __future__ import print_function
 import sys
 sys.path.insert(0, ".")
 
-import glob, os
+import glob
+import os
 import traceback
 
 for file in glob.glob("PIL/*.py"):

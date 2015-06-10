@@ -12,7 +12,7 @@ import re
 LUT_SIZE = 1 << 9
 
 
-class LutBuilder:
+class LutBuilder(object):
     """A class for building a MorphLut from a descriptive language
 
       The input patterns is a list of a strings sequences like these::
@@ -35,14 +35,14 @@ class LutBuilder:
       returned if no other match is found.
 
       Operations:
-      
+
       - 4 - 4 way rotation
       - N - Negate
       - 1 - Dummy op for no other operation (an op must always be given)
       - M - Mirroring
 
       Example::
-      
+
           lb = LutBuilder(patterns = ["4:(... .1. 111)->1"])
           lut = lb.build_lut()
 
@@ -176,7 +176,7 @@ class LutBuilder:
         return self.lut
 
 
-class MorphOp:
+class MorphOp(object):
     """A class for binary morphological operators"""
 
     def __init__(self,

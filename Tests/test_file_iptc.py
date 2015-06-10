@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, IptcImagePlugin
 
@@ -11,7 +11,7 @@ class TestFileIptc(PillowTestCase):
 
     def dummy_IptcImagePlugin(self):
         # Create an IptcImagePlugin object without initializing it
-        class FakeImage:
+        class FakeImage(object):
             pass
         im = FakeImage()
         im.__class__ = IptcImagePlugin.IptcImageFile
@@ -21,7 +21,7 @@ class TestFileIptc(PillowTestCase):
 
     def test_getiptcinfo_jpg_none(self):
         # Arrange
-        im = lena()
+        im = hopper()
 
         # Act
         iptc = IptcImagePlugin.getiptcinfo(im)

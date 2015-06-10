@@ -71,7 +71,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-#define PILLOW_VERSION "2.5.3"
+#define PILLOW_VERSION "2.9.0.dev0"
 
 #include "Python.h"
 
@@ -421,6 +421,7 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
         *length = n;
 
     PyErr_Clear();
+    Py_DECREF(seq);
 
     return list;
 }
@@ -863,7 +864,8 @@ _gaussian_blur(ImagingObject* self, PyObject* args)
     Imaging imOut;
 
     float radius = 0;
-    if (!PyArg_ParseTuple(args, "f", &radius))
+    int passes = 3;
+    if (!PyArg_ParseTuple(args, "f|i", &radius, &passes))
         return NULL;
 
     imIn = self->image;
@@ -871,7 +873,7 @@ _gaussian_blur(ImagingObject* self, PyObject* args)
     if (!imOut)
         return NULL;
 
-    if (!ImagingGaussianBlur(imIn, imOut, radius))
+    if (!ImagingGaussianBlur(imOut, imIn, radius, passes))
         return NULL;
 
     return PyImagingNew(imOut);
@@ -1220,7 +1222,7 @@ _putdata(ImagingObject* self, PyObject* args)
     Py_ssize_t n, i, x, y;
 
     PyObject* data;
-    PyObject* seq;
+    PyObject* seq = NULL;
     PyObject* op;
     double scale = 1.0;
     double offset = 0.0;
@@ -1269,7 +1271,7 @@ _putdata(ImagingObject* self, PyObject* args)
            if (scale == 1.0 && offset == 0.0) {
                /* Clipped data */
                for (i = x = y = 0; i < n; i++) {
-                   op = PySequence_Fast_GET_ITEM(data, i);
+                   op = PySequence_Fast_GET_ITEM(seq, i);
                    image->image8[y][x] = (UINT8) CLIP(PyInt_AsLong(op));
                    if (++x >= (int) image->xsize){
                        x = 0, y++;
@@ -1279,7 +1281,7 @@ _putdata(ImagingObject* self, PyObject* args)
             } else {
                /* Scaled and clipped data */
                for (i = x = y = 0; i < n; i++) {
-                   PyObject *op = PySequence_Fast_GET_ITEM(data, i);
+                   PyObject *op = PySequence_Fast_GET_ITEM(seq, i);
                    image->image8[y][x] = CLIP(
                        (int) (PyFloat_AsDouble(op) * scale + offset));
                    if (++x >= (int) image->xsize){
@@ -1299,7 +1301,7 @@ _putdata(ImagingObject* self, PyObject* args)
         switch (image->type) {
         case IMAGING_TYPE_INT32:
             for (i = x = y = 0; i < n; i++) {
-                op = PySequence_Fast_GET_ITEM(data, i);
+                op = PySequence_Fast_GET_ITEM(seq, i);
                 IMAGING_PIXEL_INT32(image, x, y) =
                     (INT32) (PyFloat_AsDouble(op) * scale + offset);
                 if (++x >= (int) image->xsize){
@@ -1310,7 +1312,7 @@ _putdata(ImagingObject* self, PyObject* args)
             break;
         case IMAGING_TYPE_FLOAT32:
             for (i = x = y = 0; i < n; i++) {
-                op = PySequence_Fast_GET_ITEM(data, i);
+                op = PySequence_Fast_GET_ITEM(seq, i);
                 IMAGING_PIXEL_FLOAT32(image, x, y) =
                     (FLOAT32) (PyFloat_AsDouble(op) * scale + offset);
                 if (++x >= (int) image->xsize){
@@ -1326,8 +1328,9 @@ _putdata(ImagingObject* self, PyObject* args)
                     INT32 inkint;
                 } u;
 
-                op = PySequence_Fast_GET_ITEM(data, i);
+                op = PySequence_Fast_GET_ITEM(seq, i);
                 if (!op || !getink(op, image, u.ink)) {
+                    Py_DECREF(seq);
                     return NULL;
                 }
                 /* FIXME: what about scale and offset? */
@@ -1340,6 +1343,8 @@ _putdata(ImagingObject* self, PyObject* args)
             break;
         }
     }
+
+    Py_XDECREF(seq);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1513,9 +1518,26 @@ _resize(ImagingObject* self, PyObject* args)
 
     imIn = self->image;
 
-    imOut = ImagingNew(imIn->mode, xsize, ysize);
-    if (imOut)
-        (void) ImagingResize(imOut, imIn, filter);
+    if (imIn->xsize == xsize && imIn->ysize == ysize) {
+        imOut = ImagingCopy(imIn);
+    }
+    else if ( ! filter) {
+        double a[6];
+
+        memset(a, 0, sizeof a);
+        a[1] = (double) imIn->xsize / xsize;
+        a[5] = (double) imIn->ysize / ysize;
+
+        imOut = ImagingNew(imIn->mode, xsize, ysize);
+
+        imOut = ImagingTransformAffine(
+            imOut, imIn,
+            0, 0, xsize, ysize,
+            a, filter, 1);
+    }
+    else {
+        imOut = ImagingResample(imIn, xsize, ysize, filter);
+    }
 
     return PyImagingNew(imOut);
 }
@@ -1609,51 +1631,6 @@ im_setmode(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject*
-_stretch(ImagingObject* self, PyObject* args)
-{
-    Imaging imIn;
-    Imaging imTemp;
-    Imaging imOut;
-
-    int xsize, ysize;
-    int filter = IMAGING_TRANSFORM_NEAREST;
-    if (!PyArg_ParseTuple(args, "(ii)|i", &xsize, &ysize, &filter))
-    return NULL;
-
-    imIn = self->image;
-
-    /* two-pass resize: minimize size of intermediate image */
-    if ((Py_ssize_t) imIn->xsize * ysize < (Py_ssize_t) xsize * imIn->ysize)
-        imTemp = ImagingNew(imIn->mode, imIn->xsize, ysize);
-    else
-        imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
-    if (!imTemp)
-        return NULL;
-
-    /* first pass */
-    if (!ImagingStretch(imTemp, imIn, filter)) {
-        ImagingDelete(imTemp);
-        return NULL;
-    }
-
-    imOut = ImagingNew(imIn->mode, xsize, ysize);
-    if (!imOut) {
-        ImagingDelete(imTemp);
-        return NULL;
-    }
-
-    /* second pass */
-    if (!ImagingStretch(imOut, imTemp, filter)) {
-        ImagingDelete(imOut);
-        ImagingDelete(imTemp);
-        return NULL;
-    }
-
-    ImagingDelete(imTemp);
-
-    return PyImagingNew(imOut);
-}
 
 static PyObject*
 _transform2(ImagingObject* self, PyObject* args)
@@ -1750,6 +1727,7 @@ _transpose(ImagingObject* self, PyObject* args)
         break;
     case 2: /* rotate 90 */
     case 4: /* rotate 270 */
+    case 5: /* transpose */
         imOut = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
         break;
     default:
@@ -1774,6 +1752,9 @@ _transpose(ImagingObject* self, PyObject* args)
         case 4:
             (void) ImagingRotate270(imOut, imIn);
             break;
+        case 5:
+            (void) ImagingTranspose(imOut, imIn);
+            break;
         }
 
     return PyImagingNew(imOut);
@@ -1791,18 +1772,39 @@ _unsharp_mask(ImagingObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "fii", &radius, &percent, &threshold))
         return NULL;
 
+    imIn = self->image;
+    imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
+    if (!imOut)
+        return NULL;
+
+    if (!ImagingUnsharpMask(imOut, imIn, radius, percent, threshold))
+        return NULL;
+
+    return PyImagingNew(imOut);
+}
+#endif
+
+static PyObject*
+_box_blur(ImagingObject* self, PyObject* args)
+{
+    Imaging imIn;
+    Imaging imOut;
+
+    float radius;
+    int n = 1;
+    if (!PyArg_ParseTuple(args, "f|i", &radius, &n))
+        return NULL;
 
     imIn = self->image;
     imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
     if (!imOut)
         return NULL;
 
-    if (!ImagingUnsharpMask(imIn, imOut, radius, percent, threshold))
+    if (!ImagingBoxBlur(imOut, imIn, radius, n))
         return NULL;
 
     return PyImagingNew(imOut);
 }
-#endif
 
 /* -------------------------------------------------------------------- */
 
@@ -3031,8 +3033,10 @@ static struct PyMethodDef methods[] = {
     {"rankfilter", (PyCFunction)_rankfilter, 1},
 #endif
     {"resize", (PyCFunction)_resize, 1},
+    // There were two methods for image resize before.
+    // Starting from Pillow 2.7.0 stretch is depreciated.
+    {"stretch", (PyCFunction)_resize, 1},
     {"rotate", (PyCFunction)_rotate, 1},
-    {"stretch", (PyCFunction)_stretch, 1},
     {"transpose", (PyCFunction)_transpose, 1},
     {"transform2", (PyCFunction)_transform2, 1},
 
@@ -3077,6 +3081,8 @@ static struct PyMethodDef methods[] = {
     {"gaussian_blur", (PyCFunction)_gaussian_blur, 1},
     {"unsharp_mask", (PyCFunction)_unsharp_mask, 1},
 #endif
+
+    {"box_blur", (PyCFunction)_box_blur, 1},    
 
 #ifdef WITH_EFFECTS
     /* Special effects */

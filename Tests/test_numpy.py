@@ -1,4 +1,5 @@
-from helper import unittest, PillowTestCase, lena
+from __future__ import print_function
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -90,7 +91,7 @@ class TestNumpy(PillowTestCase):
     def test_to_array(self):
 
         def _to_array(mode, dtype):
-            img = lena(mode)
+            img = hopper(mode)
             np_img = numpy.array(img)
             self._test_img_equals_nparray(img, np_img)
             self.assertEqual(np_img.dtype, numpy.dtype(dtype))
@@ -117,9 +118,19 @@ class TestNumpy(PillowTestCase):
         data = list(range(256))*3
         lut = numpy.array(data, dtype='uint8')
 
-        im = lena()
+        im = hopper()
 
         im.point(lut)
+
+    def test_putdata(self):
+        # shouldn't segfault
+        # see https://github.com/python-pillow/Pillow/issues/1008
+
+        im = Image.new('F', (150, 100))
+        arr = numpy.zeros((15000,), numpy.float32)
+        im.putdata(arr)
+
+        self.assertEqual(len(im.getdata()), len(arr))
 
 
 if __name__ == '__main__':

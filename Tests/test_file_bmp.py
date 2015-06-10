@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 import io
@@ -18,16 +18,16 @@ class TestFileBmp(PillowTestCase):
         self.assertEqual(reloaded.format, "BMP")
 
     def test_sanity(self):
-        self.roundtrip(lena())
+        self.roundtrip(hopper())
 
-        self.roundtrip(lena("1"))
-        self.roundtrip(lena("L"))
-        self.roundtrip(lena("P"))
-        self.roundtrip(lena("RGB"))
+        self.roundtrip(hopper("1"))
+        self.roundtrip(hopper("L"))
+        self.roundtrip(hopper("P"))
+        self.roundtrip(hopper("RGB"))
 
     def test_save_to_bytes(self):
         output = io.BytesIO()
-        im = lena()
+        im = hopper()
         im.save(output, "BMP")
 
         output.seek(0)
@@ -41,7 +41,7 @@ class TestFileBmp(PillowTestCase):
         dpi = (72, 72)
 
         output = io.BytesIO()
-        im = lena()
+        im = hopper()
         im.save(output, "BMP", dpi=dpi)
 
         output.seek(0)

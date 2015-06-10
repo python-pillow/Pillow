@@ -35,8 +35,10 @@ xbm_head = re.compile(
     b"[\\000-\\377]*_bits\\[\\]"
 )
 
+
 def _accept(prefix):
     return prefix.lstrip()[:7] == b"#define"
+
 
 ##
 # Image plugin for X11 bitmaps.
@@ -81,7 +83,7 @@ def _save(im, fp, filename):
 
     fp.write(b"static char im_bits[] = {\n")
 
-    ImageFile._save(im, fp, [("xbm", (0,0)+im.size, 0, None)])
+    ImageFile._save(im, fp, [("xbm", (0, 0)+im.size, 0, None)])
 
     fp.write(b"};\n")
 

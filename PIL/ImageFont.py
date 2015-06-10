@@ -25,8 +25,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 from PIL import Image
 from PIL._util import isDirectory, isPath
 import os
@@ -38,7 +36,7 @@ except ImportError:
     warnings = None
 
 
-class _imagingft_not_installed:
+class _imagingft_not_installed(object):
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imagingft C module is not installed")
@@ -64,7 +62,7 @@ except ImportError:
 # --------------------------------------------------------------------
 
 
-class ImageFont:
+class ImageFont(object):
     "PIL font wrapper"
 
     def _load_pilfont(self, filename):
@@ -120,7 +118,7 @@ class ImageFont:
 # Wrapper for FreeType fonts.  Application code should use the
 # <b>truetype</b> factory function to create font objects.
 
-class FreeTypeFont:
+class FreeTypeFont(object):
     "FreeType font wrapper (requires _imagingft service)"
 
     def __init__(self, font=None, size=10, index=0, encoding="", file=None):
@@ -132,6 +130,11 @@ class FreeTypeFont:
                     'please use font parameter instead.',
                     DeprecationWarning)
             font = file
+
+        self.path = font
+        self.size = size
+        self.index = index
+        self.encoding = encoding
 
         if isPath(font):
             self.font = core.getfont(font, size, index, encoding)
@@ -162,6 +165,22 @@ class FreeTypeFont:
         self.font.render(text, im.id, mode == "1")
         return im, offset
 
+    def font_variant(self, font=None, size=None, index=None, encoding=None):
+        """
+        Create a copy of this FreeTypeFont object,
+        using any specified arguments to override the settings.
+
+        Parameters are identical to the parameters used to initialize this
+        object, minus the deprecated 'file' argument.
+
+        :return: A FreeTypeFont object.
+        """
+        return FreeTypeFont(font=self.path if font is None else font,
+                            size=self.size if size is None else size,
+                            index=self.index if index is None else index,
+                            encoding=self.encoding if encoding is None else
+                            encoding)
+
 ##
 # Wrapper that creates a transposed font from any existing font
 # object.
@@ -172,7 +191,7 @@ class FreeTypeFont:
 #     Image.ROTATE_90, Image.ROTATE_180, or Image.ROTATE_270.
 
 
-class TransposedFont:
+class TransposedFont(object):
     "Wrapper for writing rotated or mirrored text"
 
     def __init__(self, font, orientation=None):
@@ -214,7 +233,7 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
 
     This function requires the _imagingft service.
 
-    :param filename: A truetype font file. Under Windows, if the file
+    :param font: A truetype font file. Under Windows, if the file
                      is not found in this filename, the loader also looks in
                      Windows :file:`fonts/` directory.
     :param size: The requested size, in points.
@@ -224,6 +243,7 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                      Symbol), "ADOB" (Adobe Standard), "ADBE" (Adobe Expert),
                      and "armn" (Apple Roman). See the FreeType documentation
                      for more information.
+    :param filename: Deprecated. Please use font instead.
     :return: A font object.
     :exception IOError: If the file could not be read.
     """
@@ -239,14 +259,44 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
     try:
         return FreeTypeFont(font, size, index, encoding)
     except IOError:
+        ttf_filename = os.path.basename(font)
+
+        dirs = []
         if sys.platform == "win32":
             # check the windows font repository
             # NOTE: must use uppercase WINDIR, to work around bugs in
             # 1.5.2's os.environ.get()
             windir = os.environ.get("WINDIR")
             if windir:
-                filename = os.path.join(windir, "fonts", font)
-                return FreeTypeFont(filename, size, index, encoding)
+                dirs.append(os.path.join(windir, "fonts"))
+        elif sys.platform in ('linux', 'linux2'):
+            lindirs = os.environ.get("XDG_DATA_DIRS", "")
+            if not lindirs:
+                # According to the freedesktop spec, XDG_DATA_DIRS should
+                # default to /usr/share
+                lindirs = '/usr/share'
+            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+        elif sys.platform == 'darwin':
+            dirs += ['/Library/Fonts', '/System/Library/Fonts',
+                     os.path.expanduser('~/Library/Fonts')]
+
+        ext = os.path.splitext(ttf_filename)[1]
+        first_font_with_a_different_extension = None
+        for directory in dirs:
+            for walkroot, walkdir, walkfilenames in os.walk(directory):
+                for walkfilename in walkfilenames:
+                    if ext and walkfilename == ttf_filename:
+                        fontpath = os.path.join(walkroot, walkfilename)
+                        return FreeTypeFont(fontpath, size, index, encoding)
+                    elif not ext and os.path.splitext(walkfilename)[0] == ttf_filename:
+                        fontpath = os.path.join(walkroot, walkfilename)
+                        if os.path.splitext(fontpath)[1] == '.ttf':
+                            return FreeTypeFont(fontpath, size, index, encoding)
+                        if not ext and first_font_with_a_different_extension is None:
+                            first_font_with_a_different_extension = fontpath
+        if first_font_with_a_different_extension:
+            return FreeTypeFont(first_font_with_a_different_extension, size,
+                                index, encoding)
         raise
 
 
@@ -259,15 +309,15 @@ def load_path(filename):
     :return: A font object.
     :exception IOError: If the file could not be read.
     """
-    for dir in sys.path:
-        if isDirectory(dir):
+    for directory in sys.path:
+        if isDirectory(directory):
             if not isinstance(filename, str):
                 if bytes is str:
                     filename = filename.encode("utf-8")
                 else:
                     filename = filename.decode("utf-8")
             try:
-                return load(os.path.join(dir, filename))
+                return load(os.path.join(directory, filename))
             except IOError:
                 pass
     raise IOError("cannot find font file")

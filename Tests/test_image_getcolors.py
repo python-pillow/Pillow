@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestImageGetColors(PillowTestCase):
@@ -6,7 +6,7 @@ class TestImageGetColors(PillowTestCase):
     def test_getcolors(self):
 
         def getcolors(mode, limit=None):
-            im = lena(mode)
+            im = hopper(mode)
             if limit:
                 colors = im.getcolors(limit)
             else:
@@ -16,37 +16,36 @@ class TestImageGetColors(PillowTestCase):
             return None
 
         self.assertEqual(getcolors("1"), 2)
-        self.assertEqual(getcolors("L"), 193)
-        self.assertEqual(getcolors("I"), 193)
-        self.assertEqual(getcolors("F"), 193)
-        self.assertEqual(getcolors("P"), 54)  # fixed palette
+        self.assertEqual(getcolors("L"), 255)
+        self.assertEqual(getcolors("I"), 255)
+        self.assertEqual(getcolors("F"), 255)
+        self.assertEqual(getcolors("P"), 90)  # fixed palette
         self.assertEqual(getcolors("RGB"), None)
         self.assertEqual(getcolors("RGBA"), None)
         self.assertEqual(getcolors("CMYK"), None)
         self.assertEqual(getcolors("YCbCr"), None)
 
         self.assertEqual(getcolors("L", 128), None)
-        self.assertEqual(getcolors("L", 1024), 193)
+        self.assertEqual(getcolors("L", 1024), 255)
 
         self.assertEqual(getcolors("RGB", 8192), None)
-        self.assertEqual(getcolors("RGB", 16384), 14836)
-        self.assertEqual(getcolors("RGB", 100000), 14836)
+        self.assertEqual(getcolors("RGB", 16384), 10100)
+        self.assertEqual(getcolors("RGB", 100000), 10100)
 
-        self.assertEqual(getcolors("RGBA", 16384), 14836)
-        self.assertEqual(getcolors("CMYK", 16384), 14836)
-        self.assertEqual(getcolors("YCbCr", 16384), 11995)
+        self.assertEqual(getcolors("RGBA", 16384), 10100)
+        self.assertEqual(getcolors("CMYK", 16384), 10100)
+        self.assertEqual(getcolors("YCbCr", 16384), 9329)
 
     # --------------------------------------------------------------------
 
     def test_pack(self):
         # Pack problems for small tables (@PIL209)
 
-        im = lena().quantize(3).convert("RGB")
+        im = hopper().quantize(3).convert("RGB")
 
-        expected = [
-            (3236, (227, 183, 147)),
-            (6297, (143, 84, 81)),
-            (6851, (208, 143, 112))]
+        expected = [(4039, (172, 166, 181)),
+                    (4385, (124, 113, 134)),
+                    (7960, (31, 20, 33))]
 
         A = im.getcolors(maxcolors=2)
         self.assertEqual(A, None)

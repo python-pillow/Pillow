@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena, fromstring, tostring
+from helper import unittest, PillowTestCase, hopper, fromstring, tostring
 
 from io import BytesIO
 
@@ -20,15 +20,15 @@ class TestImageFile(PillowTestCase):
 
         def roundtrip(format):
 
-            im = lena("L").resize((1000, 1000))
+            im = hopper("L").resize((1000, 1000))
             if format in ("MSP", "XBM"):
                 im = im.convert("1")
 
-            file = BytesIO()
+            test_file = BytesIO()
 
-            im.save(file, format)
+            im.save(test_file, format)
 
-            data = file.getvalue()
+            data = test_file.getvalue()
 
             parser = ImageFile.Parser()
             parser.feed(data)
@@ -55,6 +55,12 @@ class TestImageFile(PillowTestCase):
 
         if EpsImagePlugin.has_ghostscript():
             im1, im2 = roundtrip("EPS")
+            # This test fails on Ubuntu 12.04, PPC (Bigendian) It
+            # appears to be a ghostscript 9.05 bug, since the
+            # ghostscript rendering is wonky and the file is identical
+            # to that written on ubuntu 12.04 x64
+            # md5sum: ba974835ff2d6f3f2fd0053a23521d4a
+
             # EPS comes back in RGB:
             self.assert_image_similar(im1, im2.convert('L'), 20)
 
@@ -73,7 +79,7 @@ class TestImageFile(PillowTestCase):
 
     def test_safeblock(self):
 
-        im1 = lena()
+        im1 = hopper()
 
         if "zip_encoder" not in codecs:
             self.skipTest("PNG (zlib) encoder not available")

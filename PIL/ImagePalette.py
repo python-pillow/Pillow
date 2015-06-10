@@ -21,7 +21,7 @@ import warnings
 from PIL import ImageColor
 
 
-class ImagePalette:
+class ImagePalette(object):
     "Color palette for palette mapped images"
 
     def __init__(self, mode="RGB", palette=None, size=0):
@@ -225,8 +225,8 @@ def load(filename):
             p = PaletteFile.PaletteFile(fp)
             lut = p.getpalette()
         except (SyntaxError, ValueError):
-            import traceback
-            traceback.print_exc()
+            #import traceback
+            #traceback.print_exc()
             pass
 
     if not lut:

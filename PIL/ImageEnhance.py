@@ -21,7 +21,7 @@
 from PIL import Image, ImageFilter, ImageStat
 
 
-class _Enhance:
+class _Enhance(object):
 
     def enhance(self, factor):
         """
@@ -47,7 +47,11 @@ class Color(_Enhance):
     """
     def __init__(self, image):
         self.image = image
-        self.degenerate = image.convert("L").convert(image.mode)
+        self.intermediate_mode = 'L'
+        if 'A' in image.getbands():
+            self.intermediate_mode = 'LA'
+
+        self.degenerate = image.convert(self.intermediate_mode).convert(image.mode)
 
 
 class Contrast(_Enhance):
@@ -62,17 +66,23 @@ class Contrast(_Enhance):
         mean = int(ImageStat.Stat(image.convert("L")).mean[0] + 0.5)
         self.degenerate = Image.new("L", image.size, mean).convert(image.mode)
 
+        if 'A' in image.getbands():
+            self.degenerate.putalpha(image.split()[-1])
+
 
 class Brightness(_Enhance):
     """Adjust image brightness.
 
-    This class can be used to control the brighntess of an image.  An
+    This class can be used to control the brightness of an image.  An
     enhancement factor of 0.0 gives a black image. A factor of 1.0 gives the
     original image.
     """
     def __init__(self, image):
         self.image = image
         self.degenerate = Image.new(image.mode, image.size, 0)
+
+        if 'A' in image.getbands():
+            self.degenerate.putalpha(image.split()[-1])
 
 
 class Sharpness(_Enhance):
@@ -85,3 +95,6 @@ class Sharpness(_Enhance):
     def __init__(self, image):
         self.image = image
         self.degenerate = image.filter(ImageFilter.SMOOTH)
+
+        if 'A' in image.getbands():
+            self.degenerate.putalpha(image.split()[-1])

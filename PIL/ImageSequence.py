@@ -15,7 +15,8 @@
 
 ##
 
-class Iterator:
+
+class Iterator(object):
     """
     This class implements an iterator object that can be used to loop
     over an image sequence.
@@ -38,4 +39,4 @@ class Iterator:
                 self.im.seek(ix)
             return self.im
         except EOFError:
-            raise IndexError # end of sequence
+            raise IndexError  # end of sequence

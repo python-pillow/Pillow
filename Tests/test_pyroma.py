@@ -1,4 +1,6 @@
-from helper import *
+from helper import unittest, PillowTestCase
+
+from PIL import PILLOW_VERSION
 
 try:
     import pyroma
@@ -12,6 +14,7 @@ class TestPyroma(PillowTestCase):
     def setUp(self):
         try:
             import pyroma
+            assert pyroma  # Ignore warning
         except ImportError:
             self.skipTest("ImportError")
 
@@ -23,8 +26,15 @@ class TestPyroma(PillowTestCase):
         rating = pyroma.ratings.rate(data)
 
         # Assert
-        # Should have a perfect score
-        self.assertEqual(rating, (10, []))
+        if 'rc' in PILLOW_VERSION:
+            # Pyroma needs to chill about RC versions
+            # and not kill all our tests.
+            self.assertEqual(rating, (9, [
+                'The packages version number does not comply with PEP-386.']))
+
+        else:
+            # Should have a perfect score
+            self.assertEqual(rating, (10, []))
 
 
 if __name__ == '__main__':

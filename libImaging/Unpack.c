@@ -638,7 +638,12 @@ unpackRGBa(UINT8* out, const UINT8* in, int pixels)
         int a = in[3];
         if (!a)
             out[R] = out[G] = out[B] = out[A] = 0;
-        else {
+        else if (a == 255) {
+            out[R] = in[0];
+            out[G] = in[1];
+            out[B] = in[2];
+            out[A] = a;
+        } else {
             out[R] = CLIP(in[0] * 255 / a);
             out[G] = CLIP(in[1] * 255 / a);
             out[B] = CLIP(in[2] * 255 / a);
@@ -803,7 +808,7 @@ unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
 
         FillOrder = 2 should be used only when BitsPerSample = 1 and
         the data is either uncompressed or compressed using CCITT 1D
-        or 2D compression, to avoid potentially ambigous situations.
+        or 2D compression, to avoid potentially ambiguous situations.
 
         Yeah. I thought so. We'll see how well people read the spec. 
         We've got several fillorder=2 modes in TiffImagePlugin.py
@@ -1113,6 +1118,12 @@ static struct {
     {"RGBA",    "G",            8,      band1},
     {"RGBA",    "B",            8,      band2},
     {"RGBA",    "A",            8,      band3},
+
+    /* true colour w. alpha premultiplied */
+    {"RGBa",    "RGBa",         32,     copy4},
+    {"RGBa",    "BGRa",         32,     unpackBGRA},
+    {"RGBa",    "aRGB",         32,     unpackARGB},
+    {"RGBa",    "aBGR",         32,     unpackABGR},
 
     /* true colour w. padding */
     {"RGBX",    "RGB",          24,     ImagingUnpackRGB},

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, lena
+from helper import unittest, PillowTestCase, hopper
 
 from io import BytesIO
 
@@ -10,8 +10,8 @@ codecs = dir(Image.core)
 
 # sample png stream
 
-file = "Tests/images/lena.png"
-data = open(file, "rb").read()
+TEST_PNG_FILE = "Tests/images/hopper.png"
+TEST_DATA = open(TEST_PNG_FILE, "rb").read()
 
 # stuff to create inline PNG images
 
@@ -19,9 +19,9 @@ MAGIC = PngImagePlugin._MAGIC
 
 
 def chunk(cid, *data):
-    file = BytesIO()
-    PngImagePlugin.putchunk(*(file, cid) + data)
-    return file.getvalue()
+    test_file = BytesIO()
+    PngImagePlugin.putchunk(*(test_file, cid) + data)
+    return test_file.getvalue()
 
 o32 = PngImagePlugin.o32
 
@@ -56,37 +56,37 @@ class TestFilePng(PillowTestCase):
         self.assertRegexpMatches(
             Image.core.zlib_version, "\d+\.\d+\.\d+(\.\d+)?$")
 
-        file = self.tempfile("temp.png")
+        test_file = self.tempfile("temp.png")
 
-        lena("RGB").save(file)
+        hopper("RGB").save(test_file)
 
-        im = Image.open(file)
+        im = Image.open(test_file)
         im.load()
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "PNG")
 
-        lena("1").save(file)
-        im = Image.open(file)
+        hopper("1").save(test_file)
+        im = Image.open(test_file)
 
-        lena("L").save(file)
-        im = Image.open(file)
+        hopper("L").save(test_file)
+        im = Image.open(test_file)
 
-        lena("P").save(file)
-        im = Image.open(file)
+        hopper("P").save(test_file)
+        im = Image.open(test_file)
 
-        lena("RGB").save(file)
-        im = Image.open(file)
+        hopper("RGB").save(test_file)
+        im = Image.open(test_file)
 
-        lena("I").save(file)
-        im = Image.open(file)
+        hopper("I").save(test_file)
+        im = Image.open(test_file)
 
     def test_broken(self):
         # Check reading of totally broken files.  In this case, the test
         # file was checked into Subversion as a text file.
 
-        file = "Tests/images/broken.png"
-        self.assertRaises(IOError, lambda: Image.open(file))
+        test_file = "Tests/images/broken.png"
+        self.assertRaises(IOError, lambda: Image.open(test_file))
 
     def test_bad_text(self):
         # Make sure PIL can read malformed tEXt chunks (@PIL152)
@@ -151,29 +151,32 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.info["spam"].lang, "en")
         self.assertEqual(im.info["spam"].tkey, "Spam")
 
-        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' + zlib.compress(b"egg")[:1]) + TAIL)
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' +
+                               zlib.compress(b"egg")[:1]) + TAIL)
+        self.assertEqual(im.info, {'spam': ''})
+
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\1en\0Spam\0' +
+                               zlib.compress(b"egg")) + TAIL)
         self.assertEqual(im.info, {})
 
-        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\1en\0Spam\0' + zlib.compress(b"egg")) + TAIL)
-        self.assertEqual(im.info, {})
-
-        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' + zlib.compress(b"egg")) + TAIL)
+        im = load(HEAD + chunk(b'iTXt', b'spam\0\1\0en\0Spam\0' +
+                               zlib.compress(b"egg")) + TAIL)
         self.assertEqual(im.info, {"spam": "egg"})
         self.assertEqual(im.info["spam"].lang, "en")
         self.assertEqual(im.info["spam"].tkey, "Spam")
 
     def test_interlace(self):
 
-        file = "Tests/images/pil123p.png"
-        im = Image.open(file)
+        test_file = "Tests/images/pil123p.png"
+        im = Image.open(test_file)
 
         self.assert_image(im, "P", (162, 150))
         self.assertTrue(im.info.get("interlace"))
 
         im.load()
 
-        file = "Tests/images/pil123rgba.png"
-        im = Image.open(file)
+        test_file = "Tests/images/pil123rgba.png"
+        im = Image.open(test_file)
 
         self.assert_image(im, "RGBA", (162, 150))
         self.assertTrue(im.info.get("interlace"))
@@ -181,8 +184,8 @@ class TestFilePng(PillowTestCase):
         im.load()
 
     def test_load_transparent_p(self):
-        file = "Tests/images/pil123p.png"
-        im = Image.open(file)
+        test_file = "Tests/images/pil123p.png"
+        im = Image.open(test_file)
 
         self.assert_image(im, "P", (162, 150))
         im = im.convert("RGBA")
@@ -192,8 +195,8 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(len(im.split()[3].getcolors()), 124)
 
     def test_load_transparent_rgb(self):
-        file = "Tests/images/rgb_trns.png"
-        im = Image.open(file)
+        test_file = "Tests/images/rgb_trns.png"
+        im = Image.open(test_file)
 
         self.assert_image(im, "RGB", (64, 64))
         im = im.convert("RGBA")
@@ -206,22 +209,22 @@ class TestFilePng(PillowTestCase):
         in_file = "Tests/images/pil123p.png"
         im = Image.open(in_file)
 
-        file = self.tempfile("temp.png")
-        im.save(file)
+        test_file = self.tempfile("temp.png")
+        im.save(test_file)
 
     def test_save_p_single_transparency(self):
         in_file = "Tests/images/p_trns_single.png"
         im = Image.open(in_file)
 
-        file = self.tempfile("temp.png")
-        im.save(file)
+        test_file = self.tempfile("temp.png")
+        im.save(test_file)
 
     def test_save_l_transparency(self):
         in_file = "Tests/images/l_trns.png"
         im = Image.open(in_file)
 
-        file = self.tempfile("temp.png")
-        im.save(file)
+        test_file = self.tempfile("temp.png")
+        im.save(test_file)
 
         # There are 559 transparent pixels.
         im = im.convert('RGBA')
@@ -231,23 +234,23 @@ class TestFilePng(PillowTestCase):
         in_file = "Tests/images/caption_6_33_22.png"
         im = Image.open(in_file)
 
-        file = self.tempfile("temp.png")
-        im.save(file)
+        test_file = self.tempfile("temp.png")
+        im.save(test_file)
 
     def test_load_verify(self):
         # Check open/load/verify exception (@PIL150)
 
-        im = Image.open("Tests/images/lena.png")
+        im = Image.open(TEST_PNG_FILE)
         im.verify()
 
-        im = Image.open("Tests/images/lena.png")
+        im = Image.open(TEST_PNG_FILE)
         im.load()
-        self.assertRaises(RuntimeError, lambda: im.verify())
+        self.assertRaises(RuntimeError, im.verify)
 
     def test_roundtrip_dpi(self):
         # Check dpi roundtripping
 
-        im = Image.open(file)
+        im = Image.open(TEST_PNG_FILE)
 
         im = roundtrip(im, dpi=(100, 100))
         self.assertEqual(im.info["dpi"], (100, 100))
@@ -255,7 +258,7 @@ class TestFilePng(PillowTestCase):
     def test_roundtrip_text(self):
         # Check text roundtripping
 
-        im = Image.open(file)
+        im = Image.open(TEST_PNG_FILE)
 
         info = PngImagePlugin.PngInfo()
         info.add_text("TXT", "VALUE")
@@ -271,7 +274,8 @@ class TestFilePng(PillowTestCase):
         im = Image.new("RGB", (32, 32))
         info = PngImagePlugin.PngInfo()
         info.add_itxt("spam", "Eggs", "en", "Spam")
-        info.add_text("eggs", PngImagePlugin.iTXt("Spam", "en", "Eggs"), zip=True)
+        info.add_text("eggs", PngImagePlugin.iTXt("Spam", "en", "Eggs"),
+                      zip=True)
 
         im = roundtrip(im, pnginfo=info)
         self.assertEqual(im.info, {"spam": "Eggs", "eggs": "Spam"})
@@ -303,11 +307,11 @@ class TestFilePng(PillowTestCase):
             self.assertEqual(im.info, {"Text": value})
 
         if str is not bytes:
-            rt_text(" Aa" + chr(0xa0) + chr(0xc4) + chr(0xff)) # Latin1
-            rt_text(chr(0x400) + chr(0x472) + chr(0x4ff))      # Cyrillic
-            rt_text(chr(0x4e00) + chr(0x66f0) +                # CJK
+            rt_text(" Aa" + chr(0xa0) + chr(0xc4) + chr(0xff))  # Latin1
+            rt_text(chr(0x400) + chr(0x472) + chr(0x4ff))       # Cyrillic
+            rt_text(chr(0x4e00) + chr(0x66f0) +                 # CJK
                     chr(0x9fba) + chr(0x3042) + chr(0xac00))
-            rt_text("A" + chr(0xc4) + chr(0x472) + chr(0x3042)) # Combined
+            rt_text("A" + chr(0xc4) + chr(0x472) + chr(0x3042))  # Combined
 
     def test_scary(self):
         # Check reading of evil PNG file.  For information, see:
@@ -325,8 +329,8 @@ class TestFilePng(PillowTestCase):
         # Check writing and reading of tRNS chunks for RGB images.
         # Independent file sample provided by Sebastian Spaeth.
 
-        file = "Tests/images/caption_6_33_22.png"
-        im = Image.open(file)
+        test_file = "Tests/images/caption_6_33_22.png"
+        im = Image.open(test_file)
         self.assertEqual(im.info["transparency"], (248, 248, 248))
 
         # check saving transparency by default
@@ -338,7 +342,7 @@ class TestFilePng(PillowTestCase):
 
     def test_trns_p(self):
         # Check writing a transparency of 0, issue #528
-        im = lena('P')
+        im = hopper('P')
         im.info['transparency'] = 0
 
         f = self.tempfile("temp.png")
@@ -347,7 +351,15 @@ class TestFilePng(PillowTestCase):
         im2 = Image.open(f)
         self.assertIn('transparency', im2.info)
 
-        self.assert_image_equal(im2.convert('RGBA'), im.convert('RGBA'))
+        self.assert_image_equal(im2.convert('RGBA'),
+                                im.convert('RGBA'))
+
+    def test_trns_null(self):
+        # Check reading images with null tRNS value, issue #1239
+        test_file = "Tests/images/tRNS_null_1x1.png"
+        im = Image.open(test_file)
+
+        self.assertEqual(im.info["transparency"], 0)
 
     def test_save_icc_profile_none(self):
         # check saving files with an ICC profile set to None (omit profile)
@@ -360,7 +372,7 @@ class TestFilePng(PillowTestCase):
 
     def test_roundtrip_icc_profile(self):
         # check that we can roundtrip the icc profile
-        im = lena('RGB')
+        im = hopper('RGB')
 
         jpeg_image = Image.open('Tests/images/flower2.jpg')
         expected_icc = jpeg_image.info['icc_profile']
@@ -368,6 +380,13 @@ class TestFilePng(PillowTestCase):
         im.info['icc_profile'] = expected_icc
         im = roundtrip(im)
         self.assertEqual(im.info['icc_profile'], expected_icc)
+
+    def test_repr_png(self):
+        im = hopper()
+
+        repr_png = Image.open(BytesIO(im._repr_png_()))
+        self.assertEqual(repr_png.format, 'PNG')
+        self.assert_image_equal(im, repr_png)
 
 
 if __name__ == '__main__':

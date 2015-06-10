@@ -12,13 +12,12 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-__version__ = "0.1"
-
 from PIL import Image, ImageFile
 import struct
 import os
 import io
+
+__version__ = "0.1"
 
 
 def _parse_codestream(fp):
@@ -72,7 +71,7 @@ def _parse_jp2_header(fp):
 
         if lbox < hlen:
             raise SyntaxError('Invalid JP2 header length')
-        
+
         if tbox == b'jp2h':
             header = fp.read(lbox - hlen)
             break
@@ -208,8 +207,8 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
 
 def _accept(prefix):
-    return (prefix[:4] == b'\xff\x4f\xff\x51'
-            or prefix[:12] == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a')
+    return (prefix[:4] == b'\xff\x4f\xff\x51' or
+            prefix[:12] == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a')
 
 
 # ------------------------------------------------------------

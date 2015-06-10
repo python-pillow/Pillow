@@ -9,6 +9,6 @@ i = Image.new("RGB", (500, h), "white")
 d = ImageDraw.Draw(i)
 
 # this line causes a MemoryError
-d.text((0,0), s, font=f, fill=0)
+d.text((0, 0), s, font=f, fill=0)
 
 i.show()
