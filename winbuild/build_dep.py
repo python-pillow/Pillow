@@ -251,7 +251,7 @@ if True:
    
     script.append(msbuild_freetype(compiler))
     script.append(build_lcms2(compiler))
-    script.append(nmake_openjpeg(compiler))
+    #script.append(nmake_openjpeg(compiler))
     script.append(end_compiler())
 
 with open('build_deps.cmd', 'w') as f:    
