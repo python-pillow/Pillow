@@ -13,8 +13,8 @@ set LIB=%LIB%;%INCLIB%\msvcr90-x64
 set INCLUDE=%INCLUDE%;%INCLIB%\msvcr90-x64;%INCLIB%\tcl85\include
 
 setlocal
-set LIB=%LIB%;C:\Python27x64\tcl
-call c:\vp\27x64\Scripts\python.exe setup.py %BLDOPT%
+set LIB=%LIB%;C:\Python27-x64\tcl
+call c:\python27-x64\python.exe setup.py %BLDOPT%
 endlocal
 
 endlocal
