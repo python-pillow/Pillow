@@ -235,15 +235,8 @@ copy /Y /B %%LCMS%%\Lib\MS\*.lib %%INCLIB%%
 endlocal
 """ % compiler
 
-mkdirs()
-fetch_libs()
-#extract_binlib()
 
-script = [header()] #, cp_tk()]
-
-#for compiler in compilers.values():
-if True:
-    compiler = compilers[(7,64)]
+def add_compiler(compiler):
     script.append(setup_compiler(compiler))
     script.append(nmake_libs(compiler))
 
@@ -254,7 +247,36 @@ if True:
     #script.append(nmake_openjpeg(compiler))
     script.append(end_compiler())
 
+
+
+mkdirs()
+fetch_libs()
+#extract_binlib()
+script = [header()] #, cp_tk()]
+
+    
+#for compiler in compilers.values():
+#    add_compiler(compiler)
+
+if 'PYTHON' in os.environ:
+    bit = 32
+    if '64' in os.environ['PYTHON']:
+        bit = 64
+        break
+
+    ver = 7
+    for k,v in pythons:
+        if k in os.environ['PYTHON']:
+            ver = v
+            break
+
+    add_compiler(compilers[(ver,bit)])
+else:
+    compiler = compilers[(7,64)]
+    
 with open('build_deps.cmd', 'w') as f:    
     f.write("\n".join(script))
+
+
 
 
