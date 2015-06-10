@@ -241,17 +241,17 @@ fetch_libs()
 
 script = [header()] #, cp_tk()]
 
-for compiler in compilers.values():
-#if True:
-#    compiler = compilers[(7,32)]
+#for compiler in compilers.values():
+if True:
+    compiler = compilers[(7,64)]
     script.append(setup_compiler(compiler))
-#    script.append(nmake_libs(compiler))
+    script.append(nmake_libs(compiler))
 
-#    script.append(extract_openjpeg(compiler))
-#   
-#    script.append(build_freetype(compiler))
+    script.append(extract_openjpeg(compiler))
+   
+    script.append(build_freetype(compiler))
     script.append(build_lcms2(compiler))
-#    script.append(nmake_openjpeg(compiler))
+    script.append(nmake_openjpeg(compiler))
     script.append(end_compiler())
 
 with open('build_deps.cmd', 'w') as f:    
