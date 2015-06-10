@@ -250,7 +250,7 @@ if True:
     #script.append(extract_openjpeg(compiler))
    
     script.append(msbuild_freetype(compiler))
-    script.append(build_lcms2(compiler))
+    #script.append(build_lcms2(compiler))
     #script.append(nmake_openjpeg(compiler))
     script.append(end_compiler())
 
