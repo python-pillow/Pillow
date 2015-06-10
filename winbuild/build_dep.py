@@ -100,7 +100,7 @@ copy /Y /B %BUILD%\tk8.5.13\xlib\X11\* %INCLIB%\tcl85\include\X11\
 def header():
     return r"""setlocal
 set MSBUILD=C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe
-set CMAKE="C:\Program Files (x86)\CMake 2.8\bin\cmake.exe"
+set CMAKE="cmake.exe"
 set INCLIB=%~dp0\depends
 set BUILD=%~dp0\build
 """ + "\n".join('set %s=%%BUILD%%\%s' %(k.upper(), v['dir'])
