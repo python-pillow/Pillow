@@ -109,24 +109,14 @@ def main(op):
         print ("Compiled %s: %s" % (version, status))
         
 def run_one(op):
-    py = os.environ['PYTHON']
-
-    py_version = '27'
-    for k,v in pythons.items():
-        if k in py:
-            compiler_version = v
-            py_version = k
-            break
-
-    bit = 32
-    if '64' in py:
-        bit = 64
-        py_version = '%s-x64' % py_version
+    
+    compiler = compiler_fromEnv()
+    py_version = pyversion_fromEnv()
 
 
     run_script((py_version,
                 "\n".join([header(op),
-                           build_one(py_version, compilers[(compiler_version, bit)]),
+                           build_one(py_version, compiler),
                            footer()])
                ))
     

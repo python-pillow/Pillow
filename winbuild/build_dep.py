@@ -250,7 +250,7 @@ def add_compiler(compiler):
 
 
 mkdirs()
-fetch_libs()
+#fetch_libs()
 #extract_binlib()
 script = [header()] #, cp_tk()]
 
@@ -259,20 +259,9 @@ script = [header()] #, cp_tk()]
 #    add_compiler(compiler)
 
 if 'PYTHON' in os.environ:
-    bit = 32
-    if '64' in os.environ['PYTHON']:
-        bit = 64
-        break
-
-    ver = 7
-    for k,v in pythons:
-        if k in os.environ['PYTHON']:
-            ver = v
-            break
-
-    add_compiler(compilers[(ver,bit)])
+    add_compiler(compiler_fromEnv())
 else:
-    compiler = compilers[(7,64)]
+    add_compiler(compilers[(7,64)])
     
 with open('build_deps.cmd', 'w') as f:    
     f.write("\n".join(script))

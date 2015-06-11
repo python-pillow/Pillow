@@ -1,3 +1,5 @@
+import os
+
 SF_MIRROR = 'http://hivelocity.dl.sourceforge.net'
 SF_MIRROR = 'http://iweb.dl.sourceforge.net'
 
@@ -102,3 +104,33 @@ compilers = { (7,64): {
     },
 
     }
+
+
+def pyversion_fromEnv():
+    py = os.environ['PYTHON']
+
+    py_version = '27'
+    for k,v in pythons.items():
+        if k in py:
+            py_version = k
+            break
+
+    if '64' in py:
+        py_version = '%s-x64' % py_version
+
+    return py_version
+
+    
+def compiler_fromEnv():
+    py = os.environ['PYTHON']
+
+    for k,v in pythons.items():
+        if k in py:
+            compiler_version = v
+            break
+
+    bit = 32
+    if '64' in py:
+        bit = 64
+
+    return compilers[(compiler_version, bit)]
