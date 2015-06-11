@@ -3,13 +3,14 @@
 import subprocess, multiprocessing
 import shutil
 import sys, getopt
+import os
 
 from config import *
 
 def setup_vms():
     ret = []
     for py in pythons.keys():
-        for arch in ('', 'x64'):
+        for arch in ('', '-x64'):
             ret.append("virtualenv -p c:/Python%s%s/python.exe --clear %s%s%s" %
                        (py, arch, VIRT_BASE, py, arch))
             ret.append("%s%s%s\Scripts\pip.exe install nose" %
@@ -58,6 +59,7 @@ exit
 """
 
 def build_one(py_ver, compiler):
+    # UNDONE virtual envs if we're not running on appveyor
     args = {}
     args.update(compiler)
     args['py_ver'] = py_ver
@@ -70,7 +72,7 @@ set INCLUDE=%%INCLUDE%%;%%INCLIB%%\%(inc_dir)s;%%INCLIB%%\tcl85\include
 
 setlocal
 set LIB=%%LIB%%;C:\Python%(py_ver)s\tcl
-call c:\vp\%(py_ver)s\Scripts\python.exe setup.py %%BLDOPT%%
+call %%PYTHON%%\python.exe setup.py %%BLDOPT%%
 endlocal
 
 endlocal
@@ -106,6 +108,29 @@ def main(op):
     for (version, status, trace, err) in results:
         print ("Compiled %s: %s" % (version, status))
         
+def run_one(op):
+    py = os.environ['PYTHON']
+
+    py_version = '27'
+    for k,v in pythons.items():
+        if k in py:
+            compiler_version = v
+            py_version = k
+            break
+
+    bit = 32
+    if '64' in py:
+        bit = 64
+        py_version = '%s-x64' % py_version
+
+
+    run_script((py_version,
+                "\n".join([header(op),
+                           build_one(py_version, compilers[(compiler_version, bit)]),
+                           footer()])
+               ))
+    
+                
 
 
 if __name__=='__main__':
@@ -118,5 +143,8 @@ if __name__=='__main__':
     op = 'install'
     if '--dist' in opts:
         op = "bdist_wininst --user-access-control=auto"
-                               
-    main(op)
+
+    if 'PYTHON' in os.environ:
+        run_one(op)
+    else:
+        main(op)
