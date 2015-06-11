@@ -250,7 +250,7 @@ def add_compiler(compiler):
 
 
 mkdirs()
-#fetch_libs()
+fetch_libs()
 #extract_binlib()
 script = [header()] #, cp_tk()]
 
