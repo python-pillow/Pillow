@@ -537,7 +537,8 @@ def getheader(im, palette=None, info=None):
     # size of global color table + global color table flag
     header.append(o8(color_table_size + 128))
     # background + reserved/aspect
-    header.append(o8(0) + o8(0))
+    background = im.info["background"] if "background" in im.info else 0
+    header.append(o8(background) + o8(0))
     # end of Logical Screen Descriptor
 
     # add the missing amount of bytes
