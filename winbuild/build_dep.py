@@ -206,8 +206,23 @@ endlocal
 
 """ % compiler
     
-      
 def msbuild_freetype(compiler):
+	if compiler['env_version'] == 'v7.1':
+		return msbuild_freetype_71(compiler)
+	return msbuild_freetype_70(compiler)
+      
+def msbuild_freetype_71(compiler):
+    return r"""
+rem Build freetype
+setlocal
+rd /S /Q %%FREETYPE%%\objs
+%%MSBUILD%% %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln /t:Clean;Build /p:Configuration="Release" /p:Platform=%(platform)s /m 
+xcopy /Y /E /Q %%FREETYPE%%\include %%INCLIB%%
+copy /Y /B %%FREETYPE%%\objs\vc%(vc_version)s\%(platform)s\*.lib %%INCLIB%%\freetype.lib
+endlocal
+""" %compiler
+
+def msbuild_freetype_70(compiler):
     return r"""
 rem Build freetype
 setlocal
@@ -255,13 +270,13 @@ fetch_libs()
 script = [header()] #, cp_tk()]
 
     
-#for compiler in compilers.values():
-#    add_compiler(compiler)
 
 if 'PYTHON' in os.environ:
     add_compiler(compiler_fromEnv())
 else:
-    add_compiler(compilers[(7,64)])
+    for compiler in compilers.values():
+        add_compiler(compiler)
+    #add_compiler(compilers[(7,32)])
     
 with open('build_deps.cmd', 'w') as f:    
     f.write("\n".join(script))
