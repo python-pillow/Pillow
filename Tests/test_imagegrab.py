@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, onAppveyor
 
 import sys
 
@@ -7,10 +7,12 @@ try:
 
     class TestImageGrab(PillowTestCase):
 
+        @unittest.skipIf(onAppveyor())
         def test_grab(self):
             im = ImageGrab.grab()
             self.assert_image(im, im.mode, im.size)
 
+        @unittest.skipIf(onAppveyor())
         def test_grab2(self):
             im = ImageGrab.grab()
             self.assert_image(im, im.mode, im.size)

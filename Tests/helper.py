@@ -233,6 +233,8 @@ def netpbm_available():
 def imagemagick_available():
     return IMCONVERT and command_succeeds([IMCONVERT, '-version'])
 
+def onAppveyor():
+    return 'APPVEYOR' in os.environ
 
 if sys.platform == 'win32':
     IMCONVERT = os.environ.get('MAGICK_HOME', '')
