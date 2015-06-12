@@ -7,12 +7,12 @@ try:
 
     class TestImageGrab(PillowTestCase):
 
-        @unittest.skipIf(onAppveyor())
+        @unittest.skipIf(onAppveyor(), "Test fails on appveyor")
         def test_grab(self):
             im = ImageGrab.grab()
             self.assert_image(im, im.mode, im.size)
 
-        @unittest.skipIf(onAppveyor())
+        @unittest.skipIf(onAppveyor(), "Test fails on appveyor")
         def test_grab2(self):
             im = ImageGrab.grab()
             self.assert_image(im, im.mode, im.size)
