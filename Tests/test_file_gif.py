@@ -201,6 +201,15 @@ class TestFileGif(PillowTestCase):
 
         self.assertEqual(reread.info['loop'], number_of_loops)
 
+    def test_background(self):
+        out = self.tempfile('temp.gif')
+        im = Image.new('L', (100, 100), '#000')
+        im.info['background'] = 1
+        im.save(out)
+        reread = Image.open(out)
+
+        self.assertEqual(reread.info['background'], im.info['background'])
+
 if __name__ == '__main__':
     unittest.main()
 
