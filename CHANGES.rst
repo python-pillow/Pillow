@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Added background saving to GifImagePlugin #1273
+  [radarhere]
+
 - Provide n_frames attribute to multi-frame formats #1261
   [anntzer, radarhere]
 
