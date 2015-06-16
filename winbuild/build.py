@@ -62,6 +62,10 @@ def build_one(py_ver, compiler):
     # UNDONE virtual envs if we're not running on appveyor
     args = {}
     args.update(compiler)
+    if 'PYTHON' in os.environ:
+        args['python_path']  = "%PYTHON%"
+    else:
+        args['python_path'] = "%s%s\\Scripts" % (VIRT_BASE, py_ver)
     args['py_ver'] = py_ver
     return r"""
 setlocal EnableDelayedExpansion
@@ -72,7 +76,7 @@ set INCLUDE=%%INCLUDE%%;%%INCLIB%%\%(inc_dir)s;%%INCLIB%%\tcl85\include
 
 setlocal
 set LIB=%%LIB%%;C:\Python%(py_ver)s\tcl
-call %%PYTHON%%\python.exe setup.py %%BLDOPT%%
+call %(python_path)s\python.exe setup.py %%BLDOPT%%
 endlocal
 
 endlocal
