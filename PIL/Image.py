@@ -2300,9 +2300,7 @@ def open(fp, mode="r"):
                 _decompression_bomb_check(im.size)
                 return im
         except (SyntaxError, IndexError, TypeError, struct.error):
-            # import traceback
-            # traceback.print_exc()
-            pass
+            logger.debug("", exc_info=True)
 
     if init():
 
@@ -2315,9 +2313,7 @@ def open(fp, mode="r"):
                     _decompression_bomb_check(im.size)
                     return im
             except (SyntaxError, IndexError, TypeError, struct.error):
-                # import traceback
-                # traceback.print_exc()
-                pass
+                logger.debug("", exc_info=True)
 
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
