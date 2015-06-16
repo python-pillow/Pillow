@@ -3,6 +3,17 @@ Changelog (Pillow)
 
 2.9.0 (Unreleased)
 ------------------
+- Adjusted ImageQt use of unicode() for 2/3 compatibility #1218
+  [radarhere]
+
+- Identify XBM file created with filename including underscore #1230 (fixes #1229)
+  [hugovk]
+  
+- Copy image when saving in GifImagePlugin #1231 (fixes #718)
+  [radarhere]
+
+- Removed support for FreeType 2.0 #1247
+  [radarhere]
 
 - Added background saving to GifImagePlugin #1273
   [radarhere]
