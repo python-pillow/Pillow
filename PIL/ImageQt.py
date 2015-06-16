@@ -59,7 +59,10 @@ class ImageQt(QImage):
         # handle filename, if given instead of image name
         if hasattr(im, "toUtf8"):
             # FIXME - is this really the best way to do this?
-            im = unicode(im.toUtf8(), "utf-8")
+            if str is bytes:
+                im = unicode(im.toUtf8(), "utf-8")
+            else:
+                im = str(im.toUtf8(), "utf-8")
         if isPath(im):
             im = Image.open(im)
 
