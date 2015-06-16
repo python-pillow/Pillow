@@ -21,20 +21,8 @@
 #include "Python.h"
 #include "Imaging.h"
 
-#if !defined(USE_FREETYPE_2_0)
-/* undef/comment out to use freetype 2.0 */
-#define USE_FREETYPE_2_1
-#endif
-
-#if defined(USE_FREETYPE_2_1)
-/* freetype 2.1 and newer */
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#else
-/* freetype 2.0 */
-#include <freetype/freetype.h>
-#endif
-
 #include FT_GLYPH_H
 
 #define KEEP_PY_UNICODE
@@ -59,11 +47,7 @@ struct {
     const char* message;
 } ft_errors[] =
 
-#if defined(USE_FREETYPE_2_1)
 #include FT_ERRORS_H
-#else
-#include <freetype/fterrors.h>
-#endif
 
 /* -------------------------------------------------------------------- */
 /* font objects */

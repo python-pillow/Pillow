@@ -453,9 +453,6 @@ class pil_build_ext(build_ext):
                     if os.path.isfile(os.path.join(dir, "ft2build.h")):
                         freetype_version = 21
                         break
-                    if os.path.isdir(os.path.join(dir, "freetype")):
-                        freetype_version = 20
-                        break
                 if freetype_version:
                     feature.freetype = "freetype"
                     feature.freetype_version = freetype_version
@@ -543,12 +540,8 @@ class pil_build_ext(build_ext):
         # additional libraries
 
         if feature.freetype:
-            defs = []
-            if feature.freetype_version == 20:
-                defs.append(("USE_FREETYPE_2_0", None))
             exts.append(Extension(
-                "PIL._imagingft", ["_imagingft.c"], libraries=["freetype"],
-                define_macros=defs))
+                "PIL._imagingft", ["_imagingft.c"], libraries=["freetype"]))
 
         if os.path.isfile("_imagingtiff.c") and feature.tiff:
             exts.append(Extension(
