@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, onAppveyor
+from helper import unittest, PillowTestCase, on_appveyor
 
 import sys
 
