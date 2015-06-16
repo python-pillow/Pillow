@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-import subprocess, os, multiprocessing, glob
+import subprocess
+import os
+import glob
+import sys
 
 from config import *
 
@@ -29,17 +32,13 @@ def test_one(params):
 if __name__=='__main__':
 
     os.chdir('..')
-    pool = multiprocessing.Pool()
     matrix = [(python, architecture)  for python in pythons 
                                   for architecture in ('', X64_EXT)]
 
-    results = pool.map(test_one, matrix)
+    results = map(test_one, matrix)
 
     for (python, architecture, status, trace) in results:
-        print ("%s%s: %s" % (python, architecture, status))
+        print ("%s%s: %s" % (python, architecture, status and 'ERR' or 'PASS'))
 
-        
-        
-                            
-
-               
+    res = all(status for (python, architecture, status, trace) in results)
+    sys.exit(res)
