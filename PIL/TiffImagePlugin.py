@@ -157,6 +157,7 @@ OPEN_INFO = {
     (II, 2, (1,), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBa"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (2,)): ("RGBA", "RGBA"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
+    (II, 2, (1, 1, 1, 1), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBA"),  # OSX Grab
     (II, 3, (1,), 1, (1,), ()): ("P", "P;1"),
     (II, 3, (1,), 2, (1,), ()): ("P", "P;1R"),
     (II, 3, (1,), 1, (2,), ()): ("P", "P;2"),
@@ -185,10 +186,12 @@ OPEN_INFO = {
     (MM, 1, (3,), 1, (32,), ()): ("F", "F;32BF"),
     (MM, 2, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
     (MM, 2, (1,), 2, (8, 8, 8), ()): ("RGB", "RGB;R"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8), ()): ("RGBA", "RGBA"),  # missing ExtraSamples
     (MM, 2, (1,), 1, (8, 8, 8, 8), (0,)): ("RGBX", "RGBX"),
     (MM, 2, (1,), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBa"),
     (MM, 2, (1,), 1, (8, 8, 8, 8), (2,)): ("RGBA", "RGBA"),
     (MM, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
+    (MM, 2, (1, 1, 1, 1), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBA"),  # OSX Grab
     (MM, 3, (1,), 1, (1,), ()): ("P", "P;1"),
     (MM, 3, (1,), 2, (1,), ()): ("P", "P;1R"),
     (MM, 3, (1,), 1, (2,), ()): ("P", "P;2"),
@@ -705,9 +708,9 @@ class TiffImageFile(ImageFile.ImageFile):
             args = rawmode
         elif compression == "tiff_lzw":
             args = rawmode
-            if 317 in self.tag:
+            if PREDICTOR in self.tag:
                 # Section 14: Differencing Predictor
-                self.decoderconfig = (self.tag[PREDICTOR][0],)
+                self.decoderconfig = (self.tag[PREDICTOR],)
 
         if ICCPROFILE in self.tag:
             self.info['icc_profile'] = self.tag[ICCPROFILE]
