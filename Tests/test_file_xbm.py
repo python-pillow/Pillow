@@ -37,6 +37,30 @@ class TestFileXbm(PillowTestCase):
         self.assertEqual(im.mode, '1')
         self.assertEqual(im.size, (32, 32))
 
+    def test_open(self):
+        # Arrange
+        # Created with `convert hopper.png hopper.xbm`
+        filename = "Tests/images/hopper.xbm"
+
+        # Act
+        im = Image.open(filename)
+
+        # Assert
+        self.assertEqual(im.mode, '1')
+        self.assertEqual(im.size, (128, 128))
+
+    def test_open_filename_with_underscore(self):
+        # Arrange
+        # Created with `convert hopper.png hopper_underscore.xbm`
+        filename = "Tests/images/hopper_underscore.xbm"
+
+        # Act
+        im = Image.open(filename)
+
+        # Assert
+        self.assertEqual(im.mode, '1')
+        self.assertEqual(im.size, (128, 128))
+
 
 if __name__ == '__main__':
     unittest.main()
