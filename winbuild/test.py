@@ -31,7 +31,7 @@ if __name__=='__main__':
     os.chdir('..')
     pool = multiprocessing.Pool()
     matrix = [(python, architecture)  for python in pythons 
-                                  for architecture in ('', 'x64')]
+                                  for architecture in ('', X64_EXT)]
 
     results = pool.map(test_one, matrix)
 

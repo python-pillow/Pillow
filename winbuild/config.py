@@ -10,6 +10,7 @@ pythons = {#'26':7,
            '34':7.1}
 
 VIRT_BASE = "c:/vp/"
+X64_EXT = os.environ.get('X64_EXT',"x64")
 
 libs = { 'zlib':{
     'url':'http://zlib.net/zlib128.zip',
@@ -121,7 +122,7 @@ def pyversion_fromEnv():
             break
 
     if '64' in py:
-        py_version = '%s-x64' % py_version
+        py_version = '%s%s' % (py_version, X64_EXT)
 
     return py_version
 

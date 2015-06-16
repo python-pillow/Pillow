@@ -10,7 +10,7 @@ from config import *
 def setup_vms():
     ret = []
     for py in pythons.keys():
-        for arch in ('', '-x64'):
+        for arch in ('', X64_EXT):
             ret.append("virtualenv -p c:/Python%s%s/python.exe --clear %s%s%s" %
                        (py, arch, VIRT_BASE, py, arch))
             ret.append("%s%s%s\Scripts\pip.exe install nose" %
@@ -96,7 +96,7 @@ def main(op):
                                              compilers[(compiler_version, 32)]),
                                    footer()])))
         
-        scripts.append(("%sx64" % py_version,
+        scripts.append(("%s%s" % (py_version, X64_EXT),
                         "\n".join([header(op), 
                                    build_one("%sx64" %py_version, 
                                              compilers[(compiler_version, 64)]),
