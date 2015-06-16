@@ -1,4 +1,5 @@
-import sys, os
+import sys
+
 with open(sys.argv[1], 'r') as fd:
     content = '\n'.join(line.strip() for line in fd if line.strip())
 if len(sys.argv) == 3:
