@@ -159,7 +159,7 @@ class TestFileEps(PillowTestCase):
         # check all the freaking line endings possible
         try:
             import StringIO
-        except:
+        except ImportError:
             # don't skip, it skips everything in the parent test
             return
         t = StringIO.StringIO(test_string)

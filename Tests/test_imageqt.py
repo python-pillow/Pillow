@@ -19,13 +19,13 @@ class TestImageQt(PillowTestCase):
     def setUp(self):
         try:
             from PyQt5.QtGui import QImage, qRgb, qRgba
-        except:
+        except ImportError:
             try:
                 from PyQt4.QtGui import QImage, qRgb, qRgba
-            except:
+            except ImportError:
                 try:
                     from PySide.QtGui import QImage, qRgb, qRgba
-                except:
+                except ImportError:
                     self.skipTest('PyQt4 or 5 or PySide not installed')
 
     def test_rgb(self):

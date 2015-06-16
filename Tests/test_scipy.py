@@ -6,7 +6,7 @@ try:
 
     from scipy import misc
     HAS_SCIPY = True
-except:
+except ImportError:
     HAS_SCIPY = False
 
 

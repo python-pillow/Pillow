@@ -4,7 +4,7 @@ from PIL import Image
 
 try:
     from PIL import _webp
-except:
+except ImportError:
     pass
     # Skip in setUp()
 

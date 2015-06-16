@@ -301,7 +301,7 @@ def Draw(im, mode=None):
 # experimental access to the outline API
 try:
     Outline = Image.core.outline
-except:
+except AttributeError:
     Outline = None
 
 

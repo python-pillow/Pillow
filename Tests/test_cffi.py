@@ -3,7 +3,7 @@ from helper import unittest, PillowTestCase, hopper
 try:
     import cffi
     from PIL import PyAccess
-except:
+except ImportError:
     # Skip in setUp()
     pass
 
@@ -20,7 +20,7 @@ class TestCffiPutPixel(TestImagePutPixel):
     def setUp(self):
         try:
             import cffi
-        except:
+        except ImportError:
             self.skipTest("No cffi")
 
     def test_put(self):
@@ -32,7 +32,7 @@ class TestCffiGetPixel(TestImageGetPixel):
     def setUp(self):
         try:
             import cffi
-        except:
+        except ImportError:
             self.skipTest("No cffi")
 
     def test_get(self):
@@ -45,7 +45,7 @@ class TestCffi(PillowTestCase):
     def setUp(self):
         try:
             import cffi
-        except:
+        except ImportError:
             self.skipTest("No cffi")
 
     def _test_get_access(self, im):
