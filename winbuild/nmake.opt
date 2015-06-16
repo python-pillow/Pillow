@@ -84,7 +84,7 @@ ZLIB_LIB 	= $(ZLIBDIR)/zlib.lib
 
 #
 # Comment out the following lines to disable strip chopping
-# (whether or not to convert single-strip uncompressed images to mutiple
+# (whether or not to convert single-strip uncompressed images to multiple
 # strips of specified size to reduce memory usage). Default strip size
 # is 8192 bytes, it can be configured via the STRIP_SIZE_DEFAULT parameter
 #
