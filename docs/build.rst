@@ -6,11 +6,11 @@ Building Pillow on Windows
 
 This page will describe a build setup to build Pillow against the
 supported python versions in 32 and 64-bit modes, using freely
-availble Microsoft compilers.  This has been developed and tested
+available Microsoft compilers.  This has been developed and tested
 against 64-bit Windows 7 Professional and Windows Server 2012
 64-bit version on Amazon EC2.
 
-Prerequsites
+Prerequisites
 ------------
 
 Extra Build Helpers
