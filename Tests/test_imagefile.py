@@ -26,7 +26,7 @@ class TestImageFile(PillowTestCase):
 
             test_file = BytesIO()
 
-            im.save(test_file, format)
+            im.copy().save(test_file, format)
 
             data = test_file.getvalue()
 
@@ -37,7 +37,8 @@ class TestImageFile(PillowTestCase):
             return im, imOut
 
         self.assert_image_equal(*roundtrip("BMP"))
-        self.assert_image_equal(*roundtrip("GIF"))
+        im1, im2 = roundtrip("GIF")
+        self.assert_image_similar(im1.convert('P'), im2, 1)
         self.assert_image_equal(*roundtrip("IM"))
         self.assert_image_equal(*roundtrip("MSP"))
         if "zip_encoder" in codecs:
