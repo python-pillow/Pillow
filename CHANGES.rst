@@ -3,6 +3,10 @@ Changelog (Pillow)
 
 2.9.0 (Unreleased)
 ------------------
+
+- Register MIME type for BMP #1277
+  [coldmind]
+
 - Adjusted ImageQt use of unicode() for 2/3 compatibility #1218
   [radarhere]
 
