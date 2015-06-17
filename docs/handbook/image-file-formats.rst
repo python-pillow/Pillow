@@ -114,8 +114,7 @@ PIL reads JPEG, JFIF, and Adobe JPEG files containing ``L``, ``RGB``, or
 
 Using the :py:meth:`~PIL.Image.Image.draft` method, you can speed things up by
 converting ``RGB`` images to ``L``, and resize images to 1/2, 1/4 or 1/8 of
-their original size while loading them. The :py:meth:`~PIL.Image.Image.draft`
-method also configures the JPEG decoder to trade some quality for speed.
+their original size while loading them.
 
 The :py:meth:`~PIL.Image.Image.open` method may set the following
 :py:attr:`~PIL.Image.Image.info` properties if available:
