@@ -279,3 +279,5 @@ Image.register_open(BmpImageFile.format, BmpImageFile, _accept)
 Image.register_save(BmpImageFile.format, _save)
 
 Image.register_extension(BmpImageFile.format, ".bmp")
+
+Image.register_mime(BmpImageFile.format, "image/bmp")
