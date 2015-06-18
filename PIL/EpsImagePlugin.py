@@ -187,7 +187,7 @@ class PSFile(object):
 
 
 def _accept(prefix):
-    return prefix[:4] == b"%!PS" or i32(prefix) == 0xC6D3D0C5
+    return prefix[:4] == b"%!PS" or (len(prefix) >= 4 and i32(prefix) == 0xC6D3D0C5)
 
 ##
 # Image plugin for Encapsulated Postscript.  This plugin supports only

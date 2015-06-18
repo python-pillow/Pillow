@@ -33,7 +33,7 @@ i32 = _binary.i32le
 
 
 def _accept(prefix):
-    return i32(prefix) == MAGIC
+    return len(prefix) >= 4 and i32(prefix) == MAGIC
 
 
 ##
