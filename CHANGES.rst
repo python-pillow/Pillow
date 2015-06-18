@@ -3,7 +3,9 @@ Changelog (Pillow)
 
 2.9.0 (Unreleased)
 ------------------
-
+- Check prefix length in _accept methods #1267
+  [radarhere]
+  
 - Register MIME type for BMP #1277
   [coldmind]
 
