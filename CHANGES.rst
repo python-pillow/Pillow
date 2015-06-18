@@ -3,6 +3,9 @@ Changelog (Pillow)
 
 2.9.0 (Unreleased)
 ------------------
+- Fixed polygon edge drawing #1255 (fixes #1252)
+  [radarhere]
+  
 - Check prefix length in _accept methods #1267
   [radarhere]
   
