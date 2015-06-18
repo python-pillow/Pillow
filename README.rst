@@ -16,7 +16,7 @@ Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://githu
 
 .. image:: https://ci.appveyor.com/api/projects/status/github/wiredfool/pillow?svg=true&branch=winbuild
    :target: https://ci.appveyor.com/project/wiredfool/pillow
-   :alt: Travis CI build status (Windows)
+   :alt: AppVeyor CI build status (Windows)
 
 .. image:: https://img.shields.io/pypi/v/pillow.svg
    :target: https://pypi.python.org/pypi/Pillow/
