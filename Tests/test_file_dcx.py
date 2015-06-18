@@ -34,6 +34,18 @@ class TestFileDcx(PillowTestCase):
         im = Image.open(TEST_FILE)
         self.assertEqual(im.n_frames, 1)
 
+    def test_eoferror(self):
+        im = Image.open(TEST_FILE)
+
+        n_frames = im.n_frames
+        while True:
+            n_frames -= 1
+            try:
+                im.seek(n_frames)
+                break
+            except EOFError:
+                self.assertTrue(im.tell() < n_frames)
+
     def test_seek_too_far(self):
         # Arrange
         im = Image.open(TEST_FILE)

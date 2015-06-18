@@ -99,6 +99,18 @@ class TestFileMpo(PillowTestCase):
         im = Image.open("Tests/images/sugarshack.mpo")
         self.assertEqual(im.n_frames, 2)
 
+    def test_eoferror(self):
+        im = Image.open("Tests/images/sugarshack.mpo")
+
+        n_frames = im.n_frames
+        while True:
+            n_frames -= 1
+            try:
+                im.seek(n_frames)
+                break
+            except EOFError:
+                self.assertTrue(im.tell() < n_frames)
+
     def test_image_grab(self):
         for test_file in test_files:
             im = Image.open(test_file)

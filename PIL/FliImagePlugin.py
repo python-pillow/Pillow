@@ -127,8 +127,14 @@ class FliImageFile(ImageFile.ImageFile):
             return
         if frame < self.__frame:
             self._seek(0)
+
+        last_frame = self.__frame
         for f in range(self.__frame + 1, frame + 1):
-            self._seek(f)
+            try:
+                self._seek(f)
+            except EOFError:
+                self.seek(last_frame)
+                raise EOFError("no more images in FLI file")
 
     def _seek(self, frame):
         if frame == 0:
