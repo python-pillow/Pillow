@@ -27,7 +27,7 @@ i32 = _binary.i32be
 
 
 def _accept(prefix):
-    return i32(prefix) == 0x59a66a95
+    return len(prefix) >= 4 and i32(prefix) == 0x59a66a95
 
 
 ##

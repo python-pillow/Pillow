@@ -30,7 +30,7 @@ o8 = _binary.o8
 # decoder
 
 def _accept(prefix):
-    return i16(prefix[4:6]) in [0xAF11, 0xAF12]
+    return len(prefix) >= 6 and i16(prefix[4:6]) in [0xAF11, 0xAF12]
 
 
 ##
