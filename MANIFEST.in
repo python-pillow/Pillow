@@ -74,7 +74,6 @@ recursive-include docs *.txt
 recursive-include docs BUILDME
 recursive-include docs COPYING
 recursive-include docs Guardfile
-recursive-include docs LICENSE
 recursive-include docs Makefile
 recursive-include libImaging *.c
 recursive-include libImaging *.h

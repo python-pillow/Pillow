@@ -1,0 +1,30 @@
+version: 2.9.pre.{build}
+branches:
+  only:
+  - winbuild
+shallow_clone: true
+clone_folder: c:\pillow
+init:
+- ECHO %PYTHON%
+environment:
+  X64_EXT: -x64
+  matrix:
+  - PYTHON: C:/Python27-x64
+  - PYTHON: C:/Python34
+  - PYTHON: C:/Python27
+  - PYTHON: C:/Python34-x64
+install:
+- git clone https://github.com/wiredfool/pillow-depends.git c:\pillow-depends
+- xcopy c:\pillow-depends\*.zip c:\pillow\winbuild\
+- xcopy c:\pillow-depends\*.tar.gz c:\pillow\winbuild\
+- cd c:\pillow\winbuild\
+- c:\python34\python.exe c:\pillow\winbuild\build_dep.py
+- c:\pillow\winbuild\build_deps.cmd
+build_script:
+- '%PYTHON%\python.exe c:\pillow\winbuild\build.py'
+- cd c:\pillow
+- '%PYTHON%\python.exe selftest.py --installed'
+test_script:
+- cd c:\pillow
+- '%PYTHON%\Scripts\pip.exe install nose'
+- '%PYTHON%\python.exe test-installed.py'
