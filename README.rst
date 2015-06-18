@@ -6,15 +6,15 @@ Python Imaging Library (Fork)
 
 Pillow is the "friendly PIL fork" by `Alex Clark and Contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 
-.. image:: https://travis-ci.org/python-pillow/Pillow.svg?branch=master
+.. image:: https://img.shields.io/travis/python-pillow/Pillow/master.svg?label=Linux%20build
    :target: https://travis-ci.org/python-pillow/Pillow
    :alt: Travis CI build status (Linux)
 
-.. image:: https://travis-ci.org/python-pillow/pillow-wheels.svg?branch=latest
+.. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg?label=OS%20X%20build
    :target: https://travis-ci.org/python-pillow/pillow-wheels
    :alt: Travis CI build status (OS X)
 
-.. image:: https://ci.appveyor.com/api/projects/status/github/wiredfool/pillow?svg=true&branch=winbuild
+.. image:: https://img.shields.io/appveyor/ci/wiredfool/pillow/winbuild.svg?label=Windows%20build
    :target: https://ci.appveyor.com/project/wiredfool/pillow
    :alt: AppVeyor CI build status (Windows)
 
