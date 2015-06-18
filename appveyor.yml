@@ -1,7 +1,4 @@
 version: 2.9.pre.{build}
-branches:
-  only:
-  - winbuild
 shallow_clone: true
 clone_folder: c:\pillow
 init:
