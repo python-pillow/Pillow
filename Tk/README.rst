@@ -42,11 +42,9 @@ The Photoimage Booster Patch (for Windows 95/NT)
 
 This patch kit boosts performance for 16/24-bit displays.  The
 first patch is required on Tk 4.2 (where it fixes the problems for
-16-bit displays) and later versions, with the exception for Tk 8.0b1
-where Sun added something similar themselves, only to remove it in
-8.0b2.  By installing both patches, Tk's PhotoImage handling becomes
-much faster on both 16-bit and 24-bit displays.  The patch has been
-tested with Tk 4.2 and 8.0.
+16-bit displays) and later versions.  By installing both patches,
+Tk's PhotoImage handling becomes much faster on both 16-bit and
+24-bit displays.  The patch has been tested with Tk 4.2 and 8.0.
 
 Here's a benchmark, made with a sample program which loads two
 512x512 greyscale PGM's, and two 512x512 colour PPM's, and displays
