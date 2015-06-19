@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import ImageQt
 
@@ -10,7 +10,7 @@ if ImageQt.qt_is_installed:
         pass
 else:
     def skip_if_qt_is_not_installed(test_case):
-        test_case.skipTest('PyQt4, PyQt5, or PySide is not installed')
+        test_case.skipTest('Qt bindings are not installed')
 
 
 class PillowQtTestCase(object):
@@ -70,6 +70,10 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
         checkrgb(255, 0, 0)
         checkrgb(0, 255, 0)
         checkrgb(0, 0, 255)
+
+    def test_image(self):
+        for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
+            ImageQt.ImageQt(hopper(mode))
 
 
 if __name__ == '__main__':
