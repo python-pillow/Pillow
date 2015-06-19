@@ -1,6 +1,6 @@
 #/usr/bin/env python3
 
-import subprocess, multiprocessing
+import subprocess
 import shutil
 import sys, getopt
 import os
@@ -106,11 +106,10 @@ def main(op):
                                              compilers[(compiler_version, 64)]),
                                    footer()])))
     
-    pool = multiprocessing.Pool()
-    results = pool.map(run_script, scripts)
+    results = map(run_script, scripts)
     
     for (version, status, trace, err) in results:
-        print ("Compiled %s: %s" % (version, status))
+        print ("Compiled %s: %s" % (version, status and 'ERR' or 'OK'))
         
 def run_one(op):
     

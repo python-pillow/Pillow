@@ -72,14 +72,16 @@ compilers = { (7,64): {
     'vc_version':'2008',
     'env_flags': '/x64 /xp',
     'inc_dir': 'msvcr90-x64',
-    'platform': 'x64'
+    'platform': 'x64',
+    'webp_platform': 'x64',
     },
              (7,32): {
     'env_version':'v7.0',
     'vc_version':'2008',
     'env_flags': '/x86 /xp',
     'inc_dir': 'msvcr90-x32',
-    'platform': 'Win32'
+    'platform': 'Win32',
+    'webp_platform': 'x86',
    },
 
              (7.1,64): {
@@ -88,6 +90,7 @@ compilers = { (7,64): {
     'env_flags': '/x64 /vista',
     'inc_dir': 'msvcr10-x64',
     'platform': 'x64',
+    'webp_platform': 'x64',
    },
              (7.1,32): {
     'env_version':'v7.1',
@@ -95,6 +98,7 @@ compilers = { (7,64): {
     'env_flags': '/x86 /vista',
     'inc_dir': 'msvcr10-x32',
     'platform': 'Win32',
+    'webp_platform': 'x86',
     },
 
     }

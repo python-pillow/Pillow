@@ -185,7 +185,7 @@ setlocal
 cd /D %%WEBP%%
 rd /S /Q %%WEBP%%\output\release-static
 nmake -f Makefile.vc CFG=release-static RTLIBCFG=static OBJDIR=output all
-copy /Y /B output\release-static\%(platform)s\lib\* %%INCLIB%%
+copy /Y /B output\release-static\%(webp_platform)s\lib\* %%INCLIB%%
 mkdir %%INCLIB%%\webp
 copy /Y /B src\webp\*.h %%INCLIB%%\\webp
 endlocal
