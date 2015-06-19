@@ -3,6 +3,12 @@ Changelog (Pillow)
 
 2.9.0 (Unreleased)
 ------------------
+- Automated windows CI/build support #1278
+  [wiredfool]
+
+- Removed support for Tk versions earlier than 8.4 #1288
+  [radarhere]
+  
 - Fixed polygon edge drawing #1255 (fixes #1252)
   [radarhere]
   
