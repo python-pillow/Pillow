@@ -13,13 +13,14 @@ else:
         test_case.skipTest('PyQt4, PyQt5, or PySide is not installed')
 
 
-class PillowQtTestCase:
+class PillowQtTestCase(object):
 
     def setUp(self):
         skip_if_qt_is_not_installed(self)
 
     def tearDown(self):
         pass
+
 
 class PillowQPixmapTestCase(PillowQtTestCase):
 
@@ -34,7 +35,7 @@ class PillowQPixmapTestCase(PillowQtTestCase):
                 from PySide.QtGui import QGuiApplication
         except ImportError:
             self.skipTest('QGuiApplication not installed')
-        
+
         self.app = QGuiApplication([])
 
     def tearDown(self):

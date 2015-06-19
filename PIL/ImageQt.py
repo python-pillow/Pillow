@@ -48,7 +48,8 @@ def rgb(r, g, b, a=255):
     return (qRgba(r, g, b, a) & 0xffffffff)
 
 
-# :param im A PIL Image object, or a file name (given either as Python string or a PyQt string object).
+# :param im A PIL Image object, or a file name
+# (given either as Python string or a PyQt string object)
 
 def fromqimage(im):
     buffer = QBuffer()
@@ -139,9 +140,8 @@ if qt_is_installed:
         def __init__(self, im):
             im_data = _toqclass_helper(im)
             QImage.__init__(self,
-                im_data['data'], im_data['im'].size[0], im_data['im'].size[1],
-                im_data['format']
-            )
+                            im_data['data'], im_data['im'].size[0],
+                            im_data['im'].size[1], im_data['format'])
             if im_data['colortable']:
                 self.setColorTable(im_data['colortable'])
 
