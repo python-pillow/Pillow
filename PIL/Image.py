@@ -101,12 +101,11 @@ except ImportError:
     import __builtin__
     builtins = __builtin__
 
-from PIL import ImageMode, ImageQt
+from PIL import ImageMode
 from PIL._binary import i8
 from PIL._util import isPath
 from PIL._util import isStringType
 from PIL._util import deferred_error
-
 
 import os
 import sys
@@ -1937,13 +1936,17 @@ class Image(object):
         im = self.im.effect_spread(distance)
         return self._new(im)
 
-    if ImageQt.qt_is_installed:
-        def toqimage(self):
-            return ImageQt.toqimage(self)
+    def toqimage(self):
+        from PIL import ImageQt
+        if not ImageQt.qt_is_installed:
+            raise ImportError("Qt bindings are not installed")
+        return ImageQt.toqimage(self)
 
-        def toqpixmap(self):
-            return ImageQt.toqpixmap(self)
-
+    def toqpixmap(self):
+        from PIL import ImageQt
+        if not ImageQt.qt_is_installed:
+            raise ImportError("Qt bindings are not installed")
+        return ImageQt.toqpixmap(self)
 
 
 # --------------------------------------------------------------------
@@ -2195,9 +2198,18 @@ def fromarray(obj, mode=None):
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
 
-if ImageQt.qt_is_installed:
-    from PIL.ImageQt import fromqimage, fromqpixmap
+def fromqimage(im):
+    from PIL import ImageQt
+    if not ImageQt.qt_is_installed:
+        raise ImportError("Qt bindings are not installed")
+    return ImageQt.fromqimage(im)
 
+
+def fromqpixmap(im):
+    from PIL import ImageQt
+    if not ImageQt.qt_is_installed:
+        raise ImportError("Qt bindings are not installed")
+    return ImageQt.fromqpixmap(im)
 
 _fromarray_typemap = {
     # (shape, typestr) => mode, rawmode
