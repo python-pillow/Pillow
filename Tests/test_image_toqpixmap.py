@@ -1,5 +1,5 @@
 from helper import unittest, PillowTestCase, hopper
-from test_imageqt import PillowQPixmapTestCase
+from test_imageqt import PillowQtTestCase, PillowQPixmapTestCase
 
 from PIL import ImageQt
 
@@ -10,6 +10,7 @@ if ImageQt.qt_is_installed:
 class TestToQPixmap(PillowQPixmapTestCase, PillowTestCase):
 
     def test_sanity(self):
+        PillowQtTestCase.setUp(self)
         QPixmap('Tests/images/hopper.ppm').save(
             '/tmp/hopper_RGB_qpixmap_file.png')
         for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):

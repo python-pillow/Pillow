@@ -1,10 +1,10 @@
-from helper import unittest, PillowTestCase, hopper
+from helper import unittest, PillowTestCase
 
 from PIL import ImageQt
 
 
 if ImageQt.qt_is_installed:
-    from PIL.ImageQt import QGuiApplication, QImage, qRgb, qRgba
+    from PIL.ImageQt import qRgba
 
     def skip_if_qt_is_not_installed(_):
         pass
@@ -16,26 +16,25 @@ else:
 class PillowQtTestCase:
 
     def setUp(self):
-        try:
-            from PyQt5.QtGui import QImage, qRgb, qRgba
-        except ImportError:
-            try:
-                from PyQt4.QtGui import QImage, qRgb, qRgba
-            except ImportError:
-                try:
-                    from PySide.QtGui import QImage, qRgb, qRgba
-                except ImportError:
-                    self.skipTest('PyQt4 or 5 or PySide not installed')
         skip_if_qt_is_not_installed(self)
 
     def tearDown(self):
         pass
 
-
 class PillowQPixmapTestCase(PillowQtTestCase):
 
     def setUp(self):
         PillowQtTestCase.setUp(self)
+        try:
+            if ImageQt.qt_version == '5':
+                from PyQt5.QtGui import QGuiApplication
+            elif ImageQt.qt_version == '4':
+                from PyQt4.QtGui import QGuiApplication
+            elif ImageQt.qt_version == 'side':
+                from PySide.QtGui import QGuiApplication
+        except ImportError:
+            self.skipTest('QGuiApplication not installed')
+        
         self.app = QGuiApplication([])
 
     def tearDown(self):
@@ -50,6 +49,12 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
         # typedef QRgb
         # An ARGB quadruplet on the format #AARRGGBB,
         # equivalent to an unsigned int.
+        if ImageQt.qt_version == '5':
+            from PyQt5.QtGui import qRgb
+        elif ImageQt.qt_version == '4':
+            from PyQt4.QtGui import qRgb
+        elif ImageQt.qt_version == 'side':
+            from PySide.QtGui import qRgb
 
         self.assertEqual(qRgb(0, 0, 0), qRgba(0, 0, 0, 255))
 

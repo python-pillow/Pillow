@@ -1,16 +1,14 @@
 from helper import unittest, PillowTestCase, hopper
-from test_imageqt import PillowQPixmapTestCase
+from test_imageqt import PillowQtTestCase, PillowQPixmapTestCase
 
-from PIL import Image, ImageQt
-
-if ImageQt.qt_is_installed:
-    from PIL.ImageQt import QPixmap
+from PIL import ImageQt
 
 
 class TestFromQPixmap(PillowQPixmapTestCase, PillowTestCase):
 
     def roundtrip(self, expected):
-        result = Image.fromqpixmap(expected.toqpixmap())
+        PillowQtTestCase.setUp(self)
+        result = ImageQt.fromqpixmap(ImageQt.toqpixmap(expected))
         # Qt saves all pixmaps as rgb
         self.assert_image_equal(result, expected.convert('RGB'))
 

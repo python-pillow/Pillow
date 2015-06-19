@@ -18,20 +18,23 @@
 
 import PIL
 from PIL._util import isPath
-import sys
 
 qt_is_installed = True
+qt_version = None
 try:
-    from PyQt5.QtGui import QGuiApplication, QImage, qRgb, qRgba, QPixmap
+    from PyQt5.QtGui import QImage, qRgba, QPixmap
     from PyQt5.QtCore import QBuffer, QIODevice
+    qt_version = '5'
 except ImportError:
     try:
-        from PyQt4.QtGui import QGuiApplication, QImage, qRgb, qRgba, QPixmap
+        from PyQt4.QtGui import QImage, qRgba, QPixmap
         from PyQt4.QtCore import QBuffer, QIODevice
+        qt_version = '4'
     except ImportError:
         try:
-            from PySide.QtGui import QGuiApplication, QImage, qRgb, qRgba, QPixmap
+            from PySide.QtGui import QImage, qRgba, QPixmap
             from PySide.QtCore import QBuffer, QIODevice
+            qt_version = 'side'
         except ImportError:
             qt_is_installed = False
 
@@ -123,23 +126,6 @@ def _toqclass_helper(im):
         'data': __data, 'im': im, 'format': format, 'colortable': colortable
     }
 
-
-def toqimage(im):
-    return ImageQt(im)
-
-
-def toqpixmap(im):
-    #   This doesn't work. For now using a dumb approach.
-    # im_data = _toqclass_helper(im)
-    # result = QPixmap(im_data['im'].size[0], im_data['im'].size[1])
-    # result.loadFromData(im_data['data'])
-    # Fix some strange bug that causes
-    if im.mode == 'RGB':
-        im = im.convert('RGBA')
-    qimage = im.toqimage()
-    qimage.save('/tmp/hopper_{}_qpixmap_qimage.png'.format(im.mode))
-    return QPixmap.fromImage(qimage)
-
 ##
 # An PIL image wrapper for Qt.  This is a subclass of PyQt4's QImage
 # class.
@@ -158,3 +144,20 @@ if qt_is_installed:
             )
             if im_data['colortable']:
                 self.setColorTable(im_data['colortable'])
+
+
+def toqimage(im):
+    return ImageQt(im)
+
+
+def toqpixmap(im):
+    #   This doesn't work. For now using a dumb approach.
+    # im_data = _toqclass_helper(im)
+    # result = QPixmap(im_data['im'].size[0], im_data['im'].size[1])
+    # result.loadFromData(im_data['data'])
+    # Fix some strange bug that causes
+    if im.mode == 'RGB':
+        im = im.convert('RGBA')
+    qimage = toqimage(im)
+    qimage.save('/tmp/hopper_{}_qpixmap_qimage.png'.format(im.mode))
+    return QPixmap.fromImage(qimage)

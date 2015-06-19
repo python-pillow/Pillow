@@ -11,6 +11,7 @@ if ImageQt.qt_is_installed:
 class TestToQImage(PillowQtTestCase, PillowTestCase):
 
     def test_sanity(self):
+        PillowQtTestCase.setUp(self)
         for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
             data = ImageQt.toqimage(hopper(mode))
             data.save('/tmp/hopper_{}_qimage.png'.format(mode))
