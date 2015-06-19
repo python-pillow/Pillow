@@ -237,15 +237,36 @@ endlocal
 """ %compiler
 
 def build_lcms2(compiler):
+	if compiler['env_version'] == 'v7.1':
+		return build_lcms_71(compiler)
+	return build_lcms_70(compiler)
+
+def build_lcms_70(compiler):
+    """Link error here on x64"""
+    if compiler['platform'] == 'x64': return ''
+    
+    """Build LCMS on VC2008. This version is only 32bit/Win32"""
     return r"""
 rem Build lcms2
 setlocal
 rd /S /Q %%LCMS%%\Lib
 rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
-%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=%(platform)s /m
-%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=%(platform)s /m
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln  /t:Clean /p:Configuration="Release" /p:Platform=Win32 /m
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=Win32 /m
 xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
 copy /Y /B %%LCMS%%\Projects\VC%(vc_version)s\Release\*.lib %%INCLIB%%
+endlocal
+""" % compiler
+
+def build_lcms_71(compiler):
+    return r"""
+rem Build lcms2
+setlocal
+rd /S /Q %%LCMS%%\Lib
+rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln  /t:Clean /p:Configuration="Release" /p:Platform=%(platform)s /m
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln  /t:lcms2_static /p:Configuration="Release" /p:Platform=%(platform)s /m
+xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
 copy /Y /B %%LCMS%%\Lib\MS\*.lib %%INCLIB%%
 endlocal
 """ % compiler
@@ -258,7 +279,7 @@ def add_compiler(compiler):
     #script.append(extract_openjpeg(compiler))
    
     script.append(msbuild_freetype(compiler))
-    #script.append(build_lcms2(compiler))
+    script.append(build_lcms2(compiler))
     #script.append(nmake_openjpeg(compiler))
     script.append(end_compiler())
 
@@ -267,16 +288,17 @@ def add_compiler(compiler):
 mkdirs()
 fetch_libs()
 #extract_binlib()
-script = [header()] #, cp_tk()]
+script = [header(), cp_tk()]
 
     
 
 if 'PYTHON' in os.environ:
     add_compiler(compiler_fromEnv())
 else:
-    for compiler in compilers.values():
-        add_compiler(compiler)
-    #add_compiler(compilers[(7,32)])
+    #for compiler in compilers.values():
+        #add_compiler(compiler)
+    add_compiler(compilers[(7.1,32)])
+    #add_compiler(compilers[(7.1,64)])
     
 with open('build_deps.cmd', 'w') as f:    
     f.write("\n".join(script))
