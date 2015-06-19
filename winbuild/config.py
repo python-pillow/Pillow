@@ -1,6 +1,5 @@
 import os
 
-SF_MIRROR = 'http://hivelocity.dl.sourceforge.net'
 SF_MIRROR = 'http://iweb.dl.sourceforge.net'
 
 pythons = {#'26':7, 
