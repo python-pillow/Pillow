@@ -143,60 +143,6 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
 	             src_xoffset * im->pixelsize;
 #endif
 
-#if TK < 84 /* < 8.4.0 */
-    if (strcmp(im->mode, "RGBA") == 0) {
-        /* Copy non-transparent pixels to photo image */
-        int x, y;
-        Tk_PhotoImageBlock run;
-
-        /* Clear current contents */
-        Tk_PhotoBlank(photo);
-
-        /* Setup run descriptor */
-        run.height = 1;
-        run.pitch = block.pitch;
-        run.pixelSize = block.pixelSize;
-        run.offset[0] = 0;
-        run.offset[1] = 1;
-        run.offset[2] = 2;
-	run.offset[3] = 0; /* no alpha (or reserved, under 8.2) */
-
-        /* Copy opaque runs to photo image */
-        for (y = 0; y < block.height; y++) {
-            unsigned char* p = block.pixelPtr + y*block.pitch;
-            unsigned char* s = p;
-            int   w = 0;
-            for (x = 0; x < block.width; x++) {
-                if (p[3]) {
-                    /* opaque: add pixel to current run */
-                    if (w == 0)
-                        s = p;
-                    w = w + 1;
-                } else if (s) {
-                    /* copy run to photo image */
-                    if (w > 0) {
-                        run.width = w;
-                        run.pixelPtr = s;
-                        Tk_PhotoPutBlock(photo, &run, x-w, y, run.width, 1);
-                    }
-                    w = 0;
-                }
-                p += block.pixelSize;
-            }
-            if (w > 0) {
-                /* copy final run, if any */
-                run.width = w;
-                run.pixelPtr = s;
-                Tk_PhotoPutBlock(photo, &run, x-w, y, run.width, 1);
-          }
-        }
-
-    } else
-
-        /* Copy opaque block to photo image, and leave the rest to TK */
-        Tk_PhotoPutBlock(photo, &block, 0, 0, block.width, block.height);
-
-#else /* Tk 8.4 and newer */
 #if TK < 85 /* Tk 8.4 */
     Tk_PhotoPutBlock(photo, &block, 0, 0, block.width, block.height,
                      TK_PHOTO_COMPOSITE_SET);
@@ -207,7 +153,6 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
 #else /* Tk 8.5 */
     Tk_PhotoPutBlock(interp, photo, &block, 0, 0, block.width, block.height,
                      TK_PHOTO_COMPOSITE_SET);
-#endif
 #endif
 
     return TCL_OK;
