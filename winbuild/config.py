@@ -32,9 +32,9 @@ libs = { 'zlib':{
 	'dir': 'freetype-2.6',
     },
          'lcms':{
-    'url':SF_MIRROR+'/project/lcms/lcms/2.6/lcms2-2.6.zip',
-    'hash': 'sha1:eea25f001246fa2e6b242ac456cecff7483cf061',
-    'dir': 'lcms2-2.6',
+    'url':SF_MIRROR+'/project/lcms/lcms/2.7/lcms2-2.7.zip',
+    'hash': 'sha1:7ff1a5b721ca719760ba6eb4ec6f38d5e65381cf',
+    'dir': 'lcms2-2.7',
    },
          'tcl':{
     'url':SF_MIRROR+'/project/tcl/Tcl/8.5.13/tcl8513-src.zip',
@@ -47,9 +47,9 @@ libs = { 'zlib':{
     'dir': '',
     },
          'webp':{
-    'url':'https://webp.googlecode.com/files/libwebp-0.4.0.tar.gz',
-    'hash':'sha1:326c4b6787a01e5e32a9b30bae76442d18d2d1b6',
-    'dir':'libwebp-0.4.0',
+    'url':'http://downloads.webmproject.org/releases/webp/libwebp-0.4.3.tar.gz',
+    'hash':'sha1:1c307a61c4d0018620b4ba9a58e8f48a8d6640ef',
+    'dir':'libwebp-0.4.3',
     },
          'openjpeg':{
     'url':SF_MIRROR+'/project/openjpeg/openjpeg/2.1.0/openjpeg-2.1.0.tar.gz',
