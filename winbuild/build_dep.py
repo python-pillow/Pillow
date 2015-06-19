@@ -95,6 +95,11 @@ mkdir %INCLIB%\tcl85\include\X11
 copy /Y /B %BUILD%\tcl8.5.13\generic\*.h %INCLIB%\tcl85\include\
 copy /Y /B %BUILD%\tk8.5.13\generic\*.h %INCLIB%\tcl85\include\
 copy /Y /B %BUILD%\tk8.5.13\xlib\X11\* %INCLIB%\tcl85\include\X11\
+
+mkdir %INCLIB%\tcl86\include\X11
+copy /Y /B %BUILD%\tcl8.6.4\generic\*.h %INCLIB%\tcl86\include\
+copy /Y /B %BUILD%\tk8.6.4\generic\*.h %INCLIB%\tcl86\include\
+copy /Y /B %BUILD%\tk8.6.4\xlib\X11\* %INCLIB%\tcl86\include\X11\
 """
 
 def header():
@@ -297,7 +302,7 @@ if 'PYTHON' in os.environ:
 else:
     #for compiler in compilers.values():
         #add_compiler(compiler)
-    add_compiler(compilers[(7.1,32)])
+    add_compiler(compilers[(7.0,32)])
     #add_compiler(compilers[(7.1,64)])
     
 with open('build_deps.cmd', 'w') as f:    

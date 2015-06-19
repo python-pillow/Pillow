@@ -67,12 +67,17 @@ def build_one(py_ver, compiler):
     else:
         args['python_path'] = "%s%s\\Scripts" % (VIRT_BASE, py_ver)
     args['py_ver'] = py_ver
+    if '34' in py_ver:
+        args['tcl_ver'] = '86'
+    else:
+        args['tcl_ver'] = '85'
+        
     return r"""
 setlocal EnableDelayedExpansion
 call "%%ProgramFiles%%\Microsoft SDKs\Windows\%(env_version)s\Bin\SetEnv.Cmd" /Release %(env_flags)s
 set DISTUTILS_USE_SDK=1
 set LIB=%%LIB%%;%%INCLIB%%\%(inc_dir)s
-set INCLUDE=%%INCLUDE%%;%%INCLIB%%\%(inc_dir)s;%%INCLIB%%\tcl85\include
+set INCLUDE=%%INCLUDE%%;%%INCLIB%%\%(inc_dir)s;%%INCLIB%%\tcl%(tcl_ver)s\include
 
 setlocal
 set LIB=%%LIB%%;C:\Python%(py_ver)s\tcl
