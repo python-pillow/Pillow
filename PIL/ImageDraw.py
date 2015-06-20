@@ -256,7 +256,20 @@ class ImageDraw(object):
     ##
     # Draw text.
 
+    def _multiline_check(self, text):
+        split_character = "\n" if isinstance(text, type("")) else b"\n"
+
+        return split_character in text
+
+    def _multiline_split(self, text):
+        split_character = "\n" if isinstance(text, type("")) else b"\n"
+
+        return text.split(split_character)
+
     def text(self, xy, text, fill=None, font=None, anchor=None):
+        if self._multiline_check(text):
+            return self.multiline_text(xy, text, fill, font, anchor)
+
         ink, fill = self._getink(fill)
         if font is None:
             font = self.getfont()
@@ -273,13 +286,50 @@ class ImageDraw(object):
                     mask = font.getmask(text)
             self.draw.draw_bitmap(xy, mask, ink)
 
+    def multiline_text(self, xy, text, fill=None, font=None, anchor=None,
+                       spacing=0, align="left"):
+        widths, heights = [], []
+        max_width = 0
+        lines = self._multiline_split(text)
+        for line in lines:
+            line_width, line_height = self.textsize(line, font)
+            widths.append(line_width)
+            max_width = max(max_width, line_width)
+            heights.append(line_height)
+        left, top = xy
+        for idx, line in enumerate(lines):
+            if align == "left":
+                pass  # left = x
+            elif align == "center":
+                left += (max_width - widths[idx]) / 2.0
+            elif align == "right":
+                left += (max_width - widths[idx])
+            else:
+                assert False, 'align must be "left", "center" or "right"'
+            self.text((left, top), line, fill, font, anchor)
+            top += heights[idx] + spacing
+            left = xy[0]
+
     ##
     # Get the size of a given string, in pixels.
 
     def textsize(self, text, font=None):
+        if self._multiline_check(text):
+            return self.multiline_textsize(text, font)
+
         if font is None:
             font = self.getfont()
         return font.getsize(text)
+
+    def multiline_textsize(self, text, font=None, spacing=0):
+        max_width = 0
+        height = 0
+        lines = self._multiline_split(text)
+        for line in lines:
+            line_width, line_height = self.textsize(line, font)
+            height += line_height + spacing
+            max_width = max(max_width, line_width)
+        return max_width, height
 
 
 ##
