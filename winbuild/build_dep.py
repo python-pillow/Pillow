@@ -2,7 +2,6 @@ from fetch import fetch
 from unzip import unzip
 from untar import untar
 import os, hashlib
-import shutil
 
 from config import *
 
@@ -33,16 +32,16 @@ def check_sig(filename, signame):
 def mkdirs():
     try:
         os.mkdir(build_dir)
-    except:
+    except OSError:
         pass
     try:
         os.mkdir(inc_dir)
-    except:
+    except OSError:
         pass
     for compiler in compilers.values():
         try:
             os.mkdir(os.path.join(inc_dir, compiler['inc_dir']))
-        except: 
+        except OSError:
             pass
 
 def extract(src, dest):
@@ -66,15 +65,6 @@ def fetch_libs():
 def extract_binlib():
     lib = bin_libs['openjpeg']
     extract(lib['filename'], build_dir)
-    return
-    base = os.path.splitext(lib['filename'])[0]
-    for compiler in compilers.values():
-        shutil.copy(os.path.join(inc_dir, base, 'include', 'openjpeg-%s' % lib['version']), 
-                    os.path.join(inc_dir, compiler['inc_dir']))
-        shutil.copy(os.path.join(inc_dir, base, 'bin', 'openjp2.dll'), 
-                    os.path.join(inc_dir, compiler['inc_dir']))
-        shutil.copy(os.path.join(inc_dir, base, 'lib', 'openjp2.lib'), 
-                    os.path.join(inc_dir, compiler['inc_dir']))
 
 def extract_openjpeg(compiler):
     return r"""
@@ -212,9 +202,9 @@ endlocal
 """ % compiler
     
 def msbuild_freetype(compiler):
-	if compiler['env_version'] == 'v7.1':
-		return msbuild_freetype_71(compiler)
-	return msbuild_freetype_70(compiler)
+    if compiler['env_version'] == 'v7.1':
+        return msbuild_freetype_71(compiler)
+    return msbuild_freetype_70(compiler)
       
 def msbuild_freetype_71(compiler):
     return r"""

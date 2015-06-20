@@ -118,7 +118,7 @@ def pyversion_fromEnv():
     py = os.environ['PYTHON']
 
     py_version = '27'
-    for k,v in pythons.items():
+    for k in pythons.keys():
         if k in py:
             py_version = k
             break

@@ -45,7 +45,7 @@ def run_script(params):
                
 
 def header(op):
-   return r"""
+    return r"""
 setlocal
 set MPLSRC=%%~dp0\..
 set INCLIB=%%~dp0\depends
