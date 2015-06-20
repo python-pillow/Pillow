@@ -233,6 +233,7 @@ def netpbm_available():
 def imagemagick_available():
     return IMCONVERT and command_succeeds([IMCONVERT, '-version'])
 
+
 def on_appveyor():
     return 'APPVEYOR' in os.environ
 
