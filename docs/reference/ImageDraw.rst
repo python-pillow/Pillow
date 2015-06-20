@@ -227,7 +227,7 @@ Methods
 
     Draw a shape.
 
-.. py:method:: PIL.ImageDraw.Draw.text(xy, text, fill=None, font=None, anchor=None)
+.. py:method:: PIL.ImageDraw.Draw.text(xy, text, fill=None, font=None)
 
     Draws the string at the given position.
 
@@ -237,7 +237,7 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param fill: Color to use for the text.
 
-.. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left")
+.. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, spacing=0, align="left")
 
     Draws the string at the given position.
 
