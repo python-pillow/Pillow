@@ -36,14 +36,24 @@ libs = { 'zlib':{
     'hash': 'sha1:7ff1a5b721ca719760ba6eb4ec6f38d5e65381cf',
     'dir': 'lcms2-2.7',
    },
-         'tcl':{
+         'tcl-8.5':{
     'url':SF_MIRROR+'/project/tcl/Tcl/8.5.13/tcl8513-src.zip',
     'hash': 'sha1:3e01585c91293c532a3cd594ec59deca92153a5e',
     'dir': '',
    },
-         'tk':{
+         'tk-8.5':{
     'url':SF_MIRROR+'/project/tcl/Tcl/8.5.13/tk8513-src.zip',
     'hash': 'sha1:23a1d7ddd416e11e06dfdb9f86111d4bab9420b4',
+    'dir': '',
+    },
+         'tcl-8.6':{
+    'url':SF_MIRROR+'/project/tcl/Tcl/8.6.4/tcl864-src.zip',
+    'hash': 'md5:35748d2fc61e08a2fdb23b85c6f8c4a0',
+    'dir': '',
+   },
+         'tk-8.6':{
+    'url':SF_MIRROR+'/project/tcl/Tcl/8.6.4/tk864-src.zip',
+    'hash': 'md5:111d45061a69e7f5250b6ec8ca7c4f35',
     'dir': '',
     },
          'webp':{
