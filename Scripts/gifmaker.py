@@ -89,7 +89,7 @@ def makedelta(fp, sequence):
 
         frames += 1
 
-    fp.write(";")
+    fp.write(b";")
 
     return frames
 
