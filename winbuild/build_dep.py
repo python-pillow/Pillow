@@ -1,13 +1,15 @@
 from fetch import fetch
 from unzip import unzip
 from untar import untar
-import os, hashlib
-import shutil
+import os
+import hashlib
 
 from config import *
 
+
 def _relpath(*args):
-    return os.path.join(os.getcwd(),*args)
+    return os.path.join(os.getcwd(), *args)
+
 
 def _relbuild(*args):
     return _relpath('build', *args)
@@ -15,35 +17,40 @@ def _relbuild(*args):
 build_dir = _relpath('build')
 inc_dir = _relpath('depends')
 
+
 def check_hash(filename, checksum):
-    if not checksum: return filename
-    
+    if not checksum:
+        return filename
+
     (algo, value) = checksum.split(':')
     h = hashlib.new(algo)
     with open(filename, 'rb') as f:
         h.update(f.read())
         if not(h.hexdigest().lower() == value):
-            raise ValueError('Checksum Mismatch for %s' %filename)
+            raise ValueError('Checksum Mismatch for %s' % filename)
     return filename
 
+
 def check_sig(filename, signame):
-    #UNDONE -- need gpg
+    # UNDONE -- need gpg
     return filename
+
 
 def mkdirs():
     try:
         os.mkdir(build_dir)
-    except:
+    except OSError:
         pass
     try:
         os.mkdir(inc_dir)
-    except:
+    except OSError:
         pass
     for compiler in compilers.values():
         try:
             os.mkdir(os.path.join(inc_dir, compiler['inc_dir']))
-        except: 
+        except OSError:
             pass
+
 
 def extract(src, dest):
     if '.zip' in src:
@@ -51,30 +58,24 @@ def extract(src, dest):
     if '.tar.gz' in src or '.tgz' in src:
         return untar(src, dest)
 
+
 def fetch_libs():
-    for name,lib in libs.items():
+    for name, lib in libs.items():
         if name == 'openjpeg':
-            filename = check_hash(fetch(lib['url']),lib['hash'])
+            filename = check_hash(fetch(lib['url']), lib['hash'])
             for compiler in compilers.values():
-                if not os.path.exists(os.path.join(build_dir,lib['dir']+compiler['inc_dir'])): 
+                if not os.path.exists(os.path.join(build_dir, lib['dir']+compiler['inc_dir'])):
                     extract(filename, build_dir)
-                    os.rename(os.path.join(build_dir,lib['dir']), 
-                              os.path.join(build_dir,lib['dir']+compiler['inc_dir'])) 
+                    os.rename(os.path.join(build_dir, lib['dir']),
+                              os.path.join(build_dir, lib['dir']+compiler['inc_dir']))
         else:
-            extract(check_hash(fetch(lib['url']),lib['hash']),build_dir)
+            extract(check_hash(fetch(lib['url']), lib['hash']), build_dir)
+
 
 def extract_binlib():
     lib = bin_libs['openjpeg']
     extract(lib['filename'], build_dir)
-    return
-    base = os.path.splitext(lib['filename'])[0]
-    for compiler in compilers.values():
-        shutil.copy(os.path.join(inc_dir, base, 'include', 'openjpeg-%s' % lib['version']), 
-                    os.path.join(inc_dir, compiler['inc_dir']))
-        shutil.copy(os.path.join(inc_dir, base, 'bin', 'openjp2.dll'), 
-                    os.path.join(inc_dir, compiler['inc_dir']))
-        shutil.copy(os.path.join(inc_dir, base, 'lib', 'openjp2.lib'), 
-                    os.path.join(inc_dir, compiler['inc_dir']))
+
 
 def extract_openjpeg(compiler):
     return r"""
@@ -88,7 +89,8 @@ copy /Y /B openjpeg-2.0.0-win32-x86\bin\  %%INCLIB%%
 copy /Y /B openjpeg-2.0.0-win32-x86\lib\  %%INCLIB%%
 endlocal
 """ % compiler
-        
+
+
 def cp_tk():
     return r"""
 mkdir %INCLIB%\tcl85\include\X11
@@ -102,26 +104,30 @@ copy /Y /B %BUILD%\tk8.6.4\generic\*.h %INCLIB%\tcl86\include\
 copy /Y /B %BUILD%\tk8.6.4\xlib\X11\* %INCLIB%\tcl86\include\X11\
 """
 
+
 def header():
     return r"""setlocal
 set MSBUILD=C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe
 set CMAKE="cmake.exe"
 set INCLIB=%~dp0\depends
 set BUILD=%~dp0\build
-""" + "\n".join('set %s=%%BUILD%%\%s' %(k.upper(), v['dir'])
-                                        for (k,v) in libs.items() if v['dir'])
-    
+""" + "\n".join('set %s=%%BUILD%%\%s' % (k.upper(), v['dir'])
+                for (k, v) in libs.items() if v['dir'])
+
+
 def setup_compiler(compiler):
     return r"""setlocal EnableDelayedExpansion
 call "%%ProgramFiles%%\Microsoft SDKs\Windows\%(env_version)s\Bin\SetEnv.Cmd" /Release %(env_flags)s
 set INCLIB=%%INCLIB%%\%(inc_dir)s
 """ % compiler
 
+
 def end_compiler():
     return """
 endlocal
 """
-        
+
+
 def nmake_openjpeg(compiler):
     atts = {'op_ver': '2.1'}
     atts.update(compiler)
@@ -138,6 +144,7 @@ mkdir %%INCLIB%%\openjpeg-%(op_ver)s
 copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-%(op_ver)s
 endlocal
 """ % atts
+
 
 def msbuild_openjpeg(compiler):
     atts = {'op_ver': '2.1'}
@@ -156,7 +163,6 @@ mkdir %%INCLIB%%\openjpeg-%(op_ver)s
 copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-%(op_ver)s
 endlocal
 """ % atts
-
 
 
 def nmake_libs(compiler):
@@ -210,22 +216,25 @@ endlocal
 
 
 """ % compiler
-    
+
+
 def msbuild_freetype(compiler):
-	if compiler['env_version'] == 'v7.1':
-		return msbuild_freetype_71(compiler)
-	return msbuild_freetype_70(compiler)
-      
+    if compiler['env_version'] == 'v7.1':
+        return msbuild_freetype_71(compiler)
+    return msbuild_freetype_70(compiler)
+
+
 def msbuild_freetype_71(compiler):
     return r"""
 rem Build freetype
 setlocal
 rd /S /Q %%FREETYPE%%\objs
-%%MSBUILD%% %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln /t:Clean;Build /p:Configuration="Release" /p:Platform=%(platform)s /m 
+%%MSBUILD%% %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln /t:Clean;Build /p:Configuration="Release" /p:Platform=%(platform)s /m
 xcopy /Y /E /Q %%FREETYPE%%\include %%INCLIB%%
 copy /Y /B %%FREETYPE%%\objs\vc%(vc_version)s\%(platform)s\*.lib %%INCLIB%%\freetype.lib
 endlocal
-""" %compiler
+""" % compiler
+
 
 def msbuild_freetype_70(compiler):
     return r"""
@@ -234,22 +243,25 @@ setlocal
 py -3 %%~dp0\fixproj.py %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln %(platform)s
 py -3 %%~dp0\fixproj.py %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.vcproj %(platform)s
 rd /S /Q %%FREETYPE%%\objs
-%%MSBUILD%% %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=%(platform)s /m 
+%%MSBUILD%% %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=%(platform)s /m
 xcopy /Y /E /Q %%FREETYPE%%\include %%INCLIB%%
 xcopy /Y /E /Q %%FREETYPE%%\objs\win32\vc%(vc_version)s %%INCLIB%%
 copy /Y /B %%FREETYPE%%\objs\win32\vc%(vc_version)s\*.lib %%INCLIB%%\freetype.lib
 endlocal
-""" %compiler
+""" % compiler
+
 
 def build_lcms2(compiler):
-	if compiler['env_version'] == 'v7.1':
-		return build_lcms_71(compiler)
-	return build_lcms_70(compiler)
+    if compiler['env_version'] == 'v7.1':
+        return build_lcms_71(compiler)
+    return build_lcms_70(compiler)
+
 
 def build_lcms_70(compiler):
     """Link error here on x64"""
-    if compiler['platform'] == 'x64': return ''
-    
+    if compiler['platform'] == 'x64':
+        return ''
+
     """Build LCMS on VC2008. This version is only 32bit/Win32"""
     return r"""
 rem Build lcms2
@@ -262,6 +274,7 @@ xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
 copy /Y /B %%LCMS%%\Projects\VC%(vc_version)s\Release\*.lib %%INCLIB%%
 endlocal
 """ % compiler
+
 
 def build_lcms_71(compiler):
     return r"""
@@ -281,33 +294,27 @@ def add_compiler(compiler):
     script.append(setup_compiler(compiler))
     script.append(nmake_libs(compiler))
 
-    #script.append(extract_openjpeg(compiler))
-   
+    # script.append(extract_openjpeg(compiler))
+
     script.append(msbuild_freetype(compiler))
     script.append(build_lcms2(compiler))
-    #script.append(nmake_openjpeg(compiler))
+    # script.append(nmake_openjpeg(compiler))
     script.append(end_compiler())
-
 
 
 mkdirs()
 fetch_libs()
-#extract_binlib()
+# extract_binlib()
 script = [header(), cp_tk()]
 
-    
 
 if 'PYTHON' in os.environ:
     add_compiler(compiler_fromEnv())
 else:
-    #for compiler in compilers.values():
-        #add_compiler(compiler)
-    add_compiler(compilers[(7.0,32)])
-    #add_compiler(compilers[(7.1,64)])
-    
-with open('build_deps.cmd', 'w') as f:    
+    # for compiler in compilers.values():
+        # add_compiler(compiler)
+    add_compiler(compilers[(7.0, 32)])
+    # add_compiler(compilers[(7.1, 64)])
+
+with open('build_deps.cmd', 'w') as f:
     f.write("\n".join(script))
-
-
-
-

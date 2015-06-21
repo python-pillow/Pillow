@@ -105,7 +105,6 @@ post-patch:
             test_output = BytesIO()
             im.save(test_output, "JPEG", qtables=qtables)
 
-
     def test_exif_leak(self):
         """
 pre patch:

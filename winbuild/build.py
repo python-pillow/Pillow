@@ -2,10 +2,12 @@
 
 import subprocess
 import shutil
-import sys, getopt
+import sys
+import getopt
 import os
 
 from config import *
+
 
 def setup_vms():
     ret = []
@@ -20,50 +22,53 @@ def setup_vms():
                            (VIRT_BASE, py, arch))
     return "\n".join(ret)
 
+
 def run_script(params):
     (version, script) = params
     try:
-        print ("Running %s" %version)
+        print("Running %s" % version)
         filename = 'build_pillow_%s.cmd' % version
         with open(filename, 'w') as f:
             f.write(script)
 
-        command = ['powershell', "./%s" %filename]
-        proc = subprocess.Popen(command, 
+        command = ['powershell', "./%s" % filename]
+        proc = subprocess.Popen(command,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 )
         (trace, stderr) = proc.communicate()
         status = proc.returncode
-        print (stderr)
-        print ("Done with %s: %s" % (version, status))
+        print(stderr)
+        print("Done with %s: %s" % (version, status))
         return (version, status, trace, stderr)
     except Exception as msg:
-        print ("Error with %s: %s" % (version, str(msg)))
+        print("Error with %s: %s" % (version, str(msg)))
         return (version, -1, "", str(msg))
-               
+
 
 def header(op):
-   return r"""
+    return r"""
 setlocal
 set MPLSRC=%%~dp0\..
 set INCLIB=%%~dp0\depends
 set BLDOPT=%s
 cd /D %%MPLSRC%%
-""" % (op)   
+""" % (op)
+
 
 def footer():
     return """endlocal
 exit
 """
 
+
 def build_one(py_ver, compiler):
     # UNDONE virtual envs if we're not running on appveyor
     args = {}
     args.update(compiler)
     if 'PYTHON' in os.environ:
-        args['python_path']  = "%PYTHON%"
+        args['python_path'] = "%PYTHON%"
     else:
         args['python_path'] = "%s%s\\Scripts" % (VIRT_BASE, py_ver)
     args['py_ver'] = py_ver
@@ -71,7 +76,7 @@ def build_one(py_ver, compiler):
         args['tcl_ver'] = '86'
     else:
         args['tcl_ver'] = '85'
-        
+
     return r"""
 setlocal EnableDelayedExpansion
 call "%%ProgramFiles%%\Microsoft SDKs\Windows\%(env_version)s\Bin\SetEnv.Cmd" /Release %(env_flags)s
@@ -87,6 +92,7 @@ endlocal
 endlocal
 """ % args
 
+
 def clean():
     try:
         shutil.rmtree('../build')
@@ -95,49 +101,48 @@ def clean():
         pass
     run_script(('virtualenvs', setup_vms()))
 
+
 def main(op):
     scripts = []
 
     for py_version, compiler_version in pythons.items():
-        scripts.append((py_version, 
+        scripts.append((py_version,
                         "\n".join([header(op),
-                                   build_one(py_version, 
+                                   build_one(py_version,
                                              compilers[(compiler_version, 32)]),
                                    footer()])))
-        
+
         scripts.append(("%s%s" % (py_version, X64_EXT),
-                        "\n".join([header(op), 
-                                   build_one("%sx64" %py_version, 
+                        "\n".join([header(op),
+                                   build_one("%sx64" % py_version,
                                              compilers[(compiler_version, 64)]),
                                    footer()])))
-    
+
     results = map(run_script, scripts)
-    
+
     for (version, status, trace, err) in results:
-        print ("Compiled %s: %s" % (version, status and 'ERR' or 'OK'))
-        
+        print("Compiled %s: %s" % (version, status and 'ERR' or 'OK'))
+
+
 def run_one(op):
-    
+
     compiler = compiler_fromEnv()
     py_version = pyversion_fromEnv()
-
 
     run_script((py_version,
                 "\n".join([header(op),
                            build_one(py_version, compiler),
                            footer()])
-               ))
-    
-                
+                ))
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     opts, args = getopt.getopt(sys.argv[1:], '', ['clean', 'dist'])
-    opts = dict(opts)    
+    opts = dict(opts)
 
     if '--clean' in opts:
         clean()
-    
+
     op = 'install'
     if '--dist' in opts:
         op = "bdist_wininst --user-access-control=auto"
