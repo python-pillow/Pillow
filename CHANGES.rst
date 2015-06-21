@@ -4,7 +4,7 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 - Multiline text in ImageDraw #1177
-  [radarhere]
+  [allo-, radarhere]
   
 - Automated windows CI/build support #1278
   [wiredfool]
