@@ -1937,12 +1937,14 @@ class Image(object):
         return self._new(im)
 
     def toqimage(self):
+        """Returns a QImage copy of this image"""
         from PIL import ImageQt
         if not ImageQt.qt_is_installed:
             raise ImportError("Qt bindings are not installed")
         return ImageQt.toqimage(self)
 
     def toqpixmap(self):
+        """Returns a QPixmap copy of this image"""
         from PIL import ImageQt
         if not ImageQt.qt_is_installed:
             raise ImportError("Qt bindings are not installed")
@@ -2199,6 +2201,7 @@ def fromarray(obj, mode=None):
 
 
 def fromqimage(im):
+    """Creates an image instance from a QImage image"""
     from PIL import ImageQt
     if not ImageQt.qt_is_installed:
         raise ImportError("Qt bindings are not installed")
@@ -2206,6 +2209,7 @@ def fromqimage(im):
 
 
 def fromqpixmap(im):
+    """Creates an image instance from a QPixmap image"""
     from PIL import ImageQt
     if not ImageQt.qt_is_installed:
         raise ImportError("Qt bindings are not installed")

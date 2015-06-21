@@ -14,9 +14,13 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
         PillowQtTestCase.setUp(self)
         for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
             data = ImageQt.toqimage(hopper(mode))
-            data.save('/tmp/hopper_{}_qimage.png'.format(mode))
+
             self.assertTrue(isinstance(data, QImage))
             self.assertFalse(data.isNull())
+
+            # Test saving the file
+            tempfile = self.tempfile('temp_{}.png'.format(mode))
+            data.save(tempfile)
 
 
 if __name__ == '__main__':
