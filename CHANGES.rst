@@ -3,10 +3,14 @@ Changelog (Pillow)
 
 2.9.0 (Unreleased)
 ------------------
+
+- Remove duplicate code in gifmaker script #1294
+  [radarhere]
+
 - Multiline text in ImageDraw #1177
   [allo-, radarhere]
   
-- Automated windows CI/build support #1278
+- Automated Windows CI/build support #1278
   [wiredfool]
 
 - Removed support for Tk versions earlier than 8.4 #1288
