@@ -42,25 +42,9 @@
 
 from __future__ import print_function
 
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageSequence
 
 from PIL.GifImagePlugin import getheader, getdata
-
-# --------------------------------------------------------------------
-# sequence iterator
-
-
-class image_sequence(object):
-    def __init__(self, im):
-        self.im = im
-
-    def __getitem__(self, ix):
-        try:
-            if ix:
-                self.im.seek(ix)
-            return self.im
-        except EOFError:
-            raise IndexError  # end of sequence
 
 # --------------------------------------------------------------------
 # straightforward delta encoding
@@ -105,7 +89,7 @@ def makedelta(fp, sequence):
 
         frames += 1
 
-    fp.write(";")
+    fp.write(b";")
 
     return frames
 
@@ -122,7 +106,7 @@ def compress(infile, outfile):
     # open output file
     fp = open(outfile, "wb")
 
-    seq = image_sequence(im)
+    seq = ImageSequence.Iterator(im)
 
     makedelta(fp, seq)
 
