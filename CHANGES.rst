@@ -3,6 +3,8 @@ Changelog (Pillow)
 
 2.9.0 (Unreleased)
 ------------------
+- Add functions to convert: Image <-> QImage; Image <-> QPixmap #1217
+  [radarhere, rominf]
 
 - Remove duplicate code in gifmaker script #1294
   [radarhere]
