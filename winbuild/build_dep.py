@@ -91,18 +91,19 @@ endlocal
 """ % compiler
 
 
-def cp_tk():
+def cp_tk(ver_85, ver_86):
+    versions = {'ver_85':ver_85, 'ver_86':ver_86}
     return r"""
-mkdir %INCLIB%\tcl85\include\X11
-copy /Y /B %BUILD%\tcl8.5.13\generic\*.h %INCLIB%\tcl85\include\
-copy /Y /B %BUILD%\tk8.5.13\generic\*.h %INCLIB%\tcl85\include\
-copy /Y /B %BUILD%\tk8.5.13\xlib\X11\* %INCLIB%\tcl85\include\X11\
+mkdir %%INCLIB%%\tcl85\include\X11
+copy /Y /B %%BUILD%%\tcl%(ver_85)s\generic\*.h %%INCLIB%%\tcl85\include\
+copy /Y /B %%BUILD%%\tk%(ver_85)s\generic\*.h %%INCLIB%%\tcl85\include\
+copy /Y /B %%BUILD%%\tk%(ver_85)s\xlib\X11\* %%INCLIB%%\tcl85\include\X11\
 
-mkdir %INCLIB%\tcl86\include\X11
-copy /Y /B %BUILD%\tcl8.6.4\generic\*.h %INCLIB%\tcl86\include\
-copy /Y /B %BUILD%\tk8.6.4\generic\*.h %INCLIB%\tcl86\include\
-copy /Y /B %BUILD%\tk8.6.4\xlib\X11\* %INCLIB%\tcl86\include\X11\
-"""
+mkdir %%INCLIB%%\tcl86\include\X11
+copy /Y /B %%BUILD%%\tcl%(ver_86)s\generic\*.h %%INCLIB%%\tcl86\include\
+copy /Y /B %%BUILD%%\tk%(ver_86)s\generic\*.h %%INCLIB%%\tcl86\include\
+copy /Y /B %%BUILD%%\tk%(ver_86)s\xlib\X11\* %%INCLIB%%\tcl86\include\X11\
+""" % versions
 
 
 def header():
@@ -305,7 +306,7 @@ def add_compiler(compiler):
 mkdirs()
 fetch_libs()
 # extract_binlib()
-script = [header(), cp_tk()]
+script = [header(), cp_tk(libs['tk-8.5']['version'],libs['tk-8.6']['version'] )]
 
 
 if 'PYTHON' in os.environ:
