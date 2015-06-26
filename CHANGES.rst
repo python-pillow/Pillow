@@ -3,6 +3,10 @@ Changelog (Pillow)
 
 2.9.0 (Unreleased)
 ------------------
+
+- Update tiff and tk tcl 8.5 versions #1303
+  [radarhere]
+ 
 - Add functions to convert: Image <-> QImage; Image <-> QPixmap #1217
   [radarhere, rominf]
 
