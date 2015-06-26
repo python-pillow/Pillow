@@ -181,6 +181,18 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     :type: ``(width, height)``
 
+.. py:attribute:: width
+
+    Image width, in pixels.
+
+    :type: :py:class:`int`
+
+.. py:attribute:: height
+
+    Image height, in pixels.
+
+    :type: :py:class:`int`
+
 .. py:attribute:: palette
 
     Colour palette table, if any. If mode is “P”, this should be an instance of
