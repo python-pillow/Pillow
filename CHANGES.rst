@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Added width and height properties #1304
+  [radarhere]
+ 
 - Update tiff and tk tcl 8.5 versions #1303
   [radarhere]
  
