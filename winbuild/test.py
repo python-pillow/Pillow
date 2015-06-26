@@ -5,14 +5,15 @@ import os
 import glob
 import sys
 
-from config import *
+from config import pythons, VIRT_BASE, X64_EXT
 
 
 def test_one(params):
     python, architecture = params
     try:
         print("Running: %s, %s" % params)
-        command = [r'%s\%s%s\Scripts\python.exe' % (VIRT_BASE, python, architecture),
+        command = [r'%s\%s%s\Scripts\python.exe' %
+                   (VIRT_BASE, python, architecture),
                    'test-installed.py',
                    '--processes=-0',
                    '--process-timeout=30',

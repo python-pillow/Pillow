@@ -13,8 +13,8 @@ def setup_vms():
     ret = []
     for py in pythons.keys():
         for arch in ('', X64_EXT):
-            ret.append("virtualenv -p c:/Python%s%s/python.exe --clear %s%s%s" %
-                       (py, arch, VIRT_BASE, py, arch))
+            ret.append("virtualenv -p c:/Python%s%s/python.exe --clear %s%s%s"
+                       % (py, arch, VIRT_BASE, py, arch))
             ret.append("%s%s%s\Scripts\pip.exe install nose" %
                        (VIRT_BASE, py, arch))
             if py == '26':
@@ -109,13 +109,15 @@ def main(op):
         scripts.append((py_version,
                         "\n".join([header(op),
                                    build_one(py_version,
-                                             compilers[(compiler_version, 32)]),
+                                             compilers[(compiler_version,
+                                                        32)]),
                                    footer()])))
 
         scripts.append(("%s%s" % (py_version, X64_EXT),
                         "\n".join([header(op),
                                    build_one("%sx64" % py_version,
-                                             compilers[(compiler_version, 64)]),
+                                             compilers[(compiler_version,
+                                                        64)]),
                                    footer()])))
 
     results = map(run_script, scripts)
