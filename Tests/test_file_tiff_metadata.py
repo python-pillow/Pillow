@@ -15,7 +15,8 @@ class TestFileTiffMetadata(PillowTestCase):
 
         img = hopper()
 
-        textdata = "This is some arbitrary metadata for a text field"
+        basetextdata = "This is some arbitrary metadata for a text field"
+        textdata = basetextdata + " \xff"
         floatdata = 12.345
         doubledata = 67.89
 
@@ -35,8 +36,8 @@ class TestFileTiffMetadata(PillowTestCase):
 
         loaded = Image.open(f)
 
-        self.assertEqual(loaded.tag[50838], (len(textdata),))
-        self.assertEqual(loaded.tag[50839], textdata)
+        self.assertEqual(loaded.tag[50838], (len(basetextdata + " ?"),))
+        self.assertEqual(loaded.tag[50839], basetextdata + " ?")
         self.assertAlmostEqual(loaded.tag[tag_ids['RollAngle']][0], floatdata,
                                places=5)
         self.assertAlmostEqual(loaded.tag[tag_ids['YawAngle']][0], doubledata)
