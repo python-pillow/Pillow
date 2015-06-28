@@ -39,7 +39,7 @@ script:
 
   - coverage run --append --include=PIL/* selftest.py
   - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
-  - check-manifest
+  - check-manifest --ignore depends/libwebp-0.4.3/*
 
 after_success:
    # gather the coverage data
