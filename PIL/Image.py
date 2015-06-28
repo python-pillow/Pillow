@@ -504,6 +504,14 @@ class Image(object):
         self.readonly = 0
         self.pyaccess = None
 
+    @property
+    def width(self):
+        return self.size[0]
+
+    @property
+    def height(self):
+        return self.size[1]
+
     def _new(self, im):
         new = Image()
         new.im = im

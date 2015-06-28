@@ -30,6 +30,15 @@ class TestImage(PillowTestCase):
         # self.assertRaises(
         #     MemoryError, lambda: Image.new("L", (1000000, 1000000)))
 
+    def test_width_height(self):
+        im = Image.new("RGB", (1, 2))
+        self.assertEqual(im.width, 1)
+        self.assertEqual(im.height, 2)
+
+        im.size = (3, 4)
+        self.assertEqual(im.width, 3)
+        self.assertEqual(im.height, 4)
+
     def test_invalid_image(self):
         if str is bytes:
             import StringIO
