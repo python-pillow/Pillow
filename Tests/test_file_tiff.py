@@ -93,16 +93,12 @@ class TestFileTiff(PillowTestCase):
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
 
     def test_bad_exif(self):
-        try:
-            Image.open('Tests/images/hopper_bad_exif.jpg')._getexif()
-        except struct.error:
-            self.fail(
-                 "Bad EXIF data passed incorrect values to _binary unpack")
+        image = Image.open('Tests/images/hopper_bad_exif.jpg')
+        self.assertRaises(Exception, image._getexif)
 
     def test_save_unsupported_mode(self):
         im = hopper("HSV")
         outfile = self.tempfile("temp.tif")
-
         self.assertRaises(IOError, lambda: im.save(outfile))
 
     def test_little_endian(self):
