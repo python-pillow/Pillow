@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Fixed ValueError in Python 2.6 #1315 #1316
+  [cgohlke, radarhere]
+
 - Fixed tox test script path #1308
   [radarhere]
 
