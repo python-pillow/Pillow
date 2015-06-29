@@ -37,9 +37,9 @@ script:
   - python setup.py clean
   - CFLAGS="-coverage" python setup.py build_ext --inplace
 
-  - check-manifest --ignore "depends/*"
   - coverage run --append --include=PIL/* selftest.py
   - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
+  - check-manifest --ignore "depends/*"
 
 after_success:
    # gather the coverage data
