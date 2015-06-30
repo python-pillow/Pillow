@@ -23,6 +23,19 @@ class TestImagePsd(PillowTestCase):
         im = Image.open(test_file)
         self.assertEqual(im.n_frames, 2)
 
+    def test_eoferror(self):
+        im = Image.open(test_file)
+
+        n_frames = im.n_frames
+        while True:
+            n_frames -= 1
+            try:
+                # PSD seek index starts at 1 rather than 0
+                im.seek(n_frames+1)
+                break
+            except EOFError:
+                self.assertTrue(im.tell() < n_frames)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -157,6 +157,18 @@ class TestFileTiff(PillowTestCase):
         im = Image.open('Tests/images/multipage.tiff')
         self.assertEqual(im.n_frames, 3)
 
+    def test_eoferror(self):
+        im = Image.open('Tests/images/multipage-lastframe.tif')
+
+        n_frames = im.n_frames
+        while True:
+            n_frames -= 1
+            try:
+                im.seek(n_frames)
+                break
+            except EOFError:
+                self.assertTrue(im.tell() < n_frames)
+
     def test_multipage(self):
         # issue #862
         im = Image.open('Tests/images/multipage.tiff')

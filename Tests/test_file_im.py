@@ -19,6 +19,18 @@ class TestFileIm(PillowTestCase):
         im = Image.open(TEST_IM)
         self.assertEqual(im.n_frames, 1)
 
+    def test_eoferror(self):
+        im = Image.open(TEST_IM)
+
+        n_frames = im.n_frames
+        while True:
+            n_frames -= 1
+            try:
+                im.seek(n_frames)
+                break
+            except EOFError:
+                self.assertTrue(im.tell() < n_frames)
+
     def test_roundtrip(self):
         out = self.tempfile('temp.im')
         im = hopper()
