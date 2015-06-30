@@ -1682,14 +1682,9 @@ class Image(object):
         ext = os.path.splitext(filename)[1].lower()
 
         if not format:
-            try:
-                format = EXTENSION[ext]
-            except KeyError:
+            if ext not in EXTENSION:
                 init()
-                try:
-                    format = EXTENSION[ext]
-                except KeyError:
-                    raise KeyError(ext)  # unknown extension
+            format = EXTENSION[ext]
 
         if format.upper() not in SAVE:
             init()
