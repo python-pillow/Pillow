@@ -1,5 +1,4 @@
 version: 2.9.pre.{build}
-shallow_clone: true
 clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%

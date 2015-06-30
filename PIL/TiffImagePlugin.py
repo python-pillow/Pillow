@@ -548,7 +548,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 # and doesn't match the tiff spec: 8-bit byte that
                 # contains a 7-bit ASCII code; the last byte must be
                 # NUL (binary zero). Also, I don't think this was well
-                # excersized before.
+                # exercised before.
                 data = value = b"" + value.encode('ascii', 'replace') + b"\0"
             else:
                 # integer data

@@ -1,14 +1,16 @@
+
 include *.c
 include *.h
+include *.in
 include *.md
 include *.py
-include *.sh
 include *.rst
+include *.sh
 include *.txt
 include *.yaml
+include *.yml
 include .coveragerc
 include .gitattributes
-include .travis.yml
 include LICENSE
 include Makefile
 include tox.ini
@@ -16,7 +18,6 @@ recursive-include PIL *.md
 recursive-include Scripts *.py
 recursive-include Scripts *.rst
 recursive-include Scripts *.sh
-recursive-include Scripts README.rst
 recursive-include Tests *.bdf
 recursive-include Tests *.bin
 recursive-include Tests *.bmp
@@ -33,11 +34,13 @@ recursive-include Tests *.html
 recursive-include Tests *.icc
 recursive-include Tests *.icns
 recursive-include Tests *.ico
+recursive-include Tests *.im
 recursive-include Tests *.j2k
 recursive-include Tests *.jp2
 recursive-include Tests *.jpg
 recursive-include Tests *.lut
 recursive-include Tests *.mpo
+recursive-include Tests *.msp
 recursive-include Tests *.pbm
 recursive-include Tests *.pcf
 recursive-include Tests *.pcx
@@ -59,8 +62,8 @@ recursive-include Tests *.tiff
 recursive-include Tests *.ttf
 recursive-include Tests *.txt
 recursive-include Tests *.webp
+recursive-include Tests *.xbm
 recursive-include Tests *.xpm
-recursive-include Tests *.msp
 recursive-include Tk *.c
 recursive-include Tk *.rst
 recursive-include depends *.rst
@@ -71,9 +74,13 @@ recursive-include docs *.html
 recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include docs *.txt
-recursive-include docs BUILDME
-recursive-include docs COPYING
-recursive-include docs Guardfile
 recursive-include docs Makefile
+recursive-include docs Guardfile
+recursive-include docs COPYING
+recursive-include docs BUILDME
 recursive-include libImaging *.c
 recursive-include libImaging *.h
+recursive-include winbuild *.gitignore
+recursive-include winbuild *.md
+recursive-include winbuild *.opt
+recursive-include winbuild *.py

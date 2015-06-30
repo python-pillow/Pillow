@@ -135,8 +135,23 @@ class TestFileGif(PillowTestCase):
             self.assertEqual(framecount, 5)
 
     def test_n_frames(self):
+        im = Image.open(TEST_GIF)
+        self.assertEqual(im.n_frames, 1)
+
         im = Image.open("Tests/images/iss634.gif")
-        self.assertEqual(im.n_frames, 43)
+        self.assertEqual(im.n_frames, 42)
+
+    def test_eoferror(self):
+        im = Image.open(TEST_GIF)
+
+        n_frames = im.n_frames
+        while True:
+            n_frames -= 1
+            try:
+                im.seek(n_frames)
+                break
+            except EOFError:
+                self.assertTrue(im.tell() < n_frames)
 
     def test_dispose_none(self):
         img = Image.open("Tests/images/dispose_none.gif")
