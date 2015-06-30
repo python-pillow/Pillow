@@ -4,7 +4,7 @@ from untar import untar
 import os
 import hashlib
 
-from config import *
+from config import bin_libs, compilers, compiler_fromEnv, libs
 
 
 def _relpath(*args):
@@ -64,10 +64,12 @@ def fetch_libs():
         if name == 'openjpeg':
             filename = check_hash(fetch(lib['url']), lib['hash'])
             for compiler in compilers.values():
-                if not os.path.exists(os.path.join(build_dir, lib['dir']+compiler['inc_dir'])):
+                if not os.path.exists(os.path.join(
+                        build_dir, lib['dir']+compiler['inc_dir'])):
                     extract(filename, build_dir)
                     os.rename(os.path.join(build_dir, lib['dir']),
-                              os.path.join(build_dir, lib['dir']+compiler['inc_dir']))
+                              os.path.join(
+                                  build_dir, lib['dir']+compiler['inc_dir']))
         else:
             extract(check_hash(fetch(lib['url']), lib['hash']), build_dir)
 
