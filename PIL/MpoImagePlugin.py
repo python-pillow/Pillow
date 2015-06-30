@@ -66,6 +66,10 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     def n_frames(self):
         return self.__framecount
 
+    @property
+    def is_animated(self):
+        return self.__framecount > 1
+
     def seek(self, frame):
         if frame < 0 or frame >= self.__framecount:
             raise EOFError("no more images in MPO file")

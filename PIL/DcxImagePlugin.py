@@ -66,6 +66,10 @@ class DcxImageFile(PcxImageFile):
     def n_frames(self):
         return len(self._offset)
 
+    @property
+    def is_animated(self):
+        return len(self._offset) > 1
+
     def seek(self, frame):
         if frame >= len(self._offset):
             raise EOFError("attempt to seek outside DCX directory")

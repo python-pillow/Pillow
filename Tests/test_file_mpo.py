@@ -98,6 +98,7 @@ class TestFileMpo(PillowTestCase):
     def test_n_frames(self):
         im = Image.open("Tests/images/sugarshack.mpo")
         self.assertEqual(im.n_frames, 2)
+        self.assertTrue(im.is_animated)
 
     def test_eoferror(self):
         im = Image.open("Tests/images/sugarshack.mpo")
