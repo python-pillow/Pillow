@@ -71,6 +71,14 @@ class TestFileGif(PillowTestCase):
 
         self.assert_image_similar(reread.convert('RGB'), hopper(), 50)
 
+    def test_roundtrip_save_all(self):
+        out = self.tempfile('temp.gif')
+        im = hopper()
+        im.save(out, save_all=True)
+        reread = Image.open(out)
+
+        self.assert_image_similar(reread.convert('RGB'), im, 50)
+
     def test_palette_handling(self):
         # see https://github.com/python-pillow/Pillow/issues/513
 
