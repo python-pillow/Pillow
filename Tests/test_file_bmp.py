@@ -49,6 +49,22 @@ class TestFileBmp(PillowTestCase):
 
         self.assertEqual(reloaded.info["dpi"], dpi)
 
+    def test_save_bmp_with_dpi(self):
+        # Test for #1301
+        # Arrange
+        outfile = self.tempfile("temp.jpg")
+        im = Image.open("Tests/images/hopper.bmp")
+
+        # Act
+        im.save(outfile, 'JPEG', dpi=im.info['dpi'])
+
+        # Assert
+        reloaded = Image.open(outfile)
+        reloaded.load()
+        self.assertEqual(im.info['dpi'], reloaded.info['dpi'])
+        self.assertEqual(im.size, reloaded.size)
+        self.assertEqual(reloaded.format, "JPEG")
+
 
 if __name__ == '__main__':
     unittest.main()
