@@ -24,7 +24,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, ImagePalette, _binary
+from PIL import Image, ImageFile, ImagePalette, ImageChops, ImageSequence, _binary
 
 __version__ = "0.9"
 
@@ -284,8 +284,10 @@ RAWMODE = {
     "P": "P",
 }
 
+def _save_all(im, fp, filename):
+    _save(im, fp, filename, save_all=True)
 
-def _save(im, fp, filename):
+def _save(im, fp, filename, save_all=False):
 
     if _imaging_gif:
         # call external driver
@@ -315,23 +317,47 @@ def _save(im, fp, filename):
         palette = None
         im.encoderinfo["optimize"] = im.encoderinfo.get("optimize", True)
 
-    header, used_palette_colors = getheader(im_out, palette, im.encoderinfo)
-    for s in header:
-        fp.write(s)
+    if save_all:
+        previous = None
 
-    flags = 0
+        for im_frame in ImageSequence.Iterator(im_out):
+            # To specify duration, add the time in milliseconds to getdata(),
+            # e.g. getdata(im_frame, duration=1000)
+            if not previous:
+                # global header
+                for s in getheader(im_frame, palette, im.encoderinfo)[0] + getdata(im_frame):
+                    fp.write(s)
+            else:
+                # delta frame
+                delta = ImageChops.subtract_modulo(im_frame, previous)
+                bbox = delta.getbbox()
 
-    if get_interlace(im):
-        flags = flags | 64
+                if bbox:
+                    # compress difference
+                    for s in getdata(im_frame.crop(bbox), offset=bbox[:2]):
+                        fp.write(s)
+                else:
+                    # FIXME: what should we do in this case?
+                    pass
+            previous = im_frame.copy()
+    else:
+        header = getheader(im_out, palette, im.encoderinfo)[0]
+        for s in header:
+            fp.write(s)
 
-    # local image header
-    get_local_header(fp, im, (0, 0), flags)
+        flags = 0
 
-    im_out.encoderconfig = (8, get_interlace(im))
-    ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
-                                  RAWMODE[im_out.mode])])
+        if get_interlace(im):
+            flags = flags | 64
 
-    fp.write(b"\0")  # end of image data
+        # local image header
+        _get_local_header(fp, im, (0, 0), flags)
+
+        im_out.encoderconfig = (8, get_interlace(im))
+        ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
+                                      RAWMODE[im_out.mode])])
+
+        fp.write(b"\0")  # end of image data
 
     fp.write(b";")  # end of file
 
@@ -354,7 +380,7 @@ def get_interlace(im):
     return interlace
 
 
-def get_local_header(fp, im, offset, flags):
+def _get_local_header(fp, im, offset, flags):
     transparent_color_exists = False
     try:
         transparency = im.encoderinfo["transparency"]
@@ -577,7 +603,7 @@ def getdata(im, offset=(0, 0), **params):
         im.encoderinfo = params
 
         # local image header
-        get_local_header(fp, im, offset, 0)
+        _get_local_header(fp, im, offset, 0)
 
         ImageFile._save(im, fp, [("gif", (0, 0)+im.size, 0, RAWMODE[im.mode])])
 
@@ -594,6 +620,7 @@ def getdata(im, offset=(0, 0), **params):
 
 Image.register_open(GifImageFile.format, GifImageFile, _accept)
 Image.register_save(GifImageFile.format, _save)
+Image.register_save_all(GifImageFile.format, _save_all)
 Image.register_extension(GifImageFile.format, ".gif")
 Image.register_mime(GifImageFile.format, "image/gif")
 

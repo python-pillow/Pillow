@@ -204,6 +204,7 @@ ID = []
 OPEN = {}
 MIME = {}
 SAVE = {}
+SAVE_ALL = {}
 EXTENSION = {}
 
 # --------------------------------------------------------------------
@@ -1669,6 +1670,10 @@ class Image(object):
         # may mutate self!
         self.load()
 
+        save_all = False
+        if 'save_all' in params:
+            save_all = params['save_all']
+            del params['save_all']
         self.encoderinfo = params
         self.encoderconfig = ()
 
@@ -1686,11 +1691,12 @@ class Image(object):
                 except KeyError:
                     raise KeyError(ext)  # unknown extension
 
-        try:
-            save_handler = SAVE[format.upper()]
-        except KeyError:
+        if format.upper() not in SAVE:
             init()
-            save_handler = SAVE[format.upper()]  # unknown format
+        if save_all:
+            save_handler = SAVE_ALL[format.upper()]
+        else:
+            save_handler = SAVE[format.upper()]
 
         if isPath(fp):
             fp = builtins.open(fp, "wb")
@@ -2467,6 +2473,18 @@ def register_save(id, driver):
     :param driver: A function to save images in this format.
     """
     SAVE[id.upper()] = driver
+
+
+def register_save_all(id, driver):
+    """
+    Registers an image function to save all the frames
+    of a multiframe format.  This function should not be
+    used in application code.
+
+    :param id: An image format identifier.
+    :param driver: A function to save images in this format.
+    """
+    SAVE_ALL[id.upper()] = driver
 
 
 def register_extension(id, extension):
