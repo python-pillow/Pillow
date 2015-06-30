@@ -18,6 +18,7 @@ class TestFileIm(PillowTestCase):
     def test_n_frames(self):
         im = Image.open(TEST_IM)
         self.assertEqual(im.n_frames, 1)
+        self.assertFalse(im.is_animated)
 
     def test_eoferror(self):
         im = Image.open(TEST_IM)

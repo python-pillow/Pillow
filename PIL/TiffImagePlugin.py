@@ -650,6 +650,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
         self._frame_pos = []
         self._n_frames = None
+        self._is_animated = None
 
         if Image.DEBUG:
             print("*** TiffImageFile._open ***")
@@ -670,6 +671,20 @@ class TiffImageFile(ImageFile.ImageFile):
                 self._n_frames = self.tell() + 1
             self.seek(current)
         return self._n_frames
+
+    @property
+    def is_animated(self):
+        if self._is_animated is None:
+            current = self.tell()
+
+            try:
+                self.seek(1)
+                self._is_animated = True
+            except EOFError:
+                self._is_animated = False
+
+            self.seek(current)
+        return self._is_animated
 
     def seek(self, frame):
         "Select a given frame as current image"

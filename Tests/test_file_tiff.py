@@ -153,9 +153,11 @@ class TestFileTiff(PillowTestCase):
     def test_n_frames(self):
         im = Image.open('Tests/images/multipage-lastframe.tif')
         self.assertEqual(im.n_frames, 1)
+        self.assertFalse(im.is_animated)
 
         im = Image.open('Tests/images/multipage.tiff')
         self.assertEqual(im.n_frames, 3)
+        self.assertTrue(im.is_animated)
 
     def test_eoferror(self):
         im = Image.open('Tests/images/multipage-lastframe.tif')
