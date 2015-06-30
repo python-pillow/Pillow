@@ -90,7 +90,7 @@ except (ImportError, OSError):
 
 
 NAME = 'Pillow'
-PILLOW_VERSION = '2.9.0.dev1'
+PILLOW_VERSION = '2.9.0.dev2'
 TCL_ROOT = None
 JPEG_ROOT = None
 JPEG2K_ROOT = None
