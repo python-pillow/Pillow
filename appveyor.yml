@@ -24,3 +24,5 @@ test_script:
 - cd c:\pillow
 - '%PYTHON%\Scripts\pip.exe install nose'
 - '%PYTHON%\python.exe test-installed.py'
+matrix:
+  fast_finish: true
