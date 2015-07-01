@@ -7,9 +7,9 @@ This repository creates wheels for tagged versions of Pillow::
     git submodule update
     git add Pillow
     cd Pillow
-    git checkout <TAG>
+    git checkout <VERSION>
     cd ..
-    git commit -a -m "<TAG> wheels"
+    git commit -a -m "<VERSION> wheels"
     git push
 
 
