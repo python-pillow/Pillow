@@ -1,6 +1,7 @@
 from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper, py3
 
+from ctypes import c_float
 import io
 <<<<<<< HEAD
 import logging
@@ -144,10 +145,23 @@ class TestFileLibTiff(LibTiffTestCase):
             loaded.tag.legacy_api = legacy_api
             reloaded = loaded.tag.named()
 
-            for tag, value in itertools.chain(reloaded.items(), original.items()):
+            for tag, value in itertools.chain(reloaded.items(),
+                                              original.items()):
                 if tag not in ignored:
                     val = original[tag]
-                    self.assertEqual(val, value, msg="%s didn't roundtrip" % tag)
+                    if tag.endswith('Resolution'):
+                        if legacy_api:
+                            self.assertEqual(
+                                c_float(val[0][0] / val[0][1]).value,
+                                c_float(value[0][0] / value[0][1]).value,
+                                msg="%s didn't roundtrip" % tag)
+                        else:
+                            self.assertEqual(
+                                c_float(val).value, c_float(value).value,
+                                msg="%s didn't roundtrip" % tag)
+                    else:
+                        self.assertEqual(
+                            val, value, msg="%s didn't roundtrip" % tag)
 
     def test_g3_compression(self):
         i = Image.open('Tests/images/hopper_g4_500.tif')
