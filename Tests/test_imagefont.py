@@ -182,7 +182,10 @@ try:
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
             # Act/Assert
-            self.assertRaises(AssertionError, lambda: draw.multiline_text((0, 0), TEST_TEXT, font=ttf, align="unknown"))
+            self.assertRaises(AssertionError,
+                              lambda: draw.multiline_text((0, 0), TEST_TEXT,
+                                                          font=ttf,
+                                                          align="unknown"))
 
         def test_multiline_size(self):
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -199,7 +202,8 @@ try:
             draw = ImageDraw.Draw(im)
 
             self.assertEqual(draw.textsize("longest line", font=ttf)[0],
-                             draw.multiline_textsize("longest line\nline", font=ttf)[0])
+                             draw.multiline_textsize("longest line\nline",
+                                                     font=ttf)[0])
 
         def test_multiline_spacing(self):
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
