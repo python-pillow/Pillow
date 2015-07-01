@@ -4,6 +4,9 @@ Changelog (Pillow)
 2.9.0 (Unreleased)
 ------------------
 
+- Added test for GimpPaletteFile #1324
+  [radarhere]
+
 - Fixed ValueError in Python 2.6 #1315 #1316
   [cgohlke, radarhere]
 
