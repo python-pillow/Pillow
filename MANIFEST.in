@@ -29,6 +29,7 @@ recursive-include Tests *.eps
 recursive-include Tests *.fli
 recursive-include Tests *.ggr
 recursive-include Tests *.gif
+recursive-include Tests *.gpl
 recursive-include Tests *.gnuplot
 recursive-include Tests *.html
 recursive-include Tests *.icc
