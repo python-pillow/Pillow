@@ -299,8 +299,21 @@ RAWMODE = {
     "P": "P",
 }
 
+
+def _convert_mode(im):
+    # convert on the fly (EXPERIMENTAL -- I'm not sure PIL
+    # should automatically convert images on save...)
+    if Image.getmodebase(im.mode) == "RGB":
+        palette_size = 256
+        if im.palette:
+            palette_size = len(im.palette.getdata()[1]) // 3
+        return im.convert("P", palette=1, colors=palette_size)
+    return im.convert("L")
+
+
 def _save_all(im, fp, filename):
     _save(im, fp, filename, save_all=True)
+
 
 def _save(im, fp, filename, save_all=False):
 
@@ -315,15 +328,7 @@ def _save(im, fp, filename, save_all=False):
     if im.mode in RAWMODE:
         im_out = im.copy()
     else:
-        # convert on the fly (EXPERIMENTAL -- I'm not sure PIL
-        # should automatically convert images on save...)
-        if Image.getmodebase(im.mode) == "RGB":
-            palette_size = 256
-            if im.palette:
-                palette_size = len(im.palette.getdata()[1]) // 3
-            im_out = im.convert("P", palette=1, colors=palette_size)
-        else:
-            im_out = im.convert("L")
+        im_out = _convert_mode(im)
 
     # header
     try:
@@ -335,7 +340,9 @@ def _save(im, fp, filename, save_all=False):
     if save_all:
         previous = None
 
-        for im_frame in ImageSequence.Iterator(im_out):
+        for im_frame in ImageSequence.Iterator(im):
+            im_frame = _convert_mode(im_frame)
+
             # To specify duration, add the time in milliseconds to getdata(),
             # e.g. getdata(im_frame, duration=1000)
             if not previous:
