@@ -13,8 +13,11 @@ This repository creates wheels for tagged versions of Pillow::
     git push
 
 
+Dependencies
+------------
+
 Numpy
------
+~~~~~
 
 Check minimum numpy versions to build against in ``.travis.yml`` file. Build against the earliest numpy that Pillow is compatible with; see `forward, backward numpy compatibility <http://stackoverflow.com/questions/17709641/valueerror-numpy-dtype-has-the-wrong-size-try-recompiling/18369312#18369312>`_
 
