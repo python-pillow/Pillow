@@ -28,7 +28,10 @@ from __future__ import print_function
 
 from PIL import VERSION, PILLOW_VERSION, _plugins
 
+import logging
 import warnings
+
+logger = logging.getLogger(__name__)
 
 
 class DecompressionBombWarning(RuntimeWarning):
@@ -137,11 +140,6 @@ def isImageType(t):
     :returns: True if the object is an image
     """
     return hasattr(t, "im")
-
-#
-# Debug level
-
-DEBUG = 0
 
 #
 # Constants (also defined in _imagingmodule.c!)
@@ -387,13 +385,10 @@ def init():
 
     for plugin in _plugins:
         try:
-            if DEBUG:
-                print("Importing %s" % plugin)
+            logger.debug("Importing %s", plugin)
             __import__("PIL.%s" % plugin, globals(), locals(), [])
-        except ImportError:
-            if DEBUG:
-                print("Image: failed to import", end=' ')
-                print(plugin, ":", sys.exc_info()[1])
+        except ImportError as e:
+            logger.debug("Image: failed to import %s: %s", plugin, e)
 
     if OPEN or SAVE:
         _initialized = 2
@@ -555,8 +550,7 @@ class Image(object):
         try:
             self.fp.close()
         except Exception as msg:
-            if DEBUG:
-                print("Error closing: %s" % msg)
+            logger.debug("Error closing: %s" % msg)
 
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
@@ -2307,9 +2301,7 @@ def open(fp, mode="r"):
                 _decompression_bomb_check(im.size)
                 return im
         except (SyntaxError, IndexError, TypeError, struct.error):
-            # import traceback
-            # traceback.print_exc()
-            pass
+            logger.debug("", exc_info=True)
 
     if init():
 
@@ -2322,9 +2314,7 @@ def open(fp, mode="r"):
                     _decompression_bomb_check(im.size)
                     return im
             except (SyntaxError, IndexError, TypeError, struct.error):
-                # import traceback
-                # traceback.print_exc()
-                pass
+                logger.debug("", exc_info=True)
 
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
