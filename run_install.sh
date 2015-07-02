@@ -2,14 +2,14 @@ source terryfy/travis_tools.sh
 source terryfy/library_installers.sh
 
 # Package versions for fresh source builds
-FT_VERSION=2.5.3
-PNG_VERSION=1.6.12
+FT_VERSION=2.6
+PNG_VERSION=1.6.17
 ZLIB_VERSION=1.2.8
 JPEG_VERSION=9a
-OPENJPEG_VERSION=2.0.0
-TIFF_VERSION=4.0.3
-LCMS_VERSION=2.6
-WEBP_VERSION=0.4.0
+OPENJPEG_VERSION=2.1.0
+TIFF_VERSION=4.0.4
+LCMS_VERSION=2.7
+WEBP_VERSION=0.4.3
 
 # Need cmake for openjpeg
 brew install cmake

@@ -4,10 +4,10 @@ language:
 env:
   global: PILLOW_COMMIT=latest-tag
   matrix:
-    - VERSION=2.7.9
+    - VERSION=2.7.10
     - VERSION=3.2.5
     - VERSION=3.3.5
-    - VERSION=3.4.2
+    - VERSION=3.4.3
 
 install:
     - source run_install.sh
