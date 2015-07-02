@@ -16,10 +16,10 @@ This repository creates wheels for tagged versions of Pillow::
 Dependencies
 ------------
 
-Numpy
+NumPy
 ~~~~~
 
-Check minimum numpy versions to build against in ``.travis.yml`` file. Build against the earliest numpy that Pillow is compatible with; see `forward, backward numpy compatibility <http://stackoverflow.com/questions/17709641/valueerror-numpy-dtype-has-the-wrong-size-try-recompiling/18369312#18369312>`_
+Check minimum NumPy versions to build against in ``.travis.yml`` file. Build against the earliest NumPy that Pillow is compatible with; see `forward, backward numpy compatibility <http://stackoverflow.com/questions/17709641/valueerror-numpy-dtype-has-the-wrong-size-try-recompiling/18369312#18369312>`_
 
 Wheels
 ------
