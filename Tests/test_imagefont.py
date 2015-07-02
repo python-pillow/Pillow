@@ -182,7 +182,10 @@ try:
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
             # Act/Assert
-            self.assertRaises(AssertionError, lambda: draw.multiline_text((0, 0), TEST_TEXT, font=ttf, align="unknown"))
+            self.assertRaises(AssertionError,
+                              lambda: draw.multiline_text((0, 0), TEST_TEXT,
+                                                          font=ttf,
+                                                          align="unknown"))
 
         def test_multiline_size(self):
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -199,7 +202,8 @@ try:
             draw = ImageDraw.Draw(im)
 
             self.assertEqual(draw.textsize("longest line", font=ttf)[0],
-                             draw.multiline_textsize("longest line\nline", font=ttf)[0])
+                             draw.multiline_textsize("longest line\nline",
+                                                     font=ttf)[0])
 
         def test_multiline_spacing(self):
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -256,6 +260,34 @@ try:
             # Check boxes a and b are same size
             self.assertEqual(box_size_a, box_size_b)
 
+        def test_rotated_transposed_font_get_mask(self):
+            # Arrange
+            text = "mask this"
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            orientation = Image.ROTATE_90
+            transposed_font = ImageFont.TransposedFont(
+                font, orientation=orientation)
+
+            # Act
+            mask = transposed_font.getmask(text)
+
+            # Assert
+            self.assertEqual(mask.size, (13, 108))
+
+        def test_unrotated_transposed_font_get_mask(self):
+            # Arrange
+            text = "mask this"
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            orientation = None
+            transposed_font = ImageFont.TransposedFont(
+                font, orientation=orientation)
+
+            # Act
+            mask = transposed_font.getmask(text)
+
+            # Assert
+            self.assertEqual(mask.size, (108, 13))
+
         def test_free_type_font_get_name(self):
             # Arrange
             font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -277,6 +309,28 @@ try:
             self.assertIsInstance(ascent, int)
             self.assertIsInstance(descent, int)
             self.assertEqual((ascent, descent), (16, 4))  # too exact check?
+
+        def test_free_type_font_get_offset(self):
+            # Arrange
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            text = "offset this"
+
+            # Act
+            offset = font.getoffset(text)
+
+            # Assert
+            self.assertEqual(offset, (0, 3))
+
+        def test_free_type_font_get_mask(self):
+            # Arrange
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            text = "mask this"
+
+            # Act
+            mask = font.getmask(text)
+
+            # Assert
+            self.assertEqual(mask.size, (108, 13))
 
         def test_load_path_not_found(self):
             # Arrange
