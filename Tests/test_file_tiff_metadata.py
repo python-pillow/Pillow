@@ -1,8 +1,10 @@
+from __future__ import division
+
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
 
-tag_ids = dict(zip(TiffTags.TAGS.values(), TiffTags.TAGS.keys()))
+tag_ids = dict((info.name, info.value) for info in TiffTags.TAGS.values())
 
 
 class TestFileTiffMetadata(PillowTestCase):
@@ -15,17 +17,15 @@ class TestFileTiffMetadata(PillowTestCase):
 
         img = hopper()
 
-        textdata = "This is some arbitrary metadata for a text field"
+        textdata = b"This is some arbitrary metadata for a text field"
         floatdata = 12.345
         doubledata = 67.89
-
         info = TiffImagePlugin.ImageFileDirectory()
 
         info[tag_ids['ImageJMetaDataByteCounts']] = len(textdata)
         info[tag_ids['ImageJMetaData']] = textdata
         info[tag_ids['RollAngle']] = floatdata
         info.tagtype[tag_ids['RollAngle']] = 11
-
         info[tag_ids['YawAngle']] = doubledata
         info.tagtype[tag_ids['YawAngle']] = 12
 
@@ -33,43 +33,63 @@ class TestFileTiffMetadata(PillowTestCase):
 
         img.save(f, tiffinfo=info)
 
-        loaded = Image.open(f)
+        for legacy_api in [False, True]:
+            loaded = Image.open(f)
+            loaded.tag.legacy_api = legacy_api
 
-        self.assertEqual(loaded.tag[50838], (len(textdata),))
-        self.assertEqual(loaded.tag[50839], textdata)
-        self.assertAlmostEqual(loaded.tag[tag_ids['RollAngle']][0], floatdata,
-                               places=5)
-        self.assertAlmostEqual(loaded.tag[tag_ids['YawAngle']][0], doubledata)
+            self.assertEqual(loaded.tag[50838],
+                             (len(textdata),) if legacy_api else len(textdata))
+            self.assertEqual(loaded.tag[50839], textdata)
+            loaded_float = loaded.tag[tag_ids['RollAngle']]
+            if legacy_api:
+                loaded_float = loaded_float[0]
+            self.assertAlmostEqual(loaded_float, floatdata, places=5)
+            loaded_double = loaded.tag[tag_ids['YawAngle']]
+            if legacy_api:
+                loaded_double = loaded_double[0]
+            self.assertAlmostEqual(loaded_double, doubledata)
 
     def test_read_metadata(self):
-        img = Image.open('Tests/images/hopper_g4.tif')
+        for legacy_api in [False, True]:
+            img = Image.open('Tests/images/hopper_g4.tif')
+            img.tag.legacy_api = legacy_api
 
-        known = {'YResolution': ((4294967295, 113653537),),
-                 'PlanarConfiguration': (1,),
-                 'BitsPerSample': (1,),
-                 'ImageLength': (128,),
-                 'Compression': (4,),
-                 'FillOrder': (1,),
-                 'RowsPerStrip': (128,),
-                 'ResolutionUnit': (3,),
-                 'PhotometricInterpretation': (0,),
-                 'PageNumber': (0, 1),
-                 'XResolution': ((4294967295, 113653537),),
-                 'ImageWidth': (128,),
-                 'Orientation': (1,),
-                 'StripByteCounts': (1968,),
-                 'SamplesPerPixel': (1,),
-                 'StripOffsets': (8,),
-                 }
+            known = {'YResolution': ((4294967295, 113653537),),
+                     'PlanarConfiguration': (1,),
+                     'BitsPerSample': (1,),
+                     'ImageLength': (128,),
+                     'Compression': (4,),
+                     'FillOrder': (1,),
+                     'RowsPerStrip': (128,),
+                     'ResolutionUnit': (3,),
+                     'PhotometricInterpretation': (0,),
+                     'PageNumber': (0, 1),
+                     'XResolution': ((4294967295, 113653537),),
+                     'ImageWidth': (128,),
+                     'Orientation': (1,),
+                     'StripByteCounts': (1968,),
+                     'SamplesPerPixel': (1,),
+                     'StripOffsets': (8,)
+                    } if legacy_api else {
+                     'YResolution': 4294967295 / 113653537,
+                     'PlanarConfiguration': 1,
+                     'BitsPerSample': (1,),
+                     'ImageLength': 128,
+                     'Compression': 4,
+                     'FillOrder': 1,
+                     'RowsPerStrip': 128,
+                     'ResolutionUnit': 3,
+                     'PhotometricInterpretation': 0,
+                     'PageNumber': (0, 1),
+                     'XResolution': 4294967295 / 113653537,
+                     'ImageWidth': 128,
+                     'Orientation': 1,
+                     'StripByteCounts': (1968,),
+                     'SamplesPerPixel': 1,
+                     'StripOffsets': (8,)
+                    }
 
-        # self.assertEqual is equivalent,
-        # but less helpful in telling what's wrong.
-        named = img.tag.named()
-        for tag, value in named.items():
-            self.assertEqual(known[tag], value)
-
-        for tag, value in known.items():
-            self.assertEqual(value, named[tag])
+            self.assertEqual(known, img.tag.named())
 
     def test_write_metadata(self):
         """ Test metadata writing through the python code """
