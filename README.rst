@@ -21,7 +21,7 @@ Check minimum numpy versions to build against in ``.travis.yml`` file. Build aga
 Wheels
 ------
 
-Wheels are uploaded to a `rackspace container <http://cdf58691c5cf45771290-6a3b6a0f5f6ab91aadc447b2a897dd9a.r50.cf2.rackcdn.com/>`_. Credentials for this container are encrypted to this specific repo in the ``.travis.yml`` file so the upload won't work from another repository.
+Wheels are uploaded to a `rackspace container <http://cdf58691c5cf45771290-6a3b6a0f5f6ab91aadc447b2a897dd9a.r50.cf2.rackcdn.com/>`_. Credentials for this container are encrypted to this specific repo in the ``.travis.yml`` file, so the upload won't work from another repository.
 
 PyPI
 ~~~~
