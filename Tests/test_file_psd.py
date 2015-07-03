@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL import Image
+from PIL import Image, PsdImagePlugin
 
 # sample ppm stream
 test_file = "Tests/images/hopper.psd"
@@ -15,6 +15,9 @@ class TestImagePsd(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "PSD")
+
+    def test_invalid_file(self):
+        self.assertRaises(SyntaxError, lambda: PsdImagePlugin.PsdImageFile("Tests/images/flower.jpg"))
 
     def test_n_frames(self):
         im = Image.open("Tests/images/hopper_merged.psd")

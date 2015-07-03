@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL import Image
+from PIL import Image, SgiImagePlugin
 
 
 class TestFileSgi(PillowTestCase):
@@ -31,6 +31,9 @@ class TestFileSgi(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(ValueError, lambda: Image.open(test_file))
+
+    def test_invalid_file(self):
+        self.assertRaises(ValueError, lambda: SgiImagePlugin.SgiImageFile("Tests/images/flower.jpg"))
 
 
 if __name__ == '__main__':

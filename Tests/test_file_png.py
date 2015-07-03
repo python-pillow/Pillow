@@ -81,6 +81,9 @@ class TestFilePng(PillowTestCase):
         hopper("I").save(test_file)
         im = Image.open(test_file)
 
+    def test_invalid_file(self):
+        self.assertRaises(SyntaxError, lambda: PngImagePlugin.PngImageFile("Tests/images/flower.jpg"))
+
     def test_broken(self):
         # Check reading of totally broken files.  In this case, the test
         # file was checked into Subversion as a text file.

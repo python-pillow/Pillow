@@ -51,6 +51,9 @@ class TestFileEps(PillowTestCase):
         self.assertEqual(image2_scale2.size, (720, 504))
         self.assertEqual(image2_scale2.format, "EPS")
 
+    def test_invalid_file(self):
+        self.assertRaises(SyntaxError, lambda: EpsImagePlugin.EpsImageFile("Tests/images/flower.jpg"))
+
     def test_file_object(self):
         # issue 479
         image1 = Image.open(file1)

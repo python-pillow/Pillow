@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL import Image
+from PIL import Image, FliImagePlugin
 
 # sample ppm stream
 # created as an export of a palette image from Gimp2.6
@@ -17,6 +17,9 @@ class TestFileFli(PillowTestCase):
         self.assertEqual(im.mode, "P")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "FLI")
+
+    def test_invalid_file(self):
+        self.assertRaises(SyntaxError, lambda: FliImagePlugin.FliImageFile("Tests/images/flower.jpg"))
 
     def test_n_frames(self):
         im = Image.open(test_file)

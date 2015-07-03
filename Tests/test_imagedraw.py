@@ -52,6 +52,11 @@ class TestImageDraw(PillowTestCase):
         self.assert_warning(DeprecationWarning, lambda: draw.setink(0))
         self.assert_warning(DeprecationWarning, lambda: draw.setfill(0))
 
+    def test_mode_mismatch(self):
+        im = hopper("RGB").copy()
+
+        self.assertRaises(ValueError, lambda: ImageDraw.ImageDraw(im, mode="L"))
+
     def helper_arc(self, bbox):
         # Arrange
         im = Image.new("RGB", (W, H))

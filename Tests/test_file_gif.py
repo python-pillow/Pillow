@@ -25,6 +25,9 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "GIF")
 
+    def test_invalid_file(self):
+        self.assertRaises(SyntaxError, lambda: GifImagePlugin.GifImageFile("Tests/images/flower.jpg"))
+
     def test_optimize(self):
         from io import BytesIO
 

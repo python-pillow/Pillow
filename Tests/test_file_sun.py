@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL import Image
+from PIL import Image, SunImagePlugin
 
 
 class TestFileSun(PillowTestCase):
@@ -15,6 +15,8 @@ class TestFileSun(PillowTestCase):
 
         # Assert
         self.assertEqual(im.size, (128, 128))
+
+        self.assertRaises(SyntaxError, lambda: SunImagePlugin.SunImageFile("Tests/images/flower.jpg"))
 
 
 if __name__ == '__main__':

@@ -18,6 +18,8 @@ class TestImageColor(PillowTestCase):
             (255, 0, 0, 0), ImageColor.getrgb("rgba(255, 0, 0, 0)"))
         self.assertEqual((255, 0, 0), ImageColor.getrgb("red"))
 
+        self.assertRaises(ValueError, lambda: ImageColor.getrgb("invalid color"))
+
     # look for rounding errors (based on code by Tim Hatch)
     def test_rounding_errors(self):
 

@@ -1,7 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 
 import io
-from PIL import Image
+from PIL import Image, IcoImagePlugin
 
 # sample ppm stream
 TEST_ICO_FILE = "Tests/images/hopper.ico"
@@ -16,6 +16,10 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (16, 16))
         self.assertEqual(im.format, "ICO")
+
+    def test_invalid_file(self):
+        with open("Tests/images/flower.jpg", "rb") as fp:
+            self.assertRaises(SyntaxError, lambda: IcoImagePlugin.IcoImageFile(fp))
 
     def test_save_to_bytes(self):
         output = io.BytesIO()

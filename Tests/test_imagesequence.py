@@ -22,6 +22,8 @@ class TestImageSequence(PillowTestCase):
 
         self.assertEqual(index, 1)
 
+        self.assertRaises(AttributeError, lambda: ImageSequence.Iterator(0))
+
     def _test_multipage_tiff(self, dbg=False):
         im = Image.open('Tests/images/multipage.tiff')
         for index, frame in enumerate(ImageSequence.Iterator(im)):

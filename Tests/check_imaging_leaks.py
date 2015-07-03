@@ -3,7 +3,7 @@
 from __future__ import division
 from helper import unittest, PillowTestCase
 import sys
-from PIL import Image, ImageFilter
+from PIL import Image
 
 min_iterations = 100
 max_iterations = 10000

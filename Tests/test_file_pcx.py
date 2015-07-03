@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
+from PIL import Image, PcxImagePlugin
 
 
 class TestFilePcx(PillowTestCase):
@@ -18,6 +18,9 @@ class TestFilePcx(PillowTestCase):
     def test_sanity(self):
         for mode in ('1', 'L', 'P', 'RGB'):
             self._roundtrip(hopper(mode))
+
+    def test_invalid_file(self):
+        self.assertRaises(SyntaxError, lambda: PcxImagePlugin.PcxImageFile("Tests/images/flower.jpg"))
 
     def test_odd(self):
         # see issue #523, odd sized images should have a stride that's even.

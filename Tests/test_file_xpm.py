@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
+from PIL import Image, XpmImagePlugin
 
 # sample ppm stream
 TEST_FILE = "Tests/images/hopper.xpm"
@@ -17,6 +17,9 @@ class TestFileXpm(PillowTestCase):
 
         # large error due to quantization->44 colors.
         self.assert_image_similar(im.convert('RGB'), hopper('RGB'), 60)
+
+    def test_invalid_file(self):
+        self.assertRaises(SyntaxError, lambda: XpmImagePlugin.XpmImageFile("Tests/images/flower.jpg"))
 
     def test_load_read(self):
         # Arrange

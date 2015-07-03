@@ -61,6 +61,10 @@ class TestCffi(PillowTestCase):
             for y in range(0, h, 10):
                 self.assertEqual(access[(x, y)], caccess[(x, y)])
 
+        # Access an out-of-range pixel
+        self.assertRaises(ValueError,
+                          lambda: access[(access.xsize+1, access.ysize+1)])
+
     def test_get_vs_c(self):
         rgb = hopper('RGB')
         rgb.load()
@@ -102,6 +106,14 @@ class TestCffi(PillowTestCase):
             for y in range(0, h, 10):
                 access[(x, y)] = color
                 self.assertEqual(color, caccess[(x, y)])
+
+        # Attempt to set the value on a read-only image
+        access = PyAccess.new(im, True)
+        try:
+            access[(0, 0)] = color
+        except ValueError:
+            return
+        self.fail("Putpixel did not fail on a read-only image")
 
     def test_set_vs_c(self):
         rgb = hopper('RGB')

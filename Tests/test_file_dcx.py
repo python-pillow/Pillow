@@ -20,6 +20,10 @@ class TestFileDcx(PillowTestCase):
         orig = hopper()
         self.assert_image_equal(im, orig)
 
+    def test_invalid_file(self):
+        with open("Tests/images/flower.jpg", "rb") as fp:
+            self.assertRaises(SyntaxError, lambda: DcxImagePlugin.DcxImageFile(fp))
+
     def test_tell(self):
         # Arrange
         im = Image.open(TEST_FILE)
