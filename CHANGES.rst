@@ -1,7 +1,19 @@
 Changelog (Pillow)
 ==================
 
-2.9.0 (Unreleased)
+3.0.0 (Unreleased)
+------------------
+
+- Added various tests #1330
+  [radarhere]
+  
+- More ImageFont tests #1327
+  [hugovk]
+
+- Use logging instead of print #1207
+  [anntzer]
+
+2.9.0 (2015-07-01)
 ------------------
 
 - Added test for GimpPaletteFile #1324
