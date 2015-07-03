@@ -20,7 +20,10 @@ class TestFilePcx(PillowTestCase):
             self._roundtrip(hopper(mode))
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: PcxImagePlugin.PcxImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: PcxImagePlugin.PcxImageFile(invalid_file))
 
     def test_odd(self):
         # see issue #523, odd sized images should have a stride that's even.

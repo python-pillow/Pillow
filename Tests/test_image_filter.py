@@ -89,7 +89,7 @@ class TestImageFilter(PillowTestCase):
         self.assertEqual(rankfilter("F"), (0.0, 4.0, 8.0))
 
     def test_rankfilter_properties(self):
-        rankfilter = ImageFilter.RankFilter(1,2)
+        rankfilter = ImageFilter.RankFilter(1, 2)
 
         self.assertEqual(rankfilter.size, 1)
         self.assertEqual(rankfilter.rank, 2)

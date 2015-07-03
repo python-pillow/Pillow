@@ -17,7 +17,10 @@ class TestImagePsd(PillowTestCase):
         self.assertEqual(im.format, "PSD")
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: PsdImagePlugin.PsdImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: PsdImagePlugin.PsdImageFile(invalid_file))
 
     def test_n_frames(self):
         im = Image.open("Tests/images/hopper_merged.psd")

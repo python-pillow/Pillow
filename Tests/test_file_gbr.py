@@ -6,7 +6,10 @@ from PIL import GbrImagePlugin
 class TestFileGbr(PillowTestCase):
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: GbrImagePlugin.GbrImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: GbrImagePlugin.GbrImageFile(invalid_file))
 
 
 if __name__ == '__main__':

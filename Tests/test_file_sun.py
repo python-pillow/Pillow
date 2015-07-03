@@ -16,7 +16,9 @@ class TestFileSun(PillowTestCase):
         # Assert
         self.assertEqual(im.size, (128, 128))
 
-        self.assertRaises(SyntaxError, lambda: SunImagePlugin.SunImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+        self.assertRaises(SyntaxError,
+                          lambda: SunImagePlugin.SunImageFile(invalid_file))
 
 
 if __name__ == '__main__':

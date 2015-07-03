@@ -27,7 +27,8 @@ class TestFileBmp(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError, lambda: BmpImagePlugin.BmpImageFile(fp))
+            self.assertRaises(SyntaxError,
+                              lambda: BmpImagePlugin.BmpImageFile(fp))
 
     def test_save_to_bytes(self):
         output = io.BytesIO()

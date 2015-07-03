@@ -6,7 +6,11 @@ from PIL import GribStubImagePlugin
 class TestFileGribStub(PillowTestCase):
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: GribStubImagePlugin.GribStubImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda:
+                          GribStubImagePlugin.GribStubImageFile(invalid_file))
 
 
 if __name__ == '__main__':

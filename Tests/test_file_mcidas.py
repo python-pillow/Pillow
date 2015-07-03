@@ -6,7 +6,11 @@ from PIL import McIdasImagePlugin
 class TestFileMcIdas(PillowTestCase):
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: McIdasImagePlugin.McIdasImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda:
+                          McIdasImagePlugin.McIdasImageFile(invalid_file))
 
 
 if __name__ == '__main__':

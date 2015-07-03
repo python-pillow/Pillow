@@ -6,7 +6,11 @@ from PIL import FitsStubImagePlugin
 class TestFileFitsStub(PillowTestCase):
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: FitsStubImagePlugin.FITSStubImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda:
+                          FitsStubImagePlugin.FITSStubImageFile(invalid_file))
 
 
 if __name__ == '__main__':

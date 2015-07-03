@@ -52,7 +52,10 @@ class TestFileEps(PillowTestCase):
         self.assertEqual(image2_scale2.format, "EPS")
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: EpsImagePlugin.EpsImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: EpsImagePlugin.EpsImageFile(invalid_file))
 
     def test_file_object(self):
         # issue 479
@@ -152,7 +155,9 @@ class TestFileEps(PillowTestCase):
         Image.open(file3)
 
     def _test_readline(self, t, ending):
-        ending = "Failure with line ending: %s" % ("".join("%s" % ord(s) for s in ending))
+        ending = "Failure with line ending: %s" % ("".join(
+                                                   "%s" % ord(s)
+                                                   for s in ending))
         self.assertEqual(t.readline().strip('\r\n'), 'something', ending)
         self.assertEqual(t.readline().strip('\r\n'), 'else', ending)
         self.assertEqual(t.readline().strip('\r\n'), 'baz', ending)

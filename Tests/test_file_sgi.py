@@ -33,7 +33,11 @@ class TestFileSgi(PillowTestCase):
         self.assertRaises(ValueError, lambda: Image.open(test_file))
 
     def test_invalid_file(self):
-        self.assertRaises(ValueError, lambda: SgiImagePlugin.SgiImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(ValueError,
+                          lambda:
+                          SgiImagePlugin.SgiImageFile(invalid_file))
 
 
 if __name__ == '__main__':

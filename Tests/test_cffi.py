@@ -74,7 +74,7 @@ class TestCffi(PillowTestCase):
         self._test_get_access(hopper('LA'))
         self._test_get_access(hopper('1'))
         self._test_get_access(hopper('P'))
-        # self._test_get_access(hopper('PA')) # PA   -- how do I make a PA image?
+        # self._test_get_access(hopper('PA')) # PA -- how do I make a PA image?
         self._test_get_access(hopper('F'))
 
         im = Image.new('I;16', (10, 10), 40000)

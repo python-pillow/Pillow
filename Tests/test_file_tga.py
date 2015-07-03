@@ -30,7 +30,7 @@ class TestFileTga(PillowTestCase):
         im.convert("RGBA").save(test_file)
         test_im = Image.open(test_file)
         self.assertEqual(test_im.size, (100, 100))
-        
+
         # Unsupported mode save
         self.assertRaises(IOError, lambda: im.convert("LA").save(test_file))
 

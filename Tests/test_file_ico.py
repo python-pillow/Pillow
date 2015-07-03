@@ -19,7 +19,8 @@ class TestFileIco(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError, lambda: IcoImagePlugin.IcoImageFile(fp))
+            self.assertRaises(SyntaxError,
+                              lambda: IcoImagePlugin.IcoImageFile(fp))
 
     def test_save_to_bytes(self):
         output = io.BytesIO()
@@ -34,7 +35,8 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(im.mode, reloaded.mode)
         self.assertEqual((64, 64), reloaded.size)
         self.assertEqual(reloaded.format, "ICO")
-        self.assert_image_equal(reloaded, hopper().resize((64, 64), Image.LANCZOS))
+        self.assert_image_equal(reloaded,
+                                hopper().resize((64, 64), Image.LANCZOS))
 
         # the other one
         output.seek(0)
@@ -44,7 +46,8 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(im.mode, reloaded.mode)
         self.assertEqual((32, 32), reloaded.size)
         self.assertEqual(reloaded.format, "ICO")
-        self.assert_image_equal(reloaded, hopper().resize((32, 32), Image.LANCZOS))
+        self.assert_image_equal(reloaded,
+                                hopper().resize((32, 32), Image.LANCZOS))
 
 
 if __name__ == '__main__':

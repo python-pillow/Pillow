@@ -40,7 +40,11 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertEqual(im.format, 'JPEG2000')
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: Jpeg2KImagePlugin.Jpeg2KImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda:
+                          Jpeg2KImagePlugin.Jpeg2KImageFile(invalid_file))
 
     def test_bytesio(self):
         with open('Tests/images/test-card-lossless.jp2', 'rb') as f:

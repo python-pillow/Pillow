@@ -86,7 +86,8 @@ class TestFileTiff(PillowTestCase):
         try:
             Image.open('Tests/images/hopper_bad_exif.jpg')._getexif()
         except struct.error:
-            self.fail("Bad EXIF data should not pass incorrect values to _binary unpack")
+            self.fail(
+                 "Bad EXIF data passed incorrect values to _binary unpack")
 
     def test_little_endian(self):
         im = Image.open('Tests/images/16bit.cropped.tif')

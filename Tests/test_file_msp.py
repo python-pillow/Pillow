@@ -19,7 +19,10 @@ class TestFileMsp(PillowTestCase):
         self.assertEqual(im.format, "MSP")
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: MspImagePlugin.MspImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: MspImagePlugin.MspImageFile(invalid_file))
 
     def test_open(self):
         # Arrange

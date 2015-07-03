@@ -82,7 +82,10 @@ class TestFilePng(PillowTestCase):
         im = Image.open(test_file)
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: PngImagePlugin.PngImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: PngImagePlugin.PngImageFile(invalid_file))
 
     def test_broken(self):
         # Check reading of totally broken files.  In this case, the test

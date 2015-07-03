@@ -19,7 +19,10 @@ class TestFileXpm(PillowTestCase):
         self.assert_image_similar(im.convert('RGB'), hopper('RGB'), 60)
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: XpmImagePlugin.XpmImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: XpmImagePlugin.XpmImageFile(invalid_file))
 
     def test_load_read(self):
         # Arrange

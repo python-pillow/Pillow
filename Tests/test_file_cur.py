@@ -21,7 +21,10 @@ class TestFileCur(PillowTestCase):
         self.assertEqual(im.getpixel((16, 16)), (84, 87, 86, 255))
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: CurImagePlugin.CurImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: CurImagePlugin.CurImageFile(invalid_file))
 
 
 if __name__ == '__main__':

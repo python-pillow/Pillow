@@ -42,7 +42,8 @@ class TestPngDos(PillowTestCase):
         total_len = 0
         for txt in im2.text.values():
             total_len += len(txt)
-        self.assertLess(total_len, 64*1024*1024, "Total text chunks greater than 64M")
+        self.assertLess(total_len, 64*1024*1024,
+                        "Total text chunks greater than 64M")
 
 if __name__ == '__main__':
     unittest.main()

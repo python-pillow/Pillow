@@ -19,7 +19,10 @@ class TestFileFli(PillowTestCase):
         self.assertEqual(im.format, "FLI")
 
     def test_invalid_file(self):
-        self.assertRaises(SyntaxError, lambda: FliImagePlugin.FliImageFile("Tests/images/flower.jpg"))
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: FliImagePlugin.FliImageFile(invalid_file))
 
     def test_n_frames(self):
         im = Image.open(test_file)
