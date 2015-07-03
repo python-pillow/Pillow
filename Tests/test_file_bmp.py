@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
+from PIL import Image, BmpImagePlugin
 import io
 
 
@@ -24,6 +24,11 @@ class TestFileBmp(PillowTestCase):
         self.roundtrip(hopper("L"))
         self.roundtrip(hopper("P"))
         self.roundtrip(hopper("RGB"))
+
+    def test_invalid_file(self):
+        with open("Tests/images/flower.jpg", "rb") as fp:
+            self.assertRaises(SyntaxError,
+                              lambda: BmpImagePlugin.BmpImageFile(fp))
 
     def test_save_to_bytes(self):
         output = io.BytesIO()

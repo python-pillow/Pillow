@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
+from PIL import Image, ImImagePlugin
 
 # sample im
 TEST_IM = "Tests/images/hopper.im"
@@ -39,6 +39,13 @@ class TestFileIm(PillowTestCase):
         reread = Image.open(out)
 
         self.assert_image_equal(reread, im)
+
+    def test_invalid_file(self):
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: ImImagePlugin.ImImageFile(invalid_file))
+
 
 if __name__ == '__main__':
     unittest.main()
