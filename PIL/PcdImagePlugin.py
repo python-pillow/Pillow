@@ -55,6 +55,6 @@ class PcdImageFile(ImageFile.ImageFile):
 #
 # registry
 
-Image.register_open("PCD", PcdImageFile)
+Image.register_open(PcdImageFile.format, PcdImageFile)
 
-Image.register_extension("PCD", ".pcd")
+Image.register_extension(PcdImageFile.format, ".pcd")

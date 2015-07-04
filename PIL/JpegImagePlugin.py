@@ -728,12 +728,12 @@ def jpeg_factory(fp=None, filename=None):
 # -------------------------------------------------------------------q-
 # Registry stuff
 
-Image.register_open("JPEG", jpeg_factory, _accept)
-Image.register_save("JPEG", _save)
+Image.register_open(JpegImageFile.format, jpeg_factory, _accept)
+Image.register_save(JpegImageFile.format, _save)
 
-Image.register_extension("JPEG", ".jfif")
-Image.register_extension("JPEG", ".jpe")
-Image.register_extension("JPEG", ".jpg")
-Image.register_extension("JPEG", ".jpeg")
+Image.register_extension(JpegImageFile.format, ".jfif")
+Image.register_extension(JpegImageFile.format, ".jpe")
+Image.register_extension(JpegImageFile.format, ".jpg")
+Image.register_extension(JpegImageFile.format, ".jpeg")
 
-Image.register_mime("JPEG", "image/jpeg")
+Image.register_mime(JpegImageFile.format, "image/jpeg")

@@ -285,8 +285,8 @@ def _save_spider(im, fp, filename):
 
 # --------------------------------------------------------------------
 
-Image.register_open("SPIDER", SpiderImageFile)
-Image.register_save("SPIDER", _save_spider)
+Image.register_open(SpiderImageFile.format, SpiderImageFile)
+Image.register_save(SpiderImageFile.format, _save_spider)
 
 if __name__ == "__main__":
 

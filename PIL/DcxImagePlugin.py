@@ -82,6 +82,6 @@ class DcxImageFile(PcxImageFile):
         return self.frame
 
 
-Image.register_open("DCX", DcxImageFile, _accept)
+Image.register_open(DcxImageFile.format, DcxImageFile, _accept)
 
-Image.register_extension("DCX", ".dcx")
+Image.register_extension(DcxImageFile.format, ".dcx")

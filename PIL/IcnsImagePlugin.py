@@ -345,13 +345,14 @@ def _save(im, fp, filename):
     if retcode:
         raise CalledProcessError(retcode, convert_cmd)
 
-Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == b'icns')
-Image.register_extension("ICNS", '.icns')
+Image.register_open(IcnsImageFile.format, IcnsImageFile,
+                    lambda x: x[:4] == b'icns')
+Image.register_extension(IcnsImageFile.format, '.icns')
 
 if sys.platform == 'darwin':
-    Image.register_save("ICNS", _save)
+    Image.register_save(IcnsImageFile.format, _save)
 
-    Image.register_mime("ICNS", "image/icns")
+    Image.register_mime(IcnsImageFile.format, "image/icns")
 
 
 if __name__ == '__main__':

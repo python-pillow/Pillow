@@ -184,9 +184,9 @@ class IptcImageFile(ImageFile.ImageFile):
                 pass
 
 
-Image.register_open("IPTC", IptcImageFile)
+Image.register_open(IptcImageFile.format, IptcImageFile)
 
-Image.register_extension("IPTC", ".iim")
+Image.register_extension(IptcImageFile.format, ".iim")
 
 
 ##

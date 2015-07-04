@@ -164,9 +164,9 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("PPM", PpmImageFile, _accept)
-Image.register_save("PPM", _save)
+Image.register_open(PpmImageFile.format, PpmImageFile, _accept)
+Image.register_save(PpmImageFile.format, _save)
 
-Image.register_extension("PPM", ".pbm")
-Image.register_extension("PPM", ".pgm")
-Image.register_extension("PPM", ".ppm")
+Image.register_extension(PpmImageFile.format, ".pbm")
+Image.register_extension(PpmImageFile.format, ".pgm")
+Image.register_extension(PpmImageFile.format, ".ppm")

@@ -78,6 +78,6 @@ class SunImageFile(ImageFile.ImageFile):
 #
 # registry
 
-Image.register_open("SUN", SunImageFile, _accept)
+Image.register_open(SunImageFile.format, SunImageFile, _accept)
 
-Image.register_extension("SUN", ".ras")
+Image.register_extension(SunImageFile.format, ".ras")

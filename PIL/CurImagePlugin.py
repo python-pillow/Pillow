@@ -82,6 +82,6 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("CUR", CurImageFile, _accept)
+Image.register_open(CurImageFile.format, CurImageFile, _accept)
 
-Image.register_extension("CUR", ".cur")
+Image.register_extension(CurImageFile.format, ".cur")

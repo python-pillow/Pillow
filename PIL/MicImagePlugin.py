@@ -99,6 +99,6 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("MIC", MicImageFile, _accept)
+Image.register_open(MicImageFile.format, MicImageFile, _accept)
 
-Image.register_extension("MIC", ".mic")
+Image.register_extension(MicImageFile.format, ".mic")

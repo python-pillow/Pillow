@@ -278,6 +278,6 @@ class IcoImageFile(ImageFile.ImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("ICO", IcoImageFile, _accept)
-Image.register_save("ICO", _save)
-Image.register_extension("ICO", ".ico")
+Image.register_open(IcoImageFile.format, IcoImageFile, _accept)
+Image.register_save(IcoImageFile.format, _save)
+Image.register_extension(IcoImageFile.format, ".ico")

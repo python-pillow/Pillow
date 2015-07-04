@@ -803,9 +803,9 @@ def getchunks(im, **params):
 # --------------------------------------------------------------------
 # Registry
 
-Image.register_open("PNG", PngImageFile, _accept)
-Image.register_save("PNG", _save)
+Image.register_open(PngImageFile.format, PngImageFile, _accept)
+Image.register_save(PngImageFile.format, _save)
 
-Image.register_extension("PNG", ".png")
+Image.register_extension(PngImageFile.format, ".png")
 
-Image.register_mime("PNG", "image/png")
+Image.register_mime(PngImageFile.format, "image/png")

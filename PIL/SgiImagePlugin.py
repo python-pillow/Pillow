@@ -81,11 +81,11 @@ class SgiImageFile(ImageFile.ImageFile):
 #
 # registry
 
-Image.register_open("SGI", SgiImageFile, _accept)
+Image.register_open(SgiImageFile.format, SgiImageFile, _accept)
 
-Image.register_extension("SGI", ".bw")
-Image.register_extension("SGI", ".rgb")
-Image.register_extension("SGI", ".rgba")
-Image.register_extension("SGI", ".sgi")
+Image.register_extension(SgiImageFile.format, ".bw")
+Image.register_extension(SgiImageFile.format, ".rgb")
+Image.register_extension(SgiImageFile.format, ".rgba")
+Image.register_extension(SgiImageFile.format, ".sgi")
 
 # End of file
