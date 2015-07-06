@@ -7,9 +7,9 @@ Released quarterly on the first day of January, April, July, October.
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174
 * [ ] Develop and prepare release in ``master`` branch.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
-* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in: 
+* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
 ```
-    PIL/__init__.py setup.py _imaging.c
+    PIL/__init__.py setup.py _imaging.c appveyor.yml
 ```
 * [ ] Update `CHANGES.rst`.
 * [ ] Run pre-release check via `make pre`.
@@ -32,14 +32,14 @@ Released quarterly on the first day of January, April, July, October.
 Released as needed for security, installation or critical bug fixes.
 
 * [ ] Make necessary changes in ``master`` branch.
-* [ ] Update `CHANGES.rst`. 
+* [ ] Update `CHANGES.rst`.
 * [ ] Cherry pick individual commits from ``master`` branch to release branch e.g. ``2.9.x``.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in release branch e.g. ``2.9.x``.
 * [ ] Checkout release branch e.g.:
 ```
     git checkout -t remotes/origin/2.9.x
 ```
-* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in: 
+* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
 ```
     PIL/__init__.py setup.py _imaging.c
 ```
