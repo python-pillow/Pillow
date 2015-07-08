@@ -468,7 +468,7 @@ class pil_build_ext(build_ext):
                     feature.lcms = "lcms2_static"
 
         if _tkinter and _find_include_file(self, "tk.h"):
-            # the library names may vary somewhat (e.g. tcl84 or tcl8.4)
+            # the library names may vary somewhat (e.g. tcl85 or tcl8.5)
             version = TCL_VERSION[0] + TCL_VERSION[2]
             if feature.want('tcl'):
                 if _find_library_file(self, "tcl" + version):
