@@ -571,32 +571,33 @@ class pil_build_ext(build_ext):
             exts.append(Extension(
                 "PIL._webp", ["_webp.c"], libraries=libs, define_macros=defs))
 
-        if sys.platform == "darwin":
-            # locate Tcl/Tk frameworks
-            frameworks = []
-            framework_roots = [
-                "/Library/Frameworks",
-                "/System/Library/Frameworks"]
-            for root in framework_roots:
-                if (
-                        os.path.exists(os.path.join(root, "Tcl.framework")) and
-                        os.path.exists(os.path.join(root, "Tk.framework"))):
-                    print("--- using frameworks at %s" % root)
-                    frameworks = ["-framework", "Tcl", "-framework", "Tk"]
-                    dir = os.path.join(root, "Tcl.framework", "Headers")
-                    _add_directory(self.compiler.include_dirs, dir, 0)
-                    dir = os.path.join(root, "Tk.framework", "Headers")
-                    _add_directory(self.compiler.include_dirs, dir, 1)
-                    break
-            if frameworks:
+        if feature.tcl and feature.tk:
+            if sys.platform == "darwin":
+                # locate Tcl/Tk frameworks
+                frameworks = []
+                framework_roots = [
+                    "/Library/Frameworks",
+                    "/System/Library/Frameworks"]
+                for root in framework_roots:
+                    root_tcl = os.path.join(root, "Tcl.framework")
+                    root_tk = os.path.join(root, "Tk.framework")
+                    if (os.path.exists(root_tcl) and os.path.exists(root_tk)):
+                        print("--- using frameworks at %s" % root)
+                        frameworks = ["-framework", "Tcl", "-framework", "Tk"]
+                        dir = os.path.join(root_tcl, "Headers")
+                        _add_directory(self.compiler.include_dirs, dir, 0)
+                        dir = os.path.join(root_tk, "Headers")
+                        _add_directory(self.compiler.include_dirs, dir, 1)
+                        break
+                if frameworks:
+                    exts.append(Extension(
+                        "PIL._imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
+                        extra_compile_args=frameworks,
+                        extra_link_args=frameworks))
+            else:
                 exts.append(Extension(
                     "PIL._imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
-                    extra_compile_args=frameworks, extra_link_args=frameworks))
-                feature.tcl = feature.tk = 1  # mark as present
-        elif feature.tcl and feature.tk:
-            exts.append(Extension(
-                "PIL._imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
-                libraries=[feature.tcl, feature.tk]))
+                    libraries=[feature.tcl, feature.tk]))
 
         if os.path.isfile("_imagingmath.c"):
             exts.append(Extension("PIL._imagingmath", ["_imagingmath.c"]))
