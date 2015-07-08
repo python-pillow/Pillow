@@ -464,7 +464,7 @@ class pil_build_ext(build_ext):
                 if _find_library_file(self, "lcms2"):
                     feature.lcms = "lcms2"
                 elif _find_library_file(self, "lcms2_static"):
-                    #alternate Windows name.
+                    # alternate Windows name.
                     feature.lcms = "lcms2_static"
 
         if _tkinter and _find_include_file(self, "tk.h"):
