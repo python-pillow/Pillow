@@ -88,11 +88,6 @@ try:
                 self._render(f)
             self._clean()
 
-        def test_font_old_parameters(self):
-            self.assert_warning(
-                DeprecationWarning,
-                lambda: ImageFont.truetype(filename=FONT_PATH, size=FONT_SIZE))
-
         def _render(self, font):
             txt = "Hello World!"
             ttf = ImageFont.truetype(font, FONT_SIZE)
