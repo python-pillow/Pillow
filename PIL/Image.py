@@ -2265,7 +2265,7 @@ def open(fp, mode="r"):
     :py:meth:`~PIL.Image.Image.load` method).  See
     :py:func:`~PIL.Image.new`.
 
-    :param file: A filename (string) or a file object.  The file object
+    :param fp: A filename (string) or a file object.  The file object
        must implement :py:meth:`~file.read`, :py:meth:`~file.seek`, and
        :py:meth:`~file.tell` methods, and be opened in binary mode.
     :param mode: The mode.  If given, this argument must be "r".
