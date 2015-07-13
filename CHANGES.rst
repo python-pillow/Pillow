@@ -4,7 +4,7 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
-- Added various tests #1330
+- Added various tests #1330, #1344
   [radarhere]
   
 - More ImageFont tests #1327
