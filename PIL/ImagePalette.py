@@ -68,7 +68,6 @@ class ImagePalette(object):
             return self.palette
         arr = array.array("B", self.palette)
         if hasattr(arr, 'tobytes'):
-            # py3k has a tobytes, tostring is deprecated.
             return arr.tobytes()
         return arr.tostring()
 
