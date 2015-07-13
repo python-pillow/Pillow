@@ -44,14 +44,6 @@ class TestImageDraw(PillowTestCase):
         draw.polygon(list(range(100)))
         draw.rectangle(list(range(4)))
 
-    def test_deprecated(self):
-        im = hopper().copy()
-
-        draw = ImageDraw.Draw(im)
-
-        self.assert_warning(DeprecationWarning, lambda: draw.setink(0))
-        self.assert_warning(DeprecationWarning, lambda: draw.setfill(0))
-
     def test_mode_mismatch(self):
         im = hopper("RGB").copy()
 

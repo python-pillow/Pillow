@@ -278,21 +278,6 @@ these methods. Do not mix the old and new calling conventions.
 
     :rtype: :py:class:`~PIL.ImageDraw.Draw`
 
-.. py:method:: PIL.ImageDraw.Draw.setink(ink)
-
-    .. deprecated:: 1.1.5
-
-    Sets the color to use for subsequent draw and fill operations.
-
-.. py:method:: PIL.ImageDraw.Draw.setfill(fill)
-
-    .. deprecated:: 1.1.5
-
-    Sets the fill mode.
-
-    If the mode is 0, subsequently drawn shapes (like polygons and rectangles)
-    are outlined. If the mode is 1, they are filled.
-
 .. py:method:: PIL.ImageDraw.Draw.setfont(font)
 
     .. deprecated:: 1.1.5
