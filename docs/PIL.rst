@@ -64,15 +64,6 @@ can be found here.
 
 .. intentionally skipped documenting this because it's deprecated
 
-:mod:`ImageFileIO` Module
--------------------------
-
-.. automodule:: PIL.ImageFileIO
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 :mod:`ImageShow` Module
 -----------------------
 
