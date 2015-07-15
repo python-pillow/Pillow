@@ -243,8 +243,7 @@ Methods
     Draws the string at the given position.
 
     :param xy: Top left corner of the text.
-    :param text: Text to be drawn. If it contains any newline characters,
-                 the text is split and passed on to mulitiline_text()
+    :param text: Text to be drawn.
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
@@ -262,8 +261,7 @@ Methods
 
     Return the size of the given string, in pixels.
 
-    :param text: Text to be measured. If it contains any newline characters,
-                 the text is split and passed on to mulitiline_textsize()
+    :param text: Text to be measured.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
 
