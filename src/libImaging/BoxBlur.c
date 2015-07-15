@@ -1,58 +1,74 @@
 #include "Python.h"
 #include "Imaging.h"
+#include <emmintrin.h>
+#include <mmintrin.h>
+#include <smmintrin.h>
 
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 
-typedef UINT8 pixel[4];
-
 void static inline
-ImagingLineBoxBlur32(pixel *lineOut, pixel *lineIn, int lastx, int radius, int edgeA,
+ImagingLineBoxBlur32(UINT32 *lineOut, UINT32 *lineIn, int lastx, int radius, int edgeA,
     int edgeB, UINT32 ww, UINT32 fw)
 {
     int x;
-    UINT32 acc[4];
-    UINT32 bulk[4];
+    __m128i acc;
+    __m128i bulk;
+    __m128i wws = _mm_set1_epi32(ww);
+    __m128i fws = _mm_set1_epi32(fw);
+    __m128i b23 = _mm_set1_epi32(1 << 23);
+    __m128i shiftmask = _mm_set_epi8(0,0,0,0,0,0,0,0,0,0,0,0,3,7,11,15);    
+    
+
+    // #define MOVE_ACC(acc, subtract, add)
+    //     acc[0] += lineIn[add][0] - lineIn[subtract][0];
 
     #define MOVE_ACC(acc, subtract, add) \
-        acc[0] += lineIn[add][0] - lineIn[subtract][0]; \
-        acc[1] += lineIn[add][1] - lineIn[subtract][1]; \
-        acc[2] += lineIn[add][2] - lineIn[subtract][2]; \
-        acc[3] += lineIn[add][3] - lineIn[subtract][3];
+        __m128i tmp1 = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[add])); \
+        __m128i tmp2 = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[subtract])); \
+        acc = _mm_sub_epi32(_mm_add_epi32(acc, tmp1), tmp2);
+
+    // #define ADD_FAR(bulk, acc, left, right)
+    //     bulk[0] = (acc[0] * ww) + (lineIn[left][0] + lineIn[right][0]) * fw;
 
     #define ADD_FAR(bulk, acc, left, right) \
-        bulk[0] = (acc[0] * ww) + (lineIn[left][0] + lineIn[right][0]) * fw; \
-        bulk[1] = (acc[1] * ww) + (lineIn[left][1] + lineIn[right][1]) * fw; \
-        bulk[2] = (acc[2] * ww) + (lineIn[left][2] + lineIn[right][2]) * fw; \
-        bulk[3] = (acc[3] * ww) + (lineIn[left][3] + lineIn[right][3]) * fw;
+        __m128i tmp3 = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[left])); \
+        __m128i tmp4 = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[right])); \
+        __m128i tmp5 = _mm_mullo_epi32(_mm_add_epi32(tmp3, tmp4), fws); \
+        __m128i tmp6 = _mm_mullo_epi32(acc, wws); \
+        bulk = _mm_add_epi32(tmp5, tmp6);
+
+    // #define SAVE(x, bulk)
+    //    lineOut[x][0] = (UINT8)((bulk[0] + (1 << 23)) >> 24);
 
     #define SAVE(x, bulk) \
-        lineOut[x][0] = (UINT8)((bulk[0] + (1 << 23)) >> 24); \
-        lineOut[x][1] = (UINT8)((bulk[1] + (1 << 23)) >> 24); \
-        lineOut[x][2] = (UINT8)((bulk[2] + (1 << 23)) >> 24); \
-        lineOut[x][3] = (UINT8)((bulk[3] + (1 << 23)) >> 24);
+        lineOut[x] = _mm_cvtsi128_si32( \
+            _mm_shuffle_epi8(_mm_add_epi32(bulk, b23), shiftmask) \
+        )
 
     /* Compute acc for -1 pixel (outside of image):
        From "-radius-1" to "-1" get first pixel,
        then from "0" to "radius-1". */
-    acc[0] = lineIn[0][0] * (radius + 1);
-    acc[1] = lineIn[0][1] * (radius + 1);
-    acc[2] = lineIn[0][2] * (radius + 1);
-    acc[3] = lineIn[0][3] * (radius + 1);
+    // acc[0] = lineIn[0][0] * (radius + 1);
+    acc = _mm_mullo_epi32(
+        _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[0])),
+        _mm_set1_epi32(radius + 1)
+    );
+
     /* As radius can be bigger than xsize, iterate to edgeA -1. */
     for (x = 0; x < edgeA - 1; x++) {
-        acc[0] += lineIn[x][0];
-        acc[1] += lineIn[x][1];
-        acc[2] += lineIn[x][2];
-        acc[3] += lineIn[x][3];
+        // acc[0] += lineIn[x][0];
+        acc = _mm_add_epi32(acc, _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[x])));
     }
     /* Then multiply remainder to last x. */
-    acc[0] += lineIn[lastx][0] * (radius - edgeA + 1);
-    acc[1] += lineIn[lastx][1] * (radius - edgeA + 1);
-    acc[2] += lineIn[lastx][2] * (radius - edgeA + 1);
-    acc[3] += lineIn[lastx][3] * (radius - edgeA + 1);
+    // acc[0] += lineIn[lastx][0] * (radius - edgeA + 1);
+    acc = _mm_add_epi32(acc, _mm_mullo_epi32(
+        _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[x])),
+        _mm_set1_epi32(radius - edgeA + 1)
+    ));
+
 
     if (edgeA <= edgeB)
     {
@@ -212,8 +228,8 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius)
     {
         for (y = 0; y < imIn->ysize; y++) {
             ImagingLineBoxBlur32(
-                imIn == imOut ? (pixel *) lineOut : (pixel *) imOut->image32[y],
-                (pixel *) imIn->image32[y],
+                imIn == imOut ? (UINT32 *) lineOut : (UINT32 *) imOut->image32[y],
+                (UINT32 *) imIn->image32[y],
                 imIn->xsize - 1,
                 radius, edgeA, edgeB,
                 ww, fw
