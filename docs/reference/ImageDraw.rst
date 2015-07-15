@@ -234,8 +234,9 @@ Methods
     :param xy: Top left corner of the text.
     :param text: Text to be drawn. If it contains any newline characters,
                  the text is passed on to mulitiline_text()
-    :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param fill: Color to use for the text.
+    :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
+
 
 .. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left")
 
@@ -244,6 +245,7 @@ Methods
     :param xy: Top left corner of the text.
     :param text: Text to be drawn. If it contains any newline characters,
                  the text is split and passed on to mulitiline_text()
+    :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
     :param align: "left", "center" or "right".
