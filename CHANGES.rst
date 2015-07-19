@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Treat MPO with unknown header as base JPEG file #1350
+  [hugovk, radarhere]
+
 - Added various tests #1330, #1344
   [radarhere]
   
