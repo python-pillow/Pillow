@@ -37,6 +37,7 @@ __version__ = "0.6"
 import array
 import struct
 import io
+import warnings
 from struct import unpack
 from PIL import Image, ImageFile, TiffImagePlugin, _binary
 from PIL.JpegPresets import presets
@@ -713,14 +714,18 @@ def _save_cjpeg(im, fp, filename):
 # Factory for making JPEG and MPO instances
 def jpeg_factory(fp=None, filename=None):
     im = JpegImageFile(fp, filename)
-    mpheader = im._getmp()
     try:
+        mpheader = im._getmp()
         if mpheader[45057] > 1:
             # It's actually an MPO
             from .MpoImagePlugin import MpoImageFile
             im = MpoImageFile(fp, filename)
     except (TypeError, IndexError):
         # It is really a JPEG
+        pass
+    except SyntaxError:
+        warnings.warn("Image appears to be a malformed MPO file, it will be "
+                      "interpreted as a base JPEG file")
         pass
     return im
 
