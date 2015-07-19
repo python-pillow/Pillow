@@ -353,6 +353,17 @@ class TestFileJpeg(PillowTestCase):
         reloaded.save(f, quality='keep', progressive=True)
         reloaded.save(f, quality='keep', optimize=True)
 
+    def test_bad_mpo_header(self):
+        """ Treat unknown MPO as JPEG """
+        # Arrange
+
+        # Act
+        # Shouldn't raise error
+        im = Image.open("Tests/images/sugarshack_bad_mpo_header.jpg")
+
+        # Assert
+        self.assertEqual(im.format, "JPEG")
+
 
 if __name__ == '__main__':
     unittest.main()
