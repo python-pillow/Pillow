@@ -93,7 +93,7 @@ class TestFileGif(PillowTestCase):
         im.save(out, save_all=True)
         reread = Image.open(out)
 
-        self.assertEqual(im.n_frames, 5)
+        self.assertEqual(reread.n_frames, 5)
 
     def test_palette_handling(self):
         # see https://github.com/python-pillow/Pillow/issues/513
