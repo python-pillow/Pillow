@@ -95,6 +95,21 @@ class TestFileGif(PillowTestCase):
 
         self.assertEqual(reread.n_frames, 5)
 
+    def test_headers_saving_for_animated_gifs(self):
+        important_headers = ['background', 'version', 'transparency', 'duration', 'loop']
+        # Multiframe image
+        im = Image.open("Tests/images/dispose_bgnd.gif")
+
+        out = self.tempfile('temp.gif')
+        im.save(out, save_all=True)
+        reread = Image.open(out)
+
+        for header in important_headers:
+            self.assertEqual(
+                im.info[header],
+                reread.info[header]
+            )
+
     def test_palette_handling(self):
         # see https://github.com/python-pillow/Pillow/issues/513
 
