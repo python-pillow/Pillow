@@ -1,5 +1,4 @@
-version: 2.9.pre.{build}
-shallow_clone: true
+version: 3.0.pre.{build}
 clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%
@@ -25,3 +24,5 @@ test_script:
 - cd c:\pillow
 - '%PYTHON%\Scripts\pip.exe install nose'
 - '%PYTHON%\python.exe test-installed.py'
+matrix:
+  fast_finish: true

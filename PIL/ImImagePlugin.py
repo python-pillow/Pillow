@@ -264,6 +264,10 @@ class ImImageFile(ImageFile.ImageFile):
     def n_frames(self):
         return self.info[FRAMES]
 
+    @property
+    def is_animated(self):
+        return self.info[FRAMES] > 1
+
     def seek(self, frame):
 
         if frame < 0 or frame >= self.info[FRAMES]:

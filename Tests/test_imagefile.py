@@ -93,6 +93,9 @@ class TestImageFile(PillowTestCase):
 
         self.assert_image_equal(im1, im2)
 
+    def test_raise_ioerror(self):
+        self.assertRaises(IOError, lambda: ImageFile.raise_ioerror(1))
+
 
 if __name__ == '__main__':
     unittest.main()

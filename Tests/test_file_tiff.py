@@ -1,9 +1,12 @@
 from __future__ import print_function
+import logging
+import struct
+
 from helper import unittest, PillowTestCase, hopper, py3
 
 from PIL import Image, TiffImagePlugin
 
-import struct
+logger = logging.getLogger(__name__)
 
 
 class TestFileTiff(PillowTestCase):
@@ -79,11 +82,25 @@ class TestFileTiff(PillowTestCase):
         im._setup()
         self.assertEqual(im.info['dpi'], (72., 72.))
 
+    def test_invalid_file(self):
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: TiffImagePlugin.TiffImageFile(invalid_file))
+
+
     def test_bad_exif(self):
         try:
             Image.open('Tests/images/hopper_bad_exif.jpg')._getexif()
         except struct.error:
-            self.fail("Bad EXIF data should not pass incorrect values to _binary unpack")
+            self.fail(
+                 "Bad EXIF data passed incorrect values to _binary unpack")
+
+    def test_save_unsupported_mode(self):
+        im = hopper("HSV")
+        outfile = self.tempfile("temp.tif")
+
+        self.assertRaises(IOError, lambda: im.save(outfile))
 
     def test_little_endian(self):
         im = Image.open('Tests/images/16bit.cropped.tif')
@@ -118,7 +135,6 @@ class TestFileTiff(PillowTestCase):
         """ Are we generating the same interpretation
         of the image as Imagemagick is? """
 
-        # Image.DEBUG = True
         im = Image.open('Tests/images/12bit.cropped.tif')
 
         # to make the target --
@@ -129,14 +145,8 @@ class TestFileTiff(PillowTestCase):
 
         im2 = Image.open('Tests/images/12in16bit.tif')
 
-        if Image.DEBUG:
-            print(im.getpixel((0, 0)))
-            print(im.getpixel((0, 1)))
-            print(im.getpixel((0, 2)))
-
-            print(im2.getpixel((0, 0)))
-            print(im2.getpixel((0, 1)))
-            print(im2.getpixel((0, 2)))
+        logger.debug("%s", [img.getpixel((0, idx))
+                            for img in [im, im2] for idx in range(3)])
 
         self.assert_image_equal(im, im2)
 
@@ -153,9 +163,23 @@ class TestFileTiff(PillowTestCase):
     def test_n_frames(self):
         im = Image.open('Tests/images/multipage-lastframe.tif')
         self.assertEqual(im.n_frames, 1)
+        self.assertFalse(im.is_animated)
 
         im = Image.open('Tests/images/multipage.tiff')
         self.assertEqual(im.n_frames, 3)
+        self.assertTrue(im.is_animated)
+
+    def test_eoferror(self):
+        im = Image.open('Tests/images/multipage-lastframe.tif')
+
+        n_frames = im.n_frames
+        while True:
+            n_frames -= 1
+            try:
+                im.seek(n_frames)
+                break
+            except EOFError:
+                self.assertTrue(im.tell() < n_frames)
 
     def test_multipage(self):
         # issue #862

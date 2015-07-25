@@ -1,0 +1,12 @@
+GIMP Palette
+Name: badpaletteentry
+Columns: 4
+#
+  0   0   0     Index 3
+ 65  38
+103  62  49     Index 6
+ 79  73  72     Index 7
+114 101  97     Index 8
+208 127 100     Index 9
+151 144 142     Index 10
+221 207 199     Index 11

@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL import Image
+from PIL import Image, Jpeg2KImagePlugin
 from io import BytesIO
 
 codecs = dir(Image.core)
@@ -38,6 +38,13 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertEqual(im.mode, 'RGB')
         self.assertEqual(im.size, (640, 480))
         self.assertEqual(im.format, 'JPEG2000')
+
+    def test_invalid_file(self):
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda:
+                          Jpeg2KImagePlugin.Jpeg2KImageFile(invalid_file))
 
     def test_bytesio(self):
         with open('Tests/images/test-card-lossless.jp2', 'rb') as f:

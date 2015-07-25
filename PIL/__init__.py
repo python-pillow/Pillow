@@ -12,7 +12,7 @@
 # ;-)
 
 VERSION = '1.1.7'  # PIL version
-PILLOW_VERSION = '2.9.0.dev0'  # Pillow
+PILLOW_VERSION = '3.0.0.dev0'  # Pillow
 
 _plugins = ['BmpImagePlugin',
             'BufrStubImagePlugin',

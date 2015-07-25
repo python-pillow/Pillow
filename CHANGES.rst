@@ -1,8 +1,39 @@
 Changelog (Pillow)
 ==================
 
-2.9.0 (Unreleased)
+3.0.0 (Unreleased)
 ------------------
+
+- Treat MPO with unknown header as base JPEG file #1350
+  [hugovk, radarhere]
+
+- Added various tests #1330, #1344
+  [radarhere]
+  
+- More ImageFont tests #1327
+  [hugovk]
+
+- Use logging instead of print #1207
+  [anntzer]
+
+2.9.0 (2015-07-01)
+------------------
+
+- Added test for GimpPaletteFile #1324
+  [radarhere]
+
+- Fixed ValueError in Python 2.6 #1315 #1316
+  [cgohlke, radarhere]
+
+- Fixed tox test script path #1308
+  [radarhere]
+
+- Added width and height properties #1304
+  [radarhere]
+ 
+- Update tiff and tk tcl 8.5 versions #1303
+  [radarhere, wiredfool]
+ 
 - Add functions to convert: Image <-> QImage; Image <-> QPixmap #1217
   [radarhere, rominf]
 

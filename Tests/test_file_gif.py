@@ -25,6 +25,12 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "GIF")
 
+    def test_invalid_file(self):
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: GifImagePlugin.GifImageFile(invalid_file))
+
     def test_optimize(self):
         from io import BytesIO
 
@@ -70,6 +76,24 @@ class TestFileGif(PillowTestCase):
         reread = Image.open(out)
 
         self.assert_image_similar(reread.convert('RGB'), hopper(), 50)
+
+    def test_roundtrip_save_all(self):
+        # Single frame image
+        out = self.tempfile('temp.gif')
+        im = hopper()
+        im.save(out, save_all=True)
+        reread = Image.open(out)
+
+        self.assert_image_similar(reread.convert('RGB'), im, 50)
+
+        # Multiframe image
+        im = Image.open("Tests/images/dispose_bgnd.gif")
+
+        out = self.tempfile('temp.gif')
+        im.save(out, save_all=True)
+        reread = Image.open(out)
+
+        self.assertEqual(reread.n_frames, 5)
 
     def test_palette_handling(self):
         # see https://github.com/python-pillow/Pillow/issues/513
@@ -135,8 +159,25 @@ class TestFileGif(PillowTestCase):
             self.assertEqual(framecount, 5)
 
     def test_n_frames(self):
+        im = Image.open(TEST_GIF)
+        self.assertEqual(im.n_frames, 1)
+        self.assertFalse(im.is_animated)
+
         im = Image.open("Tests/images/iss634.gif")
-        self.assertEqual(im.n_frames, 43)
+        self.assertEqual(im.n_frames, 42)
+        self.assertTrue(im.is_animated)
+
+    def test_eoferror(self):
+        im = Image.open(TEST_GIF)
+
+        n_frames = im.n_frames
+        while True:
+            n_frames -= 1
+            try:
+                im.seek(n_frames)
+                break
+            except EOFError:
+                self.assertTrue(im.tell() < n_frames)
 
     def test_dispose_none(self):
         img = Image.open("Tests/images/dispose_none.gif")

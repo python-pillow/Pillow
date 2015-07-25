@@ -20,6 +20,7 @@ install:
   - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
   - "travis_retry pip install cffi"
   - "travis_retry pip install coverage nose"
+  - "travis_retry pip install check-manifest"
     # Pyroma tests sometimes hang on PyPy; skip for PyPy
   - if [ $TRAVIS_PYTHON_VERSION != "pypy" ]; then travis_retry pip install pyroma; fi
 
@@ -38,6 +39,7 @@ script:
 
   - coverage run --append --include=PIL/* selftest.py
   - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
+  - check-manifest --ignore "depends/*"
 
 after_success:
    # gather the coverage data

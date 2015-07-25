@@ -75,7 +75,9 @@ class TestImageOpsUsm(PillowTestCase):
                         (4, 3, 2), (4, 2, 2)]:
             self.assertGreaterEqual(i.im.getpixel((x, y))[c], 250)
         # Fuzzy match.
-        gp = lambda x, y: i.im.getpixel((x, y))
+
+        def gp(x, y):
+            return i.im.getpixel((x, y))
         self.assertTrue(236 <= gp(7, 4)[0] <= 239)
         self.assertTrue(236 <= gp(7, 5)[2] <= 239)
         self.assertTrue(236 <= gp(7, 6)[2] <= 239)

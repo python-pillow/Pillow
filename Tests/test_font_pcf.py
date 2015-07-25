@@ -30,6 +30,10 @@ class TestFontPcf(PillowTestCase):
     def test_sanity(self):
         self.save_font()
 
+    def test_invalid_file(self):
+        with open("Tests/images/flower.jpg", "rb") as fp:
+            self.assertRaises(SyntaxError, lambda: PcfFontFile.PcfFontFile(fp))
+
     def xtest_draw(self):
 
         tempname = self.save_font()

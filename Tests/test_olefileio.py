@@ -7,25 +7,20 @@ import PIL.OleFileIO as OleFileIO
 
 class TestOleFileIo(PillowTestCase):
 
-    def test_isOleFile_false(self):
-        # Arrange
-        non_ole_file = "Tests/images/flower.jpg"
-
-        # Act
-        is_ole = OleFileIO.isOleFile(non_ole_file)
-
-        # Assert
-        self.assertFalse(is_ole)
-
-    def test_isOleFile_true(self):
-        # Arrange
+    def test_isOleFile(self):
         ole_file = "Tests/images/test-ole-file.doc"
 
-        # Act
-        is_ole = OleFileIO.isOleFile(ole_file)
+        self.assertTrue(OleFileIO.isOleFile(ole_file))
+        with open(ole_file, 'rb') as fp:
+            self.assertTrue(OleFileIO.isOleFile(fp))
+            self.assertTrue(OleFileIO.isOleFile(fp.read()))
 
-        # Assert
-        self.assertTrue(is_ole)
+        non_ole_file = "Tests/images/flower.jpg"
+
+        self.assertFalse(OleFileIO.isOleFile(non_ole_file))
+        with open(non_ole_file, 'rb') as fp:
+            self.assertFalse(OleFileIO.isOleFile(fp))
+            self.assertFalse(OleFileIO.isOleFile(fp.read()))
 
     def test_exists_worddocument(self):
         # Arrange

@@ -30,9 +30,12 @@
 from PIL import Image
 from PIL._util import isPath
 import io
+import logging
 import os
 import sys
 import traceback
+
+logger = logging.getLogger(__name__)
 
 MAXBLOCK = 65536
 
@@ -95,21 +98,11 @@ class ImageFile(Image.Image):
 
         try:
             self._open()
-        except IndexError as v:  # end of data
-            if Image.DEBUG > 1:
-                traceback.print_exc()
-            raise SyntaxError(v)
-        except TypeError as v:  # end of data (ord)
-            if Image.DEBUG > 1:
-                traceback.print_exc()
-            raise SyntaxError(v)
-        except KeyError as v:  # unsupported mode
-            if Image.DEBUG > 1:
-                traceback.print_exc()
-            raise SyntaxError(v)
-        except EOFError as v:  # got header but not the first frame
-            if Image.DEBUG > 1:
-                traceback.print_exc()
+        except (IndexError,  # end of data
+                TypeError,  # end of data (ord)
+                KeyError,  # unsupported mode
+                EOFError) as v:  # got header but not the first frame
+            logger.exception("%s")
             raise SyntaxError(v)
 
         if not self.mode or self.size[0] <= 0:

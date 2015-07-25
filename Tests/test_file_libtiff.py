@@ -1,10 +1,13 @@
 from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper, py3
 
-import os
 import io
+import logging
+import os
 
 from PIL import Image, TiffImagePlugin
+
+logger = logging.getLogger(__name__)
 
 
 class LibTiffTestCase(PillowTestCase):
@@ -231,7 +234,6 @@ class TestFileLibTiff(LibTiffTestCase):
         """ Are we generating the same interpretation
         of the image as Imagemagick is? """
         TiffImagePlugin.READ_LIBTIFF = True
-        # Image.DEBUG = True
         im = Image.open('Tests/images/12bit.cropped.tif')
         im.load()
         TiffImagePlugin.READ_LIBTIFF = False
@@ -243,14 +245,8 @@ class TestFileLibTiff(LibTiffTestCase):
 
         im2 = Image.open('Tests/images/12in16bit.tif')
 
-        if Image.DEBUG:
-            print(im.getpixel((0, 0)))
-            print(im.getpixel((0, 1)))
-            print(im.getpixel((0, 2)))
-
-            print(im2.getpixel((0, 0)))
-            print(im2.getpixel((0, 1)))
-            print(im2.getpixel((0, 2)))
+        logger.debug("%s", [img.getpixel((0, idx))
+                            for img in [im, im2] for idx in range(3)])
 
         self.assert_image_equal(im, im2)
 

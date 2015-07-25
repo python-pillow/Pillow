@@ -90,6 +90,7 @@ class FliImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
         self.__rewind = self.fp.tell()
         self._n_frames = None
+        self._is_animated = None
         self.seek(0)
 
     def _palette(self, palette, shift):
@@ -122,13 +123,33 @@ class FliImageFile(ImageFile.ImageFile):
             self.seek(current)
         return self._n_frames
 
+    @property
+    def is_animated(self):
+        if self._is_animated is None:
+            current = self.tell()
+
+            try:
+                self.seek(1)
+                self._is_animated = True
+            except EOFError:
+                self._is_animated = False
+
+            self.seek(current)
+        return self._is_animated
+
     def seek(self, frame):
         if frame == self.__frame:
             return
         if frame < self.__frame:
             self._seek(0)
+
+        last_frame = self.__frame
         for f in range(self.__frame + 1, frame + 1):
-            self._seek(f)
+            try:
+                self._seek(f)
+            except EOFError:
+                self.seek(last_frame)
+                raise EOFError("no more images in FLI file")
 
     def _seek(self, frame):
         if frame == 0:

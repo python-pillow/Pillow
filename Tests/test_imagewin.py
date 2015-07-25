@@ -115,7 +115,8 @@ class TestImageWinDib(PillowTestCase):
 
         # Act/Assert
         self.assert_warning(DeprecationWarning, dib.tostring)
-        self.assert_warning(DeprecationWarning, lambda: dib.fromstring(test_buffer))
+        self.assert_warning(DeprecationWarning,
+                            lambda: dib.fromstring(test_buffer))
 
 
 if __name__ == '__main__':

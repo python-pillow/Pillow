@@ -28,7 +28,10 @@ from __future__ import print_function
 
 from PIL import VERSION, PILLOW_VERSION, _plugins
 
+import logging
 import warnings
+
+logger = logging.getLogger(__name__)
 
 
 class DecompressionBombWarning(RuntimeWarning):
@@ -139,11 +142,6 @@ def isImageType(t):
     return hasattr(t, "im")
 
 #
-# Debug level
-
-DEBUG = 0
-
-#
 # Constants (also defined in _imagingmodule.c!)
 
 NONE = 0
@@ -204,6 +202,7 @@ ID = []
 OPEN = {}
 MIME = {}
 SAVE = {}
+SAVE_ALL = {}
 EXTENSION = {}
 
 # --------------------------------------------------------------------
@@ -386,13 +385,10 @@ def init():
 
     for plugin in _plugins:
         try:
-            if DEBUG:
-                print("Importing %s" % plugin)
+            logger.debug("Importing %s", plugin)
             __import__("PIL.%s" % plugin, globals(), locals(), [])
-        except ImportError:
-            if DEBUG:
-                print("Image: failed to import", end=' ')
-                print(plugin, ":", sys.exc_info()[1])
+        except ImportError as e:
+            logger.debug("Image: failed to import %s: %s", plugin, e)
 
     if OPEN or SAVE:
         _initialized = 2
@@ -504,6 +500,14 @@ class Image(object):
         self.readonly = 0
         self.pyaccess = None
 
+    @property
+    def width(self):
+        return self.size[0]
+
+    @property
+    def height(self):
+        return self.size[1]
+
     def _new(self, im):
         new = Image()
         new.im = im
@@ -546,8 +550,7 @@ class Image(object):
         try:
             self.fp.close()
         except Exception as msg:
-            if DEBUG:
-                print("Error closing: %s" % msg)
+            logger.debug("Error closing: %s" % msg)
 
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
@@ -1661,6 +1664,10 @@ class Image(object):
         # may mutate self!
         self.load()
 
+        save_all = False
+        if 'save_all' in params:
+            save_all = params['save_all']
+            del params['save_all']
         self.encoderinfo = params
         self.encoderconfig = ()
 
@@ -1669,20 +1676,16 @@ class Image(object):
         ext = os.path.splitext(filename)[1].lower()
 
         if not format:
-            try:
-                format = EXTENSION[ext]
-            except KeyError:
+            if ext not in EXTENSION:
                 init()
-                try:
-                    format = EXTENSION[ext]
-                except KeyError:
-                    raise KeyError(ext)  # unknown extension
+            format = EXTENSION[ext]
 
-        try:
-            save_handler = SAVE[format.upper()]
-        except KeyError:
+        if format.upper() not in SAVE:
             init()
-            save_handler = SAVE[format.upper()]  # unknown format
+        if save_all:
+            save_handler = SAVE_ALL[format.upper()]
+        else:
+            save_handler = SAVE[format.upper()]
 
         if isPath(fp):
             fp = builtins.open(fp, "wb")
@@ -2262,7 +2265,7 @@ def open(fp, mode="r"):
     :py:meth:`~PIL.Image.Image.load` method).  See
     :py:func:`~PIL.Image.new`.
 
-    :param file: A filename (string) or a file object.  The file object
+    :param fp: A filename (string) or a file object.  The file object
        must implement :py:meth:`~file.read`, :py:meth:`~file.seek`, and
        :py:meth:`~file.tell` methods, and be opened in binary mode.
     :param mode: The mode.  If given, this argument must be "r".
@@ -2298,9 +2301,7 @@ def open(fp, mode="r"):
                 _decompression_bomb_check(im.size)
                 return im
         except (SyntaxError, IndexError, TypeError, struct.error):
-            # import traceback
-            # traceback.print_exc()
-            pass
+            logger.debug("", exc_info=True)
 
     if init():
 
@@ -2313,9 +2314,7 @@ def open(fp, mode="r"):
                     _decompression_bomb_check(im.size)
                     return im
             except (SyntaxError, IndexError, TypeError, struct.error):
-                # import traceback
-                # traceback.print_exc()
-                pass
+                logger.debug("", exc_info=True)
 
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
@@ -2459,6 +2458,18 @@ def register_save(id, driver):
     :param driver: A function to save images in this format.
     """
     SAVE[id.upper()] = driver
+
+
+def register_save_all(id, driver):
+    """
+    Registers an image function to save all the frames
+    of a multiframe format.  This function should not be
+    used in application code.
+
+    :param id: An image format identifier.
+    :param driver: A function to save images in this format.
+    """
+    SAVE_ALL[id.upper()] = driver
 
 
 def register_extension(id, extension):
