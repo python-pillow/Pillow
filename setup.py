@@ -305,6 +305,10 @@ class pil_build_ext(build_ext):
                     _add_directory(library_dirs, "/usr/pkg/lib")
                     _add_directory(include_dirs, "/usr/pkg/include")
 
+        elif sys.platform.startswith("sunos5"):
+                    _add_directory(library_dirs, "/opt/local/lib")
+                    _add_directory(include_dirs, "/opt/local/include")
+		
         # FIXME: check /opt/stuff directories here?
 
         #
