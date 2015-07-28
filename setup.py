@@ -302,12 +302,11 @@ class pil_build_ext(build_ext):
             self.add_multiarch_paths()
 
         elif sys.platform.startswith("netbsd"):
-                    _add_directory(library_dirs, "/usr/pkg/lib")
-                    _add_directory(include_dirs, "/usr/pkg/include")
+            _add_directory(library_dirs, "/usr/pkg/lib")
+            _add_directory(include_dirs, "/usr/pkg/include")
 
         # FIXME: check /opt/stuff directories here?
 
-        #
         # locate tkinter libraries
 
         if _tkinter:
