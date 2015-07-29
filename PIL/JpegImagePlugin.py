@@ -423,7 +423,7 @@ def _getexif(self):
     # get exif extension
     try:
         file.seek(exif[0x8769])
-    except KeyError:
+    except (KeyError, TypeError):
         pass
     else:
         info = TiffImagePlugin.ImageFileDirectory(head)
