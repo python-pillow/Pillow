@@ -15,6 +15,10 @@ python:
   - "2.7_with_system_site_packages" # For PyQt4
   - 3.2
   - 3.3
+  - nightly
+  - 3.5.0b2
+  - 3.5.0b3
+  - 3.5-dev
 
 install:
   - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
@@ -107,6 +111,11 @@ after_script:
 
 matrix:
   fast_finish: true
+  allow_failures:
+    - python: nightly
+    - python: 3.5.0b2
+    - python: 3.5.0b3
+    - python: 3.5-dev
 
 env:
   global:
