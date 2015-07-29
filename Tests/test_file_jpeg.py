@@ -166,6 +166,12 @@ class TestFileJpeg(PillowTestCase):
         im = hopper()
         im.save(f, 'JPEG', quality=90, exif=b"1"*65532)
 
+    def test_exif_typeerror(self):
+        im = Image.open('Tests/images/exif_typeerror.jpg')
+
+        # Should not raise a TypeError
+        im._getexif()
+
     def test_progressive_compat(self):
         im1 = self.roundtrip(hopper())
         im2 = self.roundtrip(hopper(), progressive=1)
