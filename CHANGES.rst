@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Added Python 3.3 to AppVeyor #1363
+  [radarhere]
+
 - Treat MPO with unknown header as base JPEG file #1350
   [hugovk, radarhere]
 
