@@ -1,25 +1,17 @@
 from helper import unittest, PillowTestCase
 
+from PIL import Image, PSDraw
+import os
+import sys
+
 
 class TestPsDraw(PillowTestCase):
 
-    def test_draw_postscript(self):
-
-        # Based on Pillow tutorial, but there is no textsize:
-        # http://pillow.readthedocs.org/en/latest/handbook/tutorial.html
-
-        # Arrange
-        from PIL import Image
-        from PIL import PSDraw
-        tempfile = self.tempfile('temp.ps')
-        fp = open(tempfile, "wb")
-
+    def _create_document(self, ps):
         im = Image.open("Tests/images/hopper.ppm")
         title = "hopper"
         box = (1*72, 2*72, 7*72, 10*72)  # in points
 
-        # Act
-        ps = PSDraw.PSDraw(fp)
         ps.begin_document(title)
 
         # draw diagonal lines in a cross
@@ -35,13 +27,42 @@ class TestPsDraw(PillowTestCase):
         ps.text((3*72, 4*72), title)
 
         ps.end_document()
+
+    def test_draw_postscript(self):
+
+        # Based on Pillow tutorial, but there is no textsize:
+        # http://pillow.readthedocs.org/en/latest/handbook/tutorial.html
+
+        # Arrange
+        tempfile = self.tempfile('temp.ps')
+        fp = open(tempfile, "wb")
+
+        # Act
+        ps = PSDraw.PSDraw(fp)
+        self._create_document(ps)
         fp.close()
 
         # Assert
         # Check non-zero file was created
-        import os
         self.assertTrue(os.path.isfile(tempfile))
         self.assertGreater(os.path.getsize(tempfile), 0)
+
+    def test_stdout(self):
+        # Temporarily redirect stdout
+        try:
+            from cStringIO import StringIO
+        except ImportError:
+            from io import StringIO
+        old_stdout = sys.stdout
+        sys.stdout = mystdout = StringIO()
+
+        ps = PSDraw.PSDraw()
+        self._create_document(ps)
+
+        # Reset stdout
+        sys.stdout = old_stdout
+
+        self.assertNotEqual(mystdout.getvalue(), "")
 
 
 if __name__ == '__main__':

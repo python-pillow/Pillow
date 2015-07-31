@@ -461,6 +461,9 @@ def _save(im, fp, tile, bufsize=0):
     # But, it would need at least the image size in most cases. RawEncode is
     # a tricky case.
     bufsize = max(MAXBLOCK, bufsize, im.size[0] * 4)  # see RawEncode.c
+    if fp == sys.stdout:
+        fp.flush()
+        return
     try:
         fh = fp.fileno()
         fp.flush()
