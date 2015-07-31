@@ -209,7 +209,7 @@ class ImageFile(Image.Image):
                         if LOAD_TRUNCATED_IMAGES:
                             break
                         else:
-                            raise IndexError(ie)
+                            raise IOError("image file is truncated")
 
                     if not s and not d.handles_eof:  # truncated jpeg
                         self.tile = []
