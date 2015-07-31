@@ -205,7 +205,7 @@ class ImageFile(Image.Image):
                 while True:
                     try:
                         s = read(self.decodermaxblock)
-                    except (IndexError, struct.error) as ie:  # truncated png/gif
+                    except (IndexError, struct.error):  # truncated png/gif
                         if LOAD_TRUNCATED_IMAGES:
                             break
                         else:
