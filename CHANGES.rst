@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Added support for ImageGrab.grab to OS X #1367
+  [radarhere]
+
 - Fixed PSDraw stdout Python 3 compatibility #1365
   [radarhere]
 
