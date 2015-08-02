@@ -12,6 +12,9 @@ This repository creates wheels for tagged versions of Pillow::
     git commit -a -m "<VERSION> wheels"
     git push
 
+.. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg?label=OS%20X%20build
+   :target: https://travis-ci.org/python-pillow/pillow-wheels
+   :alt: Travis CI build status (OS X)
 
 Dependencies
 ------------
