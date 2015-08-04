@@ -66,6 +66,6 @@ class GbrImageFile(ImageFile.ImageFile):
 #
 # registry
 
-Image.register_open("GBR", GbrImageFile, _accept)
+Image.register_open(GbrImageFile.format, GbrImageFile, _accept)
 
-Image.register_extension("GBR", ".gbr")
+Image.register_extension(GbrImageFile.format, ".gbr")

@@ -182,7 +182,7 @@ class FliImageFile(ImageFile.ImageFile):
 #
 # registry
 
-Image.register_open("FLI", FliImageFile, _accept)
+Image.register_open(FliImageFile.format, FliImageFile, _accept)
 
-Image.register_extension("FLI", ".fli")
-Image.register_extension("FLI", ".flc")
+Image.register_extension(FliImageFile.format, ".fli")
+Image.register_extension(FliImageFile.format, ".flc")

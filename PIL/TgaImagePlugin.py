@@ -193,7 +193,7 @@ def _save(im, fp, filename, check=0):
 # --------------------------------------------------------------------
 # Registry
 
-Image.register_open("TGA", TgaImageFile)
-Image.register_save("TGA", _save)
+Image.register_open(TgaImageFile.format, TgaImageFile)
+Image.register_save(TgaImageFile.format, _save)
 
-Image.register_extension("TGA", ".tga")
+Image.register_extension(TgaImageFile.format, ".tga")

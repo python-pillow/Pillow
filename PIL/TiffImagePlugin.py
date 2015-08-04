@@ -1262,10 +1262,10 @@ def _save(im, fp, filename):
 # --------------------------------------------------------------------
 # Register
 
-Image.register_open("TIFF", TiffImageFile, _accept)
-Image.register_save("TIFF", _save)
+Image.register_open(TiffImageFile.format, TiffImageFile, _accept)
+Image.register_save(TiffImageFile.format, _save)
 
-Image.register_extension("TIFF", ".tif")
-Image.register_extension("TIFF", ".tiff")
+Image.register_extension(TiffImageFile.format, ".tif")
+Image.register_extension(TiffImageFile.format, ".tiff")
 
-Image.register_mime("TIFF", "image/tiff")
+Image.register_mime(TiffImageFile.format, "image/tiff")

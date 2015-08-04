@@ -262,15 +262,15 @@ def _save(im, fp, filename):
 # ------------------------------------------------------------
 # Registry stuff
 
-Image.register_open('JPEG2000', Jpeg2KImageFile, _accept)
-Image.register_save('JPEG2000', _save)
+Image.register_open(Jpeg2KImageFile.format, Jpeg2KImageFile, _accept)
+Image.register_save(Jpeg2KImageFile.format, _save)
 
-Image.register_extension('JPEG2000', '.jp2')
-Image.register_extension('JPEG2000', '.j2k')
-Image.register_extension('JPEG2000', '.jpc')
-Image.register_extension('JPEG2000', '.jpf')
-Image.register_extension('JPEG2000', '.jpx')
-Image.register_extension('JPEG2000', '.j2c')
+Image.register_extension(Jpeg2KImageFile.format, '.jp2')
+Image.register_extension(Jpeg2KImageFile.format, '.j2k')
+Image.register_extension(Jpeg2KImageFile.format, '.jpc')
+Image.register_extension(Jpeg2KImageFile.format, '.jpf')
+Image.register_extension(Jpeg2KImageFile.format, '.jpx')
+Image.register_extension(Jpeg2KImageFile.format, '.j2c')
 
-Image.register_mime('JPEG2000', 'image/jp2')
-Image.register_mime('JPEG2000', 'image/jpx')
+Image.register_mime(Jpeg2KImageFile.format, 'image/jp2')
+Image.register_mime(Jpeg2KImageFile.format, 'image/jpx')

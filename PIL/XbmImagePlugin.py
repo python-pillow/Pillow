@@ -88,9 +88,9 @@ def _save(im, fp, filename):
     fp.write(b"};\n")
 
 
-Image.register_open("XBM", XbmImageFile, _accept)
-Image.register_save("XBM", _save)
+Image.register_open(XbmImageFile.format, XbmImageFile, _accept)
+Image.register_save(XbmImageFile.format, _save)
 
-Image.register_extension("XBM", ".xbm")
+Image.register_extension(XbmImageFile.format, ".xbm")
 
-Image.register_mime("XBM", "image/xbm")
+Image.register_mime(XbmImageFile.format, "image/xbm")

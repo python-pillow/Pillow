@@ -181,7 +181,7 @@ def _save(im, fp, filename, check=0):
 # --------------------------------------------------------------------
 # registry
 
-Image.register_open("PCX", PcxImageFile, _accept)
-Image.register_save("PCX", _save)
+Image.register_open(PcxImageFile.format, PcxImageFile, _accept)
+Image.register_save(PcxImageFile.format, _save)
 
-Image.register_extension("PCX", ".pcx")
+Image.register_extension(PcxImageFile.format, ".pcx")

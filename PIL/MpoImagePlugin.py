@@ -90,9 +90,10 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
 # Note that since MPO shares a factory with JPEG, we do not need to do a
 # separate registration for it here.
-# Image.register_open("MPO", JpegImagePlugin.jpeg_factory, _accept)
-Image.register_save("MPO", _save)
+# Image.register_open(MpoImageFile.format,
+#                     JpegImagePlugin.jpeg_factory, _accept)
+Image.register_save(MpoImageFile.format, _save)
 
-Image.register_extension("MPO", ".mpo")
+Image.register_extension(MpoImageFile.format, ".mpo")
 
-Image.register_mime("MPO", "image/mpo")
+Image.register_mime(MpoImageFile.format, "image/mpo")
