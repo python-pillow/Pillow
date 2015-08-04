@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Changed register calls to use format property #1333
+  [radarhere]
+
 - Added support for ImageGrab.grab to OS X #1367
   [radarhere]
 
