@@ -1653,13 +1653,15 @@ class Image(object):
            may have been created, and may contain partial data.
         """
 
+        filename = ""
         if isPath(fp):
             filename = fp
-        else:
-            if hasattr(fp, "name") and isPath(fp.name):
-                filename = fp.name
-            else:
-                filename = ""
+        elif sys.version_info >= (3, 4):
+            from pathlib import Path
+            if isinstance(fp, Path):
+                filename = str(fp.resolve())
+        elif hasattr(fp, "name") and isPath(fp.name):
+            filename = fp.name
 
         # may mutate self!
         self.load()
@@ -1687,8 +1689,8 @@ class Image(object):
         else:
             save_handler = SAVE[format.upper()]
 
-        if isPath(fp):
-            fp = builtins.open(fp, "wb")
+        if filename:
+            fp = builtins.open(filename, "wb")
             close = 1
         else:
             close = 0
@@ -2277,11 +2279,15 @@ def open(fp, mode="r"):
     if mode != "r":
         raise ValueError("bad mode %r" % mode)
 
+    filename = ""
     if isPath(fp):
         filename = fp
-        fp = builtins.open(fp, "rb")
-    else:
-        filename = ""
+    elif sys.version_info >= (3, 4):
+        from pathlib import Path
+        if isinstance(fp, Path):
+            filename = str(fp.resolve())
+    if filename:
+        fp = builtins.open(filename, "rb")
 
     try:
         fp.seek(0)
