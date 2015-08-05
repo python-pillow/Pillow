@@ -1621,7 +1621,7 @@ class Image(object):
         if self.mode in ("1", "P"):
             resample = NEAREST
 
-        return self._new(self.im.rotate(angle, resample))
+        return self._new(self.im.rotate(angle, resample, expand))
 
     def save(self, fp, format=None, **params):
         """
