@@ -1550,7 +1550,8 @@ _rotate(ImagingObject* self, PyObject* args)
 
     double theta;
     int filter = IMAGING_TRANSFORM_NEAREST;
-    if (!PyArg_ParseTuple(args, "d|i", &theta, &filter))
+    int expand;
+    if (!PyArg_ParseTuple(args, "d|i|i", &theta, &filter, &expand))
         return NULL;
 
     imIn = self->image;
@@ -1563,7 +1564,8 @@ _rotate(ImagingObject* self, PyObject* args)
         /* Rotate with resampling filter */
         imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
     (void) ImagingRotate(imOut, imIn, theta, filter);
-    } else if (theta == 90.0 || theta == 270.0) {
+    } else if ((theta == 90.0 || theta == 270.0)
+            && (expand || imIn->xsize == imIn->ysize)) {
         /* Use fast version */
         imOut = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
         if (imOut) {
