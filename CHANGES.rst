@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Fix fast rotate operations #1373
+  [radarhere]
+  
 - Added support for pathlib Path objects to open and save #1372
   [radarhere]
   
