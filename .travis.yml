@@ -35,12 +35,12 @@ install:
   - pushd depends && ./install_openjpeg.sh && popd
 
 script:
-  - coverage erase
+  - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage erase; fi
   - python setup.py clean
   - CFLAGS="-coverage" python setup.py build_ext --inplace
 
-  - coverage run --append --include=PIL/* selftest.py
-  - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
+  - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* selftest.py; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py; fi
   - check-manifest --ignore "depends/*"
 
 after_success:
