@@ -24,7 +24,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, ImagePalette, ImageChops, ImageSequence, _binary
+from PIL import Image, ImageFile, ImagePalette, \
+                ImageChops, ImageSequence, _binary
 
 __version__ = "0.9"
 
@@ -347,7 +348,14 @@ def _save(im, fp, filename, save_all=False):
             # e.g. getdata(im_frame, duration=1000)
             if not previous:
                 # global header
-                for s in getheader(im_frame, palette, im.encoderinfo)[0] + getdata(im_frame):
+                duration = None
+                if "duration" in im.info:
+                    duration = im.info["duration"]
+                loop = None
+                if "loop" in im.info:
+                    loop = im.info["loop"]
+                for s in getheader(im_frame, palette, im.encoderinfo)[0] + \
+                        getdata(im_frame, duration=duration, loop=loop):
                     fp.write(s)
             else:
                 # delta frame
@@ -426,7 +434,7 @@ def _get_local_header(fp, im, offset, flags):
                     else:
                         transparent_color_exists = False
 
-    if "duration" in im.encoderinfo:
+    if im.encoderinfo.get("duration") != None:
         duration = int(im.encoderinfo["duration"] / 10)
     else:
         duration = 0
@@ -443,7 +451,7 @@ def _get_local_header(fp, im, offset, flags):
                  o8(transparency) +       # transparency index
                  o8(0))
 
-    if "loop" in im.encoderinfo:
+    if im.encoderinfo.get("loop") != None:
         number_of_loops = im.encoderinfo["loop"]
         fp.write(b"!" +
                  o8(255) +                # extension intro
