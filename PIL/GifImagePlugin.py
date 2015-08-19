@@ -434,7 +434,7 @@ def _get_local_header(fp, im, offset, flags):
                     else:
                         transparent_color_exists = False
 
-    if im.encoderinfo.get("duration") != None:
+    if im.encoderinfo.get("duration") is not None:
         duration = int(im.encoderinfo["duration"] / 10)
     else:
         duration = 0
@@ -451,7 +451,7 @@ def _get_local_header(fp, im, offset, flags):
                  o8(transparency) +       # transparency index
                  o8(0))
 
-    if im.encoderinfo.get("loop") != None:
+    if im.encoderinfo.get("loop") is not None:
         number_of_loops = im.encoderinfo["loop"]
         fp.write(b"!" +
                  o8(255) +                # extension intro
