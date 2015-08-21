@@ -96,7 +96,7 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(reread.n_frames, 5)
 
     def test_headers_saving_for_animated_gifs(self):
-        important_headers = ['background', 'version', 'transparency', 'duration', 'loop']
+        important_headers = ['background', 'version', 'duration', 'loop']
         # Multiframe image
         im = Image.open("Tests/images/dispose_bgnd.gif")
 

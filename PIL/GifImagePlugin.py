@@ -24,7 +24,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, ImagePalette, ImageChops, ImageSequence, _binary
+from PIL import Image, ImageFile, ImagePalette, \
+                ImageChops, ImageSequence, _binary
 
 __version__ = "0.9"
 
@@ -317,6 +318,7 @@ def _save_all(im, fp, filename):
 
 def _save(im, fp, filename, save_all=False):
 
+    im.encoderinfo.update(im.info)
     if _imaging_gif:
         # call external driver
         try:
@@ -347,7 +349,8 @@ def _save(im, fp, filename, save_all=False):
             # e.g. getdata(im_frame, duration=1000)
             if not previous:
                 # global header
-                for s in getheader(im_frame, palette, im.encoderinfo)[0] + getdata(im_frame):
+                for s in getheader(im_frame, palette, im.encoderinfo)[0] + \
+                                   getdata(im_frame, (0, 0), **im.encoderinfo):
                     fp.write(s)
             else:
                 # delta frame
@@ -356,7 +359,8 @@ def _save(im, fp, filename, save_all=False):
 
                 if bbox:
                     # compress difference
-                    for s in getdata(im_frame.crop(bbox), offset=bbox[:2]):
+                    for s in getdata(im_frame.crop(bbox),
+                                     bbox[:2], **im.encoderinfo):
                         fp.write(s)
                 else:
                     # FIXME: what should we do in this case?
@@ -591,7 +595,16 @@ def getheader(im, palette=None, info=None):
     # size of global color table + global color table flag
     header.append(o8(color_table_size + 128))
     # background + reserved/aspect
-    background = im.info["background"] if "background" in im.info else 0
+    if info and "background" in info:
+        background = info["background"]
+    elif "background" in im.info:
+        # This elif is redundant within GifImagePlugin
+        # since im.info parameters are bundled into the info dictionary
+        # However, external scripts may call getheader directly
+        # So this maintains earlier behaviour
+        background = im.info["background"]
+    else:
+        background = 0
     header.append(o8(background) + o8(0))
     # end of Logical Screen Descriptor
 
