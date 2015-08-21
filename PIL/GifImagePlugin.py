@@ -537,8 +537,19 @@ def getheader(im, palette=None, info=None):
 
     # Header Block
     # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
+
+    version = b"87a"
+    for extensionKey in ["transparency", "duration", "loop"]:
+        if info and extensionKey in info and \
+                not (extensionKey == "duration" and info[extensionKey] == 0):
+            version = b"89a"
+            break
+    else:
+        if im.info.get("version") == "89a":
+            version = b"89a"
+
     header = [
-        b"GIF87a" +             # signature + version
+        b"GIF"+version +        # signature + version
         o16(im.size[0]) +       # canvas width
         o16(im.size[1])         # canvas height
     ]
