@@ -480,13 +480,31 @@ getink(PyObject* color, Imaging im, char* ink)
     /* fill ink buffer (four bytes) with something that can
        be cast to either UINT8 or INT32 */
 
+    int rIsInt = 1;
+    if (im->type == IMAGING_TYPE_UINT8 ||
+        im->type == IMAGING_TYPE_INT32 ||
+        im->type == IMAGING_TYPE_SPECIAL) {
+#if PY_VERSION_HEX >= 0x03000000
+		if (PyLong_Check(color)) {
+			r = (int) PyLong_AsLong(color);
+#else
+		if (PyInt_Check(color) || PyLong_Check(color)) {
+			if (PyInt_Check(color))
+				r = PyInt_AS_LONG(color);
+			else
+				r = (int) PyLong_AsLong(color);
+#endif
+		}
+		if (r == -1 && PyErr_Occurred())
+		    rIsInt = 0;
+    }
+
     switch (im->type) {
     case IMAGING_TYPE_UINT8:
         /* unsigned integer */
         if (im->bands == 1) {
             /* unsigned integer, single layer */
-            r = PyInt_AsLong(color);
-            if (r == -1 && PyErr_Occurred())
+            if (rIsInt != 1)
                 return NULL;
             ink[0] = CLIP(r);
             ink[1] = ink[2] = ink[3] = 0;
@@ -526,8 +544,7 @@ getink(PyObject* color, Imaging im, char* ink)
         return ink;
     case IMAGING_TYPE_INT32:
         /* signed integer */
-        r = PyInt_AsLong(color);
-        if (r == -1 && PyErr_Occurred())
+        if (rIsInt != 1)
             return NULL;
         *(INT32*) ink = r;
         return ink;
@@ -540,8 +557,7 @@ getink(PyObject* color, Imaging im, char* ink)
         return ink;
     case IMAGING_TYPE_SPECIAL:
         if (strncmp(im->mode, "I;16", 4) == 0) {
-            r = PyInt_AsLong(color);
-            if (r == -1 && PyErr_Occurred())
+            if (rIsInt != 1)
                 return NULL;
             ink[0] = (UINT8) r;
             ink[1] = (UINT8) (r >> 8);
