@@ -754,7 +754,7 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
     ImagingDecoderObject* decoder;
 
     char* mode;
-    char* rawmode; /* what we wan't from the decoder */
+    char* rawmode; /* what we want from the decoder */
     char* jpegmode; /* what's in the file */
     int scale = 1;
     int draft = 0;
