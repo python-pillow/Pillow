@@ -357,7 +357,7 @@ def _save(im, fp, filename, save_all=False):
                     fp.write(s)
             else:
                 # delta frame
-                delta = ImageChops.subtract_modulo(im_frame, previous)
+                delta = ImageChops.subtract_modulo(im_frame, previous.copy())
                 bbox = delta.getbbox()
 
                 if bbox:
@@ -368,7 +368,7 @@ def _save(im, fp, filename, save_all=False):
                 else:
                     # FIXME: what should we do in this case?
                     pass
-            previous = im_frame.copy()
+            previous = im_frame
     else:
         header = getheader(im_out, palette, im.encoderinfo)[0]
         for s in header:
