@@ -301,14 +301,17 @@ RAWMODE = {
 }
 
 
-def _convert_mode(im):
+def _convert_mode(im, initial_call=False):
     # convert on the fly (EXPERIMENTAL -- I'm not sure PIL
     # should automatically convert images on save...)
     if Image.getmodebase(im.mode) == "RGB":
-        palette_size = 256
-        if im.palette:
-            palette_size = len(im.palette.getdata()[1]) // 3
-        return im.convert("P", palette=1, colors=palette_size)
+        if initial_call:
+            palette_size = 256
+            if im.palette:
+                palette_size = len(im.palette.getdata()[1]) // 3
+            return im.convert("P", palette=1, colors=palette_size)
+        else:
+            return im.convert("P")
     return im.convert("L")
 
 
@@ -330,7 +333,7 @@ def _save(im, fp, filename, save_all=False):
     if im.mode in RAWMODE:
         im_out = im.copy()
     else:
-        im_out = _convert_mode(im)
+        im_out = _convert_mode(im, True)
 
     # header
     try:
