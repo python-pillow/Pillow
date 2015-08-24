@@ -345,6 +345,7 @@ def _save(im, fp, filename, save_all=False):
     if save_all:
         previous = None
 
+        first_frame = None
         for im_frame in ImageSequence.Iterator(im):
             im_frame = _convert_mode(im_frame)
 
@@ -352,10 +353,14 @@ def _save(im, fp, filename, save_all=False):
             # e.g. getdata(im_frame, duration=1000)
             if not previous:
                 # global header
-                for s in getheader(im_frame, palette, im.encoderinfo)[0] + \
-                                   getdata(im_frame, (0, 0), **im.encoderinfo):
-                    fp.write(s)
+                first_frame = getheader(im_frame, palette, im.encoderinfo)[0]
+                first_frame += getdata(im_frame, (0, 0), **im.encoderinfo)
             else:
+                if first_frame:
+                    for s in first_frame:
+                        fp.write(s)
+                    first_frame = None
+
                 # delta frame
                 delta = ImageChops.subtract_modulo(im_frame, previous.copy())
                 bbox = delta.getbbox()
@@ -369,7 +374,9 @@ def _save(im, fp, filename, save_all=False):
                     # FIXME: what should we do in this case?
                     pass
             previous = im_frame
-    else:
+        if first_frame:
+            save_all = False
+    if not save_all:
         header = getheader(im_out, palette, im.encoderinfo)[0]
         for s in header:
             fp.write(s)
