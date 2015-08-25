@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- In tutorial of pasting images, add to mask text #1389
+  [merriam]
+
 - Flake8 fixes #1391
   [radarhere]
 
