@@ -18,9 +18,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.1"
-
 from PIL import Image, JpegImagePlugin
+
+__version__ = "0.1"
 
 
 def _accept(prefix):

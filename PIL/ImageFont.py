@@ -275,7 +275,8 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                 # According to the freedesktop spec, XDG_DATA_DIRS should
                 # default to /usr/share
                 lindirs = '/usr/share'
-            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+            dirs += [os.path.join(lindir, "fonts")
+                     for lindir in lindirs.split(":")]
         elif sys.platform == 'darwin':
             dirs += ['/Library/Fonts', '/System/Library/Fonts',
                      os.path.expanduser('~/Library/Fonts')]

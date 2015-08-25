@@ -33,13 +33,13 @@
 
 from __future__ import print_function
 
-__version__ = "0.9"
-
 import logging
 import re
 import zlib
 
 from PIL import Image, ImageFile, ImagePalette, _binary
+
+__version__ = "0.9"
 
 logger = logging.getLogger(__name__)
 

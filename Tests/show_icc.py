@@ -1,8 +1,8 @@
-import sys
-sys.path.insert(0, ".")
-
 from PIL import Image
 from PIL import ImageCms
+
+import sys
+sys.path.insert(0, ".")
 
 try:
     filename = sys.argv[1]

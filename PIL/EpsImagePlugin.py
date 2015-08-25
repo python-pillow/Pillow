@@ -20,11 +20,12 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.5"
-
 import re
 import io
+import sys
 from PIL import Image, ImageFile, _binary
+
+__version__ = "0.5"
 
 #
 # --------------------------------------------------------------------
@@ -36,7 +37,6 @@ split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
 
 gs_windows_binary = None
-import sys
 if sys.platform.startswith('win'):
     import shutil
     if hasattr(shutil, 'which'):
@@ -187,7 +187,8 @@ class PSFile(object):
 
 
 def _accept(prefix):
-    return prefix[:4] == b"%!PS" or (len(prefix) >= 4 and i32(prefix) == 0xC6D3D0C5)
+    return prefix[:4] == b"%!PS" or \
+           (len(prefix) >= 4 and i32(prefix) == 0xC6D3D0C5)
 
 ##
 # Image plugin for Encapsulated Postscript.  This plugin supports only

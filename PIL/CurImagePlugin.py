@@ -17,10 +17,9 @@
 #
 
 
-__version__ = "0.1"
-
 from PIL import Image, BmpImagePlugin, _binary
 
+__version__ = "0.1"
 
 #
 # --------------------------------------------------------------------

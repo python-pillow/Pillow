@@ -15,10 +15,9 @@
 #
 
 
-__version__ = "0.1"
-
-
 from PIL import Image, ImageFile, _binary
+
+__version__ = "0.1"
 
 i8 = _binary.i8
 

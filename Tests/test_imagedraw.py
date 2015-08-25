@@ -5,13 +5,13 @@ from PIL import ImageColor
 from PIL import ImageDraw
 import os.path
 
+import sys
+
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (190, 190, 190)
 DEFAULT_MODE = 'RGB'
 IMAGES_PATH = os.path.join('Tests', 'images', 'imagedraw')
-
-import sys
 
 # Image size
 W, H = 100, 100

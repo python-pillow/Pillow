@@ -17,12 +17,11 @@
 
 from __future__ import print_function
 
-__version__ = "0.3"
-
-
 from PIL import Image, ImageFile, _binary
 import os
 import tempfile
+
+__version__ = "0.3"
 
 i8 = _binary.i8
 i16 = _binary.i16be
