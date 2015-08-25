@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Flake8 fixes #1391
+  [radarhere]
+
 - Test on Python 3.5 dev and 3.6 nightly #1361
   [hugovk]
 
