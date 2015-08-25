@@ -2299,29 +2299,18 @@ def open(fp, mode="r"):
 
     preinit()
 
-    for i in ID:
-        try:
-            factory, accept = OPEN[i]
-            if not accept or accept(prefix):
-                fp.seek(0)
-                im = factory(fp, filename)
-                _decompression_bomb_check(im.size)
-                return im
-        except (SyntaxError, IndexError, TypeError, struct.error):
-            logger.debug("", exc_info=True)
-
-    if init():
-
-        for i in ID:
-            try:
-                factory, accept = OPEN[i]
-                if not accept or accept(prefix):
-                    fp.seek(0)
-                    im = factory(fp, filename)
-                    _decompression_bomb_check(im.size)
-                    return im
-            except (SyntaxError, IndexError, TypeError, struct.error):
-                logger.debug("", exc_info=True)
+    for i in range(0, 2):
+        if i == 0 or init():
+            for i in ID:
+                try:
+                    factory, accept = OPEN[i]
+                    if not accept or accept(prefix):
+                        fp.seek(0)
+                        im = factory(fp, filename)
+                        _decompression_bomb_check(im.size)
+                        return im
+                except (SyntaxError, IndexError, TypeError, struct.error):
+                    logger.debug("", exc_info=True)
 
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
