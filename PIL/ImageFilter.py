@@ -16,7 +16,7 @@
 #
 
 import functools
-
+from PIL import _imaging as core
 
 class Filter(object):
     pass
@@ -157,7 +157,8 @@ class GaussianBlur(Filter):
 
 
 class UnsharpMask(Filter):
-    """Unsharp mask filter.
+    """
+    Unsharp mask filter.
 
     See Wikipedia's entry on `digital unsharp masking`_ for an explanation of
     the parameters.
@@ -180,6 +181,22 @@ class UnsharpMask(Filter):
     def filter(self, image):
         return image.unsharp_mask(self.radius, self.percent, self.threshold)
 
+class Sobel(Filter):
+
+    """
+    Using the Scobeloperator to integrate perpendicular towards the direction of the derivative.
+    This is good for getting rid of disturbances.
+    """
+    name = "Scobel"
+
+    def __init__(self, size=3):
+        self.size = size
+
+    def filter(self, image):
+        im1 = image.filter( SOBEL1 )
+        im2 = image.filter( SOBEL2 )
+
+        return image._new(core.blend(im1.im, im2.im, 0.5))
 
 class BLUR(BuiltinFilter):
     name = "Blur"
@@ -272,4 +289,20 @@ class SHARPEN(BuiltinFilter):
         -2, -2, -2,
         -2, 32, -2,
         -2, -2, -2
+        )
+
+class SOBEL1(BuiltinFilter):
+    name = "Sobel_1"
+    filterargs = (3, 3), 1, 255, (
+        -1,  0,  1,
+        -2,  0,  2,
+        -1,  0,  1
+        )
+
+class SOBEL2(BuiltinFilter):
+    name = "Sobel_2"
+    filterargs = (3, 3), 1, 255, (
+        -1, -2, -1,
+         0,  0,  0,
+         1,  2,  1
         )
