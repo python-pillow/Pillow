@@ -94,7 +94,7 @@ endlocal
 
 
 def cp_tk(ver_85, ver_86):
-    versions = {'ver_85':ver_85, 'ver_86':ver_86}
+    versions = {'ver_85': ver_85, 'ver_86': ver_86}
     return r"""
 mkdir %%INCLIB%%\tcl85\include\X11
 copy /Y /B %%BUILD%%\tcl%(ver_85)s\generic\*.h %%INCLIB%%\tcl85\include\
@@ -308,7 +308,7 @@ def add_compiler(compiler):
 mkdirs()
 fetch_libs()
 # extract_binlib()
-script = [header(), cp_tk(libs['tk-8.5']['version'],libs['tk-8.6']['version'] )]
+script = [header(), cp_tk(libs['tk-8.5']['version'], libs['tk-8.6']['version'])]
 
 
 if 'PYTHON' in os.environ:

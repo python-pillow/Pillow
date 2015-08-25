@@ -2,9 +2,9 @@ import os
 
 SF_MIRROR = 'http://iweb.dl.sourceforge.net'
 
-pythons = {#'26': 7,
+pythons = {  # '26': 7,
            '27': 7,
-           #'32': 7,
+           # '32': 7,
            '33': 7.1,
            '34': 7.1}
 
@@ -46,7 +46,7 @@ libs = {
         'url': SF_MIRROR+'/project/tcl/Tcl/8.5.18/tk8518-src.zip',
         'hash': 'sha1:273f55148777413774aa722ecad25cabda1e31ae',
         'dir': '',
-        'version':'8.5.18',
+        'version': '8.5.18',
     },
     'tcl-8.6': {
         'url': SF_MIRROR+'/project/tcl/Tcl/8.6.4/tcl864-src.zip',
@@ -57,7 +57,7 @@ libs = {
         'url': SF_MIRROR+'/project/tcl/Tcl/8.6.4/tk864-src.zip',
         'hash': 'md5:111d45061a69e7f5250b6ec8ca7c4f35',
         'dir': '',
-        'version':'8.6.4',
+        'version': '8.6.4',
     },
     'webp': {
         'url': 'http://downloads.webmproject.org/releases/webp/libwebp-0.4.3.tar.gz',

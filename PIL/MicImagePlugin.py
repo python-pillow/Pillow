@@ -17,11 +17,10 @@
 #
 
 
-__version__ = "0.1"
-
-
 from PIL import Image, TiffImagePlugin
 from PIL.OleFileIO import MAGIC, OleFileIO
+
+__version__ = "0.1"
 
 
 #

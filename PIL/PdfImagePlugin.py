@@ -20,11 +20,11 @@
 # Image plugin for PDF images (output only).
 ##
 
-__version__ = "0.4"
-
 from PIL import Image, ImageFile
 from PIL._binary import i8
 import io
+
+__version__ = "0.4"
 
 
 #

@@ -21,11 +21,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.2"
-
 from PIL import Image, _binary
-
 from PIL.PcxImagePlugin import PcxImageFile
+
+__version__ = "0.2"
 
 MAGIC = 0x3ADE68B1  # QUIZ: what's this value, then?
 

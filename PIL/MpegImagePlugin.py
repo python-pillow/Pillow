@@ -13,10 +13,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.1"
 
 from PIL import Image, ImageFile
 from PIL._binary import i8
+
+__version__ = "0.1"
 
 
 #

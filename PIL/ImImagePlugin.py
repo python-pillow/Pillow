@@ -26,11 +26,11 @@
 #
 
 
-__version__ = "0.7"
-
 import re
 from PIL import Image, ImageFile, ImagePalette
 from PIL._binary import i8
+
+__version__ = "0.7"
 
 
 # --------------------------------------------------------------------

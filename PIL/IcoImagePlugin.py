@@ -22,13 +22,13 @@
 #   * http://msdn.microsoft.com/en-us/library/ms997538.aspx
 
 
-__version__ = "0.1"
-
 import struct
 from io import BytesIO
 
 from PIL import Image, ImageFile, BmpImagePlugin, PngImagePlugin, _binary
 from math import log, ceil
+
+__version__ = "0.1"
 
 #
 # --------------------------------------------------------------------

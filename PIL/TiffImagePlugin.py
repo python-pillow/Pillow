@@ -41,9 +41,6 @@
 
 from __future__ import print_function
 
-__version__ = "1.3.5"
-DEBUG = False # Needs to be merged with the new logging approach.
-
 from PIL import Image, ImageFile
 from PIL import ImagePalette
 from PIL import _binary
@@ -56,6 +53,9 @@ import collections
 import itertools
 import os
 import io
+
+__version__ = "1.3.5"
+DEBUG = False  # Needs to be merged with the new logging approach.
 
 # Set these to true to force use of libtiff for reading or writing.
 READ_LIBTIFF = False
@@ -519,7 +519,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 typ = self.tagtype[tag]
 
             if DEBUG:
-                print ("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
+                print("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
 
             if typ == 1:
                 # byte data
@@ -654,9 +654,9 @@ class TiffImageFile(ImageFile.ImageFile):
         self._is_animated = None
 
         if DEBUG:
-            print ("*** TiffImageFile._open ***")
-            print ("- __first:", self.__first)
-            print ("- ifh: ", ifh)
+            print("*** TiffImageFile._open ***")
+            print("- __first:", self.__first)
+            print("- ifh: ", ifh)
 
         # and load the first frame
         self._seek(0)
@@ -702,7 +702,8 @@ class TiffImageFile(ImageFile.ImageFile):
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
             if DEBUG:
-                print("Seeking to frame %s, on frame %s, __next %s, location: %s" %
+                print("Seeking to frame %s, on frame %s, " +
+                      "__next %s, location: %s" %
                       (frame, self.__frame, self.__next, self.fp.tell()))
             # reset python3 buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
@@ -788,19 +789,19 @@ class TiffImageFile(ImageFile.ImageFile):
             # that returns an IOError if there's no underlying fp. Easier to
             # deal with here by reordering.
             if DEBUG:
-                print ("have getvalue. just sending in a string from getvalue")
+                print("have getvalue. just sending in a string from getvalue")
             n, err = decoder.decode(self.fp.getvalue())
         elif hasattr(self.fp, "fileno"):
             # we've got a actual file on disk, pass in the fp.
             if DEBUG:
-                print ("have fileno, calling fileno version of the decoder.")
+                print("have fileno, calling fileno version of the decoder.")
             self.fp.seek(0)
             # 4 bytes, otherwise the trace might error out
             n, err = decoder.decode(b"fpfp")
         else:
             # we have something else.
             if DEBUG:
-                print ("don't have fileno or getvalue. just reading")
+                print("don't have fileno or getvalue. just reading")
             # UNDONE -- so much for that buffer size thing.
             n, err = decoder.decode(self.fp.read())
 
@@ -980,7 +981,7 @@ class TiffImageFile(ImageFile.ImageFile):
                             (0, min(y, ysize), w, min(y+h, ysize)),
                             offsets[i], a))
                     if DEBUG:
-                        print ("tiles: ", self.tile)
+                        print("tiles: ", self.tile)
                     y = y + h
                     if y >= self.size[1]:
                         x = y = 0
@@ -1165,8 +1166,8 @@ def _save(im, fp, filename):
 
     if libtiff:
         if DEBUG:
-            print ("Saving using libtiff encoder")
-            print (ifd.items())
+            print("Saving using libtiff encoder")
+            print(ifd.items())
         _fp = 0
         if hasattr(fp, "fileno"):
             try:
@@ -1223,7 +1224,7 @@ def _save(im, fp, filename):
                     atts[k] = v
 
         if DEBUG:
-            print (atts)
+            print(atts)
 
         # libtiff always expects the bytes in native order.
         # we're storing image byte order. So, if the rawmode
@@ -1233,7 +1234,7 @@ def _save(im, fp, filename):
             rawmode = 'I;16N'
 
         a = (rawmode, compression, _fp, filename, atts)
-        # print (im.mode, compression, a, im.encoderconfig)
+        # print(im.mode, compression, a, im.encoderconfig)
         e = Image._getencoder(im.mode, 'libtiff', a, im.encoderconfig)
         e.setimage(im.im, (0, 0)+im.size)
         while True:

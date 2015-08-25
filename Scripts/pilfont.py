@@ -12,14 +12,14 @@
 
 from __future__ import print_function
 
-VERSION = "0.4"
-
 import glob
 import sys
 
 # drivers
 from PIL import BdfFontFile
 from PIL import PcfFontFile
+
+VERSION = "0.4"
 
 if len(sys.argv) <= 1:
     print("PILFONT", VERSION, "-- PIL font compiler.")

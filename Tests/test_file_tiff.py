@@ -88,7 +88,6 @@ class TestFileTiff(PillowTestCase):
         self.assertRaises(SyntaxError,
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
 
-
     def test_bad_exif(self):
         try:
             Image.open('Tests/images/hopper_bad_exif.jpg')._getexif()

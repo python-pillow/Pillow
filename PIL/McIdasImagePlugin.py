@@ -16,10 +16,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.2"
-
 import struct
 from PIL import Image, ImageFile
+
+__version__ = "0.2"
 
 
 def _accept(s):

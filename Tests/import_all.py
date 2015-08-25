@@ -1,10 +1,11 @@
 from __future__ import print_function
-import sys
-sys.path.insert(0, ".")
 
 import glob
 import os
 import traceback
+
+import sys
+sys.path.insert(0, ".")
 
 for file in glob.glob("PIL/*.py"):
     module = os.path.basename(file)[:-3]

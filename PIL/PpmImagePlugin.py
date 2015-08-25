@@ -15,11 +15,11 @@
 #
 
 
-__version__ = "0.2"
-
 import string
 
 from PIL import Image, ImageFile
+
+__version__ = "0.2"
 
 #
 # --------------------------------------------------------------------

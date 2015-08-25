@@ -19,10 +19,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.6"
-
 import re
 from PIL import Image, ImageFile
+
+__version__ = "0.6"
 
 # XBM header
 xbm_head = re.compile(
