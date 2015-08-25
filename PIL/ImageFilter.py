@@ -184,10 +184,10 @@ class UnsharpMask(Filter):
 class Sobel(Filter):
 
     """
-    Using the Scobeloperator to integrate perpendicular towards the direction of the derivative.
+    Using the Sobeloperator to integrate perpendicular towards the direction of the derivative.
     This is good for getting rid of disturbances.
     """
-    name = "Scobel"
+    name = "Sobel"
 
     def __init__(self, size=3):
         self.size = size
