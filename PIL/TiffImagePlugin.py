@@ -702,7 +702,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
             if DEBUG:
-                print("Seeking to frame %s, on frame %s, " +
+                print("Seeking to frame %s, on frame %s, "
                       "__next %s, location: %s" %
                       (frame, self.__frame, self.__next, self.fp.tell()))
             # reset python3 buffered io handle in case fp
