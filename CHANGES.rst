@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Fixed infinite loop on truncated file #1401
+  [radarhere]
+
 - Check that images are L mode in ImageMorph methods #1400
   [radarhere]
 
