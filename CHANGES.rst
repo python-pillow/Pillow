@@ -7,7 +7,7 @@ Changelog (Pillow)
 - In tutorial of pasting images, add to mask text #1389
   [merriam]
 
-- Flake8 fixes #1391
+- Style/health fixes #1391, #1397
   [radarhere]
 
 - Test on Python 3.5 dev and 3.6 nightly #1361
