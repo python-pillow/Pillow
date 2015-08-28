@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Check that images are L mode in ImageMorph methods #1400
+  [radarhere]
+
 - In tutorial of pasting images, add to mask text #1389
   [merriam]
 
