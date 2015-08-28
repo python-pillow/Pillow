@@ -35,6 +35,14 @@ class TestFilePpm(PillowTestCase):
         reloaded = Image.open(f)
         self.assert_image_equal(im, reloaded)
 
+    def test_truncated_file(self):
+        path = self.tempfile('temp.pgm')
+        f = open(path, 'w')
+        f.write('P6')
+        f.close()
+
+        self.assertRaises(ValueError, lambda: Image.open(path))
+
 
 if __name__ == '__main__':
     unittest.main()
