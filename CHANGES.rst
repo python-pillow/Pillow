@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Updated Platform Support for Yosemite #1403
+  [radarhere]
+
 - Fixed infinite loop on truncated file #1401
   [radarhere]
 
