@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Updated libtiff to 4.0.5 #1405
+  [radarhere]
+
 - Updated Platform Support for Yosemite #1403
   [radarhere]
 
