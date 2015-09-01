@@ -23,9 +23,9 @@ libs = {
         'dir': 'jpeg-9a',
     },
     'tiff': {
-        'url': 'ftp://ftp.remotesensing.org/pub/libtiff/tiff-4.0.4.zip',
-        'hash': 'md5:8f538a34156188f9a8dcddb679c65d1e',
-        'dir': 'tiff-4.0.4',
+        'url': 'ftp://ftp.remotesensing.org/pub/libtiff/tiff-4.0.5.zip',
+        'hash': 'md5:3a8feccb0619958281f92e81be88284a',
+        'dir': 'tiff-4.0.5',
     },
     'freetype': {
         'url': 'http://download.savannah.gnu.org/releases/freetype/freetype-2.6.tar.gz',
