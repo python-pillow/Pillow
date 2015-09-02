@@ -405,13 +405,15 @@ def _save(im, fp, filename, eps=1):
     fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
     fp.write("{ currentfile buf readhexstring pop } bind\n")
     fp.write(operator[2] + "\n")
-    fp.flush()
+    if hasattr(fp, "flush"):
+        fp.flush()
 
     ImageFile._save(im, base_fp, [("eps", (0, 0)+im.size, 0, None)])
 
     fp.write("\n%%%%EndBinary\n")
     fp.write("grestore end\n")
-    fp.flush()
+    if hasattr(fp, "flush"):
+        fp.flush()
 
 #
 # --------------------------------------------------------------------

@@ -226,7 +226,8 @@ def _save(im, fp, filename):
         fp.write("%010d 00000 n \n" % x)
     fp.write("trailer\n<<\n/Size %d\n/Root 1 0 R\n>>\n" % len(xref))
     fp.write("startxref\n%d\n%%%%EOF\n" % startxref)
-    fp.flush()
+    if hasattr(fp, "flush"):
+        fp.flush()
 
 #
 # --------------------------------------------------------------------
