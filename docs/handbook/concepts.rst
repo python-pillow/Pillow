@@ -4,15 +4,20 @@ Concepts
 The Python Imaging Library handles *raster images*; that is, rectangles of
 pixel data.
 
+.. _concept-bands:
+
 Bands
 -----
 
 An image can consist of one or more bands of data. The Python Imaging Library
 allows you to store several bands in a single image, provided they all have the
-same dimensions and depth.
+same dimensions and depth.  For example, a PNG image might have 'R', 'G', 'B',
+and 'A' bands for the red, green, blue, and alpha transparency values.  Many 
+operations act on each band separately, e.g., histograms.  It is often useful to
+think of each pixel as having one value per band.
 
 To get the number and names of bands in an image, use the
-:py:meth:`~PIL.Image.Image.getbands` method.
+:py:meth:`~PIL.Image.Image.getbands` method.  
 
 .. _concept-modes:
 
