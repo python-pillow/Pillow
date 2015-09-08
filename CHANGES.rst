@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Corrected scripts path #1407
+  [radarhere]
+
 - Updated libtiff to 4.0.5 #1405
   [radarhere]
 
