@@ -751,7 +751,7 @@ setup(
     ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
     include_package_data=True,
     packages=find_packages(),
-    scripts=glob.glob("Scripts/pil*.py"),
+    scripts=glob.glob("Scripts/*.py"),
     test_suite='nose.collector',
     keywords=["Imaging", ],
     license='Standard PIL License',
