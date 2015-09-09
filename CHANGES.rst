@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Skip ImageFont_bitmap test if _imagingft C module is not installed
+  [homm]
+
+- Add param documentation to ImagePalette 
+  [bwrsandman]
+
 - Corrected scripts path #1407
   [radarhere]
 
