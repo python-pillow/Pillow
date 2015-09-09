@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Disable compiler optimizations for topalette and tobilevel functions for all msvc versions, fixes #1357
+  [cgohlke]
+
 - Skip ImageFont_bitmap test if _imagingft C module is not installed
   [homm]
 
