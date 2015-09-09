@@ -4,13 +4,16 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Improved handling of getink color #1387
+  [radarhere]
+  
 - Disable compiler optimizations for topalette and tobilevel functions for all msvc versions, fixes #1357
   [cgohlke]
 
-- Skip ImageFont_bitmap test if _imagingft C module is not installed
+- Skip ImageFont_bitmap test if _imagingft C module is not installed #1409
   [homm]
 
-- Add param documentation to ImagePalette 
+- Add param documentation to ImagePalette #1381
   [bwrsandman]
 
 - Corrected scripts path #1407
