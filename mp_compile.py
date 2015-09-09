@@ -51,15 +51,33 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
     # Return *all* object filenames, not just the ones we just built.
     return objects
 
-# explicitly don't enable if environment says 1 processor
-if MAX_PROCS != 1 and not sys.platform.startswith('win'):
-    try:
-        # bug, only enable if we can make a Pool. see issue #790 and
-        # http://stackoverflow.com/questions/6033599/oserror-38-errno-38-with-multiprocessing
-        pool = Pool(2)
-        CCompiler.compile = _mp_compile
-    except Exception as msg:
-        print("Exception installing mp_compile, proceeding without: %s" % msg)
-else:
-    print("Single threaded build, not installing mp_compile: %s processes" %
-          MAX_PROCS)
+
+def install():
+
+    fl_pypy3 = hasattr(sys, 'pypy_version_info') and sys.version_info > (3,0)
+    fl_win = sys.platform.startswith('win')
+    
+    if fl_pypy3:
+        # see https://github.com/travis-ci/travis-ci/issues/3587
+        print("Single threaded build for pypy3")
+        return
+    
+    if fl_win:
+        #windows barfs on multiprocessing installs
+        print("Single threaded build for windows")
+        return
+    
+    if MAX_PROCS != 1:
+        # explicitly don't enable if environment says 1 processor
+        try:
+            # bug, only enable if we can make a Pool. see issue #790 and
+            # http://stackoverflow.com/questions/6033599/oserror-38-errno-38-with-multiprocessing
+            pool = Pool(2)
+            CCompiler.compile = _mp_compile
+        except Exception as msg:
+            print("Exception installing mp_compile, proceeding without: %s" % msg)
+    else:
+        print("Single threaded build, not installing mp_compile: %s processes" %
+              MAX_PROCS)
+
+install()
