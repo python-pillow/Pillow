@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Add Solaris/SmartOS include and library directories #1356
+  [njones11]
+  
 - Improved handling of getink color #1387
   [radarhere]
   
