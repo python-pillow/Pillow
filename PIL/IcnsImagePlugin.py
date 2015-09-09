@@ -306,10 +306,8 @@ def _save(im, fp, filename):
 
     OS X only.
     """
-    try:
+    if hasattr(fp, "flush"):
         fp.flush()
-    except:
-        pass
 
     # create the temporary set of pngs
     iconset = tempfile.mkdtemp('.iconset')

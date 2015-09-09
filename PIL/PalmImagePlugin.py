@@ -227,7 +227,8 @@ def _save(im, fp, filename, check=0):
     ImageFile._save(
         im, fp, [("raw", (0, 0)+im.size, 0, (rawmode, rowbytes, 1))])
 
-    fp.flush()
+    if hasattr(fp, "flush"):
+        fp.flush()
 
 
 #

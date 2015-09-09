@@ -762,10 +762,8 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 
     chunk(fp, b"IEND", b"")
 
-    try:
+    if hasattr(fp, "flush"):
         fp.flush()
-    except:
-        pass
 
 
 # --------------------------------------------------------------------

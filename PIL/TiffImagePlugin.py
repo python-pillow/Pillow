@@ -935,8 +935,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     # flush the file descriptor, prevents error on pypy 2.4+
                     # should also eliminate the need for fp.tell for py3
                     # in _seek
-                    # flush method may not exist for file-like object.
-                    if hasattr(self.fp, 'flush'):
+                    if hasattr(self.fp, "flush"):
                         self.fp.flush()
                 except IOError:
                     # io.BytesIO have a fileno, but returns an IOError if
