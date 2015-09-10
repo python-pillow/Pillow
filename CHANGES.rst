@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Catch TypeError in _getexif #1414
+  [radarhere, wiredfool]
+
 - Fix for UnicodeDecodeError in TiffImagePlugin #1416
   [bogdan199, wirdfool]
 
