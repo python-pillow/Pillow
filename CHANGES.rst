@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Dedup code in image.open #1415
+  [wiredfool]
+
 - Skip any number extraneous chars at the end of JPEG chunks #1337
   [homm]
 
