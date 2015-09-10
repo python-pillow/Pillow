@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Fix for UnicodeDecodeError in TiffImagePlugin #1416
+  [bogdan199, wirdfool]
+
 - Dedup code in image.open #1415
   [wiredfool]
 
