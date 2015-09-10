@@ -474,7 +474,7 @@ class ImageFileDirectory(collections.MutableMapping):
 
         for i in range(self._unpack("H", fp.read(2))[0]):
             tag, typ, count, data = self._unpack("HHL4s", fp.read(12))
-            if Image.DEBUG:
+            if DEBUG:
                 tagname = TAGS.get(tag, TagInfo()).name
                 typname = TYPES.get(typ, "unknown")
                 print("tag: %s (%d) - type: %s (%d)" %
@@ -490,7 +490,7 @@ class ImageFileDirectory(collections.MutableMapping):
             if size > 4:
                 here = fp.tell()
                 offset, = self._unpack("L", data)
-                if Image.DEBUG:
+                if DEBUG:
                     print("Tag Location: %s - Data Location: %s" %
                           (here, offset), end=" ")
                 fp.seek(offset)

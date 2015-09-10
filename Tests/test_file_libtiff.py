@@ -3,11 +3,8 @@ from helper import unittest, PillowTestCase, hopper, py3
 
 from ctypes import c_float
 import io
-<<<<<<< HEAD
 import logging
-=======
 import itertools
->>>>>>> Restore legacy TIFF API.
 import os
 
 from PIL import Image, TiffImagePlugin
