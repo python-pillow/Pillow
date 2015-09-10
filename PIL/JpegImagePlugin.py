@@ -433,7 +433,7 @@ def _getexif(self):
     # get gpsinfo extension
     try:
         file.seek(exif[0x8825])
-    except KeyError:
+    except (KeyError, TypeError):
         pass
     else:
         info = TiffImagePlugin.ImageFileDirectory(head)
