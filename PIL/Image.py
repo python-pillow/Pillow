@@ -2299,19 +2299,7 @@ def open(fp, mode="r"):
 
     preinit()
 
-    for i in ID:
-        try:
-            factory, accept = OPEN[i]
-            if not accept or accept(prefix):
-                fp.seek(0)
-                im = factory(fp, filename)
-                _decompression_bomb_check(im.size)
-                return im
-        except (SyntaxError, IndexError, TypeError, struct.error):
-            logger.debug("", exc_info=True)
-
-    if init():
-
+    def _open_core(fp, filename, prefix):
         for i in ID:
             try:
                 factory, accept = OPEN[i]
@@ -2322,10 +2310,19 @@ def open(fp, mode="r"):
                     return im
             except (SyntaxError, IndexError, TypeError, struct.error):
                 logger.debug("", exc_info=True)
+        return None
+
+    im = _open_core(fp, filename, prefix)
+    
+    if im is None:
+        if init():
+            im = _open_core(fp, filename, prefix)
+
+    if im:
+        return im
 
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
-
 
 #
 # Image processing.
