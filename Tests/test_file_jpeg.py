@@ -168,6 +168,11 @@ class TestFileJpeg(PillowTestCase):
 
     def test_exif_typeerror(self):
         im = Image.open('Tests/images/exif_typeerror.jpg')
+        # Should not raise a TypeError
+        im._getexif()
+
+    def test_exif_gps_typeerror(self):
+        im = Image.open('Tests/images/exif_gps_typeerror.jpg')
 
         # Should not raise a TypeError
         im._getexif()
