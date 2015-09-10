@@ -33,7 +33,7 @@ import io
 import logging
 import os
 import sys
-# import traceback
+import struct
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +101,8 @@ class ImageFile(Image.Image):
         except (IndexError,  # end of data
                 TypeError,  # end of data (ord)
                 KeyError,  # unsupported mode
-                EOFError) as v:  # got header but not the first frame
+                EOFError,  # got header but not the first frame
+                struct.error) as v:
             logger.exception("%s")
             raise SyntaxError(v)
 
@@ -204,11 +205,11 @@ class ImageFile(Image.Image):
                 while True:
                     try:
                         s = read(self.decodermaxblock)
-                    except IndexError as ie:  # truncated png/gif
+                    except (IndexError, struct.error):  # truncated png/gif
                         if LOAD_TRUNCATED_IMAGES:
                             break
                         else:
-                            raise IndexError(ie)
+                            raise IOError("image file is truncated")
 
                     if not s and not d.handles_eof:  # truncated jpeg
                         self.tile = []
