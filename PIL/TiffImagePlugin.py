@@ -63,6 +63,7 @@ DEBUG = False  # Needs to be merged with the new logging approach.
 # Set these to true to force use of libtiff for reading or writing.
 READ_LIBTIFF = False
 WRITE_LIBTIFF = False
+IFD_LEGACY_API = True
 
 II = b"II"  # little-endian (Intel style)
 MM = b"MM"  # big-endian (Motorola style)
@@ -276,7 +277,7 @@ class ImageFileDirectory(collections.MutableMapping):
             raise SyntaxError("not a TIFF IFD")
         self.reset()
         self.next, = self._unpack("L", ifh[4:])
-        self._legacy_api = False
+        self._legacy_api = IFD_LEGACY_API
 
     prefix = property(lambda self: self._prefix)
     offset = property(lambda self: self._offset)
