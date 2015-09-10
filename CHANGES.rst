@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Single threaded build for pypy3, refactor #1413
+  [wiredfool]
+  
 - Fix loading of truncated images with LOAD_TRUNCATED_IMAGES enabled #1366
   [homm]
 
