@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Skip any number extraneous chars at the end of JPEG chunks #1337
+  [homm]
+
 - Single threaded build for pypy3, refactor #1413
   [wiredfool]
   
