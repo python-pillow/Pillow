@@ -288,7 +288,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         s = self.fp.read(1)
 
-        if i8(s[0]) != 255:
+        if i8(s) != 255:
             raise SyntaxError("not a JPEG file")
 
         # Create attributes
@@ -311,7 +311,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 i = i16(s)
             else:
                 # Skip non-0xFF junk
-                s = b"\xff"
+                s = self.fp.read(1)
                 continue
 
             if i in MARKER:
