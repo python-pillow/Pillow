@@ -3,7 +3,9 @@ Changelog (Pillow)
 
 3.0.0 (Unreleased)
 ------------------
-
+- Documentation update for concepts: bands
+  [merriam]
+  
 - Add Solaris/SmartOS include and library directories #1356
   [njones11]
   
