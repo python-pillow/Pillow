@@ -3,6 +3,10 @@ Changelog (Pillow)
 
 3.0.0 (Unreleased)
 ------------------
+
+- Fix loading of truncated images with LOAD_TRUNCATED_IMAGES enabled #1366
+  [homm]
+
 - Documentation update for concepts: bands
   [merriam]
   
