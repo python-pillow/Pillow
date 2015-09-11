@@ -551,7 +551,7 @@ class ImageFileDirectory(collections.MutableMapping):
                 # NUL (binary zero). Also, I don't think this was well
                 # exercised before.
                 if sys.version_info[0] == 2:
-                    value = value.decode('ascii','replace')
+                    value = value.decode('ascii', 'replace')
                 data = value = b"" + value.encode('ascii', 'replace') + b"\0"
             else:
                 # integer data

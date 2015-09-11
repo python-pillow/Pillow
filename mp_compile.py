@@ -54,19 +54,19 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
 
 def install():
 
-    fl_pypy3 = hasattr(sys, 'pypy_version_info') and sys.version_info > (3,0)
+    fl_pypy3 = hasattr(sys, 'pypy_version_info') and sys.version_info > (3, 0)
     fl_win = sys.platform.startswith('win')
-    
+
     if fl_pypy3:
         # see https://github.com/travis-ci/travis-ci/issues/3587
         print("Single threaded build for pypy3")
         return
-    
+
     if fl_win:
         #windows barfs on multiprocessing installs
         print("Single threaded build for windows")
         return
-    
+
     if MAX_PROCS != 1:
         # explicitly don't enable if environment says 1 processor
         try:
@@ -75,9 +75,10 @@ def install():
             pool = Pool(2)
             CCompiler.compile = _mp_compile
         except Exception as msg:
-            print("Exception installing mp_compile, proceeding without: %s" % msg)
+            print("Exception installing mp_compile, proceeding without:"
+                  "%s" % msg)
     else:
-        print("Single threaded build, not installing mp_compile: %s processes" %
-              MAX_PROCS)
+        print("Single threaded build, not installing mp_compile:"
+              "%s processes" % MAX_PROCS)
 
 install()
