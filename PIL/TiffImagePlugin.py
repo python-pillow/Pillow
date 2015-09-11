@@ -428,8 +428,7 @@ class ImageFileDirectory(collections.MutableMapping):
 
             ifd = fp.read(12)
             if len(ifd) != 12:
-                warnings.warn("Possibly corrupt EXIF data.  "
-                              "Expecting to read 12 bytes but only got %d."
+                warnings.warn("Possibly corrupt EXIF data. Expecting to read 12 bytes but only got %d."
                               % (len(ifd)))
                 continue
 
@@ -467,9 +466,8 @@ class ImageFileDirectory(collections.MutableMapping):
                 data = ifd[8:8+size]
 
             if len(data) != size:
-                warnings.warn("Possibly corrupt EXIF data.  "
-                              "Expecting to read %d bytes but only got %d. "
-                              "Skipping tag %s" % (size, len(data), tag))
+                warnings.warn("Possibly corrupt EXIF data. Expecting to read %d bytes but only got %d. Skipping tag %s"
+                              % (size, len(data), tag))
                 continue
 
             self.tagdata[tag] = data
@@ -484,8 +482,7 @@ class ImageFileDirectory(collections.MutableMapping):
 
         ifd = fp.read(4)
         if len(ifd) != 4:
-            warnings.warn("Possibly corrupt EXIF data.  "
-                          "Expecting to read 4 bytes but only got %d."
+            warnings.warn("Possibly corrupt EXIF data. Expecting to read 4 bytes but only got %d."
                           % (len(ifd)))
             return
 
@@ -704,9 +701,8 @@ class TiffImageFile(ImageFile.ImageFile):
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
             if DEBUG:
-                print("Seeking to frame %s, on frame %s, "
-                      "__next %s, location: %s" %
-                      (frame, self.__frame, self.__next, self.fp.tell()))
+                print("Seeking to frame %s, on frame %s, __next %s, location: %s"
+                      % (frame, self.__frame, self.__next, self.fp.tell()))
             # reset python3 buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
             self.fp.tell()
