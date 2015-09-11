@@ -361,7 +361,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                             self.tagtype[tag] = 2
 
         if self.tagtype[tag] == 7 and bytes is not str:
-            values = [value.encode("ascii") if isinstance(value, str) else value
+            values = [value.encode("ascii",'replace') if isinstance(value, str) else value
                       for value in values]
         values = tuple(info.cvt_enum(value) for value in values)
         if info.length == 1:

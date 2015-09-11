@@ -18,17 +18,20 @@ class TestFileTiffMetadata(PillowTestCase):
         img = hopper()
 
         basetextdata = "This is some arbitrary metadata for a text field"
-        textdata = basetextdata + " \xff"
+        textdata = basetextdata + " \xff" 
+        reloaded_textdata = basetextdata.encode('ascii') + b" ?"
         floatdata = 12.345
         doubledata = 67.89
         info = TiffImagePlugin.ImageFileDirectory()
 
-        info[tag_ids['ImageJMetaDataByteCounts']] = len(textdata)
+        info[tag_ids['ImageJMetaDataByteCounts']] = len(reloaded_textdata)
         info[tag_ids['ImageJMetaData']] = textdata
         info[tag_ids['RollAngle']] = floatdata
         info.tagtype[tag_ids['RollAngle']] = 11
         info[tag_ids['YawAngle']] = doubledata
         info.tagtype[tag_ids['YawAngle']] = 12
+
+        print(info.tagtype)
 
         f = self.tempfile("temp.tif")
 
@@ -36,11 +39,11 @@ class TestFileTiffMetadata(PillowTestCase):
 
         loaded = Image.open(f)
 
-        self.assertEqual(loaded.tag[50838], (len(basetextdata + " ?"),))
-        self.assertEqual(loaded.tag_v2[50838], len(basetextdata + " ?"))
+        self.assertEqual(loaded.tag[50838], (len(reloaded_textdata),))
+        self.assertEqual(loaded.tag_v2[50838], len(reloaded_textdata))
 
-        self.assertEqual(loaded.tag[50839], basetextdata + " ?")
-        self.assertEqual(loaded.tag_v2[50839], basetextdata + " ?")
+        self.assertEqual(loaded.tag[50839], reloaded_textdata)
+        self.assertEqual(loaded.tag_v2[50839], reloaded_textdata)
 
 
         loaded_float = loaded.tag[tag_ids['RollAngle']][0]
