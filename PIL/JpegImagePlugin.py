@@ -408,7 +408,7 @@ def _getexif(self):
     file = io.BytesIO(data[6:])
     head = file.read(8)
     # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory(head)
+    info = TiffImagePlugin.ImageFileDirectory_v2(head)
     info.load(file)
     exif = dict(info)
     # get exif extension
@@ -420,7 +420,7 @@ def _getexif(self):
     except (KeyError, TypeError):
         pass
     else:
-        info = TiffImagePlugin.ImageFileDirectory(head)
+        info = TiffImagePlugin.ImageFileDirectory_v2(head)
         info.load(file)
         exif.update(info)
     # get gpsinfo extension
@@ -432,7 +432,7 @@ def _getexif(self):
     except (KeyError, TypeError):
         pass
     else:
-        info = TiffImagePlugin.ImageFileDirectory(head)
+        info = TiffImagePlugin.ImageFileDirectory_v2(head)
         info.load(file)
         exif[0x8825] = dict(info)
     return exif
@@ -453,7 +453,7 @@ def _getmp(self):
     head = file_contents.read(8)
     endianness = '>' if head[:4] == b'\x4d\x4d\x00\x2a' else '<'
     # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory(head)
+    info = TiffImagePlugin.ImageFileDirectory_v2(head)
     info.load(file_contents)
     mp = dict(info)
     # it's an error not to have a number of images

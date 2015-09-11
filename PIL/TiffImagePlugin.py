@@ -227,7 +227,7 @@ def _limit_rational(val, max_val):
 _load_dispatch = {}
 _write_dispatch = {}
 
-class ImageFileDirectory(collections.MutableMapping):
+class ImageFileDirectory_v2(collections.MutableMapping):
     """This class represents a TIFF tag directory.  To speed things up, we
     don't decode tags unless they're asked for.
 
@@ -277,8 +277,8 @@ class ImageFileDirectory(collections.MutableMapping):
             raise SyntaxError("not a TIFF IFD")
         self.reset()
         self.next, = self._unpack("L", ifh[4:])
-        self._legacy_api = IFD_LEGACY_API
-
+        self._legacy_api = False
+        
     prefix = property(lambda self: self._prefix)
     offset = property(lambda self: self._offset)
     legacy_api = property(lambda self: self._legacy_api)
@@ -585,14 +585,33 @@ class ImageFileDirectory(collections.MutableMapping):
 
         return offset
 
-ImageFileDirectory._load_dispatch = _load_dispatch
-ImageFileDirectory._write_dispatch = _write_dispatch
+ImageFileDirectory_v2._load_dispatch = _load_dispatch
+ImageFileDirectory_v2._write_dispatch = _write_dispatch
 for idx, name in TYPES.items():
     name = name.replace(" ", "_")
-    setattr(ImageFileDirectory, "load_" + name, _load_dispatch[idx][1])
-    setattr(ImageFileDirectory, "write_" + name, _write_dispatch[idx])
+    setattr(ImageFileDirectory_v2, "load_" + name, _load_dispatch[idx][1])
+    setattr(ImageFileDirectory_v2, "write_" + name, _write_dispatch[idx])
 del _load_dispatch, _write_dispatch, idx, name
 
+#Legacy ImageFileDirectory support.
+class ImageFileDirectory_v1(ImageFileDirectory_v2):
+    def __init__(self, *args, **kwargs):
+        ImageFileDirectory_v2.__init__(self, *args, **kwargs)
+        self.legacy_api=True
+        #insert deprecation warning here.
+
+    tags = property(lambda self: self._tags)
+    tagdata = property(lambda self: self._tagdata)
+
+    @classmethod
+    def from_v2(cls, original):
+        ifd = cls(prefix=original.prefix)
+        ifd._tagdata = original._tagdata
+        ifd.tagtype = original.tagtype
+        return ifd
+        
+# undone -- switch this pointer when IFD_LEGACY_API == False
+ImageFileDirectory = ImageFileDirectory_v1
 
 ##
 # Image plugin for TIFF files.
@@ -609,10 +628,13 @@ class TiffImageFile(ImageFile.ImageFile):
         ifh = self.fp.read(8)
 
         # image file directory (tag dictionary)
-        self.tag = self.ifd = ImageFileDirectory(ifh)
+        self.tag_v2 = ImageFileDirectory_v2(ifh)
+
+        # legacy tag/ifd entries will be filled in later
+        self.tag = self.ifd = None
 
         # setup frame pointers
-        self.__first = self.__next = self.ifd.next
+        self.__first = self.__next = self.tag_v2.next
         self.__frame = -1
         self.__fp = self.fp
         self._frame_pos = []
@@ -678,11 +700,13 @@ class TiffImageFile(ImageFile.ImageFile):
             self._frame_pos.append(self.__next)
             if DEBUG:
                 print("Loading tags, location: %s" % self.fp.tell())
-            self.tag.load(self.fp)
-            self.__next = self.tag.next
+            self.tag_v2.load(self.fp)
+            self.__next = self.tag_v2.next
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
-        self.tag.load(self.fp)
+        self.tag_v2.load(self.fp)
+        # fill the legacy tag/ifd entries    
+        self.tag = self.ifd = ImageFileDirectory_v1.from_v2(self.tag_v2)
         self.__frame = frame
         self._setup()
 
@@ -701,20 +725,20 @@ class TiffImageFile(ImageFile.ImageFile):
             args = (rawmode, 0, 1)
         elif compression == "jpeg":
             args = rawmode, ""
-            if JPEGTABLES in self.tag:
+            if JPEGTABLES in self.tag_v2:
                 # Hack to handle abbreviated JPEG headers
                 # FIXME This will fail with more than one value
-                self.tile_prefix, = self.tag[JPEGTABLES]
+                self.tile_prefix, = self.tag_v2[JPEGTABLES]
         elif compression == "packbits":
             args = rawmode
         elif compression == "tiff_lzw":
             args = rawmode
-            if PREDICTOR in self.tag:
+            if PREDICTOR in self.tag_v2:
                 # Section 14: Differencing Predictor
-                self.decoderconfig = (self.tag[PREDICTOR],)
+                self.decoderconfig = (self.tag_v2[PREDICTOR],)
 
-        if ICCPROFILE in self.tag:
-            self.info['icc_profile'] = self.tag[ICCPROFILE]
+        if ICCPROFILE in self.tag_v2:
+            self.info['icc_profile'] = self.tag_v2[ICCPROFILE]
 
         return args
 
@@ -737,7 +761,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
         extents = self.tile[0][1]
-        args = self.tile[0][3] + (self.ifd.offset,)
+        args = self.tile[0][3] + (self.tag_v2.offset,)
         decoder = Image._getdecoder(self.mode, 'libtiff', args,
                                     self.decoderconfig)
         try:
@@ -790,18 +814,18 @@ class TiffImageFile(ImageFile.ImageFile):
     def _setup(self):
         "Setup this image object based on current tags"
 
-        if 0xBC01 in self.tag:
+        if 0xBC01 in self.tag_v2:
             raise IOError("Windows Media Photo files not yet supported")
 
         # extract relevant tags
-        self._compression = COMPRESSION_INFO[self.tag.get(COMPRESSION, 1)]
-        self._planar_configuration = self.tag.get(PLANAR_CONFIGURATION, 1)
+        self._compression = COMPRESSION_INFO[self.tag_v2.get(COMPRESSION, 1)]
+        self._planar_configuration = self.tag_v2.get(PLANAR_CONFIGURATION, 1)
 
         # photometric is a required tag, but not everyone is reading
         # the specification
-        photo = self.tag.get(PHOTOMETRIC_INTERPRETATION, 0)
+        photo = self.tag_v2.get(PHOTOMETRIC_INTERPRETATION, 0)
 
-        fillorder = self.tag.get(FILLORDER, 1)
+        fillorder = self.tag_v2.get(FILLORDER, 1)
 
         if DEBUG:
             print("*** Summary ***")
@@ -811,20 +835,20 @@ class TiffImageFile(ImageFile.ImageFile):
             print("- fill_order:", fillorder)
 
         # size
-        xsize = self.tag.get(IMAGEWIDTH)
-        ysize = self.tag.get(IMAGELENGTH)
+        xsize = self.tag_v2.get(IMAGEWIDTH)
+        ysize = self.tag_v2.get(IMAGELENGTH)
         self.size = xsize, ysize
 
         if DEBUG:
             print("- size:", self.size)
 
-        format = self.tag.get(SAMPLEFORMAT, (1,))
+        format = self.tag_v2.get(SAMPLEFORMAT, (1,))
 
         # mode: check photometric interpretation and bits per pixel
         key = (
-            self.tag.prefix, photo, format, fillorder,
-            self.tag.get(BITSPERSAMPLE, (1,)),
-            self.tag.get(EXTRASAMPLES, ())
+            self.tag_v2.prefix, photo, format, fillorder,
+            self.tag_v2.get(BITSPERSAMPLE, (1,)),
+            self.tag_v2.get(EXTRASAMPLES, ())
             )
         if DEBUG:
             print("format key:", key)
@@ -841,8 +865,8 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self.info["compression"] = self._compression
 
-        xres = self.tag.get(X_RESOLUTION, (1, 1))
-        yres = self.tag.get(Y_RESOLUTION, (1, 1))
+        xres = self.tag_v2.get(X_RESOLUTION, (1, 1))
+        yres = self.tag_v2.get(Y_RESOLUTION, (1, 1))
 
         if xres and not isinstance(xres, tuple):
             xres = (xres, 1.)
@@ -851,7 +875,7 @@ class TiffImageFile(ImageFile.ImageFile):
         if xres and yres:
             xres = xres[0] / (xres[1] or 1)
             yres = yres[0] / (yres[1] or 1)
-            resunit = self.tag.get(RESOLUTION_UNIT, 1)
+            resunit = self.tag_v2.get(RESOLUTION_UNIT, 1)
             if resunit == 2:  # dots per inch
                 self.info["dpi"] = xres, yres
             elif resunit == 3:  # dots per centimeter. convert to dpi
@@ -862,10 +886,10 @@ class TiffImageFile(ImageFile.ImageFile):
         # build tile descriptors
         x = y = l = 0
         self.tile = []
-        if STRIPOFFSETS in self.tag:
+        if STRIPOFFSETS in self.tag_v2:
             # striped image
-            offsets = self.tag[STRIPOFFSETS]
-            h = self.tag.get(ROWSPERSTRIP, ysize)
+            offsets = self.tag_v2[STRIPOFFSETS]
+            h = self.tag_v2.get(ROWSPERSTRIP, ysize)
             w = self.size[0]
             if READ_LIBTIFF or self._compression in ["tiff_ccitt", "group3",
                                                      "group4", "tiff_jpeg",
@@ -912,9 +936,9 @@ class TiffImageFile(ImageFile.ImageFile):
                 # https://github.com/python-pillow/Pillow/issues/279
                 if fillorder == 2:
                     key = (
-                        self.tag.prefix, photo, format, 1,
-                        self.tag.get(BITSPERSAMPLE, (1,)),
-                        self.tag.get(EXTRASAMPLES, ())
+                        self.tag_v2.prefix, photo, format, 1,
+                        self.tag_v2.get(BITSPERSAMPLE, (1,)),
+                        self.tag_v2.get(EXTRASAMPLES, ())
                         )
                     if DEBUG:
                         print("format key:", key)
@@ -952,12 +976,12 @@ class TiffImageFile(ImageFile.ImageFile):
                         x = y = 0
                         l += 1
                     a = None
-        elif TILEOFFSETS in self.tag:
+        elif TILEOFFSETS in self.tag_v2:
             # tiled image
-            w = self.tag.get(322)
-            h = self.tag.get(323)
+            w = self.tag_v2.get(322)
+            h = self.tag_v2.get(323)
             a = None
-            for o in self.tag[TILEOFFSETS]:
+            for o in self.tag_v2[TILEOFFSETS]:
                 if not a:
                     a = self._decoder(rawmode, l)
                 # FIXME: this doesn't work if the image size
@@ -981,7 +1005,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # fixup palette descriptor
 
         if self.mode == "P":
-            palette = [o8(b // 256) for b in self.tag[COLORMAP]]
+            palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
 #
 # --------------------------------------------------------------------
@@ -1023,7 +1047,7 @@ def _save(im, fp, filename):
     except KeyError:
         raise IOError("cannot write mode %s as TIFF" % im.mode)
 
-    ifd = ImageFileDirectory(prefix=prefix)
+    ifd = ImageFileDirectory_v2(prefix=prefix)
 
     compression = im.encoderinfo.get('compression', im.info.get('compression',
                                      'raw'))
