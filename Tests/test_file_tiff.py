@@ -99,9 +99,11 @@ class TestFileTiff(PillowTestCase):
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
 
     def test_bad_exif(self):
-        image = Image.open('Tests/images/hopper_bad_exif.jpg')
-        image._getexif()
-        self.assertRaises(Exception, image._getexif)
+        try:
+            Image.open('Tests/images/hopper_bad_exif.jpg')._getexif()
+        except struct.error:
+            self.fail(
+                 "Bad EXIF data passed incorrect values to _binary unpack")
 
     def test_save_unsupported_mode(self):
         im = hopper("HSV")

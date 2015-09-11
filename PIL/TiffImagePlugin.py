@@ -468,55 +468,67 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         return b"".join(self._pack("2L", *_limit_rational(frac, 2 ** 30))
                         for frac in values)
 
+    def _ensure_read(self, fp, size):
+        ret = fp.read(size)
+        if len(ret) != size:
+            raise IOError("Corrupt EXIF data.  " +
+                          "Expecting to read %d bytes but only got %d. " %
+                          (size, len(ret)))
+        return ret
+
     def load(self, fp):
 
         self.reset()
         self._offset = fp.tell()
 
-        for i in range(self._unpack("H", fp.read(2))[0]):
-            tag, typ, count, data = self._unpack("HHL4s", fp.read(12))
-            if DEBUG:
-                tagname = TAGS.get(tag, TagInfo()).name
-                typname = TYPES.get(typ, "unknown")
-                print("tag: %s (%d) - type: %s (%d)" %
-                      (tagname, tag, typname, typ), end=" ")
-
-            try:
-                unit_size, handler = self._load_dispatch[typ]
-            except KeyError:
+        try:
+            for i in range(self._unpack("H", self._ensure_read(fp,2))[0]):
+                tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp,12))
                 if DEBUG:
-                    print("- unsupported type", typ)
-                continue  # ignore unsupported type
-            size = count * unit_size
-            if size > 4:
-                here = fp.tell()
-                offset, = self._unpack("L", data)
-                if DEBUG:
-                    print("Tag Location: %s - Data Location: %s" %
-                          (here, offset), end=" ")
-                fp.seek(offset)
-                data = ImageFile._safe_read(fp, size)
-                fp.seek(here)
-            else:
-                data = data[:size]
+                    tagname = TAGS.get(tag, TagInfo()).name
+                    typname = TYPES.get(typ, "unknown")
+                    print("tag: %s (%d) - type: %s (%d)" %
+                          (tagname, tag, typname, typ), end=" ")
 
-            if len(data) != size:
-                warnings.warn("Possibly corrupt EXIF data.  "
-                              "Expecting to read %d bytes but only got %d. "
-                              "Skipping tag %s" % (size, len(data), tag))
-                continue
-
-            self._tagdata[tag] = data
-            self.tagtype[tag] = typ
-
-            if DEBUG:
-                if size > 32:
-                    print("- value: <table: %d bytes>" % size)
+                try:
+                    unit_size, handler = self._load_dispatch[typ]
+                except KeyError:
+                    if DEBUG:
+                        print("- unsupported type", typ)
+                    continue  # ignore unsupported type
+                size = count * unit_size
+                if size > 4:
+                    here = fp.tell()
+                    offset, = self._unpack("L", data)
+                    if DEBUG:
+                        print("Tag Location: %s - Data Location: %s" %
+                              (here, offset), end=" ")
+                    fp.seek(offset)
+                    data = ImageFile._safe_read(fp, size)
+                    fp.seek(here)
                 else:
-                    print("- value:", self[tag])
+                    data = data[:size]
 
-        self.next, = self._unpack("L", fp.read(4))
+                if len(data) != size:
+                    warnings.warn("Possibly corrupt EXIF data.  "
+                                  "Expecting to read %d bytes but only got %d. "
+                                  "Skipping tag %s" % (size, len(data), tag))
+                    continue
 
+                self._tagdata[tag] = data
+                self.tagtype[tag] = typ
+
+                if DEBUG:
+                    if size > 32:
+                        print("- value: <table: %d bytes>" % size)
+                    else:
+                        print("- value:", self[tag])
+
+            self.next, = self._unpack("L", self._ensure_read(fp,4))
+        except IOError as msg:
+            warnings.warn(str(msg))
+            return
+        
     def save(self, fp):
 
         if fp.tell() == 0:  # skip TIFF header on subsequent pages
