@@ -2313,7 +2313,7 @@ def open(fp, mode="r"):
         return None
 
     im = _open_core(fp, filename, prefix)
-    
+
     if im is None:
         if init():
             im = _open_core(fp, filename, prefix)
@@ -2326,6 +2326,7 @@ def open(fp, mode="r"):
 
 #
 # Image processing.
+
 
 def alpha_composite(im1, im2):
     """

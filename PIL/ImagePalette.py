@@ -28,7 +28,7 @@ class ImagePalette(object):
     :param mode: The mode to use for the Palette. See:
         :ref:`concept-modes`. Defaults to "RGB"
     :param palette: An optional palette. If given, it must be a bytearray,
-        an array or a list of ints between 0-255 and of length ``size`` 
+        an array or a list of ints between 0-255 and of length ``size``
         times the number of colors in ``mode``. The list must be aligned
         by channel (All R values must be contiguous in the list before G
         and B values.) Defaults to 0 through 255 per channel.
