@@ -58,7 +58,7 @@ Changelog (Pillow)
 - In tutorial of pasting images, add to mask text #1389
   [merriam]
 
-- Style/health fixes #1391, #1397, #1417
+- Style/health fixes #1391, #1397, #1417, #1418
   [radarhere]
 
 - Test on Python 3.5 dev and 3.6 nightly #1361
