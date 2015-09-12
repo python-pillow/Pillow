@@ -75,10 +75,8 @@ def install():
             pool = Pool(2)
             CCompiler.compile = _mp_compile
         except Exception as msg:
-            print("Exception installing mp_compile, proceeding without:"
-                  "%s" % msg)
+            print("Exception installing mp_compile, proceeding without: %s" % msg)
     else:
-        print("Single threaded build, not installing mp_compile:"
-              "%s processes" % MAX_PROCS)
+        print("Single threaded build, not installing mp_compile: %s processes" % MAX_PROCS)
 
 install()
