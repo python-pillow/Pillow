@@ -17,34 +17,50 @@ class TestFileTiffMetadata(PillowTestCase):
 
         img = hopper()
 
+        # Behaviour change:
+        # Pre ifd rewrite, ImageJMetaData was being written as a string(2),
+        # Post ifd rewrite, it's defined as arbitrary bytes(7). It should
+        # roundtrip with the actual bytes, rather than stripped text
+        # of the premerge tests.
+        #
+        # For text items, we still have to decode('ascii','replace') because
+        # the tiff file format can't take 8 bit bytes in that field.
+        
         basetextdata = "This is some arbitrary metadata for a text field"
-        textdata = basetextdata + " \xff" 
-        reloaded_textdata = basetextdata.encode('ascii') + b" ?"
+        bindata = basetextdata.encode('ascii') + b" \xff"
+        textdata = basetextdata + " " + chr(255)
+        reloaded_textdata = basetextdata + " ?"
         floatdata = 12.345
         doubledata = 67.89
         info = TiffImagePlugin.ImageFileDirectory()
 
-        info[tag_ids['ImageJMetaDataByteCounts']] = len(reloaded_textdata)
-        info[tag_ids['ImageJMetaData']] = textdata
+        ImageJMetaData = tag_ids['ImageJMetaData']
+        ImageJMetaDataByteCounts = tag_ids['ImageJMetaDataByteCounts']
+        ImageDescription = tag_ids['ImageDescription']
+        
+        info[ImageJMetaDataByteCounts] = len(bindata)
+        info[ImageJMetaData] = bindata
         info[tag_ids['RollAngle']] = floatdata
         info.tagtype[tag_ids['RollAngle']] = 11
         info[tag_ids['YawAngle']] = doubledata
         info.tagtype[tag_ids['YawAngle']] = 12
 
-        print(info.tagtype)
-
+        info[ImageDescription] = textdata
+             
         f = self.tempfile("temp.tif")
 
         img.save(f, tiffinfo=info)
 
         loaded = Image.open(f)
 
-        self.assertEqual(loaded.tag[50838], (len(reloaded_textdata),))
-        self.assertEqual(loaded.tag_v2[50838], len(reloaded_textdata))
+        self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (len(bindata),))
+        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], len(bindata))
 
-        self.assertEqual(loaded.tag[50839], reloaded_textdata)
-        self.assertEqual(loaded.tag_v2[50839], reloaded_textdata)
+        self.assertEqual(loaded.tag[ImageJMetaData], bindata)
+        self.assertEqual(loaded.tag_v2[ImageJMetaData], bindata)
 
+        self.assertEqual(loaded.tag[ImageDescription], (reloaded_textdata,))
+        self.assertEqual(loaded.tag_v2[ImageDescription], reloaded_textdata)
 
         loaded_float = loaded.tag[tag_ids['RollAngle']][0]
         self.assertAlmostEqual(loaded_float, floatdata, places=5)
