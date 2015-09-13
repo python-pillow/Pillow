@@ -4,7 +4,7 @@ from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
 
-tag_ids = dict((info.name, info.value) for info in TiffTags.TAGS.values())
+tag_ids = dict((info.name, info.value) for info in TiffTags.TAGS_V2.values())
 
 
 class TestFileTiffMetadata(PillowTestCase):

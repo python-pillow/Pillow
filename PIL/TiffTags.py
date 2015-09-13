@@ -19,6 +19,9 @@
 
 from collections import namedtuple
 
+# Legacy Tags structure
+TAGS = {}
+
 class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
     __slots__ = []
 
@@ -34,7 +37,7 @@ class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
 #
 #  id: (Name, Type, Length, enum_values)
 #
-TAGS = {
+TAGS_V2 = {
 
     254: ("NewSubfileType", 4, 1),
     255: ("SubfileType", 3, 1),
@@ -160,12 +163,17 @@ TAGS = {
     50839: ("ImageJMetaData", 7, 1)
 }
 
+def _populate():
+    for k, v in TAGS_V2.items():
+        # Populate legacy structure. 
+        TAGS[k] = v[0]
+        if len(v) == 4:
+            for sk,sv in v[3].items():
+                TAGS[(k,sk)] = sv
+            
+        TAGS_V2[k] = TagInfo(k, *v)
 
-for k, v in TAGS.items():
-    TAGS[k] = TagInfo(k, *v)
-del k, v
-
-
+_populate()
 ##
 # Map type numbers to type names -- defined in ImageFileDirectory.
 
