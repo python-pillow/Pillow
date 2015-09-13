@@ -232,7 +232,8 @@ class TestFileLibTiff(LibTiffTestCase):
         orig.save(out)
 
         reread = Image.open(out)
-        self.assertEqual('temp.tif', reread.tag[269])
+        self.assertEqual('temp.tif', reread.tag_v2[269])
+        self.assertEqual('temp.tif', reread.tag[269][0])
 
     def test_12bit_rawmode(self):
         """ Are we generating the same interpretation
