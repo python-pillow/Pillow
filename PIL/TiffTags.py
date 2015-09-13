@@ -19,9 +19,6 @@
 
 from collections import namedtuple
 
-# Legacy Tags structure
-TAGS = {}
-
 class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
     __slots__ = []
 
@@ -163,6 +160,127 @@ TAGS_V2 = {
     50839: ("ImageJMetaData", 7, 1)
 }
 
+# Legacy Tags structure
+# these tags aren't included above, but were in the previous versions
+TAGS = {347: 'JPEGTables',
+        700: 'XMP',
+
+        # Additional Exif Info
+        33434: 'ExposureTime',
+        33437: 'FNumber',
+        33723: 'IptcNaaInfo',
+        34377: 'PhotoshopInfo',
+        34675: 'ICCProfile',
+        34850: 'ExposureProgram',
+        34852: 'SpectralSensitivity',
+        34853: 'GPSInfoIFD',
+        34855: 'ISOSpeedRatings',
+        34856: 'OECF',
+        34864: 'SensitivityType',
+        34865: 'StandardOutputSensitivity',
+        34866: 'RecommendedExposureIndex',
+        34867: 'ISOSpeed',
+        34868: 'ISOSpeedLatitudeyyy',
+        34869: 'ISOSpeedLatitudezzz',
+        36864: 'ExifVersion',
+        36867: 'DateTimeOriginal',
+        36868: 'DateTImeDigitized',
+        37121: 'ComponentsConfiguration',
+        37122: 'CompressedBitsPerPixel',
+        37377: 'ShutterSpeedValue',
+        37378: 'ApertureValue',
+        37379: 'BrightnessValue',
+        37380: 'ExposureBiasValue',
+        37381: 'MaxApertureValue',
+        37382: 'SubjectDistance',
+        37383: 'MeteringMode',
+        37384: 'LightSource',
+        37385: 'Flash',
+        37386: 'FocalLength',
+        37396: 'SubjectArea',
+        37500: 'MakerNote',
+        37510: 'UserComment',
+        37520: 'SubSec',
+        37521: 'SubSecTimeOriginal',
+        37522: 'SubsecTimeDigitized',
+        40960: 'FlashPixVersion',
+        40961: 'ColorSpace',
+        40962: 'PixelXDimension',
+        40963: 'PixelYDimension',
+        40964: 'RelatedSoundFile',
+        40965: 'InteroperabilityIFD',
+        41483: 'FlashEnergy',
+        41484: 'SpatialFrequencyResponse',
+        41486: 'FocalPlaneXResolution',
+        41487: 'FocalPlaneYResolution',
+        41488: 'FocalPlaneResolutionUnit',
+        41492: 'SubjectLocation',
+        41493: 'ExposureIndex',
+        41495: 'SensingMethod',
+        41728: 'FileSource',
+        41729: 'SceneType',
+        41730: 'CFAPattern',
+        41985: 'CustomRendered',
+        41986: 'ExposureMode',
+        41987: 'WhiteBalance',
+        41988: 'DigitalZoomRatio',
+        41989: 'FocalLengthIn35mmFilm',
+        41990: 'SceneCaptureType',
+        41991: 'GainControl',
+        41992: 'Contrast',
+        41993: 'Saturation',
+        41994: 'Sharpness',
+        41995: 'DeviceSettingDescription',
+        41996: 'SubjectDistanceRange',
+        42016: 'ImageUniqueID',
+        42032: 'CameraOwnerName',
+        42033: 'BodySerialNumber',
+        42034: 'LensSpecification',
+        42035: 'LensMake',
+        42036: 'LensModel',
+        42037: 'LensSerialNumber',
+        42240: 'Gamma',
+
+        # Adobe DNG
+        50706: 'DNGVersion',
+        50707: 'DNGBackwardVersion',
+        50708: 'UniqueCameraModel',
+        50709: 'LocalizedCameraModel',
+        50710: 'CFAPlaneColor',
+        50711: 'CFALayout',
+        50712: 'LinearizationTable',
+        50713: 'BlackLevelRepeatDim',
+        50714: 'BlackLevel',
+        50715: 'BlackLevelDeltaH',
+        50716: 'BlackLevelDeltaV',
+        50717: 'WhiteLevel',
+        50718: 'DefaultScale',
+        50719: 'DefaultCropOrigin',
+        50720: 'DefaultCropSize',
+        50721: 'ColorMatrix1',
+        50722: 'ColorMatrix2',
+        50723: 'CameraCalibration1',
+        50724: 'CameraCalibration2',
+        50725: 'ReductionMatrix1',
+        50726: 'ReductionMatrix2',
+        50727: 'AnalogBalance',
+        50728: 'AsShotNeutral',
+        50729: 'AsShotWhiteXY',
+        50730: 'BaselineExposure',
+        50731: 'BaselineNoise',
+        50732: 'BaselineSharpness',
+        50733: 'BayerGreenSplit',
+        50734: 'LinearResponseLimit',
+        50735: 'CameraSerialNumber',
+        50736: 'LensInfo',
+        50737: 'ChromaBlurRadius',
+        50738: 'AntiAliasStrength',
+        50740: 'DNGPrivateData',
+        50778: 'CalibrationIlluminant1',
+        50779: 'CalibrationIlluminant2',
+}
+
+
 def _populate():
     for k, v in TAGS_V2.items():
         # Populate legacy structure. 
@@ -170,7 +288,7 @@ def _populate():
         if len(v) == 4:
             for sk, sv in v[3].items():
                 TAGS[(k, sv)] = sk
-            
+
         TAGS_V2[k] = TagInfo(k, *v)
 
 _populate()
