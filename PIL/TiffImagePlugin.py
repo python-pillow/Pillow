@@ -244,15 +244,26 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         * self.tagtype = {} Key: numerical tiff tag number
                             Value: integer corresponding to the data type from
                             `TiffTags.TYPES`
-
+    """
+    """
+    Documentation:
+    
         'internal'
-        * self._tags = {}  Key: numerical tiff tag number
-                           Value: decoded data, as tuple for multiple values
+        * self._tags_v2 = {} Key: numerical tiff tag number
+                             Value: decoded data, as tuple for multiple values
         * self._tagdata = {} Key: numerical tiff tag number
                              Value: undecoded byte string from file
-
+        * self._tags_v1 = {} Key: numerical tiff tag number
+                             Value: decoded data in the v1 format
+                             
     Tags will be found in the private attributes self._tagdata, and in
-    self._tags once decoded.
+    self._tags_v2 once decoded.
+
+    If legacy_api is true, then decoded tags will be populated into both
+    _tags_v1 and _tags_v2. _Tags_v2 will be used if this IFD is used in
+    the TIFF save routine. 
+
+    Tags will be read from tags_v1 if legacy_api == true.
     """
 
     def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None):
@@ -278,19 +289,18 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         self.reset()
         self.next, = self._unpack("L", ifh[4:])
         self._legacy_api = False
-        
+
     prefix = property(lambda self: self._prefix)
     offset = property(lambda self: self._offset)
     legacy_api = property(lambda self: self._legacy_api)
 
     @legacy_api.setter
     def legacy_api(self, value):
-        if value != self._legacy_api:
-            self._tags.clear()
-        self._legacy_api = value
+        raise Exception("Not allowing setting of legacy api")
 
     def reset(self):
-        self._tags = {}
+        self._tags_v1 = {} # will remain empty if legacy_api is false
+        self._tags_v2 = {} # main tag storage
         self._tagdata = {}
         self.tagtype = {}  # added 2008-06-05 by Florian Hoech
         self._next = None
@@ -312,27 +322,30 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                     for code, value in self.items())
 
     def __len__(self):
-        return len(set(self._tagdata) | set(self._tags))
+        return len(set(self._tagdata) | set(self._tags_v2))
 
     def __getitem__(self, tag):
-        if tag not in self._tags:  # unpack on the fly
+        if tag not in self._tags_v2:  # unpack on the fly
             data = self._tagdata[tag]
             typ = self.tagtype[tag]
             size, handler = self._load_dispatch[typ]
             self[tag] = handler(self, self.legacy_api, data)  # check type
-        val = self._tags[tag]
+        val = self._tags_v2[tag]
         if self.legacy_api and not isinstance(val, (tuple, bytes)):
             val = val,
         return val
 
     def __contains__(self, tag):
-        return tag in self._tags or tag in self._tagdata
+        return tag in self._tags_v2 or tag in self._tagdata
 
     if bytes is str:
         def has_key(self, tag):
             return tag in self
 
     def __setitem__(self, tag, value):
+        self._setitem(tag, value, self.legacy_api)
+
+    def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
         if bytes is str:
             basetypes += unicode,
@@ -363,20 +376,25 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         if self.tagtype[tag] == 7 and bytes is not str:
             values = [value.encode("ascii",'replace') if isinstance(value, str) else value
                       for value in values]
+
         values = tuple(info.cvt_enum(value) for value in values)
+
+        dest = self._tags_v1 if legacy_api else self._tags_v2
+        
         if info.length == 1:
-            if self.legacy_api and self.tagtype[tag] in [5, 10]:
+            if legacy_api and self.tagtype[tag] in [5, 10]:
                 values = values,
-            self._tags[tag], = values
+            dest[tag], = values
         else:
-            self._tags[tag] = values
+            dest[tag] = values
 
     def __delitem__(self, tag):
-        self._tags.pop(tag, None)
+        self._tags_v2.pop(tag, None)
+        self._tags_v1.pop(tag, None)
         self._tagdata.pop(tag, None)
 
     def __iter__(self):
-        return iter(set(self._tagdata) | set(self._tags))
+        return iter(set(self._tagdata) | set(self._tags_v2))
 
     def _unpack(self, fmt, data):
         return struct.unpack(self._endian + fmt, data)
@@ -536,15 +554,15 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             fp.write(self._prefix + self._pack("HL", 42, 8))
 
         # FIXME What about tagdata?
-        fp.write(self._pack("H", len(self._tags)))
+        fp.write(self._pack("H", len(self._tags_v2)))
 
         entries = []
-        offset = fp.tell() + len(self._tags) * 12 + 4
+        offset = fp.tell() + len(self._tags_v2) * 12 + 4
         stripoffsets = None
 
         # pass 1: convert tags to binary format
         # always write tags in ascending order
-        for tag, value in sorted(self._tags.items()):
+        for tag, value in sorted(self._tags_v2.items()):
             if tag == STRIPOFFSETS:
                 stripoffsets = len(entries)
             typ = self.tagtype.get(tag)
@@ -609,18 +627,62 @@ del _load_dispatch, _write_dispatch, idx, name
 class ImageFileDirectory_v1(ImageFileDirectory_v2):
     def __init__(self, *args, **kwargs):
         ImageFileDirectory_v2.__init__(self, *args, **kwargs)
-        self.legacy_api=True
+        self._legacy_api=True
         #insert deprecation warning here.
 
-    tags = property(lambda self: self._tags)
+    tags = property(lambda self: self._tags_v1)
     tagdata = property(lambda self: self._tagdata)
 
     @classmethod
     def from_v2(cls, original):
+        """ returns: ImageFileDirectory_v1
+
+        Returns an ImageFileDirectory_v1 instance with the same
+        data as is contained in the original ImageFileDirectory_v2
+        instance """
+
         ifd = cls(prefix=original.prefix)
         ifd._tagdata = original._tagdata
         ifd.tagtype = original.tagtype
         return ifd
+
+    def to_v2(self):
+        """ returns: ImageFileDirectory_v2
+
+        Returns an ImageFileDirectory_v2 instance with the same
+        data as is contained in this ImageFileDirectory_v1 instance """
+    
+        ifd = ImageFileDirectory_v2(prefix=self.prefix)
+        ifd._tagdata = dict(self._tagdata)
+        ifd.tagtype = dict(self.tagtype)
+        ifd._tags_v2 = dict(self._tags_v2)
+        return ifd
+
+    def __contains__(self, tag):
+        return tag in self._tags_v1 or tag in self._tagdata
+    
+    def __len__(self):
+        return len(set(self._tagdata) | set(self._tags_v1))
+
+    def __iter__(self):
+        return iter(set(self._tagdata) | set(self._tags_v1))
+
+    def __setitem__(self, tag, value):
+        for legacy_api in (False,True):
+            self._setitem(tag, value, legacy_api)
+        
+    def __getitem__(self, tag):
+        if tag not in self._tags_v1:  # unpack on the fly
+            data = self._tagdata[tag]
+            typ = self.tagtype[tag]
+            size, handler = self._load_dispatch[typ]
+            for legacy in (False, True):
+                self._setitem(tag, handler(self, legacy, data), legacy)
+        val = self._tags_v1[tag]
+        if not isinstance(val, (tuple, bytes)):
+            val = val,
+        return val
+
         
 # undone -- switch this pointer when IFD_LEGACY_API == False
 ImageFileDirectory = ImageFileDirectory_v1
@@ -1076,6 +1138,8 @@ def _save(im, fp, filename):
     info = im.encoderinfo.get("tiffinfo", {})
     if DEBUG:
         print("Tiffinfo Keys: %s" % list(info))
+    if isinstance(info, ImageFileDirectory_v1):
+        info = info.to_v2()
     for key in info:
         ifd[key] = info.get(key)
         try:
