@@ -31,7 +31,9 @@ class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
 
 ##
 # Map tag numbers to tag info.
-
+#
+#  id: (Name, Type, Length, enum_values)
+#
 TAGS = {
 
     254: ("NewSubfileType", 4, 1),
