@@ -644,6 +644,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ifd = cls(prefix=original.prefix)
         ifd._tagdata = original._tagdata
         ifd.tagtype = original.tagtype
+        ifd.next = original.next # an indicator for multipage tiffs
         return ifd
 
     def to_v2(self):
