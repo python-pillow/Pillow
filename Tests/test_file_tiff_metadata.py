@@ -17,7 +17,7 @@ class TestFileTiffMetadata(PillowTestCase):
 
         img = hopper()
 
-        # Behaviour change:
+        # Behaviour change: re #1416
         # Pre ifd rewrite, ImageJMetaData was being written as a string(2),
         # Post ifd rewrite, it's defined as arbitrary bytes(7). It should
         # roundtrip with the actual bytes, rather than stripped text
@@ -116,8 +116,8 @@ class TestFileTiffMetadata(PillowTestCase):
 
         loaded = Image.open(f)
 
-        original = img.tag.named()
-        reloaded = loaded.tag.named()
+        original = img.tag_v2.named()
+        reloaded = loaded.tag_v2.named()
 
         ignored = [
             'StripByteCounts', 'RowsPerStrip', 'PageNumber', 'StripOffsets']

@@ -254,27 +254,26 @@ class TestFileTiff(PillowTestCase):
     def test_load_byte(self):
         for legacy_api in [False, True]:
             ifd = TiffImagePlugin.ImageFileDirectory_v2()
-            ifd.legacy_api = legacy_api
             data = b"abc"
-            ret = ifd.load_byte(data)
+            ret = ifd.load_byte(legacy_api, data)
             self.assertEqual(ret, b"abc" if legacy_api else (97, 98, 99))
 
     def test_load_string(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         data = b"abc\0"
-        ret = ifd.load_string(data)
+        ret = ifd.load_string(False, data)
         self.assertEqual(ret, "abc")
 
     def test_load_float(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         data = b"abcdabcd"
-        ret = ifd.load_float(data)
+        ret = ifd.load_float(False, data)
         self.assertEqual(ret, (1.6777999408082104e+22, 1.6777999408082104e+22))
 
     def test_load_double(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         data = b"abcdefghabcdefgh"
-        ret = ifd.load_double(data)
+        ret = ifd.load_double(False, data)
         self.assertEqual(ret, (8.540883223036124e+194, 8.540883223036124e+194))
 
     def test_seek(self):

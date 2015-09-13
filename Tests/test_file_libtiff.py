@@ -127,11 +127,14 @@ class TestFileLibTiff(LibTiffTestCase):
         """ Test metadata writing through libtiff """
         for legacy_api in [False, True]:
             img = Image.open('Tests/images/hopper_g4.tif')
-            img.tag.legacy_api = legacy_api
             f = self.tempfile('temp.tiff')
 
             img.save(f, tiffinfo=img.tag)
-            original = img.tag.named()
+
+            if legacy_api:
+                original = img.tag.named()
+            else:
+                original = img.tag_v2.named()
 
             # PhotometricInterpretation is set from SAVE_INFO,
             # not the original image.
@@ -139,8 +142,10 @@ class TestFileLibTiff(LibTiffTestCase):
                        'PhotometricInterpretation']
 
             loaded = Image.open(f)
-            loaded.tag.legacy_api = legacy_api
-            reloaded = loaded.tag.named()
+            if legacy_api:
+                reloaded = loaded.tag.named()
+            else:
+                reloaded = loaded.tag_v2.named()
 
             for tag, value in itertools.chain(reloaded.items(),
                                               original.items()):
