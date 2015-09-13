@@ -1085,16 +1085,13 @@ def _save(im, fp, filename):
 
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
-    if hasattr(im, 'tag'):
+    if hasattr(im, 'tag_v2'):
         # preserve tags from original TIFF image file
-        orig_api = im.tag.legacy_api
-        im.tag.legacy_api = False
         for key in (RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION,
                     IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK, XMP):
-            if key in im.tag:
-                ifd[key] = im.tag[key]
-            ifd.tagtype[key] = im.tag.tagtype.get(key, None)
-        im.tag.legacy_api = orig_api
+            if key in im.tag_v2:
+                ifd[key] = im.tag_v2[key]
+            ifd.tagtype[key] = im.tag_v2.tagtype.get(key, None)
 
         # preserve ICC profile (should also work when saving other formats
         # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
