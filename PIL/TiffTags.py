@@ -157,7 +157,7 @@ TAGS_V2 = {
     45580: ("PitchAngle", 10, 1),
     45581: ("RollAngle", 10, 1),
 
-    50741: ("MakerNoteSafety", 3, 1, {0: "Unsafe", 1: "Safe"}),
+    50741: ("MakerNoteSafety", 3, 1, {"Unsafe": 0, "Safe": 1}),
     50780: ("BestQualityScale", 5, 1),
     50838: ("ImageJMetaDataByteCounts", 4, 1),
     50839: ("ImageJMetaData", 7, 1)
@@ -168,8 +168,8 @@ def _populate():
         # Populate legacy structure. 
         TAGS[k] = v[0]
         if len(v) == 4:
-            for sk,sv in v[3].items():
-                TAGS[(k,sk)] = sv
+            for sk, sv in v[3].items():
+                TAGS[(k, sv)] = sk
             
         TAGS_V2[k] = TagInfo(k, *v)
 
