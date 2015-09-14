@@ -85,12 +85,16 @@ class TestFileTiff(PillowTestCase):
 
         self.assertEqual(im.info['dpi'], (72., 72.))
 
-    def xtest_int_resolution(self):
+    def test_int_resolution(self):
+        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
+        filename = "Tests/images/pil168.tif"
+        im = Image.open(filename)
+
         # Try to read a file where X,Y_RESOLUTION are ints
-        im.tag[X_RESOLUTION] = (72,)
-        im.tag[Y_RESOLUTION] = (72,)
+        im.tag_v2[X_RESOLUTION] = 71
+        im.tag_v2[Y_RESOLUTION] = 71
         im._setup()
-        self.assertEqual(im.info['dpi'], (72., 72.))
+        self.assertEqual(im.info['dpi'], (71., 71.))
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
