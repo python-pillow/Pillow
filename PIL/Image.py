@@ -2309,7 +2309,10 @@ def open(fp, mode="r"):
                     _decompression_bomb_check(im.size)
                     return im
             except (SyntaxError, IndexError, TypeError, struct.error):
-                logger.debug("", exc_info=True)
+                # Leave disabled by default, spams the logs with image
+                # opening failures that are entirely expected.                
+                #logger.debug("", exc_info=True)
+                continue
         return None
 
     im = _open_core(fp, filename, prefix)
