@@ -1230,8 +1230,12 @@ def _save(im, fp, filename):
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
+        legacy_ifd = {}
+        if hasattr(im, 'tag'):
+            legacy_ifd = im.tag.to_v2()
         for k, v in itertools.chain(ifd.items(),
-                                    getattr(im, 'ifd', {}).items()):
+                                    getattr(im, 'tag_v2', {}).items(),
+                                    legacy_ifd.items()):
             if k not in atts and k not in blocklist:
                 if isinstance(v, unicode if bytes is str else str):
                     atts[k] = v.encode('ascii', 'replace') + b"\0"

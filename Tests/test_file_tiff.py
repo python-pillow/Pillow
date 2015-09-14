@@ -308,10 +308,7 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.mode, "L")
         self.assert_image_similar(im, original, 7.3)
 
-###
-# UNDONE
-### Segfaulting 
-    def xtest_page_number_x_0(self):
+    def test_page_number_x_0(self):
         # Issue 973
         # Test TIFF with tag 297 (Page Number) having value of 0 0.
         # The first number is the current page number.

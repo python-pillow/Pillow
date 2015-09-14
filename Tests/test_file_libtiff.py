@@ -198,7 +198,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # UNDONE - libtiff defaults to writing in native endian, so
         # on big endian, we'll get back mode = 'I;16B' here.
 
-    def xtest_big_endian(self):
+    def test_big_endian(self):
         im = Image.open('Tests/images/16bit.MM.deflate.tif')
 
         self.assertEqual(im.getpixel((0, 0)), 480)

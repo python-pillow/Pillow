@@ -775,7 +775,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                                                         len, intav);
                         free(intav);
                     }
-                } else {
+                } else if (PyFloat_Check(PyTuple_GetItem(value,0))) {
                     TRACE((" %d elements, setting as floats \n", len));
                     floatav = malloc(sizeof(float)*len);
                     if (floatav) {
@@ -787,6 +787,10 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                                                         len, floatav);
                         free(floatav);
                     }
+                } else {
+                    TRACE(("Unhandled type in tuple for key %d : %s \n",
+                           (int)PyInt_AsLong(key),
+                           PyBytes_AsString(PyObject_Str(value))));
                 }
             }
         } else {
