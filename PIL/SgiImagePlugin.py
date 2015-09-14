@@ -24,7 +24,6 @@ __version__ = "0.2"
 
 i8 = _binary.i8
 i16 = _binary.i16be
-i32 = _binary.i32be
 
 
 def _accept(prefix):
