@@ -329,7 +329,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             data = self._tagdata[tag]
             typ = self.tagtype[tag]
             size, handler = self._load_dispatch[typ]
-            self[tag] = handler(self, self.legacy_api, data)  # check type
+            self[tag] = handler(self, data, self.legacy_api)  # check type
         val = self._tags_v2[tag]
         if self.legacy_api and not isinstance(val, (tuple, bytes)):
             val = val,
@@ -422,7 +422,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         idx, fmt, name = idx_fmt_name
         TYPES[idx] = name
         size = struct.calcsize("=" + fmt)
-        _load_dispatch[idx] = size, lambda self, legacy_api, data: (
+        _load_dispatch[idx] = size, lambda self, data, legacy_api=True: (
             self._unpack("{0}{1}".format(len(data) // size, fmt), data))
         _write_dispatch[idx] = lambda self, *values: (
             b"".join(self._pack(fmt, value) for value in values))
@@ -433,7 +433,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
               (9, "l", "signed long"), (11, "f", "float"), (12, "d", "double")]))
 
     @_register_loader(1, 1) # Basic type, except for the legacy API.
-    def load_byte(self, legacy_api, data):
+    def load_byte(self, data, legacy_api=True):
         return (data if legacy_api else
                 tuple(map(ord, data) if bytes is str else data))
 
@@ -442,7 +442,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         return data
 
     @_register_loader(2, 1)
-    def load_string(self, legacy_api, data):
+    def load_string(self, data, legacy_api=True):
         if data.endswith(b"\0"):
             data = data[:-1]
         return data.decode("latin-1", "replace")
@@ -455,7 +455,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         return b"" + value.encode('ascii', 'replace') + b"\0"
 
     @_register_loader(5, 8)
-    def load_rational(self, legacy_api, data):
+    def load_rational(self, data, legacy_api=True):
         vals = self._unpack("{0}L".format(len(data) // 4), data)
         combine = lambda a, b: (a, b) if legacy_api else a / b
         return tuple(combine(num, denom)
@@ -467,7 +467,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                         for frac in values)
 
     @_register_loader(7, 1)
-    def load_undefined(self, legacy_api, data):
+    def load_undefined(self, data, legacy_api=True):
         return data
 
     @_register_writer(7)
@@ -475,7 +475,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         return value
 
     @_register_loader(10, 8)
-    def load_signed_rational(self, legacy_api, data):
+    def load_signed_rational(self, data, legacy_api=True):
         vals = self._unpack("{0}l".format(len(data) // 4), data)
         combine = lambda a, b: (a, b) if legacy_api else a / b
         return tuple(combine(num, denom)
@@ -678,7 +678,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
             typ = self.tagtype[tag]
             size, handler = self._load_dispatch[typ]
             for legacy in (False, True):
-                self._setitem(tag, handler(self, legacy, data), legacy)
+                self._setitem(tag, handler(self, data, legacy), legacy)
         val = self._tags_v1[tag]
         if not isinstance(val, (tuple, bytes)):
             val = val,
