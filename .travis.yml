@@ -9,13 +9,13 @@ notifications:
 python:
   - "pypy"
   - "pypy3"
-  - 3.4
+  - 3.5
   - 2.7
   - 2.6
   - "2.7_with_system_site_packages" # For PyQt4
   - 3.2
   - 3.3
-  - 3.5-dev
+  - 3.4
   - nightly
 
 install:
@@ -110,7 +110,6 @@ after_script:
 matrix:
   fast_finish: true
   allow_failures:
-    - python: 3.5-dev
     - python: nightly
 
 env:
