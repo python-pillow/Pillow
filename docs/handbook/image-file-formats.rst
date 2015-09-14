@@ -438,17 +438,37 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 **compression**
     Compression mode.
 
+    .. versionadded:: 2.0.0
+
 **dpi**
-    Image resolution as an (xdpi, ydpi) tuple, where applicable. You can use
+    Image resolution as an ``(xdpi, ydpi)`` tuple, where applicable. You can use
     the :py:attr:`~PIL.Image.Image.tag` attribute to get more detailed
     information about the image resolution.
 
     .. versionadded:: 1.1.5
 
-In addition, the :py:attr:`~PIL.Image.Image.tag` attribute contains a
-dictionary of decoded TIFF fields. Values are stored as either strings or
-tuples. Note that only short, long and ASCII tags are correctly unpacked by
-this release.
+**resolution**
+    Image resolution as an ``(xres, yres)`` tuple, where applicable. This is a 
+    measurement in whichever unit is specified by the file.
+
+    .. versionadded:: 1.1.5
+
+
+The :py:attr:`~PIL.Image.Image.tag_v2` attribute contains a dictionary of 
+TIFF metadata. The keys are numerical indexes from `~PIL.TiffTags.TAGS_V2`.
+Values are strings or numbers for single items, multiple values are returned
+in a tuple of values. Rational numbers are returned as a single value.
+
+    .. versionadded:: 3.0.0
+
+For compatibility with legacy code, the
+:py:attr:`~PIL.Image.Image.tag` attribute contains a dictionary of
+decoded TIFF fields as returned prior to version 3.0.0.  Values are
+returned as either strings or tuples of numeric values. Rational
+numbers are returned as a tuple of ``(numerator, denominator)``.
+
+    .. deprecated:: 3.0.0
+
 
 Saving Tiff Images
 ~~~~~~~~~~~~~~~~~~
@@ -456,16 +476,22 @@ Saving Tiff Images
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
 **tiffinfo**
-    A :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory` object or dict
+    A :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2` object or dict
     object containing tiff tags and values. The TIFF field type is
     autodetected for Numeric and string values, any other types
-    require using an :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory`
+    require using an :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
     object and setting the type in
-    :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory.tagtype` with
+    :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` with
     the appropriate numerical value from
     ``TiffTags.TYPES``.
 
     .. versionadded:: 2.3.0
+
+    For compatibility with legacy code, a
+    `~PIL.TiffImagePlugin.ImageFileDirectory_v1` object may be passed
+    in this field. This will be deprecated in a future version. 
+
+    ..versionadded:: 3.0.0
 
 **compression**
     A string containing the desired compression method for the

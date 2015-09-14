@@ -231,24 +231,36 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     """This class represents a TIFF tag directory.  To speed things up, we
     don't decode tags unless they're asked for.
 
-    Exposes a dictionary interface of the tags in the directory
+    Exposes a dictionary interface of the tags in the directory::
 
-        ImageFileDirectory[key] = value
-        value = ImageFileDirectory[key]
+        ifd = ImageFileDirectory_v2()
+        ifd[key] = 'Some Data'
+        ifd.tagtype[key] = 2
+        print(ifd[key])
+        'Some Data'
+        
+    Individual values are returned as the strings or numbers, sequences are
+    returned as tuples of the values. 
 
-    Also contains a dictionary of tag types as read from the tiff image file,
-    'ImageFileDirectory.tagtype'
+    The tiff metadata type of each item is stored in a dictionary of
+    tag types in
+    `~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype`. The types
+    are read from a tiff file, guessed from the type added, or added
+    manually.
 
     Data Structures:
-        'public'
-        * self.tagtype = {} Key: numerical tiff tag number
-                            Value: integer corresponding to the data type from
-                            `TiffTags.TYPES`
+
+        * self.tagtype = {}
+        
+          * Key: numerical tiff tag number
+          * Value: integer corresponding to the data type from `~PIL.TiffTags.TYPES`
+
+    .. versionadded:: 3.0.0
     """
     """
     Documentation:
     
-        'internal'
+        'internal' data structures:
         * self._tags_v2 = {} Key: numerical tiff tag number
                              Value: decoded data, as tuple for multiple values
         * self._tagdata = {} Key: numerical tiff tag number
@@ -259,11 +271,13 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     Tags will be found in the private attributes self._tagdata, and in
     self._tags_v2 once decoded.
 
-    If legacy_api is true, then decoded tags will be populated into both
-    _tags_v1 and _tags_v2. _Tags_v2 will be used if this IFD is used in
-    the TIFF save routine. 
-
-    Tags will be read from tags_v1 if legacy_api == true.
+    Self.legacy_api is a value for internal use, and shouldn't be
+    changed from outside code. In cooperation with the
+    ImageFileDirectory_v1 class, if legacy_api is true, then decoded
+    tags will be populated into both _tags_v1 and _tags_v2. _Tags_v2
+    will be used if this IFD is used in the TIFF save routine. Tags
+    should be read from tags_v1 if legacy_api == true.
+    
     """
 
     def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None):
@@ -273,9 +287,9 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         magic header to the constructor.  To only set the endianness, pass it
         as the 'prefix' keyword argument.
 
-        :ifh: One of the accepted magic headers (cf. PREFIXES); also sets
+        :param ifh: One of the accepted magic headers (cf. PREFIXES); also sets
               endianness.
-        :prefix: Override the endianness of the file.
+        :param prefix: Override the endianness of the file.
         """
         if ifh[:4] not in PREFIXES:
             raise SyntaxError("not a TIFF file (header %r not valid)" % ifh)
@@ -310,12 +324,19 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         return str(dict(self))
 
     def as_dict(self):
-        """Return a dictionary of the image's tags."""
+        """Return a dictionary of the image's tags.
+
+        use `dict(ifd)` instead.
+        
+        .. deprecated:: 3.0.0
+        """
         # FIXME Deprecate: use dict(self)
         return dict(self)
 
     def named(self):
         """
+        :returns: dict of name|key: value
+        
         Returns the complete tag dictionary, with named tags where possible.
         """
         return dict((TAGS_V2.get(code, TagInfo()).name, value)
@@ -625,6 +646,23 @@ del _load_dispatch, _write_dispatch, idx, name
 
 #Legacy ImageFileDirectory support.
 class ImageFileDirectory_v1(ImageFileDirectory_v2):
+    """This class represents the **legacy** interface to  a TIFF tag directory.
+    
+    Exposes a dictionary interface of the tags in the directory::
+
+        ifd = ImageFileDirectory_v1()
+        ifd[key] = 'Some Data'
+        ifd.tagtype[key] = 2
+        print ifd[key]
+        ('Some Data',)
+        
+    Also contains a dictionary of tag types as read from the tiff image file,
+    `~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype'. 
+
+    Values are returned as a tuple.
+    
+    ..  deprecated:: 3.0.0
+    """
     def __init__(self, *args, **kwargs):
         ImageFileDirectory_v2.__init__(self, *args, **kwargs)
         self._legacy_api=True
@@ -635,11 +673,15 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
 
     @classmethod
     def from_v2(cls, original):
-        """ returns: ImageFileDirectory_v1
+        """ Returns an
+        :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1`
+        instance with the same data as is contained in the original
+        :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
+        instance.
 
-        Returns an ImageFileDirectory_v1 instance with the same
-        data as is contained in the original ImageFileDirectory_v2
-        instance """
+        :returns: :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1`
+
+        """
 
         ifd = cls(prefix=original.prefix)
         ifd._tagdata = original._tagdata
@@ -648,10 +690,15 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         return ifd
 
     def to_v2(self):
-        """ returns: ImageFileDirectory_v2
+        """ Returns an
+        :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
+        instance with the same data as is contained in the original
+        :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1`
+        instance.
 
-        Returns an ImageFileDirectory_v2 instance with the same
-        data as is contained in this ImageFileDirectory_v1 instance """
+        :returns: :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
+
+        """
     
         ifd = ImageFileDirectory_v2(prefix=self.prefix)
         ifd._tagdata = dict(self._tagdata)

@@ -296,3 +296,20 @@ _populate()
 # Map type numbers to type names -- defined in ImageFileDirectory.
 
 TYPES = {}
+
+# was:
+# TYPES = {
+#     1: "byte",
+#     2: "ascii",
+#     3: "short",
+#     4: "long",
+#     5: "rational",
+#     6: "signed byte",
+#     7: "undefined",
+#     8: "signed short",
+#     9: "signed long",
+#     10: "signed rational",
+#     11: "float",
+#     12: "double",
+# }
+
