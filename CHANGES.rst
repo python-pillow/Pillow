@@ -43,7 +43,7 @@ Changelog (Pillow)
 - Corrected scripts path #1407
   [radarhere]
 
-- Updated libtiff to 4.0.5 #1405
+- Updated libtiff to 4.0.6 #1405, #1421
   [radarhere]
 
 - Updated Platform Support for Yosemite #1403
