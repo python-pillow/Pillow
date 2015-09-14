@@ -657,7 +657,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ('Some Data',)
         
     Also contains a dictionary of tag types as read from the tiff image file,
-    `~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype'. 
+    `~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype`. 
 
     Values are returned as a tuple.
     
