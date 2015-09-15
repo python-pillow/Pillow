@@ -21,7 +21,6 @@ from PIL import Image, ImageFile, ImagePalette, _binary
 
 __version__ = "0.3"
 
-i16 = _binary.i16be
 i32 = _binary.i32be
 
 

@@ -103,8 +103,9 @@ class TestFileTiff(PillowTestCase):
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
 
     def test_bad_exif(self):
+        i = Image.open('Tests/images/hopper_bad_exif.jpg')
         try:
-            Image.open('Tests/images/hopper_bad_exif.jpg')._getexif()
+            self.assert_warning(UserWarning, lambda: i._getexif())
         except struct.error:
             self.fail(
                  "Bad EXIF data passed incorrect values to _binary unpack")

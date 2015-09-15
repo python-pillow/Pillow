@@ -217,7 +217,7 @@ def getiptcinfo(im):
                 while app[offset:offset+4] == b"8BIM":
                     offset += 4
                     # resource code
-                    code = JpegImagePlugin.i16(app, offset)
+                    code = i16(app, offset)
                     offset += 2
                     # resource name (usually empty)
                     name_len = i8(app[offset])
@@ -226,7 +226,7 @@ def getiptcinfo(im):
                     if offset & 1:
                         offset += 1
                     # resource data block
-                    size = JpegImagePlugin.i32(app, offset)
+                    size = i32(app, offset)
                     offset += 4
                     if code == 0x0404:
                         # 0x0404 contains IPTC/NAA data

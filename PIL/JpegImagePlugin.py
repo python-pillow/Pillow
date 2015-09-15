@@ -428,7 +428,7 @@ def _getexif(self):
         # exif field 0x8825 is an offset pointer to the location
         # of the nested embedded gps exif ifd. 
         # It should be a long, but may be corrupted.
-      file.seek(exif[0x8825])
+        file.seek(exif[0x8825])
     except (KeyError, TypeError):
         pass
     else:

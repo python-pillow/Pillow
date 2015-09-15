@@ -28,7 +28,6 @@ __version__ = "0.3"
 
 i8 = _binary.i8
 i16 = _binary.i16le
-i32 = _binary.i32le
 
 
 MODES = {

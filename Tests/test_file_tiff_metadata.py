@@ -1,5 +1,8 @@
 from __future__ import division
 
+import io
+import struct
+
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
@@ -135,6 +138,15 @@ class TestFileTiffMetadata(PillowTestCase):
     def test_no_duplicate_50741_tag(self):
         self.assertEqual(tag_ids['MakerNoteSafety'], 50741)
         self.assertEqual(tag_ids['BestQualityScale'], 50780)
+
+    def test_empty_metadata(self):
+        f = io.BytesIO(b'II*\x00\x08\x00\x00\x00')
+        head = f.read(8)
+        info = TiffImagePlugin.ImageFileDirectory(head)
+        try:
+            self.assert_warning(UserWarning, lambda: info.load(f))
+        except struct.error:
+            self.fail("Should not be struct errors there.")
 
 
 if __name__ == '__main__':
