@@ -11,7 +11,7 @@ Changelog (Pillow)
   [radarhere, wiredfool]
 
 - Fix for UnicodeDecodeError in TiffImagePlugin #1416
-  [bogdan199, wirdfool]
+  [bogdan199, wiredfool]
 
 - Dedup code in image.open #1415
   [wiredfool]
