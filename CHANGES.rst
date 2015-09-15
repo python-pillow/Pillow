@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Correct convert matrix docs #1426
+  [wiredfool]
+
 - Catch TypeError in _getexif #1414
   [radarhere, wiredfool]
 
