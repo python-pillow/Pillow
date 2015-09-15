@@ -822,7 +822,7 @@ class Image(object):
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
-           should be 4- or 16-tuple containing floating point values.
+           should be 4- or 12-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are NONE or FLOYDSTEINBERG (default).

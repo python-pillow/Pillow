@@ -768,11 +768,12 @@ _convert_matrix(ImagingObject* self, PyObject* args)
     float m[12];
     if (!PyArg_ParseTuple(args, "s(ffff)", &mode, m+0, m+1, m+2, m+3)) {
         PyErr_Clear();
-    if (!PyArg_ParseTuple(args, "s(ffffffffffff)", &mode,
-                  m+0, m+1, m+2, m+3,
-                  m+4, m+5, m+6, m+7,
-                  m+8, m+9, m+10, m+11))
-        return NULL;
+        if (!PyArg_ParseTuple(args, "s(ffffffffffff)", &mode,
+                              m+0, m+1, m+2, m+3,
+                              m+4, m+5, m+6, m+7,
+                              m+8, m+9, m+10, m+11)){
+            return NULL;
+        }
     }
 
     return PyImagingNew(ImagingConvertMatrix(self->image, mode, m));
