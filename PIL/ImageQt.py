@@ -53,7 +53,12 @@ def rgb(r, g, b, a=255):
 def fromqimage(im):
     buffer = QBuffer()
     buffer.open(QIODevice.ReadWrite)
-    im.save(buffer, 'ppm')
+    # preserve alha channel with png
+    # otherwise ppm is more friendly with Image.open
+    if im.hasAlphaChannel():
+        im.save(buffer, 'png')
+    else:
+        im.save(buffer, 'ppm')
 
     b = BytesIO()
     try:
