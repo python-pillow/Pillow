@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Save as GiF89a with suppoert for animation parameters #1384
+  [radarhere]
+
 - Correct convert matrix docs #1426
   [wiredfool]
 
