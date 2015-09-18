@@ -54,8 +54,11 @@ GIF
 ^^^
 
 PIL reads GIF87a and GIF89a versions of the GIF file format. The library writes
-run-length encoded GIF87a files. Note that GIF files are always read as
-grayscale (``L``) or palette mode (``P``) images.
+run-length encoded files in GIF87a by default, unless GIF89a features
+are used or GIF89a is already in use.
+
+Note that GIF files are always read as grayscale (``L``)
+or palette mode (``P``) images.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
@@ -73,12 +76,32 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 **version**
     Version (either ``GIF87a`` or ``GIF89a``).
 
+**duration**
+    May not be present. The time to display each frame of the GIF, in
+    milliseconds.
+
+**loop**
+    May not be present. The number of times the GIF should loop.
+
 Reading sequences
 ~~~~~~~~~~~~~~~~~
 
 The GIF loader supports the :py:meth:`~file.seek` and :py:meth:`~file.tell`
 methods. You can seek to the next frame (``im.seek(im.tell() + 1)``), or rewind
-the file by seeking to the first frame. Random access is not supported. ``im.seek()`` raises an ``EOFError`` if you try to seek after the last frame.
+the file by seeking to the first frame. Random access is not supported.
+
+``im.seek()`` raises an ``EOFError`` if you try to seek after the last frame.
+
+Saving sequences
+~~~~~~~~~~~~~~~~
+
+When calling :py:meth:`~PIL.Image.Image.save`, if a multiframe image is used,
+by default only the first frame will be saved. To save all frames, the
+``save_all`` parameter must be present and set to ``True``.
+
+If present, the ``loop`` parameter can be used to set the number of times
+the GIF should loop, and the ``duration`` parameter can set the number of
+milliseconds between each frame.
 
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~
