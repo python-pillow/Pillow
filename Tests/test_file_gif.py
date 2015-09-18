@@ -24,6 +24,7 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.mode, "P")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "GIF")
+        self.assertEqual(im.info["version"], b"GIF89a")
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -94,6 +95,21 @@ class TestFileGif(PillowTestCase):
         reread = Image.open(out)
 
         self.assertEqual(reread.n_frames, 5)
+
+    def test_headers_saving_for_animated_gifs(self):
+        important_headers = ['background', 'version', 'duration', 'loop']
+        # Multiframe image
+        im = Image.open("Tests/images/dispose_bgnd.gif")
+
+        out = self.tempfile('temp.gif')
+        im.save(out, save_all=True)
+        reread = Image.open(out)
+
+        for header in important_headers:
+            self.assertEqual(
+                im.info[header],
+                reread.info[header]
+            )
 
     def test_palette_handling(self):
         # see https://github.com/python-pillow/Pillow/issues/513
@@ -250,6 +266,34 @@ class TestFileGif(PillowTestCase):
         reread = Image.open(out)
 
         self.assertEqual(reread.info['background'], im.info['background'])
+
+    def test_version(self):
+        out = self.tempfile('temp.gif')
+
+        # Test that GIF87a is used by default
+        im = Image.new('L', (100, 100), '#000')
+        im.save(out)
+        reread = Image.open(out)
+        self.assertEqual(reread.info["version"], b"GIF87a")
+
+        # Test that adding a GIF89a feature changes the version
+        im.info["transparency"] = 1
+        im.save(out)
+        reread = Image.open(out)
+        self.assertEqual(reread.info["version"], b"GIF89a")
+
+        # Test that a GIF87a image is also saved in that format
+        im = Image.open(TEST_GIF)
+        im.save(out)
+        reread = Image.open(out)
+        self.assertEqual(reread.info["version"], b"GIF87a")
+
+        # Test that a GIF89a image is also saved in that format
+        im.info["version"] = "GIF89a"
+        im.save(out)
+        reread = Image.open(out)
+        self.assertEqual(reread.info["version"], b"GIF87a")
+
 
 if __name__ == '__main__':
     unittest.main()

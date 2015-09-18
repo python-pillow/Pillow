@@ -24,7 +24,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, ImagePalette, ImageChops, ImageSequence, _binary
+from PIL import Image, ImageFile, ImagePalette, \
+                ImageChops, ImageSequence, _binary
 
 __version__ = "0.9"
 
@@ -300,14 +301,17 @@ RAWMODE = {
 }
 
 
-def _convert_mode(im):
+def _convert_mode(im, initial_call=False):
     # convert on the fly (EXPERIMENTAL -- I'm not sure PIL
     # should automatically convert images on save...)
     if Image.getmodebase(im.mode) == "RGB":
-        palette_size = 256
-        if im.palette:
-            palette_size = len(im.palette.getdata()[1]) // 3
-        return im.convert("P", palette=1, colors=palette_size)
+        if initial_call:
+            palette_size = 256
+            if im.palette:
+                palette_size = len(im.palette.getdata()[1]) // 3
+            return im.convert("P", palette=1, colors=palette_size)
+        else:
+            return im.convert("P")
     return im.convert("L")
 
 
@@ -317,6 +321,7 @@ def _save_all(im, fp, filename):
 
 def _save(im, fp, filename, save_all=False):
 
+    im.encoderinfo.update(im.info)
     if _imaging_gif:
         # call external driver
         try:
@@ -328,7 +333,7 @@ def _save(im, fp, filename, save_all=False):
     if im.mode in RAWMODE:
         im_out = im.copy()
     else:
-        im_out = _convert_mode(im)
+        im_out = _convert_mode(im, True)
 
     # header
     try:
@@ -340,6 +345,7 @@ def _save(im, fp, filename, save_all=False):
     if save_all:
         previous = None
 
+        first_frame = None
         for im_frame in ImageSequence.Iterator(im):
             im_frame = _convert_mode(im_frame)
 
@@ -347,22 +353,30 @@ def _save(im, fp, filename, save_all=False):
             # e.g. getdata(im_frame, duration=1000)
             if not previous:
                 # global header
-                for s in getheader(im_frame, palette, im.encoderinfo)[0] + getdata(im_frame):
-                    fp.write(s)
+                first_frame = getheader(im_frame, palette, im.encoderinfo)[0]
+                first_frame += getdata(im_frame, (0, 0), **im.encoderinfo)
             else:
+                if first_frame:
+                    for s in first_frame:
+                        fp.write(s)
+                    first_frame = None
+
                 # delta frame
-                delta = ImageChops.subtract_modulo(im_frame, previous)
+                delta = ImageChops.subtract_modulo(im_frame, previous.copy())
                 bbox = delta.getbbox()
 
                 if bbox:
                     # compress difference
-                    for s in getdata(im_frame.crop(bbox), offset=bbox[:2]):
+                    for s in getdata(im_frame.crop(bbox),
+                                     bbox[:2], **im.encoderinfo):
                         fp.write(s)
                 else:
                     # FIXME: what should we do in this case?
                     pass
-            previous = im_frame.copy()
-    else:
+            previous = im_frame
+        if first_frame:
+            save_all = False
+    if not save_all:
         header = getheader(im_out, palette, im.encoderinfo)[0]
         for s in header:
             fp.write(s)
@@ -533,8 +547,19 @@ def getheader(im, palette=None, info=None):
 
     # Header Block
     # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
+
+    version = b"87a"
+    for extensionKey in ["transparency", "duration", "loop"]:
+        if info and extensionKey in info and \
+                not (extensionKey == "duration" and info[extensionKey] == 0):
+            version = b"89a"
+            break
+    else:
+        if im.info.get("version") == "89a":
+            version = b"89a"
+
     header = [
-        b"GIF87a" +             # signature + version
+        b"GIF"+version +        # signature + version
         o16(im.size[0]) +       # canvas width
         o16(im.size[1])         # canvas height
     ]
@@ -591,7 +616,16 @@ def getheader(im, palette=None, info=None):
     # size of global color table + global color table flag
     header.append(o8(color_table_size + 128))
     # background + reserved/aspect
-    background = im.info["background"] if "background" in im.info else 0
+    if info and "background" in info:
+        background = info["background"]
+    elif "background" in im.info:
+        # This elif is redundant within GifImagePlugin
+        # since im.info parameters are bundled into the info dictionary
+        # However, external scripts may call getheader directly
+        # So this maintains earlier behaviour
+        background = im.info["background"]
+    else:
+        background = 0
     header.append(o8(background) + o8(0))
     # end of Logical Screen Descriptor
 
