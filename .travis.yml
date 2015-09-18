@@ -2,7 +2,9 @@ language:
   - objective-c
 
 env:
-  global: PILLOW_COMMIT=latest-tag
+  global:
+    - PILLOW_COMMIT=latest-tag
+    - REPO_DIR=Pillow
   matrix:
     - VERSION=2.7.10
     - VERSION=3.2.5
@@ -14,9 +16,9 @@ install:
     - get_python_environment macpython $VERSION venv
     - pip install delocate
     - if [ -n "$PILLOW_COMMIT" ]; then
-        checkout_commit Pillow $PILLOW_COMMIT;
+        checkout_commit $REPO_DIR $PILLOW_COMMIT;
       fi
-    - cd Pillow
+    - cd $REPO_DIR
     - python setup.py bdist_wheel
     - delocate-wheel dist/*.whl
     - rename_wheels dist/*.whl
@@ -24,7 +26,7 @@ install:
     - cd ..
 
 script:
-    - cd Pillow
+    - cd $REPO_DIR
     - python selftest.py --installed
     - pip install nose
     - export NOSE_PROCESS_TIMEOUT=600
@@ -36,7 +38,11 @@ script:
       fi
     - cd ..
 
-before_deploy: cd Pillow/dist
+before_deploy:
+  - cd $REPO_DIR/dist
+  # Fix for https://github.com/travis-ci/travis-ci/issues/4635
+  - rvm 1.9.3 do gem install net-ssh -v 2.9.2
+
 deploy:
   provider: cloudfiles
   username: travis-upload
