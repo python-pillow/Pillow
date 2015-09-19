@@ -35,6 +35,12 @@
 
 #include "ImDib.h"
 
+#if SIZEOF_VOID_P == 8
+#define F_HANDLE "K"
+#else
+#define F_HANDLE "k"
+#endif
+
 typedef struct {
     PyObject_HEAD
     ImagingDIB dib;
@@ -74,8 +80,8 @@ _delete(ImagingDisplayObject* display)
 static PyObject*
 _expose(ImagingDisplayObject* display, PyObject* args)
 {
-    int hdc;
-    if (!PyArg_ParseTuple(args, "i", &hdc))
+    HDC hdc;
+    if (!PyArg_ParseTuple(args, F_HANDLE, &hdc))
 	return NULL;
 
     ImagingExposeDIB(display->dib, hdc);
@@ -87,10 +93,10 @@ _expose(ImagingDisplayObject* display, PyObject* args)
 static PyObject*
 _draw(ImagingDisplayObject* display, PyObject* args)
 {
-    int hdc;
+    HDC hdc;
     int dst[4];
     int src[4];
-    if (!PyArg_ParseTuple(args, "i(iiii)(iiii)", &hdc,
+    if (!PyArg_ParseTuple(args, F_HANDLE "(iiii)(iiii)", &hdc,
                           dst+0, dst+1, dst+2, dst+3,
                           src+0, src+1, src+2, src+3))
 	return NULL;
@@ -131,10 +137,10 @@ _paste(ImagingDisplayObject* display, PyObject* args)
 static PyObject*
 _query_palette(ImagingDisplayObject* display, PyObject* args)
 {
-    int hdc;
+    HDC hdc;
     int status;
 
-    if (!PyArg_ParseTuple(args, "i", &hdc))
+    if (!PyArg_ParseTuple(args, F_HANDLE, &hdc))
 	return NULL;
 
     status = ImagingQueryPaletteDIB(display->dib, hdc);
@@ -145,30 +151,31 @@ _query_palette(ImagingDisplayObject* display, PyObject* args)
 static PyObject*
 _getdc(ImagingDisplayObject* display, PyObject* args)
 {
-    int window;
+    HWND window;
     HDC dc;
 
-    if (!PyArg_ParseTuple(args, "i", &window))
+    if (!PyArg_ParseTuple(args, F_HANDLE, &window))
 	return NULL;
 
-    dc = GetDC((HWND) window);
+    dc = GetDC(window);
     if (!dc) {
         PyErr_SetString(PyExc_IOError, "cannot create dc");
         return NULL;
     }
 
-    return Py_BuildValue("i", (int) dc);
+    return Py_BuildValue(F_HANDLE, dc);
 }
 
 static PyObject*
 _releasedc(ImagingDisplayObject* display, PyObject* args)
 {
-    int window, dc;
+    HWND window;
+    HDC dc;
 
-    if (!PyArg_ParseTuple(args, "ii", &window, &dc))
+    if (!PyArg_ParseTuple(args, F_HANDLE F_HANDLE, &window, &dc))
 	return NULL;
 
-    ReleaseDC((HWND) window, (HDC) dc);
+    ReleaseDC(window, dc);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -386,7 +393,7 @@ static BOOL CALLBACK list_windows_callback(HWND hwnd, LPARAM lParam)
     if (title_size > 0) {
         title = PyUnicode_FromStringAndSize(NULL, title_size);
         if (title)
-            GetWindowText(hwnd, PyUnicode_AS_UNICODE(title), title_size+1);
+            GetWindowTextW(hwnd, PyUnicode_AS_UNICODE(title), title_size+1);
     } else
         title = PyUnicode_FromString("");
     if (!title)
@@ -397,7 +404,7 @@ static BOOL CALLBACK list_windows_callback(HWND hwnd, LPARAM lParam)
     GetWindowRect(hwnd, &outer);
 
     item = Py_BuildValue(
-        "nN(iiii)(iiii)", (Py_ssize_t) hwnd, title,
+        F_HANDLE "N(iiii)(iiii)", hwnd, title,
         inner.left, inner.top, inner.right, inner.bottom,
         outer.left, outer.top, outer.right, outer.bottom
         );
@@ -600,10 +607,10 @@ windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam)
         /* fall through... */
     case WM_PAINT:
     case WM_SIZE:
-        callback = (PyObject*) GetWindowLong(wnd, 0);
+        callback = (PyObject*) GetWindowLongPtr(wnd, 0);
         if (callback) {
             threadstate = (PyThreadState*)
-                GetWindowLong(wnd, sizeof(PyObject*));
+                GetWindowLongPtr(wnd, sizeof(PyObject*));
             current_threadstate = PyThreadState_Swap(NULL);
             PyEval_RestoreThread(threadstate);
         } else
@@ -631,7 +638,7 @@ windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam)
             callback_error("window damage callback");
 
         result = PyObject_CallFunction(
-            callback, "siiiii", "clear", (int) dc,
+            callback, "s" F_HANDLE "iiii", "clear", dc,
             0, 0, rect.right-rect.left, rect.bottom-rect.top
             );
         if (result)
@@ -640,7 +647,7 @@ windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam)
             callback_error("window clear callback");
 
         result = PyObject_CallFunction(
-            callback, "siiiii", "repair", (int) dc,
+            callback, "s" F_HANDLE "iiii", "repair", dc,
             0, 0, rect.right-rect.left, rect.bottom-rect.top
             );
         if (result)
@@ -741,7 +748,7 @@ PyImaging_CreateWindowWin32(PyObject* self, PyObject* args)
     SetForegroundWindow(wnd); /* to make sure it's visible */
     Py_END_ALLOW_THREADS
 
-    return Py_BuildValue("n", (Py_ssize_t) wnd);
+    return Py_BuildValue(F_HANDLE, wnd);
 }
 
 PyObject*
