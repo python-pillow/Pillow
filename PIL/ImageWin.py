@@ -182,6 +182,14 @@ class Dib(object):
         """
         return self.image.tobytes()
 
+    def fromstring(self, *args, **kw):
+        raise Exception("fromstring() has been removed. " +
+                        "Please use frombytes() instead.")
+
+    def tostring(self, *args, **kw):
+        raise Exception("tostring() has been removed. " +
+                        "Please use tobytes() instead.")
+
 
 ##
 # Create a Window with the given title size.

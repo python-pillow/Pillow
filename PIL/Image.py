@@ -681,6 +681,10 @@ class Image(object):
 
         return b"".join(data)
 
+    def tostring(self, *args, **kw):
+        raise Exception("tostring() has been removed. " +
+                        "Please call tobytes() instead.")
+
     def tobitmap(self, name="image"):
         """
         Returns the image converted to an X11 bitmap.
@@ -727,6 +731,10 @@ class Image(object):
             raise ValueError("not enough image data")
         if s[1] != 0:
             raise ValueError("cannot decode image data")
+
+    def fromstring(self, *args, **kw):
+        raise Exception("fromstring() has been removed. " +
+                        "Please call frombytes() instead.")
 
     def load(self):
         """
@@ -1223,6 +1231,10 @@ class Image(object):
                 extrema = self.getextrema()
             return self.im.histogram(extrema)
         return self.im.histogram()
+
+    def offset(self, xoffset, yoffset=None):
+        raise Exception("offset() has been removed. " +
+                        "Please call ImageChops.offset() instead.")
 
     def paste(self, im, box=None, mask=None):
         """
@@ -2032,6 +2044,11 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
     im = new(mode, size)
     im.frombytes(data, decoder_name, args)
     return im
+
+
+def fromstring(*args, **kw):
+    raise Exception("fromstring() has been removed. " +
+                    "Please call frombytes() instead.")
 
 
 def frombuffer(mode, size, data, decoder_name="raw", *args):
