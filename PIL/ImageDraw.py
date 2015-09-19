@@ -90,10 +90,10 @@ class ImageDraw(object):
         self.fill = 0
         self.font = None
 
-    ##
-    # Set the default font.
-
     def setfont(self, font):
+        if warnings:
+            warnings.warn("setfont() is deprecated. " +
+                          "Please set the attribute directly instead.")
         # compatibility
         self.font = font
 

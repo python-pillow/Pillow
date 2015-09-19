@@ -223,11 +223,11 @@ try:
                 font, orientation=orientation)
 
             # Original font
-            draw.setfont(font)
+            draw.font = font
             box_size_a = draw.textsize(word)
 
             # Rotated font
-            draw.setfont(transposed_font)
+            draw.font = transposed_font
             box_size_b = draw.textsize(word)
 
             # Check (w,h) of box a is (h,w) of box b
@@ -245,11 +245,11 @@ try:
                 font, orientation=orientation)
 
             # Original font
-            draw.setfont(font)
+            draw.font = font
             box_size_a = draw.textsize(word)
 
             # Rotated font
-            draw.setfont(transposed_font)
+            draw.font = transposed_font
             box_size_b = draw.textsize(word)
 
             # Check boxes a and b are same size
