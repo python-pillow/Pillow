@@ -227,6 +227,7 @@ ImagingAccessInit()
     ADD("I;16", line_16, get_pixel_16L, put_pixel_16L);
     ADD("I;16L", line_16, get_pixel_16L, put_pixel_16L);
     ADD("I;16B", line_16, get_pixel_16B, put_pixel_16B);
+    ADD("I;16S", line_16, get_pixel_16L, put_pixel_16L);
     ADD("I;32L", line_32, get_pixel_32L, put_pixel_32L);
     ADD("I;32B", line_32, get_pixel_32B, put_pixel_32B);
     ADD("F", line_32, get_pixel_32, put_pixel_32);
