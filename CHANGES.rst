@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Removed spammy debug logging #1423
+  [wiredfool]
+  
 - Save as GiF89a with support for animation parameters #1384
   [radarhere]
 
