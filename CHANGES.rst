@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Qt needs 32 bit aligned image data #1430
+  [ericfrederich]
+  
 - Tiff ImafeFileDirectory rewrite #1419
   [anntzer, wiredfool, homm]
 
