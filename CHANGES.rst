@@ -10,7 +10,7 @@ Changelog (Pillow)
 - Qt needs 32 bit aligned image data #1430
   [ericfrederich]
   
-- Tiff ImafeFileDirectory rewrite #1419
+- Tiff ImageFileDirectory rewrite #1419
   [anntzer, wiredfool, homm]
 
 - Removed spammy debug logging #1423
