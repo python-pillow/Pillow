@@ -144,14 +144,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`TiffTags` Module
-----------------------
-
-.. automodule:: PIL.TiffTags
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`WalImageFile` Module
 --------------------------
 

@@ -370,7 +370,8 @@ class TestFileJpeg(PillowTestCase):
 
         # Act
         # Shouldn't raise error
-        im = Image.open("Tests/images/sugarshack_bad_mpo_header.jpg")
+        fn = "Tests/images/sugarshack_bad_mpo_header.jpg"
+        im = self.assert_warning(UserWarning, lambda: Image.open(fn))
 
         # Assert
         self.assertEqual(im.format, "JPEG")

@@ -27,7 +27,6 @@ __version__ = "0.1"
 # helpers
 
 i16 = _binary.i16le
-i32 = _binary.i32le
 
 
 ##

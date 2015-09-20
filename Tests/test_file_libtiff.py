@@ -1,8 +1,10 @@
 from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper, py3
 
+from ctypes import c_float
 import io
 import logging
+import itertools
 import os
 
 from PIL import Image, TiffImagePlugin
@@ -123,43 +125,45 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_write_metadata(self):
         """ Test metadata writing through libtiff """
-        img = Image.open('Tests/images/hopper_g4.tif')
-        f = self.tempfile('temp.tiff')
+        for legacy_api in [False, True]:
+            img = Image.open('Tests/images/hopper_g4.tif')
+            f = self.tempfile('temp.tiff')
 
-        img.save(f, tiffinfo=img.tag)
+            img.save(f, tiffinfo=img.tag)
 
-        loaded = Image.open(f)
+            if legacy_api:
+                original = img.tag.named()
+            else:
+                original = img.tag_v2.named()
 
-        original = img.tag.named()
-        reloaded = loaded.tag.named()
+            # PhotometricInterpretation is set from SAVE_INFO,
+            # not the original image.
+            ignored = ['StripByteCounts', 'RowsPerStrip', 'PageNumber',
+                       'PhotometricInterpretation']
 
-        # PhotometricInterpretation is set from SAVE_INFO,
-        # not the original image.
-        ignored = [
-            'StripByteCounts', 'RowsPerStrip',
-            'PageNumber', 'PhotometricInterpretation']
+            loaded = Image.open(f)
+            if legacy_api:
+                reloaded = loaded.tag.named()
+            else:
+                reloaded = loaded.tag_v2.named()
 
-        for tag, value in reloaded.items():
-            if tag not in ignored:
-                if tag.endswith('Resolution'):
+            for tag, value in itertools.chain(reloaded.items(),
+                                              original.items()):
+                if tag not in ignored:
                     val = original[tag]
-                    self.assert_almost_equal(
-                        val[0][0]/val[0][1], value[0][0]/value[0][1],
-                        msg="%s didn't roundtrip" % tag)
-                else:
-                    self.assertEqual(
-                        original[tag], value, "%s didn't roundtrip" % tag)
-
-        for tag, value in original.items():
-            if tag not in ignored:
-                if tag.endswith('Resolution'):
-                    val = reloaded[tag]
-                    self.assert_almost_equal(
-                        val[0][0]/val[0][1], value[0][0]/value[0][1],
-                        msg="%s didn't roundtrip" % tag)
-                else:
-                    self.assertEqual(
-                        value, reloaded[tag], "%s didn't roundtrip" % tag)
+                    if tag.endswith('Resolution'):
+                        if legacy_api:
+                            self.assertEqual(
+                                c_float(val[0][0] / val[0][1]).value,
+                                c_float(value[0][0] / value[0][1]).value,
+                                msg="%s didn't roundtrip" % tag)
+                        else:
+                            self.assertEqual(
+                                c_float(val).value, c_float(value).value,
+                                msg="%s didn't roundtrip" % tag)
+                    else:
+                        self.assertEqual(
+                            val, value, msg="%s didn't roundtrip" % tag)
 
     def test_g3_compression(self):
         i = Image.open('Tests/images/hopper_g4_500.tif')
@@ -228,7 +232,8 @@ class TestFileLibTiff(LibTiffTestCase):
         orig.save(out)
 
         reread = Image.open(out)
-        self.assertEqual('temp.tif', reread.tag[269])
+        self.assertEqual('temp.tif', reread.tag_v2[269])
+        self.assertEqual('temp.tif', reread.tag[269][0])
 
     def test_12bit_rawmode(self):
         """ Are we generating the same interpretation

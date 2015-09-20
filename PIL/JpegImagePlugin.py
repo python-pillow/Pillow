@@ -36,7 +36,7 @@ import array
 import struct
 import io
 import warnings
-from struct import unpack
+from struct import unpack_from
 from PIL import Image, ImageFile, TiffImagePlugin, _binary
 from PIL.JpegPresets import presets
 from PIL._util import isStringType
@@ -394,13 +394,6 @@ class JpegImageFile(ImageFile.ImageFile):
         return _getmp(self)
 
 
-def _fixup(value):
-    # Helper function for _getexif() and _getmp()
-    if len(value) == 1:
-        return value[0]
-    return value
-
-
 def _getexif(self):
     # Extract EXIF information.  This method is highly experimental,
     # and is likely to be replaced with something better in a future
@@ -414,12 +407,10 @@ def _getexif(self):
         return None
     file = io.BytesIO(data[6:])
     head = file.read(8)
-    exif = {}
     # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory(head)
+    info = TiffImagePlugin.ImageFileDirectory_v2(head)
     info.load(file)
-    for key, value in info.items():
-        exif[key] = _fixup(value)
+    exif = dict(info)
     # get exif extension
     try:
         # exif field 0x8769 is an offset pointer to the location
@@ -429,24 +420,21 @@ def _getexif(self):
     except (KeyError, TypeError):
         pass
     else:
-        info = TiffImagePlugin.ImageFileDirectory(head)
+        info = TiffImagePlugin.ImageFileDirectory_v2(head)
         info.load(file)
-        for key, value in info.items():
-            exif[key] = _fixup(value)
+        exif.update(info)
     # get gpsinfo extension
     try:
         # exif field 0x8825 is an offset pointer to the location
         # of the nested embedded gps exif ifd. 
         # It should be a long, but may be corrupted.
-      file.seek(exif[0x8825])
+        file.seek(exif[0x8825])
     except (KeyError, TypeError):
         pass
     else:
-        info = TiffImagePlugin.ImageFileDirectory(head)
+        info = TiffImagePlugin.ImageFileDirectory_v2(head)
         info.load(file)
-        exif[0x8825] = gps = {}
-        for key, value in info.items():
-            gps[key] = _fixup(value)
+        exif[0x8825] = dict(info)
     return exif
 
 
@@ -464,23 +452,22 @@ def _getmp(self):
     file_contents = io.BytesIO(data)
     head = file_contents.read(8)
     endianness = '>' if head[:4] == b'\x4d\x4d\x00\x2a' else '<'
-    mp = {}
     # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory(head)
+    info = TiffImagePlugin.ImageFileDirectory_v2(head)
     info.load(file_contents)
-    for key, value in info.items():
-        mp[key] = _fixup(value)
+    mp = dict(info)
     # it's an error not to have a number of images
     try:
         quant = mp[0xB001]
     except KeyError:
         raise SyntaxError("malformed MP Index (no number of images)")
     # get MP entries
+    mpentries = []
     try:
-        mpentries = []
+        rawmpentries = mp[0xB002]
         for entrynum in range(0, quant):
-            rawmpentry = mp[0xB002][entrynum * 16:(entrynum + 1) * 16]
-            unpackedentry = unpack('{0}LLLHH'.format(endianness), rawmpentry)
+            unpackedentry = unpack_from(
+                '{0}LLLHH'.format(endianness), rawmpentries, entrynum * 16)
             labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1',
                       'EntryNo2')
             mpentry = dict(zip(labels, unpackedentry))
