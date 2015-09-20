@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Preserve alpha when converting from a QImage to a Pillow Image by using png instead of ppm #1429
+  [ericfrederich]
+  
 - Qt needs 32 bit aligned image data #1430
   [ericfrederich]
   
