@@ -146,7 +146,7 @@ Plugin reference
     :show-inheritance:
 
 :mod:`Jpeg2KImagePlugin` Module
------------------------------
+-------------------------------
 
 .. automodule:: PIL.Jpeg2KImagePlugin
     :members:
@@ -228,10 +228,22 @@ Plugin reference
 :mod:`PngImagePlugin` Module
 ----------------------------
 
-.. automodule:: PIL.PngImagePlugin
+.. automodule:: PIL.PngImagePlugin            
+    :members: ChunkStream, PngImageFile, PngStream, getchunks, is_cid, putchunk
+    :show-inheritance:
+.. autoclass:: PIL.PngImagePlugin.ChunkStream
     :members:
     :undoc-members:
     :show-inheritance:
+.. autoclass:: PIL.PngImagePlugin.PngImageFile
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. autoclass:: PIL.PngImagePlugin.PngStream
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 :mod:`PpmImagePlugin` Module
 ----------------------------
