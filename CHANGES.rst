@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Tiff ImafeFileDirectory rewrite #1419
+  [anntzer, wiredfool, homm]
+
 - Removed spammy debug logging #1423
   [wiredfool]
   
