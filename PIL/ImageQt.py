@@ -80,6 +80,33 @@ def fromqpixmap(im):
     # bytes_io.seek(0)
     # return PIL.Image.open(bytes_io)
 
+def align8to32(bytes, width, mode):
+    """
+    converts each scanline of data from 8 bit to 32 bit aligned
+    """
+
+    bits_per_pixel = {
+        '1': 1,
+        'L': 8,
+        'P': 8,
+    }[mode]
+
+    # calculate bytes per line and the extra padding if needed
+    bits_per_line = bits_per_pixel * width
+    full_bytes_per_line, remaining_bits_per_line = divmod(bits_per_line, 8)
+    bytes_per_line = full_bytes_per_line + (1 if remaining_bits_per_line else 0)
+
+    extra_padding = -bytes_per_line % 4
+
+    # already 32 bit aligned by luck
+    if not extra_padding:
+        return bytes
+
+    new_data = []
+    for i in range(len(bytes) / bytes_per_line):
+        new_data.append(bytes[i*bytes_per_line:(i+1)*bytes_per_line] + '\x00' * extra_padding)
+
+    return ''.join(new_data)
 
 def _toqclass_helper(im):
     data = None
@@ -123,7 +150,7 @@ def _toqclass_helper(im):
         raise ValueError("unsupported image mode %r" % im.mode)
 
     # must keep a reference, or Qt will crash!
-    __data = data or im.tobytes()
+    __data = data or align8to32(im.tobytes(), im.size[0], im.mode)
     return {
         'data': __data, 'im': im, 'format': format, 'colortable': colortable
     }
