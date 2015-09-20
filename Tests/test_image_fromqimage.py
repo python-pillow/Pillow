@@ -13,9 +13,15 @@ class TestFromQImage(PillowQtTestCase, PillowTestCase):
     ]
     
     def roundtrip(self, expected):
-        result = ImageQt.fromqimage(expected.toqimage())
-        # Qt saves all images as rgb
-        self.assert_image_equal(result, expected.convert('RGB'))
+        # PIL -> Qt
+        intermediate = expected.toqimage()
+        # Qt -> PIL
+        result = ImageQt.fromqimage(intermediate)
+
+        if intermediate.hasAlphaChannel():
+            self.assert_image_equal(result, expected.convert('RGBA'))
+        else:
+            self.assert_image_equal(result, expected.convert('RGB'))
 
     def test_sanity_1(self):
         for im in self.files_to_test:
