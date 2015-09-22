@@ -19,6 +19,7 @@
 
 from collections import namedtuple
 
+
 class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
     __slots__ = []
 
@@ -278,12 +279,12 @@ TAGS = {347: 'JPEGTables',
         50740: 'DNGPrivateData',
         50778: 'CalibrationIlluminant1',
         50779: 'CalibrationIlluminant2',
-}
+        }
 
 
 def _populate():
     for k, v in TAGS_V2.items():
-        # Populate legacy structure. 
+        # Populate legacy structure.
         TAGS[k] = v[0]
         if len(v) == 4:
             for sk, sv in v[3].items():
@@ -312,4 +313,3 @@ TYPES = {}
 #     11: "float",
 #     12: "double",
 # }
-
