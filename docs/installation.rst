@@ -51,9 +51,15 @@ Many of Pillow's features require external libraries:
 
 * **libjpeg** provides JPEG functionality.
 
-  * Pillow has been tested with libjpeg versions **6b**, **8**, and **9** and libjpeg-turbo version **8**.
+  * Pillow has been tested with libjpeg versions **6b**, **8**, and
+    **9** and libjpeg-turbo version **8**.
+  * Starting with Pillow 3.0.0, libjpeg is required by default, but
+    may be disabled with the `--disable-jpeg` flag.
 
 * **zlib** provides access to compressed PNGs
+
+  * Starting with Pillow 3.0.0, zlib is required by default, but may
+    be disabled with the `--disable-zlib` flag.
 
 * **libtiff** provides compressed TIFF functionality
 
