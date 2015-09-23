@@ -105,7 +105,7 @@ class pil_build_ext(build_ext):
     class feature:
         zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = webpmux = None
         jpeg2000 = None
-        required = []
+        required = set(['jpeg', 'zlib'])
 
         def require(self, feat):
             return feat in self.required
@@ -139,12 +139,13 @@ class pil_build_ext(build_ext):
         for x in self.feature:
             if getattr(self, 'disable_%s' % x):
                 setattr(self.feature, x, False)
+                self.feature.required.discard(x)
                 if getattr(self, 'enable_%s' % x):
                     raise ValueError(
                         'Conflicting options: --enable-%s and --disable-%s'
                         % (x, x))
             if getattr(self, 'enable_%s' % x):
-                self.feature.required.append(x)
+                self.feature.required.add(x)
 
     def build_extensions(self):
 
@@ -505,6 +506,10 @@ class pil_build_ext(build_ext):
 
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
+                if feature in ('jpeg', 'libz'):
+                    raise ValueError('%s is required unless explicitly disabled'
+                                     + ' using --disable-%s, aborting' %
+                                     (f, f))
                 raise ValueError(
                     '--enable-%s requested but %s not found, aborting.'
                     % (f, f))
