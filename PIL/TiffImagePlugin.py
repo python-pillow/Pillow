@@ -648,7 +648,7 @@ del _load_dispatch, _write_dispatch, idx, name
 
 # Legacy ImageFileDirectory support.
 class ImageFileDirectory_v1(ImageFileDirectory_v2):
-    """This class represents the **legacy** interface to  a TIFF tag directory.
+    """This class represents the **legacy** interface to a TIFF tag directory.
 
     Exposes a dictionary interface of the tags in the directory::
 
@@ -668,7 +668,6 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     def __init__(self, *args, **kwargs):
         ImageFileDirectory_v2.__init__(self, *args, **kwargs)
         self._legacy_api = True
-        # insert deprecation warning here.
 
     tags = property(lambda self: self._tags_v1)
     tagdata = property(lambda self: self._tagdata)
