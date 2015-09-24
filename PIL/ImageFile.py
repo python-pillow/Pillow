@@ -190,9 +190,6 @@ class ImageFile(Image.Image):
             except AttributeError:
                 prefix = b""
 
-            # Buffer length read; assign a default value
-            t = 0
-
             for d, e, o, a in self.tile:
                 d = Image._getdecoder(self.mode, d, a, self.decoderconfig)
                 seek(o)
@@ -201,7 +198,6 @@ class ImageFile(Image.Image):
                 except ValueError:
                     continue
                 b = prefix
-                t = len(b)
                 while True:
                     try:
                         s = read(self.decodermaxblock)
@@ -230,7 +226,6 @@ class ImageFile(Image.Image):
                     if n < 0:
                         break
                     b = b[n:]
-                    t = t + n
                 # Need to cleanup here to prevent leaks in PyPy
                 d.cleanup()
 
@@ -239,7 +234,7 @@ class ImageFile(Image.Image):
 
         self.fp = None  # might be shared
 
-        if not self.map and (not LOAD_TRUNCATED_IMAGES or t == 0) and e < 0:
+        if not self.map and not LOAD_TRUNCATED_IMAGES and e < 0:
             # still raised if decoder fails to return anything
             raise_ioerror(e)
 

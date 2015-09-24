@@ -115,6 +115,26 @@ class TestImageFile(PillowTestCase):
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
+    def test_broken_datastream_with_errors(self):
+        if "zip_encoder" not in codecs:
+            self.skipTest("PNG (zlib) encoder not available")
+
+        im = Image.open("Tests/images/broken_data_stream.png")
+        with self.assertRaises(IOError):
+            im.load()
+
+    def test_broken_datastream_without_errors(self):
+        if "zip_encoder" not in codecs:
+            self.skipTest("PNG (zlib) encoder not available")
+
+        im = Image.open("Tests/images/broken_data_stream.png")
+
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        try:
+            im.load()
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+
 if __name__ == '__main__':
     unittest.main()
 
