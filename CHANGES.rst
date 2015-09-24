@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Load more broken images #1428
+  [homm]
+  
 - Require zlib and libjpeg #1439
   [wiredfool]
 
