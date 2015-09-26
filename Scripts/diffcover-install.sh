@@ -1,5 +1,5 @@
 # Fetch the remote master branch before running diff-cover on Travis CI.
-# https://github.com/edx/diff-cover#troubleshooting
+# https://github.com/Bachmann1234/diff-cover#troubleshooting
 git fetch origin master:refs/remotes/origin/master
 
 # CFLAGS=-O0 means build with no optimisation.
