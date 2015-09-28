@@ -675,7 +675,7 @@ def _save(im, fp, filename):
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
     # in a shot. Guessing on the size, at im.size bytes. (raw pizel size is
     # channels*size, this is a value that's been used in a django patch.
-    # https://github.com/jdriscoll/django-imagekit/issues/50
+    # https://github.com/matthewwithanm/django-imagekit/issues/50
     bufsize = 0
     if "optimize" in info or "progressive" in info or "progression" in info:
         # keep sets quality to 0, but the actual value may be high.

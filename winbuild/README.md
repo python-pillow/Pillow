@@ -3,7 +3,7 @@ Quick README
 
 For more extensive info, see the windows build instructions `docs/build.rst`.
 
-* See https://github.com/python-imaging/Pillow/issues/553#issuecomment-37877416 and https://github.com/matplotlib/matplotlib/issues/1717#issuecomment-13343859 
+* See https://github.com/python-pillow/Pillow/issues/553#issuecomment-37877416 and https://github.com/matplotlib/matplotlib/issues/1717#issuecomment-13343859 
 
 *  Works best with Python 3.4, due to virtualenv and pip batteries included. Python3+ required for fetch command. 
 *  Check config.py for virtual env paths, suffix for 64 bit releases. Defaults to `x64`, set `X64_EXT` to change.
