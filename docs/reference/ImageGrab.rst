@@ -7,7 +7,7 @@
 The :py:mod:`ImageGrab` module can be used to copy the contents of the screen
 or the clipboard to a PIL image memory.
 
-.. note:: The current version works on OS X and Windows only.
+.. note:: The current version works on OS X and Windows only. OS X support was added in 3.0.0.
 
 .. versionadded:: 1.1.3
 
