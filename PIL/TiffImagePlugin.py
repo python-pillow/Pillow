@@ -107,7 +107,7 @@ ICCPROFILE = 34675
 EXIFIFD = 34665
 XMP = 700
 
-# https://github.com/fiji/ImageJA/blob/master/src/main/java/ij/io/TiffDecoder.java
+# https://github.com/imagej/ImageJA/blob/master/src/main/java/ij/io/TiffDecoder.java
 IMAGEJ_META_DATA_BYTE_COUNTS = 50838
 IMAGEJ_META_DATA = 50839
 
