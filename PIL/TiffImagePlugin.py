@@ -227,6 +227,7 @@ def _limit_rational(val, max_val):
 _load_dispatch = {}
 _write_dispatch = {}
 
+
 class ImageFileDirectory_v2(collections.MutableMapping):
     """This class represents a TIFF tag directory.  To speed things up, we
     don't decode tags unless they're asked for.
@@ -238,9 +239,9 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         ifd.tagtype[key] = 2
         print(ifd[key])
         'Some Data'
-        
+
     Individual values are returned as the strings or numbers, sequences are
-    returned as tuples of the values. 
+    returned as tuples of the values.
 
     The tiff metadata type of each item is stored in a dictionary of
     tag types in
@@ -251,7 +252,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     Data Structures:
 
         * self.tagtype = {}
-        
+
           * Key: numerical tiff tag number
           * Value: integer corresponding to the data type from `~PIL.TiffTags.TYPES`
 
@@ -259,7 +260,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     """
     """
     Documentation:
-    
+
         'internal' data structures:
         * self._tags_v2 = {} Key: numerical tiff tag number
                              Value: decoded data, as tuple for multiple values
@@ -267,7 +268,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                              Value: undecoded byte string from file
         * self._tags_v1 = {} Key: numerical tiff tag number
                              Value: decoded data in the v1 format
-                             
+
     Tags will be found in the private attributes self._tagdata, and in
     self._tags_v2 once decoded.
 
@@ -277,7 +278,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     tags will be populated into both _tags_v1 and _tags_v2. _Tags_v2
     will be used if this IFD is used in the TIFF save routine. Tags
     should be read from tags_v1 if legacy_api == true.
-    
+
     """
 
     def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None):
@@ -313,10 +314,10 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         raise Exception("Not allowing setting of legacy api")
 
     def reset(self):
-        self._tags_v1 = {} # will remain empty if legacy_api is false
-        self._tags_v2 = {} # main tag storage
+        self._tags_v1 = {}  # will remain empty if legacy_api is false
+        self._tags_v2 = {}  # main tag storage
         self._tagdata = {}
-        self.tagtype = {}  # added 2008-06-05 by Florian Hoech
+        self.tagtype = {}   # added 2008-06-05 by Florian Hoech
         self._next = None
         self._offset = None
 
@@ -327,7 +328,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         """Return a dictionary of the image's tags.
 
         use `dict(ifd)` instead.
-        
+
         .. deprecated:: 3.0.0
         """
         # FIXME Deprecate: use dict(self)
@@ -336,7 +337,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     def named(self):
         """
         :returns: dict of name|key: value
-        
+
         Returns the complete tag dictionary, with named tags where possible.
         """
         return dict((TAGS_V2.get(code, TagInfo()).name, value)
@@ -395,13 +396,13 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                             self.tagtype[tag] = 2
 
         if self.tagtype[tag] == 7 and bytes is not str:
-            values = [value.encode("ascii",'replace') if isinstance(value, str) else value
+            values = [value.encode("ascii", 'replace') if isinstance(value, str) else value
                       for value in values]
 
         values = tuple(info.cvt_enum(value) for value in values)
 
         dest = self._tags_v1 if legacy_api else self._tags_v2
-        
+
         if info.length == 1:
             if legacy_api and self.tagtype[tag] in [5, 10]:
                 values = values,
@@ -453,12 +454,12 @@ class ImageFileDirectory_v2(collections.MutableMapping):
               (6, "b", "signed byte"), (8, "h", "signed short"),
               (9, "l", "signed long"), (11, "f", "float"), (12, "d", "double")]))
 
-    @_register_loader(1, 1) # Basic type, except for the legacy API.
+    @_register_loader(1, 1)  # Basic type, except for the legacy API.
     def load_byte(self, data, legacy_api=True):
         return (data if legacy_api else
                 tuple(map(ord, data) if bytes is str else data))
 
-    @_register_writer(1) # Basic type, except for the legacy API.
+    @_register_writer(1)  # Basic type, except for the legacy API.
     def write_byte(self, data):
         return data
 
@@ -472,7 +473,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     def write_string(self, value):
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
         if sys.version_info[0] == 2:
-           value = value.decode('ascii', 'replace')
+            value = value.decode('ascii', 'replace')
         return b"" + value.encode('ascii', 'replace') + b"\0"
 
     @_register_loader(5, 8)
@@ -521,8 +522,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         self._offset = fp.tell()
 
         try:
-            for i in range(self._unpack("H", self._ensure_read(fp,2))[0]):
-                tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp,12))
+            for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
+                tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
                 if DEBUG:
                     tagname = TAGS_V2.get(tag, TagInfo()).name
                     typname = TYPES.get(typ, "unknown")
@@ -563,11 +564,11 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                     else:
                         print("- value:", self[tag])
 
-            self.next, = self._unpack("L", self._ensure_read(fp,4))
+            self.next, = self._unpack("L", self._ensure_read(fp, 4))
         except IOError as msg:
             warnings.warn(str(msg))
             return
-        
+
     def save(self, fp):
 
         if fp.tell() == 0:  # skip TIFF header on subsequent pages
@@ -608,7 +609,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                 entries.append((tag, typ, count, data.ljust(4, b"\0"), b""))
             else:
                 entries.append((tag, typ, count, self._pack("L", offset), data))
-                offset += (len(data) + 1) // 2 * 2 # pad to word
+                offset += (len(data) + 1) // 2 * 2  # pad to word
 
         # update strip offset data to point beyond auxiliary data
         if stripoffsets is not None:
@@ -644,10 +645,11 @@ for idx, name in TYPES.items():
     setattr(ImageFileDirectory_v2, "write_" + name, _write_dispatch[idx])
 del _load_dispatch, _write_dispatch, idx, name
 
-#Legacy ImageFileDirectory support.
+
+# Legacy ImageFileDirectory support.
 class ImageFileDirectory_v1(ImageFileDirectory_v2):
-    """This class represents the **legacy** interface to  a TIFF tag directory.
-    
+    """This class represents the **legacy** interface to a TIFF tag directory.
+
     Exposes a dictionary interface of the tags in the directory::
 
         ifd = ImageFileDirectory_v1()
@@ -655,18 +657,17 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ifd.tagtype[key] = 2
         print ifd[key]
         ('Some Data',)
-        
+
     Also contains a dictionary of tag types as read from the tiff image file,
-    `~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype`. 
+    `~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype`.
 
     Values are returned as a tuple.
-    
+
     ..  deprecated:: 3.0.0
     """
     def __init__(self, *args, **kwargs):
         ImageFileDirectory_v2.__init__(self, *args, **kwargs)
-        self._legacy_api=True
-        #insert deprecation warning here.
+        self._legacy_api = True
 
     tags = property(lambda self: self._tags_v1)
     tagdata = property(lambda self: self._tagdata)
@@ -686,7 +687,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ifd = cls(prefix=original.prefix)
         ifd._tagdata = original._tagdata
         ifd.tagtype = original.tagtype
-        ifd.next = original.next # an indicator for multipage tiffs
+        ifd.next = original.next  # an indicator for multipage tiffs
         return ifd
 
     def to_v2(self):
@@ -699,7 +700,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         :returns: :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
 
         """
-    
+
         ifd = ImageFileDirectory_v2(prefix=self.prefix)
         ifd._tagdata = dict(self._tagdata)
         ifd.tagtype = dict(self.tagtype)
@@ -708,7 +709,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
 
     def __contains__(self, tag):
         return tag in self._tags_v1 or tag in self._tagdata
-    
+
     def __len__(self):
         return len(set(self._tagdata) | set(self._tags_v1))
 
@@ -716,9 +717,9 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         return iter(set(self._tagdata) | set(self._tags_v1))
 
     def __setitem__(self, tag, value):
-        for legacy_api in (False,True):
+        for legacy_api in (False, True):
             self._setitem(tag, value, legacy_api)
-        
+
     def __getitem__(self, tag):
         if tag not in self._tags_v1:  # unpack on the fly
             data = self._tagdata[tag]
@@ -731,9 +732,10 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
             val = val,
         return val
 
-        
+
 # undone -- switch this pointer when IFD_LEGACY_API == False
 ImageFileDirectory = ImageFileDirectory_v1
+
 
 ##
 # Image plugin for TIFF files.
@@ -827,7 +829,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
-        # fill the legacy tag/ifd entries    
+        # fill the legacy tag/ifd entries
         self.tag = self.ifd = ImageFileDirectory_v1.from_v2(self.tag_v2)
         self.__frame = frame
         self._setup()

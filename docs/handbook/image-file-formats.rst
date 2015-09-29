@@ -512,7 +512,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     For compatibility with legacy code, a
     `~PIL.TiffImagePlugin.ImageFileDirectory_v1` object may be passed
-    in this field. This will be deprecated in a future version. 
+    in this field. However, this is deprecated.
 
     ..versionadded:: 3.0.0
 
