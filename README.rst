@@ -37,10 +37,10 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
 More Information
 ----------------
 
-- `Documentation <http://pillow.readthedocs.org/>`_
+- `Documentation <https://pillow.readthedocs.org/>`_
 
-  - `Installation <http://pillow.readthedocs.org/installation.html>`_
-  - `Guides <http://pillow.readthedocs.org/guides.html>`_
+  - `Installation <https://pillow.readthedocs.org/installation.html>`_
+  - `Guides <https://pillow.readthedocs.org/guides.html>`_
 
 - `Contribute <https://github.com/python-pillow/Pillow/blob/master/CONTRIBUTING.md>`_
 
