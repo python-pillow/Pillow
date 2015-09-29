@@ -97,8 +97,8 @@ Changelog (Pillow)
 - Changed register calls to use format property #1333
   [radarhere]
 
-- Added support for ImageGrab.grab to OS X #1367
-  [radarhere]
+- Added support for ImageGrab.grab to OS X #1367, #1443
+  [radarhere, hugovk]
 
 - Fixed PSDraw stdout Python 3 compatibility #1365
   [radarhere]
