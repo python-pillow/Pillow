@@ -1184,10 +1184,11 @@ Changelog (Pillow)
 - Forked PIL based on `Hanno Schlichting's re-packaging <http://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz>`_
   [aclark4life]
 
-.. Note:: What follows is the original PIL 1.1.7 CHANGES
+Pre-fork
+--------
 
-0.2b5 - 1.1.7 (1995-2010)
--------------------------
+0.2b5-1.1.7
++++++++++++
 
 ::
 
