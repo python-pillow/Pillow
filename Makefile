@@ -75,3 +75,6 @@ upload-test:
 
 upload:
 	python setup.py sdist --format=gztar,zip upload
+
+readme:
+	viewdoc
