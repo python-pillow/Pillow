@@ -681,18 +681,9 @@ class Image(object):
 
         return b"".join(data)
 
-    # Declare tostring as alias to tobytes
     def tostring(self, *args, **kw):
-        """Deprecated alias to tobytes.
-
-        .. deprecated:: 2.0
-        """
-        warnings.warn(
-            'tostring() is deprecated. Please call tobytes() instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.tobytes(*args, **kw)
+        raise Exception("tostring() has been removed. " +
+                        "Please call tobytes() instead.")
 
     def tobitmap(self, name="image"):
         """
@@ -742,14 +733,8 @@ class Image(object):
             raise ValueError("cannot decode image data")
 
     def fromstring(self, *args, **kw):
-        """Deprecated alias to frombytes.
-
-        .. deprecated:: 2.0
-        """
-        warnings.warn(
-            'fromstring() is deprecated. Please call frombytes() instead.',
-            DeprecationWarning)
-        return self.frombytes(*args, **kw)
+        raise Exception("fromstring() has been removed. " +
+                        "Please call frombytes() instead.")
 
     def load(self):
         """
@@ -1248,27 +1233,8 @@ class Image(object):
         return self.im.histogram()
 
     def offset(self, xoffset, yoffset=None):
-        """
-        .. deprecated:: 2.0
-
-        .. note:: New code should use :py:func:`PIL.ImageChops.offset`.
-
-        Returns a copy of the image where the data has been offset by the given
-        distances. Data wraps around the edges. If **yoffset** is omitted, it
-        is assumed to be equal to **xoffset**.
-
-        :param xoffset: The horizontal distance.
-        :param yoffset: The vertical distance.  If omitted, both
-           distances are set to the same value.
-        :returns: An :py:class:`~PIL.Image.Image` object.
-        """
-        if warnings:
-            warnings.warn(
-                "'offset' is deprecated; use 'ImageChops.offset' instead",
-                DeprecationWarning, stacklevel=2
-                )
-        from PIL import ImageChops
-        return ImageChops.offset(self, xoffset, yoffset)
+        raise Exception("offset() has been removed. " +
+                        "Please call ImageChops.offset() instead.")
 
     def paste(self, im, box=None, mask=None):
         """
@@ -2083,16 +2049,8 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
 
 def fromstring(*args, **kw):
-    """Deprecated alias to frombytes.
-
-    .. deprecated:: 2.0
-    """
-    warnings.warn(
-        'fromstring() is deprecated. Please call frombytes() instead.',
-        DeprecationWarning,
-        stacklevel=2
-    )
-    return frombytes(*args, **kw)
+    raise Exception("fromstring() has been removed. " +
+                    "Please call frombytes() instead.")
 
 
 def frombuffer(mode, size, data, decoder_name="raw", *args):

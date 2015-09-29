@@ -17,7 +17,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-import warnings
 from PIL import Image
 
 
@@ -183,24 +182,13 @@ class Dib(object):
         """
         return self.image.tobytes()
 
-    ##
-    # Deprecated aliases to frombytes & tobytes.
-
     def fromstring(self, *args, **kw):
-        warnings.warn(
-            'fromstring() is deprecated. Please call frombytes() instead.',
-            DeprecationWarning,
-            stacklevel=2
-        )
-        return self.frombytes(*args, **kw)
+        raise Exception("fromstring() has been removed. " +
+                        "Please use frombytes() instead.")
 
-    def tostring(self):
-        warnings.warn(
-            'tostring() is deprecated. Please call tobytes() instead.',
-            DeprecationWarning,
-            stacklevel=2
-        )
-        return self.tobytes()
+    def tostring(self, *args, **kw):
+        raise Exception("tostring() has been removed. " +
+                        "Please use tobytes() instead.")
 
 
 ##

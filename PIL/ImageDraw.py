@@ -90,38 +90,18 @@ class ImageDraw(object):
         self.fill = 0
         self.font = None
 
-    ##
-    # Set the default pen color.
-
     def setink(self, ink):
-        # compatibility
-        if warnings:
-            warnings.warn(
-                "'setink' is deprecated; use keyword arguments instead",
-                DeprecationWarning, stacklevel=2
-                )
-        if isStringType(ink):
-            ink = ImageColor.getcolor(ink, self.mode)
-        if self.palette and not isinstance(ink, numbers.Number):
-            ink = self.palette.getcolor(ink)
-        self.ink = self.draw.draw_ink(ink, self.mode)
-
-    ##
-    # Set the default background color.
+        raise Exception("setink() has been removed. " +
+                        "Please use keyword arguments instead.")
 
     def setfill(self, onoff):
-        # compatibility
-        if warnings:
-            warnings.warn(
-                "'setfill' is deprecated; use keyword arguments instead",
-                DeprecationWarning, stacklevel=2
-                )
-        self.fill = onoff
-
-    ##
-    # Set the default font.
+        raise Exception("setfill() has been removed. " +
+                        "Please use keyword arguments instead.")
 
     def setfont(self, font):
+        if warnings:
+            warnings.warn("setfont() is deprecated. " +
+                          "Please set the attribute directly instead.")
         # compatibility
         self.font = font
 
