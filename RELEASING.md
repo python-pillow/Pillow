@@ -103,3 +103,7 @@ Released as needed privately to individual vendors for critical security-related
 ## Publicize Release
 
 * [ ] Announce release availability via [Twitter](https://twitter.com/pythonpillow) e.g. https://twitter.com/aclark4life/status/583366798302691328.
+
+## Documentation
+
+* [ ] Make sure the default version for Read the Docs is the latest release version e.g. 3.0.0 not latest: https://readthedocs.org/dashboard/pillow/versions/
