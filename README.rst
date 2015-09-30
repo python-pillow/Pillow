@@ -40,7 +40,7 @@ More Information
 - `Documentation <https://pillow.readthedocs.org/>`_
 
   - `Installation <https://pillow.readthedocs.org/installation.html>`_
-  - `Guides <https://pillow.readthedocs.org/guides.html>`_
+  - `Handbook <https://pillow.readthedocs.org/handbook/index.html>`_
 
 - `Contribute <https://github.com/python-pillow/Pillow/blob/master/CONTRIBUTING.md>`_
 

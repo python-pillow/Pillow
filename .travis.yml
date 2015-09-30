@@ -23,6 +23,7 @@ install:
   - "travis_retry pip install cffi"
   - "travis_retry pip install nose"
   - "travis_retry pip install check-manifest"
+  - "travis_retry pip install Sphinx"
     # Pyroma tests sometimes hang on PyPy and Python 2.6; skip for those
   - if [ $TRAVIS_PYTHON_VERSION != "pypy" && $TRAVIS_PYTHON_VERSION != "2.6" ]; then travis_retry pip install pyroma; fi
 
@@ -46,6 +47,8 @@ script:
   - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* selftest.py; fi
   - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py; fi
   - check-manifest --ignore "depends/*"
+  # Sphinx
+  - pushd docs; make html; make linkcheck; popd
 
 after_success:
    # gather the coverage data

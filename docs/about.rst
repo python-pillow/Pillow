@@ -1,5 +1,5 @@
-About Pillow
-============
+About
+=====
 
 Goals
 -----
