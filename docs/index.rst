@@ -33,9 +33,8 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    installation.rst
    handbook/index.rst
    reference/index.rst
-   porting.rst
-   releasenotes/index.rst
    developer/index.rst
+   porting.rst
    about.rst
    plugins.rst
 
