@@ -108,10 +108,10 @@ def align8to32(bytes, width, mode):
         return bytes
 
     new_data = []
-    for i in range(len(bytes) / bytes_per_line):
-        new_data.append(bytes[i*bytes_per_line:(i+1)*bytes_per_line] + '\x00' * extra_padding)
+    for i in range(len(bytes) // bytes_per_line):
+        new_data.append(bytes[i*bytes_per_line:(i+1)*bytes_per_line] + b'\x00' * extra_padding)
 
-    return ''.join(new_data)
+    return b''.join(new_data)
 
 def _toqclass_helper(im):
     data = None
