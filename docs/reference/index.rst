@@ -32,3 +32,4 @@ Reference
    PixelAccess
    PyAccess
    ../PIL
+   plugins
