@@ -36,7 +36,6 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    handbook/appendices
    releasenotes/index.rst
    about
-   pre-fork-readme
 
 Indices and tables
 ==================
