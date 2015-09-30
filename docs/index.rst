@@ -30,12 +30,12 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
 .. toctree::
    :maxdepth: 2
 
-   installation
-   guides
+   installation.rst
+   guides.rst
    reference/index.rst
-   handbook/appendices
+   handbook/appendices.rst
    releasenotes/index.rst
-   about
+   about.rst
 
 Indices and tables
 ==================
