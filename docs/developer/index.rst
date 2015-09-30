@@ -15,6 +15,12 @@ The version number is currently stored in 3 places::
 
     PIL/__init__.py _imaging.c setup.py
 
+
+Readthedocs
+~~~~~~~~~~~
+
+Make sure the default version for Readthedocs is the latest release version e.g. 3.0.0 not latest.
+
 Release notes
 -------------
 
