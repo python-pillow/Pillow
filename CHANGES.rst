@@ -127,6 +127,12 @@ Changelog (Pillow)
 - Added test for GimpPaletteFile #1324
   [radarhere]
 
+- Merged gifmaker script to allow saving of multi-frame GIF images #1320
+  [radarhere]
+
+- Added is_animated property to multi-frame formats #1319
+  [radarhere]
+
 - Fixed ValueError in Python 2.6 #1315 #1316
   [cgohlke, radarhere]
 
