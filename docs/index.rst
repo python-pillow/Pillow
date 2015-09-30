@@ -31,9 +31,8 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :maxdepth: 2
 
    installation.rst
-   guides.rst
+   handbook/index.rst
    reference/index.rst
-   handbook/appendices.rst
    releasenotes/index.rst
    about.rst
 

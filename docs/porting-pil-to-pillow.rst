@@ -1,5 +1,7 @@
-Porting existing PIL-based code to Pillow
-=========================================
+Porting
+=======
+
+**Porting existing PIL-based code to Pillow**
 
 Pillow is a functional drop-in replacement for the Python Imaging Library. To
 run your existing PIL-compatible code with Pillow, it needs to be modified to
