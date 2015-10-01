@@ -44,9 +44,12 @@ Released as needed for security, installation or critical bug fixes.
 ```
 * [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
 ```
-    PIL/__init__.py setup.py _imaging.c
+    PIL/__init__.py 
+    setup.py 
+    _imaging.c
+    appveyor.yml
 ```
-* [ ] Run pre-release check via `make pre`.
+* [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
 ```
     $ git tag 2.9.1
@@ -66,7 +69,7 @@ Released as needed privately to individual vendors for critical security-related
 * [ ] Commit against master, cherry pick to affected release branches.
 * [ ] Run local test matrix on each release & Python version.
 * [ ] Privately send to distros.
-* [ ] Run pre-release check via `make pre`
+* [ ] Run pre-release check via `make release-test`
 * [ ] Amend any commits with the CVE #
 * [ ] On release date, tag and push to GitHub.
 ```
