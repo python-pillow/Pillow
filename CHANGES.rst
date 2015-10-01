@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.0.0 (Unreleased)
 ------------------
 
+- Check flush method existence for file-like object #1398
+  [mrTable, radarhere]
+
 - Added PDF multipage saving #1445
   [radarhere]
   
