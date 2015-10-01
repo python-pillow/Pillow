@@ -489,10 +489,8 @@ def _save(im, fp, tile, bufsize=0):
             if s < 0:
                 raise IOError("encoder error %d when writing image file" % s)
             e.cleanup()
-    try:
+    if hasattr(fp, "flush"):
         fp.flush()
-    except:
-        pass
 
 
 def _safe_read(fp, size):
