@@ -29,7 +29,7 @@ Released quarterly on the first day of January, April, July, October.
     $ make upload
 ```
 * [ ] Create and upload [binary distributions](#binary-distributions)
-* [ ] Manually hide old versions on PyPI as needed, such that only the latest main release is visible when viewing https://pypi.python.org/pypi/Pillow
+* [ ] Manually hide old versions on PyPI such that only the latest major release is visible when viewing https://pypi.python.org/pypi/Pillow (https://pypi.python.org/pypi?:action=pkg_edit&name=Pillow)
 
 ## Point Release
 
