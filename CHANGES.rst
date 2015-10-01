@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-3.0.0 (Unreleased)
+3.0.0 (2015-10-01)
 ------------------
 
 - Check flush method existence for file-like object #1398
