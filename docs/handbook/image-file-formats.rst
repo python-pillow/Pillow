@@ -786,6 +786,11 @@ PIL can write PDF (Acrobat) images. Such images are written as binary PDF 1.1
 files, using either JPEG or HEX encoding depending on the image mode (and
 whether JPEG support is available or not).
 
+When calling :py:meth:`~PIL.Image.Image.save`, if a multiframe image is used,
+by default, only the first image will be saved. To save all frames, each frame
+to a separate page of the PDF, the ``save_all`` parameter must be present and
+set to ``True``.
+
 PIXAR (read only)
 ^^^^^^^^^^^^^^^^^
 
