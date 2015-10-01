@@ -9,10 +9,13 @@ Released quarterly on the first day of January, April, July, October.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
 * [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
 ```
-    PIL/__init__.py setup.py _imaging.c appveyor.yml
+    PIL/__init__.py 
+    setup.py 
+    _imaging.c 
+    appveyor.yml
 ```
 * [ ] Update `CHANGES.rst`.
-* [ ] Run pre-release check via `make pre`.
+* [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
 * [ ] Create branch and tag for release e.g.:
 ```
     $ git branch 2.9.x
