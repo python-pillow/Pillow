@@ -95,7 +95,7 @@ class TestImageWinPointers(PillowTestCase):
 		hdr.biClrImportant = 0
 
 		hdc = CreateCompatibleDC(None)
-		print('hdc:',hex(hdc))
+		#print('hdc:',hex(hdc))
 		pixels = ctypes.c_void_p()
 		dib = CreateDIBSection(hdc, ctypes.byref(hdr), DIB_RGB_COLORS, ctypes.byref(pixels), None, 0)
 		SelectObject(hdc, dib)
