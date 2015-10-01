@@ -1,4 +1,4 @@
-version: 3.0.pre.{build}
+version: 3.1.pre.{build}
 clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%
