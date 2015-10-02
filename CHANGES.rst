@@ -4,6 +4,8 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Use correctly sized pointers for windows handle types. #1458
+ [nu744]
 
 3.0.0 (2015-10-01)
 ------------------
