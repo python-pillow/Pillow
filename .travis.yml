@@ -10,10 +10,13 @@ env:
     - VERSION=3.2.5
     - VERSION=3.3.5
     - VERSION=3.4.3
+    - VERSION=3.5.0
 
 install:
     - source run_install.sh
     - get_python_environment macpython $VERSION venv
+    # Update to latest wheel package for Python 3.5
+    - pip install -U wheel
     - pip install delocate
     - if [ -n "$PILLOW_COMMIT" ]; then
         checkout_commit $REPO_DIR $PILLOW_COMMIT;
