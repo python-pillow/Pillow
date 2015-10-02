@@ -285,4 +285,4 @@ current versions of Linux, OS X, and Windows.
 Old Versions
 ------------
 
-You can download old distributions from `PyPI <https://pypi.python.org/pypi/Pillow>`_. Only the latest 1.x and 2.x releases are visible, but all releases are available by direct URL access e.g. https://pypi.python.org/pypi/Pillow/1.0.
+You can download old distributions from `PyPI <https://pypi.python.org/pypi/Pillow>`_. Only the latest major releases for Python 2.x and 3.x are visible, but all releases are available by direct URL access e.g. https://pypi.python.org/pypi/Pillow/1.0.
