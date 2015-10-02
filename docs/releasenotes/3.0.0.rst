@@ -42,4 +42,11 @@ have been removed in this release::
     ImageWin.fromstring()
     ImageWin.tostring()
 
+LibJpeg and Zlib are Required by Default
+----------------------------------------
+
+The external dependencies on libjpeg and zlib are now required by default.
+If the headers or libraries are not found, then installation will abort
+with an error. This behaviour can be disabled with the `--disable-libjpeg` 
+and `--disable-zlib` flags. 
 
