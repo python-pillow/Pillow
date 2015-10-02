@@ -43,8 +43,6 @@ script:
 
 before_deploy:
   - cd $REPO_DIR/dist
-  # Fix for https://github.com/travis-ci/travis-ci/issues/4635
-  - rvm 1.9.3 do gem install net-ssh -v 2.9.2
 
 deploy:
   provider: cloudfiles
