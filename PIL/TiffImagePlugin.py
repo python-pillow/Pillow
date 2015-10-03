@@ -180,8 +180,6 @@ OPEN_INFO = {
     (MM, 2, (1,), 1, (8, 8, 8, 8), (2,)): ("RGBA", "RGBA"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
     (MM, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
-    (II, 2, (1, 1, 1, 1), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBA"),  # OSX Grab
-    (MM, 2, (1, 1, 1, 1), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBA"),  # OSX Grab
     (II, 3, (1,), 1, (1,), ()): ("P", "P;1"),
     (MM, 3, (1,), 1, (1,), ()): ("P", "P;1"),
     (II, 3, (1,), 2, (1,), ()): ("P", "P;1R"),
@@ -967,6 +965,13 @@ class TiffImageFile(ImageFile.ImageFile):
             print("- size:", self.size)
 
         format = self.tag_v2.get(SAMPLEFORMAT, (1,))
+        if len(format) > 1 and max(format) == min(format) == 1:
+            # SAMPLEFORMAT is properly per band, so an RGB image will
+            # be (1,1,1).  But, we don't support per band pixel types,
+            # and anything more than one band is a uint8. So, just
+            # take the first element. Revisit this if adding support
+            # for more exotic images.
+            format = (1,)
 
         # mode: check photometric interpretation and bits per pixel
         key = (
