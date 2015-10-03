@@ -70,6 +70,11 @@ class TestFileTiff(PillowTestCase):
                 ])
         im.load()
 
+    def test_sampleformat(self):
+        # https://github.com/python-pillow/Pillow/issues/1466
+        im = Image.open("Tests/images/copyleft.tiff")
+        self.assertEqual(im.mode, 'RGB')
+
     def test_xyres_tiff(self):
         from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         filename = "Tests/images/pil168.tif"
