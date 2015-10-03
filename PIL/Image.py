@@ -1620,13 +1620,17 @@ class Image(object):
         """
 
         filename = ""
+        open_fp = False
         if isPath(fp):
             filename = fp
+            open_fp=True
         elif sys.version_info >= (3, 4):
             from pathlib import Path
             if isinstance(fp, Path):
                 filename = str(fp.resolve())
+                open_fp=True
         elif hasattr(fp, "name") and isPath(fp.name):
+            # only set the name for metadata purposes
             filename = fp.name
 
         # may mutate self!
@@ -1655,17 +1659,14 @@ class Image(object):
         else:
             save_handler = SAVE[format.upper()]
 
-        if filename:
+        if open_fp:
             fp = builtins.open(filename, "wb")
-            close = 1
-        else:
-            close = 0
 
         try:
             save_handler(self, fp, filename)
         finally:
             # do what we can to clean up
-            if close:
+            if open_fp:
                 fp.close()
 
     def seek(self, frame):
