@@ -18,8 +18,8 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://travis-ci.org/python-pillow/pillow-wheels
    :alt: Travis CI build status (OS X)
 
-.. image:: https://img.shields.io/appveyor/ci/Pythonpillow/pillow/master.svg?label=Windows%20build
-   :target: https://ci.appveyor.com/project/Pythonpillow/pillow
+.. image:: https://img.shields.io/appveyor/ci/python-pillow/Pillow/master.svg?label=Windows%20build
+   :target: https://ci.appveyor.com/project/python-pillow/Pillow
    :alt: AppVeyor CI build status (Windows)
 
 .. image:: https://img.shields.io/pypi/v/pillow.svg
