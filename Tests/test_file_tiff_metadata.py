@@ -150,7 +150,7 @@ class TestFileTiffMetadata(PillowTestCase):
 
     def test_iccprofile(self):
         # https://github.com/python-pillow/Pillow/issues/1462
-        im = Image.open('Tests/images/iccprofile.tiff')
+        im = Image.open('Tests/images/hopper.iccprofile.tif')
         out = self.tempfile('temp.tiff')
 
         im.save(out)
