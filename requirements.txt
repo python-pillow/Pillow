@@ -6,3 +6,6 @@ nose
 nose-cov
 pep8
 pyflakes
+check-manifest
+pyroma
+jarn.viewdoc
