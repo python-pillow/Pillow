@@ -647,7 +647,13 @@ class Image(object):
 
     def tobytes(self, encoder_name="raw", *args):
         """
-        Return image as a bytes object
+        Return image as a bytes object.
+        
+        .. warning::
+        
+            This method is for raw-ish output, for compressed image
+            data (e.g. PNG, JPEG) use :meth:`~.save`, with a BytesIO
+            parameter for in-memory data.
 
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
