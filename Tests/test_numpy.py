@@ -76,7 +76,8 @@ class TestNumpy(PillowTestCase):
         self.assert_image(Image.fromarray(a[:, :, 1]), "L", (10, 10))
 
     def _test_img_equals_nparray(self, img, np):
-        self.assertEqual(img.size, np.shape[0:2])
+        np_size = np.shape[1], np.shape[0]
+        self.assertEqual(img.size, np_size)
         px = img.load()
         for x in range(0, img.size[0], int(img.size[0]/10)):
             for y in range(0, img.size[1], int(img.size[1]/10)):
@@ -92,6 +93,11 @@ class TestNumpy(PillowTestCase):
 
         def _to_array(mode, dtype):
             img = hopper(mode)
+
+            # Resize to non-square
+            img = img.crop((3, 0, 124, 127))
+            self.assertEqual(img.size, (121, 127))
+
             np_img = numpy.array(img)
             self._test_img_equals_nparray(img, np_img)
             self.assertEqual(np_img.dtype, numpy.dtype(dtype))
