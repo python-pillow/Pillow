@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Add tag info for iccprofile, fixes #1462. #1465
+  [wiredfool]
+
+- Added some requirements for make release-test #1451
+  [wiredfool]
+
 - Flatten tiff metadata value SAMPLEFORMAT to initial value, fixes #1466
   [wiredfool]
 
