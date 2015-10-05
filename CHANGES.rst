@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Make tests more robust #1469
+  [hugovk]
+
 - Use correctly sized pointers for windows handle types. #1458
   [nu744]
 
