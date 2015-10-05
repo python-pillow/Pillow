@@ -133,6 +133,7 @@ TAGS_V2 = {
 
     # FIXME add more tags here
     34665: ("ExifIFD", 3, 1),
+    34675: ('ICCProfile', 7, 1),
 
     # MPInfo
     45056: ("MPFVersion", 7, 1),
@@ -171,7 +172,6 @@ TAGS = {347: 'JPEGTables',
         33437: 'FNumber',
         33723: 'IptcNaaInfo',
         34377: 'PhotoshopInfo',
-        34675: 'ICCProfile',
         34850: 'ExposureProgram',
         34852: 'SpectralSensitivity',
         34853: 'GPSInfoIFD',

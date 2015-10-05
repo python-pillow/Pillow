@@ -148,6 +148,17 @@ class TestFileTiffMetadata(PillowTestCase):
         except struct.error:
             self.fail("Should not be struct errors there.")
 
+    def test_iccprofile(self):
+        # https://github.com/python-pillow/Pillow/issues/1462
+        im = Image.open('Tests/images/hopper.iccprofile.tif')
+        out = self.tempfile('temp.tiff')
+
+        im.save(out)
+        reloaded = Image.open(out)
+        self.assert_(type(im.info['icc_profile']) is not type(tuple))
+        self.assertEqual(im.info['icc_profile'], reloaded.info['icc_profile'])
+
+
 
 if __name__ == '__main__':
     unittest.main()
