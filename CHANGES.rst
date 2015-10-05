@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Flatten tiff metadata value SAMPLEFORMAT to initial value, fixes #1466
+  [wiredfool]
+
+- Fix handling of pathlib in Image.save. Fixes #1460
+  [wiredfool]
+
 - Make tests more robust #1469
   [hugovk]
 
