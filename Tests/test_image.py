@@ -57,6 +57,17 @@ class TestImage(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
 
+    def test_tempfile(self):
+        # see #1460, pathlib support breaks tempfile.TemporaryFile on py27
+        # Will error out on save on 3.0.0
+        import tempfile
+        im = hopper()
+        fp = tempfile.TemporaryFile()
+        im.save(fp, 'JPEG')
+        fp.seek(0)
+        reloaded = Image.open(fp)
+        self.assert_image_similar(im, reloaded, 20)
+
     def test_internals(self):
 
         im = Image.new("L", (100, 100))
