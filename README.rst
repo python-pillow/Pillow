@@ -44,8 +44,8 @@ More Information
 
 - `Documentation <https://pillow.readthedocs.org/>`_
 
-  - `Installation <https://pillow.readthedocs.org/installation.html>`_
-  - `Handbook <https://pillow.readthedocs.org/handbook/index.html>`_
+  - `Installation <https://pillow.readthedocs.org/en/latest/installation.html>`_
+  - `Handbook <https://pillow.readthedocs.org/en/latest/handbook/index.html>`_
 
 - `Contribute <https://github.com/python-pillow/Pillow/blob/master/CONTRIBUTING.md>`_
 
