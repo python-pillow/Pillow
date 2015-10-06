@@ -128,7 +128,7 @@ Sample Usage::
 OS X Installation
 -----------------
 
-We provide binaries for OS X in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow from soure with XCode.
+We provide binaries for OS X in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow from source with XCode.
 
 The easiest way to install external libraries is via `Homebrew <http://brew.sh/>`_. After you install Homebrew, run::
 
