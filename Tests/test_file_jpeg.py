@@ -171,6 +171,23 @@ class TestFileJpeg(PillowTestCase):
         # Should not raise a TypeError
         im._getexif()
 
+    def test_exif_gps(self):
+        # Arrange
+        im = Image.open('Tests/images/exif_gps.jpg')
+        gps_index = 34853
+        expected_exif_gps = {
+            0: '\x00\x00\x00\x01',
+            2: (4294967295L, 1),
+            5: '\x01',
+            30: 65535,
+            29: u'1999:99:99 99:99:99'}
+
+        # Act
+        exif = im._getexif()
+
+        # Assert
+        self.assertEqual(exif[gps_index], expected_exif_gps)
+
     def test_exif_gps_typeerror(self):
         im = Image.open('Tests/images/exif_gps_typeerror.jpg')
 
