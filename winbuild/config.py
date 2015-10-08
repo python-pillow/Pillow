@@ -28,9 +28,9 @@ libs = {
         'dir': 'tiff-4.0.6',
     },
     'freetype': {
-        'url': 'http://download.savannah.gnu.org/releases/freetype/freetype-2.6.tar.gz',
-        'hash': 'md5:1d733ea6c1b7b3df38169fbdbec47d2b',
-        'dir': 'freetype-2.6',
+        'url': 'http://download.savannah.gnu.org/releases/freetype/freetype-2.6.1.tar.gz',
+        'hash': 'md5:348e667d728c597360e4a87c16556597',
+        'dir': 'freetype-2.6.1',
     },
     'lcms': {
         'url': SF_MIRROR+'/project/lcms/lcms/2.7/lcms2-2.7.zip',
