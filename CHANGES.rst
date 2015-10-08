@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Updated freetype to 2.6.1 #1479
+  [radarhere]
+
 - Add tag info for iccprofile, fixes #1462. #1465
   [wiredfool]
 
