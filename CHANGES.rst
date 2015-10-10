@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Added Usage message to painter script #1482
+  [radarhere]
+
 - Updated freetype to 2.6.1 #1479
   [radarhere]
 
