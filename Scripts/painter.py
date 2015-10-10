@@ -68,6 +68,10 @@ class PaintCanvas(Canvas):
 
 root = Tk()
 
+if len(sys.argv) != 2:
+    print("Usage: painter file")
+    sys.exit(1)
+
 im = Image.open(sys.argv[1])
 
 if im.mode != "RGB":
