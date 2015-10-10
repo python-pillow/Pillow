@@ -6,11 +6,11 @@ download, build & install non-packaged dependencies; useful for
 testing with Travis CI.
 
 The other scripts can be used to install all of the dependencies for
-the listed operating systems/distros, The ``ubuntu_14.04.sh`` and
-``debian_8.2.sh`` have been tested on bare AWS images and will install
-all required dependencies for the system python 2.7 and 3.4 for all of
-the optional dependencies.  Git may also be required prior to running
-the script to actually download Pillow.
+the listed operating systems/distros. The ``ubuntu_14.04.sh`` and
+``debian_8.2.sh`` scripts have been tested on bare AWS images and will
+install all required dependencies for the system python 2.7 and 3.4
+for all of the optional dependencies.  Git may also be required prior
+to running the script to actually download Pillow.
 
 e.g.::
 
