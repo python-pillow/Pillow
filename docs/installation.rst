@@ -83,6 +83,8 @@ Many of Pillow's features require external libraries:
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0** and **2.1.0**.
+  * Pillow does **not** support the earlier **1.5** series which ships
+    with Ubuntu and Debian.
 
 Once you have installed the prerequisites,run::
 
@@ -195,7 +197,11 @@ Linux Installation
 
 .. note::
 
-    Most major Linux distributions, including Fedora, Debian/Ubuntu and ArchLinux include Pillow in packages that previously contained PIL e.g. ``python-imaging``. Please consider using native operating system packages first to avoid installation problems and/or missing library support later.
+    Most major Linux distributions, including Fedora, Debian/Ubuntu
+    and ArchLinux include Pillow in packages that previously contained
+    PIL e.g. ``python-imaging``. Please consider using native
+    operating system packages first to avoid installation problems
+    and/or missing library support later.
 
 **We do not provide binaries for Linux.** If you didn't build Python from
 source, make sure you have Python's development libraries installed. In Debian
@@ -267,7 +273,9 @@ current versions of Linux, OS X, and Windows.
 |                                  |             |                              |                                |                       |
 |                                  |             | 2.7,3.2                      | 2.6.1                          |ppc                    |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
-| Ubuntu Linux 14.04 LTS           |Yes          | 2.7,3.2,3.3,3.4              | 2.3.0                          |x86                    |
+| Ubuntu Linux 14.04 LTS           |Yes          | 2.7,3.4                      | 3.0.0                          |x86-64                 |
++----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
+| Debian 8.2 Jessie                |Yes          | 2.7,3.4                      | 3.0.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Raspian Wheezy                   |Yes          | 2.7,3.2                      | 2.3.0                          |arm                    |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
@@ -289,4 +297,8 @@ current versions of Linux, OS X, and Windows.
 Old Versions
 ------------
 
-You can download old distributions from `PyPI <https://pypi.python.org/pypi/Pillow>`_. Only the latest major releases for Python 2.x and 3.x are visible, but all releases are available by direct URL access e.g. https://pypi.python.org/pypi/Pillow/1.0.
+You can download old distributions from `PyPI
+<https://pypi.python.org/pypi/Pillow>`_. Only the latest major
+releases for Python 2.x and 3.x are visible, but all releases are
+available by direct URL access
+e.g. https://pypi.python.org/pypi/Pillow/1.0.
