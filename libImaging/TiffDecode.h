@@ -47,7 +47,7 @@ extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 
 /* 
    Trace debugging
-   legacy, don't enable for python 3.x, unicode issues. 
+   legacy, don't enable for Python 3.x, unicode issues.
 */
 
 /*
