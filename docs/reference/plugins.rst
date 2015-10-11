@@ -228,7 +228,7 @@ Plugin reference
 :mod:`PngImagePlugin` Module
 ----------------------------
 
-.. automodule:: PIL.PngImagePlugin            
+.. automodule:: PIL.PngImagePlugin
     :members: ChunkStream, PngImageFile, PngStream, getchunks, is_cid, putchunk
     :show-inheritance:
 .. autoclass:: PIL.PngImagePlugin.ChunkStream

@@ -12,12 +12,12 @@ Bands
 An image can consist of one or more bands of data. The Python Imaging Library
 allows you to store several bands in a single image, provided they all have the
 same dimensions and depth.  For example, a PNG image might have 'R', 'G', 'B',
-and 'A' bands for the red, green, blue, and alpha transparency values.  Many 
+and 'A' bands for the red, green, blue, and alpha transparency values.  Many
 operations act on each band separately, e.g., histograms.  It is often useful to
 think of each pixel as having one value per band.
 
 To get the number and names of bands in an image, use the
-:py:meth:`~PIL.Image.Image.getbands` method.  
+:py:meth:`~PIL.Image.Image.getbands` method.
 
 .. _concept-modes:
 
@@ -43,7 +43,7 @@ PIL also provides limited support for a few special modes, including ``LA`` (L
 with alpha), ``RGBX`` (true color with padding) and ``RGBa`` (true color with
 premultiplied alpha). However, PIL doesn’t support user-defined modes; if you
 to handle band combinations that are not listed above, use a sequence of Image
-objects. 
+objects.
 
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
 attribute. This is a string containing one of the above values.

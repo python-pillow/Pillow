@@ -2269,7 +2269,7 @@ def open(fp, mode="r"):
                     return im
             except (SyntaxError, IndexError, TypeError, struct.error):
                 # Leave disabled by default, spams the logs with image
-                # opening failures that are entirely expected.                
+                # opening failures that are entirely expected.
                 #logger.debug("", exc_info=True)
                 continue
         return None

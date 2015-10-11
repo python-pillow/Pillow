@@ -4,7 +4,7 @@
 :py:mod:`ImageMorph` Module
 ===========================
 
-The :py:mod:`ImageMorph` module provides morphology operations on images. 
+The :py:mod:`ImageMorph` module provides morphology operations on images.
 
 .. automodule:: PIL.ImageMorph
     :members:

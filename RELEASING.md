@@ -42,8 +42,8 @@ Released as needed for security, installation or critical bug fixes.
 ```
 * [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
 ```
-    PIL/__init__.py 
-    setup.py 
+    PIL/__init__.py
+    setup.py
     _imaging.c
     appveyor.yml
 ```

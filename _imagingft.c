@@ -128,11 +128,11 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         /* Don't free this before FT_Done_Face */
         self->font_bytes = PyMem_Malloc(font_bytes_size);
         if (!self->font_bytes) {
-            error = 65; // Out of Memory in Freetype. 
+            error = 65; // Out of Memory in Freetype.
         }
         if (!error) {
             memcpy(self->font_bytes, font_bytes, (size_t)font_bytes_size);
-            error = FT_New_Memory_Face(library, (FT_Byte*)self->font_bytes, 
+            error = FT_New_Memory_Face(library, (FT_Byte*)self->font_bytes,
                                        font_bytes_size, index, &self->face);
         }
     }
@@ -152,7 +152,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     if (error) {
         if (self->font_bytes) {
             PyMem_Free(self->font_bytes);
-        }  
+        }
         PyObject_Del(self);
         return geterror(error);
     }
@@ -228,8 +228,8 @@ font_getsize(FontObject* self, PyObject* args)
             x += delta.x;
         }
 
-	/* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 
-	 *   Yifu Yu<root@jackyyf.com>, 2014-10-15 
+	/* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
+	 *   Yifu Yu<root@jackyyf.com>, 2014-10-15
 	 */
         error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
         if (error)
@@ -443,7 +443,7 @@ font_dealloc(FontObject* self)
     FT_Done_Face(self->face);
     if (self->font_bytes) {
         PyMem_Free(self->font_bytes);
-    }  
+    }
     PyObject_Del(self);
 }
 

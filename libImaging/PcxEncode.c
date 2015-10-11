@@ -94,10 +94,10 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             while (state->x < planes * bytes_per_line) {
                 /* If we're encoding an odd width file, and we've
                    got more than one plane, we need to pad each
-                   color row with padding bytes at the end. Since 
+                   color row with padding bytes at the end. Since
                    The pixels are stored RRRRRGGGGGBBBBB, so we need
-                   to have the padding be RRRRRPGGGGGPBBBBBP. Hence 
-                   the double loop 
+                   to have the padding be RRRRRPGGGGGPBBBBBP. Hence
+                   the double loop
                 */
                 while (state->x % bytes_per_line) {
 
@@ -174,8 +174,8 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 }
                 /* reset for the next color plane. */
                 if (state->x < planes * bytes_per_line) {
-                    state->count = 1;  
-                    state->LAST = state->buffer[state->x];                
+                    state->count = 1;
+                    state->LAST = state->buffer[state->x];
                     state->x++;
                 }
             }

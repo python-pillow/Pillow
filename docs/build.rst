@@ -33,11 +33,11 @@ Download Python 3.4, install it, and add it to the path. This is the
 Python that we will use to bootstrap the build process. (The download
 routines are using 3.2+ features, and installing 3.4 gives us pip and
 virtualenv as well, reducing the number of packages that we need to
-install.) 
+install.)
 
 Download the rest of the Pythons by opening a command window, changing
 to the `winbuild` directory, and running `python
-get_pythons.py`. 
+get_pythons.py`.
 
 UNDONE -- gpg verify the signatures (note that we can download from
 https)
@@ -67,13 +67,13 @@ Dependencies
 
 The script 'build_dep.py' downloads and builds the dependencies.  Open
 a command window, change directory into `winbuild` and run `python
-build_dep.py`. 
+build_dep.py`.
 
 This will download libjpeg, libtiff, libz, and freetype. It will then
 compile 32 and 64-bit versions of the libraries, with both versions of
-the compilers. 
+the compilers.
 
-UNDONE -- lcms fails. 
+UNDONE -- lcms fails.
 UNDONE -- webp, jpeg2k not recognized
 
 Building Pillow
@@ -82,7 +82,7 @@ Building Pillow
 Once the dependencies are built, run `python build.py --clean` to
 build and install Pillow in virtualenvs for each python
 build. `build.py --dist` will build Windows installers instead of
-installing into virtualenvs. 
+installing into virtualenvs.
  
 UNDONE -- suppressed output, what about failures.
 

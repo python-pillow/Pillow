@@ -400,7 +400,7 @@ ImagingPackLAB(UINT8* out, const UINT8* in, int pixels)
     /* LAB triplets */
     for (i = 0; i < pixels; i++) {
 	out[0] = in[0];
-	out[1] = in[1] ^ 128; /* signed in outside world */ 
+	out[1] = in[1] ^ 128; /* signed in outside world */
 	out[2] = in[2] ^ 128;
 	out += 3; in += 4;
     }

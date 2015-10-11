@@ -554,7 +554,7 @@ static unsigned int* get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
     tables = PySequence_Fast(qtables, "expected a sequence");
     num_tables = PySequence_Size(qtables);
     if (num_tables < 1 || num_tables > NUM_QUANT_TBLS) {
-        PyErr_SetString(PyExc_ValueError, 
+        PyErr_SetString(PyExc_ValueError,
             "Not a valid number of quantization tables. Should be between 1 and 4.");
         Py_DECREF(tables);
         return NULL;
@@ -582,7 +582,7 @@ static unsigned int* get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
         Py_DECREF(table_data);
     }
 
-    *qtablesLen = num_tables; 
+    *qtablesLen = num_tables;
 
 JPEG_QTABLES_ERR:
     Py_DECREF(tables);  // Run on both error and not error
