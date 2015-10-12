@@ -208,6 +208,8 @@ OPEN_INFO = {
 
 PREFIXES = [b"MM\000\052", b"II\052\000", b"II\xBC\000"]
 
+FLOAT_MIN = sys.float_info.min * sys.float_info.epsilon
+
 
 def _accept(prefix):
     return prefix[:4] in PREFIXES
@@ -477,7 +479,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     @_register_loader(5, 8)
     def load_rational(self, data, legacy_api=True):
         vals = self._unpack("{0}L".format(len(data) // 4), data)
-        combine = lambda a, b: (a, b) if legacy_api else a / b
+        combine = lambda a, b: (a, b) if legacy_api else a / (b or FLOAT_MIN)
         return tuple(combine(num, denom)
                      for num, denom in zip(vals[::2], vals[1::2]))
 
