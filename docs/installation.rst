@@ -22,30 +22,82 @@ Basic Installation
 
 .. note::
 
-    The following instructions will install Pillow with support for most common image formats. See :ref:`external-libraries` for a full list of external libraries supported.
+    The following instructions will install Pillow with support for
+    most common image formats. See :ref:`external-libraries` for a
+    full list of external libraries supported.
 
+.. note:: 
+
+   The basic installation works on Windows and OSX using the binaries
+   from PyPI. Other installations require building from source as
+   detailed below.
+ 
 Install Pillow with :command:`pip`::
 
     $ pip install Pillow
 
-Or use :command:`easy_install` for installing `Python Eggs <http://peak.telecommunity.com/DevCenter/PythonEggs>`_ as :command:`pip` does not support them::
+Or use :command:`easy_install` for installing `Python Eggs
+<http://peak.telecommunity.com/DevCenter/PythonEggs>`_ as
+:command:`pip` does not support them::
 
     $ easy_install Pillow
 
-Or download and extract the `compressed archive from PyPI`_ and inside it run::
 
-    $ python setup.py install
+Windows Installation
+^^^^^^^^^^^^^^^^^^^^
+
+We provide Pillow binaries for Windows compiled for the matrix of
+supported Pythons in both 32 and 64 bit versions in wheel, egg, and
+executable installers. These binaries have all of the optional
+libraries included::
+
+  $ pip install Pillow
+
+or::
+
+  $ easy_install Pillow
+
+
+OSX Installation
+^^^^^^^^^^^^^^^^
+
+We provide binaries for OSX  for each of the supported Python versions
+in the wheel format. These  include support for all optional libraries
+except OpenJPEG::
+
+  $ pip install Pillow
+
+Linux Installation
+^^^^^^^^^^^^^^^^^^
+
+We do not provide binaries for Linux. Most major Linux distributions,
+including Fedora, Debian/Ubuntu and ArchLinux include Pillow in
+packages that previously contained PIL e.g. ``python-imaging``. Please
+consider using native operating system packages first to avoid
+installation problems and/or missing library support later.
+
+
+Building From Source
+--------------------
+
+Download and extract the `compressed archive from PyPI`_.
 
 .. _compressed archive from PyPI: https://pypi.python.org/pypi/Pillow
 
 .. _external-libraries:
 
 External Libraries
-------------------
+^^^^^^^^^^^^^^^^^^
 
 .. note::
 
-    You **do not need to install all external libraries supported** to use Pillow's basic features.
+    You **do not need to install all external libraries supported** to
+    use Pillow's basic features.
+
+.. note::
+   
+   There are scripts to install the dependencies for some operating
+   systems included in the ``depends`` directory.
 
 Many of Pillow's features require external libraries:
 
@@ -86,7 +138,7 @@ Many of Pillow's features require external libraries:
   * Pillow does **not** support the earlier **1.5** series which ships
     with Ubuntu and Debian.
 
-Once you have installed the prerequisites,run::
+Once you have installed the prerequisites, run::
 
     $ pip install Pillow
 
@@ -100,8 +152,14 @@ line::
 
     $ CFLAGS="-I/usr/pkg/include" pip install pillow
 
+If pillow has been previously built without the required
+prerequisites, it may be necessary to manually clear the pip cache or
+build without cache using the ``--no-cache-dir`` option to force a
+build with newly installed external libraries.
+
+
 Build Options
--------------
+^^^^^^^^^^^^^
 
 * Environment Variable: ``MAX_CONCURRENCY=n``. By default, Pillow will
   use multiprocessing to build the extension on all available CPUs,
@@ -127,12 +185,16 @@ Sample Usage::
 
     $ MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
 
-OS X Installation
------------------
+Building on OSX
+^^^^^^^^^^^^^^^
 
-We provide binaries for OS X in the form of `Python Wheels <http://wheel.readthedocs.org/en/latest/index.html>`_. Alternatively you can compile Pillow from source with XCode.
+XCode is required to compile portions of Pillow. Either install the
+full package from the app store, or run ``xcode-select --install``
+from the command line.  It may be necessary to run `` sudo xcodebuild
+-license`` to accept the license prior to using the tools.
 
-The easiest way to install external libraries is via `Homebrew <http://brew.sh/>`_. After you install Homebrew, run::
+The easiest way to install external libraries is via `Homebrew
+<http://brew.sh/>`_. After you install Homebrew, run::
 
     $ brew install libtiff libjpeg webp little-cms2
 
@@ -140,43 +202,19 @@ Install Pillow with::
 
     $ pip install Pillow
 
-Windows Installation
---------------------
+or from within the uncompressed source directory::
 
-We provide binaries for Windows in the form of Python Eggs and `Python Wheels
-<http://wheel.readthedocs.org/en/latest/index.html>`_:
+    $ python setup.py install
 
-Python Eggs
-^^^^^^^^^^^
+Building on Windows
+^^^^^^^^^^^^^^^^^^^
 
-.. note::
+We don't recommend trying to build on Windows. It is a maze of twisty
+passages, mostly dead ends. There are build scripts and notes for the
+Windows build in the ``winbuild`` directory. 
 
-    :command:`pip` does not support Python Eggs; use :command:`easy_install`
-    instead.
-
-::
-
-    $ easy_install Pillow
-
-Python Wheels
-^^^^^^^^^^^^^
-
-.. Note:: Requires setuptools >=0.8 and pip >=1.4.1. Some older versions of pip required the ``--use-wheel`` flag.
-
-::
-
-    $ pip install Pillow
-
-If the above does not work, it's likely because we haven't uploaded a
-wheel for the latest version of Pillow. In that case, try pinning it
-to a specific version:
-
-::
-
-    $ pip install Pillow==2.6.1
-
-FreeBSD Installation
---------------------
+Building on FreeBSD
+^^^^^^^^^^^^^^^^^^^
 
 .. Note:: Only FreeBSD 10 tested
 
@@ -192,20 +230,12 @@ Prerequisites are installed on **FreeBSD 10** with::
 
     $ sudo pkg install jpeg tiff webp lcms2 freetype2
 
-Linux Installation
-------------------
 
-.. note::
+Building on Linux
+^^^^^^^^^^^^^^^^^
 
-    Most major Linux distributions, including Fedora, Debian/Ubuntu
-    and ArchLinux include Pillow in packages that previously contained
-    PIL e.g. ``python-imaging``. Please consider using native
-    operating system packages first to avoid installation problems
-    and/or missing library support later.
-
-**We do not provide binaries for Linux.** If you didn't build Python from
-source, make sure you have Python's development libraries installed. In Debian
-or Ubuntu::
+If you didn't build Python from source, make sure you have Python's
+development libraries installed. In Debian or Ubuntu::
 
     $ sudo apt-get install python-dev python-setuptools
 
@@ -247,7 +277,8 @@ current versions of Linux, OS X, and Windows.
 
 .. note::
 
-    Contributors please test Pillow on your platform then update this document and send a pull request.
+    Contributors please test Pillow on your platform then update this
+    document and send a pull request.
 
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Supported**|**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
