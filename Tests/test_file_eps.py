@@ -124,15 +124,18 @@ class TestFileEps(PillowTestCase):
         # Arrange
         image1 = Image.open(file1)
         image2 = Image.open(file2)
+        image3 = Image.open("Tests/images/illu10_preview.eps")
         new_size = (100, 100)
 
         # Act
         image1 = image1.resize(new_size)
         image2 = image2.resize(new_size)
+        image3 = image3.resize(new_size)
 
         # Assert
         self.assertEqual(image1.size, new_size)
         self.assertEqual(image2.size, new_size)
+        self.assertEqual(image3.size, new_size)
 
     def test_thumbnail(self):
         # Issue #619
