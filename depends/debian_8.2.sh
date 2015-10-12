@@ -2,7 +2,7 @@
 
 #
 # Installs all of the dependencies for Pillow for Debian 8.2
-# for both system pythons 2.7 and 3.4
+# for both system Pythons 2.7 and 3.4
 #
 
 sudo apt-get -y install python-dev python-setuptools \
