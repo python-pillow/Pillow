@@ -651,9 +651,10 @@ class Image(object):
         
         .. warning::
         
-            This method is for raw-ish output, for compressed image
-            data (e.g. PNG, JPEG) use :meth:`~.save`, with a BytesIO
-            parameter for in-memory data.
+            This method returns the raw image data from the internal
+            storage.  For compressed image data (e.g. PNG, JPEG) use
+            :meth:`~.save`, with a BytesIO parameter for in-memory
+            data.
 
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
