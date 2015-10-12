@@ -49,7 +49,7 @@ http://www.cazabon.com\n\
 
 /* known to-do list with current version:
 
-   Verify that PILmode->littleCMStype conversion in findLCMStype is correct for all 
+   Verify that PILmode->littleCMStype conversion in findLCMStype is correct for all
    PIL modes (it probably isn't for the more obscure ones)
 
    Add support for creating custom RGB profiles on the fly
@@ -454,7 +454,7 @@ createProfile(PyObject *self, PyObject *args)
     }
     else if (strcmp(sColorSpace, "XYZ") == 0) {
         hProfile = cmsCreateXYZProfile();
-    } 
+    }
     else if (strcmp(sColorSpace, "sRGB") == 0) {
         hProfile = cmsCreate_sRGBProfile();
     }
@@ -554,10 +554,10 @@ _profile_getattr(CmsProfileObject* self, cmsInfoType field)
 {
     // UNDONE -- check that I'm getting the right fields on these.
     // return PyUnicode_DecodeFSDefault(cmsTakeProductName(self->profile));
-    //wchar_t buf[256]; -- UNDONE need wchar_t for unicode version. 
+    //wchar_t buf[256]; -- UNDONE need wchar_t for unicode version.
     char buf[256];
     cmsUInt32Number written;
-    written =  cmsGetProfileInfoASCII(self->profile, 
+    written =  cmsGetProfileInfoASCII(self->profile,
                                       field,
                                       "en",
                                       "us",
@@ -566,40 +566,40 @@ _profile_getattr(CmsProfileObject* self, cmsInfoType field)
     if (written) {
         return PyUnicode_FromString(buf);
     }
-    // UNDONE suppressing error here by sending back blank string. 
+    // UNDONE suppressing error here by sending back blank string.
     return PyUnicode_FromString("");
 }
 
 static PyObject*
 cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
-{    
+{
     // description was Description != 'Copyright' || or  "%s - %s" (manufacturer, model) in 1.x
     return _profile_getattr(self, cmsInfoDescription);
 }
 
-/* use these four for the individual fields. 
+/* use these four for the individual fields.
  */
 static PyObject*
 cms_profile_getattr_product_description(CmsProfileObject* self, void* closure)
-{    
+{
     return _profile_getattr(self, cmsInfoDescription);
 }
 
 static PyObject*
 cms_profile_getattr_product_model(CmsProfileObject* self, void* closure)
-{    
+{
     return _profile_getattr(self, cmsInfoModel);
 }
 
 static PyObject*
 cms_profile_getattr_product_manufacturer(CmsProfileObject* self, void* closure)
-{    
+{
     return _profile_getattr(self, cmsInfoManufacturer);
 }
 
 static PyObject*
 cms_profile_getattr_product_copyright(CmsProfileObject* self, void* closure)
-{    
+{
     return _profile_getattr(self, cmsInfoCopyright);
 }
 

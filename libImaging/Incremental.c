@@ -175,7 +175,7 @@ ImagingIncrementalCodecCreate(ImagingIncrementalCodecEntry codec_entry,
   codec->state = state;
   codec->result = 0;
   codec->stream.fd = fd;
-  codec->stream.buffer = codec->stream.ptr = codec->stream.end 
+  codec->stream.buffer = codec->stream.ptr = codec->stream.end
     = codec->stream.top = NULL;
   codec->started = 0;
   codec->seekable = seekable;
@@ -294,7 +294,7 @@ ImagingIncrementalCodecDestroy(ImagingIncrementalCodec codec)
   if (codec->seekable && codec->stream.fd < 0)
     free (codec->stream.buffer);
 
-  codec->stream.buffer = codec->stream.ptr = codec->stream.end 
+  codec->stream.buffer = codec->stream.ptr = codec->stream.end
     = codec->stream.top = NULL;
 
 #ifdef _WIN32

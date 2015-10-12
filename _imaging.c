@@ -395,8 +395,8 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
     
     for (i = 0; i < n; i++) {
         op = PySequence_Fast_GET_ITEM(seq, i);
-        // DRY, branch prediction is going to work _really_ well 
-        // on this switch. And 3 fewer loops to copy/paste. 
+        // DRY, branch prediction is going to work _really_ well
+        // on this switch. And 3 fewer loops to copy/paste.
         switch (type) {
         case TYPE_UINT8:
             itemp = PyInt_AsLong(op);
@@ -3101,7 +3101,7 @@ static struct PyMethodDef methods[] = {
     {"unsharp_mask", (PyCFunction)_unsharp_mask, 1},
 #endif
 
-    {"box_blur", (PyCFunction)_box_blur, 1},    
+    {"box_blur", (PyCFunction)_box_blur, 1},
 
 #ifdef WITH_EFFECTS
     /* Special effects */

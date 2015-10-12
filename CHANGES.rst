@@ -325,7 +325,7 @@ Changelog (Pillow)
 - Adjust buffer size when quality=keep, fixes #148 (again)
   [wiredfool]
 
-- Fix for corrupted bitmaps embedded in truetype fonts. #1072 
+- Fix for corrupted bitmaps embedded in truetype fonts. #1072
   [jackyyf, wiredfool]
 
 2.7.0 (2015-01-01)
@@ -412,7 +412,7 @@ Changelog (Pillow)
 2.6.2 (2015-01-01)
 ------------------
 
-- Fix CVE-2014-9601, potential PNG decompression DOS #1060 
+- Fix CVE-2014-9601, potential PNG decompression DOS #1060
   [wiredfool]
 
 - Fix Regression in PyPy 2.4 in streamio  #958
@@ -1081,7 +1081,7 @@ Changelog (Pillow)
 
 .. Note:: Special thanks to Christoph Gohlke and Eric Soroos for assisting with a pre-PyCon 2013 release!
 
-- Many other bug fixes and enhancements by many other people. 
+- Many other bug fixes and enhancements by many other people.
 
 - Add Python 3 support. (Pillow >= 2.0.0 supports Python 2.6, 2.7, 3.2, 3.3. Pillow < 2.0.0 supports Python 2.4, 2.5, 2.6, 2.7.)
   [fluggo]

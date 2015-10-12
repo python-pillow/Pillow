@@ -471,13 +471,13 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     .. versionadded:: 1.1.5
 
 **resolution**
-    Image resolution as an ``(xres, yres)`` tuple, where applicable. This is a 
+    Image resolution as an ``(xres, yres)`` tuple, where applicable. This is a
     measurement in whichever unit is specified by the file.
 
     .. versionadded:: 1.1.5
 
 
-The :py:attr:`~PIL.Image.Image.tag_v2` attribute contains a dictionary of 
+The :py:attr:`~PIL.Image.Image.tag_v2` attribute contains a dictionary of
 TIFF metadata. The keys are numerical indexes from `~PIL.TiffTags.TAGS_V2`.
 Values are strings or numbers for single items, multiple values are returned
 in a tuple of values. Rational numbers are returned as a single value.
