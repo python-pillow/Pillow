@@ -28,7 +28,7 @@ Basic Installation
 
 .. note:: 
 
-   The basic installation works on Windows and OSX using the binaries
+   The basic installation works on Windows and OS X using the binaries
    from PyPI. Other installations require building from source as
    detailed below.
  
@@ -47,7 +47,7 @@ Windows Installation
 ^^^^^^^^^^^^^^^^^^^^
 
 We provide Pillow binaries for Windows compiled for the matrix of
-supported Pythons in both 32 and 64 bit versions in wheel, egg, and
+supported Pythons in both 32 and 64-bit versions in wheel, egg, and
 executable installers. These binaries have all of the optional
 libraries included::
 
@@ -58,10 +58,10 @@ or::
   $ easy_install Pillow
 
 
-OSX Installation
-^^^^^^^^^^^^^^^^
+OS X Installation
+^^^^^^^^^^^^^^^^^
 
-We provide binaries for OSX  for each of the supported Python versions
+We provide binaries for OS X  for each of the supported Python versions
 in the wheel format. These  include support for all optional libraries
 except OpenJPEG::
 
@@ -152,7 +152,7 @@ line::
 
     $ CFLAGS="-I/usr/pkg/include" pip install pillow
 
-If pillow has been previously built without the required
+If Pillow has been previously built without the required
 prerequisites, it may be necessary to manually clear the pip cache or
 build without cache using the ``--no-cache-dir`` option to force a
 build with newly installed external libraries.
@@ -185,8 +185,8 @@ Sample Usage::
 
     $ MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
 
-Building on OSX
-^^^^^^^^^^^^^^^
+Building on OS X
+^^^^^^^^^^^^^^^^
 
 XCode is required to compile portions of Pillow. Either install the
 full package from the app store, or run ``xcode-select --install``
