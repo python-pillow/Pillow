@@ -188,7 +188,7 @@ Sample Usage::
 Building on OS X
 ^^^^^^^^^^^^^^^^
 
-XCode is required to compile portions of Pillow. Either install the
+Xcode is required to compile portions of Pillow. Either install the
 full package from the app store, or run ``xcode-select --install``
 from the command line.  It may be necessary to run `` sudo xcodebuild
 -license`` to accept the license prior to using the tools.
