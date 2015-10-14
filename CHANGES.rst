@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Dependency scripts for Debian and Ubuntu #1486
+  [wiredfool]
+
 - Added Usage message to painter script #1482
   [radarhere]
 
