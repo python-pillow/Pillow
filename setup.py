@@ -243,7 +243,7 @@ class pil_build_ext(build_ext):
         elif sys.platform.startswith("linux"):
             arch_tp = (plat.processor(), plat.architecture()[0])
             if arch_tp == ("x86_64", "32bit"):
-                # 32 bit build on 64 bit machine.
+                # 32-bit build on 64-bit machine.
                 _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
             else:
                 for platform_ in arch_tp:
