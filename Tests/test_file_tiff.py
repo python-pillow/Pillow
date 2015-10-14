@@ -169,7 +169,7 @@ class TestFileTiff(PillowTestCase):
         self.assert_image_equal(im, im2)
 
     def test_32bit_float(self):
-        # Issue 614, specific 32 bit float format
+        # Issue 614, specific 32-bit float format
         path = 'Tests/images/10ct_32bit_128.tiff'
         im = Image.open(path)
         im.load()

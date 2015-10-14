@@ -1100,7 +1100,7 @@ Changelog (Pillow)
 - Backport PIL's PNG/Zip improvements.
   [olt]
 
-- Various 64 bit and Windows fixes.
+- Various 64-bit and Windows fixes.
   [cgohlke]
 
 - Add testing suite.
