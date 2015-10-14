@@ -337,7 +337,7 @@ Changelog (Pillow)
 - Split Sane into a separate repo: https://github.com/python-pillow/Sane
   [hugovk]
 
-- Look for OSX and Linux fonts in common places. #1054
+- Look for OS X and Linux fonts in common places. #1054
   [charleslaw]
 
 - Fix CVE-2014-9601, potential PNG decompression DOS #1060
@@ -945,7 +945,7 @@ Changelog (Pillow)
 - Fix #328: _imagingcms.c: include windef.h to fix build issue on MSVC
   [nu774]
 
-- Automatically discover homebrew include/ and lib/ paths on OSX
+- Automatically discover homebrew include/ and lib/ paths on OS X
   [donspaulding]
 
 - Fix bytes which should be bytearray
