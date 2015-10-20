@@ -432,9 +432,9 @@ def _getexif(self):
     except (KeyError, TypeError):
         pass
     else:
-        info = TiffImagePlugin.ImageFileDirectory_v2(head)
+        info = TiffImagePlugin.ImageFileDirectory_v1(head)
         info.load(file)
-        exif[0x8825] = dict(info)
+        exif[0x8825] = dict([(k,v[0]) if len(v) == 1 else (k,v) for k,v in info.items()])
     return exif
 
 
