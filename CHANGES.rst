@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Remove old _imagingtiff.c and pilplus stuff #1499
+  [hugovk]
+
 - Fix Exception when requiring jpeg #1501
   [hansmosh]
   
