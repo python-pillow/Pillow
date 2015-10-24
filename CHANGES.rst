@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Fix Exception when requiring jpeg #1501
+  [hansmosh]
+  
 - Dependency scripts for Debian and Ubuntu #1486
   [wiredfool]
 
