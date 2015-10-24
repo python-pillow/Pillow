@@ -98,9 +98,6 @@
 
 #define WITH_DEBUG /* extra debugging interfaces */
 
-/* PIL Plus extensions */
-#undef  WITH_CRACKCODE /* pil plus */
-
 #undef    VERBOSE
 
 #define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
@@ -370,7 +367,7 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
     void* list;
     PyObject* seq;
     PyObject* op;
-    
+
     if (!PySequence_Check(arg)) {
         PyErr_SetString(PyExc_TypeError, must_be_sequence);
         return NULL;
@@ -392,7 +389,7 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
         PyErr_SetString(PyExc_TypeError, must_be_sequence);
         return NULL;
     }
-    
+
     for (i = 0; i < n; i++) {
         op = PySequence_Fast_GET_ITEM(seq, i);
         // DRY, branch prediction is going to work _really_ well
@@ -3030,9 +3027,6 @@ static struct PyMethodDef methods[] = {
     {"convert_transparent", (PyCFunction)_convert_transparent, 1},
     {"copy", (PyCFunction)_copy, 1},
     {"copy2", (PyCFunction)_copy2, 1},
-#ifdef WITH_CRACKCODE
-    {"crackcode", (PyCFunction)_crackcode, 1},
-#endif
     {"crop", (PyCFunction)_crop, 1},
     {"expand", (PyCFunction)_expand_image, 1},
     {"filter", (PyCFunction)_filter, 1},

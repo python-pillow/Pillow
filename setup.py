@@ -554,10 +554,6 @@ class pil_build_ext(build_ext):
             exts.append(Extension(
                 "PIL._imagingft", ["_imagingft.c"], libraries=["freetype"]))
 
-        if os.path.isfile("_imagingtiff.c") and feature.tiff:
-            exts.append(Extension(
-                "PIL._imagingtiff", ["_imagingtiff.c"], libraries=["tiff"]))
-
         if os.path.isfile("_imagingcms.c") and feature.lcms:
             extra = []
             if sys.platform == "win32":
