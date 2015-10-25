@@ -282,6 +282,13 @@ class IFDRational(Fraction):
 
     def __repr__(self):
         return str(float(self._val))
+
+    def __eq__(self,other):
+        if type(other) == float:
+            return float(self) == other
+        if type(other) == int:
+            return float(self) == float(int(self)) and int(self) == other
+        return float(self) == float(other)
     
 
 class ImageFileDirectory_v2(collections.MutableMapping):
