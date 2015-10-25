@@ -47,9 +47,10 @@ from PIL import _binary
 
 import collections
 from fractions import Fraction
+from numbers import Number, Rational
+
 import io
 import itertools
-from numbers import Number
 import os
 import struct
 import sys
@@ -215,8 +216,7 @@ def _accept(prefix):
 
 def _limit_rational(val, max_val):
     inv = abs(val) > 1
-    f = Fraction.from_float(1 / val if inv else val).limit_denominator(max_val)
-    n_d = (f.numerator, f.denominator)
+    n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
 
 ##
@@ -225,6 +225,64 @@ def _limit_rational(val, max_val):
 _load_dispatch = {}
 _write_dispatch = {}
 
+class IFDRational(Fraction):
+    """ Implements a rational class where 0/0 is a legal value to match
+    the in the wild use of exif rationals.
+
+    e.g., DigitalZoomRatio - 0.00/0.00  indicates that no digital zoom was used
+    """
+
+    """ If the denominator is 0, store this as a float('nan'), otherwise store
+    as a fractions.Fraction(). Delegate as appropriate
+
+    """
+    
+    __slots__ = ('numerator', 'denominator', '_val') 
+
+    def __init__(self, value, denominator=1):
+        """
+        :param value: either an integer numerator, a
+        float/rational/other number, or an IFDRational
+        :param denominator: Optional integer denominator
+        """
+        self.denominator = denominator
+        self.numerator = value
+        
+        if type(value) == IFDRational:
+            self.denominator = value.denominator
+            self.numerator = value.numerator
+            self._val = value._val
+            return
+
+        if denominator == 0:
+            self._val = float('nan')
+            return
+
+        try:
+            if denominator == 1:
+                self._val = Fraction(value)
+            else:
+                self._val = Fraction(value, denominator)
+        except:
+            print(type(value), type(denominator))
+            raise
+
+    def limit_rational(self, max_denominator):
+        """
+        
+        :param max_denominator: Integer, the maximum denominator value
+        :returns: Tuple of (numerator, denominator)
+        """
+
+        if self.denominator == 0:
+            return (self.numerator, self.denominator)
+
+        f = self._val.limit_denominator(max_denominator)
+        return (f.numerator, f.denominator)
+
+    def __repr__(self):
+        return str(float(self._val))
+    
 
 class ImageFileDirectory_v2(collections.MutableMapping):
     """This class represents a TIFF tag directory.  To speed things up, we
@@ -477,7 +535,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     @_register_loader(5, 8)
     def load_rational(self, data, legacy_api=True):
         vals = self._unpack("{0}L".format(len(data) // 4), data)
-        combine = lambda a, b: (a, b) if legacy_api else a / b
+        combine = lambda a, b: (a, b) if legacy_api else IFDRational(a, b)
         return tuple(combine(num, denom)
                      for num, denom in zip(vals[::2], vals[1::2]))
 
@@ -497,7 +555,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     @_register_loader(10, 8)
     def load_signed_rational(self, data, legacy_api=True):
         vals = self._unpack("{0}l".format(len(data) // 4), data)
-        combine = lambda a, b: (a, b) if legacy_api else a / b
+        combine = lambda a, b: (a, b) if legacy_api else IFDRational(a, b)
         return tuple(combine(num, denom)
                      for num, denom in zip(vals[::2], vals[1::2]))
 
@@ -1296,6 +1354,8 @@ def _save(im, fp, filename):
             if k not in atts and k not in blocklist:
                 if isinstance(v, unicode if bytes is str else str):
                     atts[k] = v.encode('ascii', 'replace') + b"\0"
+                elif isinstance(v, IFDRational):
+                    atts[k] = float(v)
                 else:
                     atts[k] = v
 

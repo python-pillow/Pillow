@@ -126,8 +126,10 @@ class TestFileTiffMetadata(PillowTestCase):
 
         for tag, value in reloaded.items():
             if tag not in ignored:
-                self.assertEqual(
-                    original[tag], value, "%s didn't roundtrip" % tag)
+                self.assertEqual(original[tag],
+                                 value,
+                                 "%s didn't roundtrip, %s, %s" %
+                                 (tag, original[tag], value))
 
         for tag, value in original.items():
             if tag not in ignored:
