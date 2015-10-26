@@ -17,7 +17,7 @@ Please send a pull request to the master branch. Please include [documentation](
 - Separate code commits from reformatting commits.
 - Provide tests for any newly added code.
 - Follow PEP8.
-- When committing only trivial changes please include [ci skip] in the commit message to avoid running tests on Travis-CI.
+- When committing only documentation changes please include [ci skip] in the commit message to avoid running tests on Travis-CI.
 
 ## Reporting Issues
 
