@@ -1278,7 +1278,7 @@ Pre-fork
     This section may not be fully complete.  For changes since this file
     was last updated, see the repository revision history:
 
-      http://bitbucket.org/effbot/pil-2009-raclette/changesets/
+      https://bitbucket.org/effbot/pil-2009-raclette/commits/all
 
     (1.1.7 final)
 
