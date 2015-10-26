@@ -2,7 +2,7 @@
 # The Python Imaging Library
 # $Id$
 #
-# screen grabber (windows only)
+# screen grabber (OS X and Windows only)
 #
 # History:
 # 2001-04-26 fl  created
