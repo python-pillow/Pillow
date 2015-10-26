@@ -143,9 +143,6 @@ function::
             errPtr = errLinePtr;
             destBytePtr = dstLinePtr;
 
-last updated: 97-07-03/fl
-
-
 The PIL Bitmap Booster Patch
 ====================================================================
 
@@ -286,5 +283,3 @@ Imaging.h instead of copying the struct declaration...)::
     /* ==================================================================== */
 
 3. Recompile Tk and relink the _tkinter module (where necessary).
-
-Last updated: 97-05-17/fl
