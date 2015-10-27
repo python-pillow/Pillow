@@ -12,7 +12,7 @@ environment:
   - PYTHON: C:/Python33
   - PYTHON: C:/Python33-x64
 install:
-- git clone https://github.com/wiredfool/pillow-depends.git c:\pillow-depends
+- git clone https://github.com/python-pillow/pillow-depends.git c:\pillow-depends
 - xcopy c:\pillow-depends\*.zip c:\pillow\winbuild\
 - xcopy c:\pillow-depends\*.tar.gz c:\pillow\winbuild\
 - cd c:\pillow\winbuild\
