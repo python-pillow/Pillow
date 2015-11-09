@@ -109,10 +109,10 @@ class BdfFontFile(FontFile.FontFile):
                 if s.find(b"LogicalFontDescription") < 0:
                     comments.append(s[i+1:-1].decode('ascii'))
 
-        font = props["FONT"].split("-")
+        # font = props["FONT"].split("-")
 
-        font[4] = bdf_slant[font[4].upper()]
-        font[11] = bdf_spacing[font[11].upper()]
+        # font[4] = bdf_slant[font[4].upper()]
+        # font[11] = bdf_spacing[font[11].upper()]
 
         # ascent = int(props["FONT_ASCENT"])
         # descent = int(props["FONT_DESCENT"])
@@ -123,7 +123,6 @@ class BdfFontFile(FontFile.FontFile):
         # for i in comments:
         #       print "#", i
 
-        font = []
         while True:
             c = bdf_char(fp)
             if not c:
