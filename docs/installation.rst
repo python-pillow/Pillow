@@ -190,7 +190,7 @@ Building on OS X
 
 Xcode is required to compile portions of Pillow. Either install the
 full package from the app store, or run ``xcode-select --install``
-from the command line.  It may be necessary to run `` sudo xcodebuild
+from the command line.  It may be necessary to run ``sudo xcodebuild
 -license`` to accept the license prior to using the tools.
 
 The easiest way to install external libraries is via `Homebrew
