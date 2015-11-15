@@ -133,7 +133,7 @@ TAGS_V2 = {
 
     # FIXME add more tags here
     34665: ("ExifIFD", 3, 1),
-    34675: ('ICCProfile', 7, 1),
+    34675: ('ICCProfile', 7, 0),
 
     # MPInfo
     45056: ("MPFVersion", 7, 1),
