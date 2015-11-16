@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Fix the definition of icc_profile in TiffTags #1539
+  [wiredfool]
+
 - Remove old _imagingtiff.c and pilplus stuff #1499
   [hugovk]
 
