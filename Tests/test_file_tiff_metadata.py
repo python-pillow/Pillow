@@ -158,6 +158,14 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assert_(type(im.info['icc_profile']) is not type(tuple))
         self.assertEqual(im.info['icc_profile'], reloaded.info['icc_profile'])
 
+    def test_iccprofile_binary(self):
+        # https://github.com/python-pillow/Pillow/issues/1526
+        # We should be able to load this, but probably won't be able to save it.
+
+        im = Image.open('Tests/images/hopper.iccprofile_binary.tif')
+        self.assertEqual(im.tag_v2.tagtype[34675], 1)
+        self.assert_(im.info['icc_profile'])
+
 
 
 if __name__ == '__main__':
