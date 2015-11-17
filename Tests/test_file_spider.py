@@ -80,6 +80,11 @@ class TestImageSpider(PillowTestCase):
         # Assert
         self.assertEqual(ret, 0)
 
+    def test_invalid_file(self):
+        invalid_file = "Tests/images/invalid.spider"
+        
+        self.assertRaises(IOError, lambda: Image.open(invalid_file))
+
 
 if __name__ == '__main__':
     unittest.main()
