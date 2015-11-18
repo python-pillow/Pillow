@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Catch OverflowError in SpiderImagePlugin #1545
+  [radarhere, MrShark]
+
 - Fix the definition of icc_profile in TiffTags #1539
   [wiredfool]
 
