@@ -493,6 +493,25 @@ font_getattr_descent(FontObject* self, void* closure)
 }
 
 static PyObject*
+font_getattr_height(FontObject* self, void* closure)
+{
+    return PyInt_FromLong(PIXEL(self->face->size->metrics.height));
+}
+
+static PyObject*
+font_getattr_x_ppem(FontObject* self, void* closure)
+{
+    return PyInt_FromLong(self->face->size->metrics.x_ppem);
+}
+
+static PyObject*
+font_getattr_y_ppem(FontObject* self, void* closure)
+{
+    return PyInt_FromLong(self->face->size->metrics.y_ppem);
+}
+
+
+static PyObject*
 font_getattr_glyphs(FontObject* self, void* closure)
 {
     return PyInt_FromLong(self->face->num_glyphs);
@@ -503,6 +522,9 @@ static struct PyGetSetDef font_getsetters[] = {
     { "style",      (getter) font_getattr_style },
     { "ascent",     (getter) font_getattr_ascent },
     { "descent",    (getter) font_getattr_descent },
+    { "height",     (getter) font_getattr_height },
+    { "x_ppem",     (getter) font_getattr_x_ppem },
+    { "y_ppem",     (getter) font_getattr_y_ppem },
     { "glyphs",     (getter) font_getattr_glyphs },
     { NULL }
 };
