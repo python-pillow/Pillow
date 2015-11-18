@@ -4,6 +4,15 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Updated WebP to 0.4.4 for Travis #1515
+  [radarhere]
+  
+- Fix missing 'version' key value in __array_interface__ #1519
+  [mattip]
+  
+- Replaced os.popen with subprocess.Popen to pilprint script #1523
+  [radarhere]
+  
 - Catch OverflowError in SpiderImagePlugin #1545
   [radarhere, MrShark]
 
