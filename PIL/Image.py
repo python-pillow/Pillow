@@ -622,6 +622,7 @@ class Image(object):
             new['shape'] = shape
             new['typestr'] = typestr
             new['data'] = self.tobytes()
+            new['version'] = 3
             return new
         raise AttributeError(name)
 
