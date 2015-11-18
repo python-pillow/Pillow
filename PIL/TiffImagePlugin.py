@@ -225,7 +225,7 @@ def _limit_rational(val, max_val):
 _load_dispatch = {}
 _write_dispatch = {}
 
-class IFDRational(Fraction):
+class IFDRational(Rational):
     """ Implements a rational class where 0/0 is a legal value to match
     the in the wild use of exif rationals.
 
@@ -247,6 +247,12 @@ class IFDRational(Fraction):
         """
         self.denominator = denominator
         self.numerator = value
+        self._val = float(1)
+
+        if type(value) == Fraction:
+            self.numerator = value.numerator
+            self.denominator = value.denominator
+            self._val = value
         
         if type(value) == IFDRational:
             self.denominator = value.denominator
@@ -258,14 +264,16 @@ class IFDRational(Fraction):
             self._val = float('nan')
             return
 
-        try:
-            if denominator == 1:
-                self._val = Fraction(value)
+
+        elif denominator == 1:
+            if sys.hexversion < 0x2070000 and type(value) == float:
+                # python 2.6 is different.
+                self._val = Fraction.from_float(value)
             else:
-                self._val = Fraction(value, denominator)
-        except:
-            print(type(value), type(denominator))
-            raise
+                self._val = Fraction(value)
+        else:
+            self._val = Fraction(value, denominator)
+
 
     def limit_rational(self, max_denominator):
         """
@@ -287,11 +295,45 @@ class IFDRational(Fraction):
         return self._val.__hash__()
 
     def __eq__(self,other):
-        if type(other) == float:
-            return float(self) == other
-        if type(other) == int:
-            return float(self) == float(int(self)) and int(self) == other
-        return float(self) == float(other)
+        return self._val == other
+
+    def _delegate(op):
+        def delegate(self, *args):
+            return getattr(self._val,op)(*args)
+        return delegate
+
+    """ a = ['add','radd', 'sub', 'rsub','div', 'rdiv', 'mul', 'rmul',
+             'truediv', 'rtruediv', 'floordiv',
+             'rfloordiv','mod','rmod', 'pow','rpow', 'pos', 'neg',
+             'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'nonzero']
+        print "\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a)
+        """
+
+    __add__ = _delegate('__add__')
+    __radd__ = _delegate('__radd__')
+    __sub__ = _delegate('__sub__')
+    __rsub__ = _delegate('__rsub__')
+    __div__ = _delegate('__div__')
+    __rdiv__ = _delegate('__rdiv__')
+    __mul__ = _delegate('__mul__')
+    __rmul__ = _delegate('__rmul__')
+    __truediv__ = _delegate('__truediv__')
+    __rtruediv__ = _delegate('__rtruediv__')
+    __floordiv__ = _delegate('__floordiv__')
+    __rfloordiv__ = _delegate('__rfloordiv__')
+    __mod__ = _delegate('__mod__')
+    __rmod__ = _delegate('__rmod__')
+    __pow__ = _delegate('__pow__')
+    __rpow__ = _delegate('__rpow__')
+    __pos__ = _delegate('__pos__')
+    __neg__ = _delegate('__neg__')
+    __abs__ = _delegate('__abs__')
+    __trunc__ = _delegate('__trunc__')
+    __lt__ = _delegate('__lt__')
+    __gt__ = _delegate('__gt__')
+    __le__ = _delegate('__le__')
+    __ge__ = _delegate('__ge__')
+    __nonzero__ = _delegate('__nonzero__')
 
     
 
@@ -1063,16 +1105,10 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self.info["compression"] = self._compression
 
-        xres = self.tag_v2.get(X_RESOLUTION, (1, 1))
-        yres = self.tag_v2.get(Y_RESOLUTION, (1, 1))
+        xres = self.tag_v2.get(X_RESOLUTION,1)
+        yres = self.tag_v2.get(Y_RESOLUTION,1)
 
-        if xres and not isinstance(xres, tuple):
-            xres = (xres, 1.)
-        if yres and not isinstance(yres, tuple):
-            yres = (yres, 1.)
         if xres and yres:
-            xres = xres[0] / (xres[1] or 1)
-            yres = yres[0] / (yres[1] or 1)
             resunit = self.tag_v2.get(RESOLUTION_UNIT, 1)
             if resunit == 2:  # dots per inch
                 self.info["dpi"] = xres, yres
