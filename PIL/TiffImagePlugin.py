@@ -237,7 +237,7 @@ class IFDRational(Rational):
 
     """
     
-    __slots__ = ('numerator', 'denominator', '_val') 
+    __slots__ = ('_numerator', '_denominator', '_val') 
 
     def __init__(self, value, denominator=1):
         """
@@ -245,18 +245,18 @@ class IFDRational(Rational):
         float/rational/other number, or an IFDRational
         :param denominator: Optional integer denominator
         """
-        self.denominator = denominator
-        self.numerator = value
+        self._denominator = denominator
+        self._numerator = value
         self._val = float(1)
 
         if type(value) == Fraction:
-            self.numerator = value.numerator
-            self.denominator = value.denominator
+            self._numerator = value.numerator
+            self._denominator = value.denominator
             self._val = value
         
         if type(value) == IFDRational:
-            self.denominator = value.denominator
-            self.numerator = value.numerator
+            self._denominator = value.denominator
+            self._numerator = value.numerator
             self._val = value._val
             return
 
@@ -273,6 +273,14 @@ class IFDRational(Rational):
                 self._val = Fraction(value)
         else:
             self._val = Fraction(value, denominator)
+
+    @property
+    def numerator(a):
+        return a._numerator
+
+    @property
+    def denominator(a):
+        return a._denominator
 
 
     def limit_rational(self, max_denominator):
