@@ -66,6 +66,8 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
             # print "hotspot y", i16(s[6:])
             # print "bytes", i32(s[8:])
             # print "offset", i32(s[12:])
+        if not m:
+            raise TypeError("No cursors were found")
 
         # load as bitmap
         self._bitmap(i32(m[12:]) + offset)

@@ -2,17 +2,14 @@ from helper import unittest, PillowTestCase
 
 from PIL import Image, CurImagePlugin
 
+TEST_FILE = "Tests/images/deerstalker.cur"
+
 
 class TestFileCur(PillowTestCase):
 
     def test_sanity(self):
-        # Arrange
-        test_file = "Tests/images/deerstalker.cur"
+        im = Image.open(TEST_FILE)
 
-        # Act
-        im = Image.open(test_file)
-
-        # Assert
         self.assertEqual(im.size, (32, 32))
         self.assertIsInstance(im, CurImagePlugin.CurImageFile)
         # Check some pixel colors to ensure image is loaded properly
@@ -25,6 +22,12 @@ class TestFileCur(PillowTestCase):
 
         self.assertRaises(SyntaxError,
                           lambda: CurImagePlugin.CurImageFile(invalid_file))
+
+        no_cursors_file = "Tests/images/no_cursors.cur"
+
+        cur = CurImagePlugin.CurImageFile(TEST_FILE)
+        cur.fp = open(no_cursors_file, "rb")
+        self.assertRaises(TypeError, cur._open)
 
 
 if __name__ == '__main__':
