@@ -17,6 +17,7 @@
 #
 
 import PIL
+import PIL.Image
 from PIL._util import isPath
 from io import BytesIO
 
