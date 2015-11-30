@@ -16,7 +16,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import PIL
+from PIL import Image
 from PIL._util import isPath
 from io import BytesIO
 
@@ -69,7 +69,7 @@ def fromqimage(im):
     buffer.close()
     b.seek(0)
 
-    return PIL.Image.open(b)
+    return Image.open(b)
 
 
 def fromqpixmap(im):
@@ -83,7 +83,7 @@ def fromqpixmap(im):
     # bytes_io.write(buffer.data())
     # buffer.close()
     # bytes_io.seek(0)
-    # return PIL.Image.open(bytes_io)
+    # return Image.open(bytes_io)
 
 def align8to32(bytes, width, mode):
     """
@@ -125,7 +125,7 @@ def _toqclass_helper(im):
         else:
             im = str(im.toUtf8(), "utf-8")
     if isPath(im):
-        im = PIL.Image.open(im)
+        im = Image.open(im)
 
     if im.mode == "1":
         format = QImage.Format_Mono
@@ -149,7 +149,7 @@ def _toqclass_helper(im):
         except SystemError:
             # workaround for earlier versions
             r, g, b, a = im.split()
-            im = PIL.Image.merge("RGBA", (b, g, r, a))
+            im = Image.merge("RGBA", (b, g, r, a))
         format = QImage.Format_ARGB32
     else:
         raise ValueError("unsupported image mode %r" % im.mode)
