@@ -1,4 +1,5 @@
 language: python
+sudo: false
 
 notifications:
   irc: "chat.freenode.net#pil"
@@ -19,7 +20,6 @@ python:
   - nightly
 
 install:
-  - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
   - "travis_retry pip install cffi"
   - "travis_retry pip install nose"
   - "travis_retry pip install check-manifest"
@@ -52,7 +52,6 @@ script:
 
 after_success:
    # gather the coverage data
-  - travis_retry sudo apt-get -qq install lcov
   - lcov --capture --directory . -b . --output-file coverage.info
    # filter to remove system headers
   - lcov --remove coverage.info '/usr/*' -o coverage.filtered.info
@@ -123,3 +122,17 @@ env:
   global:
     # travis encrypt AUTH_TOKEN=
     secure: "Vzm7aG1Qv0SDQcqiPzZMedNLn5ZmpL7IzF0DYnqcD+/l+zmKU22SnJBcX0uVXumo+r7eZfpsShpqfcdsZvMlvmQnwz+Y6AGKQru9tCKZbTMnuRjWKKXekC+tr8Xt9CKvRVtte5PyXW31paxUI3/e+fQGBwoFjEEC+6EpEOjeRfE="
+
+
+addons:
+  apt:
+    packages:
+    - ibfreetype6-dev
+    - liblcms2-dev
+    - python-qt4
+    - ghostscript
+    - libffi-dev
+    - libjpeg-turbo-progs
+    - cmake
+    - imagemagick
+    - lcov
