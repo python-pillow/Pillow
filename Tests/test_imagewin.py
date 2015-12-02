@@ -114,7 +114,7 @@ class TestImageWinDib(PillowTestCase):
 
         # Act/Assert
         self.assertRaises(Exception, dib.tostring)
-        self.assertRaises(Exception, lambda: dib.fromstring(test_buffer))
+        self.assertRaises(Exception, dib.fromstring)
 
 
 if __name__ == '__main__':
