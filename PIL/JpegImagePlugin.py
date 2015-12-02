@@ -379,7 +379,7 @@ class JpegImageFile(ImageFile.ImageFile):
         finally:
             try:
                 os.unlink(path)
-            except:
+            except OSError:
                 pass
 
         self.mode = self.im.mode
@@ -699,7 +699,7 @@ def _save_cjpeg(im, fp, filename):
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
     try:
         os.unlink(tempfile)
-    except:
+    except OSError:
         pass
 
 

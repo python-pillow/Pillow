@@ -24,7 +24,7 @@ class TestImageSequence(PillowTestCase):
 
         self.assertRaises(AttributeError, lambda: ImageSequence.Iterator(0))
 
-    def _test_multipage_tiff(self, dbg=False):
+    def _test_multipage_tiff(self):
         im = Image.open('Tests/images/multipage.tiff')
         for index, frame in enumerate(ImageSequence.Iterator(im)):
             frame.load()
@@ -32,8 +32,7 @@ class TestImageSequence(PillowTestCase):
             frame.convert('RGB')
 
     def test_tiff(self):
-        # self._test_multipage_tiff(True)
-        self._test_multipage_tiff(False)
+        self._test_multipage_tiff()
 
     def test_libtiff(self):
         codecs = dir(Image.core)
@@ -42,8 +41,7 @@ class TestImageSequence(PillowTestCase):
             self.skipTest("tiff support not available")
 
         TiffImagePlugin.READ_LIBTIFF = True
-        # self._test_multipage_tiff(True)
-        self._test_multipage_tiff(False)
+        self._test_multipage_tiff()
         TiffImagePlugin.READ_LIBTIFF = False
 
 if __name__ == '__main__':

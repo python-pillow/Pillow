@@ -179,7 +179,7 @@ class IptcImageFile(ImageFile.ImageFile):
         finally:
             try:
                 os.unlink(outfile)
-            except:
+            except OSError:
                 pass
 
 
