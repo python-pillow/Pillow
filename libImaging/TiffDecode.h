@@ -35,7 +35,7 @@ typedef struct {
     int ifd; /* offset of the ifd, used for multipage */
 	TIFF *tiff; /* Used in write */
 	toff_t eof;
-	int flrealloc; /* may we realloc */
+	int flrealloc; /* may be realloc */
 } TIFFSTATE;
 
 
