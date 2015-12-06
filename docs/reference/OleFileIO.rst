@@ -9,7 +9,7 @@ Structured Storage or Microsoft Compound Document File Format), such
 as Microsoft Office documents, Image Composer and FlashPix files, and
 Outlook messages.
 
-This module is the `OleFileIO\_PL`_ project by Philippe Lagadec, v0.30,
+This module is the `OleFileIO\_PL`_ project by Philippe Lagadec, v0.42,
 merged back into Pillow.
 
 .. _OleFileIO\_PL: http://www.decalage.info/python/olefileio
