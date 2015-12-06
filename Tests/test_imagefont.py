@@ -130,7 +130,7 @@ try:
             im = Image.new(mode='RGB', size=(300, 100))
             draw = ImageDraw.Draw(im)
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
-            line_spacing = draw.textsize('A', font=ttf)[1] + 4
+            line_spacing = draw.textsize('A', font=ttf)[1]
             lines = TEST_TEXT.split("\n")
             y = 0
             for line in lines:
