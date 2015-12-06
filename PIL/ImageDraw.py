@@ -267,7 +267,7 @@ class ImageDraw(object):
             self.draw.draw_bitmap(xy, mask, ink)
 
     def multiline_text(self, xy, text, fill=None, font=None, anchor=None,
-                       spacing=0, align="left"):
+                       spacing=4, align="left"):
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
