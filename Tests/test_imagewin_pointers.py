@@ -104,7 +104,7 @@ if sys.platform.startswith('win32'):
             DeleteObject(dib)
             DeleteDC(hdc)
 
-            reloaded = Image.open(BytesIO(bitmap)).save(opath)
+            Image.open(BytesIO(bitmap)).save(opath)
 
 if __name__ == '__main__':
     unittest.main()

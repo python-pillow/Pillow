@@ -110,7 +110,7 @@ class TestFileTiff(PillowTestCase):
     def test_bad_exif(self):
         i = Image.open('Tests/images/hopper_bad_exif.jpg')
         try:
-            self.assert_warning(UserWarning, lambda: i._getexif())
+            self.assert_warning(UserWarning, i._getexif)
         except struct.error:
             self.fail(
                  "Bad EXIF data passed incorrect values to _binary unpack")

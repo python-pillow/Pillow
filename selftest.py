@@ -206,9 +206,8 @@ if __name__ == "__main__":
 
     # use doctest to make sure the test program behaves as documented!
     import doctest
-    import selftest
     print("Running selftest:")
-    status = doctest.testmod(selftest)
+    status = doctest.testmod(sys.modules[__name__])
     if status[0]:
         print("*** %s tests of %d failed." % status)
         exit_status = 1

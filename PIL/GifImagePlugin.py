@@ -518,7 +518,7 @@ def _save_netpbm(im, fp, filename):
 
     try:
         os.unlink(file)
-    except:
+    except OSError:
         pass
 
 

@@ -11,7 +11,7 @@ against 64-bit Windows 7 Professional and Windows Server 2012
 64-bit version on Amazon EC2.
 
 Prerequisites
-------------
+-------------
 
 Extra Build Helpers
 ^^^^^^^^^^^^^^^^^^^

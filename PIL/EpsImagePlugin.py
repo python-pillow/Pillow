@@ -151,7 +151,7 @@ def Ghostscript(tile, size, fp, scale=1):
             os.unlink(outfile)
             if infile_temp:
                 os.unlink(infile_temp)
-        except:
+        except OSError:
             pass
 
     return im

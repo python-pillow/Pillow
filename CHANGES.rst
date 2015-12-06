@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Docs and code health fixes #1565 #1566
+  [radarhere]
+  
+- Updated freetype to 2.6.2 #1564
+  [radarhere]
+
 - Updated WebP to 0.4.4 for Travis #1515
   [radarhere]
   
@@ -29,9 +35,6 @@ Changelog (Pillow)
   [wiredfool]
 
 - Added Usage message to painter script #1482
-  [radarhere]
-
-- Updated freetype to 2.6.1 #1479
   [radarhere]
 
 - Add tag info for iccprofile, fixes #1462. #1465

@@ -19,6 +19,7 @@ python:
   - nightly
 
 install:
+  - "travis_retry sudo apt-get update"
   - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
   - "travis_retry pip install cffi"
   - "travis_retry pip install nose"
