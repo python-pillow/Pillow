@@ -27,7 +27,7 @@ Subsampling
 
 Subsampling is the practice of encoding images by implementing less resolution
 for chroma information than for luma information.
-(ref.: http://en.wikipedia.org/wiki/Chroma_subsampling)
+(ref.: https://en.wikipedia.org/wiki/Chroma_subsampling)
 
 Possible subsampling values are 0, 1 and 2 that correspond to 4:4:4, 4:2:2 and
 4:1:1 (or 4:2:0?).
@@ -41,8 +41,8 @@ Quantization tables
 
 They are values use by the DCT (Discrete cosine transform) to remove
 *unnecessary* information from the image (the lossy part of the compression).
-(ref.: http://en.wikipedia.org/wiki/Quantization_matrix#Quantization_matrices,
-http://en.wikipedia.org/wiki/JPEG#Quantization)
+(ref.: https://en.wikipedia.org/wiki/Quantization_matrix#Quantization_matrices,
+https://en.wikipedia.org/wiki/JPEG#Quantization)
 
 You can get the quantization tables of a JPEG with::
 
