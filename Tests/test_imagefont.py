@@ -434,6 +434,7 @@ try:
             self.assertEqual(t.font.height, 20)
             self.assertEqual(t.font.x_ppem, 20)
             self.assertEqual(t.font.y_ppem, 20)
+            self.assertEqual(t.font.glyphs, 4177)
             self.assertEqual(t.getsize('A'), (12, 16))
             self.assertEqual(t.getsize('AB'), (24, 16))
             self.assertEqual(t.getsize('M'), (12, 16))
