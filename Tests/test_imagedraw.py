@@ -64,7 +64,6 @@ class TestImageDraw(PillowTestCase):
         draw = ImageDraw.Draw(im)
 
         # Act
-        # FIXME Fill param should be named outline.
         draw.arc(bbox, 0, 180)
         del draw
 
