@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Changed ImageQt import of Image #1560
+  [radarhere, ericfrederich]
+
 - Throw TypeError if no cursors were found in .cur file #1556
   [radarhere]
 
