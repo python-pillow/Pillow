@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Fix command to invoke ghostscript for eps files. #1478
+  [baumatron, radarhere]
+
 - Consistent multiline text spacing #1574
   [hugovk]
   
