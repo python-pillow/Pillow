@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- ExtraSamples tag should be a SHORT, not a BYTE #1555
+  [Nexuapex]
+
 - Docs and code health fixes #1565 #1566
   [radarhere]
   
