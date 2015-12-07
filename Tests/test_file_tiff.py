@@ -115,6 +115,11 @@ class TestFileTiff(PillowTestCase):
             self.fail(
                  "Bad EXIF data passed incorrect values to _binary unpack")
 
+    def test_save_rgba(self):
+        im = hopper("RGBA")
+        outfile = self.tempfile("temp.tif")
+        im.save(outfile)
+
     def test_save_unsupported_mode(self):
         im = hopper("HSV")
         outfile = self.tempfile("temp.tif")

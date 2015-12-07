@@ -106,7 +106,7 @@ TAGS_V2 = {
     334: ("NumberOfInks", 3, 1),
     336: ("DotRange", 3, 0),
     337: ("TargetPrinter", 2, 1),
-    338: ("ExtraSamples", 1, 0),
+    338: ("ExtraSamples", 3, 0),
     339: ("SampleFormat", 3, 0),
 
     340: ("SMinSampleValue", 12, 0),
