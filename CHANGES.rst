@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Removed unused lines in BDFFontFile #1530
+  [radarhere]
+
 - Changed ImageQt import of Image #1560
   [radarhere, ericfrederich]
 
