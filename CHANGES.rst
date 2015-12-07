@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Consistent multiline text spacing #1574
+  [hugovk]
+  
 - Removed unused lines in BDFFontFile #1530
   [radarhere]
 
