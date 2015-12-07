@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Throw TypeError if no cursors were found in .cur file #1556
+  [radarhere]
+
+- Fix crash in ImageTk.PhotoImage on win-amd64 #1553
+  [cgohlke]
+
 - ExtraSamples tag should be a SHORT, not a BYTE #1555
   [Nexuapex]
 
