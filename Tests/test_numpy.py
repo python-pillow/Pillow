@@ -113,6 +113,7 @@ class TestNumpy(PillowTestCase):
                  ("I;16", '<u2'),
                  ("I;16B", '>u2'),
                  ("I;16L", '<u2'),
+                 ("HSV", 'uint8'),
                  ]
 
         for mode in modes:

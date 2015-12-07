@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Enabled conversion to numpy array for HSV images. #1559
+  [cartisan]
+
 - Fix command to invoke ghostscript for eps files. #1478
   [baumatron, radarhere]
 
