@@ -4,11 +4,14 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
-- Fix command to invoke ghostscript for eps files. #1478
+- Update unit test asserts #1584
+  [radarhere]
+
+- Fix command to invoke ghostscript for eps files #1478
   [baumatron, radarhere]
 
 - Consistent multiline text spacing #1574
-  [hugovk]
+  [wiredfool, hugovk]
   
 - Removed unused lines in BDFFontFile #1530
   [radarhere]
