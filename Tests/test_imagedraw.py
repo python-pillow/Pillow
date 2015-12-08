@@ -58,13 +58,13 @@ class TestImageDraw(PillowTestCase):
         self.assertRaises(ValueError,
                           lambda: ImageDraw.ImageDraw(im, mode="L"))
 
-    def helper_arc(self, bbox):
+    def helper_arc(self, bbox, start, end):
         # Arrange
         im = Image.new("RGB", (W, H))
         draw = ImageDraw.Draw(im)
 
         # Act
-        draw.arc(bbox, 0, 180)
+        draw.arc(bbox, start, end)
         del draw
 
         # Assert
@@ -72,10 +72,12 @@ class TestImageDraw(PillowTestCase):
             im, Image.open("Tests/images/imagedraw_arc.png"), 1)
 
     def test_arc1(self):
-        self.helper_arc(BBOX1)
+        self.helper_arc(BBOX1, 0, 180)
+        self.helper_arc(BBOX1, 0.5, 180.4)
 
     def test_arc2(self):
-        self.helper_arc(BBOX2)
+        self.helper_arc(BBOX2, 0, 180)
+        self.helper_arc(BBOX2, 0.5, 180.4)
 
     def test_bitmap(self):
         # Arrange
@@ -91,13 +93,13 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_bitmap.png"))
 
-    def helper_chord(self, bbox):
+    def helper_chord(self, bbox, start, end):
         # Arrange
         im = Image.new("RGB", (W, H))
         draw = ImageDraw.Draw(im)
 
         # Act
-        draw.chord(bbox, 0, 180, fill="red", outline="yellow")
+        draw.chord(bbox, start, end, fill="red", outline="yellow")
         del draw
 
         # Assert
@@ -105,10 +107,12 @@ class TestImageDraw(PillowTestCase):
             im, Image.open("Tests/images/imagedraw_chord.png"), 1)
 
     def test_chord1(self):
-        self.helper_chord(BBOX1)
+        self.helper_chord(BBOX1, 0, 180)
+        self.helper_chord(BBOX1, 0.5, 180.4)
 
     def test_chord2(self):
-        self.helper_chord(BBOX2)
+        self.helper_chord(BBOX2, 0, 180)
+        self.helper_chord(BBOX2, 0.5, 180.4)
 
     def helper_ellipse(self, bbox):
         # Arrange
@@ -161,13 +165,13 @@ class TestImageDraw(PillowTestCase):
     def test_line2(self):
         self.helper_line(POINTS2)
 
-    def helper_pieslice(self, bbox):
+    def helper_pieslice(self, bbox, start, end):
         # Arrange
         im = Image.new("RGB", (W, H))
         draw = ImageDraw.Draw(im)
 
         # Act
-        draw.pieslice(bbox, -90, 45, fill="white", outline="blue")
+        draw.pieslice(bbox, start, end, fill="white", outline="blue")
         del draw
 
         # Assert
@@ -175,10 +179,12 @@ class TestImageDraw(PillowTestCase):
             im, Image.open("Tests/images/imagedraw_pieslice.png"), 1)
 
     def test_pieslice1(self):
-        self.helper_pieslice(BBOX1)
+        self.helper_pieslice(BBOX1, -90, 45)
+        self.helper_pieslice(BBOX1, -90.5, 45.4)
 
     def test_pieslice2(self):
-        self.helper_pieslice(BBOX2)
+        self.helper_pieslice(BBOX2, -90, 45)
+        self.helper_pieslice(BBOX2, -90.5, 45.4)
 
     def helper_point(self, points):
         # Arrange

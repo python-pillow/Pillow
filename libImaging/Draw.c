@@ -743,10 +743,11 @@ ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap, const void* ink,
 
 static int
 ellipse(Imaging im, int x0, int y0, int x1, int y1,
-        int start, int end, const void* ink_, int fill,
+        float start, float end, const void* ink_, int fill,
         int mode, int op)
 {
-    int i, n;
+    float i;
+    int n;
     int cx, cy;
     int w, h;
     int x = 0, y = 0;
@@ -779,7 +780,10 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
 
         n = 0;
 
-        for (i = start; i <= end; i++) {
+        for (i = start; i < end+1; i++) {
+            if (i > end) {
+                i = end;
+            }
             x = FLOOR((cos(i*M_PI/180) * w/2) + cx + 0.5);
             y = FLOOR((sin(i*M_PI/180) * h/2) + cy + 0.5);
             if (i != start)
@@ -807,7 +811,10 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
 
     } else {
 
-        for (i = start; i <= end; i++) {
+        for (i = start; i < end+1; i++) {
+            if (i > end) {
+                i = end;
+            }
             x = FLOOR((cos(i*M_PI/180) * w/2) + cx + 0.5);
             y = FLOOR((sin(i*M_PI/180) * h/2) + cy + 0.5);
             if (i != start)
@@ -835,14 +842,14 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
 
 int
 ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
-               int start, int end, const void* ink, int op)
+               float start, float end, const void* ink, int op)
 {
     return ellipse(im, x0, y0, x1, y1, start, end, ink, 0, ARC, op);
 }
 
 int
 ImagingDrawChord(Imaging im, int x0, int y0, int x1, int y1,
-               int start, int end, const void* ink, int fill, int op)
+               float start, float end, const void* ink, int fill, int op)
 {
     return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, CHORD, op);
 }
@@ -856,7 +863,7 @@ ImagingDrawEllipse(Imaging im, int x0, int y0, int x1, int y1,
 
 int
 ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
-                    int start, int end, const void* ink, int fill, int op)
+                    float start, float end, const void* ink, int fill, int op)
 {
     return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, PIESLICE, op);
 }
