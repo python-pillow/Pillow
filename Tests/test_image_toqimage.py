@@ -15,7 +15,7 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
         for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
             data = ImageQt.toqimage(hopper(mode))
 
-            self.assertTrue(isinstance(data, QImage))
+            self.assertIsInstance(data, QImage)
             self.assertFalse(data.isNull())
 
             # Test saving the file
