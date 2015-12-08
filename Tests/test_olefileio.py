@@ -124,25 +124,6 @@ class TestOleFileIo(PillowTestCase):
         self.assertIn(['WordDocument'], dirlist)
         ole.close()
 
-    def test_debug(self):
-        # Arrange
-        ole_file = "Tests/images/test-ole-file.doc"
-        ole = OleFileIO.OleFileIO(ole_file)
-        meta = ole.get_metadata()
-
-        # Act
-        OleFileIO.set_debug_mode(True)
-        ole.dumpdirectory()
-        meta.dump()
-
-        OleFileIO.set_debug_mode(False)
-        ole.dumpdirectory()
-        meta.dump()
-
-        # Assert
-        # No assert, just check they run ok
-        ole.close()
-
 
 if __name__ == '__main__':
     unittest.main()
