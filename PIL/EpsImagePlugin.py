@@ -295,7 +295,7 @@ class EpsImageFile(ImageFile.ImageFile):
                     break
                 try:
                     self.mode = self.mode_map[int(mo)]
-                except:
+                except ValueError:
                     break
 
                 self.size = int(x), int(y)

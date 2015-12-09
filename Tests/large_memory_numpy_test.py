@@ -13,7 +13,7 @@ from helper import unittest, PillowTestCase
 from PIL import Image
 try:
     import numpy as np
-except:
+except ImportError:
     raise unittest.SkipTest("numpy not installed")
 
 YDIM = 32769
