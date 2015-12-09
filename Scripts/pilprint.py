@@ -64,7 +64,7 @@ for o, a in opt:
         printerArgs = ["lpr"]
     elif o == "-P":
         # printer channel
-        printerArgs = ["lpr","-P%s" % a]
+        printerArgs = ["lpr", "-P%s" % a]
 
 for filepath in argv:
     try:

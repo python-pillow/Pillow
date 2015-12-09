@@ -11,7 +11,7 @@ class TestFromQImage(PillowQtTestCase, PillowTestCase):
         Image.open('Tests/images/transparent.png'),
         Image.open('Tests/images/7x13.png'),
     ]
-    
+
     def roundtrip(self, expected):
         # PIL -> Qt
         intermediate = expected.toqimage()

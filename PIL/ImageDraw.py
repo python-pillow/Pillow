@@ -42,6 +42,7 @@ from PIL._util import isStringType
 # Application code should use the <b>Draw</b> factory, instead of
 # directly.
 
+
 class ImageDraw(object):
 
     ##

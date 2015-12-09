@@ -56,7 +56,7 @@ class PyAccess(object):
 
         # Debugging is polluting test traces, only useful here
         # when hacking on PyAccess
-        #logger.debug("%s", vals)
+        # logger.debug("%s", vals)
         self._post_init()
 
     def _post_init(self):

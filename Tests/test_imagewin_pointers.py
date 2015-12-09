@@ -9,7 +9,7 @@ from io import BytesIO
 
 if sys.platform.startswith('win32'):
     import ctypes.wintypes
-    
+
     class BITMAPFILEHEADER(ctypes.Structure):
         _pack_ = 2
         _fields_ = [
@@ -40,26 +40,25 @@ if sys.platform.startswith('win32'):
     DIB_RGB_COLORS = 0
 
     memcpy = ctypes.cdll.msvcrt.memcpy
-    memcpy.argtypes = [ ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t ]
+    memcpy.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
 
     CreateCompatibleDC = ctypes.windll.gdi32.CreateCompatibleDC
-    CreateCompatibleDC.argtypes = [ ctypes.wintypes.HDC ]
+    CreateCompatibleDC.argtypes = [ctypes.wintypes.HDC]
     CreateCompatibleDC.restype = ctypes.wintypes.HDC
 
     DeleteDC = ctypes.windll.gdi32.DeleteDC
-    DeleteDC.argtypes = [ ctypes.wintypes.HDC ]
+    DeleteDC.argtypes = [ctypes.wintypes.HDC]
 
     SelectObject = ctypes.windll.gdi32.SelectObject
-    SelectObject.argtypes = [ ctypes.wintypes.HDC, ctypes.wintypes.HGDIOBJ ]
+    SelectObject.argtypes = [ctypes.wintypes.HDC, ctypes.wintypes.HGDIOBJ]
     SelectObject.restype = ctypes.wintypes.HGDIOBJ
 
     DeleteObject = ctypes.windll.gdi32.DeleteObject
-    DeleteObject.argtypes = [ ctypes.wintypes.HGDIOBJ ]
+    DeleteObject.argtypes = [ctypes.wintypes.HGDIOBJ]
 
     CreateDIBSection = ctypes.windll.gdi32.CreateDIBSection
-    CreateDIBSection.argtypes = [ ctypes.wintypes.HDC, ctypes.c_void_p, ctypes.c_uint, ctypes.POINTER(ctypes.c_void_p), ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD ]
+    CreateDIBSection.argtypes = [ctypes.wintypes.HDC, ctypes.c_void_p, ctypes.c_uint, ctypes.POINTER(ctypes.c_void_p), ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD]
     CreateDIBSection.restype = ctypes.wintypes.HBITMAP
-
 
     def serialize_dib(bi, pixels):
         bf = BITMAPFILEHEADER()
@@ -78,7 +77,7 @@ if sys.platform.startswith('win32'):
     class TestImageWinPointers(PillowTestCase):
         def test_pointer(self):
             im = hopper()
-            (width, height) =im.size
+            (width, height) = im.size
             opath = self.tempfile('temp.png')
             imdib = ImageWin.Dib(im)
 
@@ -94,7 +93,7 @@ if sys.platform.startswith('win32'):
             hdr.biClrImportant = 0
 
             hdc = CreateCompatibleDC(None)
-            #print('hdc:',hex(hdc))
+            # print('hdc:',hex(hdc))
             pixels = ctypes.c_void_p()
             dib = CreateDIBSection(hdc, ctypes.byref(hdr), DIB_RGB_COLORS, ctypes.byref(pixels), None, 0)
             SelectObject(hdc, dib)
@@ -108,4 +107,3 @@ if sys.platform.startswith('win32'):
 
 if __name__ == '__main__':
     unittest.main()
-
