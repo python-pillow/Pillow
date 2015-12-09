@@ -24,13 +24,13 @@ class TestImageOpsUsm(PillowTestCase):
 
     def test_filter_api(self):
 
-        filter = ImageFilter.GaussianBlur(2.0)
-        i = im.filter(filter)
+        test_filter = ImageFilter.GaussianBlur(2.0)
+        i = im.filter(test_filter)
         self.assertEqual(i.mode, "RGB")
         self.assertEqual(i.size, (128, 128))
 
-        filter = ImageFilter.UnsharpMask(2.0, 125, 8)
-        i = im.filter(filter)
+        test_filter = ImageFilter.UnsharpMask(2.0, 125, 8)
+        i = im.filter(test_filter)
         self.assertEqual(i.mode, "RGB")
         self.assertEqual(i.size, (128, 128))
 
