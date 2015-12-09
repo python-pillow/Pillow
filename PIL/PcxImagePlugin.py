@@ -27,10 +27,14 @@
 
 from __future__ import print_function
 
+import sys
 import logging
 from PIL import Image, ImageFile, ImagePalette, _binary
 
 logger = logging.getLogger(__name__)
+if sys.version_info < (2, 7):
+    logging.NullHandler = Image.NullHandler
+logger.addHandler(logging.NullHandler())
 
 i8 = _binary.i8
 i16 = _binary.i16le

@@ -3,6 +3,7 @@ from helper import unittest, PillowTestCase, hopper, py3
 
 from ctypes import c_float
 import io
+import sys
 import logging
 import itertools
 import os
@@ -10,6 +11,9 @@ import os
 from PIL import Image, TiffImagePlugin
 
 logger = logging.getLogger(__name__)
+if sys.version_info < (2, 7):
+    logging.NullHandler = Image.NullHandler
+logger.addHandler(logging.NullHandler())
 
 
 class LibTiffTestCase(PillowTestCase):

@@ -29,6 +29,10 @@ from cffi import FFI
 
 
 logger = logging.getLogger(__name__)
+if sys.version_info < (2, 7):
+    from PIL import Image
+    logging.NullHandler = Image.NullHandler
+logger.addHandler(logging.NullHandler())
 
 
 defs = """
