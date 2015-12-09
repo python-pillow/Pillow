@@ -34,7 +34,7 @@ Changelog (Pillow)
 - ExtraSamples tag should be a SHORT, not a BYTE #1555
   [Nexuapex]
 
-- Docs and code health fixes #1565 #1566  #1581 #1586
+- Docs and code health fixes #1565 #1566 #1581 #1586
   [radarhere]
   
 - Updated freetype to 2.6.2 #1564
