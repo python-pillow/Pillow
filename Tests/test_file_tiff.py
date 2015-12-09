@@ -7,6 +7,7 @@ from helper import unittest, PillowTestCase, hopper, py3
 from PIL import Image, TiffImagePlugin
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class TestFileTiff(PillowTestCase):

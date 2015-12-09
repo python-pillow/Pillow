@@ -31,6 +31,7 @@ import logging
 from PIL import Image, ImageFile, ImagePalette, _binary
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 i8 = _binary.i8
 i16 = _binary.i16le

@@ -10,6 +10,7 @@ import os
 from PIL import Image, TiffImagePlugin
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class LibTiffTestCase(PillowTestCase):

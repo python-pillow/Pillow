@@ -42,6 +42,7 @@ from PIL import Image, ImageFile, ImagePalette, _binary
 __version__ = "0.9"
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 i8 = _binary.i8
 i16 = _binary.i16be

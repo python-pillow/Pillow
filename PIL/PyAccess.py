@@ -29,6 +29,7 @@ from cffi import FFI
 
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 defs = """

@@ -36,6 +36,7 @@ import sys
 import struct
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 MAXBLOCK = 65536
 
