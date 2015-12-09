@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Removed warnings module check #1587
+  [radarhere]
+
+- Changed arcs, chords and pie slices to use floats #1577
+  [radarhere]
+
 - Update unit test asserts #1584
   [radarhere]
 
@@ -28,7 +34,7 @@ Changelog (Pillow)
 - ExtraSamples tag should be a SHORT, not a BYTE #1555
   [Nexuapex]
 
-- Docs and code health fixes #1565 #1566
+- Docs and code health fixes #1565 #1566  #1581 #1586
   [radarhere]
   
 - Updated freetype to 2.6.2 #1564
