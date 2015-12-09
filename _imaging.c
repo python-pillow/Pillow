@@ -2382,9 +2382,9 @@ _draw_arc(ImagingDrawObject* self, PyObject* args)
 
     PyObject* data;
     int ink;
-    int start, end;
+    float start, end;
     int op = 0;
-    if (!PyArg_ParseTuple(args, "Oiii|i", &data, &start, &end, &ink))
+    if (!PyArg_ParseTuple(args, "Offi|i", &data, &start, &end, &ink))
         return NULL;
 
     n = PyPath_Flatten(data, &xy);
@@ -2456,8 +2456,8 @@ _draw_chord(ImagingDrawObject* self, PyObject* args)
 
     PyObject* data;
     int ink, fill;
-    int start, end;
-    if (!PyArg_ParseTuple(args, "Oiiii",
+    float start, end;
+    if (!PyArg_ParseTuple(args, "Offii",
                           &data, &start, &end, &ink, &fill))
         return NULL;
 
@@ -2677,8 +2677,8 @@ _draw_pieslice(ImagingDrawObject* self, PyObject* args)
 
     PyObject* data;
     int ink, fill;
-    int start, end;
-    if (!PyArg_ParseTuple(args, "Oiiii", &data, &start, &end, &ink, &fill))
+    float start, end;
+    if (!PyArg_ParseTuple(args, "Offii", &data, &start, &end, &ink, &fill))
         return NULL;
 
     n = PyPath_Flatten(data, &xy);
