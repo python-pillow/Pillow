@@ -30,11 +30,6 @@ from PIL._util import isDirectory, isPath
 import os
 import sys
 
-try:
-    import warnings
-except ImportError:
-    warnings = None
-
 
 class _imagingft_not_installed(object):
     # module placeholder

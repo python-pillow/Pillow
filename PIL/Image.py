@@ -2103,13 +2103,12 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     if decoder_name == "raw":
         if args == ():
-            if warnings:
-                warnings.warn(
-                    "the frombuffer defaults may change in a future release; "
-                    "for portability, change the call to read:\n"
-                    "  frombuffer(mode, size, data, 'raw', mode, 0, 1)",
-                    RuntimeWarning, stacklevel=2
-                )
+            warnings.warn(
+                "the frombuffer defaults may change in a future release; "
+                "for portability, change the call to read:\n"
+                "  frombuffer(mode, size, data, 'raw', mode, 0, 1)",
+                RuntimeWarning, stacklevel=2
+            )
             args = mode, 0, -1  # may change to (mode, 0, 1) post-1.1.6
         if args[0] in _MAPMODES:
             im = new(mode, (1, 1))
