@@ -31,15 +31,10 @@
 #
 
 import numbers
+import warnings
 
 from PIL import Image, ImageColor
 from PIL._util import isStringType
-
-try:
-    import warnings
-except ImportError:
-    warnings = None
-
 
 ##
 # A simple 2D drawing interface for PIL images.
@@ -99,9 +94,8 @@ class ImageDraw(object):
                         "Please use keyword arguments instead.")
 
     def setfont(self, font):
-        if warnings:
-            warnings.warn("setfont() is deprecated. " +
-                          "Please set the attribute directly instead.")
+        warnings.warn("setfont() is deprecated. " +
+                      "Please set the attribute directly instead.")
         # compatibility
         self.font = font
 
