@@ -1277,8 +1277,10 @@ def _save(im, fp, filename):
             except io.UnsupportedOperation:
                 pass
 
-        # ICC Profile crashes.
-        blocklist = [STRIPOFFSETS, STRIPBYTECOUNTS, ROWSPERSTRIP, ICCPROFILE]
+        # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
+        # based on the data in the strip.
+        # ICCPROFILE crashes.
+        blocklist = [STRIPOFFSETS, STRIPBYTECOUNTS, ICCPROFILE]
         atts = {}
         # bits per sample is a single short in the tiff directory, not a list.
         atts[BITSPERSAMPLE] = bits[0]
