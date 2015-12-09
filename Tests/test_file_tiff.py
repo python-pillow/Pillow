@@ -1,4 +1,5 @@
 from __future__ import print_function
+import sys
 import logging
 import struct
 
@@ -7,6 +8,8 @@ from helper import unittest, PillowTestCase, hopper, py3
 from PIL import Image, TiffImagePlugin
 
 logger = logging.getLogger(__name__)
+if sys.version_info < (2, 7):
+    logging.NullHandler = Image.NullHandler
 logger.addHandler(logging.NullHandler())
 
 

@@ -28,7 +28,13 @@ from __future__ import print_function
 
 from PIL import VERSION, PILLOW_VERSION, _plugins
 
+import sys
 import logging
+if sys.version_info < (2, 7):
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+    logging.NullHandler = NullHandler
 import warnings
 
 logger = logging.getLogger(__name__)
@@ -112,7 +118,6 @@ from PIL._util import isStringType
 from PIL._util import deferred_error
 
 import os
-import sys
 import io
 import struct
 

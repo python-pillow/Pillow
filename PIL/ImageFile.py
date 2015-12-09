@@ -36,6 +36,8 @@ import sys
 import struct
 
 logger = logging.getLogger(__name__)
+if sys.version_info < (2, 7):
+    logging.NullHandler = Image.NullHandler
 logger.addHandler(logging.NullHandler())
 
 MAXBLOCK = 65536
