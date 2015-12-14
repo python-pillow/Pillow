@@ -423,6 +423,24 @@ try:
                     self._test_fake_loading_font(
                         font_directory+'/Duplicate.ttf', 'Duplicate')
 
+        def test_imagefont_getters(self):
+            # Arrange
+            t = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+            # Act / Assert
+            self.assertEqual(t.getmetrics(), (16, 4))
+            self.assertEqual(t.font.ascent, 16)
+            self.assertEqual(t.font.descent, 4)
+            self.assertEqual(t.font.height, 20)
+            self.assertEqual(t.font.x_ppem, 20)
+            self.assertEqual(t.font.y_ppem, 20)
+            self.assertEqual(t.font.glyphs, 4177)
+            self.assertEqual(t.getsize('A'), (12, 16))
+            self.assertEqual(t.getsize('AB'), (24, 16))
+            self.assertEqual(t.getsize('M'), (12, 16))
+            self.assertEqual(t.getsize('y'), (12, 20))
+            self.assertEqual(t.getsize('a'), (12, 16))
+
 
 except ImportError:
     class TestImageFont(PillowTestCase):
