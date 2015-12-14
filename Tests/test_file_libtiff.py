@@ -165,6 +165,13 @@ class TestFileLibTiff(LibTiffTestCase):
                         self.assertEqual(
                             val, value, msg="%s didn't roundtrip" % tag)
 
+            # https://github.com/python-pillow/Pillow/issues/1561
+            requested_fields = ['StripByteCounts',
+                                'RowsPerStrip',
+                                'StripOffsets']
+            for field in requested_fields:
+                self.assertTrue(field in reloaded, "%s not in metadata" %field)
+
     def test_g3_compression(self):
         i = Image.open('Tests/images/hopper_g4_500.tif')
         out = self.tempfile("temp.tif")
