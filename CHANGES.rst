@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Changed some urls in the docs to use https #1580
+  [hugovk]
+ 
 - Removed logger.exception from ImageFile.py #1590
   [radarhere]
   
