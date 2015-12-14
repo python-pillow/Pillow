@@ -404,6 +404,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         if info.length == 1:
             if legacy_api and self.tagtype[tag] in [5, 10]:
                 values = values,
+            if len(values) != 1:
+                raise TypeError("A tag was malformed")
             dest[tag], = values
         else:
             dest[tag] = values

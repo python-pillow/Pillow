@@ -107,6 +107,11 @@ class TestFileTiff(PillowTestCase):
         self.assertRaises(SyntaxError,
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
 
+    def test_malformed_value(self):
+        malformed_file = "Tests/images/malformed.tiff"
+
+        self.assertRaises(IOError, lambda: Image.open(malformed_file))
+
     def test_bad_exif(self):
         i = Image.open('Tests/images/hopper_bad_exif.jpg')
         try:
