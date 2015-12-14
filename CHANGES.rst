@@ -3,6 +3,8 @@ Changelog (Pillow)
 
 3.1.0 (unreleased)
 ------------------
+- Enabled conversion to numpy array for HSV images. Fixes issue #1578
+  [cartisan]
 
 - Changed some urls in the docs to use https #1580
   [hugovk]
