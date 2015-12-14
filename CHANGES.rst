@@ -3,6 +3,10 @@ Changelog (Pillow)
 
 3.1.0 (unreleased)
 ------------------
+
+- Health fixes #1591
+  [radarhere]
+  
 - Enabled conversion to numpy array for HSV images. Fixes issue #1578
   [cartisan]
 
