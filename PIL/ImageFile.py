@@ -30,12 +30,9 @@
 from PIL import Image
 from PIL._util import isPath
 import io
-import logging
 import os
 import sys
 import struct
-
-logger = logging.getLogger(__name__)
 
 MAXBLOCK = 65536
 
@@ -103,7 +100,6 @@ class ImageFile(Image.Image):
                 KeyError,  # unsupported mode
                 EOFError,  # got header but not the first frame
                 struct.error) as v:
-            logger.exception("%s")
             raise SyntaxError(v)
 
         if not self.mode or self.size[0] <= 0:
