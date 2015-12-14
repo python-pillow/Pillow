@@ -719,7 +719,6 @@ def jpeg_factory(fp=None, filename=None):
     except SyntaxError:
         warnings.warn("Image appears to be a malformed MPO file, it will be "
                       "interpreted as a base JPEG file")
-        pass
     return im
 
 

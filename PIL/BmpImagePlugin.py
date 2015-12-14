@@ -134,9 +134,13 @@ class BmpImageFile(ImageFile.ImageFile):
             24: [(0xff0000, 0xff00, 0xff)],
             16: [(0xf800, 0x7e0, 0x1f), (0x7c00, 0x3e0, 0x1f)]}
             MASK_MODES = {
-            (32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX", (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA", (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
-            (24, (0xff0000, 0xff00, 0xff)): "BGR",
-            (16, (0xf800, 0x7e0, 0x1f)): "BGR;16", (16, (0x7c00, 0x3e0, 0x1f)): "BGR;15"}
+                (32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX",
+                (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA",
+                (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
+                (24, (0xff0000, 0xff00, 0xff)): "BGR",
+                (16, (0xf800, 0x7e0, 0x1f)): "BGR;16",
+                (16, (0x7c00, 0x3e0, 0x1f)): "BGR;15"
+            }
             if file_info['bits'] in SUPPORTED:
                 if file_info['bits'] == 32 and file_info['rgba_mask'] in SUPPORTED[file_info['bits']]:
                     raw_mode = MASK_MODES[(file_info['bits'], file_info['rgba_mask'])]

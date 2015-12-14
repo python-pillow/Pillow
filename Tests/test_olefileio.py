@@ -52,10 +52,10 @@ class TestOleFileIo(PillowTestCase):
         ole = OleFileIO.OleFileIO(ole_file)
 
         # Act
-        type = ole.get_type('worddocument')
+        entry_type = ole.get_type('worddocument')
 
         # Assert
-        self.assertEqual(type, OleFileIO.STGTY_STREAM)
+        self.assertEqual(entry_type, OleFileIO.STGTY_STREAM)
         ole.close()
 
     def test_get_size(self):

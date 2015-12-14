@@ -85,6 +85,7 @@ def fromqpixmap(im):
     # bytes_io.seek(0)
     # return Image.open(bytes_io)
 
+
 def align8to32(bytes, width, mode):
     """
     converts each scanline of data from 8 bit to 32 bit aligned
@@ -112,6 +113,7 @@ def align8to32(bytes, width, mode):
         new_data.append(bytes[i*bytes_per_line:(i+1)*bytes_per_line] + b'\x00' * extra_padding)
 
     return b''.join(new_data)
+
 
 def _toqclass_helper(im):
     data = None

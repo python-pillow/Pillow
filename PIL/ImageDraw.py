@@ -42,6 +42,7 @@ from PIL._util import isStringType
 # Application code should use the <b>Draw</b> factory, instead of
 # directly.
 
+
 class ImageDraw(object):
 
     ##
@@ -297,7 +298,6 @@ class ImageDraw(object):
 
     def multiline_textsize(self, text, font=None, spacing=0):
         max_width = 0
-        height = 0
         lines = self._multiline_split(text)
         line_spacing = self.textsize('A', font=font)[1] + spacing
         for line in lines:

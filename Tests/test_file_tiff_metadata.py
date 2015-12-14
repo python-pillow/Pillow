@@ -28,7 +28,7 @@ class TestFileTiffMetadata(PillowTestCase):
         #
         # For text items, we still have to decode('ascii','replace') because
         # the tiff file format can't take 8 bit bytes in that field.
-        
+
         basetextdata = "This is some arbitrary metadata for a text field"
         bindata = basetextdata.encode('ascii') + b" \xff"
         textdata = basetextdata + " " + chr(255)
@@ -40,7 +40,7 @@ class TestFileTiffMetadata(PillowTestCase):
         ImageJMetaData = tag_ids['ImageJMetaData']
         ImageJMetaDataByteCounts = tag_ids['ImageJMetaDataByteCounts']
         ImageDescription = tag_ids['ImageDescription']
-        
+
         info[ImageJMetaDataByteCounts] = len(bindata)
         info[ImageJMetaData] = bindata
         info[tag_ids['RollAngle']] = floatdata
@@ -49,7 +49,7 @@ class TestFileTiffMetadata(PillowTestCase):
         info.tagtype[tag_ids['YawAngle']] = 12
 
         info[ImageDescription] = textdata
-             
+
         f = self.tempfile("temp.tif")
 
         img.save(f, tiffinfo=info)
@@ -69,7 +69,6 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertAlmostEqual(loaded_float, floatdata, places=5)
         loaded_double = loaded.tag[tag_ids['YawAngle']][0]
         self.assertAlmostEqual(loaded_double, doubledata)
-
 
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
@@ -165,7 +164,6 @@ class TestFileTiffMetadata(PillowTestCase):
         im = Image.open('Tests/images/hopper.iccprofile_binary.tif')
         self.assertEqual(im.tag_v2.tagtype[34675], 1)
         self.assert_(im.info['icc_profile'])
-
 
 
 if __name__ == '__main__':

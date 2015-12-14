@@ -650,9 +650,9 @@ class Image(object):
     def tobytes(self, encoder_name="raw", *args):
         """
         Return image as a bytes object.
-        
+
         .. warning::
-        
+
             This method returns the raw image data from the internal
             storage.  For compressed image data (e.g. PNG, JPEG) use
             :meth:`~.save`, with a BytesIO parameter for in-memory
@@ -2278,7 +2278,7 @@ def open(fp, mode="r"):
             except (SyntaxError, IndexError, TypeError, struct.error):
                 # Leave disabled by default, spams the logs with image
                 # opening failures that are entirely expected.
-                #logger.debug("", exc_info=True)
+                # logger.debug("", exc_info=True)
                 continue
         return None
 

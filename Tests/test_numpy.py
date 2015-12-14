@@ -22,9 +22,9 @@ class TestNumpy(PillowTestCase):
 
     def test_numpy_to_image(self):
 
-        def to_image(dtype, bands=1, bool=0):
+        def to_image(dtype, bands=1, boolean=0):
             if bands == 1:
-                if bool:
+                if boolean:
                     data = [0, 1] * 50
                 else:
                     data = list(range(100))
@@ -43,8 +43,8 @@ class TestNumpy(PillowTestCase):
             # print dtype, list(i.getdata())
             return i
 
-        # self.assert_image(to_image(numpy.bool, bool=1), "1", (10, 10))
-        # self.assert_image(to_image(numpy.bool8, bool=1), "1", (10, 10))
+        # self.assert_image(to_image(numpy.bool, boolean=1), "1", (10, 10))
+        # self.assert_image(to_image(numpy.bool8, boolean=1), "1", (10, 10))
 
         self.assertRaises(TypeError, lambda: to_image(numpy.uint))
         self.assert_image(to_image(numpy.uint8), "L", (10, 10))

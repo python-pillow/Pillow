@@ -22,8 +22,8 @@ class TestPickle(PillowTestCase):
         self.assertEqual(im, loaded_im)
 
     def helper_pickle_string(self, pickle, protocol=0,
-                             file='Tests/images/hopper.jpg', mode=None):
-        im = Image.open(file)
+                             test_file='Tests/images/hopper.jpg', mode=None):
+        im = Image.open(test_file)
         if mode:
             im = im.convert(mode)
 
@@ -69,7 +69,7 @@ class TestPickle(PillowTestCase):
                 "Tests/images/p_trns_single.png",
                 "Tests/images/pil123p.png"
         ]:
-            self.helper_pickle_string(pickle, file=test_file)
+            self.helper_pickle_string(pickle, test_file=test_file)
 
     def test_pickle_l_mode(self):
         # Arrange

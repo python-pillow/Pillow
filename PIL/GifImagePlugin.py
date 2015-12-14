@@ -397,10 +397,8 @@ def _save(im, fp, filename, save_all=False):
 
     fp.write(b";")  # end of file
 
-    try:
+    if hasattr(fp, "flush"):
         fp.flush()
-    except:
-        pass
 
 
 def get_interlace(im):

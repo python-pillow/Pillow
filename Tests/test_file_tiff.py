@@ -80,11 +80,11 @@ class TestFileTiff(PillowTestCase):
         filename = "Tests/images/pil168.tif"
         im = Image.open(filename)
 
-        #legacy api
+        # legacy api
         self.assert_(isinstance(im.tag[X_RESOLUTION][0], tuple))
         self.assert_(isinstance(im.tag[Y_RESOLUTION][0], tuple))
 
-        #v2 api
+        # v2 api
         self.assert_(isinstance(im.tag_v2[X_RESOLUTION], float))
         self.assert_(isinstance(im.tag_v2[Y_RESOLUTION], float))
 
@@ -249,7 +249,7 @@ class TestFileTiff(PillowTestCase):
                 {256: 55, 257: 43, 258: (8, 8, 8, 8), 259: 1,
                  262: 2, 296: 2, 273: (8,), 338: (1,), 277: 4,
                  279: (9460,), 282: 72.0, 283: 72.0, 284: 1})
-        
+
         # legacy interface
         self.assertEqual(
                 im.tag.as_dict(),
