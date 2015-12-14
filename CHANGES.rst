@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Removed logger.exception from ImageFile.py #1590
+  [radarhere]
+  
 - Removed warnings module check #1587
   [radarhere]
 
