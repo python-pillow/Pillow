@@ -36,7 +36,7 @@ vector data. Path objects can be passed to the methods on the
     **distance** is measured as `Manhattan distance`_ and defaults to two
     pixels.
 
-.. _Manhattan distance: http://en.wikipedia.org/wiki/Manhattan_distance
+.. _Manhattan distance: https://en.wikipedia.org/wiki/Manhattan_distance
 
 .. py:method:: PIL.ImagePath.Path.getbbox()
 

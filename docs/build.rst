@@ -52,12 +52,12 @@ Compilers
 Download and install:
 
 * `Microsoft Windows SDK for Windows 7 and .NET Framework 3.5
-  SP1 <http://www.microsoft.com/en-us/download/details.aspx?id=3138>`_
+  SP1 <https://www.microsoft.com/en-us/download/details.aspx?id=3138>`_
 
 * `Microsoft Windows SDK for Windows 7 and .NET Framework
-  4 <http://www.microsoft.com/en-us/download/details.aspx?id=8279>`_
+  4 <https://www.microsoft.com/en-us/download/details.aspx?id=8279>`_
 
-* `CMake-2.8.10.2-win32-x86.exe <http://www.cmake.org/cmake/resources/software.html>`_
+* `CMake-2.8.10.2-win32-x86.exe <https://cmake.org/download/>`_
 
 The samples and the .NET SDK portions aren't required, just the
 compilers and other tools. UNDONE -- check exact wording.
@@ -83,7 +83,7 @@ Once the dependencies are built, run `python build.py --clean` to
 build and install Pillow in virtualenvs for each python
 build. `build.py --dist` will build Windows installers instead of
 installing into virtualenvs.
- 
+
 UNDONE -- suppressed output, what about failures.
 
 Testing Pillow
