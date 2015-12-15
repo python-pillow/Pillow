@@ -4,9 +4,12 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
-- Health fixes #1591
+- Added field type constants to TiffTags #1596
   [radarhere]
   
+- Allow saving RowsPerStrip with libtiff #1594
+  [wiredfool]
+
 - Enabled conversion to numpy array for HSV images. Fixes issue #1578
   [cartisan]
 
@@ -46,7 +49,7 @@ Changelog (Pillow)
 - ExtraSamples tag should be a SHORT, not a BYTE #1555
   [Nexuapex]
 
-- Docs and code health fixes #1565 #1566 #1581 #1586
+- Docs and code health fixes #1565 #1566 #1581 #1586 #1591
   [radarhere]
   
 - Updated freetype to 2.6.2 #1564
