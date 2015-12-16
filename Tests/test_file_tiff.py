@@ -81,12 +81,12 @@ class TestFileTiff(PillowTestCase):
         im = Image.open(filename)
 
         # legacy api
-        self.assert_(isinstance(im.tag[X_RESOLUTION][0], tuple))
-        self.assert_(isinstance(im.tag[Y_RESOLUTION][0], tuple))
+        self.assertIsInstance(im.tag[X_RESOLUTION][0], tuple)
+        self.assertIsInstance(im.tag[Y_RESOLUTION][0], tuple)
 
         # v2 api
-        self.assert_(isinstance(im.tag_v2[X_RESOLUTION], float))
-        self.assert_(isinstance(im.tag_v2[Y_RESOLUTION], float))
+        self.assertIsInstance(im.tag_v2[X_RESOLUTION], float)
+        self.assertIsInstance(im.tag_v2[Y_RESOLUTION], float)
 
         self.assertEqual(im.info['dpi'], (72., 72.))
 
