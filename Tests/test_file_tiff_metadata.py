@@ -163,7 +163,7 @@ class TestFileTiffMetadata(PillowTestCase):
 
         im = Image.open('Tests/images/hopper.iccprofile_binary.tif')
         self.assertEqual(im.tag_v2.tagtype[34675], 1)
-        self.assert_(im.info['icc_profile'])
+        self.assertTrue(im.info['icc_profile'])
 
 
 if __name__ == '__main__':
