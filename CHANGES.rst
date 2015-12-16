@@ -25,7 +25,7 @@ Changelog (Pillow)
 - Changed arcs, chords and pie slices to use floats #1577
   [radarhere]
 
-- Update unit test asserts #1584
+- Update unit test asserts #1584, #1598
   [radarhere]
 
 - Fix command to invoke ghostscript for eps files #1478
