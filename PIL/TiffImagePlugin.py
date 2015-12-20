@@ -49,6 +49,7 @@ import collections
 from fractions import Fraction
 import io
 import itertools
+import logging
 from numbers import Number
 import os
 import struct
@@ -58,7 +59,8 @@ import warnings
 from .TiffTags import TAGS_V2, TYPES, TagInfo
 
 __version__ = "1.3.5"
-DEBUG = False  # Needs to be merged with the new logging approach.
+
+logger = logging.getLogger(__name__)
 
 # Set these to true to force use of libtiff for reading or writing.
 READ_LIBTIFF = False
@@ -522,25 +524,20 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         try:
             for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
                 tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
-                if DEBUG:
-                    tagname = TAGS_V2.get(tag, TagInfo()).name
-                    typname = TYPES.get(typ, "unknown")
-                    print("tag: %s (%d) - type: %s (%d)" %
-                          (tagname, tag, typname, typ), end=" ")
-
+                logger.debug("tag: %s (%d) - type: %s (%d)",
+                             TAGS_V2.get(tag, TagInfo()).name, tag,
+                             TYPES.get(typ, "unknown"), typ)
                 try:
                     unit_size, handler = self._load_dispatch[typ]
                 except KeyError:
-                    if DEBUG:
-                        print("- unsupported type", typ)
+                    logger.debug("- unsupported type")
                     continue  # ignore unsupported type
                 size = count * unit_size
                 if size > 4:
                     here = fp.tell()
                     offset, = self._unpack("L", data)
-                    if DEBUG:
-                        print("Tag Location: %s - Data Location: %s" %
-                              (here, offset), end=" ")
+                    logger.debug("Tag Location: %s - Data Location: %s",
+                                 here, offset)
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -556,11 +553,10 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                 self._tagdata[tag] = data
                 self.tagtype[tag] = typ
 
-                if DEBUG:
-                    if size > 32:
-                        print("- value: <table: %d bytes>" % size)
-                    else:
-                        print("- value:", self[tag])
+                if size > 32:
+                    logger.debug("- value: <table: %d bytes>", size)
+                else:
+                    logger.debug("- value: %s", self[tag])
 
             self.next, = self._unpack("L", self._ensure_read(fp, 4))
         except IOError as msg:
@@ -586,19 +582,16 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             if tag == STRIPOFFSETS:
                 stripoffsets = len(entries)
             typ = self.tagtype.get(tag)
-            if DEBUG:
-                print("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
+            logger.debug("Tag %s, Type: %s, Value: %s", tag, typ, value)
             values = value if isinstance(value, tuple) else (value,)
             data = self._write_dispatch[typ](self, *values)
-            if DEBUG:
-                tagname = TAGS_V2.get(tag, TagInfo()).name
-                typname = TYPES.get(typ, "unknown")
-                print("save: %s (%d) - type: %s (%d)" %
-                      (tagname, tag, typname, typ), end=" ")
-                if len(data) >= 16:
-                    print("- value: <table: %d bytes>" % len(data))
-                else:
-                    print("- value:", values)
+            logger.debug("save: %s (%d) - type: %s (%d)",
+                         TAGS_V2.get(tag, TagInfo()).name, tag,
+                         TYPES.get(typ, "unknown"), typ)
+            if len(data) >= 16:
+                logger.debug("- value: <table: %d bytes>", len(data))
+            else:
+                logger.debug("- value: %s", values)
 
             # count is sum of lengths for string and arbitrary data
             count = len(data) if typ in [2, 7] else len(values)
@@ -620,8 +613,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
         # pass 2: write entries to file
         for tag, typ, count, value, data in entries:
-            if DEBUG > 1:
-                print(tag, typ, count, repr(value), repr(data))
+            logger.debug("%s %s %s %r %r", tag, typ, count, value, data)
             fp.write(self._pack("HHL4s", tag, typ, count, value))
 
         # -- overwrite here for multi-page --
@@ -763,10 +755,9 @@ class TiffImageFile(ImageFile.ImageFile):
         self._n_frames = None
         self._is_animated = None
 
-        if DEBUG:
-            print("*** TiffImageFile._open ***")
-            print("- __first:", self.__first)
-            print("- ifh: ", ifh)
+        logger.debug("*** TiffImageFile._open ***")
+        logger.debug("- __first: %s", self.__first)
+        logger.debug("- ifh: %s", ifh)
 
         # and load the first frame
         self._seek(0)
@@ -811,17 +802,15 @@ class TiffImageFile(ImageFile.ImageFile):
         while len(self._frame_pos) <= frame:
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
-            if DEBUG:
-                print("Seeking to frame %s, on frame %s, "
-                      "__next %s, location: %s" %
-                      (frame, self.__frame, self.__next, self.fp.tell()))
+            logger.debug(
+                "Seeking to frame %s, on frame %s, __next %s, location: %s",
+                frame, self.__frame, self.__next, self.fp.tell())
             # reset python3 buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
             self.fp.tell()
             self.fp.seek(self.__next)
             self._frame_pos.append(self.__next)
-            if DEBUG:
-                print("Loading tags, location: %s" % self.fp.tell())
+            logger.debug("Loading tags, location: %s", self.fp.tell())
             self.tag_v2.load(self.fp)
             self.__next = self.tag_v2.next
             self.__frame += 1
@@ -901,20 +890,17 @@ class TiffImageFile(ImageFile.ImageFile):
             # Rearranging for supporting byteio items, since they have a fileno
             # that returns an IOError if there's no underlying fp. Easier to
             # deal with here by reordering.
-            if DEBUG:
-                print("have getvalue. just sending in a string from getvalue")
+            logger.debug("have getvalue. just sending in a string from getvalue")
             n, err = decoder.decode(self.fp.getvalue())
         elif hasattr(self.fp, "fileno"):
             # we've got a actual file on disk, pass in the fp.
-            if DEBUG:
-                print("have fileno, calling fileno version of the decoder.")
+            logger.debug("have fileno, calling fileno version of the decoder.")
             self.fp.seek(0)
             # 4 bytes, otherwise the trace might error out
             n, err = decoder.decode(b"fpfp")
         else:
             # we have something else.
-            if DEBUG:
-                print("don't have fileno or getvalue. just reading")
+            logger.debug("don't have fileno or getvalue. just reading")
             # UNDONE -- so much for that buffer size thing.
             n, err = decoder.decode(self.fp.read())
 
@@ -949,20 +935,18 @@ class TiffImageFile(ImageFile.ImageFile):
 
         fillorder = self.tag_v2.get(FILLORDER, 1)
 
-        if DEBUG:
-            print("*** Summary ***")
-            print("- compression:", self._compression)
-            print("- photometric_interpretation:", photo)
-            print("- planar_configuration:", self._planar_configuration)
-            print("- fill_order:", fillorder)
+        logger.debug("*** Summary ***")
+        logger.debug("- compression: %s", self._compression)
+        logger.debug("- photometric_interpretation: %s", photo)
+        logger.debug("- planar_configuration: %s", self._planar_configuration)
+        logger.debug("- fill_order: %s", fillorder)
 
         # size
         xsize = self.tag_v2.get(IMAGEWIDTH)
         ysize = self.tag_v2.get(IMAGELENGTH)
         self.size = xsize, ysize
 
-        if DEBUG:
-            print("- size:", self.size)
+        logger.debug("- size: %s", self.size)
 
         format = self.tag_v2.get(SAMPLEFORMAT, (1,))
         if len(format) > 1 and max(format) == min(format) == 1:
@@ -979,18 +963,15 @@ class TiffImageFile(ImageFile.ImageFile):
             self.tag_v2.get(BITSPERSAMPLE, (1,)),
             self.tag_v2.get(EXTRASAMPLES, ())
             )
-        if DEBUG:
-            print("format key:", key)
+        logger.debug("format key: %s", key)
         try:
             self.mode, rawmode = OPEN_INFO[key]
         except KeyError:
-            if DEBUG:
-                print("- unsupported format")
+            logger.debug("- unsupported format")
             raise SyntaxError("unknown pixel mode")
 
-        if DEBUG:
-            print("- raw mode:", rawmode)
-            print("- pil mode:", self.mode)
+        logger.debug("- raw mode: %s", rawmode)
+        logger.debug("- pil mode: %s", self.mode)
 
         self.info["compression"] = self._compression
 
@@ -1065,13 +1046,10 @@ class TiffImageFile(ImageFile.ImageFile):
                 # bits, so stripes of the image are reversed.  See
                 # https://github.com/python-pillow/Pillow/issues/279
                 if fillorder == 2:
-                    key = (
-                        self.tag_v2.prefix, photo, format, 1,
-                        self.tag_v2.get(BITSPERSAMPLE, (1,)),
-                        self.tag_v2.get(EXTRASAMPLES, ())
-                        )
-                    if DEBUG:
-                        print("format key:", key)
+                    key = (self.tag_v2.prefix, photo, format, 1,
+                           self.tag_v2.get(BITSPERSAMPLE, (1,)),
+                           self.tag_v2.get(EXTRASAMPLES, ()))
+                    logger.debug("format key: %s", key)
                     # this should always work, since all the
                     # fillorder==2 modes have a corresponding
                     # fillorder=1 mode
@@ -1099,8 +1077,7 @@ class TiffImageFile(ImageFile.ImageFile):
                         (self._compression,
                             (0, min(y, ysize), w, min(y+h, ysize)),
                             offsets[i], a))
-                    if DEBUG:
-                        print("tiles: ", self.tile)
+                    logger.debug("tiles: %s", self.tile)
                     y = y + h
                     if y >= self.size[1]:
                         x = y = 0
@@ -1128,8 +1105,7 @@ class TiffImageFile(ImageFile.ImageFile):
                         l += 1
                         a = None
         else:
-            if DEBUG:
-                print("- unsupported data organization")
+            logger.debug("- unsupported data organization")
             raise SyntaxError("unknown data organization")
 
         # fixup palette descriptor
@@ -1192,8 +1168,7 @@ def _save(im, fp, filename):
 
     # write any arbitrary tags passed in as an ImageFileDirectory
     info = im.encoderinfo.get("tiffinfo", {})
-    if DEBUG:
-        print("Tiffinfo Keys: %s" % list(info))
+    logger.debug("Tiffinfo Keys: %s", list(info))
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()
     for key in info:
@@ -1266,9 +1241,8 @@ def _save(im, fp, filename):
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
 
     if libtiff:
-        if DEBUG:
-            print("Saving using libtiff encoder")
-            print("Items: %s" % sorted(ifd.items()))
+        logger.debug("Saving using libtiff encoder")
+        logger.debug("Items: %s", sorted(ifd.items()))
         _fp = 0
         if hasattr(fp, "fileno"):
             try:
@@ -1299,8 +1273,7 @@ def _save(im, fp, filename):
                 else:
                     atts[k] = v
 
-        if DEBUG:
-            print("Converted items: %s" % sorted(atts.items()))
+        logger.debug("Converted items: %s", sorted(atts.items()))
 
         # libtiff always expects the bytes in native order.
         # we're storing image byte order. So, if the rawmode
