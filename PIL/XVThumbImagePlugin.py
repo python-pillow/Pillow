@@ -72,4 +72,4 @@ class XVThumbImageFile(ImageFile.ImageFile):
 
 # --------------------------------------------------------------------
 
-Image.register_open("XVThumb", XVThumbImageFile)
+Image.register_open(XVThumbImageFile.format, XVThumbImageFile)
