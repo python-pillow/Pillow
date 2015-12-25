@@ -103,8 +103,8 @@ Many of Pillow's features require external libraries:
 
 * **libjpeg** provides JPEG functionality.
 
-  * Pillow has been tested with libjpeg versions **6b**, **8**, and
-    **9** and libjpeg-turbo version **8**.
+  * Pillow has been tested with libjpeg versions **6b**, **8**, **9**, and
+    **9a** and libjpeg-turbo version **8**.
   * Starting with Pillow 3.0.0, libjpeg is required by default, but
     may be disabled with the ``--disable-jpeg`` flag.
 
@@ -122,12 +122,12 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.2**.
+    above uses liblcms2. Tested with **1.19** and **2.7**.
 
 * **libwebp** provides the WebP format.
 
   * Pillow has been tested with version **0.1.3**, which does not read
-    transparent WebP files. Versions **0.3.0** and **0.4.0** support
+    transparent WebP files. Versions **0.3.0** and above support
     transparency.
 
 * **tcl/tk** provides support for tkinter bitmap and photo images.
