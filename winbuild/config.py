@@ -60,9 +60,9 @@ libs = {
         'version': '8.6.4',
     },
     'webp': {
-        'url': 'http://downloads.webmproject.org/releases/webp/libwebp-0.4.4.tar.gz',
-        'hash': 'sha1:b8762e330b6cd7e7b4a5a6dbfc53bc787a4f0ba3',
-        'dir': 'libwebp-0.4.4',
+        'url': 'http://downloads.webmproject.org/releases/webp/libwebp-0.5.0.tar.gz',
+        'hash': 'sha1:d3de815b272fcf88fc4f2dc1ab65d176bcb8df68',
+        'dir': 'libwebp-0.5.0',
     },
     'openjpeg': {
         'url': SF_MIRROR+'/project/openjpeg/openjpeg/2.1.0/openjpeg-2.1.0.tar.gz',
