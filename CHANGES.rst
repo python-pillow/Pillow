@@ -4,6 +4,15 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Updated installation docs for new versions of dependencies #1611
+  [radarhere]
+  
+- Removed unrunnable test file #1610
+  [radarhere]
+
+- Changed register calls to use format property #1608
+  [radarhere]
+
 - Added field type constants to TiffTags #1596
   [radarhere]
   
