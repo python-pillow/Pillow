@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Add /usr/local include and library directories for freebsd #1613
+  [leforestier]
+
 - Updated installation docs for new versions of dependencies #1611
   [radarhere]
   
