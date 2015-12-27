@@ -11,7 +11,7 @@ except ImportError:
 
 
 class Test_scipy_resize(PillowTestCase):
-    """ Tests for scipy regression in 2.6.0
+    """ Tests for scipy regression in Pillow 2.6.0
 
     Tests from https://github.com/scipy/scipy/blob/master/scipy/misc/pilutil.py
     """
