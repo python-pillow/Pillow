@@ -6,6 +6,7 @@ import struct
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
+from TiffImagePlugin import _limit_rational, IFDRational
 
 tag_ids = dict((info.name, info.value) for info in TiffTags.TAGS_V2.values())
 
@@ -73,7 +74,7 @@ class TestFileTiffMetadata(PillowTestCase):
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
 
-        self.assertEqual({'YResolution': TiffImagePlugin.IFDRational(4294967295, 113653537),
+        self.assertEqual({'YResolution': IFDRational(4294967295, 113653537),
                           'PlanarConfiguration': 1,
                           'BitsPerSample': (1,),
                           'ImageLength': 128,
@@ -83,7 +84,7 @@ class TestFileTiffMetadata(PillowTestCase):
                           'ResolutionUnit': 3,
                           'PhotometricInterpretation': 0,
                           'PageNumber': (0, 1),
-                          'XResolution': TiffImagePlugin.IFDRational(4294967295, 113653537),
+                          'XResolution': IFDRational(4294967295, 113653537),
                           'ImageWidth': 128,
                           'Orientation': 1,
                           'StripByteCounts': (1968,),
@@ -121,13 +122,21 @@ class TestFileTiffMetadata(PillowTestCase):
         original = img.tag_v2.named()
         reloaded = loaded.tag_v2.named()
 
-        ignored = [
-            'StripByteCounts', 'RowsPerStrip', 'PageNumber', 'StripOffsets']
+        for k,v in original.items():
+            if type(v) == IFDRational:
+                original[k] = IFDRational(*_limit_rational(v,2**31))
+            if type(v) == tuple and \
+                type(v[0]) == IFDRational:
+                original[k] = tuple([IFDRational(
+                                      *_limit_rational(elt, 2**31)) for elt in v])
+
+        ignored = ['StripByteCounts', 'RowsPerStrip',
+                   'PageNumber', 'StripOffsets']
 
         for tag, value in reloaded.items():
             if tag in ignored: continue
             if (type(original[tag]) == tuple
-                and type(original[tag][0]) == TiffImagePlugin.IFDRational):
+                and type(original[tag][0]) == IFDRational):
                 # Need to compare element by element in the tuple,
                 # not comparing tuples of object references
                 self.assert_deep_equal(original[tag],
