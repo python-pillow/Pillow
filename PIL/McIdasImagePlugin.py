@@ -69,6 +69,6 @@ class McIdasImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # registry
 
-Image.register_open("MCIDAS", McIdasImageFile, _accept)
+Image.register_open(McIdasImageFile.format, McIdasImageFile, _accept)
 
 # no default extension

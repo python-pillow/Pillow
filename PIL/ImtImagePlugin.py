@@ -89,7 +89,7 @@ class ImtImageFile(ImageFile.ImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("IMT", ImtImageFile)
+Image.register_open(ImtImageFile.format, ImtImageFile)
 
 #
 # no extension registered (".im" is simply too common)
