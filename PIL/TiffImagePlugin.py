@@ -313,7 +313,8 @@ class IFDRational(Rational):
     """ a = ['add','radd', 'sub', 'rsub','div', 'rdiv', 'mul', 'rmul',
              'truediv', 'rtruediv', 'floordiv',
              'rfloordiv','mod','rmod', 'pow','rpow', 'pos', 'neg',
-             'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'nonzero']
+             'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'nonzero',
+             'ceil', 'floor', 'round']
         print "\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a)
         """
 
@@ -342,6 +343,9 @@ class IFDRational(Rational):
     __le__ = _delegate('__le__')
     __ge__ = _delegate('__ge__')
     __nonzero__ = _delegate('__nonzero__')
+    __ceil__ = _delegate('__ceil__')
+    __floor__ = _delegate('__floor__')
+    __round__ = _delegate('__round__')
 
     
 
