@@ -73,7 +73,7 @@ class TestFileTiffMetadata(PillowTestCase):
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
 
-        self.assertEqual({'YResolution': 4294967295 / 113653537,
+        self.assertEqual({'YResolution': TiffImagePlugin.IFDRational(4294967295, 113653537),
                           'PlanarConfiguration': 1,
                           'BitsPerSample': (1,),
                           'ImageLength': 128,
@@ -83,7 +83,7 @@ class TestFileTiffMetadata(PillowTestCase):
                           'ResolutionUnit': 3,
                           'PhotometricInterpretation': 0,
                           'PageNumber': (0, 1),
-                          'XResolution': 4294967295 / 113653537,
+                          'XResolution': TiffImagePlugin.IFDRational(4294967295, 113653537),
                           'ImageWidth': 128,
                           'Orientation': 1,
                           'StripByteCounts': (1968,),
@@ -125,7 +125,16 @@ class TestFileTiffMetadata(PillowTestCase):
             'StripByteCounts', 'RowsPerStrip', 'PageNumber', 'StripOffsets']
 
         for tag, value in reloaded.items():
-            if tag not in ignored:
+            if tag in ignored: continue
+            if (type(original[tag]) == tuple
+                and type(original[tag][0]) == TiffImagePlugin.IFDRational):
+                # Need to compare element by element in the tuple,
+                # not comparing tuples of object references
+                self.assert_deep_equal(original[tag],
+                                       value,
+                                       "%s didn't roundtrip, %s, %s" %
+                                       (tag, original[tag], value))
+            else:
                 self.assertEqual(original[tag],
                                  value,
                                  "%s didn't roundtrip, %s, %s" %
