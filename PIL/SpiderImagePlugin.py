@@ -27,10 +27,10 @@
 # image data from electron microscopy and tomography.
 #
 # Spider home page:
-# http://www.wadsworth.org/spider_doc/spider/docs/spider.html
+# http://spider.wadsworth.org/spider_doc/spider/docs/spider.html
 #
 # Details about the Spider image format:
-# http://www.wadsworth.org/spider_doc/spider/docs/image_doc.html
+# http://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
 #
 
 from __future__ import print_function

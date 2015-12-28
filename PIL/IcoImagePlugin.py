@@ -18,7 +18,7 @@
 # https://code.google.com/p/casadebender/wiki/Win32IconImagePlugin
 #
 # Icon format references:
-#   * http://en.wikipedia.org/wiki/ICO_(file_format)
+#   * https://en.wikipedia.org/wiki/ICO_(file_format)
 #   * http://msdn.microsoft.com/en-us/library/ms997538.aspx
 
 
