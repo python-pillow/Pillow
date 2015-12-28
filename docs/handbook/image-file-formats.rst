@@ -477,10 +477,12 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     .. versionadded:: 1.1.5
 
 
-The :py:attr:`~PIL.Image.Image.tag_v2` attribute contains a dictionary of
-TIFF metadata. The keys are numerical indexes from `~PIL.TiffTags.TAGS_V2`.
-Values are strings or numbers for single items, multiple values are returned
-in a tuple of values. Rational numbers are returned as a single value.
+The :py:attr:`~PIL.Image.Image.tag_v2` attribute contains a dictionary
+of TIFF metadata. The keys are numerical indexes from
+`~PIL.TiffTags.TAGS_V2`.  Values are strings or numbers for single
+items, multiple values are returned in a tuple of values. Rational
+numbers are returned as a :py:class:`~PIL.TiffImagePlugin.IFDRational`
+object.
 
     .. versionadded:: 3.0.0
 
@@ -510,20 +512,27 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     .. versionadded:: 2.3.0
 
-    For compatibility with legacy code, a
-    `~PIL.TiffImagePlugin.ImageFileDirectory_v1` object may be passed
-    in this field. However, this is deprecated.
+    Metadata values that are of the rational type should be passed in
+    using a :py:class:`~PIL.TiffImagePlugin.IFDRational` object.
 
-    ..versionadded:: 3.0.0
+    .. versionadded:: 3.1.0
+
+    For compatibility with legacy code, a
+    :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1` object may
+    be passed in this field. However, this is deprecated.
+
+    .. versionadded:: 3.0.0
 
 **compression**
     A string containing the desired compression method for the
 	file. (valid only with libtiff installed) Valid compression
-	methods are: ``[None, "tiff_ccitt", "group3", "group4",
-	"tiff_jpeg", "tiff_adobe_deflate", "tiff_thunderscan",
-	"tiff_deflate", "tiff_sgilog", "tiff_sgilog24", "tiff_raw_16"]``
+	methods are: ``None``, ``"tiff_ccitt"``, ``"group3"``,
+	``"group4"``, ``"tiff_jpeg"``, ``"tiff_adobe_deflate"``,
+	``"tiff_thunderscan"``, ``"tiff_deflate"``, ``"tiff_sgilog"``,
+	``"tiff_sgilog24"``, ``"tiff_raw_16"``
 
-These arguments to set the tiff header fields are an alternative to using the general tags available through tiffinfo.
+These arguments to set the tiff header fields are an alternative to
+using the general tags available through tiffinfo.
 
 **description**
 
@@ -545,10 +554,11 @@ These arguments to set the tiff header fields are an alternative to using the ge
 
 **y_resolution**
 
-**dpi**
-    Either a Float, Integer, or 2 tuple of (numerator,
-    denominator). Resolution implies an equal x and y resolution, dpi
-    also implies a unit of inches.
+**dpi** 
+    Either a Float, 2 tuple of (numerator, denominator) or a
+    :py:class:`~PIL.TiffImagePlugin.IFDRational`. Resolution implies
+    an equal x and y resolution, dpi also implies a unit of inches.
+
 
 WebP
 ^^^^
