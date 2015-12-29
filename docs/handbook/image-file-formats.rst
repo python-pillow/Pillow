@@ -598,11 +598,6 @@ XBM
 
 PIL reads and writes X bitmap files (mode ``1``).
 
-XV Thumbnails
-^^^^^^^^^^^^^
-
-PIL can read XV thumbnail files.
-
 Read-only formats
 -----------------
 
@@ -699,8 +694,8 @@ MCIDAS
 
 PIL identifies and reads 8-bit McIdas area files.
 
-MIC (read only)
-^^^^^^^^^^^^^^^
+MIC
+^^^
 
 PIL identifies and reads Microsoft Image Composer (MIC) files. When opened, the
 first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
@@ -722,6 +717,14 @@ resolution is read. You can use the :py:meth:`~PIL.Image.Image.draft` method to
 read the lower resolution versions instead, thus effectively resizing the image
 to 384x256 or 192x128. Higher resolutions cannot be read by the Python Imaging
 Library.
+
+PIXAR
+^^^^^
+
+PIL provides limited support for PIXAR raster files. The library can identify
+and read “dumped” RGB files.
+
+The format code is ``PIXAR``.
 
 PSD
 ^^^
@@ -786,13 +789,10 @@ by default, only the first image will be saved. To save all frames, each frame
 to a separate page of the PDF, the ``save_all`` parameter must be present and
 set to ``True``.
 
-PIXAR (read only)
-^^^^^^^^^^^^^^^^^
+XV Thumbnails
+^^^^^^^^^^^^^
 
-PIL provides limited support for PIXAR raster files. The library can identify
-and read “dumped” RGB files.
-
-The format code is ``PIXAR``.
+PIL can read XV thumbnail files.
 
 Identify-only formats
 ---------------------
