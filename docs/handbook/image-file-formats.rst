@@ -4,7 +4,7 @@ Image file formats
 ==================
 
 The Python Imaging Library supports a wide variety of raster file formats.
-Nearly 30 different file formats can be identified and read by the library.
+Over 30 different file formats can be identified and read by the library.
 Write support is less extensive, but most common interchange and presentation
 formats are supported.
 
@@ -119,6 +119,25 @@ attributes before loading the file::
         tag, (x0, y0, x1, y1), offset, extra = im.tile[0]
         im.size = (x1 - x0, y1 - y0)
         im.tile = [(tag, (0, 0) + im.size, offset, extra)]
+
+ICNS
+^^^^
+
+PIL reads and (OS X only) writes Mac OS X ``.icns`` files.  By default, the
+largest available icon is read, though you can override this by setting the
+:py:attr:`~PIL.Image.Image.size` property before calling
+:py:meth:`~PIL.Image.Image.load`.  The :py:meth:`~PIL.Image.Image.open` method
+sets the following :py:attr:`~PIL.Image.Image.info` property:
+
+**sizes**
+    A list of supported sizes found in this icon file; these are a
+    3-tuple, ``(width, height, scale)``, where ``scale`` is 2 for a retina
+    icon and 1 for a standard icon.  You *are* permitted to use this 3-tuple
+    format for the :py:attr:`~PIL.Image.Image.size` property if you set it
+    before calling :py:meth:`~PIL.Image.Image.load`; after loading, the size
+    will be reset to a 2-tuple containing pixel dimensions (so, e.g. if you
+    ask for ``(512, 512, 2)``, the final value of
+    :py:attr:`~PIL.Image.Image.size` will be ``(1024, 1024)``).
 
 IM
 ^^
@@ -579,11 +598,6 @@ XBM
 
 PIL reads and writes X bitmap files (mode ``1``).
 
-XV Thumbnails
-^^^^^^^^^^^^^
-
-PIL can read XV thumbnail files.
-
 Read-only formats
 -----------------
 
@@ -665,25 +679,6 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     (64, 64), (128, 128), (255, 255)]``. Any size is bigger then the original
     size or 255 will be ignored.
 
-ICNS
-^^^^
-
-PIL reads Mac OS X ``.icns`` files.  By default, the largest available icon is
-read, though you can override this by setting the :py:attr:`~PIL.Image.Image.size`
-property before calling :py:meth:`~PIL.Image.Image.load`.  The
-:py:meth:`~PIL.Image.Image.open` method sets the following
-:py:attr:`~PIL.Image.Image.info` property:
-
-**sizes**
-    A list of supported sizes found in this icon file; these are a
-    3-tuple, ``(width, height, scale)``, where ``scale`` is 2 for a retina
-    icon and 1 for a standard icon.  You *are* permitted to use this 3-tuple
-    format for the :py:attr:`~PIL.Image.Image.size` property if you set it
-    before calling :py:meth:`~PIL.Image.Image.load`; after loading, the size
-    will be reset to a 2-tuple containing pixel dimensions (so, e.g. if you
-    ask for ``(512, 512, 2)``, the final value of
-    :py:attr:`~PIL.Image.Image.size` will be ``(1024, 1024)``).
-
 IMT
 ^^^
 
@@ -699,7 +694,8 @@ MCIDAS
 
 PIL identifies and reads 8-bit McIdas area files.
 
-MIC (read only)
+MIC
+^^^
 
 PIL identifies and reads Microsoft Image Composer (MIC) files. When opened, the
 first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
@@ -713,12 +709,6 @@ image when first opened. The :py:meth:`~file.seek` and :py:meth:`~file.tell`
 methods may be used to read other pictures from the file. The pictures are
 zero-indexed and random access is supported.
 
-MIC (read only)
-
-Pillow identifies and reads Microsoft Image Composer (MIC) files. When opened, the
-first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
-:py:meth:`~file.tell` to read other sprites from the file.
-
 PCD
 ^^^
 
@@ -727,6 +717,14 @@ resolution is read. You can use the :py:meth:`~PIL.Image.Image.draft` method to
 read the lower resolution versions instead, thus effectively resizing the image
 to 384x256 or 192x128. Higher resolutions cannot be read by the Python Imaging
 Library.
+
+PIXAR
+^^^^^
+
+PIL provides limited support for PIXAR raster files. The library can identify
+and read “dumped” RGB files.
+
+The format code is ``PIXAR``.
 
 PSD
 ^^^
@@ -791,13 +789,10 @@ by default, only the first image will be saved. To save all frames, each frame
 to a separate page of the PDF, the ``save_all`` parameter must be present and
 set to ``True``.
 
-PIXAR (read only)
-^^^^^^^^^^^^^^^^^
+XV Thumbnails
+^^^^^^^^^^^^^
 
-PIL provides limited support for PIXAR raster files. The library can identify
-and read “dumped” RGB files.
-
-The format code is ``PIXAR``.
+PIL can read XV thumbnail files.
 
 Identify-only formats
 ---------------------
