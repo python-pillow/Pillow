@@ -185,6 +185,20 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertEqual(im.tag_v2.tagtype[34675], 1)
         self.assertTrue(im.info['icc_profile'])
 
+    def test_exif_div_zero(self):
+        im = hopper()
+        info = TiffImagePlugin.ImageFileDirectory_v2()
+        info[41988] = TiffImagePlugin.IFDRational(0,0)
+
+        out = self.tempfile('temp.tiff')
+        im.save(out, tiffinfo=info, compression='raw')
+
+        reloaded = Image.open(out)
+        self.assertEqual(0, reloaded.tag_v2[41988][0].numerator)
+        self.assertEqual(0, reloaded.tag_v2[41988][0].denominator)
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

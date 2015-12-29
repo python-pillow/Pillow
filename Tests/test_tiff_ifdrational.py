@@ -1,7 +1,8 @@
 from __future__ import print_function
 
-from helper import PillowTestCase
+from helper import PillowTestCase, hopper
 
+from PIL import TiffImagePlugin, Image
 from PIL.TiffImagePlugin import IFDRational
 
 from fractions import Fraction
@@ -43,4 +44,18 @@ class Test_IFDRational(PillowTestCase):
         
         self.assert_(xres and 1)
         self.assert_(xres and yres)
+
+
+    def test_ifd_rational_save(self):
+        for libtiff in (True, False):
+            TiffImagePlugin.WRITE_LIBTIFF = libtiff
+            
+            im = hopper()
+            out = self.tempfile('temp.tiff')
+            res = IFDRational(301,1)
+            im.save(out, dpi=(res,res), compression='raw')
+
+            reloaded = Image.open(out)
+            self.assertEqual(float(IFDRational(301,1)),
+                             float(reloaded.tag_v2[282]))
 

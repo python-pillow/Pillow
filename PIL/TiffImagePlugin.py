@@ -497,11 +497,13 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         values = [value] if isinstance(value, basetypes) else value
 
         if tag not in self.tagtype:
-            try:
+            if info.type:
                 self.tagtype[tag] = info.type
-            except KeyError:
+            else:
                 self.tagtype[tag] = 7
-                if all(isinstance(v, int) for v in values):
+                if all(isinstance(v, IFDRational) for v in values):
+                    self.tagtype[tag] = 5
+                elif all(isinstance(v, int) for v in values):
                     if all(v < 2 ** 16 for v in values):
                         self.tagtype[tag] = 3
                     else:
