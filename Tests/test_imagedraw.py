@@ -52,6 +52,13 @@ class TestImageDraw(PillowTestCase):
         self.assertRaises(Exception, lambda: draw.setink(0))
         self.assertRaises(Exception, lambda: draw.setfill(0))
 
+    def test_valueerror(self):
+        im = Image.open("Tests/images/chi.gif")
+
+        draw = ImageDraw.Draw(im)
+        draw.line(((0, 0)), fill=(0, 0, 0))
+        del draw
+
     def test_mode_mismatch(self):
         im = hopper("RGB").copy()
 
