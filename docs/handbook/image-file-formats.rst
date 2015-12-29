@@ -700,6 +700,7 @@ MCIDAS
 PIL identifies and reads 8-bit McIdas area files.
 
 MIC (read only)
+^^^^^^^^^^^^^^^
 
 PIL identifies and reads Microsoft Image Composer (MIC) files. When opened, the
 first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
@@ -712,12 +713,6 @@ Pillow identifies and reads Multi Picture Object (MPO) files, loading the primar
 image when first opened. The :py:meth:`~file.seek` and :py:meth:`~file.tell`
 methods may be used to read other pictures from the file. The pictures are
 zero-indexed and random access is supported.
-
-MIC (read only)
-
-Pillow identifies and reads Microsoft Image Composer (MIC) files. When opened, the
-first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
-:py:meth:`~file.tell` to read other sprites from the file.
 
 PCD
 ^^^
