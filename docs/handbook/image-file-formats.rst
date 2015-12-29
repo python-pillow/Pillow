@@ -4,7 +4,7 @@ Image file formats
 ==================
 
 The Python Imaging Library supports a wide variety of raster file formats.
-Nearly 30 different file formats can be identified and read by the library.
+Over 30 different file formats can be identified and read by the library.
 Write support is less extensive, but most common interchange and presentation
 formats are supported.
 
