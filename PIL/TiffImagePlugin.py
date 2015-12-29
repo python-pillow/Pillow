@@ -44,6 +44,7 @@ from __future__ import division, print_function
 from PIL import Image, ImageFile
 from PIL import ImagePalette
 from PIL import _binary
+from PIL import TiffTags
 
 import collections
 from fractions import Fraction
@@ -56,7 +57,8 @@ import struct
 import sys
 import warnings
 
-from .TiffTags import TAGS_V2, TYPES, TagInfo
+from .TiffTags import TYPES, TagInfo
+
 
 __version__ = "1.3.5"
 DEBUG = False  # Needs to be merged with the new logging approach.
@@ -461,7 +463,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
         Returns the complete tag dictionary, with named tags where possible.
         """
-        return dict((TAGS_V2.get(code, TagInfo()).name, value)
+        return dict((TiffTags.lookup(code).name, value)
                     for code, value in self.items())
 
     def __len__(self):
@@ -493,7 +495,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         if bytes is str:
             basetypes += unicode,
 
-        info = TAGS_V2.get(tag, TagInfo())
+        info = TiffTags.lookup(tag)
         values = [value] if isinstance(value, basetypes) else value
 
         if tag not in self.tagtype:
@@ -648,7 +650,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
                 tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
                 if DEBUG:
-                    tagname = TAGS_V2.get(tag, TagInfo()).name
+                    tagname = TiffTags.lookup(tag).name
                     typname = TYPES.get(typ, "unknown")
                     print("tag: %s (%d) - type: %s (%d)" %
                           (tagname, tag, typname, typ), end=" ")
@@ -716,7 +718,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             values = value if isinstance(value, tuple) else (value,)
             data = self._write_dispatch[typ](self, *values)
             if DEBUG:
-                tagname = TAGS_V2.get(tag, TagInfo()).name
+                tagname = TiffTags.lookup(tag).name
                 typname = TYPES.get(typ, "unknown")
                 print("save: %s (%d) - type: %s (%d)" %
                       (tagname, tag, typname, typ), end=" ")
