@@ -176,9 +176,9 @@ class TestFileJpeg(PillowTestCase):
         im = Image.open('Tests/images/exif_gps.jpg')
         gps_index = 34853
         expected_exif_gps = {
-            0: '\x00\x00\x00\x01',
-            2: (4294967295L, 1),
-            5: '\x01',
+            0: b'\x00\x00\x00\x01',
+            2: (4294967295, 1),
+            5: b'\x01',
             30: 65535,
             29: u'1999:99:99 99:99:99'}
 
