@@ -185,6 +185,11 @@ Sample Usage::
 
     $ MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
 
+or using pip::
+
+    $ pip install pillow --global-option="build_ext" --global-option="--enable-[feature]"
+
+
 Building on OS X
 ^^^^^^^^^^^^^^^^
 
