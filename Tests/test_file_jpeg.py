@@ -180,7 +180,7 @@ class TestFileJpeg(PillowTestCase):
             2: (4294967295, 1),
             5: b'\x01',
             30: 65535,
-            29: u'1999:99:99 99:99:99'}
+            29: '1999:99:99 99:99:99'}
 
         # Act
         exif = im._getexif()
