@@ -395,6 +395,17 @@ class TestFileLibTiff(LibTiffTestCase):
         TiffImagePlugin.WRITE_LIBTIFF = False
         TiffImagePlugin.READ_LIBTIFF = False
 
+    def test_crashing_metadata(self):
+        # issue 1597
+        im = Image.open('Tests/images/rdf.tif')
+        out = self.tempfile('temp.tif')
+
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        # this shouldn't crash
+        im.save(out, format='TIFF')
+        TiffImagePlugin.WRITE_LIBTIFF = False
+
+
 
 if __name__ == '__main__':
     unittest.main()

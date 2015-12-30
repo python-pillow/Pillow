@@ -1400,8 +1400,7 @@ def _save(im, fp, filename):
 
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
-        # ICCPROFILE crashes.
-        blocklist = [STRIPOFFSETS, STRIPBYTECOUNTS, ICCPROFILE]
+        blocklist = [STRIPOFFSETS, STRIPBYTECOUNTS]
         atts = {}
         # bits per sample is a single short in the tiff directory, not a list.
         atts[BITSPERSAMPLE] = bits[0]
@@ -1411,16 +1410,22 @@ def _save(im, fp, filename):
         legacy_ifd = {}
         if hasattr(im, 'tag'):
             legacy_ifd = im.tag.to_v2()
-        for k, v in itertools.chain(ifd.items(),
+        for tag, value in itertools.chain(ifd.items(),
                                     getattr(im, 'tag_v2', {}).items(),
                                     legacy_ifd.items()):
-            if k not in atts and k not in blocklist:
-                if isinstance(v, unicode if bytes is str else str):
-                    atts[k] = v.encode('ascii', 'replace') + b"\0"
-                elif isinstance(v, IFDRational):
-                    atts[k] = float(v)
+            # Libtiff can only process certain core items without adding
+            # them to the custom dictionary. It will segfault if it attempts
+            # to add a custom tag without the dictionary entry
+            #
+            # UNDONE --  add code for the custom dictionary
+            if tag not in TiffTags.LIBTIFF_CORE: continue
+            if tag not in atts and tag not in blocklist:
+                if isinstance(value, unicode if bytes is str else str):
+                    atts[tag] = value.encode('ascii', 'replace') + b"\0"
+                elif isinstance(value, IFDRational):
+                    atts[tag] = float(value)
                 else:
-                    atts[k] = v
+                    atts[tag] = value
 
         if DEBUG:
             print("Converted items: %s" % sorted(atts.items()))
