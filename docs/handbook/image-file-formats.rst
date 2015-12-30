@@ -523,7 +523,13 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     .. versionadded:: 3.0.0
 
-**compression**
+ .. note:: 
+
+    Only some tags are currently supported when writing using
+    libtiff. The supported list is found in
+    :py:attr:`~PIL:TiffTags.LIBTIFF_CORE`.
+
+**compression** 
     A string containing the desired compression method for the
 	file. (valid only with libtiff installed) Valid compression
 	methods are: ``None``, ``"tiff_ccitt"``, ``"group3"``,
