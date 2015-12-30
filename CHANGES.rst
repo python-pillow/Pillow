@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Restore exif data to the v1 form
+  [wiredfool]
+
 - Add /usr/local include and library directories for freebsd #1613
   [leforestier]
 
