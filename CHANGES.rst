@@ -70,7 +70,7 @@ Changelog (Pillow)
 - Updated freetype to 2.6.2 #1564
   [radarhere]
 
-- Updated WebP to 0.4.4 for Travis #1515
+- Updated WebP to 0.5.0 for Travis #1515 #1609
   [radarhere]
   
 - Fix missing 'version' key value in __array_interface__ #1519
