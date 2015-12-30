@@ -296,7 +296,7 @@ class ImageDraw(object):
             font = self.getfont()
         return font.getsize(text)
 
-    def multiline_textsize(self, text, font=None, spacing=0):
+    def multiline_textsize(self, text, font=None, spacing=4):
         max_width = 0
         lines = self._multiline_split(text)
         line_spacing = self.textsize('A', font=font)[1] + spacing
