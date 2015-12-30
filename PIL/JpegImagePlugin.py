@@ -434,7 +434,7 @@ def _getexif(self):
     else:
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
         info.load(file)
-        exif[0x8825] = dict([(k,v[0]) if len(v) == 1 else (k,v) for k,v in info.items()])
+        exif[0x8825] = dict([(k, v[0]) if len(v) == 1 else (k, v) for k, v in info.items()])
     return exif
 
 
