@@ -25,7 +25,7 @@ Changelog (Pillow)
 - Allow saving RowsPerStrip with libtiff #1594
   [wiredfool]
 
-- Enabled conversion to numpy array for HSV images. Fixes issue #1578
+- Enabled conversion to numpy array for HSV images #1578
   [cartisan]
 
 - Changed some urls in the docs to use https #1580
