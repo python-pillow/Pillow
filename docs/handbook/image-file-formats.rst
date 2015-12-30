@@ -479,7 +479,7 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 
 The :py:attr:`~PIL.Image.Image.tag_v2` attribute contains a dictionary
 of TIFF metadata. The keys are numerical indexes from
-`~PIL.TiffTags.TAGS_V2`.  Values are strings or numbers for single
+:py:attr:`~PIL.TiffTags.TAGS_V2`.  Values are strings or numbers for single
 items, multiple values are returned in a tuple of values. Rational
 numbers are returned as a :py:class:`~PIL.TiffImagePlugin.IFDRational`
 object.
@@ -531,11 +531,11 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 **compression** 
     A string containing the desired compression method for the
-	file. (valid only with libtiff installed) Valid compression
-	methods are: ``None``, ``"tiff_ccitt"``, ``"group3"``,
-	``"group4"``, ``"tiff_jpeg"``, ``"tiff_adobe_deflate"``,
-	``"tiff_thunderscan"``, ``"tiff_deflate"``, ``"tiff_sgilog"``,
-	``"tiff_sgilog24"``, ``"tiff_raw_16"``
+    file. (valid only with libtiff installed) Valid compression
+    methods are: ``None``, ``"tiff_ccitt"``, ``"group3"``,
+    ``"group4"``, ``"tiff_jpeg"``, ``"tiff_adobe_deflate"``,
+    ``"tiff_thunderscan"``, ``"tiff_deflate"``, ``"tiff_sgilog"``,
+    ``"tiff_sgilog24"``, ``"tiff_raw_16"``
 
 These arguments to set the tiff header fields are an alternative to
 using the general tags available through tiffinfo.
