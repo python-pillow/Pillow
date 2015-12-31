@@ -4,6 +4,21 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Divide by zero in Exif #1531
+  [wiredfool]
+
+- Catch the IFD error near the source #1622
+  [wiredfool]
+
+- Added release notes for 3.1.0 #1623
+  [radarhere]
+
+- Updated spacing to be consistent between multiline methods #1624
+  [radarhere]
+
+- Let EditorConfig take care of some basic formatting #1489
+  [hugovk]
+
 - Restore exif data to the v1 form
   [wiredfool]
 
@@ -64,7 +79,7 @@ Changelog (Pillow)
 - ExtraSamples tag should be a SHORT, not a BYTE #1555
   [Nexuapex]
 
-- Docs and code health fixes #1565 #1566 #1581 #1586 #1591
+- Docs and code health fixes #1565 #1566 #1581 #1586 #1591 #1621
   [radarhere]
   
 - Updated freetype to 2.6.2 #1564
