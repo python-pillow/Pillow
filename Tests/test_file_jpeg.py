@@ -194,6 +194,12 @@ class TestFileJpeg(PillowTestCase):
         # Should not raise a TypeError
         im._getexif()
 
+    def test_exif_zerodivisionerror(self):
+        im = Image.open('Tests/images/exif_zerodivisionerror.jpg')
+
+        # Should not raise a ZeroDivisionError
+        im._getexif()
+
     def test_progressive_compat(self):
         im1 = self.roundtrip(hopper())
         im2 = self.roundtrip(hopper(), progressive=1)
