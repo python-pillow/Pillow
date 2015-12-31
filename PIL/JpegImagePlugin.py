@@ -453,9 +453,12 @@ def _getmp(self):
     head = file_contents.read(8)
     endianness = '>' if head[:4] == b'\x4d\x4d\x00\x2a' else '<'
     # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory_v2(head)
-    info.load(file_contents)
-    mp = dict(info)
+    try:
+        info = TiffImagePlugin.ImageFileDirectory_v2(head)
+        info.load(file_contents)
+        mp = dict(info)
+    except:
+        raise SyntaxError("malformed MP Index (unreadable directory)")
     # it's an error not to have a number of images
     try:
         quant = mp[0xB001]
