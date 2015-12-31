@@ -320,8 +320,8 @@ class TestFileJpeg(PillowTestCase):
         # dict of qtable lists
         self.assert_image_similar(im,
                                   self.roundtrip(im, qtables={
-                                    0: standard_l_qtable,
-                                    1: standard_chrominance_qtable
+                                      0: standard_l_qtable,
+                                      1: standard_chrominance_qtable
                                   }), 30)
 
         # not a sequence

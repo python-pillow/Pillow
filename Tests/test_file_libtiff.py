@@ -170,7 +170,7 @@ class TestFileLibTiff(LibTiffTestCase):
                                 'RowsPerStrip',
                                 'StripOffsets']
             for field in requested_fields:
-                self.assertTrue(field in reloaded, "%s not in metadata" %field)
+                self.assertTrue(field in reloaded, "%s not in metadata" % field)
 
     def test_g3_compression(self):
         i = Image.open('Tests/images/hopper_g4_500.tif')
