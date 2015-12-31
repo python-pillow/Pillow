@@ -23,12 +23,24 @@ from collections import namedtuple
 class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
     __slots__ = []
 
-    def __new__(cls, value=None, name="unknown", type=4, length=0, enum=None):
+    def __new__(cls, value=None, name="unknown", type=None, length=0, enum=None):
         return super(TagInfo, cls).__new__(
             cls, value, name, type, length, enum or {})
 
     def cvt_enum(self, value):
         return self.enum.get(value, value)
+
+def lookup(tag):
+    """
+    :param tag: Integer tag number
+    :returns: Taginfo namedtuple, From the TAGS_V2 info if possible,
+        otherwise just populating the value and name from TAGS.
+        If the tag is not recognized, "unknown" is returned for the name
+        
+    """
+    
+    return TAGS_V2.get(tag, TagInfo(tag, TAGS.get(tag, 'unknown')))
+
 
 ##
 # Map tag numbers to tag info.

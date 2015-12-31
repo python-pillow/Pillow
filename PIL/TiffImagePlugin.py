@@ -44,18 +44,21 @@ from __future__ import division, print_function
 from PIL import Image, ImageFile
 from PIL import ImagePalette
 from PIL import _binary
+from PIL import TiffTags
 
 import collections
 from fractions import Fraction
+from numbers import Number, Rational
+
 import io
 import itertools
-from numbers import Number
 import os
 import struct
 import sys
 import warnings
 
-from .TiffTags import TAGS_V2, TYPES, TagInfo
+from .TiffTags import TYPES, TagInfo
+
 
 __version__ = "1.3.5"
 DEBUG = False  # Needs to be merged with the new logging approach.
@@ -215,8 +218,7 @@ def _accept(prefix):
 
 def _limit_rational(val, max_val):
     inv = abs(val) > 1
-    f = Fraction.from_float(1 / val if inv else val).limit_denominator(max_val)
-    n_d = (f.numerator, f.denominator)
+    n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
 
 ##
@@ -225,6 +227,129 @@ def _limit_rational(val, max_val):
 _load_dispatch = {}
 _write_dispatch = {}
 
+class IFDRational(Rational):
+    """ Implements a rational class where 0/0 is a legal value to match
+    the in the wild use of exif rationals.
+
+    e.g., DigitalZoomRatio - 0.00/0.00  indicates that no digital zoom was used
+    """
+
+    """ If the denominator is 0, store this as a float('nan'), otherwise store
+    as a fractions.Fraction(). Delegate as appropriate
+
+    """
+    
+    __slots__ = ('_numerator', '_denominator', '_val') 
+
+    def __init__(self, value, denominator=1):
+        """
+        :param value: either an integer numerator, a
+        float/rational/other number, or an IFDRational
+        :param denominator: Optional integer denominator
+        """
+        self._denominator = denominator
+        self._numerator = value
+        self._val = float(1)
+
+        if type(value) == Fraction:
+            self._numerator = value.numerator
+            self._denominator = value.denominator
+            self._val = value
+        
+        if type(value) == IFDRational:
+            self._denominator = value.denominator
+            self._numerator = value.numerator
+            self._val = value._val
+            return
+
+        if denominator == 0:
+            self._val = float('nan')
+            return
+
+
+        elif denominator == 1:
+            if sys.hexversion < 0x2070000 and type(value) == float:
+                # python 2.6 is different.
+                self._val = Fraction.from_float(value)
+            else:
+                self._val = Fraction(value)
+        else:
+            self._val = Fraction(value, denominator)
+
+    @property
+    def numerator(a):
+        return a._numerator
+
+    @property
+    def denominator(a):
+        return a._denominator
+
+
+    def limit_rational(self, max_denominator):
+        """
+        
+        :param max_denominator: Integer, the maximum denominator value
+        :returns: Tuple of (numerator, denominator)
+        """
+
+        if self.denominator == 0:
+            return (self.numerator, self.denominator)
+
+        f = self._val.limit_denominator(max_denominator)
+        return (f.numerator, f.denominator)
+
+    def __repr__(self):
+        return str(float(self._val))
+
+    def __hash__(self):
+        return self._val.__hash__()
+
+    def __eq__(self,other):
+        return self._val == other
+
+    def _delegate(op):
+        def delegate(self, *args):
+            return getattr(self._val,op)(*args)
+        return delegate
+
+    """ a = ['add','radd', 'sub', 'rsub','div', 'rdiv', 'mul', 'rmul',
+             'truediv', 'rtruediv', 'floordiv',
+             'rfloordiv','mod','rmod', 'pow','rpow', 'pos', 'neg',
+             'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'nonzero',
+             'ceil', 'floor', 'round']
+        print "\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a)
+        """
+
+    __add__ = _delegate('__add__')
+    __radd__ = _delegate('__radd__')
+    __sub__ = _delegate('__sub__')
+    __rsub__ = _delegate('__rsub__')
+    __div__ = _delegate('__div__')
+    __rdiv__ = _delegate('__rdiv__')
+    __mul__ = _delegate('__mul__')
+    __rmul__ = _delegate('__rmul__')
+    __truediv__ = _delegate('__truediv__')
+    __rtruediv__ = _delegate('__rtruediv__')
+    __floordiv__ = _delegate('__floordiv__')
+    __rfloordiv__ = _delegate('__rfloordiv__')
+    __mod__ = _delegate('__mod__')
+    __rmod__ = _delegate('__rmod__')
+    __pow__ = _delegate('__pow__')
+    __rpow__ = _delegate('__rpow__')
+    __pos__ = _delegate('__pos__')
+    __neg__ = _delegate('__neg__')
+    __abs__ = _delegate('__abs__')
+    __trunc__ = _delegate('__trunc__')
+    __lt__ = _delegate('__lt__')
+    __gt__ = _delegate('__gt__')
+    __le__ = _delegate('__le__')
+    __ge__ = _delegate('__ge__')
+    __nonzero__ = _delegate('__nonzero__')
+    __ceil__ = _delegate('__ceil__')
+    __floor__ = _delegate('__floor__')
+    __round__ = _delegate('__round__')
+
+    
 
 class ImageFileDirectory_v2(collections.MutableMapping):
     """This class represents a TIFF tag directory.  To speed things up, we
@@ -338,7 +463,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
         Returns the complete tag dictionary, with named tags where possible.
         """
-        return dict((TAGS_V2.get(code, TagInfo()).name, value)
+        return dict((TiffTags.lookup(code).name, value)
                     for code, value in self.items())
 
     def __len__(self):
@@ -370,15 +495,17 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         if bytes is str:
             basetypes += unicode,
 
-        info = TAGS_V2.get(tag, TagInfo())
+        info = TiffTags.lookup(tag)
         values = [value] if isinstance(value, basetypes) else value
 
         if tag not in self.tagtype:
-            try:
+            if info.type:
                 self.tagtype[tag] = info.type
-            except KeyError:
+            else:
                 self.tagtype[tag] = 7
-                if all(isinstance(v, int) for v in values):
+                if all(isinstance(v, IFDRational) for v in values):
+                    self.tagtype[tag] = 5
+                elif all(isinstance(v, int) for v in values):
                     if all(v < 2 ** 16 for v in values):
                         self.tagtype[tag] = 3
                     else:
@@ -477,7 +604,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     @_register_loader(5, 8)
     def load_rational(self, data, legacy_api=True):
         vals = self._unpack("{0}L".format(len(data) // 4), data)
-        combine = lambda a, b: (a, b) if legacy_api else a / b
+        combine = lambda a, b: (a, b) if legacy_api else IFDRational(a, b)
         return tuple(combine(num, denom)
                      for num, denom in zip(vals[::2], vals[1::2]))
 
@@ -497,7 +624,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     @_register_loader(10, 8)
     def load_signed_rational(self, data, legacy_api=True):
         vals = self._unpack("{0}l".format(len(data) // 4), data)
-        combine = lambda a, b: (a, b) if legacy_api else a / b
+        combine = lambda a, b: (a, b) if legacy_api else IFDRational(a, b)
         return tuple(combine(num, denom)
                      for num, denom in zip(vals[::2], vals[1::2]))
 
@@ -523,7 +650,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
                 tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
                 if DEBUG:
-                    tagname = TAGS_V2.get(tag, TagInfo()).name
+                    tagname = TiffTags.lookup(tag).name
                     typname = TYPES.get(typ, "unknown")
                     print("tag: %s (%d) - type: %s (%d)" %
                           (tagname, tag, typname, typ), end=" ")
@@ -591,7 +718,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             values = value if isinstance(value, tuple) else (value,)
             data = self._write_dispatch[typ](self, *values)
             if DEBUG:
-                tagname = TAGS_V2.get(tag, TagInfo()).name
+                tagname = TiffTags.lookup(tag).name
                 typname = TYPES.get(typ, "unknown")
                 print("save: %s (%d) - type: %s (%d)" %
                       (tagname, tag, typname, typ), end=" ")
@@ -994,16 +1121,10 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self.info["compression"] = self._compression
 
-        xres = self.tag_v2.get(X_RESOLUTION, (1, 1))
-        yres = self.tag_v2.get(Y_RESOLUTION, (1, 1))
+        xres = self.tag_v2.get(X_RESOLUTION,1)
+        yres = self.tag_v2.get(Y_RESOLUTION,1)
 
-        if xres and not isinstance(xres, tuple):
-            xres = (xres, 1.)
-        if yres and not isinstance(yres, tuple):
-            yres = (yres, 1.)
         if xres and yres:
-            xres = xres[0] / (xres[1] or 1)
-            yres = yres[0] / (yres[1] or 1)
             resunit = self.tag_v2.get(RESOLUTION_UNIT, 1)
             if resunit == 2:  # dots per inch
                 self.info["dpi"] = xres, yres
@@ -1296,6 +1417,8 @@ def _save(im, fp, filename):
             if k not in atts and k not in blocklist:
                 if isinstance(v, unicode if bytes is str else str):
                     atts[k] = v.encode('ascii', 'replace') + b"\0"
+                elif isinstance(v, IFDRational):
+                    atts[k] = float(v)
                 else:
                     atts[k] = v
 
