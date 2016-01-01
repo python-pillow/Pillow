@@ -394,6 +394,19 @@ class JpegImageFile(ImageFile.ImageFile):
         return _getmp(self)
 
 
+def _fixup_dict(src_dict):
+    # Helper function for _getexif()
+    # returns a dict with any single item tuples/lists as individual values
+    def _fixup(value):
+        try:
+            if len(value) == 1 and type(value) != type({}):
+                return value[0]
+        except: pass
+        return value
+
+    return dict([(k, _fixup(v)) for k, v in src_dict.items()])
+
+
 def _getexif(self):
     # Extract EXIF information.  This method is highly experimental,
     # and is likely to be replaced with something better in a future
@@ -408,9 +421,9 @@ def _getexif(self):
     file = io.BytesIO(data[6:])
     head = file.read(8)
     # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory_v2(head)
+    info = TiffImagePlugin.ImageFileDirectory_v1(head)
     info.load(file)
-    exif = dict(info)
+    exif = dict(_fixup_dict(info))
     # get exif extension
     try:
         # exif field 0x8769 is an offset pointer to the location
@@ -420,9 +433,9 @@ def _getexif(self):
     except (KeyError, TypeError):
         pass
     else:
-        info = TiffImagePlugin.ImageFileDirectory_v2(head)
+        info = TiffImagePlugin.ImageFileDirectory_v1(head)
         info.load(file)
-        exif.update(info)
+        exif.update(_fixup_dict(info))
     # get gpsinfo extension
     try:
         # exif field 0x8825 is an offset pointer to the location
@@ -434,7 +447,8 @@ def _getexif(self):
     else:
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
         info.load(file)
-        exif[0x8825] = dict([(k, v[0]) if len(v) == 1 else (k, v) for k, v in info.items()])
+        exif[0x8825] = _fixup_dict(info)
+    
     return exif
 
 
