@@ -85,3 +85,4 @@ recursive-include winbuild *.gitignore
 recursive-include winbuild *.md
 recursive-include winbuild *.opt
 recursive-include winbuild *.py
+exclude .editorconfig
