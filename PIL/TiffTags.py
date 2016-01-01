@@ -331,3 +331,72 @@ TYPES = {}
 #     11: "float",
 #     12: "double",
 # }
+
+#
+# These tags are handled by default in libtiff, without
+# adding to the custom dictionary. From tif_dir.c, searching for
+# case TIFFTAG in the _TIFFVSetField function:
+# Line: item. 
+# 148:	case TIFFTAG_SUBFILETYPE:
+# 151:	case TIFFTAG_IMAGEWIDTH:
+# 154:	case TIFFTAG_IMAGELENGTH:
+# 157:	case TIFFTAG_BITSPERSAMPLE:
+# 181:	case TIFFTAG_COMPRESSION:
+# 202:	case TIFFTAG_PHOTOMETRIC:
+# 205:	case TIFFTAG_THRESHHOLDING:
+# 208:	case TIFFTAG_FILLORDER:
+# 214:	case TIFFTAG_ORIENTATION:
+# 221:	case TIFFTAG_SAMPLESPERPIXEL:
+# 228:	case TIFFTAG_ROWSPERSTRIP:
+# 238:	case TIFFTAG_MINSAMPLEVALUE:
+# 241:	case TIFFTAG_MAXSAMPLEVALUE:
+# 244:	case TIFFTAG_SMINSAMPLEVALUE:
+# 247:	case TIFFTAG_SMAXSAMPLEVALUE:
+# 250:	case TIFFTAG_XRESOLUTION:
+# 256:	case TIFFTAG_YRESOLUTION:
+# 262:	case TIFFTAG_PLANARCONFIG:
+# 268:	case TIFFTAG_XPOSITION:
+# 271:	case TIFFTAG_YPOSITION:
+# 274:	case TIFFTAG_RESOLUTIONUNIT:
+# 280:	case TIFFTAG_PAGENUMBER:
+# 284:	case TIFFTAG_HALFTONEHINTS:
+# 288:	case TIFFTAG_COLORMAP:
+# 294:	case TIFFTAG_EXTRASAMPLES:
+# 298:	case TIFFTAG_MATTEING:
+# 305:	case TIFFTAG_TILEWIDTH:
+# 316:	case TIFFTAG_TILELENGTH:
+# 327:	case TIFFTAG_TILEDEPTH:
+# 333:	case TIFFTAG_DATATYPE:
+# 344:	case TIFFTAG_SAMPLEFORMAT:
+# 361:	case TIFFTAG_IMAGEDEPTH:
+# 364:	case TIFFTAG_SUBIFD:
+# 376:	case TIFFTAG_YCBCRPOSITIONING:
+# 379:	case TIFFTAG_YCBCRSUBSAMPLING:
+# 383:	case TIFFTAG_TRANSFERFUNCTION:
+# 389:	case TIFFTAG_REFERENCEBLACKWHITE:
+# 393:	case TIFFTAG_INKNAMES:
+
+# some of these are not in our TAGS_V2 dict and were included from tiff.h
+
+LIBTIFF_CORE = set ([255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
+                     278, 280, 281, 340, 341, 282, 283, 284, 286, 287,
+                     296, 297, 321, 320, 338, 32995, 322, 323, 32998,
+                     32996, 339, 32997, 330, 531, 530, 301, 532, 333,
+                     # as above
+                     269 # this has been in our tests forever, and works
+                     ])
+
+LIBTIFF_CORE.remove(320) # Array of short, crashes
+LIBTIFF_CORE.remove(301) # Array of short, crashes
+LIBTIFF_CORE.remove(532) # Array of long, crashes
+
+LIBTIFF_CORE.remove(255) # We don't have support for subfiletypes
+LIBTIFF_CORE.remove(322) # We don't have support for tiled images in libtiff
+LIBTIFF_CORE.remove(323) # Tiled images
+LIBTIFF_CORE.remove(333) # Ink Names either
+
+# Note to advanced users: There may be combinations of these
+# parameters and values that when added properly, will work and
+# produce valid tiff images that may work in your application.
+# It is safe to add and remove tags from this set from Pillow's point
+# of view so long as you test against libtiff.
