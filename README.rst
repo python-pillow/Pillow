@@ -58,11 +58,3 @@ More Information
 - `Changelog <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst>`_
 
   - `Pre-fork <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst#pre-fork>`_
-
-.. raw:: html
-
-    <div style="float: right">
-        <a href="https://gratipay.com/pillow/">
-          <img alt="Support via Gratipay" src="https://cdn.rawgit.com/gratipay/gratipay-badge/2.3.0/dist/gratipay.png"/>
-        </a>
-    </div>
