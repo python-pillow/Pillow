@@ -4,7 +4,13 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
-- Divide by zero in Exif #1531
+- Limit metadata tags when writing using libtiff #1620
+  [wiredfool]
+
+- Rolling back exif support to pre-3.0 format #1627
+  [wiredfool]
+
+- Fix Divide by zero in Exif, add IFDRational class #1531
   [wiredfool]
 
 - Catch the IFD error near the source #1622
@@ -19,7 +25,7 @@ Changelog (Pillow)
 - Let EditorConfig take care of some basic formatting #1489
   [hugovk]
 
-- Restore exif data to the v1 form
+- Restore gpsexif data to the v1 form
   [wiredfool]
 
 - Add /usr/local include and library directories for freebsd #1613
