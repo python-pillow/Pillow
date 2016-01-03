@@ -74,7 +74,7 @@ if sys.platform.startswith('win32'):
         memcpy(bp + bf.bfOffBits, pixels, bi.biSizeImage)
         try:
             return bytearray(buf)
-        except:
+        except ValueError:
             # py2.6
             return buffer(buf)[:]
 

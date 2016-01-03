@@ -1,5 +1,5 @@
 from helper import unittest, PillowTestCase, hopper, py3
-
+import sys
 
 class TestImageGetIm(PillowTestCase):
 
@@ -11,10 +11,10 @@ class TestImageGetIm(PillowTestCase):
             self.assertIn("PyCapsule", type_repr)
 
 
-        try:
-            #py2.6
+        if sys.hexversion < 0x2070000:
+            # py2.6 x64, windows
             target_types = (int, long)
-        except:
+        else:
             target_types = (int)
 
         self.assertIsInstance(im.im.id, target_types)
