@@ -10,7 +10,14 @@ class TestImageGetIm(PillowTestCase):
         if py3:
             self.assertIn("PyCapsule", type_repr)
 
-        self.assertIsInstance(im.im.id, int)
+
+        try:
+            #py2.6
+            target_types = (int, long)
+        except:
+            target_types = (int)
+
+        self.assertIsInstance(im.im.id, target_types)
 
 
 if __name__ == '__main__':
