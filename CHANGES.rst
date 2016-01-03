@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.1.0 (unreleased)
 ------------------
 
+- Fixing test failures on Python 2.6/Windows #1633
+  [wiredfool]
+
 - Limit metadata tags when writing using libtiff #1620
   [wiredfool]
 
