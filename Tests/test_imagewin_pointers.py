@@ -72,7 +72,11 @@ if sys.platform.startswith('win32'):
         memcpy(bp, ctypes.byref(bf), ctypes.sizeof(bf))
         memcpy(bp + ctypes.sizeof(bf), ctypes.byref(bi), bi.biSize)
         memcpy(bp + bf.bfOffBits, pixels, bi.biSizeImage)
-        return bytearray(buf)
+        try:
+            return bytearray(buf)
+        except ValueError:
+            # py2.6
+            return buffer(buf)[:]
 
     class TestImageWinPointers(PillowTestCase):
         def test_pointer(self):
