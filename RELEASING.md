@@ -6,7 +6,7 @@ Released quarterly on the first day of January, April, July, October.
 
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174
 * [ ] Develop and prepare release in ``master`` branch.
-* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
+* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) and [AppVeyor CI](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
 * [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
 ```
     PIL/__init__.py setup.py _imaging.c appveyor.yml
