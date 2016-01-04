@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-3.1.0 (unreleased)
+3.1.0 (2016-01-04)
 ------------------
 
 - Fixing test failures on Python 2.6/Windows #1633
