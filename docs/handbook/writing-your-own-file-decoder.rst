@@ -124,9 +124,9 @@ The raw decoder
 The ``raw`` decoder is used to read uncompressed data from an image file. It
 can be used with most uncompressed file formats, such as PPM, BMP, uncompressed
 TIFF, and many others. To use the raw decoder with the
-:py:func:`PIL.Image.fromstring` function, use the following syntax::
+:py:func:`PIL.Image.frombytes` function, use the following syntax::
 
-    image = Image.fromstring(
+    image = Image.frombytes(
         mode, size, data, "raw",
         raw mode, stride, orientation
         )
@@ -233,9 +233,9 @@ If the raw decoder cannot handle your format, PIL also provides a special “bit
 decoder that can be used to read various packed formats into a floating point
 image memory.
 
-To use the bit decoder with the fromstring function, use the following syntax::
+To use the bit decoder with the frombytes function, use the following syntax::
 
-    image = fromstring(
+    image = frombytes(
         mode, size, data, "bit",
         bits, pad, fill, sign, orientation
         )
