@@ -159,12 +159,20 @@ try:
 
             self.assert_image_similar(im, target_img, .5)
 
+            # Test that text() can pass on additional arguments
+            # to multiline_text()
+            draw.text((0, 0), TEST_TEXT, fill=None, font=ttf, anchor=None,
+                      spacing=4, align="left")
+            draw.text((0, 0), TEST_TEXT, None, ttf, None, 4, "left")
+            del draw
+
             # Test align center and right
             for align, ext in {"center": "_center",
                                "right": "_right"}.items():
                 im = Image.new(mode='RGB', size=(300, 100))
                 draw = ImageDraw.Draw(im)
                 draw.multiline_text((0, 0), TEST_TEXT, font=ttf, align=align)
+                del draw
 
                 target = 'Tests/images/multiline_text'+ext+'.png'
                 target_img = Image.open(target)
