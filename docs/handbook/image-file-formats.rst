@@ -542,13 +542,13 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     .. versionadded:: 3.0.0
 
- .. note:: 
+ .. note::
 
     Only some tags are currently supported when writing using
     libtiff. The supported list is found in
     :py:attr:`~PIL:TiffTags.LIBTIFF_CORE`.
 
-**compression** 
+**compression**
     A string containing the desired compression method for the
     file. (valid only with libtiff installed) Valid compression
     methods are: ``None``, ``"tiff_ccitt"``, ``"group3"``,
@@ -579,7 +579,7 @@ using the general tags available through tiffinfo.
 
 **y_resolution**
 
-**dpi** 
+**dpi**
     Either a Float, 2 tuple of (numerator, denominator) or a
     :py:class:`~PIL.TiffImagePlugin.IFDRational`. Resolution implies
     an equal x and y resolution, dpi also implies a unit of inches.
@@ -632,6 +632,16 @@ is commonly used in fax applications. The DCX decoder can read files containing
 
 When the file is opened, only the first image is read. You can use
 :py:meth:`~file.seek` or :py:mod:`~PIL.ImageSequence` to read other images.
+
+
+DDS
+^^^
+
+DDS is a popular container texture format used in video games and natively
+supported by DirectX.
+Currently, only DXT1 and DXT5 pixel formats are supported and only in ``RGBA``
+mode.
+
 
 FLI, FLC
 ^^^^^^^^
