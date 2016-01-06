@@ -121,6 +121,7 @@ try:
             size = draw.textsize(txt, ttf)
             draw.text((10, 10), txt, font=ttf)
             draw.rectangle((10, 10, 10 + size[0], 10 + size[1]))
+            del draw
 
             target = 'Tests/images/rectangle_surrounding_text.png'
             target_img = Image.open(target)
@@ -199,6 +200,12 @@ try:
             self.assertEqual(draw.textsize(TEST_TEXT, font=ttf),
                              draw.multiline_textsize(TEST_TEXT, font=ttf))
 
+            # Test that textsize() can pass on additional arguments
+            # to multiline_textsize()
+            draw.textsize(TEST_TEXT, font=ttf, spacing=4)
+            draw.textsize(TEST_TEXT, ttf, 4)
+            del draw
+
         def test_multiline_width(self):
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
             im = Image.new(mode='RGB', size=(300, 100))
@@ -207,6 +214,7 @@ try:
             self.assertEqual(draw.textsize("longest line", font=ttf)[0],
                              draw.multiline_textsize("longest line\nline",
                                                      font=ttf)[0])
+            del draw
 
         def test_multiline_spacing(self):
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -214,6 +222,7 @@ try:
             im = Image.new(mode='RGB', size=(300, 100))
             draw = ImageDraw.Draw(im)
             draw.multiline_text((0, 0), TEST_TEXT, font=ttf, spacing=10)
+            del draw
 
             target = 'Tests/images/multiline_text_spacing.png'
             target_img = Image.open(target)
@@ -237,6 +246,7 @@ try:
             # Rotated font
             draw.font = transposed_font
             box_size_b = draw.textsize(word)
+            del draw
 
             # Check (w,h) of box a is (h,w) of box b
             self.assertEqual(box_size_a[0], box_size_b[1])
@@ -259,6 +269,7 @@ try:
             # Rotated font
             draw.font = transposed_font
             box_size_b = draw.textsize(word)
+            del draw
 
             # Check boxes a and b are same size
             self.assertEqual(box_size_a, box_size_b)
@@ -354,6 +365,7 @@ try:
             # Act
             default_font = ImageFont.load_default()
             draw.text((10, 10), txt, font=default_font)
+            del draw
 
             # Assert
             self.assert_image_equal(im, target_img)

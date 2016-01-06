@@ -288,9 +288,9 @@ class ImageDraw(object):
     ##
     # Get the size of a given string, in pixels.
 
-    def textsize(self, text, font=None):
+    def textsize(self, text, font=None, *args, **kwargs):
         if self._multiline_check(text):
-            return self.multiline_textsize(text, font)
+            return self.multiline_textsize(text, font, *args, **kwargs)
 
         if font is None:
             font = self.getfont()
