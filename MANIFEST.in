@@ -24,6 +24,7 @@ recursive-include Tests *.bmp
 recursive-include Tests *.bw
 recursive-include Tests *.cur
 recursive-include Tests *.dcx
+recursive-include Tests *.dds
 recursive-include Tests *.doc
 recursive-include Tests *.eps
 recursive-include Tests *.fli
