@@ -61,7 +61,8 @@ DDS_LUMINANCEA = DDPF_LUMINANCE | DDPF_ALPHAPIXELS
 DDS_ALPHA = DDPF_ALPHA
 DDS_PAL8 = DDPF_PALETTEINDEXED8
 
-DDS_HEADER_FLAGS_TEXTURE = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT
+DDS_HEADER_FLAGS_TEXTURE = (DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH |
+                            DDSD_PIXELFORMAT)
 DDS_HEADER_FLAGS_MIPMAP = DDSD_MIPMAPCOUNT
 DDS_HEADER_FLAGS_VOLUME = DDSD_DEPTH
 DDS_HEADER_FLAGS_PITCH = DDSD_PITCH
@@ -102,8 +103,10 @@ def decode565(bits):
 def _c2a(a, b):
     return (2 * a + b) // 3
 
+
 def _c2b(a, b):
     return (a + b) // 2
+
 
 def _c3(a, b):
     return (2 * b + a) // 3
@@ -175,7 +178,8 @@ def dxt5(data, width, height):
 
     for y in range(0, height, 4):
         for x in range(0, width, 4):
-            a0, a1, ac0, ac1, c0, c1, code = struct.unpack("<2BHI2HI", data.read(16))
+            a0, a1, ac0, ac1, c0, c1, code = struct.unpack("<2BHI2HI",
+                                                           data.read(16))
 
             r0, g0, b0 = decode565(c0)
             r1, g1, b1 = decode565(c1)
@@ -221,7 +225,8 @@ class DdsImageFile(ImageFile.ImageFile):
         # pixel format
         pfsize, pfflags = struct.unpack("<2I", header.read(8))
         fourcc = header.read(4)
-        bitcount, rmask, gmask, bmask, amask = struct.unpack("<5I", header.read(20))
+        bitcount, rmask, gmask, bmask, amask = struct.unpack("<5I",
+                                                             header.read(20))
 
         self.tile = [
             ("raw", (0, 0) + self.size, 0, (self.mode, 0, 1))
@@ -234,7 +239,8 @@ class DdsImageFile(ImageFile.ImageFile):
             self.pixel_format = "DXT5"
             codec = dxt5
         else:
-            raise NotImplementedError("Unimplemented pixel format %r" % (fourcc))
+            raise NotImplementedError("Unimplemented pixel format %r" %
+                                      (fourcc))
 
         decoded_data = codec(self.fp, self.width, self.height)
 
