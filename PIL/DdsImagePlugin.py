@@ -93,7 +93,7 @@ DXT3_FOURCC = 0x33545844
 DXT5_FOURCC = 0x35545844
 
 
-def decode565(bits):
+def _decode565(bits):
     a = ((bits >> 11) & 0x1f) << 3
     b = ((bits >> 5) & 0x3f) << 2
     c = (bits & 0x1f) << 3
@@ -112,15 +112,16 @@ def _c3(a, b):
     return (2 * b + a) // 3
 
 
-def dxt1(data, width, height):
+def _dxt1(data, width, height):
+    # TODO implement this function as pixel format in decode.c
     ret = bytearray(4 * width * height)
 
     for y in range(0, height, 4):
         for x in range(0, width, 4):
             color0, color1, bits = struct.unpack("<HHI", data.read(8))
 
-            r0, g0, b0 = decode565(color0)
-            r1, g1, b1 = decode565(color1)
+            r0, g0, b0 = _decode565(color0)
+            r1, g1, b1 = _decode565(color1)
 
             # Decode this block into 4x4 pixels
             for j in range(4):
@@ -173,7 +174,8 @@ def _dxtc_alpha(a0, a1, ac0, ac1, ai):
     return alpha
 
 
-def dxt5(data, width, height):
+def _dxt5(data, width, height):
+    # TODO implement this function as pixel format in decode.c
     ret = bytearray(4 * width * height)
 
     for y in range(0, height, 4):
@@ -181,8 +183,8 @@ def dxt5(data, width, height):
             a0, a1, ac0, ac1, c0, c1, code = struct.unpack("<2BHI2HI",
                                                            data.read(16))
 
-            r0, g0, b0 = decode565(c0)
-            r1, g1, b1 = decode565(c1)
+            r0, g0, b0 = _decode565(c0)
+            r1, g1, b1 = _decode565(c1)
 
             for j in range(4):
                 for i in range(4):
@@ -234,10 +236,10 @@ class DdsImageFile(ImageFile.ImageFile):
 
         if fourcc == b"DXT1":
             self.pixel_format = "DXT1"
-            codec = dxt1
+            codec = _dxt1
         elif fourcc == b"DXT5":
             self.pixel_format = "DXT5"
-            codec = dxt5
+            codec = _dxt5
         else:
             raise NotImplementedError("Unimplemented pixel format %r" %
                                       (fourcc))
