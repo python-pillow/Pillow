@@ -49,6 +49,7 @@ script:
   - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py; fi
   - check-manifest --ignore "depends/*"
   # Sphinx
+  - make install
   - pushd docs; make html; make linkcheck; popd
 
 after_success:
