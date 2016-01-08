@@ -145,7 +145,7 @@ def _dxt1(data, width, height):
                             r, g, b = 0, 0, 0
 
                     idx = 4 * ((y + j) * width + (x + i))
-                    ret[idx:idx+4] = bytes([r, g, b, 0xff])
+                    ret[idx:idx+4] = struct.pack('4B', r, g, b, 255)
 
     return bytes(ret)
 
@@ -202,7 +202,7 @@ def _dxt5(data, width, height):
                         r, g, b = _c3(r0, r1), _c3(g0, g1), _c3(b0, b1)
 
                     idx = 4 * ((y + j) * width + (x + i))
-                    ret[idx:idx+4] = bytes([r, g, b, alpha])
+                    ret[idx:idx+4] = struct.pack('4B', r, g, b, alpha)
 
     return bytes(ret)
 

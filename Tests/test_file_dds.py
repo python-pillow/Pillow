@@ -12,26 +12,37 @@ class TestFileDds(PillowTestCase):
 
     def test_sanity_dxt1(self):
         """Check DXT1 images can be opened"""
-        im = Image.open(TEST_FILE_DXT1)
+        target = Image.open(TEST_FILE_DXT1.replace('.dds', '.png'))
 
+        im = Image.open(TEST_FILE_DXT1)
+        im.load()
+        
         self.assertEqual(im.format, "DDS")
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (256, 256))
-        
-        target = Image.open(TEST_FILE_DXT1.replace('.dds', '.png'))
-        target.show()
+
+        # This target image is from the test set of images, and is exact. 
         self.assert_image_equal(target.convert('RGBA'), im)
 
     def test_sanity_dxt5(self):
         """Check DXT5 images can be opened"""
+
+        target = Image.open(TEST_FILE_DXT5.replace('.dds', '.png'))
+
         im = Image.open(TEST_FILE_DXT5)
+        im.load()
 
         self.assertEqual(im.format, "DDS")
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (256, 256))
-        
-        target = Image.open(TEST_FILE_DXT5.replace('.dds', '.png'))
-        self.assert_image_equal(target, im)
+
+        # Imagemagick, which generated this target image from the .dds
+        # has a slightly different decoder than is standard. It looks
+        # a little brighter. The 0,0 pixel is (00,6c,f8,ff) by our code,
+        # and by the target image for the DXT1, and the imagemagick .png
+        # is giving (00, 6d, ff, ff).  So, assert similar, pretty tight
+        # I'm currently seeing about a 3 for the epsilon. 
+        self.assert_image_similar(target, im, 5)
 
 
     def test_sanity_dxt3(self):
