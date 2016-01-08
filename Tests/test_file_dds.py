@@ -17,7 +17,10 @@ class TestFileDds(PillowTestCase):
         self.assertEqual(im.format, "DDS")
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (256, 256))
-        self.assertIsInstance(im, DdsImagePlugin.DdsImageFile)
+        
+        target = Image.open(TEST_FILE_DXT1.replace('.dds', '.png'))
+        target.show()
+        self.assert_image_equal(target.convert('RGBA'), im)
 
     def test_sanity_dxt5(self):
         """Check DXT5 images can be opened"""
@@ -26,7 +29,10 @@ class TestFileDds(PillowTestCase):
         self.assertEqual(im.format, "DDS")
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (256, 256))
-        self.assertIsInstance(im, DdsImagePlugin.DdsImageFile)
+        
+        target = Image.open(TEST_FILE_DXT5.replace('.dds', '.png'))
+        self.assert_image_equal(target, im)
+
 
     def test_sanity_dxt3(self):
         """Check DXT3 images are not supported"""
