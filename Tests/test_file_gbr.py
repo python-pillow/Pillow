@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL import GbrImagePlugin
+from PIL import Image, GbrImagePlugin
 
 
 class TestFileGbr(PillowTestCase):
@@ -11,6 +11,13 @@ class TestFileGbr(PillowTestCase):
         self.assertRaises(SyntaxError,
                           lambda: GbrImagePlugin.GbrImageFile(invalid_file))
 
+
+    def test_gbr_file(self):
+        im = Image.open('Tests/images/gbr.gbr')
+
+        target = Image.open('Tests/images/gbr.png')
+
+        self.assert_image_equal(target, im)
 
 if __name__ == '__main__':
     unittest.main()
