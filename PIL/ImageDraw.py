@@ -241,9 +241,9 @@ class ImageDraw(object):
 
         return text.split(split_character)
 
-    def text(self, xy, text, fill=None, font=None, anchor=None, *args, **kwargs):
+    def text(self, xy, text, fill=None, font=None, anchor=None, *args, **kwargs, direction=None, features=[]):
         if self._multiline_check(text):
-            return self.multiline_text(xy, text, fill, font, anchor, *args, **kwargs)
+            return self.multiline_text(xy, text, fill, font, anchor, *args, **kwargs, direction=direction, features=features)
 
         ink, fill = self._getink(fill)
         if font is None:
@@ -252,17 +252,17 @@ class ImageDraw(object):
             ink = fill
         if ink is not None:
             try:
-                mask, offset = font.getmask2(text, self.fontmode)
+                mask, offset = font.getmask2(text, self.fontmode, direction=direction, features=features)
                 xy = xy[0] + offset[0], xy[1] + offset[1]
             except AttributeError:
                 try:
-                    mask = font.getmask(text, self.fontmode)
+                    mask = font.getmask(text, self.fontmode, direction, features)
                 except TypeError:
                     mask = font.getmask(text)
             self.draw.draw_bitmap(xy, mask, ink)
 
     def multiline_text(self, xy, text, fill=None, font=None, anchor=None,
-                       spacing=4, align="left"):
+                       spacing=4, align="left", direction=None, features=[]):
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
@@ -281,7 +281,7 @@ class ImageDraw(object):
                 left += (max_width - widths[idx])
             else:
                 assert False, 'align must be "left", "center" or "right"'
-            self.text((left, top), line, fill, font, anchor)
+            self.text((left, top), line, fill, font, anchor, direction=direction, features=features)
             top += line_spacing
             left = xy[0]
 
