@@ -17,10 +17,11 @@ python:
   - nightly
 
 dist: trusty
-  
+
 install:
+  - "travis_retry sudo add-apt-repository -y ppa:as-bahanta/raqm"
   - "travis_retry sudo apt-get update"
-  - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
+  - "travis_retry sudo apt-get -qq install libfreetype6-dev libharfbuzz-dev libfribidi-dev libraqm-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
   - "travis_retry pip install cffi"
   - "travis_retry pip install nose"
   - "travis_retry pip install check-manifest"

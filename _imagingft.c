@@ -48,6 +48,7 @@ struct {
 } ft_errors[] =
 
 #include FT_ERRORS_H
+#include "raqm.h"
 
 /* -------------------------------------------------------------------- */
 /* font objects */
@@ -329,11 +330,7 @@ font_render(FontObject* self, PyObject* args)
     int index, error, ascender;
     int load_flags;
     unsigned char *source;
-    FT_ULong ch;
     FT_GlyphSlot glyph;
-    FT_Bool kerning = FT_HAS_KERNING(self->face);
-    FT_UInt last_index = 0;
-
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
     PyObject* string;
@@ -341,16 +338,127 @@ font_render(FontObject* self, PyObject* args)
     int mask = 0;
     int temp;
     int xx, x0, x1;
-    if (!PyArg_ParseTuple(args, "On|i:render", &string, &id, &mask))
+    const char *dir = NULL;
+    raqm_direction_t direction;
+    raqm_t *rq;
+    size_t count;
+    raqm_glyph_t *glyph_info;
+    PyObject *features = NULL;
+
+    if (!PyArg_ParseTuple(args, "On|izO:render", &string,  &id, &mask, &dir, &features))
         return NULL;
 
+    rq = raqm_create();
+    if (rq == NULL) {
+        PyErr_SetString(PyExc_ValueError, "raqm_create() failed.");
+        goto failed;
+    }
+
 #if PY_VERSION_HEX >= 0x03000000
-    if (!PyUnicode_Check(string)) {
+    if (PyUnicode_Check(string)) {
+        Py_ssize_t size = PyUnicode_GET_LENGTH(string);
+        Py_UCS4 text[size];
+        PyUnicode_READY(string);
+        if (!PyUnicode_AsUCS4(string, text, size, 0))
+            goto failed;
+        if (!raqm_set_text(rq, text, size)) {
+            PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
+            goto failed;
+        }
+    }
 #else
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
+    if (PyUnicode_Check(string)) {
+        Py_UNICODE *text = PyUnicode_AS_UNICODE(string);
+        Py_ssize_t size = PyUnicode_GET_SIZE(string);
+        if (!raqm_set_text(rq, text, size)) {
+            PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
+            goto failed;
+        }
+    }
+    else if (PyString_Check(string)) {
+        char *text = PyString_AS_STRING(string);
+        int size = PyString_GET_SIZE(string);
+        if (!raqm_set_text_utf8(rq, text, size)) {
+            PyErr_SetString(PyExc_ValueError, "raqm_set_text_utf8() failed");
+            goto failed;
+        }
+    }
 #endif
+    else {
         PyErr_SetString(PyExc_TypeError, "expected string");
-        return NULL;
+        goto failed;
+    }
+
+    direction = RAQM_DIRECTION_DEFAULT;
+    if (dir) {
+        if (strcmp(dir, "rtl") == 0)
+            direction = RAQM_DIRECTION_RTL;
+        else if (strcmp(dir, "ltr") == 0)
+            direction = RAQM_DIRECTION_LTR;
+        else if (strcmp(dir, "ttb") == 0)
+            direction = RAQM_DIRECTION_TTB;
+        else {
+            PyErr_SetString(PyExc_ValueError, "direction must be either 'rtl', 'ltr' or 'ttb'");
+            goto failed;
+        }
+    }
+
+    if (!raqm_set_par_direction(rq, direction)) {
+        PyErr_SetString(PyExc_ValueError, "raqm_set_par_direction() failed");
+        goto failed;
+    }
+
+    if (features) {
+        int len;
+        PyObject *seq = PySequence_Fast(features, "expected a sequence");
+        if (!seq) {
+            goto failed;
+        }
+
+        len = PySequence_Size(seq);
+        for (i = 0; i < len; i++) {
+            PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
+            char *feature = NULL;
+            Py_ssize_t size = 0;
+#if PY_VERSION_HEX >= 0x03000000
+            if (!PyUnicode_Check(item) ||
+                PyUnicode_READY(string) != 0 ||
+                PyUnicode_KIND(item) != PyUnicode_1BYTE_KIND) {
+                PyErr_SetString(PyExc_TypeError, "expected an ASCII string");
+                goto failed;
+            }
+
+            feature = PyUnicode_1BYTE_DATA(item);
+            size = PyUnicode_GET_LENGTH(item);
+#else
+            if (!PyString_Check(item)) {
+                PyErr_SetString(PyExc_TypeError, "expected a string");
+                goto failed;
+            }
+            feature = PyString_AsString(item);
+            size = PyString_GET_SIZE(item);
+#endif
+            if (!raqm_add_font_feature(rq, feature, size)) {
+                PyErr_SetString(PyExc_ValueError, "raqm_add_font_feature() failed");
+                goto failed;
+            }
+        }
+    }
+
+    if (!raqm_set_freetype_face(rq, self->face)) {
+      PyErr_SetString(PyExc_RuntimeError, "raqm_set_freetype_face() failed.");
+      goto failed;
+    }
+
+    if (!raqm_layout (rq)) {
+      PyErr_SetString(PyExc_RuntimeError, "raqm_layout() failed.");
+      goto failed;
+    }
+
+    glyph_info = raqm_get_glyphs(rq, &count);
+    if (glyph_info == NULL) {
+        PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
+        goto failed;
     }
 
     im = (Imaging) id;
@@ -360,36 +468,36 @@ font_render(FontObject* self, PyObject* args)
         load_flags |= FT_LOAD_TARGET_MONO;
 
     ascender = 0;
-    for (i = 0; font_getchar(string, i, &ch); i++) {
-        index = FT_Get_Char_Index(self->face, ch);
+    for (i = 0; i < count; i++) {
+        index = glyph_info[i].index;
         error = FT_Load_Glyph(self->face, index, load_flags);
-        if (error)
-            return geterror(error);
+        if (error) {
+            geterror(error);
+            goto failed;
+        }
         glyph = self->face->glyph;
         temp = (glyph->bitmap.rows - glyph->bitmap_top);
+        temp -= PIXEL(glyph_info[i].y_offset);
         if (temp > ascender)
             ascender = temp;
     }
 
-    for (x = i = 0; font_getchar(string, i, &ch); i++) {
+    for (x = i = 0; i < count; i++) {
         if (i == 0 && self->face->glyph->metrics.horiBearingX < 0)
             x = -PIXEL(self->face->glyph->metrics.horiBearingX);
-        index = FT_Get_Char_Index(self->face, ch);
-        if (kerning && last_index && index) {
-            FT_Vector delta;
-            FT_Get_Kerning(self->face, last_index, index, ft_kerning_default,
-                           &delta);
-            x += delta.x >> 6;
-        }
+        index = glyph_info[i].index;
 
         error = FT_Load_Glyph(self->face, index, load_flags);
-        if (error)
-            return geterror(error);
+        if (error){
+            geterror(error);
+            goto failed;
+        }
 
         glyph = self->face->glyph;
 
         source = (unsigned char*) glyph->bitmap.buffer;
         xx = x + glyph->bitmap_left;
+        xx += PIXEL(glyph_info[i].x_offset);
         x0 = 0;
         x1 = glyph->bitmap.width;
         if (xx < 0)
@@ -401,6 +509,7 @@ font_render(FontObject* self, PyObject* args)
             /* use monochrome mask (on palette images, etc) */
             for (y = 0; y < glyph->bitmap.rows; y++) {
                 int yy = y + im->ysize - (PIXEL(glyph->metrics.horiBearingY) + ascender);
+                yy -= PIXEL(glyph_info[i].y_offset);
                 if (yy >= 0 && yy < im->ysize) {
                     /* blend this glyph into the buffer */
                     unsigned char *target = im->image8[yy] + xx;
@@ -420,6 +529,7 @@ font_render(FontObject* self, PyObject* args)
             /* use antialiased rendering */
             for (y = 0; y < glyph->bitmap.rows; y++) {
                 int yy = y + im->ysize - (PIXEL(glyph->metrics.horiBearingY) + ascender);
+                yy -= PIXEL(glyph_info[i].y_offset);
                 if (yy >= 0 && yy < im->ysize) {
                     /* blend this glyph into the buffer */
                     int i;
@@ -432,11 +542,14 @@ font_render(FontObject* self, PyObject* args)
                 source += glyph->bitmap.pitch;
             }
         }
-        x += PIXEL(glyph->metrics.horiAdvance);
-        last_index = index;
+        x += PIXEL(glyph_info[i].x_advance);
     }
 
     Py_RETURN_NONE;
+
+failed:
+    raqm_destroy(rq);
+    return NULL;
 }
 
 static void

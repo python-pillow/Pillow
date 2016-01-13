@@ -143,13 +143,13 @@ class FreeTypeFont(object):
     def getoffset(self, text):
         return self.font.getsize(text)[1]
 
-    def getmask(self, text, mode=""):
-        return self.getmask2(text, mode)[0]
+    def getmask(self, text, mode="", direction=None, features=[]):
+        return self.getmask2(text, mode, direction, features)[0]
 
-    def getmask2(self, text, mode="", fill=Image.core.fill):
+    def getmask2(self, text, mode="", fill=Image.core.fill, direction=None, features=[]):
         size, offset = self.font.getsize(text)
         im = fill("L", size, 0)
-        self.font.render(text, im.id, mode == "1")
+        self.font.render(text, im.id, mode == "1", direction, features)
         return im, offset
 
     def font_variant(self, font=None, size=None, index=None, encoding=None):
