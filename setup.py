@@ -114,6 +114,7 @@ TIFF_ROOT = None
 FREETYPE_ROOT = None
 LCMS_ROOT = None
 
+RAQM_ROOT = None
 
 def _pkg_config(name):
     try:
@@ -131,7 +132,7 @@ def _pkg_config(name):
 
 class pil_build_ext(build_ext):
     class feature:
-        features = ['zlib', 'jpeg', 'tiff', 'freetype', 'lcms', 'webp',
+        features = ['zlib', 'jpeg', 'tiff', 'freetype', 'raqm', 'lcms', 'webp',
                     'webpmux', 'jpeg2000', 'imagequant']
 
         required = {'jpeg', 'zlib'}
@@ -516,6 +517,11 @@ class pil_build_ext(build_ext):
                     if subdir:
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 
+        if feature.want('raqm'):
+            if _find_include_file(self, "raqm.h"):
+                if _find_library_file(self, "raqm"):
+                    feature.raqm = "raqm"
+
         if feature.want('lcms'):
             _dbg('Looking for lcms')
             if _find_include_file(self, "lcms2.h"):
@@ -597,6 +603,9 @@ class pil_build_ext(build_ext):
             exts.append(Extension("PIL._imagingft",
                                   ["_imagingft.c"],
                                   libraries=["freetype"]))
+        if feature.freetype and feature.raqm:
+            exts.append(Extension(
+                "PIL._imagingft", ["_imagingft.c"], libraries=["freetype", "fribidi" , "harfbuzz", "raqm"]))
 
         if feature.lcms:
             extra = []
@@ -658,6 +667,7 @@ class pil_build_ext(build_ext):
             (feature.imagequant, "LIBIMAGEQUANT"),
             (feature.tiff, "LIBTIFF"),
             (feature.freetype, "FREETYPE2"),
+            (feature.raqm, "RAQM"),
             (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"),

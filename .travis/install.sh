@@ -2,9 +2,12 @@
 
 set -e
 
+sudo add-apt-repository -y ppa:as-bahanta/raqm
 sudo apt-get update
-sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk \
-			 python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick
+sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk\
+			 python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick\
+             libharfbuzz-dev libfribidi-dev libraqm-dev
+
 pip install cffi
 pip install nose
 pip install check-manifest
