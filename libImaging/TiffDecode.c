@@ -169,7 +169,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 	char *filename = "tempfile.tif";
 	char *mode = "r";
 	TIFF *tiff;
-	int size;
+	tsize_t size;
 
 
 	/* buffer is the encoded file, bytes is the length of the encoded file */
