@@ -222,8 +222,8 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 
     if (clientstate->ifd){
 		int rv;
-		unsigned int ifdoffset = clientstate->ifd;
-		TRACE(("reading tiff ifd %d\n", ifdoffset));
+		uint32 ifdoffset = clientstate->ifd;
+		TRACE(("reading tiff ifd %u\n", ifdoffset));
 		rv = TIFFSetSubDirectory(tiff, ifdoffset);
 		if (!rv){
 			TRACE(("error in TIFFSetSubDirectory"));
