@@ -1,5 +1,6 @@
-from helper import unittest, PillowTestCase
+from io import BytesIO
 
+from helper import unittest, PillowTestCase
 from PIL import Image, DdsImagePlugin
 
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
@@ -44,7 +45,6 @@ class TestFileDds(PillowTestCase):
         # I'm currently seeing about a 3 for the epsilon. 
         self.assert_image_similar(target, im, 5)
 
-
     def test_sanity_dxt3(self):
         """Check DXT3 images are not supported"""
         self.assertRaises(NotImplementedError,
@@ -72,6 +72,26 @@ class TestFileDds(PillowTestCase):
         # Assert
         self.assertFalse(output)
 
+    def test_short_header(self):
+        """ Check a short header"""
+        with open(TEST_FILE_DXT5, 'rb') as f:
+            img_file = f.read()
+
+        def short_header():
+            im = Image.open(BytesIO(img_file[:119]))
+
+        self.assertRaises(IOError, short_header)
+
+    def test_short_file(self):
+        """ Check that the appropriate error is thrown for a short file"""
+        
+        with open(TEST_FILE_DXT5, 'rb') as f:
+            img_file = f.read()
+
+        def short_file():
+            im = Image.open(BytesIO(img_file[:-100]))
+
+        self.assertRaises(IOError, short_file)
 
 if __name__ == '__main__':
     unittest.main()

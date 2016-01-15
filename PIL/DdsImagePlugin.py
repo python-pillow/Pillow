@@ -215,8 +215,11 @@ class DdsImageFile(ImageFile.ImageFile):
         magic, header_size = struct.unpack("<II", self.fp.read(8))
         if header_size != 124:
             raise IOError("Unsupported header size %r" % (header_size))
-        header = BytesIO(self.fp.read(header_size - 4))
-
+        header_bytes = self.fp.read(header_size - 4)
+        if len(header_bytes) != 120:
+            raise IOError("Incomplete header: %s bytes" % len(header_bytes))
+        header = BytesIO(header_bytes)
+        
         flags, height, width = struct.unpack("<3I", header.read(12))
         self.size = (width, height)
         self.mode = "RGBA"
@@ -244,10 +247,15 @@ class DdsImageFile(ImageFile.ImageFile):
             raise NotImplementedError("Unimplemented pixel format %r" %
                                       (fourcc))
 
-        decoded_data = codec(self.fp, self.width, self.height)
-
-        self.fp.close()
+        try:
+            decoded_data = codec(self.fp, self.width, self.height)
+        except struct.error:
+            raise IOError("Truncated DDS file")
+        finally:
+            self.fp.close()
+            
         self.fp = BytesIO(decoded_data)
+
 
     def load_seek(self, pos):
         pass
