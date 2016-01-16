@@ -4,8 +4,12 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Add a basic DDS image plugin with more tests #1654
+  [jleclanche, hugovk, wiredfool]
+
 - Fix incorrect conditional in encode.c #1638
   [manisandro]
+
 - Add a basic read-only DDS plugin #252
   [jleclanche]
 
