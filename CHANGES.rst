@@ -10,9 +10,6 @@ Changelog (Pillow)
 - Fix incorrect conditional in encode.c #1638
   [manisandro]
 
-- Add a basic read-only DDS plugin #252
-  [jleclanche]
-
 3.1.0 (2016-01-04)
 ------------------
 
