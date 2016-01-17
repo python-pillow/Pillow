@@ -9,6 +9,7 @@ include *.sh
 include *.txt
 include LICENSE
 include Makefile
+recursive-include Tests *.py
 graft Tests/fonts
 graft Tests/images
 graft Tests/icc
