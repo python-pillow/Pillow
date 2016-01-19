@@ -9,7 +9,7 @@ JPEG_VERSION=9a
 OPENJPEG_VERSION=2.1.0
 TIFF_VERSION=4.0.6
 LCMS_VERSION=2.7
-WEBP_VERSION=0.4.4
+WEBP_VERSION=0.5.0
 
 # Need cmake for openjpeg
 brew install cmake
