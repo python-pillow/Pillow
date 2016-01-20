@@ -185,7 +185,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    /* COPY chunk */
 	    for (y = 0; y < state->ysize; y++) {
 		UINT8* buf = (UINT8*) im->image[y];
-		memcpy(buf+x, data, state->xsize);
+		memcpy(buf, data, state->xsize);
 		data += state->xsize;
 	    }
 	    break;
