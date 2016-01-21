@@ -107,6 +107,11 @@ class TestFileTiff(PillowTestCase):
         self.assertRaises(SyntaxError,
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
 
+        TiffImagePlugin.PREFIXES.append("\xff\xd8\xff\xe0")
+        self.assertRaises(SyntaxError,
+                          lambda: TiffImagePlugin.TiffImageFile(invalid_file))
+        TiffImagePlugin.PREFIXES.pop()
+
     def test_bad_exif(self):
         i = Image.open('Tests/images/hopper_bad_exif.jpg')
         try:
