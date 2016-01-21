@@ -110,4 +110,4 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Documentation
 
-* [ ] Make sure the default version for Read the Docs is the latest release version e.g. 3.0.0 not latest: https://readthedocs.org/dashboard/pillow/versions/
+* [ ] Make sure the default version for Read the Docs is the latest release version e.g. 3.0.0 not latest: https://readthedocs.org/projects/pillow/versions/
