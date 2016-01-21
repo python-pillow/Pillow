@@ -330,10 +330,13 @@ class EpsImageFile(ImageFile.ImageFile):
 
         return (length, offset)
 
-    def load(self, scale=1):
+    def load(self, scale=1, size=None):
         # Load EPS via Ghostscript
         if not self.tile:
             return
+        # Override the size of the image if specified
+        if not size is None:
+            self.size = size
         self.im = Ghostscript(self.tile, self.size, self.fp, scale)
         self.mode = self.im.mode
         self.size = self.im.size
