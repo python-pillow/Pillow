@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Add TIFF IFD test #1671
+  [radarhere]
+
 - Add a basic DDS image plugin with more tests #1654
   [jleclanche, hugovk, wiredfool]
 
