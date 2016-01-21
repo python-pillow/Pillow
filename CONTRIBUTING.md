@@ -1,6 +1,6 @@
 # Contributing to Pillow
 
-Bug fixes, feature additions, tests, documentation and more can be contributed via [issues](https://github.com/python-pillow/Pillow/issues) and/or [pull requests](https://github.com/python-pillow/Pillow/issues). All contributions are welcome.
+Bug fixes, feature additions, tests, documentation and more can be contributed via [issues](https://github.com/python-pillow/Pillow/issues) and/or [pull requests](https://github.com/python-pillow/Pillow/pulls). All contributions are welcome.
 
 ## Bug fixes, feature additions, etc.
 
