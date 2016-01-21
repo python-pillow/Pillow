@@ -120,6 +120,28 @@ class TestFileEps(PillowTestCase):
         image2_scale2_compare.load()
         self.assert_image_similar(image2_scale2, image2_scale2_compare, 10)
 
+    def test_render_custom_size(self):
+        # We need png support for these render test
+        codecs = dir(Image.core)
+        if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
+            self.skipTest("zip/deflate support not available")
+
+        # Zero bounding box
+        image1_scale2_compare = Image.open(file1_compare_scale2).convert("RGB")
+        image1_custom_size_scale2 = image1_scale2_compare.size
+        image1_custom_size = Image.open(file1)
+        image1_custom_size.load(size=image1_custom_size_scale2)
+        image1_scale2_compare.load()
+        self.assert_image_similar(image1_custom_size, image1_scale2_compare, 5)
+
+        # Non-Zero bounding box
+        image2_scale2_compare = Image.open(file2_compare_scale2).convert("RGB")
+        image2_custom_size_scale2 = image2_scale2_compare.size
+        image2_custom_size = Image.open(file2)
+        image2_custom_size.load(size=image2_custom_size_scale2)
+        image2_scale2_compare.load()
+        self.assert_image_similar(image2_custom_size, image2_scale2_compare, 10)
+
     def test_resize(self):
         # Arrange
         image1 = Image.open(file1)
