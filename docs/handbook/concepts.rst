@@ -34,6 +34,9 @@ image. The current release supports the following standard modes:
     * ``RGBA`` (4x8-bit pixels, true color with transparency mask)
     * ``CMYK`` (4x8-bit pixels, color separation)
     * ``YCbCr`` (3x8-bit pixels, color video format)
+
+      * Note that this refers to the JPEG, and not the ITU-R BT.2020, standard
+
     * ``LAB`` (3x8-bit pixels, the L*a*b color space)
     * ``HSV`` (3x8-bit pixels, Hue, Saturation, Value color space)
     * ``I`` (32-bit signed integer pixels)
