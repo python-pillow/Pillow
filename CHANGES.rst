@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Add tests for OLE file based formats #1678
+  [radarhere]
+
 - Add TIFF IFD test #1671
   [radarhere]
 
