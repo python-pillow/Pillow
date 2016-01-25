@@ -354,27 +354,16 @@ font_render(FontObject* self, PyObject* args)
         goto failed;
     }
 
-#if PY_VERSION_HEX >= 0x03000000
-    if (PyUnicode_Check(string)) {
-        Py_ssize_t size = PyUnicode_GET_LENGTH(string);
-        Py_UCS4 text[size];
-        PyUnicode_READY(string);
-        if (!PyUnicode_AsUCS4(string, text, size, 0))
-            goto failed;
-        if (!raqm_set_text(rq, text, size)) {
-            PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
-            goto failed;
-        }
-    }
-#else
+
     if (PyUnicode_Check(string)) {
         Py_UNICODE *text = PyUnicode_AS_UNICODE(string);
         Py_ssize_t size = PyUnicode_GET_SIZE(string);
-        if (!raqm_set_text(rq, text, size)) {
+        if (!raqm_set_text(rq, (const uint32_t *)(text), size)) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
             goto failed;
         }
     }
+#if PY_VERSION_HEX < 0x03000000
     else if (PyString_Check(string)) {
         char *text = PyString_AS_STRING(string);
         int size = PyString_GET_SIZE(string);
@@ -420,23 +409,27 @@ font_render(FontObject* self, PyObject* args)
             PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
             char *feature = NULL;
             Py_ssize_t size = 0;
-#if PY_VERSION_HEX >= 0x03000000
-            if (!PyUnicode_Check(item) ||
-                PyUnicode_READY(string) != 0 ||
-                PyUnicode_KIND(item) != PyUnicode_1BYTE_KIND) {
-                PyErr_SetString(PyExc_TypeError, "expected an ASCII string");
-                goto failed;
-            }
+            PyObject *bytes;
 
-            feature = PyUnicode_1BYTE_DATA(item);
-            size = PyUnicode_GET_LENGTH(item);
+#if PY_VERSION_HEX >= 0x03000000
+            if (!PyUnicode_Check(item)) {
 #else
-            if (!PyString_Check(item)) {
+            if (!PyUnicode_Check(item) && !PyString_Check(item)) {
+#endif
                 PyErr_SetString(PyExc_TypeError, "expected a string");
                 goto failed;
             }
-            feature = PyString_AsString(item);
-            size = PyString_GET_SIZE(item);
+
+            if (!PyUnicode_Check(item)) {
+                bytes = PyUnicode_AsUTF8String(item);
+                feature = PyBytes_AS_STRING(bytes);
+                size = PyBytes_GET_SIZE(bytes);
+            }
+#if PY_VERSION_HEX < 0x03000000
+            else {
+                feature = PyString_AsString(item);
+                size = PyString_GET_SIZE(item);
+            }
 #endif
             if (!raqm_add_font_feature(rq, feature, size)) {
                 PyErr_SetString(PyExc_ValueError, "raqm_add_font_feature() failed");
