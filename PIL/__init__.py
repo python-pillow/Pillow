@@ -56,4 +56,6 @@ _plugins = ['BmpImagePlugin',
             'WmfImagePlugin',
             'XbmImagePlugin',
             'XpmImagePlugin',
-            'XVThumbImagePlugin']
+            'XVThumbImagePlugin',
+            'FtexImagePlugin',
+            ]
