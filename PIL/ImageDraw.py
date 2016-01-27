@@ -203,7 +203,8 @@ class ImageDraw(object):
         return text.split(split_character)
 
     def text(self, xy, text, fill=None, font=None, anchor=None,
-             *args, **kwargs, direction=None, features=[]):
+             *args, **kwargs, direction=None, features=None):
+
         if self._multiline_check(text):
             return self.multiline_text(xy, text, fill, font, anchor,
                                        *args, **kwargs, direction=direction, features=features)
@@ -225,7 +226,7 @@ class ImageDraw(object):
             self.draw.draw_bitmap(xy, mask, ink)
 
     def multiline_text(self, xy, text, fill=None, font=None, anchor=None,
-                       spacing=4, align="left", direction=None, features=[]):
+                       spacing=4, align="left", direction=None, features=None):
         widths = []
         max_width = 0
         lines = self._multiline_split(text)

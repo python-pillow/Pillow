@@ -519,8 +519,10 @@ class pil_build_ext(build_ext):
 
         if feature.want('raqm'):
             if _find_include_file(self, "raqm.h"):
-                if _find_library_file(self, "raqm"):
-                    feature.raqm = "raqm"
+                if _find_library_file(self, "raqm") and \
+                   _find_library_file(self, "harfbuzz") and \
+                   _find_library_file(self, "fribidi"):
+                    feature.raqm = ["raqm", "harfbuzz", "fribidi"]
 
         if feature.want('lcms'):
             _dbg('Looking for lcms')
@@ -600,12 +602,14 @@ class pil_build_ext(build_ext):
         # additional libraries
 
         if feature.freetype:
-            exts.append(Extension("PIL._imagingft",
-                                  ["_imagingft.c"],
-                                  libraries=["freetype"]))
-        if feature.freetype and feature.raqm:
+            libs = ["freetype"]
+            defs = []
+            if feature.raqm:
+                libs.extend(feature.raqm)
+                defs.append(('HAVE_RAQM', None))
             exts.append(Extension(
-                "PIL._imagingft", ["_imagingft.c"], libraries=["freetype", "fribidi" , "harfbuzz", "raqm"]))
+                "PIL._imagingft", ["_imagingft.c"], libraries=libs,
+                define_macros=defs))
 
         if feature.lcms:
             extra = []
