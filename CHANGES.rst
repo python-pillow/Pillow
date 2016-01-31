@@ -4,6 +4,24 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Allow ImageSequence to seek to zero #1686
+  [radarhere]
+
+- ImageSequence Iterator is now an iterator #1649
+  [radarhere]
+
+- Updated windows test builds to jpeg9b
+  [radarhere]
+
+- Fixed support for .gbr version 1 images, added support for version 2 in GbrImagePlugin #1653
+  [wiredfool]
+  
+- Clarified which YCbCr format is used #1677
+  [radarhere]
+
+- Added TiffTags documentation, Moved windows build documentation to winbuild/ #1667
+  [wiredfool]
+
 - Add tests for OLE file based formats #1678
   [radarhere]
 
