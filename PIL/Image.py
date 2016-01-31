@@ -1295,7 +1295,7 @@ class Image(object):
             box = (0, 0) + self.size
 
         if len(box) == 2:
-            # lower left corner given; get size from image or mask
+            # upper left corner given; get size from image or mask
             if isImageType(im):
                 size = im.size
             elif isImageType(mask):
