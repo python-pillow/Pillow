@@ -34,6 +34,9 @@ install:
   - if [ "$TRAVIS_PYTHON_VERSION" == "3.2" ]; then travis_retry pip install coverage==3.7.1; fi
   - if [ "$TRAVIS_PYTHON_VERSION" != "3.2" ]; then travis_retry pip install coverage; fi
 
+  # clean checkout for manifest
+  - mkdir /tmp/check-manifest && cp -a . /tmp/check-manifest
+
   # webp
   - pushd depends && ./install_webp.sh && popd
 
@@ -47,7 +50,7 @@ script:
 
   - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* selftest.py; fi
   - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py; fi
-  - check-manifest --ignore "depends/*,.coveragerc,.editorconfig,*.yml,*.yaml,tox.ini"
+  - pushd /tmp/check-manifest && check-manifest --ignore ".coveragerc,.editorconfig,*.yml,*.yaml,tox.ini" && popd
   # Sphinx
   - make install
   - pushd docs; make html; make linkcheck; popd
