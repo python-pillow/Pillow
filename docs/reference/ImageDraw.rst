@@ -227,15 +227,19 @@ Methods
 
     Draw a shape.
 
-.. py:method:: PIL.ImageDraw.Draw.text(xy, text, fill=None, font=None, anchor=None)
+.. py:method:: PIL.ImageDraw.Draw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left")
 
     Draws the string at the given position.
 
     :param xy: Top left corner of the text.
     :param text: Text to be drawn. If it contains any newline characters,
-                 the text is passed on to mulitiline_text()
+                 the text is passed on to multiline_text()
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
+    :param spacing: If the text is passed on to multiline_text(),
+                    the number of pixels between lines.
+    :param align: If the text is passed on to multiline_text(),
+                  "left", "center" or "right".
 
 
 .. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left")
@@ -249,13 +253,15 @@ Methods
     :param spacing: The number of pixels between lines.
     :param align: "left", "center" or "right".
 
-.. py:method:: PIL.ImageDraw.Draw.textsize(text, font=None)
+.. py:method:: PIL.ImageDraw.Draw.textsize(text, font=None, spacing=0)
 
     Return the size of the given string, in pixels.
 
     :param text: Text to be measured. If it contains any newline characters,
-                 the text is passed on to mulitiline_textsize()
+                 the text is passed on to multiline_textsize()
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
+    :param spacing: If the text is passed on to multiline_textsize(),
+                    the number of pixels between lines.
 
 .. py:method:: PIL.ImageDraw.Draw.multiline_textsize(text, font=None, spacing=0)
 
