@@ -52,6 +52,17 @@ class TestImageSequence(PillowTestCase):
         self._test_multipage_tiff()
         TiffImagePlugin.READ_LIBTIFF = False
 
+    def test_consecutive(self):
+        im = Image.open('Tests/images/multipage.tiff')
+        firstFrame = None
+        for frame in ImageSequence.Iterator(im):
+            if firstFrame == None:
+                firstFrame = frame.copy()
+            pass
+        for frame in ImageSequence.Iterator(im):
+            self.assert_image_equal(frame, firstFrame)
+            break
+
 if __name__ == '__main__':
     unittest.main()
 

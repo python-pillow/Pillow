@@ -36,8 +36,7 @@ class Iterator(object):
 
     def __getitem__(self, ix):
         try:
-            if ix:
-                self.im.seek(ix)
+            self.im.seek(ix)
             return self.im
         except EOFError:
             raise IndexError  # end of sequence
