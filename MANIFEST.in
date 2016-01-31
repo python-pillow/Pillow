@@ -9,10 +9,9 @@ include *.sh
 include *.txt
 include LICENSE
 include Makefile
-recursive-include Tests *.py
-graft Tests/fonts
-graft Tests/images
-graft Tests/icc
+graft Scripts
+graft Tests
+graft PIL
 graft Tk
 graft libImaging
 graft depends
@@ -23,4 +22,6 @@ prune docs/_static
 # build/src control detritus
 exclude build_children.sh
 global-exclude .git*
+global-exclude *.pyc
+global-exclude *.so
 
