@@ -670,13 +670,16 @@ into account.
 GBR
 ^^^
 
-The GBR decoder reads GIMP brush files.
+The GBR decoder reads GIMP brush files, version 1 and 2.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
-**description**
+**comment**
     The brush name.
+
+**spacing**
+    The spacing between the brushes, in pixels. Version 2 only.
 
 GD
 ^^

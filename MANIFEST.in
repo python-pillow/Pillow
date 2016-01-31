@@ -28,6 +28,7 @@ recursive-include Tests *.dds
 recursive-include Tests *.doc
 recursive-include Tests *.eps
 recursive-include Tests *.fli
+recursive-include Tests *.gbr
 recursive-include Tests *.ggr
 recursive-include Tests *.gif
 recursive-include Tests *.gpl
