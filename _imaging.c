@@ -585,13 +585,14 @@ _fill(PyObject* self, PyObject* args)
     if (!im)
         return NULL;
 
+    buffer[0] = buffer[1] = buffer[2] = buffer[3] = 0;
     if (color) {
         if (!getink(color, im, buffer)) {
             ImagingDelete(im);
             return NULL;
         }
-    } else
-        buffer[0] = buffer[1] = buffer[2] = buffer[3] = 0;
+    }
+
 
     (void) ImagingFill(im, buffer);
 
@@ -1336,6 +1337,8 @@ _putdata(ImagingObject* self, PyObject* args)
                     char ink[4];
                     INT32 inkint;
                 } u;
+
+                u.inkint = 0;
 
                 op = PySequence_Fast_GET_ITEM(seq, i);
                 if (!op || !getink(op, image, u.ink)) {
