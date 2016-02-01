@@ -1,0 +1,30 @@
+
+3.2.0
+=====
+
+New DDS Image Plugins
+=====================
+
+The `DdsImagePlugin` reading DXT1 and DXT5 encoded .dds images was
+added. DXT3 images are not currently supported.
+
+Updates to the GbrImagePlugin
+=============================
+
+The `GbrImagePlugin` (GIMP brush format) has been updated to fix
+support for version 1 files and add support for version 2 files.
+
+Passthrough Parameters for ImageDraw.text
+=========================================
+
+`ImageDraw.multiline_text` takes extra spacing paramaters above what
+is used in `ImageDraw.text`. These parameters can now be passed into
+`ImageDraw.text` and they will be passed through to
+`ImageDraw.multiline_text`.
+
+ImageSequence.Iterator changes
+==============================
+
+`ImageSequence.Iterator` is now an actual iterator implementating the
+Iterator protocol.  It is also now possible to seek to the first image
+of the file when using direct indexing.
