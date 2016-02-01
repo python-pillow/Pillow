@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Improved alpha_composite documentation #1698
+  [radarhere]
+
 - Extend ImageDraw.text method to pass on multiline_text method specific arguments #1647
   [radarhere]
 
