@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Add a loader for the FTEX format from Independence War 2: Edge of Chaos #1688
+  [jleclanche]
+  
 - Improved alpha_composite documentation #1698
   [radarhere]
 
