@@ -241,9 +241,9 @@ class ImageDraw(object):
 
         return text.split(split_character)
 
-    def text(self, xy, text, fill=None, font=None, anchor=None):
+    def text(self, xy, text, fill=None, font=None, anchor=None, *args, **kwargs):
         if self._multiline_check(text):
-            return self.multiline_text(xy, text, fill, font, anchor)
+            return self.multiline_text(xy, text, fill, font, anchor, *args, **kwargs)
 
         ink, fill = self._getink(fill)
         if font is None:
@@ -288,9 +288,9 @@ class ImageDraw(object):
     ##
     # Get the size of a given string, in pixels.
 
-    def textsize(self, text, font=None):
+    def textsize(self, text, font=None, *args, **kwargs):
         if self._multiline_check(text):
-            return self.multiline_textsize(text, font)
+            return self.multiline_textsize(text, font, *args, **kwargs)
 
         if font is None:
             font = self.getfont()
