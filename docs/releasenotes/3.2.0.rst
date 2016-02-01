@@ -17,10 +17,11 @@ support for version 1 files and add support for version 2 files.
 Passthrough Parameters for ImageDraw.text
 =========================================
 
-`ImageDraw.multiline_text` takes extra spacing paramaters above what
-is used in `ImageDraw.text`. These parameters can now be passed into
-`ImageDraw.text` and they will be passed through to
-`ImageDraw.multiline_text`.
+`ImageDraw.multiline_text` and `ImageDraw.multiline_size` take extra
+spacing paramaters above what are used in `ImageDraw.text` and
+`ImageDraw.size`. These parameters can now be passed into
+`ImageDraw.text` and `ImageDraw.size` and they will be passed through
+to the corresponding multiline functions.
 
 ImageSequence.Iterator changes
 ==============================
