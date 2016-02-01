@@ -2,11 +2,16 @@
 3.2.0
 =====
 
-New DDS Image Plugins
-=====================
+New DDS and FTEX Image Plugins
+==============================
 
-The `DdsImagePlugin` reading DXT1 and DXT5 encoded .dds images was
+The `DdsImagePlugin` reading DXT1 and DXT5 encoded `.dds` images was
 added. DXT3 images are not currently supported.
+
+The `FtexImagePlugin` reads textures used for 3D objects in
+Independence War 2: Edge Of Chaos. The plugin reads a single texture
+per file, in the `.ftc` (compressed) and `.ftu` (uncompressed)
+formats.
 
 Updates to the GbrImagePlugin
 =============================
