@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Extend ImageDraw.text method to pass on multiline_text method specific arguments #1647
+  [radarhere]
+
 - Allow ImageSequence to seek to zero #1686
   [radarhere]
 
