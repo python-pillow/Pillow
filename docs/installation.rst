@@ -26,12 +26,12 @@ Basic Installation
     most common image formats. See :ref:`external-libraries` for a
     full list of external libraries supported.
 
-.. note:: 
+.. note::
 
    The basic installation works on Windows and OS X using the binaries
    from PyPI. Other installations require building from source as
    detailed below.
- 
+
 Install Pillow with :command:`pip`::
 
     $ pip install Pillow
@@ -95,7 +95,7 @@ External Libraries
     use Pillow's basic features.
 
 .. note::
-   
+
    There are scripts to install the dependencies for some operating
    systems included in the ``depends`` directory.
 
@@ -216,7 +216,7 @@ Building on Windows
 
 We don't recommend trying to build on Windows. It is a maze of twisty
 passages, mostly dead ends. There are build scripts and notes for the
-Windows build in the ``winbuild`` directory. 
+Windows build in the ``winbuild`` directory.
 
 Building on FreeBSD
 ^^^^^^^^^^^^^^^^^^^
@@ -288,7 +288,7 @@ current versions of Linux, OS X, and Windows.
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Supported**|**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
-| Mac OS X 10.11 El Capitan        |Yes          | 2.7,3.3,3.4,3.5              | 3.0.0                          |x86-64                 |
+| Mac OS X 10.11 El Capitan        |Yes          | 2.7,3.3,3.4,3.5              | 3.1.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Mac OS X 10.10 Yosemite          |Yes          | 2.7,3.3,3.4                  | 3.0.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
