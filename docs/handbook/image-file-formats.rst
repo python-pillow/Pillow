@@ -667,6 +667,15 @@ into account.
     library before building the Python Imaging Library. See the distribution
     README for details.
 
+FTEX
+^^^^
+
+.. versionadded:: 3.2.0
+
+The FTEX decoder reads textures used for 3D objects in
+Independence War 2: Edge Of Chaos. The plugin reads a single texture
+per file, in the compressed and uncompressed formats.
+
 GBR
 ^^^
 
