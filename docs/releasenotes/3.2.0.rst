@@ -23,7 +23,7 @@ Passthrough Parameters for ImageDraw.text
 =========================================
 
 `ImageDraw.multiline_text` and `ImageDraw.multiline_size` take extra
-spacing paramaters above what are used in `ImageDraw.text` and
+spacing parameters above what are used in `ImageDraw.text` and
 `ImageDraw.size`. These parameters can now be passed into
 `ImageDraw.text` and `ImageDraw.size` and they will be passed through
 to the corresponding multiline functions.
@@ -31,6 +31,6 @@ to the corresponding multiline functions.
 ImageSequence.Iterator changes
 ==============================
 
-`ImageSequence.Iterator` is now an actual iterator implementating the
+`ImageSequence.Iterator` is now an actual iterator implementing the
 Iterator protocol.  It is also now possible to seek to the first image
 of the file when using direct indexing.
