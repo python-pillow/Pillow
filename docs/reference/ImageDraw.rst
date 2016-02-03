@@ -227,7 +227,7 @@ Methods
 
     Draw a shape.
 
-.. py:method:: PIL.ImageDraw.Draw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left")
+.. py:method:: PIL.ImageDraw.Draw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None)
 
     Draws the string at the given position.
 
@@ -240,9 +240,11 @@ Methods
                     the number of pixels between lines.
     :param align: If the text is passed on to multiline_text(),
                   "left", "center" or "right".
+    :param direction: Direction of the text. It can be 'rtl', 'ltr', 'ttb' or 'btt.
+    :param features: A list of font features used for text layout. For example, 'ligature, kerning, Medial ...etc.
 
-
-.. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left")
+.. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left",
+                                                 direction=None, features=[])
 
     Draws the string at the given position.
 
@@ -252,6 +254,8 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
     :param align: "left", "center" or "right".
+    :param direction: Direction of the text.
+    :param features: Font features used for text layout.
 
 .. py:method:: PIL.ImageDraw.Draw.textsize(text, font=None, spacing=0)
 
