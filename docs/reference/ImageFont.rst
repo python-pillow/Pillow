@@ -51,7 +51,7 @@ Methods
 
     :return: (width, height)
 
-.. py:method:: PIL.ImageFont.ImageFont.getmask(text, mode='')
+.. py:method:: PIL.ImageFont.ImageFont.getmask(text, mode='', direction=None, features=[])
 
     Create a bitmap for the text.
 
@@ -63,6 +63,8 @@ Methods
                  driver prefers; if empty, the renderer may return either
                  mode. Note that the mode is always a string, to simplify
                  C-level implementations.
+    :param direction: Direction of the text.
+    :param features: A list of font features used for text layout.
 
                  .. versionadded:: 1.1.5
     :return: An internal PIL storage memory instance as defined by the

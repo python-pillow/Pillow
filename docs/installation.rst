@@ -170,6 +170,8 @@ Many of Pillow's features require external libraries:
   * Windows support: Libimagequant requires VS2013/MSVC 18 to compile,
     so it is unlikely to work with any Python prior to 3.5 on Windows.
 
+* **libraqm** provides complex text layout support.
+
 Once you have installed the prerequisites, run::
 
     $ pip install Pillow
@@ -221,7 +223,6 @@ Build Options
 * Build flag: ``--debug``. Adds a debugging flag to the include and
   library search process to dump all paths searched for and found to
   stdout.
-
 
 Sample Usage::
 
