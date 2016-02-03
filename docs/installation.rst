@@ -138,6 +138,8 @@ Many of Pillow's features require external libraries:
   * Pillow does **not** support the earlier **1.5** series which ships
     with Ubuntu and Debian.
 
+* **libraqm** provides complex text layout support.
+
 Once you have installed the prerequisites, run::
 
     $ pip install Pillow
@@ -168,14 +170,14 @@ Build Options
 
 * Build flags: ``--disable-zlib``, ``--disable-jpeg``,
   ``--disable-tiff``, ``--disable-freetype``, ``--disable-tcl``,
-  ``--disable-tk``, ``--disable-lcms``, ``--disable-webp``,
+  ``--disable-tk``, ``--disable-lcms``, ``--disable-raqm``, ``--disable-webp``,
   ``--disable-webpmux``, ``--disable-jpeg2000``. Disable building the
   corresponding feature even if the development libraries are present
   on the building machine.
 
 * Build flags: ``--enable-zlib``, ``--enable-jpeg``,
   ``--enable-tiff``, ``--enable-freetype``, ``--enable-tcl``,
-  ``--enable-tk``, ``--enable-lcms``, ``--enable-webp``,
+  ``--enable-tk``, ``--enable-lcms``, ``--enable-raqm``, ``--enable-webp``,
   ``--enable-webpmux``, ``--enable-jpeg2000``. Require that the
   corresponding feature is built. The build will raise an exception if
   the libraries are not found. Webpmux (WebP metadata) relies on WebP
