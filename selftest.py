@@ -183,7 +183,8 @@ if __name__ == "__main__":
         ("jpg", "JPEG"),
         ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),
-        ("libtiff", "LIBTIFF")
+        ("libtiff", "LIBTIFF"),
+        ("raqm", "RAQM")
     ]:
         if features.check(name):
             print("---", feature, "support ok")
