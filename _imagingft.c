@@ -588,17 +588,21 @@ font_render(FontObject* self, PyObject* args)
 
     for (x = i = 0; i < count; i++) {
         if (i == 0 && self->face->glyph->metrics.horiBearingX < 0)
-            x = -PIXEL(self->face->glyph->metrics.horiBearingX);
+            x = -self->face->glyph->metrics.horiBearingX;
         index = glyph_info[i].index;
 
         error = FT_Load_Glyph(self->face, index, load_flags);
         if (error)
             return geterror(error);
 
+        if (i == 0 && self->face->glyph->metrics.horiBearingX < 0) {
+            x = -self->face->glyph->metrics.horiBearingX;
+        }
+
         glyph = self->face->glyph;
 
         source = (unsigned char*) glyph->bitmap.buffer;
-        xx = x + glyph->bitmap_left;
+        xx = PIXEL(x) + glyph->bitmap_left;
         xx += PIXEL(glyph_info[i].x_offset);
         x0 = 0;
         x1 = glyph->bitmap.width;
@@ -644,7 +648,7 @@ font_render(FontObject* self, PyObject* args)
                 source += glyph->bitmap.pitch;
             }
         }
-        x += PIXEL(glyph_info[i].x_advance);
+        x += glyph_info[i].x_advance;
     }
     PyMem_Del(glyph_info);
     Py_RETURN_NONE;

@@ -5,6 +5,7 @@ modules = {
     "tkinter": "PIL._imagingtk",
     "freetype2": "PIL._imagingft",
     "littlecms2": "PIL._imagingcms",
+    "raqm": "PIL._imagingft",
     "webp": "PIL._webp",
     "transp_webp": ("WEBP", "WebPDecoderBuggyAlpha")
 }
