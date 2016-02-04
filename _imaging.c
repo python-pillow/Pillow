@@ -1532,6 +1532,10 @@ _resize(ImagingObject* self, PyObject* args)
 
     imIn = self->image;
 
+    if (xsize < 1 || ysize < 1) {
+        return ImagingError_ValueError("height and width must be > 0");
+    }
+
     if (imIn->xsize == xsize && imIn->ysize == ysize) {
         imOut = ImagingCopy(imIn);
     }
