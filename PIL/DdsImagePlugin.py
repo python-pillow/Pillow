@@ -219,7 +219,7 @@ class DdsImageFile(ImageFile.ImageFile):
         if len(header_bytes) != 120:
             raise IOError("Incomplete header: %s bytes" % len(header_bytes))
         header = BytesIO(header_bytes)
-        
+
         flags, height, width = struct.unpack("<3I", header.read(12))
         self.size = (width, height)
         self.mode = "RGBA"
@@ -253,9 +253,8 @@ class DdsImageFile(ImageFile.ImageFile):
             raise IOError("Truncated DDS file")
         finally:
             self.fp.close()
-            
-        self.fp = BytesIO(decoded_data)
 
+        self.fp = BytesIO(decoded_data)
 
     def load_seek(self, pos):
         pass

@@ -30,7 +30,7 @@ i32 = _binary.i32be
 
 
 def _accept(prefix):
-    return len(prefix) >= 8 and i32(prefix[:4]) >= 20 and i32(prefix[4:8]) in (1,2)
+    return len(prefix) >= 8 and i32(prefix[:4]) >= 20 and i32(prefix[4:8]) in (1, 2)
 
 
 ##
@@ -46,17 +46,17 @@ class GbrImageFile(ImageFile.ImageFile):
         version = i32(self.fp.read(4))
         if header_size < 20:
             raise SyntaxError("not a GIMP brush")
-        if version not in (1,2):
-            raise SyntaxError("Unsupported GIMP brush version: %s" %version)
+        if version not in (1, 2):
+            raise SyntaxError("Unsupported GIMP brush version: %s" % version)
 
         width = i32(self.fp.read(4))
         height = i32(self.fp.read(4))
         color_depth = i32(self.fp.read(4))
-        if width <= 0 or height <= 0: 
+        if width <= 0 or height <= 0:
             raise SyntaxError("not a GIMP brush")
-        if color_depth not in (1,4):
-            raise SyntaxError("Unsupported GMP brush color depth: %s" %color_depth)
-        
+        if color_depth not in (1, 4):
+            raise SyntaxError("Unsupported GMP brush color depth: %s" % color_depth)
+
         if version == 1:
             comment_length = header_size-20
         else:
@@ -72,7 +72,7 @@ class GbrImageFile(ImageFile.ImageFile):
             self.mode = "L"
         else:
             self.mode = 'RGBA'
-            
+
         self.size = width, height
 
         self.info["comment"] = comment
@@ -80,7 +80,7 @@ class GbrImageFile(ImageFile.ImageFile):
         # Image might not be small
         Image._decompression_bomb_check(self.size)
 
-        # Data is an uncompressed block of w * h * bytes/pixel 
+        # Data is an uncompressed block of w * h * bytes/pixel
         self._data_size = width * height * color_depth
 
     def load(self):

@@ -30,6 +30,7 @@ class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
     def cvt_enum(self, value):
         return self.enum.get(value, value)
 
+
 def lookup(tag):
     """
     :param tag: Integer tag number
@@ -378,22 +379,22 @@ TYPES = {}
 
 # some of these are not in our TAGS_V2 dict and were included from tiff.h
 
-LIBTIFF_CORE = set ([255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
-                     278, 280, 281, 340, 341, 282, 283, 284, 286, 287,
-                     296, 297, 321, 320, 338, 32995, 322, 323, 32998,
-                     32996, 339, 32997, 330, 531, 530, 301, 532, 333,
-                     # as above
-                     269 # this has been in our tests forever, and works
-                     ])
+LIBTIFF_CORE = set([255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
+                    278, 280, 281, 340, 341, 282, 283, 284, 286, 287,
+                    296, 297, 321, 320, 338, 32995, 322, 323, 32998,
+                    32996, 339, 32997, 330, 531, 530, 301, 532, 333,
+                    # as above
+                    269  # this has been in our tests forever, and works
+                    ])
 
-LIBTIFF_CORE.remove(320) # Array of short, crashes
-LIBTIFF_CORE.remove(301) # Array of short, crashes
-LIBTIFF_CORE.remove(532) # Array of long, crashes
+LIBTIFF_CORE.remove(320)  # Array of short, crashes
+LIBTIFF_CORE.remove(301)  # Array of short, crashes
+LIBTIFF_CORE.remove(532)  # Array of long, crashes
 
-LIBTIFF_CORE.remove(255) # We don't have support for subfiletypes
-LIBTIFF_CORE.remove(322) # We don't have support for tiled images in libtiff
-LIBTIFF_CORE.remove(323) # Tiled images
-LIBTIFF_CORE.remove(333) # Ink Names either
+LIBTIFF_CORE.remove(255)  # We don't have support for subfiletypes
+LIBTIFF_CORE.remove(322)  # We don't have support for tiled images in libtiff
+LIBTIFF_CORE.remove(323)  # Tiled images
+LIBTIFF_CORE.remove(333)  # Ink Names either
 
 # Note to advanced users: There may be combinations of these
 # parameters and values that when added properly, will work and

@@ -122,21 +122,22 @@ class TestFileTiffMetadata(PillowTestCase):
         original = img.tag_v2.named()
         reloaded = loaded.tag_v2.named()
 
-        for k,v in original.items():
+        for k, v in original.items():
             if type(v) == IFDRational:
-                original[k] = IFDRational(*_limit_rational(v,2**31))
+                original[k] = IFDRational(*_limit_rational(v, 2**31))
             if type(v) == tuple and \
-                type(v[0]) == IFDRational:
+               type(v[0]) == IFDRational:
                 original[k] = tuple([IFDRational(
-                                      *_limit_rational(elt, 2**31)) for elt in v])
+                                     *_limit_rational(elt, 2**31)) for elt in v])
 
         ignored = ['StripByteCounts', 'RowsPerStrip',
                    'PageNumber', 'StripOffsets']
 
         for tag, value in reloaded.items():
-            if tag in ignored: continue
+            if tag in ignored:
+                continue
             if (type(original[tag]) == tuple
-                and type(original[tag][0]) == IFDRational):
+               and type(original[tag][0]) == IFDRational):
                 # Need to compare element by element in the tuple,
                 # not comparing tuples of object references
                 self.assert_deep_equal(original[tag],
@@ -188,7 +189,7 @@ class TestFileTiffMetadata(PillowTestCase):
     def test_exif_div_zero(self):
         im = hopper()
         info = TiffImagePlugin.ImageFileDirectory_v2()
-        info[41988] = TiffImagePlugin.IFDRational(0,0)
+        info[41988] = TiffImagePlugin.IFDRational(0, 0)
 
         out = self.tempfile('temp.tiff')
         im.save(out, tiffinfo=info, compression='raw')
@@ -196,8 +197,6 @@ class TestFileTiffMetadata(PillowTestCase):
         reloaded = Image.open(out)
         self.assertEqual(0, reloaded.tag_v2[41988][0].numerator)
         self.assertEqual(0, reloaded.tag_v2[41988][0].denominator)
-
-
 
 
 if __name__ == '__main__':

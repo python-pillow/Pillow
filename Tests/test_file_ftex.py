@@ -1,5 +1,6 @@
-from helper import unittest, PillowTestCase
+from helper import PillowTestCase
 from PIL import Image
+
 
 class TestFileFtex(PillowTestCase):
 

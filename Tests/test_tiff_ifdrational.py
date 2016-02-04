@@ -7,8 +7,8 @@ from PIL.TiffImagePlugin import IFDRational
 
 from fractions import Fraction
 
-class Test_IFDRational(PillowTestCase):
 
+class Test_IFDRational(PillowTestCase):
 
     def _test_equal(self, num, denom, target):
 
@@ -20,17 +20,16 @@ class Test_IFDRational(PillowTestCase):
     def test_sanity(self):
 
         self._test_equal(1, 1, 1)
-        self._test_equal(1, 1, Fraction(1,1))
+        self._test_equal(1, 1, Fraction(1, 1))
 
         self._test_equal(2, 2, 1)
-        self._test_equal(1.0, 1, Fraction(1,1))
+        self._test_equal(1.0, 1, Fraction(1, 1))
 
-        self._test_equal(Fraction(1,1), 1, Fraction(1,1))
-        self._test_equal(IFDRational(1,1), 1, 1)
+        self._test_equal(Fraction(1, 1), 1, Fraction(1, 1))
+        self._test_equal(IFDRational(1, 1), 1, 1)
 
-
-        self._test_equal(1, 2, Fraction(1,2))
-        self._test_equal(1, 2, IFDRational(1,2))
+        self._test_equal(1, 2, Fraction(1, 2))
+        self._test_equal(1, 2, IFDRational(1, 2))
 
     def test_nonetype(self):
         " Fails if the _delegate function doesn't return a valid function"
@@ -45,17 +44,15 @@ class Test_IFDRational(PillowTestCase):
         self.assertTrue(xres and 1)
         self.assertTrue(xres and yres)
 
-
     def test_ifd_rational_save(self):
         for libtiff in (True, False):
             TiffImagePlugin.WRITE_LIBTIFF = libtiff
 
             im = hopper()
             out = self.tempfile('temp.tiff')
-            res = IFDRational(301,1)
-            im.save(out, dpi=(res,res), compression='raw')
+            res = IFDRational(301, 1)
+            im.save(out, dpi=(res, res), compression='raw')
 
             reloaded = Image.open(out)
-            self.assertEqual(float(IFDRational(301,1)),
+            self.assertEqual(float(IFDRational(301, 1)),
                              float(reloaded.tag_v2[282]))
-

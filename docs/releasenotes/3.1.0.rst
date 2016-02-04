@@ -47,14 +47,14 @@ When used in a ``ImageFileDirectory_v1``, a 2 item tuple is returned
 of the numerator and denominator, as was done previously.
 
 This class should be used when adding a rational value to an
-ImageFileDirectory for saving to image metadata. 
+ImageFileDirectory for saving to image metadata.
 
 JpegImagePlugin._getexif
 ++++++++++++++++++++++++
 
 In Pillow 3.0, the dictionary returned from the private, experimental,
 but generally widely used ``_getexif`` function changed to reflect the
-ImageFileDirectory_v2 format, without a fallback to the previous format. 
+ImageFileDirectory_v2 format, without a fallback to the previous format.
 
 In Pillow 3.1, ``_getexif`` now returns a dictionary compatible with
 Pillow 2.9 and earlier, built with
@@ -70,6 +70,6 @@ Out of Spec Metadata
 In Pillow 3.0 and 3.1, images that contain metadata that is internally
 consistent but not in agreement with the TIFF spec may cause an
 exception when reading the metadata.  This can happen when a tag that
-is specified to have a single value is stored with an array of values. 
+is specified to have a single value is stored with an array of values.
 
-It is anticipated that this behavior will change in future releases. 
+It is anticipated that this behavior will change in future releases.

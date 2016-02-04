@@ -62,7 +62,7 @@ class FtexImageFile(ImageFile.ImageFile):
         mipmap_count, format_count = struct.unpack("<2i", self.fp.read(8))
 
         self.mode = "RGB"
-        
+
         # Only support single-format files. I don't know of any multi-format file.
         assert format_count == 1
 
@@ -82,7 +82,6 @@ class FtexImageFile(ImageFile.ImageFile):
 
         self.fp.close()
         self.fp = BytesIO(data)
-
 
     def load_seek(self, pos):
         pass
