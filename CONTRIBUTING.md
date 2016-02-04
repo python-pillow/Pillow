@@ -29,3 +29,9 @@ When reporting issues, please include code that reproduces the issue and wheneve
 - What did you expect to happen?
 - What actually happened?
 - What versions of Pillow and Python are you using?
+
+## Security vulnerabilities
+
+To report sensitive vulnerability information, email aclark@aclark.net.
+
+If your organisation/employer is a distributor of Pillow and would like advance notification of security-related bugs, please let us know your preferred contact method.
