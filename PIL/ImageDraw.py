@@ -202,11 +202,9 @@ class ImageDraw(object):
 
         return text.split(split_character)
 
-    def text(self, xy, text, fill=None, font=None, anchor=None,
-             direction=None, features=None, *args, **kwargs):
+    def text(self, xy, text, fill=None, font=None, anchor=None, *args, **kwargs):
         if self._multiline_check(text):
-            return self.multiline_text(xy, text, fill, font, anchor,
-                                       direction=direction, features=features, *args, **kwargs)
+            return self.multiline_text(xy, text, fill, font, anchor, *args, **kwargs)
         ink, fill = self._getink(fill)
         if font is None:
             font = self.getfont()
@@ -214,11 +212,11 @@ class ImageDraw(object):
             ink = fill
         if ink is not None:
             try:
-                mask, offset = font.getmask2(text, self.fontmode, direction=direction, features=features)
+                mask, offset = font.getmask2(text, self.fontmode, *args, **kwargs)
                 xy = xy[0] + offset[0], xy[1] + offset[1]
             except AttributeError:
                 try:
-                    mask = font.getmask(text, self.fontmode, direction, features)
+                    mask = font.getmask(text, self.fontmode, *args, **kwargs)
                 except TypeError:
                     mask = font.getmask(text)
             self.draw.draw_bitmap(xy, mask, ink)
