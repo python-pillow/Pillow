@@ -16,3 +16,7 @@ class TestFilePcd(PillowTestCase):
         #target = hopper().resize((768,512))
         #self.assert_image_similar(im, target, 10)
 
+
+if __name__ == '__main__':
+    unittest.main()
+
