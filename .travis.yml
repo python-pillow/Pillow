@@ -7,10 +7,11 @@ env:
     - REPO_DIR=Pillow
   matrix:
     - VERSION=2.7.10
-    - VERSION=3.2.5
     - VERSION=3.3.5
     - VERSION=3.4.3
     - VERSION=3.5.0
+# Disabled due to pip install issue
+#    - VERSION=3.2.5
 
 install:
     - source run_install.sh
