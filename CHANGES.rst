@@ -43,6 +43,23 @@ Changelog (Pillow)
 - Fix incorrect conditional in encode.c #1638
   [manisandro]
 
+
+3.1.1 (2016-02-04)
+------------------
+
+- Fixed an integer overflow in Resample.c causing writes in the Python heap. 
+  [nedwill]
+
+- Fixed a buffer overflow in PcdDecode.c causing a segfault when opening PhotoCD files. CVE-2016-TBD
+  [wiredfool]
+
+- Fixed a buffer overflow in FliDecode.c causing a segfault when opening FLI files. CVE-2016-0775
+  [wiredfool]
+
+- Fixed a buffer overflow in TiffDecode.c causing an arbitrary amount of memory to be overwritten when opening a specially crafted invalid TIFF file. CVE-2016-0740
+  [wiredfool]
+
+
 3.1.0 (2016-01-04)
 ------------------
 
