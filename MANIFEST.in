@@ -45,6 +45,7 @@ recursive-include Tests *.msp
 recursive-include Tests *.pbm
 recursive-include Tests *.pcf
 recursive-include Tests *.pcx
+recursive-include Tests *.pcd
 recursive-include Tests *.pgm
 recursive-include Tests *.pil
 recursive-include Tests *.png
