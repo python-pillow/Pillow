@@ -9,7 +9,7 @@ from helper import unittest, PillowTestCase
 # service on our testing infrastructure.  I expect this test to fail
 # on any 32-bit machine, as well as any smallish things (like
 # Raspberry Pis). It does succeed on a 3gb Ubuntu 12.04x64 VM on Python
-# 2.7 an 3.2.
+# 2.7 and 3.2.
 
 from PIL import Image
 YDIM = 32769
