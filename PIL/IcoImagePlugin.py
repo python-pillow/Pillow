@@ -19,7 +19,7 @@
 #
 # Icon format references:
 #   * https://en.wikipedia.org/wiki/ICO_(file_format)
-#   * http://msdn.microsoft.com/en-us/library/ms997538.aspx
+#   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
 
 
 import struct

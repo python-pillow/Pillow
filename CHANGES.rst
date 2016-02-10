@@ -1247,7 +1247,7 @@ Changelog (Pillow)
 
 - Use PyCapsule for py3.1, fixes #237.
 
-- Workaround for: http://bugs.python.org/16754 in 3.2.x < 3.2.4 and 3.3.0.
+- Workaround for: http://bugs.python.org/issue16754 in 3.2.x < 3.2.4 and 3.3.0.
 
 2.0.0 (2013-03-15)
 ------------------
