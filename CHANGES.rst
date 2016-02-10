@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Updated freetype to 2.6.3 #1725
+  [radarhere]
+
 - Add a loader for the FTEX format from Independence War 2: Edge of Chaos #1688
   [jleclanche]
   
