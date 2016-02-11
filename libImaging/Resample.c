@@ -53,7 +53,7 @@ static struct filter BILINEAR = { bilinear_filter, 1.0 };
 
 static inline float bicubic_filter(float x)
 {
-    /* http://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm */
+    /* https://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm */
 #define a -0.5
     if (x < 0.0)
         x = -x;
