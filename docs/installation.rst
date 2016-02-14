@@ -268,7 +268,10 @@ Prerequisites are installed on **Fedora 20** with::
     $ sudo yum install libtiff-devel libjpeg-devel libzip-devel freetype-devel \
         lcms2-devel libwebp-devel tcl-devel tk-devel
 
+Prerequisites are installed on **Fedora 23** with::
 
+    $ sudo dnf install libtiff-devel libjpeg-devel libzip-devel freetype-devel \
+        lcms2-devel libwebp-devel tcl-devel tk-devel redhat-rpm-config
 
 
 
