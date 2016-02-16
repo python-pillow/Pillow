@@ -205,60 +205,69 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
     return 0;
 }
 
+static size_t
+text_layout(PyObject* string, FontObject* self, const char* dir,
+            PyObject *features ,GlyphInfo **glyph_info, int mask);
+
 static PyObject*
 font_getsize(FontObject* self, PyObject* args)
 {
     int i, x, y_max, y_min;
-    FT_ULong ch;
     FT_Face face;
     int xoffset, yoffset;
-    FT_Bool kerning = FT_HAS_KERNING(self->face);
-    FT_UInt last_index = 0;
+    const char *dir = NULL;
+    size_t count;
+    GlyphInfo *glyph_info = NULL;;
+    PyObject *features = Py_None;
 
     /* calculate size and bearing for a given string */
 
     PyObject* string;
-    if (!PyArg_ParseTuple(args, "O:getsize", &string))
+    if (!PyArg_ParseTuple(args, "O|zO:getsize", &string, &dir, &features))
         return NULL;
-
-#if PY_VERSION_HEX >= 0x03000000
-    if (!PyUnicode_Check(string)) {
-#else
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
-#endif
-        PyErr_SetString(PyExc_TypeError, "expected string");
-        return NULL;
-    }
 
     face = NULL;
     xoffset = yoffset = 0;
     y_max = y_min = 0;
 
-    for (x = i = 0; font_getchar(string, i, &ch); i++) {
+    count = text_layout(string, self, dir, features, &glyph_info, 0);
+    if (count == 0)
+        return NULL;
+
+    for (x = i = 0; i < count; i++) {
         int index, error;
         FT_BBox bbox;
         FT_Glyph glyph;
         face = self->face;
-        index = FT_Get_Char_Index(face, ch);
-        if (kerning && last_index && index) {
-            FT_Vector delta;
-            FT_Get_Kerning(self->face, last_index, index, ft_kerning_default,
-                           &delta);
-            x += delta.x;
-        }
-
-	/* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
-	 *   Yifu Yu<root@jackyyf.com>, 2014-10-15
-	 */
+        index = glyph_info[i].index;
+        /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
+         *   Yifu Yu<root@jackyyf.com>, 2014-10-15
+         */
         error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
         if (error)
             return geterror(error);
-        if (i == 0)
+
+        if (i == 0 && face->glyph->metrics.horiBearingX < 0) {
             xoffset = face->glyph->metrics.horiBearingX;
-        x += face->glyph->metrics.horiAdvance;
+            x -= xoffset;
+        }
+
+        x += glyph_info[i].x_advance;
+
+        if (i == count - 1)
+        {
+            int offset;
+            offset = glyph_info[i].x_advance -
+                    face->glyph->metrics.width -
+                    face->glyph->metrics.horiBearingX;
+            if (offset < 0)
+                x -= offset;
+        }
 
         FT_Get_Glyph(face->glyph, &glyph);
         FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_SUBPIXELS, &bbox);
+        bbox.yMax -= glyph_info[i].y_offset;
+        bbox.yMin -= glyph_info[i].y_offset;
         if (bbox.yMax > y_max)
             y_max = bbox.yMax;
         if (bbox.yMin < y_min)
@@ -268,23 +277,17 @@ font_getsize(FontObject* self, PyObject* args)
         if (face->glyph->metrics.horiBearingY > yoffset)
             yoffset = face->glyph->metrics.horiBearingY;
 
-        last_index = index;
+        //last_index = index;
         FT_Done_Glyph(glyph);
     }
 
     if (face) {
-        int offset;
+
         /* left bearing */
         if (xoffset < 0)
             x -= xoffset;
         else
             xoffset = 0;
-        /* right bearing */
-        offset = face->glyph->metrics.horiAdvance -
-            face->glyph->metrics.width -
-            face->glyph->metrics.horiBearingX;
-        if (offset < 0)
-            x -= offset;
         /* difference between the font ascender and the distance of
          * the baseline from the top */
         yoffset = PIXEL(self->face->size->metrics.ascender - yoffset);
@@ -323,7 +326,7 @@ font_getabc(FontObject* self, PyObject* args)
         int index, error;
         face = self->face;
         index = FT_Get_Char_Index(face, ch);
-	/* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
+        /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
         error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
         if (error)
             return geterror(error);
@@ -589,15 +592,15 @@ font_render(FontObject* self, PyObject* args)
     for (x = i = 0; i < count; i++) {
         if (i == 0 && self->face->glyph->metrics.horiBearingX < 0)
             x = -self->face->glyph->metrics.horiBearingX;
-        index = glyph_info[i].index;
 
+        index = glyph_info[i].index;
         error = FT_Load_Glyph(self->face, index, load_flags);
         if (error)
             return geterror(error);
 
         if (i == 0 && self->face->glyph->metrics.horiBearingX < 0) {
             x = -self->face->glyph->metrics.horiBearingX;
-        }
+     }
 
         glyph = self->face->glyph;
 
@@ -638,6 +641,7 @@ font_render(FontObject* self, PyObject* args)
                 yy -= PIXEL(glyph_info[i].y_offset);
                 if (yy >= 0 && yy < im->ysize) {
                     /* blend this glyph into the buffer */
+
                     int i;
                     unsigned char *target = im->image8[yy] + xx;
                     for (i = x0; i < x1; i++) {
@@ -650,6 +654,7 @@ font_render(FontObject* self, PyObject* args)
         }
         x += glyph_info[i].x_advance;
     }
+
     PyMem_Del(glyph_info);
     Py_RETURN_NONE;
 }

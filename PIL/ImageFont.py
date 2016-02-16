@@ -136,8 +136,8 @@ class FreeTypeFont(object):
     def getmetrics(self):
         return self.font.ascent, self.font.descent
 
-    def getsize(self, text):
-        size, offset = self.font.getsize(text)
+    def getsize(self, text, direction=None, features=None):
+        size, offset = self.font.getsize(text, direction, features)
         return (size[0] + offset[0], size[1] + offset[1])
 
     def getoffset(self, text):
@@ -147,7 +147,7 @@ class FreeTypeFont(object):
         return self.getmask2(text, mode, direction=direction, features=features)[0]
 
     def getmask2(self, text, mode="", fill=Image.core.fill, direction=None, features=None):
-        size, offset = self.font.getsize(text)
+        size, offset = self.font.getsize(text, direction, features)
         im = fill("L", size, 0)
         self.font.render(text, im.id, mode == "1", direction, features)
         return im, offset
