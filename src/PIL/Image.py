@@ -2599,7 +2599,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
                 RuntimeWarning,
                 stacklevel=2,
             )
-            args = mode, 0, -1  # may change to (mode, 0, 1) post-1.1.6
+            args = mode, 0, 1
         if args[0] in _MAPMODES:
             im = new(mode, (1, 1))
             im = im._new(core.map_buffer(data, size, decoder_name, None, 0, args))
