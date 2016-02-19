@@ -95,7 +95,7 @@ except ImportError as v:
             RuntimeWarning
             )
     # Fail here anyway. Don't let people run with a mostly broken Pillow.
-    # see docs/porting-pil-to-pillow.rst
+    # see docs/porting.rst
     raise
 
 try:
