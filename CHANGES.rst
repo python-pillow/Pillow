@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Fix EXIF tag name typos #1736
+  [zarlant, radarhere]
+
 - Updated freetype to 2.6.3 #1725
   [radarhere]
 
