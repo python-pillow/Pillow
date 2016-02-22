@@ -56,7 +56,7 @@ Changelog (Pillow)
 - Fixed an integer overflow in Resample.c causing writes in the Python heap. 
   [nedwill]
 
-- Fixed a buffer overflow in PcdDecode.c causing a segfault when opening PhotoCD files. CVE-2016-TBD
+- Fixed a buffer overflow in PcdDecode.c causing a segfault when opening PhotoCD files. CVE-2016-2533
   [wiredfool]
 
 - Fixed a buffer overflow in FliDecode.c causing a segfault when opening FLI files. CVE-2016-0775
