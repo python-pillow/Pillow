@@ -47,7 +47,7 @@ off the end of the memory buffer, causing a segfault.
 
 This issue was found by Alyssa Besseling at Atlassian
 
-CVE-2016-TBD -- Buffer overflow in PcdDecode.c
+CVE-2016-2533 -- Buffer overflow in PcdDecode.c
 ----------------------------------------------
 
 In all versions of Pillow, dating back at least to the last PIL 1.1.7
