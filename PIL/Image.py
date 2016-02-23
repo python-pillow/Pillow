@@ -2077,7 +2077,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     **BytesIO** object, and use :py:func:`~PIL.Image.open` to load it.
 
     In the current version, the default parameters used for the "raw" decoder
-    differs from that used for :py:func:`~PIL.Image.fromstring`.  This is a
+    differs from that used for :py:func:`~PIL.Image.frombytes`.  This is a
     bug, and will probably be fixed in a future release.  The current release
     issues a warning if you do this; to disable the warning, you should provide
     the full set of parameters.  See below for details.
