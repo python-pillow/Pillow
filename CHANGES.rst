@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Added py35 to tox envlist #1724
+  [radarhere]
+
 - Fix EXIF tag name typos #1736
   [zarlant, radarhere]
 
