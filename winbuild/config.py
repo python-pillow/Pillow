@@ -38,15 +38,15 @@ libs = {
         'dir': 'lcms2-2.7',
     },
     'tcl-8.5': {
-        'url': SF_MIRROR+'/project/tcl/Tcl/8.5.18/tcl8518-src.zip',
-        'hash': 'sha1:4c2aed9043088c630a4c795265e2738ef1b4db3b',
+        'url': SF_MIRROR+'/project/tcl/Tcl/8.5.19/tcl8519-src.zip',
+        'hash': 'sha1:9de57fd34bd688716c16c978db96fa16a5fde924',
         'dir': '',
     },
     'tk-8.5': {
-        'url': SF_MIRROR+'/project/tcl/Tcl/8.5.18/tk8518-src.zip',
-        'hash': 'sha1:273f55148777413774aa722ecad25cabda1e31ae',
+        'url': SF_MIRROR+'/project/tcl/Tcl/8.5.19/tk8519-src.zip',
+        'hash': 'sha1:78d0d2c81e024e0b48bfd7b2cc16718f08f46ed9',
         'dir': '',
-        'version': '8.5.18',
+        'version': '8.5.19',
     },
     'tcl-8.6': {
         'url': SF_MIRROR+'/project/tcl/Tcl/8.6.4/tcl864-src.zip',
