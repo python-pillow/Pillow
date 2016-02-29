@@ -1066,6 +1066,13 @@ class TiffImageFile(ImageFile.ImageFile):
         if 0xBC01 in self.tag_v2:
             raise IOError("Windows Media Photo files not yet supported")
 
+        try:
+            #restore pointer to load method
+            self.load = self._load 
+        except AttributeError:
+            #save pointer to parent load method
+            self._load = super(TiffImageFile,self).load 
+
         # extract relevant tags
         self._compression = COMPRESSION_INFO[self.tag_v2.get(COMPRESSION, 1)]
         self._planar_configuration = self.tag_v2.get(PLANAR_CONFIGURATION, 1)
