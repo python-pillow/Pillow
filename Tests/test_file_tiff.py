@@ -378,6 +378,22 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.tag_v2[X_RESOLUTION], 36)
         self.assertEqual(im.tag_v2[Y_RESOLUTION], 72)
 
+    def test_multipage_compression(self):
+        im = Image.open('Tests/images/compression.tif')
+
+        im.seek(0)
+        self.assertEqual(im._compression,'tiff_ccitt')
+        self.assertEqual(im.size, (10, 10))
+
+        im.seek(1)
+        self.assertEqual(im._compression,'packbits')
+        self.assertEqual(im.size, (10, 10))
+        im.load()
+
+        im.seek(0)
+        self.assertEqual(im._compression,'tiff_ccitt')
+        self.assertEqual(im.size, (10, 10))
+        im.load()
 
 if __name__ == '__main__':
     unittest.main()
