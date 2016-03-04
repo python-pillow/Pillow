@@ -76,7 +76,7 @@ class ExtentTransform(Transform):
 
 
 ##
-# Define an quad image transform.
+# Define a quad image transform.
 # <p>
 # Maps a quadrilateral (a region defined by four corners) from the
 # image to a rectangle of the given size.
@@ -92,7 +92,7 @@ class QuadTransform(Transform):
 
 
 ##
-# Define an mesh image transform.  A mesh transform consists of one
+# Define a mesh image transform.  A mesh transform consists of one
 # or more individual quad transforms.
 #
 # @def MeshTransform(data)
