@@ -49,15 +49,15 @@ libs = {
         'version': '8.5.19',
     },
     'tcl-8.6': {
-        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.4/tcl864-src.zip',
-        'hash': 'md5:35748d2fc61e08a2fdb23b85c6f8c4a0',
+        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.5/tcl865-src.zip',
+        'hash': 'md5:932e360acb40ec760ebeed659bc893de',
         'dir': '',
     },
     'tk-8.6': {
-        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.4/tk864-src.zip',
-        'hash': 'md5:111d45061a69e7f5250b6ec8ca7c4f35',
+        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.5/tk865-src.zip',
+        'hash': 'md5:f2f5802a5a3b1f70b906e6930db12089',
         'dir': '',
-        'version': '8.6.4',
+        'version': '8.6.5',
     },
     'webp': {
         'url': 'http://downloads.webmproject.org/releases/webp/libwebp-0.5.0.tar.gz',
