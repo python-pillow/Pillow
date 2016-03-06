@@ -2421,7 +2421,7 @@ Pre-fork
     + Added experimental "RGBa" mode support.
 
       An "RGBa" image is an RGBA image where the colour components
-      have have been premultipled with the alpha value.  PIL allows
+      have have been premultiplied with the alpha value.  PIL allows
       you to convert an RGBA image to an RGBa image, and to paste
       RGBa images on top of RGB images.  Since this saves a bunch
       of multiplications and shifts, it is typically about twice
