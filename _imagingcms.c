@@ -658,6 +658,30 @@ _profile_read_ciexyz(CmsProfileObject* self, cmsTagSignature info, int multi)
 }
 
 static PyObject*
+_profile_read_ciexyy_triple(CmsProfileObject* self, cmsTagSignature info)
+{
+    cmsCIExyYTRIPLE* triple;
+
+    if (!cmsIsTag(self->profile, info)) {
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    triple = (cmsCIExyYTRIPLE*) cmsReadTag(self->profile, info);
+    if (!triple) {
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    /* Note: lcms does all the heavy lifting and error checking (nr of
+       channels == 3).  */
+    return Py_BuildValue("((d,d,d),(d,d,d),(d,d,d)),",
+			 triple->Red.x, triple->Red.y, triple->Red.Y,
+			 triple->Green.x, triple->Green.y, triple->Green.Y,
+			 triple->Blue.x, triple->Blue.y, triple->Blue.Y);
+}
+
+static PyObject*
 _profile_read_named_color_list(CmsProfileObject* self, cmsTagSignature info)
 {
     cmsNAMEDCOLORLIST* ncl;
@@ -1138,7 +1162,7 @@ cms_profile_getattr_chromatic_adaptation(CmsProfileObject* self, void* closure)
 static PyObject*
 cms_profile_getattr_chromaticity(CmsProfileObject* self, void* closure)
 {
-    return _profile_read_ciexyz(self, cmsSigChromaticityTag, 0);
+    return _profile_read_ciexyy_triple(self, cmsSigChromaticityTag);
 }
 
 static PyObject*
