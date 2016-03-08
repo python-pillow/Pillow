@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Fix the error reported when libz is not found #1764
+  [wiredfool]
+
+- More general error check to avoid Symbol not found: _PyUnicodeUCS2_AsLatin1String on OS X #1761
+  [wiredfool]
+
 - Added py35 to tox envlist #1724
   [radarhere]
 
