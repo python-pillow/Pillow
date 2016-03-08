@@ -510,7 +510,7 @@ class pil_build_ext(build_ext):
 
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
-                if f in ('jpeg', 'libz'):
+                if f in ('jpeg', 'zlib'):
                     raise ValueError('%s is required unless explicitly disabled'
                                      ' using --disable-%s, aborting' %
                                      (f, f))
