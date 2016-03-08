@@ -82,16 +82,20 @@ except ImportError as v:
             )
     elif str(v).startswith("The _imaging extension"):
         warnings.warn(str(v), RuntimeWarning)
-    elif "Symbol not found: _PyUnicodeUCS2_FromString" in str(v):
+    elif "Symbol not found: _PyUnicodeUCS2_" in str(v):
+        # should match _PyUnicodeUCS2_FromString and
+        # _PyUnicodeUCS2_AsLatin1String
         warnings.warn(
             "The _imaging extension was built for Python with UCS2 support; "
-            "recompile PIL or build Python --without-wide-unicode. ",
+            "recompile Pillow or build Python --without-wide-unicode. ",
             RuntimeWarning
             )
-    elif "Symbol not found: _PyUnicodeUCS4_FromString" in str(v):
+    elif "Symbol not found: _PyUnicodeUCS4_" in str(v):
+        # should match _PyUnicodeUCS4_FromString and
+        # _PyUnicodeUCS4_AsLatin1String
         warnings.warn(
             "The _imaging extension was built for Python with UCS4 support; "
-            "recompile PIL or build Python --with-wide-unicode. ",
+            "recompile Pillow or build Python --with-wide-unicode. ",
             RuntimeWarning
             )
     # Fail here anyway. Don't let people run with a mostly broken Pillow.
