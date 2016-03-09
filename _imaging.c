@@ -471,29 +471,29 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
 static char*
 getink(PyObject* color, Imaging im, char* ink)
 {
-    int r, g, b, a;
+    int r = -1;
+    int g, b, a;
     double f;
 
     /* fill ink buffer (four bytes) with something that can
        be cast to either UINT8 or INT32 */
 
-    int rIsInt = 1;
+    int rIsInt = 0;
     if (im->type == IMAGING_TYPE_UINT8 ||
         im->type == IMAGING_TYPE_INT32 ||
         im->type == IMAGING_TYPE_SPECIAL) {
-#if PY_VERSION_HEX >= 0x03000000
 		if (PyLong_Check(color)) {
 			r = (int) PyLong_AsLong(color);
-#else
-		if (PyInt_Check(color) || PyLong_Check(color)) {
-			if (PyInt_Check(color))
-				r = PyInt_AS_LONG(color);
-			else
-				r = (int) PyLong_AsLong(color);
-#endif
+			if (!(r == -1 && PyErr_Occurred()))
+				rIsInt = 1;
+                }
+#if PY_VERSION_HEX < 0x03000000
+		else if (PyInt_Check(color)) {
+			r = PyInt_AS_LONG(color);
+			if (!(r == -1 && PyErr_Occurred()))
+				rIsInt = 1;
 		}
-		if (r == -1 && PyErr_Occurred())
-		    rIsInt = 0;
+#endif
     }
 
     switch (im->type) {
@@ -507,17 +507,7 @@ getink(PyObject* color, Imaging im, char* ink)
             ink[1] = ink[2] = ink[3] = 0;
         } else {
             a = 255;
-#if PY_VERSION_HEX >= 0x03000000
-            if (PyLong_Check(color)) {
-                r = (int) PyLong_AsLong(color);
-#else
-            if (PyInt_Check(color) || PyLong_Check(color)) {
-                if (PyInt_Check(color))
-                    r = PyInt_AS_LONG(color);
-                else
-                    r = (int) PyLong_AsLong(color);
-#endif
-
+	    if (rIsInt) {
                 /* compatibility: ABGR */
                 a = (UINT8) (r >> 24);
                 b = (UINT8) (r >> 16);
@@ -3596,4 +3586,3 @@ init_imaging(void)
     setup_module(m);
 }
 #endif
-
