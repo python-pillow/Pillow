@@ -37,6 +37,7 @@ if len(sys.argv) == 1:
     print("Usage: pilprint files...")
     print("Options:")
     print("  -c            colour printer (default is monochrome)")
+    print("  -d            debug (show available drivers)")
     print("  -p            print via lpr (default is stdout)")
     print("  -P <printer>  same as -p but use given printer")
     sys.exit(1)
