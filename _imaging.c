@@ -471,8 +471,13 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
 static char*
 getink(PyObject* color, Imaging im, char* ink)
 {
-    int r=0, g=0, b=0, a=0;
+    int g=0, b=0, a=0;
     double f=0;
+    /* Windows 64 bit longs are 32 bits, and 0xFFFFFFFF (white) is a
+       python long (not int) that raises an overflow error when trying
+       to return it into a 32 bit C long
+    */
+    PY_LONG_LONG r = 0;
 
     /* fill ink buffer (four bytes) with something that can
        be cast to either UINT8 or INT32 */
@@ -482,19 +487,19 @@ getink(PyObject* color, Imaging im, char* ink)
         im->type == IMAGING_TYPE_INT32 ||
         im->type == IMAGING_TYPE_SPECIAL) {
 #if PY_VERSION_HEX >= 0x03000000
-		if (PyLong_Check(color)) {
-			r = (int) PyLong_AsLong(color);
+                if (PyLong_Check(color)) {
+                        r = PyLong_AsLongLong(color);
 #else
-		if (PyInt_Check(color) || PyLong_Check(color)) {
-			if (PyInt_Check(color))
-				r = PyInt_AS_LONG(color);
-			else
-				r = (int) PyLong_AsLong(color);
+                if (PyInt_Check(color) || PyLong_Check(color)) {
+                        if (PyInt_Check(color))
+                                r = PyInt_AS_LONG(color);
+                        else
+                                r = PyLong_AsLongLong(color);
 #endif
             rIsInt = 1;
-		}
-		if (r == -1 && PyErr_Occurred()) {
-		    rIsInt = 0;
+                }
+                if (r == -1 && PyErr_Occurred()) {
+                    rIsInt = 0;
         }
     }
 
