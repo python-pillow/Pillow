@@ -62,7 +62,7 @@ The tables format between im.quantization and quantization in presets differ in
 You can convert the dict format to the preset format with the
 `JpegImagePlugin.convert_dict_qtables(dict_qtables)` function.
 
-Libjpeg ref.: http://www.jpegcameras.com/libjpeg/libjpeg-3.html
+Libjpeg ref.: http://web.archive.org/web/20120328125543/http://www.jpegcameras.com/libjpeg/libjpeg-3.html
 
 """
 
