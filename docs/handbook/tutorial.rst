@@ -247,8 +247,9 @@ Transposing an image
     out = im.transpose(Image.ROTATE_180)
     out = im.transpose(Image.ROTATE_270)
 
-There’s no difference in performance or result between ``transpose(ROTATE)``
-and corresponding :py:meth:`~PIL.Image.Image.rotate` operations.
+``transpose(ROTATE)`` operations can also be performed identically with
+:py:meth:`~PIL.Image.Image.rotate` operations, provided the `expand` flag is
+true, to provide for the same changes to the image's size.
 
 A more general form of image transformations can be carried out via the
 :py:meth:`~PIL.Image.Image.transform` method.
