@@ -879,6 +879,12 @@ class Image(object):
                     trns_im = Image()._new(core.new(self.mode, (1, 1)))
                     if self.mode == 'P':
                         trns_im.putpalette(self.palette)
+                        if type(t) == tuple:
+                            try:
+                                t = trns_im.palette.getcolor(t)
+                            except:
+                                raise ValueError("Couldn't allocate a palette "+
+                                                 "color for transparency")
                     trns_im.putpixel((0, 0), t)
 
                     if mode in ('L', 'RGB'):
