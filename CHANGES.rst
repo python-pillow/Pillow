@@ -4,6 +4,27 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Added debug to command line help text for pilprint #1766
+  [radarhere]
+
+- Expose many more fields in ICC Profiles #1756
+  [lambdafu]
+
+- Documentation changes, URL update, transpose, release checklist
+  [radarhere]
+
+- Fixed saving to nonexistant files specified by pathlib.Path objects, fixes #1747
+  [radarhere]
+
+- Round Image.crop arguments to the nearest integer, fixes #1744
+  [hugovk]
+
+- Fix uninitialized variable warning in _imaging.c:getink, fixes #486
+  [wiredfool]
+
+- Disable multiprocessing install on cygwin, fixes #1690
+  [wiredfool]
+
 - Fix the error reported when libz is not found #1764
   [wiredfool]
 
@@ -16,7 +37,7 @@ Changelog (Pillow)
 - Fix EXIF tag name typos #1736
   [zarlant, radarhere]
 
-- Updated freetype to 2.6.3 #1725
+- Updated freetype to 2.6.3, Tcl to 8.6.5, tk to 8.5.19
   [radarhere]
 
 - Add a loader for the FTEX format from Independence War 2: Edge of Chaos #1688
