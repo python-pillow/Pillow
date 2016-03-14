@@ -52,6 +52,20 @@ class TestImageCrop(PillowTestCase):
         self.assertEqual(len(im.getdata()), 0)
         self.assertRaises(IndexError, lambda: im.getdata()[0])
 
+    def test_crop_float(self):
+        # Check cropping floats are rounded to nearest integer
+        # https://github.com/python-pillow/Pillow/issues/1744
+
+        # Arrange
+        im = Image.new("RGB", (10, 10))
+        self.assertEqual(im.size, (10, 10))
+
+        # Act
+        cropped = im.crop((0.9, 1.1, 4.2, 5.8))
+
+        # Assert
+        self.assertEqual(cropped.size, (3, 5))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1951,7 +1951,9 @@ class _ImageCrop(Image):
 
         Image.__init__(self)
 
-        x0, y0, x1, y1 = box
+        # Round to nearest integer, runs int(round(x)) when unpacking
+        x0, y0, x1, y1 = map(int, map(round, box))
+
         if x1 < x0:
             x1 = x0
         if y1 < y0:
