@@ -1646,7 +1646,7 @@ class Image(object):
         elif sys.version_info >= (3, 4):
             from pathlib import Path
             if isinstance(fp, Path):
-                filename = str(fp.resolve())
+                filename = str(fp)
                 open_fp = True
         elif hasattr(fp, "name") and isPath(fp.name):
             # only set the name for metadata purposes

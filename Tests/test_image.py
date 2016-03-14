@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
+import os
 import sys
 
 
@@ -56,6 +57,11 @@ class TestImage(PillowTestCase):
         im = Image.open(Path("Tests/images/hopper.jpg"))
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
+
+        temp_file = self.tempfile("temp.jpg")
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
+        im.save(Path(temp_file))
 
     def test_tempfile(self):
         # see #1460, pathlib support breaks tempfile.TemporaryFile on py27
