@@ -88,7 +88,7 @@ its 9 years and its new write features.
 As far as I know, olefile is the most complete and robust Python implementation to read MS OLE2 files, portable on 
 several operating systems. (please tell me if you know other similar Python modules)
 
-Since 2014 olefile/OleFileIO_PL has been integrated into [Pillow](http://python-imaging.github.io/), the friendly fork 
+Since 2014 olefile/OleFileIO_PL has been integrated into [Pillow](http://python-pillow.org), the friendly fork 
 of PIL. olefile will continue to be improved as a separate project, and new versions will be merged into Pillow 
 regularly.
 
