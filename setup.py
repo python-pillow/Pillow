@@ -22,18 +22,16 @@ from setuptools import Extension, setup, find_packages
 # comment this out to disable multi threaded builds.
 import mp_compile
 
-_IMAGING = (
-    "decode", "encode", "map", "display", "outline", "path")
+_IMAGING = ("decode", "encode", "map", "display", "outline", "path")
 
 _LIB_IMAGING = (
     "Access", "AlphaComposite", "Resample", "Bands", "BitDecode", "Blend",
     "Chops", "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop", "Dib", "Draw",
-    "Effects", "EpsEncode", "File", "Fill", "Filter", "FliDecode",
-    "Geometry", "GetBBox", "GifDecode", "GifEncode", "HexDecode",
-    "Histo", "JpegDecode", "JpegEncode", "LzwDecode", "Matrix",
-    "ModeFilter", "MspDecode", "Negative", "Offset", "Pack",
-    "PackDecode", "Palette", "Paste", "Quant", "QuantOctree", "QuantHash",
-    "QuantHeap", "PcdDecode", "PcxDecode", "PcxEncode", "Point",
+    "Effects", "EpsEncode", "File", "Fill", "Filter", "FliDecode", "Geometry",
+    "GetBBox", "GifDecode", "GifEncode", "HexDecode", "Histo", "JpegDecode",
+    "JpegEncode", "LzwDecode", "Matrix", "ModeFilter", "MspDecode", "Negative",
+    "Offset", "Pack", "PackDecode", "Palette", "Paste", "Quant", "QuantOctree",
+    "QuantHash", "QuantHeap", "PcdDecode", "PcxDecode", "PcxEncode", "Point",
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
     "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
     "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Incremental",
@@ -65,13 +63,13 @@ def _find_library_file(self, library):
     if 'cpython' in self.compiler.shared_lib_extension:
         existing = self.compiler.shared_lib_extension
         self.compiler.shared_lib_extension = "." + existing.split('.')[-1]
-        ret = self.compiler.find_library_file(
-            self.compiler.library_dirs, library)
+        ret = self.compiler.find_library_file(self.compiler.library_dirs,
+                                              library)
         self.compiler.shared_lib_extension = existing
         return ret
     else:
-        return self.compiler.find_library_file(
-            self.compiler.library_dirs, library)
+        return self.compiler.find_library_file(self.compiler.library_dirs,
+                                               library)
 
 
 def _lib_include(root):
@@ -82,12 +80,12 @@ def _lib_include(root):
 def _read(file):
     return open(file, 'rb').read()
 
+
 try:
     import _tkinter
 except (ImportError, OSError):
     # pypy emits an oserror
     _tkinter = None
-
 
 NAME = 'Pillow'
 PILLOW_VERSION = '3.2.0.dev0'
@@ -101,7 +99,6 @@ LCMS_ROOT = None
 
 
 class pil_build_ext(build_ext):
-
     class feature:
         zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = webpmux = None
         jpeg2000 = None
@@ -121,11 +118,9 @@ class pil_build_ext(build_ext):
     feature = feature()
 
     user_options = build_ext.user_options + [
-        ('disable-%s' % x, None, 'Disable support for %s' % x)
-        for x in feature
+        ('disable-%s' % x, None, 'Disable support for %s' % x) for x in feature
     ] + [
-        ('enable-%s' % x, None, 'Enable support for %s' % x)
-        for x in feature
+        ('enable-%s' % x, None, 'Enable support for %s' % x) for x in feature
     ]
 
     def initialize_options(self):
@@ -142,8 +137,8 @@ class pil_build_ext(build_ext):
                 self.feature.required.discard(x)
                 if getattr(self, 'enable_%s' % x):
                     raise ValueError(
-                        'Conflicting options: --enable-%s and --disable-%s'
-                        % (x, x))
+                        'Conflicting options: --enable-%s and --disable-%s' %
+                        (x, x))
             if getattr(self, 'enable_%s' % x):
                 self.feature.required.add(x)
 
@@ -197,8 +192,9 @@ class pil_build_ext(build_ext):
 
         if sys.platform == "cygwin":
             # pythonX.Y.dll.a is in the /usr/lib/pythonX.Y/config directory
-            _add_directory(library_dirs, os.path.join(
-                "/usr/lib", "python%s" % sys.version[:3], "config"))
+            _add_directory(library_dirs,
+                           os.path.join("/usr/lib", "python%s" %
+                                        sys.version[:3], "config"))
 
         elif sys.platform == "darwin":
             # attempt to make sure we pick freetype2 over other versions
@@ -214,9 +210,8 @@ class pil_build_ext(build_ext):
             # if Homebrew is installed, use its lib and include directories
             import subprocess
             try:
-                prefix = subprocess.check_output(
-                    ['brew', '--prefix']
-                ).strip().decode('latin1')
+                prefix = subprocess.check_output(['brew', '--prefix']).strip(
+                ).decode('latin1')
             except:
                 # Homebrew not installed
                 prefix = None
@@ -232,8 +227,8 @@ class pil_build_ext(build_ext):
             if ft_prefix and os.path.isdir(ft_prefix):
                 # freetype might not be linked into Homebrew's prefix
                 _add_directory(library_dirs, os.path.join(ft_prefix, 'lib'))
-                _add_directory(
-                    include_dirs, os.path.join(ft_prefix, 'include'))
+                _add_directory(include_dirs,
+                               os.path.join(ft_prefix, 'include'))
             else:
                 # fall back to freetype from XQuartz if
                 # Homebrew's freetype is missing
@@ -254,38 +249,37 @@ class pil_build_ext(build_ext):
                     if platform_ in ["x86_64", "64bit"]:
                         _add_directory(library_dirs, "/lib64")
                         _add_directory(library_dirs, "/usr/lib64")
-                        _add_directory(
-                            library_dirs, "/usr/lib/x86_64-linux-gnu")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/x86_64-linux-gnu")
                         break
                     elif platform_ in ["i386", "i686", "32bit"]:
-                        _add_directory(
-                            library_dirs, "/usr/lib/i386-linux-gnu")
+                        _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
                         break
                     elif platform_ in ["aarch64"]:
                         _add_directory(library_dirs, "/usr/lib64")
-                        _add_directory(
-                            library_dirs, "/usr/lib/aarch64-linux-gnu")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/aarch64-linux-gnu")
                         break
                     elif platform_ in ["arm", "armv7l"]:
-                        _add_directory(
-                            library_dirs, "/usr/lib/arm-linux-gnueabi")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/arm-linux-gnueabi")
                         break
                     elif platform_ in ["ppc64"]:
                         _add_directory(library_dirs, "/usr/lib64")
-                        _add_directory(
-                            library_dirs, "/usr/lib/ppc64-linux-gnu")
-                        _add_directory(
-                            library_dirs, "/usr/lib/powerpc64-linux-gnu")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/ppc64-linux-gnu")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/powerpc64-linux-gnu")
                         break
                     elif platform_ in ["ppc"]:
                         _add_directory(library_dirs, "/usr/lib/ppc-linux-gnu")
-                        _add_directory(
-                            library_dirs, "/usr/lib/powerpc-linux-gnu")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/powerpc-linux-gnu")
                         break
                     elif platform_ in ["s390x"]:
                         _add_directory(library_dirs, "/usr/lib64")
-                        _add_directory(
-                            library_dirs, "/usr/lib/s390x-linux-gnu")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/s390x-linux-gnu")
                         break
                     elif platform_ in ["s390"]:
                         _add_directory(library_dirs, "/usr/lib/s390-linux-gnu")
@@ -311,8 +305,8 @@ class pil_build_ext(build_ext):
             _add_directory(include_dirs, "/usr/pkg/include")
 
         elif sys.platform.startswith("sunos5"):
-                    _add_directory(library_dirs, "/opt/local/lib")
-                    _add_directory(include_dirs, "/opt/local/include")
+            _add_directory(library_dirs, "/opt/local/lib")
+            _add_directory(include_dirs, "/opt/local/include")
 
         # FIXME: check /opt/stuff directories here?
 
@@ -332,8 +326,12 @@ class pil_build_ext(build_ext):
                 # locations later)
                 os.path.join("/py" + PYVERSION, "Tcl"),
                 os.path.join("/python" + PYVERSION, "Tcl"),
-                "/Tcl", "/Tcl" + TCLVERSION, "/Tcl" + TCL_VERSION,
-                os.path.join(os.environ.get("ProgramFiles", ""), "Tcl"), ]
+                "/Tcl",
+                "/Tcl" + TCLVERSION,
+                "/Tcl" + TCL_VERSION,
+                os.path.join(
+                    os.environ.get("ProgramFiles", ""), "Tcl"),
+            ]
             for TCL_ROOT in roots:
                 TCL_ROOT = os.path.abspath(TCL_ROOT)
                 if os.path.isfile(os.path.join(TCL_ROOT, "include", "tk.h")):
@@ -368,15 +366,14 @@ class pil_build_ext(build_ext):
             best_path = None
             for name in os.listdir(program_files):
                 if name.startswith('OpenJPEG '):
-                    version = tuple(
-                        [int(x) for x in name[9:].strip().split('.')])
+                    version = tuple([int(x) for x in name[9:].strip().split(
+                        '.')])
                     if version > best_version:
                         best_version = version
                         best_path = os.path.join(program_files, name)
 
             if best_path:
-                _add_directory(library_dirs,
-                               os.path.join(best_path, 'lib'))
+                _add_directory(library_dirs, os.path.join(best_path, 'lib'))
                 _add_directory(include_dirs,
                                os.path.join(best_path, 'include'))
 
@@ -397,16 +394,15 @@ class pil_build_ext(build_ext):
                 if _find_library_file(self, "z"):
                     feature.zlib = "z"
                 elif (sys.platform == "win32" and
-                        _find_library_file(self, "zlib")):
+                      _find_library_file(self, "zlib")):
                     feature.zlib = "zlib"  # alternative name
 
         if feature.want('jpeg'):
             if _find_include_file(self, "jpeglib.h"):
                 if _find_library_file(self, "jpeg"):
                     feature.jpeg = "jpeg"
-                elif (
-                        sys.platform == "win32" and
-                        _find_library_file(self, "libjpeg")):
+                elif (sys.platform == "win32" and
+                      _find_library_file(self, "libjpeg")):
                     feature.jpeg = "libjpeg"  # alternative name
 
         feature.openjpeg_version = None
@@ -436,8 +432,8 @@ class pil_build_ext(build_ext):
                 # include path
                 _add_directory(self.compiler.include_dirs, best_path, 0)
                 feature.jpeg2000 = 'openjp2'
-                feature.openjpeg_version = '.'.join(
-                    [str(x) for x in best_version])
+                feature.openjpeg_version = '.'.join([str(x) for x in
+                                                     best_version])
 
         if feature.want('tiff'):
             if _find_library_file(self, "tiff"):
@@ -511,12 +507,12 @@ class pil_build_ext(build_ext):
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
                 if f in ('jpeg', 'zlib'):
-                    raise ValueError('%s is required unless explicitly disabled'
-                                     ' using --disable-%s, aborting' %
-                                     (f, f))
+                    raise ValueError(
+                        '%s is required unless explicitly disabled'
+                        ' using --disable-%s, aborting' % (f, f))
                 raise ValueError(
-                    '--enable-%s requested but %s not found, aborting.'
-                    % (f, f))
+                    '--enable-%s requested but %s not found, aborting.' %
+                    (f, f))
 
         #
         # core library
@@ -548,24 +544,26 @@ class pil_build_ext(build_ext):
         if struct.unpack("h", "\0\1".encode('ascii'))[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
 
-        exts = [(Extension(
-            "PIL._imaging", files, libraries=libs, define_macros=defs))]
+        exts = [(Extension("PIL._imaging",
+                           files,
+                           libraries=libs,
+                           define_macros=defs))]
 
         #
         # additional libraries
 
         if feature.freetype:
-            exts.append(Extension(
-                "PIL._imagingft", ["_imagingft.c"], libraries=["freetype"]))
+            exts.append(Extension("PIL._imagingft",
+                                  ["_imagingft.c"],
+                                  libraries=["freetype"]))
 
         if os.path.isfile("_imagingcms.c") and feature.lcms:
             extra = []
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
-            exts.append(Extension(
-                "PIL._imagingcms",
-                ["_imagingcms.c"],
-                libraries=[feature.lcms] + extra))
+            exts.append(Extension("PIL._imagingcms",
+                                  ["_imagingcms.c"],
+                                  libraries=[feature.lcms] + extra))
 
         if os.path.isfile("_webp.c") and feature.webp:
             libs = [feature.webp]
@@ -576,16 +574,18 @@ class pil_build_ext(build_ext):
                 libs.append(feature.webpmux)
                 libs.append(feature.webpmux.replace('pmux', 'pdemux'))
 
-            exts.append(Extension(
-                "PIL._webp", ["_webp.c"], libraries=libs, define_macros=defs))
+            exts.append(Extension("PIL._webp",
+                                  ["_webp.c"],
+                                  libraries=libs,
+                                  define_macros=defs))
 
         if feature.tcl and feature.tk:
             if sys.platform == "darwin":
                 # locate Tcl/Tk frameworks
                 frameworks = []
                 framework_roots = [
-                    "/Library/Frameworks",
-                    "/System/Library/Frameworks"]
+                    "/Library/Frameworks", "/System/Library/Frameworks"
+                ]
                 for root in framework_roots:
                     root_tcl = os.path.join(root, "Tcl.framework")
                     root_tk = os.path.join(root, "Tk.framework")
@@ -598,14 +598,14 @@ class pil_build_ext(build_ext):
                         _add_directory(self.compiler.include_dirs, dir, 1)
                         break
                 if frameworks:
-                    exts.append(Extension(
-                        "PIL._imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
-                        extra_compile_args=frameworks,
-                        extra_link_args=frameworks))
+                    exts.append(Extension("PIL._imagingtk",
+                                          ["_imagingtk.c", "Tk/tkImaging.c"],
+                                          extra_compile_args=frameworks,
+                                          extra_link_args=frameworks))
             else:
-                exts.append(Extension(
-                    "PIL._imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
-                    libraries=[feature.tcl, feature.tk]))
+                exts.append(Extension("PIL._imagingtk",
+                                      ["_imagingtk.c", "Tk/tkImaging.c"],
+                                      libraries=[feature.tcl, feature.tk]))
 
         if os.path.isfile("_imagingmath.c"):
             exts.append(Extension("PIL._imagingmath", ["_imagingmath.c"]))
@@ -643,13 +643,14 @@ class pil_build_ext(build_ext):
             (feature.tcl and feature.tk, "TKINTER"),
             (feature.jpeg, "JPEG"),
             (feature.jpeg2000, "OPENJPEG (JPEG2000)",
-                feature.openjpeg_version),
+             feature.openjpeg_version),
             (feature.zlib, "ZLIB (PNG/ZIP)"),
             (feature.tiff, "LIBTIFF"),
             (feature.freetype, "FREETYPE2"),
             (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
-            (feature.webpmux, "WEBPMUX"), ]
+            (feature.webpmux, "WEBPMUX"),
+        ]
 
         all = 1
         for option in options:
@@ -717,12 +718,10 @@ class pil_build_ext(build_ext):
                 fp = open(tmpfile, 'r')
                 multiarch_path_component = fp.readline().strip()
                 fp.close()
-                _add_directory(
-                    self.compiler.library_dirs,
-                    '/usr/lib/' + multiarch_path_component)
-                _add_directory(
-                    self.compiler.include_dirs,
-                    '/usr/include/' + multiarch_path_component)
+                _add_directory(self.compiler.library_dirs,
+                               '/usr/lib/' + multiarch_path_component)
+                _add_directory(self.compiler.include_dirs,
+                               '/usr/include/' + multiarch_path_component)
         finally:
             os.unlink(tmpfile)
 
@@ -730,41 +729,40 @@ class pil_build_ext(build_ext):
 def debug_build():
     return hasattr(sys, 'gettotalrefcount')
 
-setup(
-    name=NAME,
-    version=PILLOW_VERSION,
-    description='Python Imaging Library (Fork)',
-    long_description=_read('README.rst').decode('utf-8'),
-    author='Alex Clark (Fork Author)',
-    author_email='aclark@aclark.net',
-    url='http://python-pillow.github.io/',
-    classifiers=[
-        "Development Status :: 6 - Mature",
-        "Topic :: Multimedia :: Graphics",
-        "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
-        "Topic :: Multimedia :: Graphics :: Capture :: Scanners",
-        "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
-        "Topic :: Multimedia :: Graphics :: Graphics Conversion",
-        "Topic :: Multimedia :: Graphics :: Viewers",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.2",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy',
-        ],
-    cmdclass={"build_ext": pil_build_ext},
-    ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
-    include_package_data=True,
-    packages=find_packages(),
-    scripts=glob.glob("Scripts/*.py"),
-    test_suite='nose.collector',
-    keywords=["Imaging", ],
-    license='Standard PIL License',
-    zip_safe=not debug_build(),
-)
+
+setup(name=NAME,
+      version=PILLOW_VERSION,
+      description='Python Imaging Library (Fork)',
+      long_description=_read('README.rst').decode('utf-8'),
+      author='Alex Clark (Fork Author)',
+      author_email='aclark@aclark.net',
+      url='http://python-pillow.org',
+      classifiers=[
+          "Development Status :: 6 - Mature",
+          "Topic :: Multimedia :: Graphics",
+          "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+          "Topic :: Multimedia :: Graphics :: Capture :: Scanners",
+          "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+          "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+          "Topic :: Multimedia :: Graphics :: Viewers",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.6",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.2",
+          "Programming Language :: Python :: 3.3",
+          "Programming Language :: Python :: 3.4",
+          "Programming Language :: Python :: 3.5",
+          'Programming Language :: Python :: Implementation :: CPython',
+          'Programming Language :: Python :: Implementation :: PyPy',
+      ],
+      cmdclass={"build_ext": pil_build_ext},
+      ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
+      include_package_data=True,
+      packages=find_packages(),
+      scripts=glob.glob("Scripts/*.py"),
+      test_suite='nose.collector',
+      keywords=["Imaging", ],
+      license='Standard PIL License',
+      zip_safe=not debug_build(), )
 # End of file
