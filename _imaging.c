@@ -2366,7 +2366,7 @@ _draw_dealloc(ImagingDrawObject* self)
     PyObject_Del(self);
 }
 
-extern int PyPath_Flatten(PyObject* data, double **xy);
+extern Py_ssize_t PyPath_Flatten(PyObject* data, double **xy);
 
 static PyObject*
 _draw_ink(ImagingDrawObject* self, PyObject* args)
@@ -2387,7 +2387,7 @@ static PyObject*
 _draw_arc(ImagingDrawObject* self, PyObject* args)
 {
     double* xy;
-    int n;
+    Py_ssize_t n;
 
     PyObject* data;
     int ink;
@@ -2423,7 +2423,7 @@ static PyObject*
 _draw_bitmap(ImagingDrawObject* self, PyObject* args)
 {
     double *xy;
-    int n;
+    Py_ssize_t n;
 
     PyObject *data;
     ImagingObject* bitmap;
@@ -2459,7 +2459,7 @@ static PyObject*
 _draw_chord(ImagingDrawObject* self, PyObject* args)
 {
     double* xy;
-    int n;
+    Py_ssize_t n;
 
     PyObject* data;
     int ink, fill;
@@ -2495,7 +2495,7 @@ static PyObject*
 _draw_ellipse(ImagingDrawObject* self, PyObject* args)
 {
     double* xy;
-    int n;
+    Py_ssize_t n;
 
     PyObject* data;
     int ink;
@@ -2546,7 +2546,7 @@ static PyObject*
 _draw_lines(ImagingDrawObject* self, PyObject* args)
 {
     double *xy;
-    int i, n;
+    Py_ssize_t i, n;
 
     PyObject *data;
     int ink;
@@ -2614,7 +2614,7 @@ static PyObject*
 _draw_points(ImagingDrawObject* self, PyObject* args)
 {
     double *xy;
-    int i, n;
+    Py_ssize_t i, n;
 
     PyObject *data;
     int ink;
@@ -2676,7 +2676,7 @@ static PyObject*
 _draw_pieslice(ImagingDrawObject* self, PyObject* args)
 {
     double* xy;
-    int n;
+    Py_ssize_t n;
 
     PyObject* data;
     int ink, fill;
@@ -2712,7 +2712,7 @@ _draw_polygon(ImagingDrawObject* self, PyObject* args)
 {
     double *xy;
     int *ixy;
-    int n, i;
+    Py_ssize_t n, i;
 
     PyObject* data;
     int ink;
@@ -2756,7 +2756,7 @@ static PyObject*
 _draw_rectangle(ImagingDrawObject* self, PyObject* args)
 {
     double* xy;
-    int n;
+    Py_ssize_t n;
 
     PyObject* data;
     int ink;

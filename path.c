@@ -107,10 +107,10 @@ path_dealloc(PyPathObject* path)
 
 #define PyPath_Check(op) (Py_TYPE(op) == &PyPathType)
 
-int
+Py_ssize_t
 PyPath_Flatten(PyObject* data, double **pxy)
 {
-    int i, j, n;
+    Py_ssize_t i, j, n;
     double *xy;
 
     if (PyPath_Check(data)) {
@@ -283,7 +283,7 @@ path_compact(PyPathObject* self, PyObject* args)
     /* Simple-minded method to shorten path.  A point is removed if
        the city block distance to the previous point is less than the
        given distance */
-    int i, j;
+    Py_ssize_t i, j;
     double *xy;
 
     double cityblock = 2.0;
@@ -331,7 +331,7 @@ static PyObject*
 path_getbbox(PyPathObject* self, PyObject* args)
 {
     /* Find bounding box */
-    int i;
+    Py_ssize_t i;
     double *xy;
     double x0, y0, x1, y1;
 
@@ -358,7 +358,7 @@ path_getbbox(PyPathObject* self, PyObject* args)
 }
 
 static PyObject*
-path_getitem(PyPathObject* self, int i)
+path_getitem(PyPathObject* self, Py_ssize_t i)
 {
     if (i < 0)
         i = self->count + i;
@@ -398,7 +398,7 @@ static PyObject*
 path_map(PyPathObject* self, PyObject* args)
 {
     /* Map coordinate set through function */
-    int i;
+    Py_ssize_t i;
     double *xy;
     PyObject* function;
 
@@ -426,7 +426,7 @@ path_map(PyPathObject* self, PyObject* args)
 }
 
 static int
-path_setitem(PyPathObject* self, int i, PyObject* op)
+path_setitem(PyPathObject* self, Py_ssize_t i, PyObject* op)
 {
     double* xy;
 
@@ -454,7 +454,7 @@ static PyObject*
 path_tolist(PyPathObject* self, PyObject* args)
 {
     PyObject *list;
-    int i;
+    Py_ssize_t i;
 
     int flat = 0;
     if (!PyArg_ParseTuple(args, "|i:tolist", &flat))
@@ -491,7 +491,7 @@ static PyObject*
 path_transform(PyPathObject* self, PyObject* args)
 {
     /* Apply affine transform to coordinate set */
-    int i;
+    Py_ssize_t i;
     double *xy;
     double a, b, c, d, e, f;
 
