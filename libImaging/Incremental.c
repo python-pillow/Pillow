@@ -371,7 +371,17 @@ ImagingIncrementalCodecPushBuffer(ImagingIncrementalCodec codec,
     /* In this specific case, we append to a buffer we allocate ourselves */
     size_t old_size = codec->stream.end - codec->stream.buffer;
     size_t new_size = codec->stream.end - codec->stream.buffer + bytes;
-    UINT8 *new = (UINT8 *)realloc (codec->stream.buffer, new_size);
+    UINT8 *new;
+    
+    if (old_size > SIZE_MAX - bytes) {
+       codec->state->errcode = IMAGING_CODEC_MEMORY;
+#ifndef _WIN32
+      pthread_mutex_unlock(&codec->data_mutex);
+#endif
+      return -1;
+    }       
+    /* malloc check ok, overflow checked */
+    new = (UINT8 *)realloc (codec->stream.buffer, new_size);
 
     if (!new) {
       codec->state->errcode = IMAGING_CODEC_MEMORY;

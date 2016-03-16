@@ -702,6 +702,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
         tile_info.y1 = (tile_info.y1 + correction) >> context->reduce;
 
         if (buffer_size < tile_info.data_size) {
+            /* malloc check ok, tile_info.data_size from openjpeg */
             UINT8 *new = realloc (state->buffer, tile_info.data_size);
             if (!new) {
                 state->errcode = IMAGING_CODEC_MEMORY;

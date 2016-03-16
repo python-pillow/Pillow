@@ -933,13 +933,16 @@ allocate(ImagingOutline outline, int extra)
     if (outline->count + extra > outline->size) {
         /* expand outline buffer */
         outline->size += extra + 25;
-        if (!outline->edges)
+        if (!outline->edges) {
             /* malloc check ok, uses calloc for overflow */
             e = calloc(outline->size, sizeof(Edge));
-        else
-            /* malloc check UNDONE, overflow, realloc to larger, 
-               if it fails, it will leak memory */
+        } else {
+            if (outline->size > SIZE_MAX / sizeof(Edge)) {
+                return NULL;
+            }
+            /* malloc check ok, overflow checked above */
             e = realloc(outline->edges, outline->size * sizeof(Edge));
+        }
         if (!e)
             return NULL;
         outline->edges = e;
