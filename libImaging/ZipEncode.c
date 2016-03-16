@@ -37,9 +37,16 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
         /* Valid modes are ZIP_PNG, ZIP_PNG_PALETTE, and ZIP_TIFF */
 
+        /* overflow check for malloc */
+        if (state->bytes > SIZE_MAX - 1) {
+            state->errcode = IMAGING_CODEC_MEMORY;
+            return -1;
+        }
+        
         /* Expand standard buffer to make room for the filter selector,
            and allocate filter buffers */
         free(state->buffer);
+        /* malloc check ok, overflow checked above */
         state->buffer = (UINT8*) malloc(state->bytes+1);
         context->previous = (UINT8*) malloc(state->bytes+1);
         context->prior = (UINT8*) malloc(state->bytes+1);

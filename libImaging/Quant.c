@@ -150,6 +150,7 @@ create_pixel_hash(Pixel *pixelData,uint32_t nPixels)
    uint32_t timer,timer2,timer3;
 #endif
 
+   /* malloc check ok, small constant allocation */
    d=malloc(sizeof(PixelHashData));
    if (!d) return NULL;
    hash=hashtable_new(pixel_hash,pixel_cmp);
@@ -234,6 +235,7 @@ hash_to_list(const HashTable *h, const Pixel pixel, const uint32_t count, void *
 
    PIXEL_SCALE(&pixel,&q,d->scale);
 
+   /* malloc check ok, small constant allocation */
    p=malloc(sizeof(PixelList));
    if (!p) return;
 
@@ -557,6 +559,7 @@ split(BoxNode *node)
       exit(1);
    }
 #endif
+   /* malloc check ok, small constant allocation */
    left=malloc(sizeof(BoxNode));
    right=malloc(sizeof(BoxNode));
    if (!left||!right) {
@@ -613,6 +616,7 @@ median_cut(PixelList *hl[3],
    BoxNode *thisNode;
 
    h=ImagingQuantHeapNew(box_heap_cmp);
+   /* malloc check ok, small constant allocation */
    root=malloc(sizeof(BoxNode));
    if (!root) { ImagingQuantHeapFree(h); return NULL; }
    for(i=0;i<3;i++) {
@@ -954,24 +958,22 @@ compute_palette_from_median_cut(
    uint32_t *count;
 
    *palette=NULL;
-   if (!(count=malloc(sizeof(uint32_t)*nPaletteEntries))) {
+   /* malloc check ok, using calloc */
+   if (!(count=calloc(nPaletteEntries, sizeof(uint32_t)))) {
       return 0;
    }
-   memset(count,0,sizeof(uint32_t)*nPaletteEntries);
    for(i=0;i<3;i++) {
       avg[i]=NULL;
    }
    for(i=0;i<3;i++) {
-      if (!(avg[i]=malloc(sizeof(uint32_t)*nPaletteEntries))) {
+      /* malloc check ok, using calloc */     
+      if (!(avg[i]=calloc(nPaletteEntries, sizeof(uint32_t)))) {
          for(i=0;i<3;i++) {
             if (avg[i]) free (avg[i]);
          }
          free(count);
          return 0;
       }
-   }
-   for(i=0;i<3;i++) {
-      memset(avg[i],0,sizeof(uint32_t)*nPaletteEntries);
    }
    for (i=0;i<nPixels;i++) {
 #ifdef TEST_SPLIT_INTEGRITY
@@ -1004,7 +1006,8 @@ compute_palette_from_median_cut(
       avg[2][paletteEntry]+=pixelData[i].c.b;
       count[paletteEntry]++;
    }
-   p=malloc(sizeof(Pixel)*nPaletteEntries);
+   /* malloc check ok, using calloc */
+   p=calloc(nPaletteEntries, sizeof(Pixel));
    if (!p) {
       for(i=0;i<3;i++) free (avg[i]);
       free(count);
@@ -1089,22 +1092,30 @@ k_means(Pixel *pixelData,
    uint32_t **avgDistSortKey;
    int changes;
    int built=0;
-
-   if (!(count=malloc(sizeof(uint32_t)*nPaletteEntries))) {
+   /* malloc check ok, using calloc */
+   if (!(count=calloc(nPaletteEntries, sizeof(uint32_t)))) {
       return 0;
    }
    for(i=0;i<3;i++) {
       avg[i]=NULL;
    }
    for(i=0;i<3;i++) {
-      if (!(avg[i]=malloc(sizeof(uint32_t)*nPaletteEntries))) {
+      /* malloc check ok, using calloc */
+      if (!(avg[i]=calloc(nPaletteEntries, sizeof(uint32_t)))) {
          goto error_1;
       }
    }
-   avgDist=malloc(sizeof(uint32_t)*nPaletteEntries*nPaletteEntries);
+   
+   /* this is enough of a check, since the multiplication n*size is done above */
+   if (nPaletteEntries > SIZE_MAX / (nPaletteEntries * sizeof(uint32_t))) {
+       goto error_1;
+   }
+   /* malloc check ok, using calloc, checking n*n above */
+   avgDist=calloc(nPaletteEntries*nPaletteEntries, sizeof(uint32_t));
    if (!avgDist) { goto error_1; }
 
-   avgDistSortKey=malloc(sizeof(uint32_t *)*nPaletteEntries*nPaletteEntries);
+   /* malloc check ok, using calloc, checking n*n above */
+   avgDistSortKey=calloc(nPaletteEntries*nPaletteEntries, sizeof(uint32_t *));
    if (!avgDistSortKey) { goto error_2; }
 
 #ifndef NO_OUTPUT
@@ -1251,13 +1262,20 @@ quantize(Pixel *pixelData,
    free_box_tree(root);
    root=NULL;
 
-   qp=malloc(sizeof(uint32_t)*nPixels);
+   /* malloc check ok, using calloc for overflow */
+   qp=calloc(nPixels, sizeof(uint32_t));
    if (!qp) { goto error_4; }
 
-   avgDist=malloc(sizeof(uint32_t)*nPaletteEntries*nPaletteEntries);
+   if ((nPaletteEntries > SIZE_MAX / nPaletteEntries ) ||
+       (nPaletteEntries > SIZE_MAX / (nPaletteEntries * sizeof(uint32_t)))) {
+       goto error_5;
+   }
+   /* malloc check ok, using calloc for overflow, check of n*n above */
+   avgDist=calloc(nPaletteEntries*nPaletteEntries, sizeof(uint32_t));
    if (!avgDist) { goto error_5; }
 
-   avgDistSortKey=malloc(sizeof(uint32_t *)*nPaletteEntries*nPaletteEntries);
+   /* malloc check ok, using calloc for overflow, check of n*n above */
+   avgDistSortKey=calloc(nPaletteEntries*nPaletteEntries, sizeof(uint32_t *));
    if (!avgDistSortKey) { goto error_6; }
 
    if (!build_distance_tables(avgDist,avgDistSortKey,p,nPaletteEntries)) {
@@ -1399,8 +1417,9 @@ quantize2(Pixel *pixelData,
    uint32_t *qp;
    uint32_t *avgDist;
    uint32_t **avgDistSortKey;
-
-   p=malloc(sizeof(Pixel)*nQuantPixels);
+   
+   /* malloc check ok, using calloc */
+   p=calloc(nQuantPixels, sizeof(Pixel));
    if (!p) return 0;
    mean[0]=mean[1]=mean[2]=0;
    h=hashtable_new(unshifted_pixel_hash,unshifted_pixel_cmp);
@@ -1422,13 +1441,21 @@ quantize2(Pixel *pixelData,
    }
    hashtable_free(h);
 
-   qp=malloc(sizeof(uint32_t)*nPixels);
+   /* malloc check ok, using calloc */
+   qp=calloc(nPixels, sizeof(uint32_t));
    if (!qp) { goto error_1; }
 
-   avgDist=malloc(sizeof(uint32_t)*nQuantPixels*nQuantPixels);
+   if ((nQuantPixels > SIZE_MAX / nQuantPixels ) ||
+       (nQuantPixels > SIZE_MAX / (nQuantPixels * sizeof(uint32_t)))) {
+       goto error_2;
+   }
+
+   /* malloc check ok, using calloc for overflow, check of n*n above */
+   avgDist=calloc(nQuantPixels*nQuantPixels, sizeof(uint32_t));
    if (!avgDist) { goto error_2; }
 
-   avgDistSortKey=malloc(sizeof(uint32_t *)*nQuantPixels*nQuantPixels);
+   /* malloc check ok, using calloc for overflow, check of n*n above */
+   avgDistSortKey=calloc(nQuantPixels*nQuantPixels, sizeof(uint32_t *));
    if (!avgDistSortKey) { goto error_3; }
 
    if (!build_distance_tables(avgDist,avgDistSortKey,p,nQuantPixels)) {
@@ -1474,7 +1501,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
     ImagingSectionCookie cookie;
 
     if (!im)
-	return ImagingError_ModeError();
+        return ImagingError_ModeError();
     if (colors < 1 || colors > 256)
         /* FIXME: for colors > 256, consider returning an RGB image
            instead (see @PIL205) */
@@ -1488,7 +1515,12 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
     if (!strcmp(im->mode, "RGBA") && mode != 2 && mode != 3)
        return ImagingError_ModeError();
 
-    p = malloc(sizeof(Pixel) * im->xsize * im->ysize);
+    if ((im->xsize > SIZE_MAX / im->ysize) ||
+        (im->xsize > SIZE_MAX / (im->ysize * sizeof(Pixel)))) {
+        return ImagingError_MemoryError();
+    }
+    /* malloc check ok, using calloc for final overflow, x*y above */
+    p = calloc(im->xsize * im->ysize, sizeof(Pixel));
     if (!p)
         return ImagingError_MemoryError();
 

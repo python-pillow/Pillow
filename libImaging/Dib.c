@@ -70,9 +70,11 @@ ImagingNewDIB(const char *mode, int xsize, int ysize)
         return (ImagingDIB) ImagingError_ModeError();
 
     /* Create DIB context and info header */
+    /* malloc check ok, small constant allocation */
     dib = (ImagingDIB) malloc(sizeof(*dib));
     if (!dib)
         return (ImagingDIB) ImagingError_MemoryError();
+    /* malloc check ok, small constant allocation */
     dib->info = (BITMAPINFO*) malloc(sizeof(BITMAPINFOHEADER) +
                                      256 * sizeof(RGBQUAD));
     if (!dib->info) {

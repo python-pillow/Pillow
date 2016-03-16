@@ -305,6 +305,7 @@ int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
 	} else {
 		// malloc a buffer to write the tif, we're going to need to realloc or something if we need bigger.
 		TRACE(("Opening a buffer for writing \n"));
+        /* malloc check ok, small constant allocation */
 		clientstate->data = malloc(bufsize);
 		clientstate->size = bufsize;
 		clientstate->flrealloc=1;

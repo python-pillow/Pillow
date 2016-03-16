@@ -103,7 +103,7 @@ ImagingPaletteDuplicate(ImagingPalette palette)
 
     if (!palette)
         return NULL;
-
+    /* malloc check ok, small constant allocation */
     new_palette = malloc(sizeof(struct ImagingPaletteInstance));
     if (!new_palette)
         return (ImagingPalette) ImagingError_MemoryError();
@@ -288,6 +288,7 @@ ImagingPaletteCachePrepare(ImagingPalette palette)
         /* The cache is 512k.  It might be a good idea to break it
            up into a pointer array (e.g. an 8-bit image?) */
 
+        /* malloc check ok, small constant allocation */
         palette->cache = (INT16*) malloc(entries * sizeof(INT16));
         if (!palette->cache) {
             (void) ImagingError_MemoryError();

@@ -188,8 +188,13 @@ _setimage(ImagingDecoderObject* decoder, PyObject* args)
 
     /* Allocate memory buffer (if bits field is set) */
     if (state->bits > 0) {
-        if (!state->bytes)
+        if (!state->bytes) {
+            if (state->xsize > ((SIZE_MAX / state->bits)-7)){
+                return PyErr_NoMemory();
+            }
             state->bytes = (state->bits * state->xsize+7)/8;
+        }
+        /* malloc check ok, oveflow checked above */
         state->buffer = (UINT8*) malloc(state->bytes);
         if (!state->buffer)
             return PyErr_NoMemory();

@@ -168,6 +168,7 @@ ImagingIncrementalCodecCreate(ImagingIncrementalCodecEntry codec_entry,
                               int seekable,
                               int fd)
 {
+    /* malloc check ok, small constant allocation */  
   ImagingIncrementalCodec codec = (ImagingIncrementalCodec)malloc(sizeof(struct ImagingIncrementalCodecStruct));
 
   codec->entry = codec_entry;

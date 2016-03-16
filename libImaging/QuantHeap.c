@@ -47,7 +47,12 @@ static int _heap_grow(Heap *h,int newsize) {
    void *newheap;
    if (!newsize) newsize=h->heapsize<<1;
    if (newsize<h->heapsize) return 0;
-   newheap=malloc(sizeof(void *)*newsize);
+   if (newsize > ((int)SIZE_MAX) / sizeof(void *)){
+       return 0;
+   }
+   /* malloc check ok, using calloc for overflow, also checking 
+      above due to memcpy below*/
+   newheap=calloc(newsize, sizeof(void *));
    if (!newheap) return 0;
    memcpy(newheap,h->heap,sizeof(void *)*h->heapsize);
    free(h->heap);
@@ -131,12 +136,17 @@ int ImagingQuantHeapTop(Heap *h,void **r) {
 
 Heap *ImagingQuantHeapNew(HeapCmpFunc cf) {
    Heap *h;
-
+   
+   /* malloc check ok, small constant allocation */
    h=malloc(sizeof(Heap));
    if (!h) return NULL;
    h->heapsize=INITIAL_SIZE;
-   h->heap=malloc(sizeof(void *)*h->heapsize);
-   if (!h->heap) { free(h); return NULL; }
+   /* malloc check ok, using calloc for overflow */
+   h->heap=calloc(h->heapsize, sizeof(void *));
+   if (!h->heap) { 
+       free(h); 
+       return NULL; 
+   }
    h->heapcount=0;
    h->cf=cf;
    return h;

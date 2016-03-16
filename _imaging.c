@@ -362,9 +362,20 @@ getbands(const char* mode)
 #define TYPE_DOUBLE (0x400|sizeof(double))
 
 static void*
-getlist(PyObject* arg, int* length, const char* wrong_length, int type)
+getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
 {
-    int i, n, itemp;
+    /* - allocates and returns a c array of the items in the 
+          python sequence arg.
+       - the size of the returned array is in length
+       - all of the arg items must be numeric items of the type 
+          specified in type
+       - sequence length is checked against the length parameter IF
+          an error parameter is passed in wrong_length
+       - caller is responsible for freeing the memory    
+    */
+
+    Py_ssize_t i, n; 
+    int itemp;
     double dtemp;
     void* list;
     PyObject* seq;
@@ -376,12 +387,14 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
     }
 
     n = PyObject_Length(arg);
-    if (length && wrong_length && n != *length) {
+    if (length && wrong_length && n !=  *length) {
         PyErr_SetString(PyExc_ValueError, wrong_length);
         return NULL;
     }
 
-    list = malloc(n * (type & 0xff));
+    /* malloc check ok, type & ff is just a sizeof(something)
+       calloc checks for overflow */
+    list = calloc(n, type & 0xff);
     if (!list)
         return PyErr_NoMemory();
 
@@ -845,7 +858,7 @@ static PyObject*
 _filter(ImagingObject* self, PyObject* args)
 {
     PyObject* imOut;
-    int kernelsize;
+    Py_ssize_t kernelsize;
     FLOAT32* kerneldata;
 
     int xsize, ysize;
@@ -859,7 +872,7 @@ _filter(ImagingObject* self, PyObject* args)
     kerneldata = getlist(kernel, &kernelsize, NULL, TYPE_FLOAT32);
     if (!kerneldata)
         return NULL;
-    if (kernelsize != xsize * ysize) {
+    if (kernelsize != (Py_ssize_t) xsize * (Py_ssize_t) ysize) {
         free(kerneldata);
         return ImagingError_ValueError("bad kernel size");
     }
@@ -1148,8 +1161,8 @@ _point(ImagingObject* self, PyObject* args)
 {
     static const char* wrong_number = "wrong number of lut entries";
 
-    int n, i;
-    int bands;
+    Py_ssize_t n;
+    int i, bands;
     Imaging im;
 
     PyObject* list;
@@ -1664,7 +1677,7 @@ _transform2(ImagingObject* self, PyObject* args)
 
     Imaging imIn;
     Imaging imOut;
-    int n;
+    Py_ssize_t n;
     double *a;
 
     ImagingObject* imagep;
@@ -1920,6 +1933,7 @@ _getprojection(ImagingObject* self, PyObject* args)
     unsigned char* yprofile;
     PyObject* result;
 
+    /* malloc check ok */
     xprofile = malloc(self->image->xsize);
     yprofile = malloc(self->image->ysize);
 
@@ -2731,7 +2745,7 @@ _draw_polygon(ImagingDrawObject* self, PyObject* args)
     }
 
     /* Copy list of vertices to array */
-    ixy = (int*) malloc(n * 2 * sizeof(int));
+    ixy = (int*) calloc(n, 2 * sizeof(int));
 
     for (i = 0; i < n; i++) {
         ixy[i+i] = (int) xy[i+i];

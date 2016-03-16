@@ -53,6 +53,7 @@ static ColorCube
 new_color_cube(int r, int g, int b, int a) {
    ColorCube cube;
 
+   /* malloc check ok, small constant allocation */
    cube = malloc(sizeof(struct _ColorCube));
    if (!cube) return NULL;
 
@@ -154,7 +155,11 @@ compare_bucket_count(const ColorBucket a, const ColorBucket b) {
 static ColorBucket
 create_sorted_color_palette(const ColorCube cube) {
    ColorBucket buckets;
-   buckets = malloc(sizeof(struct _ColorBucket)*cube->size);
+   if (cube->size > SIZE_MAX / sizeof(struct _ColorBucket)) {
+       return NULL;
+   }
+   /* malloc check ok, calloc + overflow check above for memcpy */
+   buckets = calloc(cube->size, sizeof(struct _ColorBucket));
    if (!buckets) return NULL;
    memcpy(buckets, cube->buckets, sizeof(struct _ColorBucket)*cube->size);
 
@@ -280,7 +285,15 @@ void add_lookup_buckets(ColorCube cube, ColorBucket palette, long nColors, long 
 ColorBucket
 combined_palette(ColorBucket bucketsA, long nBucketsA, ColorBucket bucketsB, long nBucketsB) {
    ColorBucket result;
-   result = malloc(sizeof(struct _ColorBucket)*(nBucketsA+nBucketsB));
+   if (nBucketsA > SIZE_MAX - nBucketsB ||
+       (nBucketsA+nBucketsB) > SIZE_MAX / sizeof(struct _ColorBucket)) {
+       return NULL;
+   }
+   /* malloc check ok, overflow check above */
+   result = calloc(nBucketsA + nBucketsB, sizeof(struct _ColorBucket));
+   if (!result) {
+       return NULL;
+   }
    memcpy(result, bucketsA, sizeof(struct _ColorBucket) * nBucketsA);
    memcpy(&result[nBucketsA], bucketsB, sizeof(struct _ColorBucket) * nBucketsB);
    return result;
@@ -290,8 +303,9 @@ static Pixel *
 create_palette_array(const ColorBucket palette, unsigned int paletteLength) {
    Pixel *paletteArray;
    unsigned int i;
-
-   paletteArray = malloc(sizeof(Pixel)*paletteLength);
+   
+   /* malloc check ok, calloc for overflow */
+   paletteArray = calloc(paletteLength, sizeof(Pixel));
    if (!paletteArray) return NULL;
 
    for (i=0; i<paletteLength; i++) {
@@ -405,6 +419,7 @@ int quantize_octree(Pixel *pixelData,
    paletteBucketsFine = NULL;
    free(paletteBucketsCoarse);
    paletteBucketsCoarse = NULL;
+   if (!paletteBuckets) goto error;
 
    /* add all coarse colors to our coarse lookup cube. */
    coarseLookupCube = new_color_cube(cubeBits[4], cubeBits[5],
@@ -422,7 +437,8 @@ int quantize_octree(Pixel *pixelData,
    add_lookup_buckets(lookupCube, paletteBuckets, nFineColors, nCoarseColors);
 
    /* create result pixels and map palette indices */
-   qp = malloc(sizeof(Pixel)*nPixels);
+   /* malloc check ok, calloc for overflow */
+   qp = calloc(nPixels, sizeof(Pixel));
    if (!qp) goto error;
    map_image_pixels(pixelData, nPixels, lookupCube, qp);
 

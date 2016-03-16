@@ -306,6 +306,7 @@ ImagingNewArray(const char *mode, int xsize, int ysize)
 
     /* Allocate image as an array of lines */
     for (y = 0; y < im->ysize; y++) {
+        /* malloc check UNDONE - where is linesize set? */
         p = (char *) malloc(im->linesize);
         if (!p) {
             ImagingDestroyArray(im);
@@ -345,18 +346,23 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
     if (!im)
         return NULL;
 
-    /* Use a single block */
-    bytes = (Py_ssize_t) im->ysize * im->linesize;
+
+    if (im->linesize &&
+        im->ysize > SIZE_MAX / im->linesize) {
+        /* punt if we're going to overflow */
+        return NULL;
+    }
+    /* Use a single block */        
+    bytes = ((Py_ssize_t) im->ysize) * im->linesize;
     if (bytes <= 0)
         /* some platforms return NULL for malloc(0); this fix
            prevents MemoryError on zero-sized images on such
            platforms */
         bytes = 1;
-    im->block = (char *) malloc(bytes);
+    /* malloc check ok, overflow check above */
+    im->block = (char *) calloc(bytes, 1);
 
     if (im->block) {
-        memset(im->block, 0, bytes);
-
         for (y = i = 0; y < im->ysize; y++) {
             im->image[y] = im->block + i;
             i += im->linesize;
@@ -392,7 +398,7 @@ ImagingNew(const char* mode, int xsize, int ysize)
     } else
         bytes = strlen(mode); /* close enough */
 
-    if ((int64_t) xsize * (int64_t) ysize * bytes <= THRESHOLD) {
+    if ((int64_t) xsize * (int64_t) ysize <= THRESHOLD / bytes) {
         im = ImagingNewBlock(mode, xsize, ysize);
         if (im)
             return im;
