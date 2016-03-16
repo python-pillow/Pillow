@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL import ImagePath
+from PIL import ImagePath, Image
 
 import array
 import struct
@@ -69,18 +69,21 @@ class TestImagePath(PillowTestCase):
             
             # This fails due to the invalid malloc above,
             # and segfaults
-            for i in xrange(200000):
-                x[i] = "0"*16
+            for i in range(200000):
+                if str is bytes:
+                    x[i] = "0"*16
+                else:
+                    x[i] = b'0'*16
                 
         except MemoryError as msg:
             self.assertTrue(msg)
         except:
-            self.asserTrue(False, "Should have received a memory error")
+            self.assertTrue(False, "Should have received a memory error")
 
 
 class evil:
 	def __init__(self):
-		self.corrupt = ImagePath.Path(0x4000000000000000)
+		self.corrupt = Image.core.path(0x4000000000000000)
 
 	def __getitem__(self, i):
 		x = self.corrupt[i]
