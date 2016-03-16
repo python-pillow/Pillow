@@ -252,17 +252,17 @@ class ImageDraw(object):
             ink = fill
         if ink is not None:
             try:
-                mask, offset = font.getmask2(text, self.fontmode)
+                mask, offset = font.getmask2(text, self.fontmode, *args, **kwargs)
                 xy = xy[0] + offset[0], xy[1] + offset[1]
             except AttributeError:
                 try:
-                    mask = font.getmask(text, self.fontmode)
+                    mask = font.getmask(text, self.fontmode, *args, **kwargs)
                 except TypeError:
                     mask = font.getmask(text)
             self.draw.draw_bitmap(xy, mask, ink)
 
     def multiline_text(self, xy, text, fill=None, font=None, anchor=None,
-                       spacing=4, align="left"):
+                       spacing=4, align="left", direction=None, features=None):
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
@@ -281,7 +281,7 @@ class ImageDraw(object):
                 left += (max_width - widths[idx])
             else:
                 assert False, 'align must be "left", "center" or "right"'
-            self.text((left, top), line, fill, font, anchor)
+            self.text((left, top), line, fill, font, anchor, direction=direction, features=features)
             top += line_spacing
             left = xy[0]
 

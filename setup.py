@@ -99,11 +99,12 @@ TIFF_ROOT = None
 FREETYPE_ROOT = None
 LCMS_ROOT = None
 
+RAQM_ROOT = None
 
 class pil_build_ext(build_ext):
 
     class feature:
-        zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = webpmux = None
+        zlib = jpeg = tiff = freetype = raqm = tcl = tk = lcms = webp = webpmux = None
         jpeg2000 = None
         required = set(['jpeg', 'zlib'])
 
@@ -160,7 +161,7 @@ class pil_build_ext(build_ext):
         # add configured kits
 
         for root in (TCL_ROOT, JPEG_ROOT, JPEG2K_ROOT, TIFF_ROOT, ZLIB_ROOT,
-                     FREETYPE_ROOT, LCMS_ROOT):
+                     FREETYPE_ROOT, LCMS_ROOT, RAQM_ROOT):
             if isinstance(root, type(())):
                 lib_root, include_root = root
             else:
@@ -467,6 +468,13 @@ class pil_build_ext(build_ext):
                     if dir:
                         _add_directory(self.compiler.include_dirs, dir, 0)
 
+        if feature.want('raqm'):
+            if _find_include_file(self, "raqm.h"):
+                if _find_library_file(self, "raqm") and \
+                   _find_library_file(self, "harfbuzz") and \
+                   _find_library_file(self, "fribidi"):
+                    feature.raqm = ["raqm", "harfbuzz", "fribidi"]
+
         if feature.want('lcms'):
             if _find_include_file(self, "lcms2.h"):
                 if _find_library_file(self, "lcms2"):
@@ -555,8 +563,15 @@ class pil_build_ext(build_ext):
         # additional libraries
 
         if feature.freetype:
+            libs = ["freetype"]
+            defs = []
+            if feature.raqm:
+                libs.extend(feature.raqm)
+                defs.append(('HAVE_RAQM', None))
+
             exts.append(Extension(
-                "PIL._imagingft", ["_imagingft.c"], libraries=["freetype"]))
+                "PIL._imagingft", ["_imagingft.c"], libraries=libs,
+                define_macros=defs))
 
         if os.path.isfile("_imagingcms.c") and feature.lcms:
             extra = []
@@ -647,6 +662,7 @@ class pil_build_ext(build_ext):
             (feature.zlib, "ZLIB (PNG/ZIP)"),
             (feature.tiff, "LIBTIFF"),
             (feature.freetype, "FREETYPE2"),
+            (feature.raqm, "RAQM"),
             (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"), ]

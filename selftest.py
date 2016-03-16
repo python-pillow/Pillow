@@ -180,7 +180,8 @@ if __name__ == "__main__":
         ("freetype2", "FREETYPE2"),
         ("littlecms2", "LITTLECMS2"),
         ("webp", "WEBP"),
-        ("transp_webp", "Transparent WEBP")
+        ("transp_webp", "Transparent WEBP"),
+        ("raqm", "RAQM")
     ]:
         supported = features.check_module(name)
 
