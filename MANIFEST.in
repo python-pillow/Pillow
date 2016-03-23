@@ -20,8 +20,12 @@ graft docs
 prune docs/_static
 
 # build/src control detritus
+exclude .coveragerc
+exclude .editorconfig
+exclude .landscape.yaml
+exclude appveyor.yml
 exclude build_children.sh
+exclude tox.ini
 global-exclude .git*
 global-exclude *.pyc
 global-exclude *.so
-
