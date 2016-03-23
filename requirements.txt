@@ -1,3 +1,4 @@
+# Development, documentation & testing requirements.
 -e .
 Babel==2.2.0
 Jinja2==2.8
