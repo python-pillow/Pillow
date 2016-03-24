@@ -33,6 +33,7 @@ help:
 	@echo "  inplace        make inplace extension" 
 	@echo "  install        make and install"
 	@echo "  install-req    install documentation and test dependencies"
+	@echo "  install-venv   install in virtualenv"
 	@echo "  release-test   run code and package tests before release"
 	@echo "  test           run tests on installed pillow"
 	@echo "  upload         build and upload sdists to PyPI" 
@@ -47,6 +48,8 @@ install:
 
 install-req:
 	pip install -r requirements.txt
+
+install-venv: venv install-req
 
 release-test:
 	$(MAKE) install-req
@@ -75,6 +78,9 @@ upload-test:
 
 upload:
 	python setup.py sdist --format=gztar,zip upload
+
+venv:
+	virtualenv .
 
 readme:
 	viewdoc
