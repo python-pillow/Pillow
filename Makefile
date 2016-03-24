@@ -55,7 +55,10 @@ install:
 install-req:
 	pip install -r requirements.txt
 
-install-venv: venv install-req
+install-venv: 
+	virtualenv .
+	bin/pip install -r requirements.txt
+	$(MAKE) release-test
 
 release-test:
 	$(MAKE) install-req
@@ -84,9 +87,6 @@ upload-test:
 
 upload:
 	python setup.py sdist --format=gztar,zip upload
-
-venv:
-	virtualenv .
 
 readme:
 	viewdoc
