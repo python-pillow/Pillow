@@ -8,6 +8,12 @@ clean:
 	rm -r build || true
 	find . -name __pycache__ | xargs rm -r || true
 
+BRANCHES=`git branch -a | grep -v HEAD | grep -v master | grep remote`
+co:
+	-for i in $(BRANCHES) ; do \
+        git checkout -t $$i ; \
+    done
+
 coverage: 
 	coverage erase
 	coverage run --parallel-mode --include=PIL/* selftest.py
