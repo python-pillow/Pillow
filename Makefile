@@ -58,7 +58,6 @@ install-req:
 install-venv: 
 	virtualenv .
 	bin/pip install -r requirements.txt
-	$(MAKE) release-test
 
 release-test:
 	$(MAKE) install-req
