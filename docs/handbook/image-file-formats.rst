@@ -193,7 +193,7 @@ The :py:meth:`~PIL.Image.Image.open` method may set the following
 **progression**
     Indicates that this is a progressive JPEG file.
 
-**icc-profile**
+**icc_profile**
     The ICC color profile for the image.
 
 **exif**
@@ -219,7 +219,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **dpi**
     A tuple of integers representing the pixel density, ``(x,y)``.
 
-**icc-profile**
+**icc_profile**
     If present, the image is stored with the provided ICC profile. If
     this parameter is not provided, the image will be saved with no
     profile attached. To preserve the existing profile::
