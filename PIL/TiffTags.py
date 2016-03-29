@@ -36,9 +36,9 @@ def lookup(tag):
     :returns: Taginfo namedtuple, From the TAGS_V2 info if possible,
         otherwise just populating the value and name from TAGS.
         If the tag is not recognized, "unknown" is returned for the name
-        
+
     """
-    
+
     return TAGS_V2.get(tag, TagInfo(tag, TAGS.get(tag, 'unknown')))
 
 
@@ -69,9 +69,9 @@ TAGS_V2 = {
            "Transparency Mask": 4, "CMYK": 5, "YCbCr": 6, "CieLAB": 8,
            "CFA": 32803,  # TIFF/EP, Adobe DNG
            "LinearRaw": 32892}),  # Adobe DNG
-    263: ("Thresholding", SHORT, 1),
+    263: ("Threshholding", SHORT, 1),
     264: ("CellWidth", SHORT, 1),
-    265: ("CellHeight", SHORT, 1),
+    265: ("CellLength", SHORT, 1),
     266: ("FillOrder", SHORT, 1),
     269: ("DocumentName", ASCII, 1),
 
@@ -110,7 +110,7 @@ TAGS_V2 = {
     316: ("HostComputer", ASCII, 1),
     317: ("Predictor", SHORT, 1),
     318: ("WhitePoint", RATIONAL, 2),
-    319: ("PrimaryChromaticies", SHORT, 6),
+    319: ("PrimaryChromaticities", SHORT, 6),
 
     320: ("ColorMap", SHORT, 0),
     321: ("HalftoneHints", SHORT, 2),
@@ -336,7 +336,7 @@ TYPES = {}
 # These tags are handled by default in libtiff, without
 # adding to the custom dictionary. From tif_dir.c, searching for
 # case TIFFTAG in the _TIFFVSetField function:
-# Line: item. 
+# Line: item.
 # 148:	case TIFFTAG_SUBFILETYPE:
 # 151:	case TIFFTAG_IMAGEWIDTH:
 # 154:	case TIFFTAG_IMAGELENGTH:
