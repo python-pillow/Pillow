@@ -67,15 +67,13 @@ logging.basicConfig(level=logging_level)
 
 def globfix(files):
     # expand wildcards where necessary
-    if sys.platform == "win32":
-        out = []
-        for file in files:
-            if glob.has_magic(file):
-                out.extend(glob.glob(file))
-            else:
-                out.append(file)
-        return out
-    return files
+    out = []
+    for file in files:
+        if glob.has_magic(file):
+            out.extend(glob.glob(file))
+        else:
+            out.append(file)
+    return out
 
 for file in globfix(args):
     try:
