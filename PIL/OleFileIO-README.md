@@ -161,8 +161,8 @@ Lundh under the following license:
 
 The Python Imaging Library (PIL) is
 
-- Copyright (c) 1997-2005 by Secret Labs AB
-- Copyright (c) 1995-2005 by Fredrik Lundh
+    Copyright © 1997-2011 by Secret Labs AB
+    Copyright © 1995-2011 by Fredrik Lundh
 
 By obtaining, using, and/or copying this software and/or its associated documentation, you agree that you have read, 
 understood, and will comply with the following terms and conditions:
