@@ -522,10 +522,10 @@ class pil_build_ext(build_ext):
         # core library
 
         files = ["_imaging.c"]
-        for file in _IMAGING:
-            files.append(file + ".c")
-        for file in _LIB_IMAGING:
-            files.append(os.path.join("libImaging", file + ".c"))
+        for src_file in _IMAGING:
+            files.append(src_file + ".c")
+        for src_file in _LIB_IMAGING:
+            files.append(os.path.join("libImaging", src_file + ".c"))
 
         libs = []
         defs = []
