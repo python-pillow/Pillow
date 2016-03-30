@@ -39,6 +39,7 @@ _LIB_IMAGING = (
 
 DEBUG = False
 
+
 def _dbg(s, tp=None):
     if DEBUG:
         if tp:
@@ -83,12 +84,12 @@ def _find_library_file(self, library):
         self.compiler.shared_lib_extension = existing
     else:
         ret = self.compiler.find_library_file(self.compiler.library_dirs,
-											  library)
+                                              library)
     if ret:
         _dbg('Found library %s at %s', (library, ret))
     else:
         _dbg("Couldn't find library %s in %s",
-			 (library, self.compiler.library_dirs))
+             (library, self.compiler.library_dirs))
     return ret
 
 
@@ -120,8 +121,8 @@ LCMS_ROOT = None
 
 class pil_build_ext(build_ext):
     class feature:
-        features = ['zlib', 'jpeg', 'tiff', 'freetype', 'tcl', 'tk',
-                    'lcms', 'webp', 'webpmux', 'jpeg2000']
+        features = ['zlib', 'jpeg', 'tiff', 'freetype', 'tcl', 'tk', 'lcms',
+                    'webp', 'webpmux', 'jpeg2000']
 
         required = set(['jpeg', 'zlib'])
 
@@ -460,12 +461,13 @@ class pil_build_ext(build_ext):
                     if name.startswith('openjpeg-') and \
                         os.path.isfile(os.path.join(directory, name,
                                                     'openjpeg.h')):
-                        _dbg('Found openjpeg.h in %s/%s',(directory, name)) 
+                        _dbg('Found openjpeg.h in %s/%s', (directory, name))
                         version = tuple([int(x) for x in name[9:].split('.')])
                         if best_version is None or version > best_version:
                             best_version = version
                             best_path = os.path.join(directory, name)
-                            _dbg('Best openjpeg version %s so far in %s', (best_version, best_path))
+                            _dbg('Best openjpeg version %s so far in %s',
+                                 (best_version, best_path))
 
             if best_version and _find_library_file(self, 'openjp2'):
                 # Add the directory to the include path so we can include
