@@ -100,9 +100,14 @@ LCMS_ROOT = None
 
 class pil_build_ext(build_ext):
     class feature:
-        zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = webpmux = None
-        jpeg2000 = None
+        features = ['zlib', 'jpeg', 'tiff', 'freetype', 'tcl', 'tk',
+                    'lcms', 'webp', 'webpmux', 'jpeg2000']
+
         required = set(['jpeg', 'zlib'])
+
+        def __init__(self):
+            for f in self.features:
+                setattr(self, f, None)
 
         def require(self, feat):
             return feat in self.required
@@ -111,9 +116,8 @@ class pil_build_ext(build_ext):
             return getattr(self, feat) is None
 
         def __iter__(self):
-            for x in dir(self):
-                if x[1] != '_':
-                    yield x
+            for x in self.features:
+                yield x
 
     feature = feature()
 
