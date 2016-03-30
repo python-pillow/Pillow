@@ -38,15 +38,15 @@ _LIB_IMAGING = (
     "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur")
 
 
-def _add_directory(path, dir, where=None):
-    if dir is None:
+def _add_directory(path, subdir, where=None):
+    if subdir is None:
         return
-    dir = os.path.realpath(dir)
-    if os.path.isdir(dir) and dir not in path:
+    subdir = os.path.realpath(subdir)
+    if os.path.isdir(subdir) and subdir not in path:
         if where is None:
-            path.append(dir)
+            path.append(subdir)
         else:
-            path.insert(where, dir)
+            path.insert(where, subdir)
 
 
 def _find_include_file(self, include):
@@ -448,20 +448,20 @@ class pil_build_ext(build_ext):
             if _find_library_file(self, "freetype"):
                 # look for freetype2 include files
                 freetype_version = 0
-                for dir in self.compiler.include_dirs:
-                    if os.path.isfile(os.path.join(dir, "ft2build.h")):
+                for subdir in self.compiler.include_dirs:
+                    if os.path.isfile(os.path.join(subdir, "ft2build.h")):
                         freetype_version = 21
-                        dir = os.path.join(dir, "freetype2")
+                        subdir = os.path.join(subdir, "freetype2")
                         break
-                    dir = os.path.join(dir, "freetype2")
-                    if os.path.isfile(os.path.join(dir, "ft2build.h")):
+                    subdir = os.path.join(subdir, "freetype2")
+                    if os.path.isfile(os.path.join(subdir, "ft2build.h")):
                         freetype_version = 21
                         break
                 if freetype_version:
                     feature.freetype = "freetype"
                     feature.freetype_version = freetype_version
-                    if dir:
-                        _add_directory(self.compiler.include_dirs, dir, 0)
+                    if subdir:
+                        _add_directory(self.compiler.include_dirs, subdir, 0)
 
         if feature.want('lcms'):
             if _find_include_file(self, "lcms2.h"):
@@ -592,10 +592,10 @@ class pil_build_ext(build_ext):
                     if (os.path.exists(root_tcl) and os.path.exists(root_tk)):
                         print("--- using frameworks at %s" % root)
                         frameworks = ["-framework", "Tcl", "-framework", "Tk"]
-                        dir = os.path.join(root_tcl, "Headers")
-                        _add_directory(self.compiler.include_dirs, dir, 0)
-                        dir = os.path.join(root_tk, "Headers")
-                        _add_directory(self.compiler.include_dirs, dir, 1)
+                        subdir = os.path.join(root_tcl, "Headers")
+                        _add_directory(self.compiler.include_dirs, subdir, 0)
+                        subdir = os.path.join(root_tk, "Headers")
+                        _add_directory(self.compiler.include_dirs, subdir, 1)
                         break
                 if frameworks:
                     exts.append(Extension("PIL._imagingtk",
@@ -689,8 +689,8 @@ class pil_build_ext(build_ext):
 
     def check_zlib_version(self, include_dirs):
         # look for unsafe versions of zlib
-        for dir in include_dirs:
-            zlibfile = os.path.join(dir, "zlib.h")
+        for subdir in include_dirs:
+            zlibfile = os.path.join(subdir, "zlib.h")
             if os.path.isfile(zlibfile):
                 break
         else:
