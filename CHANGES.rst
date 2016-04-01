@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-3.2.0 (unreleased)
+3.2.0 (2016-04-01)
 ------------------
 
 - Added install docs for Fedora 23 and FreeBSD #1729, #1739, #1792
@@ -103,6 +103,12 @@ Changelog (Pillow)
 - Fix incorrect conditional in encode.c #1638
   [manisandro]
 
+
+3.1.2 (2016-04-01)
+------------------
+
+- Fixed an integer overflow in Jpeg2KEncode.c causing a buffer overflow. CVE-2016-3076
+  [wiredfool]
 
 3.1.1 (2016-02-04)
 ------------------
