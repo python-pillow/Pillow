@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Added install docs for Fedora 23 and FreeBSD #1729, #1739, #1792
+  [koobs, zandermartin, wiredfool]
+  
 - Fixed TIFF multiframe load when the frames have different compression types #1782
   [radarhere, geka000]
 
