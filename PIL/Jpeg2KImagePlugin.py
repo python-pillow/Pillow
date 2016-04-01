@@ -84,7 +84,8 @@ def _parse_jp2_header(fp):
     size = None
     mode = None
     bpc = None
-
+    nc = None
+    
     hio = io.BytesIO(header)
     while True:
         lbox, tbox = struct.unpack('>I4s', hio.read(8))
@@ -141,6 +142,9 @@ def _parse_jp2_header(fp):
                         mode = 'RGBA'
                     break
 
+    if size is None or mode is None:
+        raise SyntaxError("Malformed jp2 header")
+    
     return (size, mode)
 
 ##
