@@ -1,6 +1,14 @@
 Changelog (Pillow)
 ==================
 
+3.1.2 (2016-04-01)
+------------------
+
+- Fixed an integer overflow in Jpeg2KEncode.c causing a buffer overflow. CVE-2016-3076
+  [wiredfool]
+
+
+
 3.1.1 (2016-02-04)
 ------------------
 
