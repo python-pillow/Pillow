@@ -37,7 +37,7 @@ Changelog (Pillow)
 - Fix EXIF tag name typos #1736
   [zarlant, radarhere]
 
-- Updated freetype to 2.6.3, Tcl to 8.6.5, tk to 8.5.19
+- Updated freetype to 2.6.3, Tk/Tcl to 8.6.5 and 8.5.19
   [radarhere]
 
 - Add a loader for the FTEX format from Independence War 2: Edge of Chaos #1688
