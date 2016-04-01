@@ -91,8 +91,9 @@ External Libraries
 
 .. note::
 
-    You **do not need to install all external libraries supported** to
-    use Pillow's basic features.
+    You **do not need to install all supported external libraries** to
+    use Pillow's basic features. **Zlib** and **libjpeg** are required
+    by default.
 
 .. note::
 
@@ -250,7 +251,9 @@ Or for Python 3::
 
 In Fedora, the command is::
 
-    $ sudo yum install python-devel
+    $ sudo dnf install python-devel redhat-rpm-config
+
+.. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions. 
 
 Prerequisites are installed on **Ubuntu 12.04 LTS** or **Raspian Wheezy
 7.0** with::
@@ -263,15 +266,10 @@ Prerequisites are installed on **Ubuntu 14.04 LTS** with::
     $ sudo apt-get install libtiff5-dev libjpeg8-dev zlib1g-dev \
         libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python-tk
 
-Prerequisites are installed on **Fedora 20** with::
-
-    $ sudo yum install libtiff-devel libjpeg-devel libzip-devel freetype-devel \
-        lcms2-devel libwebp-devel tcl-devel tk-devel
-
 Prerequisites are installed on **Fedora 23** with::
 
     $ sudo dnf install libtiff-devel libjpeg-devel libzip-devel freetype-devel \
-        lcms2-devel libwebp-devel tcl-devel tk-devel redhat-rpm-config
+        lcms2-devel libwebp-devel tcl-devel tk-devel 
 
 
 
