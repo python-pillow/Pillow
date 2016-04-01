@@ -4,6 +4,27 @@ Changelog (Pillow)
 3.2.0 (unreleased)
 ------------------
 
+- Fixed TIFF multiframe load when the frames have different compression types #1782
+  [radarhere, geka000]
+
+- Added __copy__ method to Image #1772
+  [radarhere]
+
+- Updated dates in PIL license in OleFileIO README  #1787
+  [radarhere]
+  
+- Corrected Tiff tag names #1786
+  [radarhere]
+
+- Fixed documented name of JPEG property #1783
+  [radarhere]
+
+- Fixed UnboundLocalErrorwhen loading a corrupt jpeg2k file #1780
+  [wiredfool]
+
+- Fixed integer overflow in path.c #1773
+  [wiredfool, nedwill]
+
 - Added debug to command line help text for pilprint #1766
   [radarhere]
 
