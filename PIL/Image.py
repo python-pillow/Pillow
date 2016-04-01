@@ -1012,6 +1012,8 @@ class Image(object):
         im = self.im.copy()
         return self._new(im)
 
+    __copy__ = copy
+
     def crop(self, box=None):
         """
         Returns a rectangular region from this image. The box is a
