@@ -76,6 +76,26 @@ packages that previously contained PIL e.g. ``python-imaging``. Please
 consider using native operating system packages first to avoid
 installation problems and/or missing library support later.
 
+FreeBSD Installation
+^^^^^^^^^^^^^^^^^^^^
+
+Pillow can be installed on FreeBSD via the official Ports or Packages systems:
+
+**Ports**::
+
+  $ cd /usr/ports/graphics/py-pillow && make install clean
+
+**Packages**::
+
+  $ pkg install py27-pillow
+  
+.. note::
+
+    The `Pillow FreeBSD port
+    <https://www.freshports.org/graphics/py-pillow/>`_ and packages
+    are tested by the ports team with all supported FreeBSD versions
+    and against Python 2.x and 3.x.
+
 
 Building From Source
 --------------------
