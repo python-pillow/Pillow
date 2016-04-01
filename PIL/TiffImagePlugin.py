@@ -238,8 +238,8 @@ class IFDRational(Rational):
     as a fractions.Fraction(). Delegate as appropriate
 
     """
-    
-    __slots__ = ('_numerator', '_denominator', '_val') 
+
+    __slots__ = ('_numerator', '_denominator', '_val')
 
     def __init__(self, value, denominator=1):
         """
@@ -255,7 +255,7 @@ class IFDRational(Rational):
             self._numerator = value.numerator
             self._denominator = value.denominator
             self._val = value
-        
+
         if type(value) == IFDRational:
             self._denominator = value.denominator
             self._numerator = value.numerator
@@ -287,7 +287,7 @@ class IFDRational(Rational):
 
     def limit_rational(self, max_denominator):
         """
-        
+
         :param max_denominator: Integer, the maximum denominator value
         :returns: Tuple of (numerator, denominator)
         """
@@ -349,7 +349,7 @@ class IFDRational(Rational):
     __floor__ = _delegate('__floor__')
     __round__ = _delegate('__round__')
 
-    
+
 
 class ImageFileDirectory_v2(collections.MutableMapping):
     """This class represents a TIFF tag directory.  To speed things up, we
@@ -991,6 +991,11 @@ class TiffImageFile(ImageFile.ImageFile):
 
         return args
 
+    def load(self):
+        if self.use_load_libtiff:
+            return self._load_libtiff()
+        return super(TiffImageFile, self).load()
+
     def _load_libtiff(self):
         """ Overload method triggered when we detect a compressed tiff
             Calls out to libtiff """
@@ -1136,6 +1141,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # build tile descriptors
         x = y = l = 0
         self.tile = []
+        self.use_load_libtiff = False
         if STRIPOFFSETS in self.tag_v2:
             # striped image
             offsets = self.tag_v2[STRIPOFFSETS]
@@ -1158,10 +1164,9 @@ class TiffImageFile(ImageFile.ImageFile):
                 # function.
                 #
                 # Setup the one tile for the whole image, then
-                # replace the existing load function with our
-                # _load_libtiff function.
+                # use the _load_libtiff function.
 
-                self.load = self._load_libtiff
+                self.use_load_libtiff = True
 
                 # To be nice on memory footprint, if there's a
                 # file descriptor, use that instead of reading
