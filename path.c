@@ -57,6 +57,10 @@ alloc_array(Py_ssize_t count)
         PyErr_NoMemory();
         return NULL;
     }
+    if (count > (SIZE_MAX / (2 * sizeof(double))) - 1 ) {
+        PyErr_NoMemory();
+        return NULL;
+    }
     xy = malloc(2 * count * sizeof(double) + 1);
     if (!xy)
         PyErr_NoMemory();
