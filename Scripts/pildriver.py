@@ -70,7 +70,7 @@ class PILDriver(object):
 
     def push(self, item):
         "Push an argument onto the evaluation stack."
-        self.stack = [item] + self.stack
+        self.stack.insert(0, item)
 
     def top(self):
         "Return the top-of-stack element."
@@ -90,9 +90,7 @@ class PILDriver(object):
 
         Discard the top element on the stack.
         """
-        top = self.stack[0]
-        self.stack = self.stack[1:]
-        return top
+        return self.stack.pop(0)
 
     def do_dup(self):
         """usage: dup
@@ -103,7 +101,7 @@ class PILDriver(object):
             dup = self.stack[0].copy()
         else:
             dup = self.stack[0]
-        self.stack = [dup] + self.stack
+        self.push(dup)
 
     def do_swap(self):
         """usage: swap
