@@ -120,7 +120,7 @@ after_script:
       fi
 
 matrix:
-  fast_finish: true
+  fast_finish: false
   allow_failures:
     - python: nightly
 
