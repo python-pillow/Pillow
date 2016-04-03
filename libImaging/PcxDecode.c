@@ -62,8 +62,8 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             int stride = state->bytes / bands;
             int i;
             for (i=1; i< bands; i++) {  // note -- skipping first band
-                memmove(&state->buffer[i*state->xsize], 
-                        &state->buffer[i*stride], 
+                memmove(&state->buffer[i*state->xsize],
+                        &state->buffer[i*stride],
                         state->xsize);
             }
         }

@@ -1,0 +1,6 @@
+*.zip
+*.tar.gz
+*.msi
+*.asc
+__pycache__
+depends/

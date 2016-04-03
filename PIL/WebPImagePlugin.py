@@ -73,8 +73,8 @@ def _save(im, fp, filename):
     fp.write(data)
 
 
-Image.register_open("WEBP", WebPImageFile, _accept)
-Image.register_save("WEBP", _save)
+Image.register_open(WebPImageFile.format, WebPImageFile, _accept)
+Image.register_save(WebPImageFile.format, _save)
 
-Image.register_extension("WEBP", ".webp")
-Image.register_mime("WEBP", "image/webp")
+Image.register_extension(WebPImageFile.format, ".webp")
+Image.register_mime(WebPImageFile.format, "image/webp")

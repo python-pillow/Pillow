@@ -54,7 +54,7 @@ PyImaging_EncoderNew(int contextsize)
     ImagingEncoderObject *encoder;
     void *context;
 
-    if(!PyType_Ready(&ImagingEncoderType) < 0)
+    if(PyType_Ready(&ImagingEncoderType) < 0)
         return NULL;
 
     encoder = PyObject_New(ImagingEncoderObject, &ImagingEncoderType);
@@ -554,7 +554,7 @@ static unsigned int* get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
     tables = PySequence_Fast(qtables, "expected a sequence");
     num_tables = PySequence_Size(qtables);
     if (num_tables < 1 || num_tables > NUM_QUANT_TBLS) {
-        PyErr_SetString(PyExc_ValueError, 
+        PyErr_SetString(PyExc_ValueError,
             "Not a valid number of quantization tables. Should be between 1 and 4.");
         Py_DECREF(tables);
         return NULL;
@@ -582,7 +582,7 @@ static unsigned int* get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
         Py_DECREF(table_data);
     }
 
-    *qtablesLen = num_tables; 
+    *qtablesLen = num_tables;
 
 JPEG_QTABLES_ERR:
     Py_DECREF(tables);  // Run on both error and not error
@@ -721,7 +721,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
         pos = 0;
     }
 
-
     TRACE(("new tiff encoder %s fp: %d, filename: %s \n", compname, fp, filename));
 
     encoder = PyImaging_EncoderNew(sizeof(TIFFSTATE));
@@ -737,11 +736,9 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
         return NULL;
     }
 
-        // While fails on 64 bit machines, complains that pos is an int instead of a Py_ssize_t
-        //    while (PyDict_Next(dir, &pos, &key, &value)) {
-        for (pos=0;pos<d_size;pos++){
-                key = PyList_GetItem(keys,pos);
-                value = PyList_GetItem(values,pos);
+    for (pos = 0; pos < d_size; pos++) {
+        key = PyList_GetItem(keys, pos);
+        value = PyList_GetItem(values, pos);
         status = 0;
         TRACE(("Attempting to set key: %d\n", (int)PyInt_AsLong(key)));
         if (PyInt_Check(value)) {
@@ -749,49 +746,53 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
             status = ImagingLibTiffSetField(&encoder->state,
                                             (ttag_t) PyInt_AsLong(key),
                                             PyInt_AsLong(value));
-        } else if(PyBytes_Check(value)) {
-            TRACE(("Setting from Bytes: %d, %s \n", (int)PyInt_AsLong(key),PyBytes_AsString(value)));
-            status = ImagingLibTiffSetField(&encoder->state,
-                                            (ttag_t) PyInt_AsLong(key),
-                                            PyBytes_AsString(value));
-        } else if(PyList_Check(value)) {
-            int len,i;
-            float *floatav;
-            int *intav;
-            TRACE(("Setting from List: %d \n", (int)PyInt_AsLong(key)));
-            len = (int)PyList_Size(value);
-            if (len) {
-                if (PyInt_Check(PyList_GetItem(value,0))) {
-                    TRACE((" %d elements, setting as ints \n", len));
-                    intav = malloc(sizeof(int)*len);
-                    if (intav) {
-                        for (i=0;i<len;i++) {
-                            intav[i] = (int)PyInt_AsLong(PyList_GetItem(value,i));
-                        }
-                        status = ImagingLibTiffSetField(&encoder->state,
-                                                        (ttag_t) PyInt_AsLong(key),
-                                                        intav);
-                        free(intav);
-                    }
-                } else {
-                    TRACE((" %d elements, setting as floats \n", len));
-                    floatav = malloc(sizeof(float)*len);
-                    if (floatav) {
-                        for (i=0;i<len;i++) {
-                            floatav[i] = (float)PyFloat_AsDouble(PyList_GetItem(value,i));
-                        }
-                        status = ImagingLibTiffSetField(&encoder->state,
-                                                        (ttag_t) PyInt_AsLong(key),
-                                                        floatav);
-                        free(floatav);
-                    }
-                }
-            }
         } else if (PyFloat_Check(value)) {
             TRACE(("Setting from Float: %d, %f \n", (int)PyInt_AsLong(key),PyFloat_AsDouble(value)));
             status = ImagingLibTiffSetField(&encoder->state,
                                             (ttag_t) PyInt_AsLong(key),
                                             (float)PyFloat_AsDouble(value));
+        } else if (PyBytes_Check(value)) {
+            TRACE(("Setting from Bytes: %d, %s \n", (int)PyInt_AsLong(key),PyBytes_AsString(value)));
+            status = ImagingLibTiffSetField(&encoder->state,
+                                            (ttag_t) PyInt_AsLong(key),
+                                            PyBytes_AsString(value));
+        } else if (PyTuple_Check(value)) {
+            int len,i;
+            float *floatav;
+            int *intav;
+            TRACE(("Setting from Tuple: %d \n", (int)PyInt_AsLong(key)));
+            len = (int)PyTuple_Size(value);
+            if (len) {
+                if (PyInt_Check(PyTuple_GetItem(value,0))) {
+                    TRACE((" %d elements, setting as ints \n", len));
+                    intav = malloc(sizeof(int)*len);
+                    if (intav) {
+                        for (i=0;i<len;i++) {
+                            intav[i] = (int)PyInt_AsLong(PyTuple_GetItem(value,i));
+                        }
+                        status = ImagingLibTiffSetField(&encoder->state,
+                                                        (ttag_t) PyInt_AsLong(key),
+                                                        len, intav);
+                        free(intav);
+                    }
+                } else if (PyFloat_Check(PyTuple_GetItem(value,0))) {
+                    TRACE((" %d elements, setting as floats \n", len));
+                    floatav = malloc(sizeof(float)*len);
+                    if (floatav) {
+                        for (i=0;i<len;i++) {
+                            floatav[i] = (float)PyFloat_AsDouble(PyTuple_GetItem(value,i));
+                        }
+                        status = ImagingLibTiffSetField(&encoder->state,
+                                                        (ttag_t) PyInt_AsLong(key),
+                                                        len, floatav);
+                        free(floatav);
+                    }
+                } else {
+                    TRACE(("Unhandled type in tuple for key %d : %s \n",
+                           (int)PyInt_AsLong(key),
+                           PyBytes_AsString(PyObject_Str(value))));
+                }
+            }
         } else {
             TRACE(("Unhandled type for key %d : %s \n",
                    (int)PyInt_AsLong(key),

@@ -17,12 +17,23 @@
 #
 
 import array
-import warnings
 from PIL import ImageColor
 
 
 class ImagePalette(object):
-    "Color palette for palette mapped images"
+    """
+    Color palette for palette mapped images
+
+    :param mode: The mode to use for the Palette. See:
+        :ref:`concept-modes`. Defaults to "RGB"
+    :param palette: An optional palette. If given, it must be a bytearray,
+        an array or a list of ints between 0-255 and of length ``size``
+        times the number of colors in ``mode``. The list must be aligned
+        by channel (All R values must be contiguous in the list before G
+        and B values.) Defaults to 0 through 255 per channel.
+    :param size: An optional palette size. If given, it cannot be equal to
+        or greater than 256. Defaults to 0.
+    """
 
     def __init__(self, mode="RGB", palette=None, size=0):
         self.mode = mode
@@ -33,6 +44,18 @@ class ImagePalette(object):
         if ((size == 0 and len(self.mode)*256 != len(self.palette)) or
                 (size != 0 and size != len(self.palette))):
             raise ValueError("wrong palette size")
+
+    def copy(self):
+        new = ImagePalette()
+
+        new.mode = self.mode
+        new.rawmode = self.rawmode
+        if self.palette is not None:
+            new.palette = self.palette[:]
+        new.colors = self.colors.copy()
+        new.dirty = self.dirty
+
+        return new
 
     def getdata(self):
         """
@@ -56,7 +79,6 @@ class ImagePalette(object):
             return self.palette
         arr = array.array("B", self.palette)
         if hasattr(arr, 'tobytes'):
-            # py3k has a tobytes, tostring is deprecated.
             return arr.tobytes()
         return arr.tostring()
 
@@ -124,26 +146,6 @@ def raw(rawmode, data):
 
 # --------------------------------------------------------------------
 # Factories
-
-def _make_linear_lut(black, white):
-    warnings.warn(
-        '_make_linear_lut() is deprecated. '
-        'Please call make_linear_lut() instead.',
-        DeprecationWarning,
-        stacklevel=2
-    )
-    return make_linear_lut(black, white)
-
-
-def _make_gamma_lut(exp):
-    warnings.warn(
-        '_make_gamma_lut() is deprecated. '
-        'Please call make_gamma_lut() instead.',
-        DeprecationWarning,
-        stacklevel=2
-    )
-    return make_gamma_lut(exp)
-
 
 def make_linear_lut(black, white):
     lut = []
@@ -225,8 +227,8 @@ def load(filename):
             p = PaletteFile.PaletteFile(fp)
             lut = p.getpalette()
         except (SyntaxError, ValueError):
-            #import traceback
-            #traceback.print_exc()
+            # import traceback
+            # traceback.print_exc()
             pass
 
     if not lut:

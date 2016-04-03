@@ -23,10 +23,10 @@
 # purposes only.
 
 
-__version__ = "0.1"
-
 from PIL import ImageFile, ImagePalette, _binary
 from PIL._util import isPath
+
+__version__ = "0.1"
 
 try:
     import builtins

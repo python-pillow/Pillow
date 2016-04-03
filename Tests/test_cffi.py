@@ -3,7 +3,7 @@ from helper import unittest, PillowTestCase, hopper
 try:
     import cffi
     from PIL import PyAccess
-except:
+except ImportError:
     # Skip in setUp()
     pass
 
@@ -20,7 +20,7 @@ class TestCffiPutPixel(TestImagePutPixel):
     def setUp(self):
         try:
             import cffi
-        except:
+        except ImportError:
             self.skipTest("No cffi")
 
     def test_put(self):
@@ -32,7 +32,7 @@ class TestCffiGetPixel(TestImageGetPixel):
     def setUp(self):
         try:
             import cffi
-        except:
+        except ImportError:
             self.skipTest("No cffi")
 
     def test_get(self):
@@ -45,7 +45,7 @@ class TestCffi(PillowTestCase):
     def setUp(self):
         try:
             import cffi
-        except:
+        except ImportError:
             self.skipTest("No cffi")
 
     def _test_get_access(self, im):
@@ -61,6 +61,10 @@ class TestCffi(PillowTestCase):
             for y in range(0, h, 10):
                 self.assertEqual(access[(x, y)], caccess[(x, y)])
 
+        # Access an out-of-range pixel
+        self.assertRaises(ValueError,
+                          lambda: access[(access.xsize+1, access.ysize+1)])
+
     def test_get_vs_c(self):
         rgb = hopper('RGB')
         rgb.load()
@@ -70,7 +74,7 @@ class TestCffi(PillowTestCase):
         self._test_get_access(hopper('LA'))
         self._test_get_access(hopper('1'))
         self._test_get_access(hopper('P'))
-        # self._test_get_access(hopper('PA')) # PA   -- how do I make a PA image?
+        # self._test_get_access(hopper('PA')) # PA -- how do I make a PA image?
         self._test_get_access(hopper('F'))
 
         im = Image.new('I;16', (10, 10), 40000)
@@ -102,6 +106,14 @@ class TestCffi(PillowTestCase):
             for y in range(0, h, 10):
                 access[(x, y)] = color
                 self.assertEqual(color, caccess[(x, y)])
+
+        # Attempt to set the value on a read-only image
+        access = PyAccess.new(im, True)
+        try:
+            access[(0, 0)] = color
+        except ValueError:
+            return
+        self.fail("Putpixel did not fail on a read-only image")
 
     def test_set_vs_c(self):
         rgb = hopper('RGB')

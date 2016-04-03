@@ -15,6 +15,10 @@ class TestFontBdf(PillowTestCase):
         self.assertIsInstance(font, FontFile.FontFile)
         self.assertEqual(len([_f for _f in font.glyph if _f]), 190)
 
+    def test_invalid_file(self):
+        with open("Tests/images/flower.jpg", "rb") as fp:
+            self.assertRaises(SyntaxError, lambda: BdfFontFile.BdfFontFile(fp))
+
 
 if __name__ == '__main__':
     unittest.main()

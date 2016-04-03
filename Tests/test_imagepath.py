@@ -1,9 +1,9 @@
 from helper import unittest, PillowTestCase
 
-from PIL import ImagePath
+from PIL import ImagePath, Image
 
 import array
-
+import struct
 
 class TestImagePath(PillowTestCase):
 
@@ -60,6 +60,40 @@ class TestImagePath(PillowTestCase):
         else:
             p = ImagePath.Path(arr.tostring())
         self.assertEqual(list(p), [(0.0, 1.0)])
+
+
+    def test_overflow_segfault(self):
+        try:
+            # post patch, this fails with a memory error
+            x = evil()
+            
+            # This fails due to the invalid malloc above,
+            # and segfaults
+            for i in range(200000):
+                if str is bytes:
+                    x[i] = "0"*16
+                else:
+                    x[i] = b'0'*16
+        except TypeError as msg:
+            # Some pythons fail getting the argument as an integer, and
+            # it falls through to the sequence. Seeing this on 32bit windows.
+            self.assertTrue(True, "Sequence required")
+        except MemoryError as msg:
+            self.assertTrue(msg)
+        except:
+            self.assertTrue(False, "Should have received a memory error")
+
+
+class evil:
+	def __init__(self):
+		self.corrupt = Image.core.path(0x4000000000000000)
+
+	def __getitem__(self, i):
+		x = self.corrupt[i]
+		return struct.pack("dd", x[0], x[1])
+
+	def __setitem__(self, i, x):
+		self.corrupt[i] = struct.unpack("dd", x)
 
 
 if __name__ == '__main__':

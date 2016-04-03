@@ -3,7 +3,7 @@
 from __future__ import division
 from helper import unittest, PillowTestCase
 import sys
-from PIL import Image, ImageFilter
+from PIL import Image
 
 min_iterations = 100
 max_iterations = 10000
@@ -31,7 +31,8 @@ class TestImagingLeaks(PillowTestCase):
 
     def test_leak_putdata(self):
         im = Image.new('RGB', (25, 25))
-        self._test_leak(min_iterations, max_iterations, im.putdata, im.getdata())
+        self._test_leak(min_iterations, max_iterations,
+                        im.putdata, im.getdata())
 
     def test_leak_getlist(self):
         im = Image.new('P', (25, 25))

@@ -43,11 +43,6 @@ class PillowTestCase(unittest.TestCase):
         else:
             print("=== orphaned temp file: %s" % path)
 
-    def assert_almost_equal(self, a, b, msg=None, eps=1e-6):
-        self.assertLess(
-            abs(a-b), eps,
-            msg or "got %r, expected %r" % (a, b))
-
     def assert_deep_equal(self, a, b, msg=None):
         try:
             self.assertEqual(
@@ -233,6 +228,9 @@ def netpbm_available():
 def imagemagick_available():
     return IMCONVERT and command_succeeds([IMCONVERT, '-version'])
 
+
+def on_appveyor():
+    return 'APPVEYOR' in os.environ
 
 if sys.platform == 'win32':
     IMCONVERT = os.environ.get('MAGICK_HOME', '')

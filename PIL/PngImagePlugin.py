@@ -33,12 +33,15 @@
 
 from __future__ import print_function
 
-__version__ = "0.9"
-
+import logging
 import re
+import zlib
 
 from PIL import Image, ImageFile, ImagePalette, _binary
-import zlib
+
+__version__ = "0.9"
+
+logger = logging.getLogger(__name__)
 
 i8 = _binary.i8
 i16 = _binary.i16be
@@ -129,8 +132,7 @@ class ChunkStream(object):
     def call(self, cid, pos, length):
         "Call the appropriate chunk handler"
 
-        if Image.DEBUG:
-            print("STREAM", cid, pos, length)
+        logger.debug("STREAM %s %s %s", cid, pos, length)
         return getattr(self, "chunk_" + cid.decode('ascii'))(pos, length)
 
     def crc(self, cid, data):
@@ -293,9 +295,8 @@ class PngStream(ChunkStream):
         # Compression method    1 byte (0)
         # Compressed profile    n bytes (zlib with deflate compression)
         i = s.find(b"\0")
-        if Image.DEBUG:
-            print("iCCP profile name", s[:i])
-            print("Compression method", i8(s[i]))
+        logger.debug("iCCP profile name %s", s[:i])
+        logger.debug("Compression method %s", i8(s[i]))
         comp_method = i8(s[i])
         if comp_method != 0:
             raise SyntaxError("Unknown compression method %s in iCCP chunk" %
@@ -507,8 +508,7 @@ class PngImageFile(ImageFile.ImageFile):
             except EOFError:
                 break
             except AttributeError:
-                if Image.DEBUG:
-                    print(cid, pos, length, "(unknown)")
+                logger.debug("%s %s %s (unknown)", cid, pos, length)
                 s = ImageFile._safe_read(self.fp, length)
 
             self.png.crc(cid, s)
@@ -762,10 +762,8 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 
     chunk(fp, b"IEND", b"")
 
-    try:
+    if hasattr(fp, "flush"):
         fp.flush()
-    except:
-        pass
 
 
 # --------------------------------------------------------------------
@@ -803,9 +801,9 @@ def getchunks(im, **params):
 # --------------------------------------------------------------------
 # Registry
 
-Image.register_open("PNG", PngImageFile, _accept)
-Image.register_save("PNG", _save)
+Image.register_open(PngImageFile.format, PngImageFile, _accept)
+Image.register_save(PngImageFile.format, _save)
 
-Image.register_extension("PNG", ".png")
+Image.register_extension(PngImageFile.format, ".png")
 
-Image.register_mime("PNG", "image/png")
+Image.register_mime(PngImageFile.format, "image/png")

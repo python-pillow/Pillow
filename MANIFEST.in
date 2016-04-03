@@ -1,80 +1,31 @@
+
 include *.c
 include *.h
+include *.in
 include *.md
 include *.py
-include *.sh
 include *.rst
+include *.sh
 include *.txt
-include *.yaml
-include .coveragerc
-include .gitattributes
-include .travis.yml
 include LICENSE
 include Makefile
-include tox.ini
-recursive-include PIL *.md
-recursive-include Scripts *.py
-recursive-include Scripts *.rst
-recursive-include Scripts *.sh
-recursive-include Scripts README.rst
-recursive-include Tests *.bdf
-recursive-include Tests *.bin
-recursive-include Tests *.bmp
-recursive-include Tests *.bw
-recursive-include Tests *.cur
-recursive-include Tests *.dcx
-recursive-include Tests *.doc
-recursive-include Tests *.eps
-recursive-include Tests *.fli
-recursive-include Tests *.ggr
-recursive-include Tests *.gif
-recursive-include Tests *.gnuplot
-recursive-include Tests *.html
-recursive-include Tests *.icc
-recursive-include Tests *.icns
-recursive-include Tests *.ico
-recursive-include Tests *.j2k
-recursive-include Tests *.jp2
-recursive-include Tests *.jpg
-recursive-include Tests *.lut
-recursive-include Tests *.mpo
-recursive-include Tests *.pbm
-recursive-include Tests *.pcf
-recursive-include Tests *.pcx
-recursive-include Tests *.pgm
-recursive-include Tests *.pil
-recursive-include Tests *.png
-recursive-include Tests *.ppm
-recursive-include Tests *.psd
-recursive-include Tests *.py
-recursive-include Tests *.ras
-recursive-include Tests *.rgb
-recursive-include Tests *.rst
-recursive-include Tests *.sgi
-recursive-include Tests *.spider
-recursive-include Tests *.tar
-recursive-include Tests *.tga
-recursive-include Tests *.tif
-recursive-include Tests *.tiff
-recursive-include Tests *.ttf
-recursive-include Tests *.txt
-recursive-include Tests *.webp
-recursive-include Tests *.xpm
-recursive-include Tests *.msp
-recursive-include Tk *.c
-recursive-include Tk *.rst
-recursive-include depends *.rst
-recursive-include depends *.sh
-recursive-include docs *.bat
-recursive-include docs *.gitignore
-recursive-include docs *.html
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs *.txt
-recursive-include docs BUILDME
-recursive-include docs COPYING
-recursive-include docs Guardfile
-recursive-include docs LICENSE
-recursive-include docs Makefile
-recursive-include libImaging *.c
-recursive-include libImaging *.h
+graft Scripts
+graft Tests
+graft PIL
+graft Tk
+graft libImaging
+graft depends
+graft winbuild
+graft docs
+prune docs/_static
+
+# build/src control detritus
+exclude .coveragerc
+exclude .editorconfig
+exclude .landscape.yaml
+exclude appveyor.yml
+exclude build_children.sh
+exclude tox.ini
+global-exclude .git*
+global-exclude *.pyc
+global-exclude *.so

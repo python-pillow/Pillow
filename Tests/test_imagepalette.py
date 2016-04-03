@@ -90,27 +90,6 @@ class TestImagePalette(PillowTestCase):
         self.assertEqual(lut[191], 60)
         self.assertEqual(lut[255], 255)
 
-    def test_private_make_linear_lut_warning(self):
-        # Arrange
-        from PIL.ImagePalette import _make_linear_lut
-        black = 0
-        white = 255
-
-        # Act / Assert
-        self.assert_warning(
-            DeprecationWarning,
-            lambda: _make_linear_lut(black, white))
-
-    def test_private_make_gamma_lut_warning(self):
-        # Arrange
-        from PIL.ImagePalette import _make_gamma_lut
-        exp = 5
-
-        # Act / Assert
-        self.assert_warning(
-            DeprecationWarning,
-            lambda: _make_gamma_lut(exp))
-
     def test_rawmode_valueerrors(self):
         # Arrange
         from PIL.ImagePalette import raw

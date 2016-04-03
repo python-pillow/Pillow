@@ -17,12 +17,11 @@
 
 from __future__ import print_function
 
-__version__ = "0.3"
-
-
 from PIL import Image, ImageFile, _binary
 import os
 import tempfile
+
+__version__ = "0.3"
 
 i8 = _binary.i8
 i16 = _binary.i16be
@@ -180,13 +179,13 @@ class IptcImageFile(ImageFile.ImageFile):
         finally:
             try:
                 os.unlink(outfile)
-            except:
+            except OSError:
                 pass
 
 
-Image.register_open("IPTC", IptcImageFile)
+Image.register_open(IptcImageFile.format, IptcImageFile)
 
-Image.register_extension("IPTC", ".iim")
+Image.register_extension(IptcImageFile.format, ".iim")
 
 
 ##
@@ -218,7 +217,7 @@ def getiptcinfo(im):
                 while app[offset:offset+4] == b"8BIM":
                     offset += 4
                     # resource code
-                    code = JpegImagePlugin.i16(app, offset)
+                    code = i16(app, offset)
                     offset += 2
                     # resource name (usually empty)
                     name_len = i8(app[offset])
@@ -227,7 +226,7 @@ def getiptcinfo(im):
                     if offset & 1:
                         offset += 1
                     # resource data block
-                    size = JpegImagePlugin.i32(app, offset)
+                    size = i32(app, offset)
                     offset += 4
                     if code == 0x0404:
                         # 0x0404 contains IPTC/NAA data

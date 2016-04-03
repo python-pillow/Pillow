@@ -13,10 +13,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.1"
 
 from PIL import Image, ImageFile
 from PIL._binary import i8
+
+__version__ = "0.1"
 
 
 #
@@ -77,9 +78,9 @@ class MpegImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # Registry stuff
 
-Image.register_open("MPEG", MpegImageFile)
+Image.register_open(MpegImageFile.format, MpegImageFile)
 
-Image.register_extension("MPEG", ".mpg")
-Image.register_extension("MPEG", ".mpeg")
+Image.register_extension(MpegImageFile.format, ".mpg")
+Image.register_extension(MpegImageFile.format, ".mpeg")
 
-Image.register_mime("MPEG", "video/mpeg")
+Image.register_mime(MpegImageFile.format, "video/mpeg")

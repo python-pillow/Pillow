@@ -22,10 +22,14 @@
 
 from __future__ import print_function
 
-from cffi import FFI
+import logging
 import sys
 
-DEBUG = 0
+from cffi import FFI
+
+
+logger = logging.getLogger(__name__)
+
 
 defs = """
 struct Pixel_RGBA {
@@ -50,8 +54,9 @@ class PyAccess(object):
         self.xsize = vals['xsize']
         self.ysize = vals['ysize']
 
-        if DEBUG:
-            print(vals)
+        # Debugging is polluting test traces, only useful here
+        # when hacking on PyAccess
+        # logger.debug("%s", vals)
         self._post_init()
 
     def _post_init(self):
@@ -305,11 +310,8 @@ else:
 def new(img, readonly=False):
     access_type = mode_map.get(img.mode, None)
     if not access_type:
-        if DEBUG:
-            print("PyAccess Not Implemented: %s" % img.mode)
+        logger.debug("PyAccess Not Implemented: %s", img.mode)
         return None
-    if DEBUG:
-        print("New PyAccess: %s" % img.mode)
     return access_type(img, readonly)
 
 # End of file

@@ -20,11 +20,12 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.5"
-
 import re
 import io
+import sys
 from PIL import Image, ImageFile, _binary
+
+__version__ = "0.5"
 
 #
 # --------------------------------------------------------------------
@@ -36,7 +37,6 @@ split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
 
 gs_windows_binary = None
-import sys
 if sys.platform.startswith('win'):
     import shutil
     if hasattr(shutil, 'which'):
@@ -123,8 +123,8 @@ def Ghostscript(tile, size, fp, scale=1):
                "-q",                         # quiet mode
                "-g%dx%d" % size,             # set output geometry (pixels)
                "-r%fx%f" % res,              # set input DPI (dots per inch)
-               "-dNOPAUSE -dSAFER",          # don't pause between pages,
-                                             # safe mode
+               "-dNOPAUSE",                  # don't pause between pages,
+               "-dSAFER",                    # safe mode
                "-sDEVICE=ppmraw",            # ppm driver
                "-sOutputFile=%s" % outfile,  # output file
                "-c", "%d %d translate" % (-bbox[0], -bbox[1]),
@@ -151,7 +151,7 @@ def Ghostscript(tile, size, fp, scale=1):
             os.unlink(outfile)
             if infile_temp:
                 os.unlink(infile_temp)
-        except:
+        except OSError:
             pass
 
     return im
@@ -187,7 +187,8 @@ class PSFile(object):
 
 
 def _accept(prefix):
-    return prefix[:4] == b"%!PS" or i32(prefix) == 0xC6D3D0C5
+    return prefix[:4] == b"%!PS" or \
+           (len(prefix) >= 4 and i32(prefix) == 0xC6D3D0C5)
 
 ##
 # Image plugin for Encapsulated Postscript.  This plugin supports only
@@ -294,7 +295,7 @@ class EpsImageFile(ImageFile.ImageFile):
                     break
                 try:
                     self.mode = self.mode_map[int(mo)]
-                except:
+                except ValueError:
                     break
 
                 self.size = int(x), int(y)
@@ -376,9 +377,10 @@ def _save(im, fp, filename, eps=1):
             pass
 
     base_fp = fp
-    fp = NoCloseStream(fp)
-    if sys.version_info[0] > 2:
-        fp = io.TextIOWrapper(fp, encoding='latin-1')
+    if fp != sys.stdout:
+        fp = NoCloseStream(fp)
+        if sys.version_info[0] > 2:
+            fp = io.TextIOWrapper(fp, encoding='latin-1')
 
     if eps:
         #
@@ -403,13 +405,15 @@ def _save(im, fp, filename, eps=1):
     fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
     fp.write("{ currentfile buf readhexstring pop } bind\n")
     fp.write(operator[2] + "\n")
-    fp.flush()
+    if hasattr(fp, "flush"):
+        fp.flush()
 
     ImageFile._save(im, base_fp, [("eps", (0, 0)+im.size, 0, None)])
 
     fp.write("\n%%%%EndBinary\n")
     fp.write("grestore end\n")
-    fp.flush()
+    if hasattr(fp, "flush"):
+        fp.flush()
 
 #
 # --------------------------------------------------------------------

@@ -28,6 +28,10 @@ class TestImageQuantize(PillowTestCase):
         im.quantize()
         self.assertRaises(Exception, lambda: im.quantize(method=0))
 
+    def test_quantize(self):
+        im = Image.open('Tests/images/caption_6_33_22.png')
+        im.convert('RGB').quantize().convert('RGB')
+
 
 if __name__ == '__main__':
     unittest.main()

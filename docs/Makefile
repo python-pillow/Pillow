@@ -154,3 +154,6 @@ doctest:
 
 livehtml: html
 	livereload $(BUILDDIR)/html -p 33233
+
+serve:
+	cd $(BUILDDIR)/html; python -m SimpleHTTPServer

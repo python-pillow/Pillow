@@ -30,11 +30,6 @@ from PIL._util import isDirectory, isPath
 import os
 import sys
 
-try:
-    import warnings
-except ImportError:
-    warnings = None
-
 
 class _imagingft_not_installed(object):
     # module placeholder
@@ -67,7 +62,7 @@ class ImageFont(object):
 
     def _load_pilfont(self, filename):
 
-        file = open(filename, "rb")
+        fp = open(filename, "rb")
 
         for ext in (".png", ".gif", ".pbm"):
             try:
@@ -83,7 +78,7 @@ class ImageFont(object):
 
         self.file = fullname
 
-        return self._load_pilfont_data(file, image)
+        return self._load_pilfont_data(fp, image)
 
     def _load_pilfont_data(self, file, image):
 
@@ -121,15 +116,8 @@ class ImageFont(object):
 class FreeTypeFont(object):
     "FreeType font wrapper (requires _imagingft service)"
 
-    def __init__(self, font=None, size=10, index=0, encoding="", file=None):
+    def __init__(self, font=None, size=10, index=0, encoding=""):
         # FIXME: use service provider instead
-        if file:
-            if warnings:
-                warnings.warn(
-                    'file parameter deprecated, '
-                    'please use font parameter instead.',
-                    DeprecationWarning)
-            font = file
 
         self.path = font
         self.size = size
@@ -171,7 +159,7 @@ class FreeTypeFont(object):
         using any specified arguments to override the settings.
 
         Parameters are identical to the parameters used to initialize this
-        object, minus the deprecated 'file' argument.
+        object.
 
         :return: A FreeTypeFont object.
         """
@@ -225,7 +213,7 @@ def load(filename):
     return f
 
 
-def truetype(font=None, size=10, index=0, encoding="", filename=None):
+def truetype(font=None, size=10, index=0, encoding=""):
     """
     Load a TrueType or OpenType font file, and create a font object.
     This function loads a font object from the given file, and creates
@@ -243,18 +231,9 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                      Symbol), "ADOB" (Adobe Standard), "ADBE" (Adobe Expert),
                      and "armn" (Apple Roman). See the FreeType documentation
                      for more information.
-    :param filename: Deprecated. Please use font instead.
     :return: A font object.
     :exception IOError: If the file could not be read.
     """
-
-    if filename:
-        if warnings:
-            warnings.warn(
-                'filename parameter deprecated, '
-                'please use font parameter instead.',
-                DeprecationWarning)
-        font = filename
 
     try:
         return FreeTypeFont(font, size, index, encoding)
@@ -275,7 +254,8 @@ def truetype(font=None, size=10, index=0, encoding="", filename=None):
                 # According to the freedesktop spec, XDG_DATA_DIRS should
                 # default to /usr/share
                 lindirs = '/usr/share'
-            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+            dirs += [os.path.join(lindir, "fonts")
+                     for lindir in lindirs.split(":")]
         elif sys.platform == 'darwin':
             dirs += ['/Library/Fonts', '/System/Library/Fonts',
                      os.path.expanduser('~/Library/Fonts')]

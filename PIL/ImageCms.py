@@ -16,6 +16,7 @@
 # below for the original description.
 
 from __future__ import print_function
+import sys
 
 DESCRIPTION = """
 pyCMS
@@ -240,7 +241,6 @@ def get_display_profile(handle=None):
     :returns: None if the profile is not known.
     """
 
-    import sys
     if sys.platform == "win32":
         from PIL import ImageWin
         if isinstance(handle, ImageWin.HDC):
@@ -943,7 +943,6 @@ def versions():
     (pyCMS) Fetches versions.
     """
 
-    import sys
     return (
         VERSION, core.littlecms_version,
         sys.version.split()[0], Image.VERSION
@@ -954,10 +953,9 @@ def versions():
 if __name__ == "__main__":
     # create a cheap manual from the __doc__ strings for the functions above
 
-    from PIL import ImageCms
     print(__doc__)
 
-    for f in dir(ImageCms):
+    for f in dir(sys.modules[__name__]):
         doc = None
         try:
             exec("doc = %s.__doc__" % (f))

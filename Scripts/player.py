@@ -15,9 +15,6 @@ from PIL import Image, ImageTk
 import sys
 
 
-Image.DEBUG = 0
-
-
 # --------------------------------------------------------------------
 # an image animation player
 

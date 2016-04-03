@@ -300,7 +300,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         if (context->qtables) {
             free(context->qtables);
             context->qtables = NULL;
-        }            
+        }
 
 	jpeg_destroy_compress(&context->cinfo);
 	/* if (jerr.pub.num_warnings) return BROKEN; */

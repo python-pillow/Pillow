@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
+from PIL import Image, MspImagePlugin
 
 TEST_FILE = "Tests/images/hopper.msp"
 
@@ -17,6 +17,12 @@ class TestFileMsp(PillowTestCase):
         self.assertEqual(im.mode, "1")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "MSP")
+
+    def test_invalid_file(self):
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: MspImagePlugin.MspImageFile(invalid_file))
 
     def test_open(self):
         # Arrange

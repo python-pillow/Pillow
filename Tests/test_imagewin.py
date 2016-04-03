@@ -107,15 +107,14 @@ class TestImageWinDib(PillowTestCase):
         # Confirm they're the same
         self.assertEqual(dib1.tobytes(), dib2.tobytes())
 
-    def test_dib_fromstring_tostring_deprecated(self):
+    def test_removed_methods(self):
         # Arrange
         im = hopper()
         dib = ImageWin.Dib(im)
-        test_buffer = dib.tobytes()
 
         # Act/Assert
-        self.assert_warning(DeprecationWarning, dib.tostring)
-        self.assert_warning(DeprecationWarning, lambda: dib.fromstring(test_buffer))
+        self.assertRaises(Exception, dib.tostring)
+        self.assertRaises(Exception, dib.fromstring)
 
 
 if __name__ == '__main__':

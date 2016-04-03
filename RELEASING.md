@@ -6,13 +6,13 @@ Released quarterly on the first day of January, April, July, October.
 
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174
 * [ ] Develop and prepare release in ``master`` branch.
-* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
-* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in: 
+* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) and [AppVeyor CI](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
+* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
 ```
-    PIL/__init__.py setup.py _imaging.c
+    PIL/__init__.py setup.py _imaging.c appveyor.yml
 ```
 * [ ] Update `CHANGES.rst`.
-* [ ] Run pre-release check via `make pre`.
+* [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
 * [ ] Create branch and tag for release e.g.:
 ```
     $ git branch 2.9.x
@@ -22,28 +22,32 @@ Released quarterly on the first day of January, April, July, October.
 ```
 * [ ] Create and upload source distributions e.g.:
 ```
-    $ make sdistup
+    $ make sdist
+    $ make upload
 ```
 * [ ] Create and upload [binary distributions](#binary-distributions)
-* [ ] Manually hide old versions on PyPI as needed, such that only the latest main release is visible when viewing https://pypi.python.org/pypi/Pillow
+* [ ] Manually hide old versions on PyPI such that only the latest major release is visible when viewing https://pypi.python.org/pypi/Pillow (https://pypi.python.org/pypi?:action=pkg_edit&name=Pillow)
 
 ## Point Release
 
 Released as needed for security, installation or critical bug fixes.
 
 * [ ] Make necessary changes in ``master`` branch.
-* [ ] Update `CHANGES.rst`. 
+* [ ] Update `CHANGES.rst`.
 * [ ] Cherry pick individual commits from ``master`` branch to release branch e.g. ``2.9.x``.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in release branch e.g. ``2.9.x``.
 * [ ] Checkout release branch e.g.:
 ```
     git checkout -t remotes/origin/2.9.x
 ```
-* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in: 
+* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
 ```
-    PIL/__init__.py setup.py _imaging.c
+    PIL/__init__.py
+    setup.py
+    _imaging.c
+    appveyor.yml
 ```
-* [ ] Run pre-release check via `make pre`.
+* [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
 ```
     $ git tag 2.9.1
@@ -63,7 +67,7 @@ Released as needed privately to individual vendors for critical security-related
 * [ ] Commit against master, cherry pick to affected release branches.
 * [ ] Run local test matrix on each release & Python version.
 * [ ] Privately send to distros.
-* [ ] Run pre-release check via `make pre`
+* [ ] Run pre-release check via `make release-test`
 * [ ] Amend any commits with the CVE #
 * [ ] On release date, tag and push to GitHub.
 ```
@@ -103,3 +107,7 @@ Released as needed privately to individual vendors for critical security-related
 ## Publicize Release
 
 * [ ] Announce release availability via [Twitter](https://twitter.com/pythonpillow) e.g. https://twitter.com/aclark4life/status/583366798302691328.
+
+## Documentation
+
+* [ ] Make sure the default version for Read the Docs is the latest release version, e.g. ``3.1.x`` rather than ``latest``: https://readthedocs.org/projects/pillow/versions/

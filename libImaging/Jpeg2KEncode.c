@@ -265,6 +265,10 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
 
     unsigned prec = 8;
     unsigned bpp = 8;
+    unsigned _overflow_scale_factor;
+    /* SIZE_MAX is not working in the conditionals unless it's a typed
+       variable */
+    unsigned _SIZE__MAX = SIZE_MAX;
 
     stream = opj_stream_default_create(OPJ_FALSE);
 
@@ -303,7 +307,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
         prec = 16;
         bpp = 12;
     } else if (strcmp (im->mode, "LA") == 0) {
-        components = 2; 
+        components = 2;
         color_space = OPJ_CLRSPC_GRAY;
         pack = j2k_pack_la;
     } else if (strcmp (im->mode, "RGB") == 0) {
@@ -335,6 +339,11 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     }
 
     image = opj_image_create(components, image_params, color_space);
+    if (!image) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        state->state = J2K_STATE_FAILED;
+        goto quick_exit;
+    }       
 
     /* Setup compression context */
     context->error_msg = NULL;
@@ -471,7 +480,24 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     tiles_y = (im->ysize + (params.image_offset_y0 - params.cp_ty0)
                + tile_height - 1) / tile_height;
 
+    /* check for integer overflow for the malloc line, checking any expression
+       that may multiply either tile_width or tile_height */
+    _overflow_scale_factor = components * prec;
+    if (( tile_width > _SIZE__MAX / _overflow_scale_factor ) ||
+        ( tile_height > _SIZE__MAX / _overflow_scale_factor ) ||
+        ( tile_width > _SIZE__MAX / (tile_height * _overflow_scale_factor )) ||
+        ( tile_height > _SIZE__MAX / (tile_width * _overflow_scale_factor ))) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        state->state = J2K_STATE_FAILED;
+        goto quick_exit;
+    }
+    /* malloc check ok, checked for overflow above */
     state->buffer = malloc (tile_width * tile_height * components * prec / 8);
+    if (!state->buffer) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        state->state = J2K_STATE_FAILED;
+        goto quick_exit;
+    }
 
     tile_ndx = 0;
     for (y = 0; y < tiles_y; ++y) {
@@ -544,8 +570,8 @@ ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
         return -1;
 
     if (state->state == J2K_STATE_START) {
-        int seekable = (context->format != OPJ_CODEC_J2K 
-                        ? INCREMENTAL_CODEC_SEEKABLE 
+        int seekable = (context->format != OPJ_CODEC_J2K
+                        ? INCREMENTAL_CODEC_SEEKABLE
                         : INCREMENTAL_CODEC_NOT_SEEKABLE);
 
         context->encoder = ImagingIncrementalCodecCreate(j2k_encode_entry,

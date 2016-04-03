@@ -7,20 +7,20 @@ from helper import unittest, PillowTestCase
 # It requires > 2gb memory for the >2 gigapixel image generated in the
 # second test.  Running this automatically would amount to a denial of
 # service on our testing infrastructure.  I expect this test to fail
-# on any 32 bit machine, as well as any smallish things (like
+# on any 32-bit machine, as well as any smallish things (like
 # Raspberry Pis).
 
 from PIL import Image
 try:
     import numpy as np
-except:
+except ImportError:
     raise unittest.SkipTest("numpy not installed")
 
 YDIM = 32769
 XDIM = 48000
 
 
-@unittest.skipIf(sys.maxsize <= 2**32, "requires 64 bit system")
+@unittest.skipIf(sys.maxsize <= 2**32, "requires 64-bit system")
 class LargeMemoryNumpyTest(PillowTestCase):
 
     def _write_png(self, xdim, ydim):

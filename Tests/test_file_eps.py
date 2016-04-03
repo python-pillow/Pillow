@@ -51,6 +51,12 @@ class TestFileEps(PillowTestCase):
         self.assertEqual(image2_scale2.size, (720, 504))
         self.assertEqual(image2_scale2.format, "EPS")
 
+    def test_invalid_file(self):
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: EpsImagePlugin.EpsImageFile(invalid_file))
+
     def test_file_object(self):
         # issue 479
         image1 = Image.open(file1)
@@ -118,15 +124,18 @@ class TestFileEps(PillowTestCase):
         # Arrange
         image1 = Image.open(file1)
         image2 = Image.open(file2)
+        image3 = Image.open("Tests/images/illu10_preview.eps")
         new_size = (100, 100)
 
         # Act
         image1 = image1.resize(new_size)
         image2 = image2.resize(new_size)
+        image3 = image3.resize(new_size)
 
         # Assert
         self.assertEqual(image1.size, new_size)
         self.assertEqual(image2.size, new_size)
+        self.assertEqual(image3.size, new_size)
 
     def test_thumbnail(self):
         # Issue #619
@@ -149,7 +158,9 @@ class TestFileEps(PillowTestCase):
         Image.open(file3)
 
     def _test_readline(self, t, ending):
-        ending = "Failure with line ending: %s" % ("".join("%s" % ord(s) for s in ending))
+        ending = "Failure with line ending: %s" % ("".join(
+                                                   "%s" % ord(s)
+                                                   for s in ending))
         self.assertEqual(t.readline().strip('\r\n'), 'something', ending)
         self.assertEqual(t.readline().strip('\r\n'), 'else', ending)
         self.assertEqual(t.readline().strip('\r\n'), 'baz', ending)
@@ -159,7 +170,7 @@ class TestFileEps(PillowTestCase):
         # check all the freaking line endings possible
         try:
             import StringIO
-        except:
+        except ImportError:
             # don't skip, it skips everything in the parent test
             return
         t = StringIO.StringIO(test_string)

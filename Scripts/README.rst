@@ -12,7 +12,7 @@ pildriver.py (by Eric S. Raymond)
 --------------------------------------------------------------------
 
 A class implementing an image-processing calculator for scripts.
-Parses lists of commnds (or, called interactively, command-line
+Parses lists of commands (or, called interactively, command-line
 arguments) into image loads, transformations, and saves.
 
 viewer.py

@@ -43,10 +43,10 @@ extern ImagingDIB ImagingNewDIB(const char *mode, int xsize, int ysize);
 
 extern void ImagingDeleteDIB(ImagingDIB im);
 
-extern void ImagingDrawDIB(ImagingDIB dib, int dc, int dst[4], int src[4]);
-extern void ImagingExposeDIB(ImagingDIB dib, int dc);
+extern void ImagingDrawDIB(ImagingDIB dib, void *dc, int dst[4], int src[4]);
+extern void ImagingExposeDIB(ImagingDIB dib, void *dc);
 
-extern int ImagingQueryPaletteDIB(ImagingDIB dib, int dc);
+extern int ImagingQueryPaletteDIB(ImagingDIB dib, void *dc);
 
 extern void ImagingPasteDIB(ImagingDIB dib, Imaging im, int xy[4]);
 

@@ -1,10 +1,15 @@
 from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper, py3
 
-import os
+from ctypes import c_float
 import io
+import logging
+import itertools
+import os
 
-from PIL import Image, TiffImagePlugin
+from PIL import Image, TiffImagePlugin, TiffTags
+
+logger = logging.getLogger(__name__)
 
 
 class LibTiffTestCase(PillowTestCase):
@@ -120,43 +125,103 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_write_metadata(self):
         """ Test metadata writing through libtiff """
-        img = Image.open('Tests/images/hopper_g4.tif')
-        f = self.tempfile('temp.tiff')
+        for legacy_api in [False, True]:
+            img = Image.open('Tests/images/hopper_g4.tif')
+            f = self.tempfile('temp.tiff')
 
-        img.save(f, tiffinfo=img.tag)
+            img.save(f, tiffinfo=img.tag)
 
-        loaded = Image.open(f)
+            if legacy_api:
+                original = img.tag.named()
+            else:
+                original = img.tag_v2.named()
 
-        original = img.tag.named()
-        reloaded = loaded.tag.named()
+            # PhotometricInterpretation is set from SAVE_INFO,
+            # not the original image.
+            ignored = ['StripByteCounts', 'RowsPerStrip', 'PageNumber',
+                       'PhotometricInterpretation']
 
-        # PhotometricInterpretation is set from SAVE_INFO,
-        # not the original image.
-        ignored = [
-            'StripByteCounts', 'RowsPerStrip',
-            'PageNumber', 'PhotometricInterpretation']
+            loaded = Image.open(f)
+            if legacy_api:
+                reloaded = loaded.tag.named()
+            else:
+                reloaded = loaded.tag_v2.named()
 
-        for tag, value in reloaded.items():
-            if tag not in ignored:
-                if tag.endswith('Resolution'):
+            for tag, value in itertools.chain(reloaded.items(),
+                                              original.items()):
+                if tag not in ignored:
                     val = original[tag]
-                    self.assert_almost_equal(
-                        val[0][0]/val[0][1], value[0][0]/value[0][1],
-                        msg="%s didn't roundtrip" % tag)
-                else:
-                    self.assertEqual(
-                        original[tag], value, "%s didn't roundtrip" % tag)
+                    if tag.endswith('Resolution'):
+                        if legacy_api:
+                            self.assertEqual(
+                                c_float(val[0][0] / val[0][1]).value,
+                                c_float(value[0][0] / value[0][1]).value,
+                                msg="%s didn't roundtrip" % tag)
+                        else:
+                            self.assertEqual(
+                                c_float(val).value, c_float(value).value,
+                                msg="%s didn't roundtrip" % tag)
+                    else:
+                        self.assertEqual(
+                            val, value, msg="%s didn't roundtrip" % tag)
 
-        for tag, value in original.items():
-            if tag not in ignored:
-                if tag.endswith('Resolution'):
-                    val = reloaded[tag]
-                    self.assert_almost_equal(
-                        val[0][0]/val[0][1], value[0][0]/value[0][1],
-                        msg="%s didn't roundtrip" % tag)
-                else:
-                    self.assertEqual(
-                        value, reloaded[tag], "%s didn't roundtrip" % tag)
+            # https://github.com/python-pillow/Pillow/issues/1561
+            requested_fields = ['StripByteCounts',
+                                'RowsPerStrip',
+                                'StripOffsets']
+            for field in requested_fields:
+                self.assertTrue(field in reloaded, "%s not in metadata" % field)
+
+    def test_additional_metadata(self):
+        # these should not crash. Seriously dummy data, most of it doesn't make
+        # any sense, so we're running up against limits where we're asking
+        # libtiff to do stupid things.
+
+        # Get the list of the ones that we should be able to write
+
+        core_items = dict((tag, info) for tag, info in [(s, TiffTags.lookup(s)) for s
+                                                        in TiffTags.LIBTIFF_CORE]
+                          if info.type is not None)
+
+        # Exclude ones that have special meaning that we're already testing them
+        im = Image.open('Tests/images/hopper_g4.tif')
+        for tag in im.tag_v2.keys():
+            try:
+                del(core_items[tag])
+            except:
+                pass
+
+        # Type codes:
+        #     2: "ascii",
+        #     3: "short",
+        #     4: "long",
+        #     5: "rational",
+        #     12: "double",
+        # type: dummy value
+        values = {2: 'test',
+                  3: 1,
+                  4: 2**20,
+                  5: TiffImagePlugin.IFDRational(100, 1),
+                  12: 1.05}
+
+        new_ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        for tag, info in core_items.items():
+            if info.length == 1:
+                new_ifd[tag] = values[info.type]
+            if info.length == 0:
+                new_ifd[tag] = tuple(values[info.type] for _ in range(3))
+            else:
+                new_ifd[tag] = tuple(values[info.type] for _ in range(info.length))
+
+        # Extra samples really doesn't make sense in this application.
+        del(new_ifd[338])
+
+        out = self.tempfile("temp.tif")
+        TiffImagePlugin.WRITE_LIBTIFF = True
+
+        im.save(out, tiffinfo=new_ifd)
+
+        TiffImagePlugin.WRITE_LIBTIFF = False
 
     def test_g3_compression(self):
         i = Image.open('Tests/images/hopper_g4_500.tif')
@@ -225,13 +290,13 @@ class TestFileLibTiff(LibTiffTestCase):
         orig.save(out)
 
         reread = Image.open(out)
-        self.assertEqual('temp.tif', reread.tag[269])
+        self.assertEqual('temp.tif', reread.tag_v2[269])
+        self.assertEqual('temp.tif', reread.tag[269][0])
 
     def test_12bit_rawmode(self):
         """ Are we generating the same interpretation
         of the image as Imagemagick is? """
         TiffImagePlugin.READ_LIBTIFF = True
-        # Image.DEBUG = True
         im = Image.open('Tests/images/12bit.cropped.tif')
         im.load()
         TiffImagePlugin.READ_LIBTIFF = False
@@ -243,14 +308,8 @@ class TestFileLibTiff(LibTiffTestCase):
 
         im2 = Image.open('Tests/images/12in16bit.tif')
 
-        if Image.DEBUG:
-            print(im.getpixel((0, 0)))
-            print(im.getpixel((0, 1)))
-            print(im.getpixel((0, 2)))
-
-            print(im2.getpixel((0, 0)))
-            print(im2.getpixel((0, 1)))
-            print(im2.getpixel((0, 2)))
+        logger.debug("%s", [img.getpixel((0, idx))
+                            for img in [im, im2] for idx in range(3)])
 
         self.assert_image_equal(im, im2)
 
@@ -360,6 +419,39 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertEqual(im.mode, "L")
         self.assert_image_similar(im, original, 7.3)
 
+    def test_gray_semibyte_per_pixel(self):
+        test_files = (
+            (
+                24.8,#epsilon
+                (#group
+                    "Tests/images/tiff_gray_2_4_bpp/hopper2.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper2I.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper2R.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper2IR.tif",
+                )
+            ),
+            (
+                7.3,#epsilon
+                (#group
+                    "Tests/images/tiff_gray_2_4_bpp/hopper4.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper4I.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper4R.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper4IR.tif",
+                )
+            ),
+        )
+        original = hopper("L")
+        for epsilon, group in test_files:
+            im = Image.open(group[0])
+            self.assertEqual(im.size, (128, 128))
+            self.assertEqual(im.mode, "L")
+            self.assert_image_similar(im, original, epsilon)
+            for file in group[1:]:
+                im2 = Image.open(file)
+                self.assertEqual(im2.size, (128, 128))
+                self.assertEqual(im2.mode, "L")
+                self.assert_image_equal(im, im2)
+
     def test_save_bytesio(self):
         # PR 1011
         # Test TIFF saving to io.BytesIO() object.
@@ -386,6 +478,16 @@ class TestFileLibTiff(LibTiffTestCase):
 
         TiffImagePlugin.WRITE_LIBTIFF = False
         TiffImagePlugin.READ_LIBTIFF = False
+
+    def test_crashing_metadata(self):
+        # issue 1597
+        im = Image.open('Tests/images/rdf.tif')
+        out = self.tempfile('temp.tif')
+
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        # this shouldn't crash
+        im.save(out, format='TIFF')
+        TiffImagePlugin.WRITE_LIBTIFF = False
 
 
 if __name__ == '__main__':

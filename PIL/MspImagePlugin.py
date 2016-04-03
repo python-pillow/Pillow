@@ -17,9 +17,9 @@
 #
 
 
-__version__ = "0.1"
-
 from PIL import Image, ImageFile, _binary
+
+__version__ = "0.1"
 
 
 #
@@ -98,7 +98,7 @@ def _save(im, fp, filename):
 #
 # registry
 
-Image.register_open("MSP", MspImageFile, _accept)
-Image.register_save("MSP", _save)
+Image.register_open(MspImageFile.format, MspImageFile, _accept)
+Image.register_save(MspImageFile.format, _save)
 
-Image.register_extension("MSP", ".msp")
+Image.register_extension(MspImageFile.format, ".msp")

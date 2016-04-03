@@ -1,0 +1,78 @@
+
+3.1.1
+=====
+
+CVE-2016-0740 -- Buffer overflow in TiffDecode.c
+------------------------------------------------
+
+Pillow 3.1.0 and earlier when linked against libtiff >= 4.0.0 on x64
+may overflow a buffer when reading a specially crafted tiff file.
+
+Specifically, libtiff >= 4.0.0 changed the return type of
+``TIFFScanlineSize`` from ``int32`` to machine dependent
+``int32|64``. If the scanline is sized so that it overflows an
+``int32``, it may be interpreted as a negative number, which will then
+pass the size check in ``TiffDecode.c`` line 236. To do this, the
+logical scanline size has to be > 2gb, and for the test file, the
+allocated buffer size is 64k against a roughly 4gb scan line size. Any
+image data over 64k is written over the heap, causing a segfault.
+
+This issue was found by security researcher FourOne.
+
+
+CVE-2016-0775 -- Buffer overflow in FliDecode.c
+-----------------------------------------------
+
+In all versions of Pillow, dating back at least to the last PIL 1.1.7
+release, FliDecode.c has a buffer overflow error.
+
+Around line 192::
+
+  case 16:
+      /* COPY chunk */
+      for (y = 0; y < state->ysize; y++) {
+          UINT8* buf = (UINT8*) im->image[y];
+          memcpy(buf+x, data, state->xsize);
+          data += state->xsize;
+      }
+      break;
+
+
+The memcpy has error where ``x`` is added to the target buffer
+address. ``X`` is used in several internal temporary variable roles,
+but can take a value up to the width of the image.  ``Im->image[y]``
+is a set of row pointers to segments of memory that are the size of
+the row.  At the max ``y``, this will write the contents of the line
+off the end of the memory buffer, causing a segfault.
+
+This issue was found by Alyssa Besseling at Atlassian
+
+CVE-2016-2533 -- Buffer overflow in PcdDecode.c
+----------------------------------------------
+
+In all versions of Pillow, dating back at least to the last PIL 1.1.7
+release, ``PcdDecode.c`` has a buffer overflow error.
+
+The ``state.buffer`` for ``PcdDecode.c`` is allocated based on a 3
+bytes per pixel sizing, where ``PcdDecode.c`` wrote into the buffer
+assuming 4 bytes per pixel. This writes 768 bytes beyond the end of
+the buffer into other Python object storage. In some cases, this
+causes a segfault, in others an internal Python malloc error.
+
+Integer overflow in Resample.c
+------------------------------
+
+If a large value was passed into the new size for an image, it is
+possible to overflow an int32 value passed into malloc.
+ 
+  kk = malloc(xsize * kmax * sizeof(float));
+  ...
+  xbounds = malloc(xsize * 2 * sizeof(int));
+
+``xsize`` is trusted user input. These multiplications can overflow,
+leading the malloc'd buffer to be undersized. These allocations are
+followed by a loop that writes out of bounds. This can lead to
+corruption on the heap of the Python process with attacker controlled
+float data.
+
+This issue was found by Ned Williamson.

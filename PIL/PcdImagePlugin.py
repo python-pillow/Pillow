@@ -15,10 +15,9 @@
 #
 
 
-__version__ = "0.1"
-
-
 from PIL import Image, ImageFile, _binary
+
+__version__ = "0.1"
 
 i8 = _binary.i8
 
@@ -55,6 +54,6 @@ class PcdImageFile(ImageFile.ImageFile):
 #
 # registry
 
-Image.register_open("PCD", PcdImageFile)
+Image.register_open(PcdImageFile.format, PcdImageFile)
 
-Image.register_extension("PCD", ".pcd")
+Image.register_extension(PcdImageFile.format, ".pcd")

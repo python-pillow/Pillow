@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL import Image
+from PIL import Image, Jpeg2KImagePlugin
 from io import BytesIO
 
 codecs = dir(Image.core)
@@ -38,6 +38,13 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertEqual(im.mode, 'RGB')
         self.assertEqual(im.size, (640, 480))
         self.assertEqual(im.format, 'JPEG2000')
+
+    def test_invalid_file(self):
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda:
+                          Jpeg2KImagePlugin.Jpeg2KImageFile(invalid_file))
 
     def test_bytesio(self):
         with open('Tests/images/test-card-lossless.jp2', 'rb') as f:
@@ -163,6 +170,18 @@ class TestFileJpeg2k(PillowTestCase):
         im = self.roundtrip(jp2)
         self.assert_image_equal(im, jp2)
 
+    def test_unbound_local(self):
+        # prepatch, a malformed jp2 file could cause an UnboundLocalError
+        # exception.
+        try:
+            jp2 = Image.open('Tests/images/unbound_variable.jp2')
+            self.assertTrue(False, 'Expecting an exception')
+        except SyntaxError as err:
+            self.assertTrue(True, 'Expecting a syntax error')
+        except IOError as err:
+            self.assertTrue(True, 'Expecting an IO error')
+        except UnboundLocalError as err:
+            self.assertTrue(False, "Prepatch error")
 
 if __name__ == '__main__':
     unittest.main()

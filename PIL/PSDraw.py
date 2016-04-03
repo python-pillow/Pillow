@@ -16,10 +16,11 @@
 #
 
 from PIL import EpsImagePlugin
-
+import sys
 
 ##
 # Simple Postscript graphics interface.
+
 
 class PSDraw(object):
     """
@@ -29,12 +30,11 @@ class PSDraw(object):
 
     def __init__(self, fp=None):
         if not fp:
-            import sys
             fp = sys.stdout
         self.fp = fp
 
     def _fp_write(self, to_write):
-        if bytes is str:
+        if bytes is str or self.fp == sys.stdout:
             self.fp.write(to_write)
         else:
             self.fp.write(bytes(to_write, 'UTF-8'))
@@ -47,7 +47,7 @@ class PSDraw(object):
                        "/showpage { } def\n"
                        "%%EndComments\n"
                        "%%BeginDocument\n")
-        # self.fp_write(ERROR_PS)  # debugging!
+        # self._fp_write(ERROR_PS)  # debugging!
         self._fp_write(EDROFF_PS)
         self._fp_write(VDI_PS)
         self._fp_write("%%EndProlog\n")

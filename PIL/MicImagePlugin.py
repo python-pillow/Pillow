@@ -17,11 +17,10 @@
 #
 
 
-__version__ = "0.1"
-
-
 from PIL import Image, TiffImagePlugin
 from PIL.OleFileIO import MAGIC, OleFileIO
+
+__version__ = "0.1"
 
 
 #
@@ -75,6 +74,10 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
     def n_frames(self):
         return len(self.images)
 
+    @property
+    def is_animated(self):
+        return len(self.images) > 1
+
     def seek(self, frame):
 
         try:
@@ -95,6 +98,6 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("MIC", MicImageFile, _accept)
+Image.register_open(MicImageFile.format, MicImageFile, _accept)
 
-Image.register_extension("MIC", ".mic")
+Image.register_extension(MicImageFile.format, ".mic")

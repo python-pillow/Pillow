@@ -166,6 +166,65 @@ class TestFileJpeg(PillowTestCase):
         im = hopper()
         im.save(f, 'JPEG', quality=90, exif=b"1"*65532)
 
+    def test_exif_typeerror(self):
+        im = Image.open('Tests/images/exif_typeerror.jpg')
+        # Should not raise a TypeError
+        im._getexif()
+
+    def test_exif_gps(self):
+        # Arrange
+        im = Image.open('Tests/images/exif_gps.jpg')
+        gps_index = 34853
+        expected_exif_gps = {
+            0: b'\x00\x00\x00\x01',
+            2: (4294967295, 1),
+            5: b'\x01',
+            30: 65535,
+            29: '1999:99:99 99:99:99'}
+
+        # Act
+        exif = im._getexif()
+
+        # Assert
+        self.assertEqual(exif[gps_index], expected_exif_gps)
+
+    def test_exif_rollback(self):
+        # rolling back exif support in 3.1 to pre-3.0 formatting.
+        # expected from 2.9, with b/u qualifiers switched for 3.2 compatibility
+        # this test passes on 2.9 and 3.1, but not 3.0
+        expected_exif = {34867: 4294967295,
+                         258: (24, 24, 24),
+                         36867: '2099:09:29 10:10:10',
+                         34853: {0: b'\x00\x00\x00\x01',
+                                 2: (4294967295, 1),
+                                 5: b'\x01',
+                                 30: 65535,
+                                 29: '1999:99:99 99:99:99'},
+                         296: 65535,
+                         34665: 185,
+                         41994: 65535,
+                         514: 4294967295,
+                         271: 'Make',
+                         272: 'XXX-XXX',
+                         305: 'PIL',
+                         42034: ((1, 1), (1, 1), (1, 1), (1, 1)),
+                         42035: 'LensMake',
+                         34856: b'\xaa\xaa\xaa\xaa\xaa\xaa',
+                         282: (4294967295, 1),
+                         33434: (4294967295, 1)}
+
+        im = Image.open('Tests/images/exif_gps.jpg')
+        exif = im._getexif()
+
+        for tag, value in expected_exif.items():
+            self.assertEqual(value, exif[tag])
+
+    def test_exif_gps_typeerror(self):
+        im = Image.open('Tests/images/exif_gps_typeerror.jpg')
+
+        # Should not raise a TypeError
+        im._getexif()
+
     def test_progressive_compat(self):
         im1 = self.roundtrip(hopper())
         im2 = self.roundtrip(hopper(), progressive=1)
@@ -291,22 +350,24 @@ class TestFileJpeg(PillowTestCase):
 
         # dict of qtable lists
         self.assert_image_similar(im,
-                                  self.roundtrip(im,
-                                                 qtables={0: standard_l_qtable,
-                                                          1: standard_chrominance_qtable}),
-                                  30)
+                                  self.roundtrip(im, qtables={
+                                      0: standard_l_qtable,
+                                      1: standard_chrominance_qtable
+                                  }), 30)
 
         # not a sequence
         self.assertRaises(Exception, lambda: self.roundtrip(im, qtables='a'))
         # sequence wrong length
         self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[]))
         # sequence wrong length
-        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1, 2, 3, 4, 5]))
+        self.assertRaises(Exception,
+                          lambda: self.roundtrip(im, qtables=[1, 2, 3, 4, 5]))
 
         # qtable entry not a sequence
         self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1]))
         # qtable entry has wrong number of items
-        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[[1, 2, 3, 4]]))
+        self.assertRaises(Exception,
+                          lambda: self.roundtrip(im, qtables=[[1, 2, 3, 4]]))
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
     def test_load_djpeg(self):
@@ -337,7 +398,8 @@ class TestFileJpeg(PillowTestCase):
             """ Generates a very hard to compress file
             :param size: tuple
             """
-            return Image.frombytes('RGB', size, os.urandom(size[0]*size[1] * 3))
+            return Image.frombytes('RGB',
+                                   size, os.urandom(size[0]*size[1] * 3))
 
         im = gen_random_image((512, 512))
         f = self.tempfile("temp.jpeg")
@@ -349,6 +411,18 @@ class TestFileJpeg(PillowTestCase):
         reloaded.save(f, quality='keep')
         reloaded.save(f, quality='keep', progressive=True)
         reloaded.save(f, quality='keep', optimize=True)
+
+    def test_bad_mpo_header(self):
+        """ Treat unknown MPO as JPEG """
+        # Arrange
+
+        # Act
+        # Shouldn't raise error
+        fn = "Tests/images/sugarshack_bad_mpo_header.jpg"
+        im = self.assert_warning(UserWarning, lambda: Image.open(fn))
+
+        # Assert
+        self.assertEqual(im.format, "JPEG")
 
 
 if __name__ == '__main__':

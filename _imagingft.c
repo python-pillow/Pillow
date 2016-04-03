@@ -21,20 +21,8 @@
 #include "Python.h"
 #include "Imaging.h"
 
-#if !defined(USE_FREETYPE_2_0)
-/* undef/comment out to use freetype 2.0 */
-#define USE_FREETYPE_2_1
-#endif
-
-#if defined(USE_FREETYPE_2_1)
-/* freetype 2.1 and newer */
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#else
-/* freetype 2.0 */
-#include <freetype/freetype.h>
-#endif
-
 #include FT_GLYPH_H
 
 #define KEEP_PY_UNICODE
@@ -59,11 +47,7 @@ struct {
     const char* message;
 } ft_errors[] =
 
-#if defined(USE_FREETYPE_2_1)
 #include FT_ERRORS_H
-#else
-#include <freetype/fterrors.h>
-#endif
 
 /* -------------------------------------------------------------------- */
 /* font objects */
@@ -144,11 +128,11 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         /* Don't free this before FT_Done_Face */
         self->font_bytes = PyMem_Malloc(font_bytes_size);
         if (!self->font_bytes) {
-            error = 65; // Out of Memory in Freetype. 
+            error = 65; // Out of Memory in Freetype.
         }
         if (!error) {
             memcpy(self->font_bytes, font_bytes, (size_t)font_bytes_size);
-            error = FT_New_Memory_Face(library, (FT_Byte*)self->font_bytes, 
+            error = FT_New_Memory_Face(library, (FT_Byte*)self->font_bytes,
                                        font_bytes_size, index, &self->face);
         }
     }
@@ -168,7 +152,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     if (error) {
         if (self->font_bytes) {
             PyMem_Free(self->font_bytes);
-        }  
+        }
         PyObject_Del(self);
         return geterror(error);
     }
@@ -244,8 +228,8 @@ font_getsize(FontObject* self, PyObject* args)
             x += delta.x;
         }
 
-	/* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 
-	 *   Yifu Yu<root@jackyyf.com>, 2014-10-15 
+	/* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
+	 *   Yifu Yu<root@jackyyf.com>, 2014-10-15
 	 */
         error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
         if (error)
@@ -459,7 +443,7 @@ font_dealloc(FontObject* self)
     FT_Done_Face(self->face);
     if (self->font_bytes) {
         PyMem_Free(self->font_bytes);
-    }  
+    }
     PyObject_Del(self);
 }
 
@@ -509,6 +493,25 @@ font_getattr_descent(FontObject* self, void* closure)
 }
 
 static PyObject*
+font_getattr_height(FontObject* self, void* closure)
+{
+    return PyInt_FromLong(PIXEL(self->face->size->metrics.height));
+}
+
+static PyObject*
+font_getattr_x_ppem(FontObject* self, void* closure)
+{
+    return PyInt_FromLong(self->face->size->metrics.x_ppem);
+}
+
+static PyObject*
+font_getattr_y_ppem(FontObject* self, void* closure)
+{
+    return PyInt_FromLong(self->face->size->metrics.y_ppem);
+}
+
+
+static PyObject*
 font_getattr_glyphs(FontObject* self, void* closure)
 {
     return PyInt_FromLong(self->face->num_glyphs);
@@ -519,6 +522,9 @@ static struct PyGetSetDef font_getsetters[] = {
     { "style",      (getter) font_getattr_style },
     { "ascent",     (getter) font_getattr_ascent },
     { "descent",    (getter) font_getattr_descent },
+    { "height",     (getter) font_getattr_height },
+    { "x_ppem",     (getter) font_getattr_x_ppem },
+    { "y_ppem",     (getter) font_getattr_y_ppem },
     { "glyphs",     (getter) font_getattr_glyphs },
     { NULL }
 };

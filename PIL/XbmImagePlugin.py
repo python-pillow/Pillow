@@ -19,15 +19,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.6"
-
 import re
 from PIL import Image, ImageFile
 
+__version__ = "0.6"
+
 # XBM header
 xbm_head = re.compile(
-    b"\s*#define[ \t]+[^_]*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
-    b"#define[ \t]+[^_]*_height[ \t]+(?P<height>[0-9]+)[\r\n]+"
+    b"\s*#define[ \t]+.*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
+    b"#define[ \t]+.*_height[ \t]+(?P<height>[0-9]+)[\r\n]+"
     b"(?P<hotspot>"
     b"#define[ \t]+[^_]*_x_hot[ \t]+(?P<xhot>[0-9]+)[\r\n]+"
     b"#define[ \t]+[^_]*_y_hot[ \t]+(?P<yhot>[0-9]+)[\r\n]+"
@@ -88,9 +88,9 @@ def _save(im, fp, filename):
     fp.write(b"};\n")
 
 
-Image.register_open("XBM", XbmImageFile, _accept)
-Image.register_save("XBM", _save)
+Image.register_open(XbmImageFile.format, XbmImageFile, _accept)
+Image.register_save(XbmImageFile.format, _save)
 
-Image.register_extension("XBM", ".xbm")
+Image.register_extension(XbmImageFile.format, ".xbm")
 
-Image.register_mime("XBM", "image/xbm")
+Image.register_mime(XbmImageFile.format, "image/xbm")

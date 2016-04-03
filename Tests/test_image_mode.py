@@ -21,12 +21,14 @@ class TestImageMode(PillowTestCase):
 
         m = ImageMode.getmode("1")
         self.assertEqual(m.mode, "1")
+        self.assertEqual(str(m), "1")
         self.assertEqual(m.bands, ("1",))
         self.assertEqual(m.basemode, "L")
         self.assertEqual(m.basetype, "L")
 
         m = ImageMode.getmode("RGB")
         self.assertEqual(m.mode, "RGB")
+        self.assertEqual(str(m), "RGB")
         self.assertEqual(m.bands, ("R", "G", "B"))
         self.assertEqual(m.basemode, "RGB")
         self.assertEqual(m.basetype, "L")

@@ -24,12 +24,10 @@
 #
 
 
-__version__ = "0.7"
-
-
 from PIL import Image, ImageFile, ImagePalette, _binary
 import math
 
+__version__ = "0.7"
 
 i8 = _binary.i8
 i16 = _binary.i16le
@@ -103,7 +101,9 @@ class BmpImageFile(ImageFile.ImageFile):
                 file_info['pixels_per_meter'] = (i32(header_data[20:24]), i32(header_data[24:28]))
                 file_info['colors'] = i32(header_data[28:32])
                 file_info['palette_padding'] = 4
-                self.info["dpi"] = tuple(map(lambda x: math.ceil(x / 39.3701), file_info['pixels_per_meter']))
+                self.info["dpi"] = tuple(
+                    map(lambda x: int(math.ceil(x / 39.3701)),
+                        file_info['pixels_per_meter']))
                 if file_info['compression'] == self.BITFIELDS:
                     if len(header_data) >= 52:
                         for idx, mask in enumerate(['r_mask', 'g_mask', 'b_mask', 'a_mask']):
@@ -130,13 +130,18 @@ class BmpImageFile(ImageFile.ImageFile):
         # ----------------- Process BMP with Bitfields compression (not palette)
         if file_info['compression'] == self.BITFIELDS:
             SUPPORTED = {
-            32: [(0xff0000, 0xff00, 0xff, 0x0), (0xff0000, 0xff00, 0xff, 0xff000000), (0x0, 0x0, 0x0, 0x0)],
-            24: [(0xff0000, 0xff00, 0xff)],
-            16: [(0xf800, 0x7e0, 0x1f), (0x7c00, 0x3e0, 0x1f)]}
+                32: [(0xff0000, 0xff00, 0xff, 0x0), (0xff0000, 0xff00, 0xff, 0xff000000), (0x0, 0x0, 0x0, 0x0)],
+                24: [(0xff0000, 0xff00, 0xff)],
+                16: [(0xf800, 0x7e0, 0x1f), (0x7c00, 0x3e0, 0x1f)]
+            }
             MASK_MODES = {
-            (32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX", (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA", (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
-            (24, (0xff0000, 0xff00, 0xff)): "BGR",
-            (16, (0xf800, 0x7e0, 0x1f)): "BGR;16", (16, (0x7c00, 0x3e0, 0x1f)): "BGR;15"}
+                (32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX",
+                (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA",
+                (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
+                (24, (0xff0000, 0xff00, 0xff)): "BGR",
+                (16, (0xf800, 0x7e0, 0x1f)): "BGR;16",
+                (16, (0x7c00, 0x3e0, 0x1f)): "BGR;15"
+            }
             if file_info['bits'] in SUPPORTED:
                 if file_info['bits'] == 32 and file_info['rgba_mask'] in SUPPORTED[file_info['bits']]:
                     raw_mode = MASK_MODES[(file_info['bits'], file_info['rgba_mask'])]
@@ -279,3 +284,5 @@ Image.register_open(BmpImageFile.format, BmpImageFile, _accept)
 Image.register_save(BmpImageFile.format, _save)
 
 Image.register_extension(BmpImageFile.format, ".bmp")
+
+Image.register_mime(BmpImageFile.format, "image/bmp")

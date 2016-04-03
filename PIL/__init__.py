@@ -12,16 +12,18 @@
 # ;-)
 
 VERSION = '1.1.7'  # PIL version
-PILLOW_VERSION = '2.9.0.dev0'  # Pillow
+PILLOW_VERSION = '3.3.0.dev0'  # Pillow
 
 _plugins = ['BmpImagePlugin',
             'BufrStubImagePlugin',
             'CurImagePlugin',
             'DcxImagePlugin',
+            'DdsImagePlugin',
             'EpsImagePlugin',
             'FitsStubImagePlugin',
             'FliImagePlugin',
             'FpxImagePlugin',
+            'FtexImagePlugin',
             'GbrImagePlugin',
             'GifImagePlugin',
             'GribStubImagePlugin',

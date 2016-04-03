@@ -5,7 +5,7 @@
 #
 # this demo script illustrates pasting into an already displayed
 # photoimage.  note that the current version of Tk updates the whole
-# image everytime we paste, so to get decent performance, we split
+# image every time we paste, so to get decent performance, we split
 # the image into a set of tiles.
 #
 
@@ -67,6 +67,10 @@ class PaintCanvas(Canvas):
 # main
 
 root = Tk()
+
+if len(sys.argv) != 2:
+    print("Usage: painter file")
+    sys.exit(1)
 
 im = Image.open(sys.argv[1])
 

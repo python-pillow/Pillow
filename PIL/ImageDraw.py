@@ -31,21 +31,17 @@
 #
 
 import numbers
+import warnings
 
 from PIL import Image, ImageColor
 from PIL._util import isStringType
-
-try:
-    import warnings
-except ImportError:
-    warnings = None
-
 
 ##
 # A simple 2D drawing interface for PIL images.
 # <p>
 # Application code should use the <b>Draw</b> factory, instead of
 # directly.
+
 
 class ImageDraw(object):
 
@@ -90,38 +86,17 @@ class ImageDraw(object):
         self.fill = 0
         self.font = None
 
-    ##
-    # Set the default pen color.
-
     def setink(self, ink):
-        # compatibility
-        if warnings:
-            warnings.warn(
-                "'setink' is deprecated; use keyword arguments instead",
-                DeprecationWarning, stacklevel=2
-                )
-        if isStringType(ink):
-            ink = ImageColor.getcolor(ink, self.mode)
-        if self.palette and not isinstance(ink, numbers.Number):
-            ink = self.palette.getcolor(ink)
-        self.ink = self.draw.draw_ink(ink, self.mode)
-
-    ##
-    # Set the default background color.
+        raise Exception("setink() has been removed. " +
+                        "Please use keyword arguments instead.")
 
     def setfill(self, onoff):
-        # compatibility
-        if warnings:
-            warnings.warn(
-                "'setfill' is deprecated; use keyword arguments instead",
-                DeprecationWarning, stacklevel=2
-                )
-        self.fill = onoff
-
-    ##
-    # Set the default font.
+        raise Exception("setfill() has been removed. " +
+                        "Please use keyword arguments instead.")
 
     def setfont(self, font):
+        warnings.warn("setfont() is deprecated. " +
+                      "Please set the attribute directly instead.")
         # compatibility
         self.font = font
 
@@ -256,7 +231,20 @@ class ImageDraw(object):
     ##
     # Draw text.
 
-    def text(self, xy, text, fill=None, font=None, anchor=None):
+    def _multiline_check(self, text):
+        split_character = "\n" if isinstance(text, type("")) else b"\n"
+
+        return split_character in text
+
+    def _multiline_split(self, text):
+        split_character = "\n" if isinstance(text, type("")) else b"\n"
+
+        return text.split(split_character)
+
+    def text(self, xy, text, fill=None, font=None, anchor=None, *args, **kwargs):
+        if self._multiline_check(text):
+            return self.multiline_text(xy, text, fill, font, anchor, *args, **kwargs)
+
         ink, fill = self._getink(fill)
         if font is None:
             font = self.getfont()
@@ -273,13 +261,49 @@ class ImageDraw(object):
                     mask = font.getmask(text)
             self.draw.draw_bitmap(xy, mask, ink)
 
+    def multiline_text(self, xy, text, fill=None, font=None, anchor=None,
+                       spacing=4, align="left"):
+        widths = []
+        max_width = 0
+        lines = self._multiline_split(text)
+        line_spacing = self.textsize('A', font=font)[1] + spacing
+        for line in lines:
+            line_width, line_height = self.textsize(line, font)
+            widths.append(line_width)
+            max_width = max(max_width, line_width)
+        left, top = xy
+        for idx, line in enumerate(lines):
+            if align == "left":
+                pass  # left = x
+            elif align == "center":
+                left += (max_width - widths[idx]) / 2.0
+            elif align == "right":
+                left += (max_width - widths[idx])
+            else:
+                assert False, 'align must be "left", "center" or "right"'
+            self.text((left, top), line, fill, font, anchor)
+            top += line_spacing
+            left = xy[0]
+
     ##
     # Get the size of a given string, in pixels.
 
-    def textsize(self, text, font=None):
+    def textsize(self, text, font=None, *args, **kwargs):
+        if self._multiline_check(text):
+            return self.multiline_textsize(text, font, *args, **kwargs)
+
         if font is None:
             font = self.getfont()
         return font.getsize(text)
+
+    def multiline_textsize(self, text, font=None, spacing=4):
+        max_width = 0
+        lines = self._multiline_split(text)
+        line_spacing = self.textsize('A', font=font)[1] + spacing
+        for line in lines:
+            line_width, line_height = self.textsize(line, font)
+            max_width = max(max_width, line_width)
+        return max_width, len(lines)*line_spacing
 
 
 ##
@@ -301,7 +325,7 @@ def Draw(im, mode=None):
 # experimental access to the outline API
 try:
     Outline = Image.core.outline
-except:
+except AttributeError:
     Outline = None
 
 

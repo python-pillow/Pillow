@@ -15,20 +15,20 @@
 
 # This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis
 # <casadebender@gmail.com>.
-# https://code.google.com/p/casadebender/wiki/Win32IconImagePlugin
+# https://code.google.com/archive/p/casadebender/wikis/Win32IconImagePlugin.wiki
 #
 # Icon format references:
-#   * http://en.wikipedia.org/wiki/ICO_(file_format)
-#   * http://msdn.microsoft.com/en-us/library/ms997538.aspx
+#   * https://en.wikipedia.org/wiki/ICO_(file_format)
+#   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
 
-
-__version__ = "0.1"
 
 import struct
 from io import BytesIO
 
 from PIL import Image, ImageFile, BmpImagePlugin, PngImagePlugin, _binary
 from math import log, ceil
+
+__version__ = "0.1"
 
 #
 # --------------------------------------------------------------------
@@ -252,7 +252,7 @@ class IcoImageFile(ImageFile.ImageFile):
 
     This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis
     <casadebender@gmail.com>.
-    https://code.google.com/p/casadebender/wiki/Win32IconImagePlugin
+    https://code.google.com/archive/p/casadebender/wikis/Win32IconImagePlugin.wiki
     """
     format = "ICO"
     format_description = "Windows Icon"
@@ -278,6 +278,6 @@ class IcoImageFile(ImageFile.ImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("ICO", IcoImageFile, _accept)
-Image.register_save("ICO", _save)
-Image.register_extension("ICO", ".ico")
+Image.register_open(IcoImageFile.format, IcoImageFile, _accept)
+Image.register_save(IcoImageFile.format, _save)
+Image.register_extension(IcoImageFile.format, ".ico")

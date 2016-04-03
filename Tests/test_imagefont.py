@@ -10,6 +10,8 @@ import copy
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20
 
+TEST_TEXT = "hey you\nyou are awesome\nthis looks awkward"
+
 
 try:
     from PIL import ImageFont
@@ -86,16 +88,11 @@ try:
                 self._render(f)
             self._clean()
 
-        def test_font_old_parameters(self):
-            self.assert_warning(
-                DeprecationWarning,
-                lambda: ImageFont.truetype(filename=FONT_PATH, size=FONT_SIZE))
-
         def _render(self, font):
             txt = "Hello World!"
             ttf = ImageFont.truetype(font, FONT_SIZE)
             ttf.getsize(txt)
-            
+
             img = Image.new("RGB", (256, 64), "white")
             d = ImageDraw.Draw(img)
             d.text((10, 10), txt, font=ttf, fill='black')
@@ -124,6 +121,7 @@ try:
             size = draw.textsize(txt, ttf)
             draw.text((10, 10), txt, font=ttf)
             draw.rectangle((10, 10, 10 + size[0], 10 + size[1]))
+            del draw
 
             target = 'Tests/images/rectangle_surrounding_text.png'
             target_img = Image.open(target)
@@ -134,7 +132,7 @@ try:
             draw = ImageDraw.Draw(im)
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
             line_spacing = draw.textsize('A', font=ttf)[1] + 4
-            lines = ['hey you', 'you are awesome', 'this looks awkward']
+            lines = TEST_TEXT.split("\n")
             y = 0
             for line in lines:
                 draw.text((0, y), line, font=ttf)
@@ -148,6 +146,89 @@ try:
             # at epsilon = ~38.
             self.assert_image_similar(im, target_img, .5)
 
+        def test_render_multiline_text(self):
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+            # Test that text() correctly connects to multiline_text()
+            # and that align defaults to left
+            im = Image.new(mode='RGB', size=(300, 100))
+            draw = ImageDraw.Draw(im)
+            draw.text((0, 0), TEST_TEXT, font=ttf)
+
+            target = 'Tests/images/multiline_text.png'
+            target_img = Image.open(target)
+
+            self.assert_image_similar(im, target_img, .5)
+
+            # Test that text() can pass on additional arguments
+            # to multiline_text()
+            draw.text((0, 0), TEST_TEXT, fill=None, font=ttf, anchor=None,
+                      spacing=4, align="left")
+            draw.text((0, 0), TEST_TEXT, None, ttf, None, 4, "left")
+            del draw
+
+            # Test align center and right
+            for align, ext in {"center": "_center",
+                               "right": "_right"}.items():
+                im = Image.new(mode='RGB', size=(300, 100))
+                draw = ImageDraw.Draw(im)
+                draw.multiline_text((0, 0), TEST_TEXT, font=ttf, align=align)
+                del draw
+
+                target = 'Tests/images/multiline_text'+ext+'.png'
+                target_img = Image.open(target)
+
+                self.assert_image_similar(im, target_img, .5)
+
+        def test_unknown_align(self):
+            im = Image.new(mode='RGB', size=(300, 100))
+            draw = ImageDraw.Draw(im)
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+            # Act/Assert
+            self.assertRaises(AssertionError,
+                              lambda: draw.multiline_text((0, 0), TEST_TEXT,
+                                                          font=ttf,
+                                                          align="unknown"))
+
+        def test_multiline_size(self):
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            im = Image.new(mode='RGB', size=(300, 100))
+            draw = ImageDraw.Draw(im)
+
+            # Test that textsize() correctly connects to multiline_textsize()
+            self.assertEqual(draw.textsize(TEST_TEXT, font=ttf),
+                             draw.multiline_textsize(TEST_TEXT, font=ttf))
+
+            # Test that textsize() can pass on additional arguments
+            # to multiline_textsize()
+            draw.textsize(TEST_TEXT, font=ttf, spacing=4)
+            draw.textsize(TEST_TEXT, ttf, 4)
+            del draw
+
+        def test_multiline_width(self):
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            im = Image.new(mode='RGB', size=(300, 100))
+            draw = ImageDraw.Draw(im)
+
+            self.assertEqual(draw.textsize("longest line", font=ttf)[0],
+                             draw.multiline_textsize("longest line\nline",
+                                                     font=ttf)[0])
+            del draw
+
+        def test_multiline_spacing(self):
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+            im = Image.new(mode='RGB', size=(300, 100))
+            draw = ImageDraw.Draw(im)
+            draw.multiline_text((0, 0), TEST_TEXT, font=ttf, spacing=10)
+            del draw
+
+            target = 'Tests/images/multiline_text_spacing.png'
+            target_img = Image.open(target)
+
+            self.assert_image_similar(im, target_img, .5)
+
         def test_rotated_transposed_font(self):
             img_grey = Image.new("L", (100, 100))
             draw = ImageDraw.Draw(img_grey)
@@ -159,12 +240,13 @@ try:
                 font, orientation=orientation)
 
             # Original font
-            draw.setfont(font)
+            draw.font = font
             box_size_a = draw.textsize(word)
 
             # Rotated font
-            draw.setfont(transposed_font)
+            draw.font = transposed_font
             box_size_b = draw.textsize(word)
+            del draw
 
             # Check (w,h) of box a is (h,w) of box b
             self.assertEqual(box_size_a[0], box_size_b[1])
@@ -181,15 +263,44 @@ try:
                 font, orientation=orientation)
 
             # Original font
-            draw.setfont(font)
+            draw.font = font
             box_size_a = draw.textsize(word)
 
             # Rotated font
-            draw.setfont(transposed_font)
+            draw.font = transposed_font
             box_size_b = draw.textsize(word)
+            del draw
 
             # Check boxes a and b are same size
             self.assertEqual(box_size_a, box_size_b)
+
+        def test_rotated_transposed_font_get_mask(self):
+            # Arrange
+            text = "mask this"
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            orientation = Image.ROTATE_90
+            transposed_font = ImageFont.TransposedFont(
+                font, orientation=orientation)
+
+            # Act
+            mask = transposed_font.getmask(text)
+
+            # Assert
+            self.assertEqual(mask.size, (13, 108))
+
+        def test_unrotated_transposed_font_get_mask(self):
+            # Arrange
+            text = "mask this"
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            orientation = None
+            transposed_font = ImageFont.TransposedFont(
+                font, orientation=orientation)
+
+            # Act
+            mask = transposed_font.getmask(text)
+
+            # Assert
+            self.assertEqual(mask.size, (108, 13))
 
         def test_free_type_font_get_name(self):
             # Arrange
@@ -213,6 +324,28 @@ try:
             self.assertIsInstance(descent, int)
             self.assertEqual((ascent, descent), (16, 4))  # too exact check?
 
+        def test_free_type_font_get_offset(self):
+            # Arrange
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            text = "offset this"
+
+            # Act
+            offset = font.getoffset(text)
+
+            # Assert
+            self.assertEqual(offset, (0, 3))
+
+        def test_free_type_font_get_mask(self):
+            # Arrange
+            font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            text = "mask this"
+
+            # Act
+            mask = font.getmask(text)
+
+            # Assert
+            self.assertEqual(mask.size, (108, 13))
+
         def test_load_path_not_found(self):
             # Arrange
             filename = "somefilenamethatdoesntexist.ttf"
@@ -232,6 +365,7 @@ try:
             # Act
             default_font = ImageFont.load_default()
             draw.text((10, 10), txt, font=default_font)
+            del draw
 
             # Assert
             self.assert_image_equal(im, target_img)
@@ -308,6 +442,24 @@ try:
                         font_directory+'/Single.otf', 'Single')
                     self._test_fake_loading_font(
                         font_directory+'/Duplicate.ttf', 'Duplicate')
+
+        def test_imagefont_getters(self):
+            # Arrange
+            t = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+            # Act / Assert
+            self.assertEqual(t.getmetrics(), (16, 4))
+            self.assertEqual(t.font.ascent, 16)
+            self.assertEqual(t.font.descent, 4)
+            self.assertEqual(t.font.height, 20)
+            self.assertEqual(t.font.x_ppem, 20)
+            self.assertEqual(t.font.y_ppem, 20)
+            self.assertEqual(t.font.glyphs, 4177)
+            self.assertEqual(t.getsize('A'), (12, 16))
+            self.assertEqual(t.getsize('AB'), (24, 16))
+            self.assertEqual(t.getsize('M'), (12, 16))
+            self.assertEqual(t.getsize('y'), (12, 20))
+            self.assertEqual(t.getsize('a'), (12, 16))
 
 
 except ImportError:

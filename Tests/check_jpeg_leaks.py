@@ -6,7 +6,8 @@ iterations = 5000
 
 
 """
-When run on a system without the jpeg leak fixes, the valgrind runs look like this.
+When run on a system without the jpeg leak fixes,
+the valgrind runs look like this.
 
 NOSE_PROCESSES=0 NOSE_TIMEOUT=600 valgrind --tool=massif \
     python test-installed.py -s -v Tests/check_jpeg_leaks.py
@@ -105,7 +106,8 @@ post-patch:
             test_output = BytesIO()
             im.save(test_output, "JPEG", qtables=qtables)
 
-    """
+    def test_exif_leak(self):
+        """
 pre patch:
 
     MB
@@ -160,8 +162,6 @@ post patch:
      0                                                                   11.33
 
 """
-
-    def test_exif_leak(self):
         im = hopper('RGB')
         exif = b'12345678'*4096
 

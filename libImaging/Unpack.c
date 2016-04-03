@@ -191,14 +191,64 @@ unpack1IR(UINT8* out, const UINT8* in, int pixels)
 static void
 unpackL2(UINT8* out, const UINT8* in, int pixels)
 {
-    /* nibbles */
+    /* nibbles (msb first, white is non-zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
         switch (pixels) {
-        default:    *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
-        case 3:     *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
-        case 2:     *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
-        case 1:     *out++ = ((byte >> 6) & 3) * 255 / 3;
+        default:    *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 3:     *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 2:     *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 1:     *out++ = ((byte >> 6) & 0x03U) * 0x55U;
+        }
+        pixels -= 4;
+    }
+}
+
+static void
+unpackL2I(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (msb first, white is zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 3:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 2:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 1:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U);
+        }
+        pixels -= 4;
+    }
+}
+
+static void
+unpackL2R(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (bit order reversed, white is non-zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        byte = BITFLIP[byte];
+        switch (pixels) {
+        default:    *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 3:     *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 2:     *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 1:     *out++ = ((byte >> 6) & 0x03U) * 0x55U;
+        }
+        pixels -= 4;
+    }
+}
+
+static void
+unpackL2IR(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (bit order reversed, white is zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        byte = BITFLIP[byte];
+        switch (pixels) {
+        default:    *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 3:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 2:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 1:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U);
         }
         pixels -= 4;
     }
@@ -207,12 +257,56 @@ unpackL2(UINT8* out, const UINT8* in, int pixels)
 static void
 unpackL4(UINT8* out, const UINT8* in, int pixels)
 {
-    /* nibbles */
+    /* nibbles (msb first, white is non-zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
         switch (pixels) {
-        default:    *out++ = ((byte >> 4) & 15) * 255 / 15; byte <<= 4;
-        case 1:     *out++ = ((byte >> 4) & 15) * 255 / 15;
+        default:    *out++ = ((byte >> 4) & 0x0FU) * 0x11U; byte <<= 4;
+        case 1:     *out++ = ((byte >> 4) & 0x0FU) * 0x11U;
+        }
+        pixels -= 2;
+    }
+}
+
+static void
+unpackL4I(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (msb first, white is zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = 0xFFU - (UINT8)(((byte >> 4) & 0x0FU) * 0x11U); byte <<= 4;
+        case 1:     *out++ = 0xFFU - (UINT8)(((byte >> 4) & 0x0FU) * 0x11U);
+        }
+        pixels -= 2;
+    }
+}
+
+static void
+unpackL4R(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (bit order reversed, white is non-zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        byte = BITFLIP[byte];
+        switch (pixels) {
+        default:    *out++ = ((byte >> 4) & 0x0FU) * 0x11U; byte <<= 4;
+        case 1:     *out++ = ((byte >> 4) & 0x0FU) * 0x11U;
+        }
+        pixels -= 2;
+    }
+}
+
+static void
+unpackL4IR(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (bit order reversed, white is zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        byte = BITFLIP[byte];
+        switch (pixels) {
+        default:    *out++ = 0xFFU - (UINT8)(((byte >> 4) & 0x0FU) * 0x11U); byte <<= 4;
+        case 1:     *out++ = 0xFFU - (UINT8)(((byte >> 4) & 0x0FU) * 0x11U);
         }
         pixels -= 2;
     }
@@ -758,13 +852,13 @@ unpackCMYKI(UINT8* out, const UINT8* in, int pixels)
 /* Unpack to "LAB" image */
 /* There are two representations of LAB images for whatever precision:
    L: Uint (in PS, it's 0-100)
-   A: Int (in ps, -128 .. 128, or elsewhere 0..255, with 128 as middle. 
-           Channels in PS display a 0 value as middle grey, 
+   A: Int (in ps, -128 .. 128, or elsewhere 0..255, with 128 as middle.
+           Channels in PS display a 0 value as middle grey,
            LCMS appears to use 128 as the 0 value for these channels)
-   B: Int (as above) 
+   B: Int (as above)
 
-   Since we don't have any signed ints, we're going with the shifted versions 
-   internally, and we'll unshift for saving and whatnot. 
+   Since we don't have any signed ints, we're going with the shifted versions
+   internally, and we'll unshift for saving and whatnot.
 */
 void
 ImagingUnpackLAB(UINT8* out, const UINT8* in, int pixels)
@@ -802,15 +896,15 @@ unpackI16N_I16(UINT8* out, const UINT8* in, int pixels){
 
 static void
 unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
-    /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer greyscale tiffs. 
+    /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer greyscale tiffs.
         
-        According to the TIFF spec: 
+        According to the TIFF spec:
 
         FillOrder = 2 should be used only when BitsPerSample = 1 and
         the data is either uncompressed or compressed using CCITT 1D
         or 2D compression, to avoid potentially ambiguous situations.
 
-        Yeah. I thought so. We'll see how well people read the spec. 
+        Yeah. I thought so. We'll see how well people read the spec.
         We've got several fillorder=2 modes in TiffImagePlugin.py
 
         There's no spec I can find. It appears that the in storage
@@ -1053,7 +1147,15 @@ static struct {
 
     /* greyscale */
     {"L",       "L;2",          2,      unpackL2},
+    {"L",       "L;2I",         2,      unpackL2I},
+    {"L",       "L;2R",         2,      unpackL2R},
+    {"L",       "L;2IR",        2,      unpackL2IR},
+
     {"L",       "L;4",          4,      unpackL4},
+    {"L",       "L;4I",         4,      unpackL4I},
+    {"L",       "L;4R",         4,      unpackL4R},
+    {"L",       "L;4IR",        4,      unpackL4IR},
+
     {"L",       "L",            8,      copy1},
     {"L",       "L;I",          8,      unpackLI},
     {"L",       "L;R",          8,      unpackLR},

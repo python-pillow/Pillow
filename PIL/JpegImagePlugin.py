@@ -32,12 +32,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.6"
-
 import array
 import struct
 import io
-from struct import unpack
+import warnings
+from struct import unpack_from
 from PIL import Image, ImageFile, TiffImagePlugin, _binary
 from PIL.JpegPresets import presets
 from PIL._util import isStringType
@@ -46,6 +45,8 @@ i8 = _binary.i8
 o8 = _binary.o8
 i16 = _binary.i16be
 i32 = _binary.i32be
+
+__version__ = "0.6"
 
 
 #
@@ -287,7 +288,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         s = self.fp.read(1)
 
-        if i8(s[0]) != 255:
+        if i8(s) != 255:
             raise SyntaxError("not a JPEG file")
 
         # Create attributes
@@ -310,7 +311,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 i = i16(s)
             else:
                 # Skip non-0xFF junk
-                s = b"\xff"
+                s = self.fp.read(1)
                 continue
 
             if i in MARKER:
@@ -378,7 +379,7 @@ class JpegImageFile(ImageFile.ImageFile):
         finally:
             try:
                 os.unlink(path)
-            except:
+            except OSError:
                 pass
 
         self.mode = self.im.mode
@@ -393,11 +394,17 @@ class JpegImageFile(ImageFile.ImageFile):
         return _getmp(self)
 
 
-def _fixup(value):
-    # Helper function for _getexif() and _getmp()
-    if len(value) == 1:
-        return value[0]
-    return value
+def _fixup_dict(src_dict):
+    # Helper function for _getexif()
+    # returns a dict with any single item tuples/lists as individual values
+    def _fixup(value):
+        try:
+            if len(value) == 1 and type(value) != type({}):
+                return value[0]
+        except: pass
+        return value
+
+    return dict([(k, _fixup(v)) for k, v in src_dict.items()])
 
 
 def _getexif(self):
@@ -413,33 +420,35 @@ def _getexif(self):
         return None
     file = io.BytesIO(data[6:])
     head = file.read(8)
-    exif = {}
     # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory(head)
+    info = TiffImagePlugin.ImageFileDirectory_v1(head)
     info.load(file)
-    for key, value in info.items():
-        exif[key] = _fixup(value)
+    exif = dict(_fixup_dict(info))
     # get exif extension
     try:
+        # exif field 0x8769 is an offset pointer to the location
+        # of the nested embedded exif ifd.
+        # It should be a long, but may be corrupted.
         file.seek(exif[0x8769])
-    except KeyError:
+    except (KeyError, TypeError):
         pass
     else:
-        info = TiffImagePlugin.ImageFileDirectory(head)
+        info = TiffImagePlugin.ImageFileDirectory_v1(head)
         info.load(file)
-        for key, value in info.items():
-            exif[key] = _fixup(value)
+        exif.update(_fixup_dict(info))
     # get gpsinfo extension
     try:
+        # exif field 0x8825 is an offset pointer to the location
+        # of the nested embedded gps exif ifd.
+        # It should be a long, but may be corrupted.
         file.seek(exif[0x8825])
-    except KeyError:
+    except (KeyError, TypeError):
         pass
     else:
-        info = TiffImagePlugin.ImageFileDirectory(head)
+        info = TiffImagePlugin.ImageFileDirectory_v1(head)
         info.load(file)
-        exif[0x8825] = gps = {}
-        for key, value in info.items():
-            gps[key] = _fixup(value)
+        exif[0x8825] = _fixup_dict(info)
+
     return exif
 
 
@@ -457,23 +466,25 @@ def _getmp(self):
     file_contents = io.BytesIO(data)
     head = file_contents.read(8)
     endianness = '>' if head[:4] == b'\x4d\x4d\x00\x2a' else '<'
-    mp = {}
     # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory(head)
-    info.load(file_contents)
-    for key, value in info.items():
-        mp[key] = _fixup(value)
+    try:
+        info = TiffImagePlugin.ImageFileDirectory_v2(head)
+        info.load(file_contents)
+        mp = dict(info)
+    except:
+        raise SyntaxError("malformed MP Index (unreadable directory)")
     # it's an error not to have a number of images
     try:
         quant = mp[0xB001]
     except KeyError:
         raise SyntaxError("malformed MP Index (no number of images)")
     # get MP entries
+    mpentries = []
     try:
-        mpentries = []
+        rawmpentries = mp[0xB002]
         for entrynum in range(0, quant):
-            rawmpentry = mp[0xB002][entrynum * 16:(entrynum + 1) * 16]
-            unpackedentry = unpack('{0}LLLHH'.format(endianness), rawmpentry)
+            unpackedentry = unpack_from(
+                '{0}LLLHH'.format(endianness), rawmpentries, entrynum * 16)
             labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1',
                       'EntryNo2')
             mpentry = dict(zip(labels, unpackedentry))
@@ -527,14 +538,14 @@ RAWMODE = {
     "YCbCr": "YCbCr",
 }
 
-zigzag_index = ( 0,  1,  5,  6, 14, 15, 27, 28,
-                 2,  4,  7, 13, 16, 26, 29, 42,
-                 3,  8, 12, 17, 25, 30, 41, 43,
-                 9, 11, 18, 24, 31, 40, 44, 53,
-                10, 19, 23, 32, 39, 45, 52, 54,
-                20, 22, 33, 38, 46, 51, 55, 60,
-                21, 34, 37, 47, 50, 56, 59, 61,
-                35, 36, 48, 49, 57, 58, 62, 63)
+zigzag_index = (0,  1,  5,  6, 14, 15, 27, 28,
+                2,  4,  7, 13, 16, 26, 29, 42,
+                3,  8, 12, 17, 25, 30, 41, 43,
+                9, 11, 18, 24, 31, 40, 44, 53,
+               10, 19, 23, 32, 39, 45, 52, 54,
+               20, 22, 33, 38, 46, 51, 55, 60,
+               21, 34, 37, 47, 50, 56, 59, 61,
+               35, 36, 48, 49, 57, 58, 62, 63)
 
 samplings = {(1, 1, 1, 1, 1, 1): 0,
              (2, 1, 1, 1, 1, 1): 1,
@@ -681,7 +692,7 @@ def _save(im, fp, filename):
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
     # in a shot. Guessing on the size, at im.size bytes. (raw pizel size is
     # channels*size, this is a value that's been used in a django patch.
-    # https://github.com/jdriscoll/django-imagekit/issues/50
+    # https://github.com/matthewwithanm/django-imagekit/issues/50
     bufsize = 0
     if "optimize" in info or "progressive" in info or "progression" in info:
         # keep sets quality to 0, but the actual value may be high.
@@ -705,7 +716,7 @@ def _save_cjpeg(im, fp, filename):
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
     try:
         os.unlink(tempfile)
-    except:
+    except OSError:
         pass
 
 
@@ -713,8 +724,8 @@ def _save_cjpeg(im, fp, filename):
 # Factory for making JPEG and MPO instances
 def jpeg_factory(fp=None, filename=None):
     im = JpegImageFile(fp, filename)
-    mpheader = im._getmp()
     try:
+        mpheader = im._getmp()
         if mpheader[45057] > 1:
             # It's actually an MPO
             from .MpoImagePlugin import MpoImageFile
@@ -722,18 +733,21 @@ def jpeg_factory(fp=None, filename=None):
     except (TypeError, IndexError):
         # It is really a JPEG
         pass
+    except SyntaxError:
+        warnings.warn("Image appears to be a malformed MPO file, it will be "
+                      "interpreted as a base JPEG file")
     return im
 
 
 # -------------------------------------------------------------------q-
 # Registry stuff
 
-Image.register_open("JPEG", jpeg_factory, _accept)
-Image.register_save("JPEG", _save)
+Image.register_open(JpegImageFile.format, jpeg_factory, _accept)
+Image.register_save(JpegImageFile.format, _save)
 
-Image.register_extension("JPEG", ".jfif")
-Image.register_extension("JPEG", ".jpe")
-Image.register_extension("JPEG", ".jpg")
-Image.register_extension("JPEG", ".jpeg")
+Image.register_extension(JpegImageFile.format, ".jfif")
+Image.register_extension(JpegImageFile.format, ".jpe")
+Image.register_extension(JpegImageFile.format, ".jpg")
+Image.register_extension(JpegImageFile.format, ".jpeg")
 
-Image.register_mime("JPEG", "image/jpeg")
+Image.register_mime(JpegImageFile.format, "image/jpeg")

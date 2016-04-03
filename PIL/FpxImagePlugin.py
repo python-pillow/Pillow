@@ -16,11 +16,10 @@
 #
 
 
-__version__ = "0.1"
-
-
 from PIL import Image, ImageFile
 from PIL.OleFileIO import i8, i32, MAGIC, OleFileIO
+
+__version__ = "0.1"
 
 
 # we map from colour field tuples to (mode, rawmode) descriptors
@@ -222,6 +221,6 @@ class FpxImageFile(ImageFile.ImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("FPX", FpxImageFile, _accept)
+Image.register_open(FpxImageFile.format, FpxImageFile, _accept)
 
-Image.register_extension("FPX", ".fpx")
+Image.register_extension(FpxImageFile.format, ".fpx")

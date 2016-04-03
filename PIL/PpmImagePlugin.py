@@ -15,11 +15,11 @@
 #
 
 
-__version__ = "0.2"
-
 import string
 
 from PIL import Image, ImageFile
+
+__version__ = "0.2"
 
 #
 # --------------------------------------------------------------------
@@ -93,6 +93,8 @@ class PpmImageFile(ImageFile.ImageFile):
                     s = self.fp.read(1)
                     if s not in b_whitespace:
                         break
+                    if s == b"":
+                        raise ValueError("File does not extend beyond magic number")
                 if s != b"#":
                     break
                 s = self.fp.readline()
@@ -164,9 +166,9 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("PPM", PpmImageFile, _accept)
-Image.register_save("PPM", _save)
+Image.register_open(PpmImageFile.format, PpmImageFile, _accept)
+Image.register_save(PpmImageFile.format, _save)
 
-Image.register_extension("PPM", ".pbm")
-Image.register_extension("PPM", ".pgm")
-Image.register_extension("PPM", ".ppm")
+Image.register_extension(PpmImageFile.format, ".pbm")
+Image.register_extension(PpmImageFile.format, ".pgm")
+Image.register_extension(PpmImageFile.format, ".ppm")

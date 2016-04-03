@@ -15,9 +15,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.2"
-
 from PIL import Image, ImageFile, _binary
+
+__version__ = "0.2"
 
 _handler = None
 

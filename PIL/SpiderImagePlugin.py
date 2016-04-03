@@ -27,10 +27,10 @@
 # image data from electron microscopy and tomography.
 #
 # Spider home page:
-# http://www.wadsworth.org/spider_doc/spider/docs/spider.html
+# http://spider.wadsworth.org/spider_doc/spider/docs/spider.html
 #
 # Details about the Spider image format:
-# http://www.wadsworth.org/spider_doc/spider/docs/image_doc.html
+# http://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
 #
 
 from __future__ import print_function
@@ -49,6 +49,8 @@ def isInt(f):
         else:
             return 0
     except ValueError:
+        return 0
+    except OverflowError:
         return 0
 
 iforms = [1, 3, -11, -12, -21, -22]
@@ -157,6 +159,10 @@ class SpiderImageFile(ImageFile.ImageFile):
     @property
     def n_frames(self):
         return self._nimages
+
+    @property
+    def is_animated(self):
+        return self._nimages > 1
 
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
     def tell(self):
@@ -281,8 +287,8 @@ def _save_spider(im, fp, filename):
 
 # --------------------------------------------------------------------
 
-Image.register_open("SPIDER", SpiderImageFile)
-Image.register_save("SPIDER", _save_spider)
+Image.register_open(SpiderImageFile.format, SpiderImageFile)
+Image.register_save(SpiderImageFile.format, _save_spider)
 
 if __name__ == "__main__":
 

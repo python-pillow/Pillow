@@ -1,8 +1,8 @@
-import sys
-sys.path.insert(0, ".")
-
 import helper
 import timeit
+
+import sys
+sys.path.insert(0, ".")
 
 
 def bench(mode):

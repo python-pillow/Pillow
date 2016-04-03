@@ -1,0 +1,43 @@
+
+3.1.2
+=====
+
+CVE-2016-3076 -- Buffer overflow in Jpeg2KEncode.c
+--------------------------------------------------
+
+Pillow between 2.5.0 and 3.1.1 may overflow a buffer when writing
+large Jpeg2000 files, allowing for code execution or other memory
+corruption.
+
+This occurs specifically in the function ``j2k_encode_entry``, at the line::
+
+    state->buffer = malloc (tile_width * tile_height * components * prec / 8);
+
+
+This vulnerability requires a particular value for ``height * width``
+such that ``height * width * components * precision`` overflows, at
+which point the malloc will be for a smaller value than expected. The
+buffer that is allocated will be ``((height * width * components *
+precision) mod (2^31) / 8)``, where components is 1-4 and precision is
+either 8 or
+16. Common values would be 4 components at precision 8 for a standard
+``RGBA`` image.
+
+The unpackers then split an image that is laid out::
+
+    RGBARGBARGBA....
+
+into::
+
+
+    RRR.
+    GGG.
+    BBB.
+    AAA.
+
+
+If this buffer is smaller than expected, the jpeg2k unpacker functions
+will write outside the allocation and onto the heap, corrupting
+memory.
+
+This issue was found by Alyssa Besseling at Atlassian.
