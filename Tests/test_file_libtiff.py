@@ -419,6 +419,39 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertEqual(im.mode, "L")
         self.assert_image_similar(im, original, 7.3)
 
+    def test_gray_semibyte_per_pixel(self):
+        test_files = (
+            (
+                24.8,#epsilon
+                (#group
+                    "Tests/images/tiff_gray_2_4_bpp/hopper2.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper2I.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper2R.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper2IR.tif",
+                )
+            ),
+            (
+                7.3,#epsilon
+                (#group
+                    "Tests/images/tiff_gray_2_4_bpp/hopper4.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper4I.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper4R.tif",
+                    "Tests/images/tiff_gray_2_4_bpp/hopper4IR.tif",
+                )
+            ),
+        )
+        original = hopper("L")
+        for epsilon, group in test_files:
+            im = Image.open(group[0])
+            self.assertEqual(im.size, (128, 128))
+            self.assertEqual(im.mode, "L")
+            self.assert_image_similar(im, original, epsilon)
+            for file in group[1:]:
+                im2 = Image.open(file)
+                self.assertEqual(im2.size, (128, 128))
+                self.assertEqual(im2.mode, "L")
+                self.assert_image_equal(im, im2)
+
     def test_save_bytesio(self):
         # PR 1011
         # Test TIFF saving to io.BytesIO() object.
