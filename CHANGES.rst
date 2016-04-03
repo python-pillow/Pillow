@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Removed unused variable from selftest #1788
+  [radarhere]
+
 - Added warning for as_dict method (deprecated in 3.0.0) #1799
   [radarhere]
 
