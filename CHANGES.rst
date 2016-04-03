@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Added warning for as_dict method (deprecated in 3.0.0) #1799
+  [radarhere]
+
 - Removed powf support for older Python versions #1784
   [radarhere]
 
