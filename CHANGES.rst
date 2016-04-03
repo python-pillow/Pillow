@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Removed powf support for older Python versions #1784
+  [radarhere]
+
 - Health fixes #1625
   [radarhere]
 
