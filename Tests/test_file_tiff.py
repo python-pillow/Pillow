@@ -244,31 +244,40 @@ class TestFileTiff(PillowTestCase):
         # Assert
         self.assertIsInstance(ret, str)
 
-    def test_as_dict(self):
+    def test_as_dict_deprecation(self):
         # Arrange
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
+
+        self.assert_warning(DeprecationWarning, lambda: im.tag_v2.as_dict())
+        self.assert_warning(DeprecationWarning, lambda: im.tag.as_dict())
+
+    def test_dict(self):
+        # Arrange
+        filename = "Tests/images/pil136.tiff"
+        im = Image.open(filename)
+
         # v2 interface
-        self.assertEqual(
-            im.tag_v2.as_dict(),
-            {256: 55, 257: 43, 258: (8, 8, 8, 8), 259: 1,
-             262: 2, 296: 2, 273: (8,), 338: (1,), 277: 4,
-             279: (9460,), 282: 72.0, 283: 72.0, 284: 1})
+        v2_tags = {256: 55, 257: 43, 258: (8, 8, 8, 8), 259: 1,
+                   262: 2, 296: 2, 273: (8,), 338: (1,), 277: 4,
+                   279: (9460,), 282: 72.0, 283: 72.0, 284: 1}
+        self.assertEqual(dict(im.tag_v2), v2_tags)
+        self.assertEqual(im.tag_v2.as_dict(), v2_tags)
 
         # legacy interface
-        self.assertEqual(
-            im.tag.as_dict(),
-            {256: (55,), 257: (43,), 258: (8, 8, 8, 8), 259: (1,),
-             262: (2,), 296: (2,), 273: (8,), 338: (1,), 277: (4,),
-             279: (9460,), 282: ((720000, 10000),),
-             283: ((720000, 10000),), 284: (1,)})
+        legacy_tags = {256: (55,), 257: (43,), 258: (8, 8, 8, 8), 259: (1,),
+                       262: (2,), 296: (2,), 273: (8,), 338: (1,), 277: (4,),
+                       279: (9460,), 282: ((720000, 10000),),
+                       283: ((720000, 10000),), 284: (1,)}
+        self.assertEqual(dict(im.tag), legacy_tags)
+        self.assertEqual(im.tag.as_dict(), legacy_tags)
 
     def test__delitem__(self):
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
-        len_before = len(im.ifd.as_dict())
+        len_before = len(dict(im.ifd))
         del im.ifd[256]
-        len_after = len(im.ifd.as_dict())
+        len_after = len(dict(im.ifd))
         self.assertEqual(len_before, len_after + 1)
 
     def test_load_byte(self):

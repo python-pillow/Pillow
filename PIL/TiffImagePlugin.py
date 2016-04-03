@@ -448,11 +448,10 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     def as_dict(self):
         """Return a dictionary of the image's tags.
 
-        use `dict(ifd)` instead.
-
         .. deprecated:: 3.0.0
         """
-        # FIXME Deprecate: use dict(self)
+        warnings.warn("as_dict() is deprecated. " +
+                      "Please use dict(ifd) instead.", DeprecationWarning)
         return dict(self)
 
     def named(self):
