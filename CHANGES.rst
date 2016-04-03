@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Add Support for 2/4 bpp Tiff Grayscale Images #1789
+  [zwhfly]
+
 - Removed unused variable from selftest #1788
   [radarhere]
 
