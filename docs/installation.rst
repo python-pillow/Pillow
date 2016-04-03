@@ -88,7 +88,7 @@ Pillow can be installed on FreeBSD via the official Ports or Packages systems:
 **Packages**::
 
   $ pkg install py27-pillow
-  
+
 .. note::
 
     The `Pillow FreeBSD port
@@ -273,7 +273,7 @@ In Fedora, the command is::
 
     $ sudo dnf install python-devel redhat-rpm-config
 
-.. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions. 
+.. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
 Prerequisites are installed on **Ubuntu 12.04 LTS** or **Raspian Wheezy
 7.0** with::
@@ -289,7 +289,7 @@ Prerequisites are installed on **Ubuntu 14.04 LTS** with::
 Prerequisites are installed on **Fedora 23** with::
 
     $ sudo dnf install libtiff-devel libjpeg-devel libzip-devel freetype-devel \
-        lcms2-devel libwebp-devel tcl-devel tk-devel 
+        lcms2-devel libwebp-devel tcl-devel tk-devel
 
 
 
@@ -309,7 +309,7 @@ current versions of Linux, OS X, and Windows.
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Supported**|**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
-| Mac OS X 10.11 El Capitan        |Yes          | 2.7,3.3,3.4,3.5              | 3.1.1                          |x86-64                 |
+| Mac OS X 10.11 El Capitan        |Yes          | 2.7,3.3,3.4,3.5              | 3.2.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Mac OS X 10.10 Yosemite          |Yes          | 2.7,3.3,3.4                  | 3.0.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
