@@ -57,7 +57,7 @@ import struct
 import sys
 import warnings
 
-from .TiffTags import TYPES, TagInfo
+from .TiffTags import TYPES
 
 
 __version__ = "1.3.5"
@@ -227,6 +227,7 @@ def _limit_rational(val, max_val):
 _load_dispatch = {}
 _write_dispatch = {}
 
+
 class IFDRational(Rational):
     """ Implements a rational class where 0/0 is a legal value to match
     the in the wild use of exif rationals.
@@ -266,7 +267,6 @@ class IFDRational(Rational):
             self._val = float('nan')
             return
 
-
         elif denominator == 1:
             if sys.hexversion < 0x2070000 and type(value) == float:
                 # python 2.6 is different.
@@ -283,7 +283,6 @@ class IFDRational(Rational):
     @property
     def denominator(a):
         return a._denominator
-
 
     def limit_rational(self, max_denominator):
         """
@@ -304,12 +303,12 @@ class IFDRational(Rational):
     def __hash__(self):
         return self._val.__hash__()
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         return self._val == other
 
     def _delegate(op):
         def delegate(self, *args):
-            return getattr(self._val,op)(*args)
+            return getattr(self._val, op)(*args)
         return delegate
 
     """ a = ['add','radd', 'sub', 'rsub','div', 'rdiv', 'mul', 'rmul',
@@ -348,7 +347,6 @@ class IFDRational(Rational):
     __ceil__ = _delegate('__ceil__')
     __floor__ = _delegate('__floor__')
     __round__ = _delegate('__round__')
-
 
 
 class ImageFileDirectory_v2(collections.MutableMapping):
@@ -1126,8 +1124,8 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self.info["compression"] = self._compression
 
-        xres = self.tag_v2.get(X_RESOLUTION,1)
-        yres = self.tag_v2.get(Y_RESOLUTION,1)
+        xres = self.tag_v2.get(X_RESOLUTION, 1)
+        yres = self.tag_v2.get(Y_RESOLUTION, 1)
 
         if xres and yres:
             resunit = self.tag_v2.get(RESOLUTION_UNIT, 1)
@@ -1416,14 +1414,15 @@ def _save(im, fp, filename):
         if hasattr(im, 'tag'):
             legacy_ifd = im.tag.to_v2()
         for tag, value in itertools.chain(ifd.items(),
-                                    getattr(im, 'tag_v2', {}).items(),
-                                    legacy_ifd.items()):
+                                          getattr(im, 'tag_v2', {}).items(),
+                                          legacy_ifd.items()):
             # Libtiff can only process certain core items without adding
             # them to the custom dictionary. It will segfault if it attempts
             # to add a custom tag without the dictionary entry
             #
             # UNDONE --  add code for the custom dictionary
-            if tag not in TiffTags.LIBTIFF_CORE: continue
+            if tag not in TiffTags.LIBTIFF_CORE:
+                continue
             if tag not in atts and tag not in blocklist:
                 if isinstance(value, unicode if bytes is str else str):
                     atts[tag] = value.encode('ascii', 'replace') + b"\0"

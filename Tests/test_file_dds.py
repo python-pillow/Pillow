@@ -17,12 +17,12 @@ class TestFileDds(PillowTestCase):
 
         im = Image.open(TEST_FILE_DXT1)
         im.load()
-        
+
         self.assertEqual(im.format, "DDS")
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (256, 256))
 
-        # This target image is from the test set of images, and is exact. 
+        # This target image is from the test set of images, and is exact.
         self.assert_image_equal(target.convert('RGBA'), im)
 
     def test_sanity_dxt5(self):
@@ -42,7 +42,7 @@ class TestFileDds(PillowTestCase):
         # a little brighter. The 0,0 pixel is (00,6c,f8,ff) by our code,
         # and by the target image for the DXT1, and the imagemagick .png
         # is giving (00, 6d, ff, ff).  So, assert similar, pretty tight
-        # I'm currently seeing about a 3 for the epsilon. 
+        # I'm currently seeing about a 3 for the epsilon.
         self.assert_image_similar(target, im, 5)
 
     def test_sanity_dxt3(self):
@@ -78,18 +78,18 @@ class TestFileDds(PillowTestCase):
             img_file = f.read()
 
         def short_header():
-            im = Image.open(BytesIO(img_file[:119]))
+            Image.open(BytesIO(img_file[:119]))
 
         self.assertRaises(IOError, short_header)
 
     def test_short_file(self):
         """ Check that the appropriate error is thrown for a short file"""
-        
+
         with open(TEST_FILE_DXT5, 'rb') as f:
             img_file = f.read()
 
         def short_file():
-            im = Image.open(BytesIO(img_file[:-100]))
+            Image.open(BytesIO(img_file[:-100]))
 
         self.assertRaises(IOError, short_file)
 

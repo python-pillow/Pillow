@@ -3,6 +3,7 @@ from PIL import Image
 
 TEST_FILE = "Tests/images/libtiff_segfault.tif"
 
+
 class TestLibtiffSegfault(PillowTestCase):
     def test_segfault(self):
         """ This test should not segfault. It will on Pillow <= 3.1.0 and
@@ -16,7 +17,6 @@ class TestLibtiffSegfault(PillowTestCase):
             self.assertTrue(True, "Got expected IOError")
         except Exception:
             self.fail("Should have returned IOError")
-
 
 
 if __name__ == '__main__':

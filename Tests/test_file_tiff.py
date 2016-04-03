@@ -84,7 +84,7 @@ class TestFileTiff(PillowTestCase):
         self.assertIsInstance(im.tag[X_RESOLUTION][0], tuple)
         self.assertIsInstance(im.tag[Y_RESOLUTION][0], tuple)
 
-        #v2 api
+        # v2 api
         self.assertIsInstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
         self.assertIsInstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
 

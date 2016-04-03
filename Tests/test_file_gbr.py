@@ -11,7 +11,6 @@ class TestFileGbr(PillowTestCase):
         self.assertRaises(SyntaxError,
                           lambda: GbrImagePlugin.GbrImageFile(invalid_file))
 
-
     def test_gbr_file(self):
         im = Image.open('Tests/images/gbr.gbr')
 

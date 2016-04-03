@@ -10,7 +10,7 @@ class TestFliOverflow(PillowTestCase):
         # this should not crash with a malloc error or access violation
         im = Image.open(TEST_FILE)
         im.load()
-        
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, hopper, py3
 import sys
 
+
 class TestImageGetIm(PillowTestCase):
 
     def test_sanity(self):
@@ -9,7 +10,6 @@ class TestImageGetIm(PillowTestCase):
 
         if py3:
             self.assertIn("PyCapsule", type_repr)
-
 
         if sys.hexversion < 0x2070000:
             # py2.6 x64, windows

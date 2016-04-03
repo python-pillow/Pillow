@@ -448,7 +448,7 @@ def _getexif(self):
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
         info.load(file)
         exif[0x8825] = _fixup_dict(info)
-    
+
     return exif
 
 
