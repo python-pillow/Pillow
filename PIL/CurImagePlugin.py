@@ -17,10 +17,9 @@
 #
 
 
-__version__ = "0.1"
-
 from PIL import Image, BmpImagePlugin, _binary
 
+__version__ = "0.1"
 
 #
 # --------------------------------------------------------------------
@@ -67,6 +66,8 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
             # print "hotspot y", i16(s[6:])
             # print "bytes", i32(s[8:])
             # print "offset", i32(s[12:])
+        if not m:
+            raise TypeError("No cursors were found")
 
         # load as bitmap
         self._bitmap(i32(m[12:]) + offset)
@@ -82,6 +83,6 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("CUR", CurImageFile, _accept)
+Image.register_open(CurImageFile.format, CurImageFile, _accept)
 
-Image.register_extension("CUR", ".cur")
+Image.register_extension(CurImageFile.format, ".cur")

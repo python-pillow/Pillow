@@ -228,7 +228,7 @@ ImagingPasteDIB(ImagingDIB dib, Imaging im, int xy[4])
 }
 
 void
-ImagingExposeDIB(ImagingDIB dib, int dc)
+ImagingExposeDIB(ImagingDIB dib, void *dc)
 {
     /* Copy bitmap to display */
 
@@ -238,7 +238,7 @@ ImagingExposeDIB(ImagingDIB dib, int dc)
 }
 
 void
-ImagingDrawDIB(ImagingDIB dib, int dc, int dst[4], int src[4])
+ImagingDrawDIB(ImagingDIB dib, void *dc, int dst[4], int src[4])
 {
     /* Copy bitmap to printer/display */
 
@@ -258,7 +258,7 @@ ImagingDrawDIB(ImagingDIB dib, int dc, int dst[4], int src[4])
 }
 
 int
-ImagingQueryPaletteDIB(ImagingDIB dib, int dc)
+ImagingQueryPaletteDIB(ImagingDIB dib, void *dc)
 {
     /* Install bitmap palette */
 

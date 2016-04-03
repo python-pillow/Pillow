@@ -17,17 +17,15 @@
 #
 
 
-__version__ = "0.3"
-
-
 from PIL import Image, ImageFile, ImagePalette, _binary
 
-i16 = _binary.i16be
+__version__ = "0.3"
+
 i32 = _binary.i32be
 
 
 def _accept(prefix):
-    return i32(prefix) == 0x59a66a95
+    return len(prefix) >= 4 and i32(prefix) == 0x59a66a95
 
 
 ##
@@ -78,6 +76,6 @@ class SunImageFile(ImageFile.ImageFile):
 #
 # registry
 
-Image.register_open("SUN", SunImageFile, _accept)
+Image.register_open(SunImageFile.format, SunImageFile, _accept)
 
-Image.register_extension("SUN", ".ras")
+Image.register_extension(SunImageFile.format, ".ras")

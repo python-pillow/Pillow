@@ -15,11 +15,12 @@
 #
 
 
-__version__ = "0.2"
-
 import re
 
 from PIL import Image, ImageFile
+
+__version__ = "0.2"
+
 
 #
 # --------------------------------------------------------------------
@@ -88,7 +89,7 @@ class ImtImageFile(ImageFile.ImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("IMT", ImtImageFile)
+Image.register_open(ImtImageFile.format, ImtImageFile)
 
 #
 # no extension registered (".im" is simply too common)

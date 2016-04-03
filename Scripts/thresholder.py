@@ -18,8 +18,9 @@ import sys
 #
 # an image viewer
 
+
 class UI(Frame):
-    def __init__(self, master, im, value = 128):
+    def __init__(self, master, im, value=128):
         Frame.__init__(self, master)
 
         self.image = im
@@ -31,7 +32,7 @@ class UI(Frame):
         self.canvas.pack()
 
         scale = Scale(self, orient=HORIZONTAL, from_=0, to=255,
-                      resolution=1, command=self.update, length=256)
+                      resolution=1, command=self.update_scale, length=256)
         scale.set(value)
         scale.bind("<ButtonRelease-1>", self.redraw)
         scale.pack()
@@ -40,21 +41,21 @@ class UI(Frame):
         # be too slow on some platforms)
         # self.redraw()
 
-    def update(self, value):
+    def update_scale(self, value):
         self.value = eval(value)
 
         self.redraw()
 
-    def redraw(self, event = None):
+    def redraw(self, event=None):
 
         # create overlay (note the explicit conversion to mode "1")
-        im = self.image.point(lambda v,t=self.value: v>=t, "1")
+        im = self.image.point(lambda v, t=self.value: v >= t, "1")
         self.overlay = ImageTk.BitmapImage(im, foreground="green")
 
         # update canvas
         self.canvas.delete("overlay")
         self.canvas.create_image(0, 0, image=self.overlay, anchor=NW,
-                tags="overlay")
+                                 tags="overlay")
 
 # --------------------------------------------------------------------
 # main

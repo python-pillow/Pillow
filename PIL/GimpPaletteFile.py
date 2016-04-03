@@ -21,7 +21,7 @@ from PIL._binary import o8
 ##
 # File handler for GIMP's palette format.
 
-class GimpPaletteFile:
+class GimpPaletteFile(object):
 
     rawmode = "RGB"
 

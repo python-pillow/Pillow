@@ -12,7 +12,7 @@ import re
 LUT_SIZE = 1 << 9
 
 
-class LutBuilder:
+class LutBuilder(object):
     """A class for building a MorphLut from a descriptive language
 
       The input patterns is a list of a strings sequences like these::
@@ -176,7 +176,7 @@ class LutBuilder:
         return self.lut
 
 
-class MorphOp:
+class MorphOp(object):
     """A class for binary morphological operators"""
 
     def __init__(self,
@@ -198,6 +198,8 @@ class MorphOp:
         if self.lut is None:
             raise Exception('No operator loaded')
 
+        if image.mode != 'L':
+            raise Exception('Image must be binary, meaning it must use mode L')
         outimage = Image.new(image.mode, image.size, None)
         count = _imagingmorph.apply(
             bytes(self.lut), image.im.id, outimage.im.id)
@@ -212,6 +214,8 @@ class MorphOp:
         if self.lut is None:
             raise Exception('No operator loaded')
 
+        if image.mode != 'L':
+            raise Exception('Image must be binary, meaning it must use mode L')
         return _imagingmorph.match(bytes(self.lut), image.im.id)
 
     def get_on_pixels(self, image):
@@ -220,6 +224,8 @@ class MorphOp:
         Returns a list of tuples of (x,y) coordinates
         of all matching pixels."""
 
+        if image.mode != 'L':
+            raise Exception('Image must be binary, meaning it must use mode L')
         return _imagingmorph.get_on_pixels(image.im.id)
 
     def load_lut(self, filename):

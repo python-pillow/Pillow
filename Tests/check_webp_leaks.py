@@ -1,10 +1,11 @@
+from __future__ import division
 from helper import unittest, PillowTestCase
 import sys
 from PIL import Image
 from io import BytesIO
 
 # Limits for testing the leak
-mem_limit = 16 # max increase in MB
+mem_limit = 16  # max increase in MB
 iterations = 5000
 test_file = "Tests/images/hopper.webp"
 
@@ -27,7 +28,7 @@ class TestWebPLeaks(PillowTestCase):
         with open(test_file, 'rb') as f:
             im_data = f.read()
         start_mem = self._get_mem_usage()
-        for count in range(iterations):
+        for _ in range(iterations):
             with Image.open(BytesIO(im_data)) as im:
                 im.load()
             mem = (self._get_mem_usage() - start_mem)

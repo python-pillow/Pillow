@@ -68,7 +68,7 @@ j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 
 typedef void (*j2k_unpacker_t)(opj_image_t *in,
                                const JPEG2KTILEINFO *tileInfo,
-                               const UINT8 *data, 
+                               const UINT8 *data,
                                Imaging im);
 
 struct j2k_decode_unpacker {
@@ -625,7 +625,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
         }
     }
     
-    /* 
+    /*
          Colorspace    Number of components    PIL mode
        ------------------------------------------------------
          sRGB          3                       RGB
@@ -668,7 +668,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     if (!unpack) {
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;
-        goto quick_exit; 
+        goto quick_exit;
     }
 
     /* Decode the image tile-by-tile; this means we only need use as much

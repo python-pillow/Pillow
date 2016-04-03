@@ -64,15 +64,6 @@ can be found here.
 
 .. intentionally skipped documenting this because it's deprecated
 
-:mod:`ImageFileIO` Module
--------------------------
-
-.. automodule:: PIL.ImageFileIO
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 :mod:`ImageShow` Module
 -----------------------
 
@@ -140,14 +131,6 @@ can be found here.
 -------------------
 
 .. automodule:: PIL.TarIO
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`TiffTags` Module
-----------------------
-
-.. automodule:: PIL.TiffTags
     :members:
     :undoc-members:
     :show-inheritance:

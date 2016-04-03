@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
+from PIL import Image, PcxImagePlugin
 
 
 class TestFilePcx(PillowTestCase):
@@ -19,6 +19,12 @@ class TestFilePcx(PillowTestCase):
         for mode in ('1', 'L', 'P', 'RGB'):
             self._roundtrip(hopper(mode))
 
+    def test_invalid_file(self):
+        invalid_file = "Tests/images/flower.jpg"
+
+        self.assertRaises(SyntaxError,
+                          lambda: PcxImagePlugin.PcxImageFile(invalid_file))
+
     def test_odd(self):
         # see issue #523, odd sized images should have a stride that's even.
         # not that imagemagick or gimp write pcx that way.
@@ -31,8 +37,8 @@ class TestFilePcx(PillowTestCase):
     def test_pil184(self):
         # Check reading of files where xmin/xmax is not zero.
 
-        file = "Tests/images/pil184.pcx"
-        im = Image.open(file)
+        test_file = "Tests/images/pil184.pcx"
+        im = Image.open(test_file)
 
         self.assertEqual(im.size, (447, 144))
         self.assertEqual(im.tile[0][1], (0, 0, 447, 144))

@@ -16,10 +16,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.2"
-
 import struct
 from PIL import Image, ImageFile
+
+__version__ = "0.2"
 
 
 def _accept(s):
@@ -69,6 +69,6 @@ class McIdasImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # registry
 
-Image.register_open("MCIDAS", McIdasImageFile, _accept)
+Image.register_open(McIdasImageFile.format, McIdasImageFile, _accept)
 
 # no default extension

@@ -22,10 +22,6 @@ class TestImagePoint(PillowTestCase):
         """ Tests for 16 bit -> 8 bit lut for converting I->L images
             see https://github.com/python-pillow/Pillow/issues/440
             """
-        # This takes _forever_ on PyPy. Open Bug,
-        # see https://github.com/python-pillow/Pillow/issues/484
-        # self.skipKnownBadTest(msg="Too Slow on pypy", interpreter='pypy')
-
         im = hopper("I")
         im.point(list(range(256))*256, 'L')
 

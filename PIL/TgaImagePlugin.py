@@ -17,9 +17,9 @@
 #
 
 
-__version__ = "0.3"
-
 from PIL import Image, ImageFile, ImagePalette, _binary
+
+__version__ = "0.3"
 
 
 #
@@ -28,7 +28,6 @@ from PIL import Image, ImageFile, ImagePalette, _binary
 
 i8 = _binary.i8
 i16 = _binary.i16le
-i32 = _binary.i32le
 
 
 MODES = {
@@ -193,7 +192,7 @@ def _save(im, fp, filename, check=0):
 # --------------------------------------------------------------------
 # Registry
 
-Image.register_open("TGA", TgaImageFile)
-Image.register_save("TGA", _save)
+Image.register_open(TgaImageFile.format, TgaImageFile)
+Image.register_save(TgaImageFile.format, _save)
 
-Image.register_extension("TGA", ".tga")
+Image.register_extension(TgaImageFile.format, ".tga")

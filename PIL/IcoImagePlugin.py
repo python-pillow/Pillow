@@ -15,20 +15,20 @@
 
 # This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis
 # <casadebender@gmail.com>.
-# https://code.google.com/p/casadebender/wiki/Win32IconImagePlugin
+# https://code.google.com/archive/p/casadebender/wikis/Win32IconImagePlugin.wiki
 #
 # Icon format references:
-#   * http://en.wikipedia.org/wiki/ICO_(file_format)
-#   * http://msdn.microsoft.com/en-us/library/ms997538.aspx
+#   * https://en.wikipedia.org/wiki/ICO_(file_format)
+#   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
 
-
-__version__ = "0.1"
 
 import struct
 from io import BytesIO
 
 from PIL import Image, ImageFile, BmpImagePlugin, PngImagePlugin, _binary
 from math import log, ceil
+
+__version__ = "0.1"
 
 #
 # --------------------------------------------------------------------
@@ -48,8 +48,7 @@ def _save(im, fp, filename):
     width, height = im.size
     filter(lambda x: False if (x[0] > width or x[1] > height or
                                x[0] > 255 or x[1] > 255) else True, sizes)
-    sizes = sorted(sizes, key=lambda x: x[0])
-    fp.write(struct.pack("H", len(sizes)))  # idCount(2)
+    fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes)*16
     for size in sizes:
         width, height = size
@@ -58,7 +57,7 @@ def _save(im, fp, filename):
         fp.write(b"\0")  # bColorCount(1)
         fp.write(b"\0")  # bReserved(1)
         fp.write(b"\0\0")  # wPlanes(2)
-        fp.write(struct.pack("H", 32))  # wBitCount(2)
+        fp.write(struct.pack("<H", 32))  # wBitCount(2)
 
         image_io = BytesIO()
         tmp = im.copy()
@@ -67,8 +66,8 @@ def _save(im, fp, filename):
         image_io.seek(0)
         image_bytes = image_io.read()
         bytes_len = len(image_bytes)
-        fp.write(struct.pack("I", bytes_len))  # dwBytesInRes(4)
-        fp.write(struct.pack("I", offset))  # dwImageOffset(4)
+        fp.write(struct.pack("<I", bytes_len))  # dwBytesInRes(4)
+        fp.write(struct.pack("<I", offset))  # dwImageOffset(4)
         current = fp.tell()
         fp.seek(offset)
         fp.write(image_bytes)
@@ -80,7 +79,7 @@ def _accept(prefix):
     return prefix[:4] == _MAGIC
 
 
-class IcoFile:
+class IcoFile(object):
     def __init__(self, buf):
         """
         Parse image from file-like object containing ico file data
@@ -253,7 +252,7 @@ class IcoImageFile(ImageFile.ImageFile):
 
     This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis
     <casadebender@gmail.com>.
-    https://code.google.com/p/casadebender/wiki/Win32IconImagePlugin
+    https://code.google.com/archive/p/casadebender/wikis/Win32IconImagePlugin.wiki
     """
     format = "ICO"
     format_description = "Windows Icon"
@@ -279,6 +278,6 @@ class IcoImageFile(ImageFile.ImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("ICO", IcoImageFile, _accept)
-Image.register_save("ICO", _save)
-Image.register_extension("ICO", ".ico")
+Image.register_open(IcoImageFile.format, IcoImageFile, _accept)
+Image.register_save(IcoImageFile.format, _save)
+Image.register_extension(IcoImageFile.format, ".ico")

@@ -21,7 +21,7 @@
 from PIL import Image, ImageFilter, ImageStat
 
 
-class _Enhance:
+class _Enhance(object):
 
     def enhance(self, factor):
         """
@@ -53,6 +53,7 @@ class Color(_Enhance):
 
         self.degenerate = image.convert(self.intermediate_mode).convert(image.mode)
 
+
 class Contrast(_Enhance):
     """Adjust image contrast.
 
@@ -72,7 +73,7 @@ class Contrast(_Enhance):
 class Brightness(_Enhance):
     """Adjust image brightness.
 
-    This class can be used to control the brighntess of an image.  An
+    This class can be used to control the brightness of an image.  An
     enhancement factor of 0.0 gives a black image. A factor of 1.0 gives the
     original image.
     """

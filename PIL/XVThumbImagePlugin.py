@@ -17,9 +17,9 @@
 # FIXME: make save work (this requires quantization support)
 #
 
-__version__ = "0.1"
-
 from PIL import Image, ImageFile, ImagePalette, _binary
+
+__version__ = "0.1"
 
 o8 = _binary.o8
 
@@ -72,4 +72,4 @@ class XVThumbImageFile(ImageFile.ImageFile):
 
 # --------------------------------------------------------------------
 
-Image.register_open("XVThumb", XVThumbImageFile)
+Image.register_open(XVThumbImageFile.format, XVThumbImageFile)

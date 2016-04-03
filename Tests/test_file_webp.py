@@ -72,6 +72,11 @@ class TestFileWebp(PillowTestCase):
         target = hopper("RGB")
         self.assert_image_similar(image, target, 12)
 
+    def test_write_unsupported_mode(self):
+        temp_file = self.tempfile("temp.webp")
+
+        self.assertRaises(IOError, lambda: hopper("L").save(temp_file))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -18,7 +18,7 @@ class TestImageLoad(PillowTestCase):
     def test_close(self):
         im = Image.open("Tests/images/hopper.gif")
         im.close()
-        self.assertRaises(ValueError, lambda: im.load())
+        self.assertRaises(ValueError, im.load)
         self.assertRaises(ValueError, lambda: im.getpixel((0, 0)))
 
     def test_contextmanager(self):

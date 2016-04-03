@@ -7,14 +7,15 @@
 from __future__ import print_function
 
 try:
-    from tkinter import *
+    from tkinter import Tk, Label
 except ImportError:
-    from Tkinter import *
+    from Tkinter import Tk, Label
 
 from PIL import Image, ImageTk
 
 #
 # an image viewer
+
 
 class UI(Label):
 

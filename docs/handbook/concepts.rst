@@ -4,12 +4,17 @@ Concepts
 The Python Imaging Library handles *raster images*; that is, rectangles of
 pixel data.
 
+.. _concept-bands:
+
 Bands
 -----
 
 An image can consist of one or more bands of data. The Python Imaging Library
 allows you to store several bands in a single image, provided they all have the
-same dimensions and depth.
+same dimensions and depth.  For example, a PNG image might have 'R', 'G', 'B',
+and 'A' bands for the red, green, blue, and alpha transparency values.  Many
+operations act on each band separately, e.g., histograms.  It is often useful to
+think of each pixel as having one value per band.
 
 To get the number and names of bands in an image, use the
 :py:meth:`~PIL.Image.Image.getbands` method.
@@ -29,6 +34,9 @@ image. The current release supports the following standard modes:
     * ``RGBA`` (4x8-bit pixels, true color with transparency mask)
     * ``CMYK`` (4x8-bit pixels, color separation)
     * ``YCbCr`` (3x8-bit pixels, color video format)
+
+      * Note that this refers to the JPEG, and not the ITU-R BT.2020, standard
+
     * ``LAB`` (3x8-bit pixels, the L*a*b color space)
     * ``HSV`` (3x8-bit pixels, Hue, Saturation, Value color space)
     * ``I`` (32-bit signed integer pixels)
@@ -38,7 +46,7 @@ PIL also provides limited support for a few special modes, including ``LA`` (L
 with alpha), ``RGBX`` (true color with padding) and ``RGBa`` (true color with
 premultiplied alpha). However, PIL doesn’t support user-defined modes; if you
 to handle band combinations that are not listed above, use a sequence of Image
-objects. 
+objects.
 
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
 attribute. This is a string containing one of the above values.

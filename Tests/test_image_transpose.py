@@ -1,14 +1,15 @@
-from helper import unittest, PillowTestCase, hopper
+import helper
+from helper import unittest, PillowTestCase
 
 from PIL.Image import (FLIP_LEFT_RIGHT, FLIP_TOP_BOTTOM, ROTATE_90, ROTATE_180,
-    ROTATE_270, TRANSPOSE)
+                       ROTATE_270, TRANSPOSE)
 
 
 class TestImageTranspose(PillowTestCase):
 
     hopper = {
-        'L': hopper('L').crop((0, 0, 121, 127)).copy(),
-        'RGB': hopper('RGB').crop((0, 0, 121, 127)).copy(),
+        'L': helper.hopper('L').crop((0, 0, 121, 127)).copy(),
+        'RGB': helper.hopper('RGB').crop((0, 0, 121, 127)).copy(),
     }
 
     def test_flip_left_right(self):

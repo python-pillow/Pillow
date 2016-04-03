@@ -7,10 +7,10 @@
 The :py:mod:`OleFileIO` module reads Microsoft OLE2 files (also called
 Structured Storage or Microsoft Compound Document File Format), such
 as Microsoft Office documents, Image Composer and FlashPix files, and
-Outlook messages. 
+Outlook messages.
 
-This module is the `OleFileIO\_PL`_ project by Philippe Lagadec, v0.30,
-merged back into Pillow. 
+This module is the `OleFileIO\_PL`_ project by Philippe Lagadec, v0.42,
+merged back into Pillow.
 
 .. _OleFileIO\_PL: http://www.decalage.info/python/olefileio
 
@@ -300,7 +300,7 @@ Close the OLE file
 
 Unless your application is a simple script that terminates after
 processing an OLE file, do not forget to close each OleFileIO object
-after parsing to close the file on disk. 
+after parsing to close the file on disk.
 
 .. code-block:: python
 

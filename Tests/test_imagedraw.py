@@ -5,13 +5,13 @@ from PIL import ImageColor
 from PIL import ImageDraw
 import os.path
 
+import sys
+
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (190, 190, 190)
 DEFAULT_MODE = 'RGB'
 IMAGES_PATH = os.path.join('Tests', 'images', 'imagedraw')
-
-import sys
 
 # Image size
 W, H = 100, 100
@@ -44,33 +44,40 @@ class TestImageDraw(PillowTestCase):
         draw.polygon(list(range(100)))
         draw.rectangle(list(range(4)))
 
-    def test_deprecated(self):
-        im = hopper().copy()
+    def test_removed_methods(self):
+        im = hopper()
 
         draw = ImageDraw.Draw(im)
 
-        self.assert_warning(DeprecationWarning, lambda: draw.setink(0))
-        self.assert_warning(DeprecationWarning, lambda: draw.setfill(0))
+        self.assertRaises(Exception, lambda: draw.setink(0))
+        self.assertRaises(Exception, lambda: draw.setfill(0))
 
-    def helper_arc(self, bbox):
+    def test_mode_mismatch(self):
+        im = hopper("RGB").copy()
+
+        self.assertRaises(ValueError,
+                          lambda: ImageDraw.ImageDraw(im, mode="L"))
+
+    def helper_arc(self, bbox, start, end):
         # Arrange
         im = Image.new("RGB", (W, H))
         draw = ImageDraw.Draw(im)
 
         # Act
-        # FIXME Fill param should be named outline.
-        draw.arc(bbox, 0, 180)
+        draw.arc(bbox, start, end)
         del draw
 
         # Assert
         self.assert_image_similar(
-            im, Image.open("Tests/images/imagedraw_arc.png"),1)
+            im, Image.open("Tests/images/imagedraw_arc.png"), 1)
 
     def test_arc1(self):
-        self.helper_arc(BBOX1)
+        self.helper_arc(BBOX1, 0, 180)
+        self.helper_arc(BBOX1, 0.5, 180.4)
 
     def test_arc2(self):
-        self.helper_arc(BBOX2)
+        self.helper_arc(BBOX2, 0, 180)
+        self.helper_arc(BBOX2, 0.5, 180.4)
 
     def test_bitmap(self):
         # Arrange
@@ -86,24 +93,26 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_bitmap.png"))
 
-    def helper_chord(self, bbox):
+    def helper_chord(self, bbox, start, end):
         # Arrange
         im = Image.new("RGB", (W, H))
         draw = ImageDraw.Draw(im)
 
         # Act
-        draw.chord(bbox, 0, 180, fill="red", outline="yellow")
+        draw.chord(bbox, start, end, fill="red", outline="yellow")
         del draw
 
         # Assert
         self.assert_image_similar(
-            im, Image.open("Tests/images/imagedraw_chord.png"),1)
+            im, Image.open("Tests/images/imagedraw_chord.png"), 1)
 
     def test_chord1(self):
-        self.helper_chord(BBOX1)
+        self.helper_chord(BBOX1, 0, 180)
+        self.helper_chord(BBOX1, 0.5, 180.4)
 
     def test_chord2(self):
-        self.helper_chord(BBOX2)
+        self.helper_chord(BBOX2, 0, 180)
+        self.helper_chord(BBOX2, 0.5, 180.4)
 
     def helper_ellipse(self, bbox):
         # Arrange
@@ -116,13 +125,26 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         self.assert_image_similar(
-            im, Image.open("Tests/images/imagedraw_ellipse.png"),1)
+            im, Image.open("Tests/images/imagedraw_ellipse.png"), 1)
 
     def test_ellipse1(self):
         self.helper_ellipse(BBOX1)
 
     def test_ellipse2(self):
         self.helper_ellipse(BBOX2)
+
+    def test_ellipse_edge(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+
+        # Act
+        draw.ellipse(((0, 0), (W-1, H)), fill="white")
+        del draw
+
+        # Assert
+        self.assert_image_similar(
+            im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
 
     def helper_line(self, points):
         # Arrange
@@ -143,24 +165,26 @@ class TestImageDraw(PillowTestCase):
     def test_line2(self):
         self.helper_line(POINTS2)
 
-    def helper_pieslice(self, bbox):
+    def helper_pieslice(self, bbox, start, end):
         # Arrange
         im = Image.new("RGB", (W, H))
         draw = ImageDraw.Draw(im)
 
         # Act
-        draw.pieslice(bbox, -90, 45, fill="white", outline="blue")
+        draw.pieslice(bbox, start, end, fill="white", outline="blue")
         del draw
 
         # Assert
         self.assert_image_similar(
-            im, Image.open("Tests/images/imagedraw_pieslice.png"),1)
+            im, Image.open("Tests/images/imagedraw_pieslice.png"), 1)
 
     def test_pieslice1(self):
-        self.helper_pieslice(BBOX1)
+        self.helper_pieslice(BBOX1, -90, 45)
+        self.helper_pieslice(BBOX1, -90.5, 45.4)
 
     def test_pieslice2(self):
-        self.helper_pieslice(BBOX2)
+        self.helper_pieslice(BBOX2, -90, 45)
+        self.helper_pieslice(BBOX2, -90.5, 45.4)
 
     def helper_point(self, points):
         # Arrange
@@ -300,32 +324,32 @@ class TestImageDraw(PillowTestCase):
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 14, 5), BLACK, 2)
         self.assert_image_equal(
-            img, expected, 'line straigth horizontal normal 2px wide failed')
+            img, expected, 'line straight horizontal normal 2px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_horizontal_w2px_inverted.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((14, 5, 5, 5), BLACK, 2)
         self.assert_image_equal(
-            img, expected, 'line straigth horizontal inverted 2px wide failed')
+            img, expected, 'line straight horizontal inverted 2px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_horizontal_w3px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 14, 5), BLACK, 3)
         self.assert_image_equal(
-            img, expected, 'line straigth horizontal normal 3px wide failed')
+            img, expected, 'line straight horizontal normal 3px wide failed')
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((14, 5, 5, 5), BLACK, 3)
         self.assert_image_equal(
-            img, expected, 'line straigth horizontal inverted 3px wide failed')
+            img, expected, 'line straight horizontal inverted 3px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_horizontal_w101px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((200, 110))
         draw.line((5, 55, 195, 55), BLACK, 101)
         self.assert_image_equal(
-            img, expected, 'line straigth horizontal 101px wide failed')
+            img, expected, 'line straight horizontal 101px wide failed')
 
     def test_line_h_s1_w2(self):
         self.skipTest('failing')
@@ -344,32 +368,32 @@ class TestImageDraw(PillowTestCase):
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 5, 14), BLACK, 2)
         self.assert_image_equal(
-            img, expected, 'line straigth vertical normal 2px wide failed')
+            img, expected, 'line straight vertical normal 2px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_vertical_w2px_inverted.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 14, 5, 5), BLACK, 2)
         self.assert_image_equal(
-            img, expected, 'line straigth vertical inverted 2px wide failed')
+            img, expected, 'line straight vertical inverted 2px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_vertical_w3px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 5, 5, 14), BLACK, 3)
         self.assert_image_equal(
-            img, expected, 'line straigth vertical normal 3px wide failed')
+            img, expected, 'line straight vertical normal 3px wide failed')
         img, draw = self.create_base_image_draw((20, 20))
         draw.line((5, 14, 5, 5), BLACK, 3)
         self.assert_image_equal(
-            img, expected, 'line straigth vertical inverted 3px wide failed')
+            img, expected, 'line straight vertical inverted 3px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_vertical_w101px.png'))
         expected.load()
         img, draw = self.create_base_image_draw((110, 200))
         draw.line((55, 5, 55, 195), BLACK, 101)
         self.assert_image_equal(img, expected,
-                                'line straigth vertical 101px wide failed')
+                                'line straight vertical 101px wide failed')
         expected = Image.open(os.path.join(IMAGES_PATH,
                               'line_vertical_slope1px_w2px.png'))
         expected.load()

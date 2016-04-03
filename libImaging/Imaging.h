@@ -345,11 +345,11 @@ struct ImagingAffineMatrixInstance {
 typedef struct ImagingAffineMatrixInstance *ImagingAffineMatrix;
 
 extern int ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
-                          int start, int end, const void* ink, int op);
+                          float start, float end, const void* ink, int op);
 extern int ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap,
                              const void* ink, int op);
 extern int ImagingDrawChord(Imaging im, int x0, int y0, int x1, int y1,
-                            int start, int end, const void* ink, int fill,
+                            float start, float end, const void* ink, int fill,
                             int op);
 extern int ImagingDrawEllipse(Imaging im, int x0, int y0, int x1, int y1,
                               const void* ink, int fill, int op);
@@ -358,7 +358,7 @@ extern int ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1,
 extern int ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
                                const void* ink, int width, int op);
 extern int ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
-                               int start, int end, const void* ink, int fill,
+                               float start, float end, const void* ink, int fill,
                                int op);
 extern int ImagingDrawPoint(Imaging im, int x, int y, const void* ink, int op);
 extern int ImagingDrawPolygon(Imaging im, int points, int *xy,

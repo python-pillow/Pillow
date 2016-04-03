@@ -76,10 +76,10 @@ class TestImageFilter(PillowTestCase):
             #   0 1 2
             #   3 4 5
             #   6 7 8
-            min = im.filter(ImageFilter.MinFilter).getpixel((1, 1))
+            minimum = im.filter(ImageFilter.MinFilter).getpixel((1, 1))
             med = im.filter(ImageFilter.MedianFilter).getpixel((1, 1))
-            max = im.filter(ImageFilter.MaxFilter).getpixel((1, 1))
-            return min, med, max
+            maximum = im.filter(ImageFilter.MaxFilter).getpixel((1, 1))
+            return minimum, med, maximum
 
         self.assertEqual(rankfilter("1"), (0, 4, 8))
         self.assertEqual(rankfilter("L"), (0, 4, 8))
@@ -87,6 +87,12 @@ class TestImageFilter(PillowTestCase):
         self.assertEqual(rankfilter("RGB"), ((0, 0, 0), (4, 0, 0), (8, 0, 0)))
         self.assertEqual(rankfilter("I"), (0, 4, 8))
         self.assertEqual(rankfilter("F"), (0.0, 4.0, 8.0))
+
+    def test_rankfilter_properties(self):
+        rankfilter = ImageFilter.RankFilter(1, 2)
+
+        self.assertEqual(rankfilter.size, 1)
+        self.assertEqual(rankfilter.rank, 2)
 
 
 if __name__ == '__main__':

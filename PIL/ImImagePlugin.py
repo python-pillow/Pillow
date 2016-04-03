@@ -26,11 +26,11 @@
 #
 
 
-__version__ = "0.7"
-
 import re
 from PIL import Image, ImageFile, ImagePalette
 from PIL._binary import i8
+
+__version__ = "0.7"
 
 
 # --------------------------------------------------------------------
@@ -260,6 +260,14 @@ class ImImageFile(ImageFile.ImageFile):
             self.tile = [("raw", (0, 0)+self.size, offs,
                          (self.rawmode, 0, -1))]
 
+    @property
+    def n_frames(self):
+        return self.info[FRAMES]
+
+    @property
+    def is_animated(self):
+        return self.info[FRAMES] > 1
+
     def seek(self, frame):
 
         if frame < 0 or frame >= self.info[FRAMES]:
@@ -313,7 +321,7 @@ SAVE = {
 def _save(im, fp, filename, check=0):
 
     try:
-        type, rawmode = SAVE[im.mode]
+        image_type, rawmode = SAVE[im.mode]
     except KeyError:
         raise ValueError("Cannot save %s images as IM" % im.mode)
 
@@ -325,7 +333,7 @@ def _save(im, fp, filename, check=0):
     if check:
         return check
 
-    fp.write(("Image type: %s image\r\n" % type).encode('ascii'))
+    fp.write(("Image type: %s image\r\n" % image_type).encode('ascii'))
     if filename:
         fp.write(("Name: %s\r\n" % filename).encode('ascii'))
     fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode('ascii'))
@@ -341,7 +349,7 @@ def _save(im, fp, filename, check=0):
 # --------------------------------------------------------------------
 # Registry
 
-Image.register_open("IM", ImImageFile)
-Image.register_save("IM", _save)
+Image.register_open(ImImageFile.format, ImImageFile)
+Image.register_save(ImImageFile.format, _save)
 
-Image.register_extension("IM", ".im")
+Image.register_extension(ImImageFile.format, ".im")

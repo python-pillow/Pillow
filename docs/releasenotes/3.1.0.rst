@@ -1,0 +1,75 @@
+
+3.1.0
+=====
+
+ImageDraw arc, chord and pieslice can now use floats
+----------------------------------------------------
+
+There is no longer a need to ensure that the start and end arguments for `arc`,
+`chord` and `pieslice` are integers.
+
+Note that these numbers are not simply rounded internally, but are actually
+utilised in the drawing process.
+
+Consistent multiline text spacing
+---------------------------------
+
+When using the ``ImageDraw`` multiline methods, the spacing between
+lines was inconsistent, based on the combination on ascenders and
+descenders.
+
+This has now been fixed, so that lines are offset by their baselines,
+not the absolute height of each line.
+
+There is also now a default spacing of 4px between lines.
+
+Exif, Jpeg and Tiff Metadata
+----------------------------
+
+There were major changes in the TIFF ImageFileDirectory support in
+Pillow 3.0 that led to a number of regressions. Some of them have been
+fixed in Pillow 3.1, and some of them have been extended to have
+different behavior.
+
+TiffImagePlugin.IFDRational
++++++++++++++++++++++++++++
+
+Pillow 3.0 changed rational metadata to use a float. In Pillow 3.1,
+this has changed to allow the expression of 0/0 as a valid piece of
+rational metadata to reflect usage in the wild.
+
+Rational metadata is now encapsulated in an ``IFDRational``
+instance. This class extends the Rational class to allow a denominator
+of 0. It compares as a float or a number, but does allow access to the
+raw numerator and denominator values through attributes.
+
+When used in a ``ImageFileDirectory_v1``, a 2 item tuple is returned
+of the numerator and denominator, as was done previously.
+
+This class should be used when adding a rational value to an
+ImageFileDirectory for saving to image metadata.
+
+JpegImagePlugin._getexif
+++++++++++++++++++++++++
+
+In Pillow 3.0, the dictionary returned from the private, experimental,
+but generally widely used ``_getexif`` function changed to reflect the
+ImageFileDirectory_v2 format, without a fallback to the previous format.
+
+In Pillow 3.1, ``_getexif`` now returns a dictionary compatible with
+Pillow 2.9 and earlier, built with
+``ImageFileDirectory_v1`` instances. Additionally, any
+single item tuples have been unwrapped and return a bare element.
+
+The format returned by Pillow 3.0 has been abandoned. A more fully
+featured interface for EXIF is anticipated in a future release.
+
+Out of Spec Metadata
+++++++++++++++++++++
+
+In Pillow 3.0 and 3.1, images that contain metadata that is internally
+consistent but not in agreement with the TIFF spec may cause an
+exception when reading the metadata.  This can happen when a tag that
+is specified to have a single value is stored with an array of values.
+
+It is anticipated that this behavior will change in future releases.

@@ -9,11 +9,10 @@ if "--installed" in sys.argv:
     del sys.path[0]
 
 from PIL import Image, ImageDraw, ImageFilter, ImageMath
+from PIL import features
 
 if "--installed" in sys.argv:
     sys.path.insert(0, sys_path_0)
-
-ROOT = "."
 
 try:
     Image.core.ping
@@ -49,13 +48,13 @@ def testimage():
 
     Or open existing files:
 
-    >>> im = Image.open(os.path.join(ROOT, "Tests/images/hopper.gif"))
+    >>> im = Image.open("Tests/images/hopper.gif")
     >>> _info(im)
     ('GIF', 'P', (128, 128))
-    >>> _info(Image.open(os.path.join(ROOT, "Tests/images/hopper.ppm")))
+    >>> _info(Image.open("Tests/images/hopper.ppm"))
     ('PPM', 'RGB', (128, 128))
     >>> try:
-    ...  _info(Image.open(os.path.join(ROOT, "Tests/images/hopper.jpg")))
+    ...  _info(Image.open("Tests/images/hopper.jpg"))
     ... except IOError as v:
     ...  print(v)
     ('JPEG', 'RGB', (128, 128))
@@ -63,7 +62,7 @@ def testimage():
     PIL doesn't actually load the image data until it's needed,
     or you call the "load" method:
 
-    >>> im = Image.open(os.path.join(ROOT, "Tests/images/hopper.ppm"))
+    >>> im = Image.open("Tests/images/hopper.ppm")
     >>> print(im.im) # internal image attribute
     None
     >>> a = im.load()
@@ -73,7 +72,7 @@ def testimage():
     You can apply many different operations on images.  Most
     operations return a new image:
 
-    >>> im = Image.open(os.path.join(ROOT, "Tests/images/hopper.ppm"))
+    >>> im = Image.open("Tests/images/hopper.ppm")
     >>> _info(im.convert("L"))
     (None, 'L', (128, 128))
     >>> _info(im.copy())
@@ -162,22 +161,6 @@ def testimage():
     """
 
 
-def check_module(feature, module):
-    try:
-        __import__(module)
-    except ImportError:
-        print("***", feature, "support not installed")
-    else:
-        print("---", feature, "support ok")
-
-
-def check_codec(feature, codec):
-    if codec + "_encoder" not in dir(Image.core):
-        print("***", feature, "support not installed")
-    else:
-        print("---", feature, "support ok")
-
-
 if __name__ == "__main__":
     # check build sanity
 
@@ -189,30 +172,40 @@ if __name__ == "__main__":
     print("Python modules loaded from", os.path.dirname(Image.__file__))
     print("Binary modules loaded from", os.path.dirname(Image.core.__file__))
     print("-"*68)
-    check_module("PIL CORE", "PIL._imaging")
-    check_module("TKINTER", "PIL._imagingtk")
-    check_codec("JPEG", "jpeg")
-    check_codec("JPEG 2000", "jpeg2k")
-    check_codec("ZLIB (PNG/ZIP)", "zip")
-    check_codec("LIBTIFF", "libtiff")
-    check_module("FREETYPE2", "PIL._imagingft")
-    check_module("LITTLECMS2", "PIL._imagingcms")
-    check_module("WEBP", "PIL._webp")
-    try:
-        from PIL import _webp
-        if _webp.WebPDecoderBuggyAlpha():
-            print("***", "Transparent WEBP", "support not installed")
+    for name, feature in [
+        ("pil", "PIL CORE"),
+        ("tkinter", "TKINTER"),
+        ("freetype2", "FREETYPE2"),
+        ("littlecms2", "LITTLECMS2"),
+        ("webp", "WEBP"),
+        ("transp_webp", "Transparent WEBP")
+    ]:
+        supported = features.check_module(name)
+
+        if supported is None:
+            # A method was being tested, but the module required
+            # for the method could not be correctly imported
+            pass
+        elif supported:
+            print("---", feature, "support ok")
         else:
-            print("---", "Transparent WEBP", "support ok")
-    except Exception:
-        pass
+            print("***", feature, "support not installed")
+    for name, feature in [
+        ("jpg", "JPEG"),
+        ("jpg_2000", "OPENJPEG (JPEG2000)"),
+        ("zlib", "ZLIB (PNG/ZIP)"),
+        ("libtiff", "LIBTIFF")
+    ]:
+        if features.check_codec(name):
+            print("---", feature, "support ok")
+        else:
+            print("***", feature, "support not installed")
     print("-"*68)
 
     # use doctest to make sure the test program behaves as documented!
     import doctest
-    import selftest
     print("Running selftest:")
-    status = doctest.testmod(selftest)
+    status = doctest.testmod(sys.modules[__name__])
     if status[0]:
         print("*** %s tests of %d failed." % status)
         exit_status = 1

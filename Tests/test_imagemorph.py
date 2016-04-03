@@ -1,5 +1,5 @@
 # Test the ImageMorphology functionality
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageMorph
@@ -167,6 +167,14 @@ class MorphTests(PillowTestCase):
         coords = mop.get_on_pixels(Aout)
         self.assertEqual(len(coords), 4)
         self.assertEqual(tuple(coords), ((2, 2), (4, 2), (2, 4), (4, 4)))
+
+    def test_non_binary_images(self):
+        im = hopper('RGB')
+        mop = ImageMorph.MorphOp(op_name="erosion8")
+
+        self.assertRaises(Exception, lambda: mop.apply(im))
+        self.assertRaises(Exception, lambda: mop.match(im))
+        self.assertRaises(Exception, lambda: mop.get_on_pixels(im))
 
 
 if __name__ == '__main__':

@@ -21,11 +21,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.2"
-
 from PIL import Image, _binary
-
 from PIL.PcxImagePlugin import PcxImageFile
+
+__version__ = "0.2"
 
 MAGIC = 0x3ADE68B1  # QUIZ: what's this value, then?
 
@@ -33,7 +32,7 @@ i32 = _binary.i32le
 
 
 def _accept(prefix):
-    return i32(prefix) == MAGIC
+    return len(prefix) >= 4 and i32(prefix) == MAGIC
 
 
 ##
@@ -62,6 +61,14 @@ class DcxImageFile(PcxImageFile):
         self.__fp = self.fp
         self.seek(0)
 
+    @property
+    def n_frames(self):
+        return len(self._offset)
+
+    @property
+    def is_animated(self):
+        return len(self._offset) > 1
+
     def seek(self, frame):
         if frame >= len(self._offset):
             raise EOFError("attempt to seek outside DCX directory")
@@ -74,6 +81,6 @@ class DcxImageFile(PcxImageFile):
         return self.frame
 
 
-Image.register_open("DCX", DcxImageFile, _accept)
+Image.register_open(DcxImageFile.format, DcxImageFile, _accept)
 
-Image.register_extension("DCX", ".dcx")
+Image.register_extension(DcxImageFile.format, ".dcx")

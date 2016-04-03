@@ -25,13 +25,18 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.6"
+from __future__ import print_function
 
+import logging
 from PIL import Image, ImageFile, ImagePalette, _binary
+
+logger = logging.getLogger(__name__)
 
 i8 = _binary.i8
 i16 = _binary.i16le
 o8 = _binary.o8
+
+__version__ = "0.6"
 
 
 def _accept(prefix):
@@ -57,17 +62,15 @@ class PcxImageFile(ImageFile.ImageFile):
         bbox = i16(s, 4), i16(s, 6), i16(s, 8)+1, i16(s, 10)+1
         if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
             raise SyntaxError("bad PCX image size")
-        if Image.DEBUG:
-            print ("BBox: %s %s %s %s" % bbox)
+        logger.debug("BBox: %s %s %s %s", *bbox)
 
         # format
         version = i8(s[1])
         bits = i8(s[3])
         planes = i8(s[65])
         stride = i16(s, 66)
-        if Image.DEBUG:
-            print ("PCX version %s, bits %s, planes %s, stride %s" %
-                   (version, bits, planes, stride))
+        logger.debug("PCX version %s, bits %s, planes %s, stride %s",
+                     version, bits, planes, stride)
 
         self.info["dpi"] = i16(s, 12), i16(s, 14)
 
@@ -105,8 +108,7 @@ class PcxImageFile(ImageFile.ImageFile):
         self.size = bbox[2]-bbox[0], bbox[3]-bbox[1]
 
         bbox = (0, 0) + self.size
-        if Image.DEBUG:
-            print ("size: %sx%s" % self.size)
+        logger.debug("size: %sx%s", *self.size)
 
         self.tile = [("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))]
 
@@ -142,9 +144,8 @@ def _save(im, fp, filename, check=0):
     # Ideally it should be passed in in the state, but the bytes value
     # gets overwritten.
 
-    if Image.DEBUG:
-        print ("PcxImagePlugin._save: xwidth: %d, bits: %d, stride: %d" % (
-            im.size[0], bits, stride))
+    logger.debug("PcxImagePlugin._save: xwidth: %d, bits: %d, stride: %d",
+                 im.size[0], bits, stride)
 
     # under windows, we could determine the current screen size with
     # "Image.core.display_mode()[1]", but I think that's overkill...
@@ -180,7 +181,7 @@ def _save(im, fp, filename, check=0):
 # --------------------------------------------------------------------
 # registry
 
-Image.register_open("PCX", PcxImageFile, _accept)
-Image.register_save("PCX", _save)
+Image.register_open(PcxImageFile.format, PcxImageFile, _accept)
+Image.register_save(PcxImageFile.format, _save)
 
-Image.register_extension("PCX", ".pcx")
+Image.register_extension(PcxImageFile.format, ".pcx")

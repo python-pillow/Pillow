@@ -3,7 +3,7 @@
  * $Id$
  *
  * Alpha composite imSrc over imDst.
- * http://en.wikipedia.org/wiki/Alpha_compositing
+ * https://en.wikipedia.org/wiki/Alpha_compositing
  *
  * See the README file for details on usage and redistribution.
  */

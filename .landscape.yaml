@@ -1,2 +1,3 @@
 strictness: medium
 test-warnings: yes
+max-line-length: 80

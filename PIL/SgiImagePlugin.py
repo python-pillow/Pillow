@@ -18,18 +18,16 @@
 #
 
 
-__version__ = "0.2"
-
-
 from PIL import Image, ImageFile, _binary
+
+__version__ = "0.2"
 
 i8 = _binary.i8
 i16 = _binary.i16be
-i32 = _binary.i32be
 
 
 def _accept(prefix):
-    return i16(prefix) == 474
+    return len(prefix) >= 2 and i16(prefix) == 474
 
 
 ##
@@ -81,11 +79,11 @@ class SgiImageFile(ImageFile.ImageFile):
 #
 # registry
 
-Image.register_open("SGI", SgiImageFile, _accept)
+Image.register_open(SgiImageFile.format, SgiImageFile, _accept)
 
-Image.register_extension("SGI", ".bw")
-Image.register_extension("SGI", ".rgb")
-Image.register_extension("SGI", ".rgba")
-Image.register_extension("SGI", ".sgi")
+Image.register_extension(SgiImageFile.format, ".bw")
+Image.register_extension(SgiImageFile.format, ".rgb")
+Image.register_extension(SgiImageFile.format, ".rgba")
+Image.register_extension(SgiImageFile.format, ".sgi")
 
 # End of file

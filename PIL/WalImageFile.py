@@ -1,3 +1,5 @@
+# encoding: utf-8
+#
 # The Python Imaging Library.
 # $Id$
 #
@@ -124,8 +126,3 @@ quake2palette = (
     b"\x10\x0f\x0d\x0d\x0b\x3c\x2e\x2a\x36\x27\x20\x30\x21\x18\x29\x1b"
     b"\x10\x3c\x39\x37\x37\x32\x2f\x31\x2c\x28\x2b\x26\x21\x30\x22\x20"
 )
-
-if __name__ == "__main__":
-    im = open("../hacks/sample.wal")
-    print(im.info, im.mode, im.size)
-    im.save("../out.png")

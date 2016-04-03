@@ -28,14 +28,17 @@ from __future__ import print_function
 
 from PIL import VERSION, PILLOW_VERSION, _plugins
 
+import logging
 import warnings
+
+logger = logging.getLogger(__name__)
 
 
 class DecompressionBombWarning(RuntimeWarning):
     pass
 
 
-class _imaging_not_installed:
+class _imaging_not_installed(object):
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imaging C module is not installed")
@@ -79,20 +82,24 @@ except ImportError as v:
             )
     elif str(v).startswith("The _imaging extension"):
         warnings.warn(str(v), RuntimeWarning)
-    elif "Symbol not found: _PyUnicodeUCS2_FromString" in str(v):
+    elif "Symbol not found: _PyUnicodeUCS2_" in str(v):
+        # should match _PyUnicodeUCS2_FromString and
+        # _PyUnicodeUCS2_AsLatin1String
         warnings.warn(
             "The _imaging extension was built for Python with UCS2 support; "
-            "recompile PIL or build Python --without-wide-unicode. ",
+            "recompile Pillow or build Python --without-wide-unicode. ",
             RuntimeWarning
             )
-    elif "Symbol not found: _PyUnicodeUCS4_FromString" in str(v):
+    elif "Symbol not found: _PyUnicodeUCS4_" in str(v):
+        # should match _PyUnicodeUCS4_FromString and
+        # _PyUnicodeUCS4_AsLatin1String
         warnings.warn(
             "The _imaging extension was built for Python with UCS4 support; "
-            "recompile PIL or build Python --with-wide-unicode. ",
+            "recompile Pillow or build Python --with-wide-unicode. ",
             RuntimeWarning
             )
     # Fail here anyway. Don't let people run with a mostly broken Pillow.
-    # see docs/porting-pil-to-pillow.rst
+    # see docs/porting.rst
     raise
 
 try:
@@ -109,6 +116,8 @@ from PIL._util import deferred_error
 
 import os
 import sys
+import io
+import struct
 
 # type stuff
 import collections
@@ -119,7 +128,7 @@ USE_CFFI_ACCESS = hasattr(sys, 'pypy_version_info')
 try:
     import cffi
     HAS_CFFI = True
-except:
+except ImportError:
     HAS_CFFI = False
 
 
@@ -135,11 +144,6 @@ def isImageType(t):
     :returns: True if the object is an image
     """
     return hasattr(t, "im")
-
-#
-# Debug level
-
-DEBUG = 0
 
 #
 # Constants (also defined in _imagingmodule.c!)
@@ -202,6 +206,7 @@ ID = []
 OPEN = {}
 MIME = {}
 SAVE = {}
+SAVE_ALL = {}
 EXTENSION = {}
 
 # --------------------------------------------------------------------
@@ -249,6 +254,7 @@ _MODE_CONV = {
     "CMYK": ('|u1', 4),
     "YCbCr": ('|u1', 3),
     "LAB": ('|u1', 3),  # UNDONE - unsigned |u1i1i1
+    "HSV": ('|u1', 3),
     # I;16 == I;16L, and I;32 == I;32L
     "I;16": ('<u2', None),
     "I;16B": ('>u2', None),
@@ -384,13 +390,10 @@ def init():
 
     for plugin in _plugins:
         try:
-            if DEBUG:
-                print ("Importing %s" % plugin)
+            logger.debug("Importing %s", plugin)
             __import__("PIL.%s" % plugin, globals(), locals(), [])
-        except ImportError:
-            if DEBUG:
-                print("Image: failed to import", end=' ')
-                print(plugin, ":", sys.exc_info()[1])
+        except ImportError as e:
+            logger.debug("Image: failed to import %s: %s", plugin, e)
 
     if OPEN or SAVE:
         _initialized = 2
@@ -441,7 +444,7 @@ def coerce_e(value):
     return value if isinstance(value, _E) else _E(value)
 
 
-class _E:
+class _E(object):
     def __init__(self, data):
         self.data = data
 
@@ -476,7 +479,7 @@ def _getscaleoffset(expr):
 # --------------------------------------------------------------------
 # Implementation wrapper
 
-class Image:
+class Image(object):
     """
     This class represents an image object.  To create
     :py:class:`~PIL.Image.Image` objects, use the appropriate factory
@@ -502,12 +505,21 @@ class Image:
         self.readonly = 0
         self.pyaccess = None
 
+    @property
+    def width(self):
+        return self.size[0]
+
+    @property
+    def height(self):
+        return self.size[1]
+
     def _new(self, im):
         new = Image()
         new.im = im
         new.mode = im.mode
         new.size = im.size
-        new.palette = self.palette
+        if self.palette:
+            new.palette = self.palette.copy()
         if im.mode == "P" and not new.palette:
             from PIL import ImagePalette
             new.palette = ImagePalette.ImagePalette()
@@ -543,8 +555,7 @@ class Image:
         try:
             self.fp.close()
         except Exception as msg:
-            if DEBUG:
-                print ("Error closing: %s" % msg)
+            logger.debug("Error closing: %s", msg)
 
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
@@ -600,7 +611,7 @@ class Image:
 
     def _repr_png_(self):
         """ iPython display hook support
-        
+
         :returns: png version of the image as bytes
         """
         from io import BytesIO
@@ -616,6 +627,7 @@ class Image:
             new['shape'] = shape
             new['typestr'] = typestr
             new['data'] = self.tobytes()
+            new['version'] = 3
             return new
         raise AttributeError(name)
 
@@ -641,7 +653,14 @@ class Image:
 
     def tobytes(self, encoder_name="raw", *args):
         """
-        Return image as a bytes object
+        Return image as a bytes object.
+
+        .. warning::
+
+            This method returns the raw image data from the internal
+            storage.  For compressed image data (e.g. PNG, JPEG) use
+            :meth:`~.save`, with a BytesIO parameter for in-memory
+            data.
 
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
@@ -675,18 +694,9 @@ class Image:
 
         return b"".join(data)
 
-    # Declare tostring as alias to tobytes
     def tostring(self, *args, **kw):
-        """Deprecated alias to tobytes.
-
-        .. deprecated:: 2.0
-        """
-        warnings.warn(
-            'tostring() is deprecated. Please call tobytes() instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.tobytes(*args, **kw)
+        raise Exception("tostring() has been removed. " +
+                        "Please call tobytes() instead.")
 
     def tobitmap(self, name="image"):
         """
@@ -736,14 +746,8 @@ class Image:
             raise ValueError("cannot decode image data")
 
     def fromstring(self, *args, **kw):
-        """Deprecated alias to frombytes.
-
-        .. deprecated:: 2.0
-        """
-        warnings.warn(
-            'fromstring() is deprecated. Please call frombytes() instead.',
-            DeprecationWarning)
-        return self.frombytes(*args, **kw)
+        raise Exception("fromstring() has been removed. " +
+                        "Please call frombytes() instead.")
 
     def load(self):
         """
@@ -816,7 +820,7 @@ class Image:
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
-           should be 4- or 16-tuple containing floating point values.
+           should be 4- or 12-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are NONE or FLOYDSTEINBERG (default).
@@ -875,6 +879,12 @@ class Image:
                     trns_im = Image()._new(core.new(self.mode, (1, 1)))
                     if self.mode == 'P':
                         trns_im.putpalette(self.palette)
+                        if type(t) == tuple:
+                            try:
+                                t = trns_im.palette.getcolor(t)
+                            except:
+                                raise ValueError("Couldn't allocate a palette "+
+                                                 "color for transparency")
                     trns_im.putpixel((0, 0), t)
 
                     if mode in ('L', 'RGB'):
@@ -892,11 +902,10 @@ class Image:
                 if isinstance(t, bytes):
                     self.im.putpalettealphas(t)
                 elif isinstance(t, int):
-                    self.im.putpalettealpha(t,0)
+                    self.im.putpalettealpha(t, 0)
                 else:
                     raise ValueError("Transparency for P mode should" +
                                      " be bytes or int")
-
 
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
@@ -1002,6 +1011,8 @@ class Image:
         self.load()
         im = self.im.copy()
         return self._new(im)
+
+    __copy__ = copy
 
     def crop(self, box=None):
         """
@@ -1243,27 +1254,8 @@ class Image:
         return self.im.histogram()
 
     def offset(self, xoffset, yoffset=None):
-        """
-        .. deprecated:: 2.0
-
-        .. note:: New code should use :py:func:`PIL.ImageChops.offset`.
-
-        Returns a copy of the image where the data has been offset by the given
-        distances. Data wraps around the edges. If **yoffset** is omitted, it
-        is assumed to be equal to **xoffset**.
-
-        :param xoffset: The horizontal distance.
-        :param yoffset: The vertical distance.  If omitted, both
-           distances are set to the same value.
-        :returns: An :py:class:`~PIL.Image.Image` object.
-        """
-        if warnings:
-            warnings.warn(
-                "'offset' is deprecated; use 'ImageChops.offset' instead",
-                DeprecationWarning, stacklevel=2
-                )
-        from PIL import ImageChops
-        return ImageChops.offset(self, xoffset, yoffset)
+        raise Exception("offset() has been removed. " +
+                        "Please call ImageChops.offset() instead.")
 
     def paste(self, im, box=None, mask=None):
         """
@@ -1287,11 +1279,11 @@ class Image:
         images (in the latter case, the alpha band is used as mask).
         Where the mask is 255, the given image is copied as is.  Where
         the mask is 0, the current value is preserved.  Intermediate
-        values can be used for transparency effects.
+        values will mix the two images together, including their alpha
+        channels if they have them.
 
-        Note that if you paste an "RGBA" image, the alpha band is
-        ignored.  You can work around this by using the same image as
-        both source image and mask.
+        See :py:meth:`~PIL.Image.Image.alpha_composite` if you want to
+        combine images with respect to their alpha channels.
 
         :param im: Source image or pixel value (integer or tuple).
         :param box: An optional 4-tuple giving the region to paste into.
@@ -1315,7 +1307,7 @@ class Image:
             box = (0, 0) + self.size
 
         if len(box) == 2:
-            # lower left corner given; get size from image or mask
+            # upper left corner given; get size from image or mask
             if isImageType(im):
                 size = im.size
             elif isImageType(mask):
@@ -1545,7 +1537,7 @@ class Image:
 
         self.load()
 
-        size=tuple(size)
+        size = tuple(size)
         if self.size == size:
             return self._new(self.im)
 
@@ -1616,7 +1608,7 @@ class Image:
         if self.mode in ("1", "P"):
             resample = NEAREST
 
-        return self._new(self.im.rotate(angle, resample))
+        return self._new(self.im.rotate(angle, resample, expand))
 
     def save(self, fp, format=None, **params):
         """
@@ -1635,7 +1627,7 @@ class Image:
         implement the ``seek``, ``tell``, and ``write``
         methods, and be opened in binary mode.
 
-        :param fp: File name or file object.
+        :param fp: A filename (string), pathlib.Path object or file object.
         :param format: Optional format override.  If omitted, the
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
@@ -1648,17 +1640,27 @@ class Image:
            may have been created, and may contain partial data.
         """
 
+        filename = ""
+        open_fp = False
         if isPath(fp):
             filename = fp
-        else:
-            if hasattr(fp, "name") and isPath(fp.name):
-                filename = fp.name
-            else:
-                filename = ""
+            open_fp = True
+        elif sys.version_info >= (3, 4):
+            from pathlib import Path
+            if isinstance(fp, Path):
+                filename = str(fp)
+                open_fp = True
+        elif hasattr(fp, "name") and isPath(fp.name):
+            # only set the name for metadata purposes
+            filename = fp.name
 
         # may mutate self!
         self.load()
 
+        save_all = False
+        if 'save_all' in params:
+            save_all = params['save_all']
+            del params['save_all']
         self.encoderinfo = params
         self.encoderconfig = ()
 
@@ -1667,32 +1669,25 @@ class Image:
         ext = os.path.splitext(filename)[1].lower()
 
         if not format:
-            try:
-                format = EXTENSION[ext]
-            except KeyError:
+            if ext not in EXTENSION:
                 init()
-                try:
-                    format = EXTENSION[ext]
-                except KeyError:
-                    raise KeyError(ext)  # unknown extension
+            format = EXTENSION[ext]
 
-        try:
-            save_handler = SAVE[format.upper()]
-        except KeyError:
+        if format.upper() not in SAVE:
             init()
-            save_handler = SAVE[format.upper()]  # unknown format
-
-        if isPath(fp):
-            fp = builtins.open(fp, "wb")
-            close = 1
+        if save_all:
+            save_handler = SAVE_ALL[format.upper()]
         else:
-            close = 0
+            save_handler = SAVE[format.upper()]
+
+        if open_fp:
+            fp = builtins.open(filename, "wb")
 
         try:
             save_handler(self, fp, filename)
         finally:
             # do what we can to clean up
-            if close:
+            if open_fp:
                 fp.close()
 
     def seek(self, frame):
@@ -1809,7 +1804,7 @@ class Image:
         self.readonly = 0
         self.pyaccess = None
 
-    # FIXME: the different tranform methods need further explanation
+    # FIXME: the different transform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
     def transform(self, size, method, data=None, resample=NEAREST, fill=1):
         """
@@ -1934,6 +1929,20 @@ class Image:
         im = self.im.effect_spread(distance)
         return self._new(im)
 
+    def toqimage(self):
+        """Returns a QImage copy of this image"""
+        from PIL import ImageQt
+        if not ImageQt.qt_is_installed:
+            raise ImportError("Qt bindings are not installed")
+        return ImageQt.toqimage(self)
+
+    def toqpixmap(self):
+        """Returns a QPixmap copy of this image"""
+        from PIL import ImageQt
+        if not ImageQt.qt_is_installed:
+            raise ImportError("Qt bindings are not installed")
+        return ImageQt.toqpixmap(self)
+
 
 # --------------------------------------------------------------------
 # Lazy operations
@@ -1944,7 +1953,9 @@ class _ImageCrop(Image):
 
         Image.__init__(self)
 
-        x0, y0, x1, y1 = box
+        # Round to nearest integer, runs int(round(x)) when unpacking
+        x0, y0, x1, y1 = map(int, map(round, box))
+
         if x1 < x0:
             x1 = x0
         if y1 < y0:
@@ -1974,12 +1985,12 @@ class _ImageCrop(Image):
 # --------------------------------------------------------------------
 # Abstract handlers.
 
-class ImagePointHandler:
+class ImagePointHandler(object):
     # used as a mixin by point transforms (for use with im.point)
     pass
 
 
-class ImageTransformHandler:
+class ImageTransformHandler(object):
     # used as a mixin by geometry transforms (for use with im.transform)
     pass
 
@@ -2062,16 +2073,8 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
 
 def fromstring(*args, **kw):
-    """Deprecated alias to frombytes.
-
-    .. deprecated:: 2.0
-    """
-    warnings.warn(
-        'fromstring() is deprecated. Please call frombytes() instead.',
-        DeprecationWarning,
-        stacklevel=2
-    )
-    return frombytes(*args, **kw)
+    raise Exception("fromstring() has been removed. " +
+                    "Please call frombytes() instead.")
 
 
 def frombuffer(mode, size, data, decoder_name="raw", *args):
@@ -2088,7 +2091,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     **BytesIO** object, and use :py:func:`~PIL.Image.open` to load it.
 
     In the current version, the default parameters used for the "raw" decoder
-    differs from that used for :py:func:`~PIL.Image.fromstring`.  This is a
+    differs from that used for :py:func:`~PIL.Image.frombytes`.  This is a
     bug, and will probably be fixed in a future release.  The current release
     issues a warning if you do this; to disable the warning, you should provide
     the full set of parameters.  See below for details.
@@ -2115,13 +2118,12 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     if decoder_name == "raw":
         if args == ():
-            if warnings:
-                warnings.warn(
-                    "the frombuffer defaults may change in a future release; "
-                    "for portability, change the call to read:\n"
-                    "  frombuffer(mode, size, data, 'raw', mode, 0, 1)",
-                    RuntimeWarning, stacklevel=2
-                )
+            warnings.warn(
+                "the frombuffer defaults may change in a future release; "
+                "for portability, change the call to read:\n"
+                "  frombuffer(mode, size, data, 'raw', mode, 0, 1)",
+                RuntimeWarning, stacklevel=2
+            )
             args = mode, 0, -1  # may change to (mode, 0, 1) post-1.1.6
         if args[0] in _MAPMODES:
             im = new(mode, (1, 1))
@@ -2183,6 +2185,22 @@ def fromarray(obj, mode=None):
 
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
+
+def fromqimage(im):
+    """Creates an image instance from a QImage image"""
+    from PIL import ImageQt
+    if not ImageQt.qt_is_installed:
+        raise ImportError("Qt bindings are not installed")
+    return ImageQt.fromqimage(im)
+
+
+def fromqpixmap(im):
+    """Creates an image instance from a QPixmap image"""
+    from PIL import ImageQt
+    if not ImageQt.qt_is_installed:
+        raise ImportError("Qt bindings are not installed")
+    return ImageQt.fromqpixmap(im)
+
 _fromarray_typemap = {
     # (shape, typestr) => mode, rawmode
     # first two members of shape are set to one
@@ -2230,9 +2248,10 @@ def open(fp, mode="r"):
     :py:meth:`~PIL.Image.Image.load` method).  See
     :py:func:`~PIL.Image.new`.
 
-    :param file: A filename (string) or a file object.  The file object
-       must implement :py:meth:`~file.read`, :py:meth:`~file.seek`, and
-       :py:meth:`~file.tell` methods, and be opened in binary mode.
+    :param fp: A filename (string), pathlib.Path object or a file object.
+       The file object must implement :py:meth:`~file.read`,
+       :py:meth:`~file.seek`, and :py:meth:`~file.tell` methods,
+       and be opened in binary mode.
     :param mode: The mode.  If given, this argument must be "r".
     :returns: An :py:class:`~PIL.Image.Image` object.
     :exception IOError: If the file cannot be found, or the image cannot be
@@ -2242,31 +2261,26 @@ def open(fp, mode="r"):
     if mode != "r":
         raise ValueError("bad mode %r" % mode)
 
+    filename = ""
     if isPath(fp):
         filename = fp
-        fp = builtins.open(fp, "rb")
-    else:
-        filename = ""
+    elif sys.version_info >= (3, 4):
+        from pathlib import Path
+        if isinstance(fp, Path):
+            filename = str(fp.resolve())
+    if filename:
+        fp = builtins.open(filename, "rb")
+
+    try:
+        fp.seek(0)
+    except (AttributeError, io.UnsupportedOperation):
+        fp = io.BytesIO(fp.read())
 
     prefix = fp.read(16)
 
     preinit()
 
-    for i in ID:
-        try:
-            factory, accept = OPEN[i]
-            if not accept or accept(prefix):
-                fp.seek(0)
-                im = factory(fp, filename)
-                _decompression_bomb_check(im.size)
-                return im
-        except (SyntaxError, IndexError, TypeError):
-            # import traceback
-            # traceback.print_exc()
-            pass
-
-    if init():
-
+    def _open_core(fp, filename, prefix):
         for i in ID:
             try:
                 factory, accept = OPEN[i]
@@ -2275,24 +2289,35 @@ def open(fp, mode="r"):
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
-            except (SyntaxError, IndexError, TypeError):
-                # import traceback
-                # traceback.print_exc()
-                pass
+            except (SyntaxError, IndexError, TypeError, struct.error):
+                # Leave disabled by default, spams the logs with image
+                # opening failures that are entirely expected.
+                # logger.debug("", exc_info=True)
+                continue
+        return None
+
+    im = _open_core(fp, filename, prefix)
+
+    if im is None:
+        if init():
+            im = _open_core(fp, filename, prefix)
+
+    if im:
+        return im
 
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
 
-
 #
 # Image processing.
+
 
 def alpha_composite(im1, im2):
     """
     Alpha composite im2 over im1.
 
-    :param im1: The first image.
-    :param im2: The second image.  Must have the same mode and size as
+    :param im1: The first image. Must have mode RGBA.
+    :param im2: The second image.  Must have mode RGBA, and the same size as
        the first image.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
@@ -2422,6 +2447,18 @@ def register_save(id, driver):
     :param driver: A function to save images in this format.
     """
     SAVE[id.upper()] = driver
+
+
+def register_save_all(id, driver):
+    """
+    Registers an image function to save all the frames
+    of a multiframe format.  This function should not be
+    used in application code.
+
+    :param id: An image format identifier.
+    :param driver: A function to save images in this format.
+    """
+    SAVE_ALL[id.upper()] = driver
 
 
 def register_extension(id, extension):

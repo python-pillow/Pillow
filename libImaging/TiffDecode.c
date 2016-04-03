@@ -169,7 +169,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 	char *filename = "tempfile.tif";
 	char *mode = "r";
 	TIFF *tiff;
-	int size;
+	tsize_t size;
 
 
 	/* buffer is the encoded file, bytes is the length of the encoded file */
@@ -222,8 +222,8 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 
     if (clientstate->ifd){
 		int rv;
-		unsigned int ifdoffset = clientstate->ifd;
-		TRACE(("reading tiff ifd %d\n", ifdoffset));
+		uint32 ifdoffset = clientstate->ifd;
+		TRACE(("reading tiff ifd %u\n", ifdoffset));
 		rv = TIFFSetSubDirectory(tiff, ifdoffset);
 		if (!rv){
 			TRACE(("error in TIFFSetSubDirectory"));
@@ -245,7 +245,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 	// back in. Can't use read encoded stripe.
 
 	// This thing pretty much requires that I have the whole image in one shot.
-	// Prehaps a stub version would work better???
+	// Perhaps a stub version would work better???
 	while(state->y < state->ysize){
 		if (TIFFReadScanline(tiff, (tdata_t)state->buffer, (uint32)state->y, 0) == -1) {
 			TRACE(("Decode Error, row %d\n", state->y));

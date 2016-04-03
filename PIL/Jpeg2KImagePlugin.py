@@ -12,13 +12,12 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-__version__ = "0.1"
-
 from PIL import Image, ImageFile
 import struct
 import os
 import io
+
+__version__ = "0.1"
 
 
 def _parse_codestream(fp):
@@ -85,7 +84,8 @@ def _parse_jp2_header(fp):
     size = None
     mode = None
     bpc = None
-
+    nc = None
+    
     hio = io.BytesIO(header)
     while True:
         lbox, tbox = struct.unpack('>I4s', hio.read(8))
@@ -142,6 +142,9 @@ def _parse_jp2_header(fp):
                         mode = 'RGBA'
                     break
 
+    if size is None or mode is None:
+        raise SyntaxError("Malformed jp2 header")
+    
     return (size, mode)
 
 ##
@@ -208,8 +211,8 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
 
 def _accept(prefix):
-    return (prefix[:4] == b'\xff\x4f\xff\x51'
-            or prefix[:12] == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a')
+    return (prefix[:4] == b'\xff\x4f\xff\x51' or
+            prefix[:12] == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a')
 
 
 # ------------------------------------------------------------
@@ -263,15 +266,15 @@ def _save(im, fp, filename):
 # ------------------------------------------------------------
 # Registry stuff
 
-Image.register_open('JPEG2000', Jpeg2KImageFile, _accept)
-Image.register_save('JPEG2000', _save)
+Image.register_open(Jpeg2KImageFile.format, Jpeg2KImageFile, _accept)
+Image.register_save(Jpeg2KImageFile.format, _save)
 
-Image.register_extension('JPEG2000', '.jp2')
-Image.register_extension('JPEG2000', '.j2k')
-Image.register_extension('JPEG2000', '.jpc')
-Image.register_extension('JPEG2000', '.jpf')
-Image.register_extension('JPEG2000', '.jpx')
-Image.register_extension('JPEG2000', '.j2c')
+Image.register_extension(Jpeg2KImageFile.format, '.jp2')
+Image.register_extension(Jpeg2KImageFile.format, '.j2k')
+Image.register_extension(Jpeg2KImageFile.format, '.jpc')
+Image.register_extension(Jpeg2KImageFile.format, '.jpf')
+Image.register_extension(Jpeg2KImageFile.format, '.jpx')
+Image.register_extension(Jpeg2KImageFile.format, '.j2c')
 
-Image.register_mime('JPEG2000', 'image/jp2')
-Image.register_mime('JPEG2000', 'image/jpx')
+Image.register_mime(Jpeg2KImageFile.format, 'image/jp2')
+Image.register_mime(Jpeg2KImageFile.format, 'image/jpx')

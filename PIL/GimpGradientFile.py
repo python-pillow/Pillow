@@ -58,7 +58,7 @@ def sphere_decreasing(middle, pos):
 SEGMENTS = [linear, curved, sine, sphere_increasing, sphere_decreasing]
 
 
-class GradientFile:
+class GradientFile(object):
 
     gradient = None
 

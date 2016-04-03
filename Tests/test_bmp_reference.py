@@ -58,10 +58,10 @@ class TestBmpReference(PillowTestCase):
                     }
 
         def get_compare(f):
-            (head, name) = os.path.split(f)
+            name = os.path.split(f)[1]
             if name in file_map:
                 return os.path.join(base, 'html', file_map[name])
-            (name, ext) = os.path.splitext(name)
+            name = os.path.splitext(name)[0]
             return os.path.join(base, 'html', "%s.png" % name)
 
         for f in self.get_files('g'):

@@ -109,7 +109,7 @@ apply(PyObject *self, PyObject* args)
             unsigned char b7 = nrow[col_idx]&1;
             unsigned char b8 = nrow[cip]&1;
 
-            int lut_idx = (b0 
+            int lut_idx = (b0
                            |(b1 << 1)
                            |(b2 << 2)
                            |(b3 << 3)
@@ -199,7 +199,7 @@ match(PyObject *self, PyObject* args)
             unsigned char b7 = nrow[col_idx]&1;
             unsigned char b8 = nrow[cip]&1;
 
-            int lut_idx = (b0 
+            int lut_idx = (b0
                            |(b1 << 1)
                            |(b2 << 2)
                            |(b3 << 3)

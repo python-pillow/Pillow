@@ -1,5 +1,7 @@
 # brute-force search for access descriptor hash table
 
+from __future__ import print_function
+
 modes = [
     "1",
     "L", "LA",

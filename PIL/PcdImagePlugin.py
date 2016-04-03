@@ -15,10 +15,9 @@
 #
 
 
-__version__ = "0.1"
-
-
 from PIL import Image, ImageFile, _binary
+
+__version__ = "0.1"
 
 i8 = _binary.i8
 
@@ -52,28 +51,9 @@ class PcdImageFile(ImageFile.ImageFile):
         self.size = 768, 512  # FIXME: not correct for rotated images!
         self.tile = [("pcd", (0, 0)+self.size, 96*2048, None)]
 
-    def draft(self, mode, size):
-
-        if len(self.tile) != 1:
-            return
-
-        d, e, o, a = self.tile[0]
-
-        if size:
-            scale = max(self.size[0] / size[0], self.size[1] / size[1])
-            for s, o in [(4, 0*2048), (2, 0*2048), (1, 96*2048)]:
-                if scale >= s:
-                    break
-            # e = e[0], e[1], (e[2]-e[0]+s-1)/s+e[0], (e[3]-e[1]+s-1)/s+e[1]
-            # self.size = ((self.size[0]+s-1)/s, (self.size[1]+s-1)/s)
-
-        self.tile = [(d, e, o, a)]
-
-        return self
-
 #
 # registry
 
-Image.register_open("PCD", PcdImageFile)
+Image.register_open(PcdImageFile.format, PcdImageFile)
 
-Image.register_extension("PCD", ".pcd")
+Image.register_extension(PcdImageFile.format, ".pcd")

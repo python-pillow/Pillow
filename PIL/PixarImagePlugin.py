@@ -19,15 +19,14 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.1"
-
 from PIL import Image, ImageFile, _binary
+
+__version__ = "0.1"
 
 #
 # helpers
 
 i16 = _binary.i16le
-i32 = _binary.i32le
 
 
 ##
@@ -63,7 +62,7 @@ class PixarImageFile(ImageFile.ImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open("PIXAR", PixarImageFile)
+Image.register_open(PixarImageFile.format, PixarImageFile)
 
 #
 # FIXME: what's the standard extension?

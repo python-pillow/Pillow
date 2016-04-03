@@ -116,11 +116,16 @@ _decode(ImagingDecoderObject* decoder, PyObject* args)
 {
     UINT8* buffer;
     int bufsize, status;
+    ImagingSectionCookie cookie;
 
     if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH, &buffer, &bufsize))
         return NULL;
 
+    ImagingSectionEnter(&cookie);
+
     status = decoder->decode(decoder->im, &decoder->state, buffer, bufsize);
+
+    ImagingSectionLeave(&cookie);
 
     return Py_BuildValue("ii", status, decoder->state.errcode);
 }
@@ -749,7 +754,7 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
     ImagingDecoderObject* decoder;
 
     char* mode;
-    char* rawmode; /* what we wan't from the decoder */
+    char* rawmode; /* what we want from the decoder */
     char* jpegmode; /* what's in the file */
     int scale = 1;
     int draft = 0;

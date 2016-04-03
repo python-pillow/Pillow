@@ -47,7 +47,7 @@ ImagingPcdDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    out[0] = ptr[x];
 	    out[1] = ptr[(x+4*state->xsize)/2];
 	    out[2] = ptr[(x+5*state->xsize)/2];
-	    out += 4;
+	    out += 3;
 	}
 
 	state->shuffle((UINT8*) im->image[state->y],
@@ -62,7 +62,7 @@ ImagingPcdDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    out[0] = ptr[x+state->xsize];
 	    out[1] = ptr[(x+4*state->xsize)/2];
 	    out[2] = ptr[(x+5*state->xsize)/2];
-	    out += 4;
+	    out += 3;
 	}
 
 	state->shuffle((UINT8*) im->image[state->y],

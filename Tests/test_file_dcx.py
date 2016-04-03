@@ -20,6 +20,11 @@ class TestFileDcx(PillowTestCase):
         orig = hopper()
         self.assert_image_equal(im, orig)
 
+    def test_invalid_file(self):
+        with open("Tests/images/flower.jpg", "rb") as fp:
+            self.assertRaises(SyntaxError,
+                              lambda: DcxImagePlugin.DcxImageFile(fp))
+
     def test_tell(self):
         # Arrange
         im = Image.open(TEST_FILE)
@@ -29,6 +34,23 @@ class TestFileDcx(PillowTestCase):
 
         # Assert
         self.assertEqual(frame, 0)
+
+    def test_n_frames(self):
+        im = Image.open(TEST_FILE)
+        self.assertEqual(im.n_frames, 1)
+        self.assertFalse(im.is_animated)
+
+    def test_eoferror(self):
+        im = Image.open(TEST_FILE)
+
+        n_frames = im.n_frames
+        while True:
+            n_frames -= 1
+            try:
+                im.seek(n_frames)
+                break
+            except EOFError:
+                self.assertTrue(im.tell() < n_frames)
 
     def test_seek_too_far(self):
         # Arrange

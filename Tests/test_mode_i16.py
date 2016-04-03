@@ -64,15 +64,15 @@ class TestModeI16(PillowTestCase):
             self.assertEqual(imIn.getpixel((0, 0)), 2)
 
             if mode == "L":
-                max = 255
+                maximum = 255
             else:
-                max = 32767
+                maximum = 32767
 
             imIn = Image.new(mode, (1, 1), 256)
-            self.assertEqual(imIn.getpixel((0, 0)), min(256, max))
+            self.assertEqual(imIn.getpixel((0, 0)), min(256, maximum))
 
             imIn.putpixel((0, 0), 512)
-            self.assertEqual(imIn.getpixel((0, 0)), min(512, max))
+            self.assertEqual(imIn.getpixel((0, 0)), min(512, maximum))
 
         basic("L")
 

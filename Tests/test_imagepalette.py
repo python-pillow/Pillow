@@ -17,11 +17,11 @@ class TestImagePalette(PillowTestCase):
 
         palette = ImagePalette()
 
-        map = {}
+        test_map = {}
         for i in range(256):
-            map[palette.getcolor((i, i, i))] = i
+            test_map[palette.getcolor((i, i, i))] = i
 
-        self.assertEqual(len(map), 256)
+        self.assertEqual(len(test_map), 256)
         self.assertRaises(ValueError, lambda: palette.getcolor((1, 2, 3)))
 
     def test_file(self):
@@ -90,34 +90,13 @@ class TestImagePalette(PillowTestCase):
         self.assertEqual(lut[191], 60)
         self.assertEqual(lut[255], 255)
 
-    def test_private_make_linear_lut_warning(self):
-        # Arrange
-        from PIL.ImagePalette import _make_linear_lut
-        black = 0
-        white = 255
-
-        # Act / Assert
-        self.assert_warning(
-            DeprecationWarning,
-            lambda: _make_linear_lut(black, white))
-
-    def test_private_make_gamma_lut_warning(self):
-        # Arrange
-        from PIL.ImagePalette import _make_gamma_lut
-        exp = 5
-
-        # Act / Assert
-        self.assert_warning(
-            DeprecationWarning,
-            lambda: _make_gamma_lut(exp))
-
     def test_rawmode_valueerrors(self):
         # Arrange
         from PIL.ImagePalette import raw
         palette = raw("RGB", list(range(256))*3)
 
         # Act / Assert
-        self.assertRaises(ValueError, lambda: palette.tobytes())
+        self.assertRaises(ValueError, palette.tobytes)
         self.assertRaises(ValueError, lambda: palette.getcolor((1, 2, 3)))
         f = self.tempfile("temp.lut")
         self.assertRaises(ValueError, lambda: palette.save(f))

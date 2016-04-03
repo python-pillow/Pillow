@@ -9,7 +9,6 @@ class TestImageShow(PillowTestCase):
     def test_sanity(self):
         dir(Image)
         dir(ImageShow)
-        pass
 
 
 if __name__ == '__main__':

@@ -20,7 +20,7 @@
 from PIL import Image
 from PIL._util import isStringType
 import operator
-from functools import reduce
+import functools
 
 
 #
@@ -213,7 +213,7 @@ def equalize(image, mask=None):
         if len(histo) <= 1:
             lut.extend(list(range(256)))
         else:
-            step = (reduce(operator.add, histo) - histo[-1]) // 255
+            step = (functools.reduce(operator.add, histo) - histo[-1]) // 255
             if not step:
                 lut.extend(list(range(256)))
             else:
@@ -233,7 +233,6 @@ def expand(image, border=0, fill=0):
     :param fill: Pixel fill value (a color value).  Default is 0 (black).
     :return: An image.
     """
-    "Add border to image"
     left, top, right, bottom = _border(border)
     width = left + image.size[0] + right
     height = top + image.size[1] + bottom

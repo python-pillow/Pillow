@@ -20,11 +20,12 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.5"
-
 import re
 import io
+import sys
 from PIL import Image, ImageFile, _binary
+
+__version__ = "0.5"
 
 #
 # --------------------------------------------------------------------
@@ -36,7 +37,6 @@ split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
 
 gs_windows_binary = None
-import sys
 if sys.platform.startswith('win'):
     import shutil
     if hasattr(shutil, 'which'):
@@ -123,8 +123,8 @@ def Ghostscript(tile, size, fp, scale=1):
                "-q",                         # quiet mode
                "-g%dx%d" % size,             # set output geometry (pixels)
                "-r%fx%f" % res,              # set input DPI (dots per inch)
-               "-dNOPAUSE -dSAFER",          # don't pause between pages,
-                                             # safe mode
+               "-dNOPAUSE",                  # don't pause between pages,
+               "-dSAFER",                    # safe mode
                "-sDEVICE=ppmraw",            # ppm driver
                "-sOutputFile=%s" % outfile,  # output file
                "-c", "%d %d translate" % (-bbox[0], -bbox[1]),
@@ -151,13 +151,13 @@ def Ghostscript(tile, size, fp, scale=1):
             os.unlink(outfile)
             if infile_temp:
                 os.unlink(infile_temp)
-        except:
+        except OSError:
             pass
 
     return im
 
 
-class PSFile:
+class PSFile(object):
     """
     Wrapper for bytesio object that treats either CR or LF as end of line.
     """
@@ -187,7 +187,8 @@ class PSFile:
 
 
 def _accept(prefix):
-    return prefix[:4] == b"%!PS" or i32(prefix) == 0xC6D3D0C5
+    return prefix[:4] == b"%!PS" or \
+           (len(prefix) >= 4 and i32(prefix) == 0xC6D3D0C5)
 
 ##
 # Image plugin for Encapsulated Postscript.  This plugin supports only
@@ -248,7 +249,7 @@ class EpsImageFile(ImageFile.ImageFile):
                         # Note: The DSC spec says that BoundingBox
                         # fields should be integers, but some drivers
                         # put floating point values there anyway.
-                        box = [int(float(s)) for s in v.split()]
+                        box = [int(float(i)) for i in v.split()]
                         self.size = box[2] - box[0], box[3] - box[1]
                         self.tile = [("eps", (0, 0) + self.size, offset,
                                       (length, box))]
@@ -275,26 +276,26 @@ class EpsImageFile(ImageFile.ImageFile):
 
             s = fp.readline().strip('\r\n')
 
-            if s[0] != "%":
+            if s[:1] != "%":
                 break
 
         #
         # Scan for an "ImageData" descriptor
 
-        while s[0] == "%":
+        while s[:1] == "%":
 
             if len(s) > 255:
                 raise SyntaxError("not an EPS file")
 
             if s[:11] == "%ImageData:":
                 # Encoded bitmapped image.
-                [x, y, bi, mo, z3, z4, en, id] = s[11:].split(None, 7)
+                x, y, bi, mo = s[11:].split(None, 7)[:4]
 
                 if int(bi) != 8:
                     break
                 try:
                     self.mode = self.mode_map[int(mo)]
-                except:
+                except ValueError:
                     break
 
                 self.size = int(x), int(y)
@@ -365,7 +366,7 @@ def _save(im, fp, filename, eps=1):
     else:
         raise ValueError("image mode is not supported")
 
-    class NoCloseStream:
+    class NoCloseStream(object):
         def __init__(self, fp):
             self.fp = fp
 
@@ -376,9 +377,10 @@ def _save(im, fp, filename, eps=1):
             pass
 
     base_fp = fp
-    fp = NoCloseStream(fp)
-    if sys.version_info[0] > 2:
-        fp = io.TextIOWrapper(fp, encoding='latin-1')
+    if fp != sys.stdout:
+        fp = NoCloseStream(fp)
+        if sys.version_info[0] > 2:
+            fp = io.TextIOWrapper(fp, encoding='latin-1')
 
     if eps:
         #
@@ -403,13 +405,15 @@ def _save(im, fp, filename, eps=1):
     fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
     fp.write("{ currentfile buf readhexstring pop } bind\n")
     fp.write(operator[2] + "\n")
-    fp.flush()
+    if hasattr(fp, "flush"):
+        fp.flush()
 
     ImageFile._save(im, base_fp, [("eps", (0, 0)+im.size, 0, None)])
 
     fp.write("\n%%%%EndBinary\n")
     fp.write("grestore end\n")
-    fp.flush()
+    if hasattr(fp, "flush"):
+        fp.flush()
 
 #
 # --------------------------------------------------------------------

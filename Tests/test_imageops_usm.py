@@ -24,13 +24,13 @@ class TestImageOpsUsm(PillowTestCase):
 
     def test_filter_api(self):
 
-        filter = ImageFilter.GaussianBlur(2.0)
-        i = im.filter(filter)
+        test_filter = ImageFilter.GaussianBlur(2.0)
+        i = im.filter(test_filter)
         self.assertEqual(i.mode, "RGB")
         self.assertEqual(i.size, (128, 128))
 
-        filter = ImageFilter.UnsharpMask(2.0, 125, 8)
-        i = im.filter(filter)
+        test_filter = ImageFilter.UnsharpMask(2.0, 125, 8)
+        i = im.filter(test_filter)
         self.assertEqual(i.mode, "RGB")
         self.assertEqual(i.size, (128, 128))
 
@@ -75,7 +75,9 @@ class TestImageOpsUsm(PillowTestCase):
                         (4, 3, 2), (4, 2, 2)]:
             self.assertGreaterEqual(i.im.getpixel((x, y))[c], 250)
         # Fuzzy match.
-        gp = lambda x, y: i.im.getpixel((x, y))
+
+        def gp(x, y):
+            return i.im.getpixel((x, y))
         self.assertTrue(236 <= gp(7, 4)[0] <= 239)
         self.assertTrue(236 <= gp(7, 5)[2] <= 239)
         self.assertTrue(236 <= gp(7, 6)[2] <= 239)

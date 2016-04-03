@@ -42,6 +42,11 @@ class TestImageSpider(PillowTestCase):
         # Assert
         self.assertEqual(index, 0)
 
+    def test_n_frames(self):
+        im = Image.open(TEST_FILE)
+        self.assertEqual(im.n_frames, 1)
+        self.assertFalse(im.is_animated)
+
     def test_loadImageSeries(self):
         # Arrange
         not_spider_file = "Tests/images/hopper.ppm"
@@ -74,6 +79,11 @@ class TestImageSpider(PillowTestCase):
 
         # Assert
         self.assertEqual(ret, 0)
+
+    def test_invalid_file(self):
+        invalid_file = "Tests/images/invalid.spider"
+
+        self.assertRaises(IOError, lambda: Image.open(invalid_file))
 
 
 if __name__ == '__main__':
