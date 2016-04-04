@@ -108,18 +108,16 @@ class ChunkStream(object):
     def read(self):
         "Fetch a new chunk. Returns header information."
         cid = None
-        try:
-            if self.queue:
-                cid, pos, length = self.queue[-1]
-                del self.queue[-1]
-                self.fp.seek(pos)
-            else:
-                s = self.fp.read(8)
-                cid = s[4:]
-                pos = self.fp.tell()
-                length = i32(s)
-        except struct.error:
-            SyntaxError("truncated PNG file (chunk %s)" % repr(cid))
+
+        if self.queue:
+            cid, pos, length = self.queue[-1]
+            del self.queue[-1]
+            self.fp.seek(pos)
+        else:
+            s = self.fp.read(8)
+            cid = s[4:]
+            pos = self.fp.tell()
+            length = i32(s)
             
         if not is_cid(cid):
             raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
@@ -165,7 +163,11 @@ class ChunkStream(object):
         cids = []
 
         while True:
-            cid, pos, length = self.read()
+            try:
+                cid, pos, length = self.read()
+            except struct.error:
+                raise IOError("truncated PNG file")
+
             if cid == endchunk:
                 break
             self.crc(cid, ImageFile._safe_read(self.fp, length))
