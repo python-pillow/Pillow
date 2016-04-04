@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
+from PIL import ImageSequence
 from PIL import SpiderImagePlugin
 
 TEST_FILE = "Tests/images/hopper.spider"
@@ -84,6 +85,17 @@ class TestImageSpider(PillowTestCase):
         invalid_file = "Tests/images/invalid.spider"
 
         self.assertRaises(IOError, lambda: Image.open(invalid_file))
+
+    def test_nonstack_file(self):
+        im = Image.open(TEST_FILE)
+
+        self.assertRaises(EOFError, lambda: im.seek(0))
+
+    def test_nonstack_dos(self):
+        im = Image.open(TEST_FILE)
+        for i, frame in enumerate(ImageSequence.Iterator(im)):
+            if i > 1:
+                self.fail("Non-stack DOS file test failed")
 
 
 if __name__ == '__main__':
