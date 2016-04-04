@@ -253,6 +253,22 @@ class TestFilePng(PillowTestCase):
         im.load()
         self.assertRaises(RuntimeError, im.verify)
 
+    def test_verify_struct_error(self):
+        # Check open/load/verify exception (#1755)
+
+        # offsets to test, -10: breaks in i32() in read. (IOError)
+        #                  -13: breaks in crc, txt chunk.
+        #                  -14: malformed chunk
+
+        for offset in (-10, -13, -14):
+            with open(TEST_PNG_FILE,'rb') as f:
+                test_file = f.read()[:offset]
+
+            im = Image.open(BytesIO(test_file))
+            self.assertTrue(im.fp is not None)
+            self.assertRaises((IOError, SyntaxError), im.verify)
+
+
     def test_roundtrip_dpi(self):
         # Check dpi roundtripping
 
