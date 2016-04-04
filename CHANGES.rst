@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- SpiderImagePlugin: raise an error when seeking in a non-stack file #1794
+  [radarhere, jmichalon]
+
 - Added Support for 2/4 bpp Tiff Grayscale Images #1789
   [zwhfly]
 
