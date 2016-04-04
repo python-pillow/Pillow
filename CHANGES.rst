@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Catch struct.errors when verifying png files #1805
+  [wiredfool]
+
 - SpiderImagePlugin: raise an error when seeking in a non-stack file #1794
   [radarhere, jmichalon]
 
