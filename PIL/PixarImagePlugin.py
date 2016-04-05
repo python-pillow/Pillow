@@ -64,5 +64,4 @@ class PixarImageFile(ImageFile.ImageFile):
 
 Image.register_open(PixarImageFile.format, PixarImageFile)
 
-#
-# FIXME: what's the standard extension?
+Image.register_extension(PixarImageFile.format, ".pxr")
