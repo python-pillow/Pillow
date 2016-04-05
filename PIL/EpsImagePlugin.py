@@ -335,7 +335,7 @@ class EpsImageFile(ImageFile.ImageFile):
         if not self.tile:
             return
         # Override the size of the image if specified
-        if not size is None:
+        if size is not None:
             self.size = size
         self.im = Ghostscript(self.tile, self.size, self.fp, scale)
         self.mode = self.im.mode
