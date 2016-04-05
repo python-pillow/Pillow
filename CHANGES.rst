@@ -46,7 +46,7 @@ Changelog (Pillow)
 - Fixed documented name of JPEG property #1783
   [radarhere]
 
-- Fixed UnboundLocalErrorwhen loading a corrupt jpeg2k file #1780
+- Fixed UnboundLocalError when loading a corrupt jpeg2k file #1780
   [wiredfool]
 
 - Fixed integer overflow in path.c #1773
