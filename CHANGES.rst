@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Add PixarImagePlugin file extension #1809
+  [radarhere]
+
 - Catch struct.errors when verifying png files #1805
   [wiredfool]
 
