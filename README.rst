@@ -65,7 +65,7 @@ More Information
   - `Installation <https://pillow.readthedocs.org/en/latest/installation.html>`_
   - `Handbook <https://pillow.readthedocs.org/en/latest/handbook/index.html>`_
 
-- `Contribute <https://github.com/python-pillow/Pillow/blob/master/CONTRIBUTING.md>`_
+- `Contribute <https://github.com/python-pillow/Pillow/blob/master/.github/CONTRIBUTING.md>`_
 
   - `Issues <https://github.com/python-pillow/Pillow/issues>`_
   - `Pull requests <https://github.com/python-pillow/Pillow/pulls>`_
