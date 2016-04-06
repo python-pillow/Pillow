@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Fix for DIB/BMP images #1813
+  [wiredfool]
+
 - Add PixarImagePlugin file extension #1809
   [radarhere]
 
