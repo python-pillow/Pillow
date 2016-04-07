@@ -5,7 +5,8 @@ import shutil
 import sys
 import os
 
-from config import *
+from config import compilers, pythons, compiler_fromEnv, pyversion_fromEnv
+from config import VIRT_BASE, X64_EXT
 
 
 def setup_vms():
