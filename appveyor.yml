@@ -25,6 +25,8 @@ build_script:
 - cd c:\pillow
 - dir dist\*.egg
 - '%PYTHON%\python.exe selftest.py --installed'
+on_success:
+- ps: Get-ChildItem .\dist\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 test_script:
 - cd c:\pillow
 - '%PYTHON%\Scripts\pip.exe install nose'
