@@ -23,8 +23,7 @@ def setup_vms():
     return "\n".join(ret)
 
 
-def run_script(params):
-    (version, script) = params
+def run_script(version, script):
     try:
         print("Running %s" % version)
         filename = 'build_pillow_%s.cmd' % version
@@ -99,7 +98,7 @@ def clean():
     except:
         # could already be removed
         pass
-    run_script(('virtualenvs', setup_vms()))
+    run_script('virtualenvs', setup_vms())
 
 
 def main(op):
@@ -120,22 +119,21 @@ def main(op):
                                                         64)]),
                                    footer()])))
 
-    results = map(run_script, scripts)
+    results = [run_script(pv, cv) for pv, cv in scripts]
 
     for (version, status, trace, err) in results:
         print("Compiled %s: %s" % (version, status and 'ERR' or 'OK'))
 
 
 def run_one(op):
-
     compiler = compiler_fromEnv()
     py_version = pyversion_fromEnv()
 
-    run_script((py_version,
+    run_script(py_version,
                 "\n".join([header(op),
                            build_one(py_version, compiler),
                            footer()])
-                ))
+                )
 
 
 if __name__ == '__main__':
@@ -146,7 +144,6 @@ if __name__ == '__main__':
     op = 'install'
     if '--dist' in args:
         op = "bdist_wininst --user-access-control=auto"
-
     if 'PYTHON' in os.environ:
         run_one(op)
     else:
