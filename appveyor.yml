@@ -19,6 +19,8 @@ install:
 - c:\python34\python.exe c:\pillow\winbuild\build_dep.py
 - c:\pillow\winbuild\build_deps.cmd
 build_script:
+- '%PYTHON%\Scripts\pip.exe install wheel'
+- '%PYTHON%\python.exe c:\pillow\winbuild\build.py --dist'
 - '%PYTHON%\python.exe c:\pillow\winbuild\build.py'
 - cd c:\pillow
 - dir dist\*.egg
