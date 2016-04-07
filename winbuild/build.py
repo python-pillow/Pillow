@@ -136,15 +136,20 @@ def run_one(op):
                 )
 
 
+def run(op):
+    if 'PYTHON' in os.environ:
+        run_one(op)
+    else:
+        main(op)
+
+
 if __name__ == '__main__':
     args = sys.argv[1:]
     if '--clean' in args:
         clean()
 
-    op = 'install'
     if '--dist' in args:
-        op = "bdist_wininst --user-access-control=auto"
-    if 'PYTHON' in os.environ:
-        run_one(op)
+        run('bdist_wininst --user-access-control=auto')
+        run('bdist_wheel')
     else:
-        main(op)
+        run('install')
