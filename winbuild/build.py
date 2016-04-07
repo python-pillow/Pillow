@@ -3,7 +3,6 @@
 import subprocess
 import shutil
 import sys
-import getopt
 import os
 
 from config import *
@@ -139,14 +138,12 @@ def run_one(op):
 
 
 if __name__ == '__main__':
-    opts, args = getopt.getopt(sys.argv[1:], '', ['clean', 'dist'])
-    opts = dict(opts)
-
-    if '--clean' in opts:
+    args = sys.argv[1:]
+    if '--clean' in args:
         clean()
 
     op = 'install'
-    if '--dist' in opts:
+    if '--dist' in args:
         op = "bdist_wininst --user-access-control=auto"
 
     if 'PYTHON' in os.environ:
