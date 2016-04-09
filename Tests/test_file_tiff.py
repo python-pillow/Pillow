@@ -3,7 +3,7 @@ import logging
 import struct
 
 from helper import unittest, PillowTestCase, hopper, py3
-
+import numpy as np
 from PIL import Image, TiffImagePlugin
 
 logger = logging.getLogger(__name__)
@@ -449,6 +449,28 @@ class TestFileTiff(PillowTestCase):
         # Act / Assert
         # Should not raise UnicodeDecodeError or anything else
         im.save(outfile)
+
+    def test_save_greyscale_uint16_tiff(self):
+        '''
+        Save uint16 data as a greyscale uint16 TIFF.
+        '''
+        data = np.full([200, 200], 65535, np.uint16)
+        im = Image.fromarray(data)
+        outfile = self.tempfile("temp.tif")
+        im.save(outfile)
+
+    def test_roundtrip_greyscale_uint16_tiff(self):
+        '''
+        Confirm that all data saved to a uint16 TIFF is preserved.
+        Note: This will fail if test_save_greyscale_uint16_tiff() fails.
+        '''
+        data = np.full([200, 200], 65535, np.uint16)
+        im = Image.fromarray(data)
+        outfile = self.tempfile("temp.tif")
+        im.save(outfile)
+
+        out_im = Image.open(outfile)
+        self.assert_image_equal(im, out_im)
 
 if __name__ == '__main__':
     unittest.main()
