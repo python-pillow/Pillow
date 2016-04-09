@@ -38,7 +38,7 @@ deploy:
   provider: S3
   access_key_id: AKIAIRAXC62ZNTVQJMOQ 
   secret_access_key:
-    secure: KpFJ5pGNJBIfy0yNX0rC/K661aaf789Ey+f7sZ7NN50SdK8Iz5WoZSke7PpGdAGe
+    secure: Hwb6klTqtBeMgxAjRoDltiiqpuH8xbwD4UooDzBSiCWXjuFj1lyl4kHgHwTCCGqi
   bucket: pillow-nightly
   folder: win/$(APPVEYOR_BUILD_NUMBER)/
   artifact: /.*egg/
