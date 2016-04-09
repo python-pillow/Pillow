@@ -24,7 +24,6 @@ install:
   - "travis_retry pip install cffi"
   - "travis_retry pip install nose"
   - "travis_retry pip install check-manifest"
-  - "travis_retry pip install Sphinx"
     # Pyroma tests sometimes hang on PyPy and Python 2.6; skip for those
   - if [ $TRAVIS_PYTHON_VERSION != "pypy" && $TRAVIS_PYTHON_VERSION != "2.6" ]; then travis_retry pip install pyroma; fi
 
@@ -33,6 +32,9 @@ install:
   # Coverage 4.0 doesn't support Python 3.2
   - if [ "$TRAVIS_PYTHON_VERSION" == "3.2" ]; then travis_retry pip install coverage==3.7.1; fi
   - if [ "$TRAVIS_PYTHON_VERSION" != "3.2" ]; then travis_retry pip install coverage; fi
+  
+  # docs only on python 2.7
+  - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then travis_retry pip install -r requirements.txt ; fi
 
   # clean checkout for manifest
   - mkdir /tmp/check-manifest && cp -a . /tmp/check-manifest
@@ -51,9 +53,9 @@ script:
   - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* selftest.py; fi
   - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py; fi
   - pushd /tmp/check-manifest && check-manifest --ignore ".coveragerc,.editorconfig,*.yml,*.yaml,tox.ini" && popd
-  # Sphinx
-  - make install
-  - pushd docs; make html; make linkcheck; popd
+
+  # Docs
+  - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then make install && make doccheck; fi
 
 after_success:
    # gather the coverage data
