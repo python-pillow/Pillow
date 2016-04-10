@@ -734,7 +734,7 @@ class pil_build_ext(build_ext):
         if not all:
             print("To add a missing option, make sure you have the required")
             print("library and headers.")
-            print("See http://pillow.readthedocs.org/en/latest/installation.html#building-from-source")
+            print("See https://pillow.readthedocs.org/en/latest/installation.html#building-from-source")
             print("")
 
         print("To check the build, run the selftest.py script.")
