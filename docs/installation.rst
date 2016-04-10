@@ -202,6 +202,11 @@ Build Options
   the libraries are not found. Webpmux (WebP metadata) relies on WebP
   support. Tcl and Tk also must be used together.
 
+* Build flags: ``--debug``. Adds a debugging flag to the include and
+  library search process to dump all paths searched for and found to
+  stdout.
+
+
 Sample Usage::
 
     $ MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install

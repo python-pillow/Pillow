@@ -37,21 +37,35 @@ _LIB_IMAGING = (
     "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Incremental",
     "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur")
 
+DEBUG = False
 
-def _add_directory(path, dir, where=None):
-    if dir is None:
+
+def _dbg(s, tp=None):
+    if DEBUG:
+        if tp:
+            print(s % tp)
+            return
+        print(s)
+
+
+def _add_directory(path, subdir, where=None):
+    if subdir is None:
         return
-    dir = os.path.realpath(dir)
-    if os.path.isdir(dir) and dir not in path:
+    subdir = os.path.realpath(subdir)
+    if os.path.isdir(subdir) and subdir not in path:
         if where is None:
-            path.append(dir)
+            _dbg('Appending path %s', subdir)
+            path.append(subdir)
         else:
-            path.insert(where, dir)
+            _dbg('Inserting path %s', subdir)
+            path.insert(where, subdir)
 
 
 def _find_include_file(self, include):
     for directory in self.compiler.include_dirs:
+        _dbg('Checking for include file %s in %s', (include, directory))
         if os.path.isfile(os.path.join(directory, include)):
+            _dbg('Found %s', include)
             return 1
     return 0
 
@@ -61,15 +75,22 @@ def _find_library_file(self, library):
     # lib extension, not the system shared lib extension: e.g. .cpython-33.so
     # vs .so. See Python bug http://bugs.python.org/16754
     if 'cpython' in self.compiler.shared_lib_extension:
+        _dbg('stripping cpython from shared library extension %s',
+             self.compiler.shared_lib_extension)
         existing = self.compiler.shared_lib_extension
         self.compiler.shared_lib_extension = "." + existing.split('.')[-1]
         ret = self.compiler.find_library_file(self.compiler.library_dirs,
                                               library)
         self.compiler.shared_lib_extension = existing
-        return ret
     else:
-        return self.compiler.find_library_file(self.compiler.library_dirs,
-                                               library)
+        ret = self.compiler.find_library_file(self.compiler.library_dirs,
+                                              library)
+    if ret:
+        _dbg('Found library %s at %s', (library, ret))
+    else:
+        _dbg("Couldn't find library %s in %s",
+             (library, self.compiler.library_dirs))
+    return ret
 
 
 def _lib_include(root):
@@ -100,9 +121,14 @@ LCMS_ROOT = None
 
 class pil_build_ext(build_ext):
     class feature:
-        zlib = jpeg = tiff = freetype = tcl = tk = lcms = webp = webpmux = None
-        jpeg2000 = None
+        features = ['zlib', 'jpeg', 'tiff', 'freetype', 'tcl', 'tk', 'lcms',
+                    'webp', 'webpmux', 'jpeg2000']
+
         required = set(['jpeg', 'zlib'])
+
+        def __init__(self):
+            for f in self.features:
+                setattr(self, f, None)
 
         def require(self, feat):
             return feat in self.required
@@ -111,9 +137,8 @@ class pil_build_ext(build_ext):
             return getattr(self, feat) is None
 
         def __iter__(self):
-            for x in dir(self):
-                if x[1] != '_':
-                    yield x
+            for x in self.features:
+                yield x
 
     feature = feature()
 
@@ -121,7 +146,7 @@ class pil_build_ext(build_ext):
         ('disable-%s' % x, None, 'Disable support for %s' % x) for x in feature
     ] + [
         ('enable-%s' % x, None, 'Enable support for %s' % x) for x in feature
-    ]
+    ] + [('debug', None, 'Debug logging')]
 
     def initialize_options(self):
         build_ext.initialize_options(self)
@@ -131,15 +156,20 @@ class pil_build_ext(build_ext):
 
     def finalize_options(self):
         build_ext.finalize_options(self)
+        if self.debug:
+            global DEBUG
+            DEBUG = True
         for x in self.feature:
             if getattr(self, 'disable_%s' % x):
                 setattr(self.feature, x, False)
                 self.feature.required.discard(x)
+                _dbg('Disabling %s', x)
                 if getattr(self, 'enable_%s' % x):
                     raise ValueError(
                         'Conflicting options: --enable-%s and --disable-%s' %
                         (x, x))
             if getattr(self, 'enable_%s' % x):
+                _dbg('Requiring %s', x)
                 self.feature.required.add(x)
 
     def build_extensions(self):
@@ -314,6 +344,9 @@ class pil_build_ext(build_ext):
 
         if _tkinter:
             TCL_VERSION = _tkinter.TCL_VERSION[:3]
+            _dbg('Tkinter found, will check for Tcl/Tk')
+        else:
+            _dbg('Tkinter not found')
 
         if _tkinter and not TCL_ROOT:
             # we have Tkinter but the TCL_ROOT variable was not set;
@@ -334,6 +367,7 @@ class pil_build_ext(build_ext):
             ]
             for TCL_ROOT in roots:
                 TCL_ROOT = os.path.abspath(TCL_ROOT)
+                _dbg('Checking %s for tk.h', TCL_ROOT)
                 if os.path.isfile(os.path.join(TCL_ROOT, "include", "tk.h")):
                     # FIXME: use distutils logging (?)
                     print("--- using Tcl/Tk libraries at", TCL_ROOT)
@@ -342,6 +376,7 @@ class pil_build_ext(build_ext):
                     break
             else:
                 TCL_ROOT = None
+                _dbg('Tcl/tk not found')
 
         # add standard directories
 
@@ -373,6 +408,7 @@ class pil_build_ext(build_ext):
                         best_path = os.path.join(program_files, name)
 
             if best_path:
+                _dbg('Adding %s to search list', best_path)
                 _add_directory(library_dirs, os.path.join(best_path, 'lib'))
                 _add_directory(include_dirs,
                                os.path.join(best_path, 'include'))
@@ -390,6 +426,7 @@ class pil_build_ext(build_ext):
         feature = self.feature
 
         if feature.want('zlib'):
+            _dbg('Looking for zlib')
             if _find_include_file(self, "zlib.h"):
                 if _find_library_file(self, "z"):
                     feature.zlib = "z"
@@ -398,6 +435,7 @@ class pil_build_ext(build_ext):
                     feature.zlib = "zlib"  # alternative name
 
         if feature.want('jpeg'):
+            _dbg('Looking for jpeg')
             if _find_include_file(self, "jpeglib.h"):
                 if _find_library_file(self, "jpeg"):
                     feature.jpeg = "jpeg"
@@ -407,11 +445,13 @@ class pil_build_ext(build_ext):
 
         feature.openjpeg_version = None
         if feature.want('jpeg2000'):
+            _dbg('Looking for jpeg2000')
             best_version = None
             best_path = None
 
             # Find the best version
             for directory in self.compiler.include_dirs:
+                _dbg('Checking for openjpeg-#.# in %s', directory)
                 try:
                     listdir = os.listdir(directory)
                 except Exception:
@@ -421,10 +461,13 @@ class pil_build_ext(build_ext):
                     if name.startswith('openjpeg-') and \
                         os.path.isfile(os.path.join(directory, name,
                                                     'openjpeg.h')):
+                        _dbg('Found openjpeg.h in %s/%s', (directory, name))
                         version = tuple([int(x) for x in name[9:].split('.')])
                         if best_version is None or version > best_version:
                             best_version = version
                             best_path = os.path.join(directory, name)
+                            _dbg('Best openjpeg version %s so far in %s',
+                                 (best_version, best_path))
 
             if best_version and _find_library_file(self, 'openjp2'):
                 # Add the directory to the include path so we can include
@@ -436,34 +479,42 @@ class pil_build_ext(build_ext):
                                                      best_version])
 
         if feature.want('tiff'):
-            if _find_library_file(self, "tiff"):
-                feature.tiff = "tiff"
-            if sys.platform == "win32" and _find_library_file(self, "libtiff"):
-                feature.tiff = "libtiff"
-            if (sys.platform == "darwin" and
-                    _find_library_file(self, "libtiff")):
-                feature.tiff = "libtiff"
+            _dbg('Looking for tiff')
+            if _find_include_file(self, 'tiff.h'):
+                if _find_library_file(self, "tiff"):
+                    feature.tiff = "tiff"
+                if sys.platform == "win32" and _find_library_file(self, "libtiff"):
+                    feature.tiff = "libtiff"
+                if (sys.platform == "darwin" and
+                        _find_library_file(self, "libtiff")):
+                    feature.tiff = "libtiff"
 
         if feature.want('freetype'):
+            _dbg('Looking for freetype')
             if _find_library_file(self, "freetype"):
                 # look for freetype2 include files
                 freetype_version = 0
-                for dir in self.compiler.include_dirs:
-                    if os.path.isfile(os.path.join(dir, "ft2build.h")):
+                for subdir in self.compiler.include_dirs:
+                    _dbg('Checking for include file %s in %s', ("ft2build.h", subdir))
+                    if os.path.isfile(os.path.join(subdir, "ft2build.h")):
+                        _dbg('Found %s in %s', ("ft2build.h", subdir))
                         freetype_version = 21
-                        dir = os.path.join(dir, "freetype2")
+                        subdir = os.path.join(subdir, "freetype2")
                         break
-                    dir = os.path.join(dir, "freetype2")
-                    if os.path.isfile(os.path.join(dir, "ft2build.h")):
+                    subdir = os.path.join(subdir, "freetype2")
+                    _dbg('Checking for include file %s in %s', ("ft2build.h", subdir))
+                    if os.path.isfile(os.path.join(subdir, "ft2build.h")):
+                        _dbg('Found %s in %s', ("ft2build.h", subdir))
                         freetype_version = 21
                         break
                 if freetype_version:
                     feature.freetype = "freetype"
                     feature.freetype_version = freetype_version
-                    if dir:
-                        _add_directory(self.compiler.include_dirs, dir, 0)
+                    if subdir:
+                        _add_directory(self.compiler.include_dirs, subdir, 0)
 
         if feature.want('lcms'):
+            _dbg('Looking for lcms')
             if _find_include_file(self, "lcms2.h"):
                 if _find_library_file(self, "lcms2"):
                     feature.lcms = "lcms2"
@@ -475,17 +526,20 @@ class pil_build_ext(build_ext):
             # the library names may vary somewhat (e.g. tcl85 or tcl8.5)
             version = TCL_VERSION[0] + TCL_VERSION[2]
             if feature.want('tcl'):
+                _dbg('Looking for TCL')
                 if _find_library_file(self, "tcl" + version):
                     feature.tcl = "tcl" + version
                 elif _find_library_file(self, "tcl" + TCL_VERSION):
                     feature.tcl = "tcl" + TCL_VERSION
             if feature.want('tk'):
+                _dbg('Looking for TK')
                 if _find_library_file(self, "tk" + version):
                     feature.tk = "tk" + version
                 elif _find_library_file(self, "tk" + TCL_VERSION):
                     feature.tk = "tk" + TCL_VERSION
 
         if feature.want('webp'):
+            _dbg('Looking for webp')
             if (_find_include_file(self, "webp/encode.h") and
                     _find_include_file(self, "webp/decode.h")):
                 # In Google's precompiled zip it is call "libwebp":
@@ -495,6 +549,7 @@ class pil_build_ext(build_ext):
                     feature.webp = "libwebp"
 
         if feature.want('webpmux'):
+            _dbg('Looking for webpmux')
             if (_find_include_file(self, "webp/mux.h") and
                     _find_include_file(self, "webp/demux.h")):
                 if (_find_library_file(self, "webpmux") and
@@ -518,10 +573,10 @@ class pil_build_ext(build_ext):
         # core library
 
         files = ["_imaging.c"]
-        for file in _IMAGING:
-            files.append(file + ".c")
-        for file in _LIB_IMAGING:
-            files.append(os.path.join("libImaging", file + ".c"))
+        for src_file in _IMAGING:
+            files.append(src_file + ".c")
+        for src_file in _LIB_IMAGING:
+            files.append(os.path.join("libImaging", src_file + ".c"))
 
         libs = []
         defs = []
@@ -557,7 +612,7 @@ class pil_build_ext(build_ext):
                                   ["_imagingft.c"],
                                   libraries=["freetype"]))
 
-        if os.path.isfile("_imagingcms.c") and feature.lcms:
+        if feature.lcms:
             extra = []
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
@@ -565,7 +620,7 @@ class pil_build_ext(build_ext):
                                   ["_imagingcms.c"],
                                   libraries=[feature.lcms] + extra))
 
-        if os.path.isfile("_webp.c") and feature.webp:
+        if feature.webp:
             libs = [feature.webp]
             defs = []
 
@@ -586,16 +641,17 @@ class pil_build_ext(build_ext):
                 framework_roots = [
                     "/Library/Frameworks", "/System/Library/Frameworks"
                 ]
+                _dbg('Looking for TclTk Framework Build')
                 for root in framework_roots:
                     root_tcl = os.path.join(root, "Tcl.framework")
                     root_tk = os.path.join(root, "Tk.framework")
                     if (os.path.exists(root_tcl) and os.path.exists(root_tk)):
                         print("--- using frameworks at %s" % root)
                         frameworks = ["-framework", "Tcl", "-framework", "Tk"]
-                        dir = os.path.join(root_tcl, "Headers")
-                        _add_directory(self.compiler.include_dirs, dir, 0)
-                        dir = os.path.join(root_tk, "Headers")
-                        _add_directory(self.compiler.include_dirs, dir, 1)
+                        subdir = os.path.join(root_tcl, "Headers")
+                        _add_directory(self.compiler.include_dirs, subdir, 0)
+                        subdir = os.path.join(root_tk, "Headers")
+                        _add_directory(self.compiler.include_dirs, subdir, 1)
                         break
                 if frameworks:
                     exts.append(Extension("PIL._imagingtk",
@@ -607,11 +663,8 @@ class pil_build_ext(build_ext):
                                       ["_imagingtk.c", "Tk/tkImaging.c"],
                                       libraries=[feature.tcl, feature.tk]))
 
-        if os.path.isfile("_imagingmath.c"):
-            exts.append(Extension("PIL._imagingmath", ["_imagingmath.c"]))
-
-        if os.path.isfile("_imagingmorph.c"):
-            exts.append(Extension("PIL._imagingmorph", ["_imagingmorph.c"]))
+        exts.append(Extension("PIL._imagingmath", ["_imagingmath.c"]))
+        exts.append(Extension("PIL._imagingmorph", ["_imagingmorph.c"]))
 
         self.extensions[:] = exts
 
@@ -680,8 +733,8 @@ class pil_build_ext(build_ext):
 
         if not all:
             print("To add a missing option, make sure you have the required")
-            print("library, and set the corresponding ROOT variable in the")
-            print("setup.py script.")
+            print("library and headers.")
+            print("See https://pillow.readthedocs.org/en/latest/installation.html#building-from-source")
             print("")
 
         print("To check the build, run the selftest.py script.")
@@ -689,8 +742,8 @@ class pil_build_ext(build_ext):
 
     def check_zlib_version(self, include_dirs):
         # look for unsafe versions of zlib
-        for dir in include_dirs:
-            zlibfile = os.path.join(dir, "zlib.h")
+        for subdir in include_dirs:
+            zlibfile = os.path.join(subdir, "zlib.h")
             if os.path.isfile(zlibfile):
                 break
         else:
