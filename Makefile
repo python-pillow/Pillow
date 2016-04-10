@@ -26,6 +26,10 @@ coverage:
 doc:
 	$(MAKE) -C docs html
 
+doccheck:
+	$(MAKE) -C docs html
+	$(MAKE) -C docs linkcheck
+
 docserve:
 	cd docs/_build/html && python -mSimpleHTTPServer 2> /dev/null&
 
