@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Added debug option for setup.py to trace header and library finding #1790
+  [wiredfool]
+
+- Fix doc building on travis #1820
+  [wiredfool]
+
 - Fix for DIB/BMP images #1813
   [wiredfool]
 
