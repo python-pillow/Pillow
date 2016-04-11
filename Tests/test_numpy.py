@@ -110,6 +110,21 @@ class TestNumpy(PillowTestCase):
         self._test_img_equals_nparray(img, np_img)
         self.assertEqual(np_img.dtype, numpy.dtype('<u2'))
 
+    def test_save_tiff_uint16(self):
+        '''
+        Open a single-channel uint16 greyscale image and verify that it can be saved without
+        losing precision.
+        '''
+        tmpfile = self.tempfile("temp.tif")
+        pixel_value = 0x1234
+        filename = "Tests/images/uint16_1_4660.tif"
+        a = numpy.array([pixel_value] * 100, dtype=numpy.uint16)
+        a.shape = TestNumpy.TEST_IMAGE_SIZE
+        Image.fromarray(a).save(tmpfile)
+        im_test = Image.open(tmpfile)
+        im_good = Image.open(filename)
+        self.assert_image_equal(im_good, im_test)
+
     def test_to_array(self):
 
         def _to_array(mode, dtype):
