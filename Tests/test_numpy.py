@@ -12,6 +12,7 @@ except ImportError:
 
 
 class TestNumpy(PillowTestCase):
+    TEST_IMAGE_SIZE = (10, 10)
 
     def setUp(self):
         try:
@@ -29,14 +30,14 @@ class TestNumpy(PillowTestCase):
                 else:
                     data = list(range(100))
                 a = numpy.array(data, dtype=dtype)
-                a.shape = 10, 10
+                a.shape = TestNumpy.TEST_IMAGE_SIZE
                 i = Image.fromarray(a)
                 if list(i.getdata()) != data:
                     print("data mismatch for", dtype)
             else:
                 data = list(range(100))
                 a = numpy.array([[x]*bands for x in data], dtype=dtype)
-                a.shape = 10, 10, bands
+                a.shape = TestNumpy.TEST_IMAGE_SIZE[0], TestNumpy.TEST_IMAGE_SIZE[1], bands
                 i = Image.fromarray(a)
                 if list(i.split()[0].getdata()) != list(range(100)):
                     print("data mismatch for", dtype)
@@ -48,35 +49,35 @@ class TestNumpy(PillowTestCase):
         self.assertRaises(TypeError, lambda: to_image(numpy.bool8))
 
         # Check supported 8-bit integer formats
-        self.assert_image(to_image(numpy.uint8), "L", (10, 10))
-        self.assert_image(to_image(numpy.uint8, 3), "RGB", (10, 10))
-        self.assert_image(to_image(numpy.uint8, 4), "RGBA", (10, 10))
-        self.assert_image(to_image(numpy.int8), "I", (10, 10))
+        self.assert_image(to_image(numpy.uint8), "L", TestNumpy.TEST_IMAGE_SIZE)
+        self.assert_image(to_image(numpy.uint8, 3), "RGB", TestNumpy.TEST_IMAGE_SIZE)
+        self.assert_image(to_image(numpy.uint8, 4), "RGBA", TestNumpy.TEST_IMAGE_SIZE)
+        self.assert_image(to_image(numpy.int8), "I", TestNumpy.TEST_IMAGE_SIZE)
 
         # Check non-fixed-size integer types
         self.assertRaises(TypeError, lambda: to_image(numpy.uint))
-        self.assert_image(to_image(numpy.int), "I", (10, 10))
+        self.assert_image(to_image(numpy.int), "I", TestNumpy.TEST_IMAGE_SIZE)
 
         # Check 16-bit integer formats
         if Image._ENDIAN == '<':
-            self.assert_image(to_image(numpy.uint16), "I;16L", (10, 10))
+            self.assert_image(to_image(numpy.uint16), "I;16L", TestNumpy.TEST_IMAGE_SIZE)
         else:
-            self.assert_image(to_image(numpy.uint16), "I;16B", (10, 10))
+            self.assert_image(to_image(numpy.uint16), "I;16B", TestNumpy.TEST_IMAGE_SIZE)
         self.assertRaises(TypeError, lambda: to_image(numpy.int16))
 
         # Check 32-bit integer formats
         self.assertRaises(TypeError, lambda: to_image(numpy.uint32))
-        self.assert_image(to_image(numpy.int32), "I", (10, 10))
+        self.assert_image(to_image(numpy.int32), "I", TestNumpy.TEST_IMAGE_SIZE)
 
         # Check 64-bit integer formats
         self.assertRaises(TypeError, lambda: to_image(numpy.uint64))
         self.assertRaises(TypeError, lambda: to_image(numpy.int64))
 
         # Check floating-point formats
-        self.assert_image(to_image(numpy.float), "F", (10, 10))
+        self.assert_image(to_image(numpy.float), "F", TestNumpy.TEST_IMAGE_SIZE)
         self.assertRaises(TypeError, lambda: to_image(numpy.float16))
-        self.assert_image(to_image(numpy.float32), "F", (10, 10))
-        self.assert_image(to_image(numpy.float64), "F", (10, 10))
+        self.assert_image(to_image(numpy.float32), "F", TestNumpy.TEST_IMAGE_SIZE)
+        self.assert_image(to_image(numpy.float64), "F", TestNumpy.TEST_IMAGE_SIZE)
 
         self.assert_image(to_image(numpy.uint8, 2), "LA", (10, 10))
         self.assert_image(to_image(numpy.uint8, 3), "RGB", (10, 10))
@@ -85,10 +86,15 @@ class TestNumpy(PillowTestCase):
     # based on an erring example at
     # http://stackoverflow.com/questions/10854903/what-is-causing-dimension-dependent-attributeerror-in-pil-fromarray-function
     def test_3d_array(self):
-        a = numpy.ones((10, 10, 10), dtype=numpy.uint8)
-        self.assert_image(Image.fromarray(a[1, :, :]), "L", (10, 10))
-        self.assert_image(Image.fromarray(a[:, 1, :]), "L", (10, 10))
-        self.assert_image(Image.fromarray(a[:, :, 1]), "L", (10, 10))
+        size = (5, TestNumpy.TEST_IMAGE_SIZE[0], TestNumpy.TEST_IMAGE_SIZE[1])
+        a = numpy.ones(size, dtype=numpy.uint8)
+        self.assert_image(Image.fromarray(a[1, :, :]), "L", TestNumpy.TEST_IMAGE_SIZE)
+        size = (TestNumpy.TEST_IMAGE_SIZE[0], 5, TestNumpy.TEST_IMAGE_SIZE[1])
+        a = numpy.ones(size, dtype=numpy.uint8)
+        self.assert_image(Image.fromarray(a[:, 1, :]), "L", TestNumpy.TEST_IMAGE_SIZE)
+        size = (TestNumpy.TEST_IMAGE_SIZE[0], TestNumpy.TEST_IMAGE_SIZE[1], 5)
+        a = numpy.ones(size, dtype=numpy.uint8)
+        self.assert_image(Image.fromarray(a[:, :, 1]), "L", TestNumpy.TEST_IMAGE_SIZE)
 
     def _test_img_equals_nparray(self, img, np):
         np_size = np.shape[1], np.shape[0]
