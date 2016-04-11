@@ -450,6 +450,13 @@ class TestFileTiff(PillowTestCase):
         # Should not raise UnicodeDecodeError or anything else
         im.save(outfile)
 
+    def test_open_tiff_uint16(self):
+        # Test an image of all '0' values
+        pixel_value = 0x1234
+        infile = "Tests/images/uint16_1_{}.tif".format(pixel_value)
+        im = Image.open(infile)
+        self.assertEqual(im.getpixel((0, 0)), pixel_value)
+
 if __name__ == '__main__':
     unittest.main()
 
