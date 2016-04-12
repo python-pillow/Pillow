@@ -280,6 +280,8 @@ int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view)
 
 /* error messages */
 static const char* must_be_sequence = "argument must be a sequence";
+static const char* must_be_two_coordinates =
+                     "coordinate list must contain exactly 2 coordinates";
 static const char* wrong_mode = "unrecognized image mode";
 static const char* wrong_raw_mode = "unrecognized raw mode";
 static const char* outside_image = "image index out of range";
@@ -2398,9 +2400,7 @@ _draw_arc(ImagingDrawObject* self, PyObject* args)
     if (n < 0)
         return NULL;
     if (n != 2) {
-        PyErr_SetString(PyExc_TypeError,
-                        "coordinate list must contain exactly 2 coordinates"
-                        );
+        PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
         return NULL;
     }
 
@@ -2472,9 +2472,7 @@ _draw_chord(ImagingDrawObject* self, PyObject* args)
     if (n < 0)
         return NULL;
     if (n != 2) {
-        PyErr_SetString(PyExc_TypeError,
-                        "coordinate list must contain exactly 2 coordinates"
-                        );
+        PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
         return NULL;
     }
 
@@ -2509,9 +2507,7 @@ _draw_ellipse(ImagingDrawObject* self, PyObject* args)
     if (n < 0)
         return NULL;
     if (n != 2) {
-        PyErr_SetString(PyExc_TypeError,
-                        "coordinate list must contain exactly 2 coordinates"
-                        );
+        PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
         return NULL;
     }
 
@@ -2692,9 +2688,7 @@ _draw_pieslice(ImagingDrawObject* self, PyObject* args)
     if (n < 0)
         return NULL;
     if (n != 2) {
-        PyErr_SetString(PyExc_TypeError,
-                        "coordinate list must contain exactly 2 coordinates"
-                        );
+        PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
         return NULL;
     }
 
@@ -2774,9 +2768,7 @@ _draw_rectangle(ImagingDrawObject* self, PyObject* args)
     if (n < 0)
         return NULL;
     if (n != 2) {
-        PyErr_SetString(PyExc_TypeError,
-                        "coordinate list must contain exactly 2 coordinates"
-                        );
+        PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
         return NULL;
     }
 
