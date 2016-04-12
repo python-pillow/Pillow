@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Removed outdated scanner classifier #1823
+  [radarhere]
+
+- Combined identical error messages in _imaging #1825
+  [radarhere]
+
 - Added debug option for setup.py to trace header and library finding #1790
   [wiredfool]
 
