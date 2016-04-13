@@ -24,7 +24,7 @@ class TestBmpReference(PillowTestCase):
                 # print ("Bad Image %s: %s" %(f,msg))
 
     def test_questionable(self):
-        """ These shouldn't crash/dos, but its not well defined that these
+        """ These shouldn't crash/dos, but it's not well defined that these
         are in spec """
         for f in self.get_files('q'):
             try:
