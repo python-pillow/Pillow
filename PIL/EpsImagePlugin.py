@@ -201,7 +201,7 @@ class EpsImageFile(ImageFile.ImageFile):
     format = "EPS"
     format_description = "Encapsulated Postscript"
 
-    mode_map = {1: "L", 2: "LAB", 3: "RGB"}
+    mode_map = {1: "L", 2: "LAB", 3: "RGB", 4: "CMYK"}
 
     def _open(self):
         (length, offset) = self._find_offset(self.fp)

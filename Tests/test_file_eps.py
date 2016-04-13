@@ -57,6 +57,12 @@ class TestFileEps(PillowTestCase):
         self.assertRaises(SyntaxError,
                           lambda: EpsImagePlugin.EpsImageFile(invalid_file))
 
+    def test_cmyk(self):
+        cmyk_image = Image.open("Tests/images/pil_sample_cmyk.eps")
+        self.assertEqual(cmyk_image.mode, "CMYK")
+        self.assertEqual(cmyk_image.size, (100, 100))
+        self.assertEqual(cmyk_image.format, "EPS")
+
     def test_file_object(self):
         # issue 479
         image1 = Image.open(file1)
