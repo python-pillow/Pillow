@@ -55,7 +55,7 @@ class GbrImageFile(ImageFile.ImageFile):
         if width <= 0 or height <= 0:
             raise SyntaxError("not a GIMP brush")
         if color_depth not in (1, 4):
-            raise SyntaxError("Unsupported GMP brush color depth: %s" % color_depth)
+            raise SyntaxError("Unsupported GIMP brush color depth: %s" % color_depth)
 
         if version == 1:
             comment_length = header_size-20
