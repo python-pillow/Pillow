@@ -18,6 +18,9 @@
 
 import array
 from PIL import ImageColor
+from PIL import GimpPaletteFile
+from PIL import GimpGradientFile
+from PIL import PaletteFile
 
 
 class ImagePalette(object):
@@ -196,42 +199,21 @@ def load(filename):
 
     fp = open(filename, "rb")
 
-    lut = None
-
-    if not lut:
+    for paletteHandler in [
+        GimpPaletteFile.GimpPaletteFile,
+        GimpGradientFile.GimpGradientFile,
+        PaletteFile.PaletteFile
+    ]:
         try:
-            from PIL import GimpPaletteFile
             fp.seek(0)
-            p = GimpPaletteFile.GimpPaletteFile(fp)
-            lut = p.getpalette()
+            lut = paletteHandler(fp).getpalette()
+            if lut:
+                break
         except (SyntaxError, ValueError):
             # import traceback
             # traceback.print_exc()
             pass
-
-    if not lut:
-        try:
-            from PIL import GimpGradientFile
-            fp.seek(0)
-            p = GimpGradientFile.GimpGradientFile(fp)
-            lut = p.getpalette()
-        except (SyntaxError, ValueError):
-            # import traceback
-            # traceback.print_exc()
-            pass
-
-    if not lut:
-        try:
-            from PIL import PaletteFile
-            fp.seek(0)
-            p = PaletteFile.PaletteFile(fp)
-            lut = p.getpalette()
-        except (SyntaxError, ValueError):
-            # import traceback
-            # traceback.print_exc()
-            pass
-
-    if not lut:
+    else:
         raise IOError("cannot load palette")
 
     return lut  # data, rawmode
