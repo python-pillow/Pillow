@@ -755,7 +755,7 @@ class pil_build_ext(build_ext):
             if m.group(1) < "1.2.3":
                 return m.group(1)
 
-    # http://hg.python.org/users/barry/rev/7e8deab93d5a
+    # https://hg.python.org/users/barry/rev/7e8deab93d5a
     def add_multiarch_paths(self):
         # Debian/Ubuntu multiarch support.
         # https://wiki.ubuntu.com/MultiarchSpec
