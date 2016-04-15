@@ -474,6 +474,7 @@ extern int ImagingZipDecode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
 extern int ImagingZipEncode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
+extern int ImagingZipEncodeCleanup(ImagingCodecState state);
 #endif
 
 typedef void (*ImagingShuffler)(UINT8* out, const UINT8* in, int pixels);
