@@ -163,10 +163,9 @@ class ImageFile(Image.Image):
                     else:
                         # use mmap, if possible
                         import mmap
-                        fp = open(self.filename, "r+")
+                        fp = open(self.filename, "r")
                         size = os.path.getsize(self.filename)
-                        # FIXME: on Unix, use PROT_READ etc
-                        self.map = mmap.mmap(fp.fileno(), size)
+                        self.map = mmap.mmap(fp.fileno(), size, access=mmap.ACCESS_READ)
                         self.im = Image.core.map_buffer(
                             self.map, self.size, d, e, o, a
                             )
