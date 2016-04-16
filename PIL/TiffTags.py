@@ -152,7 +152,7 @@ TAGS_V2 = {
 
     # FIXME add more tags here
     34665: ("ExifIFD", SHORT, 1),
-    34675: ('ICCProfile', 7, 0),
+    34675: ('ICCProfile', 7, 1),
     34853: ('GPSInfoIFD', 1, 1),
 
     # MPInfo
