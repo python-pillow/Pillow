@@ -7,18 +7,6 @@ TEST_FILE = "Tests/images/iptc.jpg"
 
 class TestFileIptc(PillowTestCase):
 
-    # Helpers
-
-    def dummy_IptcImagePlugin(self):
-        # Create an IptcImagePlugin object without initializing it
-        class FakeImage(object):
-            pass
-        im = FakeImage()
-        im.__class__ = IptcImagePlugin.IptcImageFile
-        return im
-
-    # Tests
-
     def test_getiptcinfo_jpg_none(self):
         # Arrange
         im = hopper()
