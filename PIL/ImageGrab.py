@@ -51,11 +51,31 @@ def grab(bbox=None):
 
 def grabclipboard():
     if sys.platform == "darwin":
-        raise NotImplementedError("Method is not implemented on OS X")
-    debug = 0  # temporary interface
-    data = Image.core.grabclipboard(debug)
-    if isinstance(data, bytes):
-        from PIL import BmpImagePlugin
-        import io
-        return BmpImagePlugin.DibImageFile(io.BytesIO(data))
-    return data
+        f, file = tempfile.mkstemp('.jpg')
+        os.close(f)
+        commands = [
+            "set theFile to (open for access POSIX file \""+file+"\" with write permission)",
+            "try",
+                "write (the clipboard as JPEG picture) to theFile",
+            "end try",
+            "close access theFile"
+        ]
+        script = ["osascript"]
+        for command in commands:
+            script += ["-e", command]
+        subprocess.call(script)
+
+        im = None
+        if os.stat(file).st_size != 0:
+            im = Image.open(file)
+            im.load()
+        os.unlink(file)
+        return im
+    else:
+        debug = 0  # temporary interface
+        data = Image.core.grabclipboard(debug)
+        if isinstance(data, bytes):
+            from PIL import BmpImagePlugin
+            import io
+            return BmpImagePlugin.DibImageFile(io.BytesIO(data))
+        return data
