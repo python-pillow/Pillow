@@ -31,12 +31,12 @@ elif sys.platform == "darwin":
 
 def grab(bbox=None):
     if sys.platform == "darwin":
-        f, file = tempfile.mkstemp('.png')
-        os.close(f)
-        subprocess.call(['screencapture', '-x', file])
-        im = Image.open(file)
+        fh, filepath = tempfile.mkstemp('.png')
+        os.close(fh)
+        subprocess.call(['screencapture', '-x', filepath])
+        im = Image.open(filepath)
         im.load()
-        os.unlink(file)
+        os.unlink(filepath)
     else:
         size, data = grabber()
         im = Image.frombytes(
@@ -51,10 +51,10 @@ def grab(bbox=None):
 
 def grabclipboard():
     if sys.platform == "darwin":
-        f, file = tempfile.mkstemp('.jpg')
-        os.close(f)
+        fh, filepath = tempfile.mkstemp('.jpg')
+        os.close(fh)
         commands = [
-            "set theFile to (open for access POSIX file \""+file+"\" with write permission)",
+            "set theFile to (open for access POSIX file \""+filepath+"\" with write permission)",
             "try",
                 "write (the clipboard as JPEG picture) to theFile",
             "end try",
@@ -66,10 +66,10 @@ def grabclipboard():
         subprocess.call(script)
 
         im = None
-        if os.stat(file).st_size != 0:
-            im = Image.open(file)
+        if os.stat(filepath).st_size != 0:
+            im = Image.open(filepath)
             im.load()
-        os.unlink(file)
+        os.unlink(filepath)
         return im
     else:
         debug = 0  # temporary interface
