@@ -112,7 +112,9 @@ class BmpImageFile(ImageFile.ImageFile):
                         # 40 byte headers only have the three components in the bitfields masks,
                         # ref: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376(v=vs.85).aspx
                         # See also https://github.com/python-pillow/Pillow/issues/1293
-                        file_info['a_mask'] = 0xff000000
+                        # There is a 4th component in the RGBQuad, in the alpha location, but it
+                        # is listed as a reserved component, and it is not generally an alpha channel
+                        file_info['a_mask'] = 0x0
                         for mask in ['r_mask', 'g_mask', 'b_mask']:
                             file_info[mask] = i32(read(4))
                     file_info['rgb_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'])
