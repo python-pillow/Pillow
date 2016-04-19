@@ -81,13 +81,13 @@ Bitwise operators don’t work on floating point images.
 Logical Operators
 ^^^^^^^^^^^^^^^^^
 
-Logical operators like :keyword:`and`, :keyword:`or`, and :keyword:`not` work
+Logical operators like ``and``, ``or``, and ``not`` work
 on entire images, rather than individual pixels.
 
 An empty image (all pixels zero) is treated as false. All other images are
 treated as true.
 
-Note that :keyword:`and` and :keyword:`or` return the last evaluated operand,
+Note that ``and`` and ``or`` return the last evaluated operand,
 while not always returns a boolean value.
 
 Built-in Functions

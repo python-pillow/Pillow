@@ -24,7 +24,7 @@ To get the number and names of bands in an image, use the
 Modes
 -----
 
-The :term:`mode` of an image defines the type and depth of a pixel in the
+The ``mode`` of an image defines the type and depth of a pixel in the
 image. The current release supports the following standard modes:
 
     * ``1`` (1-bit pixels, black and white, stored with one pixel per byte)
