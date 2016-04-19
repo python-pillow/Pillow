@@ -4,7 +4,7 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
-- Added additional EXIF tags #1841
+- Added additional EXIF tags #1841, TIFF Tags #1821
   [radarhere]
 
 - Changed documentation to refer to ImageSequence Iterator #1833
