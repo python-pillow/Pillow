@@ -916,3 +916,28 @@ class TestFileTiffW32:
         # this should not fail, as load should have closed the file pointer,
         # and close should have closed the mmap
         os.remove(tmpfile)
+
+        # Created with ImageMagick: convert hopper.jpg hopper_jpg.tif
+        # Contains JPEGTables (347) tag
+        infile = "Tests/images/hopper_jpg.tif"
+        im = Image.open(infile)
+
+        # Act / Assert
+        # Should not raise UnicodeDecodeError or anything else
+        im.save(outfile)
+
+    def test_open_tiff_uint16_multiband(self):
+        """Test opening multiband TIFFs and reading all channels."""
+        base_value = 4660
+        for i in range(2, 6):
+            infile = "Tests/images/uint16_{}_{}.tif".format(i, base_value)
+            im = Image.open(infile)
+            im.load()
+            pixel = [base_value + j for j in range(0, i)]
+            actual_pixel = im.getpixel((0,0))
+            if type(actual_pixel) is int:
+                actual_pixel = [actual_pixel]
+            self.assertEqual(actual_pixel, pixel)
+
+if __name__ == '__main__':
+    unittest.main()
