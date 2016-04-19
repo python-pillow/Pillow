@@ -370,8 +370,13 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     Gamma, given as a floating point number.
 
 **transparency**
-    Transparency color index. This key is omitted if the image is not a
-    transparent palette image.
+    For ``P`` images: Either the palette index for full transparent pixels,
+    or a byte string with alpha values for each palette entry.
+
+    For ``L`` and ``RGB`` images, the color that represents full transparent
+    pixels in this image.
+
+    This key is omitted if the image is not a transparent palette image.
 
 ``Open`` also sets ``Image.text`` to a list of the values of the
 ``tEXt``, ``zTXt``, and ``iTXt`` chunks of the PNG image. Individual
@@ -391,6 +396,9 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **transparency**
     For ``P``, ``L``, and ``RGB`` images, this option controls what
     color image to mark as transparent.
+
+    For ``P`` images, this can be a either the palette index,
+    or a byte string with alpha values for each palette entry.
 
 **dpi**
     A tuple of two numbers corresponding to the desired dpi in each direction.
