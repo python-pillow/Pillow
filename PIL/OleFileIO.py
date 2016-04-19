@@ -540,16 +540,16 @@ class OleMetadata(object):
     OLE file.
 
     References for SummaryInformation stream:
-    - http://msdn.microsoft.com/en-us/library/dd942545.aspx
-    - http://msdn.microsoft.com/en-us/library/dd925819%28v=office.12%29.aspx
-    - http://msdn.microsoft.com/en-us/library/windows/desktop/aa380376%28v=vs.85%29.aspx
-    - http://msdn.microsoft.com/en-us/library/aa372045.aspx
-    - http://sedna-soft.de/summary-information-stream/
+    - https://msdn.microsoft.com/en-us/library/dd942545.aspx
+    - https://msdn.microsoft.com/en-us/library/dd925819%28v=office.12%29.aspx
+    - https://msdn.microsoft.com/en-us/library/windows/desktop/aa380376%28v=vs.85%29.aspx
+    - https://msdn.microsoft.com/en-us/library/aa372045.aspx
+    - http://sedna-soft.de/articles/summary-information-stream/
     - http://poi.apache.org/apidocs/org/apache/poi/hpsf/SummaryInformation.html
 
     References for DocumentSummaryInformation stream:
-    - http://msdn.microsoft.com/en-us/library/dd945671%28v=office.12%29.aspx
-    - http://msdn.microsoft.com/en-us/library/windows/desktop/aa380374%28v=vs.85%29.aspx
+    - https://msdn.microsoft.com/en-us/library/dd945671%28v=office.12%29.aspx
+    - https://msdn.microsoft.com/en-us/library/windows/desktop/aa380374%28v=vs.85%29.aspx
     - http://poi.apache.org/apidocs/org/apache/poi/hpsf/DocumentSummaryInformation.html
 
     new in version 0.25
