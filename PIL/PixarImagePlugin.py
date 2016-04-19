@@ -29,6 +29,10 @@ __version__ = "0.1"
 i16 = _binary.i16le
 
 
+def _accept(prefix):
+    return prefix[:4] == b"\200\350\000\000"
+
+
 ##
 # Image plugin for PIXAR raster images.
 
@@ -39,7 +43,7 @@ class PixarImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-        # assuming a 4-byte magic label (FIXME: add "_accept" hook)
+        # assuming a 4-byte magic label
         s = self.fp.read(4)
         if s != b"\200\350\000\000":
             raise SyntaxError("not a PIXAR file")
@@ -62,6 +66,6 @@ class PixarImageFile(ImageFile.ImageFile):
 #
 # --------------------------------------------------------------------
 
-Image.register_open(PixarImageFile.format, PixarImageFile)
+Image.register_open(PixarImageFile.format, PixarImageFile, _accept)
 
 Image.register_extension(PixarImageFile.format, ".pxr")
