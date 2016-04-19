@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Jpeg qtables are unsigned chars #1814
+  [thebostik]
+
 - Added additional EXIF tags #1841, TIFF Tags #1821
   [radarhere]
 
