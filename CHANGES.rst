@@ -4,6 +4,18 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Added additional EXIF tags #1841
+  [radarhere]
+
+- Changed documentation to refer to ImageSequence Iterator #1833
+  [radarhere]
+
+- Fix Fedora prerequisites in installation docs, depends script #1842
+  [living180]
+
+- Added _accept hook for PixarImagePlugin #1843
+  [radarhere]
+
 - Removed outdated scanner classifier #1823
   [radarhere]
 
