@@ -25,7 +25,7 @@ Changelog (Pillow)
 - Added debug option for setup.py to trace header and library finding #1790
   [wiredfool]
 
-- Fix doc building on travis #1820
+- Fix doc building on travis #1820, #1844
   [wiredfool]
 
 - Fix for DIB/BMP images #1813
