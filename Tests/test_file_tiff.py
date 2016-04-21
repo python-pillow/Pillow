@@ -85,8 +85,10 @@ class TestFileTiff(PillowTestCase):
         self.assertIsInstance(im.tag[Y_RESOLUTION][0], tuple)
 
         # v2 api
-        self.assertIsInstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
-        self.assertIsInstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
+        self.assertIsInstance(im.tag_v2[X_RESOLUTION],
+                              TiffImagePlugin.IFDRational)
+        self.assertIsInstance(im.tag_v2[Y_RESOLUTION],
+                              TiffImagePlugin.IFDRational)
 
         self.assertEqual(im.info['dpi'], (72., 72.))
 
@@ -340,8 +342,8 @@ class TestFileTiff(PillowTestCase):
     def test_gray_semibyte_per_pixel(self):
         test_files = (
             (
-                24.8,#epsilon
-                (#group
+                24.8,  # epsilon
+                (  # group
                     "Tests/images/tiff_gray_2_4_bpp/hopper2.tif",
                     "Tests/images/tiff_gray_2_4_bpp/hopper2I.tif",
                     "Tests/images/tiff_gray_2_4_bpp/hopper2R.tif",
@@ -349,8 +351,8 @@ class TestFileTiff(PillowTestCase):
                 )
             ),
             (
-                7.3,#epsilon
-                (#group
+                7.3,  # epsilon
+                (  # group
                     "Tests/images/tiff_gray_2_4_bpp/hopper4.tif",
                     "Tests/images/tiff_gray_2_4_bpp/hopper4I.tif",
                     "Tests/images/tiff_gray_2_4_bpp/hopper4R.tif",
@@ -424,16 +426,16 @@ class TestFileTiff(PillowTestCase):
         im = Image.open('Tests/images/compression.tif')
 
         im.seek(0)
-        self.assertEqual(im._compression,'tiff_ccitt')
+        self.assertEqual(im._compression, 'tiff_ccitt')
         self.assertEqual(im.size, (10, 10))
 
         im.seek(1)
-        self.assertEqual(im._compression,'packbits')
+        self.assertEqual(im._compression, 'packbits')
         self.assertEqual(im.size, (10, 10))
         im.load()
 
         im.seek(0)
-        self.assertEqual(im._compression,'tiff_ccitt')
+        self.assertEqual(im._compression, 'tiff_ccitt')
         self.assertEqual(im.size, (10, 10))
         im.load()
 
