@@ -450,6 +450,18 @@ class TestFileTiff(PillowTestCase):
         # Should not raise UnicodeDecodeError or anything else
         im.save(outfile)
 
+    def test_lzw(self):
+        # Act
+        im = Image.open("Tests/images/hopper_lzw.tif")
+
+        # Assert
+        self.assertEqual(im.mode, 'RGB')
+        self.assertEqual(im.size, (128, 128))
+        self.assertEqual(im.format, "TIFF")
+        im2 = hopper()
+        self.assert_image_similar(im, im2, 5)
+
+
 if __name__ == '__main__':
     unittest.main()
 
