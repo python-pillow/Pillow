@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Remove support for Python 3.0 from _imaging.c #1851
+  [radarhere]
+
 - Jpeg qtables are unsigned chars #1814
   [thebostik]
 
