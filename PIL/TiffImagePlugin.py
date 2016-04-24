@@ -1010,7 +1010,10 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.decoderconfig = (self.tag_v2[PREDICTOR],)
 
         if ICCPROFILE in self.tag_v2:
-            self.info['icc_profile'] = self.tag_v2[ICCPROFILE]
+            iccprofile = self.tag_v2[ICCPROFILE]
+            if len(iccprofile) == 1:
+                iccprofile = iccprofile[0]
+            self.info['icc_profile'] = iccprofile
 
         return args
 
