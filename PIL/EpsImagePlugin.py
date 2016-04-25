@@ -418,7 +418,6 @@ Image.register_open(EpsImageFile.format, EpsImageFile, _accept)
 
 Image.register_save(EpsImageFile.format, _save)
 
-Image.register_extension(EpsImageFile.format, ".ps")
-Image.register_extension(EpsImageFile.format, ".eps")
+Image.register_extensions(EpsImageFile.format, [".ps", ".eps"])
 
 Image.register_mime(EpsImageFile.format, "application/postscript")

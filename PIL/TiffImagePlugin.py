@@ -1792,7 +1792,6 @@ Image.register_open(TiffImageFile.format, TiffImageFile, _accept)
 Image.register_save(TiffImageFile.format, _save)
 Image.register_save_all(TiffImageFile.format, _save_all)
 
-Image.register_extension(TiffImageFile.format, ".tif")
-Image.register_extension(TiffImageFile.format, ".tiff")
+Image.register_extensions(TiffImageFile.format, [".tif", ".tiff"])
 
 Image.register_mime(TiffImageFile.format, "image/tiff")

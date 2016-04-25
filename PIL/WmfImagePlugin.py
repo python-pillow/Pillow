@@ -164,5 +164,4 @@ def _save(im, fp, filename):
 Image.register_open(WmfStubImageFile.format, WmfStubImageFile, _accept)
 Image.register_save(WmfStubImageFile.format, _save)
 
-Image.register_extension(WmfStubImageFile.format, ".wmf")
-Image.register_extension(WmfStubImageFile.format, ".emf")
+Image.register_extensions(WmfStubImageFile.format, [".wmf", ".emf"])

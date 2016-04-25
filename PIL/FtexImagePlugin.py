@@ -91,5 +91,4 @@ def _validate(prefix):
 
 
 Image.register_open(FtexImageFile.format, FtexImageFile, _validate)
-Image.register_extension(FtexImageFile.format, ".ftc")
-Image.register_extension(FtexImageFile.format, ".ftu")
+Image.register_extensions(FtexImageFile.format, [".ftc", ".ftu"])
