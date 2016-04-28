@@ -245,6 +245,7 @@ _MODE_CONV = {
     # official modes
     "1": ('|b1', None),  # broken
     "L": ('|u1', None),
+    "LA": ('|u1', 2),
     "I": (_ENDIAN + 'i4', None),
     "F": (_ENDIAN + 'f4', None),
     "P": ('|u1', None),
