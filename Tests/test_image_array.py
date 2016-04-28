@@ -19,6 +19,7 @@ class TestImageArray(PillowTestCase):
         # FIXME: wrong?
         self.assertEqual(test("F"), (3, (100, 128), Image._ENDIAN + 'f4', 51200))
 
+        self.assertEqual(test("LA"), (3, (100, 128, 2), '|u1', 25600))
         self.assertEqual(test("RGB"), (3, (100, 128, 3), '|u1', 38400))
         self.assertEqual(test("RGBA"), (3, (100, 128, 4), '|u1', 51200))
         self.assertEqual(test("RGBX"), (3, (100, 128, 4), '|u1', 51200))
@@ -35,6 +36,7 @@ class TestImageArray(PillowTestCase):
         self.assertEqual(test("L"), ("L", (128, 100), True))
         self.assertEqual(test("I"), ("I", (128, 100), True))
         self.assertEqual(test("F"), ("F", (128, 100), True))
+        self.assertEqual(test("LA"), ("LA", (128, 100), True))
         self.assertEqual(test("RGB"), ("RGB", (128, 100), True))
         self.assertEqual(test("RGBA"), ("RGBA", (128, 100), True))
         self.assertEqual(test("RGBX"), ("RGBA", (128, 100), True))
