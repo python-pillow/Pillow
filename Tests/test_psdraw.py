@@ -31,7 +31,7 @@ class TestPsDraw(PillowTestCase):
     def test_draw_postscript(self):
 
         # Based on Pillow tutorial, but there is no textsize:
-        # http://pillow.readthedocs.org/en/latest/handbook/tutorial.html
+        # https://pillow.readthedocs.io/en/latest/handbook/tutorial.html
 
         # Arrange
         tempfile = self.tempfile('temp.ps')

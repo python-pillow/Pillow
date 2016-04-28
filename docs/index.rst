@@ -7,7 +7,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
 
 .. image:: https://readthedocs.org/projects/pillow/badge/?version=latest
-   :target: http://pillow.readthedocs.org/?badge=latest
+   :target: https://pillow.readthedocs.io/?badge=latest
    :alt: Documentation Status
 
 .. image:: https://travis-ci.org/python-pillow/Pillow.svg?branch=master
