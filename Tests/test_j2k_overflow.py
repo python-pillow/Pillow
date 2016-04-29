@@ -4,7 +4,7 @@ from helper import unittest, PillowTestCase
 class TestJ2kEncodeOverflow(PillowTestCase):
     def test_j2k_overflow(self):
 
-        im = Image.new('RGBA', (1024, 131584))
+        im = Image.new('RGBA', (32, 131584))
         target = self.tempfile('temp.jpc')
         try:
             im.save(target)
