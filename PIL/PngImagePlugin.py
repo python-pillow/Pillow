@@ -36,6 +36,7 @@ from __future__ import print_function
 import logging
 import re
 import zlib
+import struct
 
 from PIL import Image, ImageFile, ImagePalette, _binary
 
@@ -106,6 +107,7 @@ class ChunkStream(object):
 
     def read(self):
         "Fetch a new chunk. Returns header information."
+        cid = None
 
         if self.queue:
             cid, pos, length = self.queue[-1]
@@ -116,7 +118,7 @@ class ChunkStream(object):
             cid = s[4:]
             pos = self.fp.tell()
             length = i32(s)
-
+            
         if not is_cid(cid):
             raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
 
@@ -138,11 +140,15 @@ class ChunkStream(object):
     def crc(self, cid, data):
         "Read and verify checksum"
 
-        crc1 = Image.core.crc32(data, Image.core.crc32(cid))
-        crc2 = i16(self.fp.read(2)), i16(self.fp.read(2))
-        if crc1 != crc2:
-            raise SyntaxError("broken PNG file"
-                              "(bad header checksum in %s)" % cid)
+        try:
+            crc1 = Image.core.crc32(data, Image.core.crc32(cid))
+            crc2 = i16(self.fp.read(2)), i16(self.fp.read(2))
+            if crc1 != crc2:
+                raise SyntaxError("broken PNG file (bad header checksum in %s)"
+                                  % cid)
+        except struct.error:
+            raise SyntaxError("broken PNG file (incomplete checksum in %s)"
+                              % cid)
 
     def crc_skip(self, cid, data):
         "Read checksum.  Used if the C module is not present"
@@ -157,7 +163,11 @@ class ChunkStream(object):
         cids = []
 
         while True:
-            cid, pos, length = self.read()
+            try:
+                cid, pos, length = self.read()
+            except struct.error:
+                raise IOError("truncated PNG file")
+
             if cid == endchunk:
                 break
             self.crc(cid, ImageFile._safe_read(self.fp, length))

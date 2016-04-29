@@ -4,6 +4,51 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Jpeg qtables are unsigned chars #1814
+  [thebostik]
+
+- Added additional EXIF tags #1841, TIFF Tags #1821
+  [radarhere]
+
+- Changed documentation to refer to ImageSequence Iterator #1833
+  [radarhere]
+
+- Fix Fedora prerequisites in installation docs, depends script #1842
+  [living180]
+
+- Added _accept hook for PixarImagePlugin #1843
+  [radarhere]
+
+- Removed outdated scanner classifier #1823
+  [radarhere]
+
+- Combined identical error messages in _imaging #1825
+  [radarhere]
+
+- Added debug option for setup.py to trace header and library finding #1790
+  [wiredfool]
+
+- Fix doc building on travis #1820, #1844
+  [wiredfool]
+
+- Fix for DIB/BMP images #1813
+  [wiredfool]
+
+- Add PixarImagePlugin file extension #1809
+  [radarhere]
+
+- Catch struct.errors when verifying png files #1805
+  [wiredfool]
+
+- SpiderImagePlugin: raise an error when seeking in a non-stack file #1794
+  [radarhere, jmichalon]
+
+- Added Support for 2/4 bpp Tiff Grayscale Images #1789
+  [zwhfly]
+
+- Removed unused variable from selftest #1788
+  [radarhere]
+
 - Added warning for as_dict method (deprecated in 3.0.0) #1799
   [radarhere]
 
@@ -34,7 +79,7 @@ Changelog (Pillow)
 - Fixed documented name of JPEG property #1783
   [radarhere]
 
-- Fixed UnboundLocalErrorwhen loading a corrupt jpeg2k file #1780
+- Fixed UnboundLocalError when loading a corrupt jpeg2k file #1780
   [wiredfool]
 
 - Fixed integer overflow in path.c #1773

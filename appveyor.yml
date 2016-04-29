@@ -21,6 +21,7 @@ install:
 build_script:
 - '%PYTHON%\python.exe c:\pillow\winbuild\build.py'
 - cd c:\pillow
+- dir dist\*.egg
 - '%PYTHON%\python.exe selftest.py --installed'
 test_script:
 - cd c:\pillow
@@ -28,3 +29,17 @@ test_script:
 - '%PYTHON%\python.exe test-installed.py'
 matrix:
   fast_finish: true
+artifacts:
+- path: pillow\dist\*.egg
+  name: build
+after_test:
+  - ps: Get-ChildItem .\dist\*.egg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+deploy:
+  provider: S3
+  access_key_id: AKIAIRAXC62ZNTVQJMOQ 
+  secret_access_key:
+    secure: Hwb6klTqtBeMgxAjRoDltiiqpuH8xbwD4UooDzBSiCWXjuFj1lyl4kHgHwTCCGqi
+  bucket: pillow-nightly
+  folder: win/$(APPVEYOR_BUILD_NUMBER)/
+  artifact: /.*egg/
+

@@ -400,26 +400,15 @@ Note that most drivers in the current version of the library only allow you to
 seek to the next frame (as in the above example). To rewind the file, you may
 have to reopen it.
 
-The following iterator class lets you use the for-statement to loop over the
-sequence:
+The following class lets you use the for-statement to loop over the sequence:
 
-A sequence iterator class
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Using the ImageSequence Iterator class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-    class ImageSequence:
-        def __init__(self, im):
-            self.im = im
-        def __getitem__(self, ix):
-            try:
-                if ix:
-                    self.im.seek(ix)
-                return self.im
-            except EOFError:
-                raise IndexError # end of sequence
-
-    for frame in ImageSequence(im):
+    from PIL import ImageSequence
+    for frame in ImageSequence.Iterator(im):
         # ...do something to frame...
 
 

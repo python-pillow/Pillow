@@ -48,7 +48,7 @@ off the end of the memory buffer, causing a segfault.
 This issue was found by Alyssa Besseling at Atlassian
 
 CVE-2016-2533 -- Buffer overflow in PcdDecode.c
-----------------------------------------------
+-----------------------------------------------
 
 In all versions of Pillow, dating back at least to the last PIL 1.1.7
 release, ``PcdDecode.c`` has a buffer overflow error.
@@ -64,7 +64,7 @@ Integer overflow in Resample.c
 
 If a large value was passed into the new size for an image, it is
 possible to overflow an int32 value passed into malloc.
- 
+
   kk = malloc(xsize * kmax * sizeof(float));
   ...
   xbounds = malloc(xsize * 2 * sizeof(int));

@@ -640,7 +640,7 @@ def _save(im, fp, filename):
                 try:
                     if len(table) != 64:
                         raise
-                    table = array.array('b', table)
+                    table = array.array('B', table)
                 except TypeError:
                     raise ValueError("Invalid quantization table")
                 else:

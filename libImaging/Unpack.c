@@ -191,14 +191,64 @@ unpack1IR(UINT8* out, const UINT8* in, int pixels)
 static void
 unpackL2(UINT8* out, const UINT8* in, int pixels)
 {
-    /* nibbles */
+    /* nibbles (msb first, white is non-zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
         switch (pixels) {
-        default:    *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
-        case 3:     *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
-        case 2:     *out++ = ((byte >> 6) & 3) * 255 / 3; byte <<= 2;
-        case 1:     *out++ = ((byte >> 6) & 3) * 255 / 3;
+        default:    *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 3:     *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 2:     *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 1:     *out++ = ((byte >> 6) & 0x03U) * 0x55U;
+        }
+        pixels -= 4;
+    }
+}
+
+static void
+unpackL2I(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (msb first, white is zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 3:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 2:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 1:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U);
+        }
+        pixels -= 4;
+    }
+}
+
+static void
+unpackL2R(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (bit order reversed, white is non-zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        byte = BITFLIP[byte];
+        switch (pixels) {
+        default:    *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 3:     *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 2:     *out++ = ((byte >> 6) & 0x03U) * 0x55U; byte <<= 2;
+        case 1:     *out++ = ((byte >> 6) & 0x03U) * 0x55U;
+        }
+        pixels -= 4;
+    }
+}
+
+static void
+unpackL2IR(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (bit order reversed, white is zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        byte = BITFLIP[byte];
+        switch (pixels) {
+        default:    *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 3:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 2:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U); byte <<= 2;
+        case 1:     *out++ = 0xFFU - (UINT8)(((byte >> 6) & 0x03U) * 0x55U);
         }
         pixels -= 4;
     }
@@ -207,12 +257,56 @@ unpackL2(UINT8* out, const UINT8* in, int pixels)
 static void
 unpackL4(UINT8* out, const UINT8* in, int pixels)
 {
-    /* nibbles */
+    /* nibbles (msb first, white is non-zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
         switch (pixels) {
-        default:    *out++ = ((byte >> 4) & 15) * 255 / 15; byte <<= 4;
-        case 1:     *out++ = ((byte >> 4) & 15) * 255 / 15;
+        default:    *out++ = ((byte >> 4) & 0x0FU) * 0x11U; byte <<= 4;
+        case 1:     *out++ = ((byte >> 4) & 0x0FU) * 0x11U;
+        }
+        pixels -= 2;
+    }
+}
+
+static void
+unpackL4I(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (msb first, white is zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        switch (pixels) {
+        default:    *out++ = 0xFFU - (UINT8)(((byte >> 4) & 0x0FU) * 0x11U); byte <<= 4;
+        case 1:     *out++ = 0xFFU - (UINT8)(((byte >> 4) & 0x0FU) * 0x11U);
+        }
+        pixels -= 2;
+    }
+}
+
+static void
+unpackL4R(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (bit order reversed, white is non-zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        byte = BITFLIP[byte];
+        switch (pixels) {
+        default:    *out++ = ((byte >> 4) & 0x0FU) * 0x11U; byte <<= 4;
+        case 1:     *out++ = ((byte >> 4) & 0x0FU) * 0x11U;
+        }
+        pixels -= 2;
+    }
+}
+
+static void
+unpackL4IR(UINT8* out, const UINT8* in, int pixels)
+{
+    /* nibbles (bit order reversed, white is zero) */
+    while (pixels > 0) {
+        UINT8 byte = *in++;
+        byte = BITFLIP[byte];
+        switch (pixels) {
+        default:    *out++ = 0xFFU - (UINT8)(((byte >> 4) & 0x0FU) * 0x11U); byte <<= 4;
+        case 1:     *out++ = 0xFFU - (UINT8)(((byte >> 4) & 0x0FU) * 0x11U);
         }
         pixels -= 2;
     }
@@ -738,6 +832,21 @@ unpackBGRA(UINT8* out, const UINT8* in, int pixels)
     }
 }
 
+static void
+unpackBGRT(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* RGBA, reversed bytes */
+    /* Transparency map, rather than an alpha channel */
+    for (i = 0; i < pixels; i++) {
+        out[R] = in[2];
+        out[G] = in[1];
+        out[B] = in[0];
+        out[A] = 255 - in[3];
+        out += 4; in += 4;
+    }
+}
+
 
 /* Unpack to "CMYK" image */
 
@@ -1053,7 +1162,15 @@ static struct {
 
     /* greyscale */
     {"L",       "L;2",          2,      unpackL2},
+    {"L",       "L;2I",         2,      unpackL2I},
+    {"L",       "L;2R",         2,      unpackL2R},
+    {"L",       "L;2IR",        2,      unpackL2IR},
+
     {"L",       "L;4",          4,      unpackL4},
+    {"L",       "L;4I",         4,      unpackL4I},
+    {"L",       "L;4R",         4,      unpackL4R},
+    {"L",       "L;4IR",        4,      unpackL4IR},
+
     {"L",       "L",            8,      copy1},
     {"L",       "L;I",          8,      unpackLI},
     {"L",       "L;R",          8,      unpackLR},
@@ -1111,6 +1228,7 @@ static struct {
     {"RGBA",    "RGBA;4B",      16,     ImagingUnpackRGBA4B},
     {"RGBA",    "RGBA;16B",     64,     unpackRGBA16B},
     {"RGBA",    "BGRA",         32,     unpackBGRA},
+    {"RGBA",    "BGRT",         32,     unpackBGRT},
     {"RGBA",    "ARGB",         32,     unpackARGB},
     {"RGBA",    "ABGR",         32,     unpackABGR},
     {"RGBA",    "YCCA;P",       32,     ImagingUnpackYCCA},

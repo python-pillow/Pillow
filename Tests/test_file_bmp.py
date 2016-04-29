@@ -70,6 +70,13 @@ class TestFileBmp(PillowTestCase):
         self.assertEqual(im.size, reloaded.size)
         self.assertEqual(reloaded.format, "JPEG")
 
+    def test_load_dib(self):
+        # test for #1293, Imagegrab returning Unsupported Bitfields Format
+        im = BmpImagePlugin.DibImageFile('Tests/images/clipboard.dib')
+        target = Image.open('Tests/images/clipboard_target.png')
+        self.assert_image_equal(im.convert('RGB'), target.convert('RGB'))
+        self.assert_image_similar(im, target, 1)
+
 
 if __name__ == '__main__':
     unittest.main()

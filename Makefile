@@ -26,6 +26,12 @@ coverage:
 doc:
 	$(MAKE) -C docs html
 
+doccheck:
+	$(MAKE) -C docs html
+# Don't make our test rely on the links in the docs being up every single build. 
+# We don't control them.  But do check, and update them to the target of their redirectes.  
+	$(MAKE) -C docs linkcheck || true
+
 docserve:
 	cd docs/_build/html && python -mSimpleHTTPServer 2> /dev/null&
 

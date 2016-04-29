@@ -314,6 +314,10 @@ class TestFileJpeg(PillowTestCase):
                                   30)
         self.assert_image_similar(im, self.roundtrip(im, qtables='keep'), 30)
 
+        # valid bounds for baseline qtable
+        bounds_qtable = [int(s) for s in ("255 1 " * 32).split(None)]
+        self.roundtrip(im, qtables=[bounds_qtable])
+
         # values from wizard.txt in jpeg9-a src package.
         standard_l_qtable = [int(s) for s in """
             16  11  10  16  24  40  51  61

@@ -1,7 +1,7 @@
 # The Python Imaging Library.
 # $Id$
 
-# Optional color managment support, based on Kevin Cazabon's PyCMS
+# Optional color management support, based on Kevin Cazabon's PyCMS
 # library.
 
 # History:

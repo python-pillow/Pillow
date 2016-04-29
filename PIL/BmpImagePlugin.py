@@ -109,7 +109,12 @@ class BmpImageFile(ImageFile.ImageFile):
                         for idx, mask in enumerate(['r_mask', 'g_mask', 'b_mask', 'a_mask']):
                             file_info[mask] = i32(header_data[36+idx*4:40+idx*4])
                     else:
-                        for mask in ['r_mask', 'g_mask', 'b_mask', 'a_mask']:
+                        # 40 byte headers only have the three components in the bitfields masks,
+                        # ref: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376(v=vs.85).aspx
+                        # See also https://github.com/python-pillow/Pillow/issues/1293
+                        # Note below, None is a key in the SUPPORTED and MASK_MODES structures.
+                        file_info['a_mask'] = None
+                        for mask in ['r_mask', 'g_mask', 'b_mask']:
                             file_info[mask] = i32(read(4))
                     file_info['rgb_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'])
                     file_info['rgba_mask'] = (file_info['r_mask'], file_info['g_mask'], file_info['b_mask'], file_info['a_mask'])
@@ -130,12 +135,22 @@ class BmpImageFile(ImageFile.ImageFile):
         # ----------------- Process BMP with Bitfields compression (not palette)
         if file_info['compression'] == self.BITFIELDS:
             SUPPORTED = {
-                32: [(0xff0000, 0xff00, 0xff, 0x0), (0xff0000, 0xff00, 0xff, 0xff000000), (0x0, 0x0, 0x0, 0x0)],
+                32: [(0xff0000, 0xff00, 0xff, 0x0),
+                     (0xff0000, 0xff00, 0xff, None),
+                     (0xff0000, 0xff00, 0xff, 0xff000000),
+                     (0x0, 0x0, 0x0, 0x0)],
                 24: [(0xff0000, 0xff00, 0xff)],
                 16: [(0xf800, 0x7e0, 0x1f), (0x7c00, 0x3e0, 0x1f)]
             }
+            # From inspecting DIB files from Vista screenshots, the
+            # file format is a 32 bit color image, where the 'Alpha'
+            # channel for screenshots is actually a transparency mask
+            # (255-alpha) where 00 is solid and ff is transparent.  I
+            # can't find documentation of this, but it matches
+            # imagemagick's conversion of the .dib file into a .png.
             MASK_MODES = {
                 (32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX",
+                (32, (0xff0000, 0xff00, 0xff, None)): "BGRT",
                 (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA",
                 (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
                 (24, (0xff0000, 0xff00, 0xff)): "BGR",
@@ -145,7 +160,7 @@ class BmpImageFile(ImageFile.ImageFile):
             if file_info['bits'] in SUPPORTED:
                 if file_info['bits'] == 32 and file_info['rgba_mask'] in SUPPORTED[file_info['bits']]:
                     raw_mode = MASK_MODES[(file_info['bits'], file_info['rgba_mask'])]
-                    self.mode = "RGBA" if raw_mode in ("BGRA",) else self.mode
+                    self.mode = "RGBA" if raw_mode in ("BGRA", "BGRT") else self.mode
                 elif file_info['bits'] in (24, 16) and file_info['rgb_mask'] in SUPPORTED[file_info['bits']]:
                     raw_mode = MASK_MODES[(file_info['bits'], file_info['rgb_mask'])]
                 else:
