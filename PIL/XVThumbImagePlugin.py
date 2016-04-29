@@ -23,12 +23,17 @@ __version__ = "0.1"
 
 o8 = _binary.o8
 
+_MAGIC = b"P7 332"
+
 # standard color palette for thumbnails (RGB332)
 PALETTE = b""
 for r in range(8):
     for g in range(8):
         for b in range(4):
             PALETTE = PALETTE + (o8((r*255)//7)+o8((g*255)//7)+o8((b*255)//3))
+
+def _accept(prefix):
+    return prefix[:6] == _MAGIC
 
 
 ##
@@ -42,8 +47,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
     def _open(self):
 
         # check magic
-        s = self.fp.read(6)
-        if s != b"P7 332":
+        if self.fp.read(6) != _MAGIC:
             raise SyntaxError("not an XV thumbnail file")
 
         # Skip to beginning of next line
@@ -72,4 +76,4 @@ class XVThumbImageFile(ImageFile.ImageFile):
 
 # --------------------------------------------------------------------
 
-Image.register_open(XVThumbImageFile.format, XVThumbImageFile)
+Image.register_open(XVThumbImageFile.format, XVThumbImageFile, _accept)

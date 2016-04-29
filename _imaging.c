@@ -3142,7 +3142,7 @@ _getattr_id(ImagingObject* self, void* closure)
 static PyObject*
 _getattr_ptr(ImagingObject* self, void* closure)
 {
-#if (PY_VERSION_HEX >= 0x02070000 && PY_VERSION_HEX < 0x03000000) || PY_VERSION_HEX >= 0x03010000
+#if PY_VERSION_HEX >= 0x02070000
     return PyCapsule_New(self->image, IMAGING_MAGIC, NULL);
 #else
     return PyCObject_FromVoidPtrAndDesc(self->image, IMAGING_MAGIC, NULL);

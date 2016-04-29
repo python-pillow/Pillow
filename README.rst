@@ -19,7 +19,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
       - |zenodo| |version| |downloads|
 
 .. |docs| image:: https://readthedocs.org/projects/pillow/badge/?version=latest
-   :target: http://pillow.readthedocs.org/?badge=latest
+   :target: https://pillow.readthedocs.io/?badge=latest
    :alt: Documentation Status
 
 .. |linux| image:: https://img.shields.io/travis/python-pillow/Pillow/master.svg?label=Linux%20build
@@ -60,10 +60,10 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
 More Information
 ----------------
 
-- `Documentation <https://pillow.readthedocs.org/>`_
+- `Documentation <https://pillow.readthedocs.io/>`_
 
-  - `Installation <https://pillow.readthedocs.org/en/latest/installation.html>`_
-  - `Handbook <https://pillow.readthedocs.org/en/latest/handbook/index.html>`_
+  - `Installation <https://pillow.readthedocs.io/en/latest/installation.html>`_
+  - `Handbook <https://pillow.readthedocs.io/en/latest/handbook/index.html>`_
 
 - `Contribute <https://github.com/python-pillow/Pillow/blob/master/.github/CONTRIBUTING.md>`_
 
