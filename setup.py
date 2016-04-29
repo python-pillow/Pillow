@@ -767,7 +767,7 @@ try:
     setup(name=NAME,
           version=PILLOW_VERSION,
           description='Python Imaging Library (Fork)',
-          long_description=_read('README.rst').decode('utf-8'),
+          long_description=_read('README.md').decode('utf-8'),
           author='Alex Clark (Fork Author)',
           author_email='aclark@aclark.net',
           url='http://python-pillow.org',
