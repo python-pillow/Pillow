@@ -1,108 +1,177 @@
-<p align="center">
-    <img width="248" height="250" src="https://raw.githubusercontent.com/python-pillow/pillow-logo/main/pillow-logo-248x250.png" alt="Pillow logo">
-</p>
+# Pillow-SIMD
 
-# Pillow
+Pillow-SIMD is "following" Pillow fork (which is PIL fork itself).
+"Following" means than Pillow-SIMD versions are 100% compatible
+drop-in replacement for Pillow with the same version number.
+For example, `Pillow-SIMD 3.2.0.post3` is drop-in replacement for
+`Pillow 3.2.0` and  `Pillow-SIMD 3.3.3.post0` for `Pillow 3.3.3`.
 
-## Python Imaging Library (Fork)
+For more information about original Pillow, please
+[read the documentation][original-docs],
+[check the changelog][original-changelog] and
+[find out how to contribute][original-contribute].
 
-Pillow is the friendly PIL fork by [Alex Clark and
-Contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
-PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
-As of 2019, Pillow development is
-[supported by Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise).
 
-<table>
-    <tr>
-        <th>docs</th>
-        <td>
-            <a href="https://pillow.readthedocs.io/?badge=latest"><img
-                alt="Documentation Status"
-                src="https://readthedocs.org/projects/pillow/badge/?version=latest"></a>
-        </td>
-    </tr>
-    <tr>
-        <th>tests</th>
-        <td>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3ALint"><img
-                alt="GitHub Actions build status (Lint)"
-                src="https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3ATest"><img
-                alt="GitHub Actions build status (Test Linux and macOS)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Windows%22"><img
-                alt="GitHub Actions build status (Test Windows)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Docker%22"><img
-                alt="GitHub Actions build status (Test Docker)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
-            <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
-                alt="AppVeyor CI build status (Windows)"
-                src="https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build"></a>
-            <a href="https://github.com/python-pillow/pillow-wheels/actions"><img
-                alt="GitHub Actions wheels build status (Wheels)"
-                src="https://github.com/python-pillow/pillow-wheels/workflows/Wheels/badge.svg"></a>
-            <a href="https://travis-ci.com/github/python-pillow/pillow-wheels"><img
-                alt="Travis CI wheels build status (aarch64)"
-                src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/main.svg?label=aarch64%20wheels"></a>
-            <a href="https://codecov.io/gh/python-pillow/Pillow"><img
-                alt="Code coverage"
-                src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml"><img
-                alt="Tidelift Align"
-                src="https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml/badge.svg"></a>
-        </td>
-    </tr>
-    <tr>
-        <th>package</th>
-        <td>
-            <a href="https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow"><img
-                alt="Zenodo"
-                src="https://zenodo.org/badge/17549/python-pillow/Pillow.svg"></a>
-            <a href="https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge"><img
-                alt="Tidelift"
-                src="https://tidelift.com/badges/package/pypi/Pillow?style=flat"></a>
-            <a href="https://pypi.org/project/Pillow/"><img
-                alt="Newest PyPI version"
-                src="https://img.shields.io/pypi/v/pillow.svg"></a>
-            <a href="https://pypi.org/project/Pillow/"><img
-                alt="Number of PyPI downloads"
-                src="https://img.shields.io/pypi/dm/pillow.svg"></a>
-        </td>
-    </tr>
-    <tr>
-        <th>social</th>
-        <td>
-            <a href="https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img
-                alt="Join the chat at https://gitter.im/python-pillow/Pillow"
-                src="https://badges.gitter.im/python-pillow/Pillow.svg"></a>
-            <a href="https://twitter.com/PythonPillow"><img
-                alt="Follow on https://twitter.com/PythonPillow"
-                src="https://img.shields.io/badge/tweet-on%20Twitter-00aced.svg"></a>
-        </td>
-    </tr>
-</table>
+## Why SIMD
 
-## Overview
+There are many ways to improve the performance of image processing.
+You can use better algorithms for the same task, you can make better
+implementation for current algorithms, or you can use more processing unit
+resources. It is perfect when you can just use more efficient algorithm like
+when gaussian blur based on convolutions [was replaced][gaussian-blur-changes]
+by sequential box filters. But a number of such improvements are very limited.
+It is also very tempting to use more processor unit resources 
+(via parallelization) when they are available. But it is handier just
+to make things faster on the same resources. And that is where SIMD works better.
 
-The Python Imaging Library adds image processing capabilities to your Python interpreter.
+SIMD stands for "single instruction, multiple data". This is a way to perform
+same operations against the huge amount of homogeneous data. 
+Modern CPU have different SIMD instructions sets like
+MMX, SSE-SSE4, AVX, AVX2, AVX512, NEON.
 
-This library provides extensive file format support, an efficient internal representation, and fairly powerful image processing capabilities.
+Currently, Pillow-SIMD can be [compiled](#installation) with SSE4 (default)
+and AVX2 support.
 
-The core image library is designed for fast access to data stored in a few basic pixel formats. It should provide a solid foundation for a general image processing tool.
 
-## More Information
+## Status
 
-- [Documentation](https://pillow.readthedocs.io/)
-  - [Installation](https://pillow.readthedocs.io/en/latest/installation.html)
-  - [Handbook](https://pillow.readthedocs.io/en/latest/handbook/index.html)
-- [Contribute](https://github.com/python-pillow/Pillow/blob/main/.github/CONTRIBUTING.md)
-  - [Issues](https://github.com/python-pillow/Pillow/issues)
-  - [Pull requests](https://github.com/python-pillow/Pillow/pulls)
-- [Release notes](https://pillow.readthedocs.io/en/stable/releasenotes/index.html)
-- [Changelog](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst)
-  - [Pre-fork](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst#pre-fork)
+[![Uploadcare][uploadcare.logo]][uploadcare.com]
 
-## Report a Vulnerability
+Pillow-SIMD can be used in production. Pillow-SIMD has been operating on
+[Uploadcare][uploadcare.com] servers for more than 1 year.
+Uploadcare is SAAS for image storing and processing in the cloud
+and the main sponsor of Pillow-SIMD project.
 
-To report a security vulnerability, please follow the procedure described in the [Tidelift security policy](https://tidelift.com/docs/security).
+Currently, following operations are accelerated:
+
+- Resize (convolution-based resampling): SSE4, AVX2
+- Gaussian and box blur: SSE4
+- Alpha composition: SSE4, AVX2
+- RGBA → RGBa (alpha premultiplication): SSE4, AVX2
+- RGBa → RGBA (division by alpha): AVX2
+
+See [CHANGES](CHANGES.SIMD.rst).
+
+
+## Benchmarks
+
+The numbers in the table represent processed megapixels of source RGB 2560x1600
+image per second. For example, if resize of 2560x1600 image is done
+in 0.5 seconds, the result will be 8.2 Mpx/s.
+
+- Skia 53
+- ImageMagick 6.9.3-8 Q8 x86_64
+- Pillow 3.4.1
+- Pillow-SIMD 3.4.1.post1
+
+Operation               | Filter  | IM   | Pillow| SIMD SSE4| SIMD AVX2| Skia 53
+------------------------|---------|------|-------|----------|----------|--------
+**Resize to 16x16**     | Bilinear| 41.37| 317.28|   1282.85|   1601.85|  809.49
+                        | Bicubic | 20.58| 174.85|    712.95|    900.65|  453.10
+                        | Lanczos | 14.17| 117.58|    438.60|    544.89|  292.57
+**Resize to 320x180**   | Bilinear| 29.46| 195.21|    863.40|   1057.81|  592.76
+                        | Bicubic | 15.75| 118.79|    503.75|    504.76|  327.68
+                        | Lanczos | 10.80|  79.59|    312.05|    384.92|  196.92
+**Resize to 1920x1200** | Bilinear| 17.80|  68.39|    215.15|    268.29|  192.30
+                        | Bicubic |  9.99|  49.23|    170.41|    210.62|  112.84
+                        | Lanczos |  6.95|  37.71|    130.00|    162.57|  104.76
+**Resize to 7712x4352** | Bilinear|  2.54|   8.38|     22.81|     29.17|   20.58
+                        | Bicubic |  1.60|   6.57|     18.23|     23.94|   16.52
+                        | Lanczos |  1.09|   5.20|     14.90|     20.40|   12.05
+**Blur**                | 1px     |  6.60|  16.94|     35.16|          |        
+                        | 10px    |  2.28|  16.94|     35.47|          |        
+                        | 100px   |  0.34|  16.93|     35.53|          |        
+
+
+### Some conclusion
+
+Pillow is always faster than ImageMagick. And Pillow-SIMD is faster
+than Pillow in 4—5 times. In general, Pillow-SIMD with AVX2 always
+**16-40 times faster** than ImageMagick and overperforms Skia,
+high-speed graphics library used in Chromium, up to 2 times.
+
+### Methodology
+
+All tests were performed on Ubuntu 14.04 64-bit running on
+Intel Core i5 4258U with AVX2 CPU on the single thread.
+
+ImageMagick performance was measured with command-line tool `convert` with
+`-verbose` and `-bench` arguments. I use command line because
+I need to test the latest version and this is the easiest way to do that.
+
+All operations produce exactly the same results.
+Resizing filters compliance:
+
+- PIL.Image.BILINEAR == Triangle
+- PIL.Image.BICUBIC == Catrom
+- PIL.Image.LANCZOS == Lanczos
+
+In ImageMagick, the radius of gaussian blur is called sigma and the second
+parameter is called radius. In fact, there should not be additional parameters
+for *gaussian blur*, because if the radius is too small, this is *not*
+gaussian blur anymore. And if the radius is big this does not give any
+advantages but makes operation slower. For the test, I set the radius
+to sigma × 2.5.
+
+Following script was used for testing:
+https://gist.github.com/homm/f9b8d8a84a57a7e51f9c2a5828e40e63
+
+
+## Why Pillow itself is so fast
+
+There are no cheats. High-quality resize and blur methods are used for all
+benchmarks. Results are almost pixel-perfect. The difference is only effective
+algorithms. Resampling in Pillow was rewritten in version 2.7 with 
+minimal usage of floating point numbers, precomputed coefficients and
+cache-awareness transposition. This result was improved in 3.3 & 3.4 with
+integer-only arithmetics and other optimizations.
+
+
+## Why Pillow-SIMD is even faster
+
+Because of SIMD, of course. But this is not all. Heavy loops unrolling,
+specific instructions, which not available for scalar.
+
+
+## Why do not contribute SIMD to the original Pillow
+
+Well, that's not simple. First of all, Pillow supports a large number
+of architectures, not only x86. But even for x86 platforms, Pillow is often
+distributed via precompiled binaries. To integrate SIMD in precompiled binaries
+we need to do runtime checks of CPU capabilities.
+To compile the code with runtime checks we need to pass `-mavx2` option
+to the compiler. But with that option compiller will inject AVX instructions
+enev for SSE functions, because every SSE instruction has AVX equivalent.
+So there is no easy way to compile such library, especially with setuptools.
+
+
+## Installation
+
+In general, you need to do `pip install pillow-simd` as always and if you
+are using SSE4-capable CPU everything should run smoothly.
+Do not forget to remove original Pillow package first.
+
+If you want the AVX2-enabled version, you need to pass the additional flag to C
+compiler. The easiest way to do that is define `CC` variable while compilation.
+
+```bash
+$ pip uninstall pillow
+$ CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
+```
+
+
+## Contributing to Pillow-SIMD
+
+Pillow-SIMD and Pillow are two separate projects.
+Please submit bugs and improvements not related to SIMD to 
+[original Pillow][original-issues]. All bugs and fixes in Pillow
+will appear in next Pillow-SIMD version automatically.
+
+
+  [original-docs]: http://pillow.readthedocs.io/
+  [original-issues]: https://github.com/python-pillow/Pillow/issues/new
+  [original-changelog]: https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst
+  [original-contribute]: https://github.com/python-pillow/Pillow/blob/master/.github/CONTRIBUTING.md
+  [gaussian-blur-changes]: http://pillow.readthedocs.io/en/3.2.x/releasenotes/2.7.0.html#gaussian-blur-and-unsharp-mask
+  [uploadcare.com]: https://uploadcare.com/?utm_source=github&utm_medium=description&utm_campaign=pillow-simd
+  [uploadcare.logo]: https://ucarecdn.com/dc4b8363-e89f-402f-8ea8-ce606664069c/-/preview/
