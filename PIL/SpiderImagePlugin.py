@@ -293,7 +293,7 @@ Image.register_save(SpiderImageFile.format, _save_spider)
 if __name__ == "__main__":
 
     if not sys.argv[1:]:
-        print("Syntax: python SpiderImagePlugin.py Spiderimage [outfile]")
+        print("Syntax: python SpiderImagePlugin.py [infile] [outfile]")
         sys.exit()
 
     filename = sys.argv[1]
