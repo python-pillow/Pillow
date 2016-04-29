@@ -4,6 +4,18 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Added _accept hook for XVThumbImagePlugin #1853
+  [radarhere]
+
+- Test TIFF with LZW compression #1855, TGA RLE file #1854
+  [hugovk]
+
+- Improved SpiderImagePlugin help text #1863
+  [radarhere]
+
+- Updated Sphinx project description #1870
+  [radarhere]
+
 - Remove support for Python 3.0 from _imaging.c #1851
   [radarhere]
 
