@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Make ImageFile load images in read-only mode #1864
+  [hdante]
+
 - Added _accept hook for XVThumbImagePlugin #1853
   [radarhere]
 
