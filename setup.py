@@ -224,7 +224,10 @@ class pil_build_ext(build_ext):
         #
         # add platform directories
 
-        if sys.platform == "cygwin":
+        if self.disable_platform_guessing:
+            pass
+        
+        elif sys.platform == "cygwin":
             # pythonX.Y.dll.a is in the /usr/lib/pythonX.Y/config directory
             _add_directory(library_dirs,
                            os.path.join("/usr/lib", "python%s" %
@@ -270,60 +273,57 @@ class pil_build_ext(build_ext):
                 _add_directory(include_dirs, "/usr/X11/include")
 
         elif sys.platform.startswith("linux"):
-            if self.disable_platform_guessing:
-                pass
+            arch_tp = (plat.processor(), plat.architecture()[0])
+            if arch_tp == ("x86_64", "32bit"):
+                # 32-bit build on 64-bit machine.
+                _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
             else:
-                arch_tp = (plat.processor(), plat.architecture()[0])
-                if arch_tp == ("x86_64", "32bit"):
-                    # 32-bit build on 64-bit machine.
-                    _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
+                for platform_ in arch_tp:
+
+                    if not platform_:
+                        continue
+
+                    if platform_ in ["x86_64", "64bit"]:
+                        _add_directory(library_dirs, "/lib64")
+                        _add_directory(library_dirs, "/usr/lib64")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/x86_64-linux-gnu")
+                        break
+                    elif platform_ in ["i386", "i686", "32bit"]:
+                        _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
+                        break
+                    elif platform_ in ["aarch64"]:
+                        _add_directory(library_dirs, "/usr/lib64")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/aarch64-linux-gnu")
+                        break
+                    elif platform_ in ["arm", "armv7l"]:
+                        _add_directory(library_dirs,
+                                       "/usr/lib/arm-linux-gnueabi")
+                        break
+                    elif platform_ in ["ppc64"]:
+                        _add_directory(library_dirs, "/usr/lib64")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/ppc64-linux-gnu")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/powerpc64-linux-gnu")
+                        break
+                    elif platform_ in ["ppc"]:
+                        _add_directory(library_dirs, "/usr/lib/ppc-linux-gnu")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/powerpc-linux-gnu")
+                        break
+                    elif platform_ in ["s390x"]:
+                        _add_directory(library_dirs, "/usr/lib64")
+                        _add_directory(library_dirs,
+                                       "/usr/lib/s390x-linux-gnu")
+                        break
+                    elif platform_ in ["s390"]:
+                        _add_directory(library_dirs, "/usr/lib/s390-linux-gnu")
+                        break
                 else:
-                    for platform_ in arch_tp:
-
-                        if not platform_:
-                            continue
-
-                        if platform_ in ["x86_64", "64bit"]:
-                            _add_directory(library_dirs, "/lib64")
-                            _add_directory(library_dirs, "/usr/lib64")
-                            _add_directory(library_dirs,
-                                           "/usr/lib/x86_64-linux-gnu")
-                            break
-                        elif platform_ in ["i386", "i686", "32bit"]:
-                            _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
-                            break
-                        elif platform_ in ["aarch64"]:
-                            _add_directory(library_dirs, "/usr/lib64")
-                            _add_directory(library_dirs,
-                                           "/usr/lib/aarch64-linux-gnu")
-                            break
-                        elif platform_ in ["arm", "armv7l"]:
-                            _add_directory(library_dirs,
-                                           "/usr/lib/arm-linux-gnueabi")
-                            break
-                        elif platform_ in ["ppc64"]:
-                            _add_directory(library_dirs, "/usr/lib64")
-                            _add_directory(library_dirs,
-                                           "/usr/lib/ppc64-linux-gnu")
-                            _add_directory(library_dirs,
-                                           "/usr/lib/powerpc64-linux-gnu")
-                            break
-                        elif platform_ in ["ppc"]:
-                            _add_directory(library_dirs, "/usr/lib/ppc-linux-gnu")
-                            _add_directory(library_dirs,
-                                           "/usr/lib/powerpc-linux-gnu")
-                            break
-                        elif platform_ in ["s390x"]:
-                            _add_directory(library_dirs, "/usr/lib64")
-                            _add_directory(library_dirs,
-                                           "/usr/lib/s390x-linux-gnu")
-                            break
-                        elif platform_ in ["s390"]:
-                            _add_directory(library_dirs, "/usr/lib/s390-linux-gnu")
-                            break
-                    else:
-                        raise ValueError(
-                            "Unable to identify Linux platform: `%s`" % platform_)
+                    raise ValueError(
+                        "Unable to identify Linux platform: `%s`" % platform_)
 
                 # XXX Kludge. Above /\ we brute force support multiarch. Here we
                 # try Barry's more general approach. Afterward, something should
