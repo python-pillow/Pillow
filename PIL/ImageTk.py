@@ -33,6 +33,7 @@ except ImportError:
     del Tkinter
 
 from PIL import Image
+from io import BytesIO
 
 
 # --------------------------------------------------------------------
@@ -51,6 +52,15 @@ def _pilbitmap_check():
         except tkinter.TclError:
             _pilbitmap_ok = 0
     return _pilbitmap_ok
+
+def _get_image_from_kw(kw):
+    source = None
+    if "file" in kw:
+        source = kw.pop("file")
+    elif "data" in kw:
+        source = BytesIO(kw.pop("data"))
+    if source:
+        return Image.open(source)
 
 
 # --------------------------------------------------------------------
@@ -80,13 +90,7 @@ class PhotoImage(object):
 
         # Tk compatibility: file or data
         if image is None:
-            if "file" in kw:
-                image = Image.open(kw["file"])
-                del kw["file"]
-            elif "data" in kw:
-                from io import BytesIO
-                image = Image.open(BytesIO(kw["data"]))
-                del kw["data"]
+            image = _get_image_from_kw(kw)
 
         if hasattr(image, "mode") and hasattr(image, "size"):
             # got an image instead of a mode
@@ -209,13 +213,7 @@ class BitmapImage(object):
 
         # Tk compatibility: file or data
         if image is None:
-            if "file" in kw:
-                image = Image.open(kw["file"])
-                del kw["file"]
-            elif "data" in kw:
-                from io import BytesIO
-                image = Image.open(BytesIO(kw["data"]))
-                del kw["data"]
+            image = _get_image_from_kw(kw)
 
         self.__mode = image.mode
         self.__size = image.size
