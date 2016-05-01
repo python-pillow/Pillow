@@ -64,6 +64,7 @@ class TestNumpy(PillowTestCase):
         self.assert_image(to_image(numpy.float32), "F", (10, 10))
         self.assert_image(to_image(numpy.float64), "F", (10, 10))
 
+        self.assert_image(to_image(numpy.uint8, 2), "LA", (10, 10))
         self.assert_image(to_image(numpy.uint8, 3), "RGB", (10, 10))
         self.assert_image(to_image(numpy.uint8, 4), "RGBA", (10, 10))
 
@@ -105,6 +106,7 @@ class TestNumpy(PillowTestCase):
         modes = [("L", 'uint8'),
                  ("I", 'int32'),
                  ("F", 'float32'),
+                 ("LA", 'uint8'),
                  ("RGB", 'uint8'),
                  ("RGBA", 'uint8'),
                  ("RGBX", 'uint8'),
