@@ -104,7 +104,7 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, int filter)
     float center, ww, ss, ss0, ss1, ss2, ss3;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
-    float *k, *kk;
+    float *k, *kk, *kw;
 
     /* check filter */
     switch (filter) {
@@ -151,14 +151,21 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, int filter)
     if ( ! kk)
         return (Imaging) ImagingError_MemoryError();
 
-    xbounds = malloc(xsize * 2 * sizeof(int));
-    if ( ! xbounds) {
+    /* intermediate not normalized buffer for coefficients */ 
+    kw = malloc(kmax * sizeof(float));
+    if ( ! kw) {
         free(kk);
         return (Imaging) ImagingError_MemoryError();
     }
 
+    xbounds = malloc(xsize * 2 * sizeof(int));
+    if ( ! xbounds) {
+        free(kk);
+        free(kw);
+        return (Imaging) ImagingError_MemoryError();
+    }
+
     for (xx = 0; xx < xsize; xx++) {
-        k = &kk[xx * kmax];
         center = (xx + 0.5) * scale;
         ww = 0.0;
         ss = 1.0 / filterscale;
@@ -169,17 +176,20 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, int filter)
         if (xmax > imIn->xsize)
             xmax = imIn->xsize;
         for (x = xmin; x < xmax; x++) {
-            float w = filterp->filter((x - center + 0.5) * ss) * ss;
-            k[x - xmin] = w;
+            float w = filterp->filter((x - center + 0.5) * ss);
+            kw[x - xmin] = w;
             ww += w;
         }
+        k = &kk[xx * kmax];
         for (x = 0; x < xmax - xmin; x++) {
             if (ww != 0.0)
-                k[x] /= ww;
+                k[x] = kw[x] / ww;
         }
         xbounds[xx * 2 + 0] = xmin;
         xbounds[xx * 2 + 1] = xmax;
     }
+
+    free(kw);
 
     imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
     if ( ! imOut) {
