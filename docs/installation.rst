@@ -202,7 +202,12 @@ Build Options
   the libraries are not found. Webpmux (WebP metadata) relies on WebP
   support. Tcl and Tk also must be used together.
 
-* Build flags: ``--debug``. Adds a debugging flag to the include and
+* Build flag: ``--disable-platform-guessing``. Skips all of the
+  platform dependent guessing of include and library directories for
+  automated build systems that configure the proper paths in the
+  environment variables (e.g. Buildroot).
+
+* Build flag: ``--debug``. Adds a debugging flag to the include and
   library search process to dump all paths searched for and found to
   stdout.
 
