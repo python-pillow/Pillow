@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Add support for LA mode in Image.fromarray #1865
+  [pierriko]
+
 - Make ImageFile load images in read-only mode #1864
   [hdante]
 
