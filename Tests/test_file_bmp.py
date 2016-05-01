@@ -74,8 +74,8 @@ class TestFileBmp(PillowTestCase):
         # test for #1293, Imagegrab returning Unsupported Bitfields Format
         im = BmpImagePlugin.DibImageFile('Tests/images/clipboard.dib')
         target = Image.open('Tests/images/clipboard_target.png')
-        self.assert_image_equal(im.convert('RGB'), target.convert('RGB'))
-        self.assert_image_similar(im, target, 1)
+        self.assert_image_equal(im, target)
+
 
 
 if __name__ == '__main__':

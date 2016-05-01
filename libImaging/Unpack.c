@@ -832,21 +832,6 @@ unpackBGRA(UINT8* out, const UINT8* in, int pixels)
     }
 }
 
-static void
-unpackBGRT(UINT8* out, const UINT8* in, int pixels)
-{
-    int i;
-    /* RGBA, reversed bytes */
-    /* Transparency map, rather than an alpha channel */
-    for (i = 0; i < pixels; i++) {
-        out[R] = in[2];
-        out[G] = in[1];
-        out[B] = in[0];
-        out[A] = 255 - in[3];
-        out += 4; in += 4;
-    }
-}
-
 
 /* Unpack to "CMYK" image */
 
@@ -1228,7 +1213,6 @@ static struct {
     {"RGBA",    "RGBA;4B",      16,     ImagingUnpackRGBA4B},
     {"RGBA",    "RGBA;16B",     64,     unpackRGBA16B},
     {"RGBA",    "BGRA",         32,     unpackBGRA},
-    {"RGBA",    "BGRT",         32,     unpackBGRT},
     {"RGBA",    "ARGB",         32,     unpackARGB},
     {"RGBA",    "ABGR",         32,     unpackABGR},
     {"RGBA",    "YCCA;P",       32,     ImagingUnpackYCCA},
