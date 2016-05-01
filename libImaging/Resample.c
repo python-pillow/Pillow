@@ -95,33 +95,15 @@ static float inline i2f(int v) { return (float) v; }
 
 
 Imaging
-ImagingResampleHorizontal(Imaging imIn, int xsize, int filter)
+ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     Imaging imOut;
-    struct filter *filterp;
     float support, scale, filterscale;
     float center, ww, ss, ss0, ss1, ss2, ss3;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
     float *k, *kk, *kw;
-
-    /* check filter */
-    switch (filter) {
-    case IMAGING_TRANSFORM_LANCZOS:
-        filterp = &LANCZOS;
-        break;
-    case IMAGING_TRANSFORM_BILINEAR:
-        filterp = &BILINEAR;
-        break;
-    case IMAGING_TRANSFORM_BICUBIC:
-        filterp = &BICUBIC;
-        break;
-    default:
-        return (Imaging) ImagingError_ValueError(
-            "unsupported resampling filter"
-            );
-    }
 
     /* prepare for horizontal stretch */
     filterscale = scale = (float) imIn->xsize / xsize;
@@ -302,6 +284,7 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
 {
     Imaging imTemp1, imTemp2, imTemp3;
     Imaging imOut;
+    struct filter *filterp;
 
     if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
         return (Imaging) ImagingError_ModeError();
@@ -309,8 +292,25 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
     if (imIn->type == IMAGING_TYPE_SPECIAL)
         return (Imaging) ImagingError_ModeError();
 
+    /* check filter */
+    switch (filter) {
+    case IMAGING_TRANSFORM_LANCZOS:
+        filterp = &LANCZOS;
+        break;
+    case IMAGING_TRANSFORM_BILINEAR:
+        filterp = &BILINEAR;
+        break;
+    case IMAGING_TRANSFORM_BICUBIC:
+        filterp = &BICUBIC;
+        break;
+    default:
+        return (Imaging) ImagingError_ValueError(
+            "unsupported resampling filter"
+            );
+    }
+
     /* two-pass resize, first pass */
-    imTemp1 = ImagingResampleHorizontal(imIn, xsize, filter);
+    imTemp1 = ImagingResampleHorizontal(imIn, xsize, filterp);
     if ( ! imTemp1)
         return NULL;
 
@@ -321,7 +321,7 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
         return NULL;
 
     /* second pass */
-    imTemp3 = ImagingResampleHorizontal(imTemp2, ysize, filter);
+    imTemp3 = ImagingResampleHorizontal(imTemp2, ysize, filterp);
     ImagingDelete(imTemp2);
     if ( ! imTemp3)
         return NULL;
