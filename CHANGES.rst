@@ -52,7 +52,7 @@ Changelog (Pillow)
 - Fix doc building on travis #1820, #1844
   [wiredfool]
 
-- Fix for DIB/BMP images #1813
+- Fix for DIB/BMP images #1813, #1847
   [wiredfool]
 
 - Add PixarImagePlugin file extension #1809
