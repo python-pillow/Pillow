@@ -203,6 +203,7 @@ class TestFilePng(PillowTestCase):
     def test_load_transparent_rgb(self):
         test_file = "Tests/images/rgb_trns.png"
         im = Image.open(test_file)
+        self.assertEqual(im.info["transparency"], (0, 255, 52))
 
         self.assert_image(im, "RGB", (64, 64))
         im = im.convert("RGBA")
@@ -215,15 +216,65 @@ class TestFilePng(PillowTestCase):
         in_file = "Tests/images/pil123p.png"
         im = Image.open(in_file)
 
+        # 'transparency' contains a byte string with the opacity for
+        # each palette entry
+        self.assertEqual(len(im.info["transparency"]), 256)
+
         test_file = self.tempfile("temp.png")
         im.save(test_file)
+
+        # check if saved image contains same transparency
+        im = Image.open(test_file)
+        self.assertEqual(len(im.info["transparency"]), 256)
+
+        self.assert_image(im, "P", (162, 150))
+        im = im.convert("RGBA")
+        self.assert_image(im, "RGBA", (162, 150))
+
+        # image has 124 unique alpha values
+        self.assertEqual(len(im.split()[3].getcolors()), 124)
 
     def test_save_p_single_transparency(self):
         in_file = "Tests/images/p_trns_single.png"
         im = Image.open(in_file)
 
+        # pixel value 164 is full transparent
+        self.assertEqual(im.info["transparency"], 164)
+        self.assertEqual(im.getpixel((31, 31)), 164)
+
         test_file = self.tempfile("temp.png")
         im.save(test_file)
+
+        # check if saved image contains same transparency
+        im = Image.open(test_file)
+        self.assertEqual(im.info["transparency"], 164)
+        self.assertEqual(im.getpixel((31, 31)), 164)
+        self.assert_image(im, "P", (64, 64))
+        im = im.convert("RGBA")
+        self.assert_image(im, "RGBA", (64, 64))
+
+        self.assertEqual(im.getpixel((31, 31)), (0, 255, 52, 0))
+
+        # image has 876 transparent pixels
+        self.assertEqual(im.split()[3].getcolors()[0][0], 876)
+
+    def test_save_p_transparent_black(self):
+        # check if solid black image with full transparency
+        # is supported (check for #1838)
+        im = Image.new("RGBA", (10, 10), (0, 0, 0, 0))
+        self.assertEqual(im.getcolors(), [(100, (0, 0, 0, 0))])
+
+        im = im.convert("P")
+        test_file = self.tempfile("temp.png")
+        im.save(test_file)
+
+        # check if saved image contains same transparency
+        im = Image.open(test_file)
+        self.assertEqual(len(im.info["transparency"]), 256)
+        self.assert_image(im, "P", (10, 10))
+        im = im.convert("RGBA")
+        self.assert_image(im, "RGBA", (10, 10))
+        self.assertEqual(im.getcolors(), [(100, (0, 0, 0, 0))])
 
     def test_save_l_transparency(self):
         in_file = "Tests/images/l_trns.png"

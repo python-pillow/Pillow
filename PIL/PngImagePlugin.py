@@ -74,8 +74,7 @@ _MODES = {
 }
 
 
-_simple_palette = re.compile(b'^\xff+\x00\xff*$')
-_null_palette = re.compile(b'^\x00*$')
+_simple_palette = re.compile(b'^\xff*\x00\xff*$')
 
 # Maximum decompressed size for a iTXt or zTXt chunk.
 # Eliminates decompression bombs where compressed chunks can expand 1000x
@@ -118,7 +117,7 @@ class ChunkStream(object):
             cid = s[4:]
             pos = self.fp.tell()
             length = i32(s)
-            
+
         if not is_cid(cid):
             raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
 
@@ -359,12 +358,14 @@ class PngStream(ChunkStream):
         s = ImageFile._safe_read(self.fp, length)
         if self.im_mode == "P":
             if _simple_palette.match(s):
+                # tRNS contains only one full-transparent entry,
+                # other entries are full opaque
                 i = s.find(b"\0")
                 if i >= 0:
                     self.im_info["transparency"] = i
-            elif _null_palette.match(s):
-                self.im_info["transparency"] = 0
             else:
+                # otherwise, we have a byte string with one alpha value
+                # for each palette entry
                 self.im_info["transparency"] = s
         elif self.im_mode == "L":
             self.im_info["transparency"] = i16(s)
