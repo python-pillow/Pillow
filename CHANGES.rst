@@ -4,6 +4,15 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Fixed tutorial code and added explanation #1877
+  [radarhere]
+
+- Added OS X support for ImageGrab grabclipboard #1837
+  [radarhere]
+
+- Combined duplicate code in ImageTk #1856
+  [radarhere]
+
 - Added --disable-platform-guessing option to setup.py build extension, #1861
   [angeloc]
 
