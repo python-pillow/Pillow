@@ -4,7 +4,10 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
-- Fixed loading Transparent PNGs with a transparent black color #1840.
+- Added --disable-platform-guessing option to setup.py build extension, #1861
+  [angeloc]
+
+- Fixed loading Transparent PNGs with a transparent black color #1840
   [olt]
 
 - Add support for LA mode in Image.fromarray #1865
