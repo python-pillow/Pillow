@@ -216,7 +216,8 @@ class TestFilePng(PillowTestCase):
         in_file = "Tests/images/pil123p.png"
         im = Image.open(in_file)
 
-        # 'transparency' contains a byte string with the opacity for each palett entry
+        # 'transparency' contains a byte string with the opacity for
+        # each palette entry
         self.assertEqual(len(im.info["transparency"]), 256)
 
         test_file = self.tempfile("temp.png")
@@ -230,7 +231,7 @@ class TestFilePng(PillowTestCase):
         im = im.convert("RGBA")
         self.assert_image(im, "RGBA", (162, 150))
 
-        # image has 124 uniqe qlpha values
+        # image has 124 unique alpha values
         self.assertEqual(len(im.split()[3].getcolors()), 124)
 
     def test_save_p_single_transparency(self):
