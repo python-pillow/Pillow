@@ -178,7 +178,7 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
                 xmin = xbounds[xx * 2 + 0];
                 xmax = xbounds[xx * 2 + 1];
                 k = &kk[xx * kmax];
-                ss0 = 0;
+                ss0 = 1 << (PRECISION_BITS -1);
                 for (x = xmin; x < xmax; x++)
                     ss0 += ((UINT8) imIn->image8[yy][x]) * k[x - xmin];
                 imOut->image8[yy][xx] = clip8(ss0);
@@ -192,7 +192,7 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
                         xmin = xbounds[xx * 2 + 0];
                         xmax = xbounds[xx * 2 + 1];
                         k = &kk[xx * kmax];
-                        ss0 = ss1 = 0;
+                        ss0 = ss1 = 1 << (PRECISION_BITS -1);
                         for (x = xmin; x < xmax; x++) {
                             ss0 += ((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
                             ss1 += ((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
@@ -205,7 +205,7 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
                         xmin = xbounds[xx * 2 + 0];
                         xmax = xbounds[xx * 2 + 1];
                         k = &kk[xx * kmax];
-                        ss0 = ss1 = ss2 = 0;
+                        ss0 = ss1 = ss2 = 1 << (PRECISION_BITS -1);
                         for (x = xmin; x < xmax; x++) {
                             ss0 += ((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
                             ss1 += ((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
@@ -220,7 +220,7 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
                         xmin = xbounds[xx * 2 + 0];
                         xmax = xbounds[xx * 2 + 1];
                         k = &kk[xx * kmax];
-                        ss0 = ss1 = ss2 = ss3 = 0;
+                        ss0 = ss1 = ss2 = ss3 = 1 << (PRECISION_BITS -1);
                         for (x = xmin; x < xmax; x++) {
                             ss0 += ((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
                             ss1 += ((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];

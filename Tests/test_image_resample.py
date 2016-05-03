@@ -150,5 +150,22 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
             self.make_sample(data, (12, 12)))
 
 
+class CoreResampleConsistencyTest(PillowTestCase):
+
+    def test_8u(self):
+        im = Image.new('RGB', (512, 9), (0, 64, 255))
+        im = im.resize((9, 512), Image.LANCZOS)
+        r, g, b = im.split()
+
+        for channel, color in [(r, 0), (g, 64), (b, 255)]:
+            px = channel.load()
+            for x in range(channel.size[0]):
+                for y in range(channel.size[1]):
+                    if px[x, y] != color:
+                        message = "{} != {} for pixel {}".format(
+                            px[x, y], color, (x, y))
+                        self.assertEqual(px[x, y], color, message)
+
+
 if __name__ == '__main__':
     unittest.main()
