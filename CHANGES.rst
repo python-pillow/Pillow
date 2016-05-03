@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Added check for executable permissions to ImageShow #1880
+  [radarhere]
+
 - Fixed tutorial code and added explanation #1877
   [radarhere]
 
