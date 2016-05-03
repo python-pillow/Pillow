@@ -107,15 +107,12 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
 
     /* prepare for horizontal stretch */
     filterscale = scale = (float) imIn->xsize / xsize;
-
-    /* determine support size (length of resampling filter) */
-    support = filterp->support;
-
     if (filterscale < 1.0) {
         filterscale = 1.0;
     }
 
-    support = support * filterscale;
+    /* determine support size (length of resampling filter) */
+    support = filterp->support * filterscale;
 
     /* maximum number of coofs */
     kmax = (int) ceil(support) * 2 + 1;
