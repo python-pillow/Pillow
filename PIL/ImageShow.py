@@ -139,8 +139,7 @@ else:
             return None
         for dirname in path.split(os.pathsep):
             filename = os.path.join(dirname, executable)
-            if os.path.isfile(filename):
-                # FIXME: make sure it's executable
+            if os.path.isfile(filename) and os.access(filename, os.X_OK):
                 return filename
         return None
 
