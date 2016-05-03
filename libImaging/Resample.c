@@ -38,8 +38,6 @@ static inline float lanczos_filter(float x)
     return 0.0;
 }
 
-static struct filter LANCZOS = { lanczos_filter, 3.0 };
-
 static inline float bilinear_filter(float x)
 {
     if (x < 0.0)
@@ -48,8 +46,6 @@ static inline float bilinear_filter(float x)
         return 1.0-x;
     return 0.0;
 }
-
-static struct filter BILINEAR = { bilinear_filter, 1.0 };
 
 static inline float bicubic_filter(float x)
 {
@@ -65,33 +61,27 @@ static inline float bicubic_filter(float x)
 #undef a
 }
 
+static struct filter LANCZOS = { lanczos_filter, 3.0 };
+static struct filter BILINEAR = { bilinear_filter, 1.0 };
 static struct filter BICUBIC = { bicubic_filter, 2.0 };
 
 
-static inline UINT8 clip8(float in)
+
+/* 8 bits for result. Filter can have negative areas.
+   In one cases the sum of the coefficients will be negative,
+   in the other it will be more than 1.0. That is why we need
+   two extra bits for overflow and int type. */
+#define PRECISION_BITS (32 - 8 - 2)
+
+
+static inline UINT8 clip8(int in)
 {
-    int out = (int) in;
-    if (out >= 255)
+    if (in >= (1 << PRECISION_BITS << 8))
        return 255;
-    if (out <= 0)
+    if (in <= 0)
         return 0;
-    return (UINT8) out;
+    return (UINT8) (in >> PRECISION_BITS);
 }
-
-
-/* This is work around bug in GCC prior 4.9 in 64-bit mode.
-   GCC generates code with partial dependency which 3 times slower.
-   See: http://stackoverflow.com/a/26588074/253146 */
-#if defined(__x86_64__) && defined(__SSE__) &&  ! defined(__NO_INLINE__) && \
-    ! defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900)
-static float __attribute__((always_inline)) i2f(int v) {
-    float x;
-    __asm__("xorps %0, %0; cvtsi2ss %1, %0" : "=X"(x) : "r"(v) );
-    return x;
-}
-#else
-static float inline i2f(int v) { return (float) v; }
-#endif
 
 
 Imaging
@@ -100,10 +90,12 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
     ImagingSectionCookie cookie;
     Imaging imOut;
     float support, scale, filterscale;
-    float center, ww, ss, ss0, ss1, ss2, ss3;
+    float center, ww, ss;
+    int ss0, ss1, ss2, ss3;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
-    float *k, *kk, *kw;
+    int *k, *kk;
+    float *kw;
 
     /* prepare for horizontal stretch */
     filterscale = scale = (float) imIn->xsize / xsize;
@@ -118,7 +110,7 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
     kmax = (int) ceil(support) * 2 + 1;
 
     // check for overflow
-    if (xsize > SIZE_MAX / (kmax * sizeof(float)))
+    if (xsize > SIZE_MAX / (kmax * sizeof(int)))
         return (Imaging) ImagingError_MemoryError();
 
     // sizeof(int) should be greater than 0 as well
@@ -126,7 +118,7 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
         return (Imaging) ImagingError_MemoryError();
 
     /* coefficient buffer */
-    kk = malloc(xsize * kmax * sizeof(float));
+    kk = malloc(xsize * kmax * sizeof(int));
     if ( ! kk)
         return (Imaging) ImagingError_MemoryError();
 
@@ -162,7 +154,7 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
         k = &kk[xx * kmax];
         for (x = 0; x < xmax - xmin; x++) {
             if (ww != 0.0)
-                k[x] = kw[x] / ww;
+                k[x] = (int) floor(0.5 + kw[x] / ww * (1 << PRECISION_BITS));
         }
         xbounds[xx * 2 + 0] = xmin;
         xbounds[xx * 2 + 1] = xmax;
@@ -186,10 +178,10 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
                 xmin = xbounds[xx * 2 + 0];
                 xmax = xbounds[xx * 2 + 1];
                 k = &kk[xx * kmax];
-                ss = 0.5;
+                ss0 = 0;
                 for (x = xmin; x < xmax; x++)
-                    ss += i2f(imIn->image8[yy][x]) * k[x - xmin];
-                imOut->image8[yy][xx] = clip8(ss);
+                    ss0 += ((UINT8) imIn->image8[yy][x]) * k[x - xmin];
+                imOut->image8[yy][xx] = clip8(ss0);
             }
         } else {
             switch(imIn->type) {
@@ -200,10 +192,10 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
                         xmin = xbounds[xx * 2 + 0];
                         xmax = xbounds[xx * 2 + 1];
                         k = &kk[xx * kmax];
-                        ss0 = ss1 = 0.5;
+                        ss0 = ss1 = 0;
                         for (x = xmin; x < xmax; x++) {
-                            ss0 += i2f((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
-                            ss1 += i2f((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
+                            ss0 += ((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
+                            ss1 += ((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
                         }
                         imOut->image[yy][xx*4 + 0] = clip8(ss0);
                         imOut->image[yy][xx*4 + 3] = clip8(ss1);
@@ -213,11 +205,11 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
                         xmin = xbounds[xx * 2 + 0];
                         xmax = xbounds[xx * 2 + 1];
                         k = &kk[xx * kmax];
-                        ss0 = ss1 = ss2 = 0.5;
+                        ss0 = ss1 = ss2 = 0;
                         for (x = xmin; x < xmax; x++) {
-                            ss0 += i2f((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
-                            ss1 += i2f((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
-                            ss2 += i2f((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
+                            ss0 += ((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
+                            ss1 += ((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
+                            ss2 += ((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
                         }
                         imOut->image[yy][xx*4 + 0] = clip8(ss0);
                         imOut->image[yy][xx*4 + 1] = clip8(ss1);
@@ -228,12 +220,12 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
                         xmin = xbounds[xx * 2 + 0];
                         xmax = xbounds[xx * 2 + 1];
                         k = &kk[xx * kmax];
-                        ss0 = ss1 = ss2 = ss3 = 0.5;
+                        ss0 = ss1 = ss2 = ss3 = 0;
                         for (x = xmin; x < xmax; x++) {
-                            ss0 += i2f((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
-                            ss1 += i2f((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
-                            ss2 += i2f((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
-                            ss3 += i2f((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
+                            ss0 += ((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
+                            ss1 += ((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
+                            ss2 += ((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
+                            ss3 += ((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
                         }
                         imOut->image[yy][xx*4 + 0] = clip8(ss0);
                         imOut->image[yy][xx*4 + 1] = clip8(ss1);
@@ -250,7 +242,7 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, struct filter *filterp)
                     k = &kk[xx * kmax];
                     ss = 0.0;
                     for (x = xmin; x < xmax; x++)
-                        ss += i2f(IMAGING_PIXEL_I(imIn, x, yy)) * k[x - xmin];
+                        ss += (IMAGING_PIXEL_I(imIn, x, yy)) * k[x - xmin];
                     IMAGING_PIXEL_I(imOut, xx, yy) = (int) ss;
                 }
                 break;
