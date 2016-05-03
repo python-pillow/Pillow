@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Fixed loading Transparent PNGs with a transparent black color #1840.
+  [olt]
+
 - Add support for LA mode in Image.fromarray #1865
   [pierriko]
 
