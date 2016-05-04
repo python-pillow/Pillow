@@ -13,6 +13,7 @@ import platform as plat
 import re
 import struct
 import sys
+import subprocess
 
 from distutils.command.build_ext import build_ext
 from distutils import sysconfig
@@ -238,7 +239,6 @@ class pil_build_ext(build_ext):
             _add_directory(include_dirs, "/opt/local/include")
 
             # if Homebrew is installed, use its lib and include directories
-            import subprocess
             try:
                 prefix = subprocess.check_output(['brew', '--prefix']).strip(
                 ).decode('latin1')
@@ -763,9 +763,9 @@ class pil_build_ext(build_ext):
         tmpfile = os.path.join(self.build_temp, 'multiarch')
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
-        ret = os.system(
-            'dpkg-architecture -qDEB_HOST_MULTIARCH > %s 2> /dev/null' %
-            tmpfile)
+        with open(tmpfile, 'wb') as fp:
+            ret = subprocess.call([
+                'dpkg-architecture', '-qDEB_HOST_MULTIARCH'], stdout=fp)
         try:
             if ret >> 8 == 0:
                 fp = open(tmpfile, 'r')
