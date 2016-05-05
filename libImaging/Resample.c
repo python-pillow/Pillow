@@ -181,8 +181,8 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
     }
 
     ImagingSectionEnter(&cookie);
-    for (yy = 0; yy < imOut->ysize; yy++) {
-        if (imIn->image8) {
+    if (imIn->image8) {
+        for (yy = 0; yy < imOut->ysize; yy++) {
             for (xx = 0; xx < xsize; xx++) {
                 xmin = xbounds[xx * 2 + 0];
                 xmax = xbounds[xx * 2 + 1];
@@ -192,8 +192,10 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                     ss0 += ((UINT8) imIn->image8[yy][x]) * k[x - xmin];
                 imOut->image8[yy][xx] = clip8(ss0);
             }
-        } else if (imIn->type == IMAGING_TYPE_UINT8) {
-            if (imIn->bands == 2) {
+        }
+    } else if (imIn->type == IMAGING_TYPE_UINT8) {
+        if (imIn->bands == 2) {
+            for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
@@ -206,7 +208,9 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                     imOut->image[yy][xx*4 + 0] = clip8(ss0);
                     imOut->image[yy][xx*4 + 3] = clip8(ss1);
                 }
-            } else if (imIn->bands == 3) {
+            }
+        } else if (imIn->bands == 3) {
+            for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
@@ -221,7 +225,9 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                     imOut->image[yy][xx*4 + 1] = clip8(ss1);
                     imOut->image[yy][xx*4 + 2] = clip8(ss2);
                 }
-            } else {
+            }
+        } else {
+            for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
