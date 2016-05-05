@@ -326,7 +326,9 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
     if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
         return (Imaging) ImagingError_ModeError();
 
-    if (imIn->image8) {
+    if (imIn->type == IMAGING_TYPE_SPECIAL) {
+        return (Imaging) ImagingError_ModeError();
+    } else if (imIn->image8) {
         ResampleHorizontal = ImagingResampleHorizontal_8bpc;
     } else {
         switch(imIn->type) {
