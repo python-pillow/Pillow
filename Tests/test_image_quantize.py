@@ -15,6 +15,14 @@ class TestImageQuantize(PillowTestCase):
         im = im.quantize(palette=hopper("P"))
         self.assert_image(im, "P", im.size)
 
+    def test_libimagequant_quantize(self):
+        im = hopper()
+
+        im = im.quantize(100, Image.LIBIMAGEQUANT)
+        self.assert_image(im, "P", im.size)
+
+        assert len(im.getcolors()) == 100
+
     def test_octree_quantize(self):
         im = hopper()
 

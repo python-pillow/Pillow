@@ -1484,7 +1484,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         return ImagingError_ModeError();
 
     /* only octree supports RGBA */
-    if (!strcmp(im->mode, "RGBA") && mode != 2)
+    if (!strcmp(im->mode, "RGBA") && mode != 2 && mode != 3)
        return ImagingError_ModeError();
 
     p = malloc(sizeof(Pixel) * im->xsize * im->ysize);
@@ -1503,8 +1503,10 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
            should be done by a simple copy... */
 
         for (i = y = 0; y < im->ysize; y++)
-            for (x = 0; x < im->xsize; x++, i++)
+            for (x = 0; x < im->xsize; x++, i++) {
                 p[i].c.r = p[i].c.g = p[i].c.b = im->image8[y][x];
+                p[i].c.a = 255;
+            }
 
     } else if (!strcmp(im->mode, "P")) {
         /* palette */
@@ -1517,6 +1519,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
                 p[i].c.r = pp[v*4+0];
                 p[i].c.g = pp[v*4+1];
                 p[i].c.b = pp[v*4+2];
+                p[i].c.a = pp[v*4+3];
             }
 
     } else if (!strcmp(im->mode, "RGB") || !strcmp(im->mode, "RGBA")) {
@@ -1565,6 +1568,21 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         result = quantize_octree(
             p,
             im->xsize*im->ysize,
+            colors,
+            &palette,
+            &paletteLength,
+            &newData,
+            withAlpha
+            );
+        break;
+    case 3:
+        if (!strcmp(im->mode, "RGBA")) {
+            withAlpha = 1;
+        }
+        result = quantize_pngquant(
+            p,
+            im->xsize,
+            im->ysize,
             colors,
             &palette,
             &paletteLength,
