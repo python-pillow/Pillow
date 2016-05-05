@@ -1718,7 +1718,11 @@ class Image(object):
         debugging purposes.
 
         On Unix platforms, this method saves the image to a temporary
-        PPM file, and calls the **xv** utility.
+        PPM file, and calls either the **xv** utility or the **display**
+        utility, depending on which one can be found.
+
+        On OS X, this method saves the image to a temporary BMP file, and opens
+        it with the native Preview application.
 
         On Windows, it saves the image to a temporary BMP file, and uses
         the standard BMP display utility to show it (usually Paint).
