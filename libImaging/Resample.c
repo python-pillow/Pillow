@@ -1,18 +1,3 @@
-/*
- * The Python Imaging Library
- * $Id$
- *
- * Pillow image resampling support
- *
- * history:
- * 2002-03-09 fl  Created (for PIL 1.1.3)
- * 2002-03-10 fl  Added support for mode "F"
- *
- * Copyright (c) 1997-2002 by Secret Labs AB
- *
- * See the README file for information on usage and redistribution.
- */
-
 #include "Imaging.h"
 
 #include <math.h>
@@ -107,21 +92,21 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
 
     // check for overflow
     if (outSize > SIZE_MAX / (kmax * sizeof(double)))
-        return (int) (size_t) ImagingError_MemoryError();
+        return 0;
 
     // sizeof(double) should be greater than 0 as well
     if (outSize > SIZE_MAX / (2 * sizeof(double)))
-        return (int) (size_t) ImagingError_MemoryError();
+        return 0;
 
     /* coefficient buffer */
     kk = malloc(outSize * kmax * sizeof(double));
     if ( ! kk)
-        return (int) (size_t) ImagingError_MemoryError();
+        return 0;
 
     xbounds = malloc(outSize * 2 * sizeof(int));
     if ( ! xbounds) {
         free(kk);
-        return (int) (size_t) ImagingError_MemoryError();
+        return 0;
     }
 
     for (xx = 0; xx < outSize; xx++) {
@@ -314,65 +299,14 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     Imaging imOut;
-    double support, scale, filterscale;
-    double center, ww, ss;
+    double ss;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
     double *k, *kk;
 
-    /* prepare for horizontal stretch */
-    filterscale = scale = (float) imIn->xsize / xsize;
-    if (filterscale < 1.0) {
-        filterscale = 1.0;
-    }
-
-    /* determine support size (length of resampling filter) */
-    support = filterp->support * filterscale;
-
-    /* maximum number of coofs */
-    kmax = (int) ceil(support) * 2 + 1;
-
-    // check for overflow
-    if (xsize > SIZE_MAX / (kmax * sizeof(double)))
+    kmax = ImagingPrecompute(imIn->xsize, xsize, filterp, &xbounds, &kk);
+    if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
-
-    // sizeof(double) should be greater than 0 as well
-    if (xsize > SIZE_MAX / (2 * sizeof(double)))
-        return (Imaging) ImagingError_MemoryError();
-
-    /* coefficient buffer */
-    kk = malloc(xsize * kmax * sizeof(double));
-    if ( ! kk)
-        return (Imaging) ImagingError_MemoryError();
-
-    xbounds = malloc(xsize * 2 * sizeof(int));
-    if ( ! xbounds) {
-        free(kk);
-        return (Imaging) ImagingError_MemoryError();
-    }
-
-    for (xx = 0; xx < xsize; xx++) {
-        k = &kk[xx * kmax];
-        center = (xx + 0.5) * scale;
-        ww = 0.0;
-        ss = 1.0 / filterscale;
-        xmin = (int) floor(center - support);
-        if (xmin < 0)
-            xmin = 0;
-        xmax = (int) ceil(center + support);
-        if (xmax > imIn->xsize)
-            xmax = imIn->xsize;
-        for (x = xmin; x < xmax; x++) {
-            double w = filterp->filter((x - center + 0.5) * ss);
-            k[x - xmin] = w;
-            ww += w;
-        }
-        for (x = 0; x < xmax - xmin; x++) {
-            if (ww != 0.0)
-                k[x] /= ww;
-        }
-        xbounds[xx * 2 + 0] = xmin;
-        xbounds[xx * 2 + 1] = xmax;
     }
 
     imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
