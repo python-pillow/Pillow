@@ -696,7 +696,7 @@ class Image(object):
         return b"".join(data)
 
     def tostring(self, *args, **kw):
-        raise Exception("tostring() has been removed. " +
+        raise NotImplementedError("tostring() has been removed. " +
                         "Please call tobytes() instead.")
 
     def tobitmap(self, name="image"):
@@ -747,7 +747,7 @@ class Image(object):
             raise ValueError("cannot decode image data")
 
     def fromstring(self, *args, **kw):
-        raise Exception("fromstring() has been removed. " +
+        raise NotImplementedError("fromstring() has been removed. " +
                         "Please call frombytes() instead.")
 
     def load(self):
@@ -1255,7 +1255,7 @@ class Image(object):
         return self.im.histogram()
 
     def offset(self, xoffset, yoffset=None):
-        raise Exception("offset() has been removed. " +
+        raise NotImplementedError("offset() has been removed. " +
                         "Please call ImageChops.offset() instead.")
 
     def paste(self, im, box=None, mask=None):
@@ -2078,7 +2078,7 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
 
 def fromstring(*args, **kw):
-    raise Exception("fromstring() has been removed. " +
+    raise NotImplementedError("fromstring() has been removed. " +
                     "Please call frombytes() instead.")
 
 
