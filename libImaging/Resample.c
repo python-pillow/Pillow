@@ -318,10 +318,10 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
 
     ImagingSectionEnter(&cookie);
     /* horizontal stretch */
-    for (yy = 0; yy < imOut->ysize; yy++) {
-        switch(imIn->type) {
-            case IMAGING_TYPE_INT32:
-                /* 32-bit integer */
+    
+    switch(imIn->type) {
+        case IMAGING_TYPE_INT32:
+            for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
@@ -331,9 +331,11 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
                         ss += IMAGING_PIXEL_I(imIn, x, yy) * k[x - xmin];
                     IMAGING_PIXEL_I(imOut, xx, yy) = lround(ss);
                 }
-                break;
-            case IMAGING_TYPE_FLOAT32:
-                /* 32-bit float */
+            }
+            break;
+            
+        case IMAGING_TYPE_FLOAT32:
+            for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
@@ -343,8 +345,8 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
                         ss += IMAGING_PIXEL_F(imIn, x, yy) * k[x - xmin];
                     IMAGING_PIXEL_F(imOut, xx, yy) = ss;
                 }
-                break;
-        }
+            }
+            break;
     }
     ImagingSectionLeave(&cookie);
     free(kk);
