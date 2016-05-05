@@ -84,6 +84,75 @@ static inline UINT8 clip8(int in)
 }
 
 
+int
+ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
+                  int **xboundsp, double **kkp) {
+    double support, scale, filterscale;
+    double center, ww, ss;
+    int xx, x, kmax, xmin, xmax;
+    int *xbounds;
+    double *kk, *k;
+
+    /* prepare for horizontal stretch */
+    filterscale = scale = (float) inSize / outSize;
+    if (filterscale < 1.0) {
+        filterscale = 1.0;
+    }
+
+    /* determine support size (length of resampling filter) */
+    support = filterp->support * filterscale;
+
+    /* maximum number of coofs */
+    kmax = (int) ceil(support) * 2 + 1;
+
+    // check for overflow
+    if (outSize > SIZE_MAX / (kmax * sizeof(double)))
+        return (int) (size_t) ImagingError_MemoryError();
+
+    // sizeof(double) should be greater than 0 as well
+    if (outSize > SIZE_MAX / (2 * sizeof(double)))
+        return (int) (size_t) ImagingError_MemoryError();
+
+    /* coefficient buffer */
+    kk = malloc(outSize * kmax * sizeof(double));
+    if ( ! kk)
+        return (int) (size_t) ImagingError_MemoryError();
+
+    xbounds = malloc(outSize * 2 * sizeof(int));
+    if ( ! xbounds) {
+        free(kk);
+        return (int) (size_t) ImagingError_MemoryError();
+    }
+
+    for (xx = 0; xx < outSize; xx++) {
+        center = (xx + 0.5) * scale;
+        ww = 0.0;
+        ss = 1.0 / filterscale;
+        xmin = (int) floor(center - support);
+        if (xmin < 0)
+            xmin = 0;
+        xmax = (int) ceil(center + support);
+        if (xmax > inSize)
+            xmax = inSize;
+        k = &kk[xx * kmax];
+        for (x = xmin; x < xmax; x++) {
+            double w = filterp->filter((x - center + 0.5) * ss);
+            k[x - xmin] = w;
+            ww += w;
+        }
+        for (x = 0; x < xmax - xmin; x++) {
+            if (ww != 0.0)
+                k[x] /= ww;
+        }
+        xbounds[xx * 2 + 0] = xmin;
+        xbounds[xx * 2 + 1] = xmax;
+    }
+    *xboundsp = xbounds;
+    *kkp = kk;
+    return kmax;
+}
+
+
 Imaging
 ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
 {
