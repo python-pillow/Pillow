@@ -4,6 +4,15 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Make deprecated functions raise NotImplementedError instead of Exception. #1862
+  [daniel-leicht]
+
+- Replaced os.system with subprocess.call in setup.py #1879
+  [radarhere]
+
+- Corrected Image show documentation #1886
+  [radarhere]
+
 - Added check for executable permissions to ImageShow #1880
   [radarhere]
 
