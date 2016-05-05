@@ -143,78 +143,35 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     Imaging imOut;
-    float support, scale, filterscale;
-    float center, ww, ss;
     int ss0, ss1, ss2, ss3;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
     int *k, *kk;
-    float *kw;
+    double *prekk;
 
-    /* prepare for horizontal stretch */
-    filterscale = scale = (float) imIn->xsize / xsize;
-    if (filterscale < 1.0) {
-        filterscale = 1.0;
+
+    kmax = ImagingPrecompute(imIn->xsize, xsize, filterp, &xbounds, &prekk);
+    if ( ! kmax) {
+        return (Imaging) ImagingError_MemoryError();
     }
-
-    /* determine support size (length of resampling filter) */
-    support = filterp->support * filterscale;
-
-    /* maximum number of coofs */
-    kmax = (int) ceil(support) * 2 + 1;
-
-    // check for overflow
-    if (xsize > SIZE_MAX / (kmax * sizeof(int)))
-        return (Imaging) ImagingError_MemoryError();
-
-    // sizeof(int) should be greater than 0 as well
-    if (xsize > SIZE_MAX / (2 * sizeof(int)))
-        return (Imaging) ImagingError_MemoryError();
-
-    /* coefficient buffer */
+    
     kk = malloc(xsize * kmax * sizeof(int));
-    if ( ! kk)
-        return (Imaging) ImagingError_MemoryError();
-
-    /* intermediate not normalized buffer for coefficients */ 
-    kw = malloc(kmax * sizeof(float));
-    if ( ! kw) {
-        free(kk);
-        return (Imaging) ImagingError_MemoryError();
-    }
-
-    xbounds = malloc(xsize * 2 * sizeof(int));
-    if ( ! xbounds) {
-        free(kk);
-        free(kw);
+    if ( ! kk) {
+        free(xbounds);
+        free(prekk);
         return (Imaging) ImagingError_MemoryError();
     }
 
     for (xx = 0; xx < xsize; xx++) {
-        center = (xx + 0.5) * scale;
-        ww = 0.0;
-        ss = 1.0 / filterscale;
-        xmin = (int) floor(center - support);
-        if (xmin < 0)
-            xmin = 0;
-        xmax = (int) ceil(center + support);
-        if (xmax > imIn->xsize)
-            xmax = imIn->xsize;
-        for (x = xmin; x < xmax; x++) {
-            float w = filterp->filter((x - center + 0.5) * ss);
-            kw[x - xmin] = w;
-            ww += w;
-        }
+        xmin = xbounds[xx * 2 + 0];
+        xmax = xbounds[xx * 2 + 1];
         k = &kk[xx * kmax];
         for (x = 0; x < xmax - xmin; x++) {
-            if (ww != 0.0)
-                k[x] = (int) floor(0.5 + kw[x] / ww * (1 << PRECISION_BITS));
+            k[x] = (int) floor(0.5 + prekk[xx * kmax + x] * (1 << PRECISION_BITS));
         }
-        xbounds[xx * 2 + 0] = xmin;
-        xbounds[xx * 2 + 1] = xmax;
     }
 
-    free(kw);
+    free(prekk);
 
     imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
     if ( ! imOut) {
@@ -224,10 +181,8 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
     }
 
     ImagingSectionEnter(&cookie);
-    /* horizontal stretch */
     for (yy = 0; yy < imOut->ysize; yy++) {
         if (imIn->image8) {
-            /* 8-bit grayscale */
             for (xx = 0; xx < xsize; xx++) {
                 xmin = xbounds[xx * 2 + 0];
                 xmax = xbounds[xx * 2 + 1];
@@ -238,7 +193,6 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                 imOut->image8[yy][xx] = clip8(ss0);
             }
         } else if (imIn->type == IMAGING_TYPE_UINT8) {
-            /* n-bit grayscale */
             if (imIn->bands == 2) {
                 for (xx = 0; xx < xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
@@ -287,6 +241,7 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
             }
         }
     }
+
     ImagingSectionLeave(&cookie);
     free(kk);
     free(xbounds);
@@ -316,9 +271,7 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
         return NULL;
     }
 
-    ImagingSectionEnter(&cookie);
-    /* horizontal stretch */
-    
+    ImagingSectionEnter(&cookie);    
     switch(imIn->type) {
         case IMAGING_TYPE_INT32:
             for (yy = 0; yy < imOut->ysize; yy++) {
@@ -333,7 +286,7 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
                 }
             }
             break;
-            
+
         case IMAGING_TYPE_FLOAT32:
             for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < xsize; xx++) {
@@ -348,6 +301,7 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
             }
             break;
     }
+
     ImagingSectionLeave(&cookie);
     free(kk);
     free(xbounds);
