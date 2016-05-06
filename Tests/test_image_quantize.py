@@ -22,7 +22,7 @@ class TestImageQuantize(PillowTestCase):
             im = im.quantize(100, Image.LIBIMAGEQUANT)
         except ValueError as ex:
             if 'dependency' in str(ex).lower():
-                self.skipTest('libimagepng support not available')
+                self.skipTest('libimagequant support not available')
             else:
                 raise
         self.assert_image(im, "P", im.size)
