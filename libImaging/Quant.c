@@ -27,6 +27,7 @@
 
 #include "QuantTypes.h"
 #include "QuantOctree.h"
+#include "QuantPngQuant.h"
 #include "QuantHash.h"
 #include "QuantHeap.h"
 
@@ -1483,7 +1484,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         strcmp(im->mode, "RGB") != 0 && strcmp(im->mode, "RGBA") !=0)
         return ImagingError_ModeError();
 
-    /* only octree supports RGBA */
+    /* only octree and imagequant supports RGBA */
     if (!strcmp(im->mode, "RGBA") && mode != 2 && mode != 3)
        return ImagingError_ModeError();
 
