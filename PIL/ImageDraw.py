@@ -87,12 +87,12 @@ class ImageDraw(object):
         self.font = None
 
     def setink(self, ink):
-        raise Exception("setink() has been removed. " +
-                        "Please use keyword arguments instead.")
+        raise NotImplementedError("setink() has been removed. " +
+                                  "Please use keyword arguments instead.")
 
     def setfill(self, onoff):
-        raise Exception("setfill() has been removed. " +
-                        "Please use keyword arguments instead.")
+        raise NotImplementedError("setfill() has been removed. " +
+                                  "Please use keyword arguments instead.")
 
     def setfont(self, font):
         warnings.warn("setfont() is deprecated. " +
