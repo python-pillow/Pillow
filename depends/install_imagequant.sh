@@ -1,7 +1,7 @@
 #!/bin/bash
 # install libimagequant
 
-git clone https://github.com/pornel/pngquant
+git clone -b 2.6.0 https://github.com/pornel/pngquant
 
 pushd pngquant
 
