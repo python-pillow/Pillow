@@ -1,8 +1,8 @@
 Depends
 =======
 
-``install_openjpeg.sh`` and ``install_webp.sh`` can be used to
-download, build & install non-packaged dependencies; useful for
+``install_openjpeg.sh``, ``install_webp.sh`` and ``install_imagequant.sh`` can
+be used to download, build & install non-packaged dependencies; useful for
 testing with Travis CI.
 
 The other scripts can be used to install all of the dependencies for
