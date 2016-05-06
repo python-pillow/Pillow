@@ -39,7 +39,10 @@ def run_script(params):
                                 )
         (trace, stderr) = proc.communicate()
         status = proc.returncode
+        print("-- stderr --")
         print(stderr)
+        print("-- stdout --")
+        print(trace)
         print("Done with %s: %s" % (version, status))
         return (version, status, trace, stderr)
     except Exception as msg:
@@ -72,8 +75,8 @@ def build_one(py_ver, compiler):
     else:
         args['python_path'] = "%s%s\\Scripts" % (VIRT_BASE, py_ver)
     args['py_ver'] = py_ver
-    if '34' in py_ver:
-        args['tcl_ver'] = '86'
+    if '34' in py_ver: 
+       args['tcl_ver'] = '86'
     else:
         args['tcl_ver'] = '85'
 
