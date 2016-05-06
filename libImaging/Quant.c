@@ -1577,6 +1577,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
             );
         break;
     case 3:
+#ifdef HAVE_LIBIMAGEQUANT
         if (!strcmp(im->mode, "RGBA")) {
             withAlpha = 1;
         }
@@ -1590,6 +1591,9 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
             &newData,
             withAlpha
             );
+#else
+        result = -1;
+#endif
         break;
     default:
         result = 0;
@@ -1599,7 +1603,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
     free(p);
     ImagingSectionLeave(&cookie);
 
-    if (result) {
+    if (result > 0) {
         imOut = ImagingNew("P", im->xsize, im->ysize);
         ImagingSectionEnter(&cookie);
 
@@ -1638,6 +1642,12 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         return imOut;
 
     } else {
+
+        if (result == -1) {
+            return (Imaging) ImagingError_ValueError(
+                "dependency required by this method was not "
+                "enabled at compile time");
+        }
 
         return (Imaging) ImagingError_ValueError("quantization error");
 

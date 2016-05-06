@@ -122,21 +122,4 @@ err:
     return result;
 }
 
-#else
-
-/* Offer dummy implementation */
-int
-quantize_pngquant(
-    Pixel *pixelData,
-    uint32_t width,
-    uint32_t height,
-    uint32_t quantPixels,
-    Pixel **palette,
-    uint32_t *paletteLength,
-    uint32_t **quantizedPixels,
-    int withAlpha)
-{
-    return 0;
-}
-
 #endif
