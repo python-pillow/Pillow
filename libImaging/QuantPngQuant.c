@@ -47,8 +47,9 @@ quantize_pngquant(
     liq_image *image = NULL;
     liq_attr *attr = NULL;
     liq_result *remap = NULL;
-    char *charMatrix = NULL;
-    char **charMatrixRows = NULL;
+    unsigned char *charMatrix = NULL;
+    unsigned char **charMatrixRows = NULL;
+    unsigned int i, y;
     *palette = NULL;
     *paletteLength = 0;
     *quantizedPixels = NULL;
@@ -80,7 +81,7 @@ quantize_pngquant(
     *paletteLength = l_palette->count;
     *palette = malloc(sizeof(Pixel) * l_palette->count);
     if (!*palette) { goto err; }
-    for (unsigned int i = 0; i < l_palette->count; i++) {
+    for (i = 0; i < l_palette->count; i++) {
         (*palette)[i].c.b = l_palette->entries[i].b;
         (*palette)[i].c.g = l_palette->entries[i].g;
         (*palette)[i].c.r = l_palette->entries[i].r;
@@ -90,9 +91,9 @@ quantize_pngquant(
     /* write output pixels (pngquant uses char array) */
     charMatrix = malloc(width * height);
     if (!charMatrix) { goto err; }
-    charMatrixRows = malloc(height * sizeof(char*));
+    charMatrixRows = malloc(height * sizeof(unsigned char*));
     if (!charMatrixRows) { goto err; }
-    for (unsigned int y = 0; y < height; y++) {
+    for (y = 0; y < height; y++) {
         charMatrixRows[y] = &charMatrix[y * width];
     }
     if (LIQ_OK != liq_write_remapped_image_rows(remap, image, charMatrixRows)) {
@@ -102,7 +103,7 @@ quantize_pngquant(
     /* transcribe output pixels (pillow uses uint32_t array) */
     *quantizedPixels = malloc(sizeof(uint32_t) * width * height);
     if (!*quantizedPixels) { goto err; }
-    for (int i = 0; i < width * height; i++) {
+    for (i = 0; i < width * height; i++) {
         (*quantizedPixels)[i] = charMatrix[i];
     }
 
