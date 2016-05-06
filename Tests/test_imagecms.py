@@ -256,6 +256,7 @@ class TestImageCms(PillowTestCase):
                          ImageCms.getProfileDescription(p2))
 
     def test_extended_information(self):
+        self.skip_missing()
         o = ImageCms.getOpenProfile(SRGB)
         p = o.profile
 
