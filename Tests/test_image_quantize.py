@@ -18,7 +18,13 @@ class TestImageQuantize(PillowTestCase):
     def test_libimagequant_quantize(self):
         im = hopper()
 
-        im = im.quantize(100, Image.LIBIMAGEQUANT)
+        try:
+            im = im.quantize(100, Image.LIBIMAGEQUANT)
+        except ValueError as ex:
+            if 'dependency' in str(ex).lower():
+                self.skipTest('libimagepng support not available')
+            else:
+                raise
         self.assert_image(im, "P", im.size)
 
         assert len(im.getcolors()) == 100
