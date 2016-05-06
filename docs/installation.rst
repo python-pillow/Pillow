@@ -140,6 +140,8 @@ Many of Pillow's features require external libraries:
 
 * **libfreetype** provides type related services
 
+* **libimagequant** provides improved color quantization
+
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
@@ -190,17 +192,17 @@ Build Options
 * Build flags: ``--disable-zlib``, ``--disable-jpeg``,
   ``--disable-tiff``, ``--disable-freetype``, ``--disable-tcl``,
   ``--disable-tk``, ``--disable-lcms``, ``--disable-webp``,
-  ``--disable-webpmux``, ``--disable-jpeg2000``. Disable building the
-  corresponding feature even if the development libraries are present
-  on the building machine.
+  ``--disable-webpmux``, ``--disable-jpeg2000``, ``--disable-imagequant``.
+  Disable building the corresponding feature even if the development
+  libraries are present on the building machine.
 
 * Build flags: ``--enable-zlib``, ``--enable-jpeg``,
   ``--enable-tiff``, ``--enable-freetype``, ``--enable-tcl``,
   ``--enable-tk``, ``--enable-lcms``, ``--enable-webp``,
-  ``--enable-webpmux``, ``--enable-jpeg2000``. Require that the
-  corresponding feature is built. The build will raise an exception if
-  the libraries are not found. Webpmux (WebP metadata) relies on WebP
-  support. Tcl and Tk also must be used together.
+  ``--enable-webpmux``, ``--enable-jpeg2000``, ``--enable-imagequant``.
+  Require that the corresponding feature is built. The build will raise
+  an exception if the libraries are not found. Webpmux (WebP metadata)
+  relies on WebP support. Tcl and Tk also must be used together.
 
 * Build flags: ``--debug``. Adds a debugging flag to the include and
   library search process to dump all paths searched for and found to
