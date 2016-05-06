@@ -4,8 +4,14 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
-- Make deprecated functions raise NotImplementedError instead of Exception. #1862
-  [daniel-leicht]
+- Skip tests that require libtiff if it is not installed, fixes #1866
+  [wiredfool]
+
+- Skip test when icc profile is not available, fixes #1887
+  [doko42] 
+
+- Make deprecated functions raise NotImplementedError instead of Exception. #1862, #1890
+  [daniel-leicht, radarhere]
 
 - Replaced os.system with subprocess.call in setup.py #1879
   [radarhere]
