@@ -45,7 +45,11 @@ class Test_IFDRational(PillowTestCase):
         self.assertTrue(xres and yres)
 
     def test_ifd_rational_save(self):
-        for libtiff in (True, False):
+        methods = (True, False)
+        if 'libtiff_encoder' not in dir(Image.core):
+            methods = (False)
+            
+        for libtiff in methods:
             TiffImagePlugin.WRITE_LIBTIFF = libtiff
 
             im = hopper()
