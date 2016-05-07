@@ -198,6 +198,11 @@ class GifImageFile(ImageFile.ImageFile):
                         # correct, but it seems to prevent the last
                         # frame from looking odd for some animations
                         self.disposal_method = dispose_bits
+                elif i8(s) == 254:
+                    #
+                    # comment extension
+                    #
+                    self.info["comment"] = block
                 elif i8(s) == 255:
                     #
                     # application extension
@@ -455,6 +460,12 @@ def _get_local_header(fp, im, offset, flags):
                  o8(transparency) +       # transparency index
                  o8(0))
 
+    if "comment" in im.encoderinfo and 1 <= len(im.encoderinfo["comment"]) <= 255:
+        fp.write(b"!" +
+                 o8(254) +                # extension intro
+                 o8(len(im.encoderinfo["comment"])) +
+                 im.encoderinfo["comment"] +
+                 o8(0))
     if "loop" in im.encoderinfo:
         number_of_loops = im.encoderinfo["loop"]
         fp.write(b"!" +
@@ -547,9 +558,11 @@ def getheader(im, palette=None, info=None):
     # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
 
     version = b"87a"
-    for extensionKey in ["transparency", "duration", "loop"]:
-        if info and extensionKey in info and \
-                not (extensionKey == "duration" and info[extensionKey] == 0):
+    for extensionKey in ["transparency", "duration", "loop", "comment"]:
+        if info and extensionKey in info:
+            if ((extensionKey == "duration" and info[extensionKey] == 0) or
+                (extensionKey == "comment" and not (1 <= len(info[extensionKey]) <= 255))):
+                continue
             version = b"89a"
             break
     else:
