@@ -2287,6 +2287,7 @@ def open(fp, mode="r"):
     preinit()
 
     def _open_core(fp, filename, prefix):
+        global ID
         for i in ID:
             try:
                 factory, accept = OPEN[i]
@@ -2428,6 +2429,8 @@ def register_open(id, factory, accept=None):
     :param accept: An optional function that can be used to quickly
        reject images having another format.
     """
+    global ID
+
     id = id.upper()
     ID.append(id)
     OPEN[id] = factory, accept
