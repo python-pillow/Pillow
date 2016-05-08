@@ -1,3 +1,4 @@
+#!/bin/bash
 # $Id$
 # quick build (for lazy programmers).  for more information on the
 # build process, see the README file.
