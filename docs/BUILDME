@@ -2,6 +2,10 @@
 # quick build (for lazy programmers).  for more information on the
 # build process, see the README file.
 
+if [ ${PWD##*/} == "docs" ]; then
+    cd ..
+fi
+
 if [ "$1" = "clean" ]; then
   python setup.py clean
   rm -f *.so PIL/*.so
