@@ -172,6 +172,7 @@ class CoreResampleConsistencyTest(PillowTestCase):
         self.run_case((r, color[0]))
         self.run_case((g, color[1]))
         self.run_case((b, color[2]))
+        self.run_case(self.make_case('L', 12))
 
     def test_32i(self):
         self.run_case(self.make_case('I', 12))
