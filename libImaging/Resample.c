@@ -2,6 +2,10 @@
 
 #include <math.h>
 
+
+#define ROUND_UP(f) ((int) ((f) >= 0.0 ? (f) + 0.5F : (f) - 0.5F))
+
+
 struct filter {
     float (*filter)(float x);
     float support;
@@ -288,7 +292,7 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
                     ss = 0.0;
                     for (x = xmin; x < xmax; x++)
                         ss += IMAGING_PIXEL_I(imIn, x, yy) * k[x - xmin];
-                    IMAGING_PIXEL_I(imOut, xx, yy) = lround(ss);
+                    IMAGING_PIXEL_I(imOut, xx, yy) = ROUND_UP(ss);
                 }
             }
             break;
