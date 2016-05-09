@@ -7,11 +7,11 @@
 
 
 struct filter {
-    float (*filter)(float x);
-    float support;
+    double (*filter)(double x);
+    double support;
 };
 
-static inline float sinc_filter(float x)
+static inline double sinc_filter(double x)
 {
     if (x == 0.0)
         return 1.0;
@@ -19,7 +19,7 @@ static inline float sinc_filter(float x)
     return sin(x) / x;
 }
 
-static inline float lanczos_filter(float x)
+static inline double lanczos_filter(double x)
 {
     /* truncated sinc */
     if (-3.0 <= x && x < 3.0)
@@ -27,7 +27,7 @@ static inline float lanczos_filter(float x)
     return 0.0;
 }
 
-static inline float bilinear_filter(float x)
+static inline double bilinear_filter(double x)
 {
     if (x < 0.0)
         x = -x;
@@ -36,7 +36,7 @@ static inline float bilinear_filter(float x)
     return 0.0;
 }
 
-static inline float bicubic_filter(float x)
+static inline double bicubic_filter(double x)
 {
     /* https://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm */
 #define a -0.5
@@ -83,7 +83,7 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
     double *kk, *k;
 
     /* prepare for horizontal stretch */
-    filterscale = scale = (float) inSize / outSize;
+    filterscale = scale = (double) inSize / outSize;
     if (filterscale < 1.0) {
         filterscale = 1.0;
     }
