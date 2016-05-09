@@ -186,5 +186,22 @@ class CoreResampleConsistencyTest(PillowTestCase):
         self.run_case(self.make_case('F', 1.192093e-07))
 
 
+class CoreResampleAlphaCorrectTest(PillowTestCase):
+    def test_levels(self):
+        i = Image.new('RGBA', (256, 16))
+        px = i.load()
+        for y in range(i.size[1]):
+            for x in range(i.size[0]):
+                px[x, y] = (x, x, x, 255 - y * 16)
+
+        i = i.resize((512, 32), Image.BILINEAR)
+        px = i.load()
+        for y in range(i.size[1]):
+            used_colors = set(px[x, y][0] for x in range(i.size[0]))
+            self.assertEqual(256, len(used_colors),
+                'All colors should present in resized image. '
+                'Only {0} on {1} line.'.format(len(used_colors), y))
+
+
 if __name__ == '__main__':
     unittest.main()
