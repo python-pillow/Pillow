@@ -202,6 +202,26 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
                 'All colors should present in resized image. '
                 'Only {0} on {1} line.'.format(len(used_colors), y))
 
+    def test_dirty_pixels(self):
+        i = Image.new('RGBA', (64, 64), (0, 0, 255, 0))
+        px = i.load()
+        for y in range(i.size[1] // 4, i.size[1] // 4 * 3):
+            for x in range(i.size[0] // 4, i.size[0] // 4 * 3):
+                px[x, y] = (255, 255, 0, 128)
+
+
+        for im in [
+            i.resize((20, 20), Image.BILINEAR),
+            i.resize((20, 20), Image.BICUBIC),
+            i.resize((20, 20), Image.LANCZOS),
+        ]:
+            px = im.load()
+            for y in range(im.size[1]):
+                for x in range(im.size[0]):
+                    if px[x, y][3] != 0:
+                        if px[x, y][:3] != (255, 256, 0):
+                            self.assertEqual(px[x, y][:3], (255, 255, 0))
+
 
 if __name__ == '__main__':
     unittest.main()
