@@ -123,13 +123,14 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
         xmax = (int) ceil(center + support);
         if (xmax > inSize)
             xmax = inSize;
+        xmax -= xmin;
         k = &kk[xx * kmax];
-        for (x = xmin; x < xmax; x++) {
-            double w = filterp->filter((x - center + 0.5) * ss);
-            k[x - xmin] = w;
+        for (x = 0; x < xmax; x++) {
+            double w = filterp->filter((x + xmin - center + 0.5) * ss);
+            k[x] = w;
             ww += w;
         }
-        for (x = 0; x < xmax - xmin; x++) {
+        for (x = 0; x < xmax; x++) {
             if (ww != 0.0)
                 k[x] /= ww;
         }
@@ -187,8 +188,8 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                 xmax = xbounds[xx * 2 + 1];
                 k = &kk[xx * kmax];
                 ss0 = 1 << (PRECISION_BITS -1);
-                for (x = xmin; x < xmax; x++)
-                    ss0 += ((UINT8) imIn->image8[yy][x]) * k[x - xmin];
+                for (x = 0; x < xmax; x++)
+                    ss0 += ((UINT8) imIn->image8[yy][x + xmin]) * k[x];
                 imOut->image8[yy][xx] = clip8(ss0);
             }
         }
@@ -200,9 +201,9 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     ss0 = ss1 = 1 << (PRECISION_BITS -1);
-                    for (x = xmin; x < xmax; x++) {
-                        ss0 += ((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
-                        ss1 += ((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
+                    for (x = 0; x < xmax; x++) {
+                        ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
+                        ss1 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 3]) * k[x];
                     }
                     imOut->image[yy][xx*4 + 0] = clip8(ss0);
                     imOut->image[yy][xx*4 + 3] = clip8(ss1);
@@ -215,10 +216,10 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     ss0 = ss1 = ss2 = 1 << (PRECISION_BITS -1);
-                    for (x = xmin; x < xmax; x++) {
-                        ss0 += ((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
-                        ss1 += ((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
-                        ss2 += ((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
+                    for (x = 0; x < xmax; x++) {
+                        ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
+                        ss1 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 1]) * k[x];
+                        ss2 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 2]) * k[x];
                     }
                     imOut->image[yy][xx*4 + 0] = clip8(ss0);
                     imOut->image[yy][xx*4 + 1] = clip8(ss1);
@@ -232,11 +233,11 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     ss0 = ss1 = ss2 = ss3 = 1 << (PRECISION_BITS -1);
-                    for (x = xmin; x < xmax; x++) {
-                        ss0 += ((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
-                        ss1 += ((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
-                        ss2 += ((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
-                        ss3 += ((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
+                    for (x = 0; x < xmax; x++) {
+                        ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
+                        ss1 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 1]) * k[x];
+                        ss2 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 2]) * k[x];
+                        ss3 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 3]) * k[x];
                     }
                     imOut->image[yy][xx*4 + 0] = clip8(ss0);
                     imOut->image[yy][xx*4 + 1] = clip8(ss1);
@@ -285,8 +286,8 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     ss = 0.0;
-                    for (x = xmin; x < xmax; x++)
-                        ss += IMAGING_PIXEL_I(imIn, x, yy) * k[x - xmin];
+                    for (x = 0; x < xmax; x++)
+                        ss += IMAGING_PIXEL_I(imIn, x + xmin, yy) * k[x];
                     IMAGING_PIXEL_I(imOut, xx, yy) = ROUND_UP(ss);
                 }
             }
@@ -299,8 +300,8 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
                     ss = 0.0;
-                    for (x = xmin; x < xmax; x++)
-                        ss += IMAGING_PIXEL_F(imIn, x, yy) * k[x - xmin];
+                    for (x = 0; x < xmax; x++)
+                        ss += IMAGING_PIXEL_F(imIn, x + xmin, yy) * k[x];
                     IMAGING_PIXEL_F(imOut, xx, yy) = ss;
                 }
             }
