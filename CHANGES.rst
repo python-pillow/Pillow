@@ -109,7 +109,7 @@ Changelog (Pillow)
 - Removed powf support for older Python versions #1784
   [radarhere]
 
-- Health fixes #1625
+- Health fixes #1625 #1903
   [radarhere]
 
 3.2.0 (2016-04-01)
