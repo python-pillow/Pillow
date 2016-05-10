@@ -91,6 +91,12 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
 
+    } else if (strcmp(mode, "La") == 0) {
+        /* 8-bit greyscale (luminance) with premultiplied alpha */
+        im->bands = 2;
+        im->pixelsize = 4; /* store in image32 memory */
+        im->linesize = xsize * 4;
+
     } else if (strcmp(mode, "F") == 0) {
         /* 32-bit floating point images */
         im->bands = 1;

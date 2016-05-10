@@ -4,7 +4,7 @@ from __future__ import print_function
 
 modes = [
     "1",
-    "L", "LA",
+    "L", "LA", "La",
     "I", "I;16", "I;16L", "I;16B", "I;32L", "I;32B",
     "F",
     "P", "PA",
