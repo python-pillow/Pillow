@@ -399,7 +399,7 @@ def _fixup_dict(src_dict):
     # returns a dict with any single item tuples/lists as individual values
     def _fixup(value):
         try:
-            if len(value) == 1 and type(value) != type({}):
+            if len(value) == 1 and not isinstance(value, dict):
                 return value[0]
         except: pass
         return value

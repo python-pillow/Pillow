@@ -1119,18 +1119,19 @@ class TiffImageFile(ImageFile.ImageFile):
         if DEBUG:
             print("- size:", self.size)
 
-        format = self.tag_v2.get(SAMPLEFORMAT, (1,))
-        if len(format) > 1 and max(format) == min(format) == 1:
+        sampleFormat = self.tag_v2.get(SAMPLEFORMAT, (1,))
+        if (len(sampleFormat) > 1
+            and max(sampleFormat) == min(sampleFormat) == 1):
             # SAMPLEFORMAT is properly per band, so an RGB image will
             # be (1,1,1).  But, we don't support per band pixel types,
             # and anything more than one band is a uint8. So, just
             # take the first element. Revisit this if adding support
             # for more exotic images.
-            format = (1,)
+            sampleFormat = (1,)
 
         # mode: check photometric interpretation and bits per pixel
         key = (
-            self.tag_v2.prefix, photo, format, fillorder,
+            self.tag_v2.prefix, photo, sampleFormat, fillorder,
             self.tag_v2.get(BITSPERSAMPLE, (1,)),
             self.tag_v2.get(EXTRASAMPLES, ())
             )
@@ -1215,7 +1216,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 # https://github.com/python-pillow/Pillow/issues/279
                 if fillorder == 2:
                     key = (
-                        self.tag_v2.prefix, photo, format, 1,
+                        self.tag_v2.prefix, photo, sampleFormat, 1,
                         self.tag_v2.get(BITSPERSAMPLE, (1,)),
                         self.tag_v2.get(EXTRASAMPLES, ())
                         )

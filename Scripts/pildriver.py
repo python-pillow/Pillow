@@ -208,9 +208,9 @@ class PILDriver(object):
         Process the top image with the given filter.
         """
         from PIL import ImageFilter
-        filter = eval("ImageFilter." + self.do_pop().upper())
+        imageFilter = getattr(ImageFilter, self.do_pop().upper())
         image = self.do_pop()
-        self.push(image.filter(filter))
+        self.push(image.filter(imageFilter))
 
     def do_getbbox(self):
         """usage: getbbox
