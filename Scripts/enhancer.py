@@ -45,6 +45,10 @@ class Enhance(Frame):
 #
 # main
 
+if len(sys.argv) != 2:
+    print("Usage: enhancer file")
+    sys.exit(1)
+
 root = Tk()
 
 im = Image.open(sys.argv[1])
