@@ -251,8 +251,8 @@ class TestFileTiff(PillowTestCase):
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
 
-        self.assert_warning(DeprecationWarning, lambda: im.tag_v2.as_dict())
-        self.assert_warning(DeprecationWarning, lambda: im.tag.as_dict())
+        self.assert_warning(DeprecationWarning, im.tag_v2.as_dict)
+        self.assert_warning(DeprecationWarning, im.tag.as_dict)
 
     def test_dict(self):
         # Arrange
