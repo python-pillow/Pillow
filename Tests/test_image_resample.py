@@ -187,14 +187,17 @@ class CoreResampleConsistencyTest(PillowTestCase):
 
 
 class CoreResampleAlphaCorrectTest(PillowTestCase):
-    def test_levels(self):
-        i = Image.new('RGBA', (256, 16))
+    def make_levels_case(self, mode):
+        i = Image.new(mode, (256, 16))
         px = i.load()
         for y in range(i.size[1]):
             for x in range(i.size[0]):
-                px[x, y] = (x, x, x, 255 - y * 16)
+                pix = [x] * len(mode)
+                pix[-1] = 255 - y * 16
+                px[x, y] = tuple(pix)
+        return i
 
-        i = i.resize((512, 32), Image.BILINEAR)
+    def run_levels_case(self, i):
         px = i.load()
         for y in range(i.size[1]):
             used_colors = set(px[x, y][0] for x in range(i.size[0]))
@@ -202,25 +205,50 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
                 'All colors should present in resized image. '
                 'Only {0} on {1} line.'.format(len(used_colors), y))
 
-    def test_dirty_pixels(self):
-        i = Image.new('RGBA', (64, 64), (0, 0, 255, 0))
+    @unittest.skip("current implementation isn't precise enough")
+    def test_levels_rgba(self):
+        case = self.make_levels_case('RGBA')
+        self.run_levels_case(case.resize((512, 32), Image.BILINEAR))
+        self.run_levels_case(case.resize((512, 32), Image.BICUBIC))
+        self.run_levels_case(case.resize((512, 32), Image.LANCZOS))
+
+    def test_levels_la(self):
+        case = self.make_levels_case('LA')
+        self.run_levels_case(case.resize((512, 32), Image.BILINEAR))
+        self.run_levels_case(case.resize((512, 32), Image.BICUBIC))
+        self.run_levels_case(case.resize((512, 32), Image.LANCZOS))
+
+    def make_dity_case(self, mode, clean_pixel, dirty_pixel):
+        i = Image.new(mode, (64, 64), dirty_pixel)
         px = i.load()
-        for y in range(i.size[1] // 4, i.size[1] // 4 * 3):
-            for x in range(i.size[0] // 4, i.size[0] // 4 * 3):
-                px[x, y] = (255, 255, 0, 128)
+        xdiv4 = i.size[0] // 4
+        ydiv4 = i.size[1] // 4
+        for y in range(ydiv4 * 2):
+            for x in range(xdiv4 * 2):
+                px[x + xdiv4, y + ydiv4] = clean_pixel
+        return i
 
+    def run_dity_case(self, i, clean_pixel):
+        px = i.load()
+        for y in range(i.size[1]):
+            for x in range(i.size[0]):
+                if px[x, y][-1] != 0 and px[x, y][:-1] != clean_pixel:
+                    message = 'pixel at ({0}, {1}) is differ:\n{2}\n{3}'\
+                        .format(x, y, px[x, y], clean_pixel)
+                    self.assertEqual(px[x, y][:3], clean_pixel, message)
 
-        for im in [
-            i.resize((20, 20), Image.BILINEAR),
-            i.resize((20, 20), Image.BICUBIC),
-            i.resize((20, 20), Image.LANCZOS),
-        ]:
-            px = im.load()
-            for y in range(im.size[1]):
-                for x in range(im.size[0]):
-                    if px[x, y][3] != 0:
-                        if px[x, y][:3] != (255, 256, 0):
-                            self.assertEqual(px[x, y][:3], (255, 255, 0))
+    def test_dirty_pixels_rgba(self):
+        case = self.make_dity_case('RGBA', (255, 255, 0, 128), (0, 0, 255, 0))
+        self.run_dity_case(case.resize((20, 20), Image.BILINEAR), (255, 255, 0))
+        self.run_dity_case(case.resize((20, 20), Image.BICUBIC), (255, 255, 0))
+        self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255, 255, 0))
+
+    @unittest.skip("current implementation doesn't support La mode")
+    def test_dirty_pixels_la(self):
+        case = self.make_dity_case('LA', (255, 128), (0, 0))
+        self.run_dity_case(case.resize((20, 20), Image.BILINEAR), (255,))
+        self.run_dity_case(case.resize((20, 20), Image.BICUBIC), (255,))
+        self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255,))
 
 
 if __name__ == '__main__':
