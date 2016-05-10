@@ -42,7 +42,7 @@ class UI(Frame):
         # self.redraw()
 
     def update_scale(self, value):
-        self.value = eval(value)
+        self.value = float(value)
 
         self.redraw()
 

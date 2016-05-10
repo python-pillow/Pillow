@@ -39,7 +39,7 @@ class Enhance(Frame):
         s.pack()
 
     def update(self, value):
-        self.value = eval(value)
+        self.value = float(value)
         self.tkim.paste(self.enhancer.enhance(self.value))
 
 #
