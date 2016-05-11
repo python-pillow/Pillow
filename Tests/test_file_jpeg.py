@@ -232,11 +232,8 @@ class TestFileJpeg(PillowTestCase):
         self.assert_image_equal(im1, im2)
         self.assert_image_equal(im1, im3)
         self.assertFalse(im1.info.get("progressive"))
-        self.assertFalse(im1.info.get("progression"))
         self.assertTrue(im2.info.get("progressive"))
-        self.assertTrue(im2.info.get("progression"))
         self.assertTrue(im3.info.get("progressive"))
-        self.assertTrue(im3.info.get("progression"))
 
     def test_quality(self):
         im1 = self.roundtrip(hopper())
