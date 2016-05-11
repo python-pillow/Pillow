@@ -25,9 +25,8 @@ kevin@cazabon.com\n\
 http://www.cazabon.com\n\
 "
 
+#include "Python.h" // Include before wchar.h so _GNU_SOURCE is set
 #include "wchar.h"
-
-#include "Python.h"
 #include "datetime.h"
 
 #include "lcms2.h"
