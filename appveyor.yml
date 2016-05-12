@@ -2,6 +2,9 @@ version: 3.3.pre.{build}
 clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%
+#- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+# Uncomment previous line to get RDP access during the build. 
+
 environment:
   X64_EXT: -x64
   matrix:
@@ -42,4 +45,11 @@ deploy:
   bucket: pillow-nightly
   folder: win/$(APPVEYOR_BUILD_NUMBER)/
   artifact: /.*egg/
-
+  on: 
+    branch: master
+    
+# Uncomment the following line to get RDP access after the build/test and block for
+# up to the timeout limit (~1hr)
+#
+#on_finish:
+#- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
