@@ -103,11 +103,11 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
         return 0;
 
     /* coefficient buffer */
-    kk = calloc(outSize * kmax, sizeof(double));
+    kk = malloc(outSize * kmax * sizeof(double));
     if ( ! kk)
         return 0;
 
-    xbounds = calloc(outSize * 2, sizeof(int));
+    xbounds = malloc(outSize * 2 * sizeof(int));
     if ( ! xbounds) {
         free(kk);
         return 0;
@@ -160,7 +160,7 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
         return (Imaging) ImagingError_MemoryError();
     }
     
-    kk = calloc(xsize * kmax, sizeof(int));
+    kk = malloc(xsize * kmax * sizeof(int));
     if ( ! kk) {
         free(xbounds);
         free(prekk);
