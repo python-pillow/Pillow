@@ -257,10 +257,12 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n)
 
     if (!(strcmp(imIn->mode, "RGB") == 0 ||
           strcmp(imIn->mode, "RGBA") == 0 ||
+          strcmp(imIn->mode, "RGBa") == 0 ||
           strcmp(imIn->mode, "RGBX") == 0 ||
           strcmp(imIn->mode, "CMYK") == 0 ||
           strcmp(imIn->mode, "L") == 0 ||
-          strcmp(imIn->mode, "LA") == 0))
+          strcmp(imIn->mode, "LA") == 0 ||
+          strcmp(imIn->mode, "La") == 0))
         return ImagingError_ModeError();
 
     imTransposed = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
