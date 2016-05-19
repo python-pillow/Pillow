@@ -169,6 +169,15 @@ class FreeTypeFont(object):
                             encoding=self.encoding if encoding is None else
                             encoding)
 
+    def getBB( self, text ):
+        size, offset = self.font.getsize( text )
+        ascent, descent = self.getmetrics()
+        yMax = ascent - offset[ 1 ] # distance from baseline to max horiBearingY
+        yMin = yMax - size[ 1 ]
+        xMin = offset[ 0 ]
+        xMax = size[ 0 ] + xMin
+        return ( xMin, yMin, xMax, yMax )
+
 ##
 # Wrapper that creates a transposed font from any existing font
 # object.

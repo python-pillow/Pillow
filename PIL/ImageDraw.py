@@ -263,6 +263,8 @@ class ImageDraw(object):
             top += line_spacing
             left = xy[0]
 
+    ##
+    # Get the size of a given string, in pixels.
     def textsize(self, text, font=None, *args, **kwargs):
         """Get the size of a given string, in pixels."""
         if self._multiline_check(text):
@@ -281,6 +283,120 @@ class ImageDraw(object):
             max_width = max(max_width, line_width)
         return max_width, len(lines)*line_spacing
 
+    # Note that font metrics assume an origin on a baseline. So xMin is negative
+    # pixels to the left of the origin, xMax is positive pixels to the right of the
+    # origin, yMin is negative pixels below the baseline, yMax is positive pixels
+    # above the baseline.
+    # if text contains "\n" it is treated as multiple lines of text.
+    #    yMin becomes really negative.
+    #    lineHeight and lineHeightPercent become relevant.
+    #    lineHeightPercent is only used if LineHeight is None, and defaults to 100%.
+    #    Use of a lineHeight < sum( font.getmetrics ) may result in text overlap.
+    #    The best lineHeight would be that returned from the font.font.height
+    #    attribute, but in versions of PIL in which that isn't accessible,
+    #    sum( font.getmetrics()) is used instead.
+    def textInfo( self, text, font=None, lineHeight=None, lineHeightPercent=None ):
+        if font is None:
+            font = self.getfont()
+        lines = text.split('\n')
+        txMax = 0
+        txMin = 0
+        txWid = 0
+        tyMax = None
+        tyMin = None
+        if len( lines ) > 1:
+            if lineHeight is None:
+                if lineHeightPercent is None:
+                    lineHeightPercent = 100
+                try:
+                    lineHeight = font.font.height
+                except Exception as exc:
+                    lineHeight = sum( font.getmetrics())
+                lineHeight = int( lineHeight * lineHeightPercent / 100 )
+
+        lineBBs = []
+        for line in lines:
+            lxMin, lyMin, lxMax, lyMax = font.getBB( line )
+            lineBBs.append(( lxMin, lyMin, lxMax, lyMax, line ))
+            lxWid = lxMax - lxMin
+            if txWid < lxWid:
+                txWid = lxWid
+            if txMax < lxMax:
+                txMax = lxMax
+            if txMin > lxMin:
+                txMin = lxMin
+            if tyMax is None:
+                tyMax = lyMax # from first line only
+            if tyMin is None:
+                tyMin = 0 # skips first line (unless it is also last)
+            else:
+                tyMin -= lineHeight
+        tyMin += lyMin # from last line
+        return ( txMin, tyMin, txMax, tyMax, txWid, lineHeight, lineBBs )
+
+    # Text is drawn as close as possible to the specified alignment edges of the
+    # image, without truncation on those edges, then adjusted by the origin value.
+    # alignX or alignY of 'exact' means to use the specified origin point exactly
+    # in that direction. Otherwise origin is used as an offset from the calculated
+    # alignment position. alignX can also be 'left', 'center', or 'right'; alignY
+    # can also be 'top', 'middle', or 'bottom'. justifyX can be 'left', 'center',
+    # or 'right'. Other parameters like textInfo.
+    def textAtPos( self, text, font=None, lineHeight=None, lineHeightPercent=None,
+                   origin=( 0, 0 ), alignX='exact', alignY='exact', justifyX='left',
+                   fill=None ):
+        if font is None:
+            font = self.getfont()
+        ink, fill = self._getink( fill )
+        if ink is None:
+            inx = fill
+            if ink is None:
+                return
+        if justifyX not in ('left', 'center', 'right'):
+            raise ValueError('Unknown justifyX value "%s".' % justifyX )
+        txMin, tyMin, txMax, tyMax, txWid, lineHeight, lineBBs = self.textInfo(
+            text, font, lineHeight, lineHeightPercent )
+        if alignX == 'exact':
+            ox = 0
+        elif alignX == 'left':
+            ox = -txMin
+        elif alignX == 'right':
+            ox = self.im.size[ 0 ] - txMax
+        elif alignX == 'center':
+            ox = self.im.size[ 0 ] // 2 - txMax // 2
+        else:
+            raise ValueError('Unknown alignX value "%s".' % alignX )
+        if alignY == 'exact':
+            oy = 0
+        elif alignY == 'top':
+            oy = tyMax
+        elif alignY == 'bottom':
+            oy = self.im.size[ 1 ] + tyMin
+        elif alignY == 'middle':
+            oy = self.im.size[ 1 ] // 2 + ( tyMax + tyMin ) // 2
+        else:
+            raise ValueError('Unknown alignY value "%s".' % alignY )
+        ox += origin[ 0 ]
+        oy += origin[ 1 ]
+        ascent, descent = font.getmetrics()
+        while lineBBs:
+            lxMin, lyMin, lxMax, lyMax, line = lineBBs.pop( 0 )
+            if justifyX == 'left':
+                lox = ox
+            elif justifyX == 'right':
+                lox = ox + txMax - lxMax
+            else:
+                lox = ox + txMax // 2 - lxMax // 2
+
+            # finally, draw some text
+            lox = lox + lxMin
+            loy = oy - lyMax
+            im = Image.core.fill("L", ( lxMax - lxMin, lyMax - lyMin ), 0 )
+            font.font.render( line, im.id, self.fontmode == "1" )
+            self.draw.draw_bitmap(( lox, loy ), im, ink )
+
+            if not lineBBs:
+                break
+            oy += lineHeight
 
 def Draw(im, mode=None):
     """
