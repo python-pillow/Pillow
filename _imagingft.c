@@ -352,14 +352,15 @@ font_hasglyphs(FontObject* self, PyObject* args)
 static PyObject*
 font_getglyphs(FontObject* self)
 {
-    int ii = 0;
     FT_UInt gindex = 0;
-    PyObject* characters = PyList_New(self->face->num_glyphs);
+    PyObject* characters = PyList_New(0);
+    if(!characters)
+        return PyErr_NoMemory();
     FT_ULong charcode = 0;
 
     charcode = FT_Get_First_Char(self->face, &gindex);
-    for(ii = 0; gindex != 0 && ii < self->face->num_glyphs; ii++) {
-        PyList_SetItem(characters, ii, PyLong_FromUnsignedLong(charcode));
+    while( gindex != 0 ) {
+        PyList_Append(characters, PyLong_FromUnsignedLong(charcode));
         charcode = FT_Get_Next_Char(self->face, charcode, &gindex);
     }
 

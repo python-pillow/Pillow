@@ -180,7 +180,8 @@ class FreeTypeFont(object):
         Return a string containing all the characters with matching glyphs in
         the font
         """
-        return ''.join(unichr(code) for code in self.font.getglyphs())
+        codes = self.font.getglyphs()
+        return ''.join(unichr(code) for code in codes)
 
 ##
 # Wrapper that creates a transposed font from any existing font
