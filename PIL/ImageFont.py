@@ -168,6 +168,19 @@ class FreeTypeFont(object):
                             index=self.index if index is None else index,
                             encoding=self.encoding if encoding is None else
                             encoding)
+    def hasglyphs(self, text):
+        """
+        Returns true if all the characters in the string exist in the font,
+        false otherwise.
+        """
+        return self.font.hasglyphs(text)
+
+    def getglyphs(self):
+        """
+        Return a string containing all the characters with matching glyphs in
+        the font
+        """
+        return ''.join(unichr(code) for code in self.font.getglyphs())
 
 ##
 # Wrapper that creates a transposed font from any existing font

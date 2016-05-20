@@ -244,11 +244,11 @@ font_getsize(FontObject* self, PyObject* args)
             y_max = bbox.yMax;
         if (bbox.yMin < y_min)
             y_min = bbox.yMin;
-            
+
         /* find max distance of baseline from top */
         if (face->glyph->metrics.horiBearingY > yoffset)
             yoffset = face->glyph->metrics.horiBearingY;
-            
+
         last_index = index;
         FT_Done_Glyph(glyph);
     }
@@ -317,6 +317,53 @@ font_getabc(FontObject* self, PyObject* args)
         a = b = c = 0.0;
 
     return Py_BuildValue("ddd", a, b, c);
+}
+
+static PyObject*
+font_hasglyphs(FontObject* self, PyObject* args)
+{
+    int i;
+    FT_ULong ch;
+
+    /* calculate ABC values for a given string */
+
+    PyObject* string;
+    if (!PyArg_ParseTuple(args, "O:hasglyphs", &string))
+        return NULL;
+
+#if PY_VERSION_HEX >= 0x03000000
+    if (!PyUnicode_Check(string)) {
+#else
+    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
+#endif
+        PyErr_SetString(PyExc_TypeError, "expected string");
+        return NULL;
+    }
+
+    for (i = 0; font_getchar(string, i, &ch); i++) {
+        int index;
+        index = FT_Get_Char_Index(self->face, ch);
+        if(!index)
+            return Py_False;
+    }
+    return Py_True;
+}
+
+static PyObject*
+font_getglyphs(FontObject* self)
+{
+    int ii = 0;
+    FT_UInt gindex = 0;
+    PyObject* characters = PyList_New(self->face->num_glyphs);
+    FT_ULong charcode = 0;
+
+    charcode = FT_Get_First_Char(self->face, &gindex);
+    for(ii = 0; gindex != 0 && ii < self->face->num_glyphs; ii++) {
+        PyList_SetItem(characters, ii, PyLong_FromUnsignedLong(charcode));
+        charcode = FT_Get_Next_Char(self->face, charcode, &gindex);
+    }
+
+    return characters;
 }
 
 static PyObject*
@@ -448,6 +495,8 @@ font_dealloc(FontObject* self)
 }
 
 static PyMethodDef font_methods[] = {
+    {"getglyphs", (PyCFunction) font_getglyphs, METH_VARARGS},
+    {"hasglyph", (PyCFunction) font_hasglyphs, METH_VARARGS},
     {"render", (PyCFunction) font_render, METH_VARARGS},
     {"getsize", (PyCFunction) font_getsize, METH_VARARGS},
     {"getabc", (PyCFunction) font_getabc, METH_VARARGS},
