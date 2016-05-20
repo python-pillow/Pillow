@@ -496,7 +496,7 @@ font_dealloc(FontObject* self)
 
 static PyMethodDef font_methods[] = {
     {"getglyphs", (PyCFunction) font_getglyphs, METH_VARARGS},
-    {"hasglyph", (PyCFunction) font_hasglyphs, METH_VARARGS},
+    {"hasglyphs", (PyCFunction) font_hasglyphs, METH_VARARGS},
     {"render", (PyCFunction) font_render, METH_VARARGS},
     {"getsize", (PyCFunction) font_getsize, METH_VARARGS},
     {"getabc", (PyCFunction) font_getabc, METH_VARARGS},
