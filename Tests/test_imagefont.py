@@ -52,6 +52,9 @@ try:
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
             self.assertEqual(ttf.path, FONT_PATH)
             self.assertEqual(ttf.size, FONT_SIZE)
+            self.assertTrue(ttf.hasglyph('a')
+            self.assertFalse(ttf.hasglyph('\ueeee')
+            self.assertEqual(ttf.getglyphs(), '....')
 
             ttf_copy = ttf.font_variant()
             self.assertEqual(ttf_copy.path, FONT_PATH)
@@ -63,6 +66,9 @@ try:
             second_font_path = "Tests/fonts/DejaVuSans.ttf"
             ttf_copy = ttf.font_variant(font=second_font_path)
             self.assertEqual(ttf_copy.path, second_font_path)
+            self.assertTrue(ttf_copy.hasglyph('a')
+            self.assertFalse(ttf_copy.hasglyph('\ueeee')
+            self.assertEqual(ttf_copy.getglyphs(), '....')
 
         def test_font_with_name(self):
             ImageFont.truetype(FONT_PATH, FONT_SIZE)
