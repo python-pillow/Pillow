@@ -13,7 +13,10 @@ sys.path.insert(0, os.path.abspath('./Tests'))
 # if there's no test selected (mostly) choose a working default.
 # Something is required, because if we import the tests from the local
 # directory, once again, we've got the non-installed PIL in the way
-if len(sys.argv) == 1:
+for arg in sys.argv[1:]:
+    if '.py' in arg:
+        break
+else:
     sys.argv.extend(glob.glob('Tests/test*.py'))
 
 # Make sure that nose doesn't muck with our paths.
