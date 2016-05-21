@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Fix typos in TIFF tags #1918
+  [radarhere]
+
 - Skip tests that require libtiff if it is not installed, fixes #1866
   [wiredfool]
 
