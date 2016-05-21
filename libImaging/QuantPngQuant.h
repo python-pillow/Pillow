@@ -4,8 +4,8 @@
 #include "QuantTypes.h"
 
 int quantize_pngquant(Pixel *,
-    uint32_t,
-    uint32_t,
+    int,
+    int,
     uint32_t,
     Pixel **,
     uint32_t *,
