@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <limits.h>
 
 #include "QuantHeap.h"
 
@@ -47,7 +48,7 @@ static int _heap_grow(Heap *h,int newsize) {
    void *newheap;
    if (!newsize) newsize=h->heapsize<<1;
    if (newsize<h->heapsize) return 0;
-   if (newsize > ((int)SIZE_MAX) / sizeof(void *)){
+   if (newsize > INT_MAX / sizeof(void *)){
        return 0;
    }
    /* malloc check ok, using calloc for overflow, also checking 

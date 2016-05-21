@@ -189,7 +189,7 @@ _setimage(ImagingDecoderObject* decoder, PyObject* args)
     /* Allocate memory buffer (if bits field is set) */
     if (state->bits > 0) {
         if (!state->bytes) {
-            if (state->xsize > ((SIZE_MAX / state->bits)-7)){
+            if (state->xsize > ((INT_MAX / state->bits)-7)){
                 return PyErr_NoMemory();
             }
             state->bytes = (state->bits * state->xsize+7)/8;

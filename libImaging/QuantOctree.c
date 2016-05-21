@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "QuantOctree.h"
 
@@ -62,6 +63,12 @@ new_color_cube(int r, int g, int b, int a) {
    cube->bBits = MAX(b, 0);
    cube->aBits = MAX(a, 0);
 
+   /* overflow check for size multiplication below */
+   if (cube->rBits + cube->gBits + cube->bBits + cube->aBits > 31) {
+       free(cube);
+       return NULL;
+   }
+
    /* the width of the cube for each dimension */
    cube->rWidth = 1<<cube->rBits;
    cube->gWidth = 1<<cube->gBits;
@@ -77,6 +84,7 @@ new_color_cube(int r, int g, int b, int a) {
 
    /* the number of color buckets */
    cube->size = cube->rWidth * cube->gWidth * cube->bWidth * cube->aWidth;
+   /* malloc check ok, overflow checked above */
    cube->buckets = calloc(cube->size, sizeof(struct _ColorBucket));
 
    if (!cube->buckets) {
@@ -155,7 +163,7 @@ compare_bucket_count(const ColorBucket a, const ColorBucket b) {
 static ColorBucket
 create_sorted_color_palette(const ColorCube cube) {
    ColorBucket buckets;
-   if (cube->size > SIZE_MAX / sizeof(struct _ColorBucket)) {
+   if (cube->size > LONG_MAX / sizeof(struct _ColorBucket)) {
        return NULL;
    }
    /* malloc check ok, calloc + overflow check above for memcpy */
@@ -285,8 +293,8 @@ void add_lookup_buckets(ColorCube cube, ColorBucket palette, long nColors, long 
 ColorBucket
 combined_palette(ColorBucket bucketsA, long nBucketsA, ColorBucket bucketsB, long nBucketsB) {
    ColorBucket result;
-   if (nBucketsA > SIZE_MAX - nBucketsB ||
-       (nBucketsA+nBucketsB) > SIZE_MAX / sizeof(struct _ColorBucket)) {
+   if (nBucketsA > LONG_MAX - nBucketsB ||
+       (nBucketsA+nBucketsB) > LONG_MAX / sizeof(struct _ColorBucket)) {
        return NULL;
    }
    /* malloc check ok, overflow check above */

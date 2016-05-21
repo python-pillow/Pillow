@@ -937,7 +937,7 @@ allocate(ImagingOutline outline, int extra)
             /* malloc check ok, uses calloc for overflow */
             e = calloc(outline->size, sizeof(Edge));
         } else {
-            if (outline->size > SIZE_MAX / sizeof(Edge)) {
+            if (outline->size > INT_MAX / sizeof(Edge)) {
                 return NULL;
             }
             /* malloc check ok, overflow checked above */

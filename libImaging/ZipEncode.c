@@ -38,7 +38,7 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         /* Valid modes are ZIP_PNG, ZIP_PNG_PALETTE, and ZIP_TIFF */
 
         /* overflow check for malloc */
-        if (state->bytes > SIZE_MAX - 1) {
+        if (state->bytes > INT_MAX - 1) {
             state->errcode = IMAGING_CODEC_MEMORY;
             return -1;
         }

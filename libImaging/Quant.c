@@ -1092,6 +1092,10 @@ k_means(Pixel *pixelData,
    uint32_t **avgDistSortKey;
    int changes;
    int built=0;
+
+   if (nPaletteEntries > UINT32_MAX / (sizeof(uint32_t))) {
+       return 0;
+   }
    /* malloc check ok, using calloc */
    if (!(count=calloc(nPaletteEntries, sizeof(uint32_t)))) {
       return 0;
@@ -1107,7 +1111,7 @@ k_means(Pixel *pixelData,
    }
    
    /* this is enough of a check, since the multiplication n*size is done above */
-   if (nPaletteEntries > SIZE_MAX / (nPaletteEntries * sizeof(uint32_t))) {
+   if (nPaletteEntries > UINT32_MAX / (nPaletteEntries * sizeof(uint32_t))) {
        goto error_1;
    }
    /* malloc check ok, using calloc, checking n*n above */
@@ -1266,8 +1270,8 @@ quantize(Pixel *pixelData,
    qp=calloc(nPixels, sizeof(uint32_t));
    if (!qp) { goto error_4; }
 
-   if ((nPaletteEntries > SIZE_MAX / nPaletteEntries ) ||
-       (nPaletteEntries > SIZE_MAX / (nPaletteEntries * sizeof(uint32_t)))) {
+   if ((nPaletteEntries > UINT32_MAX / nPaletteEntries ) ||
+       (nPaletteEntries > UINT32_MAX / (nPaletteEntries * sizeof(uint32_t)))) {
        goto error_5;
    }
    /* malloc check ok, using calloc for overflow, check of n*n above */
@@ -1445,8 +1449,8 @@ quantize2(Pixel *pixelData,
    qp=calloc(nPixels, sizeof(uint32_t));
    if (!qp) { goto error_1; }
 
-   if ((nQuantPixels > SIZE_MAX / nQuantPixels ) ||
-       (nQuantPixels > SIZE_MAX / (nQuantPixels * sizeof(uint32_t)))) {
+   if ((nQuantPixels > UINT32_MAX / nQuantPixels ) ||
+       (nQuantPixels > UINT32_MAX / (nQuantPixels * sizeof(uint32_t)))) {
        goto error_2;
    }
 
@@ -1515,8 +1519,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
     if (!strcmp(im->mode, "RGBA") && mode != 2 && mode != 3)
        return ImagingError_ModeError();
 
-    if ((im->xsize > SIZE_MAX / im->ysize) ||
-        (im->xsize > SIZE_MAX / (im->ysize * sizeof(Pixel)))) {
+    if ((im->xsize > INT_MAX / im->ysize) ||
+        (im->xsize > INT_MAX / (im->ysize * sizeof(Pixel)))) {
         return ImagingError_MemoryError();
     }
     /* malloc check ok, using calloc for final overflow, x*y above */

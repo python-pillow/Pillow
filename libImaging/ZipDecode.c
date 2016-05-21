@@ -57,7 +57,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             context->prefix = 1; /* PNG */
 
         /* overflow check for malloc */
-        if (state->bytes > SIZE_MAX - 1) {
+        if (state->bytes > INT_MAX - 1) {
             state->errcode = IMAGING_CODEC_MEMORY;
             return -1;
         }
