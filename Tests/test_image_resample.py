@@ -1,8 +1,8 @@
 from helper import unittest, PillowTestCase, hopper
-from PIL import Image
+from PIL import Image, ImageDraw
 
 
-class TestImagingCoreResize(PillowTestCase):
+class TestImagingResampleVulnerability(PillowTestCase):
     # see https://github.com/python-pillow/Pillow/issues/1710
     def test_overflow(self):
         im = hopper('L')
@@ -32,6 +32,123 @@ class TestImagingCoreResize(PillowTestCase):
             self.fail("Resize should raise a value error on y negative size")
         except ValueError:
             self.assertTrue(True, "Should raise ValueError")
+
+
+class TestImagingCoreResampleAccuracy(PillowTestCase):
+    def make_case(self, size, color):
+        """Makes a sample image with two dark and two bright squares.
+        For example:
+        e0 e0 1f 1f
+        e0 e0 1f 1f
+        1f 1f e0 e0
+        1f 1f e0 e0
+        """
+        dark = (255 - color, 255 - color, 255 - color, 255 - color)
+        bright = (color, color, color, color)
+
+        i = Image.new('RGBX', size, dark)
+        rectangle = ImageDraw.Draw(i).rectangle
+        rectangle((0, 0, size[0] // 2 - 1, size[1] // 2 - 1), bright)
+        rectangle((size[0] // 2, size[1] // 2, size[0], size[1]), bright)
+        return i
+
+    def make_sample(self, data, size):
+        """Restores a sample image from given data string which contains
+        hex-encoded pixels from the top left fourth of a sample.
+        """
+        data = data.replace(' ', '')
+        sample = Image.new('L', size)
+        s_px = sample.load()
+        w, h = size[0] // 2, size[1] // 2
+        for y in range(h):
+            for x in range(w):
+                val = int(data[(y * w + x) * 2:(y * w + x + 1) * 2], 16)
+                s_px[x, y] = val
+                s_px[size[0] - x - 1, size[1] - y - 1] = val
+                s_px[x, size[1] - y - 1] = 255 - val
+                s_px[size[0] - x - 1, y] = 255 - val
+        return sample
+
+    def check_case(self, case, sample):
+        for channel in case.split():
+            s_px = sample.load()
+            c_px = channel.load()
+            for y in range(case.size[1]):
+                for x in range(case.size[0]):
+                    if c_px[x, y] != s_px[x, y]:
+                        message = '\nHave: \n{}\n\nExpected: \n{}'.format(
+                            self.serialize_image(channel),
+                            self.serialize_image(sample),
+                        )
+                        self.assertEqual(s_px[x, y], c_px[x, y], message)
+
+    def serialize_image(self, image):
+        s_px = image.load()
+        return '\n'.join(
+            ' '.join(
+                '{:02x}'.format(s_px[x, y])
+                for x in range(image.size[0])
+            )
+            for y in range(image.size[1])
+        )
+
+    def test_reduce_bilinear(self):
+        case = self.make_case((8, 8), 0xe1)
+        data = ('e1 c9'
+                'c9 b7')
+        self.check_case(
+            case.resize((4, 4), Image.BILINEAR),
+            self.make_sample(data, (4, 4)))
+
+    def test_reduce_bicubic(self):
+        case = self.make_case((12, 12), 0xe1)
+        data = ('e1 e3 d4'
+                'e3 e5 d6'
+                'd4 d6 c9')
+        self.check_case(
+            case.resize((6, 6), Image.BICUBIC),
+            self.make_sample(data, (6, 6)))
+
+    def test_reduce_lanczos(self):
+        case = self.make_case((16, 16), 0xe1)
+        data = ('e1 e0 e4 d7'
+                'e0 df e3 d6'
+                'e4 e3 e7 da'
+                'd7 d6 d9 ce')
+        self.check_case(
+            case.resize((8, 8), Image.LANCZOS),
+            self.make_sample(data, (8, 8)))
+
+    def test_enlarge_bilinear(self):
+        case = self.make_case((2, 2), 0xe1)
+        data = ('e1 b0'
+                'b0 98')
+        self.check_case(
+            case.resize((4, 4), Image.BILINEAR),
+            self.make_sample(data, (4, 4)))
+
+    def test_enlarge_bicubic(self):
+        case = self.make_case((4, 4), 0xe1)
+        data = ('e1 e5 ee b9'
+                'e5 e9 f3 bc'
+                'ee f3 fd c1'
+                'b9 bc c1 a2')
+        self.check_case(
+            case.resize((8, 8), Image.BICUBIC),
+            self.make_sample(data, (8, 8)))
+
+    def test_enlarge_lanczos(self):
+        case = self.make_case((6, 6), 0xe1)
+        data = ('e1 e0 db ed f5 b8'
+                'e0 df da ec f3 b7'
+                'db db d6 e7 ee b5'
+                'ed ec e6 fb ff bf'
+                'f5 f4 ee ff ff c4'
+                'b8 b7 b4 bf c4 a0')
+        self.check_case(
+            case.resize((12, 12), Image.LANCZOS),
+            self.make_sample(data, (12, 12)))
+
 
 if __name__ == '__main__':
     unittest.main()
