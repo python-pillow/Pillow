@@ -56,6 +56,11 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize,
     if (!im)
         return (Imaging) ImagingError_MemoryError();
 
+    /* linesize overflow check, roughly the current largest space req'd */
+    if (xsize > (INT_MAX / 4) - 1) {
+        return (Imaging) ImagingError_MemoryError();
+    }
+
     /* Setup image descriptor */
     im->xsize = xsize;
     im->ysize = ysize;
@@ -306,8 +311,8 @@ ImagingNewArray(const char *mode, int xsize, int ysize)
 
     /* Allocate image as an array of lines */
     for (y = 0; y < im->ysize; y++) {
-        /* malloc check UNDONE - where is linesize set? */
-        p = (char *) malloc(im->linesize);
+        /* malloc check linesize checked in prologue */
+        p = (char *) calloc(1, im->linesize);
         if (!p) {
             ImagingDestroyArray(im);
             break;
