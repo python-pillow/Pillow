@@ -168,9 +168,9 @@ extern Imaging ImagingNewMap(const char* filename, int readonly,
                              const char* mode, int xsize, int ysize);
 
 extern Imaging ImagingNewPrologue(const char *mode,
-                                  unsigned xsize, unsigned ysize);
+                                  int xsize, int ysize);
 extern Imaging ImagingNewPrologueSubtype(const char *mode,
-                                  unsigned xsize, unsigned ysize,
+                                  int xsize, int ysize,
                                   int structure_size);
 extern Imaging ImagingNewEpilogue(Imaging im);
 

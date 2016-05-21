@@ -46,7 +46,7 @@ int ImagingNewCount = 0;
  */
 
 Imaging
-ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
+ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize,
                           int size)
 {
     Imaging im;
@@ -226,7 +226,7 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
 }
 
 Imaging
-ImagingNewPrologue(const char *mode, unsigned xsize, unsigned ysize)
+ImagingNewPrologue(const char *mode, int xsize, int ysize)
 {
     return ImagingNewPrologueSubtype(
         mode, xsize, ysize, sizeof(struct ImagingMemoryInstance)
