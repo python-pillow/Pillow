@@ -60,6 +60,10 @@ class UI(Frame):
 # --------------------------------------------------------------------
 # main
 
+if len(sys.argv) != 2:
+    print("Usage: thresholder file")
+    sys.exit(1)
+
 root = Tk()
 
 im = Image.open(sys.argv[1])

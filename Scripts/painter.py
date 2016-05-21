@@ -66,11 +66,11 @@ class PaintCanvas(Canvas):
 #
 # main
 
-root = Tk()
-
 if len(sys.argv) != 2:
     print("Usage: painter file")
     sys.exit(1)
+
+root = Tk()
 
 im = Image.open(sys.argv[1])
 
