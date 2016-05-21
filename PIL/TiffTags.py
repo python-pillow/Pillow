@@ -66,7 +66,7 @@ TAGS_V2 = {
            "LZW": 5, "JPEG": 6, "PackBits": 32773}),
 
     262: ("PhotometricInterpretation", SHORT, 1,
-          {"WhiteIsZero": 0, "BlackIsZero": 1, "RGB": 2, "RBG Palette": 3,
+          {"WhiteIsZero": 0, "BlackIsZero": 1, "RGB": 2, "RGB Palette": 3,
            "Transparency Mask": 4, "CMYK": 5, "YCbCr": 6, "CieLAB": 8,
            "CFA": 32803,  # TIFF/EP, Adobe DNG
            "LinearRaw": 32892}),  # Adobe DNG
@@ -89,7 +89,7 @@ TAGS_V2 = {
     281: ("MaxSampleValue", SHORT, 0),
     282: ("XResolution", RATIONAL, 1),
     283: ("YResolution", RATIONAL, 1),
-    284: ("PlanarConfiguration", SHORT, 1, {"Contigous": 1, "Separate": 2}),
+    284: ("PlanarConfiguration", SHORT, 1, {"Contiguous": 1, "Separate": 2}),
     285: ("PageName", ASCII, 1),
     286: ("XPosition", RATIONAL, 1),
     287: ("YPosition", RATIONAL, 1),
