@@ -69,10 +69,10 @@ true color.
                 ("raw", (0, 0) + self.size, 128, (self.mode, 0, 1))
             ]
 
-    Image.register_open("SPAM", SpamImageFile)
+    Image.register_open(SpamImageFile.format, SpamImageFile)
 
-    Image.register_extension("SPAM", ".spam")
-    Image.register_extension("SPAM", ".spa") # dos version
+    Image.register_extension(SpamImageFile.format, ".spam")
+    Image.register_extension(SpamImageFile.format, ".spa") # dos version
 
 The format handler must always set the :py:attr:`~PIL.Image.Image.size` and
 :py:attr:`~PIL.Image.Image.mode` attributes. If these are not set, the file
