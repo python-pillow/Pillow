@@ -644,7 +644,8 @@ class pil_build_ext(build_ext):
                                   define_macros=defs))
 
         if feature.tcl and feature.tk:
-            if sys.platform == "darwin":
+            if (sys.platform == "darwin" and
+                os.environ.get('IGNORE_OSX_TCLTK_FRAMEWORKS', False)==False):
                 # locate Tcl/Tk frameworks
                 frameworks = []
                 framework_roots = [
