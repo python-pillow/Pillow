@@ -303,6 +303,15 @@ class TestFileJpeg(PillowTestCase):
         filename = "Tests/images/junk_jpeg_header.jpg"
         Image.open(filename)
 
+    def _n_qtables_helper(self, n, test_file):
+        im = Image.open(test_file)
+        f = self.tempfile('temp.jpg')
+        im.save(f, qtables=[[n]*64]*n)
+        im = Image.open(f)
+        self.assertEqual(len(im.quantization), n)
+        reloaded = self.roundtrip(im, qtables="keep")
+        self.assertEqual(im.quantization, reloaded.quantization)
+
     def test_qtables(self):
         im = Image.open("Tests/images/hopper.jpg")
         qtables = im.quantization
@@ -358,6 +367,15 @@ class TestFileJpeg(PillowTestCase):
                                       0: standard_l_qtable,
                                       1: standard_chrominance_qtable
                                   }), 30)
+
+        self._n_qtables_helper(1, "Tests/images/hopper_gray.jpg")
+        self._n_qtables_helper(1, "Tests/images/pil_sample_rgb.jpg")
+        self._n_qtables_helper(2, "Tests/images/pil_sample_rgb.jpg")
+        self._n_qtables_helper(3, "Tests/images/pil_sample_rgb.jpg")
+        self._n_qtables_helper(1, "Tests/images/pil_sample_cmyk.jpg")
+        self._n_qtables_helper(2, "Tests/images/pil_sample_cmyk.jpg")
+        self._n_qtables_helper(3, "Tests/images/pil_sample_cmyk.jpg")
+        self._n_qtables_helper(4, "Tests/images/pil_sample_cmyk.jpg")
 
         # not a sequence
         self.assertRaises(Exception, lambda: self.roundtrip(im, qtables='a'))
