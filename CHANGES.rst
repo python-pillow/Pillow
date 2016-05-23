@@ -4,6 +4,21 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Added --disable-osx-tcltk-framework in setup.py #1883
+  [wiredfool]
+
+- Include Python.h before wchar.h so _GNU_SOURCE is set consistently #1906
+  [hugovk]
+
+- Updated example decoder in documentation #1899
+  [radarhere]
+
+- Added support for GIF comment extension #1896
+  [radarhere]
+
+- Removed support for pre- 1.5.2 list form of Image info in Image.new #1897
+  [radarhere]
+
 - Fix typos in TIFF tags #1918
   [radarhere]
 
