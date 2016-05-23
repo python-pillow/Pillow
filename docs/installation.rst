@@ -207,6 +207,10 @@ Build Options
   automated build systems that configure the proper paths in the
   environment variables (e.g. Buildroot).
 
+* Build flag: ``--disable-osx-tcltk-framework``. Skips linking against
+  the OSX system TCL/TK frameworks for systems that have alternate
+  versions of the libraries installed. 
+
 * Build flag: ``--debug``. Adds a debugging flag to the include and
   library search process to dump all paths searched for and found to
   stdout.

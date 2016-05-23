@@ -149,11 +149,14 @@ class pil_build_ext(build_ext):
         ('enable-%s' % x, None, 'Enable support for %s' % x) for x in feature
     ] + [
         ('disable-platform-guessing', None, 'Disable platform guessing on Linux'),
+        ('disable-osx-tcltk-framework', None,
+             'Disable linking against system tcl/tk frameworks on OSX'),
         ('debug', None, 'Debug logging')
     ]
 
     def initialize_options(self):
         self.disable_platform_guessing = None
+        self.disable_osx_tcltk_framework = None
         build_ext.initialize_options(self)
         for x in self.feature:
             setattr(self, 'disable_%s' % x, None)
@@ -644,7 +647,7 @@ class pil_build_ext(build_ext):
                                   define_macros=defs))
 
         if feature.tcl and feature.tk:
-            if sys.platform == "darwin":
+            if sys.platform == "darwin" and not self.disable_osx_tcltk_framework:
                 # locate Tcl/Tk frameworks
                 frameworks = []
                 framework_roots = [
