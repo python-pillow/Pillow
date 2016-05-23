@@ -195,7 +195,7 @@ def DQT(self, marker):
             raise SyntaxError("bad quantization table marker")
         v = i8(s[0])
         if v//16 == 0:
-            self.quantization[v & 15] = array.array("b", s[1:65])
+            self.quantization[v & 15] = array.array("B", s[1:65])
             s = s[65:]
         else:
             return  # FIXME: add code to read 16-bit tables!
