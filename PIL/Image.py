@@ -524,13 +524,7 @@ class Image(object):
         if im.mode == "P" and not new.palette:
             from PIL import ImagePalette
             new.palette = ImagePalette.ImagePalette()
-        try:
-            new.info = self.info.copy()
-        except AttributeError:
-            # fallback (pre-1.5.2)
-            new.info = {}
-            for k, v in self.info:
-                new.info[k] = v
+        new.info = self.info.copy()
         return new
 
     _makeself = _new  # compatibility
