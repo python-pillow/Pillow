@@ -267,6 +267,18 @@ class TestFileGif(PillowTestCase):
 
         self.assertEqual(reread.info['background'], im.info['background'])
 
+    def test_comment(self):
+        im = Image.open(TEST_GIF)
+        self.assertEqual(im.info['comment'], b"File written by Adobe Photoshop\xa8 4.0")
+
+        out = self.tempfile('temp.gif')
+        im = Image.new('L', (100, 100), '#000')
+        im.info['comment'] = b"Test comment text"
+        im.save(out)
+        reread = Image.open(out)
+
+        self.assertEqual(reread.info['comment'], im.info['comment'])
+
     def test_version(self):
         out = self.tempfile('temp.gif')
 
@@ -283,7 +295,7 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(reread.info["version"], b"GIF89a")
 
         # Test that a GIF87a image is also saved in that format
-        im = Image.open(TEST_GIF)
+        im = Image.open("Tests/images/test.colors.gif")
         im.save(out)
         reread = Image.open(out)
         self.assertEqual(reread.info["version"], b"GIF87a")
