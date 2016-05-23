@@ -148,10 +148,10 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	if (context->qtables) {
 	    int i;
 	    int quality = 100;
+	    int last_q = 0;
 	    if (context->quality > 0) {
 		quality = context->quality;
 	    }
-        int last_q;
         for (i = 0; i < context->qtablesLen; i++) {
             // TODO: Should add support for none baseline
             jpeg_add_quant_table(&context->cinfo, i, &context->qtables[i * DCTSIZE2],
