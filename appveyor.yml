@@ -14,6 +14,7 @@ environment:
   - PYTHON: C:/Python34-x64
   - PYTHON: C:/Python33
   - PYTHON: C:/Python33-x64
+
 install:
 - git clone https://github.com/python-pillow/pillow-depends.git c:\pillow-depends
 - xcopy c:\pillow-depends\*.zip c:\pillow\winbuild\
@@ -21,22 +22,34 @@ install:
 - cd c:\pillow\winbuild\
 - c:\python34\python.exe c:\pillow\winbuild\build_dep.py
 - c:\pillow\winbuild\build_deps.cmd
+
 build_script:
 - '%PYTHON%\python.exe c:\pillow\winbuild\build.py'
 - cd c:\pillow
 - dir dist\*.egg
 - '%PYTHON%\python.exe selftest.py --installed'
+
 test_script:
 - cd c:\pillow
 - '%PYTHON%\Scripts\pip.exe install nose'
 - '%PYTHON%\python.exe test-installed.py -v -s'
+
 matrix:
   fast_finish: true
+
 artifacts:
 - path: pillow\dist\*.egg
-  name: build
+  name: egg
+- path: pillow\dist\*.wheel
+  name: wheel
+
 after_test:
-  - ps: Get-ChildItem .\dist\*.egg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+  - '%PYTHON%\Scripts\pip.exe install wheel'
+  - cd c:\pillow\winbuild\
+  - '%PYTHON%\python.exe c:\pillow\winbuild\build.py --wheel'
+  - cd c:\pillow
+  - ps: Get-ChildItem .\dist\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+
 deploy:
   provider: S3
   access_key_id: AKIAIRAXC62ZNTVQJMOQ 
@@ -44,7 +57,7 @@ deploy:
     secure: Hwb6klTqtBeMgxAjRoDltiiqpuH8xbwD4UooDzBSiCWXjuFj1lyl4kHgHwTCCGqi
   bucket: pillow-nightly
   folder: win/$(APPVEYOR_BUILD_NUMBER)/
-  artifact: /.*egg/
+  artifact: /.*egg|wheel/
   on: 
     branch: master
     
