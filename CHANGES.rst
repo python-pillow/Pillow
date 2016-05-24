@@ -82,7 +82,7 @@ Changelog (Pillow)
 - Remove support for Python 3.0 from _imaging.c #1851
   [radarhere]
 
-- Jpeg qtables are unsigned chars #1814
+- Jpeg qtables are unsigned chars #1814, #1921
   [thebostik]
 
 - Added additional EXIF tags #1841, TIFF Tags #1821
