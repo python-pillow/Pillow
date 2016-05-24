@@ -29,6 +29,7 @@ from PIL import Image
 from PIL._util import isDirectory, isPath
 import os
 import sys
+import six
 
 
 class _imagingft_not_installed(object):
@@ -168,6 +169,7 @@ class FreeTypeFont(object):
                             index=self.index if index is None else index,
                             encoding=self.encoding if encoding is None else
                             encoding)
+
     def hasglyphs(self, text):
         """
         Returns true if all the characters in the string exist in the font,
@@ -181,7 +183,7 @@ class FreeTypeFont(object):
         the font
         """
         codes = self.font.getglyphs()
-        return ''.join(unichr(code) for code in codes)
+        return ''.join(six.unichr(code) for code in codes)
 
 ##
 # Wrapper that creates a transposed font from any existing font
