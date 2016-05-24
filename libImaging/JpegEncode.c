@@ -148,14 +148,25 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	if (context->qtables) {
 	    int i;
 	    int quality = 100;
+	    int last_q = 0;
 	    if (context->quality > 0) {
 		quality = context->quality;
 	    }
-	    for (i = 0; i < context->qtablesLen; i++) {
-		// TODO: Should add support for none baseline
-		jpeg_add_quant_table(&context->cinfo, i, &context->qtables[i * DCTSIZE2],
-				     quality, TRUE);
-	    }
+        for (i = 0; i < context->qtablesLen; i++) {
+            // TODO: Should add support for none baseline
+            jpeg_add_quant_table(&context->cinfo, i, &context->qtables[i * DCTSIZE2],
+                                 quality, TRUE);
+            context->cinfo.comp_info[i].quant_tbl_no = i;
+            last_q = i;
+        }
+        if (context->qtablesLen == 1) {
+            // jpeg_set_defaults created two qtables internally, but we only wanted one.
+            jpeg_add_quant_table(&context->cinfo, 1, &context->qtables[0],
+                                 quality, TRUE);
+        }
+        for (i = last_q; i < context->cinfo.num_components; i++) {
+            context->cinfo.comp_info[i].quant_tbl_no = last_q;
+        }
 	} else if (context->quality > 0) {
 	    jpeg_set_quality(&context->cinfo, context->quality, 1);
 	}
