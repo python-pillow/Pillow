@@ -38,25 +38,23 @@ def register(viewer, order=1):
         _viewers.insert(0, viewer)
 
 
-##
-# Displays a given image.
-#
-# @param image An image object.
-# @param title Optional title.  Not all viewers can display the title.
-# @param **options Additional viewer options.
-# @return True if a suitable viewer was found, false otherwise.
-
 def show(image, title=None, **options):
+    """
+    Display a given image.
+
+    @param image An image object.
+    @param title Optional title.  Not all viewers can display the title.
+    @param **options Additional viewer options.
+    @return True if a suitable viewer was found, false otherwise.
+    """
     for viewer in _viewers:
         if viewer.show(image, title=title, **options):
             return 1
     return 0
 
 
-##
-# Base class for viewers.
-
 class Viewer(object):
+    """Base class for viewers."""
 
     # main api
 
@@ -81,22 +79,22 @@ class Viewer(object):
     format = None
 
     def get_format(self, image):
-        # return format name, or None to save as PGM/PPM
+        """Return format name, or None to save as PGM/PPM"""
         return self.format
 
     def get_command(self, file, **options):
         raise NotImplementedError
 
     def save_image(self, image):
-        # save to temporary file, and return filename
+        """Save to temporary file, and return filename"""
         return image._dump(format=self.get_format(image))
 
     def show_image(self, image, **options):
-        # display given image
+        """Display given image"""
         return self.show_file(self.save_image(image), **options)
 
     def show_file(self, file, **options):
-        # display given file
+        """Display given file"""
         os.system(self.get_command(file, **options))
         return 1
 
@@ -176,3 +174,5 @@ else:
 if __name__ == "__main__":
     # usage: python ImageShow.py imagefile [title]
     print(show(Image.open(sys.argv[1]), *sys.argv[2:]))
+
+# End of file
