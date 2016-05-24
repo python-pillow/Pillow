@@ -25,42 +25,38 @@ class Path(object):
     def __init__(self, xy):
         pass
 
-    ##
-    # Compacts the path, by removing points that are close to each
-    # other.  This method modifies the path in place.
-
     def compact(self, distance=2):
+        """
+        Compacts the path, by removing points that are close to each other.
+        This method modifies the path in place.
+        """
         pass
-
-    ##
-    # Gets the bounding box.
 
     def getbbox(self):
+        """Gets the bounding box."""
         pass
-
-    ##
-    # Maps the path through a function.
 
     def map(self, function):
+        """Maps the path through a function."""
         pass
-
-    ##
-    # Converts the path to Python list.
-    #
-    # @param flat By default, this function returns a list of 2-tuples
-    #     [(x, y), ...].  If this argument is true, it returns a flat
-    #     list [x, y, ...] instead.
-    # @return A list of coordinates.
 
     def tolist(self, flat=0):
+        """
+        Converts the path to Python list.
+        #
+        @param flat By default, this function returns a list of 2-tuples
+            [(x, y), ...].  If this argument is true, it returns a flat list
+            [x, y, ...] instead.
+        @return A list of coordinates.
+        """
         pass
 
-    ##
-    # Transforms the path.
-
     def transform(self, matrix):
+        """Transforms the path."""
         pass
 
 
 # override with C implementation
 Path = Image.core.path
+
+# End of file

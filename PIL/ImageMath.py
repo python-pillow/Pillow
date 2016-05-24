@@ -32,7 +32,7 @@ def _isconstant(v):
 
 
 class _Operand(object):
-    # wraps an image operand, providing standard operators
+    """Wraps an image operand, providing standard operators"""
 
     def __init__(self, im):
         self.im = im
@@ -268,3 +268,5 @@ def eval(expression, _dict={}, **kw):
         return out.im
     except AttributeError:
         return out
+
+# End of file

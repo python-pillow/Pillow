@@ -18,6 +18,16 @@
 from __future__ import print_function
 import sys
 
+from PIL import Image
+try:
+    from PIL import _imagingcms
+except ImportError as ex:
+    # Allow error import for doc purposes, but error out when accessing
+    # anything in core.
+    from _util import deferred_error
+    _imagingcms = deferred_error(ex)
+from PIL._util import isStringType
+
 DESCRIPTION = """
 pyCMS
 
@@ -84,16 +94,6 @@ pyCMS
 VERSION = "1.0.0 pil"
 
 # --------------------------------------------------------------------.
-
-from PIL import Image
-try:
-    from PIL import _imagingcms
-except ImportError as ex:
-    # Allow error import for doc purposes, but error out when accessing
-    # anything in core.
-    from _util import deferred_error
-    _imagingcms = deferred_error(ex)
-from PIL._util import isStringType
 
 core = _imagingcms
 
@@ -188,10 +188,12 @@ class ImageCmsProfile(object):
 
 class ImageCmsTransform(Image.ImagePointHandler):
 
-    # Transform.  This can be used with the procedural API, or with the
-    # standard Image.point() method.
-    #
-    # Will return the output profile in the output.info['icc_profile'].
+    """
+    Transform.  This can be used with the procedural API, or with the standard
+    Image.point() method.
+
+    Will return the output profile in the output.info['icc_profile'].
+    """
 
     def __init__(self, input, output, input_mode, output_mode,
                  intent=INTENT_PERCEPTUAL, proof=None,
@@ -590,7 +592,8 @@ def applyTransform(im, transform, inPlace=0):
         with the transform applied is returned (and im is not changed). The
         default is False.
     :returns: Either None, or a new PIL Image object, depending on the value of
-        inPlace. The profile will be returned in the image's info['icc_profile'].
+        inPlace. The profile will be returned in the image's
+        info['icc_profile'].
     :exception PyCMSError:
     """
 

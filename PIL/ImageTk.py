@@ -53,6 +53,7 @@ def _pilbitmap_check():
             _pilbitmap_ok = 0
     return _pilbitmap_ok
 
+
 def _get_image_from_kw(kw):
     source = None
     if "file" in kw:
@@ -196,7 +197,6 @@ class PhotoImage(object):
 
 class BitmapImage(object):
     """
-
     A Tkinter-compatible bitmap image.  This can be used everywhere Tkinter
     expects an image object.
 
@@ -268,10 +268,8 @@ def getimage(photo):
     photo.tk.call("PyImagingPhotoGet", photo)
 
 
-# --------------------------------------------------------------------
-# Helper for the Image.show method.
-
 def _show(image, title):
+    """Helper for the Image.show method."""
 
     class UI(tkinter.Label):
         def __init__(self, master, im):
@@ -288,3 +286,5 @@ def _show(image, title):
     if title:
         top.title(title)
     UI(top, image).pack()
+
+# End of file

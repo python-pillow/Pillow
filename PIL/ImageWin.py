@@ -191,10 +191,8 @@ class Dib(object):
                                   "Please use tobytes() instead.")
 
 
-##
-# Create a Window with the given title size.
-
 class Window(object):
+    """Create a Window with the given title size."""
 
     def __init__(self, title="PIL", width=None, height=None):
         self.hwnd = Image.core.createwindow(
@@ -223,10 +221,8 @@ class Window(object):
         Image.core.eventloop()
 
 
-##
-# Create an image window which displays the given image.
-
 class ImageWindow(Window):
+    """Create an image window which displays the given image."""
 
     def __init__(self, image, title="PIL"):
         if not isinstance(image, Dib):
@@ -237,3 +233,5 @@ class ImageWindow(Window):
 
     def ui_handle_repair(self, dc, x0, y0, x1, y1):
         self.image.draw(dc, (x0, y0, x1, y1))
+
+# End of file
