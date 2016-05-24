@@ -295,7 +295,7 @@ class ImageDraw(object):
     #    The best lineHeight would be that returned from the font.font.height
     #    attribute, but in versions of PIL in which that isn't accessible,
     #    sum( font.getmetrics()) is used instead.
-    def textInfo( self, text, font=None, lineHeight=None, lineHeightPercent=None ):
+    def textInfo(self, text, font=None, lineHeight=None, lineHeightPercent=None):
         if font is None:
             font = self.getfont()
         lines = text.split('\n')
@@ -304,20 +304,20 @@ class ImageDraw(object):
         txWid = 0
         tyMax = None
         tyMin = None
-        if len( lines ) > 1:
+        if len(lines) > 1:
             if lineHeight is None:
                 if lineHeightPercent is None:
                     lineHeightPercent = 100
                 try:
                     lineHeight = font.font.height
-                except Exception as exc:
-                    lineHeight = sum( font.getmetrics())
-                lineHeight = int( lineHeight * lineHeightPercent / 100 )
+                except AttributeError:
+                    lineHeight = sum(font.getmetrics())
+                lineHeight = int(lineHeight * lineHeightPercent / 100)
 
         lineBBs = []
         for line in lines:
-            lxMin, lyMin, lxMax, lyMax = font.getBB( line )
-            lineBBs.append(( lxMin, lyMin, lxMax, lyMax, line ))
+            lxMin, lyMin, lxMax, lyMax = font.getBB(line)
+            lineBBs.append((lxMin, lyMin, lxMax, lyMax, line))
             lxWid = lxMax - lxMin
             if txWid < lxWid:
                 txWid = lxWid
@@ -326,13 +326,13 @@ class ImageDraw(object):
             if txMin > lxMin:
                 txMin = lxMin
             if tyMax is None:
-                tyMax = lyMax # from first line only
+                tyMax = lyMax  # from first line only
             if tyMin is None:
-                tyMin = 0 # skips first line (unless it is also last)
+                tyMin = 0  # skips first line (unless it is also last)
             else:
                 tyMin -= lineHeight
-        tyMin += lyMin # from last line
-        return ( txMin, tyMin, txMax, tyMax, txWid, lineHeight, lineBBs )
+        tyMin += lyMin  # from last line
+        return (txMin, tyMin, txMax, tyMax, txWid, lineHeight, lineBBs)
 
     # Text is drawn as close as possible to the specified alignment edges of the
     # image, without truncation on those edges, then adjusted by the origin value.
@@ -341,45 +341,44 @@ class ImageDraw(object):
     # alignment position. alignX can also be 'left', 'center', or 'right'; alignY
     # can also be 'top', 'middle', or 'bottom'. justifyX can be 'left', 'center',
     # or 'right'. Other parameters like textInfo.
-    def textAtPos( self, text, font=None, lineHeight=None, lineHeightPercent=None,
-                   origin=( 0, 0 ), alignX='exact', alignY='exact', justifyX='left',
-                   fill=None ):
+    def textAtPos(self, text, font=None, lineHeight=None, lineHeightPercent=None,
+                  origin=(0, 0), alignX='exact', alignY='exact', justifyX='left',
+                  fill=None):
         if font is None:
             font = self.getfont()
-        ink, fill = self._getink( fill )
+        ink, fill = self._getink(fill)
         if ink is None:
-            inx = fill
             if ink is None:
                 return
         if justifyX not in ('left', 'center', 'right'):
-            raise ValueError('Unknown justifyX value "%s".' % justifyX )
+            raise ValueError('Unknown justifyX value "%s".' % justifyX)
         txMin, tyMin, txMax, tyMax, txWid, lineHeight, lineBBs = self.textInfo(
-            text, font, lineHeight, lineHeightPercent )
+            text, font, lineHeight, lineHeightPercent)
         if alignX == 'exact':
             ox = 0
         elif alignX == 'left':
             ox = -txMin
         elif alignX == 'right':
-            ox = self.im.size[ 0 ] - txMax
+            ox = self.im.size[0] - txMax
         elif alignX == 'center':
-            ox = self.im.size[ 0 ] // 2 - txMax // 2
+            ox = self.im.size[0] // 2 - txMax // 2
         else:
-            raise ValueError('Unknown alignX value "%s".' % alignX )
+            raise ValueError('Unknown alignX value "%s".' % alignX)
         if alignY == 'exact':
             oy = 0
         elif alignY == 'top':
             oy = tyMax
         elif alignY == 'bottom':
-            oy = self.im.size[ 1 ] + tyMin
+            oy = self.im.size[1] + tyMin
         elif alignY == 'middle':
-            oy = self.im.size[ 1 ] // 2 + ( tyMax + tyMin ) // 2
+            oy = self.im.size[1] // 2 + (tyMax + tyMin) // 2
         else:
-            raise ValueError('Unknown alignY value "%s".' % alignY )
-        ox += origin[ 0 ]
-        oy += origin[ 1 ]
+            raise ValueError('Unknown alignY value "%s".' % alignY)
+        ox += origin[0]
+        oy += origin[1]
         ascent, descent = font.getmetrics()
         while lineBBs:
-            lxMin, lyMin, lxMax, lyMax, line = lineBBs.pop( 0 )
+            lxMin, lyMin, lxMax, lyMax, line = lineBBs.pop(0)
             if justifyX == 'left':
                 lox = ox
             elif justifyX == 'right':
@@ -390,14 +389,24 @@ class ImageDraw(object):
             # finally, draw some text
             lox = lox + lxMin
             loy = oy - lyMax
-            im = Image.core.fill("L", ( lxMax - lxMin, lyMax - lyMin ), 0 )
-            font.font.render( line, im.id, self.fontmode == "1" )
-            self.draw.draw_bitmap(( lox, loy ), im, ink )
+            im = Image.core.fill("L", (lxMax - lxMin, lyMax - lyMin), 0)
+            font.font.render(line, im.id, self.fontmode == "1")
+            self.draw.draw_bitmap((lox, loy), im, ink)
 
             if not lineBBs:
                 break
             oy += lineHeight
 
+
+##
+# A simple 2D drawing interface for PIL images.
+#
+# @param im The image to draw in.
+# @param mode Optional mode to use for color values.  For RGB
+#    images, this argument can be RGB or RGBA (to blend the
+#    drawing into the image).  For all other modes, this argument
+#    must be the same as the image mode.  If omitted, the mode
+#    defaults to the mode of the image.
 def Draw(im, mode=None):
     """
     A simple 2D drawing interface for PIL images.
