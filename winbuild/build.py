@@ -3,10 +3,10 @@
 import subprocess
 import shutil
 import sys
-import getopt
 import os
 
-from config import *
+from config import compilers, pythons, compiler_fromEnv, pyversion_fromEnv
+from config import VIRT_BASE, X64_EXT
 
 
 def setup_vms():
@@ -23,8 +23,7 @@ def setup_vms():
     return "\n".join(ret)
 
 
-def run_script(params):
-    (version, script) = params
+def run_script(version, script):
     try:
         print("Running %s" % version)
         filename = 'build_pillow_%s.cmd' % version
@@ -102,7 +101,7 @@ def clean():
     except:
         # could already be removed
         pass
-    run_script(('virtualenvs', setup_vms()))
+    run_script('virtualenvs', setup_vms())
 
 
 def main(op):
@@ -123,36 +122,37 @@ def main(op):
                                                         64)]),
                                    footer()])))
 
-    results = map(run_script, scripts)
+    results = [run_script(pv, cv) for pv, cv in scripts]
 
     for (version, status, trace, err) in results:
         print("Compiled %s: %s" % (version, status and 'ERR' or 'OK'))
 
 
 def run_one(op):
-
     compiler = compiler_fromEnv()
     py_version = pyversion_fromEnv()
 
-    run_script((py_version,
+    run_script(py_version,
                 "\n".join([header(op),
                            build_one(py_version, compiler),
                            footer()])
-                ))
+                )
 
 
-if __name__ == '__main__':
-    opts, args = getopt.getopt(sys.argv[1:], '', ['clean', 'dist'])
-    opts = dict(opts)
-
-    if '--clean' in opts:
-        clean()
-
-    op = 'install'
-    if '--dist' in opts:
-        op = "bdist_wininst --user-access-control=auto"
-
+def run(op):
     if 'PYTHON' in os.environ:
         run_one(op)
     else:
         main(op)
+
+
+if __name__ == '__main__':
+    args = sys.argv[1:]
+    if '--clean' in args:
+        clean()
+
+    if '--dist' in args:
+        run('bdist_wininst --user-access-control=auto')
+        run('bdist_wheel')
+    else:
+        run('install')

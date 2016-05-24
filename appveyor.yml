@@ -18,7 +18,9 @@ install:
 - cd c:\pillow\winbuild\
 - c:\python34\python.exe c:\pillow\winbuild\build_dep.py
 - c:\pillow\winbuild\build_deps.cmd
+- '%PYTHON%\Scripts\pip.exe install wheel'
 build_script:
+- '%PYTHON%\python.exe c:\pillow\winbuild\build.py --dist'
 - '%PYTHON%\python.exe c:\pillow\winbuild\build.py'
 - cd c:\pillow
 - dir dist\*.egg
@@ -33,7 +35,7 @@ artifacts:
 - path: pillow\dist\*.egg
   name: build
 after_test:
-  - ps: Get-ChildItem .\dist\*.egg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+  - ps: Get-ChildItem .\dist\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 deploy:
   provider: S3
   access_key_id: AKIAIRAXC62ZNTVQJMOQ 
@@ -42,4 +44,3 @@ deploy:
   bucket: pillow-nightly
   folder: win/$(APPVEYOR_BUILD_NUMBER)/
   artifact: /.*egg/
-
