@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Removed docs/BUILDME script #1924
+  [radarhere]
+
+- Moved comments to docstrings  #1926 
+  [hugovk]
+
 - Added --disable-osx-tcltk-framework in setup.py #1883
   [wiredfool]
 
