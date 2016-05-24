@@ -31,6 +31,11 @@
 #include "QuantHash.h"
 #include "QuantHeap.h"
 
+/* MSVC9.0 */
+#ifndef UINT32_MAX
+#define UINT32_MAX 0xffffffff
+#endif
+
 #define NO_OUTPUT
 
 typedef struct {
