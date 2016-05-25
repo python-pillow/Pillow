@@ -34,8 +34,13 @@
 
 #include "Imaging.h"
 
-#define MAX(a, b) (a) > (b) ? (a) : (b)
-#define MIN(a, b) (a) < (b) ? (a) : (b)
+#include <emmintrin.h>
+#include <mmintrin.h>
+#include <smmintrin.h>
+
+
+#define MAX(a, b) (a)>(b) ? (a) : (b)
+#define MIN(a, b) (a)<(b) ? (a) : (b)
 
 #define CLIP16(v) ((v) <= -32768 ? -32768 : (v) >= 32767 ? 32767 : (v))
 
@@ -453,15 +458,43 @@ rgba2rgb(UINT8 *out, const UINT8 *in, int xsize) {
 }
 
 static void
-rgbA2rgba(UINT8 *out, const UINT8 *in, int xsize) {
-    int x;
-    unsigned int alpha, tmp;
-    for (x = 0; x < xsize; x++) {
-        alpha = in[3];
-        *out++ = MULDIV255(*in++, alpha, tmp);
-        *out++ = MULDIV255(*in++, alpha, tmp);
-        *out++ = MULDIV255(*in++, alpha, tmp);
-        *out++ = *in++;
+rgbA2rgba(UINT8* out, const UINT8* in, int xsize)
+{
+    unsigned int tmp;
+    unsigned char alpha;
+    int x = 0;
+    __m128i zero = _mm_setzero_si128();
+    __m128i half = _mm_set1_epi16(128);
+    __m128i maxalpha = _mm_set_epi16(255, 0, 0, 0, 255, 0, 0, 0);
+    __m128i source, pix1, pix2, factors;
+
+    for (; x < xsize - 3; x += 4) {
+        source = _mm_loadu_si128((__m128i *) &in[x * 4]);
+        
+        pix1 = _mm_unpacklo_epi8(source, zero);
+        factors = _mm_shufflelo_epi16(pix1, _MM_SHUFFLE(3, 3, 3, 3));
+        factors = _mm_shufflehi_epi16(factors, _MM_SHUFFLE(3, 3, 3, 3));
+        factors = _mm_or_si128(factors, maxalpha);
+        pix1 = _mm_add_epi16(_mm_mullo_epi16(pix1, factors), half);
+        pix1 = _mm_add_epi16(pix1, _mm_srli_epi16(pix1, 8));
+        pix1 = _mm_srli_epi16(pix1, 8);
+
+        pix2 = _mm_unpackhi_epi8(source, zero);
+        factors = _mm_shufflelo_epi16(pix2, _MM_SHUFFLE(3, 3, 3, 3));
+        factors = _mm_shufflehi_epi16(factors, _MM_SHUFFLE(3, 3, 3, 3));
+        factors = _mm_or_si128(factors, maxalpha);
+        pix2 = _mm_add_epi16(_mm_mullo_epi16(pix2, factors), half);
+        pix2 = _mm_add_epi16(pix2, _mm_srli_epi16(pix2, 8));
+        pix2 = _mm_srli_epi16(pix2, 8);
+
+        _mm_storeu_si128((__m128i *) &out[x * 4], _mm_packus_epi16(pix1, pix2));
+    }
+    for (; x < xsize; x++) {
+        alpha = in[x * 4 + 3];
+        out[x * 4 + 0] = MULDIV255(in[x * 4 + 0], alpha, tmp);
+        out[x * 4 + 1] = MULDIV255(in[x * 4 + 1], alpha, tmp);
+        out[x * 4 + 2] = MULDIV255(in[x * 4 + 2], alpha, tmp);
+        out[x * 4 + 3] = alpha;
     }
 }
 
