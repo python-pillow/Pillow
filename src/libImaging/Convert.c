@@ -465,24 +465,23 @@ rgbA2rgba(UINT8* out, const UINT8* in, int xsize)
     int x = 0;
     __m128i zero = _mm_setzero_si128();
     __m128i half = _mm_set1_epi16(128);
-    __m128i maxalpha = _mm_set_epi16(255, 0, 0, 0, 255, 0, 0, 0);
-    __m128i source, pix1, pix2, factors;
+    __m128i maxalpha = _mm_set1_epi32(0xff000000);
+    __m128i factormask = _mm_set_epi8(15,15,15,15, 11,11,11,11, 7,7,7,7, 3,3,3,3);
+    __m128i factorsource, source, pix1, pix2, factors;
 
     for (; x < xsize - 3; x += 4) {
         source = _mm_loadu_si128((__m128i *) &in[x * 4]);
+        factorsource = _mm_shuffle_epi8(source, factormask);
+        factorsource = _mm_or_si128(factorsource, maxalpha);
         
         pix1 = _mm_unpacklo_epi8(source, zero);
-        factors = _mm_shufflelo_epi16(pix1, _MM_SHUFFLE(3, 3, 3, 3));
-        factors = _mm_shufflehi_epi16(factors, _MM_SHUFFLE(3, 3, 3, 3));
-        factors = _mm_or_si128(factors, maxalpha);
+        factors = _mm_unpacklo_epi8(factorsource, zero);
         pix1 = _mm_add_epi16(_mm_mullo_epi16(pix1, factors), half);
         pix1 = _mm_add_epi16(pix1, _mm_srli_epi16(pix1, 8));
         pix1 = _mm_srli_epi16(pix1, 8);
 
         pix2 = _mm_unpackhi_epi8(source, zero);
-        factors = _mm_shufflelo_epi16(pix2, _MM_SHUFFLE(3, 3, 3, 3));
-        factors = _mm_shufflehi_epi16(factors, _MM_SHUFFLE(3, 3, 3, 3));
-        factors = _mm_or_si128(factors, maxalpha);
+        factors = _mm_unpackhi_epi8(factorsource, zero);
         pix2 = _mm_add_epi16(_mm_mullo_epi16(pix2, factors), half);
         pix2 = _mm_add_epi16(pix2, _mm_srli_epi16(pix2, 8));
         pix2 = _mm_srli_epi16(pix2, 8);
