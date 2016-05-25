@@ -95,19 +95,19 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
     kmax = (int) ceil(support) * 2 + 1;
 
     // check for overflow
-    if (outSize > SIZE_MAX / (kmax * sizeof(double)))
+    if (outSize > INT_MAX / (kmax * sizeof(double)))
         return 0;
 
     // sizeof(double) should be greater than 0 as well
-    if (outSize > SIZE_MAX / (2 * sizeof(double)))
+    if (outSize > INT_MAX / (2 * sizeof(double)))
         return 0;
 
     /* coefficient buffer */
-    kk = malloc(outSize * kmax * sizeof(double));
+    kk = calloc(outSize * kmax, sizeof(double));
     if ( ! kk)
         return 0;
 
-    xbounds = malloc(outSize * 2 * sizeof(int));
+    xbounds = calloc(outSize * 2, sizeof(int));
     if ( ! xbounds) {
         free(kk);
         return 0;
@@ -160,7 +160,7 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
         return (Imaging) ImagingError_MemoryError();
     }
     
-    kk = malloc(xsize * kmax * sizeof(int));
+    kk = calloc(xsize * kmax, sizeof(int));
     if ( ! kk) {
         free(xbounds);
         free(prekk);

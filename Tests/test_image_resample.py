@@ -151,7 +151,6 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
 
 
 class CoreResampleConsistencyTest(PillowTestCase):
-
     def make_case(self, mode, fill):
         im = Image.new(mode, (512, 9), fill)
         return (im.resize((9, 512), Image.LANCZOS), im.load()[0, 0])
