@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Added internal Premultiplied luminosity (La) mode #1912
+  [homm]
+
 - Fixed point integer resample #1881
   [homm]
 
