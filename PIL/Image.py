@@ -1539,6 +1539,9 @@ class Image(object):
         if self.mode in ("1", "P"):
             resample = NEAREST
 
+        if self.mode == 'LA':
+            return self.convert('La').resize(size, resample).convert('LA')
+
         if self.mode == 'RGBA':
             return self.convert('RGBa').resize(size, resample).convert('RGBA')
 
@@ -1828,6 +1831,10 @@ class Image(object):
            has mode "1" or "P", it is set to :py:attr:`PIL.Image.NEAREST`.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
+
+        if self.mode == 'LA':
+            return self.convert('La').transform(
+                size, method, data, resample, fill).convert('LA')
 
         if self.mode == 'RGBA':
             return self.convert('RGBa').transform(

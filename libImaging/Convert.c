@@ -117,6 +117,42 @@ l2bit(UINT8* out, const UINT8* in, int xsize)
 }
 
 static void
+lA2la(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    unsigned int alpha, pixel, tmp;
+    for (x = 0; x < xsize; x++, in += 4) {
+        alpha = in[3];
+        pixel = MULDIV255(in[0], alpha, tmp);
+        *out++ = (UINT8) pixel;
+        *out++ = (UINT8) pixel;
+        *out++ = (UINT8) pixel;
+        *out++ = (UINT8) alpha;
+    }
+}
+
+/* RGBa -> RGBA conversion to remove premultiplication
+   Needed for correct transforms/resizing on RGBA images */
+static void
+la2lA(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    unsigned int alpha, pixel;
+    for (x = 0; x < xsize; x++, in+=4) {
+        alpha = in[3];
+        if (alpha == 255 || alpha == 0) {
+            pixel = in[0];
+        } else {
+            pixel = CLIP((255 * in[0]) / alpha);
+        }        
+        *out++ = (UINT8) pixel;
+        *out++ = (UINT8) pixel;
+        *out++ = (UINT8) pixel;
+        *out++ = (UINT8) alpha;
+    }
+}
+
+static void
 l2la(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
@@ -405,7 +441,7 @@ rgba2rgb(UINT8* out, const UINT8* in, int xsize)
 }
 
 static void
-rgba2rgba(UINT8* out, const UINT8* in, int xsize)
+rgbA2rgba(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     unsigned int alpha, tmp;
@@ -427,17 +463,16 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
     unsigned int alpha;
     for (x = 0; x < xsize; x++, in+=4) {
         alpha = in[3];
-        if (alpha) {
-            *out++ = CLIP((255 * in[0]) / alpha);
-            *out++ = CLIP((255 * in[1]) / alpha);
-            *out++ = CLIP((255 * in[2]) / alpha);
-        } else {
+        if (alpha == 255 || alpha == 0) {
             *out++ = in[0];
             *out++ = in[1];
             *out++ = in[2];
+        } else {
+            *out++ = CLIP((255 * in[0]) / alpha);
+            *out++ = CLIP((255 * in[1]) / alpha);
+            *out++ = CLIP((255 * in[2]) / alpha);
         }
         *out++ = in[3];
-
     }
 }
 
@@ -765,9 +800,12 @@ static struct {
     { "L", "YCbCr", l2ycbcr },
 
     { "LA", "L", la2l },
+    { "LA", "La", lA2la },
     { "LA", "RGB", la2rgb },
     { "LA", "RGBX", la2rgb },
     { "LA", "RGBA", la2rgb },
+
+    { "La", "LA", la2lA },
 
     { "I",    "L",    i2l },
     { "I",    "F",    i2f },
@@ -795,7 +833,7 @@ static struct {
     { "RGBA", "I", rgb2i },
     { "RGBA", "F", rgb2f },
     { "RGBA", "RGB", rgba2rgb },
-    { "RGBA", "RGBa", rgba2rgba },
+    { "RGBA", "RGBa", rgbA2rgba },
     { "RGBA", "RGBX", rgb2rgba },
     { "RGBA", "CMYK", rgb2cmyk },
     { "RGBA", "YCbCr", ImagingConvertRGB2YCbCr },
