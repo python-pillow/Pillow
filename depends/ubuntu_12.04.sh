@@ -14,3 +14,4 @@ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev \
 
 ./install_openjpeg.sh
 ./install_webp.sh
+./install_imagequant.sh

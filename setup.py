@@ -36,7 +36,7 @@ _LIB_IMAGING = (
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
     "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
     "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Incremental",
-    "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur")
+    "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur", "QuantPngQuant")
 
 DEBUG = False
 
@@ -115,6 +115,7 @@ TCL_ROOT = None
 JPEG_ROOT = None
 JPEG2K_ROOT = None
 ZLIB_ROOT = None
+IMAGEQUANT_ROOT = None
 TIFF_ROOT = None
 FREETYPE_ROOT = None
 LCMS_ROOT = None
@@ -123,7 +124,7 @@ LCMS_ROOT = None
 class pil_build_ext(build_ext):
     class feature:
         features = ['zlib', 'jpeg', 'tiff', 'freetype', 'tcl', 'tk', 'lcms',
-                    'webp', 'webpmux', 'jpeg2000']
+                    'webp', 'webpmux', 'jpeg2000', 'imagequant']
 
         required = set(['jpeg', 'zlib'])
 
@@ -193,7 +194,7 @@ class pil_build_ext(build_ext):
         # add configured kits
 
         for root in (TCL_ROOT, JPEG_ROOT, JPEG2K_ROOT, TIFF_ROOT, ZLIB_ROOT,
-                     FREETYPE_ROOT, LCMS_ROOT):
+                     FREETYPE_ROOT, LCMS_ROOT, IMAGEQUANT_ROOT):
             if isinstance(root, type(())):
                 lib_root, include_root = root
             else:
@@ -490,6 +491,14 @@ class pil_build_ext(build_ext):
                 feature.openjpeg_version = '.'.join([str(x) for x in
                                                      best_version])
 
+        if feature.want('imagequant'):
+            _dbg('Looking for imagequant')
+            if _find_include_file(self, 'libimagequant.h'):
+                if _find_library_file(self, "imagequant"):
+                    feature.imagequant = "imagequant"
+                elif _find_library_file(self, "libimagequant"):
+                    feature.imagequant = "libimagequant"
+
         if feature.want('tiff'):
             _dbg('Looking for tiff')
             if _find_include_file(self, 'tiff.h'):
@@ -603,6 +612,9 @@ class pil_build_ext(build_ext):
         if feature.zlib:
             libs.append(feature.zlib)
             defs.append(("HAVE_LIBZ", None))
+        if feature.imagequant:
+            libs.append(feature.imagequant)
+            defs.append(("HAVE_LIBIMAGEQUANT", None))
         if feature.tiff:
             libs.append(feature.tiff)
             defs.append(("HAVE_LIBTIFF", None))
@@ -710,6 +722,7 @@ class pil_build_ext(build_ext):
             (feature.jpeg2000, "OPENJPEG (JPEG2000)",
              feature.openjpeg_version),
             (feature.zlib, "ZLIB (PNG/ZIP)"),
+            (feature.imagequant, "LIBIMAGEQUANT"),
             (feature.tiff, "LIBTIFF"),
             (feature.freetype, "FREETYPE2"),
             (feature.lcms, "LITTLECMS2"),

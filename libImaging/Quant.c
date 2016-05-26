@@ -27,6 +27,7 @@
 
 #include "QuantTypes.h"
 #include "QuantOctree.h"
+#include "QuantPngQuant.h"
 #include "QuantHash.h"
 #include "QuantHeap.h"
 
@@ -1483,8 +1484,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         strcmp(im->mode, "RGB") != 0 && strcmp(im->mode, "RGBA") !=0)
         return ImagingError_ModeError();
 
-    /* only octree supports RGBA */
-    if (!strcmp(im->mode, "RGBA") && mode != 2)
+    /* only octree and imagequant supports RGBA */
+    if (!strcmp(im->mode, "RGBA") && mode != 2 && mode != 3)
        return ImagingError_ModeError();
 
     p = malloc(sizeof(Pixel) * im->xsize * im->ysize);
@@ -1503,8 +1504,10 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
            should be done by a simple copy... */
 
         for (i = y = 0; y < im->ysize; y++)
-            for (x = 0; x < im->xsize; x++, i++)
+            for (x = 0; x < im->xsize; x++, i++) {
                 p[i].c.r = p[i].c.g = p[i].c.b = im->image8[y][x];
+                p[i].c.a = 255;
+            }
 
     } else if (!strcmp(im->mode, "P")) {
         /* palette */
@@ -1517,6 +1520,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
                 p[i].c.r = pp[v*4+0];
                 p[i].c.g = pp[v*4+1];
                 p[i].c.b = pp[v*4+2];
+                p[i].c.a = pp[v*4+3];
             }
 
     } else if (!strcmp(im->mode, "RGB") || !strcmp(im->mode, "RGBA")) {
@@ -1572,6 +1576,25 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
             withAlpha
             );
         break;
+    case 3:
+#ifdef HAVE_LIBIMAGEQUANT
+        if (!strcmp(im->mode, "RGBA")) {
+            withAlpha = 1;
+        }
+        result = quantize_pngquant(
+            p,
+            im->xsize,
+            im->ysize,
+            colors,
+            &palette,
+            &paletteLength,
+            &newData,
+            withAlpha
+            );
+#else
+        result = -1;
+#endif
+        break;
     default:
         result = 0;
         break;
@@ -1580,7 +1603,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
     free(p);
     ImagingSectionLeave(&cookie);
 
-    if (result) {
+    if (result > 0) {
         imOut = ImagingNew("P", im->xsize, im->ysize);
         ImagingSectionEnter(&cookie);
 
@@ -1619,6 +1642,12 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         return imOut;
 
     } else {
+
+        if (result == -1) {
+            return (Imaging) ImagingError_ValueError(
+                "dependency required by this method was not "
+                "enabled at compile time");
+        }
 
         return (Imaging) ImagingError_ValueError("quantization error");
 

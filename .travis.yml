@@ -45,6 +45,9 @@ install:
   # openjpeg
   - pushd depends && ./install_openjpeg.sh && popd
 
+  # libimagequant
+  - pushd depends && ./install_imagequant.sh && popd
+
 script:
   - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage erase; fi
   - python setup.py clean

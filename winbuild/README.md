@@ -15,4 +15,4 @@ For more extensive info, see the windows build instructions `docs/build.rst`.
 * `python test.py` runs the tests on Pillow in all the virtual envs.
 *  Currently working with zlib, libjpeg, freetype, and libtiff on Python 2.7, 3.3, and 3.4, both 32 and 64 bit, on a local win7 pro machine and appveyor.com
 * Webp is built, not detected.
-* LCMS and OpenJpeg are not building.
+* LCMS, OpenJpeg and libimagequant are not building.

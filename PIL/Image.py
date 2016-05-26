@@ -185,6 +185,7 @@ ADAPTIVE = 1
 MEDIANCUT = 0
 MAXCOVERAGE = 1
 FASTOCTREE = 2
+LIBIMAGEQUANT = 3
 
 # categories
 NORMAL = 0
@@ -961,6 +962,7 @@ class Image(object):
         :param method: 0 = median cut
                        1 = maximum coverage
                        2 = fast octree
+                       3 = libimagequant
         :param kmeans: Integer
         :param palette: Quantize to the :py:class:`PIL.ImagingPalette` palette.
         :returns: A new image
@@ -975,10 +977,11 @@ class Image(object):
             if self.mode == 'RGBA':
                 method = 2
 
-        if self.mode == 'RGBA' and method != 2:
+        if self.mode == 'RGBA' and method not in (2, 3):
             # Caller specified an invalid mode.
-            raise ValueError('Fast Octree (method == 2) is the ' +
-                             ' only valid method for quantizing RGBA images')
+            raise ValueError(
+                'Fast Octree (method == 2) and libimagequant (method == 3) ' +
+                'are the only valid methods for quantizing RGBA images')
 
         if palette:
             # use palette from reference image

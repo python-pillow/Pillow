@@ -14,3 +14,4 @@ sudo apt-get -y install libtiff5-dev libjpeg62-turbo-dev zlib1g-dev \
      python-tk python3-tk
 
 ./install_openjpeg.sh
+./install_imagequant.sh
