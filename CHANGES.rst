@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Add libimagequant support in quantize() #1889
+  [rr-]
+
 - Added internal Premultiplied luminosity (La) mode #1912
   [homm]
 
