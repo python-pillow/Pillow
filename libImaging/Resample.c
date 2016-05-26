@@ -1,28 +1,17 @@
-/*
- * The Python Imaging Library
- * $Id$
- *
- * Pillow image resampling support
- *
- * history:
- * 2002-03-09 fl  Created (for PIL 1.1.3)
- * 2002-03-10 fl  Added support for mode "F"
- *
- * Copyright (c) 1997-2002 by Secret Labs AB
- *
- * See the README file for information on usage and redistribution.
- */
-
 #include "Imaging.h"
 
 #include <math.h>
 
+
+#define ROUND_UP(f) ((int) ((f) >= 0.0 ? (f) + 0.5F : (f) - 0.5F))
+
+
 struct filter {
-    float (*filter)(float x);
-    float support;
+    double (*filter)(double x);
+    double support;
 };
 
-static inline float sinc_filter(float x)
+static inline double sinc_filter(double x)
 {
     if (x == 0.0)
         return 1.0;
@@ -30,7 +19,7 @@ static inline float sinc_filter(float x)
     return sin(x) / x;
 }
 
-static inline float lanczos_filter(float x)
+static inline double lanczos_filter(double x)
 {
     /* truncated sinc */
     if (-3.0 <= x && x < 3.0)
@@ -38,9 +27,7 @@ static inline float lanczos_filter(float x)
     return 0.0;
 }
 
-static struct filter LANCZOS = { lanczos_filter, 3.0 };
-
-static inline float bilinear_filter(float x)
+static inline double bilinear_filter(double x)
 {
     if (x < 0.0)
         x = -x;
@@ -49,9 +36,7 @@ static inline float bilinear_filter(float x)
     return 0.0;
 }
 
-static struct filter BILINEAR = { bilinear_filter, 1.0 };
-
-static inline float bicubic_filter(float x)
+static inline double bicubic_filter(double x)
 {
     /* https://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm */
 #define a -0.5
@@ -65,46 +50,299 @@ static inline float bicubic_filter(float x)
 #undef a
 }
 
+static struct filter LANCZOS = { lanczos_filter, 3.0 };
+static struct filter BILINEAR = { bilinear_filter, 1.0 };
 static struct filter BICUBIC = { bicubic_filter, 2.0 };
 
 
-static inline UINT8 clip8(float in)
+
+/* 8 bits for result. Filter can have negative areas.
+   In one cases the sum of the coefficients will be negative,
+   in the other it will be more than 1.0. That is why we need
+   two extra bits for overflow and int type. */
+#define PRECISION_BITS (32 - 8 - 2)
+
+
+static inline UINT8 clip8(int in)
 {
-    int out = (int) in;
-    if (out >= 255)
+    if (in >= (1 << PRECISION_BITS << 8))
        return 255;
-    if (out <= 0)
+    if (in <= 0)
         return 0;
-    return (UINT8) out;
+    return (UINT8) (in >> PRECISION_BITS);
 }
 
 
-/* This is work around bug in GCC prior 4.9 in 64-bit mode.
-   GCC generates code with partial dependency which 3 times slower.
-   See: http://stackoverflow.com/a/26588074/253146 */
-#if defined(__x86_64__) && defined(__SSE__) &&  ! defined(__NO_INLINE__) && \
-    ! defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900)
-static float __attribute__((always_inline)) i2f(int v) {
-    float x;
-    __asm__("xorps %0, %0; cvtsi2ss %1, %0" : "=X"(x) : "r"(v) );
-    return x;
+int
+ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
+                  int **xboundsp, double **kkp) {
+    double support, scale, filterscale;
+    double center, ww, ss;
+    int xx, x, kmax, xmin, xmax;
+    int *xbounds;
+    double *kk, *k;
+
+    /* prepare for horizontal stretch */
+    filterscale = scale = (double) inSize / outSize;
+    if (filterscale < 1.0) {
+        filterscale = 1.0;
+    }
+
+    /* determine support size (length of resampling filter) */
+    support = filterp->support * filterscale;
+
+    /* maximum number of coofs */
+    kmax = (int) ceil(support) * 2 + 1;
+
+    // check for overflow
+    if (outSize > INT_MAX / (kmax * sizeof(double)))
+        return 0;
+
+    // sizeof(double) should be greater than 0 as well
+    if (outSize > INT_MAX / (2 * sizeof(double)))
+        return 0;
+
+    /* coefficient buffer */
+    kk = calloc(outSize * kmax, sizeof(double));
+    if ( ! kk)
+        return 0;
+
+    xbounds = calloc(outSize * 2, sizeof(int));
+    if ( ! xbounds) {
+        free(kk);
+        return 0;
+    }
+
+    for (xx = 0; xx < outSize; xx++) {
+        center = (xx + 0.5) * scale;
+        ww = 0.0;
+        ss = 1.0 / filterscale;
+        xmin = (int) floor(center - support);
+        if (xmin < 0)
+            xmin = 0;
+        xmax = (int) ceil(center + support);
+        if (xmax > inSize)
+            xmax = inSize;
+        xmax -= xmin;
+        k = &kk[xx * kmax];
+        for (x = 0; x < xmax; x++) {
+            double w = filterp->filter((x + xmin - center + 0.5) * ss);
+            k[x] = w;
+            ww += w;
+        }
+        for (x = 0; x < xmax; x++) {
+            if (ww != 0.0)
+                k[x] /= ww;
+        }
+        xbounds[xx * 2 + 0] = xmin;
+        xbounds[xx * 2 + 1] = xmax;
+    }
+    *xboundsp = xbounds;
+    *kkp = kk;
+    return kmax;
 }
-#else
-static float inline i2f(int v) { return (float) v; }
-#endif
 
 
 Imaging
-ImagingResampleHorizontal(Imaging imIn, int xsize, int filter)
+ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     Imaging imOut;
-    struct filter *filterp;
-    float support, scale, filterscale;
-    float center, ww, ss, ss0, ss1, ss2, ss3;
+    int ss0, ss1, ss2, ss3;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
-    float *k, *kk;
+    int *k, *kk;
+    double *prekk;
+
+
+    kmax = ImagingPrecompute(imIn->xsize, xsize, filterp, &xbounds, &prekk);
+    if ( ! kmax) {
+        return (Imaging) ImagingError_MemoryError();
+    }
+    
+    kk = calloc(xsize * kmax, sizeof(int));
+    if ( ! kk) {
+        free(xbounds);
+        free(prekk);
+        return (Imaging) ImagingError_MemoryError();
+    }
+
+    for (x = 0; x < xsize * kmax; x++) {
+        kk[x] = (int) (0.5 + prekk[x] * (1 << PRECISION_BITS));
+    }
+
+    free(prekk);
+
+    imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
+    if ( ! imOut) {
+        free(kk);
+        free(xbounds);
+        return NULL;
+    }
+
+    ImagingSectionEnter(&cookie);
+    if (imIn->image8) {
+        for (yy = 0; yy < imOut->ysize; yy++) {
+            for (xx = 0; xx < xsize; xx++) {
+                xmin = xbounds[xx * 2 + 0];
+                xmax = xbounds[xx * 2 + 1];
+                k = &kk[xx * kmax];
+                ss0 = 1 << (PRECISION_BITS -1);
+                for (x = 0; x < xmax; x++)
+                    ss0 += ((UINT8) imIn->image8[yy][x + xmin]) * k[x];
+                imOut->image8[yy][xx] = clip8(ss0);
+            }
+        }
+    } else if (imIn->type == IMAGING_TYPE_UINT8) {
+        if (imIn->bands == 2) {
+            for (yy = 0; yy < imOut->ysize; yy++) {
+                for (xx = 0; xx < xsize; xx++) {
+                    xmin = xbounds[xx * 2 + 0];
+                    xmax = xbounds[xx * 2 + 1];
+                    k = &kk[xx * kmax];
+                    ss0 = ss1 = 1 << (PRECISION_BITS -1);
+                    for (x = 0; x < xmax; x++) {
+                        ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
+                        ss1 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 3]) * k[x];
+                    }
+                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
+                    imOut->image[yy][xx*4 + 3] = clip8(ss1);
+                }
+            }
+        } else if (imIn->bands == 3) {
+            for (yy = 0; yy < imOut->ysize; yy++) {
+                for (xx = 0; xx < xsize; xx++) {
+                    xmin = xbounds[xx * 2 + 0];
+                    xmax = xbounds[xx * 2 + 1];
+                    k = &kk[xx * kmax];
+                    ss0 = ss1 = ss2 = 1 << (PRECISION_BITS -1);
+                    for (x = 0; x < xmax; x++) {
+                        ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
+                        ss1 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 1]) * k[x];
+                        ss2 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 2]) * k[x];
+                    }
+                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
+                    imOut->image[yy][xx*4 + 1] = clip8(ss1);
+                    imOut->image[yy][xx*4 + 2] = clip8(ss2);
+                }
+            }
+        } else {
+            for (yy = 0; yy < imOut->ysize; yy++) {
+                for (xx = 0; xx < xsize; xx++) {
+                    xmin = xbounds[xx * 2 + 0];
+                    xmax = xbounds[xx * 2 + 1];
+                    k = &kk[xx * kmax];
+                    ss0 = ss1 = ss2 = ss3 = 1 << (PRECISION_BITS -1);
+                    for (x = 0; x < xmax; x++) {
+                        ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
+                        ss1 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 1]) * k[x];
+                        ss2 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 2]) * k[x];
+                        ss3 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 3]) * k[x];
+                    }
+                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
+                    imOut->image[yy][xx*4 + 1] = clip8(ss1);
+                    imOut->image[yy][xx*4 + 2] = clip8(ss2);
+                    imOut->image[yy][xx*4 + 3] = clip8(ss3);
+                }
+            }
+        }
+    }
+
+    ImagingSectionLeave(&cookie);
+    free(kk);
+    free(xbounds);
+    return imOut;
+}
+
+
+Imaging
+ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
+{
+    ImagingSectionCookie cookie;
+    Imaging imOut;
+    double ss;
+    int xx, yy, x, kmax, xmin, xmax;
+    int *xbounds;
+    double *k, *kk;
+
+    kmax = ImagingPrecompute(imIn->xsize, xsize, filterp, &xbounds, &kk);
+    if ( ! kmax) {
+        return (Imaging) ImagingError_MemoryError();
+    }
+
+    imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
+    if ( ! imOut) {
+        free(kk);
+        free(xbounds);
+        return NULL;
+    }
+
+    ImagingSectionEnter(&cookie);    
+    switch(imIn->type) {
+        case IMAGING_TYPE_INT32:
+            for (yy = 0; yy < imOut->ysize; yy++) {
+                for (xx = 0; xx < xsize; xx++) {
+                    xmin = xbounds[xx * 2 + 0];
+                    xmax = xbounds[xx * 2 + 1];
+                    k = &kk[xx * kmax];
+                    ss = 0.0;
+                    for (x = 0; x < xmax; x++)
+                        ss += IMAGING_PIXEL_I(imIn, x + xmin, yy) * k[x];
+                    IMAGING_PIXEL_I(imOut, xx, yy) = ROUND_UP(ss);
+                }
+            }
+            break;
+
+        case IMAGING_TYPE_FLOAT32:
+            for (yy = 0; yy < imOut->ysize; yy++) {
+                for (xx = 0; xx < xsize; xx++) {
+                    xmin = xbounds[xx * 2 + 0];
+                    xmax = xbounds[xx * 2 + 1];
+                    k = &kk[xx * kmax];
+                    ss = 0.0;
+                    for (x = 0; x < xmax; x++)
+                        ss += IMAGING_PIXEL_F(imIn, x + xmin, yy) * k[x];
+                    IMAGING_PIXEL_F(imOut, xx, yy) = ss;
+                }
+            }
+            break;
+    }
+
+    ImagingSectionLeave(&cookie);
+    free(kk);
+    free(xbounds);
+    return imOut;
+}
+
+
+Imaging
+ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
+{
+    Imaging imTemp1, imTemp2, imTemp3;
+    Imaging imOut;
+    struct filter *filterp;
+    Imaging (*ResampleHorizontal)(Imaging imIn, int xsize, struct filter *filterp);
+
+    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
+        return (Imaging) ImagingError_ModeError();
+
+    if (imIn->type == IMAGING_TYPE_SPECIAL) {
+        return (Imaging) ImagingError_ModeError();
+    } else if (imIn->image8) {
+        ResampleHorizontal = ImagingResampleHorizontal_8bpc;
+    } else {
+        switch(imIn->type) {
+            case IMAGING_TYPE_UINT8:
+                ResampleHorizontal = ImagingResampleHorizontal_8bpc;
+                break;
+            case IMAGING_TYPE_INT32:
+            case IMAGING_TYPE_FLOAT32:
+                ResampleHorizontal = ImagingResampleHorizontal_32bpc;
+                break;
+            default:
+                return (Imaging) ImagingError_ModeError();
+        }
+    }
 
     /* check filter */
     switch (filter) {
@@ -123,188 +361,8 @@ ImagingResampleHorizontal(Imaging imIn, int xsize, int filter)
             );
     }
 
-    /* prepare for horizontal stretch */
-    filterscale = scale = (float) imIn->xsize / xsize;
-
-    /* determine support size (length of resampling filter) */
-    support = filterp->support;
-
-    if (filterscale < 1.0) {
-        filterscale = 1.0;
-    }
-
-    support = support * filterscale;
-
-    /* maximum number of coofs */
-    kmax = (int) ceil(support) * 2 + 1;
-
-    // check for overflow
-    if (kmax > 0 && xsize > SIZE_MAX / kmax)
-        return (Imaging) ImagingError_MemoryError();
-
-    // sizeof(float) should be greater than 0
-    if (xsize * kmax > SIZE_MAX / sizeof(float))
-        return (Imaging) ImagingError_MemoryError();
-
-    /* coefficient buffer */
-    kk = malloc(xsize * kmax * sizeof(float));
-    if ( ! kk)
-        return (Imaging) ImagingError_MemoryError();
-
-    // sizeof(int) should be greater than 0 as well
-    if (xsize > SIZE_MAX / (2 * sizeof(int)))
-        return (Imaging) ImagingError_MemoryError();
-
-    xbounds = malloc(xsize * 2 * sizeof(int));
-    if ( ! xbounds) {
-        free(kk);
-        return (Imaging) ImagingError_MemoryError();
-    }
-
-    for (xx = 0; xx < xsize; xx++) {
-        k = &kk[xx * kmax];
-        center = (xx + 0.5) * scale;
-        ww = 0.0;
-        ss = 1.0 / filterscale;
-        xmin = (int) floor(center - support);
-        if (xmin < 0)
-            xmin = 0;
-        xmax = (int) ceil(center + support);
-        if (xmax > imIn->xsize)
-            xmax = imIn->xsize;
-        for (x = xmin; x < xmax; x++) {
-            float w = filterp->filter((x - center + 0.5) * ss) * ss;
-            k[x - xmin] = w;
-            ww += w;
-        }
-        for (x = 0; x < xmax - xmin; x++) {
-            if (ww != 0.0)
-                k[x] /= ww;
-        }
-        xbounds[xx * 2 + 0] = xmin;
-        xbounds[xx * 2 + 1] = xmax;
-    }
-
-    imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
-    if ( ! imOut) {
-        free(kk);
-        free(xbounds);
-        return NULL;
-    }
-
-    ImagingSectionEnter(&cookie);
-    /* horizontal stretch */
-    for (yy = 0; yy < imOut->ysize; yy++) {
-        if (imIn->image8) {
-            /* 8-bit grayscale */
-            for (xx = 0; xx < xsize; xx++) {
-                xmin = xbounds[xx * 2 + 0];
-                xmax = xbounds[xx * 2 + 1];
-                k = &kk[xx * kmax];
-                ss = 0.5;
-                for (x = xmin; x < xmax; x++)
-                    ss += i2f(imIn->image8[yy][x]) * k[x - xmin];
-                imOut->image8[yy][xx] = clip8(ss);
-            }
-        } else {
-            switch(imIn->type) {
-            case IMAGING_TYPE_UINT8:
-                /* n-bit grayscale */
-                if (imIn->bands == 2) {
-                    for (xx = 0; xx < xsize; xx++) {
-                        xmin = xbounds[xx * 2 + 0];
-                        xmax = xbounds[xx * 2 + 1];
-                        k = &kk[xx * kmax];
-                        ss0 = ss1 = 0.5;
-                        for (x = xmin; x < xmax; x++) {
-                            ss0 += i2f((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
-                            ss1 += i2f((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
-                        }
-                        imOut->image[yy][xx*4 + 0] = clip8(ss0);
-                        imOut->image[yy][xx*4 + 3] = clip8(ss1);
-                    }
-                } else if (imIn->bands == 3) {
-                    for (xx = 0; xx < xsize; xx++) {
-                        xmin = xbounds[xx * 2 + 0];
-                        xmax = xbounds[xx * 2 + 1];
-                        k = &kk[xx * kmax];
-                        ss0 = ss1 = ss2 = 0.5;
-                        for (x = xmin; x < xmax; x++) {
-                            ss0 += i2f((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
-                            ss1 += i2f((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
-                            ss2 += i2f((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
-                        }
-                        imOut->image[yy][xx*4 + 0] = clip8(ss0);
-                        imOut->image[yy][xx*4 + 1] = clip8(ss1);
-                        imOut->image[yy][xx*4 + 2] = clip8(ss2);
-                    }
-                } else {
-                    for (xx = 0; xx < xsize; xx++) {
-                        xmin = xbounds[xx * 2 + 0];
-                        xmax = xbounds[xx * 2 + 1];
-                        k = &kk[xx * kmax];
-                        ss0 = ss1 = ss2 = ss3 = 0.5;
-                        for (x = xmin; x < xmax; x++) {
-                            ss0 += i2f((UINT8) imIn->image[yy][x*4 + 0]) * k[x - xmin];
-                            ss1 += i2f((UINT8) imIn->image[yy][x*4 + 1]) * k[x - xmin];
-                            ss2 += i2f((UINT8) imIn->image[yy][x*4 + 2]) * k[x - xmin];
-                            ss3 += i2f((UINT8) imIn->image[yy][x*4 + 3]) * k[x - xmin];
-                        }
-                        imOut->image[yy][xx*4 + 0] = clip8(ss0);
-                        imOut->image[yy][xx*4 + 1] = clip8(ss1);
-                        imOut->image[yy][xx*4 + 2] = clip8(ss2);
-                        imOut->image[yy][xx*4 + 3] = clip8(ss3);
-                    }
-                }
-                break;
-            case IMAGING_TYPE_INT32:
-                /* 32-bit integer */
-                for (xx = 0; xx < xsize; xx++) {
-                    xmin = xbounds[xx * 2 + 0];
-                    xmax = xbounds[xx * 2 + 1];
-                    k = &kk[xx * kmax];
-                    ss = 0.0;
-                    for (x = xmin; x < xmax; x++)
-                        ss += i2f(IMAGING_PIXEL_I(imIn, x, yy)) * k[x - xmin];
-                    IMAGING_PIXEL_I(imOut, xx, yy) = (int) ss;
-                }
-                break;
-            case IMAGING_TYPE_FLOAT32:
-                /* 32-bit float */
-                for (xx = 0; xx < xsize; xx++) {
-                    xmin = xbounds[xx * 2 + 0];
-                    xmax = xbounds[xx * 2 + 1];
-                    k = &kk[xx * kmax];
-                    ss = 0.0;
-                    for (x = xmin; x < xmax; x++)
-                        ss += IMAGING_PIXEL_F(imIn, x, yy) * k[x - xmin];
-                    IMAGING_PIXEL_F(imOut, xx, yy) = ss;
-                }
-                break;
-            }
-        }
-    }
-    ImagingSectionLeave(&cookie);
-    free(kk);
-    free(xbounds);
-    return imOut;
-}
-
-
-Imaging
-ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
-{
-    Imaging imTemp1, imTemp2, imTemp3;
-    Imaging imOut;
-
-    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
-        return (Imaging) ImagingError_ModeError();
-
-    if (imIn->type == IMAGING_TYPE_SPECIAL)
-        return (Imaging) ImagingError_ModeError();
-
     /* two-pass resize, first pass */
-    imTemp1 = ImagingResampleHorizontal(imIn, xsize, filter);
+    imTemp1 = ResampleHorizontal(imIn, xsize, filterp);
     if ( ! imTemp1)
         return NULL;
 
@@ -315,7 +373,7 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
         return NULL;
 
     /* second pass */
-    imTemp3 = ImagingResampleHorizontal(imTemp2, ysize, filter);
+    imTemp3 = ResampleHorizontal(imTemp2, ysize, filterp);
     ImagingDelete(imTemp2);
     if ( ! imTemp3)
         return NULL;
