@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Fixed point integer resample #1881
+  [homm]
+
 - Removed docs/BUILDME script #1924
   [radarhere]
 
