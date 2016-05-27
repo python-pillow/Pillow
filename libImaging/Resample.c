@@ -490,10 +490,11 @@ ImagingResampleVertical_32bpc(Imaging imIn, int ysize, struct filter *filterp)
 Imaging
 ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
 {
-    Imaging imTemp1, imTemp2, imTemp3;
+    Imaging imTemp;
     Imaging imOut;
     struct filter *filterp;
     Imaging (*ResampleHorizontal)(Imaging imIn, int xsize, struct filter *filterp);
+    Imaging (*ResampleVertical)(Imaging imIn, int xsize, struct filter *filterp);
 
     if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
         return (Imaging) ImagingError_ModeError();
@@ -502,14 +503,17 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
         return (Imaging) ImagingError_ModeError();
     } else if (imIn->image8) {
         ResampleHorizontal = ImagingResampleHorizontal_8bpc;
+        ResampleVertical = ImagingResampleVertical_8bpc;
     } else {
         switch(imIn->type) {
             case IMAGING_TYPE_UINT8:
                 ResampleHorizontal = ImagingResampleHorizontal_8bpc;
+                ResampleVertical = ImagingResampleVertical_8bpc;
                 break;
             case IMAGING_TYPE_INT32:
             case IMAGING_TYPE_FLOAT32:
                 ResampleHorizontal = ImagingResampleHorizontal_32bpc;
+                ResampleVertical = ImagingResampleVertical_32bpc;
                 break;
             default:
                 return (Imaging) ImagingError_ModeError();
@@ -534,25 +538,13 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
     }
 
     /* two-pass resize, first pass */
-    imTemp1 = ResampleHorizontal(imIn, xsize, filterp);
-    if ( ! imTemp1)
-        return NULL;
-
-    /* transpose image once */
-    imTemp2 = ImagingTransposeToNew(imTemp1);
-    ImagingDelete(imTemp1);
-    if ( ! imTemp2)
+    imTemp = ResampleHorizontal(imIn, xsize, filterp);
+    if ( ! imTemp)
         return NULL;
 
     /* second pass */
-    imTemp3 = ResampleHorizontal(imTemp2, ysize, filterp);
-    ImagingDelete(imTemp2);
-    if ( ! imTemp3)
-        return NULL;
-
-    /* transpose result */
-    imOut = ImagingTransposeToNew(imTemp3);
-    ImagingDelete(imTemp3);
+    imOut = ResampleVertical(imTemp, ysize, filterp);
+    ImagingDelete(imTemp);
     if ( ! imOut)
         return NULL;
 
