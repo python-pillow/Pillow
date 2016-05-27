@@ -140,8 +140,6 @@ Many of Pillow's features require external libraries:
 
 * **libfreetype** provides type related services
 
-* **libimagequant** provides improved color quantization
-
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
@@ -160,6 +158,15 @@ Many of Pillow's features require external libraries:
   * Pillow has been tested with openjpeg **2.0.0** and **2.1.0**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Ubuntu and Debian.
+
+* **libimagequant** provides improved color quantization
+  
+  * Pillow has been tested with libimagequant **2.6.0**
+  * Libimagequant is licenced GPLv3, which is more restrictive than
+    the Pillow license, therefore we will not be distributing binaries
+    with libimagequant support enabled.
+  * Windows support: Libimagequant requires VS2013/MSVC 18 to compile,
+    so it is unlikely to work with any Python prior to 3.5 on Windows.
 
 Once you have installed the prerequisites, run::
 
