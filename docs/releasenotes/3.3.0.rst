@@ -5,9 +5,9 @@ Libimagequant support
 =====================
 
 There is now support for using libimagequant as a higher quality
-quantization option in ``Image.quantize()`` on unixlike
+quantization option in ``Image.quantize()`` on Unix-like
 platforms. This support requires building Pillow from source against
-libiamgequant.  We cannot distribute binaries due to licensing
+libimagequant. We cannot distribute binaries due to licensing
 differences.
 
 New Setup.py options
@@ -24,4 +24,4 @@ There are three new options to control the ``build_ext`` task in ``setup.py``:
     variables.
   * ``--disable-osx-tcltk-framework`` prevents automatically linking
     against the system Tcl/Tk frameworks to allow building against
-    vendor provided libraries.
+    vendor-provided libraries.
