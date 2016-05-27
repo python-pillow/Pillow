@@ -222,6 +222,15 @@ TkImaging_Init(Tcl_Interp* interp)
 /*
  * Functions to fill global Tcl / Tk function pointers by dynamic loading
  */
+
+#if PY_VERSION_HEX >= 0x03000000
+#define TKINTER_PKG "tkinter"
+#define TKINTER_MOD "_tkinter"
+#else
+#define TKINTER_PKG "Tkinter"
+#define TKINTER_MOD "tkinter"
+#endif
+
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
 /*
@@ -311,6 +320,13 @@ int load_tkinter_funcs(void)
     int found_tcl = 0;
     int found_tk = 0;
 
+    /* First load tkinter module to make sure libraries are loaded */
+    PyObject *pModule = PyImport_ImportModule(TKINTER_PKG);
+    if (pModule == NULL) {
+        return 1;
+    }
+    Py_DECREF(pModule);
+
     /* Returns pseudo-handle that does not need to be closed */
     hProcess = GetCurrentProcess();
 
@@ -351,10 +367,8 @@ int load_tkinter_funcs(void)
  * tkinter dynamic library (module).
  */
 
-#if PY_VERSION_HEX >= 0x03000000
-#define TKINTER_PKG "tkinter"
-#define TKINTER_MOD "_tkinter"
 /* From module __file__ attribute to char *string for dlopen. */
+#if PY_VERSION_HEX >= 0x03000000
 char *fname2char(PyObject *fname)
 {
     PyObject *bytes = PyUnicode_EncodeFSDefault(fname);
@@ -364,9 +378,6 @@ char *fname2char(PyObject *fname)
     return PyBytes_AsString(bytes);
 }
 #else
-#define TKINTER_PKG "Tkinter"
-#define TKINTER_MOD "tkinter"
-/* From module __file__ attribute to char *string for dlopen */
 #define fname2char(s) (PyString_AsString(s))
 #endif
 
