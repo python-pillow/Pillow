@@ -256,6 +256,75 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
 
 
 Imaging
+ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
+{
+    ImagingSectionCookie cookie;
+    Imaging imOut;
+    int ss0, ss1, ss2, ss3;
+    int xx, yy, y, kmax, ymin, ymax;
+    int *xbounds;
+    int *k, *kk;
+    double *prekk;
+
+
+    kmax = ImagingPrecompute(imIn->ysize, ysize, filterp, &xbounds, &prekk);
+    if ( ! kmax) {
+        return (Imaging) ImagingError_MemoryError();
+    }
+    
+    kk = malloc(ysize * kmax * sizeof(int));
+    if ( ! kk) {
+        free(xbounds);
+        free(prekk);
+        return (Imaging) ImagingError_MemoryError();
+    }
+
+    for (y = 0; y < ysize * kmax; y++) {
+        kk[y] = (int) (0.5 + prekk[y] * (1 << PRECISION_BITS));
+    }
+
+    free(prekk);
+
+    imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
+    if ( ! imOut) {
+        free(kk);
+        free(xbounds);
+        return NULL;
+    }
+
+    ImagingSectionEnter(&cookie);
+    if (imIn->image8) {
+    } else if (imIn->type == IMAGING_TYPE_UINT8) {
+        if (imIn->bands == 2) {
+        } else if (imIn->bands == 3) {
+            for (yy = 0; yy < ysize; yy++) {
+                k = &kk[yy * kmax];
+                ymin = xbounds[yy * 2 + 0];
+                ymax = xbounds[yy * 2 + 1];
+                for (xx = 0; xx < imOut->xsize; xx++) {
+                    ss0 = ss1 = ss2 = 1 << (PRECISION_BITS -1);
+                    for (y = 0; y < ymax; y++) {
+                        ss0 += ((UINT8) imIn->image[y + ymin][xx*4 + 0]) * k[y];
+                        ss1 += ((UINT8) imIn->image[y + ymin][xx*4 + 1]) * k[y];
+                        ss2 += ((UINT8) imIn->image[y + ymin][xx*4 + 2]) * k[y];
+                    }
+                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
+                    imOut->image[yy][xx*4 + 1] = clip8(ss1);
+                    imOut->image[yy][xx*4 + 2] = clip8(ss2);
+                }
+            }
+        } else {
+        }
+    }
+
+    ImagingSectionLeave(&cookie);
+    free(kk);
+    free(xbounds);
+    return imOut;
+}
+
+
+Imaging
 ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
 {
     ImagingSectionCookie cookie;
