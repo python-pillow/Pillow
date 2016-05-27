@@ -200,13 +200,13 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
-                    ss0 = ss1 = 1 << (PRECISION_BITS -1);
+                    ss0 = ss3 = 1 << (PRECISION_BITS -1);
                     for (x = 0; x < xmax; x++) {
                         ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
-                        ss1 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 3]) * k[x];
+                        ss3 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 3]) * k[x];
                     }
                     imOut->image[yy][xx*4 + 0] = clip8(ss0);
-                    imOut->image[yy][xx*4 + 3] = clip8(ss1);
+                    imOut->image[yy][xx*4 + 3] = clip8(ss3);
                 }
             }
         } else if (imIn->bands == 3) {
@@ -294,8 +294,33 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
 
     ImagingSectionEnter(&cookie);
     if (imIn->image8) {
+        for (yy = 0; yy < ysize; yy++) {
+            k = &kk[yy * kmax];
+            ymin = xbounds[yy * 2 + 0];
+            ymax = xbounds[yy * 2 + 1];
+            for (xx = 0; xx < imOut->xsize; xx++) {
+                ss0 = 1 << (PRECISION_BITS -1);
+                for (y = 0; y < ymax; y++)
+                    ss0 += ((UINT8) imIn->image8[y + ymin][xx]) * k[y];
+                imOut->image8[yy][xx] = clip8(ss0);
+            }
+        }
     } else if (imIn->type == IMAGING_TYPE_UINT8) {
         if (imIn->bands == 2) {
+            for (yy = 0; yy < ysize; yy++) {
+                k = &kk[yy * kmax];
+                ymin = xbounds[yy * 2 + 0];
+                ymax = xbounds[yy * 2 + 1];
+                for (xx = 0; xx < imOut->xsize; xx++) {
+                    ss0 = ss3 = 1 << (PRECISION_BITS -1);
+                    for (y = 0; y < ymax; y++) {
+                        ss0 += ((UINT8) imIn->image[y + ymin][xx*4 + 0]) * k[y];
+                        ss3 += ((UINT8) imIn->image[y + ymin][xx*4 + 3]) * k[y];
+                    }
+                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
+                    imOut->image[yy][xx*4 + 3] = clip8(ss3);
+                }
+            }
         } else if (imIn->bands == 3) {
             for (yy = 0; yy < ysize; yy++) {
                 k = &kk[yy * kmax];
@@ -314,6 +339,24 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
                 }
             }
         } else {
+            for (yy = 0; yy < ysize; yy++) {
+                k = &kk[yy * kmax];
+                ymin = xbounds[yy * 2 + 0];
+                ymax = xbounds[yy * 2 + 1];
+                for (xx = 0; xx < imOut->xsize; xx++) {
+                    ss0 = ss1 = ss2 = ss3 = 1 << (PRECISION_BITS -1);
+                    for (y = 0; y < ymax; y++) {
+                        ss0 += ((UINT8) imIn->image[y + ymin][xx*4 + 0]) * k[y];
+                        ss1 += ((UINT8) imIn->image[y + ymin][xx*4 + 1]) * k[y];
+                        ss2 += ((UINT8) imIn->image[y + ymin][xx*4 + 2]) * k[y];
+                        ss3 += ((UINT8) imIn->image[y + ymin][xx*4 + 3]) * k[y];
+                    }
+                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
+                    imOut->image[yy][xx*4 + 1] = clip8(ss1);
+                    imOut->image[yy][xx*4 + 2] = clip8(ss2);
+                    imOut->image[yy][xx*4 + 3] = clip8(ss3);
+                }
+            }
         }
     }
 
