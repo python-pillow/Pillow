@@ -1,5 +1,5 @@
 from helper import unittest, PillowTestCase, hopper
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageMode
 
 
 class TestImagingResampleVulnerability(PillowTestCase):
@@ -43,14 +43,12 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
         1f 1f e0 e0
         1f 1f e0 e0
         """
-        dark = (255 - color, 255 - color, 255 - color, 255 - color)
-        bright = (color, color, color, color)
+        case = Image.new('L', size, 255 - color)
+        rectangle = ImageDraw.Draw(case).rectangle
+        rectangle((0, 0, size[0] // 2 - 1, size[1] // 2 - 1), color)
+        rectangle((size[0] // 2, size[1] // 2, size[0], size[1]), color)
 
-        i = Image.new('RGBX', size, dark)
-        rectangle = ImageDraw.Draw(i).rectangle
-        rectangle((0, 0, size[0] // 2 - 1, size[1] // 2 - 1), bright)
-        rectangle((size[0] // 2, size[1] // 2, size[0], size[1]), bright)
-        return i.convert(mode)
+        return Image.merge(mode, [case] *  len(mode))
 
     def make_sample(self, data, size):
         """Restores a sample image from given data string which contains
@@ -92,7 +90,7 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
         )
 
     def test_reduce_bilinear(self):
-        for mode in ['RGBX', 'RGB', 'L']:
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
             case = self.make_case(mode, (8, 8), 0xe1)
             case = case.resize((4, 4), Image.BILINEAR)
             data = ('e1 c9'
@@ -101,7 +99,7 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
                 self.check_case(channel, self.make_sample(data, (4, 4)))
 
     def test_reduce_bicubic(self):
-        for mode in ['RGBX', 'RGB', 'L']:
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
             case = self.make_case(mode, (12, 12), 0xe1)
             case = case.resize((6, 6), Image.BICUBIC)
             data = ('e1 e3 d4'
@@ -111,7 +109,7 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
                 self.check_case(channel, self.make_sample(data, (6, 6)))
 
     def test_reduce_lanczos(self):
-        for mode in ['RGBX', 'RGB', 'L']:
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
             case = self.make_case(mode, (16, 16), 0xe1)
             case = case.resize((8, 8), Image.LANCZOS)
             data = ('e1 e0 e4 d7'
@@ -122,7 +120,7 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
                 self.check_case(channel, self.make_sample(data, (8, 8)))
 
     def test_enlarge_bilinear(self):
-        for mode in ['RGBX', 'RGB', 'L']:
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
             case = self.make_case(mode, (2, 2), 0xe1)
             case = case.resize((4, 4), Image.BILINEAR)
             data = ('e1 b0'
@@ -131,7 +129,7 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
                 self.check_case(channel, self.make_sample(data, (4, 4)))
 
     def test_enlarge_bicubic(self):
-        for mode in ['RGBX', 'RGB', 'L']:
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
             case = self.make_case(mode, (4, 4), 0xe1)
             case = case.resize((8, 8), Image.BICUBIC)
             data = ('e1 e5 ee b9'
@@ -142,7 +140,7 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
                 self.check_case(channel, self.make_sample(data, (8, 8)))
 
     def test_enlarge_lanczos(self):
-        for mode in ['RGBX', 'RGB', 'L']:
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
             case = self.make_case(mode, (6, 6), 0xe1)
             case = case.resize((12, 12), Image.LANCZOS)
             data = ('e1 e0 db ed f5 b8'
