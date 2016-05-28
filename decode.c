@@ -52,7 +52,8 @@ typedef struct {
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject* lock;
-    int     handles_eof;
+    int handles_eof;
+    int pulls_fd;
 } ImagingDecoderObject;
 
 static PyTypeObject ImagingDecoderType;
@@ -97,6 +98,10 @@ PyImaging_DecoderNew(int contextsize)
     /* Most decoders don't want to handle EOF themselves */
     decoder->handles_eof = 0;
 
+    /* set if the decoder needs to pull data from the fd, instead of
+       having it pushed */
+    decoder->pulls_fd = 0;
+
     return decoder;
 }
 
@@ -108,6 +113,7 @@ _dealloc(ImagingDecoderObject* decoder)
     free(decoder->state.buffer);
     free(decoder->state.context);
     Py_XDECREF(decoder->lock);
+    Py_XDECREF(decoder->state.fd);
     PyObject_Del(decoder);
 }
 
@@ -121,11 +127,15 @@ _decode(ImagingDecoderObject* decoder, PyObject* args)
     if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH, &buffer, &bufsize))
         return NULL;
 
-    ImagingSectionEnter(&cookie);
+    if (!decoder->pulls_fd) {
+        ImagingSectionEnter(&cookie);
+    }
 
     status = decoder->decode(decoder->im, &decoder->state, buffer, bufsize);
 
-    ImagingSectionLeave(&cookie);
+    if (!decoder->pulls_fd) {
+        ImagingSectionLeave(&cookie);
+    }
 
     return Py_BuildValue("ii", status, decoder->state.errcode);
 }
@@ -210,22 +220,51 @@ _setimage(ImagingDecoderObject* decoder, PyObject* args)
     return Py_None;
 }
 
+static PyObject*
+_setfd(ImagingDecoderObject* decoder, PyObject* args)
+{
+    PyObject* fd;
+    ImagingCodecState state;
+
+    if (!PyArg_ParseTuple(args, "O", &fd))
+        return NULL;
+
+    state = &decoder->state;
+
+    Py_XINCREF(fd);
+    state->fd = fd;
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
 static PyObject *
 _get_handles_eof(ImagingDecoderObject *decoder)
 {
     return PyBool_FromLong(decoder->handles_eof);
 }
 
+static PyObject *
+_get_pulls_fd(ImagingDecoderObject *decoder)
+{
+    return PyBool_FromLong(decoder->pulls_fd);
+}
+
 static struct PyMethodDef methods[] = {
     {"decode", (PyCFunction)_decode, 1},
     {"cleanup", (PyCFunction)_decode_cleanup, 1},
     {"setimage", (PyCFunction)_setimage, 1},
+    {"setfd", (PyCFunction)_setfd, 1},
     {NULL, NULL} /* sentinel */
 };
 
 static struct PyGetSetDef getseters[] = {
     {"handles_eof", (getter)_get_handles_eof, NULL,
      "True if this decoder expects to handle EOF itself.",
+     NULL},
+   {"pulls_fd", (getter)_get_pulls_fd, NULL,
+     "True if this decoder expects to pull from self.fd itself.",
      NULL},
     {NULL, NULL, NULL, NULL, NULL} /* sentinel */
 };
@@ -811,6 +850,8 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
     int layers = 0;
     int fd = -1;
     PY_LONG_LONG length = -1;
+    PyObject * py_fd;
+
     if (!PyArg_ParseTuple(args, "ss|iiiL", &mode, &format,
                           &reduce, &layers, &fd, &length))
         return NULL;
@@ -829,11 +870,12 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
         return NULL;
 
     decoder->handles_eof = 1;
+    decoder->pulls_fd = 1;
     decoder->decode = ImagingJpeg2KDecode;
     decoder->cleanup = ImagingJpeg2KDecodeCleanup;
 
     context = (JPEG2KDECODESTATE *)decoder->state.context;
-
+    
     context->fd = fd;
     context->length = (off_t)length;
     context->format = codec_format;
@@ -843,3 +885,61 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
     return (PyObject*) decoder;
 }
 #endif /* HAVE_OPENJPEG */
+
+Py_ssize_t 
+_imaging_read_pyFd(PyObject *fd, char* dest, Py_ssize_t bytes)
+{
+    /* dest should be a buffer bytes long, returns length of read
+       -1 on error */
+
+    PyObject *result;
+    char *buffer;
+    Py_ssize_t length;
+    int bytes_result;
+
+    result = PyObject_CallMethod(fd, "read", "n", bytes);
+
+    bytes_result = PyBytes_AsStringAndSize(result, &buffer, &length);
+    if (bytes_result == -1) { 
+        goto err;
+    }
+    
+    if (length > bytes) {
+        goto err;
+    }
+    
+    memcpy(dest, buffer, length); 
+
+    Py_DECREF(result);
+    return length;
+
+ err:
+    Py_DECREF(result);
+    return -1;  
+      
+}
+
+int
+_imaging_seek_pyFd(PyObject *fd, Py_ssize_t offset, int whence)
+{
+    PyObject *result;
+    
+    result = PyObject_CallMethod(fd, "seek", "ni", offset, whence);
+
+    Py_DECREF(result);   
+    return 0;
+
+}
+
+Py_ssize_t
+_imaging_tell_pyFd(PyObject *fd)
+{
+    PyObject *result;
+    Py_ssize_t location;
+    
+    result = PyObject_CallMethod(fd, "tell", NULL);
+    location = PyInt_AsSsize_t(result);
+
+    Py_DECREF(result);
+    return location;
+}

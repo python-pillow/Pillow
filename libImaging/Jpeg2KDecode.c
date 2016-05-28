@@ -46,9 +46,9 @@ j2k_error(const char *msg, void *client_data)
 static OPJ_SIZE_T
 j2k_read(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
 {
-    ImagingIncrementalCodec decoder = (ImagingIncrementalCodec)p_user_data;
+    ImagingCodecState state = (ImagingCodecState)p_user_data;
 
-    size_t len = ImagingIncrementalCodecRead(decoder, p_buffer, p_nb_bytes);
+    size_t len = _imaging_read_pyFd(state->fd, p_buffer, p_nb_bytes);
 
     return len ? len : (OPJ_SIZE_T)-1;
 }
@@ -56,8 +56,10 @@ j2k_read(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
 static OPJ_OFF_T
 j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 {
-    ImagingIncrementalCodec decoder = (ImagingIncrementalCodec)p_user_data;
-    off_t pos = ImagingIncrementalCodecSkip(decoder, p_nb_bytes);
+    ImagingCodecState state = (ImagingCodecState)p_user_data;
+
+    _imaging_seek_pyFd(state->fd, p_nb_bytes, SEEK_CUR);
+    off_t pos = _imaging_tell_pyFd(state->fd);
 
     return pos ? pos : (OPJ_OFF_T)-1;
 }
@@ -545,8 +547,7 @@ enum {
 };
 
 static int
-j2k_decode_entry(Imaging im, ImagingCodecState state,
-                 ImagingIncrementalCodec decoder)
+j2k_decode_entry(Imaging im, ImagingCodecState state)
 {
     JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *) state->context;
     opj_stream_t *stream = NULL;
@@ -558,22 +559,35 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     size_t buffer_size = 0;
     unsigned n;
 
-    stream = opj_stream_default_create(OPJ_TRUE);
+    // fastpath of using a filepointer, and not our own shufflers.
+    /*    if (context->fp) {
+        context->pfile = fdopen(context->fp, 'rb');
+        stream = opj_stream_create_default_file_stream(pfile, OPJ_TRUE);
+         if (!stream) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }       
+    } else {
+    */     // Using our own shufflers.
+        //stream = opj_stream_default_create(OPJ_TRUE);
+        stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
 
-    if (!stream) {
-        state->errcode = IMAGING_CODEC_BROKEN;
-        state->state = J2K_STATE_FAILED;
-        goto quick_exit;
-    }
+        if (!stream) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
 
-    opj_stream_set_read_function(stream, j2k_read);
-    opj_stream_set_skip_function(stream, j2k_skip);
+        opj_stream_set_read_function(stream, j2k_read);
+        opj_stream_set_skip_function(stream, j2k_skip);
+        /* }*/
 
     /* OpenJPEG 2.0 doesn't have OPJ_VERSION_MAJOR */
 #ifndef OPJ_VERSION_MAJOR
-    opj_stream_set_user_data(stream, decoder);
+    opj_stream_set_user_data(stream, state);
 #else
-    opj_stream_set_user_data(stream, decoder, NULL);
+    opj_stream_set_user_data(stream, state, NULL);
 
     /* Hack: if we don't know the length, the largest file we can
        possibly support is 4GB.  We can't go larger than this, because
@@ -749,6 +763,12 @@ j2k_decode_entry(Imaging im, ImagingCodecState state,
     state->state = J2K_STATE_DONE;
     state->errcode = IMAGING_CODEC_END;
 
+    if (context->pfile) {
+        if(fclose(context->pfile)){
+            context->pfile = NULL;
+        }
+    }
+    
  quick_exit:
     if (codec)
         opj_destroy_codec(codec);
@@ -765,26 +785,27 @@ ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 {
     JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *) state->context;
 
+    if (bytes){
+        state->errcode = IMAGING_CODEC_BROKEN;
+        state->state = J2K_STATE_FAILED;
+        return -1;
+    }       
+
     if (state->state == J2K_STATE_DONE || state->state == J2K_STATE_FAILED)
         return -1;
 
     if (state->state == J2K_STATE_START) {
-        context->decoder = ImagingIncrementalCodecCreate(j2k_decode_entry,
-                                                         im, state,
-                                                         INCREMENTAL_CODEC_READ,
-                                                         INCREMENTAL_CODEC_NOT_SEEKABLE,
-                                                         context->fd);
-
-        if (!context->decoder) {
-            state->errcode = IMAGING_CODEC_BROKEN;
-            state->state = J2K_STATE_FAILED;
-            return -1;
-        }
-
         state->state = J2K_STATE_DECODING;
+      
+        return j2k_decode_entry(im, state);
     }
 
-    return ImagingIncrementalCodecPushBuffer(context->decoder, buf, bytes);
+    if (state->state == J2K_STATE_DECODING) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        state->state = J2K_STATE_FAILED;
+        return -1;
+    }
+    return -1;
 }
 
 /* -------------------------------------------------------------------- */
@@ -798,13 +819,13 @@ ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
     if (context->error_msg)
         free ((void *)context->error_msg);
 
-    if (context->decoder)
-        ImagingIncrementalCodecDestroy(context->decoder);
+    /*   if (context->decoder)*/
+        
 
     context->error_msg = NULL;
 
     /* Prevent multiple calls to ImagingIncrementalCodecDestroy */
-    context->decoder = NULL;
+    //context->decoder = NULL;
 
     return -1;
 }

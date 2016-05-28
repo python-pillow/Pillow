@@ -10,6 +10,9 @@
 
 #include <openjpeg.h>
 
+/* 1MB for now */
+#define BUFFER_SIZE OPJ_J2K_STREAM_CHUNK_SIZE
+
 /* -------------------------------------------------------------------- */
 /* Decoder								*/
 /* -------------------------------------------------------------------- */
@@ -19,6 +22,9 @@ typedef struct {
 
     /* File descriptor, if available; otherwise, -1 */
     int fd;
+
+    /* File pointer, when opened */
+    FILE * pfile;
 
     /* Length of data, if available; otherwise, -1 */
     off_t length;
@@ -34,8 +40,7 @@ typedef struct {
 
     /* PRIVATE CONTEXT (set by decoder) */
     const char    *error_msg;
-
-    ImagingIncrementalCodec decoder;
+    
 } JPEG2KDECODESTATE;
 
 /* -------------------------------------------------------------------- */
@@ -47,6 +52,9 @@ typedef struct {
 
     /* File descriptor, if available; otherwise, -1 */
     int           fd;
+
+    /* File pointer, when opened */
+    FILE * pfile;
 
     /* Specify the desired format */
     OPJ_CODEC_FORMAT format;
@@ -83,7 +91,7 @@ typedef struct {
     /* PRIVATE CONTEXT (set by decoder) */
     const char    *error_msg;
 
-    ImagingIncrementalCodec encoder;
+
 } JPEG2KENCODESTATE;
 
 /*

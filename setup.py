@@ -35,8 +35,8 @@ _LIB_IMAGING = (
     "QuantHash", "QuantHeap", "PcdDecode", "PcxDecode", "PcxEncode", "Point",
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
     "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
-    "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Incremental",
-    "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur", "QuantPngQuant")
+    "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Jpeg2KDecode",
+    "Jpeg2KEncode", "BoxBlur", "QuantPngQuant")
 
 DEBUG = False
 
