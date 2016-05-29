@@ -492,7 +492,7 @@ def _save(im, fp, tile, bufsize=0):
             e.setimage(im.im, b)
             if e.pushes_fd:
                 e.setfd(fp)
-                e.encode_to_pyfd()
+                l,s = e.encode_to_pyfd()
             else:
                 s = e.encode_to_file(fh, bufsize)
             if s < 0:
