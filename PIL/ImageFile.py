@@ -225,7 +225,7 @@ class ImageFile(Image.Image):
                         n, err_code = decoder.decode(b)
                         if n < 0:
                             break
-                    b = b[n:]
+                        b = b[n:]
                     
                 # Need to cleanup here to prevent leaks in PyPy
                 decoder.cleanup()
