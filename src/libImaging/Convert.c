@@ -541,13 +541,64 @@ rgbA2rgba(UINT8* out, const UINT8* in, int xsize)
     }
 }
 
+int *rgba2rgbAtable = NULL;
+
 /* RGBa -> RGBA conversion to remove premultiplication
    Needed for correct transforms/resizing on RGBA images */
 static void
-rgba2rgbA(UINT8 *out, const UINT8 *in, int xsize) {
-    int x;
+rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
+{
+    int x = 0;
     unsigned int alpha;
-    for (x = 0; x < xsize; x++, in += 4) {
+
+#if defined(__AVX2__)
+
+    int a, c;
+    if ( ! rgba2rgbAtable) {
+        rgba2rgbAtable = (int *) malloc(256 * 256 * 2 * 4);
+        for (c = 0; c < 256; c++) {
+            rgba2rgbAtable[c] = c;
+        }
+        for (a = 1; a < 256; a++) {
+            for (c = 0; c < 256; c++) {
+                rgba2rgbAtable[a * 256 + c] = CLIP((255 * c) / a);
+            }
+        }
+    }
+
+    for (; x < xsize - 7; x += 8) {
+        __m256i pix0, pix1, pix2, pix3;
+        __m256i source = _mm256_loadu_si256((__m256i *) &in[x * 4]);
+
+        pix0 = _mm256_shuffle_epi8(source, _mm256_set_epi8(
+            -1,-1,-1,3, -1,-1,3,2, -1,-1,3,1, -1,-1,3,0,
+            -1,-1,-1,3, -1,-1,3,2, -1,-1,3,1, -1,-1,3,0));
+        pix0 = _mm256_i32gather_epi32(rgba2rgbAtable, pix0, 4);
+
+        pix1 = _mm256_shuffle_epi8(source, _mm256_set_epi8(
+            -1,-1,-1,7, -1,-1,7,6, -1,-1,7,5, -1,-1,7,4,
+            -1,-1,-1,7, -1,-1,7,6, -1,-1,7,5, -1,-1,7,4));
+        pix1 = _mm256_i32gather_epi32(rgba2rgbAtable, pix1, 4);
+
+        pix2 = _mm256_shuffle_epi8(source, _mm256_set_epi8(
+            -1,-1,-1,11, -1,-1,11,10, -1,-1,11,9, -1,-1,11,8,
+            -1,-1,-1,11, -1,-1,11,10, -1,-1,11,9, -1,-1,11,8));
+        pix2 = _mm256_i32gather_epi32(rgba2rgbAtable, pix2, 4);
+
+        pix3 = _mm256_shuffle_epi8(source, _mm256_set_epi8(
+            -1,-1,-1,15, -1,-1,15,14, -1,-1,15,13, -1,-1,15,12,
+            -1,-1,-1,15, -1,-1,15,14, -1,-1,15,13, -1,-1,15,12));
+        pix3 = _mm256_i32gather_epi32(rgba2rgbAtable, pix3, 4);
+
+        pix0 = _mm256_packus_epi32(pix0, pix1);
+        pix2 = _mm256_packus_epi32(pix2, pix3);
+        source = _mm256_packus_epi16(pix0, pix2);
+        _mm256_storeu_si256((__m256i *) &out[x * 4], source);
+    }
+
+#endif
+
+    for (; x < xsize; x++, in+=4) {
         alpha = in[3];
         if (alpha == 255 || alpha == 0) {
             *out++ = in[0];
