@@ -223,13 +223,7 @@ TkImaging_Init(Tcl_Interp* interp)
  * Functions to fill global Tcl / Tk function pointers by dynamic loading
  */
 
-#if PY_VERSION_HEX >= 0x03000000
-#define TKINTER_PKG "tkinter"
-#define TKINTER_MOD "_tkinter"
-#else
-#define TKINTER_PKG "Tkinter"
-#define TKINTER_MOD "tkinter"
-#endif
+#define TKINTER_FINDER "PIL._tkinter_finder"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
@@ -244,6 +238,12 @@ TkImaging_Init(Tcl_Interp* interp)
 #define PSAPI_VERSION 1
 #include <psapi.h>
 /* Must be linked with 'psapi' library */
+
+#if PY_VERSION_HEX >= 0x03000000
+#define TKINTER_PKG "tkinter"
+#else
+#define TKINTER_PKG "Tkinter"
+#endif
 
 FARPROC _dfunc(HMODULE lib_handle, const char *func_name)
 {
@@ -438,17 +438,13 @@ int load_tkinter_funcs(void)
     int ret = -1;
     void *tkinter_lib;
     char *tkinter_libname;
-    PyObject *pModule = NULL, *pSubmodule = NULL, *pString = NULL;
+    PyObject *pModule = NULL, *pString = NULL;
 
-    pModule = PyImport_ImportModule(TKINTER_PKG);
+    pModule = PyImport_ImportModule(TKINTER_FINDER);
     if (pModule == NULL) {
         goto exit;
     }
-    pSubmodule = PyObject_GetAttrString(pModule, TKINTER_MOD);
-    if (pSubmodule == NULL) {
-        goto exit;
-    }
-    pString = PyObject_GetAttrString(pSubmodule, "__file__");
+    pString = PyObject_GetAttrString(pModule, "TKINTER_LIB");
     if (pString == NULL) {
         goto exit;
     }
@@ -467,7 +463,6 @@ int load_tkinter_funcs(void)
     dlclose(tkinter_lib);
 exit:
     Py_XDECREF(pModule);
-    Py_XDECREF(pSubmodule);
     Py_XDECREF(pString);
     return ret;
 }
