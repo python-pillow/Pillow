@@ -938,7 +938,7 @@ _imaging_tell_pyFd(PyObject *fd)
     Py_ssize_t location;
     
     result = PyObject_CallMethod(fd, "tell", NULL);
-    location = PyLong_AsSsize_t(result);
+    location = PyInt_AsSsize_t(result);
 
     Py_DECREF(result);
     return location;
