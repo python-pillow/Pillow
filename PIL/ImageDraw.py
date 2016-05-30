@@ -283,119 +283,176 @@ class ImageDraw(object):
             max_width = max(max_width, line_width)
         return max_width, len(lines)*line_spacing
 
-    # Note that font metrics assume an origin on a baseline. So xMin is negative
-    # pixels to the left of the origin, xMax is positive pixels to the right of the
-    # origin, yMin is negative pixels below the baseline, yMax is positive pixels
-    # above the baseline.
-    # if text contains "\n" it is treated as multiple lines of text.
-    #    yMin becomes really negative.
-    #    lineHeight and lineHeightPercent become relevant.
-    #    lineHeightPercent is only used if LineHeight is None, and defaults to 100%.
-    #    Use of a lineHeight < sum( font.getmetrics ) may result in text overlap.
-    #    The best lineHeight would be that returned from the font.font.height
-    #    attribute, but in versions of PIL in which that isn't accessible,
-    #    sum( font.getmetrics()) is used instead.
-    def textInfo(self, text, font=None, lineHeight=None, lineHeightPercent=None):
+    def textinfo(self, text, font=None, line_height=None, line_height_percent=100):
+        """
+        Get font metrics for a block of text, where lines are separated by '\n'.
+        Origin is assumed to be at the start (left) on a baseline, so y-min will
+        naturally be negative for characters like 'y'. If text contains "\n" it is
+        treated as multiple lines of text. yMin will therefore become
+        progressively more negative with additional lines
+
+        @param text: String of words/lines to analyze
+        @param font: Font to load  (default to the currently selected drawing font)
+        @param line_height: Absolute size of lines (in pixels). Default None (100%
+          of font's line height). This is only used if there is a '\n' in the text
+          NOTE: using line_height < sum(font.getmetrics) may result in text overlap
+        @param float line_height_percent: Ratio of font's estimated height to use
+          for line height. Defaults to (100%). This is only used if line_height is
+          None or not set and '\n' exists in the text.
+          NOTE: The best line_height would be that returned from the
+          font.font.height attribute, but in versions of PIL in which that isn't
+          accessible, sum( font.getmetrics()) is used instead.
+        @return Tuple of: (xmin, ymin, xmax, ymax, list of bounding boxes)
+            Where the x, y bounds are relative to an unspecified origin, and the
+            bounding boxe list contains length-5 tuples:
+
+            (line x min, line y min, line x max, line y max, line text)
+
+        """
         if font is None:
             font = self.getfont()
+
+        if line_height is None:
+            try:
+                line_height = font.font.height
+            except AttributeError:
+                line_height = sum(font.getmetrics())
+            line_height = int(line_height * line_height_percent / 100.)
+
         lines = text.split('\n')
-        txMax = 0
-        txMin = 0
-        txWid = 0
-        tyMax = None
-        tyMin = None
-        if len(lines) > 1:
-            if lineHeight is None:
-                if lineHeightPercent is None:
-                    lineHeightPercent = 100
-                try:
-                    lineHeight = font.font.height
-                except AttributeError:
-                    lineHeight = sum(font.getmetrics())
-                lineHeight = int(lineHeight * lineHeightPercent / 100)
+        full_xmax = full_xmin = 0
+        full_ymax = full_ymin = 0
 
-        lineBBs = []
-        for line in lines:
-            lxMin, lyMin, lxMax, lyMax = font.getBB(line)
-            lineBBs.append((lxMin, lyMin, lxMax, lyMax, line))
-            lxWid = lxMax - lxMin
-            if txWid < lxWid:
-                txWid = lxWid
-            if txMax < lxMax:
-                txMax = lxMax
-            if txMin > lxMin:
-                txMin = lxMin
-            if tyMax is None:
-                tyMax = lyMax  # from first line only
-            if tyMin is None:
-                tyMin = 0  # skips first line (unless it is also last)
-            else:
-                tyMin -= lineHeight
-        tyMin += lyMin  # from last line
-        return (txMin, tyMin, txMax, tyMax, txWid, lineHeight, lineBBs)
+        line_bounding_boxes = []
+        for ll, line in enumerate(lines):
+            line_xmin, line_ymin, line_xmax, line_ymax = font.getBoundingBox(line)
 
-    # Text is drawn as close as possible to the specified alignment edges of the
-    # image, without truncation on those edges, then adjusted by the origin value.
-    # alignX or alignY of 'exact' means to use the specified origin point exactly
-    # in that direction. Otherwise origin is used as an offset from the calculated
-    # alignment position. alignX can also be 'left', 'center', or 'right'; alignY
-    # can also be 'top', 'middle', or 'bottom'. justifyX can be 'left', 'center',
-    # or 'right'. Other parameters like textInfo.
-    def textAtPos(self, text, font=None, lineHeight=None, lineHeightPercent=None,
-                  origin=(0, 0), alignX='exact', alignY='exact', justifyX='left',
-                  fill=None):
+            # Adjust y range for line number
+            line_ymin = ll*line_height + line_ymin
+            line_ymax = ll*line_height + line_ymax
+
+            # Combine line bounds with overall bounding box
+            full_xmax = max(full_xmax, line_xmax)
+            full_xmin = min(full_xmin, line_xmin)
+            full_ymax = max(full_ymax, line_ymax)
+            full_ymin = min(full_ymin, line_ymin)
+
+            line_bounding_boxes.append((line_xmin, line_ymin, line_xmax,
+                                        line_ymax, line))
+
+        return (full_xmin, full_ymin, full_xmax, full_ymax, line_height,
+                line_bounding_boxes)
+
+
+    def draw_at_pos(self, text, font=None, line_height=None,
+                    line_height_percent=None, origin=(0, 0), align_x='exact',
+                    align_y='exact', justify_x='left', fill=None):
+        """
+        Draw text is drawn as close as possible to the specified alignment edges
+        of the image, without truncation on those edges, then adjusted by the
+        origin value.
+
+        @param text: String to draw. If it contains '\n', multiple lines will be
+            drawn
+        @param font: Font to load  (default to the currently selected drawing
+            font)
+        @param line_height: Absolute size of lines (in pixels). Default None
+            (100% of font's line height). This is only used if there is a '\n'
+            in the text NOTE: using line_height < sum(font.getmetrics) may
+            result in text overlap
+        @param float line_height_percent: Ratio of font's estimated height to
+            use for line height. Defaults to (100%). This is only used if
+            line_height is None or not set and '\n' exists in the text.
+            NOTE: The best line_height would be that returned from the
+            font.font.height attribute, but in versions of PIL in which that
+            isn't accessible, sum( font.getmetrics()) is used instead.
+        @param tuple origin: Where to start drawing. This is the baseline for
+            the first line of text.
+        @param str align_x: One of 'left', 'center', 'right' or 'exact', where
+            means to use the specified origin point exactly in that direction.
+            Otherwise origin is used as an offset from the calculated alignment
+            position
+        @param str align_y: One of 'top', 'middle', 'bottom', or 'exact' where
+            'exact' has the same meaning as it does in 'align_x'
+        @param str justify_x: One of 'left', 'right', 'center'
+        @param fill: Any valid color object (including string)
+        """
+        # Check inputs
         if font is None:
             font = self.getfont()
+
+        if justify_x not in ('left', 'center', 'right'):
+            raise ValueError('Unknown justify_x value "%s".' % justify_x)
+
         ink, fill = self._getink(fill)
-        if ink is None:
-            if ink is None:
-                return
-        if justifyX not in ('left', 'center', 'right'):
-            raise ValueError('Unknown justifyX value "%s".' % justifyX)
-        txMin, tyMin, txMax, tyMax, txWid, lineHeight, lineBBs = self.textInfo(
-            text, font, lineHeight, lineHeightPercent)
-        if alignX == 'exact':
-            ox = 0
-        elif alignX == 'left':
-            ox = -txMin
-        elif alignX == 'right':
-            ox = self.im.size[0] - txMax
-        elif alignX == 'center':
-            ox = self.im.size[0] // 2 - txMax // 2
-        else:
-            raise ValueError('Unknown alignX value "%s".' % alignX)
-        if alignY == 'exact':
-            oy = 0
-        elif alignY == 'top':
-            oy = tyMax
-        elif alignY == 'bottom':
-            oy = self.im.size[1] + tyMin
-        elif alignY == 'middle':
-            oy = self.im.size[1] // 2 + (tyMax + tyMin) // 2
-        else:
-            raise ValueError('Unknown alignY value "%s".' % alignY)
-        ox += origin[0]
-        oy += origin[1]
+        if ink is None and fill is None:
+            return
+        elif ink is None and fill is not None:
+            ink = fill
+
+        # Get line bounding boxes and overall bounding box, not adjusted for
+        # origin
+        full_xmin, full_ymin, full_xmax, full_ymax, line_height, line_bounds = \
+            self.textinfo(text, font, line_height, line_height_percent)
+
+        # Adjust origin for alignment and bounding box size
+        x_origin, y_origin = self._get_origin(full_xmin, full_ymin, full_xmax,
+                                              full_ymax, origin, align_x, align_y)
+
         ascent, descent = font.getmetrics()
-        while lineBBs:
-            lxMin, lyMin, lxMax, lyMax, line = lineBBs.pop(0)
-            if justifyX == 'left':
-                lox = ox
-            elif justifyX == 'right':
-                lox = ox + txMax - lxMax
+        for line_xmin, line_ymin, line_xmax, line_ymax, line_str in line_bounds:
+            if justify_x == 'left':
+                line_xpos = x_origin
+            elif justify_x == 'right':
+                line_xpos = x_origin + full_xmax - line_xmax
             else:
-                lox = ox + txMax // 2 - lxMax // 2
+                line_xpos = x_origin + full_xmax // 2 - line_xmax // 2
 
             # finally, draw some text
-            lox = lox + lxMin
-            loy = oy - lyMax
-            im = Image.core.fill("L", (lxMax - lxMin, lyMax - lyMin), 0)
-            font.font.render(line, im.id, self.fontmode == "1")
-            self.draw.draw_bitmap((lox, loy), im, ink)
+            line_xpos += line_xmin
+            line_ypos = line_ymax
+            width = line_xmax - line_xmin + 1
+            height = line_ymax - line_ymin + 1
 
-            if not lineBBs:
-                break
-            oy += lineHeight
+            im = Image.core.fill("L", (width, height), 0)
+            font.font.render(line_str, im.id, self.fontmode == "1")
+            self.draw.draw_bitmap((line_xpos, line_ypos), im, ink)
+
+
+    def _get_origin(self, full_xmin, full_ymin, full_xmax, full_ymax,
+                    origin=(0, 0), align_x='exact', align_y='exact'):
+        """
+        Helper for drawing text. Handles justification to produce a proper
+        origin.
+        """
+        # Get starting point, based on alignmet
+        if align_x == 'exact':
+            xpos = 0
+        elif align_x == 'left':
+            # in most cases this is zero, although a strange font might reach
+            # outside the normal starting point
+            xpos = -full_xmin
+        elif align_x == 'right':
+            # In right justfied case the left side is the right side of the page
+            # minus the furthest possible line distance from the base
+            xpos = self.im.size[0] - full_xmax
+        elif align_x == 'center':
+            xpos = self.im.size[0] // 2 - full_xmax // 2
+        else:
+            raise ValueError('Unknown align_x value "%s".' % align_x)
+
+        if align_y == 'exact':
+            ypos = 0
+        elif align_y == 'top':
+            ypos = full_ymax
+        elif align_y == 'bottom':
+            ypos = self.im.size[1] + full_ymin
+        elif align_y == 'middle':
+            ypos = self.im.size[1] // 2 + (full_ymax + full_ymin) // 2
+        else:
+            raise ValueError('Unknown align_y value "%s".' % align_y)
+
+        return xpos + origin[0], ypos + origin[0]
 
 
 ##

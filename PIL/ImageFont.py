@@ -169,14 +169,22 @@ class FreeTypeFont(object):
                             encoding=self.encoding if encoding is None else
                             encoding)
 
-    def getBB( self, text ):
+    def getBoundingBox(self, text):
+        """
+        Return bounding box that would be produced if text were drawn. Note that
+        line breaks will *not* be handled correctly.
+
+        :param basestring text:
+        :return: (x0, y0, x1, y1) where the corners of the bounding rectangle
+                 are: (x0, y0), (x0, y1), (x1, y0), (x1, y1)
+        """
         size, offset = self.font.getsize( text )
         ascent, descent = self.getmetrics()
-        yMax = ascent - offset[ 1 ] # distance from baseline to max horiBearingY
-        yMin = yMax - size[ 1 ]
-        xMin = offset[ 0 ]
-        xMax = size[ 0 ] + xMin
-        return ( xMin, yMin, xMax, yMax )
+        yMax = ascent - offset[1]  # distance from baseline to max horiBearingY
+        yMin = yMax - size[1]
+        xMin = offset[0]
+        xMax = size[0] + xMin
+        return (xMin, yMin, xMax-1, yMax-1)
 
 ##
 # Wrapper that creates a transposed font from any existing font
