@@ -30,11 +30,11 @@ RUN apk --no-cache add git \
 				   	   bash \
 					   sudo	
 					   
-RUN git clone https://github.com/wiredfool/Pillow.git /Pillow
+RUN git clone https://github.com/python-pillow/Pillow.git /Pillow
 RUN pip install virtualenv && virtualenv /vpy && source /vpy/bin/activate && pip install nose
 
 RUN echo "#!/bin/bash" >> /test && \
-    echo "source /vpy/bin/activate && cd /Pillow && git checkout alpine-setup " >> test && \
+    echo "source /vpy/bin/activate && cd /Pillow " >> test && \
 	echo "pushd depends && ./install_webp.sh && popd" >> test && \
 	echo "LIBRARY_PATH=/lib:/usr/lib make install && make test" >> test
 
