@@ -405,6 +405,8 @@ class pil_build_ext(build_ext):
 
             _add_directory(library_dirs, "/usr/lib")
             _add_directory(include_dirs, "/usr/include")
+            # alpine, at least
+            _add_directory(library_dirs, "/lib")
 
         # on Windows, look for the OpenJPEG libraries in the location that
         # the official installer puts them
@@ -789,8 +791,11 @@ class pil_build_ext(build_ext):
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         with open(tmpfile, 'wb') as fp:
-            ret = subprocess.call([
-                'dpkg-architecture', '-qDEB_HOST_MULTIARCH'], stdout=fp)
+            try:
+                ret = subprocess.call(['dpkg-architecture',
+                                       '-qDEB_HOST_MULTIARCH'], stdout=fp)
+            except:
+                return
         try:
             if ret >> 8 == 0:
                 fp = open(tmpfile, 'r')
