@@ -35,7 +35,7 @@ RUN pip install virtualenv && virtualenv /vpy && source /vpy/bin/activate && pip
 
 RUN echo "#!/bin/bash" >> /test && \
     echo "source /vpy/bin/activate && cd /Pillow " >> test && \
-	echo "pushd depends && ./install_webp.sh && popd" >> test && \
+	echo "pushd depends && ./install_webp.sh && ./install_imagequant.sh && popd" >> test && \
 	echo "LIBRARY_PATH=/lib:/usr/lib make install && make test" >> test
 
 RUN chmod +x /test
