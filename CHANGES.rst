@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Box blur with premultiplied alpha #1914
+  [homm]
+
 - Add libimagequant support in quantize() #1889
   [rr-]
 
