@@ -520,3 +520,83 @@ def _safe_read(fp, size):
         data.append(block)
         size -= len(block)
     return b"".join(data)
+
+
+class PyCodecState(object):
+    def __init__(self):
+        self.xsize = 0
+        self.ysize = 0
+        self.xoff = 0
+        self.yoff = 0
+
+    def extents(self):
+        return (self.xoff, self.yoff,
+                self.xoff+self.xsize, self.yoff+self.ysize)
+
+class PyDecoder(object):
+    _handles_eof = False
+    _pulls_fd = False
+
+    def __init__(self, mode, *args):
+        self.im = None
+        self.state = PyCodecState()
+        self.fd = None
+        self.mode = mode
+        self.init(args)
+
+    def init(self, args):
+        self.args = args
+    
+    @property
+    def handles_eof(self):
+        return self._handles_eof
+
+    @property
+    def pulls_fd(self):
+        return self._pulls_fd
+
+    def decode(self, buffer):
+        raise NotImplementedError()
+
+    def cleanup(self):
+        pass
+
+    def setfd(self, fd):
+        self.fd = fd
+        
+    def setimage(self, im, extents=None):
+        # following c code
+        self.im = im
+
+        if extents:
+            (x0, y0, x1, y1) = extents
+        else:
+            (x0, y0, x1, y1) = (0, 0, 0, 0)
+
+        
+        if x0 ==0 and x1 ==0:
+            self.state.xsize, self.state.ysize = self.im.size
+        else:
+            self.state.xoff = x0
+            self.state.yoff = y0
+            self.state.xsize = x1 - x0
+            self.state.ysize = y1 - y0
+
+        if self.state.xsize <= 0 or self.state.ysize <= 0:
+            raise ValueError("Size Cannot be Negative")
+        
+        if (self.state.xsize + self.state.xoff > self.im.size[0] or
+            self.state.ysize + self.state.yoff > self.im.size[1]):
+            raise ValueError("Tile cannot extend outside image")
+           
+    def set_as_raw(self, data, rawmode=None):
+        if not rawmode:
+            rawmode = self.mode
+        d = Image._getdecoder(self.mode, 'raw', (rawmode))
+        d.setimage(self.im, self.state.extents())
+        s = d.decode(data)
+                
+        if s[0] >= 0:
+            raise ValueError("not enough image data")
+        if s[1] != 0:
+            raise ValueError("cannot decode image data")
