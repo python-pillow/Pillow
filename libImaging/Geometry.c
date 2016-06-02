@@ -264,8 +264,8 @@ perspective_transform(double* xin, double* yin, int x, int y, void* data)
     double a3 = a[3]; double a4 = a[4]; double a5 = a[5];
     double a6 = a[6]; double a7 = a[7];
 
-    xin[0] = (a0 + a1*x + a2*y) / (a6*x + a7*y + 1);
-    yin[0] = (a3 + a4*x + a5*y) / (a6*x + a7*y + 1);
+    xin[0] = (a0*x + a1*y + a2) / (a6*x + a7*y + 1);
+    yin[0] = (a3*x + a4*y + a5) / (a6*x + a7*y + 1);
 
     return 1;
 }

@@ -1881,9 +1881,7 @@ class Image(object):
 
         elif method == PERSPECTIVE:
             # change argument order to match implementation
-            data = (data[2], data[0], data[1],
-                    data[5], data[3], data[4],
-                    data[6], data[7])
+            data = data[0:8]
 
         elif method == QUAD:
             # quadrilateral warp.  data specifies the four corners
