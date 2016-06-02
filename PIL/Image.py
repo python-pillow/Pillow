@@ -995,8 +995,7 @@ class Image(object):
             im = self.im.convert("P", 1, palette.im)
             return self._makeself(im)
 
-        im = self.im.quantize(colors, method, kmeans)
-        return self._new(im)
+        return self._new(self.im.quantize(colors, method, kmeans))
 
     def copy(self):
         """
@@ -1007,8 +1006,7 @@ class Image(object):
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
         self.load()
-        im = self.im.copy()
-        return self._new(im)
+        return self._new(self.im.copy())
 
     __copy__ = copy
 
@@ -1935,8 +1933,7 @@ class Image(object):
         :param distance: Distance to spread pixels.
         """
         self.load()
-        im = self.im.effect_spread(distance)
-        return self._new(im)
+        return self._new(self.im.effect_spread(distance))
 
     def toqimage(self):
         """Returns a QImage copy of this image"""
