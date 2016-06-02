@@ -1581,12 +1581,13 @@ _rotate(ImagingObject* self, PyObject* args)
 
     theta = fmod(theta, 360.0);
     if (theta < 0.0)
-    theta += 360;
+        theta += 360;
 
     if (filter && imIn->type != IMAGING_TYPE_SPECIAL) {
         /* Rotate with resampling filter */
         imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
-    (void) ImagingRotate(imOut, imIn, theta, filter);
+        (void) ImagingRotate(imOut, imIn, theta, filter);
+    
     } else if ((theta == 90.0 || theta == 270.0)
             && (expand || imIn->xsize == imIn->ysize)) {
         /* Use fast version */
@@ -1597,6 +1598,7 @@ _rotate(ImagingObject* self, PyObject* args)
             else
                 (void) ImagingRotate270(imOut, imIn);
         }
+    
     } else {
         imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
         if (imOut) {

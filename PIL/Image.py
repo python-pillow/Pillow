@@ -1569,6 +1569,18 @@ class Image(object):
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
+        angle = angle % 360.0
+
+        # Fast paths regardless of filter
+        if angle == 0:
+            return self._new(self.im)
+        if angle == 180:
+            return self.transpose(ROTATE_180)
+        if angle == 90 and expand:
+            return self.transpose(ROTATE_90)
+        if angle == 270 and expand:
+            return self.transpose(ROTATE_270)
+
         if expand:
             import math
             angle = -angle * math.pi / 180
@@ -1843,9 +1855,11 @@ class Image(object):
 
         if isinstance(method, ImageTransformHandler):
             return method.transform(size, self, resample=resample, fill=fill)
+
         if hasattr(method, "getdata"):
             # compatibility w. old-style transform objects
             method, data = method.getdata()
+
         if data is None:
             raise ValueError("missing method data")
 
@@ -1864,13 +1878,14 @@ class Image(object):
 
         # FIXME: this should be turned into a lazy operation (?)
 
-        w = box[2]-box[0]
-        h = box[3]-box[1]
+        w = box[2] - box[0]
+        h = box[3] - box[1]
 
         if method == AFFINE:
             # change argument order to match implementation
             data = (data[2], data[0], data[1],
                     data[5], data[3], data[4])
+
         elif method == EXTENT:
             # convert extent to an affine transform
             x0, y0, x1, y1 = data
@@ -1878,11 +1893,13 @@ class Image(object):
             ys = float(y1 - y0) / h
             method = AFFINE
             data = (x0 + xs/2, xs, 0, y0 + ys/2, 0, ys)
+
         elif method == PERSPECTIVE:
             # change argument order to match implementation
             data = (data[2], data[0], data[1],
                     data[5], data[3], data[4],
                     data[6], data[7])
+
         elif method == QUAD:
             # quadrilateral warp.  data specifies the four corners
             # given as NW, SW, SE, and NE.
@@ -1897,6 +1914,7 @@ class Image(object):
                     (se[0]-sw[0]-ne[0]+x0)*As*At,
                     y0, (ne[1]-y0)*As, (sw[1]-y0)*At,
                     (se[1]-sw[1]-ne[1]+y0)*As*At)
+
         else:
             raise ValueError("unknown transformation method")
 
