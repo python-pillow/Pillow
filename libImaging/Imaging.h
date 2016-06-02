@@ -300,11 +300,6 @@ extern Imaging ImagingTransformAffine(
 extern Imaging ImagingTransformQuad(
     Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     double a[8], int filter, int fill);
-extern Imaging ImagingTransform(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
-    ImagingTransformMap transform, void* transform_data,
-    ImagingTransformFilter filter, void* filter_data,
-    int fill);
 extern Imaging ImagingUnsharpMask(
     Imaging imOut, Imaging im, float radius, int percent, int threshold);
 extern Imaging ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n);

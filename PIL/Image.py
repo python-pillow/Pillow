@@ -1865,9 +1865,6 @@ class Image(object):
 
     def __transformer(self, box, image, method, data,
                       resample=NEAREST, fill=1):
-
-        # FIXME: this should be turned into a lazy operation (?)
-
         w = box[2] - box[0]
         h = box[3] - box[1]
 

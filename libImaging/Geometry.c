@@ -606,7 +606,7 @@ getfilter(Imaging im, int filterid)
 /* transformation engines */
 
 Imaging
-ImagingTransform(
+ImagingGenericTransform(
     Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     ImagingTransformMap transform, void* transform_data,
     ImagingTransformFilter filter, void* filter_data,
@@ -828,7 +828,7 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
         ImagingTransformFilter filter = getfilter(imIn, filterid);
         if (!filter)
             return (Imaging) ImagingError_ValueError("unknown filter");
-        return ImagingTransform(
+        return ImagingGenericTransform(
             imOut, imIn,
             x0, y0, x1, y1,
             affine_transform, a,
@@ -915,7 +915,7 @@ ImagingTransformPerspective(Imaging imOut, Imaging imIn,
     if (!filter)
         return (Imaging) ImagingError_ValueError("bad filter number");
 
-    return ImagingTransform(
+    return ImagingGenericTransform(
         imOut, imIn,
         x0, y0, x1, y1,
         perspective_transform, a,
@@ -932,7 +932,7 @@ ImagingTransformQuad(Imaging imOut, Imaging imIn,
     if (!filter)
         return (Imaging) ImagingError_ValueError("bad filter number");
 
-    return ImagingTransform(
+    return ImagingGenericTransform(
         imOut, imIn,
         x0, y0, x1, y1,
         quad_transform, a,
