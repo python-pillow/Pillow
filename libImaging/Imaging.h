@@ -286,8 +286,6 @@ extern Imaging ImagingPointTransform(
     Imaging imIn, double scale, double offset);
 extern Imaging ImagingPutBand(Imaging im, Imaging imIn, int band);
 extern Imaging ImagingRankFilter(Imaging im, int size, int rank);
-extern Imaging ImagingRotate(
-    Imaging imOut, Imaging imIn, double theta, int filter);
 extern Imaging ImagingRotate90(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);

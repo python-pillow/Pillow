@@ -939,34 +939,3 @@ ImagingTransformQuad(Imaging imOut, Imaging imIn,
         filter, NULL,
         fill);
 }
-
-/* -------------------------------------------------------------------- */
-/* Convenience functions */
-
-Imaging
-ImagingRotate(Imaging imOut, Imaging imIn, double theta, int filterid)
-{
-    int xsize, ysize;
-    double sintheta, costheta;
-    double a[6];
-
-    /* Setup an affine transform to rotate around the image center */
-    theta = -theta * M_PI / 180.0;
-    sintheta = sin(theta);
-    costheta = cos(theta);
-
-    xsize = imOut->xsize;
-    ysize = imOut->ysize;
-
-    a[0] = -costheta * xsize/2 - sintheta * ysize/2 + xsize/2;
-    a[1] = costheta;
-    a[2] = sintheta;
-    a[3] = sintheta * xsize/2 - costheta * ysize/2 + ysize/2;
-    a[4] = -sintheta;
-    a[5] = costheta;
-
-    return ImagingTransformAffine(
-        imOut, imIn,
-        0, 0, imOut->xsize, imOut->ysize,
-        a, filterid, 1);
-}

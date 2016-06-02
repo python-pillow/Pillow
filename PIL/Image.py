@@ -1582,7 +1582,6 @@ class Image(object):
         if angle == 270 and expand:
             return self.transpose(ROTATE_270)
 
-
         angle = - math.radians(angle)
         matrix = [
             round(math.cos(angle), 15), round(math.sin(angle), 15), 0.0,

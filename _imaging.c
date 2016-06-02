@@ -1565,57 +1565,6 @@ _resize(ImagingObject* self, PyObject* args)
     return PyImagingNew(imOut);
 }
 
-static PyObject*
-_rotate(ImagingObject* self, PyObject* args)
-{
-    Imaging imOut;
-    Imaging imIn;
-
-    double theta;
-    int filter = IMAGING_TRANSFORM_NEAREST;
-    int expand;
-    if (!PyArg_ParseTuple(args, "d|i|i", &theta, &filter, &expand))
-        return NULL;
-
-    imIn = self->image;
-
-    theta = fmod(theta, 360.0);
-    if (theta < 0.0)
-        theta += 360;
-
-    if (filter && imIn->type != IMAGING_TYPE_SPECIAL) {
-        /* Rotate with resampling filter */
-        imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
-        (void) ImagingRotate(imOut, imIn, theta, filter);
-    
-    } else if ((theta == 90.0 || theta == 270.0)
-            && (expand || imIn->xsize == imIn->ysize)) {
-        /* Use fast version */
-        imOut = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
-        if (imOut) {
-            if (theta == 90.0)
-                (void) ImagingRotate90(imOut, imIn);
-            else
-                (void) ImagingRotate270(imOut, imIn);
-        }
-    
-    } else {
-        imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
-        if (imOut) {
-            if (theta == 0.0)
-                /* No rotation: simply copy the input image */
-                (void) ImagingCopy2(imOut, imIn);
-            else if (theta == 180.0)
-                /* Use fast version */
-                (void) ImagingRotate180(imOut, imIn);
-            else
-                /* Use ordinary version */
-                (void) ImagingRotate(imOut, imIn, theta, 0);
-        }
-    }
-
-    return PyImagingNew(imOut);
-}
 
 #define IS_RGB(mode)\
     (!strcmp(mode, "RGB") || !strcmp(mode, "RGBA") || !strcmp(mode, "RGBX"))
@@ -3050,7 +2999,6 @@ static struct PyMethodDef methods[] = {
     // There were two methods for image resize before.
     // Starting from Pillow 2.7.0 stretch is depreciated.
     {"stretch", (PyCFunction)_resize, 1},
-    {"rotate", (PyCFunction)_rotate, 1},
     {"transpose", (PyCFunction)_transpose, 1},
     {"transform2", (PyCFunction)_transform2, 1},
 
