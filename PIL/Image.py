@@ -30,6 +30,7 @@ from PIL import VERSION, PILLOW_VERSION, _plugins
 
 import logging
 import warnings
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -1581,20 +1582,20 @@ class Image(object):
         if angle == 270 and expand:
             return self.transpose(ROTATE_270)
 
+
+        angle = - math.radians(angle)
+        matrix = [
+            round(math.cos(angle), 15), round(math.sin(angle), 15), 0.0,
+            round(-math.sin(angle), 15), round(math.cos(angle), 15), 0.0
+            ]
+
+        def transform(x, y, matrix=matrix):
+            (a, b, c, d, e, f) = matrix
+            return a*x + b*y + c, d*x + e*y + f
+
+        w, h = self.size
         if expand:
-            import math
-            angle = - math.radians(angle)
-            matrix = [
-                round(math.cos(angle), 15), round(math.sin(angle), 15), 0.0,
-                round(-math.sin(angle), 15), round(math.cos(angle), 15), 0.0
-                ]
-
-            def transform(x, y, matrix=matrix):
-                (a, b, c, d, e, f) = matrix
-                return a*x + b*y + c, d*x + e*y + f
-
             # calculate output size
-            w, h = self.size
             xx = []
             yy = []
             for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
@@ -1604,22 +1605,12 @@ class Image(object):
             w = int(math.ceil(max(xx)) - math.floor(min(xx)))
             h = int(math.ceil(max(yy)) - math.floor(min(yy)))
 
-            # adjust center
-            x, y = transform(w / 2.0, h / 2.0)
-            matrix[2] = self.size[0] / 2.0 - x
-            matrix[5] = self.size[1] / 2.0 - y
+        # adjust center
+        x, y = transform(w / 2.0, h / 2.0)
+        matrix[2] = self.size[0] / 2.0 - x
+        matrix[5] = self.size[1] / 2.0 - y
 
-            return self.transform((w, h), AFFINE, matrix, resample)
-
-        if resample not in (NEAREST, BILINEAR, BICUBIC):
-            raise ValueError("unknown resampling filter")
-
-        self.load()
-
-        if self.mode in ("1", "P"):
-            resample = NEAREST
-
-        return self._new(self.im.rotate(angle, resample, expand))
+        return self.transform((w, h), AFFINE, matrix, resample)
 
     def save(self, fp, format=None, **params):
         """
