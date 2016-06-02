@@ -1583,10 +1583,10 @@ class Image(object):
 
         if expand:
             import math
-            angle = -angle * math.pi / 180
+            angle = - math.radians(angle)
             matrix = [
-                math.cos(angle), math.sin(angle), 0.0,
-                -math.sin(angle), math.cos(angle), 0.0
+                round(math.cos(angle), 15), round(math.sin(angle), 15), 0.0,
+                round(-math.sin(angle), 15), round(math.cos(angle), 15), 0.0
                 ]
 
             def transform(x, y, matrix=matrix):
