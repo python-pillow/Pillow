@@ -1869,9 +1869,7 @@ class Image(object):
         h = box[3] - box[1]
 
         if method == AFFINE:
-            # change argument order to match implementation
-            data = (data[2], data[0], data[1],
-                    data[5], data[3], data[4])
+            data = data[0:6]
 
         elif method == EXTENT:
             # convert extent to an affine transform
@@ -1879,7 +1877,7 @@ class Image(object):
             xs = float(x1 - x0) / w
             ys = float(y1 - y0) / h
             method = AFFINE
-            data = (x0 + xs/2, xs, 0, y0 + ys/2, 0, ys)
+            data = (xs, 0, x0 + xs/2, 0, ys, y0 + ys/2)
 
         elif method == PERSPECTIVE:
             # change argument order to match implementation

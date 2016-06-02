@@ -1544,12 +1544,12 @@ _resize(ImagingObject* self, PyObject* args)
     if (imIn->xsize == xsize && imIn->ysize == ysize) {
         imOut = ImagingCopy(imIn);
     }
-    else if ( ! filter) {
+    else if (filter == IMAGING_TRANSFORM_NEAREST) {
         double a[6];
 
         memset(a, 0, sizeof a);
-        a[1] = (double) imIn->xsize / xsize;
-        a[5] = (double) imIn->ysize / ysize;
+        a[0] = (double) imIn->xsize / xsize;
+        a[4] = (double) imIn->ysize / ysize;
 
         imOut = ImagingNew(imIn->mode, xsize, ysize);
 

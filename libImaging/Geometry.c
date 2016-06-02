@@ -250,8 +250,8 @@ affine_transform(double* xin, double* yin, int x, int y, void* data)
     double a0 = a[0]; double a1 = a[1]; double a2 = a[2];
     double a3 = a[3]; double a4 = a[4]; double a5 = a[5];
 
-    xin[0] = a0 + a1*x + a2*y;
-    yin[0] = a3 + a4*x + a5*y;
+    xin[0] = a0*x + a1*y + a2;
+    yin[0] = a3*x + a4*y + a5;
 
     return 1;
 }
@@ -690,8 +690,8 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
         return (Imaging) ImagingError_MemoryError();
     }
 
-    xo = a[0];
-    yo = a[3];
+    xo = a[2];
+    yo = a[5];
 
     xmin = x1;
     xmax = x0;
@@ -705,7 +705,7 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
                 xmin = x;
             xintab[x] = xin;
         }
-        xo += a[1];
+        xo += a[0];
     }
 
 #define AFFINE_SCALE(pixel, image)\
@@ -720,7 +720,7 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
             for (x = xmin; x < xmax; x++)\
                 out[x] = in[xintab[x]];\
         }\
-        yo += a[5];\
+        yo += a[4];\
     }
 
     ImagingSectionEnter(&cookie);
@@ -743,8 +743,8 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
 static inline int
 check_fixed(double a[6], int x, int y)
 {
-    return (fabs(a[0] + x*a[1] + y*a[2]) < 32768.0 &&
-            fabs(a[3] + x*a[4] + y*a[5]) < 32768.0);
+    return (fabs(x*a[0] + y*a[1] + a[2]) < 32768.0 &&
+            fabs(x*a[3] + y*a[4] + a[5]) < 32768.0);
 }
 
 static inline Imaging
@@ -778,8 +778,8 @@ affine_fixed(Imaging imOut, Imaging imIn,
 #define AFFINE_TRANSFORM_FIXED(pixel, image)\
     for (y = y0; y < y1; y++) {\
         pixel *out;\
-        xx = a0;\
-        yy = a3;\
+        xx = a2;\
+        yy = a5;\
         out = imOut->image[y];\
         if (fill && x1 > x0)\
             memset(out+x0, 0, (x1-x0)*sizeof(pixel));\
@@ -790,11 +790,11 @@ affine_fixed(Imaging imOut, Imaging imIn,
                 if (yin >= 0 && yin < ysize)\
                     *out = imIn->image[yin][xin];\
             }\
-            xx += a1;\
-            yy += a4;\
+            xx += a0;\
+            yy += a3;\
         }\
-        a0 += a2;\
-        a3 += a5;\
+        a2 += a1;\
+        a5 += a4;\
     }
 
     ImagingSectionEnter(&cookie);
@@ -834,7 +834,7 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
             filterid, fill);
     }
 
-    if (a[2] == 0 && a[4] == 0)
+    if (a[1] == 0 && a[3] == 0)
         /* Scaling */
         return ImagingScaleAffine(imOut, imIn, x0, y0, x1, y1, a, fill);
 
@@ -866,8 +866,8 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
     xsize = (int) imIn->xsize;
     ysize = (int) imIn->ysize;
 
-    xo = a[0];
-    yo = a[3];
+    xo = a[2];
+    yo = a[5];
 
 #define AFFINE_TRANSFORM(pixel, image)\
     for (y = y0; y < y1; y++) {\
@@ -884,11 +884,11 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
                 if (yin >= 0 && yin < ysize)\
                     *out = imIn->image[yin][xin];\
             }\
-            xx += a[1];\
-            yy += a[4];\
+            xx += a[0];\
+            yy += a[3];\
         }\
-        xo += a[2];\
-        yo += a[5];\
+        xo += a[1];\
+        yo += a[4];\
     }
 
     ImagingSectionEnter(&cookie);
