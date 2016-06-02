@@ -27,9 +27,6 @@
 
 #include "Imaging.h"
 
-/* Undef if you don't need resampling filters */
-#define WITH_FILTERS
-
 /* For large images rotation is an inefficient operation in terms of CPU cache.
    One row in the source image affects each column in destination.
    Rotating in chunks that fit in the cache can speed up rotation
@@ -320,8 +317,6 @@ quad_transform(double* xin, double* yin, int x, int y, void* data)
 }
 
 /* transform filters (ImagingTransformFilter) */
-
-#ifdef WITH_FILTERS
 
 static int
 nearest_filter8(void* out, Imaging im, double xin, double yin, void* data)
@@ -630,10 +625,6 @@ getfilter(Imaging im, int filterid)
     /* no such filter */
     return NULL;
 }
-
-#else
-#define getfilter(im, id) NULL
-#endif
 
 /* transformation engines */
 
