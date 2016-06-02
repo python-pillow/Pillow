@@ -609,8 +609,7 @@ Imaging
 ImagingGenericTransform(
     Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     ImagingTransformMap transform, void* transform_data,
-    ImagingTransformFilter filter, void* filter_data,
-    int fill)
+    int filterid, void* filter_data, int fill)
 {
     /* slow generic transformation.  use ImagingTransformAffine or
        ImagingScaleAffine where possible. */
@@ -619,6 +618,10 @@ ImagingGenericTransform(
     int x, y;
     char *out;
     double xx, yy;
+
+    ImagingTransformFilter filter = getfilter(imIn, filterid);
+    if (!filter)
+        return (Imaging) ImagingError_ValueError("bad filter number");
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -824,15 +827,11 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
     double xo, yo;
 
     if (filterid || imIn->type == IMAGING_TYPE_SPECIAL) {
-        /* Filtered transform */
-        ImagingTransformFilter filter = getfilter(imIn, filterid);
-        if (!filter)
-            return (Imaging) ImagingError_ValueError("unknown filter");
         return ImagingGenericTransform(
             imOut, imIn,
             x0, y0, x1, y1,
             affine_transform, a,
-            filter, NULL, fill);
+            filterid, NULL, fill);
     }
 
     if (a[2] == 0 && a[4] == 0)
@@ -907,35 +906,29 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
 }
 
 Imaging
-ImagingTransformPerspective(Imaging imOut, Imaging imIn,
-                            int x0, int y0, int x1, int y1,
-                            double a[8], int filterid, int fill)
+ImagingTransform(Imaging imOut, Imaging imIn, int method,
+                 int x0, int y0, int x1, int y1,
+                 double a[8], int filterid, int fill)
 {
-    ImagingTransformFilter filter = getfilter(imIn, filterid);
-    if (!filter)
-        return (Imaging) ImagingError_ValueError("bad filter number");
+    ImagingTransformMap transform;
+
+    switch(method) {
+    case IMAGING_TRANSFORM_AFFINE:
+        return ImagingTransformAffine(
+            imOut, imIn, x0, y0, x1, y1, a, filterid, fill);
+        break;
+    case IMAGING_TRANSFORM_PERSPECTIVE:
+        transform = perspective_transform;
+        break;
+    case IMAGING_TRANSFORM_QUAD:
+        transform = quad_transform;
+        break;
+    default:
+        return (Imaging) ImagingError_ValueError("bad transform method");
+    }
 
     return ImagingGenericTransform(
         imOut, imIn,
         x0, y0, x1, y1,
-        perspective_transform, a,
-        filter, NULL,
-        fill);
-}
-
-Imaging
-ImagingTransformQuad(Imaging imOut, Imaging imIn,
-                     int x0, int y0, int x1, int y1,
-                     double a[8], int filterid, int fill)
-{
-    ImagingTransformFilter filter = getfilter(imIn, filterid);
-    if (!filter)
-        return (Imaging) ImagingError_ValueError("bad filter number");
-
-    return ImagingGenericTransform(
-        imOut, imIn,
-        x0, y0, x1, y1,
-        quad_transform, a,
-        filter, NULL,
-        fill);
+        transform, a, filterid, NULL, fill);
 }

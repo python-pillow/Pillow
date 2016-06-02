@@ -1553,8 +1553,8 @@ _resize(ImagingObject* self, PyObject* args)
 
         imOut = ImagingNew(imIn->mode, xsize, ysize);
 
-        imOut = ImagingTransformAffine(
-            imOut, imIn,
+        imOut = ImagingTransform(
+            imOut, imIn, IMAGING_TRANSFORM_AFFINE,
             0, 0, xsize, ysize,
             a, filter, 1);
     }
@@ -1613,7 +1613,6 @@ _transform2(ImagingObject* self, PyObject* args)
 {
     static const char* wrong_number = "wrong number of matrix entries";
 
-    Imaging imIn;
     Imaging imOut;
     int n;
     double *a;
@@ -1649,30 +1648,9 @@ _transform2(ImagingObject* self, PyObject* args)
     if (!a)
         return NULL;
 
-    imOut = self->image;
-    imIn = imagep->image;
-
-    /* FIXME: move transform dispatcher into libImaging */
-
-    switch (method) {
-    case IMAGING_TRANSFORM_AFFINE:
-        imOut = ImagingTransformAffine(
-            imOut, imIn, x0, y0, x1, y1, a, filter, 1
-            );
-        break;
-    case IMAGING_TRANSFORM_PERSPECTIVE:
-        imOut = ImagingTransformPerspective(
-            imOut, imIn, x0, y0, x1, y1, a, filter, 1
-            );
-        break;
-    case IMAGING_TRANSFORM_QUAD:
-        imOut = ImagingTransformQuad(
-            imOut, imIn, x0, y0, x1, y1, a, filter, 1
-            );
-        break;
-    default:
-        (void) ImagingError_ValueError("bad transform method");
-    }
+    imOut = ImagingTransform(
+        self->image, imagep->image, method,
+        x0, y0, x1, y1, a, filter, 1);
 
     free(a);
 

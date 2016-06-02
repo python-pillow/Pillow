@@ -291,15 +291,9 @@ extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
 extern Imaging ImagingResample(Imaging imIn, int xsize, int ysize, int filter);
 extern Imaging ImagingTranspose(Imaging imOut, Imaging imIn);
-extern Imaging ImagingTransformPerspective(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
-    double a[8], int filter, int fill);
-extern Imaging ImagingTransformAffine(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
-    double a[6], int filter, int fill);
-extern Imaging ImagingTransformQuad(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
-    double a[8], int filter, int fill);
+extern Imaging ImagingTransform(
+    Imaging imOut, Imaging imIn, int method, int x0, int y0, int x1, int y1,
+    double *a, int filter, int fill);
 extern Imaging ImagingUnsharpMask(
     Imaging imOut, Imaging im, float radius, int percent, int threshold);
 extern Imaging ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n);
