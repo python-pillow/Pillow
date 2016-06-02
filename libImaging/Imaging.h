@@ -330,12 +330,6 @@ extern Imaging ImagingChopXor(Imaging imIn1, Imaging imIn2);
 extern void ImagingCrack(Imaging im, int x0, int y0);
 
 /* Graphics */
-struct ImagingAffineMatrixInstance {
-    float a[9];
-};
-
-typedef struct ImagingAffineMatrixInstance *ImagingAffineMatrix;
-
 extern int ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
                           float start, float end, const void* ink, int op);
 extern int ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap,
