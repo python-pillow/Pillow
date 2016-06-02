@@ -236,8 +236,7 @@ extern void ImagingError_Clear(void);
 typedef int (*ImagingTransformMap)(double* X, double* Y,
                                    int x, int y, void* data);
 typedef int (*ImagingTransformFilter)(void* out, Imaging im,
-                                      double x, double y,
-                                      void* data);
+                                      double x, double y);
 
 /* Image Manipulation Methods */
 /* -------------------------- */

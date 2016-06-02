@@ -288,7 +288,7 @@ quad_transform(double* xin, double* yin, int x, int y, void* data)
 /* transform filters (ImagingTransformFilter) */
 
 static int
-nearest_filter8(void* out, Imaging im, double xin, double yin, void* data)
+nearest_filter8(void* out, Imaging im, double xin, double yin)
 {
     int x = COORD(xin);
     int y = COORD(yin);
@@ -299,7 +299,7 @@ nearest_filter8(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-nearest_filter16(void* out, Imaging im, double xin, double yin, void* data)
+nearest_filter16(void* out, Imaging im, double xin, double yin)
 {
     int x = COORD(xin);
     int y = COORD(yin);
@@ -310,7 +310,7 @@ nearest_filter16(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-nearest_filter32(void* out, Imaging im, double xin, double yin, void* data)
+nearest_filter32(void* out, Imaging im, double xin, double yin)
 {
     int x = COORD(xin);
     int y = COORD(yin);
@@ -355,7 +355,7 @@ nearest_filter32(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-bilinear_filter8(void* out, Imaging im, double xin, double yin, void* data)
+bilinear_filter8(void* out, Imaging im, double xin, double yin)
 {
     BILINEAR_HEAD(UINT8);
     BILINEAR_BODY(UINT8, im->image8, 1, 0);
@@ -364,7 +364,7 @@ bilinear_filter8(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-bilinear_filter32I(void* out, Imaging im, double xin, double yin, void* data)
+bilinear_filter32I(void* out, Imaging im, double xin, double yin)
 {
     BILINEAR_HEAD(INT32);
     BILINEAR_BODY(INT32, im->image32, 1, 0);
@@ -373,7 +373,7 @@ bilinear_filter32I(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-bilinear_filter32F(void* out, Imaging im, double xin, double yin, void* data)
+bilinear_filter32F(void* out, Imaging im, double xin, double yin)
 {
     BILINEAR_HEAD(FLOAT32);
     BILINEAR_BODY(FLOAT32, im->image32, 1, 0);
@@ -382,7 +382,7 @@ bilinear_filter32F(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-bilinear_filter32LA(void* out, Imaging im, double xin, double yin, void* data)
+bilinear_filter32LA(void* out, Imaging im, double xin, double yin)
 {
     BILINEAR_HEAD(UINT8);
     BILINEAR_BODY(UINT8, im->image, 4, 0);
@@ -395,7 +395,7 @@ bilinear_filter32LA(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-bilinear_filter32RGB(void* out, Imaging im, double xin, double yin, void* data)
+bilinear_filter32RGB(void* out, Imaging im, double xin, double yin)
 {
     int b;
     BILINEAR_HEAD(UINT8);
@@ -462,7 +462,7 @@ bilinear_filter32RGB(void* out, Imaging im, double xin, double yin, void* data)
 
 
 static int
-bicubic_filter8(void* out, Imaging im, double xin, double yin, void* data)
+bicubic_filter8(void* out, Imaging im, double xin, double yin)
 {
     BICUBIC_HEAD(UINT8);
     BICUBIC_BODY(UINT8, im->image8, 1, 0);
@@ -476,7 +476,7 @@ bicubic_filter8(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-bicubic_filter32I(void* out, Imaging im, double xin, double yin, void* data)
+bicubic_filter32I(void* out, Imaging im, double xin, double yin)
 {
     BICUBIC_HEAD(INT32);
     BICUBIC_BODY(INT32, im->image32, 1, 0);
@@ -485,7 +485,7 @@ bicubic_filter32I(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-bicubic_filter32F(void* out, Imaging im, double xin, double yin, void* data)
+bicubic_filter32F(void* out, Imaging im, double xin, double yin)
 {
     BICUBIC_HEAD(FLOAT32);
     BICUBIC_BODY(FLOAT32, im->image32, 1, 0);
@@ -494,7 +494,7 @@ bicubic_filter32F(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-bicubic_filter32LA(void* out, Imaging im, double xin, double yin, void* data)
+bicubic_filter32LA(void* out, Imaging im, double xin, double yin)
 {
     BICUBIC_HEAD(UINT8);
     BICUBIC_BODY(UINT8, im->image, 4, 0);
@@ -522,7 +522,7 @@ bicubic_filter32LA(void* out, Imaging im, double xin, double yin, void* data)
 }
 
 static int
-bicubic_filter32RGB(void* out, Imaging im, double xin, double yin, void* data)
+bicubic_filter32RGB(void* out, Imaging im, double xin, double yin)
 {
     int b;
     BICUBIC_HEAD(UINT8);
@@ -550,51 +550,51 @@ getfilter(Imaging im, int filterid)
         if (im->image8)
             switch (im->type) {
             case IMAGING_TYPE_UINT8:
-                return (ImagingTransformFilter) nearest_filter8;
+                return nearest_filter8;
             case IMAGING_TYPE_SPECIAL:
                 switch (im->pixelsize) {
                 case 1:
-                    return (ImagingTransformFilter) nearest_filter8;
+                    return nearest_filter8;
                 case 2:
-                    return (ImagingTransformFilter) nearest_filter16;
+                    return nearest_filter16;
                 case 4:
-                    return (ImagingTransformFilter) nearest_filter32;
+                    return nearest_filter32;
                 }
             }
         else
-            return (ImagingTransformFilter) nearest_filter32;
+            return nearest_filter32;
         break;
     case IMAGING_TRANSFORM_BILINEAR:
         if (im->image8)
-            return (ImagingTransformFilter) bilinear_filter8;
+            return bilinear_filter8;
         else if (im->image32) {
             switch (im->type) {
             case IMAGING_TYPE_UINT8:
                 if (im->bands == 2)
-                    return (ImagingTransformFilter) bilinear_filter32LA;
+                    return bilinear_filter32LA;
                 else
-                    return (ImagingTransformFilter) bilinear_filter32RGB;
+                    return bilinear_filter32RGB;
             case IMAGING_TYPE_INT32:
-                return (ImagingTransformFilter) bilinear_filter32I;
+                return bilinear_filter32I;
             case IMAGING_TYPE_FLOAT32:
-                return (ImagingTransformFilter) bilinear_filter32F;
+                return bilinear_filter32F;
             }
         }
         break;
     case IMAGING_TRANSFORM_BICUBIC:
         if (im->image8)
-            return (ImagingTransformFilter) bicubic_filter8;
+            return bicubic_filter8;
         else if (im->image32) {
             switch (im->type) {
             case IMAGING_TYPE_UINT8:
                 if (im->bands == 2)
-                    return (ImagingTransformFilter) bicubic_filter32LA;
+                    return bicubic_filter32LA;
                 else
-                    return (ImagingTransformFilter) bicubic_filter32RGB;
+                    return bicubic_filter32RGB;
             case IMAGING_TYPE_INT32:
-                return (ImagingTransformFilter) bicubic_filter32I;
+                return bicubic_filter32I;
             case IMAGING_TYPE_FLOAT32:
-                return (ImagingTransformFilter) bicubic_filter32F;
+                return bicubic_filter32F;
             }
         }
         break;
@@ -609,7 +609,7 @@ Imaging
 ImagingGenericTransform(
     Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
     ImagingTransformMap transform, void* transform_data,
-    int filterid, void* filter_data, int fill)
+    int filterid, int fill)
 {
     /* slow generic transformation.  use ImagingTransformAffine or
        ImagingScaleAffine where possible. */
@@ -642,8 +642,8 @@ ImagingGenericTransform(
     for (y = y0; y < y1; y++) {
         out = imOut->image[y] + x0*imOut->pixelsize;
         for (x = x0; x < x1; x++) {
-            if (!transform(&xx, &yy, x-x0, y-y0, transform_data) ||
-                !filter(out, imIn, xx, yy, filter_data)) {
+            if ( ! transform(&xx, &yy, x-x0, y-y0, transform_data) ||
+                 ! filter(out, imIn, xx, yy)) {
                 if (fill)
                     memset(out, 0, imOut->pixelsize);
             }
@@ -831,7 +831,7 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
             imOut, imIn,
             x0, y0, x1, y1,
             affine_transform, a,
-            filterid, NULL, fill);
+            filterid, fill);
     }
 
     if (a[2] == 0 && a[4] == 0)
@@ -930,5 +930,5 @@ ImagingTransform(Imaging imOut, Imaging imIn, int method,
     return ImagingGenericTransform(
         imOut, imIn,
         x0, y0, x1, y1,
-        transform, a, filterid, NULL, fill);
+        transform, a, filterid, fill);
 }
