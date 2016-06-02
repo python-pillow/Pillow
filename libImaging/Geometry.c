@@ -850,8 +850,6 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
     if (y1 > imOut->ysize)
         y1 = imOut->ysize;
 
-    ImagingCopyInfo(imOut, imIn);
-
     /* translate all four corners to check if they are within the
        range that can be represented by the fixed point arithmetics */
 
@@ -862,6 +860,8 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
     /* FIXME: cannot really think of any reasonable case when the
        following code is used.  maybe we should fall back on the slow
        generic transform engine in this case? */
+    
+    ImagingCopyInfo(imOut, imIn);
 
     xsize = (int) imIn->xsize;
     ysize = (int) imIn->ysize;
