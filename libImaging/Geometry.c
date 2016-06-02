@@ -69,6 +69,8 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
 
     ImagingSectionLeave(&cookie);
 
+#undef FLIP_HORIZ
+
     return imOut;
 }
 
@@ -88,7 +90,7 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    yr = imIn->ysize-1;
+    yr = imIn->ysize - 1;
     for (y = 0; y < imIn->ysize; y++, yr--)
         memcpy(imOut->image[yr], imIn->image[y], imIn->linesize);
 
@@ -134,6 +136,8 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 
     ImagingSectionLeave(&cookie);
 
+#undef ROTATE_90
+
     return imOut;
 }
 
@@ -149,6 +153,8 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize)
         return (Imaging) ImagingError_Mismatch();
 
+    ImagingCopyInfo(imOut, imIn);
+
 #define TRANSPOSE(image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
         for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) { \
@@ -162,14 +168,16 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
         } \
     }
 
-    ImagingCopyInfo(imOut, imIn);
-
     ImagingSectionEnter(&cookie);
+    
     if (imIn->image8)
         TRANSPOSE(image8)
     else
         TRANSPOSE(image32)
+
     ImagingSectionLeave(&cookie);
+
+#undef TRANSPOSE
 
     return imOut;
 }
@@ -203,8 +211,6 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
-    yr = imIn->ysize-1;
-
 #define ROTATE_180(image)\
     for (y = 0; y < imIn->ysize; y++, yr--) {\
         xr = imIn->xsize-1;\
@@ -214,12 +220,15 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
+    yr = imIn->ysize-1;
     if (imIn->image8)
         ROTATE_180(image8)
     else
         ROTATE_180(image32)
 
     ImagingSectionLeave(&cookie);
+
+#undef ROTATE_180
 
     return imOut;
 }
@@ -260,6 +269,8 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
         ROTATE_270(image32)
 
     ImagingSectionLeave(&cookie);
+
+#undef ROTATE_270
 
     return imOut;
 }
@@ -437,6 +448,10 @@ bilinear_filter32RGB(void* out, Imaging im, double xin, double yin, void* data)
     return 1;
 }
 
+#undef BILINEAR
+#undef BILINEAR_HEAD
+#undef BILINEAR_BODY
+
 #define BICUBIC(v, v1, v2, v3, v4, d) {\
     double p1 = v2;\
     double p2 = -v1 + v3;\
@@ -564,6 +579,10 @@ bicubic_filter32RGB(void* out, Imaging im, double xin, double yin, void* data)
     }
     return 1;
 }
+
+#undef BICUBIC
+#undef BICUBIC_HEAD
+#undef BICUBIC_BODY
 
 static ImagingTransformFilter
 getfilter(Imaging im, int filterid)
@@ -753,6 +772,8 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
 
     ImagingSectionLeave(&cookie);
 
+#undef AFFINE_SCALE
+
     free(xintab);
 
     return imOut;
@@ -773,6 +794,7 @@ affine_fixed(Imaging imOut, Imaging imIn,
     /* affine transform, nearest neighbour resampling, fixed point
        arithmetics */
 
+    ImagingSectionCookie cookie;
     int x, y;
     int xin, yin;
     int xsize, ysize;
@@ -789,6 +811,8 @@ affine_fixed(Imaging imOut, Imaging imIn,
 
     a0 = FIX(a[0]); a1 = FIX(a[1]); a2 = FIX(a[2]);
     a3 = FIX(a[3]); a4 = FIX(a[4]); a5 = FIX(a[5]);
+
+#undef FIX
 
 #define AFFINE_TRANSFORM_FIXED(pixel, image)\
     for (y = y0; y < y1; y++) {\
@@ -812,10 +836,16 @@ affine_fixed(Imaging imOut, Imaging imIn,
         a3 += a5;\
     }
 
+    ImagingSectionEnter(&cookie);
+
     if (imIn->image8)
         AFFINE_TRANSFORM_FIXED(UINT8, image8)
     else
         AFFINE_TRANSFORM_FIXED(INT32, image32)
+
+    ImagingSectionLeave(&cookie);
+
+#undef AFFINE_TRANSFORM_FIXED
 
     return imOut;
 }
@@ -912,6 +942,8 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
         AFFINE_TRANSFORM(INT32, image32)
 
     ImagingSectionLeave(&cookie);
+
+#undef AFFINE_TRANSFORM
 
     return imOut;
 }
