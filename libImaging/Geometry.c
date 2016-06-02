@@ -1,30 +1,3 @@
-/*
- * The Python Imaging Library
- * $Id$
- *
- * the imaging geometry methods
- *
- * history:
- * 1995-06-15 fl  Created
- * 1996-04-15 fl  Changed origin
- * 1996-05-18 fl  Fixed rotate90/270 for rectangular images
- * 1996-05-27 fl  Added general purpose transform
- * 1996-11-22 fl  Don't crash when resizing from outside source image
- * 1997-08-09 fl  Fixed rounding error in resize
- * 1998-09-21 fl  Incorporated transformation patches (from Zircon #2)
- * 1998-09-22 fl  Added bounding box to transform engines
- * 1999-02-03 fl  Fixed bicubic filtering for RGB images
- * 1999-02-16 fl  Added fixed-point version of affine transform
- * 2001-03-28 fl  Fixed transform(EXTENT) for xoffset < 0
- * 2003-03-10 fl  Compiler tweaks
- * 2004-09-19 fl  Fixed bilinear/bicubic filtering of LA images
- *
- * Copyright (c) 1997-2003 by Secret Labs AB
- * Copyright (c) 1995-1997 by Fredrik Lundh
- *
- * See the README file for information on usage and redistribution.
- */
-
 #include "Imaging.h"
 
 /* For large images rotation is an inefficient operation in terms of CPU cache.
@@ -180,21 +153,6 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 #undef TRANSPOSE
 
     return imOut;
-}
-
-
-Imaging
-ImagingTransposeToNew(Imaging imIn)
-{
-    Imaging imTemp = ImagingNew(imIn->mode, imIn->ysize, imIn->xsize);
-    if ( ! imTemp)
-        return NULL;
-
-    if ( ! ImagingTranspose(imTemp, imIn)) {
-        ImagingDelete(imTemp);
-        return NULL;
-    }
-    return imTemp;
 }
 
 
