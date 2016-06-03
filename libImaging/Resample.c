@@ -91,7 +91,7 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
     /* determine support size (length of resampling filter) */
     support = filterp->support * filterscale;
 
-    /* maximum number of coofs */
+    /* maximum number of coeffs */
     kmax = (int) ceil(support) * 2 + 1;
 
     // check for overflow
@@ -102,7 +102,9 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
     if (outSize > INT_MAX / (2 * sizeof(double)))
         return 0;
 
-    /* coefficient buffer */
+    /* coefficient buffer. kmax elements for each of outSize pixels.
+       Only xmax number of coefficients are initialized (xmax <= kmax),
+       other coefficients should be 0, so we are using calloc.  */
     kk = calloc(outSize * kmax, sizeof(double));
     if ( ! kk)
         return 0;
