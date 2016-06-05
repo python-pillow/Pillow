@@ -3,7 +3,7 @@ source terryfy/library_installers.sh
 
 # Package versions for fresh source builds
 FT_VERSION=2.6.3
-PNG_VERSION=1.6.21
+PNG_VERSION=1.6.22
 ZLIB_VERSION=1.2.8
 JPEG_VERSION=9b
 OPENJPEG_VERSION=2.1.0
