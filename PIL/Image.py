@@ -1880,7 +1880,6 @@ class Image(object):
             data = (xs, 0, x0 + xs/2, 0, ys, y0 + ys/2)
 
         elif method == PERSPECTIVE:
-            # change argument order to match implementation
             data = data[0:8]
 
         elif method == QUAD:
