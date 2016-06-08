@@ -4,6 +4,15 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Fix "Fatal Python error: UNREF invalid object" in debug builds #1936
+  [wiredfool]
+
+- Setup fixes for Alpine linux #1937
+  [wiredfool]
+
+- Split resample into horizontal + vertical passes #1933
+  [homm]
+
 - Box blur with premultiplied alpha #1914
   [homm]
 
