@@ -102,10 +102,8 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
     if (outSize > INT_MAX / (2 * sizeof(double)))
         return 0;
 
-    /* coefficient buffer. kmax elements for each of outSize pixels.
-       Only xmax number of coefficients are initialized (xmax <= kmax),
-       other coefficients should be 0, so we are using calloc.  */
-    kk = calloc(outSize * kmax, sizeof(double));
+    /* coefficient buffer */
+    kk = malloc(outSize * kmax * sizeof(double));
     if ( ! kk)
         return 0;
 
@@ -135,6 +133,10 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
         for (x = 0; x < xmax; x++) {
             if (ww != 0.0)
                 k[x] /= ww;
+        }
+        // Remaining values should stay empty if they are used despite of xmax.
+        for (; x < kmax; x++) {
+            k[x] = 0;
         }
         xbounds[xx * 2 + 0] = xmin;
         xbounds[xx * 2 + 1] = xmax;
