@@ -39,7 +39,9 @@ def getmode(mode):
         for m, (basemode, basetype, bands) in Image._MODEINFO.items():
             _modes[m] = ModeDescriptor(m, bands, basemode, basetype)
         # extra experimental modes
+        _modes["RGBa"] = ModeDescriptor("RGBa", ("R", "G", "B", "a"), "RGB", "L")
         _modes["LA"] = ModeDescriptor("LA", ("L", "A"), "L", "L")
+        _modes["La"] = ModeDescriptor("La", ("L", "a"), "L", "L")
         _modes["PA"] = ModeDescriptor("PA", ("P", "A"), "RGB", "L")
         # mapping modes
         _modes["I;16"] = ModeDescriptor("I;16", "I", "L", "L")
