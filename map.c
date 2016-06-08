@@ -73,7 +73,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
         NULL);
     if (mapper->hFile == (HANDLE)-1) {
         PyErr_SetString(PyExc_IOError, "cannot open file");
-        PyObject_Del(mapper);
+        Py_DECREF(mapper);
         return NULL;
     }
 
@@ -84,7 +84,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
     if (mapper->hMap == (HANDLE)-1) {
         CloseHandle(mapper->hFile);
         PyErr_SetString(PyExc_IOError, "cannot map file");
-        PyObject_Del(mapper);
+        Py_DECREF(mapper);
         return NULL;
     }
 

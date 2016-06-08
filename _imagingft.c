@@ -119,7 +119,9 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
             PyMem_Free(filename);
         return NULL;
     }
-
+    
+    self->face = NULL;
+    
     if (filename && font_bytes_size <= 0) {
         self->font_bytes = NULL;
         error = FT_New_Face(library, filename, index, &self->face);
@@ -153,7 +155,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         if (self->font_bytes) {
             PyMem_Free(self->font_bytes);
         }
-        PyObject_Del(self);
+        Py_DECREF(self);
         return geterror(error);
     }
 
@@ -440,7 +442,9 @@ font_render(FontObject* self, PyObject* args)
 static void
 font_dealloc(FontObject* self)
 {
-    FT_Done_Face(self->face);
+    if (self->face) {
+        FT_Done_Face(self->face);
+    }
     if (self->font_bytes) {
         PyMem_Free(self->font_bytes);
     }
