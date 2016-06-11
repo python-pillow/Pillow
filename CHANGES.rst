@@ -37,9 +37,6 @@ Changelog (Pillow)
 - Moved comments to docstrings  #1926 
   [hugovk]
 
-~~- Added --disable-osx-tcltk-framework in setup.py #1883
-  [wiredfool]~~
-
 - Include Python.h before wchar.h so _GNU_SOURCE is set consistently #1906
   [hugovk]
 
