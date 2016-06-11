@@ -490,6 +490,8 @@ struct ImagingCodecStateInstance {
 };
 
 
+/* Codec read/write python fd */
+
 extern Py_ssize_t _imaging_read_pyFd(PyObject *fd, char* dest, Py_ssize_t bytes);
 extern Py_ssize_t _imaging_write_pyFd(PyObject *fd, char* src, Py_ssize_t bytes);
 extern int _imaging_seek_pyFd(PyObject *fd, Py_ssize_t offset, int whence);
