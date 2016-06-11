@@ -170,7 +170,7 @@ class ImageFile(Image.Image):
                             self.map, self.size, d, e, o, a
                             )
                     readonly = 1
-                except (AttributeError, EnvironmentError, ImportError):
+                except (AttributeError, EnvironmentError, ImportError, io.UnsupportedOperation):
                     self.map = None
 
         self.load_prepare()
