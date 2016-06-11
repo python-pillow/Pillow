@@ -16,10 +16,11 @@
 #include "Python.h"
 #include "Imaging.h"
 
-#include "tk.h"
+#include "_tkmini.h"
 
 /* must link with Tk/tkImaging.c */
 extern void TkImaging_Init(Tcl_Interp* interp);
+extern int load_tkinter_funcs(void);
 
 /* copied from _tkinter.c (this isn't as bad as it may seem: for new
    versions, we use _tkinter's interpaddr hook instead, and all older
@@ -73,14 +74,16 @@ PyInit__imagingtk(void) {
         -1,                 /* m_size */
         functions,          /* m_methods */
     };
-
-    return PyModule_Create(&module_def);
+    PyObject *m;
+    m = PyModule_Create(&module_def);
+    return (load_tkinter_funcs() == 0) ? m : NULL;
 }
 #else
 PyMODINIT_FUNC
 init_imagingtk(void)
 {
     Py_InitModule("_imagingtk", functions);
+    load_tkinter_funcs();
 }
 #endif
 
