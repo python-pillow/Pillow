@@ -559,29 +559,16 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
     size_t buffer_size = 0;
     unsigned n;
 
-    // fastpath of using a filepointer, and not our own shufflers.
-    /*    if (context->fp) {
-        context->pfile = fdopen(context->fp, 'rb');
-        stream = opj_stream_create_default_file_stream(pfile, OPJ_TRUE);
-         if (!stream) {
-            state->errcode = IMAGING_CODEC_BROKEN;
-            state->state = J2K_STATE_FAILED;
-            goto quick_exit;
-        }       
-    } else {
-    */     // Using our own shufflers.
-        //stream = opj_stream_default_create(OPJ_TRUE);
-        stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
-
-        if (!stream) {
-            state->errcode = IMAGING_CODEC_BROKEN;
-            state->state = J2K_STATE_FAILED;
-            goto quick_exit;
-        }
-
-        opj_stream_set_read_function(stream, j2k_read);
-        opj_stream_set_skip_function(stream, j2k_skip);
-        /* }*/
+    stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
+    
+    if (!stream) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        state->state = J2K_STATE_FAILED;
+        goto quick_exit;
+    }
+    
+    opj_stream_set_read_function(stream, j2k_read);
+    opj_stream_set_skip_function(stream, j2k_skip);
 
     /* OpenJPEG 2.0 doesn't have OPJ_VERSION_MAJOR */
 #ifndef OPJ_VERSION_MAJOR
@@ -783,7 +770,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
 int
 ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 {
-    JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *) state->context;
 
     if (bytes){
         state->errcode = IMAGING_CODEC_BROKEN;
@@ -816,16 +802,11 @@ int
 ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
     JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *)state->context;
 
-    if (context->error_msg)
+    if (context->error_msg) {
         free ((void *)context->error_msg);
-
-    /*   if (context->decoder)*/
-        
-
+    }
+       
     context->error_msg = NULL;
-
-    /* Prevent multiple calls to ImagingIncrementalCodecDestroy */
-    //context->decoder = NULL;
 
     return -1;
 }

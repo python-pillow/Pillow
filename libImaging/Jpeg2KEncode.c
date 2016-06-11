@@ -82,8 +82,10 @@ static OPJ_BOOL
 j2k_seek(OPJ_OFF_T p_nb_bytes, void *p_user_data)
 {
     ImagingCodecState state = (ImagingCodecState)p_user_data;
-    int ignored = _imaging_seek_pyFd(state->fd, p_nb_bytes, SEEK_SET);
-    off_t pos = _imaging_tell_pyFd(state->fd);
+    off_t pos = 0;
+
+    _imaging_seek_pyFd(state->fd, p_nb_bytes, SEEK_SET);
+    pos = _imaging_tell_pyFd(state->fd);
 
     return pos == p_nb_bytes;
 }
@@ -583,8 +585,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
 int
 ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
 {
-    JPEG2KENCODESTATE *context = (JPEG2KENCODESTATE *)state->context;
-
     if (state->state == J2K_STATE_FAILED)
         return -1;
 
