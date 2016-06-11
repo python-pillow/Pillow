@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Runtime loading of TCL/TK libraries, eliminating build time dependency. #1932
+  [matthew-brett]
+
+- Cleanup of transform methods #1941
+  [homm]
+
 - Fix "Fatal Python error: UNREF invalid object" in debug builds #1936
   [wiredfool]
 
