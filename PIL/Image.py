@@ -30,6 +30,7 @@ from PIL import VERSION, PILLOW_VERSION, _plugins
 
 import logging
 import warnings
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -995,8 +996,7 @@ class Image(object):
             im = self.im.convert("P", 1, palette.im)
             return self._makeself(im)
 
-        im = self.im.quantize(colors, method, kmeans)
-        return self._new(im)
+        return self._new(self.im.quantize(colors, method, kmeans))
 
     def copy(self):
         """
@@ -1007,8 +1007,7 @@ class Image(object):
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
         self.load()
-        im = self.im.copy()
-        return self._new(im)
+        return self._new(self.im.copy())
 
     __copy__ = copy
 
@@ -1571,20 +1570,31 @@ class Image(object):
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
+        angle = angle % 360.0
+
+        # Fast paths regardless of filter
+        if angle == 0:
+            return self._new(self.im)
+        if angle == 180:
+            return self.transpose(ROTATE_180)
+        if angle == 90 and expand:
+            return self.transpose(ROTATE_90)
+        if angle == 270 and expand:
+            return self.transpose(ROTATE_270)
+
+        angle = - math.radians(angle)
+        matrix = [
+            round(math.cos(angle), 15), round(math.sin(angle), 15), 0.0,
+            round(-math.sin(angle), 15), round(math.cos(angle), 15), 0.0
+            ]
+
+        def transform(x, y, matrix=matrix):
+            (a, b, c, d, e, f) = matrix
+            return a*x + b*y + c, d*x + e*y + f
+
+        w, h = self.size
         if expand:
-            import math
-            angle = -angle * math.pi / 180
-            matrix = [
-                math.cos(angle), math.sin(angle), 0.0,
-                -math.sin(angle), math.cos(angle), 0.0
-                ]
-
-            def transform(x, y, matrix=matrix):
-                (a, b, c, d, e, f) = matrix
-                return a*x + b*y + c, d*x + e*y + f
-
             # calculate output size
-            w, h = self.size
             xx = []
             yy = []
             for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
@@ -1594,22 +1604,12 @@ class Image(object):
             w = int(math.ceil(max(xx)) - math.floor(min(xx)))
             h = int(math.ceil(max(yy)) - math.floor(min(yy)))
 
-            # adjust center
-            x, y = transform(w / 2.0, h / 2.0)
-            matrix[2] = self.size[0] / 2.0 - x
-            matrix[5] = self.size[1] / 2.0 - y
+        # adjust center
+        x, y = transform(w / 2.0, h / 2.0)
+        matrix[2] = self.size[0] / 2.0 - x
+        matrix[5] = self.size[1] / 2.0 - y
 
-            return self.transform((w, h), AFFINE, matrix, resample)
-
-        if resample not in (NEAREST, BILINEAR, BICUBIC):
-            raise ValueError("unknown resampling filter")
-
-        self.load()
-
-        if self.mode in ("1", "P"):
-            resample = NEAREST
-
-        return self._new(self.im.rotate(angle, resample, expand))
+        return self.transform((w, h), AFFINE, matrix, resample)
 
     def save(self, fp, format=None, **params):
         """
@@ -1845,9 +1845,11 @@ class Image(object):
 
         if isinstance(method, ImageTransformHandler):
             return method.transform(size, self, resample=resample, fill=fill)
+
         if hasattr(method, "getdata"):
             # compatibility w. old-style transform objects
             method, data = method.getdata()
+
         if data is None:
             raise ValueError("missing method data")
 
@@ -1863,28 +1865,23 @@ class Image(object):
 
     def __transformer(self, box, image, method, data,
                       resample=NEAREST, fill=1):
-
-        # FIXME: this should be turned into a lazy operation (?)
-
-        w = box[2]-box[0]
-        h = box[3]-box[1]
+        w = box[2] - box[0]
+        h = box[3] - box[1]
 
         if method == AFFINE:
-            # change argument order to match implementation
-            data = (data[2], data[0], data[1],
-                    data[5], data[3], data[4])
+            data = data[0:6]
+
         elif method == EXTENT:
             # convert extent to an affine transform
             x0, y0, x1, y1 = data
             xs = float(x1 - x0) / w
             ys = float(y1 - y0) / h
             method = AFFINE
-            data = (x0 + xs/2, xs, 0, y0 + ys/2, 0, ys)
+            data = (xs, 0, x0 + xs/2, 0, ys, y0 + ys/2)
+
         elif method == PERSPECTIVE:
-            # change argument order to match implementation
-            data = (data[2], data[0], data[1],
-                    data[5], data[3], data[4],
-                    data[6], data[7])
+            data = data[0:8]
+
         elif method == QUAD:
             # quadrilateral warp.  data specifies the four corners
             # given as NW, SW, SE, and NE.
@@ -1899,6 +1896,7 @@ class Image(object):
                     (se[0]-sw[0]-ne[0]+x0)*As*At,
                     y0, (ne[1]-y0)*As, (sw[1]-y0)*At,
                     (se[1]-sw[1]-ne[1]+y0)*As*At)
+
         else:
             raise ValueError("unknown transformation method")
 
@@ -1935,8 +1933,7 @@ class Image(object):
         :param distance: Distance to spread pixels.
         """
         self.load()
-        im = self.im.effect_spread(distance)
-        return self._new(im)
+        return self._new(self.im.effect_spread(distance))
 
     def toqimage(self):
         """Returns a QImage copy of this image"""

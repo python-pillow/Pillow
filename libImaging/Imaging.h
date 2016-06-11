@@ -236,8 +236,7 @@ extern void ImagingError_Clear(void);
 typedef int (*ImagingTransformMap)(double* X, double* Y,
                                    int x, int y, void* data);
 typedef int (*ImagingTransformFilter)(void* out, Imaging im,
-                                      double x, double y,
-                                      void* data);
+                                      double x, double y);
 
 /* Image Manipulation Methods */
 /* -------------------------- */
@@ -286,28 +285,14 @@ extern Imaging ImagingPointTransform(
     Imaging imIn, double scale, double offset);
 extern Imaging ImagingPutBand(Imaging im, Imaging imIn, int band);
 extern Imaging ImagingRankFilter(Imaging im, int size, int rank);
-extern Imaging ImagingRotate(
-    Imaging imOut, Imaging imIn, double theta, int filter);
 extern Imaging ImagingRotate90(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
 extern Imaging ImagingResample(Imaging imIn, int xsize, int ysize, int filter);
 extern Imaging ImagingTranspose(Imaging imOut, Imaging imIn);
-extern Imaging ImagingTransposeToNew(Imaging imIn);
-extern Imaging ImagingTransformPerspective(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
-    double a[8], int filter, int fill);
-extern Imaging ImagingTransformAffine(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
-    double a[6], int filter, int fill);
-extern Imaging ImagingTransformQuad(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
-    double a[8], int filter, int fill);
 extern Imaging ImagingTransform(
-    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1,
-    ImagingTransformMap transform, void* transform_data,
-    ImagingTransformFilter filter, void* filter_data,
-    int fill);
+    Imaging imOut, Imaging imIn, int method, int x0, int y0, int x1, int y1,
+    double *a, int filter, int fill);
 extern Imaging ImagingUnsharpMask(
     Imaging imOut, Imaging im, float radius, int percent, int threshold);
 extern Imaging ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n);
@@ -338,12 +323,6 @@ extern Imaging ImagingChopXor(Imaging imIn1, Imaging imIn2);
 extern void ImagingCrack(Imaging im, int x0, int y0);
 
 /* Graphics */
-struct ImagingAffineMatrixInstance {
-    float a[9];
-};
-
-typedef struct ImagingAffineMatrixInstance *ImagingAffineMatrix;
-
 extern int ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
                           float start, float end, const void* ink, int op);
 extern int ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap,
