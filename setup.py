@@ -36,7 +36,7 @@ _LIB_IMAGING = (
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
     "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
     "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Jpeg2KDecode",
-    "Jpeg2KEncode", "BoxBlur", "QuantPngQuant")
+    "Jpeg2KEncode", "BoxBlur", "QuantPngQuant", "codec_fd")
 
 DEBUG = False
 

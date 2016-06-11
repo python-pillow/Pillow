@@ -1032,25 +1032,6 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
 
 #endif
 
-Py_ssize_t 
-_imaging_write_pyFd(PyObject *fd, char* src, Py_ssize_t bytes)
-{
-
-    PyObject *result;
-    PyObject *byteObj;
-        
-    byteObj = PyBytes_FromStringAndSize(src, bytes);
-    result = PyObject_CallMethod(fd, "write", "O", byteObj);
-
-    Py_DECREF(byteObj);
-    Py_DECREF(result);
-
-    return bytes;
-      
-}
-
-
-
 /*
  * Local Variables:
  * c-basic-offset: 4
