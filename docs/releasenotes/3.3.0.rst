@@ -13,7 +13,7 @@ differences.
 New Setup.py options
 ====================
 
-There are three new options to control the ``build_ext`` task in ``setup.py``:
+There are two new options to control the ``build_ext`` task in ``setup.py``:
 
   * ``--debug`` dumps all of the directories and files that are
     checked when searching for libraries or headers when building the
@@ -22,6 +22,3 @@ There are three new options to control the ``build_ext`` task in ``setup.py``:
     that are checked for libraries and headers for build systems or
     cross compilers that specify that information in via environment
     variables.
-  * ``--disable-osx-tcltk-framework`` prevents automatically linking
-    against the system Tcl/Tk frameworks to allow building against
-    vendor-provided libraries.
