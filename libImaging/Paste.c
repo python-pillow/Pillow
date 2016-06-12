@@ -5,15 +5,15 @@
  * paste image on another image
  *
  * history:
- * 96-03-27 fl	Created
- * 96-07-16 fl	Support "1", "L" and "RGBA" masks
- * 96-08-16 fl	Merged with opaque paste
- * 97-01-17 fl	Faster blending, added support for RGBa images
- * 97-08-27 fl	Faster masking for 32-bit images
- * 98-02-02 fl	Fixed MULDIV255 macro for gcc
- * 99-02-02 fl	Added "RGBa" mask support
- * 99-02-06 fl	Rewritten.  Added support for masked fill operations.
- * 99-12-08 fl	Fixed matte fill.
+ * 96-03-27 fl  Created
+ * 96-07-16 fl  Support "1", "L" and "RGBA" masks
+ * 96-08-16 fl  Merged with opaque paste
+ * 97-01-17 fl  Faster blending, added support for RGBa images
+ * 97-08-27 fl  Faster masking for 32-bit images
+ * 98-02-02 fl  Fixed MULDIV255 macro for gcc
+ * 99-02-02 fl  Added "RGBa" mask support
+ * 99-02-06 fl  Rewritten.  Added support for masked fill operations.
+ * 99-12-08 fl  Fixed matte fill.
  *
  * Copyright (c) Fredrik Lundh 1996-97.
  * Copyright (c) Secret Labs AB 1997-99.
@@ -24,19 +24,19 @@
 #include "Imaging.h"
 
 /* like (a * b + 127) / 255), but much faster on most platforms */
-#define	MULDIV255NEW(a, b, tmp)\
-     	(tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
+#define MULDIV255NEW(a, b, tmp)\
+        (tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
 
-#define	MULDIV255OLD(a, b, tmp)\
+#define MULDIV255OLD(a, b, tmp)\
         (((a) * (b) + 127) / 255)
 
 #define MULDIV255 MULDIV255NEW
 
-#define	BLEND(mask, in1, in2, tmp1, tmp2)\
-	(MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
+#define BLEND(mask, in1, in2, tmp1, tmp2)\
+        (MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
 
-#define	PREBLEND(mask, in1, in2, tmp1)\
-	(MULDIV255(in1, 255 - mask, tmp1) + in2)
+#define PREBLEND(mask, in1, in2, tmp1)\
+        (MULDIV255(in1, 255 - mask, tmp1) + in2)
 
 static inline void
 paste(Imaging imOut, Imaging imIn, int dx, int dy, int sx, int sy,
@@ -212,7 +212,7 @@ paste_mask_RGBa(Imaging imOut, Imaging imIn, Imaging imMask,
 
 int
 ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
-	     int dx0, int dy0, int dx1, int dy1)
+             int dx0, int dy0, int dx1, int dy1)
 {
     int xsize, ysize;
     int pixelsize;
@@ -220,8 +220,8 @@ ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
     ImagingSectionCookie cookie;
 
     if (!imOut || !imIn) {
-	(void) ImagingError_ModeError();
-	return -1;
+        (void) ImagingError_ModeError();
+        return -1;
     }
 
     pixelsize = imOut->pixelsize;
@@ -231,28 +231,28 @@ ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
 
     if (xsize != imIn->xsize || ysize != imIn->ysize ||
         pixelsize != imIn->pixelsize) {
-	(void) ImagingError_Mismatch();
-	return -1;
+        (void) ImagingError_Mismatch();
+        return -1;
     }
 
     if (imMask && (xsize != imMask->xsize || ysize != imMask->ysize)) {
-	(void) ImagingError_Mismatch();
-	return -1;
+        (void) ImagingError_Mismatch();
+        return -1;
     }
 
     /* Determine which region to copy */
     sx0 = sy0 = 0;
     if (dx0 < 0)
-	xsize += dx0, sx0 = -dx0, dx0 = 0;
+        xsize += dx0, sx0 = -dx0, dx0 = 0;
     if (dx0 + xsize > imOut->xsize)
-	xsize = imOut->xsize - dx0;
+        xsize = imOut->xsize - dx0;
     if (dy0 < 0)
-	ysize += dy0, sy0 = -dy0, dy0 = 0;
+        ysize += dy0, sy0 = -dy0, dy0 = 0;
     if (dy0 + ysize > imOut->ysize)
-	ysize = imOut->ysize - dy0;
+        ysize = imOut->ysize - dy0;
 
     if (xsize <= 0 || ysize <= 0)
-	return 0;
+        return 0;
 
     if (!imMask) {
         ImagingSectionEnter(&cookie);
@@ -284,8 +284,8 @@ ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
         ImagingSectionLeave(&cookie);
 
     } else {
-	(void) ImagingError_ValueError("bad transparency mask");
-	return -1;
+        (void) ImagingError_ValueError("bad transparency mask");
+        return -1;
     }
 
     return 0;
@@ -308,15 +308,15 @@ fill(Imaging imOut, const void* ink_, int dx, int dy,
 
         dx *= pixelsize;
         xsize *= pixelsize;
-	for (y = 0; y < ysize; y++)
-	    memset(imOut->image[y+dy]+dx, ink8, xsize);
+        for (y = 0; y < ysize; y++)
+            memset(imOut->image[y+dy]+dx, ink8, xsize);
 
     } else {
 
-	for (y = 0; y < ysize; y++) {
+        for (y = 0; y < ysize; y++) {
             INT32* out = imOut->image32[y+dy]+dx;
-	    for (x = 0; x < xsize; x++)
-		out[x] = ink32;
+            for (x = 0; x < xsize; x++)
+                out[x] = ink32;
         }
 
     }
@@ -489,8 +489,8 @@ ImagingFill2(Imaging imOut, const void* ink, Imaging imMask,
     int sx0, sy0;
 
     if (!imOut || !ink) {
-	(void) ImagingError_ModeError();
-	return -1;
+        (void) ImagingError_ModeError();
+        return -1;
     }
 
     pixelsize = imOut->pixelsize;
@@ -499,23 +499,23 @@ ImagingFill2(Imaging imOut, const void* ink, Imaging imMask,
     ysize = dy1 - dy0;
 
     if (imMask && (xsize != imMask->xsize || ysize != imMask->ysize)) {
-	(void) ImagingError_Mismatch();
-	return -1;
+        (void) ImagingError_Mismatch();
+        return -1;
     }
 
     /* Determine which region to fill */
     sx0 = sy0 = 0;
     if (dx0 < 0)
-	xsize += dx0, sx0 = -dx0, dx0 = 0;
+        xsize += dx0, sx0 = -dx0, dx0 = 0;
     if (dx0 + xsize > imOut->xsize)
-	xsize = imOut->xsize - dx0;
+        xsize = imOut->xsize - dx0;
     if (dy0 < 0)
-	ysize += dy0, sy0 = -dy0, dy0 = 0;
+        ysize += dy0, sy0 = -dy0, dy0 = 0;
     if (dy0 + ysize > imOut->ysize)
-	ysize = imOut->ysize - dy0;
+        ysize = imOut->ysize - dy0;
 
     if (xsize <= 0 || ysize <= 0)
-	return 0;
+        return 0;
 
     if (!imMask) {
         ImagingSectionEnter(&cookie);
@@ -547,8 +547,8 @@ ImagingFill2(Imaging imOut, const void* ink, Imaging imMask,
         ImagingSectionLeave(&cookie);
 
     } else {
-	(void) ImagingError_ValueError("bad transparency mask");
-	return -1;
+        (void) ImagingError_ValueError("bad transparency mask");
+        return -1;
     }
 
     return 0;
