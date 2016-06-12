@@ -39,6 +39,7 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
     int xsize = imDst->xsize;
     __m128i mm_max_alpha = _mm_set1_epi32(255);
     __m128i mm_max_alpha2 = _mm_set1_epi32(255 * 255);
+    __m256i mm_half = _mm_set1_epi32(128);
     __m128i mm_get_lo = _mm_set_epi8(
         -1,-1, 5,4, 5,4, 5,4, -1,-1, 1,0, 1,0, 1,0);
     __m128i mm_get_hi = _mm_set_epi8(
@@ -46,6 +47,7 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
 #if defined(__AVX2__)
     __m256i vmm_max_alpha = _mm256_set1_epi32(255);
     __m256i vmm_max_alpha2 = _mm256_set1_epi32(255 * 255);
+    __m256i vmm_half = _mm256_set1_epi32(128);
     __m256i vmm_get_lo = _mm256_set_epi8(
         -1,-1, 5,4, 5,4, 5,4, -1,-1, 1,0, 1,0, 1,0,
         -1,-1, 5,4, 5,4, 5,4, -1,-1, 1,0, 1,0, 1,0);
@@ -112,6 +114,7 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
                 _mm256_mullo_epi16(mm_dst_lo, _mm256_shuffle_epi8(mm_coef2, vmm_get_lo)));
             mm_out_lo = _mm256_or_si256(mm_out_lo, _mm256_slli_epi64(
                 _mm256_unpacklo_epi32(mm_outa, _mm256_setzero_si256()), 48));
+            mm_out_lo = _mm256_add_epi32(mm_out_lo, vmm_half);
             mm_out_lo = MM_SHIFTDIV255_epi16(mm_out_lo);
 
             __m256i mm_out_hi = _mm256_add_epi16(
@@ -119,6 +122,7 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
                 _mm256_mullo_epi16(mm_dst_hi, _mm256_shuffle_epi8(mm_coef2, vmm_get_hi)));
             mm_out_hi = _mm256_or_si256(mm_out_hi, _mm256_slli_epi64(
                 _mm256_unpackhi_epi32(mm_outa, _mm256_setzero_si256()), 48));
+            mm_out_hi = _mm256_add_epi32(mm_out_hi, vmm_half);
             mm_out_hi = MM_SHIFTDIV255_epi16(mm_out_hi);
 
             _mm256_storeu_si256((__m256i *) &out[x],
@@ -159,6 +163,7 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
                 _mm_mullo_epi16(mm_dst_lo, _mm_shuffle_epi8(mm_coef2, mm_get_lo)));
             mm_out_lo = _mm_or_si128(mm_out_lo, _mm_slli_epi64(
                 _mm_unpacklo_epi32(mm_outa, _mm_setzero_si128()), 48));
+            mm_out_lo = _mm_add_epi32(mm_out_lo, mm_half);
             mm_out_lo = MM_SHIFTDIV255_epi16(mm_out_lo);
 
             __m128i mm_out_hi = _mm_add_epi16(
@@ -166,6 +171,7 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
                 _mm_mullo_epi16(mm_dst_hi, _mm_shuffle_epi8(mm_coef2, mm_get_hi)));
             mm_out_hi = _mm_or_si128(mm_out_hi, _mm_slli_epi64(
                 _mm_unpackhi_epi32(mm_outa, _mm_setzero_si128()), 48));
+            mm_out_hi = _mm_add_epi32(mm_out_hi, mm_half);
             mm_out_hi = MM_SHIFTDIV255_epi16(mm_out_hi);
 
             _mm_storeu_si128((__m128i *) &out[x],
