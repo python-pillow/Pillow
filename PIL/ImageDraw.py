@@ -344,7 +344,7 @@ class ImageDraw(object):
                 line_bounding_boxes)
 
 
-    def draw_at_pos(self, text, font=None, line_height=None,
+    def text_at_pos(self, text, font=None, line_height=None,
                     line_height_percent=None, origin=(0, 0), align_x='exact',
                     align_y='exact', justify_x='left', fill=None):
         """

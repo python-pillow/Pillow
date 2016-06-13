@@ -180,6 +180,36 @@ try:
 
                 self.assert_image_similar(im, target_img, .5)
 
+        def test_render_text_at_pos(self):
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+            # Test that text() correctly connects to multiline_text()
+            # and that align defaults to left
+            im = Image.new(mode='RGB', size=(300, 100))
+            draw = ImageDraw.Draw(im)
+            draw.text_at_pos((0, 0), TEST_TEXT, font=ttf)
+
+            target = 'Tests/images/multiline_text.png'
+            target_img = Image.open(target)
+
+            self.assert_image_similar(im, target_img, .5)
+
+            # Test align center and right
+            for align_x in ('left', 'center', 'right', 'exact'):
+                for align_y in ('top', 'middle', 'bottom', 'exact'):
+                    for justify_x in ('left', 'right', 'center'):
+                        im = Image.new(mode='RGB', size=(300, 100))
+                        ext = '%s_%s_%s' % (align_x, align_y, justify_x)
+                        draw = ImageDraw.Draw(im)
+                        draw.text_at_pos(TEST_TEXT, font=ttf, align_x=align_x,
+                                         align_y=align_x, justify_x=justify_x)
+                        del draw
+
+                        target = 'Tests/images/text_at_pos_'+ext+'.png'
+                        target_img = Image.open(target)
+
+                        self.assert_image_similar(im, target_img, .5)
+
         def test_unknown_align(self):
             im = Image.new(mode='RGB', size=(300, 100))
             draw = ImageDraw.Draw(im)
