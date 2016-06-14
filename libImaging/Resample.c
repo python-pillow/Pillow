@@ -494,8 +494,8 @@ ImagingResampleVertical_32bpc(Imaging imIn, int ysize, struct filter *filterp)
 Imaging
 ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
 {
-    Imaging imTemp;
-    Imaging imOut;
+    Imaging imTemp = NULL;
+    Imaging imOut = NULL;
     struct filter *filterp;
     Imaging (*ResampleHorizontal)(Imaging imIn, int xsize, struct filter *filterp);
     Imaging (*ResampleVertical)(Imaging imIn, int xsize, struct filter *filterp);
@@ -542,15 +542,28 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
     }
 
     /* two-pass resize, first pass */
-    imTemp = ResampleHorizontal(imIn, xsize, filterp);
-    if ( ! imTemp)
-        return NULL;
+    if (imIn->xsize != xsize) {
+        imTemp = ResampleHorizontal(imIn, xsize, filterp);
+        if ( ! imTemp)
+            return NULL;
+        imOut = imIn = imTemp;
+    }
 
     /* second pass */
-    imOut = ResampleVertical(imTemp, ysize, filterp);
-    ImagingDelete(imTemp);
-    if ( ! imOut)
-        return NULL;
+    if (imIn->ysize != ysize) {
+        /* imIn can be the original image or horizontally resampled one */
+        imOut = ResampleVertical(imIn, ysize, filterp);
+        /* it's safe to call ImagingDelete with empty value
+           if there was no previous step. */
+        ImagingDelete(imTemp);
+        if ( ! imOut)
+            return NULL;
+    }
+
+    /* none of the previous steps are performed, copying */
+    if ( ! imOut) {
+        imOut = ImagingCopy(imIn);
+    }
 
     return imOut;
 }

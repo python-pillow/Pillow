@@ -254,5 +254,25 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255,))
 
 
+class CoreResamplePassesTest(PillowTestCase):
+    def test_horizontal(self):
+        im = hopper('L')
+        count = Image.core.getcount()
+        im.resize((im.size[0] + 10, im.size[1]), Image.BILINEAR)
+        self.assertEqual(Image.core.getcount(), count + 1)
+
+    def test_vertical(self):
+        im = hopper('L')
+        count = Image.core.getcount()
+        im.resize((im.size[0], im.size[1] + 10), Image.BILINEAR)
+        self.assertEqual(Image.core.getcount(), count + 1)
+
+    def test_both(self):
+        im = hopper('L')
+        count = Image.core.getcount()
+        im.resize((im.size[0] + 10, im.size[1] + 10), Image.BILINEAR)
+        self.assertEqual(Image.core.getcount(), count + 2)
+
+
 if __name__ == '__main__':
     unittest.main()
