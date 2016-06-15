@@ -362,7 +362,7 @@ int load_tkinter_funcs(void)
 #else  /* not Windows */
 
 /*
- * On Unix, we can get the Tcl and Tk synbols from the tkinter module, because
+ * On Unix, we can get the Tcl and Tk symbols from the tkinter module, because
  * tkinter uses these symbols, and the symbols are therefore visible in the
  * tkinter dynamic library (module).
  */
