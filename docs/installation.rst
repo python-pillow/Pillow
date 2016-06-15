@@ -162,7 +162,7 @@ Many of Pillow's features require external libraries:
 * **libimagequant** provides improved color quantization
   
   * Pillow has been tested with libimagequant **2.6.0**
-  * Libimagequant is licenced GPLv3, which is more restrictive than
+  * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
   * Windows support: Libimagequant requires VS2013/MSVC 18 to compile,
