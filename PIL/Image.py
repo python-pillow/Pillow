@@ -172,7 +172,6 @@ BOX = 4
 BILINEAR = LINEAR = 2
 HAMMING = 5
 BICUBIC = CUBIC = 3
-MITCHELL = 6
 LANCZOS = ANTIALIAS = 1
 
 # dithers
@@ -1522,8 +1521,7 @@ class Image(object):
         :param resample: An optional resampling filter.  This can be
            one of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BOX`,
            :py:attr:`PIL.Image.BILINEAR`, :py:attr:`PIL.Image.HAMMING`,
-           :py:attr:`PIL.Image.BICUBIC`, :py:attr:`PIL.Image.MITCHELL` or
-           :py:attr:`PIL.Image.LANCZOS`.
+           :py:attr:`PIL.Image.BICUBIC` or :py:attr:`PIL.Image.LANCZOS`.
            If omitted, or if the image has mode "1" or "P", it is
            set :py:attr:`PIL.Image.NEAREST`.
            See: :ref:`concept-filters`.
@@ -1531,8 +1529,7 @@ class Image(object):
         """
 
         if resample not in (
-                NEAREST, BILINEAR, BICUBIC, LANCZOS,
-                BOX, HAMMING, MITCHELL,
+                NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING,
         ):
             raise ValueError("unknown resampling filter")
 

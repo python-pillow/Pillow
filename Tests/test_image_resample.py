@@ -126,16 +126,6 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
             for channel in case.split():
                 self.check_case(channel, self.make_sample(data, (6, 6)))
 
-    def test_reduce_mitchell(self):
-        for mode in ['RGBX', 'RGB', 'La', 'L']:
-            case = self.make_case(mode, (12, 12), 0xe1)
-            case = case.resize((6, 6), Image.MITCHELL)
-            data = ('e1 e2 cc'
-                    'e2 e3 cd'
-                    'cc cd bb')
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (6, 6)))
-
     def test_reduce_lanczos(self):
         for mode in ['RGBX', 'RGB', 'La', 'L']:
             case = self.make_case(mode, (16, 16), 0xe1)
@@ -184,17 +174,6 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
                     'e5 e9 f3 bc'
                     'ee f3 fd c1'
                     'b9 bc c1 a2')
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (8, 8)))
-
-    def test_enlarge_mitchell(self):
-        for mode in ['RGBX', 'RGB', 'La', 'L']:
-            case = self.make_case(mode, (4, 4), 0xe1)
-            case = case.resize((8, 8), Image.MITCHELL)
-            data = ('e1 e4 e6 b2'
-                    'e4 e7 e9 b3'
-                    'e6 e9 eb b4'
-                    'b2 b3 b5 9a')
             for channel in case.split():
                 self.check_case(channel, self.make_sample(data, (8, 8)))
 
@@ -274,7 +253,6 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         self.run_levels_case(case.resize((512, 32), Image.BILINEAR))
         self.run_levels_case(case.resize((512, 32), Image.HAMMING))
         self.run_levels_case(case.resize((512, 32), Image.BICUBIC))
-        self.run_levels_case(case.resize((512, 32), Image.MITCHELL))
         self.run_levels_case(case.resize((512, 32), Image.LANCZOS))
 
     @unittest.skip("current implementation isn't precise enough")
@@ -284,7 +262,6 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         self.run_levels_case(case.resize((512, 32), Image.BILINEAR))
         self.run_levels_case(case.resize((512, 32), Image.HAMMING))
         self.run_levels_case(case.resize((512, 32), Image.BICUBIC))
-        self.run_levels_case(case.resize((512, 32), Image.MITCHELL))
         self.run_levels_case(case.resize((512, 32), Image.LANCZOS))
 
     def make_dity_case(self, mode, clean_pixel, dirty_pixel):
@@ -312,7 +289,6 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         self.run_dity_case(case.resize((20, 20), Image.BILINEAR), (255, 255, 0))
         self.run_dity_case(case.resize((20, 20), Image.HAMMING), (255, 255, 0))
         self.run_dity_case(case.resize((20, 20), Image.BICUBIC), (255, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.MITCHELL), (255, 255, 0))
         self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255, 255, 0))
 
     def test_dirty_pixels_la(self):
@@ -321,7 +297,6 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         self.run_dity_case(case.resize((20, 20), Image.BILINEAR), (255,))
         self.run_dity_case(case.resize((20, 20), Image.HAMMING), (255,))
         self.run_dity_case(case.resize((20, 20), Image.BICUBIC), (255,))
-        self.run_dity_case(case.resize((20, 20), Image.MITCHELL), (255,))
         self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255,))
 
 

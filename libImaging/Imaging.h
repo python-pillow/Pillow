@@ -233,7 +233,6 @@ extern void ImagingError_Clear(void);
 #define IMAGING_TRANSFORM_BILINEAR 2
 #define IMAGING_TRANSFORM_HAMMING 5
 #define IMAGING_TRANSFORM_BICUBIC 3
-#define IMAGING_TRANSFORM_MITCHELL 6
 #define IMAGING_TRANSFORM_LANCZOS 1
 
 typedef int (*ImagingTransformMap)(double* X, double* Y,
