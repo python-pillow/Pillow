@@ -96,13 +96,30 @@ For geometry operations that may map multiple input pixels to a single output
 pixel, the Python Imaging Library provides four different resampling *filters*.
 
 ``NEAREST``
-    Pick the nearest pixel from the input image. Ignore all other input pixels.
+    Pick one nearest pixel from the input image. Ignore all other input pixels.
+
+``BOX``
+    Each pixel of source image contributes to one pixel of the
+    destination image with identical weights.
+    For upscaling is equivalent of ``NEAREST``.
+    This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
+    and :py:meth:`~PIL.Image.Image.thumbnail` methods.
+
+    .. versionadded:: 3.4.0
 
 ``BILINEAR``
     For resize calculate the output pixel value using linear interpolation
     on all pixels that may contribute to the output value.
     For other transformations linear interpolation over a 2x2 environment
     in the input image is used.
+
+``HAMMING``
+    Produces more sharp image than ``BILINEAR``, doesn't have dislocations
+    on local level like with ``BOX``.
+    This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
+    and :py:meth:`~PIL.Image.Image.thumbnail` methods.
+
+    .. versionadded:: 3.4.0
 
 ``BICUBIC``
     For resize calculate the output pixel value using cubic interpolation
@@ -128,7 +145,11 @@ Filters comparison table
 +============+=============+===========+=============+
 |``NEAREST`` |             |           | ⭐⭐⭐⭐⭐       |
 +------------+-------------+-----------+-------------+
+|``BOX``     | ⭐           |           | ⭐⭐⭐⭐        |
++------------+-------------+-----------+-------------+
 |``BILINEAR``| ⭐           | ⭐         | ⭐⭐⭐         |
++------------+-------------+-----------+-------------+
+|``HAMMING`` | ⭐⭐          |           | ⭐⭐⭐         |
 +------------+-------------+-----------+-------------+
 |``BICUBIC`` | ⭐⭐⭐         | ⭐⭐⭐       | ⭐⭐          |
 +------------+-------------+-----------+-------------+
