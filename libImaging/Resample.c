@@ -10,6 +10,13 @@ struct filter {
     double support;
 };
 
+static inline double box_filter(double x)
+{
+    if (x >= -0.5 && x < 0.5)
+        return 1.0;
+    return 0.0;
+}
+
 static inline double bilinear_filter(double x)
 {
     if (x < 0.0)
@@ -17,6 +24,16 @@ static inline double bilinear_filter(double x)
     if (x < 1.0)
         return 1.0-x;
     return 0.0;
+}
+
+static inline double hamming_filter(double x)
+{
+    if (x < 0.0)
+        x = -x;
+    if (x == 0.0)
+        return 1.0;
+    x = x * M_PI;
+    return sin(x) / x * (0.54f + 0.46f * cos(x));
 }
 
 static inline double bicubic_filter(double x)
@@ -31,6 +48,27 @@ static inline double bicubic_filter(double x)
         return (((x - 5) * x + 8) * x - 4) * a;
     return 0.0;
 #undef a
+}
+
+static inline double mitchell_filter(double x)
+{
+    double fB = 1.f / 3.f;
+    double fC = 1.f / 3.f;
+    double fA1 = -fB - 6*fC;
+    double fB1 = 6*fB + 30*fC;
+    double fC1 = -12*fB - 48*fC;
+    double fD1 = 8*fB + 24*fC;
+    double fA2 = 12 - 9*fB - 6*fC;
+    double fB2 = -18 + 12*fB + 6*fC;
+    double fD2 = 6 - 2*fB;
+
+    if (x < 0.0)
+        x = -x;
+    if (x < 1.0)
+        return ((fA2 * x + fB2) * x*x + fD2) * (1.f/6.f);
+    if (x < 2.0)
+        return (((fA1 * x + fB1) * x + fC1) * x + fD1) * (1.f/6.f);
+    return 0.0;
 }
 
 static inline double sinc_filter(double x)
@@ -49,10 +87,12 @@ static inline double lanczos_filter(double x)
     return 0.0;
 }
 
+static struct filter BOX = { bilinear_filter, 0.5 };
 static struct filter BILINEAR = { bilinear_filter, 1.0 };
+static struct filter HAMMING = { hamming_filter, 1.0 };
 static struct filter BICUBIC = { bicubic_filter, 2.0 };
+static struct filter MITCHELL = { mitchell_filter, 2.0 };
 static struct filter LANCZOS = { lanczos_filter, 3.0 };
-
 
 
 /* 8 bits for result. Filter can have negative areas.
@@ -523,11 +563,20 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
 
     /* check filter */
     switch (filter) {
+    case IMAGING_TRANSFORM_BOX:
+        filterp = &BOX;
+        break;
     case IMAGING_TRANSFORM_BILINEAR:
         filterp = &BILINEAR;
         break;
+    case IMAGING_TRANSFORM_HAMMING:
+        filterp = &HAMMING;
+        break;
     case IMAGING_TRANSFORM_BICUBIC:
         filterp = &BICUBIC;
+        break;
+    case IMAGING_TRANSFORM_MITCHELL:
+        filterp = &MITCHELL;
         break;
     case IMAGING_TRANSFORM_LANCZOS:
         filterp = &LANCZOS;
