@@ -387,7 +387,7 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
     }
 
     n = PyObject_Length(arg);
-    if (length && wrong_length && n !=  *length) {
+    if (length && wrong_length && n != *length) {
         PyErr_SetString(PyExc_ValueError, wrong_length);
         return NULL;
     }
