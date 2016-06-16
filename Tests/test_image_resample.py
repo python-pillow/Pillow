@@ -10,7 +10,7 @@ class TestImagingResampleVulnerability(PillowTestCase):
         ysize = 1000  # unimportant
         try:
             # any resampling filter will do here
-            im.im.resize((xsize, ysize), Image.LINEAR)
+            im.im.resize((xsize, ysize), Image.BILINEAR)
             self.fail("Resize should raise MemoryError on invalid xsize")
         except MemoryError:
             self.assertTrue(True, "Should raise MemoryError")
@@ -89,12 +89,30 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
             for y in range(image.size[1])
         )
 
+    def test_reduce_box(self):
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
+            case = self.make_case(mode, (8, 8), 0xe1)
+            case = case.resize((4, 4), Image.BOX)
+            data = ('e1 e1'
+                    'e1 e1')
+            for channel in case.split():
+                self.check_case(channel, self.make_sample(data, (4, 4)))
+
     def test_reduce_bilinear(self):
         for mode in ['RGBX', 'RGB', 'La', 'L']:
             case = self.make_case(mode, (8, 8), 0xe1)
             case = case.resize((4, 4), Image.BILINEAR)
             data = ('e1 c9'
                     'c9 b7')
+            for channel in case.split():
+                self.check_case(channel, self.make_sample(data, (4, 4)))
+
+    def test_reduce_hamming(self):
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
+            case = self.make_case(mode, (8, 8), 0xe1)
+            case = case.resize((4, 4), Image.HAMMING)
+            data = ('e1 da'
+                    'da d3')
             for channel in case.split():
                 self.check_case(channel, self.make_sample(data, (4, 4)))
 
@@ -105,6 +123,16 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
             data = ('e1 e3 d4'
                     'e3 e5 d6'
                     'd4 d6 c9')
+            for channel in case.split():
+                self.check_case(channel, self.make_sample(data, (6, 6)))
+
+    def test_reduce_mitchell(self):
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
+            case = self.make_case(mode, (12, 12), 0xe1)
+            case = case.resize((6, 6), Image.MITCHELL)
+            data = ('e1 e2 cc'
+                    'e2 e3 cd'
+                    'cc cd bb')
             for channel in case.split():
                 self.check_case(channel, self.make_sample(data, (6, 6)))
 
@@ -119,6 +147,15 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
             for channel in case.split():
                 self.check_case(channel, self.make_sample(data, (8, 8)))
 
+    def test_enlarge_box(self):
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
+            case = self.make_case(mode, (2, 2), 0xe1)
+            case = case.resize((4, 4), Image.BOX)
+            data = ('e1 e1'
+                    'e1 e1')
+            for channel in case.split():
+                self.check_case(channel, self.make_sample(data, (4, 4)))
+
     def test_enlarge_bilinear(self):
         for mode in ['RGBX', 'RGB', 'La', 'L']:
             case = self.make_case(mode, (2, 2), 0xe1)
@@ -128,6 +165,17 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
             for channel in case.split():
                 self.check_case(channel, self.make_sample(data, (4, 4)))
 
+    def test_enlarge_hamming(self):
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
+            case = self.make_case(mode, (4, 4), 0xe1)
+            case = case.resize((8, 8), Image.HAMMING)
+            data = ('e1 e1 ea d1'
+                    'e1 e1 ea d1'
+                    'ea ea f4 d9'
+                    'd1 d1 d9 c4')
+            for channel in case.split():
+                self.check_case(channel, self.make_sample(data, (8, 8)))
+
     def test_enlarge_bicubic(self):
         for mode in ['RGBX', 'RGB', 'La', 'L']:
             case = self.make_case(mode, (4, 4), 0xe1)
@@ -136,6 +184,17 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
                     'e5 e9 f3 bc'
                     'ee f3 fd c1'
                     'b9 bc c1 a2')
+            for channel in case.split():
+                self.check_case(channel, self.make_sample(data, (8, 8)))
+
+    def test_enlarge_mitchell(self):
+        for mode in ['RGBX', 'RGB', 'La', 'L']:
+            case = self.make_case(mode, (4, 4), 0xe1)
+            case = case.resize((8, 8), Image.MITCHELL)
+            data = ('e1 e4 e6 b2'
+                    'e4 e7 e9 b3'
+                    'e6 e9 eb b4'
+                    'b2 b3 b5 9a')
             for channel in case.split():
                 self.check_case(channel, self.make_sample(data, (8, 8)))
 
@@ -211,15 +270,21 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
     @unittest.skip("current implementation isn't precise enough")
     def test_levels_rgba(self):
         case = self.make_levels_case('RGBA')
+        self.run_levels_case(case.resize((512, 32), Image.BOX))
         self.run_levels_case(case.resize((512, 32), Image.BILINEAR))
+        self.run_levels_case(case.resize((512, 32), Image.HAMMING))
         self.run_levels_case(case.resize((512, 32), Image.BICUBIC))
+        self.run_levels_case(case.resize((512, 32), Image.MITCHELL))
         self.run_levels_case(case.resize((512, 32), Image.LANCZOS))
 
     @unittest.skip("current implementation isn't precise enough")
     def test_levels_la(self):
         case = self.make_levels_case('LA')
+        self.run_levels_case(case.resize((512, 32), Image.BOX))
         self.run_levels_case(case.resize((512, 32), Image.BILINEAR))
+        self.run_levels_case(case.resize((512, 32), Image.HAMMING))
         self.run_levels_case(case.resize((512, 32), Image.BICUBIC))
+        self.run_levels_case(case.resize((512, 32), Image.MITCHELL))
         self.run_levels_case(case.resize((512, 32), Image.LANCZOS))
 
     def make_dity_case(self, mode, clean_pixel, dirty_pixel):
@@ -243,14 +308,20 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
 
     def test_dirty_pixels_rgba(self):
         case = self.make_dity_case('RGBA', (255, 255, 0, 128), (0, 0, 255, 0))
+        self.run_dity_case(case.resize((20, 20), Image.BOX), (255, 255, 0))
         self.run_dity_case(case.resize((20, 20), Image.BILINEAR), (255, 255, 0))
+        self.run_dity_case(case.resize((20, 20), Image.HAMMING), (255, 255, 0))
         self.run_dity_case(case.resize((20, 20), Image.BICUBIC), (255, 255, 0))
+        self.run_dity_case(case.resize((20, 20), Image.MITCHELL), (255, 255, 0))
         self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255, 255, 0))
 
     def test_dirty_pixels_la(self):
         case = self.make_dity_case('LA', (255, 128), (0, 0))
+        self.run_dity_case(case.resize((20, 20), Image.BOX), (255,))
         self.run_dity_case(case.resize((20, 20), Image.BILINEAR), (255,))
+        self.run_dity_case(case.resize((20, 20), Image.HAMMING), (255,))
         self.run_dity_case(case.resize((20, 20), Image.BICUBIC), (255,))
+        self.run_dity_case(case.resize((20, 20), Image.MITCHELL), (255,))
         self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255,))
 
 

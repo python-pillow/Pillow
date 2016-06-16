@@ -87,7 +87,7 @@ static inline double lanczos_filter(double x)
     return 0.0;
 }
 
-static struct filter BOX = { bilinear_filter, 0.5 };
+static struct filter BOX = { box_filter, 0.5 };
 static struct filter BILINEAR = { bilinear_filter, 1.0 };
 static struct filter HAMMING = { hamming_filter, 1.0 };
 static struct filter BICUBIC = { bicubic_filter, 2.0 };
