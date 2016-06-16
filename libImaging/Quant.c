@@ -1116,7 +1116,7 @@ k_means(Pixel *pixelData,
    }
    
    /* this is enough of a check, since the multiplication n*size is done above */
-   if (nPaletteEntries > UINT32_MAX / (nPaletteEntries * sizeof(uint32_t))) {
+   if (nPaletteEntries > UINT32_MAX / nPaletteEntries) {
        goto error_1;
    }
    /* malloc check ok, using calloc, checking n*n above */
@@ -1275,8 +1275,7 @@ quantize(Pixel *pixelData,
    qp=calloc(nPixels, sizeof(uint32_t));
    if (!qp) { goto error_4; }
 
-   if ((nPaletteEntries > UINT32_MAX / nPaletteEntries ) ||
-       (nPaletteEntries > UINT32_MAX / (nPaletteEntries * sizeof(uint32_t)))) {
+   if (nPaletteEntries > UINT32_MAX / nPaletteEntries )  {
        goto error_5;
    }
    /* malloc check ok, using calloc for overflow, check of n*n above */
@@ -1454,8 +1453,7 @@ quantize2(Pixel *pixelData,
    qp=calloc(nPixels, sizeof(uint32_t));
    if (!qp) { goto error_1; }
 
-   if ((nQuantPixels > UINT32_MAX / nQuantPixels ) ||
-       (nQuantPixels > UINT32_MAX / (nQuantPixels * sizeof(uint32_t)))) {
+   if (nQuantPixels > UINT32_MAX / nQuantPixels ) {
        goto error_2;
    }
 
@@ -1524,8 +1522,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
     if (!strcmp(im->mode, "RGBA") && mode != 2 && mode != 3)
        return ImagingError_ModeError();
 
-    if ((im->xsize > INT_MAX / im->ysize) ||
-        (im->xsize > INT_MAX / (im->ysize * sizeof(Pixel)))) {
+    if (im->xsize > INT_MAX / im->ysize) {
         return ImagingError_MemoryError();
     }
     /* malloc check ok, using calloc for final overflow, x*y above */
