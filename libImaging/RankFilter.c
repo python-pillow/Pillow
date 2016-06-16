@@ -76,6 +76,7 @@ ImagingRankFilter(Imaging im, int size, int rank)
     if (!imOut)
         return NULL;
 
+    /* malloc check ok, checked above */
 #define RANK_BODY(type) do {\
     type* buf = malloc(size2 * sizeof(type));\
     if (!buf)\
