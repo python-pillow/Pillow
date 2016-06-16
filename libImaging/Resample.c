@@ -5,27 +5,10 @@
 
 #define ROUND_UP(f) ((int) ((f) >= 0.0 ? (f) + 0.5F : (f) - 0.5F))
 
-
 struct filter {
     double (*filter)(double x);
     double support;
 };
-
-static inline double sinc_filter(double x)
-{
-    if (x == 0.0)
-        return 1.0;
-    x = x * M_PI;
-    return sin(x) / x;
-}
-
-static inline double lanczos_filter(double x)
-{
-    /* truncated sinc */
-    if (-3.0 <= x && x < 3.0)
-        return sinc_filter(x) * sinc_filter(x/3);
-    return 0.0;
-}
 
 static inline double bilinear_filter(double x)
 {
@@ -50,9 +33,25 @@ static inline double bicubic_filter(double x)
 #undef a
 }
 
-static struct filter LANCZOS = { lanczos_filter, 3.0 };
+static inline double sinc_filter(double x)
+{
+    if (x == 0.0)
+        return 1.0;
+    x = x * M_PI;
+    return sin(x) / x;
+}
+
+static inline double lanczos_filter(double x)
+{
+    /* truncated sinc */
+    if (-3.0 <= x && x < 3.0)
+        return sinc_filter(x) * sinc_filter(x/3);
+    return 0.0;
+}
+
 static struct filter BILINEAR = { bilinear_filter, 1.0 };
 static struct filter BICUBIC = { bicubic_filter, 2.0 };
+static struct filter LANCZOS = { lanczos_filter, 3.0 };
 
 
 
@@ -524,14 +523,14 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
 
     /* check filter */
     switch (filter) {
-    case IMAGING_TRANSFORM_LANCZOS:
-        filterp = &LANCZOS;
-        break;
     case IMAGING_TRANSFORM_BILINEAR:
         filterp = &BILINEAR;
         break;
     case IMAGING_TRANSFORM_BICUBIC:
         filterp = &BICUBIC;
+        break;
+    case IMAGING_TRANSFORM_LANCZOS:
+        filterp = &LANCZOS;
         break;
     default:
         return (Imaging) ImagingError_ValueError(
