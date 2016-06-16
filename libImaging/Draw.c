@@ -772,6 +772,11 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
     while (end < start)
         end += 360;
 
+    if (end - start > 360) {
+        /* no need to go in loops */
+        end = start + 361;
+    }
+
     if (mode != ARC && fill) {
 
         /* Build edge list */
