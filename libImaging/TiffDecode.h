@@ -34,7 +34,7 @@ typedef struct {
 	int fp;
     uint32 ifd;   /* offset of the ifd, used for multipage
                    * Should be uint32 for libtiff 3.9.x
-                   * uint64 for libtiff 4.0.x 
+                   * uint64 for libtiff 4.0.x
                    */
 	TIFF *tiff;   /* Used in write */
 	toff_t eof;
@@ -48,7 +48,7 @@ extern int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int
 extern int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 
 
-/* 
+/*
    Trace debugging
    legacy, don't enable for Python 3.x, unicode issues.
 */

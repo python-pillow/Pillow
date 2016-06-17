@@ -75,7 +75,7 @@ def build_one(py_ver, compiler):
     else:
         args['python_path'] = "%s%s\\Scripts" % (VIRT_BASE, py_ver)
     args['py_ver'] = py_ver
-    if '34' in py_ver: 
+    if '34' in py_ver:
         args['tcl_ver'] = '86'
     else:
         args['tcl_ver'] = '85'
