@@ -391,7 +391,7 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
         return NULL;
     }
 
-    ImagingSectionEnter(&cookie);    
+    ImagingSectionEnter(&cookie);
     switch(imIn->type) {
         case IMAGING_TYPE_INT32:
             for (yy = 0; yy < imOut->ysize; yy++) {
@@ -451,7 +451,7 @@ ImagingResampleVertical_32bpc(Imaging imIn, int ysize, struct filter *filterp)
         return NULL;
     }
 
-    ImagingSectionEnter(&cookie);    
+    ImagingSectionEnter(&cookie);
     switch(imIn->type) {
         case IMAGING_TYPE_INT32:
             for (yy = 0; yy < ysize; yy++) {

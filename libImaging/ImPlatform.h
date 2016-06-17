@@ -18,7 +18,7 @@
 #endif
 
 #if defined(PIL_NO_INLINE)
-#define inline 
+#define inline
 #else
 #if defined(_MSC_VER) && !defined(__GNUC__)
 #define inline __inline

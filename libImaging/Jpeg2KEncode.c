@@ -362,7 +362,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;
         goto quick_exit;
-    }       
+    }
 
     /* Setup compression context */
     context->error_msg = NULL;

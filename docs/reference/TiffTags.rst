@@ -29,7 +29,7 @@ metadata tag numbers, names, and type information.
   .. method:: cvt_enum(self, value)
 
      :param value: The enumerated value name
-     :returns: The integer corresponding to the name. 
+     :returns: The integer corresponding to the name.
 
 .. versionadded:: 3.0.0
 

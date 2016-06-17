@@ -106,7 +106,7 @@ Changelog (Pillow)
 - Removed docs/BUILDME script #1924
   [radarhere]
 
-- Moved comments to docstrings  #1926 
+- Moved comments to docstrings  #1926
   [hugovk]
 
 - Include Python.h before wchar.h so _GNU_SOURCE is set consistently #1906
@@ -128,7 +128,7 @@ Changelog (Pillow)
   [wiredfool]
 
 - Skip test when icc profile is not available, fixes #1887
-  [doko42] 
+  [doko42]
 
 - Make deprecated functions raise NotImplementedError instead of Exception. #1862, #1890
   [daniel-leicht, radarhere]
@@ -344,7 +344,7 @@ Changelog (Pillow)
 3.1.1 (2016-02-04)
 ------------------
 
-- Fixed an integer overflow in Resample.c causing writes in the Python heap. 
+- Fixed an integer overflow in Resample.c causing writes in the Python heap.
   [nedwill]
 
 - Fixed a buffer overflow in PcdDecode.c causing a segfault when opening PhotoCD files. CVE-2016-2533

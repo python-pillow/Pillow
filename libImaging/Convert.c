@@ -144,7 +144,7 @@ la2lA(UINT8* out, const UINT8* in, int xsize)
             pixel = in[0];
         } else {
             pixel = CLIP((255 * in[0]) / alpha);
-        }        
+        }
         *out++ = (UINT8) pixel;
         *out++ = (UINT8) pixel;
         *out++ = (UINT8) pixel;
