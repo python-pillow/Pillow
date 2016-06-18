@@ -109,8 +109,7 @@ class ChunkStream(object):
         cid = None
 
         if self.queue:
-            cid, pos, length = self.queue[-1]
-            del self.queue[-1]
+            cid, pos, length = self.queue.pop()
             self.fp.seek(pos)
         else:
             s = self.fp.read(8)

@@ -1660,8 +1660,7 @@ class Image(object):
 
         save_all = False
         if 'save_all' in params:
-            save_all = params['save_all']
-            del params['save_all']
+            save_all = params.pop('save_all')
         self.encoderinfo = params
         self.encoderconfig = ()
 
