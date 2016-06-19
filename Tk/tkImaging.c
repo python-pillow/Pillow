@@ -80,7 +80,7 @@ ImagingFind(const char* name)
 
 static int
 PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
-               int argc, char **argv)
+               int argc, const char **argv)
 {
     Imaging im;
     Tk_PhotoHandle photo;
@@ -172,7 +172,7 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
 
 static int
 PyImagingPhotoGet(ClientData clientdata, Tcl_Interp* interp,
-               int argc, char **argv)
+               int argc, const char **argv)
 {
     Tk_PhotoHandle photo;
     Tk_PhotoImageBlock block;
