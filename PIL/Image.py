@@ -584,16 +584,14 @@ class Image(object):
         return file
 
     def __eq__(self, other):
-        if self.__class__.__name__ != other.__class__.__name__:
-            return False
-        a = (self.mode == other.mode)
-        b = (self.size == other.size)
-        c = (self.getpalette() == other.getpalette())
-        d = (self.info == other.info)
-        e = (self.category == other.category)
-        f = (self.readonly == other.readonly)
-        g = (self.tobytes() == other.tobytes())
-        return a and b and c and d and e and f and g
+        return (self.__class__.__name__ == other.__class__.__name__ and
+                self.mode == other.mode and
+                self.size == other.size and
+                self.info == other.info and
+                self.category == other.category and
+                self.readonly == other.readonly and
+                self.getpalette() == other.getpalette() and
+                self.tobytes() == other.tobytes())
 
     def __ne__(self, other):
         eq = (self == other)
