@@ -268,7 +268,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state,
     unsigned _overflow_scale_factor;
     /* SIZE_MAX is not working in the conditionals unless it's a typed
        variable */
-    unsigned _SIZE__MAX = SIZE_MAX;
+    size_t _SIZE__MAX = SIZE_MAX;
 
     stream = opj_stream_default_create(OPJ_FALSE);
 
