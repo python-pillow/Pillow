@@ -282,7 +282,7 @@ def _save(im, fp, filename):
 def _save_spider(im, fp, filename):
     # get the filename extension and register it with Image
     ext = os.path.splitext(filename)[1]
-    Image.register_extension("SPIDER", ext)
+    Image.register_extension(SpiderImageFile.format, ext)
     _save(im, fp, filename)
 
 # --------------------------------------------------------------------
@@ -319,4 +319,4 @@ if __name__ == "__main__":
         print(
             "saving a flipped version of %s as %s " %
             (os.path.basename(filename), outfile))
-        im.save(outfile, "SPIDER")
+        im.save(outfile, SpiderImageFile.format)
