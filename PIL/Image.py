@@ -586,14 +586,17 @@ class Image(object):
     def __eq__(self, other):
         if self.__class__.__name__ != other.__class__.__name__:
             return False
-        a = (self.mode == other.mode)
-        b = (self.size == other.size)
-        c = (self.getpalette() == other.getpalette())
-        d = (self.info == other.info)
-        e = (self.category == other.category)
-        f = (self.readonly == other.readonly)
-        g = (self.tobytes() == other.tobytes())
-        return a and b and c and d and e and f and g
+
+        properties = ['mode', 'size', 'info', 'category', 'readonly']
+
+        props_eq = all(self.__getattribute__(p) == other.__getattribute__(p)
+                       for p in properties)
+        if not props_eq:
+            return False
+
+        funcs_eq = (self.getpalette() == other.getpalette()) \
+                   and (self.tobytes() == other.tobytes())
+        return funcs_eq
 
     def __ne__(self, other):
         eq = (self == other)
