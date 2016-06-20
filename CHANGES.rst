@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Change equals method on Image so it short circuits #1967
+  [mattBoros]
+ 
 - Runtime loading of TCL/TK libraries, eliminating build time dependency. #1932
   [matthew-brett]
 
