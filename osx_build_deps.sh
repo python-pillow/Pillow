@@ -1,5 +1,9 @@
-source terryfy/travis_tools.sh
+# Script for building Pillow dependencies on OSX
 source terryfy/library_installers.sh
+
+# Compiler
+export CC=clang
+export CXX=clang++
 
 # Package versions for fresh source builds
 FT_VERSION=2.6.3

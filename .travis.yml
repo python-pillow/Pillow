@@ -1,55 +1,83 @@
-language:
-  - objective-c
-
 env:
   global:
-    - PILLOW_COMMIT=latest-tag
-    - REPO_DIR=Pillow
-  matrix:
-    - VERSION=2.7.10
-    - VERSION=3.3.5
-    - VERSION=3.4.3
-    - VERSION=3.5.0
-# Disabled due to pip install issue
-#    - VERSION=3.2.5
+      - REPO_DIR=Pillow
+      - BUILD_COMMIT=3.2.0
+      - PLAT=x86_64
+      - UNICODE_WIDTH=32
+      - BUILD_DEPENDS=""
+      - TEST_DEPENDS=nose
+      - WHEELHOUSE_UPLOADER_USERNAME=travis-worker
+      # Following generated with
+      # travis encrypt -r python-pillow/pillow-wheels WHEELHOUSE_UPLOADER_SECRET=<the api key>
+      - secure: "ky76goiK6n4k8V9/uG340GSFVwmjE7G76l9xbhhGZkcph4eTwN5VRM/tqyJvlNs/HZOhKSILfyGBeaG8qf7gHmwr0touPT+EjWn4TNV8iyVj75ZshgRE9DuaIAfdH89gW2m+BmvBDyzi0JE3KVCu55NcGm8h7Ecl6nmQ/c2iROY="
+
+language: python
+sudo: required
+dist: trusty
+services: docker
+
+matrix:
+  include:
+    - os: linux
+      python: 2.7
+    - os: linux
+      python: 2.7
+      env:
+        - UNICODE_WIDTH=16
+    - os: linux
+      python: 2.7
+      env:
+        - PLAT=i686
+    - os: linux
+      python: 2.7
+      env:
+        - PLAT=i686
+        - UNICODE_WIDTH=16
+    - os: linux
+      python: 3.4
+    - os: linux
+      python: 3.4
+      env:
+        - PLAT=i686
+    - os: linux
+      python: 3.5
+    - os: linux
+      python: 3.5
+      env:
+        - PLAT=i686
+    - os: osx
+      language: objective-c
+      env: TRAVIS_PYTHON_VERSION=2.7
+    - os: osx
+      language: objective-c
+      env:
+        - TRAVIS_PYTHON_VERSION=3.3
+    - os: osx
+      language: objective-c
+      env:
+        - TRAVIS_PYTHON_VERSION=3.4
+    - os: osx
+      language: objective-c
+      env:
+        - TRAVIS_PYTHON_VERSION=3.5
+
+before_install:
+    - source multibuild/common_utils.sh
+    - source multibuild/travis_steps.sh
+    - before_install
 
 install:
-    - source run_install.sh
-    - get_python_environment macpython $VERSION venv
-    # Update to latest wheel package for Python 3.5
-    - pip install -U wheel
-    - pip install delocate
-    - if [ -n "$PILLOW_COMMIT" ]; then
-        checkout_commit $REPO_DIR $PILLOW_COMMIT;
-      fi
-    - cd $REPO_DIR
-    - python setup.py bdist_wheel
-    - delocate-wheel dist/*.whl
-    - rename_wheels dist/*.whl
-    - pip install dist/*.whl
-    - cd ..
+    # Maybe get and clean and patch source
+    - clean_code $REPO_DIR $BUILD_COMMIT
+    - build_wheel $REPO_DIR $PLAT
 
 script:
-    - cd $REPO_DIR
-    - python selftest.py --installed
-    - pip install nose
-    - export NOSE_PROCESS_TIMEOUT=600
-    - export NOSE_PROCESSES=0
-    - if [ -f test-installed.py ]; then
-      python test-installed.py -s -v Tests/test_*.py ;
-      else
-      python Tests/run.py --installed ;
-      fi
-    - cd ..
+    - install_run $PLAT
 
-before_deploy:
-  - cd $REPO_DIR/dist
-
-deploy:
-  provider: cloudfiles
-  username: travis-upload
-  api-key:
-    secure: MqebEoOm+nNwSKWcINYJ0ct6Z16q4DBB9j/plfTw3Xc4Rr8e/OC66/hLBEga5J7afr4TkIK1849xaB2ce/Gxe2+mRM9qbg4ggz2Ul16lKhl9obFZwcP2ttLEqs//LjBHD9MAz1NMRxhwvb80OKuC2dg02/s9K7CRb2sJmDG4nC0=
-  region: ORD
-  container: wheels
-  skip_cleanup: true
+after_success:
+    # Upload wheels to Rackspace container
+    - pip install wheelhouse-uploader
+    - python -m wheelhouse_uploader upload --local-folder
+          ${TRAVIS_BUILD_DIR}/wheelhouse/
+          --no-update-index
+          wheels
