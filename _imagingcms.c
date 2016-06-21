@@ -983,12 +983,9 @@ cms_profile_getattr_attributes(CmsProfileObject* self, void* closure)
 {
     cmsUInt64Number attr;
     cmsGetHeaderAttributes(self->profile, &attr);
-#ifdef _WIN32
-    // Windows is weird this way.
-    return PyLong_FromLongLong((long long) attr);
-#else
-    return PyInt_FromLong((long) attr);
-#endif
+    /* This works just as well on Windows (LLP64), 32-bit Linux
+       (ILP32) and 64-bit Linux (LP64) systems.  */
+    return PyLong_FromUnsignedLongLong((unsigned long long) attr);
 }
 
 static PyObject*
