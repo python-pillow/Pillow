@@ -3,6 +3,10 @@ Changelog (Pillow)
 
 3.3.0 (unreleased)
 ------------------
+
+- Fix integer overflow on ILP32 systems (32-bit Linux). #1975
+  [lambdafu]
+
 - Change function declaration to match Tcl_CmdProc type #1966
   [homm]
 
