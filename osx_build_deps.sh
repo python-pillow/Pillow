@@ -29,8 +29,8 @@ standard_install libpng $PNG_VERSION
 standard_install lcms2 $LCMS_VERSION
 WEBP_EXTRAS="--enable-libwebpmux --enable-libwebpdemux"
 standard_install libwebp $WEBP_VERSION .tar.gz libwebp- "$WEBP_EXTRAS"
-#standard_install openjpeg $OPENJPEG_VERSION .tar.gz openjpeg- cmake
+standard_install openjpeg $OPENJPEG_VERSION .tar.gz openjpeg- cmake
 # Fix openjpeg library install id
 # https://code.google.com/p/openjpeg/issues/detail?id=367
-install_name_tool -id $PWD/build/lib/libopenjp2.6.dylib build/lib/libopenjp2.2.0.0.dylib
+install_name_tool -id $PWD/build/lib/libopenjp2.7.dylib build/lib/libopenjp2.2.1.0.dylib
 standard_install freetype $FT_VERSION .tar.gz freetype- "--with-harfbuzz=no"
