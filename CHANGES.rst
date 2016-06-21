@@ -3,6 +3,8 @@ Changelog (Pillow)
 
 3.3.0 (unreleased)
 ------------------
+- Change function declaration to match Tcl_CmdProc type #1966
+  [homm]
 
 - Integer overflow checks on all calls to *alloc #1781
   [wiredfool]
