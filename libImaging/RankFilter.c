@@ -55,21 +55,28 @@ ImagingRankFilter(Imaging im, int size, int rank)
     int i, margin, size2;
 
     if (!im || im->bands != 1 || im->type == IMAGING_TYPE_SPECIAL)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     if (!(size & 1))
-	return (Imaging) ImagingError_ValueError("bad filter size");
+        return (Imaging) ImagingError_ValueError("bad filter size");
+    
+    /* malloc check ok, for overflow in the define below */
+    if (size > INT_MAX / size || 
+        size > INT_MAX / (size * sizeof(FLOAT32))) {
+        return (Imaging) ImagingError_ValueError("filter size too large");
+    }
 
     size2 = size * size;
     margin = (size-1) / 2;
 
     if (rank < 0 || rank >= size2)
-	return (Imaging) ImagingError_ValueError("bad rank value");
+        return (Imaging) ImagingError_ValueError("bad rank value");
 
     imOut = ImagingNew(im->mode, im->xsize - 2*margin, im->ysize - 2*margin);
     if (!imOut)
-	return NULL;
+        return NULL;
 
+    /* malloc check ok, checked above */
 #define RANK_BODY(type) do {\
     type* buf = malloc(size2 * sizeof(type));\
     if (!buf)\

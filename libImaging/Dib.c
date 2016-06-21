@@ -39,14 +39,14 @@ ImagingGetModeDIB(int size_out[2])
 
     mode = "P";
     if (!(GetDeviceCaps(dc, RASTERCAPS) & RC_PALETTE)) {
-	mode = "RGB";
-	if (GetDeviceCaps(dc, BITSPIXEL) == 1)
-	    mode = "1";
+        mode = "RGB";
+        if (GetDeviceCaps(dc, BITSPIXEL) == 1)
+            mode = "1";
     }
 
     if (size_out) {
-	size_out[0] = GetDeviceCaps(dc, HORZRES);
-	size_out[1] = GetDeviceCaps(dc, VERTRES);
+        size_out[0] = GetDeviceCaps(dc, HORZRES);
+        size_out[1] = GetDeviceCaps(dc, VERTRES);
     }
 
     DeleteDC(dc);
@@ -66,18 +66,20 @@ ImagingNewDIB(const char *mode, int xsize, int ysize)
 
     /* Check mode */
     if (strcmp(mode, "1") != 0 && strcmp(mode, "L") != 0 &&
-	strcmp(mode, "RGB") != 0)
-	return (ImagingDIB) ImagingError_ModeError();
+        strcmp(mode, "RGB") != 0)
+        return (ImagingDIB) ImagingError_ModeError();
 
     /* Create DIB context and info header */
+    /* malloc check ok, small constant allocation */
     dib = (ImagingDIB) malloc(sizeof(*dib));
     if (!dib)
-	return (ImagingDIB) ImagingError_MemoryError();
+        return (ImagingDIB) ImagingError_MemoryError();
+    /* malloc check ok, small constant allocation */
     dib->info = (BITMAPINFO*) malloc(sizeof(BITMAPINFOHEADER) +
                                      256 * sizeof(RGBQUAD));
     if (!dib->info) {
         free(dib);
-	return (ImagingDIB) ImagingError_MemoryError();
+        return (ImagingDIB) ImagingError_MemoryError();
     }
 
     memset(dib->info, 0, sizeof(BITMAPINFOHEADER));
@@ -91,17 +93,17 @@ ImagingNewDIB(const char *mode, int xsize, int ysize)
     /* Create DIB */
     dib->dc = CreateCompatibleDC(NULL);
     if (!dib->dc) {
-	free(dib->info);
-	free(dib);
-	return (ImagingDIB) ImagingError_MemoryError();
+        free(dib->info);
+        free(dib);
+        return (ImagingDIB) ImagingError_MemoryError();
     }
 
     dib->bitmap = CreateDIBSection(dib->dc, dib->info, DIB_RGB_COLORS,
                                    &dib->bits, NULL, 0);
     if (!dib->bitmap) {
         free(dib->info);
-	free(dib);
-	return (ImagingDIB) ImagingError_MemoryError();
+        free(dib);
+        return (ImagingDIB) ImagingError_MemoryError();
     }
 
     strcpy(dib->mode, mode);
@@ -112,10 +114,10 @@ ImagingNewDIB(const char *mode, int xsize, int ysize)
     dib->linesize = (xsize * dib->pixelsize + 3) & -4;
 
     if (dib->pixelsize == 1)
-	dib->pack = dib->unpack = (ImagingShuffler) memcpy;
+        dib->pack = dib->unpack = (ImagingShuffler) memcpy;
     else {
-	dib->pack = ImagingPackBGR;
-	dib->unpack = ImagingPackBGR;
+        dib->pack = ImagingPackBGR;
+        dib->unpack = ImagingPackBGR;
     }
 
     /* Bind the DIB to the device context */
@@ -125,88 +127,88 @@ ImagingNewDIB(const char *mode, int xsize, int ysize)
 
     /* Bind a palette to it as well (only required for 8-bit DIBs) */
     if (dib->pixelsize == 1) {
-	for (i = 0; i < 256; i++) {
-	    palette[i].rgbRed =
-	    palette[i].rgbGreen =
-	    palette[i].rgbBlue = i;
-	    palette[i].rgbReserved = 0;
+        for (i = 0; i < 256; i++) {
+            palette[i].rgbRed =
+            palette[i].rgbGreen =
+            palette[i].rgbBlue = i;
+            palette[i].rgbReserved = 0;
         }
-	SetDIBColorTable(dib->dc, 0, 256, palette);
+        SetDIBColorTable(dib->dc, 0, 256, palette);
     }
 
     /* Create an associated palette (for 8-bit displays only) */
     if (strcmp(ImagingGetModeDIB(NULL), "P") == 0) {
 
-	char palbuf[sizeof(LOGPALETTE)+256*sizeof(PALETTEENTRY)];
-	LPLOGPALETTE pal = (LPLOGPALETTE) palbuf;
-	int i, r, g, b;
+        char palbuf[sizeof(LOGPALETTE)+256*sizeof(PALETTEENTRY)];
+        LPLOGPALETTE pal = (LPLOGPALETTE) palbuf;
+        int i, r, g, b;
 
-	/* Load system palette */
-	pal->palVersion = 0x300;
-	pal->palNumEntries = 256;
-	GetSystemPaletteEntries(dib->dc, 0, 256, pal->palPalEntry);
+        /* Load system palette */
+        pal->palVersion = 0x300;
+        pal->palNumEntries = 256;
+        GetSystemPaletteEntries(dib->dc, 0, 256, pal->palPalEntry);
 
-	if (strcmp(mode, "L") == 0) {
+        if (strcmp(mode, "L") == 0) {
 
-	    /* Greyscale DIB.  Fill all 236 slots with a greyscale ramp
-	     * (this is usually overkill on Windows since VGA only offers
-	     * 6 bits greyscale resolution).  Ignore the slots already
-	     * allocated by Windows */
+            /* Greyscale DIB.  Fill all 236 slots with a greyscale ramp
+             * (this is usually overkill on Windows since VGA only offers
+             * 6 bits greyscale resolution).  Ignore the slots already
+             * allocated by Windows */
 
-	    i = 10;
-	    for (r = 0; r < 236; r++) {
-		pal->palPalEntry[i].peRed =
-		pal->palPalEntry[i].peGreen =
-	        pal->palPalEntry[i].peBlue = i;
-		i++;
-	    }
+            i = 10;
+            for (r = 0; r < 236; r++) {
+                pal->palPalEntry[i].peRed =
+                pal->palPalEntry[i].peGreen =
+                pal->palPalEntry[i].peBlue = i;
+                i++;
+            }
 
-	    dib->palette = CreatePalette(pal);
+            dib->palette = CreatePalette(pal);
 
-	} else if (strcmp(mode, "RGB") == 0) {
+        } else if (strcmp(mode, "RGB") == 0) {
 
 #ifdef CUBE216
 
-	    /* Colour DIB.  Create a 6x6x6 colour cube (216 entries) and
-	     * add 20 extra greylevels for best result with greyscale
-	     * images. */
+            /* Colour DIB.  Create a 6x6x6 colour cube (216 entries) and
+             * add 20 extra greylevels for best result with greyscale
+             * images. */
 
-	    i = 10;
-	    for (r = 0; r < 256; r += 51)
-		for (g = 0; g < 256; g += 51)
-		    for (b = 0; b < 256; b += 51) {
-			pal->palPalEntry[i].peRed = r;
-			pal->palPalEntry[i].peGreen = g;
-			pal->palPalEntry[i].peBlue = b;
-			i++;
-		    }
-	    for (r = 1; r < 22-1; r++) {
-		/* Black and white are already provided by the cube. */
-		pal->palPalEntry[i].peRed =
-		pal->palPalEntry[i].peGreen =
-		pal->palPalEntry[i].peBlue = r * 255 / (22-1);
-		i++;
-	    }
+            i = 10;
+            for (r = 0; r < 256; r += 51)
+                for (g = 0; g < 256; g += 51)
+                    for (b = 0; b < 256; b += 51) {
+                        pal->palPalEntry[i].peRed = r;
+                        pal->palPalEntry[i].peGreen = g;
+                        pal->palPalEntry[i].peBlue = b;
+                        i++;
+                    }
+            for (r = 1; r < 22-1; r++) {
+                /* Black and white are already provided by the cube. */
+                pal->palPalEntry[i].peRed =
+                pal->palPalEntry[i].peGreen =
+                pal->palPalEntry[i].peBlue = r * 255 / (22-1);
+                i++;
+            }
 
 #else
 
-	    /* Colour DIB.  Alternate palette. */
+            /* Colour DIB.  Alternate palette. */
 
-	    i = 10;
-	    for (r = 0; r < 256; r += 37)
-		for (g = 0; g < 256; g += 32)
-		    for (b = 0; b < 256; b += 64) {
-			pal->palPalEntry[i].peRed = r;
-			pal->palPalEntry[i].peGreen = g;
-			pal->palPalEntry[i].peBlue = b;
-			i++;
-		    }
+            i = 10;
+            for (r = 0; r < 256; r += 37)
+                for (g = 0; g < 256; g += 32)
+                    for (b = 0; b < 256; b += 64) {
+                        pal->palPalEntry[i].peRed = r;
+                        pal->palPalEntry[i].peGreen = g;
+                        pal->palPalEntry[i].peBlue = b;
+                        i++;
+                    }
 
 #endif
 
-	    dib->palette = CreatePalette(pal);
+            dib->palette = CreatePalette(pal);
 
-	}
+        }
 
     }
 
@@ -222,8 +224,8 @@ ImagingPasteDIB(ImagingDIB dib, Imaging im, int xy[4])
 
     int y;
     for (y = 0; y < im->ysize; y++)
-	dib->pack(dib->bits + dib->linesize*(dib->ysize-(xy[1]+y)-1) +
-		  xy[0]*dib->pixelsize, im->image[y], im->xsize);
+        dib->pack(dib->bits + dib->linesize*(dib->ysize-(xy[1]+y)-1) +
+                  xy[0]*dib->pixelsize, im->image[y], im->xsize);
 
 }
 
@@ -233,7 +235,7 @@ ImagingExposeDIB(ImagingDIB dib, void *dc)
     /* Copy bitmap to display */
 
     if (dib->palette != 0)
-	SelectPalette((HDC) dc, dib->palette, FALSE);
+        SelectPalette((HDC) dc, dib->palette, FALSE);
     BitBlt((HDC) dc, 0, 0, dib->xsize, dib->ysize, dib->dc, 0, 0, SRCCOPY);
 }
 
@@ -266,15 +268,15 @@ ImagingQueryPaletteDIB(ImagingDIB dib, void *dc)
 
     if (dib->palette != 0) {
 
-	/* Realize associated palette */
-	HPALETTE now = SelectPalette((HDC) dc, dib->palette, FALSE);
-	n = RealizePalette((HDC) dc);
+        /* Realize associated palette */
+        HPALETTE now = SelectPalette((HDC) dc, dib->palette, FALSE);
+        n = RealizePalette((HDC) dc);
 
-	/* Restore palette */
-	SelectPalette((HDC) dc, now, FALSE);
+        /* Restore palette */
+        SelectPalette((HDC) dc, now, FALSE);
 
     } else
-	n = 0;
+        n = 0;
 
     return n; /* number of colours that was changed */
 }
@@ -285,13 +287,13 @@ ImagingDeleteDIB(ImagingDIB dib)
     /* Clean up */
 
     if (dib->palette)
-	DeleteObject(dib->palette);
+        DeleteObject(dib->palette);
     if (dib->bitmap) {
         SelectObject(dib->dc, dib->old_bitmap);
-	DeleteObject(dib->bitmap);
+        DeleteObject(dib->bitmap);
     }
     if (dib->dc)
-	DeleteDC(dib->dc);
+        DeleteDC(dib->dc);
     free(dib->info);
 }
 

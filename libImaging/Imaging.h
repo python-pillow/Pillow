@@ -168,9 +168,9 @@ extern Imaging ImagingNewMap(const char* filename, int readonly,
                              const char* mode, int xsize, int ysize);
 
 extern Imaging ImagingNewPrologue(const char *mode,
-                                  unsigned xsize, unsigned ysize);
+                                  int xsize, int ysize);
 extern Imaging ImagingNewPrologueSubtype(const char *mode,
-                                  unsigned xsize, unsigned ysize,
+                                  int xsize, int ysize,
                                   int structure_size);
 extern Imaging ImagingNewEpilogue(Imaging im);
 
@@ -453,6 +453,7 @@ extern int ImagingZipDecode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
 extern int ImagingZipEncode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
+extern int ImagingZipEncodeCleanup(ImagingCodecState state);
 #endif
 
 typedef void (*ImagingShuffler)(UINT8* out, const UINT8* in, int pixels);

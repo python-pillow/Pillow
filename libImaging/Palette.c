@@ -31,20 +31,20 @@ ImagingPaletteNew(const char* mode)
     ImagingPalette palette;
 
     if (strcmp(mode, "RGB") && strcmp(mode, "RGBA"))
-	return (ImagingPalette) ImagingError_ModeError();
+        return (ImagingPalette) ImagingError_ModeError();
 
     palette = calloc(1, sizeof(struct ImagingPaletteInstance));
     if (!palette)
-	return (ImagingPalette) ImagingError_MemoryError();
+        return (ImagingPalette) ImagingError_MemoryError();
 
     strncpy(palette->mode, mode, IMAGING_MODE_LENGTH);
 
     /* Initialize to ramp */
     for (i = 0; i < 256; i++) {
-	palette->palette[i*4+0] =
-	palette->palette[i*4+1] =
-	palette->palette[i*4+2] = (UINT8) i;
-	palette->palette[i*4+3] = 255; /* opaque */
+        palette->palette[i*4+0] =
+        palette->palette[i*4+1] =
+        palette->palette[i*4+2] = (UINT8) i;
+        palette->palette[i*4+3] = 255; /* opaque */
     }
 
     return palette;
@@ -60,35 +60,35 @@ ImagingPaletteNewBrowser(void)
 
     palette = ImagingPaletteNew("RGB");
     if (!palette)
-	return NULL;
+        return NULL;
 
     /* Blank out unused entries */
     /* FIXME: Add 10-level windows palette here? */
 
     for (i = 0; i < 10; i++) {
-	palette->palette[i*4+0] =
-	palette->palette[i*4+1] =
-	palette->palette[i*4+2] = 0;
+        palette->palette[i*4+0] =
+        palette->palette[i*4+1] =
+        palette->palette[i*4+2] = 0;
     }
 
     /* Simple 6x6x6 colour cube */
 
     for (b = 0; b < 256; b += 51)
-	for (g = 0; g < 256; g += 51)
-	    for (r = 0; r < 256; r += 51) {
-		palette->palette[i*4+0] = r;
-		palette->palette[i*4+1] = g;
-		palette->palette[i*4+2] = b;
-		i++;
-	    }
+        for (g = 0; g < 256; g += 51)
+            for (r = 0; r < 256; r += 51) {
+                palette->palette[i*4+0] = r;
+                palette->palette[i*4+1] = g;
+                palette->palette[i*4+2] = b;
+                i++;
+            }
 
     /* Blank out unused entries */
     /* FIXME: add 30-level greyscale wedge here? */
 
     for (; i < 256; i++) {
-	palette->palette[i*4+0] =
-	palette->palette[i*4+1] =
-	palette->palette[i*4+2] = 0;
+        palette->palette[i*4+0] =
+        palette->palette[i*4+1] =
+        palette->palette[i*4+2] = 0;
     }
 
     return palette;
@@ -102,11 +102,11 @@ ImagingPaletteDuplicate(ImagingPalette palette)
     ImagingPalette new_palette;
 
     if (!palette)
-	return NULL;
-
+        return NULL;
+    /* malloc check ok, small constant allocation */
     new_palette = malloc(sizeof(struct ImagingPaletteInstance));
     if (!new_palette)
-	return (ImagingPalette) ImagingError_MemoryError();
+        return (ImagingPalette) ImagingError_MemoryError();
 
     memcpy(new_palette, palette, sizeof(struct ImagingPaletteInstance));
 
@@ -122,15 +122,15 @@ ImagingPaletteDelete(ImagingPalette palette)
     /* Destroy palette object */
 
     if (palette) {
-	if (palette->cache)
-	    free(palette->cache);
-	free(palette);
+        if (palette->cache)
+            free(palette->cache);
+        free(palette);
     }
 }
 
 
 /* -------------------------------------------------------------------- */
-/* Colour mapping							*/
+/* Colour mapping                                                       */
 /* -------------------------------------------------------------------- */
 
 /* This code is used to map RGB triplets to palette indices, using
@@ -143,26 +143,26 @@ ImagingPaletteDelete(ImagingPalette palette)
  *
  * The IJG JPEG library is copyright (C) 1991-1995, Thomas G. Lane.  */
 
-#define	DIST(a, b, s) (a - b) * (a - b) * s
+#define DIST(a, b, s) (a - b) * (a - b) * s
 
 /* Colour weights (no scaling, for now) */
-#define	RSCALE	1
-#define	GSCALE	1
-#define	BSCALE	1
+#define RSCALE  1
+#define GSCALE  1
+#define BSCALE  1
 
 /* Calculated scaled distances */
-#define	RDIST(a, b) DIST(a, b, RSCALE*RSCALE)
-#define	GDIST(a, b) DIST(a, b, GSCALE*GSCALE)
-#define	BDIST(a, b) DIST(a, b, BSCALE*BSCALE)
+#define RDIST(a, b) DIST(a, b, RSCALE*RSCALE)
+#define GDIST(a, b) DIST(a, b, GSCALE*GSCALE)
+#define BDIST(a, b) DIST(a, b, BSCALE*BSCALE)
 
 /* Incremental steps */
-#define RSTEP	(4 * RSCALE)
-#define GSTEP	(4 * GSCALE)
-#define BSTEP	(4 * BSCALE)
+#define RSTEP   (4 * RSCALE)
+#define GSTEP   (4 * GSCALE)
+#define BSTEP   (4 * BSCALE)
 
-#define	BOX	8
+#define BOX     8
 
-#define	BOXVOLUME BOX*BOX*BOX
+#define BOXVOLUME BOX*BOX*BOX
 
 void
 ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
@@ -191,25 +191,25 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
 
     for (i = 0; i < 256; i++) {
 
-	int r, g, b;
-	unsigned int tmin, tmax;
+        int r, g, b;
+        unsigned int tmin, tmax;
 
-	/* Find min and max distances to any point in the box */
-	r = palette->palette[i*4+0];
-	tmin = (r < r0) ? RDIST(r, r1) : (r > r1) ? RDIST(r, r0) : 0;
-	tmax = (r <= rc) ? RDIST(r, r1) : RDIST(r, r0);
+        /* Find min and max distances to any point in the box */
+        r = palette->palette[i*4+0];
+        tmin = (r < r0) ? RDIST(r, r1) : (r > r1) ? RDIST(r, r0) : 0;
+        tmax = (r <= rc) ? RDIST(r, r1) : RDIST(r, r0);
 
-	g = palette->palette[i*4+1];
-	tmin += (g < g0) ? GDIST(g, g1) : (g > g1) ? GDIST(g, g0) : 0;
-	tmax += (g <= gc) ? GDIST(g, g1) : GDIST(g, g0);
+        g = palette->palette[i*4+1];
+        tmin += (g < g0) ? GDIST(g, g1) : (g > g1) ? GDIST(g, g0) : 0;
+        tmax += (g <= gc) ? GDIST(g, g1) : GDIST(g, g0);
 
-	b = palette->palette[i*4+2];
-	tmin += (b < b0) ? BDIST(b, b1) : (b > b1) ? BDIST(b, b0) : 0;
-	tmax += (b <= bc) ? BDIST(b, b1) : BDIST(b, b0);
+        b = palette->palette[i*4+2];
+        tmin += (b < b0) ? BDIST(b, b1) : (b > b1) ? BDIST(b, b0) : 0;
+        tmax += (b <= bc) ? BDIST(b, b1) : BDIST(b, b0);
 
-	dmin[i] = tmin;
-	if (tmax < dmax)
-	    dmax = tmax; /* keep the smallest max distance only */
+        dmin[i] = tmin;
+        if (tmax < dmax)
+            dmax = tmax; /* keep the smallest max distance only */
 
     }
 
@@ -220,47 +220,47 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
      * distance is less than or equal the smallest max distance */
 
     for (i = 0; i < BOXVOLUME; i++)
-	d[i] = (unsigned int) ~0;
+        d[i] = (unsigned int) ~0;
 
     for (i = 0; i < 256; i++)
 
-	if (dmin[i] <= dmax) {
+        if (dmin[i] <= dmax) {
 
-	    int rd, gd, bd;
-	    int ri, gi, bi;
-	    int rx, gx, bx;
+            int rd, gd, bd;
+            int ri, gi, bi;
+            int rx, gx, bx;
 
-	    ri = (r0 - palette->palette[i*4+0]) * RSCALE;
-	    gi = (g0 - palette->palette[i*4+1]) * GSCALE;
-	    bi = (b0 - palette->palette[i*4+2]) * BSCALE;
+            ri = (r0 - palette->palette[i*4+0]) * RSCALE;
+            gi = (g0 - palette->palette[i*4+1]) * GSCALE;
+            bi = (b0 - palette->palette[i*4+2]) * BSCALE;
 
-	    rd = ri*ri + gi*gi + bi*bi;
+            rd = ri*ri + gi*gi + bi*bi;
 
-	    ri = ri * (2 * RSTEP) + RSTEP * RSTEP;
-	    gi = gi * (2 * GSTEP) + GSTEP * GSTEP;
-	    bi = bi * (2 * BSTEP) + BSTEP * BSTEP;
+            ri = ri * (2 * RSTEP) + RSTEP * RSTEP;
+            gi = gi * (2 * GSTEP) + GSTEP * GSTEP;
+            bi = bi * (2 * BSTEP) + BSTEP * BSTEP;
 
-	    rx = ri;
-	    for (r = j = 0; r < BOX; r++) {
-		gd = rd; gx = gi;
-		for (g = 0; g < BOX; g++) {
-		    bd = gd; bx = bi;
-		    for (b = 0; b < BOX; b++) {
-			if ((unsigned int) bd < d[j]) {
-			    d[j] = bd;
-			    c[j] = (UINT8) i;
-			}
-			bd += bx;
-			bx += 2 * BSTEP * BSTEP;
-			j++;
-		    }
-		    gd += gx;
-		    gx += 2 * GSTEP * GSTEP;
-		}
-		rd += rx;
-		rx += 2 * RSTEP * RSTEP;
-	    }
-	}
+            rx = ri;
+            for (r = j = 0; r < BOX; r++) {
+                gd = rd; gx = gi;
+                for (g = 0; g < BOX; g++) {
+                    bd = gd; bx = bi;
+                    for (b = 0; b < BOX; b++) {
+                        if ((unsigned int) bd < d[j]) {
+                            d[j] = bd;
+                            c[j] = (UINT8) i;
+                        }
+                        bd += bx;
+                        bx += 2 * BSTEP * BSTEP;
+                        j++;
+                    }
+                    gd += gx;
+                    gx += 2 * GSTEP * GSTEP;
+                }
+                rd += rx;
+                rx += 2 * RSTEP * RSTEP;
+            }
+        }
 
     /* Step 3 -- Update cache */
 
@@ -269,9 +269,9 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
 
     j = 0;
     for (r = r0; r < r1; r+=4)
-	for (g = g0; g < g1; g+=4)
-	    for (b = b0; b < b1; b+=4)
-		ImagingPaletteCache(palette, r, g, b) = c[j++];
+        for (g = g0; g < g1; g+=4)
+            for (b = b0; b < b1; b+=4)
+                ImagingPaletteCache(palette, r, g, b) = c[j++];
 }
 
 
@@ -285,18 +285,19 @@ ImagingPaletteCachePrepare(ImagingPalette palette)
 
     if (palette->cache == NULL) {
 
-	/* The cache is 512k.  It might be a good idea to break it
-	   up into a pointer array (e.g. an 8-bit image?) */
+        /* The cache is 512k.  It might be a good idea to break it
+           up into a pointer array (e.g. an 8-bit image?) */
 
-	palette->cache = (INT16*) malloc(entries * sizeof(INT16));
-	if (!palette->cache) {
-	    (void) ImagingError_MemoryError();
-	    return -1;
-	}
+        /* malloc check ok, small constant allocation */
+        palette->cache = (INT16*) malloc(entries * sizeof(INT16));
+        if (!palette->cache) {
+            (void) ImagingError_MemoryError();
+            return -1;
+        }
 
-	/* Mark all entries as empty */
-	for (i = 0; i < entries; i++)
-	    palette->cache[i] = 0x100;
+        /* Mark all entries as empty */
+        for (i = 0; i < entries; i++)
+            palette->cache[i] = 0x100;
 
     }
 
@@ -310,7 +311,7 @@ ImagingPaletteCacheDelete(ImagingPalette palette)
     /* Release the colour cache, if any */
 
     if (palette && palette->cache) {
-	free(palette->cache);
-	palette->cache = NULL;
+        free(palette->cache);
+        palette->cache = NULL;
     }
 }

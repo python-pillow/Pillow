@@ -58,10 +58,14 @@ tsize_t _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
 		tdata_t new;
 		tsize_t newsize=state->size;
 		while (newsize < (size + state->size)) {
+            if (newsize > (tsize_t)SIZE_MAX - 64*1024){
+                return 0;
+            }
 			newsize += 64*1024;
 			// newsize*=2; // UNDONE, by 64k chunks?
 		}
 		TRACE(("Reallocing in write to %d bytes\n", (int)newsize));
+        /* malloc check ok, overflow checked above */
 		new = realloc(state->data, newsize);
 		if (!new) {
 			// fail out
@@ -305,6 +309,7 @@ int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
 	} else {
 		// malloc a buffer to write the tif, we're going to need to realloc or something if we need bigger.
 		TRACE(("Opening a buffer for writing \n"));
+        /* malloc check ok, small constant allocation */
 		clientstate->data = malloc(bufsize);
 		clientstate->size = bufsize;
 		clientstate->flrealloc=1;

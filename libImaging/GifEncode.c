@@ -61,6 +61,7 @@ emit(GIFENCODERSTATE *context, int byte)
             block = context->free;
             context->free = NULL;
         } else {
+            /* malloc check ok, small constant allocation */
             block = malloc(sizeof(GIFENCODERBLOCK));
             if (!block)
                 return 0;

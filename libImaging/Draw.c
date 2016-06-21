@@ -434,7 +434,8 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     }
 
     /* Initialize the edge table and find polygon boundaries */
-    edge_table = malloc(sizeof(Edge*) * n);
+    /* malloc check ok, using calloc */
+    edge_table = calloc(n, sizeof(Edge*));
     if (!edge_table) {
         return -1;
     }
@@ -462,7 +463,8 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     }
 
     /* Process the edge table with a scan line searching for intersections */
-    xx = malloc(sizeof(float) * edge_count * 2);
+    /* malloc check ok, using calloc */ 
+    xx = calloc(edge_count * 2, sizeof(float));
     if (!xx) {
         free(edge_table);
         return -1;
@@ -700,7 +702,8 @@ ImagingDrawPolygon(Imaging im, int count, int* xy, const void* ink_,
     if (fill) {
 
         /* Build edge list */
-        Edge* e = malloc(count * sizeof(Edge));
+        /* malloc check ok, using calloc */
+        Edge* e = calloc(count, sizeof(Edge));
         if (!e) {
             (void) ImagingError_MemoryError();
             return -1;
@@ -769,10 +772,16 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
     while (end < start)
         end += 360;
 
+    if (end - start > 360) {
+        /* no need to go in loops */
+        end = start + 361;
+    }
+
     if (mode != ARC && fill) {
 
         /* Build edge list */
-        Edge* e = malloc((end - start + 3) * sizeof(Edge));
+        /* malloc check UNDONE, FLOAT? */
+        Edge* e = calloc((end - start + 3), sizeof(Edge));
         if (!e) {
             ImagingError_MemoryError();
             return -1;
@@ -929,10 +938,16 @@ allocate(ImagingOutline outline, int extra)
     if (outline->count + extra > outline->size) {
         /* expand outline buffer */
         outline->size += extra + 25;
-        if (!outline->edges)
-            e = malloc(outline->size * sizeof(Edge));
-        else
+        if (!outline->edges) {
+            /* malloc check ok, uses calloc for overflow */
+            e = calloc(outline->size, sizeof(Edge));
+        } else {
+            if (outline->size > INT_MAX / sizeof(Edge)) {
+                return NULL;
+            }
+            /* malloc check ok, overflow checked above */
             e = realloc(outline->edges, outline->size * sizeof(Edge));
+        }
         if (!e)
             return NULL;
         outline->edges = e;
