@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Integer overflow checks on all calls to *alloc #1781
+  [wiredfool]
+
 - Change equals method on Image so it short circuits #1967
   [mattBoros]
  
