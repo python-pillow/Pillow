@@ -303,6 +303,10 @@ class TestFileJpeg(PillowTestCase):
         filename = "Tests/images/junk_jpeg_header.jpg"
         Image.open(filename)
 
+    def test_ff00_jpeg_header(self):
+        filename = "Tests/images/jpeg_ff00_header.jpg"
+        Image.open(filename)
+
     def _n_qtables_helper(self, n, test_file):
         im = Image.open(test_file)
         f = self.tempfile('temp.jpg')

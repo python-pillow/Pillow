@@ -331,6 +331,8 @@ class JpegImageFile(ImageFile.ImageFile):
             elif i == 0 or i == 0xFFFF:
                 # padded marker or junk; move on
                 s = b"\xff"
+            elif i == 0xFF00:  # Skip extraneous data (escaped 0xFF)
+                s = self.fp.read(1)
             else:
                 raise SyntaxError("no marker found")
 
