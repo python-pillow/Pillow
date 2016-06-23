@@ -240,7 +240,7 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
 /* transform primitives (ImagingTransformMap) */
 
 static int
-affine_transform(double* xin, double* yin, int x, int y, void* data)
+affine_transform(double* xout, double* yout, int x, int y, void* data)
 {
     /* full moon tonight.  your compiler will generate bogus code
        for simple expressions, unless you reorganize the code, or
@@ -250,28 +250,34 @@ affine_transform(double* xin, double* yin, int x, int y, void* data)
     double a0 = a[0]; double a1 = a[1]; double a2 = a[2];
     double a3 = a[3]; double a4 = a[4]; double a5 = a[5];
 
-    xin[0] = a0*x + a1*y + a2;
-    yin[0] = a3*x + a4*y + a5;
+    double xin = x + 0.5;
+    double yin = y + 0.5;
+
+    xout[0] = a0*xin + a1*yin + a2;
+    yout[0] = a3*xin + a4*yin + a5;
 
     return 1;
 }
 
 static int
-perspective_transform(double* xin, double* yin, int x, int y, void* data)
+perspective_transform(double* xout, double* yout, int x, int y, void* data)
 {
     double* a = (double*) data;
     double a0 = a[0]; double a1 = a[1]; double a2 = a[2];
     double a3 = a[3]; double a4 = a[4]; double a5 = a[5];
     double a6 = a[6]; double a7 = a[7];
 
-    xin[0] = (a0*x + a1*y + a2) / (a6*x + a7*y + 1);
-    yin[0] = (a3*x + a4*y + a5) / (a6*x + a7*y + 1);
+    double xin = x + 0.5;
+    double yin = y + 0.5;
+
+    xout[0] = (a0*xin + a1*yin + a2) / (a6*xin + a7*yin + 1);
+    yout[0] = (a3*xin + a4*yin + a5) / (a6*xin + a7*yin + 1);
 
     return 1;
 }
 
 static int
-quad_transform(double* xin, double* yin, int x, int y, void* data)
+quad_transform(double* xout, double* yout, int x, int y, void* data)
 {
     /* quad warp: map quadrilateral to rectangle */
 
@@ -279,8 +285,11 @@ quad_transform(double* xin, double* yin, int x, int y, void* data)
     double a0 = a[0]; double a1 = a[1]; double a2 = a[2]; double a3 = a[3];
     double a4 = a[4]; double a5 = a[5]; double a6 = a[6]; double a7 = a[7];
 
-    xin[0] = a0 + a1*x + a2*y + a3*x*y;
-    yin[0] = a4 + a5*x + a6*y + a7*x*y;
+    double xin = x + 0.5;
+    double yin = y + 0.5;
+
+    xout[0] = a0 + a1*xin + a2*yin + a3*xin*yin;
+    yout[0] = a4 + a5*xin + a6*yin + a7*xin*yin;
 
     return 1;
 }
@@ -290,8 +299,8 @@ quad_transform(double* xin, double* yin, int x, int y, void* data)
 static int
 nearest_filter8(void* out, Imaging im, double xin, double yin)
 {
-    int x = COORD(xin);
-    int y = COORD(yin);
+    int x = COORD(xin + 0.5);
+    int y = COORD(yin + 0.5);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
     ((UINT8*)out)[0] = im->image8[y][x];
@@ -301,8 +310,8 @@ nearest_filter8(void* out, Imaging im, double xin, double yin)
 static int
 nearest_filter16(void* out, Imaging im, double xin, double yin)
 {
-    int x = COORD(xin);
-    int y = COORD(yin);
+    int x = COORD(xin + 0.5);
+    int y = COORD(yin + 0.5);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
     ((INT16*)out)[0] = ((INT16*)(im->image8[y]))[x];
@@ -312,8 +321,8 @@ nearest_filter16(void* out, Imaging im, double xin, double yin)
 static int
 nearest_filter32(void* out, Imaging im, double xin, double yin)
 {
-    int x = COORD(xin);
-    int y = COORD(yin);
+    int x = COORD(xin + 0.5);
+    int y = COORD(yin + 0.5);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
     ((INT32*)out)[0] = im->image32[y][x];
@@ -691,8 +700,8 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
         return (Imaging) ImagingError_MemoryError();
     }
 
-    xo = a[2];
-    yo = a[5];
+    xo = a[2] + a[0] * 0.5;
+    yo = a[5] + a[4] * 0.5;
 
     xmin = x1;
     xmax = x0;
@@ -771,8 +780,10 @@ affine_fixed(Imaging imOut, Imaging imIn,
 /* use 16.16 fixed point arithmetics */
 #define FIX(v) FLOOR((v)*65536.0 + 0.5)
 
-    a0 = FIX(a[0]); a1 = FIX(a[1]); a2 = FIX(a[2]);
-    a3 = FIX(a[3]); a4 = FIX(a[4]); a5 = FIX(a[5]);
+    a0 = FIX(a[0]); a1 = FIX(a[1]); 
+    a3 = FIX(a[3]); a4 = FIX(a[4]);
+    a2 = FIX(a[2] + a[0] * 0.5 + a[1] * 0.5);
+    a5 = FIX(a[5] + a[3] * 0.5 + a[4] * 0.5);
 
 #undef FIX
 
@@ -835,9 +846,10 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
             filterid, fill);
     }
 
-    if (a[1] == 0 && a[3] == 0)
+    if (a[1] == 0 && a[3] == 0) {
         /* Scaling */
         return ImagingScaleAffine(imOut, imIn, x0, y0, x1, y1, a, fill);
+    }
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -867,8 +879,8 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
     xsize = (int) imIn->xsize;
     ysize = (int) imIn->ysize;
 
-    xo = a[2];
-    yo = a[5];
+    xo = a[2] + a[1] * 0.5 + a[0] * 0.5;
+    yo = a[5] + a[4] * 0.5 + a[3] * 0.5;
 
 #define AFFINE_TRANSFORM(pixel, image)\
     for (y = y0; y < y1; y++) {\
