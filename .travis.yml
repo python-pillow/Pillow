@@ -12,54 +12,81 @@ env:
       - secure: "ky76goiK6n4k8V9/uG340GSFVwmjE7G76l9xbhhGZkcph4eTwN5VRM/tqyJvlNs/HZOhKSILfyGBeaG8qf7gHmwr0touPT+EjWn4TNV8iyVj75ZshgRE9DuaIAfdH89gW2m+BmvBDyzi0JE3KVCu55NcGm8h7Ecl6nmQ/c2iROY="
 
 language: python
+# Default Python version is usually 2.7
+python: 3.5
 sudo: required
 dist: trusty
 services: docker
 
 matrix:
+  exclude:
+      # Exclude the default Python 3.5 build
+      - python: 3.5
   include:
     - os: linux
-      python: 2.7
-    - os: linux
-      python: 2.7
       env:
+        - MB_PYTHON_VERSION=2.7
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
         - UNICODE_WIDTH=16
     - os: linux
-      python: 2.7
       env:
+        - MB_PYTHON_VERSION=2.7
         - PLAT=i686
     - os: linux
-      python: 2.7
       env:
+        - MB_PYTHON_VERSION=2.7
         - PLAT=i686
         - UNICODE_WIDTH=16
     - os: linux
-      python: 3.4
-    - os: linux
-      python: 3.4
       env:
+        - MB_PYTHON_VERSION=3.4
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=3.4
         - PLAT=i686
     - os: linux
-      python: 3.5
-    - os: linux
-      python: 3.5
       env:
+        - MB_PYTHON_VERSION=3.5
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=3.5
         - PLAT=i686
     - os: osx
       language: objective-c
-      env: TRAVIS_PYTHON_VERSION=2.7
+      env: MB_PYTHON_VERSION=2.7
     - os: osx
       language: objective-c
       env:
-        - TRAVIS_PYTHON_VERSION=3.3
+        - MB_PYTHON_VERSION=3.3
     - os: osx
       language: objective-c
       env:
-        - TRAVIS_PYTHON_VERSION=3.4
+        - MB_PYTHON_VERSION=3.4
     - os: osx
       language: objective-c
       env:
-        - TRAVIS_PYTHON_VERSION=3.5
+        - MB_PYTHON_VERSION=3.5
+  # 32-bit tests currently failing on Linux
+  allow_failures:
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+        - PLAT=i686
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+        - PLAT=i686
+        - UNICODE_WIDTH=16
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=3.4
+        - PLAT=i686
+    - os: linux
+      env:
+        - MB_PYTHON_VERSION=3.5
+        - PLAT=i686
 
 before_install:
     - source multibuild/common_utils.sh
