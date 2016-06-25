@@ -466,7 +466,7 @@ class TestFileTiff(PillowTestCase):
     def test_open_tiff_uint16(self):
         # Test an image of all '0' values
         pixel_value = 0x1234
-        infile = "Tests/images/uint16_1_{}.tif".format(pixel_value)
+        infile = "Tests/images/uint16_1_4660.tif"
         im = Image.open(infile)
         self.assertEqual(im.getpixel((0, 0)), pixel_value)
 
