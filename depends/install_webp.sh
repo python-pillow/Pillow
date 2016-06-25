@@ -2,7 +2,7 @@
 # install webp
 
 if [ ! -f libwebp-0.5.0.tar.gz ]; then
-    wget 'http://downloads.webmproject.org/releases/webp/libwebp-0.5.0.tar.gz'
+    wget -O 'libwebp-0.5.0.tar.gz' 'https://github.com/python-pillow/pillow-depends/blob/master/libwebp-0.5.0.tar.gz?raw=true'
 fi
 
 rm -r libwebp-0.5.0

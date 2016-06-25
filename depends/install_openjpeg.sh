@@ -3,7 +3,7 @@
 
 
 if [ ! -f openjpeg-2.1.0.tar.gz ]; then
-    wget 'http://iweb.dl.sourceforge.net/project/openjpeg.mirror/2.1.0/openjpeg-2.1.0.tar.gz'
+    wget -O 'openjpeg-2.1.0.tar.gz' 'https://github.com/python-pillow/pillow-depends/blob/master/openjpeg-2.1.0.tar.gz?raw=true'
 
 fi
 
