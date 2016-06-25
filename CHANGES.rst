@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Allow ICC profile from `encoderinfo` while saving PNGs #1909
+  [homm]
+
 - Fix integer overflow on ILP32 systems (32-bit Linux). #1975
   [lambdafu]
 
