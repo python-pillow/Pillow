@@ -755,8 +755,8 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
         for cid, data in info.chunks:
             chunk(fp, cid, data)
 
-    # ICC profile writing support -- 2008-06-06 Florian Hoech
-    if im.info.get("icc_profile"):
+    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
+    if icc:
         # ICC profile
         # according to PNG spec, the iCCP chunk contains:
         # Profile name  1-79 bytes (character string)
@@ -764,7 +764,7 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
         # Compression method    1 byte (0)
         # Compressed profile    n bytes (zlib with deflate compression)
         name = b"ICC Profile"
-        data = name + b"\0\0" + zlib.compress(im.info["icc_profile"])
+        data = name + b"\0\0" + zlib.compress(icc)
         chunk(fp, b"iCCP", data)
 
     ImageFile._save(im, _idat(fp, chunk),

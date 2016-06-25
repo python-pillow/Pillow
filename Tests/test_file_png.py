@@ -434,25 +434,35 @@ class TestFilePng(PillowTestCase):
 
         self.assertEqual(im.info["transparency"], 0)
 
-    def test_save_icc_profile_none(self):
-        # check saving files with an ICC profile set to None (omit profile)
-        in_file = "Tests/images/icc_profile_none.png"
-        im = Image.open(in_file)
+    def test_save_icc_profile(self):
+        im = Image.open("Tests/images/icc_profile_none.png")
+        self.assertEqual(im.info['icc_profile'], None)
+
+        with_icc = Image.open("Tests/images/icc_profile.png")
+        expected_icc = with_icc.info['icc_profile']
+
+        im = roundtrip(im, icc_profile=expected_icc)
+        self.assertEqual(im.info['icc_profile'], expected_icc)
+
+    def test_discard_icc_profile(self):
+        im = Image.open('Tests/images/icc_profile.png')
+
+        im = roundtrip(im, icc_profile=None)
+        self.assertNotIn('icc_profile', im.info)
+
+    def test_roundtrip_icc_profile(self):
+        im = Image.open('Tests/images/icc_profile.png')
+        expected_icc = im.info['icc_profile']
+
+        im = roundtrip(im)
+        self.assertEqual(im.info['icc_profile'], expected_icc)
+
+    def test_roundtrip_no_icc_profile(self):
+        im = Image.open("Tests/images/icc_profile_none.png")
         self.assertEqual(im.info['icc_profile'], None)
 
         im = roundtrip(im)
         self.assertNotIn('icc_profile', im.info)
-
-    def test_roundtrip_icc_profile(self):
-        # check that we can roundtrip the icc profile
-        im = hopper('RGB')
-
-        jpeg_image = Image.open('Tests/images/flower2.jpg')
-        expected_icc = jpeg_image.info['icc_profile']
-
-        im.info['icc_profile'] = expected_icc
-        im = roundtrip(im)
-        self.assertEqual(im.info['icc_profile'], expected_icc)
 
     def test_repr_png(self):
         im = hopper()
