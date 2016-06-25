@@ -904,6 +904,18 @@ p2l(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 }
 
 static void
+p2la(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    /* FIXME: precalculate greyscale palette? */
+    for (x = 0; x < xsize; x++, out+=4) {
+        const UINT8* rgba = &palette[*in++ * 4];
+        out[0] = L(rgba) / 1000;
+        out[3] = rgba[3];
+    }
+}
+
+static void
 pa2la(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
@@ -1005,7 +1017,7 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
     else if (strcmp(mode, "L") == 0)
         convert = p2l;
     else if (strcmp(mode, "LA") == 0)
-        convert = (alpha) ? pa2la : p2l;
+        convert = (alpha) ? pa2la : p2la;
     else if (strcmp(mode, "I") == 0)
         convert = p2i;
     else if (strcmp(mode, "F") == 0)
