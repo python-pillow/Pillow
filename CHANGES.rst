@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Added additional uint modes for Image.fromarray, more extensve tests of fromarray #1984
+  [mairsbw, wiredfool]
+
 - Fix for program importing PyQt4 when PyQt5 also installed #1942
   [hugovk]
 
