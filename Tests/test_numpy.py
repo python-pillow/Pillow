@@ -55,28 +55,22 @@ class TestNumpy(PillowTestCase):
         self.assert_image(to_image(numpy.int8), "I", TEST_IMAGE_SIZE)
 
         # Check non-fixed-size integer types
-        self.assert_image(to_image(numpy.uint), "I", TEST_IMAGE_SIZE)
-        self.assert_image(to_image(numpy.int), "I", TEST_IMAGE_SIZE)
+        # These may fail, depending on the platform, since we have no native
+        # 64 bit int image types.
+        # self.assert_image(to_image(numpy.uint), "I", TEST_IMAGE_SIZE)
+        # self.assert_image(to_image(numpy.int), "I", TEST_IMAGE_SIZE)
 
         # Check 16-bit integer formats
         if Image._ENDIAN == '<':
             self.assert_image(to_image(numpy.uint16), "I;16", TEST_IMAGE_SIZE)
         else:
             self.assert_image(to_image(numpy.uint16), "I;16B", TEST_IMAGE_SIZE)
-        if Image._ENDIAN == '<':
-            self.assert_image(to_image(numpy.int16), "I;16S", TEST_IMAGE_SIZE)
-        else:
-            self.assert_image(to_image(numpy.int16), "I;16BS", TEST_IMAGE_SIZE)
+
+        self.assert_image(to_image(numpy.int16), "I", TEST_IMAGE_SIZE)
 
         # Check 32-bit integer formats
-        if Image._ENDIAN == '<':
-            self.assert_image(to_image(numpy.uint32), "I;32", TEST_IMAGE_SIZE)
-        else:
-            self.assert_image(to_image(numpy.uint32), "I;32B", TEST_IMAGE_SIZE)
-        if Image._ENDIAN == '<':
-            self.assert_image(to_image(numpy.int32), "I;32S", TEST_IMAGE_SIZE)
-        else:
-            self.assert_image(to_image(numpy.int32), "I;32BS", TEST_IMAGE_SIZE)
+        self.assert_image(to_image(numpy.uint32), "I", TEST_IMAGE_SIZE)
+        self.assert_image(to_image(numpy.int32), "I", TEST_IMAGE_SIZE)
 
         # Check 64-bit integer formats
         self.assertRaises(TypeError, lambda: to_image(numpy.uint64))
