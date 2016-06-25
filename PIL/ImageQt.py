@@ -26,12 +26,12 @@ try:
     from PyQt5.QtGui import QImage, qRgba, QPixmap
     from PyQt5.QtCore import QBuffer, QIODevice
     qt_version = '5'
-except ImportError:
+except (ImportError, RuntimeError):
     try:
         from PyQt4.QtGui import QImage, qRgba, QPixmap
         from PyQt4.QtCore import QBuffer, QIODevice
         qt_version = '4'
-    except ImportError:
+    except (ImportError, RuntimeError):
         try:
             from PySide.QtGui import QImage, qRgba, QPixmap
             from PySide.QtCore import QBuffer, QIODevice
