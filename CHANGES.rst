@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Skip extra 0xff00 in jpeg #1977
+  [kkopachev]
+  
 - Use bytearray for palette mutable storage #1985
   [radarhere, wiredfool]
 
