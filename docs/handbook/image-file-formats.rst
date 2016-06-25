@@ -412,6 +412,9 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     When ``optimize`` option is True ``compress_level`` has no effect
     (it is set to 9 regardless of a value passed).
 
+**icc_profile**
+    The ICC Profile to include in the saved file. 
+
 **bits (experimental)**
     For ``P`` images, this option controls how many bits to store. If omitted,
     the PNG writer uses 8 bits (256 colors).
@@ -422,8 +425,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 .. note::
 
     To enable PNG support, you need to build and install the ZLIB compression
-    library before building the Python Imaging Library. See the distribution
-    README for details.
+    library before building the Python Imaging Library. See the installation
+    documentation for details.
 
 PPM
 ^^^
