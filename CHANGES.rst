@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Changed depends/install_*.sh urls to point to githup pillow-depends repo #1983
+  [wiredfool]
+  
 - Allow ICC profile from `encoderinfo` while saving PNGs #1909
   [homm]
 
