@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Fix for program importing PyQt4 when PyQt5 also installed #1942
+  [hugovk]
+
 - Changed depends/install_*.sh urls to point to githup pillow-depends repo #1983
   [wiredfool]
   
