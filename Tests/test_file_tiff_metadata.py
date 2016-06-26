@@ -175,7 +175,7 @@ class TestFileTiffMetadata(PillowTestCase):
 
         im.save(out)
         reloaded = Image.open(out)
-        self.assert_(type(im.info['icc_profile']) is not type(tuple))
+        self.assert_(type(im.info['icc_profile']) is not tuple)
         self.assertEqual(im.info['icc_profile'], reloaded.info['icc_profile'])
 
     def test_iccprofile_binary(self):
