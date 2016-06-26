@@ -287,7 +287,7 @@ class TestFileTiff(PillowTestCase):
             ifd = TiffImagePlugin.ImageFileDirectory_v2()
             data = b"abc"
             ret = ifd.load_byte(data, legacy_api)
-            self.assertEqual(ret, b"abc" if legacy_api else (97, 98, 99))
+            self.assertEqual(ret, b"abc")
 
     def test_load_string(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()

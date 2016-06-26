@@ -544,8 +544,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                             self.tagtype[tag] = 2
 
         if self.tagtype[tag] == 7 and bytes is not str:
-            values = [value.encode("ascii", 'replace') if isinstance(value, str) else value
-                      for value in values]
+            values = [value.encode("ascii", 'replace') if isinstance(value, str) else value]
 
         values = tuple(info.cvt_enum(value) for value in values)
 
@@ -604,8 +603,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
     @_register_loader(1, 1)  # Basic type, except for the legacy API.
     def load_byte(self, data, legacy_api=True):
-        return (data if legacy_api else
-                tuple(map(ord, data) if bytes is str else data))
+        return data
 
     @_register_writer(1)  # Basic type, except for the legacy API.
     def write_byte(self, data):
