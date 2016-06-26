@@ -48,6 +48,12 @@ def lookup(tag):
 #
 #  id: (Name, Type, Length, enum_values)
 #
+# The length here differs from the length in the tiff spec.  For
+# numbers, the tiff spec is for the number of fields returned. We
+# agree here.  For string-like types, the tiff spec uses the length of
+# field in bytes.  In Pillow, we are using the number of expected
+# fields, in general 1 for string-like types.
+
 
 BYTE = 1
 ASCII = 2
@@ -156,14 +162,14 @@ TAGS_V2 = {
 
     # FIXME add more tags here
     34665: ("ExifIFD", SHORT, 1),
-    34675: ('ICCProfile', UNDEFINED, 0),
+    34675: ('ICCProfile', UNDEFINED, 1),
     34853: ('GPSInfoIFD', BYTE, 1),
 
     # MPInfo
     45056: ("MPFVersion", UNDEFINED, 1),
     45057: ("NumberOfImages", LONG, 1),
     45058: ("MPEntry", UNDEFINED, 1),
-    45059: ("ImageUIDList", UNDEFINED, 0),
+    45059: ("ImageUIDList", UNDEFINED, 0), # UNDONE, check
     45060: ("TotalFrames", LONG, 1),
     45313: ("MPIndividualNum", LONG, 1),
     45569: ("PanOrientation", LONG, 1),
