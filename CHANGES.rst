@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Replace index = index+1 in docs with +=1
+  [cclauss]
+
 - Skip extra 0xff00 in jpeg #1977
   [kkopachev]
   
