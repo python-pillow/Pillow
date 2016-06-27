@@ -13,7 +13,7 @@ Changelog (Pillow)
 - Use bytearray for palette mutable storage #1985
   [radarhere, wiredfool]
 
-- Added additional uint modes for Image.fromarray, more extensve tests of fromarray #1984
+- Added additional uint modes for Image.fromarray, more extensive tests of fromarray #1984
   [mairsbw, wiredfool]
 
 - Fix for program importing PyQt4 when PyQt5 also installed #1942
