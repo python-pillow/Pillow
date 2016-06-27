@@ -14,7 +14,7 @@ co:
         git checkout -t $$i ; \
     done
 
-coverage: 
+coverage:
 	coverage erase
 	coverage run --parallel-mode --include=PIL/* selftest.py
 	nosetests --with-cov --cov='PIL/' --cov-report=html Tests/test_*.py
@@ -28,8 +28,8 @@ doc:
 
 doccheck:
 	$(MAKE) -C docs html
-# Don't make our test rely on the links in the docs being up every single build. 
-# We don't control them.  But do check, and update them to the target of their redirectes.  
+# Don't make our test rely on the links in the docs being up every single build.
+# We don't control them.  But do check, and update them to the target of their redirectes.
 	$(MAKE) -C docs linkcheck || true
 
 docserve:
@@ -42,13 +42,13 @@ help:
 	@echo "  doc            make html docs"
 	@echo "  docserve       run an http server on the docs directory"
 	@echo "  html           to make standalone HTML files"
-	@echo "  inplace        make inplace extension" 
+	@echo "  inplace        make inplace extension"
 	@echo "  install        make and install"
 	@echo "  install-req    install documentation and test dependencies"
 	@echo "  install-venv   install in virtualenv"
 	@echo "  release-test   run code and package tests before release"
 	@echo "  test           run tests on installed pillow"
-	@echo "  upload         build and upload sdists to PyPI" 
+	@echo "  upload         build and upload sdists to PyPI"
 	@echo "  upload-test    build and upload sdists to test.pythonpackages.com"
 
 inplace: clean
@@ -61,7 +61,7 @@ install:
 install-req:
 	pip install -r requirements.txt
 
-install-venv: 
+install-venv:
 	virtualenv .
 	bin/pip install -r requirements.txt
 

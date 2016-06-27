@@ -22,6 +22,6 @@ e.g.::
   $ git checkout [branch or tag]
   $ virtualenv -p /usr/bin/python2.7 ~/vpy27
   $ source ~/vpy27/bin/activate
-  $ make install 
+  $ make install
   $ make test
   

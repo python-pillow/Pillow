@@ -2,8 +2,8 @@
 # with all/most of the dependencies working.
 #
 # Tcl/Tk isn't detecting
-# Freetype has different metrics so tests are failing. 
-# sudo and bash are required for the webp build script. 
+# Freetype has different metrics so tests are failing.
+# sudo and bash are required for the webp build script.
 
 FROM alpine
 USER root
@@ -28,7 +28,7 @@ RUN apk --no-cache add python \
 # install from git, run tests, including webp
 RUN apk --no-cache add git \
 				   	   bash \
-					   sudo	
+					   sudo
 					   
 RUN git clone https://github.com/python-pillow/Pillow.git /Pillow
 RUN pip install virtualenv && virtualenv /vpy && source /vpy/bin/activate && pip install nose

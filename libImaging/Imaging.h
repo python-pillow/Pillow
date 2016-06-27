@@ -491,7 +491,7 @@ struct ImagingCodecStateInstance {
 /* Incremental encoding/decoding support */
 typedef struct ImagingIncrementalCodecStruct *ImagingIncrementalCodec;
 
-typedef int (*ImagingIncrementalCodecEntry)(Imaging im, 
+typedef int (*ImagingIncrementalCodecEntry)(Imaging im,
                                             ImagingCodecState state,
                                             ImagingIncrementalCodec codec);
 
