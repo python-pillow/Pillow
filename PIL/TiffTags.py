@@ -48,11 +48,21 @@ def lookup(tag):
 #
 #  id: (Name, Type, Length, enum_values)
 #
+# The length here differs from the length in the tiff spec.  For
+# numbers, the tiff spec is for the number of fields returned. We
+# agree here.  For string-like types, the tiff spec uses the length of
+# field in bytes.  In Pillow, we are using the number of expected
+# fields, in general 1 for string-like types.
 
+
+BYTE = 1
 ASCII = 2
 SHORT = 3
 LONG = 4
 RATIONAL = 5
+UNDEFINED = 7
+SIGNED_RATIONAL = 10
+DOUBLE = 12
 
 TAGS_V2 = {
 
@@ -128,8 +138,8 @@ TAGS_V2 = {
     338: ("ExtraSamples", SHORT, 0),
     339: ("SampleFormat", SHORT, 0),
 
-    340: ("SMinSampleValue", 12, 0),
-    341: ("SMaxSampleValue", 12, 0),
+    340: ("SMinSampleValue", DOUBLE, 0),
+    341: ("SMaxSampleValue", DOUBLE, 0),
     342: ("TransferRange", SHORT, 6),
 
     # obsolete JPEG tags
@@ -152,34 +162,34 @@ TAGS_V2 = {
 
     # FIXME add more tags here
     34665: ("ExifIFD", SHORT, 1),
-    34675: ('ICCProfile', 7, 0),
-    34853: ('GPSInfoIFD', 1, 1),
+    34675: ('ICCProfile', UNDEFINED, 1),
+    34853: ('GPSInfoIFD', BYTE, 1),
 
     # MPInfo
-    45056: ("MPFVersion", 7, 1),
+    45056: ("MPFVersion", UNDEFINED, 1),
     45057: ("NumberOfImages", LONG, 1),
-    45058: ("MPEntry", 7, 1),
-    45059: ("ImageUIDList", 7, 0),
+    45058: ("MPEntry", UNDEFINED, 1),
+    45059: ("ImageUIDList", UNDEFINED, 0), # UNDONE, check
     45060: ("TotalFrames", LONG, 1),
     45313: ("MPIndividualNum", LONG, 1),
     45569: ("PanOrientation", LONG, 1),
     45570: ("PanOverlap_H", RATIONAL, 1),
     45571: ("PanOverlap_V", RATIONAL, 1),
     45572: ("BaseViewpointNum", LONG, 1),
-    45573: ("ConvergenceAngle", 10, 1),
+    45573: ("ConvergenceAngle", SIGNED_RATIONAL, 1),
     45574: ("BaselineLength", RATIONAL, 1),
-    45575: ("VerticalDivergence", 10, 1),
-    45576: ("AxisDistance_X", 10, 1),
-    45577: ("AxisDistance_Y", 10, 1),
-    45578: ("AxisDistance_Z", 10, 1),
-    45579: ("YawAngle", 10, 1),
-    45580: ("PitchAngle", 10, 1),
-    45581: ("RollAngle", 10, 1),
+    45575: ("VerticalDivergence", SIGNED_RATIONAL, 1),
+    45576: ("AxisDistance_X", SIGNED_RATIONAL, 1),
+    45577: ("AxisDistance_Y", SIGNED_RATIONAL, 1),
+    45578: ("AxisDistance_Z", SIGNED_RATIONAL, 1),
+    45579: ("YawAngle", SIGNED_RATIONAL, 1),
+    45580: ("PitchAngle", SIGNED_RATIONAL, 1),
+    45581: ("RollAngle", SIGNED_RATIONAL, 1),
 
     50741: ("MakerNoteSafety", SHORT, 1, {"Unsafe": 0, "Safe": 1}),
     50780: ("BestQualityScale", RATIONAL, 1),
     50838: ("ImageJMetaDataByteCounts", LONG, 1),
-    50839: ("ImageJMetaData", 7, 1)
+    50839: ("ImageJMetaData", UNDEFINED, 1)
 }
 
 # Legacy Tags structure

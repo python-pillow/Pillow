@@ -22,3 +22,12 @@ There are two new options to control the ``build_ext`` task in ``setup.py``:
     that are checked for libraries and headers for build systems or
     cross compilers that specify that information in via environment
     variables.
+
+
+Image Metadata
+==============
+
+The return type for binary data in version 2 Exif and Tiff metadata
+has been changed from a tuple of integers to bytes. This is a change
+from the behavior since ``3.0.0``.
+

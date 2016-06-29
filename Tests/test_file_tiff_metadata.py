@@ -175,7 +175,7 @@ class TestFileTiffMetadata(PillowTestCase):
 
         im.save(out)
         reloaded = Image.open(out)
-        self.assert_(type(im.info['icc_profile']) is not type(tuple))
+        self.assert_(type(im.info['icc_profile']) is not tuple)
         self.assertEqual(im.info['icc_profile'], reloaded.info['icc_profile'])
 
     def test_iccprofile_binary(self):
@@ -185,6 +185,16 @@ class TestFileTiffMetadata(PillowTestCase):
         im = Image.open('Tests/images/hopper.iccprofile_binary.tif')
         self.assertEqual(im.tag_v2.tagtype[34675], 1)
         self.assertTrue(im.info['icc_profile'])
+
+    def test_iccprofile_save_png(self):
+        im = Image.open('Tests/images/hopper.iccprofile.tif')
+        outfile = self.tempfile('temp.png')
+        im.save(outfile)
+
+    def test_iccprofile_binary_save_png(self):
+        im = Image.open('Tests/images/hopper.iccprofile_binary.tif')
+        outfile = self.tempfile('temp.png')
+        im.save(outfile)
 
     def test_exif_div_zero(self):
         im = hopper()
