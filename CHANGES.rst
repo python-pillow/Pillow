@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Removed duplicate code in ImagePalette #1832
+  [radarhere]
+
 - test_imagecms: Reduce precision of extended info due to 32 bit machine precision #1990
   [AbdealiJK]
   
