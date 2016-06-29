@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Binary Tiff Metadata/ICC profile. #1988
+  [wiredfool] 
+  
 - Ignore large text blocks in PNG if LOAD_TRUNCATED_IMAGES is enabled #1970
   [homm]
 
