@@ -3,6 +3,7 @@ from helper import unittest, PillowTestCase, hopper
 from io import BytesIO
 
 from PIL import Image
+from PIL import ImageFile
 from PIL import PngImagePlugin
 import zlib
 
@@ -318,6 +319,35 @@ class TestFilePng(PillowTestCase):
             im = Image.open(BytesIO(test_file))
             self.assertTrue(im.fp is not None)
             self.assertRaises((IOError, SyntaxError), im.verify)
+
+    def test_verify_ignores_crc_error(self):
+        # check ignores crc errors in ancillary chunks
+
+        chunk_data = chunk(b'tEXt', b'spam')
+        broken_crc_chunk_data = chunk_data[:-1] + 'q'  # break CRC
+
+        image_data = HEAD + broken_crc_chunk_data + TAIL
+        self.assertRaises(SyntaxError,
+                          lambda: PngImagePlugin.PngImageFile(BytesIO(image_data)))
+
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        try:
+            im = load(image_data)
+            self.assertTrue(im is not None)
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+
+    def test_verify_not_ignores_crc_error_in_required_chunk(self):
+        # check does not ignore crc errors in required chunks
+
+        image_data = MAGIC + IHDR[:-1] + 'q' + TAIL
+
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        try:
+            self.assertRaises(SyntaxError,
+                              lambda: PngImagePlugin.PngImageFile(BytesIO(image_data)))
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
     def test_roundtrip_dpi(self):
