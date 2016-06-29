@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Ignore large text blocks in PNG if LOAD_TRUNCATED_IMAGES is enabled #1970
+  [homm]
+
 - Replace index = index+1 in docs with +=1
   [cclauss]
 
