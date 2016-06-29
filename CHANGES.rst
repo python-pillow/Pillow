@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- test_imagecms: Reduce precision of extended info due to 32 bit machine precision #1990
+  [AbdealiJK]
+  
 - Binary Tiff Metadata/ICC profile. #1988
   [wiredfool] 
   
