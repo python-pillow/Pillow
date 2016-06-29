@@ -140,7 +140,7 @@ class ChunkStream(object):
 
         # Skip CRC checks for ancillary chunks if allowed to load truncated images
         # 5th byte of first char is 1 [specs, section 5.4]
-        if ImageFile.LOAD_TRUNCATED_IMAGES and (ord(cid[0]) >> 5 & 1):
+        if ImageFile.LOAD_TRUNCATED_IMAGES and (i8(cid[0]) >> 5 & 1):
             self.crc_skip(cid, data)
             return
 

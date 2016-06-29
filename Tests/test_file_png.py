@@ -324,7 +324,7 @@ class TestFilePng(PillowTestCase):
         # check ignores crc errors in ancillary chunks
 
         chunk_data = chunk(b'tEXt', b'spam')
-        broken_crc_chunk_data = chunk_data[:-1] + 'q'  # break CRC
+        broken_crc_chunk_data = chunk_data[:-1] + b'q'  # break CRC
 
         image_data = HEAD + broken_crc_chunk_data + TAIL
         self.assertRaises(SyntaxError,
@@ -340,7 +340,7 @@ class TestFilePng(PillowTestCase):
     def test_verify_not_ignores_crc_error_in_required_chunk(self):
         # check does not ignore crc errors in required chunks
 
-        image_data = MAGIC + IHDR[:-1] + 'q' + TAIL
+        image_data = MAGIC + IHDR[:-1] + b'q' + TAIL
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
