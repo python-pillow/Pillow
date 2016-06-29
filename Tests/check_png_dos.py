@@ -1,5 +1,5 @@
 from helper import unittest, PillowTestCase
-from PIL import Image, PngImagePlugin
+from PIL import Image, PngImagePlugin, ImageFile
 from io import BytesIO
 import zlib
 
@@ -7,6 +7,21 @@ TEST_FILE = "Tests/images/png_decompression_dos.png"
 
 
 class TestPngDos(PillowTestCase):
+    def test_ignore_dos_text(self):
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+        try:
+            im = Image.open(TEST_FILE)
+            im.load()
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+
+        for s in im.text.values():
+            self.assertLess(len(s), 1024*1024, "Text chunk larger than 1M")
+
+        for s in im.info.values():
+            self.assertLess(len(s), 1024*1024, "Text chunk larger than 1M")
+
     def test_dos_text(self):
 
         try:

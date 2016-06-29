@@ -311,6 +311,11 @@ class PngStream(ChunkStream):
                               comp_method)
         try:
             icc_profile = _safe_zlib_decompress(s[i+2:])
+        except ValueError:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                icc_profile = None
+            else:
+                raise
         except zlib.error:
             icc_profile = None  # FIXME
         self.im_info["icc_profile"] = icc_profile
@@ -430,6 +435,11 @@ class PngStream(ChunkStream):
                               comp_method)
         try:
             v = _safe_zlib_decompress(v[1:])
+        except ValueError:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                v = b""
+            else:
+                raise
         except zlib.error:
             v = b""
 
@@ -462,6 +472,11 @@ class PngStream(ChunkStream):
             if cm == 0:
                 try:
                     v = _safe_zlib_decompress(v)
+                except ValueError:
+                    if ImageFile.LOAD_TRUNCATED_IMAGES:
+                        return s
+                    else:
+                        raise
                 except zlib.error:
                     return s
             else:
