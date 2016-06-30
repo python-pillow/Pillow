@@ -87,6 +87,8 @@ the file format handler (see the chapter on :ref:`image-file-formats`). Most
 handlers add properties to the :py:attr:`~PIL.Image.Image.info` attribute when
 loading an image, but ignore it when saving images.
 
+.. _concept-filters:
+
 Filters
 -------
 
@@ -110,8 +112,25 @@ pixel, the Python Imaging Library provides four different resampling *filters*.
 
 ``LANCZOS``
     Calculate the output pixel value using a high-quality Lanczos filter (a
-    truncated sinc) on all pixels that may contribute to the output value. In
-    the current version of PIL, this filter can only be used with the resize
-    and thumbnail methods.
+    truncated sinc) on all pixels that may contribute to the output value.
+    This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
+    and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
     .. versionadded:: 1.1.3
+
+
+Filters comparison table
+~~~~~~~~~~~~~~~~~~~~~~~~
+
++------------+-------------+-----------+-------------+
+| Filter     | Downscaling | Upscaling | Performance |
+|            | quality     | quality   |             |
++============+=============+===========+=============+
+|``NEAREST`` |             |           | ⭐⭐⭐⭐⭐       |
++------------+-------------+-----------+-------------+
+|``BILINEAR``| ⭐           | ⭐         | ⭐⭐⭐         |
++------------+-------------+-----------+-------------+
+|``BICUBIC`` | ⭐⭐⭐         | ⭐⭐⭐       | ⭐⭐          |
++------------+-------------+-----------+-------------+
+|``LANCZOS`` | ⭐⭐⭐⭐        | ⭐⭐⭐⭐      | ⭐           |
++------------+-------------+-----------+-------------+
