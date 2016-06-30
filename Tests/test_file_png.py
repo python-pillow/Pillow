@@ -327,8 +327,7 @@ class TestFilePng(PillowTestCase):
         broken_crc_chunk_data = chunk_data[:-1] + b'q'  # break CRC
 
         image_data = HEAD + broken_crc_chunk_data + TAIL
-        self.assertRaises(SyntaxError,
-                          lambda: PngImagePlugin.PngImageFile(BytesIO(image_data)))
+        self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile, BytesIO(image_data))
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
@@ -344,8 +343,7 @@ class TestFilePng(PillowTestCase):
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
-            self.assertRaises(SyntaxError,
-                              lambda: PngImagePlugin.PngImageFile(BytesIO(image_data)))
+            self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile, BytesIO(image_data))
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
