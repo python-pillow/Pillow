@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Fix issue converting P mode to LA #1986
+  [didrix]
+  
 - Moved test_j2k_overflow to check_j2k_overflow, prevent DOS of our 32bit testing machines #1995
   [wiredfool]
 
