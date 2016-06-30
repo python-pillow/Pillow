@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Docs: OSX build instruction clarification #1994
+  [wiredfool]
+
+- Docs: Filter comparison table #1993
+  [homm]
+
 - Removal of pthread based Incremental.c, new interface for file decoders/encoders to access the python file. Fixes assorted J2k Hangs. #1934
   [wiredfool]
 
