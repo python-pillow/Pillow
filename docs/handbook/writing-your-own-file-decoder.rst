@@ -1,15 +1,27 @@
-.. _file-decoders:
+.. _image-plugins:
 
-Writing Your Own File Decoder
+Writing Your Own Image Plugin
 =============================
 
-The Python Imaging Library uses a plug-in model which allows you to
-add your own decoders to the library, without any changes to the
-library itself. Such plug-ins usually have names like
+The Pillow uses a plug-in model which allows you to add your own
+decoders to the library, without any changes to the library
+itself. Such plug-ins usually have names like
 :file:`XxxImagePlugin.py`, where ``Xxx`` is a unique format name
 (usually an abbreviation).
 
-.. warning:: Pillow >= 2.1.0 no longer automatically imports any file in the Python path with a name ending in :file:`ImagePlugin.py`.  You will need to import your decoder manually.
+.. warning:: Pillow >= 2.1.0 no longer automatically imports any file in the Python path with a name ending in :file:`ImagePlugin.py`.  You will need to import your image plugin manually.
+
+Pillow decodes files in 2 stages:
+
+1. It loops over the available image plugins in the loaded order, and
+   calls the plugin's ``accept` function with the first 16 bytes of
+   the file. If the ``accept`` function returns true, the plugin's
+   ``_open`` method is called to set up the image metadata and image
+   tiles. The ``_open`` method is not for decoding the actual image
+   data.
+2. When the image data is requested, the ``ImageFile.load`` method is
+   called, which sets up a decoder for each tile and feeds the data to
+   it.
 
 A decoder plug-in should contain a decoder class, based on the
 :py:class:`PIL.ImageFile.ImageFile` base class. This class should provide an
@@ -21,6 +33,11 @@ call to the :py:mod:`~PIL.Image` module.
 
 For performance reasons, it is important that the :py:meth:`_open` method
 quickly rejects files that do not have the appropriate contents.
+
+The ``raw`` decoder is useful for uncompressed image formats, but many
+formats require more control of the decoding context, either with a
+decoder written in ``C`` or by linking in an external library to do
+the decoding. (Examples of this include PNG, Tiff, and Jpeg support)
 
 Example
 -------
@@ -74,11 +91,13 @@ true color.
     Image.register_extension(SpamImageFile.format, ".spam")
     Image.register_extension(SpamImageFile.format, ".spa") # dos version
 
-The format handler must always set the :py:attr:`~PIL.Image.Image.size` and
-:py:attr:`~PIL.Image.Image.mode` attributes. If these are not set, the file
-cannot be opened. To simplify the decoder, the calling code considers
-exceptions like :py:exc:`SyntaxError`, :py:exc:`KeyError`, and
-:py:exc:`IndexError`, as a failure to identify the file.
+The format handler must always set the
+:py:attr:`~PIL.Image.Image.size` and :py:attr:`~PIL.Image.Image.mode`
+attributes. If these are not set, the file cannot be opened. To
+simplify the decoder, the calling code considers exceptions like
+:py:exc:`SyntaxError`, :py:exc:`KeyError`, :py:exc:`IndexError`,
+:py:exc:`EOFError` and :py:exc:`struct.error` as a failure to identify
+the file.
 
 Note that the decoder must be explicitly registered using
 :py:func:`PIL.Image.register_open`. Although not required, it is also a good
@@ -282,3 +301,93 @@ The fields are used as follows:
 **orientation**
     Whether the first line in the image is the top line on the screen (1), or
     the bottom line (-1). If omitted, the orientation defaults to 1.
+
+.. _file-decoders:
+
+Writing Your Own File Decoder
+=============================
+
+There are 3 stages in a file decoder's lifetime:
+
+1. Setup: Pillow looks for a function named ``[decodername]_decoder``
+   on the internal core image object.  That function is called with the ``args`` tuple
+   from the ``tile`` setup in the ``_open`` method.
+
+2. Decoding: The decoder's decode function is repeadedly called with
+   chunks of image data.
+
+3. Cleanup: If the decoder has registered a cleanup function, it will
+   be called at the end of the decoding process, even if there was an
+   exception raised.
+
+
+Setup
+----- 
+
+The current conventions are that the decoder setup function is named
+``PyImaging_[Decodername]DecoderNew`` and defined in ``decode.c``. The
+python binding for it is named ``[decodername]_decoder`` and is setup
+from within the ``_imaging.c`` file in the codecs section of the
+function array.
+
+The setup function needs to call ``PyImaging_DecoderNew`` and at the
+very least, set the ``decode`` function pointer. The fields of
+interest in this object are:
+
+**decode** 
+  Function pointer to the decode function, which has access to
+  ``im``, ``state``, and the buffer of data to be added to the image.
+
+**cleanup** 
+  Function pointer to the cleanup function, has access to ``state``.
+
+**im** 
+  The target image, will be set by Pillow.  
+
+**state**
+  An ImagingCodecStateInstance, will be set by Pillow. The **context**
+  member is an opaque struct that can be used by the decoder to store
+  any format spefific state or options.
+
+**handles_eof**
+  UNDONE, set if your code handles EOF errors. 
+
+**pulls_fd**
+  **EXPERIMENTAL** -- **WARNING**, interface may change. If set to 1,
+  ``state->fd`` will be a pointer to the Python file like object.  The
+  decoder may use the functions in ``codec_fd.c`` to read directly
+  from the file like object rather than have the data pushed through a
+  buffer.  Note that this implementation may be refactored until this
+  warning is removed.
+
+  .. versionadded:: 3.3.0
+
+
+Decoding
+--------
+
+The decode function is called with the target (core) image, the
+decoder state structure, and a buffer of data to be decoded.
+
+**Experimental** -- If ``pulls_fd`` is set, then the decode function
+is called once, with an empty buffer. It is the decoder's
+responibility to decode the entire tile in that one call.  The rest of
+this secton only applies if ``pulls_fd`` is not set.
+
+It is the decoder's responsibility to pull as much data as possible
+out of the buffer and return the number of bytes consumed. The next
+call to the decoder will include the previous unconsumed tail. The
+decoder function will be called multiple times as the data is read
+from the file like object.
+
+If an error occurs, set ``state->errcode`` and return -1. 
+
+Return -1 on success, without setting the errcode. 
+
+Cleanup
+-------
+
+The cleanup function is called after the decoder returns a negative
+value, or if there is a read error from the file. This function should
+free any allocated memory and release any resources from external
+libraries.

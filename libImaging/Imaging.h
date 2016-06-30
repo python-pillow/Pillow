@@ -486,33 +486,18 @@ struct ImagingCodecStateInstance {
     int bits, bytes;
     UINT8 *buffer;
     void *context;
+    PyObject *fd;
 };
 
-/* Incremental encoding/decoding support */
-typedef struct ImagingIncrementalCodecStruct *ImagingIncrementalCodec;
 
-typedef int (*ImagingIncrementalCodecEntry)(Imaging im, 
-                                            ImagingCodecState state,
-                                            ImagingIncrementalCodec codec);
+/* Codec read/write python fd */
 
-enum {
-  INCREMENTAL_CODEC_READ = 1,
-  INCREMENTAL_CODEC_WRITE = 2
-};
+extern Py_ssize_t _imaging_read_pyFd(PyObject *fd, char* dest, Py_ssize_t bytes);
+extern Py_ssize_t _imaging_write_pyFd(PyObject *fd, char* src, Py_ssize_t bytes);
+extern int _imaging_seek_pyFd(PyObject *fd, Py_ssize_t offset, int whence);
+extern Py_ssize_t _imaging_tell_pyFd(PyObject *fd);
 
-enum {
-  INCREMENTAL_CODEC_NOT_SEEKABLE = 0,
-  INCREMENTAL_CODEC_SEEKABLE = 1
-};
 
-extern ImagingIncrementalCodec ImagingIncrementalCodecCreate(ImagingIncrementalCodecEntry codec_entry, Imaging im, ImagingCodecState state, int read_or_write, int seekable, int fd);
-extern void ImagingIncrementalCodecDestroy(ImagingIncrementalCodec codec);
-extern int ImagingIncrementalCodecPushBuffer(ImagingIncrementalCodec codec, UINT8 *buf, int bytes);
-extern Py_ssize_t ImagingIncrementalCodecRead(ImagingIncrementalCodec codec, void *buffer, size_t bytes);
-extern off_t ImagingIncrementalCodecSkip(ImagingIncrementalCodec codec, off_t bytes);
-extern Py_ssize_t ImagingIncrementalCodecWrite(ImagingIncrementalCodec codec, const void *buffer, size_t bytes);
-extern off_t ImagingIncrementalCodecSeek(ImagingIncrementalCodec codec, off_t bytes);
-extern size_t ImagingIncrementalCodecBytesInBuffer(ImagingIncrementalCodec codec);
 
 /* Errcodes */
 #define	IMAGING_CODEC_END	 1

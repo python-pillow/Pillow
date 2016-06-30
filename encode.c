@@ -44,6 +44,7 @@ typedef struct {
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject* lock;
+    int pushes_fd;
 } ImagingEncoderObject;
 
 static PyTypeObject ImagingEncoderType;
@@ -84,6 +85,7 @@ PyImaging_EncoderNew(int contextsize)
     /* Target image */
     encoder->lock = NULL;
     encoder->im = NULL;
+    encoder->pushes_fd = 0;
 
     return encoder;
 }
@@ -96,6 +98,7 @@ _dealloc(ImagingEncoderObject* encoder)
     free(encoder->state.buffer);
     free(encoder->state.context);
     Py_XDECREF(encoder->lock);
+    Py_XDECREF(encoder->state.fd);
     PyObject_Del(encoder);
 }
 
@@ -139,6 +142,27 @@ _encode(ImagingEncoderObject* encoder, PyObject* args)
     result = Py_BuildValue("iiO", status, encoder->state.errcode, buf);
 
     Py_DECREF(buf); /* must release buffer!!! */
+
+    return result;
+}
+
+static PyObject*
+_encode_to_pyfd(ImagingEncoderObject* encoder, PyObject* args)
+{
+
+    PyObject *result;
+    int status;
+
+    if (!encoder->pushes_fd) {
+        // UNDONE, appropriate errcode???
+        result = Py_BuildValue("ii", 0, IMAGING_CODEC_CONFIG);;
+        return result;
+    }
+
+    status = encoder->encode(encoder->im, &encoder->state,
+                             (UINT8*) NULL, 0);
+    
+    result = Py_BuildValue("ii", status, encoder->state.errcode);
 
     return result;
 }
@@ -254,12 +278,45 @@ _setimage(ImagingEncoderObject* encoder, PyObject* args)
     return Py_None;
 }
 
+static PyObject*
+_setfd(ImagingEncoderObject* encoder, PyObject* args)
+{
+    PyObject* fd;
+    ImagingCodecState state;
+
+    if (!PyArg_ParseTuple(args, "O", &fd))
+        return NULL;
+
+    state = &encoder->state;
+
+    Py_XINCREF(fd);
+    state->fd = fd;
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *
+_get_pushes_fd(ImagingEncoderObject *encoder)
+{
+    return PyBool_FromLong(encoder->pushes_fd);
+}
+
 static struct PyMethodDef methods[] = {
     {"encode", (PyCFunction)_encode, 1},
     {"cleanup", (PyCFunction)_encode_cleanup, 1},
     {"encode_to_file", (PyCFunction)_encode_to_file, 1},
+    {"encode_to_pyfd", (PyCFunction)_encode_to_pyfd, 1},
     {"setimage", (PyCFunction)_setimage, 1},
+    {"setfd", (PyCFunction)_setfd, 1},
     {NULL, NULL} /* sentinel */
+};
+
+static struct PyGetSetDef getseters[] = {
+   {"pushes_fd", (getter)_get_pushes_fd, NULL,
+     "True if this decoder expects to push directly to self.fd",
+     NULL},
+    {NULL, NULL, NULL, NULL, NULL} /* sentinel */
 };
 
 static PyTypeObject ImagingEncoderType = {
@@ -293,7 +350,7 @@ static PyTypeObject ImagingEncoderType = {
     0,                          /*tp_iternext*/
     methods,                    /*tp_methods*/
     0,                          /*tp_members*/
-    0,                          /*tp_getset*/
+    getseters,                  /*tp_getset*/
 };
 
 /* -------------------------------------------------------------------- */
@@ -916,12 +973,14 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
 
     encoder->encode = ImagingJpeg2KEncode;
     encoder->cleanup = ImagingJpeg2KEncodeCleanup;
+    encoder->pushes_fd = 1;
 
     context = (JPEG2KENCODESTATE *)encoder->state.context;
 
     context->fd = fd;
     context->format = codec_format;
     context->offset_x = context->offset_y = 0;
+
 
     j2k_decode_coord_tuple(offset, &context->offset_x, &context->offset_y);
     j2k_decode_coord_tuple(tile_offset,

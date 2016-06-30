@@ -185,53 +185,59 @@ class ImageFile(Image.Image):
             except AttributeError:
                 prefix = b""
 
-            for d, e, o, a in self.tile:
-                d = Image._getdecoder(self.mode, d, a, self.decoderconfig)
-                seek(o)
+            for decoder_name, extents, offset, args in self.tile:
+                decoder = Image._getdecoder(self.mode, decoder_name,
+                                      args, self.decoderconfig)
+                seek(offset)
                 try:
-                    d.setimage(self.im, e)
+                    decoder.setimage(self.im, extents)
                 except ValueError:
                     continue
-                b = prefix
-                while True:
-                    try:
-                        s = read(self.decodermaxblock)
-                    except (IndexError, struct.error):  # truncated png/gif
-                        if LOAD_TRUNCATED_IMAGES:
+                if decoder.pulls_fd:
+                    decoder.setfd(self.fp)
+                    status, err_code = decoder.decode(b"")
+                else:
+                    b = prefix
+                    while True:
+                        try:
+                            s = read(self.decodermaxblock)
+                        except (IndexError, struct.error):  # truncated png/gif
+                            if LOAD_TRUNCATED_IMAGES:
+                                break
+                            else:
+                                raise IOError("image file is truncated")
+
+                        if not s and not decoder.handles_eof:  # truncated jpeg
+                            self.tile = []
+
+                            # JpegDecode needs to clean things up here either way
+                            # If we don't destroy the decompressor,
+                            # we have a memory leak.
+                            decoder.cleanup()
+
+                            if LOAD_TRUNCATED_IMAGES:
+                                break
+                            else:
+                                raise IOError("image file is truncated "
+                                              "(%d bytes not processed)" % len(b))
+
+                        b = b + s
+                        n, err_code = decoder.decode(b)
+                        if n < 0:
                             break
-                        else:
-                            raise IOError("image file is truncated")
-
-                    if not s and not d.handles_eof:  # truncated jpeg
-                        self.tile = []
-
-                        # JpegDecode needs to clean things up here either way
-                        # If we don't destroy the decompressor,
-                        # we have a memory leak.
-                        d.cleanup()
-
-                        if LOAD_TRUNCATED_IMAGES:
-                            break
-                        else:
-                            raise IOError("image file is truncated "
-                                          "(%d bytes not processed)" % len(b))
-
-                    b = b + s
-                    n, e = d.decode(b)
-                    if n < 0:
-                        break
-                    b = b[n:]
+                        b = b[n:]
+                    
                 # Need to cleanup here to prevent leaks in PyPy
-                d.cleanup()
+                decoder.cleanup()
 
         self.tile = []
         self.readonly = readonly
 
         self.fp = None  # might be shared
 
-        if not self.map and not LOAD_TRUNCATED_IMAGES and e < 0:
+        if not self.map and not LOAD_TRUNCATED_IMAGES and err_code < 0:
             # still raised if decoder fails to return anything
-            raise_ioerror(e)
+            raise_ioerror(err_code)
 
         # post processing
         if hasattr(self, "tile_post_rotate"):
@@ -465,11 +471,15 @@ def _save(im, fp, tile, bufsize=0):
             if o > 0:
                 fp.seek(o, 0)
             e.setimage(im.im, b)
-            while True:
-                l, s, d = e.encode(bufsize)
-                fp.write(d)
-                if s:
-                    break
+            if e.pushes_fd:
+                e.setfd(fp)
+                l,s = e.encode_to_pyfd()
+            else:
+                while True:
+                    l, s, d = e.encode(bufsize)
+                    fp.write(d)
+                    if s:
+                        break
             if s < 0:
                 raise IOError("encoder error %d when writing image file" % s)
             e.cleanup()
@@ -480,7 +490,11 @@ def _save(im, fp, tile, bufsize=0):
             if o > 0:
                 fp.seek(o, 0)
             e.setimage(im.im, b)
-            s = e.encode_to_file(fh, bufsize)
+            if e.pushes_fd:
+                e.setfd(fp)
+                l,s = e.encode_to_pyfd()
+            else:
+                s = e.encode_to_file(fh, bufsize)
             if s < 0:
                 raise IOError("encoder error %d when writing image file" % s)
             e.cleanup()
