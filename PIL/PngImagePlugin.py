@@ -138,6 +138,12 @@ class ChunkStream(object):
     def crc(self, cid, data):
         "Read and verify checksum"
 
+        # Skip CRC checks for ancillary chunks if allowed to load truncated images
+        # 5th byte of first char is 1 [specs, section 5.4]
+        if ImageFile.LOAD_TRUNCATED_IMAGES and (i8(cid[0]) >> 5 & 1):
+            self.crc_skip(cid, data)
+            return
+
         try:
             crc1 = Image.core.crc32(data, Image.core.crc32(cid))
             crc2 = i16(self.fp.read(2)), i16(self.fp.read(2))
