@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Moved test_j2k_overflow to check_j2k_overflow, prevent DOS of our 32bit testing machines #1995
+  [wiredfool]
+
 - Skip CRC checks in PNG files when LOAD_TRUNCATED_IMAGES is enabled #1991
   [kkopachev]
 
