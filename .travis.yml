@@ -68,25 +68,6 @@ matrix:
       language: objective-c
       env:
         - MB_PYTHON_VERSION=3.5
-  # 32-bit tests currently failing on Linux
-  allow_failures:
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-        - PLAT=i686
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-        - PLAT=i686
-        - UNICODE_WIDTH=16
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=3.4
-        - PLAT=i686
-    - os: linux
-      env:
-        - MB_PYTHON_VERSION=3.5
-        - PLAT=i686
 
 before_install:
     - source multibuild/common_utils.sh
