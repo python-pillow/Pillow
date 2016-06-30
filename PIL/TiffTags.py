@@ -110,7 +110,7 @@ TAGS_V2 = {
     291: ("GrayResponseCurve", SHORT, 0),
     292: ("T4Options", LONG, 1),
     293: ("T6Options", LONG, 1),
-    296: ("ResolutionUnit", SHORT, 1, {"inch": 1, "cm": 2}),
+    296: ("ResolutionUnit", SHORT, 1, {"none": 1, "inch": 2, "cm": 3}),
     297: ("PageNumber", SHORT, 2),
 
     301: ("TransferFunction", SHORT, 0),
@@ -119,7 +119,7 @@ TAGS_V2 = {
 
     315: ("Artist", ASCII, 1),
     316: ("HostComputer", ASCII, 1),
-    317: ("Predictor", SHORT, 1),
+    317: ("Predictor", SHORT, 1, {"none": 1, "Horizontal Differencing": 2}),
     318: ("WhitePoint", RATIONAL, 2),
     319: ("PrimaryChromaticities", SHORT, 6),
 
