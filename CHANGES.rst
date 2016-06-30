@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Fixed enums for Resolution Unit and Predictor in TiffTags.py #1998
+  [wiredfool]
+
 - Fix issue converting P mode to LA #1986
   [didrix]
   
