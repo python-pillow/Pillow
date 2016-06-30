@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.3.0 (unreleased)
 ------------------
 
+- Skip CRC checks in PNG files when LOAD_TRUNCATED_IMAGES is set #1991
+  [kkopachev]
+
+- Added CMYK mode for opening EPS files #1826
+  [radarhere]
+
 - Docs: OSX build instruction clarification #1994
   [wiredfool]
 
