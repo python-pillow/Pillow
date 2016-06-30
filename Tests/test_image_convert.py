@@ -123,25 +123,14 @@ class TestImageConvert(PillowTestCase):
         self.assertNotIn('transparency', p.info)
         p.save(f)
 
-    # ref https://github.com/python-pillow/Pillow/issues/1979
-
     def test_p_la(self):
-        def L(rgb):
-            return int((rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000)
+        im = hopper('RGBA')
+        alpha = hopper('L')
+        im.putalpha(alpha)
 
-        def convert_to_gray(im, pixel):
-            if im.mode == 'P':
-                color_id = im.getpixel(pixel)
-                color = im.getpalette()[color_id * 3:(color_id+1)*3]
-                return L(color)
-            elif im.mode == 'LA':
-                color = im.getpixel(pixel)
-                return color[0]
+        comparable = im.convert('P').convert('LA').split()[1]
 
-        im_p = hopper('P')
-        im_la = im_p.convert('LA')
-        self.assertEqual(convert_to_gray(im_p, (5, 5)),
-                         convert_to_gray(im_la, (5, 5)))
+        self.assert_image_similar(alpha, comparable, 5)
 
 
 if __name__ == '__main__':
