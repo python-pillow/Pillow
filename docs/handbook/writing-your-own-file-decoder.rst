@@ -313,7 +313,7 @@ There are 3 stages in a file decoder's lifetime:
    on the internal core image object.  That function is called with the ``args`` tuple
    from the ``tile`` setup in the ``_open`` method.
 
-2. Decoding: The decoder's decode function is repeadedly called with
+2. Decoding: The decoder's decode function is repeatedly called with
    chunks of image data.
 
 3. Cleanup: If the decoder has registered a cleanup function, it will
@@ -347,7 +347,7 @@ interest in this object are:
 **state**
   An ImagingCodecStateInstance, will be set by Pillow. The **context**
   member is an opaque struct that can be used by the decoder to store
-  any format spefific state or options.
+  any format specific state or options.
 
 **handles_eof**
   UNDONE, set if your code handles EOF errors. 
@@ -371,8 +371,8 @@ decoder state structure, and a buffer of data to be decoded.
 
 **Experimental** -- If ``pulls_fd`` is set, then the decode function
 is called once, with an empty buffer. It is the decoder's
-responibility to decode the entire tile in that one call.  The rest of
-this secton only applies if ``pulls_fd`` is not set.
+responsibility to decode the entire tile in that one call.  The rest of
+this section only applies if ``pulls_fd`` is not set.
 
 It is the decoder's responsibility to pull as much data as possible
 out of the buffer and return the number of bytes consumed. The next
