@@ -776,7 +776,7 @@ ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;
         return -1;
-    }       
+    }
 
     if (state->state == J2K_STATE_DONE || state->state == J2K_STATE_FAILED)
         return -1;

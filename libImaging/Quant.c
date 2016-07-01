@@ -971,7 +971,7 @@ compute_palette_from_median_cut(
       avg[i]=NULL;
    }
    for(i=0;i<3;i++) {
-      /* malloc check ok, using calloc */     
+      /* malloc check ok, using calloc */
       if (!(avg[i]=calloc(nPaletteEntries, sizeof(uint32_t)))) {
          for(i=0;i<3;i++) {
             if (avg[i]) free (avg[i]);

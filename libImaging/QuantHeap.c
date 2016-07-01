@@ -51,7 +51,7 @@ static int _heap_grow(Heap *h,int newsize) {
    if (newsize > INT_MAX / sizeof(void *)){
        return 0;
    }
-   /* malloc check ok, using calloc for overflow, also checking 
+   /* malloc check ok, using calloc for overflow, also checking
       above due to memcpy below*/
    newheap=calloc(newsize, sizeof(void *));
    if (!newheap) return 0;
@@ -144,9 +144,9 @@ Heap *ImagingQuantHeapNew(HeapCmpFunc cf) {
    h->heapsize=INITIAL_SIZE;
    /* malloc check ok, using calloc for overflow */
    h->heap=calloc(h->heapsize, sizeof(void *));
-   if (!h->heap) { 
-       free(h); 
-       return NULL; 
+   if (!h->heap) {
+       free(h);
+       return NULL;
    }
    h->heapcount=0;
    h->cf=cf;
