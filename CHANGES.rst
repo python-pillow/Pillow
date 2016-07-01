@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-3.3.0 (unreleased)
+3.3.0 (2016-07-01)
 ------------------
 
 - Fixed enums for Resolution Unit and Predictor in TiffTags.py #1998
