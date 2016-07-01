@@ -29,7 +29,7 @@ doc:
 doccheck:
 	$(MAKE) -C docs html
 # Don't make our test rely on the links in the docs being up every single build.
-# We don't control them.  But do check, and update them to the target of their redirectes.
+# We don't control them.  But do check, and update them to the target of their redirects.
 	$(MAKE) -C docs linkcheck || true
 
 docserve:

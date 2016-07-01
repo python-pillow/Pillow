@@ -41,7 +41,7 @@ Rotation
 ========
 
 Rotation for angles divisible by 90 degrees now always uses transposition.
-This greately improve both quality and performance in this cases.
+This greatly improve both quality and performance in this cases.
 Also, the bug with wrong image size calculation when rotating by 90 degrees 
 was fixed.
 
