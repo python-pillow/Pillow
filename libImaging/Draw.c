@@ -463,7 +463,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     }
 
     /* Process the edge table with a scan line searching for intersections */
-    /* malloc check ok, using calloc */ 
+    /* malloc check ok, using calloc */
     xx = calloc(edge_count * 2, sizeof(float));
     if (!xx) {
         free(edge_table);

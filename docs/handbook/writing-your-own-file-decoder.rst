@@ -322,7 +322,7 @@ There are 3 stages in a file decoder's lifetime:
 
 
 Setup
------ 
+-----
 
 The current conventions are that the decoder setup function is named
 ``PyImaging_[Decodername]DecoderNew`` and defined in ``decode.c``. The
@@ -334,15 +334,15 @@ The setup function needs to call ``PyImaging_DecoderNew`` and at the
 very least, set the ``decode`` function pointer. The fields of
 interest in this object are:
 
-**decode** 
+**decode**
   Function pointer to the decode function, which has access to
   ``im``, ``state``, and the buffer of data to be added to the image.
 
-**cleanup** 
+**cleanup**
   Function pointer to the cleanup function, has access to ``state``.
 
-**im** 
-  The target image, will be set by Pillow.  
+**im**
+  The target image, will be set by Pillow.
 
 **state**
   An ImagingCodecStateInstance, will be set by Pillow. The **context**
@@ -350,7 +350,7 @@ interest in this object are:
   any format specific state or options.
 
 **handles_eof**
-  UNDONE, set if your code handles EOF errors. 
+  UNDONE, set if your code handles EOF errors.
 
 **pulls_fd**
   **EXPERIMENTAL** -- **WARNING**, interface may change. If set to 1,
@@ -380,9 +380,9 @@ call to the decoder will include the previous unconsumed tail. The
 decoder function will be called multiple times as the data is read
 from the file like object.
 
-If an error occurs, set ``state->errcode`` and return -1. 
+If an error occurs, set ``state->errcode`` and return -1.
 
-Return -1 on success, without setting the errcode. 
+Return -1 on success, without setting the errcode.
 
 Cleanup
 -------

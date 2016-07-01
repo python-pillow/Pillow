@@ -38,7 +38,7 @@ Changelog (Pillow)
   [AbdealiJK]
   
 - Binary Tiff Metadata/ICC profile. #1988
-  [wiredfool] 
+  [wiredfool]
   
 - Ignore large text blocks in PNG if LOAD_TRUNCATED_IMAGES is enabled #1970
   [homm]

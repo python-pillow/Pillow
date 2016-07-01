@@ -417,7 +417,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     (it is set to 9 regardless of a value passed).
 
 **icc_profile**
-    The ICC Profile to include in the saved file. 
+    The ICC Profile to include in the saved file.
 
 **bits (experimental)**
     For ``P`` images, this option controls how many bits to store. If omitted,

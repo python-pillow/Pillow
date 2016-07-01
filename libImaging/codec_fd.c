@@ -3,7 +3,7 @@
 #include "../py3.h"
 
 
-Py_ssize_t 
+Py_ssize_t
 _imaging_read_pyFd(PyObject *fd, char* dest, Py_ssize_t bytes)
 {
     /* dest should be a buffer bytes long, returns length of read
@@ -17,7 +17,7 @@ _imaging_read_pyFd(PyObject *fd, char* dest, Py_ssize_t bytes)
     result = PyObject_CallMethod(fd, "read", "n", bytes);
 
     bytes_result = PyBytes_AsStringAndSize(result, &buffer, &length);
-    if (bytes_result == -1) { 
+    if (bytes_result == -1) {
         goto err;
     }
     
@@ -25,18 +25,18 @@ _imaging_read_pyFd(PyObject *fd, char* dest, Py_ssize_t bytes)
         goto err;
     }
     
-    memcpy(dest, buffer, length); 
+    memcpy(dest, buffer, length);
 
     Py_DECREF(result);
     return length;
 
  err:
     Py_DECREF(result);
-    return -1;  
+    return -1;
       
 }
 
-Py_ssize_t 
+Py_ssize_t
 _imaging_write_pyFd(PyObject *fd, char* src, Py_ssize_t bytes)
 {
 
@@ -60,7 +60,7 @@ _imaging_seek_pyFd(PyObject *fd, Py_ssize_t offset, int whence)
     
     result = PyObject_CallMethod(fd, "seek", "ni", offset, whence);
 
-    Py_DECREF(result);   
+    Py_DECREF(result);
     return 0;
 
 }
