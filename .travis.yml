@@ -1,7 +1,7 @@
 env:
   global:
       - REPO_DIR=Pillow
-      - BUILD_COMMIT=master
+      - BUILD_COMMIT=3.3.0
       - PLAT=x86_64
       - UNICODE_WIDTH=32
       - BUILD_DEPENDS=""
