@@ -234,7 +234,7 @@ Building on OS X
 ^^^^^^^^^^^^^^^^
 
 The Xcode command line tools are required to compile portions of
-Pillow. The tools are installed by runing ``xcode-select --install``
+Pillow. The tools are installed by running ``xcode-select --install``
 from the command line. The command line tools are required even if you
 have the full Xcode package installed.  It may be necessary to run
 ``sudo xcodebuild -license`` to accept the license prior to using the
