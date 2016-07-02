@@ -176,6 +176,16 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
         k = &kk[xx * kmax];
         for (x = 0; x < xmax; x++) {
             double w = filterp->filter((x + xmin - center + 0.5) * ss);
+            if (w == 0) {
+                if (x == 0) {
+                    x -= 1;
+                    xmin += 1;
+                    xmax -= 1;
+                } else if (x == xmax - 1) {
+                    xmax -= 1;
+                }
+                continue;
+            }
             k[x] = w;
             ww += w;
         }
