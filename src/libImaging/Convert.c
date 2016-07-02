@@ -37,7 +37,10 @@
 #include <emmintrin.h>
 #include <mmintrin.h>
 #include <smmintrin.h>
-
+#if defined(__AVX2__)
+    #include <immintrin.h>
+#endif
+ 
 
 #define MAX(a, b) (a)>(b) ? (a) : (b)
 #define MIN(a, b) (a)<(b) ? (a) : (b)
@@ -463,10 +466,47 @@ rgbA2rgba(UINT8* out, const UINT8* in, int xsize)
     unsigned int tmp;
     unsigned char alpha;
     int x = 0;
+
+#if defined(__AVX2__)
+    
+    __m256i zero = _mm256_setzero_si256();
+    __m256i half = _mm256_set1_epi16(128);
+    __m256i maxalpha = _mm256_set_epi32(
+        0xff000000, 0xff000000, 0xff000000, 0xff000000,
+        0xff000000, 0xff000000, 0xff000000, 0xff000000);
+    __m256i factormask = _mm256_set_epi8(
+        15,15,15,15, 11,11,11,11, 7,7,7,7, 3,3,3,3,
+        15,15,15,15, 11,11,11,11, 7,7,7,7, 3,3,3,3);
+    __m256i factorsource, source, pix1, pix2, factors;
+
+    for (; x < xsize - 7; x += 8) {
+        source = _mm256_loadu_si256((__m256i *) &in[x * 4]);
+        factorsource = _mm256_shuffle_epi8(source, factormask);
+        factorsource = _mm256_or_si256(factorsource, maxalpha);
+        
+        pix1 = _mm256_unpacklo_epi8(source, zero);
+        factors = _mm256_unpacklo_epi8(factorsource, zero);
+        pix1 = _mm256_add_epi16(_mm256_mullo_epi16(pix1, factors), half);
+        pix1 = _mm256_add_epi16(pix1, _mm256_srli_epi16(pix1, 8));
+        pix1 = _mm256_srli_epi16(pix1, 8);
+
+        pix2 = _mm256_unpackhi_epi8(source, zero);
+        factors = _mm256_unpackhi_epi8(factorsource, zero);
+        pix2 = _mm256_add_epi16(_mm256_mullo_epi16(pix2, factors), half);
+        pix2 = _mm256_add_epi16(pix2, _mm256_srli_epi16(pix2, 8));
+        pix2 = _mm256_srli_epi16(pix2, 8);
+
+        source = _mm256_packus_epi16(pix1, pix2);
+        _mm256_storeu_si256((__m256i *) &out[x * 4], source);
+    }
+
+#else
+
     __m128i zero = _mm_setzero_si128();
     __m128i half = _mm_set1_epi16(128);
     __m128i maxalpha = _mm_set1_epi32(0xff000000);
-    __m128i factormask = _mm_set_epi8(15,15,15,15, 11,11,11,11, 7,7,7,7, 3,3,3,3);
+    __m128i factormask = _mm_set_epi8(
+        15,15,15,15, 11,11,11,11, 7,7,7,7, 3,3,3,3);
     __m128i factorsource, source, pix1, pix2, factors;
 
     for (; x < xsize - 3; x += 4) {
@@ -486,8 +526,12 @@ rgbA2rgba(UINT8* out, const UINT8* in, int xsize)
         pix2 = _mm_add_epi16(pix2, _mm_srli_epi16(pix2, 8));
         pix2 = _mm_srli_epi16(pix2, 8);
 
-        _mm_storeu_si128((__m128i *) &out[x * 4], _mm_packus_epi16(pix1, pix2));
+        source = _mm_packus_epi16(pix1, pix2);
+        _mm_storeu_si128((__m128i *) &out[x * 4], source);
     }
+
+#endif
+
     for (; x < xsize; x++) {
         alpha = in[x * 4 + 3];
         out[x * 4 + 0] = MULDIV255(in[x * 4 + 0], alpha, tmp);
