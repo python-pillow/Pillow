@@ -206,6 +206,32 @@ precompute_coeffs(int inSize, int outSize, struct filter *filterp,
 }
 
 
+int
+normalize_coeffs_8bpc(int outSize, int kmax, double *prekk, INT32 **kkp)
+{
+    int x;
+    INT32 *kk;
+
+    /* malloc check ok, overflow checked in precompute_coeffs */
+    kk = malloc(outSize * kmax * sizeof(INT32));
+    if ( ! kk) {
+        return 0;
+    }
+
+    for (x = 0; x < outSize * kmax; x++) {
+        if (prekk[x] < 0) {
+            kk[x] = (int) (-0.5 + prekk[x] * (1 << PRECISION_BITS));
+        } else {
+            kk[x] = (int) (0.5 + prekk[x] * (1 << PRECISION_BITS));
+        }
+    }
+
+    *kkp = kk;
+    return kmax;
+}
+
+
+
 Imaging
 ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
 {
@@ -214,26 +240,20 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
     int ss0, ss1, ss2, ss3;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
-    int *k, *kk;
+    INT32 *k, *kk;
     double *prekk;
 
     kmax = precompute_coeffs(imIn->xsize, xsize, filterp, &xbounds, &prekk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
-    
-    kk = malloc(xsize * kmax * sizeof(int));
-    if ( ! kk) {
+
+    kmax = normalize_coeffs_8bpc(xsize, kmax, prekk, &kk);
+    free(prekk);    
+    if ( ! kmax) {
         free(xbounds);
-        free(prekk);
         return (Imaging) ImagingError_MemoryError();
     }
-
-    for (x = 0; x < xsize * kmax; x++) {
-        kk[x] = (int) (0.5 + prekk[x] * (1 << PRECISION_BITS));
-    }
-
-    free(prekk);
 
     imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
     if ( ! imOut) {
@@ -325,26 +345,20 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
     int ss0, ss1, ss2, ss3;
     int xx, yy, y, kmax, ymin, ymax;
     int *xbounds;
-    int *k, *kk;
+    INT32 *k, *kk;
     double *prekk;
 
     kmax = precompute_coeffs(imIn->ysize, ysize, filterp, &xbounds, &prekk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
-    
-    kk = malloc(ysize * kmax * sizeof(int));
-    if ( ! kk) {
+
+    kmax = normalize_coeffs_8bpc(ysize, kmax, prekk, &kk);
+    free(prekk);    
+    if ( ! kmax) {
         free(xbounds);
-        free(prekk);
         return (Imaging) ImagingError_MemoryError();
     }
-
-    for (y = 0; y < ysize * kmax; y++) {
-        kk[y] = (int) (0.5 + prekk[y] * (1 << PRECISION_BITS));
-    }
-
-    free(prekk);
 
     imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
     if ( ! imOut) {
