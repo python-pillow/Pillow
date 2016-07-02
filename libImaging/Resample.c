@@ -108,7 +108,7 @@ static inline UINT8 clip8(int in)
 
 
 int
-ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
+precompute_coeffs(int inSize, int outSize, struct filter *filterp,
                   int **xboundsp, double **kkp) {
     double support, scale, filterscale;
     double center, ww, ss;
@@ -200,8 +200,7 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
     int *k, *kk;
     double *prekk;
 
-
-    kmax = ImagingPrecompute(imIn->xsize, xsize, filterp, &xbounds, &prekk);
+    kmax = precompute_coeffs(imIn->xsize, xsize, filterp, &xbounds, &prekk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
@@ -312,8 +311,7 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
     int *k, *kk;
     double *prekk;
 
-
-    kmax = ImagingPrecompute(imIn->ysize, ysize, filterp, &xbounds, &prekk);
+    kmax = precompute_coeffs(imIn->ysize, ysize, filterp, &xbounds, &prekk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
@@ -423,7 +421,7 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
     int *xbounds;
     double *k, *kk;
 
-    kmax = ImagingPrecompute(imIn->xsize, xsize, filterp, &xbounds, &kk);
+    kmax = precompute_coeffs(imIn->xsize, xsize, filterp, &xbounds, &kk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
@@ -483,7 +481,7 @@ ImagingResampleVertical_32bpc(Imaging imIn, int ysize, struct filter *filterp)
     int *xbounds;
     double *k, *kk;
 
-    kmax = ImagingPrecompute(imIn->ysize, ysize, filterp, &xbounds, &kk);
+    kmax = precompute_coeffs(imIn->ysize, ysize, filterp, &xbounds, &kk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
