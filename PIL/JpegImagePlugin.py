@@ -534,7 +534,6 @@ RAWMODE = {
     "1": "L",
     "L": "L",
     "RGB": "RGB",
-    "RGBA": "RGB",
     "RGBX": "RGB",
     "CMYK": "CMYK;I",  # assume adobe conventions
     "YCbCr": "YCbCr",
