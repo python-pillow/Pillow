@@ -285,7 +285,8 @@ class CoreResampleCoefficientsTest(PillowTestCase):
             draw = ImageDraw.Draw(i)
             draw.rectangle((0, 0, i.size[0] // 2 - 1, 0), test_color)
 
-            px = i.resize((5, i.size[1]), Image.BICUBIC).load()
+            i = i.resize((5, i.size[1]), Image.BICUBIC)
+            px = i.load()
             if px[2, 0] != test_color // 2:
                 self.assertEqual(test_color // 2, px[2, 0])
                 # print '\r>', size, test_color // 2, px[2, 0]
