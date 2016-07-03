@@ -48,5 +48,3 @@ def getmode(mode):
         _modes["I;16L"] = ModeDescriptor("I;16L", "I", "L", "L")
         _modes["I;16B"] = ModeDescriptor("I;16B", "I", "L", "L")
     return _modes[mode]
-
-# End of file

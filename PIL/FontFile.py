@@ -111,5 +111,3 @@ class FontFile(object):
             else:
                 puti16(fp, m[0] + m[1] + m[2])
         fp.close()
-
-# End of file

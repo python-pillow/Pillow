@@ -96,5 +96,3 @@ class MeshTransform(Transform):
     @see Image#Image.transform
     """
     method = Image.MESH
-
-# End of file

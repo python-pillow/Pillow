@@ -148,5 +148,3 @@ ImagingEffectSpread(Imaging imIn, int distance)
 
     return imOut;
 }
-
-// End of file

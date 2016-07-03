@@ -34,5 +34,3 @@ class TestFileTar(PillowTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-# End of file
