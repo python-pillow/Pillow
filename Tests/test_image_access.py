@@ -221,6 +221,17 @@ class TestCffi(AccessTest):
         # im = Image.new('I;32B', (10, 10), 2**10)
         # self._test_set_access(im, 2**13-1)
 
+    # ref https://github.com/python-pillow/Pillow/pull/2009
+    def test_reference_counting(self):
+        size = 10
+
+        for _ in range(10):
+            # Do not save references to the image, only to the access object
+            px = Image.new('L', (size, 1), 0).load()
+            for i in range(size):
+                # pixels can contain garbarge if image is released
+                self.assertEqual(px[i, 0], 0)
+
 
 if __name__ == '__main__':
     unittest.main()
