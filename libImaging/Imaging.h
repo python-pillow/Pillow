@@ -229,9 +229,11 @@ extern void ImagingError_Clear(void);
 
 /* standard filters */
 #define IMAGING_TRANSFORM_NEAREST 0
-#define IMAGING_TRANSFORM_LANCZOS 1
+#define IMAGING_TRANSFORM_BOX 4
 #define IMAGING_TRANSFORM_BILINEAR 2
+#define IMAGING_TRANSFORM_HAMMING 5
 #define IMAGING_TRANSFORM_BICUBIC 3
+#define IMAGING_TRANSFORM_LANCZOS 1
 
 typedef int (*ImagingTransformMap)(double* X, double* Y,
                                    int x, int y, void* data);

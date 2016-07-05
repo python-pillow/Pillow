@@ -168,13 +168,14 @@ MESH = 4
 
 # resampling filters
 NEAREST = NONE = 0
-LANCZOS = ANTIALIAS = 1
+BOX = 4
 BILINEAR = LINEAR = 2
+HAMMING = 5
 BICUBIC = CUBIC = 3
+LANCZOS = ANTIALIAS = 1
 
 # dithers
-NONE = 0
-NEAREST = 0
+NEAREST = NONE = 0
 ORDERED = 1  # Not yet implemented
 RASTERIZE = 2  # Not yet implemented
 FLOYDSTEINBERG = 3  # default
@@ -1518,16 +1519,18 @@ class Image(object):
         :param size: The requested size in pixels, as a 2-tuple:
            (width, height).
         :param resample: An optional resampling filter.  This can be
-           one of :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
-           :py:attr:`PIL.Image.BILINEAR` (linear interpolation),
-           :py:attr:`PIL.Image.BICUBIC` (cubic spline interpolation), or
-           :py:attr:`PIL.Image.LANCZOS` (a high-quality downsampling filter).
+           one of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BOX`,
+           :py:attr:`PIL.Image.BILINEAR`, :py:attr:`PIL.Image.HAMMING`,
+           :py:attr:`PIL.Image.BICUBIC` or :py:attr:`PIL.Image.LANCZOS`.
            If omitted, or if the image has mode "1" or "P", it is
            set :py:attr:`PIL.Image.NEAREST`.
+           See: :ref:`concept-filters`.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if resample not in (NEAREST, BILINEAR, BICUBIC, LANCZOS):
+        if resample not in (
+                NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING,
+        ):
             raise ValueError("unknown resampling filter")
 
         self.load()
@@ -1560,7 +1563,7 @@ class Image(object):
            environment), or :py:attr:`PIL.Image.BICUBIC`
            (cubic spline interpolation in a 4x4 environment).
            If omitted, or if the image has mode "1" or "P", it is
-           set :py:attr:`PIL.Image.NEAREST`.
+           set :py:attr:`PIL.Image.NEAREST`. See :ref:`concept-filters`.
         :param expand: Optional expansion flag.  If true, expands the output
            image to make it large enough to hold the entire rotated image.
            If false or omitted, make the output image the same size as the
