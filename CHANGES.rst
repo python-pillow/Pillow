@@ -1,6 +1,15 @@
 Changelog (Pillow)
 ==================
 
+3.4.0 (unreleased)
+------------------
+
+- Add Box and Hamming filters for resampling #1959
+  [homm]
+
+- Retain a reference to core image object in PyAccess #2009
+  [homm]
+
 3.3.0 (2016-07-01)
 ------------------
 
