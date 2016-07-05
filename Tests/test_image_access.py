@@ -1,7 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
 try:
-    import cffi
     from PIL import PyAccess
 except ImportError:
     # Skip in setUp()
@@ -9,25 +8,109 @@ except ImportError:
 
 from PIL import Image
 
-from test_image_putpixel import TestImagePutPixel
-from test_image_getpixel import TestImageGetPixel
 
-Image.USE_CFFI_ACCESS = True
+class AccessTest(PillowTestCase):
+    # initial value
+    _init_cffi_access = Image.USE_CFFI_ACCESS
+    _need_cffi_access = False
+
+    @classmethod
+    def setUpClass(cls):
+        Image.USE_CFFI_ACCESS = cls._need_cffi_access
+
+    @classmethod
+    def tearDownClass(cls):
+        Image.USE_CFFI_ACCESS = cls._init_cffi_access
+
+
+class TestImagePutPixel(AccessTest):
+    def test_sanity(self):
+        im1 = hopper()
+        im2 = Image.new(im1.mode, im1.size, 0)
+
+        for y in range(im1.size[1]):
+            for x in range(im1.size[0]):
+                pos = x, y
+                im2.putpixel(pos, im1.getpixel(pos))
+
+        self.assert_image_equal(im1, im2)
+
+        im2 = Image.new(im1.mode, im1.size, 0)
+        im2.readonly = 1
+
+        for y in range(im1.size[1]):
+            for x in range(im1.size[0]):
+                pos = x, y
+                im2.putpixel(pos, im1.getpixel(pos))
+
+        self.assertFalse(im2.readonly)
+        self.assert_image_equal(im1, im2)
+
+        im2 = Image.new(im1.mode, im1.size, 0)
+
+        pix1 = im1.load()
+        pix2 = im2.load()
+
+        for y in range(im1.size[1]):
+            for x in range(im1.size[0]):
+                pix2[x, y] = pix1[x, y]
+
+        self.assert_image_equal(im1, im2)
+
+
+class TestImageGetPixel(AccessTest):
+    @staticmethod
+    def color(mode):
+        bands = Image.getmodebands(mode)
+        if bands == 1:
+            return 1
+        else:
+            return tuple(range(1, bands + 1))
+
+    def check(self, mode, c=None):
+        if not c:
+            c = self.color(mode)
+
+        # check putpixel
+        im = Image.new(mode, (1, 1), None)
+        im.putpixel((0, 0), c)
+        self.assertEqual(
+            im.getpixel((0, 0)), c,
+            "put/getpixel roundtrip failed for mode %s, color %s" % (mode, c))
+
+        # check inital color
+        im = Image.new(mode, (1, 1), c)
+        self.assertEqual(
+            im.getpixel((0, 0)), c,
+            "initial color failed for mode %s, color %s " % (mode, c))
+
+    def test_basic(self):
+        for mode in ("1", "L", "LA", "I", "I;16", "I;16B", "F",
+                     "P", "PA", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr"):
+            self.check(mode)
+
+    def test_signedness(self):
+        # see https://github.com/python-pillow/Pillow/issues/452
+        # pixelaccess is using signed int* instead of uint*
+        for mode in ("I;16", "I;16B"):
+            self.check(mode, 2**15-1)
+            self.check(mode, 2**15)
+            self.check(mode, 2**15+1)
+            self.check(mode, 2**16-1)
 
 
 class TestCffiPutPixel(TestImagePutPixel):
+    _need_cffi_access = True
 
     def setUp(self):
         try:
             import cffi
         except ImportError:
             self.skipTest("No cffi")
-
-    def test_put(self):
-        self.test_sanity()
 
 
 class TestCffiGetPixel(TestImageGetPixel):
+    _need_cffi_access = True
 
     def setUp(self):
         try:
@@ -35,12 +118,9 @@ class TestCffiGetPixel(TestImageGetPixel):
         except ImportError:
             self.skipTest("No cffi")
 
-    def test_get(self):
-        self.test_basic()
-        self.test_signedness()
 
-
-class TestCffi(PillowTestCase):
+class TestCffi(AccessTest):
+    _need_cffi_access = True
 
     def setUp(self):
         try:
@@ -141,8 +221,17 @@ class TestCffi(PillowTestCase):
         # im = Image.new('I;32B', (10, 10), 2**10)
         # self._test_set_access(im, 2**13-1)
 
+    # ref https://github.com/python-pillow/Pillow/pull/2009
+    def test_reference_counting(self):
+        size = 10
+
+        for _ in range(10):
+            # Do not save references to the image, only to the access object
+            px = Image.new('L', (size, 1), 0).load()
+            for i in range(size):
+                # pixels can contain garbarge if image is released
+                self.assertEqual(px[i, 0], 0)
+
 
 if __name__ == '__main__':
     unittest.main()
-
-# End of file
