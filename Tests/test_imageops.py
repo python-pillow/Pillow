@@ -78,6 +78,16 @@ class TestImageOps(PillowTestCase):
         ImageOps.equalize(i.convert("P"))
         ImageOps.equalize(i.convert("RGB"))
 
+    def test_scale(self):
+        # Test the scaling function
+        i = hopper("L").resize((50,50))
+ 
+        newimg = ImageOps.scale(i,2)
+        self.assertEqual(newimg.size, (100, 100))
+
+        newimg = ImageOps.scale(i,0.5)
+        self.assertEqual(newimg.size, (25, 25))
+
 
 if __name__ == '__main__':
     unittest.main()
