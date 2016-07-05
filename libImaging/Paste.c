@@ -99,7 +99,7 @@ paste_mask_L(Imaging imOut, Imaging imIn, Imaging imMask,
 {
     /* paste with mode "L" matte */
 
-    int x, y, i;
+    int x, y;
     unsigned int tmp1, tmp2;
 
     if (imOut->image8) {
@@ -117,15 +117,16 @@ paste_mask_L(Imaging imOut, Imaging imIn, Imaging imMask,
     } else {
 
         for (y = 0; y < ysize; y++) {
-            UINT8* out = (UINT8*) imOut->image[y+dy]+dx*pixelsize;
-            UINT8* in = (UINT8*) imIn->image[y+sy]+sx*pixelsize;
-            UINT8* mask = (UINT8*) imMask->image[y+sy]+sx;
+            UINT8* out = (UINT8*) (imOut->image32[y + dy] + dx);
+            UINT8* in = (UINT8*) (imIn->image32[y + sy] + sx);
+            UINT8* mask = (UINT8*) (imMask->image8[y+sy] + sx);
             for (x = 0; x < xsize; x++) {
-                for (i = 0; i < pixelsize; i++) {
-                    *out = BLEND(*mask, *out, *in, tmp1, tmp2);
-                    out++, in++;
-                }
-                mask++;
+                UINT8 a = mask[0];
+                out[0] = BLEND(a, out[0], in[0], tmp1, tmp2);
+                out[1] = BLEND(a, out[1], in[1], tmp1, tmp2);
+                out[2] = BLEND(a, out[2], in[2], tmp1, tmp2);
+                out[3] = BLEND(a, out[3], in[3], tmp1, tmp2);
+                out += 4; in += 4; mask ++;
             }
         }
     }
@@ -138,7 +139,7 @@ paste_mask_RGBA(Imaging imOut, Imaging imIn, Imaging imMask,
 {
     /* paste with mode "RGBA" matte */
 
-    int x, y, i;
+    int x, y;
     unsigned int tmp1, tmp2;
 
     if (imOut->image8) {
@@ -156,15 +157,16 @@ paste_mask_RGBA(Imaging imOut, Imaging imIn, Imaging imMask,
     } else {
 
         for (y = 0; y < ysize; y++) {
-            UINT8* out = (UINT8*) imOut->image[y+dy]+dx*pixelsize;
-            UINT8* in = (UINT8*) imIn->image[y+sy]+sx*pixelsize;
-            UINT8* mask = (UINT8*) imMask->image[y+sy]+sx*4+3;
+            UINT8* out = (UINT8*) (imOut->image32[y + dy] + dx);
+            UINT8* in = (UINT8*) (imIn->image32[y + sy] + sx);
+            UINT8* mask = (UINT8*) (imMask->image32[y+sy] + sx);
             for (x = 0; x < xsize; x++) {
-                for (i = 0; i < pixelsize; i++) {
-                    *out = BLEND(*mask, *out, *in, tmp1, tmp2);
-                    out++, in++;
-                }
-                mask += 4;
+                UINT8 a = mask[3];
+                out[0] = BLEND(a, out[0], in[0], tmp1, tmp2);
+                out[1] = BLEND(a, out[1], in[1], tmp1, tmp2);
+                out[2] = BLEND(a, out[2], in[2], tmp1, tmp2);
+                out[3] = BLEND(a, out[3], in[3], tmp1, tmp2);
+                out += 4; in += 4; mask += 4;
             }
         }
     }
@@ -178,7 +180,7 @@ paste_mask_RGBa(Imaging imOut, Imaging imIn, Imaging imMask,
 {
     /* paste with mode "RGBa" matte */
 
-    int x, y, i;
+    int x, y;
     unsigned int tmp1;
 
     if (imOut->image8) {
@@ -196,15 +198,16 @@ paste_mask_RGBa(Imaging imOut, Imaging imIn, Imaging imMask,
     } else {
 
         for (y = 0; y < ysize; y++) {
-            UINT8* out = (UINT8*) imOut->image[y+dy]+dx*pixelsize;
-            UINT8* in = (UINT8*) imIn->image[y+sy]+sx*pixelsize;
-            UINT8* mask = (UINT8*) imMask->image[y+sy]+sx*4+3;
+            UINT8* out = (UINT8*) (imOut->image32[y + dy] + dx);
+            UINT8* in = (UINT8*) (imIn->image32[y + sy] + sx);
+            UINT8* mask = (UINT8*) (imMask->image32[y+sy] + sx);
             for (x = 0; x < xsize; x++) {
-                for (i = 0; i < pixelsize; i++) {
-                    *out = PREBLEND(*mask, *out, *in, tmp1);
-                    out++, in++;
-                }
-                mask += 4;
+                UINT8 a = mask[3];
+                out[0] = PREBLEND(a, out[0], in[0], tmp1);
+                out[1] = PREBLEND(a, out[1], in[1], tmp1);
+                out[2] = PREBLEND(a, out[2], in[2], tmp1);
+                out[3] = PREBLEND(a, out[3], in[3], tmp1);
+                out += 4; in += 4; mask += 4;
             }
         }
     }
