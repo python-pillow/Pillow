@@ -160,7 +160,7 @@ Many of Pillow's features require external libraries:
     with Ubuntu and Debian.
 
 * **libimagequant** provides improved color quantization
-  
+
   * Pillow has been tested with libimagequant **2.6.0**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
@@ -330,7 +330,7 @@ current versions of Linux, OS X, and Windows.
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Supported**|**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
-| Mac OS X 10.11 El Capitan        |Yes          | 2.7,3.3,3.4,3.5              | 3.2.0                          |x86-64                 |
+| Mac OS X 10.11 El Capitan        |Yes          | 2.7,3.3,3.4,3.5              | 3.3.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Mac OS X 10.10 Yosemite          |Yes          | 2.7,3.3,3.4                  | 3.0.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
