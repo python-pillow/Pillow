@@ -83,15 +83,15 @@ class TestImageOps(PillowTestCase):
         i = hopper("L").resize((50, 50))
         
         with self.assertRaises(ValueError):
-            ImageOps.scale(i,-1)
+            ImageOps.scale(i, -1)
 
-        newimg = ImageOps.scale(i,1)
+        newimg = ImageOps.scale(i, 1)
         self.assertEqual(newimg.size, (50, 50))
 
-        newimg = ImageOps.scale(i,2)
+        newimg = ImageOps.scale(i, 2)
         self.assertEqual(newimg.size, (100, 100))
 
-        newimg = ImageOps.scale(i,0.5)
+        newimg = ImageOps.scale(i, 0.5)
         self.assertEqual(newimg.size, (25, 25))
 
 
