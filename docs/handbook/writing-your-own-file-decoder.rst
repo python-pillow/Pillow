@@ -37,8 +37,8 @@ any decoder specific data. The format handler class must be explicitly
 registered, via a call to the :py:mod:`~PIL.Image` module.
 
 .. note:: For performance reasons, it is important that the
-:py:meth:`_open` method quickly rejects files that do not have the
-appropriate contents.
+  :py:meth:`_open` method quickly rejects files that do not have the
+  appropriate contents.
 
 Example
 -------
@@ -397,6 +397,7 @@ value, or if there is a read error from the file. This function should
 free any allocated memory and release any resources from external
 libraries.
 
+.. _file-decoders-py:
 
 Writing Your Own File Decoder in Python
 =======================================

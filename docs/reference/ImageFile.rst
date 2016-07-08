@@ -39,3 +39,9 @@ Example: Parse an image
 
 .. autoclass:: PIL.ImageFile.Parser()
     :members:
+
+:py:class:`~PIL.ImageFile.PyDecoder`
+------------------------------------
+
+.. autoclass:: PIL.ImageFile.PyDecoder()
+    :members:

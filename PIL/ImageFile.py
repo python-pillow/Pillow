@@ -534,6 +534,13 @@ class PyCodecState(object):
                 self.xoff+self.xsize, self.yoff+self.ysize)
 
 class PyDecoder(object):
+    """
+    Python implementation of a format decoder. Override this class and
+    add the decoding logic in the `decode` method.
+
+    See :ref:`Writing Your Own File Decoder in Python<file-decoders-py>`
+    """
+
     _handles_eof = False
     _pulls_fd = False
 
@@ -545,6 +552,12 @@ class PyDecoder(object):
         self.init(args)
 
     def init(self, args):
+        """
+        Override to perform decoder specific initialization
+
+        :param args: Array of args items from the tile entry
+        :returns: None
+        """
         self.args = args
     
     @property
@@ -556,15 +569,43 @@ class PyDecoder(object):
         return self._pulls_fd
 
     def decode(self, buffer):
+        """
+        Override to perform the decoding process.
+
+        :param buffer: A bytes object with the data to be decoded.  If `handles_eof`
+             is set, then `buffer` will be empty and `self.fd` will be set.
+        :returns: A tuple of (bytes consumed, errcode). If finished with decoding
+             return <0 for the bytes consumed. Err codes are from `ERRORS`
+        """
         raise NotImplementedError()
 
     def cleanup(self):
+        """
+        Override to perform decoder specific cleanup
+
+        :returns: None
+        """
         pass
 
     def setfd(self, fd):
+        """
+        Called from ImageFile to set the python file like object
+
+        :param fd: A python file like object
+        :returns: None
+        """
         self.fd = fd
         
     def setimage(self, im, extents=None):
+        """
+        Called from ImageFile to set the core output image for the decoder
+
+        :param im: A core image object
+        :param extents: a 4 tuple of (x0, y0, x1, y1) defining the rectangle
+            for this tile
+        :returns: None
+        """
+        
         # following c code
         self.im = im
 
@@ -590,6 +631,15 @@ class PyDecoder(object):
             raise ValueError("Tile cannot extend outside image")
            
     def set_as_raw(self, data, rawmode=None):
+        """
+        Convenience method to set the internal image from a stream of raw data
+
+        :param data: Bytes to be set
+        :param rawmode: The rawmode to be used for the decoder. If not specified,
+             it will default to the mode of the image
+        :returns: None
+        """
+        
         if not rawmode:
             rawmode = self.mode
         d = Image._getdecoder(self.mode, 'raw', (rawmode))
