@@ -6,7 +6,7 @@ export CC=clang
 export CXX=clang++
 
 # Package versions for fresh source builds
-FT_VERSION=2.6.3
+FT_VERSION=2.6.4
 PNG_VERSION=1.6.23
 ZLIB_VERSION=1.2.8
 JPEG_VERSION=9b
