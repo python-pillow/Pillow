@@ -98,7 +98,7 @@ class TestImageTransform(PillowTestCase):
     def test_alpha_premult_resize(self):
 
         def op(im, sz):
-            return im.resize(sz, Image.LINEAR)
+            return im.resize(sz, Image.BILINEAR)
 
         self._test_alpha_premult(op)
 
@@ -137,6 +137,59 @@ class TestImageTransform(PillowTestCase):
         pattern = None
 
         self.test_mesh()
+
+
+class TestImageTransformAffine(PillowTestCase):
+    def _test_image(self):
+        im = hopper('RGB')
+        return im.crop((10, 20, im.width - 10, im.height - 20))
+
+    def test_rotate_0_deg(self):
+        im = self._test_image()
+        transform_data = [
+            1, 0, 0,
+            0, 1, 0,
+        ]
+        for resample in [Image.NEAREST, Image.BILINEAR, Image.BICUBIC]:
+            transformed = im.transform(im.size, Image.AFFINE,
+                                       transform_data, resample)
+            self.assert_image_equal(im, transformed)
+
+    def test_rotate_90_deg(self):
+        im = self._test_image()
+        transform_data = [
+            0, -1, im.width,
+            1, 0, 0,
+        ]
+        transposed = im.transpose(Image.ROTATE_90)
+        for resample in [Image.NEAREST, Image.BILINEAR, Image.BICUBIC]:
+            transformed = im.transform(transposed.size, Image.AFFINE,
+                                       transform_data, resample)
+            self.assert_image_equal(transposed, transformed)
+
+    def test_rotate_180_deg(self):
+        im = self._test_image()
+        transform_data = [
+            -1, 0, im.width,
+            0, -1, im.height,
+        ]
+        transposed = im.transpose(Image.ROTATE_180)
+        for resample in [Image.NEAREST, Image.BILINEAR, Image.BICUBIC]:
+            transformed = im.transform(transposed.size, Image.AFFINE,
+                                       transform_data, resample)
+            self.assert_image_equal(transposed, transformed)
+
+    def test_rotate_270_deg(self):
+        im = self._test_image()
+        transform_data = [
+            0, 1, 0,
+            -1, 0, im.height,
+        ]
+        transposed = im.transpose(Image.ROTATE_270)
+        for resample in [Image.NEAREST, Image.BILINEAR, Image.BICUBIC]:
+            transformed = im.transform(transposed.size, Image.AFFINE,
+                                       transform_data, resample)
+            self.assert_image_equal(transposed, transformed)
 
 
 if __name__ == '__main__':
