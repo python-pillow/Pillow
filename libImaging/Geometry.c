@@ -299,8 +299,8 @@ quad_transform(double* xout, double* yout, int x, int y, void* data)
 static int
 nearest_filter8(void* out, Imaging im, double xin, double yin)
 {
-    int x = COORD(xin + 0.5);
-    int y = COORD(yin + 0.5);
+    int x = COORD(xin);
+    int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
     ((UINT8*)out)[0] = im->image8[y][x];
@@ -310,8 +310,8 @@ nearest_filter8(void* out, Imaging im, double xin, double yin)
 static int
 nearest_filter16(void* out, Imaging im, double xin, double yin)
 {
-    int x = COORD(xin + 0.5);
-    int y = COORD(yin + 0.5);
+    int x = COORD(xin);
+    int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
     ((INT16*)out)[0] = ((INT16*)(im->image8[y]))[x];
@@ -321,8 +321,8 @@ nearest_filter16(void* out, Imaging im, double xin, double yin)
 static int
 nearest_filter32(void* out, Imaging im, double xin, double yin)
 {
-    int x = COORD(xin + 0.5);
-    int y = COORD(yin + 0.5);
+    int x = COORD(xin);
+    int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
     ((INT32*)out)[0] = im->image32[y][x];
