@@ -148,15 +148,14 @@ class TestImageTransformAffine(PillowTestCase):
         im = hopper('RGB')
         return im.crop((10, 20, im.width - 10, im.height - 20))
 
-    def _test_rotate(self, angle, transpose):
+    def _test_rotate(self, deg, transpose):
         im = self._test_image()
 
-        angle = - math.radians(angle)
+        angle = - math.radians(deg)
         matrix = [
             round(math.cos(angle), 15), round(math.sin(angle), 15), 0.0,
             round(-math.sin(angle), 15), round(math.cos(angle), 15), 0.0,
-            0, 0,
-        ]
+            0, 0]
         matrix[2] = (1 - matrix[0] - matrix[1]) * im.width / 2
         matrix[5] = (1 - matrix[3] - matrix[4]) * im.height / 2
 
@@ -164,6 +163,7 @@ class TestImageTransformAffine(PillowTestCase):
             transposed = im.transpose(transpose)
         else:
             transposed = im
+
         for resample in [Image.NEAREST, Image.BILINEAR, Image.BICUBIC]:
             transformed = im.transform(transposed.size, self.transform,
                                        matrix, resample)
@@ -181,53 +181,55 @@ class TestImageTransformAffine(PillowTestCase):
     def test_rotate_270_deg(self):
         self._test_rotate(270, Image.ROTATE_270)
 
-    def _test_resize(self, scale):
+    def _test_resize(self, scale, epsilonscale):
         im = self._test_image()
-        matrix = [
+
+        size_up = int(round(im.width * scale)), int(round(im.height * scale))
+        matrix_up = [
             1 / scale, 0, 0,
             0, 1 / scale, 0,
-            0, 0,
-        ]
-        size = int(round(im.width * scale)), int(round(im.height * scale))
-        transformed = im.transform(
-            size, self.transform, matrix, Image.NEAREST)
-        matrix = [
+            0, 0]
+        matrix_down = [
             scale, 0, 0,
             0, scale, 0,
-            0, 0,
-        ]
-        transformed = transformed.transform(
-            im.size, self.transform, matrix, Image.NEAREST)
-        self.assert_image_equal(im, transformed)
+            0, 0]
+
+        for resample, epsilon in [(Image.NEAREST, 0),
+                                  (Image.BILINEAR, 2), (Image.BICUBIC, 1)]:
+            transformed = im.transform(
+                size_up, self.transform, matrix_up, resample)
+            transformed = transformed.transform(
+                im.size, self.transform, matrix_down, resample)
+            self.assert_image_similar(transformed, im, epsilon * epsilonscale)
 
     def test_resize_1_1x(self):
-        self._test_resize(1.1)
+        self._test_resize(1.1, 6.9)
 
     def test_resize_1_5x(self):
-        self._test_resize(1.5)
+        self._test_resize(1.5, 5.5)
 
     def test_resize_2_0x(self):
-        self._test_resize(2.0)
+        self._test_resize(2.0, 5.5)
 
     def test_resize_2_3x(self):
-        self._test_resize(2.3)
+        self._test_resize(2.3, 3.7)
 
     def test_resize_2_5x(self):
-        self._test_resize(2.5)
+        self._test_resize(2.5, 3.7)
 
     def _test_translate(self, x, y, epsilonscale):
         im = self._test_image()
+
         size_up = int(round(im.width + x)), int(round(im.height + y))
         matrix_up = [
             1, 0, -x,
             0, 1, -y,
-            0, 0,
-        ]
+            0, 0]
         matrix_down = [
             1, 0, x,
             0, 1, y,
-            0, 0,
-        ]
+            0, 0]
+
         for resample, epsilon in [(Image.NEAREST, 0),
                                   (Image.BILINEAR, 1.5), (Image.BICUBIC, 1)]:
             transformed = im.transform(
