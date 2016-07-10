@@ -191,6 +191,38 @@ class TestImageTransformAffine(PillowTestCase):
                                        transform_data, resample)
             self.assert_image_equal(transposed, transformed)
 
+    def _test_resize_x(self, x):
+        im = self._test_image()
+        transform_data = [
+            1/x, 0, 0,
+            0, 1/x, 0,
+        ]
+        size = (int(round(im.width * x)), int(round(im.height * x)))
+        transformed = im.transform(
+            size, Image.AFFINE, transform_data, Image.NEAREST)
+        transform_data = [
+            x, 0, 0,
+            0, x, 0,
+        ]
+        transformed = transformed.transform(
+            im.size, Image.AFFINE, transform_data, Image.NEAREST)
+        self.assert_image_equal(im, transformed)
+
+    def test_resize_1_1x(self):
+        self._test_resize_x(1.1)
+
+    def test_resize_1_5x(self):
+        self._test_resize_x(1.5)
+
+    def test_resize_2_0x(self):
+        self._test_resize_x(2.0)
+
+    def test_resize_2_3x(self):
+        self._test_resize_x(2.3)
+
+    def test_resize_2_5x(self):
+        self._test_resize_x(2.5)
+
 
 if __name__ == '__main__':
     unittest.main()
