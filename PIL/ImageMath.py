@@ -268,5 +268,3 @@ def eval(expression, _dict={}, **kw):
         return out.im
     except AttributeError:
         return out
-
-# End of file

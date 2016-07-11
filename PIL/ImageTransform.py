@@ -96,5 +96,3 @@ class MeshTransform(Transform):
     :param data: A list of (bbox, quad) tuples.
     """
     method = Image.MESH
-
-# End of file

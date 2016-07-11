@@ -238,5 +238,3 @@ if sys.platform == 'win32':
         IMCONVERT = os.path.join(IMCONVERT, 'convert.exe')
 else:
     IMCONVERT = 'convert'
-
-# End of file

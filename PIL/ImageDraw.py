@@ -380,5 +380,3 @@ def floodfill(image, xy, value, border=None):
                             pixel[s, t] = value
                             newedge.append((s, t))
             edge = newedge
-
-# End of file

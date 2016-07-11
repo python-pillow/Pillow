@@ -85,5 +85,3 @@ Image.register_extension(SgiImageFile.format, ".bw")
 Image.register_extension(SgiImageFile.format, ".rgb")
 Image.register_extension(SgiImageFile.format, ".rgba")
 Image.register_extension(SgiImageFile.format, ".sgi")
-
-# End of file

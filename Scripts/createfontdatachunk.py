@@ -14,5 +14,3 @@ if __name__ == "__main__":
     print("''')), Image.open(BytesIO(base64.decodestring(b'''")
     base64.encode(open(font + ".pbm", "rb"), sys.stdout)
     print("'''))))")
-
-# End of file

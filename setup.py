@@ -225,7 +225,7 @@ class pil_build_ext(build_ext):
 
         if self.disable_platform_guessing:
             pass
-        
+
         elif sys.platform == "cygwin":
             # pythonX.Y.dll.a is in the /usr/lib/pythonX.Y/config directory
             _add_directory(library_dirs,
@@ -751,4 +751,3 @@ setup(name=NAME,
       keywords=["Imaging", ],
       license='Standard PIL License',
       zip_safe=not debug_build(), )
-# End of file
