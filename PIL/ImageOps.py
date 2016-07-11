@@ -190,7 +190,7 @@ def scale(image, factor, resample=Image.NEAREST):
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
     if factor == 1:
-        return Image.Image._new(image.im)
+        return image.copy()
     elif factor <= 0:
         raise ValueError("the factor must be greater than 0")
     else:
