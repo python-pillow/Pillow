@@ -218,7 +218,7 @@ class TestFileTiffMetadata(PillowTestCase):
         info = TiffImagePlugin.ImageFileDirectory_v2(head)
         info.load(data)
         try:
-            info = info.as_dict()
+            info = dict(info)
         except ValueError:
             self.fail("Should not be struct value error there.")
         self.assertIn(33432, info)
