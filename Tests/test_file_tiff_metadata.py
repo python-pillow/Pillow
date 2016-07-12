@@ -208,6 +208,21 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertEqual(0, reloaded.tag_v2[41988][0].numerator)
         self.assertEqual(0, reloaded.tag_v2[41988][0].denominator)
 
+    def test_expty_values(self):
+        data = io.BytesIO(
+            b'II*\x00\x08\x00\x00\x00\x03\x00\x1a\x01\x05\x00\x00\x00\x00\x00'
+            '\x00\x00\x00\x00\x1b\x01\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+            '\x98\x82\x02\x00\x07\x00\x00\x002\x00\x00\x00\x00\x00\x00\x00a '
+            'text\x00\x00')
+        head = data.read(8)
+        info = TiffImagePlugin.ImageFileDirectory_v2(head)
+        info.load(data)
+        try:
+            info = info.as_dict()
+        except ValueError:
+            self.fail("Should not be struct value error there.")
+        self.assertIn(33432, info)
+
 
 if __name__ == '__main__':
     unittest.main()
