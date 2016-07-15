@@ -14,6 +14,8 @@
 VERSION = '1.1.7'  # PIL version
 PILLOW_VERSION = '3.4.0.dev0'  # Pillow
 
+__version__ = PILLOW_VERSION
+
 _plugins = ['BmpImagePlugin',
             'BufrStubImagePlugin',
             'CurImagePlugin',
