@@ -154,6 +154,7 @@ class SpiderImageFile(ImageFile.ImageFile):
             ("raw", (0, 0) + self.size, offset,
                 (self.rawmode, 0, 1))]
         self.__fp = self.fp  # FIXME: hack
+        self._exclusive_fp = False
 
     @property
     def n_frames(self):

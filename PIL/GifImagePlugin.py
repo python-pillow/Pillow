@@ -80,6 +80,7 @@ class GifImageFile(ImageFile.ImageFile):
                     break
 
         self.__fp = self.fp  # FIXME: hack
+        self._exclusive_fp = False
         self.__rewind = self.fp.tell()
         self._n_frames = None
         self._is_animated = None

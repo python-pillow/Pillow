@@ -234,6 +234,7 @@ class ImImageFile(ImageFile.ImageFile):
         self.__offset = offs = self.fp.tell()
 
         self.__fp = self.fp  # FIXME: hack
+        self._exclusive_fp = False
 
         if self.rawmode[:2] == "F;":
 

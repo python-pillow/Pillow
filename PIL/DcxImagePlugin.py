@@ -58,6 +58,7 @@ class DcxImageFile(PcxImageFile):
             self._offset.append(offset)
 
         self.__fp = self.fp
+        self._exclusive_fp = False
         self.seek(0)
 
     @property

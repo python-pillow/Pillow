@@ -84,6 +84,7 @@ class FliImageFile(ImageFile.ImageFile):
         # set things up to decode first frame
         self.__frame = -1
         self.__fp = self.fp
+        self._exclusive_fp = False
         self.__rewind = self.fp.tell()
         self._n_frames = None
         self._is_animated = None
