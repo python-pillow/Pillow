@@ -53,6 +53,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         assert self.__framecount == len(self.__mpoffsets)
         del self.info['mpoffset']  # no longer needed
         self.__fp = self.fp  # FIXME: hack
+        self._exclusive_fp = False
         self.__fp.seek(self.__mpoffsets[0])  # get ready to read first frame
         self.__frame = 0
         self.offset = 0

@@ -93,7 +93,8 @@ class ImageFile(Image.Image):
             # stream
             self.fp = fp
             self.filename = filename
-            self._exclusive_fp = False
+            # can be overridden
+            self._exclusive_fp = None
 
         try:
             self._open()

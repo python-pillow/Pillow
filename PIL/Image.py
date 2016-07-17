@@ -2317,6 +2317,8 @@ def open(fp, mode="r"):
             im = _open_core(fp, filename, prefix)
 
     if im:
+        if getattr(im, '_exclusive_fp', 'undef') is None:
+            im._exclusive_fp = exclusive_fp
         return im
 
     if exclusive_fp:

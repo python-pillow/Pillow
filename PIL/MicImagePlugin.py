@@ -63,6 +63,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
             raise SyntaxError("not an MIC file; no image entries")
 
         self.__fp = self.fp
+        self._exclusive_fp = False
         self.frame = 0
 
         if len(self.images) > 1:
