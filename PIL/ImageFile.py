@@ -120,6 +120,8 @@ class ImageFile(Image.Image):
 
         # raise exception if something's wrong.  must be called
         # directly after open, and closes file when finished.
+        if self._exclusive_fp:
+            self.fp.close()
         self.fp = None
 
     def load(self):
@@ -231,14 +233,16 @@ class ImageFile(Image.Image):
                         if n < 0:
                             break
                         b = b[n:]
-                    
+
                 # Need to cleanup here to prevent leaks in PyPy
                 decoder.cleanup()
 
         self.tile = []
         self.readonly = readonly
 
-        self.fp = None  # might be shared
+        if self._exclusive_fp:
+            self.fp.close()
+        self.fp = None
 
         if not self.map and not LOAD_TRUNCATED_IMAGES and err_code < 0:
             # still raised if decoder fails to return anything
