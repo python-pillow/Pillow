@@ -88,10 +88,12 @@ class ImageFile(Image.Image):
             # filename
             self.fp = open(fp, "rb")
             self.filename = fp
+            self._exclusive_fp = True
         else:
             # stream
             self.fp = fp
             self.filename = filename
+            self._exclusive_fp = False
 
         try:
             self._open()
@@ -100,6 +102,9 @@ class ImageFile(Image.Image):
                 KeyError,  # unsupported mode
                 EOFError,  # got header but not the first frame
                 struct.error) as v:
+            # close the file only if we have opened it this constructor
+            if self._exclusive_fp:
+                self.fp.close()
             raise SyntaxError(v)
 
         if not self.mode or self.size[0] <= 0:
