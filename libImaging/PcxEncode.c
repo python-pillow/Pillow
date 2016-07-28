@@ -168,9 +168,6 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                         bytes -= 2;
                     }
                 }
-                if (bytes < padding) {
-                    return ptr - buf;
-                }
                 /* add the padding */
                 for (i = 0; i < padding; i++) {
                     ptr[0] = 0;
