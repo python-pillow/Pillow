@@ -91,7 +91,7 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             /* when we arrive here, "count" contains the number of
                bytes having the value of "LAST" that we've already
                seen */
-            while (state->x < planes * bytes_per_line) {
+            do {
                 /* If we're encoding an odd width file, and we've
                    got more than one plane, we need to pad each
                    color row with padding bytes at the end. Since
@@ -180,7 +180,8 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     state->LAST = state->buffer[state->x];
                     state->x += 1;
                 }
-            }
+            } while (state->x < planes * bytes_per_line);
+
             /* read next line */
             state->state = FETCH;
             break;
