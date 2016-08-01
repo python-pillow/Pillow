@@ -434,6 +434,18 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.size, (10, 10))
         im.load()
 
+        self.assertRaises(EOFError, lambda: im.seek(2))
+            
+        im.seek(0)
+        self.assertEqual(im._compression, 'tiff_ccitt')
+        self.assertEqual(im.size, (10, 10))
+        im.load()
+
+        im.seek(1)
+        self.assertEqual(im._compression, 'packbits')
+        self.assertEqual(im.size, (10, 10))
+        im.load()
+
         im.seek(0)
         self.assertEqual(im._compression, 'tiff_ccitt')
         self.assertEqual(im.size, (10, 10))
