@@ -60,6 +60,8 @@ matrix:
       language: generic
       env:
         - MB_PYTHON_VERSION=3.3
+        # Last numpy / scipy version built for Python 3.3
+        - TEST_DEPENDS="nose numpy==1.11.0 scipy==0.17.1"
     - os: osx
       language: generic
       env:
