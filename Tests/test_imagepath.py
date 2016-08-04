@@ -5,6 +5,7 @@ from PIL import ImagePath, Image
 import array
 import struct
 
+
 class TestImagePath(PillowTestCase):
 
     def test_path(self):
@@ -60,7 +61,6 @@ class TestImagePath(PillowTestCase):
         else:
             p = ImagePath.Path(arr.tostring())
         self.assertEqual(list(p), [(0.0, 1.0)])
-
 
     def test_overflow_segfault(self):
         try:

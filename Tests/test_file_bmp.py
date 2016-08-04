@@ -77,6 +77,5 @@ class TestFileBmp(PillowTestCase):
         self.assert_image_equal(im, target)
 
 
-
 if __name__ == '__main__':
     unittest.main()

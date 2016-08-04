@@ -8,6 +8,7 @@ except (OSError, ImportError) as v:
     # Skipped via setUp()
     pass
 
+
 class TestImageTk(PillowTestCase):
 
     def setUp(self):
@@ -24,7 +25,7 @@ class TestImageTk(PillowTestCase):
         im2 = Image.open(TEST_PNG)
         with open(TEST_PNG, 'rb') as fp:
             data = fp.read()
-        kw = {"file":TEST_JPG, "data":data}
+        kw = {"file": TEST_JPG, "data": data}
 
         # Test "file"
         im = ImageTk._get_image_from_kw(kw)
