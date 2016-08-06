@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Fix C90 compilation error for Tcl / Tk rewrite #2033
+  [matthew-brett]
+  
 - Fix image loading when rotating by 0 deg #2052
   [homm]
 
