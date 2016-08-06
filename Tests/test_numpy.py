@@ -6,6 +6,8 @@ from PIL import Image
 try:
     import site
     import numpy
+    assert site  # silence warning
+    assert numpy  # silence warning
 except ImportError:
     # Skip via setUp()
     pass
@@ -18,6 +20,8 @@ class TestNumpy(PillowTestCase):
         try:
             import site
             import numpy
+            assert site  # silence warning
+            assert numpy  # silence warning
         except ImportError:
             self.skipTest("ImportError")
 

@@ -170,7 +170,8 @@ class TestFileLibTiff(LibTiffTestCase):
                                 'RowsPerStrip',
                                 'StripOffsets']
             for field in requested_fields:
-                self.assertTrue(field in reloaded, "%s not in metadata" % field)
+                self.assertTrue(field in reloaded,
+                                "%s not in metadata" % field)
 
     def test_additional_metadata(self):
         # these should not crash. Seriously dummy data, most of it doesn't make
@@ -183,7 +184,8 @@ class TestFileLibTiff(LibTiffTestCase):
                                                         in TiffTags.LIBTIFF_CORE]
                           if info.type is not None)
 
-        # Exclude ones that have special meaning that we're already testing them
+        # Exclude ones that have special meaning
+        # that we're already testing them
         im = Image.open('Tests/images/hopper_g4.tif')
         for tag in im.tag_v2.keys():
             try:
@@ -422,8 +424,8 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_gray_semibyte_per_pixel(self):
         test_files = (
             (
-                24.8,#epsilon
-                (#group
+                24.8,  # epsilon
+                (  # group
                     "Tests/images/tiff_gray_2_4_bpp/hopper2.tif",
                     "Tests/images/tiff_gray_2_4_bpp/hopper2I.tif",
                     "Tests/images/tiff_gray_2_4_bpp/hopper2R.tif",
@@ -431,8 +433,8 @@ class TestFileLibTiff(LibTiffTestCase):
                 )
             ),
             (
-                7.3,#epsilon
-                (#group
+                7.3,  # epsilon
+                (  # group
                     "Tests/images/tiff_gray_2_4_bpp/hopper4.tif",
                     "Tests/images/tiff_gray_2_4_bpp/hopper4I.tif",
                     "Tests/images/tiff_gray_2_4_bpp/hopper4R.tif",
@@ -502,7 +504,6 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open(infile)
         # Should not divide by zero
         im.save(outfile)
-
 
 
 if __name__ == '__main__':
