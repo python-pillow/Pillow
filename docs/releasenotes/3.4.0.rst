@@ -1,0 +1,15 @@
+
+3.4.0
+-----
+
+New resizing filters
+====================
+
+Two new filters available for ``Image.resize()`` and ``Image.thumbnail()``
+functions: ``BOX`` and ``HAMMING``. ``BOX`` is the high-performance filter with
+two times shorter window than ``BILINEAR``. It can be used for image reduction
+3 and more times and produces a more sharp result than ``BILINEAR``.
+
+``HAMMING`` filter has the same performance as ``BILINEAR`` filter while
+providing the image downscaling quality comparable to ``BICUBIC``.
+Both new filters don't show good quality for the image upscaling.
