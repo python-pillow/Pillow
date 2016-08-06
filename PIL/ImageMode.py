@@ -40,6 +40,7 @@ def getmode(mode):
             _modes[m] = ModeDescriptor(m, bands, basemode, basetype)
         # extra experimental modes
         _modes["RGBa"] = ModeDescriptor("RGBa", ("R", "G", "B", "a"), "RGB", "L")
+        _modes["BGRa"] = ModeDescriptor("BGRa", ("B", "G", "R", "a"), "BGR", "L")
         _modes["LA"] = ModeDescriptor("LA", ("L", "A"), "L", "L")
         _modes["La"] = ModeDescriptor("La", ("L", "a"), "L", "L")
         _modes["PA"] = ModeDescriptor("PA", ("P", "A"), "RGB", "L")

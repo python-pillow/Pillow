@@ -179,6 +179,11 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize,
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
 
+    } else if (strcmp(mode, "BGRa") == 0) {
+        /* 32-bit true colour images with premultiplied alpha */
+        im->bands = im->pixelsize = 4;
+        im->linesize = xsize * 4;
+
     } else if (strcmp(mode, "CMYK") == 0) {
         /* 32-bit colour separation */
         im->bands = im->pixelsize = 4;

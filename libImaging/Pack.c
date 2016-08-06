@@ -534,6 +534,7 @@ static struct {
     {"RGBa",	"RGBa",		32,	copy4},
     {"RGBa",	"BGRa",		32,	ImagingPackBGRA},
     {"RGBa",	"aBGR",		32,	ImagingPackABGR},
+    {"BGRa",	"BGRa",		32,	copy4},
 
     /* true colour w. padding */
     {"RGBX",	"RGBX",		32,	copy4},
