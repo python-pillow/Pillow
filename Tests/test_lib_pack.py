@@ -10,11 +10,11 @@ class TestLibPack(PillowTestCase):
 
     def test_pack(self):
 
-        def pack(mode, rawmode):
+        def pack(mode, rawmode, in_data=(1, 2, 3, 4)):
             if len(mode) == 1:
-                im = Image.new(mode, (1, 1), 1)
+                im = Image.new(mode, (1, 1), in_data[0])
             else:
-                im = Image.new(mode, (1, 1), (1, 2, 3, 4)[:len(mode)])
+                im = Image.new(mode, (1, 1), in_data[:len(mode)])
 
             if py3:
                 return list(im.tobytes("raw", rawmode))
@@ -47,6 +47,8 @@ class TestLibPack(PillowTestCase):
         self.assertEqual(pack("RGBX", "RGBX"), [1, 2, 3, 4])  # 4->255?
 
         self.assertEqual(pack("RGBA", "RGBA"), [1, 2, 3, 4])
+        self.assertEqual(pack("RGBA", "BGRa"), [0, 0, 0, 4])
+        self.assertEqual(pack("RGBA", "BGRa", in_data=(20, 30, 40, 50)), [8, 6, 4, 50])
 
         self.assertEqual(pack("RGBa", "RGBa"), [1, 2, 3, 4])
         self.assertEqual(pack("RGBa", "BGRa"), [3, 2, 1, 4])
