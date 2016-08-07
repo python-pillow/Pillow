@@ -4,6 +4,30 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Fix C90 compilation error for Tcl / Tk rewrite #2033
+  [matthew-brett]
+  
+- Fix image loading when rotating by 0 deg #2052
+  [homm]
+
+- Add ImageOps.scale to expand or contract a PIL image by a factor #2011
+  [vlmath]
+  
+- Flake8 fixes #2050
+  [hugovk]
+
+- Updated freetype to 2.6.5 on Appveyor builds #2035
+  [radarhere]
+  
+- PCX encoder fixes #2023, pr #2041
+  [homm]
+  
+- Docs: Windows console prompts are > #2031
+  [techtonik]
+
+- Expose Pillow package version as PIL.__version__ #2027
+  [techtonik]
+
 - Add Box and Hamming filters for resampling #1959
   [homm]
 

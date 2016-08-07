@@ -51,11 +51,11 @@ supported Pythons in both 32 and 64-bit versions in wheel, egg, and
 executable installers. These binaries have all of the optional
 libraries included::
 
-  $ pip install Pillow
+  > pip install Pillow
 
 or::
 
-  $ easy_install Pillow
+  > easy_install Pillow
 
 
 OS X Installation

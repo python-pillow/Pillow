@@ -50,8 +50,8 @@ class ImageDraw(object):
         """
         Create a drawing instance.
 
-        @param im The image to draw in.
-        @param mode Optional mode to use for color values.  For RGB
+        :param im: The image to draw in.
+        :param mode: Optional mode to use for color values.  For RGB
            images, this argument can be RGB or RGBA (to blend the
            drawing into the image).  For all other modes, this argument
            must be the same as the image mode.  If omitted, the mode
@@ -286,8 +286,8 @@ def Draw(im, mode=None):
     """
     A simple 2D drawing interface for PIL images.
 
-    @param im The image to draw in.
-    @param mode Optional mode to use for color values.  For RGB
+    :param im: The image to draw in.
+    :param mode: Optional mode to use for color values.  For RGB
        images, this argument can be RGB or RGBA (to blend the
        drawing into the image).  For all other modes, this argument
        must be the same as the image mode.  If omitted, the mode
@@ -310,9 +310,9 @@ def getdraw(im=None, hints=None):
     (Experimental) A more advanced 2D drawing interface for PIL images,
     based on the WCK interface.
 
-    @param im The image to draw in.
-    @param hints An optional list of hints.
-    @return A (drawing context, drawing resource factory) tuple.
+    :param im: The image to draw in.
+    :param hints: An optional list of hints.
+    :returns: A (drawing context, drawing resource factory) tuple.
     """
     # FIXME: this needs more work!
     # FIXME: come up with a better 'hints' scheme.
@@ -333,10 +333,10 @@ def floodfill(image, xy, value, border=None):
     """
     (experimental) Fills a bounded region with a given color.
 
-    @param image Target image.
-    @param xy Seed position (a 2-item coordinate tuple).
-    @param value Fill color.
-    @param border Optional border value.  If given, the region consists of
+    :param image: Target image.
+    :param xy: Seed position (a 2-item coordinate tuple).
+    :param value: Fill color.
+    :param border: Optional border value.  If given, the region consists of
         pixels with a color different from the border color.  If not given,
         the region consists of pixels having the same color as the seed
         pixel.
@@ -380,5 +380,3 @@ def floodfill(image, xy, value, border=None):
                             pixel[s, t] = value
                             newedge.append((s, t))
             edge = newedge
-
-# End of file

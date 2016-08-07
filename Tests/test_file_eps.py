@@ -63,7 +63,7 @@ class TestFileEps(PillowTestCase):
         self.assertEqual(cmyk_image.mode, "CMYK")
         self.assertEqual(cmyk_image.size, (100, 100))
         self.assertEqual(cmyk_image.format, "EPS")
-        
+
         cmyk_image.load()
         self.assertEqual(cmyk_image.mode, "RGB")
 
@@ -267,5 +267,3 @@ class TestFileEps(PillowTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-# End of file

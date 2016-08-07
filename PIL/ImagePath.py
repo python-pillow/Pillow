@@ -58,5 +58,3 @@ class Path(object):
 
 # override with C implementation
 Path = Image.core.path
-
-# End of file

@@ -72,5 +72,3 @@ def o16be(i):
 
 def o32be(i):
     return pack(">I", i)
-
-# End of file

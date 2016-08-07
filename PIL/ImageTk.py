@@ -286,5 +286,3 @@ def _show(image, title):
     if title:
         top.title(title)
     UI(top, image).pack()
-
-# End of file

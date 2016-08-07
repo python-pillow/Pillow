@@ -105,6 +105,7 @@ class TestCffiPutPixel(TestImagePutPixel):
     def setUp(self):
         try:
             import cffi
+            assert cffi  # silence warning
         except ImportError:
             self.skipTest("No cffi")
 
@@ -115,6 +116,7 @@ class TestCffiGetPixel(TestImageGetPixel):
     def setUp(self):
         try:
             import cffi
+            assert cffi  # silence warning
         except ImportError:
             self.skipTest("No cffi")
 
@@ -125,6 +127,7 @@ class TestCffi(AccessTest):
     def setUp(self):
         try:
             import cffi
+            assert cffi  # silence warning
         except ImportError:
             self.skipTest("No cffi")
 

@@ -313,7 +313,7 @@ class TestFilePng(PillowTestCase):
         #                  -14: malformed chunk
 
         for offset in (-10, -13, -14):
-            with open(TEST_PNG_FILE,'rb') as f:
+            with open(TEST_PNG_FILE, 'rb') as f:
                 test_file = f.read()[:offset]
 
             im = Image.open(BytesIO(test_file))
@@ -346,7 +346,6 @@ class TestFilePng(PillowTestCase):
             self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile, BytesIO(image_data))
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
-
 
     def test_roundtrip_dpi(self):
         # Check dpi roundtripping
@@ -502,5 +501,3 @@ class TestFilePng(PillowTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-# End of file

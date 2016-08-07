@@ -75,7 +75,7 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                            (UINT8*) im->image[state->y + state->yoff] +
                            state->xoff * im->pixelsize, state->xsize);
 
-            state->y++;
+            state->y += 1;
 
             state->count = 1;
             state->LAST = state->buffer[0];
@@ -91,7 +91,7 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             /* when we arrive here, "count" contains the number of
                bytes having the value of "LAST" that we've already
                seen */
-            while (state->x < planes * bytes_per_line) {
+            do {
                 /* If we're encoding an odd width file, and we've
                    got more than one plane, we need to pad each
                    color row with padding bytes at the end. Since
@@ -103,22 +103,23 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
                     if (state->count == 63) {
                         /* this run is full; flush it */
-                        if (bytes < 2)
+                        if (bytes < 2) {
                             return ptr - buf;
-                        *ptr++ = 0xff;
-                        *ptr++ = state->LAST;
+                        }
+                        ptr[0] = 0xff;
+                        ptr[1] = state->LAST;
+                        ptr += 2;
                         bytes -= 2;
 
                         state->count = 0;
-
                     }
 
                     this = state->buffer[state->x];
 
                     if (this == state->LAST) {
                         /* extend the current run */
-                        state->x++;
-                        state->count++;
+                        state->x += 1;
+                        state->count += 1;
 
                     } else {
                         /* start a new run */
@@ -126,15 +127,17 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                             if (bytes < 1) {
                                 return ptr - buf;
                             }
-                            *ptr++ = state->LAST;
-                            bytes--;
+                            ptr[0] = state->LAST;
+                            ptr += 1;
+                            bytes -= 1;
                         } else {
                             if (state->count > 0) {
                                 if (bytes < 2) {
                                     return ptr - buf;
                                 }
-                                *ptr++ = 0xc0 | state->count;
-                                *ptr++ = state->LAST;
+                                ptr[0] = 0xc0 | state->count;
+                                ptr[1] = state->LAST;
+                                ptr += 2;
                                 bytes -= 2;
                             }
                         }
@@ -142,8 +145,7 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                         state->LAST = this;
                         state->count = 1;
 
-                        state->x++;
-
+                        state->x += 1;
                     }
                 }
 
@@ -152,33 +154,34 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     if (bytes < 1 + padding) {
                         return ptr - buf;
                     }
-                    *ptr++ = state->LAST;
-                    bytes--;
+                    ptr[0] = state->LAST;
+                    ptr += 1;
+                    bytes -= 1;
                 } else {
                     if (state->count > 0) {
                         if (bytes < 2 + padding) {
                             return ptr - buf;
                         }
-                        *ptr++ = 0xc0 | state->count;
-                        *ptr++ = state->LAST;
+                        ptr[0] = 0xc0 | state->count;
+                        ptr[1] = state->LAST;
+                        ptr += 2;
                         bytes -= 2;
                     }
                 }
-                if (bytes < padding) {
-                    return ptr - buf;
-                }
                 /* add the padding */
-                for (i=0;i<padding;i++){
-                    *ptr++=0;
-                    bytes--;
+                for (i = 0; i < padding; i++) {
+                    ptr[0] = 0;
+                    ptr += 1;
+                    bytes -= 1;
                 }
                 /* reset for the next color plane. */
                 if (state->x < planes * bytes_per_line) {
                     state->count = 1;
                     state->LAST = state->buffer[state->x];
-                    state->x++;
+                    state->x += 1;
                 }
-            }
+            } while (state->x < planes * bytes_per_line);
+
             /* read next line */
             state->state = FETCH;
             break;

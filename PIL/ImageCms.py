@@ -969,5 +969,3 @@ if __name__ == "__main__":
                 print(doc)
         except (AttributeError, TypeError):
             pass
-
-# End of file

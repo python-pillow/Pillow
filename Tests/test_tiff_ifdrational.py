@@ -48,7 +48,7 @@ class Test_IFDRational(PillowTestCase):
         methods = (True, False)
         if 'libtiff_encoder' not in dir(Image.core):
             methods = (False)
-            
+
         for libtiff in methods:
             TiffImagePlugin.WRITE_LIBTIFF = libtiff
 

@@ -42,10 +42,10 @@ def show(image, title=None, **options):
     """
     Display a given image.
 
-    @param image An image object.
-    @param title Optional title.  Not all viewers can display the title.
-    @param **options Additional viewer options.
-    @return True if a suitable viewer was found, false otherwise.
+    :param image: An image object.
+    :param title: Optional title.  Not all viewers can display the title.
+    :param \**options: Additional viewer options.
+    :returns: True if a suitable viewer was found, false otherwise.
     """
     for viewer in _viewers:
         if viewer.show(image, title=title, **options):
@@ -174,5 +174,3 @@ else:
 if __name__ == "__main__":
     # usage: python ImageShow.py imagefile [title]
     print(show(Image.open(sys.argv[1]), *sys.argv[2:]))
-
-# End of file

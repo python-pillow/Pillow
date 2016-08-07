@@ -1575,7 +1575,7 @@ class Image(object):
 
         # Fast paths regardless of filter
         if angle == 0:
-            return self._new(self.im)
+            return self.copy()
         if angle == 180:
             return self.transpose(ROTATE_180)
         if angle == 90 and expand:
@@ -2521,5 +2521,3 @@ def effect_noise(size, sigma):
     :param sigma: Standard deviation of noise.
     """
     return Image()._new(core.effect_noise(size, sigma))
-
-# End of file

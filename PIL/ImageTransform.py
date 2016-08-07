@@ -41,10 +41,10 @@ class AffineTransform(Transform):
     This function can be used to scale, translate, rotate, and shear the
     original image.
 
-    @def AffineTransform(matrix)
-    @param matrix A 6-tuple (a, b, c, d, e, f) containing the first two rows
+    See :py:meth:`~PIL.Image.Image.transform`
+
+    :param matrix: A 6-tuple (a, b, c, d, e, f) containing the first two rows
         from an affine transform matrix.
-    @see Image#Image.transform
     """
     method = Image.AFFINE
 
@@ -62,10 +62,10 @@ class ExtentTransform(Transform):
     rectangle in the current image. It is slightly slower than crop, but about
     as fast as a corresponding resize operation.
 
-    @def ExtentTransform(bbox)
-    @param bbox A 4-tuple (x0, y0, x1, y1) which specifies two points in the
+    See :py:meth:`~PIL.Image.Image.transform`
+
+    :param bbox: A 4-tuple (x0, y0, x1, y1) which specifies two points in the
         input image's coordinate system.
-    @see Image#Image.transform
     """
     method = Image.EXTENT
 
@@ -77,11 +77,11 @@ class QuadTransform(Transform):
     Maps a quadrilateral (a region defined by four corners) from the image to a
     rectangle of the given size.
 
-    @def QuadTransform(xy)
-    @param xy An 8-tuple (x0, y0, x1, y1, x2, y2, y3, y3) which contain the
+    See :py:meth:`~PIL.Image.Image.transform`
+
+    :param xy: An 8-tuple (x0, y0, x1, y1, x2, y2, y3, y3) which contain the
         upper left, lower left, lower right, and upper right corner of the
         source quadrilateral.
-    @see Image#Image.transform
     """
     method = Image.QUAD
 
@@ -91,10 +91,8 @@ class MeshTransform(Transform):
     Define a mesh image transform.  A mesh transform consists of one or more
     individual quad transforms.
 
-    @def MeshTransform(data)
-    @param data A list of (bbox, quad) tuples.
-    @see Image#Image.transform
+    See :py:meth:`~PIL.Image.Image.transform`
+
+    :param data: A list of (bbox, quad) tuples.
     """
     method = Image.MESH
-
-# End of file

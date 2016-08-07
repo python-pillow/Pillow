@@ -57,7 +57,10 @@ if sys.platform.startswith('win32'):
     DeleteObject.argtypes = [ctypes.wintypes.HGDIOBJ]
 
     CreateDIBSection = ctypes.windll.gdi32.CreateDIBSection
-    CreateDIBSection.argtypes = [ctypes.wintypes.HDC, ctypes.c_void_p, ctypes.c_uint, ctypes.POINTER(ctypes.c_void_p), ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD]
+    CreateDIBSection.argtypes = [ctypes.wintypes.HDC, ctypes.c_void_p,
+                                 ctypes.c_uint,
+                                 ctypes.POINTER(ctypes.c_void_p),
+                                 ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD]
     CreateDIBSection.restype = ctypes.wintypes.HBITMAP
 
     def serialize_dib(bi, pixels):
@@ -99,7 +102,8 @@ if sys.platform.startswith('win32'):
             hdc = CreateCompatibleDC(None)
             # print('hdc:',hex(hdc))
             pixels = ctypes.c_void_p()
-            dib = CreateDIBSection(hdc, ctypes.byref(hdr), DIB_RGB_COLORS, ctypes.byref(pixels), None, 0)
+            dib = CreateDIBSection(hdc, ctypes.byref(hdr), DIB_RGB_COLORS,
+                                   ctypes.byref(pixels), None, 0)
             SelectObject(hdc, dib)
 
             imdib.expose(hdc)

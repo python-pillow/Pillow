@@ -317,5 +317,3 @@ def new(img, readonly=False):
         logger.debug("PyAccess Not Implemented: %s", img.mode)
         return None
     return access_type(img, readonly)
-
-# End of file
