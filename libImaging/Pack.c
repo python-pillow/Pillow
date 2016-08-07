@@ -325,12 +325,12 @@ ImagingPackBGRa(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* BGRa, reversed bytes with premultiplied alplha */
     for (i = 0; i < pixels; i++) {
-	int alpha = out[3] = in[A];
-	int tmp;
-	out[0] = MULDIV255(in[B], alpha, tmp);
-	out[1] = MULDIV255(in[G], alpha, tmp);
-	out[2] = MULDIV255(in[R], alpha, tmp);
-	out += 4; in += 4;
+        int alpha = out[3] = in[A];
+        int tmp;
+        out[0] = MULDIV255(in[B], alpha, tmp);
+        out[1] = MULDIV255(in[G], alpha, tmp);
+        out[2] = MULDIV255(in[R], alpha, tmp);
+        out += 4; in += 4;
     }
 }
 
