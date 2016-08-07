@@ -122,7 +122,9 @@ class TestLibPack(PillowTestCase):
         self.assertEqual(unpack("RGB", "XBGR", 4), (4, 3, 2))
 
         self.assertEqual(unpack("RGBA", "RGBA", 4), (1, 2, 3, 4))
+        self.assertEqual(unpack("RGBA", "RGBa", 4), (63, 127, 191, 4))
         self.assertEqual(unpack("RGBA", "BGRA", 4), (3, 2, 1, 4))
+        self.assertEqual(unpack("RGBA", "BGRa", 4), (191, 127, 63, 4))
         self.assertEqual(unpack("RGBA", "ARGB", 4), (2, 3, 4, 1))
         self.assertEqual(unpack("RGBA", "ABGR", 4), (4, 3, 2, 1))
         self.assertEqual(unpack("RGBA", "RGBA;15", 2), (8, 131, 0, 0))
