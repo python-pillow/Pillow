@@ -246,7 +246,7 @@ else:
 
 _MODE_CONV = {
     # official modes
-    "1": ('|b1', None),  # broken
+    "1": ('|b1', None),  # Bits need to be extended to bytes
     "L": ('|u1', None),
     "LA": ('|u1', 2),
     "I": (_ENDIAN + 'i4', None),
@@ -615,17 +615,21 @@ class Image(object):
         self.save(b, 'PNG')
         return b.getvalue()
 
-    def __getattr__(self, name):
-        if name == "__array_interface__":
-            # numpy array interface support
-            new = {}
-            shape, typestr = _conv_type_shape(self)
-            new['shape'] = shape
-            new['typestr'] = typestr
+    @property
+    def __array_interface__(self):
+        # numpy array interface support
+        new = {}
+        shape, typestr = _conv_type_shape(self)
+        new['shape'] = shape
+        new['typestr'] = typestr
+        new['version'] = 3
+        if self.mode == '1':
+            # Binary images need to be extended from bits to bytes
+            # See: https://github.com/python-pillow/Pillow/issues/350
+            new['data'] = self.tobytes('raw', 'L')
+        else:
             new['data'] = self.tobytes()
-            new['version'] = 3
-            return new
-        raise AttributeError(name)
+        return new
 
     def __getstate__(self):
         return [

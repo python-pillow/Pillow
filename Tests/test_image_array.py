@@ -25,13 +25,26 @@ class TestImageArray(PillowTestCase):
         self.assertEqual(test("RGBX"), (3, (100, 128, 4), '|u1', 51200))
 
     def test_fromarray(self):
+
+        class Wrapper(object):
+            """ Class with API matching Image.fromarray """
+
+            def __init__(self, img, arr_params):
+                self.img = img
+                self.__array_interface__ = arr_params
+
+            def tobytes(self):
+                return self.img.tobytes()
+
         def test(mode):
             i = im.convert(mode)
             a = i.__array_interface__
-            a["strides"] = 1  # pretend it's non-contiguous
-            i.__array_interface__ = a  # patch in new version of attribute
-            out = Image.fromarray(i)
+            a["strides"] = 1  # pretend it's non-contigous
+            # Make wrapper instance for image, new array interface
+            wrapped = Wrapper(i, a)
+            out = Image.fromarray(wrapped)
             return out.mode, out.size, list(i.getdata()) == list(out.getdata())
+
         # self.assertEqual(test("1"), ("1", (128, 100), True))
         self.assertEqual(test("L"), ("L", (128, 100), True))
         self.assertEqual(test("I"), ("I", (128, 100), True))

@@ -117,6 +117,15 @@ class TestNumpy(PillowTestCase):
         self._test_img_equals_nparray(img, np_img)
         self.assertEqual(np_img.dtype, numpy.dtype('<u2'))
 
+    def test_1bit(self):
+        # Test that 1-bit arrays convert to numpy and back
+        # See: https://github.com/python-pillow/Pillow/issues/350
+        arr = numpy.array([[1, 0, 0, 1, 0], [0, 1, 0, 0, 0]], 'u1')
+        img = Image.fromarray(arr * 255).convert('1')
+        self.assertEqual(img.mode, '1')
+        arr_back = numpy.array(img)
+        numpy.testing.assert_array_equal(arr, arr_back)
+
     def test_save_tiff_uint16(self):
         '''
         Open a single-channel uint16 greyscale image and verify that it can be saved without
