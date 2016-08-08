@@ -34,7 +34,8 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertRegexpMatches(Image.core.jp2klib_version, '\d+\.\d+\.\d+$')
 
         im = Image.open('Tests/images/test-card-lossless.jp2')
-        im.load()
+        px = im.load()
+        self.assertTrue(px)
         self.assertEqual(im.mode, 'RGB')
         self.assertEqual(im.size, (640, 480))
         self.assertEqual(im.format, 'JPEG2000')
