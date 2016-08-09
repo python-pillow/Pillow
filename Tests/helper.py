@@ -99,7 +99,7 @@ class PillowTestCase(unittest.TestCase):
             " average pixel value difference %.4f > epsilon %.4f" % (
                 ave_diff, epsilon))
 
-    def assert_warning(self, warn_class, func):
+    def assert_warning(self, warn_class, func, *args, **kwargs):
         import warnings
 
         result = None
@@ -108,7 +108,7 @@ class PillowTestCase(unittest.TestCase):
             warnings.simplefilter("always")
 
             # Hopefully trigger a warning.
-            result = func()
+            result = func(*args, **kwargs)
 
             # Verify some things.
             self.assertGreaterEqual(len(w), 1)
