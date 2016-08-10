@@ -388,6 +388,8 @@ typedef struct ImagingCodecStateInstance *ImagingCodecState;
 typedef int (*ImagingCodec)(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
 
+extern int ImagingBcnDecode(Imaging im, ImagingCodecState state,
+			    UINT8* buffer, int bytes);
 extern int ImagingBitDecode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
 extern int ImagingEpsEncode(Imaging im, ImagingCodecState state,

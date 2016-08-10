@@ -26,17 +26,17 @@ import mp_compile
 _IMAGING = ("decode", "encode", "map", "display", "outline", "path")
 
 _LIB_IMAGING = (
-    "Access", "AlphaComposite", "Resample", "Bands", "BitDecode", "Blend",
-    "Chops", "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop", "Dib", "Draw",
-    "Effects", "EpsEncode", "File", "Fill", "Filter", "FliDecode", "Geometry",
-    "GetBBox", "GifDecode", "GifEncode", "HexDecode", "Histo", "JpegDecode",
-    "JpegEncode", "LzwDecode", "Matrix", "ModeFilter", "MspDecode", "Negative",
-    "Offset", "Pack", "PackDecode", "Palette", "Paste", "Quant", "QuantOctree",
-    "QuantHash", "QuantHeap", "PcdDecode", "PcxDecode", "PcxEncode", "Point",
-    "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
-    "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
-    "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode", "Jpeg2KDecode",
-    "Jpeg2KEncode", "BoxBlur", "QuantPngQuant", "codec_fd")
+    "Access", "AlphaComposite", "Resample", "Bands", "BcnDecode", "BitDecode",
+    "Blend", "Chops", "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop", "Dib",
+    "Draw", "Effects", "EpsEncode", "File", "Fill", "Filter", "FliDecode",
+    "Geometry", "GetBBox", "GifDecode", "GifEncode", "HexDecode", "Histo",
+    "JpegDecode", "JpegEncode", "LzwDecode", "Matrix", "ModeFilter",
+    "MspDecode", "Negative", "Offset", "Pack", "PackDecode", "Palette", "Paste",
+    "Quant", "QuantOctree", "QuantHash", "QuantHeap", "PcdDecode", "PcxDecode",
+    "PcxEncode", "Point", "RankFilter", "RawDecode", "RawEncode", "Storage",
+    "SunRleDecode", "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask",
+    "XbmDecode", "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode",
+    "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur", "QuantPngQuant", "codec_fd")
 
 DEBUG = False
 
