@@ -524,7 +524,7 @@ getink(PyObject* color, Imaging im, char* ink)
         if (im->bands == 1) {
             /* unsigned integer, single layer */
             if (rIsInt != 1) {
-                if (!PyArg_ParseTuple(color, "i", &r)) {
+                if (!PyArg_ParseTuple(color, "L", &r)) {
                     return NULL;
                 }
             }
@@ -540,11 +540,11 @@ getink(PyObject* color, Imaging im, char* ink)
                 r = (UINT8) r;
             } else {
                 if (im->bands == 2) {
-                    if (!PyArg_ParseTuple(color, "i|i", &r, &a))
+                    if (!PyArg_ParseTuple(color, "L|i", &r, &a))
                         return NULL;
                     g = b = r;
                 } else {
-                    if (!PyArg_ParseTuple(color, "iii|i", &r, &g, &b, &a))
+                    if (!PyArg_ParseTuple(color, "Lii|i", &r, &g, &b, &a))
                         return NULL;
                 }
             }
