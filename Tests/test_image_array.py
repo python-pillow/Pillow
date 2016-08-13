@@ -28,7 +28,7 @@ class TestImageArray(PillowTestCase):
         def test(mode):
             i = im.convert(mode)
             a = i.__array_interface__
-            a["strides"] = 1  # pretend it's non-contigous
+            a["strides"] = 1  # pretend it's non-contiguous
             i.__array_interface__ = a  # patch in new version of attribute
             out = Image.fromarray(i)
             return out.mode, out.size, list(i.getdata()) == list(out.getdata())
