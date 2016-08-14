@@ -311,7 +311,7 @@ static Pixel *
 create_palette_array(const ColorBucket palette, unsigned int paletteLength) {
    Pixel *paletteArray;
    unsigned int i;
-   
+
    /* malloc check ok, calloc for overflow */
    paletteArray = calloc(paletteLength, sizeof(Pixel));
    if (!paletteArray) return NULL;
@@ -407,7 +407,7 @@ int quantize_octree(Pixel *pixelData,
    /* remove the used fine colors from the coarse cube */
    subtract_color_buckets(coarseCube, paletteBucketsFine, nFineColors);
 
-   /* did the substraction cleared one or more coarse bucket? */
+   /* did the subtraction cleared one or more coarse bucket? */
    while (nCoarseColors > count_used_color_buckets(coarseCube)) {
       /* then we can use the free buckets for fine colors */
       nAlreadySubtracted = nFineColors;

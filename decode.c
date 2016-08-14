@@ -204,7 +204,7 @@ _setimage(ImagingDecoderObject* decoder, PyObject* args)
             }
             state->bytes = (state->bits * state->xsize+7)/8;
         }
-        /* malloc check ok, oveflow checked above */
+        /* malloc check ok, overflow checked above */
         state->buffer = (UINT8*) malloc(state->bytes);
         if (!state->buffer)
             return PyErr_NoMemory();
@@ -233,7 +233,7 @@ _setfd(ImagingDecoderObject* decoder, PyObject* args)
 
     Py_XINCREF(fd);
     state->fd = fd;
-    
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -874,7 +874,7 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
     decoder->cleanup = ImagingJpeg2KDecodeCleanup;
 
     context = (JPEG2KDECODESTATE *)decoder->state.context;
-    
+
     context->fd = fd;
     context->length = (off_t)length;
     context->format = codec_format;
