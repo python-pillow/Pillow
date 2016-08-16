@@ -188,7 +188,7 @@ def _dxt3(data, width, height):
 
             for j in range(4):
                 for i in range(4):
-                    alpha = ((ai >> 4 * (4 * j + i)) & 15) * 16
+                    alpha = ((ai >> 4 * (4 * j + i)) & 15) * 17 # map alpha to range 0-255
 
                     cc = (code >> 2 * (4 * j + i)) & 3
                     if cc == 0:

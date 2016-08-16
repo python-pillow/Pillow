@@ -46,9 +46,24 @@ class TestFileDds(PillowTestCase):
         self.assert_image_similar(target, im, 5)
 
     def test_sanity_dxt3(self):
-        """Check DXT3 images are not supported"""
-        self.assertRaises(NotImplementedError,
-                          lambda: Image.open(TEST_FILE_DXT3))
+        """Check DXT3 images can be opened"""
+
+        target = Image.open(TEST_FILE_DXT3.replace('.dds', '.png'))
+
+        im = Image.open(TEST_FILE_DXT3)
+        im.load()
+
+        self.assertEqual(im.format, "DDS")
+        self.assertEqual(im.mode, "RGBA")
+        self.assertEqual(im.size, (256, 256))
+
+        # Imagemagick, which generated this target image from the .dds
+        # has a slightly different decoder than is standard. It looks
+        # a little brighter. The 0,0 pixel is (00,6c,f8,ff) by our code,
+        # and by the target image for the DXT1, and the imagemagick .png
+        # is giving (00, 6d, ff, ff).  So, assert similar, pretty tight
+        # I'm currently seeing about a 3 for the epsilon.
+        self.assert_image_similar(target, im, 5)
 
     def test__validate_true(self):
         """Check valid prefix"""
