@@ -670,7 +670,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     int smooth = 0;
     int optimize = 0;
     int streamtype = 0; /* 0=interchange, 1=tables only, 2=image only */
-    int xdpi = 0, ydpi = 0;
+    double xdpi = 0, ydpi = 0;
     int subsampling = -1; /* -1=default, 0=none, 1=medium, 2=high */
     PyObject* qtables=NULL;
     unsigned int *qarrays = NULL;
@@ -680,7 +680,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     char* rawExif = NULL;
     int rawExifLen = 0;
 
-    if (!PyArg_ParseTuple(args, "ss|iiiiiiiiO"PY_ARG_BYTES_LENGTH""PY_ARG_BYTES_LENGTH,
+    if (!PyArg_ParseTuple(args, "ss|iiiiiddiO"PY_ARG_BYTES_LENGTH""PY_ARG_BYTES_LENGTH,
                           &mode, &rawmode, &quality,
                           &progressive, &smooth, &optimize, &streamtype,
                           &xdpi, &ydpi, &subsampling, &qtables, &extra, &extra_size,
@@ -727,8 +727,8 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     ((JPEGENCODERSTATE*)encoder->state.context)->smooth = smooth;
     ((JPEGENCODERSTATE*)encoder->state.context)->optimize = optimize;
     ((JPEGENCODERSTATE*)encoder->state.context)->streamtype = streamtype;
-    ((JPEGENCODERSTATE*)encoder->state.context)->xdpi = xdpi;
-    ((JPEGENCODERSTATE*)encoder->state.context)->ydpi = ydpi;
+    ((JPEGENCODERSTATE*)encoder->state.context)->xdpi = xdpi + 0.5;
+    ((JPEGENCODERSTATE*)encoder->state.context)->ydpi = ydpi + 0.5;
     ((JPEGENCODERSTATE*)encoder->state.context)->extra = extra;
     ((JPEGENCODERSTATE*)encoder->state.context)->extra_size = extra_size;
     ((JPEGENCODERSTATE*)encoder->state.context)->rawExif = rawExif;
