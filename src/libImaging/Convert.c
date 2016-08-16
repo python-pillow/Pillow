@@ -598,7 +598,10 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
 
 #endif
 
-    for (; x < xsize; x++, in+=4) {
+    in = &in[x * 4];
+    out = &out[x * 4];
+
+    for (; x < xsize; x++, in += 4) {
         alpha = in[3];
         if (alpha == 255 || alpha == 0) {
             *out++ = in[0];
