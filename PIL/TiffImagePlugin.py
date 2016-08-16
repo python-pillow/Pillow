@@ -52,6 +52,7 @@ from numbers import Number, Rational
 
 import io
 import itertools
+import math
 import os
 import struct
 import sys
@@ -1154,9 +1155,9 @@ class TiffImageFile(ImageFile.ImageFile):
         if xres and yres:
             resunit = self.tag_v2.get(RESOLUTION_UNIT, 1)
             if resunit == 2:  # dots per inch
-                self.info["dpi"] = xres, yres
+                self.info["dpi"] = int(math.ceil(xres)), int(math.ceil(yres))
             elif resunit == 3:  # dots per centimeter. convert to dpi
-                self.info["dpi"] = xres * 2.54, yres * 2.54
+                self.info["dpi"] = int(math.ceil(xres * 2.54)), int(math.ceil(yres * 2.54))
             else:  # No absolute unit of measurement
                 self.info["resolution"] = xres, yres
 
