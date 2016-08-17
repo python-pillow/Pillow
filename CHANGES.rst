@@ -1,6 +1,16 @@
 Changelog (Pillow)
 ==================
 
+3.3.1 (2016-08-18)
+------------------
+
+- Fix C90 compilation error for Tcl / Tk rewrite #2033
+  [matthew-brett]
+  
+- Fix image loading when rotating by 0 deg #2052
+  [homm]
+
+
 3.3.0 (2016-07-01)
 ------------------
 
