@@ -1,4 +1,5 @@
 from __future__ import print_function
+import sys
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
@@ -14,6 +15,8 @@ except ImportError:
 
 TEST_IMAGE_SIZE = (10, 10)
 
+@unittest.skipIf(hasattr(sys, 'pypy_version_info'),
+                 "numpy is flaky on PyPy")
 class TestNumpy(PillowTestCase):
 
     def setUp(self):
@@ -104,6 +107,7 @@ class TestNumpy(PillowTestCase):
         self.assert_image(Image.fromarray(a[:, :, 1]), "L", TEST_IMAGE_SIZE)
 
     def _test_img_equals_nparray(self, img, np):
+        self.assertGreaterEqual(len(np.shape), 2)
         np_size = np.shape[1], np.shape[0]
         self.assertEqual(img.size, np_size)
         px = img.load()
