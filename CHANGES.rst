@@ -4,12 +4,6 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
-- Fix C90 compilation error for Tcl / Tk rewrite #2033
-  [matthew-brett]
-  
-- Fix image loading when rotating by 0 deg #2052
-  [homm]
-
 - Add ImageOps.scale to expand or contract a PIL image by a factor #2011
   [vlmath]
   
@@ -32,6 +26,15 @@ Changelog (Pillow)
   [homm]
 
 - Retain a reference to core image object in PyAccess #2009
+  [homm]
+
+3.3.1 (2016-08-18)
+------------------
+
+- Fix C90 compilation error for Tcl / Tk rewrite #2033
+  [matthew-brett]
+
+- Fix image loading when rotating by 0 deg #2052
   [homm]
 
 3.3.0 (2016-07-01)
