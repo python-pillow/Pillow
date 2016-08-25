@@ -1790,8 +1790,8 @@ class Image(object):
         # preserve aspect ratio
         x, y = self.size
         if x > size[0] or y > size[1]:
-            factor = max(x/size[0], y/size[1])
-            x, y = int(x/factor), int(y/factor)
+            factor = min(float(size[0])/x, float(size[1])/y)
+            x, y = int(x*factor), int(y*factor)
         size = x, y
 
         self.draft(None, size)
