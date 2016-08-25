@@ -72,6 +72,10 @@
 #define C64L C64N
 #endif
 
+/* like (a * b + 127) / 255), but much faster on most platforms */
+#define MULDIV255(a, b, tmp)\
+        (tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
+
 static void
 pack1(UINT8* out, const UINT8* in, int pixels)
 {
@@ -315,6 +319,21 @@ ImagingPackABGR(UINT8* out, const UINT8* in, int pixels)
     }
 }
 
+void
+ImagingPackBGRa(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* BGRa, reversed bytes with premultiplied alplha */
+    for (i = 0; i < pixels; i++) {
+        int alpha = out[3] = in[A];
+        int tmp;
+        out[0] = MULDIV255(in[B], alpha, tmp);
+        out[1] = MULDIV255(in[G], alpha, tmp);
+        out[2] = MULDIV255(in[R], alpha, tmp);
+        out += 4; in += 4;
+    }
+}
+
 static void
 packRGBL(UINT8* out, const UINT8* in, int pixels)
 {
@@ -525,6 +544,7 @@ static struct {
     {"RGBA",	"BGR",		24,	ImagingPackBGR},
     {"RGBA",	"BGRA",		32,	ImagingPackBGRA},
     {"RGBA",	"ABGR",		32,	ImagingPackABGR},
+    {"RGBA",	"BGRa",		32,	ImagingPackBGRa},
     {"RGBA",   	"R",            8,      band0},
     {"RGBA",   	"G",            8,      band1},
     {"RGBA",   	"B",            8,      band2},
