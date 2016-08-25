@@ -1,6 +1,7 @@
 from __future__ import print_function
 import sys
 from helper import unittest, PillowTestCase, hopper
+import sys
 
 from PIL import Image
 
@@ -137,19 +138,14 @@ class TestNumpy(PillowTestCase):
         numpy.testing.assert_array_equal(arr, arr_back)
 
     def test_save_tiff_uint16(self):
-        '''
-        Open a single-channel uint16 greyscale image and verify that it can be saved without
-        losing precision.
-        '''
-        tmpfile = self.tempfile("temp.tif")
+        # Tests that we're getting the pixel value in the right byte order. 
         pixel_value = 0x1234
-        filename = "Tests/images/uint16_1_4660.tif"
         a = numpy.array([pixel_value] * TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1], dtype=numpy.uint16)
         a.shape = TEST_IMAGE_SIZE
-        Image.fromarray(a).save(tmpfile)
-        im_test = Image.open(tmpfile)
-        im_good = Image.open(filename)
-        self.assert_image_equal(im_good, im_test)
+        img = Image.fromarray(a)
+
+        img_px = img.load()
+        self.assertEqual(img_px[0,0], pixel_value)
 
     @unittest.skipIf(SKIP_NUMPY_ON_PYPY, "numpy.array(Image) is flaky on PyPy")
     def test_to_array(self):
