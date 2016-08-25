@@ -4,6 +4,24 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Added return for J2k (and fpx) Load to return a pixel access object #2061
+  [wiredfool]
+
+- Skip failing numpy tests on Pypy <= 5.3.1 #2090
+  [arjennienhuis]
+  
+- Show warning when trying to save RGBA image as JPEG #2010
+  [homm]
+
+- Respect pixel centers during transform #2022
+  [homm]
+
+- TOC for supported file formats #2056
+  [polarize]
+
+- Fix conversion of bit images to numpy arrays Fixes #350, #2058
+  [matthew-brett]
+
 - Add ImageOps.scale to expand or contract a PIL image by a factor #2011
   [vlmath]
   
