@@ -450,6 +450,25 @@ class TestFileJpeg(PillowTestCase):
         # Assert
         self.assertEqual(im.format, "JPEG")
 
+    def test_save_correct_modes(self):
+        out = BytesIO()
+        for mode in ['1', 'L', 'RGB', 'RGBX', 'CMYK', 'YCbCr']:
+            img = Image.new(mode, (20, 20))
+            img.save(out, "JPEG")
+
+    def test_save_wrong_modes(self):
+        out = BytesIO()
+        for mode in ['LA', 'La', 'RGBa', 'P']:
+            img = Image.new(mode, (20, 20))
+            self.assertRaises(IOError, img.save, out, "JPEG")
+
+    def test_save_modes_with_warnings(self):
+        # ref https://github.com/python-pillow/Pillow/issues/2005
+        out = BytesIO()
+        for mode in ['RGBA']:
+            img = Image.new(mode, (20, 20))
+            self.assert_warning(DeprecationWarning, img.save, out, "JPEG")
+
 
 if __name__ == '__main__':
     unittest.main()
