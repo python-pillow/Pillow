@@ -323,7 +323,7 @@ void
 ImagingPackBGRa(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
-    /* BGRa, reversed bytes with premultiplied alplha */
+    /* BGRa, reversed bytes with premultiplied alpha */
     for (i = 0; i < pixels; i++) {
         int alpha = out[3] = in[A];
         int tmp;
