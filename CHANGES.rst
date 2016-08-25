@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Add (un)packing between RGBA and BGRa #2057
+  [arjennienhuis]
+
 - Added return for J2k (and fpx) Load to return a pixel access object #2061
   [wiredfool]
 
