@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Resampling lookups, trailing empty coefficients, precision #2008
+  [homm]
+
 - Add (un)packing between RGBA and BGRa #2057
   [arjennienhuis]
 
