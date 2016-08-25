@@ -470,6 +470,20 @@ class TestFileTiff(PillowTestCase):
         im = Image.open(infile)
         self.assertEqual(im.getpixel((0, 0)), pixel_value)
 
+    def test_save_tiff_with_dpi(self):
+
+        outfile = self.tempfile("temp.tif")
+
+        infile = "Tests/images/hopper.tif"
+        im = Image.open(infile)
+
+        im.save(outfile, 'JPEG', dpi=im.info['dpi'])
+
+        reloaded = Image.open(outfile)
+        reloaded.load()
+
+        self.assertEqual(im.info['dpi'], reloaded.info['dpi'])
+
 
 if __name__ == '__main__':
     unittest.main()
