@@ -80,18 +80,52 @@ static struct filter LANCZOS = { lanczos_filter, 3.0 };
 #define PRECISION_BITS (32 - 8 - 2)
 
 
+UINT8 _lookups[512] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+    16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+    48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+    64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+    80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
+    96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+    112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127,
+    128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143,
+    144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159,
+    160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175,
+    176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
+    192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+    208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+    224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239,
+    240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255
+};
+
+UINT8 *lookups = &_lookups[128];
+
+
 static inline UINT8 clip8(int in)
 {
-    if (in >= (1 << PRECISION_BITS << 8))
-       return 255;
-    if (in <= 0)
-        return 0;
-    return (UINT8) (in >> PRECISION_BITS);
+    return lookups[in >> PRECISION_BITS];
 }
 
 
 int
-ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
+precompute_coeffs(int inSize, int outSize, struct filter *filterp,
                   int **xboundsp, double **kkp) {
     double support, scale, filterscale;
     double center, ww, ss;
@@ -142,6 +176,16 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
         k = &kk[xx * kmax];
         for (x = 0; x < xmax; x++) {
             double w = filterp->filter((x + xmin - center + 0.5) * ss);
+            if (w == 0) {
+                if (x == 0) {
+                    x -= 1;
+                    xmin += 1;
+                    xmax -= 1;
+                } else if (x == xmax - 1) {
+                    xmax -= 1;
+                }
+                continue;
+            }
             k[x] = w;
             ww += w;
         }
@@ -162,6 +206,32 @@ ImagingPrecompute(int inSize, int outSize, struct filter *filterp,
 }
 
 
+int
+normalize_coeffs_8bpc(int outSize, int kmax, double *prekk, INT32 **kkp)
+{
+    int x;
+    INT32 *kk;
+
+    /* malloc check ok, overflow checked in precompute_coeffs */
+    kk = malloc(outSize * kmax * sizeof(INT32));
+    if ( ! kk) {
+        return 0;
+    }
+
+    for (x = 0; x < outSize * kmax; x++) {
+        if (prekk[x] < 0) {
+            kk[x] = (int) (-0.5 + prekk[x] * (1 << PRECISION_BITS));
+        } else {
+            kk[x] = (int) (0.5 + prekk[x] * (1 << PRECISION_BITS));
+        }
+    }
+
+    *kkp = kk;
+    return kmax;
+}
+
+
+
 Imaging
 ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
 {
@@ -170,27 +240,20 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
     int ss0, ss1, ss2, ss3;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
-    int *k, *kk;
+    INT32 *k, *kk;
     double *prekk;
 
-
-    kmax = ImagingPrecompute(imIn->xsize, xsize, filterp, &xbounds, &prekk);
+    kmax = precompute_coeffs(imIn->xsize, xsize, filterp, &xbounds, &prekk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
-    
-    kk = malloc(xsize * kmax * sizeof(int));
-    if ( ! kk) {
+
+    kmax = normalize_coeffs_8bpc(xsize, kmax, prekk, &kk);
+    free(prekk);    
+    if ( ! kmax) {
         free(xbounds);
-        free(prekk);
         return (Imaging) ImagingError_MemoryError();
     }
-
-    for (x = 0; x < xsize * kmax; x++) {
-        kk[x] = (int) (0.5 + prekk[x] * (1 << PRECISION_BITS));
-    }
-
-    free(prekk);
 
     imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
     if ( ! imOut) {
@@ -282,27 +345,20 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
     int ss0, ss1, ss2, ss3;
     int xx, yy, y, kmax, ymin, ymax;
     int *xbounds;
-    int *k, *kk;
+    INT32 *k, *kk;
     double *prekk;
 
-
-    kmax = ImagingPrecompute(imIn->ysize, ysize, filterp, &xbounds, &prekk);
+    kmax = precompute_coeffs(imIn->ysize, ysize, filterp, &xbounds, &prekk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
-    
-    kk = malloc(ysize * kmax * sizeof(int));
-    if ( ! kk) {
+
+    kmax = normalize_coeffs_8bpc(ysize, kmax, prekk, &kk);
+    free(prekk);    
+    if ( ! kmax) {
         free(xbounds);
-        free(prekk);
         return (Imaging) ImagingError_MemoryError();
     }
-
-    for (y = 0; y < ysize * kmax; y++) {
-        kk[y] = (int) (0.5 + prekk[y] * (1 << PRECISION_BITS));
-    }
-
-    free(prekk);
 
     imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
     if ( ! imOut) {
@@ -396,7 +452,7 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
     int *xbounds;
     double *k, *kk;
 
-    kmax = ImagingPrecompute(imIn->xsize, xsize, filterp, &xbounds, &kk);
+    kmax = precompute_coeffs(imIn->xsize, xsize, filterp, &xbounds, &kk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
@@ -456,7 +512,7 @@ ImagingResampleVertical_32bpc(Imaging imIn, int ysize, struct filter *filterp)
     int *xbounds;
     double *k, *kk;
 
-    kmax = ImagingPrecompute(imIn->ysize, ysize, filterp, &xbounds, &kk);
+    kmax = precompute_coeffs(imIn->ysize, ysize, filterp, &xbounds, &kk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
