@@ -1881,7 +1881,7 @@ class Image(object):
             xs = float(x1 - x0) / w
             ys = float(y1 - y0) / h
             method = AFFINE
-            data = (xs, 0, x0 + xs/2, 0, ys, y0 + ys/2)
+            data = (xs, 0, x0, 0, ys, y0)
 
         elif method == PERSPECTIVE:
             data = data[0:8]
