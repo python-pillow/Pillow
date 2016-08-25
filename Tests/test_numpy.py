@@ -1,4 +1,5 @@
 from __future__ import print_function
+import sys
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
@@ -13,6 +14,13 @@ except ImportError:
     pass
 
 TEST_IMAGE_SIZE = (10, 10)
+
+# Numpy on pypy as of pypy 5.3.1 is corrupting the numpy.array(Image)
+# call such that it's returning a object of type numpy.ndarray, but
+# the repr is that of a PIL.Image. Size and shape are 1 and (), not the
+# size and shape of the array. This causes failures in several tests.
+SKIP_NUMPY_ON_PYPY = hasattr(sys, 'pypy_version_info') and (
+    sys.pypy_version_info <= (5,3,1,'final',0))
 
 class TestNumpy(PillowTestCase):
 
@@ -104,6 +112,7 @@ class TestNumpy(PillowTestCase):
         self.assert_image(Image.fromarray(a[:, :, 1]), "L", TEST_IMAGE_SIZE)
 
     def _test_img_equals_nparray(self, img, np):
+        self.assertGreaterEqual(len(np.shape), 2)
         np_size = np.shape[1], np.shape[0]
         self.assertEqual(img.size, np_size)
         px = img.load()
@@ -111,6 +120,7 @@ class TestNumpy(PillowTestCase):
             for y in range(0, img.size[1], int(img.size[1]/10)):
                 self.assert_deep_equal(px[x, y], np[y, x])
 
+    @unittest.skipIf(SKIP_NUMPY_ON_PYPY, "numpy.array(Image) is flaky on PyPy")
     def test_16bit(self):
         img = Image.open('Tests/images/16bit.cropped.tif')
         np_img = numpy.array(img)
@@ -141,6 +151,7 @@ class TestNumpy(PillowTestCase):
         im_good = Image.open(filename)
         self.assert_image_equal(im_good, im_test)
 
+    @unittest.skipIf(SKIP_NUMPY_ON_PYPY, "numpy.array(Image) is flaky on PyPy")
     def test_to_array(self):
 
         def _to_array(mode, dtype):
