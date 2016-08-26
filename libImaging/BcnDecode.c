@@ -153,7 +153,7 @@ static void decode_bc1_block(rgba *col, const UINT8* src) {
 
 static void decode_bc2_block(rgba *col, const UINT8* src) {
 	int n, bitI, byI, av;
-	decode_bc1_color(col, src);
+	decode_bc1_color(col, src + 8);
 	for (n = 0; n < 16; n++) {
 		bitI = n * 4;
 		byI = bitI >> 3;

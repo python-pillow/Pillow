@@ -122,6 +122,9 @@ class DdsImageFile(ImageFile.ImageFile):
         if fourcc == b"DXT1":
             self.pixel_format = "DXT1"
             n = 1
+        elif fourcc == b"DXT3":
+            self.pixel_format = "DXT3"
+            n = 2
         elif fourcc == b"DXT5":
             self.pixel_format = "DXT5"
             n = 3
