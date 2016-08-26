@@ -93,6 +93,13 @@ DXT3_FOURCC = 0x33545844
 DXT5_FOURCC = 0x35545844
 
 
+# dxgiformat.h
+
+DXGI_FORMAT_BC7_TYPELESS = 97
+DXGI_FORMAT_BC7_UNORM = 98
+DXGI_FORMAT_BC7_UNORM_SRGB = 99
+
+
 class DdsImageFile(ImageFile.ImageFile):
     format = "DDS"
     format_description = "DirectDraw Surface"
@@ -119,6 +126,8 @@ class DdsImageFile(ImageFile.ImageFile):
         bitcount, rmask, gmask, bmask, amask = struct.unpack("<5I",
                                                              header.read(20))
 
+        data_start = header_size + 4
+        n = 0
         if fourcc == b"DXT1":
             self.pixel_format = "DXT1"
             n = 1
@@ -128,12 +137,27 @@ class DdsImageFile(ImageFile.ImageFile):
         elif fourcc == b"DXT5":
             self.pixel_format = "DXT5"
             n = 3
+        elif fourcc == b"DX10":
+            data_start += 20
+            # ignoring flags which pertain to volume textures and cubemaps
+            dxt10 = BytesIO(self.fp.read(20))
+            dxgi_format, dimension = struct.unpack("<II", dxt10.read(8))
+            if dxgi_format in (DXGI_FORMAT_BC7_TYPELESS, DXGI_FORMAT_BC7_UNORM):
+                self.pixel_format = "BC7"
+                n = 7
+            elif dxgi_format == DXGI_FORMAT_BC7_UNORM_SRGB:
+                self.pixel_format = "BC7"
+                self.im_info["gamma"] = 1/2.2
+                n = 7
+            else:
+                raise NotImplementedError("Unimplemented DXGI format %d" %
+                                          (dxgi_format))
         else:
             raise NotImplementedError("Unimplemented pixel format %r" %
                                       (fourcc))
 
         self.tile = [
-            ("bcn", (0, 0) + self.size, 4 + header_size, (n))
+            ("bcn", (0, 0) + self.size, data_start, (n))
         ]
 
     def load_seek(self, pos):

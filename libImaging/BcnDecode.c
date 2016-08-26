@@ -327,10 +327,10 @@ static UINT8 expand_quantized(UINT8 v, int bits) {
 static void bc7_lerp(rgba *dst, const rgba *e, int s0, int s1) {
 	int t0 = 64 - s0;
 	int t1 = 64 - s1;
-	dst->r = (UINT8)((t0 * e[0].r + s0 * e[1].r) >> 6);
-	dst->g = (UINT8)((t0 * e[0].g + s0 * e[1].g) >> 6);
-	dst->b = (UINT8)((t0 * e[0].b + s0 * e[1].b) >> 6);
-	dst->a = (UINT8)((t1 * e[0].a + s1 * e[1].a) >> 6);
+	dst->r = (UINT8)((t0 * e[0].r + s0 * e[1].r + 32) >> 6);
+	dst->g = (UINT8)((t0 * e[0].g + s0 * e[1].g + 32) >> 6);
+	dst->b = (UINT8)((t0 * e[0].b + s0 * e[1].b + 32) >> 6);
+	dst->a = (UINT8)((t1 * e[0].a + s1 * e[1].a + 32) >> 6);
 }
 
 static void decode_bc7_block(rgba *col, const UINT8* src) {
@@ -359,7 +359,7 @@ static void decode_bc7_block(rgba *col, const UINT8* src) {
 	cb = info->cb;
 	ab = info->ab;
 	cw = bc7_get_weights(info->ib);
-	aw = bc7_get_weights(ab ? info->ib2 : info->ib);
+	aw = bc7_get_weights((ab && info->ib2) ? info->ib2 : info->ib);
 
 #define LOAD(DST, N) \
 	DST = get_bits(src, bit, N); \
@@ -401,29 +401,33 @@ static void decode_bc7_block(rgba *col, const UINT8* src) {
 #define ASSIGN_P(x) x = (x << 1) | val
 	if (info->epb) {
 		/* per endpoint */
+		cb++;
+		if (ab) {
+			ab++;
+		}
 		for (i = 0; i < numep; i++) {
 			LOAD(val, 1);
-			cb++;
 			ASSIGN_P(endpoints[i].r);
 			ASSIGN_P(endpoints[i].g);
 			ASSIGN_P(endpoints[i].b);
 			if (ab) {
-				ab++;
 				ASSIGN_P(endpoints[i].a);
 			}
 		}
 	}
 	if (info->spb) {
 		/* per subset */
+		cb++;
+		if (ab) {
+			ab++;
+		}
 		for (i = 0; i < numep; i+=2) {
 			LOAD(val, 1);
-			cb++;
 			for (j = 0; j < 2; j++) {
 				ASSIGN_P(endpoints[i+j].r);
 				ASSIGN_P(endpoints[i+j].g);
 				ASSIGN_P(endpoints[i+j].b);
 				if (ab) {
-					ab++;
 					ASSIGN_P(endpoints[i+j].a);
 				}
 			}
@@ -462,7 +466,7 @@ static void decode_bc7_block(rgba *col, const UINT8* src) {
 		i0 = get_bits(src, cibit, ib);
 		cibit += ib;
 
-		if (ab) {
+		if (ab && info->ib2) {
 			ib2 = info->ib2;
 			if (ib2 && i == 0) {
 				ib2--;
