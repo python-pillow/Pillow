@@ -105,6 +105,7 @@ class TestCffiPutPixel(TestImagePutPixel):
     def setUp(self):
         try:
             import cffi
+            assert cffi  # silence warning
         except ImportError:
             self.skipTest("No cffi")
 
@@ -115,6 +116,7 @@ class TestCffiGetPixel(TestImageGetPixel):
     def setUp(self):
         try:
             import cffi
+            assert cffi  # silence warning
         except ImportError:
             self.skipTest("No cffi")
 
@@ -125,6 +127,7 @@ class TestCffi(AccessTest):
     def setUp(self):
         try:
             import cffi
+            assert cffi  # silence warning
         except ImportError:
             self.skipTest("No cffi")
 
@@ -229,7 +232,7 @@ class TestCffi(AccessTest):
             # Do not save references to the image, only to the access object
             px = Image.new('L', (size, 1), 0).load()
             for i in range(size):
-                # pixels can contain garbarge if image is released
+                # pixels can contain garbage if image is released
                 self.assertEqual(px[i, 0], 0)
 
 

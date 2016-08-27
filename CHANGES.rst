@@ -4,10 +4,61 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Resampling lookups, trailing empty coefficients, precision #2008
+  [homm]
+
+- Add (un)packing between RGBA and BGRa #2057
+  [arjennienhuis]
+
+- Added return for J2k (and fpx) Load to return a pixel access object #2061
+  [wiredfool]
+
+- Skip failing numpy tests on Pypy <= 5.3.1 #2090
+  [arjennienhuis]
+  
+- Show warning when trying to save RGBA image as JPEG #2010
+  [homm]
+
+- Respect pixel centers during transform #2022
+  [homm]
+
+- TOC for supported file formats #2056
+  [polarize]
+
+- Fix conversion of bit images to numpy arrays Fixes #350, #2058
+  [matthew-brett]
+
+- Add ImageOps.scale to expand or contract a PIL image by a factor #2011
+  [vlmath]
+  
+- Flake8 fixes #2050
+  [hugovk]
+
+- Updated freetype to 2.6.5 on Appveyor builds #2035
+  [radarhere]
+  
+- PCX encoder fixes #2023, pr #2041
+  [homm]
+  
+- Docs: Windows console prompts are > #2031
+  [techtonik]
+
+- Expose Pillow package version as PIL.__version__ #2027
+  [techtonik]
+
 - Add Box and Hamming filters for resampling #1959
   [homm]
 
 - Retain a reference to core image object in PyAccess #2009
+  [homm]
+
+3.3.1 (2016-08-18)
+------------------
+
+- Fix C90 compilation error for Tcl / Tk rewrite #2033
+  [matthew-brett]
+
+- Fix image loading when rotating by 0 deg #2052
   [homm]
 
 3.3.0 (2016-07-01)

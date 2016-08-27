@@ -20,13 +20,13 @@ class TestImageGetData(PillowTestCase):
             return data[0], len(data), len(list(data))
 
         self.assertEqual(getdata("1"), (0, 960, 960))
-        self.assertEqual(getdata("L"), (25, 960, 960))
-        self.assertEqual(getdata("I"), (25, 960, 960))
-        self.assertEqual(getdata("F"), (25.0, 960, 960))
-        self.assertEqual(getdata("RGB"), (((20, 20, 70), 960, 960)))
-        self.assertEqual(getdata("RGBA"), ((20, 20, 70, 255), 960, 960))
-        self.assertEqual(getdata("CMYK"), ((235, 235, 185, 0), 960, 960))
-        self.assertEqual(getdata("YCbCr"), ((25, 153, 123), 960, 960))
+        self.assertEqual(getdata("L"), (16, 960, 960))
+        self.assertEqual(getdata("I"), (16, 960, 960))
+        self.assertEqual(getdata("F"), (16.0, 960, 960))
+        self.assertEqual(getdata("RGB"), (((11, 13, 52), 960, 960)))
+        self.assertEqual(getdata("RGBA"), ((11, 13, 52, 255), 960, 960))
+        self.assertEqual(getdata("CMYK"), ((244, 242, 203, 0), 960, 960))
+        self.assertEqual(getdata("YCbCr"), ((16, 147, 123), 960, 960))
 
 
 if __name__ == '__main__':

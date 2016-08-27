@@ -56,7 +56,7 @@ class TestImageSequence(PillowTestCase):
         im = Image.open('Tests/images/multipage.tiff')
         firstFrame = None
         for frame in ImageSequence.Iterator(im):
-            if firstFrame == None:
+            if firstFrame is None:
                 firstFrame = frame.copy()
             pass
         for frame in ImageSequence.Iterator(im):

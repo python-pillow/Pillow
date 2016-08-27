@@ -216,7 +216,7 @@ class FpxImageFile(ImageFile.ImageFile):
             self.fp = self.ole.openstream(self.stream[:2] +
                                           ["Subimage 0000 Data"])
 
-        ImageFile.ImageFile.load(self)
+        return ImageFile.ImageFile.load(self)
 
 #
 # --------------------------------------------------------------------

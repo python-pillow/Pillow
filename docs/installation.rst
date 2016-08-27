@@ -51,11 +51,11 @@ supported Pythons in both 32 and 64-bit versions in wheel, egg, and
 executable installers. These binaries have all of the optional
 libraries included::
 
-  $ pip install Pillow
+  > pip install Pillow
 
 or::
 
-  $ easy_install Pillow
+  > easy_install Pillow
 
 
 OS X Installation
@@ -282,7 +282,9 @@ Building on Linux
 ^^^^^^^^^^^^^^^^^
 
 If you didn't build Python from source, make sure you have Python's
-development libraries installed. In Debian or Ubuntu::
+development libraries installed. 
+
+In Debian or Ubuntu::
 
     $ sudo apt-get install python-dev python-setuptools
 
@@ -293,6 +295,10 @@ Or for Python 3::
 In Fedora, the command is::
 
     $ sudo dnf install python-devel redhat-rpm-config
+    
+Or for Python 3::
+
+    $ sudo dnf install python3-devel redhat-rpm-config 
 
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 

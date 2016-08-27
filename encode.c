@@ -365,7 +365,7 @@ get_packer(ImagingEncoderObject* encoder, const char* mode,
     pack = ImagingFindPacker(mode, rawmode, &bits);
     if (!pack) {
         Py_DECREF(encoder);
-        PyErr_SetString(PyExc_SystemError, "unknown raw mode");
+        PyErr_Format(PyExc_ValueError, "No packer found from %s to %s", mode, rawmode);
         return -1;
     }
 

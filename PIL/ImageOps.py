@@ -178,6 +178,27 @@ def crop(image, border=0):
         )
 
 
+def scale(image, factor, resample=Image.NEAREST):
+    """
+    Returns a rescaled image by a specific factor given in parameter.
+    A factor greater than 1 expands the image, between 0 and 1 contracts the
+    image.
+
+    :param factor: The expansion factor, as a float.
+    :param resample: An optional resampling filter. Same values possible as
+       in the PIL.Image.resize function.
+    :returns: An :py:class:`~PIL.Image.Image` object.
+    """
+    if factor == 1:
+        return image.copy()
+    elif factor <= 0:
+        raise ValueError("the factor must be greater than 0")
+    else:
+        size = (int(round(factor * image.width)),
+                int(round(factor * image.height)))
+        return image.resize(size, resample)
+
+
 def deform(image, deformer, resample=Image.BILINEAR):
     """
     Deform the image.

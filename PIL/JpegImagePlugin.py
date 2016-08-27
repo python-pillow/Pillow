@@ -583,6 +583,14 @@ def _save(im, fp, filename):
     except KeyError:
         raise IOError("cannot write mode %s as JPEG" % im.mode)
 
+    if im.mode == 'RGBA':
+        warnings.warn(
+            'You are saving RGBA image as JPEG. The alpha channel will be '
+            'discarded. This conversion is deprecated and will be disabled '
+            'in Pillow 3.7. Please, convert the image to RGB explicitly.',
+            DeprecationWarning
+        )
+
     info = im.encoderinfo
 
     dpi = info.get("dpi", (0, 0))
