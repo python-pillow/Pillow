@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Test fix for bigendian machines #2092
+  [wiredfool]
+
 - Resampling lookups, trailing empty coefficients, precision #2008
   [homm]
 
