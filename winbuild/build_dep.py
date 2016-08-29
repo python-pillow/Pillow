@@ -3,7 +3,7 @@ from untar import untar
 import os
 import hashlib
 
-from config import compilers, compiler_fromEnv, libs
+from config import compilers, compiler_from_env, libs
 
 
 def _relpath(*args):
@@ -301,11 +301,13 @@ def add_compiler(compiler):
 
 mkdirs()
 extract_libs()
-script = [header(), cp_tk(libs['tk-8.5']['version'], libs['tk-8.6']['version'])]
+script = [header(),
+          cp_tk(libs['tk-8.5']['version'],
+          libs['tk-8.6']['version'])]
 
 
 if 'PYTHON' in os.environ:
-    add_compiler(compiler_fromEnv())
+    add_compiler(compiler_from_env())
 else:
     # for compiler in compilers.values():
         # add_compiler(compiler)

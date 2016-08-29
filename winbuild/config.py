@@ -113,7 +113,7 @@ compilers = {
 }
 
 
-def pyversion_fromEnv():
+def pyversion_from_env():
     py = os.environ['PYTHON']
 
     py_version = '27'
@@ -128,7 +128,7 @@ def pyversion_fromEnv():
     return py_version
 
 
-def compiler_fromEnv():
+def compiler_from_env():
     py = os.environ['PYTHON']
 
     for k, v in pythons.items():
