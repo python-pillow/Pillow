@@ -1,6 +1,5 @@
 import os
 
-SF_MIRROR = 'http://iweb.dl.sourceforge.net'
 PILLOW_DEPENDS_DIR = 'C:\\pillow-depends\\'
 
 pythons = {  # '26': 7,
