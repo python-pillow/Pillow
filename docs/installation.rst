@@ -43,6 +43,43 @@ Or use :command:`easy_install` for installing `Python Eggs
     $ easy_install Pillow
 
 
+FreeBSD Installation
+^^^^^^^^^^^^^^^^^^^^
+
+Pillow can be installed on FreeBSD via the official Ports or Packages systems:
+
+**Ports**::
+
+  $ cd /usr/ports/graphics/py-pillow && make install clean
+
+**Packages**::
+
+  $ pkg install py27-pillow
+  
+.. note::
+
+The `Pillow FreeBSD port <https://www.freshports.org/graphics/py-pillow/>`_ and packages are tested with all supported FreeBSD versions and against Python 2.x and 3.x
+
+Linux Installation
+^^^^^^^^^^^^^^^^^^
+
+We do not provide binaries for Linux. Most major Linux distributions,
+including Fedora, Debian/Ubuntu and ArchLinux include Pillow in
+packages that previously contained PIL e.g. ``python-imaging``. Please
+consider using native operating system packages first to avoid
+installation problems and/or missing library support later.
+
+
+OS X Installation
+^^^^^^^^^^^^^^^^^
+
+We provide binaries for OS X  for each of the supported Python versions
+in the wheel format. These  include support for all optional libraries
+except OpenJPEG::
+
+  $ pip install Pillow
+
+
 Windows Installation
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -56,25 +93,6 @@ libraries included::
 or::
 
   $ easy_install Pillow
-
-
-OS X Installation
-^^^^^^^^^^^^^^^^^
-
-We provide binaries for OS X  for each of the supported Python versions
-in the wheel format. These  include support for all optional libraries
-except OpenJPEG::
-
-  $ pip install Pillow
-
-Linux Installation
-^^^^^^^^^^^^^^^^^^
-
-We do not provide binaries for Linux. Most major Linux distributions,
-including Fedora, Debian/Ubuntu and ArchLinux include Pillow in
-packages that previously contained PIL e.g. ``python-imaging``. Please
-consider using native operating system packages first to avoid
-installation problems and/or missing library support later.
 
 
 Building From Source
