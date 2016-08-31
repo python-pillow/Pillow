@@ -2033,6 +2033,8 @@ def new(mode, size, color=0):
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
+    _decompression_bomb_check(size)
+
     if color is None:
         # don't initialize
         return Image()._new(core.new(mode, size))

@@ -39,5 +39,17 @@ class TestDecompressionBomb(PillowTestCase):
             Image.DecompressionBombWarning,
             lambda: Image.open(TEST_FILE))
 
+    def test_image_new(self):
+        # Arrange
+        # Set limit to a low, easily testable value
+        Image.MAX_IMAGE_PIXELS = 10
+        self.assertEqual(Image.MAX_IMAGE_PIXELS, 10)
+
+        # Act / Assert
+        self.assert_warning(
+            Image.DecompressionBombWarning,
+            lambda: Image.new('L', (100, 100), 0))
+
+
 if __name__ == '__main__':
     unittest.main()
