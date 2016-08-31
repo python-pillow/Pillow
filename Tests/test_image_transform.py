@@ -249,7 +249,7 @@ class TestImageTransformAffine(PillowTestCase):
 
 
 class TestImageTransformPerspective(TestImageTransformAffine):
-    # Repeat all tests for AFFINE transormations with PERSPECTIVE
+    # Repeat all tests for AFFINE transformations with PERSPECTIVE
     transform = Image.PERSPECTIVE
 
 

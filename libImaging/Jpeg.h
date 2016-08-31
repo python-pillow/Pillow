@@ -82,7 +82,7 @@ typedef struct {
     /* Stream type (0=full, 1=tables only, 2=image only) */
     int streamtype;
 
-    /* DPI setting (0=square pixels, otherwide DPI) */
+    /* DPI setting (0=square pixels, otherwise DPI) */
     int xdpi, ydpi;
 
     /* Chroma Subsampling (-1=default, 0=none, 1=medium, 2=high) */
