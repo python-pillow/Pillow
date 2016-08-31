@@ -39,7 +39,7 @@ class TestImageArray(PillowTestCase):
         def test(mode):
             i = im.convert(mode)
             a = i.__array_interface__
-            a["strides"] = 1  # pretend it's non-contigous
+            a["strides"] = 1  # pretend it's non-contiguous
             # Make wrapper instance for image, new array interface
             wrapped = Wrapper(i, a)
             out = Image.fromarray(wrapped)

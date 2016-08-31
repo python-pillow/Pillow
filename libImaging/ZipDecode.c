@@ -237,7 +237,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 state->y = STARTING_ROW[context->pass];
                 row_len = get_row_len(state, context->pass);
                 /* Since we're moving to the "first" line, the previous line
-                 * should be black to make filters work corectly */
+                 * should be black to make filters work correctly */
                 memset(state->buffer, 0, state->bytes+1);
             }
         } else {
