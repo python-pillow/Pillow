@@ -174,6 +174,38 @@ def _dxtc_alpha(a0, a1, ac0, ac1, ai):
     return alpha
 
 
+def _dxt3(data, width, height):
+    # TODO implement this function as pixel format in decode.c
+    ret = bytearray(4 * width * height)
+
+    for y in range(0, height, 4):
+        for x in range(0, width, 4):
+            ai, c0, c1, code = struct.unpack("<Q2HI",
+                                              data.read(16))
+
+            r0, g0, b0 = _decode565(c0)
+            r1, g1, b1 = _decode565(c1)
+
+            for j in range(4):
+                for i in range(4):
+                    alpha = ((ai >> 4 * (4 * j + i)) & 15) * 17 # map alpha to range 0-255
+
+                    cc = (code >> 2 * (4 * j + i)) & 3
+                    if cc == 0:
+                        r, g, b = r0, g0, b0
+                    elif cc == 1:
+                        r, g, b = r1, g1, b1
+                    elif cc == 2:
+                        r, g, b = _c2a(r0, r1), _c2a(g0, g1), _c2a(b0, b1)
+                    elif cc == 3:
+                        r, g, b = _c3(r0, r1), _c3(g0, g1), _c3(b0, b1)
+
+                    idx = 4 * ((y + j) * width + (x + i))
+                    ret[idx:idx+4] = struct.pack('4B', r, g, b, alpha)
+
+    return bytes(ret)
+
+
 def _dxt5(data, width, height):
     # TODO implement this function as pixel format in decode.c
     ret = bytearray(4 * width * height)
@@ -240,6 +272,9 @@ class DdsImageFile(ImageFile.ImageFile):
         if fourcc == b"DXT1":
             self.pixel_format = "DXT1"
             codec = _dxt1
+        elif fourcc == b"DXT3":
+            self.pixel_format = "DXT3"
+            codec = _dxt3
         elif fourcc == b"DXT5":
             self.pixel_format = "DXT5"
             codec = _dxt5
