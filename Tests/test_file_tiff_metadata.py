@@ -178,6 +178,10 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assert_(type(im.info['icc_profile']) is not tuple)
         self.assertEqual(im.info['icc_profile'], reloaded.info['icc_profile'])
 
+        png_out = self.tempfile('temp.png')
+        # This should not error out. #1462
+        im.save(png_out)
+
     def test_iccprofile_binary(self):
         # https://github.com/python-pillow/Pillow/issues/1526
         # We should be able to load this, but probably won't be able to save it.
