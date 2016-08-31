@@ -138,6 +138,16 @@ class TestNumpy(PillowTestCase):
         im.putdata(arr)
         self.assertEqual(len(im.getdata()), len(arr))
 
+    def test_no_resource_warning_for_numpy_array(self):
+        # https://github.com/python-pillow/Pillow/issues/835
+        # Arrange
+        from numpy import array
+        test_file = 'Tests/images/hopper.png'
+        im = Image.open(test_file)
+
+        # Act/Assert
+        self.assert_warning(None, lambda: array(im))
+
 
     def test_no_resource_warning_for_numpy_array(self):
         # https://github.com/python-pillow/Pillow/issues/835
