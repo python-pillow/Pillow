@@ -264,6 +264,7 @@ class TestImageCms(PillowTestCase):
             # Helper function to reduce precision of tuples of floats
             # recursively and then check equality.
             power = 10 ** digits
+
             def truncate_tuple(tuple_or_float):
                 return tuple(
                     truncate_tuple(val) if isinstance(val, tuple)

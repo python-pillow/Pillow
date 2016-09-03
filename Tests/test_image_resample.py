@@ -48,7 +48,7 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
         rectangle((0, 0, size[0] // 2 - 1, size[1] // 2 - 1), color)
         rectangle((size[0] // 2, size[1] // 2, size[0], size[1]), color)
 
-        return Image.merge(mode, [case] *  len(mode))
+        return Image.merge(mode, [case] * len(mode))
 
     def make_sample(self, data, size):
         """Restores a sample image from given data string which contains

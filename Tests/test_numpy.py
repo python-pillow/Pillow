@@ -20,7 +20,8 @@ TEST_IMAGE_SIZE = (10, 10)
 # the repr is that of a PIL.Image. Size and shape are 1 and (), not the
 # size and shape of the array. This causes failures in several tests.
 SKIP_NUMPY_ON_PYPY = hasattr(sys, 'pypy_version_info') and (
-    sys.pypy_version_info <= (5,3,1,'final',0))
+    sys.pypy_version_info <= (5, 3, 1, 'final', 0))
+
 
 class TestNumpy(PillowTestCase):
 
@@ -137,14 +138,14 @@ class TestNumpy(PillowTestCase):
         numpy.testing.assert_array_equal(arr, arr_back)
 
     def test_save_tiff_uint16(self):
-        # Tests that we're getting the pixel value in the right byte order. 
+        # Tests that we're getting the pixel value in the right byte order.
         pixel_value = 0x1234
         a = numpy.array([pixel_value] * TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1], dtype=numpy.uint16)
         a.shape = TEST_IMAGE_SIZE
         img = Image.fromarray(a)
 
         img_px = img.load()
-        self.assertEqual(img_px[0,0], pixel_value)
+        self.assertEqual(img_px[0, 0], pixel_value)
 
     @unittest.skipIf(SKIP_NUMPY_ON_PYPY, "numpy.array(Image) is flaky on PyPy")
     def test_to_array(self):

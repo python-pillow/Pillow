@@ -64,7 +64,7 @@ def install():
         return
 
     if fl_win or fl_cygwin:
-        #windows barfs on multiprocessing installs
+        # windows barfs on multiprocessing installs
         print("Single threaded build for windows")
         return
 

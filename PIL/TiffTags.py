@@ -169,7 +169,7 @@ TAGS_V2 = {
     45056: ("MPFVersion", UNDEFINED, 1),
     45057: ("NumberOfImages", LONG, 1),
     45058: ("MPEntry", UNDEFINED, 1),
-    45059: ("ImageUIDList", UNDEFINED, 0), # UNDONE, check
+    45059: ("ImageUIDList", UNDEFINED, 0),  # UNDONE, check
     45060: ("TotalFrames", LONG, 1),
     45313: ("MPIndividualNum", LONG, 1),
     45569: ("PanOrientation", LONG, 1),
