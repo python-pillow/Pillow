@@ -161,7 +161,7 @@ _encode_to_pyfd(ImagingEncoderObject* encoder, PyObject* args)
 
     status = encoder->encode(encoder->im, &encoder->state,
                              (UINT8*) NULL, 0);
-    
+
     result = Py_BuildValue("ii", status, encoder->state.errcode);
 
     return result;
@@ -291,7 +291,7 @@ _setfd(ImagingEncoderObject* encoder, PyObject* args)
 
     Py_XINCREF(fd);
     state->fd = fd;
-    
+
     Py_INCREF(Py_None);
     return Py_None;
 }

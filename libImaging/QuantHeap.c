@@ -137,7 +137,7 @@ int ImagingQuantHeapTop(Heap *h,void **r) {
 
 Heap *ImagingQuantHeapNew(HeapCmpFunc cf) {
    Heap *h;
-   
+
    /* malloc check ok, small constant allocation */
    h=malloc(sizeof(Heap));
    if (!h) return NULL;

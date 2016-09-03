@@ -472,11 +472,11 @@ class TestFileTiff(PillowTestCase):
 
         tmpfile = self.tempfile("temp.tif")
         im.save(tmpfile)
-        
+
         reloaded = Image.open(tmpfile)
-        
+
         self.assert_image_equal(im, reloaded)
-        
+
 
 if __name__ == '__main__':
     unittest.main()

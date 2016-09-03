@@ -153,7 +153,7 @@ if __name__ == '__main__':
         op = "bdist_wininst --user-access-control=auto"
     elif '--wheel' in opts:
         op = "bdist_wheel"
-        
+
     if 'PYTHON' in os.environ:
         run_one(op)
     else:

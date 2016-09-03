@@ -81,7 +81,7 @@ class TestImageOps(PillowTestCase):
     def test_scale(self):
         # Test the scaling function
         i = hopper("L").resize((50, 50))
-        
+
         with self.assertRaises(ValueError):
             ImageOps.scale(i, -1)
 

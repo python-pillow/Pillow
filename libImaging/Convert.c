@@ -294,7 +294,7 @@ rgb2hsv(UINT8* out, const UINT8* in, int xsize)
         r = in[0];
         g = in[1];
         b = in[2];
-        
+
         maxc = MAX(r,MAX(g,b));
         minc = MIN(r,MIN(g,b));
         uv = maxc;
@@ -324,7 +324,7 @@ rgb2hsv(UINT8* out, const UINT8* in, int xsize)
             *out++ = uh;
             *out++ = us;
             *out++ = uv;
-           
+
         }
         *out++ = in[3];
     }
@@ -333,18 +333,18 @@ rgb2hsv(UINT8* out, const UINT8* in, int xsize)
 static void
 hsv2rgb(UINT8* out, const UINT8* in, int xsize)
 { // following colorsys.py
-    
+
     int p,q,t;
     UINT8 up,uq,ut;
     int i, x;
     float f, fs;
     UINT8 h,s,v;
-       
+
     for (x = 0; x < xsize; x++, in += 4) {
         h = in[0];
         s = in[1];
         v = in[2];
-        
+
         if (s==0){
             *out++ = v;
             *out++ = v;
@@ -360,7 +360,7 @@ hsv2rgb(UINT8* out, const UINT8* in, int xsize)
             up = (UINT8)CLIP(p);
             uq = (UINT8)CLIP(q);
             ut = (UINT8)CLIP(t);
-                
+
             switch (i%6) {
             case 0:
                 *out++ = v;
@@ -392,7 +392,7 @@ hsv2rgb(UINT8* out, const UINT8* in, int xsize)
                 *out++ = up;
                 *out++ = uq;
                 break;
-        
+
             }
         }
         *out++ = in[3];
@@ -481,7 +481,7 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
  * where any pixel that matches the color will have the
  * alpha channel set to 0
  */
- 
+
 static void
 rgbT2rgba(UINT8* out, int xsize, int r, int g, int b)
 {
@@ -502,7 +502,7 @@ rgbT2rgba(UINT8* out, int xsize, int r, int g, int b)
         }
     }
 }
-    
+
 
 /* ---------------- */
 /* CMYK conversions */
@@ -1383,7 +1383,7 @@ ImagingConvertTransparent(Imaging imIn, const char *mode,
     if (!imIn){
         return (Imaging) ImagingError_ModeError();
     }
-    
+
     if (!((strcmp(imIn->mode, "RGB") == 0 ||
            strcmp(imIn->mode, "L") == 0)
           && strcmp(mode, "RGBA") == 0))

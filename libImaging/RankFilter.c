@@ -59,7 +59,7 @@ ImagingRankFilter(Imaging im, int size, int rank)
 
     if (!(size & 1))
         return (Imaging) ImagingError_ValueError("bad filter size");
-    
+
     /* malloc check ok, for overflow in the define below */
     if (size > INT_MAX / size ||
         size > INT_MAX / (size * sizeof(FLOAT32))) {

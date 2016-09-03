@@ -295,7 +295,7 @@ Or for Python 3::
 In Fedora, the command is::
 
     $ sudo dnf install python-devel redhat-rpm-config
-    
+
 Or for Python 3::
 
     $ sudo dnf install python3-devel redhat-rpm-config

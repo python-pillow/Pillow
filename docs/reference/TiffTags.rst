@@ -25,7 +25,7 @@ metadata tag numbers, names, and type information.
      :param type: Integer type from :py:attr:`PIL.TiffTags.TYPES`
      :param length: Array length: 0 == variable, 1 == single value, n = fixed
      :param enum: Dict of name:integer value options for an enumeration
-   
+
   .. method:: cvt_enum(self, value)
 
      :param value: The enumerated value name

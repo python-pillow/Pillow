@@ -906,7 +906,7 @@ unpackI16N_I16B(UINT8* out, const UINT8* in, int pixels){
         C16B;
 		in += 2; tmp += 2;
     }
-	
+
 }
 static void
 unpackI16N_I16(UINT8* out, const UINT8* in, int pixels){
@@ -921,7 +921,7 @@ unpackI16N_I16(UINT8* out, const UINT8* in, int pixels){
 static void
 unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
     /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer greyscale tiffs.
-        
+
         According to the TIFF spec:
 
         FillOrder = 2 should be used only when BitsPerSample = 1 and
@@ -958,7 +958,7 @@ unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
 #else
         out16[1] = pixel;
 #endif
-  
+
 		in += 3; out16 += 2; out+=4;
     }
     if (i == pixels-1) {

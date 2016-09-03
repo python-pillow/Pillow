@@ -231,7 +231,7 @@ get_on_pixels(PyObject *self, PyObject* args)
     int row_idx, col_idx;
     int width, height;
     PyObject *ret = PyList_New(0);
-  
+
     if (!PyArg_ParseTuple(args, "n", &i0)) {
         PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
 
@@ -241,7 +241,7 @@ get_on_pixels(PyObject *self, PyObject* args)
     rows = img->image8;
     width = img->xsize;
     height = img->ysize;
-  
+
     for (row_idx=0; row_idx < height; row_idx++) {
         UINT8 *row = rows[row_idx];
         for (col_idx=0; col_idx<width; col_idx++) {
