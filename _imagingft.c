@@ -119,9 +119,9 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
             PyMem_Free(filename);
         return NULL;
     }
-    
+
     self->face = NULL;
-    
+
     if (filename && font_bytes_size <= 0) {
         self->font_bytes = NULL;
         error = FT_New_Face(library, filename, index, &self->face);
@@ -246,11 +246,11 @@ font_getsize(FontObject* self, PyObject* args)
             y_max = bbox.yMax;
         if (bbox.yMin < y_min)
             y_min = bbox.yMin;
-            
+
         /* find max distance of baseline from top */
         if (face->glyph->metrics.horiBearingY > yoffset)
             yoffset = face->glyph->metrics.horiBearingY;
-            
+
         last_index = index;
         FT_Done_Glyph(glyph);
     }

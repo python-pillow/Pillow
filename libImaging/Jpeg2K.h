@@ -40,7 +40,7 @@ typedef struct {
 
     /* PRIVATE CONTEXT (set by decoder) */
     const char    *error_msg;
-    
+
 } JPEG2KDECODESTATE;
 
 /* -------------------------------------------------------------------- */

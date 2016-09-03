@@ -29,7 +29,7 @@ RUN apk --no-cache add python \
 RUN apk --no-cache add git \
 				   	   bash \
 					   sudo
-					   
+
 RUN git clone https://github.com/python-pillow/Pillow.git /Pillow
 RUN pip install virtualenv && virtualenv /vpy && source /vpy/bin/activate && pip install nose
 

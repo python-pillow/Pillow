@@ -16,7 +16,7 @@ Example
 The following script loads an image, accesses one pixel from it, then changes it.
 
 .. code-block:: python
-    
+
     from PIL import Image
     im = Image.open('hopper.jpg')
     px = im.load()
@@ -29,7 +29,7 @@ Results in the following::
     (23, 24, 68)
     (0, 0, 0)
 
-   
+
 
 :py:class:`PyAccess` Class
 --------------------------

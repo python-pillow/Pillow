@@ -883,7 +883,7 @@ class Image(object):
                             try:
                                 t = trns_im.palette.getcolor(t)
                             except:
-                                raise ValueError("Couldn't allocate a palette "+
+                                raise ValueError("Couldn't allocate a palette " +
                                                  "color for transparency")
                     trns_im.putpixel((0, 0), t)
 

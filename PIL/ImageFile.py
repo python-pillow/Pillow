@@ -226,7 +226,7 @@ class ImageFile(Image.Image):
                         if n < 0:
                             break
                         b = b[n:]
-                    
+
                 # Need to cleanup here to prevent leaks in PyPy
                 decoder.cleanup()
 
@@ -473,7 +473,7 @@ def _save(im, fp, tile, bufsize=0):
             e.setimage(im.im, b)
             if e.pushes_fd:
                 e.setfd(fp)
-                l,s = e.encode_to_pyfd()
+                l, s = e.encode_to_pyfd()
             else:
                 while True:
                     l, s, d = e.encode(bufsize)
@@ -492,7 +492,7 @@ def _save(im, fp, tile, bufsize=0):
             e.setimage(im.im, b)
             if e.pushes_fd:
                 e.setfd(fp)
-                l,s = e.encode_to_pyfd()
+                l, s = e.encode_to_pyfd()
             else:
                 s = e.encode_to_file(fh, bufsize)
             if s < 0:

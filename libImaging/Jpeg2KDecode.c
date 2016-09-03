@@ -338,7 +338,7 @@ j2ku_srgb_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         for (n = 0; n < 3; ++n)
             data[n] = &cdata[n][csiz[n] * y * w];
-        
+
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 3; ++n) {
                 UINT32 word = 0;
@@ -391,7 +391,7 @@ j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         UINT8 *row_start = row;
         for (n = 0; n < 3; ++n)
             data[n] = &cdata[n][csiz[n] * y * w];
-        
+
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 3; ++n) {
                 UINT32 word = 0;
@@ -445,7 +445,7 @@ j2ku_srgba_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         for (n = 0; n < 4; ++n)
             data[n] = &cdata[n][csiz[n] * y * w];
-        
+
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 4; ++n) {
                 UINT32 word = 0;
@@ -497,7 +497,7 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         UINT8 *row_start = row;
         for (n = 0; n < 4; ++n)
             data[n] = &cdata[n][csiz[n] * y * w];
-        
+
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 4; ++n) {
                 UINT32 word = 0;
@@ -561,13 +561,13 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
     unsigned n;
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
-    
+
     if (!stream) {
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;
         goto quick_exit;
     }
-    
+
     opj_stream_set_read_function(stream, j2k_read);
     opj_stream_set_skip_function(stream, j2k_skip);
 
@@ -589,13 +589,13 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
 
     /* Setup decompression context */
     context->error_msg = NULL;
-    
+
     opj_set_default_decoder_parameters(&params);
     params.cp_reduce = context->reduce;
     params.cp_layer = context->layers;
-    
+
     codec = opj_create_decompress(context->format);
-    
+
     if (!codec) {
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;
@@ -618,7 +618,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
         state->state = J2K_STATE_FAILED;
         goto quick_exit;
     }
-    
+
     for (n = 1; n < image->numcomps; ++n) {
         if (image->comps[n].dx != 1 || image->comps[n].dy != 1) {
             state->errcode = IMAGING_CODEC_BROKEN;
@@ -626,7 +626,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
             goto quick_exit;
         }
     }
-    
+
     /*
          Colorspace    Number of components    PIL mode
        ------------------------------------------------------
@@ -635,22 +635,22 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
          gray          1                       L or I
          gray          2                       LA
          YCC           3                       YCbCr
-       
-       
+
+
        If colorspace is unspecified, we assume:
-       
+
            Number of components   Colorspace
          -----------------------------------------
            1                      gray
            2                      gray (+ alpha)
            3                      sRGB
            4                      sRGB (+ alpha)
-       
+
     */
-    
+
     /* Find the correct unpacker */
     color_space = image->color_space;
-    
+
     if (color_space == OPJ_CLRSPC_UNSPECIFIED) {
         switch (image->numcomps) {
         case 1: case 2: color_space = OPJ_CLRSPC_GRAY; break;
@@ -756,7 +756,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
             context->pfile = NULL;
         }
     }
-    
+
  quick_exit:
     if (codec)
         opj_destroy_codec(codec);
@@ -783,7 +783,7 @@ ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
     if (state->state == J2K_STATE_START) {
         state->state = J2K_STATE_DECODING;
-      
+
         return j2k_decode_entry(im, state);
     }
 
@@ -806,7 +806,7 @@ ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
     if (context->error_msg) {
         free ((void *)context->error_msg);
     }
-       
+
     context->error_msg = NULL;
 
     return -1;

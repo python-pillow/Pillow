@@ -42,7 +42,7 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             state->errcode = IMAGING_CODEC_MEMORY;
             return -1;
         }
-        
+
         /* Expand standard buffer to make room for the filter selector,
            and allocate filter buffers */
         free(state->buffer);

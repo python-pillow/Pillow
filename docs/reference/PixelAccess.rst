@@ -15,7 +15,7 @@ The following script loads an image, accesses one pixel from it, then
 changes it.
 
 .. code-block:: python
-    
+
     from PIL import Image
     im = Image.open('hopper.jpg')
     px = im.load()
@@ -28,7 +28,7 @@ Results in the following::
     (23, 24, 68)
     (0, 0, 0)
 
-   
+
 
 :py:class:`PixelAccess` Class
 -----------------------------------
@@ -43,9 +43,9 @@ Results in the following::
 
         :param xy: The pixel coordinate, given as (x, y).
         :param value: The pixel value.
-   
+
   .. method:: __getitem__(self, xy):
- 
+
        Returns the pixel at x,y. The pixel is returned as a single
         value for single band images or a tuple for multiple band
         images
@@ -62,9 +62,9 @@ Results in the following::
 
         :param xy: The pixel coordinate, given as (x, y).
         :param value: The pixel value.
-   
+
   .. method:: getpixel(self, xy):
- 
+
        Returns the pixel at x,y. The pixel is returned as a single
         value for single band images or a tuple for multiple band
         images

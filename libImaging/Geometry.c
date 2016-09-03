@@ -142,7 +142,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
     }
 
     ImagingSectionEnter(&cookie);
-    
+
     if (imIn->image8)
         TRANSPOSE(image8)
     else
@@ -692,7 +692,7 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
         x1 = imOut->xsize;
     if (y1 > imOut->ysize)
         y1 = imOut->ysize;
-    
+
     /* malloc check ok, uses calloc for overflow */
     xintab = (int*) calloc(imOut->xsize, sizeof(int));
     if (!xintab) {
@@ -780,7 +780,7 @@ affine_fixed(Imaging imOut, Imaging imIn,
 /* use 16.16 fixed point arithmetics */
 #define FIX(v) FLOOR((v)*65536.0 + 0.5)
 
-    a0 = FIX(a[0]); a1 = FIX(a[1]); 
+    a0 = FIX(a[0]); a1 = FIX(a[1]);
     a3 = FIX(a[3]); a4 = FIX(a[4]);
     a2 = FIX(a[2] + a[0] * 0.5 + a[1] * 0.5);
     a5 = FIX(a[5] + a[3] * 0.5 + a[4] * 0.5);
@@ -873,7 +873,7 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
     /* FIXME: cannot really think of any reasonable case when the
        following code is used.  maybe we should fall back on the slow
        generic transform engine in this case? */
-    
+
     ImagingCopyInfo(imOut, imIn);
 
     xsize = (int) imIn->xsize;

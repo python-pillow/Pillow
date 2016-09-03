@@ -32,6 +32,7 @@ for r in range(8):
         for b in range(4):
             PALETTE = PALETTE + (o8((r*255)//7)+o8((g*255)//7)+o8((b*255)//3))
 
+
 def _accept(prefix):
     return prefix[:6] == _MAGIC
 

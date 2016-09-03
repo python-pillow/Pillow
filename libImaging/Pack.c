@@ -388,7 +388,7 @@ packI16N_I16B(UINT8* out, const UINT8* in, int pixels){
         C16B;
 	out += 2; tmp += 2;
     }
-	
+
 }
 static void
 packI16N_I16(UINT8* out, const UINT8* in, int pixels){

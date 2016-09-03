@@ -70,11 +70,11 @@ j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
     if (!buffer) {
         return (OPJ_OFF_T)-1;
     }
-    
+
     result = _imaging_write_pyFd(state->fd, buffer, p_nb_bytes);
 
     free(buffer);
-    
+
     return result ? result : p_nb_bytes;
 }
 
@@ -368,7 +368,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
     context->error_msg = NULL;
 
     opj_set_default_encoder_parameters(&params);
-    
+
     params.image_offset_x0 = context->offset_x;
     params.image_offset_y0 = context->offset_y;
 

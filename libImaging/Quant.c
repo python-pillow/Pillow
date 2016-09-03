@@ -1114,7 +1114,7 @@ k_means(Pixel *pixelData,
          goto error_1;
       }
    }
-   
+
    /* this is enough of a check, since the multiplication n*size is done above */
    if (nPaletteEntries > UINT32_MAX / nPaletteEntries) {
        goto error_1;
@@ -1425,7 +1425,7 @@ quantize2(Pixel *pixelData,
    uint32_t *qp;
    uint32_t *avgDist;
    uint32_t **avgDistSortKey;
-   
+
    /* malloc check ok, using calloc */
    p=calloc(nQuantPixels, sizeof(Pixel));
    if (!p) return 0;
