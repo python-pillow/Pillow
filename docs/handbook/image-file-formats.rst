@@ -16,7 +16,7 @@ explicitly.
 Fully supported formats
 -----------------------
 
-.. contents:: 
+.. contents::
 
 BMP
 ^^^

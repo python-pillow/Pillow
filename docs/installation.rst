@@ -282,7 +282,7 @@ Building on Linux
 ^^^^^^^^^^^^^^^^^
 
 If you didn't build Python from source, make sure you have Python's
-development libraries installed. 
+development libraries installed.
 
 In Debian or Ubuntu::
 
@@ -298,7 +298,7 @@ In Fedora, the command is::
     
 Or for Python 3::
 
-    $ sudo dnf install python3-devel redhat-rpm-config 
+    $ sudo dnf install python3-devel redhat-rpm-config
 
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 

@@ -364,17 +364,17 @@ getbands(const char* mode)
 static void*
 getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
 {
-    /* - allocates and returns a c array of the items in the 
+    /* - allocates and returns a c array of the items in the
           python sequence arg.
        - the size of the returned array is in length
-       - all of the arg items must be numeric items of the type 
+       - all of the arg items must be numeric items of the type
           specified in type
        - sequence length is checked against the length parameter IF
           an error parameter is passed in wrong_length
-       - caller is responsible for freeing the memory    
+       - caller is responsible for freeing the memory
     */
 
-    Py_ssize_t i, n; 
+    Py_ssize_t i, n;
     int itemp;
     double dtemp;
     void* list;
