@@ -103,7 +103,9 @@ Saving sequences
 
 When calling :py:meth:`~PIL.Image.Image.save`, if a multiframe image is used,
 by default only the first frame will be saved. To save all frames, the
-``save_all`` parameter must be present and set to ``True``.
+``save_all`` parameter must be present and set to ``True``. To append
+additional frames when saving, the ``append_images`` parameter can be set to a
+list of images containing the extra frames.
 
 If present, the ``loop`` parameter can be used to set the number of times
 the GIF should loop, and the ``duration`` parameter can set the number of

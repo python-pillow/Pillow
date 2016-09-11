@@ -351,35 +351,38 @@ def _save(im, fp, filename, save_all=False):
         previous = None
 
         first_frame = None
-        for im_frame in ImageSequence.Iterator(im):
-            im_frame = _convert_mode(im_frame)
+        append_images = im.encoderinfo.get("append_images", [])
+        for imSequence in [im]+append_images:
+            for im_frame in ImageSequence.Iterator(imSequence):
+                encoderinfo = im.encoderinfo.copy()
+                im_frame = _convert_mode(im_frame)
 
-            # To specify duration, add the time in milliseconds to getdata(),
-            # e.g. getdata(im_frame, duration=1000)
-            if not previous:
-                # global header
-                first_frame = getheader(im_frame, palette, im.encoderinfo)[0]
-                first_frame += getdata(im_frame, (0, 0), **im.encoderinfo)
-            else:
-                if first_frame:
-                    for s in first_frame:
-                        fp.write(s)
-                    first_frame = None
-
-                # delta frame
-                delta = ImageChops.subtract_modulo(im_frame, previous.copy())
-                bbox = delta.getbbox()
-
-                if bbox:
-                    # compress difference
-                    encoderinfo['include_color_table'] = True
-                    for s in getdata(im_frame.crop(bbox),
-                                     bbox[:2], **im.encoderinfo):
-                        fp.write(s)
+                # To specify duration, add the time in milliseconds to getdata(),
+                # e.g. getdata(im_frame, duration=1000)
+                if not previous:
+                    # global header
+                    first_frame = getheader(im_frame, palette, encoderinfo)[0]
+                    first_frame += getdata(im_frame, (0, 0), **encoderinfo)
                 else:
-                    # FIXME: what should we do in this case?
-                    pass
-            previous = im_frame
+                    if first_frame:
+                        for s in first_frame:
+                            fp.write(s)
+                        first_frame = None
+
+                    # delta frame
+                    delta = ImageChops.subtract_modulo(im_frame, previous.copy())
+                    bbox = delta.getbbox()
+
+                    if bbox:
+                        # compress difference
+                        encoderinfo['include_color_table'] = True
+                        for s in getdata(im_frame.crop(bbox),
+                                         bbox[:2], **encoderinfo):
+                            fp.write(s)
+                    else:
+                        # FIXME: what should we do in this case?
+                        pass
+                previous = im_frame
         if first_frame:
             save_all = False
     if not save_all:
