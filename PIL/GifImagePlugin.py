@@ -372,6 +372,7 @@ def _save(im, fp, filename, save_all=False):
 
                 if bbox:
                     # compress difference
+                    encoderinfo['include_color_table'] = True
                     for s in getdata(im_frame.crop(bbox),
                                      bbox[:2], **im.encoderinfo):
                         fp.write(s)
@@ -455,7 +456,7 @@ def _get_local_header(fp, im, offset, flags):
         fp.write(b"!" +
                  o8(249) +                # extension intro
                  o8(4) +                  # length
-                 o8(transparency_flag) +  # transparency info present
+                 o8(transparency_flag) +  # packed fields
                  o16(duration) +          # duration
                  o8(transparency) +       # transparency index
                  o8(0))
@@ -476,13 +477,27 @@ def _get_local_header(fp, im, offset, flags):
                  o8(1) +
                  o16(number_of_loops) +   # number of loops
                  o8(0))
+    include_color_table = im.encoderinfo.get('include_color_table')
+    if include_color_table:
+        try:
+            palette = im.encoderinfo["palette"]
+        except KeyError:
+            palette = None
+        palette_bytes = _get_palette_bytes(im, palette, im.encoderinfo)[0]
+        color_table_size = _get_color_table_size(palette_bytes)
+        if color_table_size:
+            flags = flags | 128               # local color table flag
+            flags = flags | color_table_size
+
     fp.write(b"," +
              o16(offset[0]) +             # offset
              o16(offset[1]) +
              o16(im.size[0]) +            # size
              o16(im.size[1]) +
-             o8(flags) +                  # flags
-             o8(8))                       # bits
+             o8(flags))                   # flags
+    if include_color_table and color_table_size:
+        fp.write(_get_header_palette(palette_bytes))
+    fp.write(o8(8))                       # bits
 
 
 def _save_netpbm(im, fp, filename):
@@ -550,31 +565,25 @@ def _get_used_palette_colors(im):
 
     return used_palette_colors
 
+def _get_color_table_size(palette_bytes):
+    # calculate the palette size for the header
+    import math
+    color_table_size = int(math.ceil(math.log(len(palette_bytes)//3, 2)))-1
+    if color_table_size < 0:
+        color_table_size = 0
+    return color_table_size
 
-def getheader(im, palette=None, info=None):
-    """Return a list of strings representing a GIF header"""
+def _get_header_palette(palette_bytes):
+    color_table_size = _get_color_table_size(palette_bytes)
 
-    # Header Block
-    # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
+    # add the missing amount of bytes
+    # the palette has to be 2<<n in size
+    actual_target_size_diff = (2 << color_table_size) - len(palette_bytes)//3
+    if actual_target_size_diff > 0:
+        palette_bytes += o8(0) * 3 * actual_target_size_diff
+    return palette_bytes
 
-    version = b"87a"
-    for extensionKey in ["transparency", "duration", "loop", "comment"]:
-        if info and extensionKey in info:
-            if ((extensionKey == "duration" and info[extensionKey] == 0) or
-                (extensionKey == "comment" and not (1 <= len(info[extensionKey]) <= 255))):
-                continue
-            version = b"89a"
-            break
-    else:
-        if im.info.get("version") == "89a":
-            version = b"89a"
-
-    header = [
-        b"GIF"+version +        # signature + version
-        o16(im.size[0]) +       # canvas width
-        o16(im.size[1])         # canvas height
-    ]
-
+def _get_palette_bytes(im, palette, info):
     if im.mode == "P":
         if palette and isinstance(palette, bytes):
             source_palette = palette[:768]
@@ -617,15 +626,38 @@ def getheader(im, palette=None, info=None):
 
     if not palette_bytes:
         palette_bytes = source_palette
+    return palette_bytes, used_palette_colors
+
+def getheader(im, palette=None, info=None):
+    """Return a list of strings representing a GIF header"""
+
+    # Header Block
+    # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
+
+    version = b"87a"
+    for extensionKey in ["transparency", "duration", "loop", "comment"]:
+        if info and extensionKey in info:
+            if ((extensionKey == "duration" and info[extensionKey] == 0) or
+                (extensionKey == "comment" and not (1 <= len(info[extensionKey]) <= 255))):
+                continue
+            version = b"89a"
+            break
+    else:
+        if im.info.get("version") == "89a":
+            version = b"89a"
+
+    header = [
+        b"GIF"+version +        # signature + version
+        o16(im.size[0]) +       # canvas width
+        o16(im.size[1])         # canvas height
+    ]
+
+    palette_bytes, used_palette_colors = _get_palette_bytes(im, palette, info)
 
     # Logical Screen Descriptor
-    # calculate the palette size for the header
-    import math
-    color_table_size = int(math.ceil(math.log(len(palette_bytes)//3, 2)))-1
-    if color_table_size < 0:
-        color_table_size = 0
+    color_table_size = _get_color_table_size(palette_bytes)
     # size of global color table + global color table flag
-    header.append(o8(color_table_size + 128))
+    header.append(o8(color_table_size + 128))  # packed fields
     # background + reserved/aspect
     if info and "background" in info:
         background = info["background"]
@@ -640,14 +672,8 @@ def getheader(im, palette=None, info=None):
     header.append(o8(background) + o8(0))
     # end of Logical Screen Descriptor
 
-    # add the missing amount of bytes
-    # the palette has to be 2<<n in size
-    actual_target_size_diff = (2 << color_table_size) - len(palette_bytes)//3
-    if actual_target_size_diff > 0:
-        palette_bytes += o8(0) * 3 * actual_target_size_diff
-
     # Header + Logical Screen Descriptor + Global Color Table
-    header.append(palette_bytes)
+    header.append(_get_header_palette(palette_bytes))
     return header, used_palette_colors
 
 
