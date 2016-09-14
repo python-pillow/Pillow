@@ -2279,10 +2279,14 @@ def open(fp, mode="r"):
     filename = ""
     if isPath(fp):
         filename = fp
-    elif sys.version_info >= (3, 4):
-        from pathlib import Path
-        if isinstance(fp, Path):
-            filename = str(fp.resolve())
+    else:
+        try:
+            from pathlib import Path
+            if isinstance(fp, Path):
+                filename = str(fp.resolve())
+        except ImportError:
+            pass
+
     if filename:
         fp = builtins.open(filename, "rb")
 
