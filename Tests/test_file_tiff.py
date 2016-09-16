@@ -1,5 +1,6 @@
 from __future__ import print_function
 import logging
+from io import BytesIO
 import struct
 
 from helper import unittest, PillowTestCase, hopper, py3
@@ -102,6 +103,15 @@ class TestFileTiff(PillowTestCase):
         im.tag_v2[Y_RESOLUTION] = 71
         im._setup()
         self.assertEqual(im.info['dpi'], (71., 71.))
+
+    def test_save_setting_missing_resolution(self):
+        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
+        b = BytesIO()
+        Image.open("Tests/images/10ct_32bit_128.tiff").save(
+            b, format="tiff", resolution=123.45)
+        im = Image.open(b)
+        self.assertEqual(float(im.tag_v2[X_RESOLUTION]), 123.45)
+        self.assertEqual(float(im.tag_v2[Y_RESOLUTION]), 123.45)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
