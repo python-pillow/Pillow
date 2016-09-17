@@ -86,25 +86,24 @@ def _save(im, fp, filename):
     if im.mode != "RGB" and im.mode != "RGBA" and im.mode != "L":
         raise ValueError("Unsupported SGI image mode")
 
-    im = im.transpose(Image.FLIP_TOP_BOTTOM)                                    # Flip the image, since the origin of SGI
-                                                                                # file is the bottom-left corner
+    im = im.transpose(Image.FLIP_TOP_BOTTOM)
 
-    magicNumber = 474                                                           # Define the file as SGI File Format
-    rle = 0                                                                     # Run-Length Encoding Compression - Unsupported
-    bpc = 1                                                                     # Byte-per-pixel precision, 1 = 256bits per pixel
-    dim = 3                                                                     # Number of dimensions (x,y,z)
-    x, y = im.size                                                              # X Dimension / Y Dimension
+    magicNumber = 474
+    rle = 0
+    bpc = 1
+    dim = 3
+    x, y = im.size
     if im.mode == "L" and y == 1:
         dim = 1
     elif im.mode == "L":
         dim = 2
-    z = len(im.mode)                                                            # Z Dimension: Number of channels
+    z = len(im.mode)
     if dim == 1 or dim == 2:
         z = 1
-    pinmin = 0                                                                  # Minimum Byte value
-    pinmax = 255                                                                # Maximum Byte value
-    imgName = os.path.splitext(os.path.basename(filename))[0][0:78]             # Image name (79 characters max)
-    colormap = 0                                                                # Standard representation of pixel in the file
+    pinmin = 0
+    pinmax = 255
+    imgName = os.path.splitext(os.path.basename(filename))[0][0:78]
+    colormap = 0
     channels = []
     for channelIndex in range(0, z):
         channelData = list(im.getdata(channelIndex))
