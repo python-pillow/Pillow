@@ -45,21 +45,38 @@ def getrgb(color):
             return rgb
         colormap[color] = rgb = getrgb(rgb)
         return rgb
+
     # check for known string formats
-    m = re.match("#\w\w\w$", color)
-    if m:
+    if re.match('#[a-f0-9]{3}$', color, re.I):
         return (
             int(color[1]*2, 16),
             int(color[2]*2, 16),
-            int(color[3]*2, 16)
+            int(color[3]*2, 16),
             )
-    m = re.match("#\w\w\w\w\w\w$", color)
-    if m:
+
+    if re.match('#[a-f0-9]{4}$', color, re.I):
+        return (
+            int(color[1]*2, 16),
+            int(color[2]*2, 16),
+            int(color[3]*2, 16),
+            int(color[4]*2, 16),
+            )
+
+    if re.match('#[a-f0-9]{6}$', color, re.I):
         return (
             int(color[1:3], 16),
             int(color[3:5], 16),
-            int(color[5:7], 16)
+            int(color[5:7], 16),
             )
+
+    if re.match('#[a-f0-9]{8}$', color, re.I):
+        return (
+            int(color[1:3], 16),
+            int(color[3:5], 16),
+            int(color[5:7], 16),
+            int(color[7:9], 16),
+            )
+
     m = re.match("rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
         return (
