@@ -39,6 +39,7 @@ class TestImageColor(PillowTestCase):
     def test_colormap(self):
         self.assertEqual((0, 0, 0), ImageColor.getrgb("black"))
         self.assertEqual((255, 255, 255), ImageColor.getrgb("white"))
+        self.assertEqual((255, 255, 255), ImageColor.getrgb("WHITE"))
 
         self.assertRaises(ValueError, ImageColor.getrgb, "black0")
 

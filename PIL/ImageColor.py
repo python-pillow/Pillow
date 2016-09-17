@@ -31,15 +31,9 @@ def getrgb(color):
     :param color: A color string
     :return: ``(red, green, blue[, alpha])``
     """
-    try:
-        rgb = colormap[color]
-    except KeyError:
-        try:
-            # fall back on case-insensitive lookup
-            rgb = colormap[color.lower()]
-        except KeyError:
-            rgb = None
-    # found color in cache
+    color = color.lower()
+
+    rgb = colormap.get(color, None)
     if rgb:
         if isinstance(rgb, tuple):
             return rgb
@@ -47,14 +41,14 @@ def getrgb(color):
         return rgb
 
     # check for known string formats
-    if re.match('#[a-f0-9]{3}$', color, re.I):
+    if re.match('#[a-f0-9]{3}$', color):
         return (
             int(color[1]*2, 16),
             int(color[2]*2, 16),
             int(color[3]*2, 16),
             )
 
-    if re.match('#[a-f0-9]{4}$', color, re.I):
+    if re.match('#[a-f0-9]{4}$', color):
         return (
             int(color[1]*2, 16),
             int(color[2]*2, 16),
@@ -62,14 +56,14 @@ def getrgb(color):
             int(color[4]*2, 16),
             )
 
-    if re.match('#[a-f0-9]{6}$', color, re.I):
+    if re.match('#[a-f0-9]{6}$', color):
         return (
             int(color[1:3], 16),
             int(color[3:5], 16),
             int(color[5:7], 16),
             )
 
-    if re.match('#[a-f0-9]{8}$', color, re.I):
+    if re.match('#[a-f0-9]{8}$', color):
         return (
             int(color[1:3], 16),
             int(color[3:5], 16),
