@@ -2,7 +2,7 @@
 # The Python Imaging Library.
 # $Id$
 #
-# SGI image file handling (hack version)
+# SGI image file handling
 #
 # See "The SGI Image File Format (Draft version 0.97)", Paul Haeberli.
 # <ftp://ftp.sgi.com/graphics/SGIIMAGESPEC>
