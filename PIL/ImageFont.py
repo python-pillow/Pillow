@@ -313,6 +313,8 @@ def load_default():
     from io import BytesIO
     import base64
     f = ImageFont()
+    if sys.version_info < (3, 1):
+        base64.decodebytes = base64.decodestring
     f._load_pilfont_data(
         # courB08
         BytesIO(base64.decodebytes(b'''
