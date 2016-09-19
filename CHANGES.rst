@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- ImageColor.getrgb hexadecimal RGBA #2114
+  [homm]
+
 - Test fix for bigendian machines #2092
   [wiredfool]
 
