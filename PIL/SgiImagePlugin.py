@@ -86,23 +86,33 @@ def _save(im, fp, filename):
     if im.mode != "RGB" and im.mode != "RGBA" and im.mode != "L":
         raise ValueError("Unsupported SGI image mode")
 
+    # Flip the image, since the origin of SGI file is the bottom-left corner
     im = im.transpose(Image.FLIP_TOP_BOTTOM)
-
+    # Define the file as SGI File Format
     magicNumber = 474
+    # Run-Length Encoding Compression - Unsupported at this time
     rle = 0
+    # Byte-per-pixel precision, 1 = 8bits per pixel
     bpc = 1
+    # Number of dimensions (x,y,z)
     dim = 3
+    # X Dimension = width / Y Dimension = height
     x, y = im.size
     if im.mode == "L" and y == 1:
         dim = 1
     elif im.mode == "L":
         dim = 2
+    # Z Dimension: Number of channels
     z = len(im.mode)
     if dim == 1 or dim == 2:
         z = 1
+    # Minimum Byte value
     pinmin = 0
+    # Maximum Byte value (255 = 8bits per pixel)
     pinmax = 255
+    # Image name (79 characters max)
     imgName = os.path.splitext(os.path.basename(filename))[0][0:78]
+    # Standard representation of pixel in the file
     colormap = 0
     channels = []
     for channelIndex in range(0, z):
