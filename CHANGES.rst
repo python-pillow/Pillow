@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Use modern base64 interface over deprecated #2121
+  [hugovk]
+
 - ImageColor.getrgb hexadecimal RGBA #2114
   [homm]
 
