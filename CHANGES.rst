@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Allow pathlib.Path in Image.open on Python 2.7 #2110
+  [patricksnape]
+
 - Use modern base64 interface over deprecated #2121
   [hugovk]
 
