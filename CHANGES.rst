@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Added append_images parameter to GIF saving #2103
+  [radarhere]
+
 - Speedup paste with masks up to 80% #2015 
   [homm]
 
