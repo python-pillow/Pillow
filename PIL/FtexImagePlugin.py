@@ -43,7 +43,6 @@ Note: All data is stored in little-Endian (Intel) byte order.
 import struct
 from io import BytesIO
 from PIL import Image, ImageFile
-from PIL.DdsImagePlugin import _dxt1
 
 
 MAGIC = b"FTEX"
@@ -73,8 +72,8 @@ class FtexImageFile(ImageFile.ImageFile):
         data = self.fp.read(mipmap_size)
 
         if format == FORMAT_DXT1:
-            data = _dxt1(BytesIO(data), self.width, self.height)
-            self.tile = [("raw", (0, 0) + self.size, 0, ('RGBX', 0, 1))]
+            self.mode = "RGBA"
+            self.tile = [("bcn", (0, 0) + self.size, 0, (1))]
         elif format == FORMAT_UNCOMPRESSED:
             self.tile = [("raw", (0, 0) + self.size, 0, ('RGB', 0, 1))]
         else:

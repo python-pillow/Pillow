@@ -3297,6 +3297,7 @@ static PyTypeObject PixelAccess_Type = {
    pluggable codecs, but not before PIL 1.2 */
 
 /* Decoders (in decode.c) */
+extern PyObject* PyImaging_BcnDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_BitDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_FliDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_GifDecoderNew(PyObject* self, PyObject* args);
@@ -3362,6 +3363,7 @@ static PyMethodDef functions[] = {
     {"copy", (PyCFunction)_copy2, 1},
 
     /* Codecs */
+    {"bcn_decoder", (PyCFunction)PyImaging_BcnDecoderNew, 1},
     {"bit_decoder", (PyCFunction)PyImaging_BitDecoderNew, 1},
     {"eps_encoder", (PyCFunction)PyImaging_EpsEncoderNew, 1},
     {"fli_decoder", (PyCFunction)PyImaging_FliDecoderNew, 1},
