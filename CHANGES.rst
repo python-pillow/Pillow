@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Convert DPI to ints when saving as JPEG #2102
+  [radarhere]
+
 - Added append_images parameter to GIF saving #2103
   [radarhere]
 
