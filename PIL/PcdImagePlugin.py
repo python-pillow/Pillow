@@ -4,10 +4,6 @@
 #
 # PCD file handling
 #
-# History:
-#       96-05-10 fl     Created
-#       96-05-27 fl     Added draft mode (128x192, 256x384)
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996.
 #

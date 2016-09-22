@@ -4,9 +4,6 @@
  *
  * encoder for PCX data
  *
- * history:
- * 99-02-07 fl  created
- *
  * Copyright (c) Fredrik Lundh 1999.
  * Copyright (c) Secret Labs AB 1999.
  *

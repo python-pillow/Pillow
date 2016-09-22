@@ -4,11 +4,6 @@
  *
  * decoder for ZIP (deflated) image data.
  *
- * history:
- * 1996-12-14 fl   Created (for PNG)
- * 1997-01-15 fl   Prepared to read TIFF/ZIP
- * 2001-11-19 fl   PNG incomplete read patch (from Bernhard Herzog)
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997-2001.
  *

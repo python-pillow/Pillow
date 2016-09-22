@@ -4,10 +4,6 @@
  *
  * encoder for EPS hex data
  *
- * history:
- *	96-04-19 fl	created
- *	96-06-27 fl	don't drop last block of encoded data
- *
  * notes:
  *	FIXME: rename to HexEncode.c ??
  *

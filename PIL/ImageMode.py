@@ -4,9 +4,6 @@
 #
 # standard mode descriptors
 #
-# History:
-# 2006-03-20 fl   Added
-#
 # Copyright (c) 2006 by Secret Labs AB.
 # Copyright (c) 2006 by Fredrik Lundh.
 #

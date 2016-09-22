@@ -3,68 +3,6 @@
  *
  * the imaging library bindings
  *
- * history:
- * 1995-09-24 fl   Created
- * 1996-03-24 fl   Ready for first public release (release 0.0)
- * 1996-03-25 fl   Added fromstring (for Jack's "img" library)
- * 1996-03-28 fl   Added channel operations
- * 1996-03-31 fl   Added point operation
- * 1996-04-08 fl   Added new/new_block/new_array factories
- * 1996-04-13 fl   Added decoders
- * 1996-05-04 fl   Added palette hack
- * 1996-05-12 fl   Compile cleanly as C++
- * 1996-05-19 fl   Added matrix conversions, gradient fills
- * 1996-05-27 fl   Added display_mode
- * 1996-07-22 fl   Added getbbox, offset
- * 1996-07-23 fl   Added sequence semantics
- * 1996-08-13 fl   Added logical operators, point mode
- * 1996-08-16 fl   Modified paste interface
- * 1996-09-06 fl   Added putdata methods, use abstract interface
- * 1996-11-01 fl   Added xbm encoder
- * 1996-11-04 fl   Added experimental path stuff, draw_lines, etc
- * 1996-12-10 fl   Added zip decoder, crc32 interface
- * 1996-12-14 fl   Added modulo arithmetics
- * 1996-12-29 fl   Added zip encoder
- * 1997-01-03 fl   Added fli and msp decoders
- * 1997-01-04 fl   Added experimental sun_rle and tga_rle decoders
- * 1997-01-05 fl   Added gif encoder, getpalette hack
- * 1997-02-23 fl   Added histogram mask
- * 1997-05-12 fl   Minor tweaks to match the IFUNC95 interface
- * 1997-05-21 fl   Added noise generator, spread effect
- * 1997-06-05 fl   Added mandelbrot generator
- * 1997-08-02 fl   Modified putpalette to coerce image mode if necessary
- * 1998-01-11 fl   Added INT32 support
- * 1998-01-22 fl   Fixed draw_points to draw the last point too
- * 1998-06-28 fl   Added getpixel, getink, draw_ink
- * 1998-07-12 fl   Added getextrema
- * 1998-07-17 fl   Added point conversion to arbitrary formats
- * 1998-09-21 fl   Added support for resampling filters
- * 1998-09-22 fl   Added support for quad transform
- * 1998-12-29 fl   Added support for arcs, chords, and pieslices
- * 1999-01-10 fl   Added some experimental arrow graphics stuff
- * 1999-02-06 fl   Added draw_bitmap, font acceleration stuff
- * 2001-04-17 fl   Fixed some egcs compiler nits
- * 2001-09-17 fl   Added screen grab primitives (win32)
- * 2002-03-09 fl   Added stretch primitive
- * 2002-03-10 fl   Fixed filter handling in rotate
- * 2002-06-06 fl   Added I, F, and RGB support to putdata
- * 2002-06-08 fl   Added rankfilter
- * 2002-06-09 fl   Added support for user-defined filter kernels
- * 2002-11-19 fl   Added clipboard grab primitives (win32)
- * 2002-12-11 fl   Added draw context
- * 2003-04-26 fl   Tweaks for Python 2.3 beta 1
- * 2003-05-21 fl   Added createwindow primitive (win32)
- * 2003-09-13 fl   Added thread section hooks
- * 2003-09-15 fl   Added expand helper
- * 2003-09-26 fl   Added experimental LA support
- * 2004-02-21 fl   Handle zero-size images in quantize
- * 2004-06-05 fl   Added ptr attribute (used to access Imaging objects)
- * 2004-06-05 fl   Don't crash when fetching pixels from zero-wide images
- * 2004-09-17 fl   Added getcolors
- * 2004-10-04 fl   Added modefilter
- * 2005-10-02 fl   Added access proxy
- * 2006-06-18 fl   Always draw last point in polyline
- *
  * Copyright (c) 1997-2006 by Secret Labs AB
  * Copyright (c) 1995-2006 by Fredrik Lundh
  *

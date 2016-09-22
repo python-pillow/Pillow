@@ -4,23 +4,6 @@
  *
  * a simple drawing package for the Imaging library
  *
- * history:
- * 1996-04-13 fl  Created.
- * 1996-04-30 fl  Added transforms and polygon support.
- * 1996-08-12 fl  Added filled polygons.
- * 1996-11-05 fl  Fixed float/int confusion in polygon filler
- * 1997-07-04 fl  Support 32-bit images (C++ would have been nice)
- * 1998-09-09 fl  Eliminated qsort casts; improved rectangle clipping
- * 1998-09-10 fl  Fixed fill rectangle to include lower edge (!)
- * 1998-12-29 fl  Added arc, chord, and pieslice primitives
- * 1999-01-10 fl  Added some level 2 ("arrow") stuff (experimental)
- * 1999-02-06 fl  Added bitmap primitive
- * 1999-07-26 fl  Eliminated a compiler warning
- * 1999-07-31 fl  Pass ink as void* instead of int
- * 2002-12-10 fl  Added experimental RGBA-on-RGB drawing
- * 2004-09-04 fl  Support simple wide lines (no joins)
- * 2005-05-25 fl  Fixed line width calculation
- *
  * Copyright (c) 1996-2006 by Fredrik Lundh
  * Copyright (c) 1997-2006 by Secret Labs AB.
  *

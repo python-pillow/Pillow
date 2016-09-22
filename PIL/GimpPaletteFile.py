@@ -4,10 +4,6 @@
 #
 # stuff to read GIMP palette files
 #
-# History:
-# 1997-08-23 fl     Created
-# 2004-09-07 fl     Support GIMP 2.0 palette files.
-#
 # Copyright (c) Secret Labs AB 1997-2004.  All rights reserved.
 # Copyright (c) Fredrik Lundh 1997-2004.
 #

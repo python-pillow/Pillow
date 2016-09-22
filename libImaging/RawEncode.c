@@ -8,10 +8,6 @@
  * hold one full line of data.  There's a workaround for this problem
  * in ImageFile.py, but it should be solved here instead.
  *
- * history:
- * 96-04-30 fl	created
- * 97-01-03 fl	fixed padding
- *
  * Copyright (c) Fredrik Lundh 1996-97.
  * Copyright (c) Secret Labs AB 1997.
  *

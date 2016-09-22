@@ -6,9 +6,6 @@
  *
  * decoder for SUN RLE data.
  *
- * history:
- *	97-01-04 fl	Created
- *
  * Copyright (c) Fredrik Lundh 1997.
  * Copyright (c) Secret Labs AB 1997.
  *

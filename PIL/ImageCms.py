@@ -4,10 +4,6 @@
 # Optional color management support, based on Kevin Cazabon's PyCMS
 # library.
 
-# History:
-
-# 2009-03-08 fl   Added to PIL.
-
 # Copyright (C) 2002-2003 Kevin Cazabon
 # Copyright (c) 2009 by Fredrik Lundh
 # Copyright (c) 2013 by Eric Soroos

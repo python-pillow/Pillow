@@ -3,10 +3,6 @@
 #
 # load a GIMP brush file
 #
-# History:
-#       96-03-14 fl     Created
-#       16-01-08 es     Version 2
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996.
 # Copyright (c) Eric Soroos 2016.

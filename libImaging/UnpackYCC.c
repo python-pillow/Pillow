@@ -4,9 +4,6 @@
  *
  * code to convert and unpack PhotoYCC data
  *
- * history:
- * 97-01-25 fl	Moved from PcdDecode.c
- *
  * Copyright (c) Fredrik Lundh 1996-97.
  * Copyright (c) Secret Labs AB 1997.
  *

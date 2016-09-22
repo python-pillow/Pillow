@@ -4,9 +4,6 @@
 #
 # PIXAR raster support for PIL
 #
-# history:
-#       97-01-29 fl     Created
-#
 # notes:
 #       This is incomplete; it is based on a few samples created with
 #       Photoshop 2.5 and 3.0, and a summary description provided by

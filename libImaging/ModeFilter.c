@@ -4,10 +4,6 @@
  *
  * mode filter
  *
- * history:
- * 2002-06-08 fl    Created (based on code from IFUNC95)
- * 2004-10-05 fl    Rewritten; use a simpler brute-force algorithm
- *
  * Copyright (c) Secret Labs AB 2002-2004.  All rights reserved.
  *
  * See the README file for information on usage and redistribution.

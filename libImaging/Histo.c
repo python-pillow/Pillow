@@ -4,12 +4,6 @@
  *
  * histogram support
  *
- * history:
- * 1995-06-15 fl   Created.
- * 1996-04-05 fl   Fixed histogram for multiband images.
- * 1997-02-23 fl   Added mask support
- * 1998-07-01 fl   Added basic 32-bit float/integer support
- *
  * Copyright (c) 1997-2003 by Secret Labs AB.
  * Copyright (c) 1995-2003 by Fredrik Lundh.
  *

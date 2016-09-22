@@ -4,11 +4,6 @@
 #
 # IPTC/NAA file handling
 #
-# history:
-# 1995-10-01 fl   Created
-# 1998-03-09 fl   Cleaned up and added to PIL
-# 2002-06-18 fl   Added getiptcinfo helper
-#
 # Copyright (c) Secret Labs AB 1997-2002.
 # Copyright (c) Fredrik Lundh 1995.
 #

@@ -4,9 +4,6 @@
 #
 # stuff to read (and render) GIMP gradient files
 #
-# History:
-#       97-08-23 fl     Created
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1997.
 #

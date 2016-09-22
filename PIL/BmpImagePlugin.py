@@ -6,17 +6,6 @@
 #
 # Windows (and OS/2) native bitmap storage format.
 #
-# history:
-# 1995-09-01 fl   Created
-# 1996-04-30 fl   Added save
-# 1997-08-27 fl   Fixed save of 1-bit images
-# 1998-03-06 fl   Load P images as L where possible
-# 1998-07-03 fl   Load P images as 1 where possible
-# 1998-12-29 fl   Handle small palettes
-# 2002-12-30 fl   Fixed load of 1-bit palette images
-# 2003-04-21 fl   Fixed load of 1-bit monochrome images
-# 2003-04-23 fl   Added limited support for BI_BITFIELDS compression
-#
 # Copyright (c) 1997-2003 by Secret Labs AB
 # Copyright (c) 1995-2003 by Fredrik Lundh
 #

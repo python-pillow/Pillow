@@ -5,11 +5,6 @@
 #
 # print image files to postscript printer
 #
-# History:
-# 0.1   1996-04-20 fl   Created
-# 0.2   1996-10-04 fl   Use draft mode when converting.
-# 0.3   2003-05-06 fl   Fixed a typo or two.
-#
 
 from __future__ import print_function
 import getopt

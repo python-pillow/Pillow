@@ -4,13 +4,6 @@
  *
  * encoder for uncompressed GIF data
  *
- * history:
- * 97-01-05 fl	created (writes uncompressed data)
- * 97-08-27 fl	fixed off-by-one error in buffer size test
- * 98-07-09 fl	added interlace write support
- * 99-02-07 fl	rewritten, now uses a run-length encoding strategy
- * 99-02-08 fl	improved run-length encoding for long runs
- *
  * Copyright (c) Secret Labs AB 1997-99.
  * Copyright (c) Fredrik Lundh 1997.
  *

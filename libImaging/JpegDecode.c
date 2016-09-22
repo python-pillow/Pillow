@@ -4,17 +4,6 @@
  *
  * decoder for JPEG image data.
  *
- * history:
- * 1996-05-02 fl   Created
- * 1996-05-05 fl   Handle small JPEG files correctly
- * 1996-05-28 fl   Added "draft mode" support
- * 1997-01-25 fl   Added colour conversion override
- * 1998-01-31 fl   Adapted to libjpeg 6a
- * 1998-07-12 fl   Extended YCbCr support
- * 1998-12-29 fl   Added new state to handle suspension in multipass modes
- * 2000-10-12 fl   Suppress warnings
- * 2000-12-04 fl   Suppress errors beyond end of image data
- *
  * Copyright (c) 1998-2000 Secret Labs AB
  * Copyright (c) 1996-2000 Fredrik Lundh
  *

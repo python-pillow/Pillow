@@ -229,12 +229,6 @@ __version__ = '0.42b'
 #-----------------------------------------------------------------------------
 # NOTES from PIL 1.1.6:
 
-# History:
-# 1997-01-20 fl   Created
-# 1997-01-22 fl   Fixed 64-bit portability quirk
-# 2003-09-09 fl   Fixed typo in OleFileIO.loadfat (noted by Daniel Haertle)
-# 2004-02-29 fl   Changed long hex constants to signed integers
-#
 # Notes:
 # FIXME: sort out sign problem (eliminate long hex constants)
 # FIXME: change filename to use "a/b/c" instead of ["a", "b", "c"]

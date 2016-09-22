@@ -4,11 +4,6 @@
 #
 # simple postscript graphics interface
 #
-# History:
-# 1996-04-20 fl   Created
-# 1999-01-10 fl   Added gsave/grestore to image method
-# 2005-05-04 fl   Fixed floating point issue in image (from Eric Etheridge)
-#
 # Copyright (c) 1997-2005 by Secret Labs AB.  All rights reserved.
 # Copyright (c) 1996 by Fredrik Lundh.
 #
@@ -147,9 +142,6 @@ class PSDraw(object):
 #
 # EDROFF.PS -- Postscript driver for Edroff 2
 #
-# History:
-# 94-01-25 fl: created (edroff 2.04)
-#
 # Copyright (c) Fredrik Lundh 1994.
 #
 
@@ -176,9 +168,6 @@ EDROFF_PS = """\
 #
 # VDI.PS -- Postscript driver for VDI meta commands
 #
-# History:
-# 94-01-25 fl: created (edroff 2.04)
-#
 # Copyright (c) Fredrik Lundh 1994.
 #
 
@@ -202,9 +191,6 @@ VDI_PS = """\
 
 #
 # ERROR.PS -- Error handler
-#
-# History:
-# 89-11-21 fl: created (pslist 1.10)
 #
 
 ERROR_PS = """\

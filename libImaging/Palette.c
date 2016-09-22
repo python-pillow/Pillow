@@ -4,12 +4,6 @@
  *
  * imaging palette object
  *
- * history:
- * 1996-05-05 fl   Added to library
- * 1996-05-27 fl   Added colour mapping stuff
- * 1997-05-12 fl   Support RGBA palettes
- * 2005-02-09 fl   Removed grayscale entries from web palette
- *
  * Copyright (c) Secret Labs AB 1997-2005.  All rights reserved.
  * Copyright (c) Fredrik Lundh 1995-1997.
  *

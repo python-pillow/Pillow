@@ -4,9 +4,6 @@
 #
 # stuff to read simple, teragon-style palette files
 #
-# History:
-#       97-08-23 fl     Created
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1997.
 #

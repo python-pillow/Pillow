@@ -9,16 +9,6 @@
 # Windows applications, including the Windows PaintBrush program in
 # Windows 3.
 #
-# history:
-# 1995-09-01 fl   Created
-# 1996-05-20 fl   Fixed RGB support
-# 1997-01-03 fl   Fixed 2-bit and 4-bit support
-# 1999-02-03 fl   Fixed 8-bit support (broken in 1.0b1)
-# 1999-02-07 fl   Added write support
-# 2002-06-09 fl   Made 2-bit and 4-bit support a bit more robust
-# 2002-07-30 fl   Seek from to current position, not beginning of file
-# 2003-06-03 fl   Extract DPI settings (info["dpi"])
-#
 # Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1995-2003 by Fredrik Lundh.
 #

@@ -4,11 +4,6 @@
 #
 # standard filters
 #
-# History:
-# 1995-11-27 fl   Created
-# 2002-06-08 fl   Added rank and mode filters
-# 2003-09-15 fl   Fixed rank calculation in rank filter; added expand call
-#
 # Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1995-2002 by Fredrik Lundh.
 #

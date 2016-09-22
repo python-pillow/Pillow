@@ -7,9 +7,6 @@
 # See "The SGI Image File Format (Draft version 0.97)", Paul Haeberli.
 # <ftp://ftp.sgi.com/graphics/SGIIMAGESPEC>
 #
-# History:
-# 1995-09-10 fl   Created
-#
 # Copyright (c) 2008 by Karsten Hiddemann.
 # Copyright (c) 1997 by Secret Labs AB.
 # Copyright (c) 1995 by Fredrik Lundh.

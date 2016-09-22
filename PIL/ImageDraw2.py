@@ -4,12 +4,6 @@
 #
 # WCK-style drawing interface operations
 #
-# History:
-# 2003-12-07 fl   created
-# 2005-05-15 fl   updated; added to PIL as ImageDraw2
-# 2005-05-15 fl   added text support
-# 2005-05-20 fl   added arc/chord/pieslice support
-#
 # Copyright (c) 2003-2005 by Secret Labs AB
 # Copyright (c) 2003-2005 by Fredrik Lundh
 #

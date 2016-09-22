@@ -4,9 +4,6 @@
  *
  * encoder for Xbm data
  *
- * history:
- *	96-11-01 fl	created
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
  *

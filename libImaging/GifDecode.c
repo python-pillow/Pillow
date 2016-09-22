@@ -4,17 +4,6 @@
  *
  * a fast, suspendable GIF decoder
  *
- * history:
- * 95-09-03 fl	Created
- * 95-09-05 fl	Fixed sign problem on 16-bit platforms
- * 95-09-13 fl	Added some storage shortcuts
- * 96-03-28 fl	Revised API, integrated with PIL
- * 96-12-10 fl	Added interlace support
- * 96-12-16 fl	Fixed premature termination bug introduced by last fix
- * 97-01-05 fl	Don't mess up on bogus configuration
- * 97-01-17 fl	Don't mess up on very small, interlaced files
- * 99-02-07 fl	Minor speedups
- *
  * Copyright (c) Secret Labs AB 1997-99.
  * Copyright (c) Fredrik Lundh 1995-97.
  *

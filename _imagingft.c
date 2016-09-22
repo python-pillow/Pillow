@@ -3,18 +3,6 @@
  *
  * a FreeType 2.X driver for PIL
  *
- * history:
- * 2001-02-17 fl  Created (based on old experimental freetype 1.0 code)
- * 2001-04-18 fl  Fixed some egcs compiler nits
- * 2002-11-08 fl  Added unicode support; more font metrics, etc
- * 2003-05-20 fl  Fixed compilation under 1.5.2 and newer non-unicode builds
- * 2003-09-27 fl  Added charmap encoding support
- * 2004-05-15 fl  Fixed compilation for FreeType 2.1.8
- * 2004-09-10 fl  Added support for monochrome bitmaps
- * 2006-06-18 fl  Fixed glyph bearing calculation
- * 2007-12-23 fl  Fixed crash in family/style attribute fetch
- * 2008-01-02 fl  Handle Unicode filenames properly
- *
  * Copyright (c) 1998-2007 by Secret Labs AB
  */
 

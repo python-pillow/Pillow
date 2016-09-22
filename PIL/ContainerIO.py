@@ -4,10 +4,6 @@
 #
 # a class to read from a container file
 #
-# History:
-# 1995-06-18 fl     Created
-# 1995-09-07 fl     Added readline(), readlines()
-#
 # Copyright (c) 1997-2001 by Secret Labs AB
 # Copyright (c) 1995 by Fredrik Lundh
 #

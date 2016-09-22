@@ -4,9 +4,6 @@
 #
 # im.show() drivers
 #
-# History:
-# 2008-04-06 fl   Created
-#
 # Copyright (c) Secret Labs AB 2008.
 #
 # See the README file for information on usage and redistribution.

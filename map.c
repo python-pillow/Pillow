@@ -3,11 +3,6 @@
  *
  * standard memory mapping interface for the Imaging library
  *
- * history:
- * 1998-03-05 fl   added Win32 read mapping
- * 1999-02-06 fl   added "I;16" support
- * 2003-04-21 fl   added PyImaging_MapBuffer primitive
- *
  * Copyright (c) 1998-2003 by Secret Labs AB.
  * Copyright (c) 2003 by Fredrik Lundh.
  *

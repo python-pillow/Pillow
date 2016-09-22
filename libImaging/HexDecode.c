@@ -4,9 +4,6 @@
  *
  * decoder for hex encoded image data
  *
- * history:
- *	96-05-16 fl	Created
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
  *

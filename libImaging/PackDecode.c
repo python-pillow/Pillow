@@ -4,9 +4,6 @@
  *
  * decoder for PackBits image data.
  *
- * history:
- *	96-04-19 fl	Created
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
  *

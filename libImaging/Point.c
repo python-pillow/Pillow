@@ -4,15 +4,6 @@
  *
  * point (pixel) translation
  *
- * history:
- * 1995-11-27 fl   Created
- * 1996-03-31 fl   Fixed colour support
- * 1996-08-13 fl   Support 8-bit to "1" thresholding
- * 1997-05-31 fl   Added floating point transform
- * 1998-07-02 fl   Added integer point transform
- * 1998-07-17 fl   Support L to anything lookup
- * 2004-12-18 fl   Refactored; added I to L lookup
- *
  * Copyright (c) 1997-2004 by Secret Labs AB.
  * Copyright (c) 1995-2004 by Fredrik Lundh.
  *

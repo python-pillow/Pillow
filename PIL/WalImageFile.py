@@ -5,9 +5,6 @@
 #
 # WAL file handling
 #
-# History:
-# 2003-04-23 fl   created
-#
 # Copyright (c) 2003 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.

@@ -6,9 +6,6 @@
 #
 # FlashPix support for PIL
 #
-# History:
-# 97-01-25 fl   Created (reads uncompressed RGB images only)
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1997.
 #

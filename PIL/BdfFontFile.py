@@ -4,13 +4,6 @@
 #
 # bitmap distribution font (bdf) file parser
 #
-# history:
-# 1996-05-16 fl   created (as bdf2pil)
-# 1997-08-25 fl   converted to FontFile driver
-# 2001-05-25 fl   removed bogus __init__ call
-# 2002-11-20 fl   robustification (from Kevin Cazabon, Dmitry Vasiliev)
-# 2003-04-22 fl   more robustification (from Graham Dumpleton)
-#
 # Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1997-2003 by Fredrik Lundh.
 #

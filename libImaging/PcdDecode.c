@@ -4,11 +4,6 @@
  *
  * decoder for uncompressed PCD image data.
  *
- * history:
- *	96-05-10 fl	Created
- *	96-05-18 fl	New tables
- *	97-01-25 fl	Use PhotoYCC unpacker
- *
  * notes:
  *	This driver supports uncompressed PCD modes only
  *	(resolutions up to 768x512).

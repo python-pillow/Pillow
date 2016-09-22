@@ -4,10 +4,6 @@
 #
 # Basic McIdas support for PIL
 #
-# History:
-# 1997-05-05 fl  Created (8-bit images only)
-# 2009-03-08 fl  Added 16/32-bit support.
-#
 # Thanks to Richard Jones and Craig Swank for specs and samples.
 #
 # Copyright (c) Secret Labs AB 1997.

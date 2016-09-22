@@ -4,17 +4,6 @@
  *
  * paste image on another image
  *
- * history:
- * 96-03-27 fl  Created
- * 96-07-16 fl  Support "1", "L" and "RGBA" masks
- * 96-08-16 fl  Merged with opaque paste
- * 97-01-17 fl  Faster blending, added support for RGBa images
- * 97-08-27 fl  Faster masking for 32-bit images
- * 98-02-02 fl  Fixed MULDIV255 macro for gcc
- * 99-02-02 fl  Added "RGBa" mask support
- * 99-02-06 fl  Rewritten.  Added support for masked fill operations.
- * 99-12-08 fl  Fixed matte fill.
- *
  * Copyright (c) Fredrik Lundh 1996-97.
  * Copyright (c) Secret Labs AB 1997-99.
  *

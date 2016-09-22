@@ -4,11 +4,6 @@
 #
 # FLI/FLC file handling.
 #
-# History:
-#       95-09-01 fl     Created
-#       97-01-03 fl     Fixed parser, setup decoder tile
-#       98-07-15 fl     Renamed offset attribute to avoid name clash
-#
 # Copyright (c) Secret Labs AB 1997-98.
 # Copyright (c) Fredrik Lundh 1995-97.
 #

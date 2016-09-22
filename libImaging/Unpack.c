@@ -4,26 +4,6 @@
  *
  * code to unpack raw data from various file formats
  *
- * history:
- * 1996-03-07 fl   Created (from various decoders)
- * 1996-04-19 fl   Added band unpackers
- * 1996-05-12 fl   Published RGB unpackers
- * 1996-05-27 fl   Added nibble unpacker
- * 1996-12-10 fl   Added complete set of PNG unpackers
- * 1996-12-29 fl   Set alpha byte in RGB unpackers
- * 1997-01-05 fl   Added remaining TGA unpackers
- * 1997-01-18 fl   Added inverting band unpackers
- * 1997-01-25 fl   Added FlashPix unpackers
- * 1997-05-31 fl   Added floating point unpackers
- * 1998-02-08 fl   Added I unpacker
- * 1998-07-01 fl   Added YCbCr unpacker
- * 1998-07-02 fl   Added full set of integer unpackers
- * 1998-12-29 fl   Added mode field, I;16 unpackers
- * 1998-12-30 fl   Added RGBX modes
- * 1999-02-04 fl   Fixed I;16 unpackers
- * 2003-05-13 fl   Added L/RGB reversed unpackers
- * 2003-09-26 fl   Added LA/PA and RGBa->RGB unpackers
- *
  * Copyright (c) 1997-2003 by Secret Labs AB.
  * Copyright (c) 1996-1997 by Fredrik Lundh.
  *

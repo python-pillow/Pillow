@@ -4,9 +4,6 @@
 #
 # Windows Icon support for PIL
 #
-# History:
-#       96-05-27 fl     Created
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996.
 #

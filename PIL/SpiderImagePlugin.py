@@ -3,11 +3,6 @@
 #
 # SPIDER image file handling
 #
-# History:
-# 2004-08-02    Created BB
-# 2006-03-02    added save method
-# 2006-03-13    added support for stack images
-#
 # Copyright (c) 2004 by Health Research Inc. (HRI) RENSSELAER, NY 12144.
 # Copyright (c) 2004 by William Baxter.
 # Copyright (c) 2004 by Secret Labs AB.

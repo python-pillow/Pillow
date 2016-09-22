@@ -4,9 +4,6 @@
  *
  * decoder for packed bitfields (converts to floating point)
  *
- * history:
- *	97-05-31 fl	created (much more than originally intended)
- *
  * Copyright (c) Fredrik Lundh 1997.
  * Copyright (c) Secret Labs AB 1997.
  *

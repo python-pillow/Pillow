@@ -4,9 +4,6 @@
  *
  * decoder for PCX image data.
  *
- * history:
- *	95-09-14 fl	Created
- *
  * Copyright (c) Fredrik Lundh 1995.
  * Copyright (c) Secret Labs AB 1997.
  *

@@ -3,10 +3,6 @@
  *
  * tkinter hooks
  *
- * history:
- * 99-07-26 fl	created
- * 99-08-15 fl	moved to its own support module
- *
  * Copyright (c) Secret Labs AB 1999.
  *
  * See the README file for information on usage and redistribution.

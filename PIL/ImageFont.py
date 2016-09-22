@@ -4,18 +4,6 @@
 #
 # PIL raster font management
 #
-# History:
-# 1996-08-07 fl   created (experimental)
-# 1997-08-25 fl   minor adjustments to handle fonts from pilfont 0.3
-# 1999-02-06 fl   rewrote most font management stuff in C
-# 1999-03-17 fl   take pth files into account in load_path (from Richard Jones)
-# 2001-02-17 fl   added freetype support
-# 2001-05-09 fl   added TransposedFont wrapper class
-# 2002-03-04 fl   make sure we have a "L" or "1" font
-# 2002-12-04 fl   skip non-directory entries in the system path
-# 2003-04-29 fl   add embedded default font
-# 2003-09-27 fl   added support for truetype charmap encodings
-#
 # Todo:
 # Adapt to PILFONT2 format (16-bit fonts, compressed, single file)
 #

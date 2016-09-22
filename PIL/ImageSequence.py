@@ -4,9 +4,6 @@
 #
 # sequence support classes
 #
-# history:
-# 1997-02-20 fl     Created
-#
 # Copyright (c) 1997 by Secret Labs AB.
 # Copyright (c) 1997 by Fredrik Lundh.
 #

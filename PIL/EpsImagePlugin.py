@@ -4,16 +4,6 @@
 #
 # EPS file handling
 #
-# History:
-# 1995-09-01 fl   Created (0.1)
-# 1996-05-18 fl   Don't choke on "atend" fields, Ghostscript interface (0.2)
-# 1996-08-22 fl   Don't choke on floating point BoundingBox values
-# 1996-08-23 fl   Handle files from Macintosh (0.3)
-# 2001-02-17 fl   Use 're' instead of 'regex' (Python 2.1) (0.4)
-# 2003-09-07 fl   Check gs.close status (from Federico Di Gregorio) (0.5)
-# 2014-05-07 e    Handling of EPS with binary preview and fixed resolution
-#                 resizing
-#
 # Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1995-2003 by Fredrik Lundh
 #

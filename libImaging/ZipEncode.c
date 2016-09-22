@@ -4,10 +4,6 @@
  *
  * coder for ZIP (deflated) image data
  *
- * History:
- * 96-12-29 fl  created
- * 96-12-30 fl  adaptive filter selection, encoder tuning
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
  *

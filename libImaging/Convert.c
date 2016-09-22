@@ -4,28 +4,6 @@
  *
  * convert images
  *
- * history:
- * 1995-06-15 fl   created
- * 1995-11-28 fl   added some "RGBA" and "CMYK" conversions
- * 1996-04-22 fl   added "1" conversions (same as "L")
- * 1996-05-05 fl   added palette conversions (hack)
- * 1996-07-23 fl   fixed "1" conversions to zero/non-zero convention
- * 1996-11-01 fl   fixed "P" to "L" and "RGB" to "1" conversions
- * 1996-12-29 fl   set alpha byte in RGB converters
- * 1997-05-12 fl   added ImagingConvert2
- * 1997-05-30 fl   added floating point support
- * 1997-08-27 fl   added "P" to "1" and "P" to "F" conversions
- * 1998-01-11 fl   added integer support
- * 1998-07-01 fl   added "YCbCr" support
- * 1998-07-02 fl   added "RGBX" conversions (sort of)
- * 1998-07-04 fl   added floyd-steinberg dithering
- * 1998-07-12 fl   changed "YCrCb" to "YCbCr" (!)
- * 1998-12-29 fl   added basic "I;16" and "I;16B" conversions
- * 1999-02-03 fl   added "RGBa", and "BGR" conversions (experimental)
- * 2003-09-26 fl   added "LA" and "PA" conversions (experimental)
- * 2005-05-05 fl   fixed "P" to "1" threshold
- * 2005-12-08 fl   fixed palette memory leak in topalette
- *
  * Copyright (c) 1997-2005 by Secret Labs AB.
  * Copyright (c) 1995-1997 by Fredrik Lundh.
  *

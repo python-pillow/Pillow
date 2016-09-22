@@ -4,10 +4,6 @@
  *
  * decoder for Autodesk Animator FLI/FLC animations
  *
- * history:
- *	97-01-03 fl	Created
- *	97-01-17 fl	Added SS2 support (FLC)
- *
  * Copyright (c) Fredrik Lundh 1997.
  * Copyright (c) Secret Labs AB 1997.
  *

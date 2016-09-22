@@ -4,13 +4,6 @@
 #
 # a Windows DIB display interface
 #
-# History:
-# 1996-05-20 fl   Created
-# 1996-09-20 fl   Fixed subregion exposure
-# 1997-09-21 fl   Added draw primitive (for tzPrint)
-# 2003-05-21 fl   Added experimental Window/ImageWindow classes
-# 2003-09-05 fl   Added fromstring/tostring methods
-#
 # Copyright (c) Secret Labs AB 1997-2003.
 # Copyright (c) Fredrik Lundh 1996-2003.
 #

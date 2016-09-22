@@ -4,9 +4,6 @@
  *
  * min, max, median filters
  *
- * history:
- * 2002-06-08 fl    Created
- *
  * Copyright (c) Secret Labs AB 2002.  All rights reserved.
  *
  * See the README file for information on usage and redistribution.

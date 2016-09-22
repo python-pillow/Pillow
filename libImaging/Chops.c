@@ -4,12 +4,6 @@
  *
  * basic channel operations
  *
- * history:
- * 1996-03-28 fl   Created
- * 1996-08-13 fl   Added and/or/xor for "1" images
- * 1996-12-14 fl   Added add_modulo, sub_modulo
- * 2005-09-10 fl   Fixed output values from and/or/xor
- *
  * Copyright (c) 1996 by Fredrik Lundh.
  * Copyright (c) 1997 by Secret Labs AB.
  *

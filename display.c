@@ -3,19 +3,6 @@
  *
  * display support (and other windows-related stuff)
  *
- * History:
- * 1996-05-13 fl  Windows DIB support
- * 1996-05-21 fl  Added palette stuff
- * 1996-05-28 fl  Added display_mode stuff
- * 1997-09-21 fl  Added draw primitive
- * 2001-09-17 fl  Added ImagingGrabScreen (from _grabscreen.c)
- * 2002-05-12 fl  Added ImagingListWindows
- * 2002-11-19 fl  Added clipboard support
- * 2002-11-25 fl  Added GetDC/ReleaseDC helpers
- * 2003-05-21 fl  Added create window support (including window callback)
- * 2003-09-05 fl  Added fromstring/tostring methods
- * 2009-03-14 fl  Added WMF support (from pilwmf)
- *
  * Copyright (c) 1997-2003 by Secret Labs AB.
  * Copyright (c) 1996-1997 by Fredrik Lundh.
  *

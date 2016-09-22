@@ -4,12 +4,6 @@
 #
 # PDF (Acrobat) file handling
 #
-# History:
-# 1996-07-16 fl   Created
-# 1997-01-18 fl   Fixed header
-# 2004-02-21 fl   Fixes for 1/L/CMYK images, etc.
-# 2004-02-24 fl   Fixes for 1 and P images.
-#
 # Copyright (c) 1997-2004 by Secret Labs AB.  All rights reserved.
 # Copyright (c) 1996-1997 by Fredrik Lundh.
 #

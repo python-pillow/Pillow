@@ -5,9 +5,6 @@
 #
 # convert sequence format to GIF animation
 #
-# history:
-#       97-01-03 fl     created
-#
 # Copyright (c) Secret Labs AB 1997.  All rights reserved.
 # Copyright (c) Fredrik Lundh 1997.
 #

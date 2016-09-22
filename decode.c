@@ -3,24 +3,6 @@
  *
  * standard decoder interfaces for the Imaging library
  *
- * history:
- * 1996-03-28 fl   Moved from _imagingmodule.c
- * 1996-04-15 fl   Support subregions in setimage
- * 1996-04-19 fl   Allocate decoder buffer (where appropriate)
- * 1996-05-02 fl   Added jpeg decoder
- * 1996-05-12 fl   Compile cleanly as C++
- * 1996-05-16 fl   Added hex decoder
- * 1996-05-26 fl   Added jpeg configuration parameters
- * 1996-12-14 fl   Added zip decoder
- * 1996-12-30 fl   Plugged potential memory leak for tiled images
- * 1997-01-03 fl   Added fli and msp decoders
- * 1997-01-04 fl   Added sun_rle and tga_rle decoders
- * 1997-05-31 fl   Added bitfield decoder
- * 1998-09-11 fl   Added orientation and pixelsize fields to tga_rle decoder
- * 1998-12-29 fl   Added mode/rawmode argument to decoders
- * 1998-12-30 fl   Added mode argument to *all* decoders
- * 2002-06-09 fl   Added stride argument to pcx decoder
- *
  * Copyright (c) 1997-2002 by Secret Labs AB.
  * Copyright (c) 1995-2002 by Fredrik Lundh.
  *

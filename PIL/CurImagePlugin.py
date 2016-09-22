@@ -7,9 +7,6 @@
 # notes:
 #       uses BmpImagePlugin.py to read the bitmap data.
 #
-# history:
-#       96-05-27 fl     Created
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996.
 #

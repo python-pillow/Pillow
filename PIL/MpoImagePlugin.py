@@ -12,9 +12,6 @@
 # a GIF animation, it is commonly used to represent 3D photographs and is (as
 # of this writing) the most commonly used format by 3D cameras.
 #
-# History:
-# 2014-03-13 Feneric   Created
-#
 # See the README file for information on usage and redistribution.
 #
 

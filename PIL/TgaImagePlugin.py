@@ -4,12 +4,6 @@
 #
 # TGA file handling
 #
-# History:
-# 95-09-01 fl   created (reads 24-bit files only)
-# 97-01-04 fl   support more TGA versions, including compressed images
-# 98-07-04 fl   fixed orientation and alpha layer bugs
-# 98-09-11 fl   fixed orientation for runlength decoder
-#
 # Copyright (c) Secret Labs AB 1997-98.
 # Copyright (c) Fredrik Lundh 1995-97.
 #

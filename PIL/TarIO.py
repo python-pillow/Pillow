@@ -4,10 +4,6 @@
 #
 # read files from within a tar file
 #
-# History:
-# 95-06-18 fl   Created
-# 96-05-28 fl   Open files in binary mode
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1995-96.
 #
