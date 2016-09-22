@@ -469,6 +469,19 @@ class TestFileJpeg(PillowTestCase):
             img = Image.new(mode, (20, 20))
             self.assert_warning(DeprecationWarning, img.save, out, "JPEG")
 
+    def test_save_tiff_with_dpi(self):
+        # Arrange
+        outfile = self.tempfile("temp.tif")
+        im = Image.open("Tests/images/hopper.tif")
+
+        # Act
+        im.save(outfile, 'JPEG', dpi=im.info['dpi'])
+
+        # Assert
+        reloaded = Image.open(outfile)
+        reloaded.load()
+        self.assertEqual(im.info['dpi'], reloaded.info['dpi'])
+
 
 if __name__ == '__main__':
     unittest.main()
