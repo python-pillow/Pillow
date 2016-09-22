@@ -306,6 +306,24 @@ class TestFileGif(PillowTestCase):
         reread = Image.open(out)
         self.assertEqual(reread.info["version"], b"GIF87a")
 
+    def test_append_images(self):
+        out = self.tempfile('temp.gif')
+
+        # Test appending single frame images
+        im = Image.new('RGB', (100, 100), '#f00')
+        ims = [Image.new('RGB', (100, 100), color) for color in ['#0f0', '#00f']]
+        im.save(out, save_all=True, append_images=ims)
+
+        reread = Image.open(out)
+        self.assertEqual(reread.n_frames, 3)
+
+        # Tests appending single and multiple frame images
+        im = Image.open("Tests/images/dispose_none.gif")
+        ims = [Image.open("Tests/images/dispose_prev.gif")]
+        im.save(out, save_all=True, append_images=ims)
+
+        reread = Image.open(out)
+        self.assertEqual(reread.n_frames, 10)
 
 if __name__ == '__main__':
     unittest.main()
