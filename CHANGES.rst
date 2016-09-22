@@ -4,6 +4,18 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Speedup paste with masks up to 80% #2015 
+  [homm]
+
+- Rewrite DDS decoders in C, add DXT3 and BC7 decoders #2068
+  [Mischanix]
+
+- Fix PyArg_ParseTuple format in getink() #2070
+  [arjennienhuis]
+
+- Fix saving originally missing TIFF tags. #2111
+  [anntzer]
+
 - Allow pathlib.Path in Image.open on Python 2.7 #2110
   [patricksnape]
 
