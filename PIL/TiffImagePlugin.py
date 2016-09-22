@@ -1359,7 +1359,7 @@ def _save(im, fp, filename):
                     IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK, XMP):
             if key in im.tag_v2:
                 ifd[key] = im.tag_v2[key]
-            ifd.tagtype[key] = im.tag_v2.tagtype.get(key, None)
+                ifd.tagtype[key] = im.tag_v2.tagtype[key]
 
         # preserve ICC profile (should also work when saving other formats
         # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
