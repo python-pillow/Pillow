@@ -227,12 +227,20 @@ class TestFileJpeg(PillowTestCase):
 
     def test_progressive_compat(self):
         im1 = self.roundtrip(hopper())
+        self.assertFalse(im1.info.get("progressive"))
+        self.assertFalse(im1.info.get("progression"))
+
+        im2 = self.roundtrip(hopper(), progressive=0)
+        im3 = self.roundtrip(hopper(), progression=0)  # compatibility
+        self.assertFalse(im2.info.get("progressive"))
+        self.assertFalse(im2.info.get("progression"))
+        self.assertFalse(im3.info.get("progressive"))
+        self.assertFalse(im3.info.get("progression"))
+
         im2 = self.roundtrip(hopper(), progressive=1)
         im3 = self.roundtrip(hopper(), progression=1)  # compatibility
         self.assert_image_equal(im1, im2)
         self.assert_image_equal(im1, im3)
-        self.assertFalse(im1.info.get("progressive"))
-        self.assertFalse(im1.info.get("progression"))
         self.assertTrue(im2.info.get("progressive"))
         self.assertTrue(im2.info.get("progression"))
         self.assertTrue(im3.info.get("progressive"))
