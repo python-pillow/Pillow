@@ -422,7 +422,7 @@ try:
 
         @unittest.skipIf(sys.platform.startswith('win32'),
                          "requires Unix or MacOS")
-        def test_find_osx_font(self):
+        def test_find_macos_font(self):
             # Like the linux test, more cover hitting code rather than testing
             # correctness.
             font_directory = '/System/Library/Fonts'

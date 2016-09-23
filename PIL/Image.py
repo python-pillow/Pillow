@@ -1725,7 +1725,7 @@ class Image(object):
         PPM file, and calls either the **xv** utility or the **display**
         utility, depending on which one can be found.
 
-        On OS X, this method saves the image to a temporary BMP file, and opens
+        On macOS, this method saves the image to a temporary BMP file, and opens
         it with the native Preview application.
 
         On Windows, it saves the image to a temporary BMP file, and uses

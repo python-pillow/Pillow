@@ -2,7 +2,7 @@
 # The Python Imaging Library.
 # $Id$
 #
-# Mac OS X icns file decoder, based on icns.py by Bob Ippolito.
+# macOS icns file decoder, based on icns.py by Bob Ippolito.
 #
 # history:
 # 2004-10-09 fl   Turned into a PIL plugin; removed 2.3 dependencies.
@@ -302,9 +302,9 @@ def _save(im, fp, filename):
     """
     Saves the image as a series of PNG files,
     that are then converted to a .icns file
-    using the OS X command line utility 'iconutil'.
+    using the macOS command line utility 'iconutil'.
 
-    OS X only.
+    macOS only.
     """
     if hasattr(fp, "flush"):
         fp.flush()

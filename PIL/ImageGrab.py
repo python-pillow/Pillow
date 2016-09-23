@@ -2,7 +2,7 @@
 # The Python Imaging Library
 # $Id$
 #
-# screen grabber (OS X and Windows only)
+# screen grabber (macOS and Windows only)
 #
 # History:
 # 2001-04-26 fl  created
@@ -19,7 +19,7 @@ from PIL import Image
 
 import sys
 if sys.platform not in ["win32", "darwin"]:
-    raise ImportError("ImageGrab is OS X and Windows only")
+    raise ImportError("ImageGrab is macOS and Windows only")
 
 if sys.platform == "win32":
     grabber = Image.core.grabscreen

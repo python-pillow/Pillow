@@ -28,7 +28,7 @@ Basic Installation
 
 .. note::
 
-   The basic installation works on Windows and OS X using the binaries
+   The basic installation works on Windows and macOS using the binaries
    from PyPI. Other installations require building from source as
    detailed below.
 
@@ -58,11 +58,11 @@ or::
   > easy_install Pillow
 
 
-OS X Installation
+macOS Installation
 ^^^^^^^^^^^^^^^^^
 
-We provide binaries for OS X  for each of the supported Python versions
-in the wheel format. These  include support for all optional libraries
+We provide binaries for macOS for each of the supported Python versions
+in the wheel format. These include support for all optional libraries
 except OpenJPEG::
 
   $ pip install Pillow
@@ -230,7 +230,7 @@ or using pip::
     $ pip install pillow --global-option="build_ext" --global-option="--enable-[feature]"
 
 
-Building on OS X
+Building on macOS
 ^^^^^^^^^^^^^^^^
 
 The Xcode command line tools are required to compile portions of
@@ -326,7 +326,7 @@ Platform Support
 Current platform support for Pillow. Binary distributions are contributed for
 each release on a volunteer basis, but the source should compile and run
 everywhere platform support is listed. In general, we aim to support all
-current versions of Linux, OS X, and Windows.
+current versions of Linux, macOS, and Windows.
 
 .. note::
 
