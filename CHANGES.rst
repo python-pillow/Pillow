@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Use truth value when checking for JPEG progressive option on save #2115
+  [radarhere]
+
 - Convert DPI to ints when saving as JPEG #2102
   [radarhere]
 
