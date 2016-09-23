@@ -13,3 +13,16 @@ two times shorter window than ``BILINEAR``. It can be used for image reduction
 ``HAMMING`` filter has the same performance as ``BILINEAR`` filter while
 providing the image downscaling quality comparable to ``BICUBIC``.
 Both new filters don't show good quality for the image upscaling.
+
+
+Append images to GIF
+====================
+
+Additional frames can now be appended when saving a GIF file, through the
+``append_images`` argument. The new frames are passed in as a list of images,
+which may be have multiple frames themselves.
+
+Note that the ``append_images`` argument is only used if ``save_all`` is also
+in effect, e.g.::
+
+    im.save(out, save_all=True, append_images=[im1, im2, ...])
