@@ -682,13 +682,16 @@ def _save(im, fp, filename):
                       o8(len(markers)) + marker)
             i += 1
 
+    # "progressive" is the official name, but older documentation
+    # says "progression"
+    # FIXME: issue a warning if the wrong form is used (post-1.1.7)
+    progressive = info.get("progressive", False) or\
+                  info.get("progression", False)
+
     # get keyword arguments
     im.encoderconfig = (
         quality,
-        # "progressive" is the official name, but older documentation
-        # says "progression"
-        # FIXME: issue a warning if the wrong form is used (post-1.1.7)
-        "progressive" in info or "progression" in info,
+        progressive,
         info.get("smooth", 0),
         "optimize" in info,
         info.get("streamtype", 0),
@@ -704,7 +707,7 @@ def _save(im, fp, filename):
     # channels*size, this is a value that's been used in a django patch.
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     bufsize = 0
-    if "optimize" in info or "progressive" in info or "progression" in info:
+    if "optimize" in info or progressive:
         # keep sets quality to 0, but the actual value may be high.
         if quality >= 95 or quality == 0:
             bufsize = 2 * im.size[0] * im.size[1]
