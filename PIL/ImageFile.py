@@ -305,8 +305,6 @@ class Parser(object):
     """
     Incremental image parser.  This class implements the standard
     feed/close consumer interface.
-
-    In Python 2.x, this is an old-style class.
     """
     incremental = None
     image = None
