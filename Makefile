@@ -36,7 +36,7 @@ docserve:
 	cd docs/_build/html && python -mSimpleHTTPServer 2> /dev/null&
 
 help:
-	@echo "Welcome to Pillow development. Please use \`make <target>' where <target> is one of"
+	@echo "Welcome to Pillow development. Please use \`make <target>\` where <target> is one of"
 	@echo "  clean          remove build products"
 	@echo "  coverage       run coverage test (in progress)"
 	@echo "  doc            make html docs"
