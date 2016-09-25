@@ -44,6 +44,18 @@ class TestFilePpm(PillowTestCase):
         self.assertRaises(ValueError, lambda: Image.open(path))
 
 
+    def test_neg_ppm(self):
+        """test_neg_ppm
+
+        Storage.c accepted negative values for xsize, ysize.
+        open_ppm is a core debugging item that doesn't check any parameters for
+        sanity. 
+        """
+        
+        with self.assertRaises(ValueError):
+            Image.core.open_ppm('Tests/images/negative_size.ppm')
+
+
 if __name__ == '__main__':
     unittest.main()
 
