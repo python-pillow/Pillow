@@ -4,6 +4,15 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Converted documentation parameter format, comments to docstrings #2021
+  [radarhere]
+
+- Fixed typo in makefile #2128
+  [radarhere]
+  
+- Renamed references to OS X to macOS #2125 
+  [radarhere]
+  
 - Use truth value when checking for JPEG progressive option on save #2115
   [radarhere]
 
@@ -13,7 +22,7 @@ Changelog (Pillow)
 - Added append_images parameter to GIF saving #2103
   [radarhere]
 
-- Speedup paste with masks up to 80% #2015
+- Speedup paste with masks up to 80% #2015 
   [homm]
 
 - Rewrite DDS decoders in C, add DXT3 and BC7 decoders #2068
@@ -112,7 +121,7 @@ Changelog (Pillow)
 - Added CMYK mode for opening EPS files #1826
   [radarhere]
 
-- Docs: OS X build instruction clarification #1994
+- Docs: OSX build instruction clarification #1994
   [wiredfool]
 
 - Docs: Filter comparison table #1993
