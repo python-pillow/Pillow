@@ -219,20 +219,20 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     image quality.
 
 **optimize**
-    If present, indicates that the encoder should make an extra pass over the
-    image in order to select optimal encoder settings.
+    If present and true, indicates that the encoder should make an extra pass
+    over the image in order to select optimal encoder settings.
 
 **progressive**
-    If present, indicates that this image should be stored as a progressive
-    JPEG file.
+    If present and true, indicates that this image should be stored as a
+    progressive JPEG file.
 
 **dpi**
     A tuple of integers representing the pixel density, ``(x,y)``.
 
 **icc_profile**
-    If present, the image is stored with the provided ICC profile. If
-    this parameter is not provided, the image will be saved with no
-    profile attached. To preserve the existing profile::
+    If present and true, the image is stored with the provided ICC profile.
+    If this parameter is not provided, the image will be saved with no profile
+    attached. To preserve the existing profile::
 
         im.save(filename, 'jpeg', icc_profile=im.info.get('icc_profile'))
 
@@ -399,9 +399,9 @@ chunks is limited to ``PngImagePlugin.MAX_TEXT_MEMORY``, defaulting to
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **optimize**
-    If present, instructs the PNG writer to make the output file as small as
-    possible. This includes extra processing in order to find optimal encoder
-    settings.
+    If present and true, instructs the PNG writer to make the output file as
+    small as possible. This includes extra processing in order to find optimal
+    encoder settings.
 
 **transparency**
     For ``P``, ``L``, and ``RGB`` images, this option controls what
@@ -615,8 +615,7 @@ format are currently undocumented.
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **lossless**
-    If present, instructs the WEBP writer to use lossless
-    compression.
+    If present and true, instructs the WEBP writer to use lossless compression.
 
 **quality**
     Integer, 1-100, Defaults to 80. Sets the quality level for
