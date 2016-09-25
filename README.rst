@@ -14,7 +14,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
     * - docs
       - |docs|
     * - tests
-      - | |linux| |osx| |windows| |coverage| |health|
+      - | |linux| |macos| |windows| |coverage| |health|
     * - package
       - |zenodo| |version| |downloads|
 
@@ -26,9 +26,9 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://travis-ci.org/python-pillow/Pillow
    :alt: Travis CI build status (Linux)
 
-.. |osx| image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg?label=OS%20X%20build
+.. |macos| image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg?label=OS%20X%20build
    :target: https://travis-ci.org/python-pillow/pillow-wheels
-   :alt: Travis CI build status (OS X)
+   :alt: Travis CI build status (macOS)
 
 .. |windows| image:: https://img.shields.io/appveyor/ci/python-pillow/Pillow/master.svg?label=Windows%20build
    :target: https://ci.appveyor.com/project/python-pillow/Pillow

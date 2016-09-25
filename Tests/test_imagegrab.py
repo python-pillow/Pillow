@@ -42,7 +42,7 @@ class TestImageGrabImport(PillowTestCase):
         else:
             self.assertIsInstance(exception, ImportError)
             self.assertEqual(str(exception),
-                             "ImageGrab is OS X and Windows only")
+                             "ImageGrab is macOS and Windows only")
 
 
 if __name__ == '__main__':

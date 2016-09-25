@@ -133,7 +133,7 @@ attributes before loading the file::
 ICNS
 ^^^^
 
-PIL reads and (OS X only) writes Mac OS X ``.icns`` files.  By default, the
+PIL reads and (macOS only) writes macOS ``.icns`` files.  By default, the
 largest available icon is read, though you can override this by setting the
 :py:attr:`~PIL.Image.Image.size` property before calling
 :py:meth:`~PIL.Image.Image.load`.  The :py:meth:`~PIL.Image.Image.open` method

@@ -40,7 +40,7 @@ class TestFileTiff(PillowTestCase):
         im = Image.open(filename)
 
     def test_mac_tiff(self):
-        # Read RGBa images from Mac OS X [@PIL136]
+        # Read RGBa images from macOS [@PIL136]
 
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)

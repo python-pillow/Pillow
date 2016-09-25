@@ -32,7 +32,7 @@ install:
   # Coverage 4.0 doesn't support Python 3.2
   - if [ "$TRAVIS_PYTHON_VERSION" == "3.2" ]; then travis_retry pip install coverage==3.7.1; fi
   - if [ "$TRAVIS_PYTHON_VERSION" != "3.2" ]; then travis_retry pip install coverage; fi
-  
+
   # docs only on python 2.7
   - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then travis_retry pip install -r requirements.txt ; fi
 
@@ -94,8 +94,8 @@ after_success:
         export $(cat .to_export_back)
         if [ "$BUILD_LEADER" = "YES" ]; then
           if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-            echo "All jobs succeded! Triggering OS X build..."
-            # Trigger an OS X build at the pillow-wheels repo
+            echo "All jobs succeded! Triggering macOS build..."
+            # Trigger a macOS build at the pillow-wheels repo
             ./build_children.sh
           else
             echo "Some jobs failed"
