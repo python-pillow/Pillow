@@ -34,16 +34,16 @@ except ImportError:
 i32 = _binary.i32le
 
 
-##
-# Load texture from a Quake2 WAL texture file.
-# <p>
-# By default, a Quake2 standard palette is attached to the texture.
-# To override the palette, use the <b>putpalette</b> method.
-#
-# @param filename WAL file name, or an opened file handle.
-# @return An image instance.
-
 def open(filename):
+    """
+    Load texture from a Quake2 WAL texture file.
+
+    By default, a Quake2 standard palette is attached to the texture.
+    To override the palette, use the <b>putpalette</b> method.
+
+    :param filename: WAL file name, or an opened file handle.
+    :returns: An image instance.
+    """
     # FIXME: modify to return a WalImageFile instance instead of
     # plain Image object ?
 

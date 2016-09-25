@@ -25,12 +25,12 @@ if str != bytes:
     long = int
 
 
-##
-# Install application-specific WMF image handler.
-#
-# @param handler Handler object.
-
 def register_handler(handler):
+    """
+    Install application-specific WMF image handler.
+
+    :param handler: Handler object.
+    """
     global _handler
     _handler = handler
 

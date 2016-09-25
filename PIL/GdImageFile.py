@@ -66,17 +66,16 @@ class GdImageFile(ImageFile.ImageFile):
         self.tile = [("raw", (0, 0)+self.size, 775, ("L", 0, -1))]
 
 
-##
-# Load texture from a GD image file.
-#
-# @param filename GD file name, or an opened file handle.
-# @param mode Optional mode.  In this version, if the mode argument
-#     is given, it must be "r".
-# @return An image instance.
-# @exception IOError If the image could not be read.
-
 def open(fp, mode="r"):
+    """
+    Load texture from a GD image file.
 
+    :param filename: GD file name, or an opened file handle.
+    :param mode: Optional mode.  In this version, if the mode argument
+        is given, it must be "r".
+    :returns: An image instance.
+    :raises IOError: If the image could not be read.
+    """
     if mode != "r":
         raise ValueError("bad mode")
 

@@ -169,20 +169,20 @@ class FreeTypeFont(object):
                             encoding=self.encoding if encoding is None else
                             encoding)
 
-##
-# Wrapper that creates a transposed font from any existing font
-# object.
-#
-# @param font A font object.
-# @param orientation An optional orientation.  If given, this should
-#     be one of Image.FLIP_LEFT_RIGHT, Image.FLIP_TOP_BOTTOM,
-#     Image.ROTATE_90, Image.ROTATE_180, or Image.ROTATE_270.
-
 
 class TransposedFont(object):
     "Wrapper for writing rotated or mirrored text"
 
     def __init__(self, font, orientation=None):
+        """
+        Wrapper that creates a transposed font from any existing font
+        object.
+
+        :param font: A font object.
+        :param orientation: An optional orientation.  If given, this should
+            be one of Image.FLIP_LEFT_RIGHT, Image.FLIP_TOP_BOTTOM,
+            Image.ROTATE_90, Image.ROTATE_180, or Image.ROTATE_270.
+        """
         self.font = font
         self.orientation = orientation  # any 'transpose' argument, or None
 
