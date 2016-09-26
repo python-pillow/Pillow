@@ -586,6 +586,10 @@ def _get_header_palette(palette_bytes):
         palette_bytes += o8(0) * 3 * actual_target_size_diff
     return palette_bytes
 
+# Force optimization so that we can test performance against
+# cases where it took lots of memory and time previously. 
+_FORCE_OPTIMIZE = False
+
 def _get_palette_bytes(im, palette, info):
     if im.mode == "P":
         if palette and isinstance(palette, bytes):
@@ -603,32 +607,78 @@ def _get_palette_bytes(im, palette, info):
     if _get_optimize(im, info):
         used_palette_colors = _get_used_palette_colors(im)
 
-        # create the new palette if not every color is used
-        if len(used_palette_colors) < 256:
-            palette_bytes = b""
-            new_positions = {}
+        # Potentially expensive operation.
 
-            i = 0
+        # The palette saves 3 bytes per color not used, but palette
+        # lengths are restricted to 3*(2**N) bytes. Max saving would
+        # be 768 -> 6 bytes if we went all the way down to 2 colors.
+        # * If we're over 128 colors, we can't save any space.
+        # * If there aren't any holes, it's not worth collapsing. 
+        # * If we have a 'large' image, the palette is in the noise.
+
+        # create the new palette if not every color is used
+        if _FORCE_OPTIMIZE or im.mode == 'L' or \
+               (len(used_palette_colors) <= 128 and  
+                max(used_palette_colors) > len(used_palette_colors) and
+                im.width * im.height < 512 * 512):
+            palette_bytes = b""
+            new_positions = [0]*256
+
             # pick only the used colors from the palette
-            for oldPosition in used_palette_colors:
+            for i, oldPosition in enumerate(used_palette_colors):
                 palette_bytes += source_palette[oldPosition*3:oldPosition*3+3]
                 new_positions[oldPosition] = i
-                i += 1
 
             # replace the palette color id of all pixel with the new id
-            image_bytes = bytearray(im.tobytes())
-            for i in range(len(image_bytes)):
-                image_bytes[i] = new_positions[image_bytes[i]]
-            im.frombytes(bytes(image_bytes))
+
+            # Palette images are [0..255], mapped through a 1 or 3
+            # byte/color map.  We need to remap the whole image
+            # from palette 1 to palette 2. New_positions is
+            # an array of indexes into palette 1.  Palette 2 is
+            # palette 1 with any holes removed.
+
+            # We're going to leverage the convert mechanism to use the
+            # C code to remap the image from palette 1 to palette 2,
+            # by forcing the source image into 'L' mode and adding a
+            # mapping 'L' mode palette, then converting back to 'L'
+            # sans palette thus converting the image bytes, then
+            # assigning the optimized RGB palette.
+
+            # perf reference, 9500x4000 gif, w/~135 colors
+            # 14 sec prepatch, 1 sec postpatch with optimization forced.
+
+            mapping_palette = bytearray(new_positions)
+
+            m_im = im.copy()
+            m_im.mode = 'P'
+
+            m_im.palette = ImagePalette.ImagePalette("RGB",
+                                                   palette=mapping_palette*3,
+                                                   size=768)
+            #possibly set palette dirty, then 
+            #m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
+            # or just force it.
+            # UNDONE -- this is part of the general issue with palettes
+            m_im.im.putpalette(*m_im.palette.getdata())
+            
+            m_im = m_im.convert('L')
+         
+            # Internally, we require 768 bytes for a palette. 
             new_palette_bytes = (palette_bytes +
                                  (768 - len(palette_bytes)) * b'\x00')
-            im.putpalette(new_palette_bytes)
-            im.palette = ImagePalette.ImagePalette("RGB",
+            m_im.putpalette(new_palette_bytes)
+            m_im.palette = ImagePalette.ImagePalette("RGB",
                                                    palette=palette_bytes,
                                                    size=len(palette_bytes))
 
+            # oh gawd, this is modifying the image in place so I can pass by ref.
+            # REFACTOR SOONEST 
+            im.frombytes(m_im.tobytes())
+            
     if not palette_bytes:
         palette_bytes = source_palette
+
+    # returning palette, _not_ padded to 768 bytes like our internal ones.
     return palette_bytes, used_palette_colors
 
 def getheader(im, palette=None, info=None):

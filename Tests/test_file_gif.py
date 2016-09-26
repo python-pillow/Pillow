@@ -3,6 +3,8 @@ from helper import unittest, PillowTestCase, hopper, netpbm_available
 from PIL import Image
 from PIL import GifImagePlugin
 
+from io import BytesIO
+
 codecs = dir(Image.core)
 
 # sample gif stream
@@ -33,8 +35,6 @@ class TestFileGif(PillowTestCase):
                           lambda: GifImagePlugin.GifImageFile(invalid_file))
 
     def test_optimize(self):
-        from io import BytesIO
-
         def test_grayscale(optimize):
             im = Image.new("L", (1, 1), 0)
             filename = BytesIO()
@@ -51,6 +51,42 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(test_grayscale(1), 38)
         self.assertEqual(test_bilevel(0), 800)
         self.assertEqual(test_bilevel(1), 800)
+
+    def test_optimize_correctness(self):
+        # 256 color Palette image, posterize to > 128 and < 128 levels
+        # Size bigger and smaller than 512x512
+        # Check the palette for number of colors allocated.
+        # Check for correctness after conversion back to RGB        
+        def check(colors, size, expected_palette_length):
+            # make an image with empty colors in the start of the palette range
+            im = Image.frombytes('P', (colors,colors), bytes(bytearray(range(256-colors,256)*colors)))
+            im = im.resize((size,size))
+            outfile = BytesIO()
+            im.save(outfile, 'GIF')
+            outfile.seek(0)
+            reloaded = Image.open(outfile)
+
+            # check palette length
+            palette_length = max(i+1 for i,v in enumerate(reloaded.histogram()) if v)
+            self.assertEqual(expected_palette_length, palette_length)
+            
+            self.assert_image_equal(im.convert('RGB'), reloaded.convert('RGB'))
+
+
+        # These do optimize the palette
+        check(128, 511, 128)
+        check(64, 511, 64)
+        check(4, 511, 4)
+
+        # These don't optimize the palette
+        check(128, 513, 256)
+        check(64, 513, 256)
+        check(4, 513, 256)
+
+        # other limits that don't optimize the palette
+        check(129, 511, 256)
+        check(255, 511, 256)
+        check(256, 511, 256)
 
     def test_optimize_full_l(self):
         from io import BytesIO
