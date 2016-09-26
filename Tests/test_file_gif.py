@@ -59,7 +59,8 @@ class TestFileGif(PillowTestCase):
         # Check for correctness after conversion back to RGB        
         def check(colors, size, expected_palette_length):
             # make an image with empty colors in the start of the palette range
-            im = Image.frombytes('P', (colors,colors), bytes(bytearray(range(256-colors,256)*colors)))
+            im = Image.frombytes('P', (colors,colors),
+                                 bytes(bytearray(list(range(256-colors,256))*colors)))
             im = im.resize((size,size))
             outfile = BytesIO()
             im.save(outfile, 'GIF')
