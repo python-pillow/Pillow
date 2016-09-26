@@ -10,7 +10,7 @@ Changelog (Pillow)
 - Fixed typo in makefile #2128
   [radarhere]
   
-- Renamed references to OS X to macOS #2125 
+- Renamed references to OS X to macOS #2125 2130
   [radarhere]
   
 - Use truth value when checking for JPEG progressive option on save #2115
