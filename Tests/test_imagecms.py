@@ -321,5 +321,17 @@ class TestImageCms(PillowTestCase):
         self.assertEqual(p.viewing_condition, 'Reference Viewing Condition in IEC 61966-2-1')
         self.assertEqual(p.xcolor_space, 'RGB ')
 
+    def test_profile_typesafety(self):
+        """ Profile init type safety
+
+        prepatch, these would segfault, postpatch they should emit a typeerror
+        """
+        
+        with self.assertRaises(TypeError):
+            ImageCms.ImageCmsProfile(0).tobytes()
+        with self.assertRaises(TypeError):
+            ImageCms.ImageCmsProfile(1).tobytes()
+    
+
 if __name__ == '__main__':
     unittest.main()
