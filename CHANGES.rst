@@ -13,7 +13,7 @@ Changelog (Pillow)
 - Renamed references to OS X to macOS #2125 2130
   [radarhere]
   
-- Use truth value when checking for JPEG progressive option on save #2115
+- Use truth value when checking for progressive and optimize option on save #2115, #2129
   [radarhere]
 
 - Convert DPI to ints when saving as JPEG #2102
