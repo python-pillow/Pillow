@@ -126,9 +126,12 @@ class TestFileJpeg(PillowTestCase):
 
     def test_optimize(self):
         im1 = self.roundtrip(hopper())
-        im2 = self.roundtrip(hopper(), optimize=1)
+        im2 = self.roundtrip(hopper(), optimize=0)
+        im3 = self.roundtrip(hopper(), optimize=1)
         self.assert_image_equal(im1, im2)
+        self.assert_image_equal(im1, im3)
         self.assertGreaterEqual(im1.bytes, im2.bytes)
+        self.assertGreaterEqual(im1.bytes, im3.bytes)
 
     def test_optimize_large_buffer(self):
         # https://github.com/python-pillow/Pillow/issues/148
@@ -139,9 +142,14 @@ class TestFileJpeg(PillowTestCase):
 
     def test_progressive(self):
         im1 = self.roundtrip(hopper())
-        im2 = self.roundtrip(hopper(), progressive=True)
-        self.assert_image_equal(im1, im2)
-        self.assertGreaterEqual(im1.bytes, im2.bytes)
+        im2 = self.roundtrip(hopper(), progressive=False)
+        im3 = self.roundtrip(hopper(), progressive=True)
+        self.assertFalse(im1.info.get("progressive"))
+        self.assertFalse(im2.info.get("progressive"))
+        self.assertTrue(im3.info.get("progressive"))
+
+        self.assert_image_equal(im1, im3)
+        self.assertGreaterEqual(im1.bytes, im3.bytes)
 
     def test_progressive_large_buffer(self):
         f = self.tempfile('temp.jpg')

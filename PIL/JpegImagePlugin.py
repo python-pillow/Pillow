@@ -688,12 +688,14 @@ def _save(im, fp, filename):
     progressive = info.get("progressive", False) or\
                   info.get("progression", False)
 
+    optimize = info.get("optimize", False)
+
     # get keyword arguments
     im.encoderconfig = (
         quality,
         progressive,
         info.get("smooth", 0),
-        "optimize" in info,
+        optimize,
         info.get("streamtype", 0),
         dpi[0], dpi[1],
         subsampling,
@@ -707,7 +709,7 @@ def _save(im, fp, filename):
     # channels*size, this is a value that's been used in a django patch.
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     bufsize = 0
-    if "optimize" in info or progressive:
+    if optimize or progressive:
         # keep sets quality to 0, but the actual value may be high.
         if quality >= 95 or quality == 0:
             bufsize = 2 * im.size[0] * im.size[1]
