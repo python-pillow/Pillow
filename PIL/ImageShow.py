@@ -39,7 +39,7 @@ def register(viewer, order=1):
 
 
 def show(image, title=None, **options):
-    """
+    r"""
     Display a given image.
 
     :param image: An image object.

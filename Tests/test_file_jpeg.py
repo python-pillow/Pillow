@@ -32,7 +32,7 @@ class TestFileJpeg(PillowTestCase):
     def test_sanity(self):
 
         # internal version number
-        self.assertRegexpMatches(Image.core.jpeglib_version, "\d+\.\d+$")
+        self.assertRegexpMatches(Image.core.jpeglib_version, r"\d+\.\d+$")
 
         im = Image.open(TEST_FILE)
         im.load()
