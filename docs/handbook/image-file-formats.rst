@@ -907,7 +907,7 @@ PIL identifies MPEG files.
 WMF
 ^^^
 
-PIL can identify placable WMF files.
+PIL can identify playable WMF files.
 
 In PIL 1.1.4 and earlier, the WMF driver provides some limited rendering
 support, but not enough to be useful for any real application.
