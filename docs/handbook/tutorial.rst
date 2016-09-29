@@ -523,6 +523,7 @@ This is only available for JPEG and MPO files.
 
 ::
 
+    from PIL import Image
     from __future__ import print_function
     im = Image.open(file)
     print("original =", im.mode, im.size)
