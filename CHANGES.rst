@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Skip empty values in ImageFileDirectory #2024
+  [homm]
+
 - Force reloading palette when using mmap in ImageFile. #2139
   [lambdafu]
   
