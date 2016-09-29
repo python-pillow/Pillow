@@ -170,6 +170,9 @@ class ImageFile(Image.Image):
                             self.map, self.size, d, e, o, a
                             )
                     readonly = 1
+                    # After trashing self.im, we might need to reload the palette data.
+                    if self.palette:
+                        self.palette.dirty = 1
                 except (AttributeError, EnvironmentError, ImportError):
                     self.map = None
 
