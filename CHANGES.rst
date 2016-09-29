@@ -124,6 +124,15 @@ Changelog (Pillow)
 - Retain a reference to core image object in PyAccess #2009
   [homm]
 
+3.3.2 (2016-10-03)
+------------------
+
+- Fix negative image sizes in Storage.c #2105
+  [wiredfool]
+  
+- Fix integer overflow in map.c #2105
+  [wiredfool]
+
 3.3.1 (2016-08-18)
 ------------------
 
