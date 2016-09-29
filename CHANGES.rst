@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Fix "invalid escape sequence" warning in Python 3.6 #2136
+  [timgraham]
+  
 - Update documentation about drafts #2137
   [radarhere]
 
