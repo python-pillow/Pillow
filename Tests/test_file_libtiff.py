@@ -505,6 +505,24 @@ class TestFileLibTiff(LibTiffTestCase):
         # Should not divide by zero
         im.save(outfile)
 
+    def test_fd_duplication(self):
+        # https://github.com/python-pillow/Pillow/issues/1651
+
+        tmpfile = self.tempfile("temp.tif")
+        with open(tmpfile, 'wb') as f:
+            with open("Tests/images/g4-multi.tiff", 'rb') as src:
+                f.write(src.read())
+
+        im = Image.open(tmpfile)
+        count = im.n_frames
+        im.close()
+        try:
+            os.remove(tmpfile) # Windows PermissionError here!
+        except:
+            self.fail("Should not get permission error here")
+
+    
+
 
 if __name__ == '__main__':
     unittest.main()
