@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Update documentation about drafts #2137
+  [radarhere]
+
 - Converted documentation parameter format, comments to docstrings #2021
   [radarhere]
 
