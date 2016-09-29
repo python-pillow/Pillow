@@ -519,6 +519,8 @@ is done by reconfiguring the image decoder.
 Reading in draft mode
 ^^^^^^^^^^^^^^^^^^^^^
 
+This is only available for JPEG and MPO files.
+
 ::
 
     from __future__ import print_function
