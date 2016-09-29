@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Force reloading palette when using mmap in ImageFile. #2139
+  [lambdafu]
+  
 - Fix "invalid escape sequence" warning in Python 3.6 #2136
   [timgraham]
   
