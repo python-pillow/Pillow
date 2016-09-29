@@ -1020,10 +1020,7 @@ class Image(object):
         4-tuple defining the left, upper, right, and lower pixel
         coordinate.
 
-        This is a lazy operation.  Changes to the source image may or
-        may not be reflected in the cropped image.  To break the
-        connection, call the :py:meth:`~PIL.Image.Image.load` method on
-        the cropped copy.
+        Note: Prior to Pillow 3.4.0, this was a lazy operation. 
 
         :param box: The crop rectangle, as a (left, upper, right, lower)-tuple.
         :rtype: :py:class:`~PIL.Image.Image`
@@ -1034,8 +1031,15 @@ class Image(object):
         if box is None:
             return self.copy()
 
-        # lazy operation
-        return _ImageCrop(self, box)
+        x0, y0, x1, y1 = map(int, map(round, box))
+
+        if x1 < x0:
+            x1 = x0
+        if y1 < y0:
+            y1 = y0
+
+        return self._new(self.im.crop(( x0, y0, x1, y1)))
+
 
     def draft(self, mode, size):
         """
@@ -1953,43 +1957,6 @@ class Image(object):
             raise ImportError("Qt bindings are not installed")
         return ImageQt.toqpixmap(self)
 
-
-# --------------------------------------------------------------------
-# Lazy operations
-
-class _ImageCrop(Image):
-
-    def __init__(self, im, box):
-
-        Image.__init__(self)
-
-        # Round to nearest integer, runs int(round(x)) when unpacking
-        x0, y0, x1, y1 = map(int, map(round, box))
-
-        if x1 < x0:
-            x1 = x0
-        if y1 < y0:
-            y1 = y0
-
-        self.mode = im.mode
-        self.size = x1-x0, y1-y0
-
-        self.__crop = x0, y0, x1, y1
-
-        self.im = im.im
-
-    def load(self):
-
-        # lazy evaluation!
-        if self.__crop:
-            self.im = self.im.crop(self.__crop)
-            self.__crop = None
-
-        if self.im:
-            return self.im.pixel_access(self.readonly)
-
-        # FIXME: future versions should optimize crop/paste
-        # sequences!
 
 
 # --------------------------------------------------------------------
