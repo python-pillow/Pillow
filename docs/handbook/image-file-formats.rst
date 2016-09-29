@@ -770,11 +770,9 @@ zero-indexed and random access is supported.
 PCD
 ^^^
 
-PIL reads PhotoCD files containing ``RGB`` data. By default, the 768x512
-resolution is read. You can use the :py:meth:`~PIL.Image.Image.draft` method to
-read the lower resolution versions instead, thus effectively resizing the image
-to 384x256 or 192x128. Higher resolutions cannot be read by the Python Imaging
-Library.
+PIL reads PhotoCD files containing ``RGB`` data. This only reads the 768x512
+resolution image from the file. Higher resolutions are encoded in a proprietary
+encoding.
 
 PIXAR
 ^^^^^
