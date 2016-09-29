@@ -263,6 +263,8 @@ class TestFileTiff(PillowTestCase):
 
         self.assert_warning(DeprecationWarning, im.tag_v2.as_dict)
         self.assert_warning(DeprecationWarning, im.tag.as_dict)
+        self.assertEqual(dict(im.tag_v2), im.tag_v2.as_dict())
+        self.assertEqual(dict(im.tag), im.tag.as_dict())
 
     def test_dict(self):
         # Arrange
@@ -274,7 +276,6 @@ class TestFileTiff(PillowTestCase):
                    262: 2, 296: 2, 273: (8,), 338: (1,), 277: 4,
                    279: (9460,), 282: 72.0, 283: 72.0, 284: 1}
         self.assertEqual(dict(im.tag_v2), v2_tags)
-        self.assertEqual(im.tag_v2.as_dict(), v2_tags)
 
         # legacy interface
         legacy_tags = {256: (55,), 257: (43,), 258: (8, 8, 8, 8), 259: (1,),
@@ -282,7 +283,6 @@ class TestFileTiff(PillowTestCase):
                        279: (9460,), 282: ((720000, 10000),),
                        283: ((720000, 10000),), 284: (1,)}
         self.assertEqual(dict(im.tag), legacy_tags)
-        self.assertEqual(im.tag.as_dict(), legacy_tags)
 
     def test__delitem__(self):
         filename = "Tests/images/pil136.tiff"

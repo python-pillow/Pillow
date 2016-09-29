@@ -701,6 +701,9 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                                   "Skipping tag %s" % (size, len(data), tag))
                     continue
 
+                if not data:
+                    continue
+
                 self._tagdata[tag] = data
                 self.tagtype[tag] = typ
 
