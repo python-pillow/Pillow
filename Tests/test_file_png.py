@@ -55,7 +55,7 @@ class TestFilePng(PillowTestCase):
 
         # internal version number
         self.assertRegexpMatches(
-            Image.core.zlib_version, "\d+\.\d+\.\d+(\.\d+)?$")
+            Image.core.zlib_version, r"\d+\.\d+\.\d+(\.\d+)?$")
 
         test_file = self.tempfile("temp.png")
 

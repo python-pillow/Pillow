@@ -46,7 +46,7 @@ try:
 
         def test_sanity(self):
             self.assertRegexpMatches(
-                ImageFont.core.freetype2_version, "\d+\.\d+\.\d+$")
+                ImageFont.core.freetype2_version, r"\d+\.\d+\.\d+$")
 
         def test_font_properties(self):
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)

@@ -680,7 +680,7 @@ class pil_build_ext(build_ext):
         else:
             return
         for line in open(zlibfile).readlines():
-            m = re.match('#define\s+ZLIB_VERSION\s+"([^"]*)"', line)
+            m = re.match(r'#define\s+ZLIB_VERSION\s+"([^"]*)"', line)
             if not m:
                 continue
             if m.group(1) < "1.2.3":

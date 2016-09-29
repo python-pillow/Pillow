@@ -71,7 +71,7 @@ def getrgb(color):
             int(color[7:9], 16),
             )
 
-    m = re.match("rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
+    m = re.match(r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
         return (
             int(m.group(1)),
@@ -79,7 +79,7 @@ def getrgb(color):
             int(m.group(3))
             )
 
-    m = re.match("rgb\(\s*(\d+)%\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
+    m = re.match(r"rgb\(\s*(\d+)%\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
     if m:
         return (
             int((int(m.group(1)) * 255) / 100.0 + 0.5),
@@ -87,7 +87,7 @@ def getrgb(color):
             int((int(m.group(3)) * 255) / 100.0 + 0.5)
             )
 
-    m = re.match("hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
+    m = re.match(r"hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
     if m:
         from colorsys import hls_to_rgb
         rgb = hls_to_rgb(
@@ -101,7 +101,7 @@ def getrgb(color):
             int(rgb[2] * 255 + 0.5)
             )
 
-    m = re.match("rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$",
+    m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$",
                  color)
     if m:
         return (
