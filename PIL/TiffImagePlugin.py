@@ -1036,8 +1036,28 @@ class TiffImageFile(ImageFile.ImageFile):
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
         extents = self.tile[0][1]
-        args = self.tile[0][3] + (self.tag_v2.offset,)
-        decoder = Image._getdecoder(self.mode, 'libtiff', args,
+        args = list(self.tile[0][3]) + [self.tag_v2.offset]
+
+        # To be nice on memory footprint, if there's a
+        # file descriptor, use that instead of reading
+        # into a string in python.
+        # libtiff closes the file descriptor, so pass in a dup.
+        try:
+            fp = hasattr(self.fp, "fileno") and os.dup(self.fp.fileno())
+            # flush the file descriptor, prevents error on pypy 2.4+
+            # should also eliminate the need for fp.tell for py3
+            # in _seek
+            if hasattr(self.fp, "flush"):
+                self.fp.flush()
+        except IOError:
+            # io.BytesIO have a fileno, but returns an IOError if
+            # it doesn't use a file descriptor.
+            fp = False
+        
+        if fp:
+            args[2] = fp
+
+        decoder = Image._getdecoder(self.mode, 'libtiff', tuple(args),
                                     self.decoderconfig)
         try:
             decoder.setimage(self.im, extents)
@@ -1190,24 +1210,6 @@ class TiffImageFile(ImageFile.ImageFile):
 
                 self.use_load_libtiff = True
 
-                # To be nice on memory footprint, if there's a
-                # file descriptor, use that instead of reading
-                # into a string in python.
-
-                # libtiff closes the file descriptor, so pass in a dup.
-                try:
-                    fp = hasattr(self.fp, "fileno") and \
-                        os.dup(self.fp.fileno())
-                    # flush the file descriptor, prevents error on pypy 2.4+
-                    # should also eliminate the need for fp.tell for py3
-                    # in _seek
-                    if hasattr(self.fp, "flush"):
-                        self.fp.flush()
-                except IOError:
-                    # io.BytesIO have a fileno, but returns an IOError if
-                    # it doesn't use a file descriptor.
-                    fp = False
-
                 # libtiff handles the fillmode for us, so 1;IR should
                 # actually be 1;I. Including the R double reverses the
                 # bits, so stripes of the image are reversed.  See
@@ -1233,7 +1235,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
                 # Offset in the tile tuple is 0, we go from 0,0 to
                 # w,h, and we only do this once -- eds
-                a = (rawmode, self._compression, fp)
+                a = (rawmode, self._compression, False)
                 self.tile.append(
                     (self._compression,
                      (0, 0, w, ysize),
