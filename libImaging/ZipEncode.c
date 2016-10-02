@@ -64,7 +64,7 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             return -1;
         }
 
-        /* Initalise filter buffers */
+        /* Initialise filter buffers */
         state->buffer[0] = 0;
         context->prior[0] = 1;
         context->up[0] = 2;
