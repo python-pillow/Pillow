@@ -19,7 +19,7 @@ Changelog (Pillow)
 - Converted documentation parameter format, comments to docstrings #2021
   [radarhere]
 
-- Fixed typo in makefile #2128
+- Fixed typos #2128 #2142
   [radarhere]
   
 - Renamed references to OS X to macOS #2125 2130
