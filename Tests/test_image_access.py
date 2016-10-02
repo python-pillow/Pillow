@@ -78,7 +78,7 @@ class TestImageGetPixel(AccessTest):
             im.getpixel((0, 0)), c,
             "put/getpixel roundtrip failed for mode %s, color %s" % (mode, c))
 
-        # check inital color
+        # check initial color
         im = Image.new(mode, (1, 1), c)
         self.assertEqual(
             im.getpixel((0, 0)), c,

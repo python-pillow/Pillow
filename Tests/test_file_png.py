@@ -198,7 +198,7 @@ class TestFilePng(PillowTestCase):
         im = im.convert("RGBA")
         self.assert_image(im, "RGBA", (162, 150))
 
-        # image has 124 uniqe qlpha values
+        # image has 124 unique alpha values
         self.assertEqual(len(im.split()[3].getcolors()), 124)
 
     def test_load_transparent_rgb(self):
