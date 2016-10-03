@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-3.4.0 (unreleased)
+3.4.0 (2016-10-03)
 ------------------
 
 - Removed Image.core.open_ppm, added negative image size checks in Image.py. #2146
