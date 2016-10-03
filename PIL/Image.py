@@ -1690,7 +1690,9 @@ class Image(object):
             save_handler = SAVE[format.upper()]
 
         if open_fp:
-            fp = builtins.open(filename, "wb")
+            # Open also for reading ("+"), because TIFF save_all
+            # writer needs to go back and edit the written data.
+            fp = builtins.open(filename, "w+b")
 
         try:
             save_handler(self, fp, filename)

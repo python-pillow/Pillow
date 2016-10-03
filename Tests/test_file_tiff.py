@@ -487,6 +487,17 @@ class TestFileTiff(PillowTestCase):
 
         self.assert_image_equal(im, reloaded)
 
+    def test_tiff_save_all(self):
+        import io
+        import os
+
+        mp = io.BytesIO()
+        with Image.open("Tests/images/multipage.tiff") as im:
+            im.save(mp, format="tiff", save_all=True)
+
+        mp.seek(0, os.SEEK_SET)
+        with Image.open(mp) as im:
+            self.assertEqual(im.n_frames, 3)
 
 if __name__ == '__main__':
     unittest.main()
