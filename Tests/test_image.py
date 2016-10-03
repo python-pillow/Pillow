@@ -237,5 +237,17 @@ class TestImage(PillowTestCase):
         im3 = Image.open('Tests/images/effect_spread.png')
         self.assert_image_similar(im2, im3, 110)
 
+    def test_check_size(self):
+        # Checking that the _check_size function throws value errors when we want it to. 
+        with self.assertRaises(ValueError):
+            Image.new('RGB', 0)  # not a tuple
+        with self.assertRaises(ValueError):
+            Image.new('RGB', (0,))  # Tuple too short
+        with self.assertRaises(ValueError):
+            Image.new('RGB', (0,0))  # w,h <= 0
+
+        self.assertTrue(Image.new('RGB', (1,1)))
+            
+
 if __name__ == '__main__':
     unittest.main()
