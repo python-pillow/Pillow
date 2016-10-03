@@ -154,7 +154,7 @@ class ImageFile(Image.Image):
             if d == "raw" and a[0] == self.mode and a[0] in Image._MAPMODES:
                 try:
                     if hasattr(Image.core, "map"):
-                        # use built-in mapper
+                        # use built-in mapper  WIN32 only
                         self.map = Image.core.map(self.filename)
                         self.map.seek(o)
                         self.im = self.map.readimage(
