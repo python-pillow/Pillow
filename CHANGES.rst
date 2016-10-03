@@ -4,6 +4,18 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Move libtiff fd duplication to _load_libtiff #2141
+  [sekrause]
+
+- Speed up GIF save optimization step, fixes #2093. #2133
+  [wiredfool]
+
+- Fix for ImageCms Segfault, Issue #2037. #2131
+  [wiredfool]
+
+- Make Image.crop an immediate operation, not lazy. #2138
+  [wiredfool]
+
 - Skip empty values in ImageFileDirectory #2024
   [homm]
 
