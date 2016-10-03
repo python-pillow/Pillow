@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Add TIFF save_all writer. #2140
+  [lambdafu, vashek]
+
 - Move libtiff fd duplication to _load_libtiff #2141
   [sekrause]
 
