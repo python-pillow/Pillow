@@ -66,6 +66,24 @@ class TestImageCrop(PillowTestCase):
         # Assert
         self.assertEqual(cropped.size, (3, 5))
 
+    def test_crop_crash(self):
+        #Image.crop crashes prepatch with an access violation
+        #apparently a use after free on windows, see
+        #https://github.com/python-pillow/Pillow/issues/1077
+        
+        test_img = 'Tests/images/bmp/g/pal8-0.bmp'
+        extents = (1,1,10,10)
+        #works prepatch
+        img = Image.open(test_img)
+        img2 = img.crop(extents)
+        img2.load()
+        
+        # fail prepatch
+        img = Image.open(test_img)
+        img = img.crop(extents)
+        img.load()
+
+
 
 if __name__ == '__main__':
     unittest.main()
