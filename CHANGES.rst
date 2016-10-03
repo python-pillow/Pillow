@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Windows build: fetch dependencies from pillow-depends #2095
+  [hugovk]
+
 - Add TIFF save_all writer. #2140
   [lambdafu, vashek]
 
