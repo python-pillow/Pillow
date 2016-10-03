@@ -18,7 +18,7 @@ The fork author's goal is to foster and support active development of PIL throug
 License
 -------
 
-Like PIL, Pillow is `licensed under the MIT-like open source PIL Software License <https://raw.githubusercontent.com/python-pillow/Pillow/master/LICENSE>`_
+Like PIL, Pillow is `licensed under the open source PIL Software License <https://raw.githubusercontent.com/python-pillow/Pillow/master/LICENSE>`_
 
 Why a fork?
 -----------
