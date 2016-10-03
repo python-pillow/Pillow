@@ -145,7 +145,8 @@ def Ghostscript(tile, size, fp, scale=1):
         status = gs.wait()
         if status:
             raise IOError("gs failed (status %d)" % status)
-        im = Image.core.open_ppm(outfile)
+        im = Image.open(outfile)
+        im.load()
     finally:
         try:
             os.unlink(outfile)
@@ -154,7 +155,7 @@ def Ghostscript(tile, size, fp, scale=1):
         except OSError:
             pass
 
-    return im
+    return im.im.copy()
 
 
 class PSFile(object):

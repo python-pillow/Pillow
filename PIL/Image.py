@@ -1985,6 +1985,22 @@ def _wedge():
 
     return Image()._new(core.wedge("L"))
 
+def _check_size(size):
+    """
+    Common check to enforce type and sanity check on size tuples
+
+    :param size: Should be a 2 tuple of (width, height)
+    :returns: True, or raises a ValueError
+    """
+
+    if not isinstance(size, tuple):
+        raise ValueError("Size must be a tuple")
+    if len(size) != 2:
+        raise ValueError("Size must be a tuple of length 2")
+    if size[0] <= 0 or size[1] <= 0:
+        raise ValueError("Width and Height must be > 0")
+
+    return True
 
 def new(mode, size, color=0):
     """
@@ -2002,6 +2018,8 @@ def new(mode, size, color=0):
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
+    _check_size(size)
+    
     if color is None:
         # don't initialize
         return Image()._new(core.new(mode, size))
@@ -2038,6 +2056,8 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
     :param args: Additional parameters for the given decoder.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
+
+    _check_size(size)
 
     # may pass tuple instead of argument list
     if len(args) == 1 and isinstance(args[0], tuple):
@@ -2090,6 +2110,8 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     .. versionadded:: 1.1.4
     """
+
+    _check_size(size)
 
     # may pass tuple instead of argument list
     if len(args) == 1 and isinstance(args[0], tuple):

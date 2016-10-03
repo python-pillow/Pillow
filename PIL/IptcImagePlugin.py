@@ -168,14 +168,9 @@ class IptcImageFile(ImageFile.ImageFile):
         o.close()
 
         try:
-            try:
-                # fast
-                self.im = Image.core.open_ppm(outfile)
-            except:
-                # slightly slower
-                im = Image.open(outfile)
-                im.load()
-                self.im = im.im
+            _im = Image.open(outfile)
+            _im.load()
+            self.im = _im.im
         finally:
             try:
                 os.unlink(outfile)
