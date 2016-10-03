@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.4.0 (unreleased)
 ------------------
 
+- Removed Image.core.open_ppm, added negative image size checks in Image.py. #2146
+  [wiredfool]
+
 - Windows build: fetch dependencies from pillow-depends #2095
   [hugovk]
 
