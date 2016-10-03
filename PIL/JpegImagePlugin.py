@@ -377,7 +377,9 @@ class JpegImageFile(ImageFile.ImageFile):
             raise ValueError("Invalid Filename")
 
         try:
-            self.im = Image.core.open_ppm(path)
+            _im = Image.open(path)
+            _im.load()
+            self.im = _im.im
         finally:
             try:
                 os.unlink(path)

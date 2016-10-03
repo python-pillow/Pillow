@@ -687,17 +687,6 @@ _radial_gradient(PyObject* self, PyObject* args)
 }
 
 static PyObject*
-_open_ppm(PyObject* self, PyObject* args)
-{
-    char* filename;
-
-    if (!PyArg_ParseTuple(args, "s", &filename))
-        return NULL;
-
-    return PyImagingNew(ImagingOpenPPM(filename));
-}
-
-static PyObject*
 _alpha_composite(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep1;
@@ -3423,9 +3412,6 @@ static PyMethodDef functions[] = {
     /* Utilities */
     {"crc32", (PyCFunction)_crc32, 1},
     {"getcodecstatus", (PyCFunction)_getcodecstatus, 1},
-
-    /* Debugging stuff */
-    {"open_ppm", (PyCFunction)_open_ppm, 1},
 
     /* Special effects (experimental) */
 #ifdef WITH_EFFECTS

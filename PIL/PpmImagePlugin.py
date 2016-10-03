@@ -123,11 +123,6 @@ class PpmImageFile(ImageFile.ImageFile):
                      self.fp.tell(),
                      (rawmode, 0, 1))]
 
-        # ALTERNATIVE: load via builtin debug function
-        # self.im = Image.core.open_ppm(self.filename)
-        # self.mode = self.im.mode
-        # self.size = self.im.size
-
 
 #
 # --------------------------------------------------------------------
