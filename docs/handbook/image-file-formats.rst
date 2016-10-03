@@ -540,6 +540,11 @@ Saving Tiff Images
 
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
+**save_all**
+    If true, Pillow will save all frames of the image to a multiframe tiff document.
+    
+    .. versionadded:: 3.4.0
+
 **tiffinfo**
     A :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2` object or dict
     object containing tiff tags and values. The TIFF field type is
@@ -659,9 +664,10 @@ DDS
 
 DDS is a popular container texture format used in video games and natively
 supported by DirectX.
-Currently, only DXT1 and DXT5 pixel formats are supported and only in ``RGBA``
+Currently, DXT1, DXT3, and DXT5 pixel formats are supported and only in ``RGBA``
 mode.
 
+.. versionadded:: 3.4.0 DXT3
 
 FLI, FLC
 ^^^^^^^^
