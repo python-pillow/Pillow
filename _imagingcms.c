@@ -1378,7 +1378,8 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
 
 static PyTypeObject CmsProfile_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "CmsProfile", sizeof(CmsProfileObject), 0,
+    "PIL._imagingcms.CmsProfile",   /*tp_name */
+    sizeof(CmsProfileObject), 0,/*tp_basicsize, tp_itemsize */
     /* methods */
     (destructor) cms_profile_dealloc, /*tp_dealloc*/
     0, /*tp_print*/
@@ -1470,9 +1471,14 @@ setup_module(PyObject* m) {
 
     d = PyModule_GetDict(m);
 
+    CmsProfile_Type.tp_new = PyType_GenericNew;
+
     /* Ready object types */
     PyType_Ready(&CmsProfile_Type);
     PyType_Ready(&CmsTransform_Type);
+
+    Py_INCREF(&CmsProfile_Type);
+    PyModule_AddObject(m, "CmsProfile", (PyObject *)&CmsProfile_Type);
 
     d = PyModule_GetDict(m);
 
@@ -1499,7 +1505,7 @@ PyInit__imagingcms(void) {
 
     if (setup_module(m) < 0)
         return NULL;
-
+   
     PyDateTime_IMPORT;
 
     return m;
