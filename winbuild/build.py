@@ -1,4 +1,4 @@
-#/usr/bin/env python3
+#!/usr/bin/env python3
 
 import subprocess
 import shutil
@@ -6,7 +6,8 @@ import sys
 import getopt
 import os
 
-from config import *
+from config import (compilers, compiler_from_env, pythons, pyversion_from_env,
+                    VIRT_BASE, X64_EXT)
 
 
 def setup_vms():
@@ -131,8 +132,8 @@ def main(op):
 
 def run_one(op):
 
-    compiler = compiler_fromEnv()
-    py_version = pyversion_fromEnv()
+    compiler = compiler_from_env()
+    py_version = pyversion_from_env()
 
     run_script((py_version,
                 "\n".join([header(op),
