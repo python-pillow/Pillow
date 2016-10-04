@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-3.4.1 (2016-10-0?)
+3.4.1 (2016-10-04)
 ------------------
 
 - Allow lists as arguments for Image.new() #2149
