@@ -238,7 +238,7 @@ class TestImage(PillowTestCase):
         self.assert_image_similar(im2, im3, 110)
 
     def test_check_size(self):
-        # Checking that the _check_size function throws value errors when we want it to. 
+        # Checking that the _check_size function throws value errors when we want it to.
         with self.assertRaises(ValueError):
             Image.new('RGB', 0)  # not a tuple
         with self.assertRaises(ValueError):
@@ -247,19 +247,22 @@ class TestImage(PillowTestCase):
             Image.new('RGB', (0,0))  # w,h <= 0
 
         self.assertTrue(Image.new('RGB', (1,1)))
+        # Should pass lists too
+        i = Image.new('RGB', [1,1])
+        self.assertEqual(type(i.size), tuple)
 
     def test_storage_neg(self):
         # Storage.c accepted negative values for xsize, ysize.  Was
         # test_neg_ppm, but the core function for that has been
         # removed Calling directly into core to test the error in
         # Storage.c, rather than the size check above
-        
+
         with self.assertRaises(ValueError):
             Image.core.fill('RGB', (2,-2), (0,0,0))
 
 
 
-            
+
 
 if __name__ == '__main__':
     unittest.main()
