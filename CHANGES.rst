@@ -1,12 +1,14 @@
 Changelog (Pillow)
 ==================
 
-3.4.1 (2016-10-0?)
+3.4.1 (2016-10-04)
 ------------------
 
 - Allow lists as arguments for Image.new() #2149
   [homm]
-
+  
+- Fix fix for map.c overflow #2151  (also in 3.3.3)
+  [wiredfool]
 
 3.4.0 (2016-10-03)
 ------------------
