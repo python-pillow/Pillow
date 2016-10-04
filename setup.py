@@ -768,10 +768,10 @@ try:
     setup(name=NAME,
           version=PILLOW_VERSION,
           description='Python Imaging Library (Fork)',
-          long_description=_read('README.md').decode('utf-8'),
+          long_description=_read('PyPI.rst').decode('utf-8'),
           author='Alex Clark (Fork Author)',
           author_email='aclark@aclark.net',
-          url='http://python-pillow.org',
+          url='https://github.com/uploadcare/pillow-simd',
           classifiers=[
               "Development Status :: 6 - Mature",
               "Topic :: Multimedia :: Graphics",
