@@ -248,7 +248,8 @@ class TestImage(PillowTestCase):
 
         self.assertTrue(Image.new('RGB', (1,1)))
         # Should pass lists too
-        self.assertTrue(Image.new('RGB', [1,1]))
+        i = Image.new('RGB', [1,1])
+        self.assertEqual(type(i.size), tuple)
 
     def test_storage_neg(self):
         # Storage.c accepted negative values for xsize, ysize.  Was
