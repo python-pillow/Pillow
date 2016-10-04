@@ -349,7 +349,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
 
     size = (Py_ssize_t) ysize * stride;
 
-    if (offset > SIZE_MAX - size) {
+    if (offset > PY_SSIZE_T_MAX - size) {
         PyErr_SetString(PyExc_MemoryError, "Integer overflow in offset");
         return NULL;
     }        
