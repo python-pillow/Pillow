@@ -4,13 +4,13 @@ Changelog (Pillow-SIMD)
 3.4.1.post0
 -----------
 
- - A lot of optimizations in resampling including 16-bit
-   intermediate color representation and heavy unrolling.
+- A lot of optimizations in resampling including 16-bit
+  intermediate color representation and heavy unrolling.
 
 3.3.2.post0
 -----------
 
- - Maintenance release
+- Maintenance release
  
 3.3.0.post2
 -----------
