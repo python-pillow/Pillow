@@ -1,6 +1,10 @@
 # Pillow-SIMD
 
 Pillow-SIMD is "following" Pillow fork (which is PIL fork itself).
+"Following" means than Pillow-SIMD versions are 100% compatible
+drop-in replacement for Pillow with the same version number.
+For example, `Pillow-SIMD 3.2.0.post3` is drop-in replacement for
+`Pillow 3.2.0` and  `Pillow-SIMD 3.4.1.post0` for `Pillow 3.4.1`.
 
 For more information about original Pillow, please
 [read the documentation][original-docs],
