@@ -17,6 +17,9 @@ python: 3.5
 sudo: required
 dist: trusty
 services: docker
+# Force xcode 6.4 image to work round
+# https://github.com/python-pillow/pillow-wheels/issues/45
+osx_image: xcode6.4
 
 matrix:
   exclude:
