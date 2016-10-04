@@ -1020,7 +1020,7 @@ class Image(object):
         4-tuple defining the left, upper, right, and lower pixel
         coordinate.
 
-        Note: Prior to Pillow 3.4.0, this was a lazy operation. 
+        Note: Prior to Pillow 3.4.0, this was a lazy operation.
 
         :param box: The crop rectangle, as a (left, upper, right, lower)-tuple.
         :rtype: :py:class:`~PIL.Image.Image`
@@ -1993,7 +1993,7 @@ def _check_size(size):
     :returns: True, or raises a ValueError
     """
 
-    if not isinstance(size, tuple):
+    if not isinstance(size, (list, tuple)):
         raise ValueError("Size must be a tuple")
     if len(size) != 2:
         raise ValueError("Size must be a tuple of length 2")
@@ -2019,7 +2019,7 @@ def new(mode, size, color=0):
     """
 
     _check_size(size)
-    
+
     if color is None:
         # don't initialize
         return Image()._new(core.new(mode, size))
