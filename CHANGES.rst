@@ -7,6 +7,9 @@ Changelog (Pillow)
 - Allow lists as arguments for Image.new() #2149
   [homm]
 
+- Fix fix for map.c overflow #2151  (also in 3.3.3)
+  [wiredfool]
+
 
 3.4.0 (2016-10-03)
 ------------------
@@ -133,6 +136,13 @@ Changelog (Pillow)
 
 - Retain a reference to core image object in PyAccess #2009
   [homm]
+
+3.3.3 (2016-10-04)
+------------------
+
+- Fix fix for map.c overflow #2151
+  [wiredfool]
+
 
 3.3.2 (2016-10-03)
 ------------------
