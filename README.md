@@ -57,23 +57,23 @@ in 0.5 seconds, the result will be 8.2 Mpx/s.
 
 - Skia 53
 - ImageMagick 6.9.3-8 Q8 x86_64
-- Pillow 3.3.0
-- Pillow-SIMD 3.3.0.post1
+- Pillow 3.4.1
+- Pillow-SIMD 3.4.1.post0
 
 Operation               | Filter  | IM   | Pillow| SIMD SSE4| SIMD AVX2| Skia 53
 ------------------------|---------|------|-------|----------|----------|--------
-**Resize to 16x16**     | Bilinear| 41.37| 337.12|    571.67|    903.40|  809.49
-                        | Bicubic | 20.58| 185.79|    305.72|    552.85|  453.10
-                        | Lanczos | 14.17| 113.27|    189.19|    355.40|  292.57
-**Resize to 320x180**   | Bilinear| 29.46| 209.06|    366.33|    558.57|  592.76
-                        | Bicubic | 15.75| 124.43|    224.91|    353.53|  327.68
-                        | Lanczos | 10.80|  82.25|    153.10|    244.22|  196.92
-**Resize to 1920x1200** | Bilinear| 17.80|  55.87|    131.27|    152.11|  192.30
-                        | Bicubic |  9.99|  43.64|     90.20|    112.34|  112.84
-                        | Lanczos |  6.95|  34.51|     72.55|    103.16|  104.76
-**Resize to 7712x4352** | Bilinear|  2.54|   6.71|     16.06|     20.33|   20.58
-                        | Bicubic |  1.60|   5.51|     12.65|     16.46|   16.52
-                        | Lanczos |  1.09|   4.62|      9.84|     13.38|   12.05
+**Resize to 16x16**     | Bilinear| 41.37| 317.28|   1282.85|   1601.85|  809.49
+                        | Bicubic | 20.58| 174.85|    712.95|    900.65|  453.10
+                        | Lanczos | 14.17| 117.58|    438.60|    544.89|  292.57
+**Resize to 320x180**   | Bilinear| 29.46| 195.21|    863.40|   1057.81|  592.76
+                        | Bicubic | 15.75| 118.79|    503.75|    504.76|  327.68
+                        | Lanczos | 10.80|  79.59|    312.05|    384.92|  196.92
+**Resize to 1920x1200** | Bilinear| 17.80|  68.39|    215.15|    268.29|  192.30
+                        | Bicubic |  9.99|  49.23|    170.41|    210.62|  112.84
+                        | Lanczos |  6.95|  37.71|    130.00|    162.57|  104.76
+**Resize to 7712x4352** | Bilinear|  2.54|   8.38|     22.81|     29.17|   20.58
+                        | Bicubic |  1.60|   6.57|     18.23|     23.94|   16.52
+                        | Lanczos |  1.09|   5.20|     14.90|     20.40|   12.05
 **Blur**                | 1px     |  6.60|  16.94|     35.16|          |        
                         | 10px    |  2.28|  16.94|     35.47|          |        
                         | 100px   |  0.34|  16.93|     35.53|          |        
@@ -82,9 +82,9 @@ Operation               | Filter  | IM   | Pillow| SIMD SSE4| SIMD AVX2| Skia 53
 ### Some conclusion
 
 Pillow is always faster than ImageMagick. And Pillow-SIMD is faster
-than Pillow in 2—2.5 times. In general, Pillow-SIMD with AVX2 always
-**8-20 times faster** than ImageMagick and almost equal to the Skia results,
-high-speed graphics library used in Chromium.
+than Pillow in 4—5 times. In general, Pillow-SIMD with AVX2 always
+**16-40 times faster** than ImageMagick and overperforms Skia,
+high-speed graphics library used in Chromium, up to 2 times.
 
 ### Methodology
 
@@ -119,36 +119,26 @@ There are no cheats. High-quality resize and blur methods are used for all
 benchmarks. Results are almost pixel-perfect. The difference is only effective
 algorithms. Resampling in Pillow was rewritten in version 2.7 with 
 minimal usage of floating point numbers, precomputed coefficients and
-cache-awareness transposition.
+cache-awareness transposition. This result was improved in 3.3 & 3.4 with
+integer-only arithmetics and other optimizations.
 
 
 ## Why Pillow-SIMD is even faster
 
-Because of SIMD, of course. There are some ideas how to achieve even better
-performance.
-
-- **Efficient work with memory** Currently, each pixel is read from 
-  memory to the SSE register, while every SSE register can handle
-  four pixels at once.
-- **Integer-based arithmetic** Experiments show that integer-based arithmetic
-  does not affect the quality and increases the performance of non-SIMD code
-  up to 50%.
-- **Aligned pixels allocation** Well-known that the SIMD load and store
-  commands work better with aligned memory.
+Because of SIMD, of course. But this is not all. Heavy loops unrolling,
+specific instructions, which not available for scalar.
 
 
 ## Why do not contribute SIMD to the original Pillow
 
-Well, it's not that simple. First of all, Pillow supports a large number
+Well, that's not simple. First of all, Pillow supports a large number
 of architectures, not only x86. But even for x86 platforms, Pillow is often
 distributed via precompiled binaries. To integrate SIMD in precompiled binaries
 we need to do runtime checks of CPU capabilities.
 To compile the code with runtime checks we need to pass `-mavx2` option
-to the compiler. However this automatically activates all `if (__AVX2__)`
-and below conditions. And SIMD instructions under such conditions exist
-even in standard C library and they do not have any runtime checks.
-Currently, I don't know how to allow SIMD instructions in the code
-but *do not allow* such instructions without runtime checks.
+to the compiler. But with that option compiller will inject AVX instructions
+enev for SSE functions, because every SSE instruction has AVX equivalent.
+So there is no easy way to compile such library, especially with setuptools.
 
 
 ## Installation
