@@ -4,7 +4,7 @@ Pillow-SIMD is "following" Pillow fork (which is PIL fork itself).
 "Following" means than Pillow-SIMD versions are 100% compatible
 drop-in replacement for Pillow with the same version number.
 For example, `Pillow-SIMD 3.2.0.post3` is drop-in replacement for
-`Pillow 3.2.0` and  `Pillow-SIMD 3.4.1.post0` for `Pillow 3.4.1`.
+`Pillow 3.2.0` and  `Pillow-SIMD 3.3.3.post0` for `Pillow 3.3.3`.
 
 For more information about original Pillow, please
 [read the documentation][original-docs],
@@ -62,7 +62,7 @@ in 0.5 seconds, the result will be 8.2 Mpx/s.
 - Skia 53
 - ImageMagick 6.9.3-8 Q8 x86_64
 - Pillow 3.4.1
-- Pillow-SIMD 3.4.1.post0
+- Pillow-SIMD 3.4.1.post1
 
 Operation               | Filter  | IM   | Pillow| SIMD SSE4| SIMD AVX2| Skia 53
 ------------------------|---------|------|-------|----------|----------|--------
