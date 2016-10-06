@@ -1,6 +1,12 @@
 Changelog (Pillow-SIMD)
 =======================
 
+3.4.1.post1
+-----------
+
+- Critical memory error for some combinations of source/destinatnion 
+  sizes is fixed.
+
 3.4.1.post0
 -----------
 
