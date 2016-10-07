@@ -21,8 +21,6 @@
 #    http://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
 # and has been tested with a few sample files found using google.
 
-from __future__ import print_function
-
 from . import Image
 from ._binary import i32le as i32
 

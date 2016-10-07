@@ -31,8 +31,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 import logging
 import re
 import zlib
