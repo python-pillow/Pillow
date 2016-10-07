@@ -24,8 +24,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 from . import VERSION, PILLOW_VERSION, _plugins
 
 import logging
