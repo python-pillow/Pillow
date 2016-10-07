@@ -1570,7 +1570,7 @@ class Image(object):
            set :py:attr:`PIL.Image.NEAREST`. See :ref:`concept-filters`.
         :param center: Optional center of rotation (a 2-tuple).  Origin is
            the upper left corner.  Default is the center of the image.
-        :param translate: Am optional final translation.
+        :param translate: An optional final translation.
         :param expand: Optional expansion flag.  If true, expands the output
            image to make it large enough to hold the entire rotated image.
            If false or omitted, make the output image the same size as the
