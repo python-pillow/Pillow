@@ -6,7 +6,7 @@ Changelog (Pillow)
 
 - Allow lists as arguments for Image.new() #2149
   [homm]
-  
+
 - Fix fix for map.c overflow #2151  (also in 3.3.3)
   [wiredfool]
 
@@ -39,10 +39,10 @@ Changelog (Pillow)
 
 - Force reloading palette when using mmap in ImageFile. #2139
   [lambdafu]
-  
+
 - Fix "invalid escape sequence" warning in Python 3.6 #2136
   [timgraham]
-  
+
 - Update documentation about drafts #2137
   [radarhere]
 
@@ -51,10 +51,10 @@ Changelog (Pillow)
 
 - Fixed typos #2128 #2142
   [radarhere]
-  
+
 - Renamed references to OS X to macOS #2125 2130
   [radarhere]
-  
+
 - Use truth value when checking for progressive and optimize option on save #2115, #2129
   [radarhere]
 
@@ -64,7 +64,7 @@ Changelog (Pillow)
 - Added append_images parameter to GIF saving #2103
   [radarhere]
 
-- Speedup paste with masks up to 80% #2015 
+- Speedup paste with masks up to 80% #2015
   [homm]
 
 - Rewrite DDS decoders in C, add DXT3 and BC7 decoders #2068
@@ -136,12 +136,18 @@ Changelog (Pillow)
 - Retain a reference to core image object in PyAccess #2009
   [homm]
 
+3.3.3 (2016-10-04)
+------------------
+
+- Fix fix for map.c overflow #2151
+  [wiredfool]
+
 3.3.2 (2016-10-03)
 ------------------
 
 - Fix negative image sizes in Storage.c #2105
   [wiredfool]
-  
+
 - Fix integer overflow in map.c #2105
   [wiredfool]
 
