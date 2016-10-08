@@ -1,6 +1,6 @@
 # Pillow-SIMD
 
-Pillow-SIMD is "following" the Pillow fork (which is a PIL's fork itself).
+Pillow-SIMD is "following" Pillow (which is a PIL's fork itself).
 "Following" here means than Pillow-SIMD versions are 100% compatible
 drop-in replacements for Pillow of the same version.
 For example, `Pillow-SIMD 3.2.0.post3` is a drop-in replacement for
@@ -18,7 +18,8 @@ There are multiple ways to tweak image processing performance.
 To name a few, such ways can be: utilizing better algorithms, optimizing existing implementations, 
 using more processing power and/or resources. 
 One of the great examples of using a more efficient algorithm is [replacing][gaussian-blur-changes] 
-a convolution-based Gaussian blur with a sequential-box one. 
+a convolution-based Gaussian blur with a sequential-box one.
+
 Such examples are rather rare, though. It is also known, that certain processes might be optimized 
 by using parallel processing to run the respective routines.
 But a more practical key to optimizations might be making things work faster 
@@ -29,17 +30,17 @@ in performing the same operation on multiple data points simultaneously
 by using multiple processing elements. 
 Common CPU SIMD instruction sets are MMX, SSE-SSE4, AVX, AVX2, AVX512, NEON.
 
-Currently, Pillow-SIMD can be [compiled](#installation) with SSE4 (default) and AVX2 support.
+Currently, Pillow-SIMD can be [compiled](#installation) with SSE4 (default) or AVX2 support.
 
 
 ## Status
 
-Pillow-SIMD project is production-ready for you to start building SIMD-enabled image processing systems.
+Pillow-SIMD project is production-ready.
 The project is supported by Uploadcare, a SAAS for cloud-based image storing and processing.
 [![Uploadcare][uploadcare.logo]][uploadcare.com]
-In fact, Uploadcare itself has been running Pillow-SIMD for about a year now.
+In fact, Uploadcare has been running Pillow-SIMD for about two years now.
 
-The following Uploadcare image operations are currently SIMD-accelerated:
+The following image operations are currently SIMD-accelerated:
 
 - Resize (convolution-based resampling): SSE4, AVX2
 - Gaussian and box blur: SSE4
@@ -54,17 +55,15 @@ See [CHANGES](CHANGES.SIMD.rst) for more information.
 ## Benchmarks
 
 In order for you to clearly assess the productivity of implementing SIMD computing into Pillow image processing, 
-we ran a number of benchmarks. The respective results can be found in the table below. 
+we ran a number of benchmarks. The respective results can be found in the table below (the more — the better). 
 The numbers represent processing rates in megapixels per second (Mpx/s). 
 For instance, the rate at which a 2560x1600 RGB image is processed in 0.5 seconds equals to 8.2 Mpx/s.
-Here are the instruments we've been up to during the benchmarks:
+Here is the list of libraries and their versions we've been up to during the benchmarks:
 
 - Skia 53
 - ImageMagick 6.9.3-8 Q8 x86_64
 - Pillow 3.4.1
 - Pillow-SIMD 3.4.1.post1
-
-Now, let's proceed to the numbers (the more — the better):
 
 Operation               | Filter  | IM   | Pillow| SIMD SSE4| SIMD AVX2| Skia 53
 ------------------------|---------|------|-------|----------|----------|--------
@@ -87,7 +86,7 @@ Operation               | Filter  | IM   | Pillow| SIMD SSE4| SIMD AVX2| Skia 53
 
 ### A brief conclusion
 
-The results show that Pillow is generally faster than ImageMagick, 
+The results show that Pillow is always faster than ImageMagick, 
 Pillow-SIMD, in turn, is even faster than the original Pillow by the factor of 4-5. 
 In general, Pillow-SIMD with AVX2 is always **16 to 40 times faster** than 
 ImageMagick and outperforms Skia, the high-speed graphics library used in Chromium.
@@ -95,7 +94,7 @@ ImageMagick and outperforms Skia, the high-speed graphics library used in Chromi
 ### Methodology
 
 All rates were measured using the following setup: Ubuntu 14.04 64-bit, 
-single-thread AVX2-enabled intel i5 4258U CPU.
+single-thread AVX2-enabled Intel i5 4258U CPU.
 ImageMagick performance was measured with the `convert` command-line tool 
 followed by `-verbose` and `-bench` arguments.
 Such approach was used because there's usually a need in testing 
@@ -112,7 +111,7 @@ the first is called 'radius' and the second is called 'sigma'.
 In fact, in order for the blur operation to be Gaussian, there should be no additional parameters. 
 When the radius value is too small the blur procedure ceases to be Gaussian and 
 if the value is excessively big the operation gets slowed down with zero benefits in exchange. 
-For the benchmarking purposes, the radius was set to sigma × 2.5.
+For the benchmarking purposes, the radius was set to `sigma × 2.5`.
 
 Following script was used for the benchmarking procedure:
 https://gist.github.com/homm/f9b8d8a84a57a7e51f9c2a5828e40e63
@@ -123,15 +122,11 @@ https://gist.github.com/homm/f9b8d8a84a57a7e51f9c2a5828e40e63
 No cheats involved. We've used identical high-quality resize and blur methods for the benchmark. 
 Outcomes produced by different libraries are in almost pixel-perfect agreement. 
 The difference in measured rates is only provided with the performance of every involved algorithm. 
-Resampling for Pillow 2.7 was rewritten with minimal usage of floating point calculations, 
-precomputed coefficients and cache-awareness transposition.
-The results were further improved in versions 3.3 & 3.4 by utilizing
-integer-only arithmetics and other optimizations.
 
 ## Why Pillow-SIMD is even faster
 
 Because of the SIMD computing, of course. But there's more to it: 
-heavy loops unrolling, specific instructions, which aren't available for **scalar WTF**.
+heavy loops unrolling, specific instructions, which aren't available for scalar data types.
 
 
 ## Why do not contribute SIMD to the original Pillow
@@ -149,12 +144,13 @@ So there is no easy way to compile such library, especially with setuptools.
 
 ## Installation
 
-If there's a copy of the original Pillow installed, it has to be removed first.
-In general, you need to run `pip install pillow-simd`, 
+If there's a copy of the original Pillow installed, it has to be removed first
+with `$ pip uninstall -y pillow`.
+The installation itself is simple just as running `$ pip install pillow-simd`, 
 and if you're using SSE4-capable CPU everything should run smoothly.
 If you'd like to install the AVX2-enabled version, 
 you need to pass the additional flag to a C compiler. 
-The easiest way to do so is to define the `CC` variable **while -> during?** the compilation.
+The easiest way to do so is to define the `CC` variable during the compilation.
 
 ```bash
 $ pip uninstall pillow
