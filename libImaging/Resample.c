@@ -184,7 +184,6 @@ precompute_coeffs(int inSize, int outSize, struct filter *filterp,
                 } else if (x == xmax - 1) {
                     xmax -= 1;
                 }
-                continue;
             }
             k[x] = w;
             ww += w;
