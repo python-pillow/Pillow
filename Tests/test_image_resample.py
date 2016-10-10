@@ -336,6 +336,17 @@ class CoreResampleCoefficientsTest(PillowTestCase):
                 self.assertEqual(test_color // 2, px[2, 0])
                 # print '\r>', size, test_color // 2, px[2, 0]
 
+    def test_nonzero_coefficients(self):
+        # regression test for the wrong coefficients calculation
+        # due to bug https://github.com/python-pillow/Pillow/issues/2161
+        im = Image.new('RGBA', (1280, 1280), (0x20, 0x40, 0x60, 0xff))
+        histogram = im.resize((256, 256), Image.BICUBIC).histogram()
+
+        self.assertEqual(histogram[0x100 * 0 + 0x20], 0x10000) # first channel
+        self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000) # second channel
+        self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000) # third channel
+        self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000) # fourth channel
+
 
 if __name__ == '__main__':
     unittest.main()
