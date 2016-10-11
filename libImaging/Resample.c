@@ -176,6 +176,9 @@ precompute_coeffs(int inSize, int outSize, struct filter *filterp,
         k = &kk[xx * kmax];
         for (x = 0; x < xmax; x++) {
             double w = filterp->filter((x + xmin - center + 0.5) * ss);
+            k[x] = w;
+            ww += w;
+            
             // We can skip extreme coefficients if they are zeroes.
             if (w == 0) {
                 // Skip from the start.
@@ -185,15 +188,11 @@ precompute_coeffs(int inSize, int outSize, struct filter *filterp,
                     // But `w` will not be 0, because it based on `xmin`.
                     xmin += 1;
                     xmax -= 1;
-                    // Prevent setting the `k[-1]` item.
-                    continue;
                 } else if (x == xmax - 1) {
                     // Truncate the last coefficient for current `xx`.
                     xmax -= 1;
                 }
             }
-            k[x] = w;
-            ww += w;
         }
         for (x = 0; x < xmax; x++) {
             if (ww != 0.0)
