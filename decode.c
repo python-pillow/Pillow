@@ -752,15 +752,6 @@ PyImaging_TgaRleDecoderNew(PyObject* self, PyObject* args)
     if (decoder == NULL)
         return NULL;
 
-#if defined(JCS_EXTENSIONS)
-    // libjpeg-turbo supports different output formats.
-    // We are choosing Pillow's native format (3 color bytes + 1 padding)
-    // to avoid extra conversion in Unpack.c.
-    if (strcmp(rawmode, "RGB") == 0) {
-        rawmode = "RGBX";
-    }
-#endif
-
     if (get_unpacker(decoder, mode, rawmode) < 0)
         return NULL;
 
@@ -871,6 +862,15 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
     decoder = PyImaging_DecoderNew(sizeof(JPEGSTATE));
     if (decoder == NULL)
         return NULL;
+
+#if defined(JCS_EXTENSIONS)
+    // libjpeg-turbo supports different output formats.
+    // We are choosing Pillow's native format (3 color bytes + 1 padding)
+    // to avoid extra conversion in Unpack.c.
+    if (strcmp(rawmode, "RGB") == 0) {
+        rawmode = "RGBX";
+    }
+#endif
 
     if (get_unpacker(decoder, mode, rawmode) < 0)
         return NULL;
