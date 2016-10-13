@@ -37,7 +37,9 @@ Currently, Pillow-SIMD can be [compiled](#installation) with SSE4 (default) or A
 
 Pillow-SIMD project is production-ready.
 The project is supported by Uploadcare, a SAAS for cloud-based image storing and processing.
+
 [![Uploadcare][uploadcare.logo]][uploadcare.com]
+
 In fact, Uploadcare has been running Pillow-SIMD for about two years now.
 
 The following image operations are currently SIMD-accelerated:
