@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+3.5.0 (unreleased)
+------------------
+
+- Update compatibility matrix
+  [daavve]
+
 3.4.1 (2016-10-04)
 ------------------
 
