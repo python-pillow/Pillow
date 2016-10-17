@@ -46,7 +46,7 @@ class _imaging_not_installed(object):
 
 
 # Limit to around a quarter gigabyte for a 24 bit (3 bpp) image
-MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 / 4 / 3)
+MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
 
 try:
     # give Tk a chance to set up the environment, in case we're
