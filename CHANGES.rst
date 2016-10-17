@@ -5,7 +5,7 @@ Changelog (Pillow)
 ------------------
 
 - Update compatibility matrix
-  [daavve]
+  [daavve, wiredfool]
 
 3.4.1 (2016-10-04)
 ------------------
