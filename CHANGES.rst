@@ -7,6 +7,14 @@ Changelog (Pillow)
 - Update compatibility matrix
   [daavve, wiredfool]
 
+
+3.4.2 (2016-10-18)
+------------------
+
+- Fix Resample coefficient calculation #2161
+  [homm]
+
+
 3.4.1 (2016-10-04)
 ------------------
 
