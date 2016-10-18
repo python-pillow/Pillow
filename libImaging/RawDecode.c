@@ -4,9 +4,6 @@
  *
  * decoder for raw (uncompressed) image data
  *
- * history:
- *	96-03-07 fl	rewritten
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
  *

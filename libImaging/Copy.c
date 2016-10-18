@@ -4,11 +4,6 @@
  *
  * copy image
  *
- * history:
- * 95-11-26 fl   Moved from Imaging.c
- * 97-05-12 fl   Added ImagingCopy2
- * 97-08-28 fl   Allow imOut == NULL in ImagingCopy2
- *
  * Copyright (c) Fredrik Lundh 1995-97.
  * Copyright (c) Secret Labs AB 1997.
  *

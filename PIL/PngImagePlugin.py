@@ -7,24 +7,6 @@
 # See "PNG (Portable Network Graphics) Specification, version 1.0;
 # W3C Recommendation", 1996-10-01, Thomas Boutell (ed.).
 #
-# history:
-# 1996-05-06 fl   Created (couldn't resist it)
-# 1996-12-14 fl   Upgraded, added read and verify support (0.2)
-# 1996-12-15 fl   Separate PNG stream parser
-# 1996-12-29 fl   Added write support, added getchunks
-# 1996-12-30 fl   Eliminated circular references in decoder (0.3)
-# 1998-07-12 fl   Read/write 16-bit images as mode I (0.4)
-# 2001-02-08 fl   Added transparency support (from Zircon) (0.5)
-# 2001-04-16 fl   Don't close data source in "open" method (0.6)
-# 2004-02-24 fl   Don't even pretend to support interlaced files (0.7)
-# 2004-08-31 fl   Do basic sanity check on chunk identifiers (0.8)
-# 2004-09-20 fl   Added PngInfo chunk container
-# 2004-12-18 fl   Added DPI read support (based on code by Niki Spahiev)
-# 2008-08-13 fl   Added tRNS support for RGB images
-# 2009-03-06 fl   Support for preserving ICC profiles (by Florian Hoech)
-# 2009-03-08 fl   Added zTXT support (from Lowell Alleman)
-# 2009-03-29 fl   Read interlaced PNG files (from Conrado Porto Lopes Gouvua)
-#
 # Copyright (c) 1997-2009 by Secret Labs AB
 # Copyright (c) 1996 by Fredrik Lundh
 #

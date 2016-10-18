@@ -4,11 +4,6 @@
 #
 # screen grabber (macOS and Windows only)
 #
-# History:
-# 2001-04-26 fl  created
-# 2001-09-17 fl  use builtin driver, if present
-# 2002-11-19 fl  added grabclipboard support
-#
 # Copyright (c) 2001-2002 by Secret Labs AB
 # Copyright (c) 2001-2002 by Fredrik Lundh
 #

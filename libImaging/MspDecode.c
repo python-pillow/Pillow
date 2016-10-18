@@ -4,9 +4,6 @@
  *
  * decoder for MSP version 2 data.
  *
- * history:
- *	97-01-03 fl	Created
- *
  * Copyright (c) Fredrik Lundh 1997.
  * Copyright (c) Secret Labs AB 1997.
  *

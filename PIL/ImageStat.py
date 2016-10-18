@@ -4,12 +4,6 @@
 #
 # global image statistics
 #
-# History:
-# 1996-04-05 fl   Created
-# 1997-05-21 fl   Added mask; added rms, var, stddev attributes
-# 1997-08-05 fl   Added median
-# 1998-07-05 hk   Fixed integer overflow error
-#
 # Notes:
 # This class shows how to implement delayed evaluation of attributes.
 # To get a certain value, simply access the corresponding attribute.

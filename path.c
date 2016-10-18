@@ -3,19 +3,6 @@
  *
  * 2D path utilities
  *
- * history:
- * 1996-11-04 fl   Added to PIL (incomplete)
- * 1996-11-05 fl   Added sequence semantics
- * 1997-02-28 fl   Fixed getbbox
- * 1997-06-12 fl   Added id attribute
- * 1997-06-14 fl   Added slicing and setitem
- * 1998-12-29 fl   Improved sequence handling (from Richard Jones)
- * 1999-01-10 fl   Fixed IndexError test for 1.5 (from Fred Drake)
- * 2000-10-12 fl   Added special cases for tuples and lists
- * 2002-10-27 fl   Added clipping boilerplate
- * 2004-09-19 fl   Added tolist(flat) variant
- * 2005-05-06 fl   Added buffer interface support to path constructor
- *
  * notes:
  * FIXME: fill in remaining slots in the sequence api
  *

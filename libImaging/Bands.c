@@ -4,11 +4,6 @@
  *
  * stuff to extract and paste back individual bands
  *
- * history:
- * 1996-03-20 fl   Created
- * 1997-08-27 fl   Fixed putband for single band targets.
- * 2003-09-26 fl   Fixed getband/putband for 2-band images (LA, PA).
- *
  * Copyright (c) 1997-2003 by Secret Labs AB.
  * Copyright (c) 1996-1997 by Fredrik Lundh.
  *

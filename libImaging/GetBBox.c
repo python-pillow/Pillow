@@ -4,12 +4,6 @@
  *
  * helpers to bounding boxes, min/max values, number of colors, etc.
  *
- * history:
- * 1996-07-22 fl   Created
- * 1996-12-30 fl   Added projection stuff
- * 1998-07-12 fl   Added extrema stuff
- * 2004-09-17 fl   Added colors stuff
- *
  * Copyright (c) 1997-2004 by Secret Labs AB.
  * Copyright (c) 1996-2004 by Fredrik Lundh.
  *

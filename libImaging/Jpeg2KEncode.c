@@ -4,9 +4,6 @@
  *
  * decoder for JPEG2000 image data.
  *
- * history:
- * 2014-03-12 ajh  Created
- *
  * Copyright (c) 2014 Coriolis Systems Limited
  * Copyright (c) 2014 Alastair Houghton
  *

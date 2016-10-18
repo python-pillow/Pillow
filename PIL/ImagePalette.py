@@ -4,12 +4,6 @@
 #
 # image palette object
 #
-# History:
-# 1996-03-11 fl   Rewritten.
-# 1997-01-03 fl   Up and running.
-# 1997-08-23 fl   Added load hack
-# 2001-04-16 fl   Fixed randint shadow bug in random()
-#
 # Copyright (c) 1997-2001 by Secret Labs AB
 # Copyright (c) 1996-1997 by Fredrik Lundh
 #

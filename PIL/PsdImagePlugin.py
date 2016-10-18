@@ -4,12 +4,6 @@
 #
 # Adobe PSD 2.5/3.0 file handling
 #
-# History:
-# 1995-09-01 fl   Created
-# 1997-01-03 fl   Read most PSD images
-# 1997-01-18 fl   Fixed P and CMYK support
-# 2001-10-21 fl   Added seek/tell support (for layers)
-#
 # Copyright (c) 1997-2001 by Secret Labs AB.
 # Copyright (c) 1995-2001 by Fredrik Lundh
 #

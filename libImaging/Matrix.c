@@ -4,9 +4,6 @@
  *
  * colour and luminance matrix transforms
  *
- * history:
- * 1996-05-18 fl:   created (brute force implementation)
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
  *

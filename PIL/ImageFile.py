@@ -4,23 +4,6 @@
 #
 # base class for image file handlers
 #
-# history:
-# 1995-09-09 fl   Created
-# 1996-03-11 fl   Fixed load mechanism.
-# 1996-04-15 fl   Added pcx/xbm decoders.
-# 1996-04-30 fl   Added encoders.
-# 1996-12-14 fl   Added load helpers
-# 1997-01-11 fl   Use encode_to_file where possible
-# 1997-08-27 fl   Flush output in _save
-# 1998-03-05 fl   Use memory mapping for some modes
-# 1999-02-04 fl   Use memory mapping also for "I;16" and "I;16B"
-# 1999-05-31 fl   Added image parser
-# 2000-10-12 fl   Set readonly flag on memory-mapped images
-# 2002-03-20 fl   Use better messages for common decoder errors
-# 2003-04-21 fl   Fall back on mmap/map_buffer if map is not available
-# 2003-10-30 fl   Added StubImageFile class
-# 2004-02-25 fl   Made incremental parser more robust
-#
 # Copyright (c) 1997-2004 by Secret Labs AB
 # Copyright (c) 1995-2004 by Fredrik Lundh
 #

@@ -13,26 +13,6 @@
 # progressive decoding, make sure to use TIFF files where the tag
 # directory is placed first in the file.
 #
-# History:
-# 1995-09-01 fl   Created
-# 1996-05-04 fl   Handle JPEGTABLES tag
-# 1996-05-18 fl   Fixed COLORMAP support
-# 1997-01-05 fl   Fixed PREDICTOR support
-# 1997-08-27 fl   Added support for rational tags (from Perry Stoll)
-# 1998-01-10 fl   Fixed seek/tell (from Jan Blom)
-# 1998-07-15 fl   Use private names for internal variables
-# 1999-06-13 fl   Rewritten for PIL 1.0 (1.0)
-# 2000-10-11 fl   Additional fixes for Python 2.0 (1.1)
-# 2001-04-17 fl   Fixed rewind support (seek to frame 0) (1.2)
-# 2001-05-12 fl   Added write support for more tags (from Greg Couch) (1.3)
-# 2001-12-18 fl   Added workaround for broken Matrox library
-# 2002-01-18 fl   Don't mess up if photometric tag is missing (D. Alan Stewart)
-# 2003-05-19 fl   Check FILLORDER tag
-# 2003-09-26 fl   Added RGBa support
-# 2004-02-24 fl   Added DPI support; fixed rational write support
-# 2005-02-07 fl   Added workaround for broken Corel Draw 10 files
-# 2006-01-09 fl   Added support for float/double tags (from Russell Nelson)
-#
 # Copyright (c) 1997-2006 by Secret Labs AB.  All rights reserved.
 # Copyright (c) 1995-1997 by Fredrik Lundh
 #

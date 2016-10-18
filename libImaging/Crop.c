@@ -4,11 +4,6 @@
  *
  * cut region from image
  *
- * history:
- * 95-11-27 fl	Created
- * 98-07-10 fl	Fixed "null result" error
- * 99-02-05 fl	Rewritten to use Paste primitive
- *
  * Copyright (c) Secret Labs AB 1997-99.
  * Copyright (c) Fredrik Lundh 1995.
  *

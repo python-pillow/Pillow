@@ -4,9 +4,6 @@
  *
  * code to convert YCbCr data
  *
- * history:
- * 98-07-01 hk	Created
- *
  * Copyright (c) Secret Labs AB 1998
  *
  * See the README file for information on usage and redistribution.

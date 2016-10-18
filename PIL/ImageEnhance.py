@@ -8,10 +8,6 @@
 # Extrapolation", Paul Haeberli and Douglas Voorhies.  Available
 # at http://www.graficaobscura.com/interp/index.html
 #
-# History:
-# 1996-03-23 fl  Created
-# 2009-06-16 fl  Fixed mean calculation
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996.
 #

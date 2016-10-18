@@ -8,9 +8,6 @@
  * the arrow graphics  package, but not before PIL 1.1.
  * use at your own risk.
  *
- * history:
- * 99-01-10 fl  Added to PIL (experimental)
- *
  * Copyright (c) Secret Labs AB 1999.
  * Copyright (c) Fredrik Lundh 1999.
  *

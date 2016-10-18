@@ -4,9 +4,6 @@
 #
 # macOS icns file decoder, based on icns.py by Bob Ippolito.
 #
-# history:
-# 2004-10-09 fl   Turned into a PIL plugin; removed 2.3 dependencies.
-#
 # Copyright (c) 2004 by Bob Ippolito.
 # Copyright (c) 2004 by Secret Labs.
 # Copyright (c) 2004 by Fredrik Lundh.

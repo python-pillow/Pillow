@@ -4,26 +4,6 @@
 #
 # drawing interface operations
 #
-# History:
-# 1996-04-13 fl   Created (experimental)
-# 1996-08-07 fl   Filled polygons, ellipses.
-# 1996-08-13 fl   Added text support
-# 1998-06-28 fl   Handle I and F images
-# 1998-12-29 fl   Added arc; use arc primitive to draw ellipses
-# 1999-01-10 fl   Added shape stuff (experimental)
-# 1999-02-06 fl   Added bitmap support
-# 1999-02-11 fl   Changed all primitives to take options
-# 1999-02-20 fl   Fixed backwards compatibility
-# 2000-10-12 fl   Copy on write, when necessary
-# 2001-02-18 fl   Use default ink for bitmap/text also in fill mode
-# 2002-10-24 fl   Added support for CSS-style color strings
-# 2002-12-10 fl   Added experimental support for RGBA-on-RGB drawing
-# 2002-12-11 fl   Refactored low-level drawing API (work in progress)
-# 2004-08-26 fl   Made Draw() a factory function, added getdraw() support
-# 2004-09-04 fl   Added width support to line primitive
-# 2004-09-10 fl   Added font mode handling
-# 2006-06-19 fl   Added font bearing support (getmask2)
-#
 # Copyright (c) 1997-2006 by Secret Labs AB
 # Copyright (c) 1996-2006 by Fredrik Lundh
 #

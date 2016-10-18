@@ -7,9 +7,6 @@
  * to do:
  *      FIXME: Maybe this should be implemented using ImagingPoint()
  *
- * history:
- *	95-11-27 fl:	Created
- *
  * Copyright (c) Fredrik Lundh 1995.
  * Copyright (c) Secret Labs AB 1997.
  *

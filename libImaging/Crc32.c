@@ -4,9 +4,6 @@
  *
  * calculate ISO 3307 checksum
  *
- * history:
- *	96-12-10 fl:	Created (based on example in the PNG spec)
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
  *

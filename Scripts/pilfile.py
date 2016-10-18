@@ -9,13 +9,6 @@
 # pixel mode information for known file formats.  Note that
 # you don't need the PIL C extension to use this module.
 #
-# History:
-# 0.0 1995-09-01 fl   Created
-# 0.1 1996-05-18 fl   Modified options, added debugging mode
-# 0.2 1996-12-29 fl   Added verify mode
-# 0.3 1999-06-05 fl   Don't mess up on class exceptions (1.5.2 and later)
-# 0.4 2003-09-30 fl   Expand wildcards on Windows; robustness tweaks
-#
 
 from __future__ import print_function
 

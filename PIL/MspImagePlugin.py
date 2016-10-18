@@ -6,10 +6,6 @@
 #
 # This is the format used by the Paint program in Windows 1 and 2.
 #
-# History:
-#       95-09-05 fl     Created
-#       97-01-03 fl     Read/write MSP images
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1995-97.
 #

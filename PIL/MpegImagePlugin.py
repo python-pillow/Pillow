@@ -4,9 +4,6 @@
 #
 # MPEG file handling
 #
-# History:
-#       95-09-09 fl     Created
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1995.
 #

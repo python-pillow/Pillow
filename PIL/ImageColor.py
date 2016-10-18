@@ -4,13 +4,6 @@
 #
 # map CSS3-style colour description strings to RGB
 #
-# History:
-# 2002-10-24 fl   Added support for CSS-style color strings
-# 2002-12-15 fl   Added RGBA support
-# 2004-03-27 fl   Fixed remaining int() problems for Python 1.5.2
-# 2004-07-19 fl   Fixed gray/grey spelling issues
-# 2009-03-05 fl   Fixed rounding error in grayscale calculation
-#
 # Copyright (c) 2002-2004 by Secret Labs AB
 # Copyright (c) 2002-2004 by Fredrik Lundh
 #

@@ -4,10 +4,6 @@
  *
  * offset an image in x and y directions
  *
- * history:
- * 96-07-22 fl:	Created
- * 98-11-01 cgw@pgt.com: Fixed negative-array index bug
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
  *

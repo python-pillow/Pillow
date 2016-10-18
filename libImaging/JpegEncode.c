@@ -4,15 +4,6 @@
  *
  * coder for JPEG data
  *
- * history:
- * 1996-05-06 fl   created
- * 1996-07-16 fl   don't drop last block of encoded data
- * 1996-12-30 fl   added quality and progressive settings
- * 1997-01-08 fl   added streamtype settings
- * 1998-01-31 fl   adapted to libjpeg 6a
- * 1998-07-12 fl   added YCbCr support
- * 2001-04-16 fl   added DPI write support
- *
  * Copyright (c) 1997-2001 by Secret Labs AB
  * Copyright (c) 1995-1997 by Fredrik Lundh
  *

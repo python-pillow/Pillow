@@ -7,9 +7,6 @@
 # Notes:
 #       uses TiffImagePlugin.py to read the actual image streams
 #
-# History:
-#       97-01-20 fl     Created
-#
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1997.
 #

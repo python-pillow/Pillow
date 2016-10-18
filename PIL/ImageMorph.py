@@ -1,8 +1,5 @@
 # A binary morphology add-on for the Python Imaging Library
 #
-# History:
-#   2014-06-04 Initial version.
-#
 # Copyright (c) 2014 Dov Grobgeld <dov.grobgeld@gmail.com>
 
 from PIL import Image

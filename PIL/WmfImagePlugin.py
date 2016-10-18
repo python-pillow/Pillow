@@ -4,11 +4,6 @@
 #
 # WMF stub codec
 #
-# history:
-# 1996-12-14 fl   Created
-# 2004-02-22 fl   Turned into a stub driver
-# 2004-02-23 fl   Added EMF support
-#
 # Copyright (c) Secret Labs AB 1997-2004.  All rights reserved.
 # Copyright (c) Fredrik Lundh 1996.
 #

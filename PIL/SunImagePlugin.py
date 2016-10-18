@@ -4,12 +4,6 @@
 #
 # Sun image file handling
 #
-# History:
-# 1995-09-10 fl   Created
-# 1996-05-28 fl   Fixed 32-bit alignment
-# 1998-12-29 fl   Import ImagePalette module
-# 2001-12-18 fl   Fixed palette loading (from Jean-Claude Rimbault)
-#
 # Copyright (c) 1997-2001 by Secret Labs AB
 # Copyright (c) 1995-1996 by Fredrik Lundh
 #

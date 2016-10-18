@@ -4,9 +4,6 @@
 #
 # transform wrappers
 #
-# History:
-# 2002-04-08 fl   Created
-#
 # Copyright (c) 2002 by Secret Labs AB
 # Copyright (c) 2002 by Fredrik Lundh
 #

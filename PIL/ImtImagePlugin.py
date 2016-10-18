@@ -4,10 +4,6 @@
 #
 # IM Tools support for PIL
 #
-# history:
-# 1996-05-27 fl   Created (read 8-bit images only)
-# 2001-02-17 fl   Use 're' instead of 'regex' (Python 2.1) (0.2)
-#
 # Copyright (c) Secret Labs AB 1997-2001.
 # Copyright (c) Fredrik Lundh 1996-2001.
 #

@@ -4,21 +4,6 @@
 #
 # a Tk display interface
 #
-# History:
-# 96-04-08 fl   Created
-# 96-09-06 fl   Added getimage method
-# 96-11-01 fl   Rewritten, removed image attribute and crop method
-# 97-05-09 fl   Use PyImagingPaste method instead of image type
-# 97-05-12 fl   Minor tweaks to match the IFUNC95 interface
-# 97-05-17 fl   Support the "pilbitmap" booster patch
-# 97-06-05 fl   Added file= and data= argument to image constructors
-# 98-03-09 fl   Added width and height methods to Image classes
-# 98-07-02 fl   Use default mode for "P" images without palette attribute
-# 98-07-02 fl   Explicitly destroy Tkinter image objects
-# 99-07-24 fl   Support multiple Tk interpreters (from Greg Couch)
-# 99-07-26 fl   Automatically hook into Tkinter (if possible)
-# 99-08-15 fl   Hook uses _imagingtk instead of _imaging
-#
 # Copyright (c) 1997-1999 by Secret Labs AB
 # Copyright (c) 1996-1997 by Fredrik Lundh
 #

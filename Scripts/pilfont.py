@@ -5,10 +5,6 @@
 #
 # PIL raster font compiler
 #
-# history:
-# 1997-08-25 fl   created
-# 2002-03-10 fl   use "from PIL import"
-#
 
 from __future__ import print_function
 

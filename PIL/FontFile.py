@@ -4,10 +4,6 @@
 #
 # base class for raster font file parsers
 #
-# history:
-# 1997-06-05 fl   created
-# 1997-08-19 fl   restrict image width
-#
 # Copyright (c) 1997-1998 by Secret Labs AB
 # Copyright (c) 1997-1998 by Fredrik Lundh
 #

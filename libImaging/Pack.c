@@ -4,21 +4,6 @@
  *
  * code to pack raw data
  *
- * history:
- * 1996-04-30 fl   Created
- * 1996-05-12 fl   Published a few RGB packers
- * 1996-11-01 fl   More RGB packers (Tk booster stuff)
- * 1996-12-30 fl   Added P;1, P;2 and P;4 packers
- * 1997-06-02 fl   Added F (F;32NF) packer
- * 1997-08-28 fl   Added 1 as L packer
- * 1998-02-08 fl   Added I packer
- * 1998-03-09 fl   Added mode field, RGBA/RGBX as RGB packers
- * 1998-07-01 fl   Added YCbCr support
- * 1998-07-12 fl   Added I 16 packer
- * 1999-02-03 fl   Added BGR packers
- * 2003-09-26 fl   Added LA/PA packers
- * 2006-06-22 fl   Added CMYK;I packer
- *
  * Copyright (c) 1997-2006 by Secret Labs AB.
  * Copyright (c) 1996-1997 by Fredrik Lundh.
  *

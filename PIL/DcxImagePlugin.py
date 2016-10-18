@@ -9,12 +9,6 @@
 # (a list of file offsets) followed by a set of (usually 1-bit)
 # PCX files.
 #
-# History:
-# 1995-09-09 fl   Created
-# 1996-03-20 fl   Properly derived from PcxImageFile.
-# 1998-07-15 fl   Renamed offset attribute to avoid name clash
-# 2002-07-30 fl   Fixed file handling
-#
 # Copyright (c) 1997-98 by Secret Labs AB.
 # Copyright (c) 1995-96 by Fredrik Lundh.
 #

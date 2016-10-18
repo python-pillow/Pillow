@@ -4,13 +4,6 @@
 #
 # standard image operations
 #
-# History:
-# 2001-10-20 fl   Created
-# 2001-10-23 fl   Added autocontrast operator
-# 2001-12-18 fl   Added Kevin's fit operator
-# 2004-03-14 fl   Fixed potential division by zero in equalize
-# 2005-05-05 fl   Fixed equalize for low number of values
-#
 # Copyright (c) 2001-2004 by Secret Labs AB
 # Copyright (c) 2001-2004 by Fredrik Lundh
 #

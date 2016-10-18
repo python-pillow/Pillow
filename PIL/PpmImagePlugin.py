@@ -4,10 +4,6 @@
 #
 # PPM support for PIL
 #
-# History:
-#       96-03-24 fl     Created
-#       98-03-06 fl     Write RGBA images (as RGB, that is)
-#
 # Copyright (c) Secret Labs AB 1997-98.
 # Copyright (c) Fredrik Lundh 1996.
 #

@@ -4,9 +4,6 @@
 #
 # GD file handling
 #
-# History:
-# 1996-04-12 fl   Created
-#
 # Copyright (c) 1997 by Secret Labs AB.
 # Copyright (c) 1996 by Fredrik Lundh.
 #

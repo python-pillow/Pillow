@@ -4,21 +4,6 @@
 #
 # IFUNC IM file handling for PIL
 #
-# history:
-# 1995-09-01 fl   Created.
-# 1997-01-03 fl   Save palette images
-# 1997-01-08 fl   Added sequence support
-# 1997-01-23 fl   Added P and RGB save support
-# 1997-05-31 fl   Read floating point images
-# 1997-06-22 fl   Save floating point images
-# 1997-08-27 fl   Read and save 1-bit images
-# 1998-06-25 fl   Added support for RGB+LUT images
-# 1998-07-02 fl   Added support for YCC images
-# 1998-07-15 fl   Renamed offset attribute to avoid name clash
-# 1998-12-29 fl   Added I;16 support
-# 2001-02-17 fl   Use 're' instead of 'regex' (Python 2.1) (0.7)
-# 2003-09-26 fl   Added LA/PA support
-#
 # Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1995-2001 by Fredrik Lundh.
 #

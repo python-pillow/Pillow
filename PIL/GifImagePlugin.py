@@ -4,20 +4,6 @@
 #
 # GIF file handling
 #
-# History:
-# 1995-09-01 fl   Created
-# 1996-12-14 fl   Added interlace support
-# 1996-12-30 fl   Added animation support
-# 1997-01-05 fl   Added write support, fixed local colour map bug
-# 1997-02-23 fl   Make sure to load raster data in getdata()
-# 1997-07-05 fl   Support external decoder (0.4)
-# 1998-07-09 fl   Handle all modes when saving (0.5)
-# 1998-07-15 fl   Renamed offset attribute to avoid name clash
-# 2001-04-16 fl   Added rewind support (seek to frame 0) (0.6)
-# 2001-04-17 fl   Added palette optimization (0.7)
-# 2002-06-06 fl   Added transparency support for save (0.8)
-# 2004-02-24 fl   Disable interlacing for small images
-#
 # Copyright (c) 1997-2004 by Secret Labs AB
 # Copyright (c) 1995-2004 by Fredrik Lundh
 #

@@ -3,9 +3,6 @@
  *
  * A binary morphology add-on for the Python Imaging Library
  *
- * History:
- *   2014-06-04 Initial version.
- *
  * Copyright (c) 2014 Dov Grobgeld <dov.grobgeld@gmail.com>
  *
  * See the README file for information on usage and redistribution.

@@ -7,25 +7,6 @@
 # See "Digital Compression and Coding of Continuous-Tone Still Images,
 # Part 1, Requirements and Guidelines" (CCITT T.81 / ISO 10918-1)
 #
-# History:
-# 1995-09-09 fl   Created
-# 1995-09-13 fl   Added full parser
-# 1996-03-25 fl   Added hack to use the IJG command line utilities
-# 1996-05-05 fl   Workaround Photoshop 2.5 CMYK polarity bug
-# 1996-05-28 fl   Added draft support, JFIF version (0.1)
-# 1996-12-30 fl   Added encoder options, added progression property (0.2)
-# 1997-08-27 fl   Save mode 1 images as BW (0.3)
-# 1998-07-12 fl   Added YCbCr to draft and save methods (0.4)
-# 1998-10-19 fl   Don't hang on files using 16-bit DQT's (0.4.1)
-# 2001-04-16 fl   Extract DPI settings from JFIF files (0.4.2)
-# 2002-07-01 fl   Skip pad bytes before markers; identify Exif files (0.4.3)
-# 2003-04-25 fl   Added experimental EXIF decoder (0.5)
-# 2003-06-06 fl   Added experimental EXIF GPSinfo decoder
-# 2003-09-13 fl   Extract COM markers
-# 2009-09-06 fl   Added icc_profile support (from Florian Hoech)
-# 2009-03-06 fl   Changed CMYK handling; always use Adobe polarity (0.6)
-# 2009-03-08 fl   Added subsampling support (from Justin Huff).
-#
 # Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1995-1996 by Fredrik Lundh.
 #

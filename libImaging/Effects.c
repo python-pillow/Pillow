@@ -4,11 +4,6 @@
  *
  * various special effects and image generators
  *
- * history:
- * 1997-05-21 fl   Just for fun
- * 1997-06-05 fl   Added mandelbrot generator
- * 2003-05-24 fl   Added perlin_turbulence generator (in progress)
- *
  * Copyright (c) 1997-2003 by Fredrik Lundh.
  * Copyright (c) 1997 by Secret Labs AB.
  *

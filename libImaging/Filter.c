@@ -4,14 +4,6 @@
  *
  * apply convolution kernel to image
  *
- * history:
- * 1995-11-26 fl   Created, supports 3x3 kernels
- * 1995-11-27 fl   Added 5x5 kernels, copy border
- * 1999-07-26 fl   Eliminated a few compiler warnings
- * 2002-06-09 fl   Moved kernel definitions to Python
- * 2002-06-11 fl   Support floating point kernels
- * 2003-09-15 fl   Added ImagingExpand helper
- *
  * Copyright (c) Secret Labs AB 1997-2002.  All rights reserved.
  * Copyright (c) Fredrik Lundh 1995.
  *

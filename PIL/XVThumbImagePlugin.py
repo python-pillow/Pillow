@@ -8,11 +8,6 @@
 # see xvcolor.c and xvbrowse.c in the sources to John Bradley's XV,
 # available from ftp://ftp.cis.upenn.edu/pub/xv/
 #
-# history:
-# 98-08-15 cec  created (b/w only)
-# 98-12-09 cec  added color palette
-# 98-12-28 fl   added to PIL (with only a few very minor modifications)
-#
 # To do:
 # FIXME: make save work (this requires quantization support)
 #

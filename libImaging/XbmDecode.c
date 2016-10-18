@@ -4,9 +4,6 @@
  *
  * decoder for XBM hex image data
  *
- * history:
- *	96-04-13 fl	Created
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
  *

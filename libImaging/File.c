@@ -4,11 +4,6 @@
  *
  * built-in image file handling
  *
- * history:
- * 1995-11-26 fl  Created, supports PGM/PPM
- * 1996-08-07 fl  Write "1" images as PGM
- * 1999-02-21 fl  Don't write non-standard modes
- *
  * Copyright (c) 1997-99 by Secret Labs AB.
  * Copyright (c) 1995-96 by Fredrik Lundh.
  *

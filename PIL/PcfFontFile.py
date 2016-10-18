@@ -6,10 +6,6 @@
 #
 # portable compiled font file parser
 #
-# history:
-# 1997-08-19 fl   created
-# 2003-09-13 fl   fixed loading of unicode fonts
-#
 # Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1997-2003 by Fredrik Lundh.
 #

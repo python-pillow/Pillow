@@ -5,13 +5,6 @@
 #
 # convert image files
 #
-# History:
-# 0.1   96-04-20 fl     Created
-# 0.2   96-10-04 fl     Use draft mode when converting images
-# 0.3   96-12-30 fl     Optimize output (PNG, JPEG)
-# 0.4   97-01-18 fl     Made optimize an option (PNG, JPEG)
-# 0.5   98-12-30 fl     Fixed -f option (from Anthony Baxter)
-#
 
 from __future__ import print_function
 

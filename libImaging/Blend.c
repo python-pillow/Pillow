@@ -4,11 +4,6 @@
  *
  * interpolate between two existing images
  *
- * history:
- * 96-03-20 fl	Created
- * 96-05-18 fl	Simplified blend expression
- * 96-10-05 fl	Fixed expression bug, special case for interpolation
- *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
  *

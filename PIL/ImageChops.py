@@ -4,11 +4,6 @@
 #
 # standard channel operations
 #
-# History:
-# 1996-03-24 fl   Created
-# 1996-08-13 fl   Added logical operations (for "1" images)
-# 2000-10-12 fl   Added offset method (from Image.py)
-#
 # Copyright (c) 1997-2000 by Secret Labs AB
 # Copyright (c) 1996-2000 by Fredrik Lundh
 #

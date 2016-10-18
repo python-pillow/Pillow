@@ -16,11 +16,6 @@
  *	  stream. This means that the code size will always
  *	  start at 9 bits.
  *
- * history:
- *	95-09-13 fl	Created (derived from GifDecode.c)
- *	96-03-28 fl	Revised API, integrated with PIL
- *	97-01-05 fl	Added filter support, added extra consistency checks
- *
  * Copyright (c) Fredrik Lundh 1995-97.
  * Copyright (c) Secret Labs AB 1997.
  *

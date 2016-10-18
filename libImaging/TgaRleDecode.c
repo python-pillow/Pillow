@@ -4,10 +4,6 @@
  *
  * decoder for Targa RLE data.
  *
- * history:
- * 97-01-04 fl	created
- * 98-09-11 fl	don't one byte per pixel; take orientation into account
- *
  * Copyright (c) Fredrik Lundh 1997.
  * Copyright (c) Secret Labs AB 1997-98.
  *
