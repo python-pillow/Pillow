@@ -338,7 +338,7 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(reread.info["version"], b"GIF87a")
 
         # Test that a GIF89a image is also saved in that format
-        im.info["version"] = "GIF89a"
+        im.info["version"] = b"GIF89a"
         im.save(out)
         reread = Image.open(out)
         self.assertEqual(reread.info["version"], b"GIF87a")

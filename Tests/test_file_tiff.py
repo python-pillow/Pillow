@@ -119,7 +119,7 @@ class TestFileTiff(PillowTestCase):
         self.assertRaises(SyntaxError,
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
 
-        TiffImagePlugin.PREFIXES.append("\xff\xd8\xff\xe0")
+        TiffImagePlugin.PREFIXES.append(b"\xff\xd8\xff\xe0")
         self.assertRaises(SyntaxError,
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
         TiffImagePlugin.PREFIXES.pop()
