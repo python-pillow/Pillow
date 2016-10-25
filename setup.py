@@ -723,7 +723,7 @@ setup(name=NAME,
       long_description=_read('README.rst').decode('utf-8'),
       author='Alex Clark (Fork Author)',
       author_email='aclark@aclark.net',
-      url='http://python-pillow.org',
+      url='https://python-pillow.org',
       classifiers=[
           "Development Status :: 6 - Mature",
           "Topic :: Multimedia :: Graphics",
