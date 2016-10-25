@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Fix Doc Formatting, too-short title underlines and malformed table #2175
+  [hugovk]
+
 - Fix BytesWarnings #2172
   [jdufresne]
 
