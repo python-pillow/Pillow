@@ -59,7 +59,7 @@ or::
 
 
 macOS Installation
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 We provide binaries for macOS for each of the supported Python versions
 in the wheel format. These include support for all optional libraries
@@ -231,7 +231,7 @@ or using pip::
 
 
 Building on macOS
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 The Xcode command line tools are required to compile portions of
 Pillow. The tools are installed by running ``xcode-select --install``
@@ -373,7 +373,7 @@ current versions of Linux, macOS, and Windows.
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |                                |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
-| Windows Server 2012 R2           |Yes          | 2.7,3.3,3.4                  | 3.4.1 (CI target)              |x86,x86-64                 |
+| Windows Server 2012 R2           |Yes          | 2.7,3.3,3.4                  | 3.4.1 (CI target)              |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,3.4a3        | 2.2.0                          |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
