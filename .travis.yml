@@ -49,12 +49,12 @@ install:
   - pushd depends && ./install_imagequant.sh && popd
 
 script:
-  - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage erase; fi
+  - coverage erase
   - python setup.py clean
   - CFLAGS="-coverage" python setup.py build_ext --inplace
 
-  - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* selftest.py; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py; fi
+  - coverage run --append --include=PIL/* selftest.py
+  - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
   - pushd /tmp/check-manifest && check-manifest --ignore ".coveragerc,.editorconfig,*.yml,*.yaml,tox.ini" && popd
 
   # Docs
