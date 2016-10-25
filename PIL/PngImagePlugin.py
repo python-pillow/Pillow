@@ -132,7 +132,7 @@ class ChunkStream(object):
     def call(self, cid, pos, length):
         "Call the appropriate chunk handler"
 
-        logger.debug("STREAM %s %s %s", cid, pos, length)
+        logger.debug("STREAM %r %s %s", cid, pos, length)
         return getattr(self, "chunk_" + cid.decode('ascii'))(pos, length)
 
     def crc(self, cid, data):
@@ -148,10 +148,10 @@ class ChunkStream(object):
             crc1 = Image.core.crc32(data, Image.core.crc32(cid))
             crc2 = i16(self.fp.read(2)), i16(self.fp.read(2))
             if crc1 != crc2:
-                raise SyntaxError("broken PNG file (bad header checksum in %s)"
+                raise SyntaxError("broken PNG file (bad header checksum in %r)"
                                   % cid)
         except struct.error:
-            raise SyntaxError("broken PNG file (incomplete checksum in %s)"
+            raise SyntaxError("broken PNG file (incomplete checksum in %r)"
                               % cid)
 
     def crc_skip(self, cid, data):
@@ -309,7 +309,7 @@ class PngStream(ChunkStream):
         # Compression method    1 byte (0)
         # Compressed profile    n bytes (zlib with deflate compression)
         i = s.find(b"\0")
-        logger.debug("iCCP profile name %s", s[:i])
+        logger.debug("iCCP profile name %r", s[:i])
         logger.debug("Compression method %s", i8(s[i]))
         comp_method = i8(s[i])
         if comp_method != 0:
@@ -539,7 +539,7 @@ class PngImageFile(ImageFile.ImageFile):
             except EOFError:
                 break
             except AttributeError:
-                logger.debug("%s %s %s (unknown)", cid, pos, length)
+                logger.debug("%r %s %s (unknown)", cid, pos, length)
                 s = ImageFile._safe_read(self.fp, length)
 
             self.png.crc(cid, s)

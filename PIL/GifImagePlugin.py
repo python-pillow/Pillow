@@ -696,7 +696,7 @@ def getheader(im, palette=None, info=None):
             version = b"89a"
             break
     else:
-        if im.info.get("version") == "89a":
+        if im.info.get("version") == b"89a":
             version = b"89a"
 
     header = [
