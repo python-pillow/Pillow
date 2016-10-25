@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Fix BytesWarnings #2172
+  [jdufresne]
+
+- Use Integer division to eliminate deprecation warning. #2168
+  [mastermatt]
+
 - Update compatibility matrix
   [daavve, wiredfool]
 
