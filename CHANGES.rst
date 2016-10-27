@@ -4,7 +4,10 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
-- Fix Doc Formatting, too-short title underlines and malformed table #2175
+- Doc: Move ICO out of the list of read-only file formats #2180
+  [alexwlchan]
+  
+- Doc: Fix formatting, too-short title underlines and malformed table #2175
   [hugovk]
 
 - Fix BytesWarnings #2172
@@ -13,7 +16,7 @@ Changelog (Pillow)
 - Use Integer division to eliminate deprecation warning. #2168
   [mastermatt]
 
-- Update compatibility matrix
+- Doc: Update compatibility matrix
   [daavve, wiredfool]
 
 
