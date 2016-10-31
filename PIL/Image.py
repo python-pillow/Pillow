@@ -879,7 +879,7 @@ class Image(object):
                     trns_im = Image()._new(core.new(self.mode, (1, 1)))
                     if self.mode == 'P':
                         trns_im.putpalette(self.palette)
-                        if type(t) == tuple:
+                        if isinstance(t, tuple):
                             try:
                                 t = trns_im.palette.getcolor(t)
                             except:

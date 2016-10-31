@@ -189,7 +189,7 @@ class pil_build_ext(build_ext):
 
         for root in (JPEG_ROOT, JPEG2K_ROOT, TIFF_ROOT, ZLIB_ROOT,
                      FREETYPE_ROOT, LCMS_ROOT, IMAGEQUANT_ROOT):
-            if isinstance(root, type(())):
+            if isinstance(root, tuple):
                 lib_root, include_root = root
             else:
                 lib_root = include_root = root

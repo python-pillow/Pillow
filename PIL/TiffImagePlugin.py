@@ -278,12 +278,12 @@ class IFDRational(Rational):
         self._numerator = value
         self._val = float(1)
 
-        if type(value) == Fraction:
+        if isinstance(value, Fraction):
             self._numerator = value.numerator
             self._denominator = value.denominator
             self._val = value
 
-        if type(value) == IFDRational:
+        if isinstance(value, IFDRational):
             self._denominator = value.denominator
             self._numerator = value.numerator
             self._val = value._val
@@ -294,7 +294,7 @@ class IFDRational(Rational):
             return
 
         elif denominator == 1:
-            if sys.hexversion < 0x2070000 and type(value) == float:
+            if sys.hexversion < 0x2070000 and isinstance(value, float):
                 # python 2.6 is different.
                 self._val = Fraction.from_float(value)
             else:
@@ -1056,7 +1056,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # io.BytesIO have a fileno, but returns an IOError if
             # it doesn't use a file descriptor.
             fp = False
-        
+
         if fp:
             args[2] = fp
 

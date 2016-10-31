@@ -17,7 +17,7 @@ def check_module(feature):
     module = modules[feature]
 
     method_to_call = None
-    if type(module) is tuple:
+    if isinstance(module, tuple):
         module, method_to_call = module
 
     try:

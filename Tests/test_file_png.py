@@ -392,7 +392,7 @@ class TestFilePng(PillowTestCase):
         info = PngImagePlugin.PngInfo()
         info.add_text("Text", "Ascii")
         im = roundtrip(im, pnginfo=info)
-        self.assertEqual(type(im.info["Text"]), str)
+        self.assertIsInstance(im.info["Text"], str)
 
     def test_unicode_text(self):
         # Check preservation of non-ASCII characters on Python3

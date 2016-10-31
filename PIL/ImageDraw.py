@@ -208,12 +208,12 @@ class ImageDraw(object):
 
     def _multiline_check(self, text):
         """Draw text."""
-        split_character = "\n" if isinstance(text, type("")) else b"\n"
+        split_character = "\n" if isinstance(text, str) else b"\n"
 
         return split_character in text
 
     def _multiline_split(self, text):
-        split_character = "\n" if isinstance(text, type("")) else b"\n"
+        split_character = "\n" if isinstance(text, str) else b"\n"
 
         return text.split(split_character)
 
