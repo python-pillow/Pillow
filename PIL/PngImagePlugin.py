@@ -48,7 +48,7 @@ i8 = _binary.i8
 i16 = _binary.i16be
 i32 = _binary.i32be
 
-is_cid = re.compile(b"\w\w\w\w").match
+is_cid = re.compile(br"\w\w\w\w").match
 
 
 _MAGIC = b"\211PNG\r\n\032\n"
