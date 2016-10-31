@@ -67,7 +67,7 @@ try:
     from PIL import _imaging as core
     if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
         raise ImportError("The _imaging extension was built for another "
-                          " version of Pillow or PIL")
+                          "version of Pillow or PIL")
 
 except ImportError as v:
     core = _imaging_not_installed()
