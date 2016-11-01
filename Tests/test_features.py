@@ -13,8 +13,8 @@ class TestFeatures(PillowTestCase):
             self.assertTrue(features.check_codec(feature) in [True, False])
 
     def test_supported_features(self):
-        self.assertTrue(type(features.get_supported_modules()) is list)
-        self.assertTrue(type(features.get_supported_codecs()) is list)
+        self.assertIsInstance(features.get_supported_modules(), list)
+        self.assertIsInstance(features.get_supported_codecs(), list)
 
     def test_unsupported_codec(self):
         # Arrange

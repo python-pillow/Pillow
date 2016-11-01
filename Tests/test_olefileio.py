@@ -106,9 +106,8 @@ class TestOleFileIo(PillowTestCase):
         mtime = root_entry.getmtime()
 
         # Assert
-        self.assertIsInstance(ctime, type(None))
+        self.assertIsNone(ctime)
         self.assertIsInstance(mtime, datetime.datetime)
-        self.assertEqual(ctime, None)
         self.assertEqual(mtime.year, 2014)
         ole.close()
 
