@@ -12,7 +12,6 @@ codecs = dir(Image.core)
 # sample png stream
 
 TEST_PNG_FILE = "Tests/images/hopper.png"
-TEST_DATA = open(TEST_PNG_FILE, "rb").read()
 
 # stuff to create inline PNG images
 

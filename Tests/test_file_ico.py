@@ -5,7 +5,6 @@ from PIL import Image, IcoImagePlugin
 
 # sample ppm stream
 TEST_ICO_FILE = "Tests/images/hopper.ico"
-TEST_DATA = open(TEST_ICO_FILE, "rb").read()
 
 
 class TestFileIco(PillowTestCase):
