@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Tests: Remove unused, open files at top level of tests #2188
+  [jdufresne]
+
+- Replace type() equality checks with isinstance #2184
+  [jdufresne]
+
 - Doc: Move ICO out of the list of read-only file formats #2180
   [alexwlchan]
   
