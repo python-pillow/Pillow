@@ -6,7 +6,6 @@ import sys
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
-data = open(TEST_FILE, "rb").read()
 
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
 

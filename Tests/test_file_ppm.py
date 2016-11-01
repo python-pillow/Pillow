@@ -4,7 +4,6 @@ from PIL import Image
 
 # sample ppm stream
 test_file = "Tests/images/hopper.ppm"
-data = open(test_file, "rb").read()
 
 
 class TestFilePpm(PillowTestCase):
