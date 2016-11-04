@@ -550,10 +550,6 @@ class Image(object):
         had their file read and closed by the
         :py:meth:`~PIL.Image.Image.load` method.
         """
-        try:
-            self.fp.close()
-        except Exception as msg:
-            logger.debug("Error closing: %s", msg)
 
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
