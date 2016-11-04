@@ -521,8 +521,16 @@ class TestFileLibTiff(LibTiffTestCase):
         except:
             self.fail("Should not get permission error here")
 
-    
-
+    def test_read_icc(self):
+        with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+            icc = img.info.get('icc_profile')
+            self.assertNotEqual(icc, None)
+        TiffImagePlugin.READ_LIBTIFF = True
+        with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+            icc_libtiff = img.info.get('icc_profile')
+            self.assertNotEqual(icc_libtiff, None)
+        TiffImagePlugin.READ_LIBTIFF = False
+        self.assertEqual(icc, icc_libtiff)
 
 if __name__ == '__main__':
     unittest.main()
