@@ -1,6 +1,7 @@
 import logging
 from io import BytesIO
 import struct
+import sys
 
 from helper import unittest, PillowTestCase, hopper, py3
 
@@ -468,6 +469,21 @@ class TestFileTiff(PillowTestCase):
 
         self.assertEqual(b'Dummy value', reloaded.info['icc_profile'])
 
+@unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
+class TestFileTiffW32(PillowTestCase):
+    def test_fd_leak(self):
+        tmpfile = self.tempfile("temp.tif")
+        import os
+
+        with Image.open("Tests/images/uint16_1_4660.tif") as im:
+            im.save(tmpfile)
+
+        im = Image.open(tmpfile)
+        im.load()
+        self.assertRaises(Exception, lambda: os.remove(tmpfile))
+
+        im.close()
+        os.remove(tmpfile)
 
 if __name__ == '__main__':
     unittest.main()
