@@ -437,8 +437,8 @@ def _get_local_header(fp, im, offset, flags):
         used_palette_colors = _get_optimize(im, im.encoderinfo)
         if used_palette_colors is not None:
             # adjust the transparency index after optimize
-            for i in range(len(used_palette_colors)):
-                if used_palette_colors[i] == transparency:
+            for i, palette_color in enumerate(used_palette_colors):
+                if palette_color == transparency:
                     transparency = i
                     transparent_color_exists = True
                     break
