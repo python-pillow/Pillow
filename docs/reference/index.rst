@@ -27,7 +27,6 @@ Reference
    ImageWin
    ExifTags
    TiffTags
-   OleFileIO
    PSDraw
    PixelAccess
    PyAccess
