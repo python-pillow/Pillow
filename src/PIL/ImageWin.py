@@ -224,7 +224,7 @@ class ImageWindow(Window):
             image = Dib(image)
         self.image = image
         width, height = image.size
-        Window.__init__(self, title, width=width, height=height)
+        super().__init__(title, width=width, height=height)
 
     def ui_handle_repair(self, dc, x0, y0, x1, y1):
         self.image.draw(dc, (x0, y0, x1, y1))

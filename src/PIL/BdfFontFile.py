@@ -85,8 +85,7 @@ def bdf_char(f):
 
 class BdfFontFile(FontFile.FontFile):
     def __init__(self, fp):
-
-        FontFile.FontFile.__init__(self)
+        super().__init__()
 
         s = fp.readline()
         if s[:13] != b"STARTFONT 2.1":

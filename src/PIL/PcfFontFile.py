@@ -62,7 +62,7 @@ class PcfFontFile(FontFile.FontFile):
         if magic != PCF_MAGIC:
             raise SyntaxError("not a PCF file")
 
-        FontFile.FontFile.__init__(self)
+        super().__init__()
 
         count = l32(fp.read(4))
         self.toc = {}
