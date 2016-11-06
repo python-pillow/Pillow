@@ -63,7 +63,9 @@ class TestImagePath(PillowTestCase):
         self.assertEqual(list(p), [(0.0, 1.0)])
 
     def test_overflow_segfault(self):
-        try:
+        # Some Pythons fail getting the argument as an integer, and it falls
+        # through to the sequence. Seeing this on 32-bit Windows.
+        with self.assertRaises((TypeError, MemoryError)):
             # post patch, this fails with a memory error
             x = evil()
 
@@ -74,14 +76,6 @@ class TestImagePath(PillowTestCase):
                     x[i] = "0"*16
                 else:
                     x[i] = b'0'*16
-        except TypeError as msg:
-            # Some pythons fail getting the argument as an integer, and
-            # it falls through to the sequence. Seeing this on 32bit windows.
-            self.assertTrue(True, "Sequence required")
-        except MemoryError as msg:
-            self.assertTrue(msg)
-        except:
-            self.assertTrue(False, "Should have received a memory error")
 
 
 class evil:

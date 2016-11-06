@@ -8,12 +8,9 @@ class TestImagingResampleVulnerability(PillowTestCase):
         im = hopper('L')
         xsize = 0x100000008 // 4
         ysize = 1000  # unimportant
-        try:
+        with self.assertRaises(MemoryError):
             # any resampling filter will do here
             im.im.resize((xsize, ysize), Image.BILINEAR)
-            self.fail("Resize should raise MemoryError on invalid xsize")
-        except MemoryError:
-            self.assertTrue(True, "Should raise MemoryError")
 
     def test_invalid_size(self):
         im = hopper()
@@ -21,17 +18,11 @@ class TestImagingResampleVulnerability(PillowTestCase):
         im.resize((100, 100))
         self.assertTrue(True, "Should not Crash")
 
-        try:
+        with self.assertRaises(ValueError):
             im.resize((-100, 100))
-            self.fail("Resize should raise a value error on x negative size")
-        except ValueError:
-            self.assertTrue(True, "Should raise ValueError")
 
-        try:
+        with self.assertRaises(ValueError):
             im.resize((100, -100))
-            self.fail("Resize should raise a value error on y negative size")
-        except ValueError:
-            self.assertTrue(True, "Should raise ValueError")
 
 
 class TestImagingCoreResampleAccuracy(PillowTestCase):
