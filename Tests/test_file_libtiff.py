@@ -529,10 +529,8 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open(tmpfile)
         im.n_frames
         im.close()
-        try:
-            os.remove(tmpfile)  # Windows PermissionError here!
-        except:
-            self.fail("Should not get permission error here")
+        # Should not raise PermissionError.
+        os.remove(tmpfile)
 
     def test_read_icc(self):
         with Image.open("Tests/images/hopper.iccprofile.tif") as img:
