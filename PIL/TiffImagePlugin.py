@@ -1246,12 +1246,12 @@ class TiffImageFile(ImageFile.ImageFile):
                 a = None
 
             else:
-                for i in range(len(offsets)):
+                for i, offset in enumerate(offsets):
                     a = self._decoder(rawmode, l, i)
                     self.tile.append(
                         (self._compression,
                             (0, min(y, ysize), w, min(y+h, ysize)),
-                            offsets[i], a))
+                            offset, a))
                     if DEBUG:
                         print("tiles: ", self.tile)
                     y = y + h
