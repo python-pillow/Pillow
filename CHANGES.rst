@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Tests: Replace try/except/fail pattern with TestCase.assertRaises() #2200
+  [jdufresne]
+
 - Tests: Remove unused, open files at top level of tests #2188
   [jdufresne]
 
