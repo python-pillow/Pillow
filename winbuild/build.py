@@ -18,9 +18,6 @@ def setup_vms():
                        % (py, arch, VIRT_BASE, py, arch))
             ret.append("%s%s%s\Scripts\pip.exe install nose" %
                        (VIRT_BASE, py, arch))
-            if py == '26':
-                ret.append("%s%s%s\Scripts\pip.exe install unittest2" %
-                           (VIRT_BASE, py, arch))
     return "\n".join(ret)
 
 

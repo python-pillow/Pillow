@@ -1,5 +1,5 @@
 /*
-    Python3 definition file to consistently map the code to Python 2.6 or
+    Python3 definition file to consistently map the code to Python 2 or
     Python 3.
 
     PyInt and PyLong were merged into PyLong in Python 3, so all PyInt functions

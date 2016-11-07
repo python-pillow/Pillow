@@ -8,7 +8,7 @@ from helper import unittest, PillowTestCase, hopper
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import _limit_rational, IFDRational
 
-tag_ids = dict((info.name, info.value) for info in TiffTags.TAGS_V2.values())
+tag_ids = {info.name: info.value for info in TiffTags.TAGS_V2.values()}
 
 
 class TestFileTiffMetadata(PillowTestCase):

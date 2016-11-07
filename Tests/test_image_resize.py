@@ -69,10 +69,10 @@ class TestImagingCoreResize(PillowTestCase):
         for f in [Image.LINEAR, Image.BOX, Image.BILINEAR, Image.HAMMING,
                 Image.BICUBIC, Image.LANCZOS]:
             # samples resized with current filter
-            references = dict(
-                (name, self.resize(ch, (4, 4), f))
+            references = {
+                name: self.resize(ch, (4, 4), f)
                 for name, ch in samples.items()
-            )
+            }
 
             for mode, channels_set in [
                 ('RGB', ('blank', 'filled', 'dirty')),

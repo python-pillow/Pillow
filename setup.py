@@ -145,7 +145,7 @@ class pil_build_ext(build_ext):
         features = ['zlib', 'jpeg', 'tiff', 'freetype', 'lcms', 'webp',
                     'webpmux', 'jpeg2000', 'imagequant']
 
-        required = set(['jpeg', 'zlib'])
+        required = {'jpeg', 'zlib'}
 
         def __init__(self):
             for f in self.features:
@@ -772,7 +772,6 @@ setup(name=NAME,
           "Topic :: Multimedia :: Graphics :: Graphics Conversion",
           "Topic :: Multimedia :: Graphics :: Viewers",
           "Programming Language :: Python :: 2",
-          "Programming Language :: Python :: 2.6",
           "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3",
           "Programming Language :: Python :: 3.2",
