@@ -192,11 +192,8 @@ class TestCffi(AccessTest):
 
         # Attempt to set the value on a read-only image
         access = PyAccess.new(im, True)
-        try:
+        with self.assertRaises(ValueError):
             access[(0, 0)] = color
-        except ValueError:
-            return
-        self.fail("Putpixel did not fail on a read-only image")
 
     def test_set_vs_c(self):
         rgb = hopper('RGB')
