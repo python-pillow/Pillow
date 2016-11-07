@@ -180,9 +180,9 @@ class TestFileLibTiff(LibTiffTestCase):
 
         # Get the list of the ones that we should be able to write
 
-        core_items = dict((tag, info) for tag, info in [(s, TiffTags.lookup(s)) for s
-                                                        in TiffTags.LIBTIFF_CORE]
-                          if info.type is not None)
+        core_items = {tag: info for tag, info in ((s, TiffTags.lookup(s)) for s
+                                                  in TiffTags.LIBTIFF_CORE)
+                      if info.type is not None}
 
         # Exclude ones that have special meaning
         # that we're already testing them

@@ -418,13 +418,13 @@ TYPES = {}
 
 # some of these are not in our TAGS_V2 dict and were included from tiff.h
 
-LIBTIFF_CORE = set([255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
-                    278, 280, 281, 340, 341, 282, 283, 284, 286, 287,
-                    296, 297, 321, 320, 338, 32995, 322, 323, 32998,
-                    32996, 339, 32997, 330, 531, 530, 301, 532, 333,
-                    # as above
-                    269  # this has been in our tests forever, and works
-                    ])
+LIBTIFF_CORE = {255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
+                278, 280, 281, 340, 341, 282, 283, 284, 286, 287,
+                296, 297, 321, 320, 338, 32995, 322, 323, 32998,
+                32996, 339, 32997, 330, 531, 530, 301, 532, 333,
+                # as above
+                269  # this has been in our tests forever, and works
+                }
 
 LIBTIFF_CORE.remove(320)  # Array of short, crashes
 LIBTIFF_CORE.remove(301)  # Array of short, crashes
