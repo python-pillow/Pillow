@@ -12,7 +12,6 @@ python:
   - 3.5
   - 2.7
   - "2.7_with_system_site_packages" # For PyQt4
-  - 3.2
   - 3.3
   - 3.4
   - nightly
@@ -26,9 +25,7 @@ install:
     # Pyroma tests sometimes hang on PyPy; skip
   - if [ $TRAVIS_PYTHON_VERSION != "pypy" ]; then travis_retry pip install pyroma; fi
 
-  # Coverage 4.0 doesn't support Python 3.2
-  - if [ "$TRAVIS_PYTHON_VERSION" == "3.2" ]; then travis_retry pip install coverage==3.7.1; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "3.2" ]; then travis_retry pip install coverage; fi
+  - "travis_retry pip install coverage"
 
   # docs only on python 2.7
   - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then travis_retry pip install -r requirements.txt ; fi

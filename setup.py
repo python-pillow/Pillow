@@ -74,20 +74,7 @@ def _find_include_file(self, include):
 
 
 def _find_library_file(self, library):
-    # Fix for 3.2.x <3.2.4, 3.3.0, shared lib extension is the python shared
-    # lib extension, not the system shared lib extension: e.g. .cpython-33.so
-    # vs .so. See Python bug http://bugs.python.org/16754
-    if 'cpython' in self.compiler.shared_lib_extension:
-        _dbg('stripping cpython from shared library extension %s',
-             self.compiler.shared_lib_extension)
-        existing = self.compiler.shared_lib_extension
-        self.compiler.shared_lib_extension = "." + existing.split('.')[-1]
-        ret = self.compiler.find_library_file(self.compiler.library_dirs,
-                                              library)
-        self.compiler.shared_lib_extension = existing
-    else:
-        ret = self.compiler.find_library_file(self.compiler.library_dirs,
-                                              library)
+    ret = self.compiler.find_library_file(self.compiler.library_dirs, library)
     if ret:
         _dbg('Found library %s at %s', (library, ret))
     else:
@@ -772,7 +759,6 @@ try:
               "Programming Language :: Python :: 2",
               "Programming Language :: Python :: 2.7",
               "Programming Language :: Python :: 3",
-              "Programming Language :: Python :: 3.2",
               "Programming Language :: Python :: 3.3",
               "Programming Language :: Python :: 3.4",
               "Programming Language :: Python :: 3.5",

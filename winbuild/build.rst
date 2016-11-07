@@ -31,7 +31,7 @@ The build routines expect Python to be installed at C:\PythonXX for
 
 Download Python 3.4, install it, and add it to the path. This is the
 Python that we will use to bootstrap the build process. (The download
-routines are using 3.2+ features, and installing 3.4 gives us pip and
+routines are using 3 features, and installing 3.4 gives us pip and
 virtualenv as well, reducing the number of packages that we need to
 install.)
 
