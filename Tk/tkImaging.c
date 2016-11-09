@@ -438,10 +438,19 @@ int load_tkinter_funcs(void)
      */
 
     int ret = -1;
-    void *tkinter_lib;
+    void *main_program, *tkinter_lib;
     char *tkinter_libname;
     PyObject *pModule = NULL, *pString = NULL;
 
+    /* Try loading from the main program namespace first */
+    main_program = dlopen(NULL, RTLD_LAZY);
+    if (_func_loader(main_program) == 0) {
+        return 0;
+    }
+    /* Clear exception triggered when we didn't find symbols above */
+    PyErr_Clear();
+
+    /* Now try finding the tkinter compiled module */
     pModule = PyImport_ImportModule(TKINTER_FINDER);
     if (pModule == NULL) {
         goto exit;
