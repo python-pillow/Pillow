@@ -98,6 +98,11 @@ def _lib_include(root):
     # map root to (root/lib, root/include)
     return os.path.join(root, "lib"), os.path.join(root, "include")
 
+def _cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK) 
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
 
 def _read(file):
     return open(file, 'rb').read()
@@ -119,6 +124,20 @@ TIFF_ROOT = None
 FREETYPE_ROOT = None
 LCMS_ROOT = None
 
+
+def _pkg_config(name):
+    try:
+        command = [
+            'pkg-config',
+            '--libs-only-L', name,
+            '--cflags-only-I', name,
+        ]
+        if not DEBUG:
+            command.append('--silence-errors')
+        libs = subprocess.check_output(command).decode('utf8').split(' ')
+        return libs[1][2:].strip(), libs[0][2:].strip()
+    except:
+        pass
 
 class pil_build_ext(build_ext):
     class feature:
@@ -184,15 +203,37 @@ class pil_build_ext(build_ext):
 
         _add_directory(include_dirs, "libImaging")
 
+        pkg_config = None
+        if _cmd_exists('pkg-config'):
+            pkg_config = _pkg_config
+
         #
         # add configured kits
+        for root_name, lib_name in dict(JPEG_ROOT="libjpeg",
+                                        JPEG2K_ROOT="libopenjp2",
+                                        TIFF_ROOT=("libtiff-5", "libtiff-4"),
+                                        ZLIB_ROOT="zlib",
+                                        FREETYPE_ROOT="freetype2",
+                                        LCMS_ROOT="lcms2",
+                                        IMAGEQUANT_ROOT="libimagequant"
+                                        ).items():
+            root = globals()[root_name]
+            if root is None and pkg_config:
+                if isinstance(lib_name, tuple):
+                    for lib_name2 in lib_name:
+                        _dbg('Looking for `%s` using pkg-config.' % lib_name2)
+                        root = pkg_config(lib_name2)
+                        if root:
+                            break
+                else:
+                    _dbg('Looking for `%s` using pkg-config.' % lib_name)
+                    root = pkg_config(lib_name)
 
-        for root in (JPEG_ROOT, JPEG2K_ROOT, TIFF_ROOT, ZLIB_ROOT,
-                     FREETYPE_ROOT, LCMS_ROOT, IMAGEQUANT_ROOT):
             if isinstance(root, tuple):
                 lib_root, include_root = root
             else:
                 lib_root = include_root = root
+
             _add_directory(library_dirs, lib_root)
             _add_directory(include_dirs, include_root)
 
