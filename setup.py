@@ -41,7 +41,7 @@ _LIB_IMAGING = (
 DEBUG = False
 
 class DependencyException(Exception): pass
-class DefaultDependencyException(Exception): pass
+class RequiredDependencyException(Exception): pass
 
 def _dbg(s, tp=None):
     if DEBUG:
@@ -560,7 +560,7 @@ class pil_build_ext(build_ext):
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
                 if f in ('jpeg', 'zlib'):
-                    raise DefaultDependencyException(f)
+                    raise RequiredDependencyException(f)
                 raise DependencyException(f)
             
         #
@@ -791,7 +791,7 @@ try:
           keywords=["Imaging", ],
           license='Standard PIL License',
           zip_safe=not debug_build(), )
-except DefaultDependencyException as err:
+except RequiredDependencyException as err:
     msg = """
 
 The headers or library files could not be found for %s,
@@ -802,7 +802,7 @@ Please see the install instructions at:
 
 """ % (str(err))
     sys.stderr.write(msg)
-    raise DefaultDependencyException(msg)
+    raise RequiredDependencyException(msg)
 except DependencyException as err:
     msg = """
 
