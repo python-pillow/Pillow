@@ -105,7 +105,8 @@ def _cmd_exists(cmd):
     )
 
 def _read(file):
-    return open(file, 'rb').read()
+    with open(file, 'rb') as fp:
+        return fp.read()
 
 
 try:
