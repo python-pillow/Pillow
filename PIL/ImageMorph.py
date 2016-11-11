@@ -156,10 +156,10 @@ class LutBuilder(object):
 #        print '--'
 
         # compile the patterns into regular expressions for speed
-        for i in range(len(patterns)):
-            p = patterns[i][0].replace('.', 'X').replace('X', '[01]')
+        for i, pattern in enumerate(patterns):
+            p = pattern[0].replace('.', 'X').replace('X', '[01]')
             p = re.compile(p)
-            patterns[i] = (p, patterns[i][1])
+            patterns[i] = (p, pattern[1])
 
         # Step through table and find patterns that match.
         # Note that all the patterns are searched. The last one
