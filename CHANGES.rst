@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Search for tkinter first in builtins #2210
+  [matthew-brett]  
+
 - Tests: Replace try/except/fail pattern with TestCase.assertRaises() #2200
   [jdufresne]
 
