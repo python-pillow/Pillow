@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Fix for ImageQt Segfault, fixes #1370 #2182
+  [wiredfool]
+
+- Setup: Close file in setup.py after finished reading #2208
+  [jdufresne]
+
 - Setup: optionally use pkg-config (when present) to detect dependencies #2074
   [garbas]
 
