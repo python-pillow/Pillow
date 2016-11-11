@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Setup: optionally use pkg-config (when present) to detect dependencies #2074
+  [garbas]
+
 - Search for tkinter first in builtins #2210
   [matthew-brett]  
 
