@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Replaced range(len()) #2197
+  [radarhere]
+
 - Fix for ImageQt Segfault, fixes #1370 #2182
   [wiredfool]
 
