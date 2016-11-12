@@ -413,25 +413,6 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.tag_v2[X_RESOLUTION], 72)
         self.assertEqual(im.tag_v2[Y_RESOLUTION], 36)
 
-    def test_deprecation_warning_with_spaces(self):
-        kwargs = {'resolution unit': 'inch',
-                  'x resolution': 36,
-                  'y resolution': 72}
-        filename = self.tempfile("temp.tif")
-        self.assert_warning(DeprecationWarning,
-                            lambda: hopper("RGB").save(filename, **kwargs))
-        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
-
-        im = Image.open(filename)
-
-        # legacy interface
-        self.assertEqual(im.tag[X_RESOLUTION][0][0], 36)
-        self.assertEqual(im.tag[Y_RESOLUTION][0][0], 72)
-
-        # v2 interface
-        self.assertEqual(im.tag_v2[X_RESOLUTION], 36)
-        self.assertEqual(im.tag_v2[Y_RESOLUTION], 72)
-
     def test_multipage_compression(self):
         im = Image.open('Tests/images/compression.tif')
 
