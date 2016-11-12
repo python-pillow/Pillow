@@ -484,9 +484,9 @@ Reading from a string
 
 ::
 
-    import StringIO
+    import io
 
-    im = Image.open(StringIO.StringIO(buffer))
+    im = Image.open(io.StringIO(buffer))
 
 Note that the library rewinds the file (using ``seek(0)``) before reading the
 image header. In addition, seek will also be used when the image data is read
