@@ -64,7 +64,8 @@ Image Lifecycle
 * ``Image.Image.seek()`` in the case of multi-frame images
   (e.g. multipage TIFF and animated GIF) the image file left open so
   that seek can load the appropriate frame.  When the last frame is
-  read, the image file is closed, and no more seeks can occur. 
+  read, the image file is closed (at least in some image plugins), and
+  no more seeks can occur.
 
 * ``Image.Image.close()`` Closes the file pointer and destroys the
   core image object. This is used in the Pillow context manager
