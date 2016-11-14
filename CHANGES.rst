@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Added missing top-level test __main__ #2222
+  [radarhere]
+
 - Replaced range(len()) #2197
   [radarhere]
 
