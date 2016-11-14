@@ -26,12 +26,26 @@ class TestBmpReference(PillowTestCase):
     def test_questionable(self):
         """ These shouldn't crash/dos, but it's not well defined that these
         are in spec """
+        supported = [
+            "pal8os2v2.bmp",
+            "rgb24prof.bmp",
+            "pal1p1.bmp",
+            "pal8offs.bmp",
+            "rgb24lprof.bmp",
+            "rgb32fakealpha.bmp",
+            "rgb24largepal.bmp",
+            "pal8os2sp.bmp",
+            "rgb32bf-xbgr.bmp",
+        ]
         for f in self.get_files('q'):
             try:
                 im = Image.open(f)
                 im.load()
+                if os.path.basename(f) not in supported:
+                    print("Please add %s to the partially supported bmp specs." % f)
             except Exception:  # as msg:
-                pass
+                if os.path.basename(f) in supported:
+                    raise
                 # print ("Bad Image %s: %s" %(f,msg))
 
     def test_good(self):
