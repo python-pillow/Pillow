@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Add support for another BMP bitfield #2221
+  [jmerdich]
+
 - Added missing top-level test __main__ #2222
   [radarhere]
 
