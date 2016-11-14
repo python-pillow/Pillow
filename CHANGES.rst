@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Close file after reading in ImagePalette.load() #2215
+  [jdufresne]
+
 - Changed behaviour of default box argument for paste method to match docs #2211
   [radarhere]
 
