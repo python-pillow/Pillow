@@ -261,8 +261,5 @@ class TestImage(PillowTestCase):
             Image.core.fill('RGB', (2,-2), (0,0,0))
 
 
-
-
-
 if __name__ == '__main__':
     unittest.main()

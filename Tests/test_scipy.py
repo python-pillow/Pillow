@@ -1,4 +1,4 @@
-from helper import PillowTestCase
+from helper import unittest, PillowTestCase
 
 try:
     import numpy as np
@@ -41,3 +41,7 @@ class Test_scipy_resize(PillowTestCase):
         assert_equal(im2, res)
         assert_equal(im3, res)
         assert_equal(im4, res)
+
+
+if __name__ == '__main__':
+    unittest.main()
