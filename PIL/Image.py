@@ -1307,8 +1307,7 @@ class Image(object):
             box = None
 
         if box is None:
-            # cover all of self
-            box = (0, 0) + self.size
+            box = (0, 0)
 
         if len(box) == 2:
             # upper left corner given; get size from image or mask
@@ -1321,7 +1320,7 @@ class Image(object):
                 raise ValueError(
                     "cannot determine region size; use 4-item box"
                     )
-            box = box + (box[0]+size[0], box[1]+size[1])
+            box += (box[0]+size[0], box[1]+size[1])
 
         if isStringType(im):
             from PIL import ImageColor
