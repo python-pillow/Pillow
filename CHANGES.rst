@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Changed behaviour of default box argument for paste method to match docs #2211
+  [radarhere]
+
 - Add support for another BMP bitfield #2221
   [jmerdich]
 
