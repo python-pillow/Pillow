@@ -33,3 +33,4 @@ Reference
    PyAccess
    ../PIL
    plugins
+   internal_design
