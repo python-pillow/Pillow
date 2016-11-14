@@ -251,6 +251,13 @@ class TestImagingPaste(PillowTestCase):
                 (126, 63, 255, 63)
             ])
 
+    def test_different_sizes(self):
+        im = Image.new('RGB', (100, 100))
+        im2 = Image.new('RGB', (50, 50))
+
+        im.copy().paste(im2)
+        im.copy().paste(im2, (0,0))
+
 
 if __name__ == '__main__':
     unittest.main()
