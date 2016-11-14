@@ -1,4 +1,4 @@
-from helper import PillowTestCase, cached_property
+from helper import unittest, PillowTestCase, cached_property
 
 from PIL import Image
 
@@ -250,3 +250,7 @@ class TestImagingPaste(PillowTestCase):
                 (48, 15, 15, 47),
                 (126, 63, 255, 63)
             ])
+
+
+if __name__ == '__main__':
+    unittest.main()

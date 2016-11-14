@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from helper import PillowTestCase, hopper
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import TiffImagePlugin, Image
 from PIL.TiffImagePlugin import IFDRational
@@ -60,3 +60,6 @@ class Test_IFDRational(PillowTestCase):
             reloaded = Image.open(out)
             self.assertEqual(float(IFDRational(301, 1)),
                              float(reloaded.tag_v2[282]))
+
+if __name__ == '__main__':
+    unittest.main()
