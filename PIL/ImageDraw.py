@@ -223,7 +223,6 @@ class ImageDraw(object):
             return self.multiline_text(xy, text, fill, font, anchor,
                                        spacing, align, outline)
         ink, fill = self._getink(fill)
-        print("Outline: %s" % outline)
         if font is None:
             font = self.getfont()
         if ink is None:

@@ -1,0 +1,10 @@
+3.5.0
+-----
+
+New text-outlining feature
+==========================
+
+Both ``ImageDraw.text()`` and ``ImageDraw.multiline_text()`` now supports
+text-stroking.
+Passing in a color value to the methods using the ``outline`` keyword argument
+will now outline the text in that color.

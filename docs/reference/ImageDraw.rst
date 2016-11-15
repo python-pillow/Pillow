@@ -240,6 +240,7 @@ Methods
                     the number of pixels between lines.
     :param align: If the text is passed on to multiline_text(),
                   "left", "center" or "right".
+    :param outline: Color to use to draw an outline around the text.
 
 
 .. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left")
@@ -252,6 +253,7 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
     :param align: "left", "center" or "right".
+    :param outline: Color to use to draw an outline around the text.
 
 .. py:method:: PIL.ImageDraw.Draw.textsize(text, font=None, spacing=0)
 
