@@ -127,6 +127,18 @@ try:
             target_img = Image.open(target)
             self.assert_image_similar(im, target_img, .5)
 
+        def test_stroke_text(self):
+            im = Image.new(mode='RGB', size=(300, 100))
+            draw = ImageDraw.Draw(im)
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+            draw.text((5, 5), TEST_TEXT, 'black', font=ttf,
+                      outline='white')
+
+            target = 'Tests/images/stroked_text_image.png'
+            target_img = Image.open(target)
+            self.assert_image_similar(im, target_img, .5)
+
         def test_render_multiline(self):
             im = Image.new(mode='RGB', size=(300, 100))
             draw = ImageDraw.Draw(im)

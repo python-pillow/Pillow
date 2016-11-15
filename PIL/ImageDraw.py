@@ -217,13 +217,13 @@ class ImageDraw(object):
 
         return text.split(split_character)
 
-    def text(self, xy, text, fill=None, font=None, anchor=None,
-             *args, **kwargs):
+    def text(self, xy, text, fill=None, font=None, anchor=None, spacing=4, 
+             align="left", outline=None):
         if self._multiline_check(text):
             return self.multiline_text(xy, text, fill, font, anchor,
-                                       *args, **kwargs)
-
+                                       spacing, align, outline)
         ink, fill = self._getink(fill)
+        print("Outline: %s" % outline)
         if font is None:
             font = self.getfont()
         if ink is None:
@@ -237,10 +237,17 @@ class ImageDraw(object):
                     mask = font.getmask(text, self.fontmode)
                 except TypeError:
                     mask = font.getmask(text)
+            if outline is not None:
+                color, _ = self._getink(outline)
+                for offset in range(0, 2):
+                    tmp_xy = list(xy)
+                    for difference in [-1, 1]:
+                        tmp_xy[offset] = xy[offset] + difference
+                        self.draw.draw_bitmap(tmp_xy, mask, color)
             self.draw.draw_bitmap(xy, mask, ink)
 
     def multiline_text(self, xy, text, fill=None, font=None, anchor=None,
-                       spacing=4, align="left"):
+                       spacing=4, align="left", outline=None):
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
@@ -259,10 +266,9 @@ class ImageDraw(object):
                 left += (max_width - widths[idx])
             else:
                 assert False, 'align must be "left", "center" or "right"'
-            self.text((left, top), line, fill, font, anchor)
+            self.text((left, top), line, fill, font, anchor, outline=outline)
             top += line_spacing
             left = xy[0]
-
     def textsize(self, text, font=None, *args, **kwargs):
         """Get the size of a given string, in pixels."""
         if self._multiline_check(text):
