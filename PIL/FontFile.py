@@ -100,14 +100,13 @@ class FontFile(object):
         self.bitmap.save(os.path.splitext(filename)[0] + ".pbm", "PNG")
 
         # font metrics
-        fp = open(os.path.splitext(filename)[0] + ".pil", "wb")
-        fp.write(b"PILfont\n")
-        fp.write((";;;;;;%d;\n" % self.ysize).encode('ascii'))  # HACK!!!
-        fp.write(b"DATA\n")
-        for id in range(256):
-            m = self.metrics[id]
-            if not m:
-                puti16(fp, [0] * 10)
-            else:
-                puti16(fp, m[0] + m[1] + m[2])
-        fp.close()
+        with open(os.path.splitext(filename)[0] + ".pil", "wb") as fp:
+            fp.write(b"PILfont\n")
+            fp.write((";;;;;;%d;\n" % self.ysize).encode('ascii'))  # HACK!!!
+            fp.write(b"DATA\n")
+            for id in range(256):
+                m = self.metrics[id]
+                if not m:
+                    puti16(fp, [0] * 10)
+                else:
+                    puti16(fp, m[0] + m[1] + m[2])
