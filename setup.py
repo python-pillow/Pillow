@@ -405,8 +405,7 @@ class pil_build_ext(build_ext):
             best_path = None
             for name in os.listdir(program_files):
                 if name.startswith('OpenJPEG '):
-                    version = tuple([int(x) for x in name[9:].strip().split(
-                        '.')])
+                    version = tuple(int(x) for x in name[9:].strip().split('.'))
                     if version > best_version:
                         best_version = version
                         best_path = os.path.join(program_files, name)
@@ -466,7 +465,7 @@ class pil_build_ext(build_ext):
                         os.path.isfile(os.path.join(directory, name,
                                                     'openjpeg.h')):
                         _dbg('Found openjpeg.h in %s/%s', (directory, name))
-                        version = tuple([int(x) for x in name[9:].split('.')])
+                        version = tuple(int(x) for x in name[9:].split('.'))
                         if best_version is None or version > best_version:
                             best_version = version
                             best_path = os.path.join(directory, name)
@@ -479,8 +478,7 @@ class pil_build_ext(build_ext):
                 # include path
                 _add_directory(self.compiler.include_dirs, best_path, 0)
                 feature.jpeg2000 = 'openjp2'
-                feature.openjpeg_version = '.'.join([str(x) for x in
-                                                     best_version])
+                feature.openjpeg_version = '.'.join(str(x) for x in best_version)
 
         if feature.want('imagequant'):
             _dbg('Looking for imagequant')

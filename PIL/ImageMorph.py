@@ -78,7 +78,7 @@ class LutBuilder(object):
     def build_default_lut(self):
         symbols = [0, 1]
         m = 1 << 4  # pos of current pixel
-        self.lut = bytearray([symbols[(i & m) > 0] for i in range(LUT_SIZE)])
+        self.lut = bytearray(symbols[(i & m) > 0] for i in range(LUT_SIZE))
 
     def get_lut(self):
         return self.lut
@@ -88,7 +88,7 @@ class LutBuilder(object):
         string permuted according to the permutation list.
         """
         assert(len(permutation) == 9)
-        return ''.join([pattern[p] for p in permutation])
+        return ''.join(pattern[p] for p in permutation)
 
     def _pattern_permute(self, basic_pattern, options, basic_result):
         """pattern_permute takes a basic pattern and its result and clones

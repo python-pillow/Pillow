@@ -600,7 +600,7 @@ def _get_palette_bytes(im, palette, info):
         if palette and isinstance(palette, bytes):
             source_palette = palette[:768]
         else:
-            source_palette = bytearray([i//3 for i in range(768)])
+            source_palette = bytearray(i//3 for i in range(768))
 
     used_palette_colors = palette_bytes = None
 
