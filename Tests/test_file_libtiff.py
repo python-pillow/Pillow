@@ -370,7 +370,8 @@ class TestFileLibTiff(LibTiffTestCase):
         fn = im.fp.fileno()
 
         os.fstat(fn)
-        im.load()  # this should close it.
+        im.load()
+        im.close() # this should close it.
         self.assertRaises(OSError, lambda: os.fstat(fn))
         im = None  # this should force even more closed.
         self.assertRaises(OSError, lambda: os.fstat(fn))
