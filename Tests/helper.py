@@ -49,7 +49,7 @@ class PillowTestCase(unittest.TestCase):
                 len(a), len(b),
                 msg or "got length %s, expected %s" % (len(a), len(b)))
             self.assertTrue(
-                all([x == y for x, y in zip(a, b)]),
+                all(x == y for x, y in zip(a, b)),
                 msg or "got %s, expected %s" % (a, b))
         except:
             self.assertEqual(a, b, msg)

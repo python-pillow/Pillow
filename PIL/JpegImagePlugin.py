@@ -408,7 +408,7 @@ def _fixup_dict(src_dict):
         except: pass
         return value
 
-    return dict([(k, _fixup(v)) for k, v in src_dict.items()])
+    return dict((k, _fixup(v)) for k, v in src_dict.items())
 
 
 def _getexif(self):

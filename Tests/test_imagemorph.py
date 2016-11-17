@@ -25,8 +25,8 @@ class MorphTests(PillowTestCase):
         chars = '.1'
         width, height = im.size
         return '\n'.join(
-            [''.join([chars[im.getpixel((c, r)) > 0] for c in range(width)])
-             for r in range(height)])
+            ''.join(chars[im.getpixel((c, r)) > 0] for c in range(width))
+            for r in range(height))
 
     def string_to_img(self, image_string):
         """Turn a string image representation into a binary image"""

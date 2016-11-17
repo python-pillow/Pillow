@@ -132,7 +132,7 @@ COMPRESSION_INFO = {
     34677: "tiff_sgilog24",
 }
 
-COMPRESSION_INFO_REV = dict([(v, k) for (k, v) in COMPRESSION_INFO.items()])
+COMPRESSION_INFO_REV = dict((v, k) for (k, v) in COMPRESSION_INFO.items())
 
 OPEN_INFO = {
     # (ByteOrder, PhotoInterpretation, SampleFormat, FillOrder, BitsPerSample,
