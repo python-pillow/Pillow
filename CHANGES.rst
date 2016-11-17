@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Use generator expressions instead of list comprehension #2225
+  [jdufresne]
+ 
 - Close file after reading in ImagePalette.load() #2215
   [jdufresne]
 
