@@ -401,6 +401,19 @@ class TestFileLibTiff(LibTiffTestCase):
 
         TiffImagePlugin.READ_LIBTIFF = False
 
+    def test_multipage_nframes(self):
+        # issue #862
+        TiffImagePlugin.READ_LIBTIFF = True
+        im = Image.open('Tests/images/multipage.tiff')
+        frames = im.n_frames
+        self.assertEqual(frames, 3)
+        for idx in range(frames):
+            im.seek(0)
+            # Should not raise ValueError: I/O operation on closed file
+            im.load()
+
+        TiffImagePlugin.READ_LIBTIFF = False
+
     def test__next(self):
         TiffImagePlugin.READ_LIBTIFF = True
         im = Image.open('Tests/images/hopper.tif')
