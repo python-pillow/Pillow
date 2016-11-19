@@ -107,7 +107,7 @@ class IptcImageFile(ImageFile.ImageFile):
             else:
                 self.info[tag] = tagdata
 
-            # print tag, self.info[tag]
+            # print(tag, self.info[tag])
 
         # mode
         layers = i8(self.info[(3, 60)][0])

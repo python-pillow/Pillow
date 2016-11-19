@@ -119,9 +119,9 @@ class BdfFontFile(FontFile.FontFile):
 
         # fontname = ";".join(font[1:])
 
-        # print "#", fontname
+        # print("#", fontname)
         # for i in comments:
-        #       print "#", i
+        #       print("#", i)
 
         while True:
             c = bdf_char(fp)

@@ -152,8 +152,8 @@ class LutBuilder(object):
 
 #        # Debugging
 #        for p,r in patterns:
-#            print p,r
-#        print '--'
+#            print(p,r)
+#        print('--')
 
         # compile the patterns into regular expressions for speed
         for i, pattern in enumerate(patterns):

@@ -2161,7 +2161,7 @@ def fromarray(obj, mode=None):
             typekey = (1, 1) + shape[2:], arr['typestr']
             mode, rawmode = _fromarray_typemap[typekey]
         except KeyError:
-            # print typekey
+            # print(typekey)
             raise TypeError("Cannot handle this data type")
     else:
         rawmode = mode
