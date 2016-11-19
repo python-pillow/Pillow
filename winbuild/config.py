@@ -43,10 +43,10 @@ libs = {
         'dir': 'freetype-2.6.5',
     },
     'lcms': {
-        'url': SF_MIRROR+'/project/lcms/lcms/2.7/lcms2-2.7.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'lcms2-2.7.zip',
-        'hash': 'sha1:7ff1a5b721ca719760ba6eb4ec6f38d5e65381cf',
-        'dir': 'lcms2-2.7',
+        'url': SF_MIRROR+'/project/lcms/lcms/2.8/lcms2-2.8.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'lcms2-2.8.zip',
+        'hash': 'sha1:1facf855756296d4bad8a2a6ae02650361a9ce1f',
+        'dir': 'lcms2-2.8',
     },
     'tcl-8.5': {
         'url': SF_MIRROR+'/project/tcl/Tcl/8.5.19/tcl8519-src.zip',
