@@ -81,10 +81,10 @@ libs = {
         'dir': 'libwebp-0.5.0',
     },
     'openjpeg': {
-        'url': SF_MIRROR+'/project/openjpeg/openjpeg/2.1.0/openjpeg-2.1.0.tar.gz',
-        'filename': PILLOW_DEPENDS_DIR + 'openjpeg-2.1.0.tar.gz',
-        'hash': 'md5:f6419fcc233df84f9a81eb36633c6db6',
-        'dir': 'openjpeg-2.1.0',
+        'url': SF_MIRROR+'/project/openjpeg/openjpeg/2.1.2/openjpeg-2.1.2.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'openjpeg-2.1.2.tar.gz',
+        'hash': 'md5:40a7bfdcc66280b3c1402a0eb1a27624',
+        'dir': 'openjpeg-2.1.2',
     },
 }
 
