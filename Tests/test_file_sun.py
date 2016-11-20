@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, SunImagePlugin
 
@@ -16,11 +16,11 @@ class TestFileSun(PillowTestCase):
         # Assert
         self.assertEqual(im.size, (128, 128))
 
+        self.assert_image_similar(im, hopper(), 5) # visually verified
+        
         invalid_file = "Tests/images/flower.jpg"
         self.assertRaises(SyntaxError,
                           lambda: SunImagePlugin.SunImageFile(invalid_file))
-
-
 
     def test_im1(self):
         im = Image.open('Tests/images/sunraster.im1')

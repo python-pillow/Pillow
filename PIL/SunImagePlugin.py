@@ -48,16 +48,19 @@ class SunImageFile(ImageFile.ImageFile):
         self.size = i32(s[4:8]), i32(s[8:12])
 
         depth = i32(s[12:16])
+        file_type = i32(s[20:24])
+        
         if depth == 1:
             self.mode, rawmode = "1", "1;I"
         elif depth == 8:
             self.mode = rawmode = "L"
         elif depth == 24:
-            self.mode, rawmode = "RGB", "BGR"
+            if file_type == 3:
+                self.mode, rawmode = "RGB", "RGB"
+            else:
+                self.mode, rawmode = "RGB", "BGR"
         else:
             raise SyntaxError("unsupported mode")
-
-        compression = i32(s[20:24])
 
         if i32(s[24:28]) != 0:
             length = i32(s[28:32])
@@ -68,11 +71,31 @@ class SunImageFile(ImageFile.ImageFile):
 
         stride = (((self.size[0] * depth + 7) // 8) + 3) & (~3)
 
-        if compression == 1:
-            self.tile = [("raw", (0, 0)+self.size, offset, (rawmode, stride))]
-        elif compression == 2:
-            self.tile = [("sun_rle", (0, 0)+self.size, offset, rawmode)]
+        # file type: Type is the version (or flavor) of the bitmap
+        # file. The following values are typically found in the Type
+        # field:
+        # 0000h	Old
+        # 0001h	Standard
+        # 0002h	Byte-encoded
+        # 0003h	RGB format
+        # 0004h	TIFF format
+        # 0005h	IFF format
+        # FFFFh	Experimental
 
+        # Old and standard are the same, except for the length tag.
+        # byte-encoded is run-length-encoded
+        # RGB looks similar to standard, but RGB byte order
+        # TIFF and IFF mean that they were converted from T/IFF
+        # Experimental means that it's something else.
+        # (http://www.fileformat.info/format/sunraster/egff.htm)
+
+        if file_type in (0, 1, 3, 4, 5):
+            self.tile = [("raw", (0, 0)+self.size, offset, (rawmode, stride))]
+        elif file_type == 2:
+            self.tile = [("sun_rle", (0, 0)+self.size, offset, rawmode)]
+        else:
+            raise SyntaxError('Unsupported Sun Raster file type')
+        
 #
 # registry
 
