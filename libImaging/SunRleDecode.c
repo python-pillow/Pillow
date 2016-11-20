@@ -26,7 +26,6 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     UINT8* ptr;
     UINT8 extra_data = 0;
     UINT8 extra_bytes = 0;
-    int ct_bytes = 0;
 
     ptr = buf;
 
@@ -47,7 +46,6 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
                 /* Literal 0x80 (2 bytes) */
                 n = 1;
-                ct_bytes += n;        
 
                 state->buffer[state->x] = 0x80;
 
@@ -60,7 +58,27 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 if (bytes < 3)
                     break;
 
-                ct_bytes += n;        
+                /* from (http://www.fileformat.info/format/sunraster/egff.htm)
+
+                   For example, a run of 100 pixels with the value of
+                   0Ah would encode as the values 80h 64h 0Ah. A
+                   single pixel value of 80h would encode as the
+                   values 80h 00h. The four unencoded bytes 12345678h
+                   would be stored in the RLE stream as 12h 34h 56h
+                   78h.  100 pixels, n=100, not 100 pixels, n=99.
+
+                   But Wait! There's More! 
+                   (http://www.fileformat.info/format/sunraster/spec/598a59c4fac64c52897585d390d86360/view.htm)
+
+                   If the first byte is 0x80, and the second byte is
+                   not zero, the record is three bytes long. The
+                   second byte is a count and the third byte is a
+                   value. Output (count+1) pixels of that value.
+
+                   2 specs, same site, but Imagemagick and GIMP seem
+                   to agree on the second one.
+                */
+                n += 1; 
 
                 if (state->x + n > state->bytes) {
                     extra_bytes = n;  /* full value */
@@ -80,7 +98,6 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
             /* Literal byte */ 
             n = 1; 
-            ct_bytes += n;        
 
             state->buffer[state->x] = ptr[0];
 
@@ -103,7 +120,6 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
                 if (++state->y >= state->ysize) {
                     /* End of file (errcode = 0) */
-                    printf("%d", ct_bytes);
                     return -1;
                 }
             }

@@ -21,5 +21,11 @@ class TestFileSun(PillowTestCase):
                           lambda: SunImagePlugin.SunImageFile(invalid_file))
 
 
+
+    def test_im1(self):
+        im = Image.open('Tests/images/sunraster.im1')
+        target = Image.open('Tests/images/sunraster.im1.png')
+        self.assert_image_equal(im, target)
+        
 if __name__ == '__main__':
     unittest.main()
