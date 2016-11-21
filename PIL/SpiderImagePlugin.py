@@ -58,7 +58,7 @@ iforms = [1, 3, -11, -12, -21, -22]
 
 # There is no magic number to identify Spider files, so just check a
 # series of header locations to see if they have reasonable values.
-# Returns no.of bytes in the header, if it is a valid Spider header,
+# Returns no. of bytes in the header, if it is a valid Spider header,
 # otherwise returns 0
 
 def isSpiderHeader(t):
