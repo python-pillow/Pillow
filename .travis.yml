@@ -47,6 +47,10 @@ install:
 
   # libimagequant
   - pushd depends && ./install_imagequant.sh && popd
+  
+  # extra test images
+  - pushd depends && ./install_extra_test_images.sh && popd  
+  
 
 before_script:
 # Qt needs a display for some of the tests, and it's only run on the system site packages install
