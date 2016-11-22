@@ -4,6 +4,24 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Fix "invalid escape sequence" bytestring warnings in Python 3.6 #2186
+  [timgraham]
+
+- Removed support for Python 2.6 and Python 3.2 #2192
+  [jdufresne]
+
+- Setup: Raise custom exceptions when required/requested dependencies are not found #2213
+  [wiredfool]
+
+- Use a context manager in FontFile.save() to ensure file is always closed #2226
+  [jdufresne]
+
+- Fixed bug in saving to fp-objects in Python >= 3.4 #2227
+  [radarhere]
+
+- Use a context manager in ImageFont._load_pilfont() to ensure file is always closed #2232
+  [jdufresne]
+  
 - Use generator expressions instead of list comprehension #2225
   [jdufresne]
  
