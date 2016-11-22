@@ -449,7 +449,9 @@ def isOleFile(filename):
         header = filename.read(len(MAGIC))
         # just in case, seek back to start of file:
         filename.seek(0)
-    elif isinstance(filename, bytes) and len(filename) >= MINIMAL_OLEFILE_SIZE:
+    elif isinstance(filename, bytes):
+        if len(filename) < MINIMAL_OLEFILE_SIZE:
+            return False
         # filename is a bytes string containing the OLE file to be parsed:
         header = filename[:len(MAGIC)]
     else:
