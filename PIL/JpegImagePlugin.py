@@ -341,6 +341,10 @@ class JpegImageFile(ImageFile.ImageFile):
         if len(self.tile) != 1:
             return
 
+        # Protect from second call
+        if self.decoderconfig:
+            return
+
         d, e, o, a = self.tile[0]
         scale = 0
 
@@ -349,7 +353,7 @@ class JpegImageFile(ImageFile.ImageFile):
             a = mode, ""
 
         if size:
-            scale = max(self.size[0] // size[0], self.size[1] // size[1])
+            scale = min(self.size[0] // size[0], self.size[1] // size[1])
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
