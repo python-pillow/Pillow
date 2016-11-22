@@ -20,6 +20,9 @@ class TestImageDraft(PillowTestCase):
         for in_size, req_size, out_size in [
             ((435, 361), (2048, 2048), (435, 361)),  # bigger
             ((435, 361), (435, 361), (435, 361)),  # same
+            ((128, 128), (64, 64), (64, 64)),
+            ((128, 128), (32, 32), (32, 32)),
+            ((128, 128), (16, 16), (16, 16)),
 
             # large requested width
             ((435, 361), (218, 128), (435, 361)),  # almost 2x
@@ -40,6 +43,7 @@ class TestImageDraft(PillowTestCase):
             ((435, 361), (16, 22), (55, 46)),  # more than 16x
         ]:
             im = self.draft_roundtrip('L', in_size, None, req_size)
+            im.load()
             self.assertEqual(im.size, out_size)
 
     def test_mode(self):
@@ -58,8 +62,13 @@ class TestImageDraft(PillowTestCase):
             ("CMYK", "YCbCr", "CMYK"),
         ]:
             im = self.draft_roundtrip(in_mode, (64, 64), req_mode, None)
+            im.load()
             self.assertEqual(im.mode, out_mode)
 
+    def test_several_drafts(self):
+        im = self.draft_roundtrip('L', (128, 128), None, (64, 64))
+        im.draft(None, (64, 64))
+        im.load()
 
 if __name__ == '__main__':
     unittest.main()
