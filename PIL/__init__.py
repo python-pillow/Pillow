@@ -57,7 +57,8 @@ _plugins = [
     'WmfImagePlugin',
     'XbmImagePlugin',
     'XpmImagePlugin',
-    'XVThumbImagePlugin'
+    'XVThumbImagePlugin',
+    
     #no _accept function
     'ImImagePlugin',
     'ImtImagePlugin',
