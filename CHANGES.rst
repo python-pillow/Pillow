@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Updated dependency scripts to use Webp 0.5.1, OpenJpeg 2.1.2, and TclTk 8.6.6 #2235, #2236, #2237
+  [radarhere]
+
 - Fix "invalid escape sequence" bytestring warnings in Python 3.6 #2186
   [timgraham]
 
