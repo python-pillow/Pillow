@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Use minimal scale for jpeg drafts #2240
+  [homm]
+
 - Updated dependency scripts to use Webp 0.5.1, OpenJpeg 2.1.2, and TclTk 8.6.6 #2235, #2236, #2237
   [radarhere]
 
