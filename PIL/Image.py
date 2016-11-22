@@ -355,7 +355,11 @@ def preinit():
         return
 
     try:
-        from PIL import BmpImagePlugin
+        from PIL import JpegImagePlugin
+    except ImportError:
+        pass
+    try:
+        from PIL import PngImagePlugin
     except ImportError:
         pass
     try:
@@ -363,21 +367,13 @@ def preinit():
     except ImportError:
         pass
     try:
-        from PIL import JpegImagePlugin
+        from PIL import BmpImagePlugin
     except ImportError:
         pass
     try:
         from PIL import PpmImagePlugin
     except ImportError:
         pass
-    try:
-        from PIL import PngImagePlugin
-    except ImportError:
-        pass
-#   try:
-#       import TiffImagePlugin
-#   except ImportError:
-#       pass
 
     _initialized = 1
 
