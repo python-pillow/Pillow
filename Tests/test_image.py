@@ -63,6 +63,18 @@ class TestImage(PillowTestCase):
             os.remove(temp_file)
         im.save(Path(temp_file))
 
+    def test_fp_name(self):
+        temp_file = self.tempfile("temp.jpg")
+
+        class FP(object):
+            def write(a, b):
+                pass
+        fp = FP()
+        fp.name = temp_file
+
+        im = hopper()
+        im.save(fp)
+
     def test_tempfile(self):
         # see #1460, pathlib support breaks tempfile.TemporaryFile on py27
         # Will error out on save on 3.0.0

@@ -1659,7 +1659,7 @@ class Image(object):
             if isinstance(fp, Path):
                 filename = str(fp)
                 open_fp = True
-        elif hasattr(fp, "name") and isPath(fp.name):
+        if not filename and hasattr(fp, "name") and isPath(fp.name):
             # only set the name for metadata purposes
             filename = fp.name
 
