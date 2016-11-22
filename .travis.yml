@@ -11,9 +11,7 @@ python:
   - "pypy3"
   - 3.5
   - 2.7
-  - 2.6
   - "2.7_with_system_site_packages" # For PyQt4
-  - 3.2
   - 3.3
   - 3.4
   - nightly
@@ -24,14 +22,10 @@ install:
   - "travis_retry pip install cffi"
   - "travis_retry pip install nose"
   - "travis_retry pip install check-manifest"
-    # Pyroma tests sometimes hang on PyPy and Python 2.6; skip for those
-  - if [ $TRAVIS_PYTHON_VERSION != "pypy" && $TRAVIS_PYTHON_VERSION != "2.6" ]; then travis_retry pip install pyroma; fi
+    # Pyroma tests sometimes hang on PyPy; skip
+  - if [ $TRAVIS_PYTHON_VERSION != "pypy" ]; then travis_retry pip install pyroma; fi
 
-  - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then travis_retry pip install unittest2; fi
-
-  # Coverage 4.0 doesn't support Python 3.2
-  - if [ "$TRAVIS_PYTHON_VERSION" == "3.2" ]; then travis_retry pip install coverage==3.7.1; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "3.2" ]; then travis_retry pip install coverage; fi
+  - "travis_retry pip install coverage"
 
   # docs only on python 2.7
   - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then travis_retry pip install -r requirements.txt ; fi

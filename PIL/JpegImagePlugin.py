@@ -408,7 +408,7 @@ def _fixup_dict(src_dict):
         except: pass
         return value
 
-    return dict((k, _fixup(v)) for k, v in src_dict.items())
+    return {k: _fixup(v) for k, v in src_dict.items()}
 
 
 def _getexif(self):
@@ -488,7 +488,7 @@ def _getmp(self):
         rawmpentries = mp[0xB002]
         for entrynum in range(0, quant):
             unpackedentry = unpack_from(
-                '{0}LLLHH'.format(endianness), rawmpentries, entrynum * 16)
+                '{}LLLHH'.format(endianness), rawmpentries, entrynum * 16)
             labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1',
                       'EntryNo2')
             mpentry = dict(zip(labels, unpackedentry))
