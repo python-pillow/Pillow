@@ -62,23 +62,22 @@ class ImageFont(object):
 
     def _load_pilfont(self, filename):
 
-        fp = open(filename, "rb")
-
-        for ext in (".png", ".gif", ".pbm"):
-            try:
-                fullname = os.path.splitext(filename)[0] + ext
-                image = Image.open(fullname)
-            except:
-                pass
+        with open(filename, "rb") as fp:
+            for ext in (".png", ".gif", ".pbm"):
+                try:
+                    fullname = os.path.splitext(filename)[0] + ext
+                    image = Image.open(fullname)
+                except:
+                    pass
+                else:
+                    if image and image.mode in ("1", "L"):
+                        break
             else:
-                if image and image.mode in ("1", "L"):
-                    break
-        else:
-            raise IOError("cannot find glyph data file")
+                raise IOError("cannot find glyph data file")
 
-        self.file = fullname
+            self.file = fullname
 
-        return self._load_pilfont_data(fp, image)
+            return self._load_pilfont_data(fp, image)
 
     def _load_pilfont_data(self, file, image):
 
