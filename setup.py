@@ -558,7 +558,9 @@ class pil_build_ext(build_ext):
                 if f in ('jpeg', 'zlib'):
                     raise ValueError(
                         '%s is required unless explicitly disabled'
-                        ' using --disable-%s, aborting' % (f, f))
+                        ' using --disable-%s, aborting. See https://pillow.'
+                        'readthedocs.io/en/latest/installation.html for more '
+                        'info' % (f, f))
                 raise ValueError(
                     '--enable-%s requested but %s not found, aborting.' %
                     (f, f))
