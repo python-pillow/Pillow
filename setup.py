@@ -40,6 +40,8 @@ _LIB_IMAGING = (
 
 DEBUG = False
 
+class DependencyException(Exception): pass
+class RequiredDependencyException(Exception): pass
 
 def _dbg(s, tp=None):
     if DEBUG:
@@ -556,13 +558,9 @@ class pil_build_ext(build_ext):
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
                 if f in ('jpeg', 'zlib'):
-                    raise ValueError(
-                        '%s is required unless explicitly disabled'
-                        ' using --disable-%s, aborting' % (f, f))
-                raise ValueError(
-                    '--enable-%s requested but %s not found, aborting.' %
-                    (f, f))
-
+                    raise RequiredDependencyException(f)
+                raise DependencyException(f)
+            
         #
         # core library
 
@@ -756,38 +754,60 @@ class pil_build_ext(build_ext):
 def debug_build():
     return hasattr(sys, 'gettotalrefcount')
 
+try:
+    setup(name=NAME,
+          version=PILLOW_VERSION,
+          description='Python Imaging Library (Fork)',
+          long_description=_read('README.rst').decode('utf-8'),
+          author='Alex Clark (Fork Author)',
+          author_email='aclark@aclark.net',
+          url='http://python-pillow.org',
+          classifiers=[
+              "Development Status :: 6 - Mature",
+              "Topic :: Multimedia :: Graphics",
+              "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+              "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+              "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+              "Topic :: Multimedia :: Graphics :: Viewers",
+              "Programming Language :: Python :: 2",
+              "Programming Language :: Python :: 2.6",
+              "Programming Language :: Python :: 2.7",
+              "Programming Language :: Python :: 3",
+              "Programming Language :: Python :: 3.2",
+              "Programming Language :: Python :: 3.3",
+              "Programming Language :: Python :: 3.4",
+              "Programming Language :: Python :: 3.5",
+              'Programming Language :: Python :: Implementation :: CPython',
+              'Programming Language :: Python :: Implementation :: PyPy',
+          ],
+          cmdclass={"build_ext": pil_build_ext},
+          ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
+          include_package_data=True,
+          packages=find_packages(),
+          scripts=glob.glob("Scripts/*.py"),
+          test_suite='nose.collector',
+          keywords=["Imaging", ],
+          license='Standard PIL License',
+          zip_safe=not debug_build(), )
+except RequiredDependencyException as err:
+    msg = """
 
-setup(name=NAME,
-      version=PILLOW_VERSION,
-      description='Python Imaging Library (Fork)',
-      long_description=_read('README.rst').decode('utf-8'),
-      author='Alex Clark (Fork Author)',
-      author_email='aclark@aclark.net',
-      url='https://python-pillow.org',
-      classifiers=[
-          "Development Status :: 6 - Mature",
-          "Topic :: Multimedia :: Graphics",
-          "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
-          "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
-          "Topic :: Multimedia :: Graphics :: Graphics Conversion",
-          "Topic :: Multimedia :: Graphics :: Viewers",
-          "Programming Language :: Python :: 2",
-          "Programming Language :: Python :: 2.6",
-          "Programming Language :: Python :: 2.7",
-          "Programming Language :: Python :: 3",
-          "Programming Language :: Python :: 3.2",
-          "Programming Language :: Python :: 3.3",
-          "Programming Language :: Python :: 3.4",
-          "Programming Language :: Python :: 3.5",
-          'Programming Language :: Python :: Implementation :: CPython',
-          'Programming Language :: Python :: Implementation :: PyPy',
-      ],
-      cmdclass={"build_ext": pil_build_ext},
-      ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
-      include_package_data=True,
-      packages=find_packages(),
-      scripts=glob.glob("Scripts/*.py"),
-      test_suite='nose.collector',
-      keywords=["Imaging", ],
-      license='Standard PIL License',
-      zip_safe=not debug_build(), )
+The headers or library files could not be found for %s,
+a required dependency when compiling Pillow from source.
+
+Please see the install instructions at:
+   http://pillow.readthedocs.io/en/latest/installation.html
+
+""" % (str(err))
+    sys.stderr.write(msg)
+    raise RequiredDependencyException(msg)
+except DependencyException as err:
+    msg = """
+
+The headers or library files could not be found for %s,
+which was requested by the option flag --enable-%s
+
+""" % (str(err), str(err))
+    sys.stderr.write(msg)
+    raise DependencyException(msg)
+
