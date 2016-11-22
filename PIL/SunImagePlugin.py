@@ -38,6 +38,21 @@ class SunImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
+        # The Sun Raster file header is 32 bytes in length and has the following format:
+
+        #     typedef struct _SunRaster
+        #     {
+        #         DWORD MagicNumber;      /* Magic (identification) number */
+        #         DWORD Width;            /* Width of image in pixels */
+        #         DWORD Height;           /* Height of image in pixels */
+        #         DWORD Depth;            /* Number of bits per pixel */
+        #         DWORD Length;           /* Size of image data in bytes */
+        #         DWORD Type;             /* Type of raster file */
+        #         DWORD ColorMapType;     /* Type of color map */
+        #         DWORD ColorMapLength;   /* Size of the color map in bytes */
+        #     } SUNRASTER;
+
+
         # HEAD
         s = self.fp.read(32)
         if i32(s) != 0x59a66a95:
@@ -48,10 +63,15 @@ class SunImageFile(ImageFile.ImageFile):
         self.size = i32(s[4:8]), i32(s[8:12])
 
         depth = i32(s[12:16])
+        data_length = i32(s[16:20])  # unreliable, ignore. 
         file_type = i32(s[20:24])
+        palette_type = i32(s[24:28]) # 0: None, 1: RGB, 2: Raw/arbitrary
+        palette_length = i32(s[28:32])
         
         if depth == 1:
             self.mode, rawmode = "1", "1;I"
+        elif depth == 4:
+            self.mode, rawmode = "L", "L;4"
         elif depth == 8:
             self.mode = rawmode = "L"
         elif depth == 24:
@@ -59,17 +79,31 @@ class SunImageFile(ImageFile.ImageFile):
                 self.mode, rawmode = "RGB", "RGB"
             else:
                 self.mode, rawmode = "RGB", "BGR"
+        elif depth == 32:
+            if file_type == 3:
+                self.mode, rawmode = 'RGB', 'RGBX'
+            else:
+                self.mode, rawmode = 'RGB', 'BGRX'
         else:
-            raise SyntaxError("unsupported mode")
+            raise SyntaxError("Unsupported Mode/Bit Depth")
 
-        if i32(s[24:28]) != 0:
-            length = i32(s[28:32])
-            offset = offset + length
-            self.palette = ImagePalette.raw("RGB;L", self.fp.read(length))
+    
+        
+        if palette_length:
+            if palette_length > 1024:
+                raise SyntaxError("Unsupported Color Palette Length")
+
+            if palette_type != 1:
+                raise SyntaxError("Unsupported Palette Type")
+            
+            offset = offset + palette_length
+            self.palette = ImagePalette.raw("RGB;L", self.fp.read(palette_length))
             if self.mode == "L":
-                self.mode = rawmode = "P"
-
-        stride = (((self.size[0] * depth + 7) // 8) + 3) & (~3)
+                self.mode = "P"
+                rawmode = rawmode.replace('L', 'P')
+            
+        # 16 bit boundaries on stride
+        stride = ((self.size[0] * depth + 15) // 16) * 2  
 
         # file type: Type is the version (or flavor) of the bitmap
         # file. The following values are typically found in the Type
