@@ -1,5 +1,4 @@
 from helper import unittest, PillowTestCase, hopper, py3
-import sys
 
 
 class TestImageGetIm(PillowTestCase):
@@ -11,13 +10,7 @@ class TestImageGetIm(PillowTestCase):
         if py3:
             self.assertIn("PyCapsule", type_repr)
 
-        if sys.hexversion < 0x2070000:
-            # py2.6 x64, windows
-            target_types = (int, long)
-        else:
-            target_types = (int)
-
-        self.assertIsInstance(im.im.id, target_types)
+        self.assertIsInstance(im.im.id, int)
 
 
 if __name__ == '__main__':

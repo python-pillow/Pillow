@@ -139,7 +139,7 @@ class IcoFile(object):
         """
         Get a list of all available icon sizes and color depths.
         """
-        return set((h['width'], h['height']) for h in self.entry)
+        return {(h['width'], h['height']) for h in self.entry}
 
     def getimage(self, size, bpp=False):
         """

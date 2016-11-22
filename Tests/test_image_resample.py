@@ -232,10 +232,10 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
     def run_levels_case(self, i):
         px = i.load()
         for y in range(i.size[1]):
-            used_colors = set(px[x, y][0] for x in range(i.size[0]))
+            used_colors = {px[x, y][0] for x in range(i.size[0])}
             self.assertEqual(256, len(used_colors),
                 'All colors should present in resized image. '
-                'Only {0} on {1} line.'.format(len(used_colors), y))
+                'Only {} on {} line.'.format(len(used_colors), y))
 
     @unittest.skip("current implementation isn't precise enough")
     def test_levels_rgba(self):
@@ -270,7 +270,7 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         for y in range(i.size[1]):
             for x in range(i.size[0]):
                 if px[x, y][-1] != 0 and px[x, y][:-1] != clean_pixel:
-                    message = 'pixel at ({0}, {1}) is differ:\n{2}\n{3}'\
+                    message = 'pixel at ({}, {}) is differ:\n{}\n{}'\
                         .format(x, y, px[x, y], clean_pixel)
                     self.assertEqual(px[x, y][:3], clean_pixel, message)
 

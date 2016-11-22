@@ -10,10 +10,6 @@ Install::
 
     pip install coverage nose
 
-If you're using Python 2.6, there's one additional dependency::
-
-    pip install unittest2
-
 Execution
 ---------
 
