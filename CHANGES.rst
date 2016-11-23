@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- SunImagePlugin fixes #2241
+  [wiredfool]
+
 - Use minimal scale for jpeg drafts #2240
   [homm]
 
