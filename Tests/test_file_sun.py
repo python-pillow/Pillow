@@ -38,7 +38,6 @@ class TestFileSun(PillowTestCase):
                    os.listdir(EXTRA_DIR) if os.path.splitext(f)[1]
                    in ('.sun', '.SUN', '.ras'))
         for path in files:
-            print (path)
             with Image.open(path) as im:
                 im.load()  
                 self.assertIsInstance(im, SunImagePlugin.SunImageFile)

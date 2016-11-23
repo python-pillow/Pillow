@@ -85,9 +85,7 @@ class SunImageFile(ImageFile.ImageFile):
             else:
                 self.mode, rawmode = 'RGB', 'BGRX'
         else:
-            raise SyntaxError("Unsupported Mode/Bit Depth")
-
-    
+            raise SyntaxError("Unsupported Mode/Bit Depth")    
         
         if palette_length:
             if palette_length > 1024:
