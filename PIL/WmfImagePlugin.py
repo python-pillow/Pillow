@@ -66,6 +66,11 @@ def short(c, o=0):
 
 dword = _binary.i32le
 
+def _long(c, o=0):
+    v = dword(c, o)
+    if v >= 1<<31:
+        v -= 1<<32
+    return v
 
 #
 # --------------------------------------------------------------------
@@ -121,10 +126,10 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             # enhanced metafile
 
             # get bounding box
-            x0 = dword(s, 8)
-            y0 = dword(s, 12)
-            x1 = dword(s, 16)
-            y1 = dword(s, 20)
+            x0 = _long(s, 8)
+            y0 = _long(s, 12)
+            x1 = _long(s, 16)
+            y1 = _long(s, 20)
 
             # get frame (in 0.01 millimeter units)
             frame = dword(s, 24), dword(s, 28), dword(s, 32), dword(s, 36)
