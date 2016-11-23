@@ -39,6 +39,8 @@ class LibTiffTestCase(PillowTestCase):
         out = self.tempfile("temp.png")
         im.save(out)
 
+        out_bytes = io.BytesIO()
+        im.save(out_bytes, format='tiff', compression='group4')
 
 class TestFileLibTiff(LibTiffTestCase):
 
