@@ -6,13 +6,11 @@ class TestFileWmf(PillowTestCase):
 
     def test_load_raw(self):
 
-        # Test basic EMF load
+        # Test basic EMF open
         im = Image.open('Tests/images/drawing.emf')
-        im.load()  # should not segfault.
 
-        # Test basic WMF load
+        # Test basic WMF open
         im = Image.open('Tests/images/drawing.wmf')
-        im.load()  # should not segfault.
 
 
 if __name__ == '__main__':
