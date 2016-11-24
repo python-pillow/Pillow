@@ -24,6 +24,15 @@ class TestImagingResampleVulnerability(PillowTestCase):
         with self.assertRaises(ValueError):
             im.resize((100, -100))
 
+    def test_modify_after_resizing(self):
+        im = hopper('RGB')
+        # get copy with same size
+        copy = im.resize(im.size)
+        # some in-place operation
+        copy.paste('black', (0, 0, im.width // 2, im.height // 2))
+        # image should be different
+        self.assertNotEqual(im.tobytes(), copy.tobytes())
+
 
 class TestImagingCoreResampleAccuracy(PillowTestCase):
     def make_case(self, mode, size, color):
