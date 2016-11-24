@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Use Image._new() instead of _makeself() #2248
+  [homm]
+
 - SunImagePlugin fixes #2241
   [wiredfool]
 
