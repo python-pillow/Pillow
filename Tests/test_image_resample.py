@@ -24,6 +24,15 @@ class TestImagingResampleVulnerability(PillowTestCase):
         with self.assertRaises(ValueError):
             im.resize((100, -100))
 
+    def test_modify_after_resizing(self):
+        im = hopper('RGB')
+        # get copy with same size
+        copy = im.resize(im.size)
+        # some in-place operation
+        copy.paste('black', (0, 0, im.width // 2, im.height // 2))
+        # image should be different
+        self.assertNotEqual(im.tobytes(), copy.tobytes())
+
 
 class TestImagingCoreResampleAccuracy(PillowTestCase):
     def make_case(self, mode, size, color):
@@ -255,7 +264,7 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         self.run_levels_case(case.resize((512, 32), Image.BICUBIC))
         self.run_levels_case(case.resize((512, 32), Image.LANCZOS))
 
-    def make_dity_case(self, mode, clean_pixel, dirty_pixel):
+    def make_dirty_case(self, mode, clean_pixel, dirty_pixel):
         i = Image.new(mode, (64, 64), dirty_pixel)
         px = i.load()
         xdiv4 = i.size[0] // 4
@@ -265,7 +274,7 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
                 px[x + xdiv4, y + ydiv4] = clean_pixel
         return i
 
-    def run_dity_case(self, i, clean_pixel):
+    def run_dirty_case(self, i, clean_pixel):
         px = i.load()
         for y in range(i.size[1]):
             for x in range(i.size[0]):
@@ -275,20 +284,20 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
                     self.assertEqual(px[x, y][:3], clean_pixel, message)
 
     def test_dirty_pixels_rgba(self):
-        case = self.make_dity_case('RGBA', (255, 255, 0, 128), (0, 0, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.BOX), (255, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.BILINEAR), (255, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.HAMMING), (255, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.BICUBIC), (255, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255, 255, 0))
+        case = self.make_dirty_case('RGBA', (255, 255, 0, 128), (0, 0, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BOX), (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BILINEAR), (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.HAMMING), (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BICUBIC), (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.LANCZOS), (255, 255, 0))
 
     def test_dirty_pixels_la(self):
-        case = self.make_dity_case('LA', (255, 128), (0, 0))
-        self.run_dity_case(case.resize((20, 20), Image.BOX), (255,))
-        self.run_dity_case(case.resize((20, 20), Image.BILINEAR), (255,))
-        self.run_dity_case(case.resize((20, 20), Image.HAMMING), (255,))
-        self.run_dity_case(case.resize((20, 20), Image.BICUBIC), (255,))
-        self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255,))
+        case = self.make_dirty_case('LA', (255, 128), (0, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BOX), (255,))
+        self.run_dirty_case(case.resize((20, 20), Image.BILINEAR), (255,))
+        self.run_dirty_case(case.resize((20, 20), Image.HAMMING), (255,))
+        self.run_dirty_case(case.resize((20, 20), Image.BICUBIC), (255,))
+        self.run_dirty_case(case.resize((20, 20), Image.LANCZOS), (255,))
 
 
 class CoreResamplePassesTest(PillowTestCase):

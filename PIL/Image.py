@@ -1544,7 +1544,7 @@ class Image(object):
 
         size = tuple(size)
         if self.size == size:
-            return self._new(self.im)
+            return self.copy()
 
         if self.mode in ("1", "P"):
             resample = NEAREST
