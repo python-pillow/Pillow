@@ -530,8 +530,6 @@ class Image(object):
         new.info = self.info.copy()
         return new
 
-    _makeself = _new  # compatibility
-
     # Context Manager Support
     def __enter__(self):
         return self
@@ -997,7 +995,7 @@ class Image(object):
                     "only RGB or L mode images can be quantized to a palette"
                     )
             im = self.im.convert("P", 1, palette.im)
-            return self._makeself(im)
+            return self._new(im)
 
         return self._new(self.im.quantize(colors, method, kmeans))
 
