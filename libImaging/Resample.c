@@ -134,7 +134,7 @@ precompute_coeffs(int inSize, int in0, int in1, int outSize,
     double *kk, *k;
 
     /* prepare for horizontal stretch */
-    filterscale = scale = (double) inSize / outSize;
+    filterscale = scale = (double) (in1 - in0) / outSize;
     if (filterscale < 1.0) {
         filterscale = 1.0;
     }
@@ -163,7 +163,7 @@ precompute_coeffs(int inSize, int in0, int in1, int outSize,
     }
 
     for (xx = 0; xx < outSize; xx++) {
-        center = (xx + 0.5) * scale;
+        center = in0 + (xx + 0.5) * scale;
         ww = 0.0;
         ss = 1.0 / filterscale;
         xmin = (int) floor(center - support);

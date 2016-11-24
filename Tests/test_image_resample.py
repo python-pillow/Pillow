@@ -397,6 +397,8 @@ class CoreResampleRoiTest(PillowTestCase):
             tile2 = im.resize(big_size, resample)\
                       .crop(o + (o[0] + size[0], o[1] + size[1]))
 
+            self.assert_image_equal(tile1, tile2)
+
 
 if __name__ == '__main__':
     unittest.main()
