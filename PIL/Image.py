@@ -1519,7 +1519,7 @@ class Image(object):
             return self.pyaccess.putpixel(xy, value)
         return self.im.putpixel(xy, value)
 
-    def resize(self, size, resample=NEAREST):
+    def resize(self, size, resample=NEAREST, roi=None):
         """
         Returns a resized copy of this image.
 
@@ -1555,7 +1555,10 @@ class Image(object):
         if self.mode == 'RGBA':
             return self.convert('RGBa').resize(size, resample).convert('RGBA')
 
-        return self._new(self.im.resize(size, resample))
+        if roi is None:
+            roi = (0, 0) + self.size
+
+        return self._new(self.im.resize(size, resample, roi))
 
     def rotate(self, angle, resample=NEAREST, expand=0):
         """

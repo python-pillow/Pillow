@@ -1534,13 +1534,30 @@ _resize(ImagingObject* self, PyObject* args)
 
     int xsize, ysize;
     int filter = IMAGING_TRANSFORM_NEAREST;
-    if (!PyArg_ParseTuple(args, "(ii)|i", &xsize, &ysize, &filter))
-        return NULL;
-
+    float roi[4] = {0, 0, 0, 0};
+    
     imIn = self->image;
+    roi[2] = imIn->xsize;
+    roi[3] = imIn->ysize;
+    
+    if (!PyArg_ParseTuple(args, "(ii)|i(ffff)", &xsize, &ysize, &filter,
+                          &roi[0], &roi[1], &roi[2], &roi[3]))
+        return NULL;
 
     if (xsize < 1 || ysize < 1) {
         return ImagingError_ValueError("height and width must be > 0");
+    }
+
+    if (roi[0] < 0 || roi[1] < 0) {
+        return ImagingError_ValueError("region of interest offset can't be negative");
+    }
+
+    if (roi[2] > imIn->xsize || roi[3] > imIn->ysize) {
+        return ImagingError_ValueError("region of interest can't exceed original image size");
+    }
+
+    if (roi[2] - roi[0] <= 0 || roi[3] - roi[1] <= 0) {
+        return ImagingError_ValueError("region of interest can't be empty");
     }
 
     if (imIn->xsize == xsize && imIn->ysize == ysize) {
