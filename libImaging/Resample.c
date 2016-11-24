@@ -125,8 +125,8 @@ static inline UINT8 clip8(int in)
 
 
 int
-precompute_coeffs(int inSize, int outSize, struct filter *filterp,
-                  int **xboundsp, double **kkp) {
+precompute_coeffs(int inSize, int in0, int in1, int outSize,
+                  struct filter *filterp, int **xboundsp, double **kkp) {
     double support, scale, filterscale;
     double center, ww, ss;
     int xx, x, kmax, xmin, xmax;
@@ -238,7 +238,8 @@ normalize_coeffs_8bpc(int outSize, int kmax, double *prekk, INT32 **kkp)
 
 
 Imaging
-ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
+ImagingResampleHorizontal_8bpc(Imaging imIn, int x0, int x1, int xsize,
+                               struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     Imaging imOut;
@@ -248,7 +249,8 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
     INT32 *k, *kk;
     double *prekk;
 
-    kmax = precompute_coeffs(imIn->xsize, xsize, filterp, &xbounds, &prekk);
+    kmax = precompute_coeffs(imIn->xsize, x0, x1, xsize, filterp,
+                             &xbounds, &prekk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
@@ -343,7 +345,8 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
 
 
 Imaging
-ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
+ImagingResampleVertical_8bpc(Imaging imIn, int y0, int y1, int ysize,
+                             struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     Imaging imOut;
@@ -353,7 +356,8 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
     INT32 *k, *kk;
     double *prekk;
 
-    kmax = precompute_coeffs(imIn->ysize, ysize, filterp, &xbounds, &prekk);
+    kmax = precompute_coeffs(imIn->ysize, y0, y1, ysize, filterp,
+                             &xbounds, &prekk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
@@ -448,7 +452,8 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
 
 
 Imaging
-ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
+ImagingResampleHorizontal_32bpc(Imaging imIn, int x0, int x1, int xsize,
+                                struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     Imaging imOut;
@@ -457,7 +462,8 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
     int *xbounds;
     double *k, *kk;
 
-    kmax = precompute_coeffs(imIn->xsize, xsize, filterp, &xbounds, &kk);
+    kmax = precompute_coeffs(imIn->xsize, x0, x1, xsize, filterp,
+                             &xbounds, &kk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
@@ -508,7 +514,8 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
 
 
 Imaging
-ImagingResampleVertical_32bpc(Imaging imIn, int ysize, struct filter *filterp)
+ImagingResampleVertical_32bpc(Imaging imIn, int y0, int y1, int ysize,
+                              struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     Imaging imOut;
@@ -517,7 +524,8 @@ ImagingResampleVertical_32bpc(Imaging imIn, int ysize, struct filter *filterp)
     int *xbounds;
     double *k, *kk;
 
-    kmax = precompute_coeffs(imIn->ysize, ysize, filterp, &xbounds, &kk);
+    kmax = precompute_coeffs(imIn->ysize, y0, y1, ysize, filterp,
+                             &xbounds, &kk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
@@ -567,14 +575,18 @@ ImagingResampleVertical_32bpc(Imaging imIn, int ysize, struct filter *filterp)
 }
 
 
+typedef Imaging (*ResampleFunction)(Imaging imIn, int x0, int x1, int xsize,
+                                    struct filter *filterp);
+
+
 Imaging
-ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
+ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float roi[4])
 {
     Imaging imTemp = NULL;
     Imaging imOut = NULL;
     struct filter *filterp;
-    Imaging (*ResampleHorizontal)(Imaging imIn, int xsize, struct filter *filterp);
-    Imaging (*ResampleVertical)(Imaging imIn, int xsize, struct filter *filterp);
+    ResampleFunction ResampleHorizontal;
+    ResampleFunction ResampleVertical;
 
     if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
         return (Imaging) ImagingError_ModeError();
@@ -624,17 +636,17 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter)
     }
 
     /* two-pass resize, first pass */
-    if (imIn->xsize != xsize) {
-        imTemp = ResampleHorizontal(imIn, xsize, filterp);
+    if (roi[0] || roi[2] != xsize) {
+        imTemp = ResampleHorizontal(imIn, roi[0], roi[2], xsize, filterp);
         if ( ! imTemp)
             return NULL;
         imOut = imIn = imTemp;
     }
 
     /* second pass */
-    if (imIn->ysize != ysize) {
+    if (roi[1] || roi[3] != ysize) {
         /* imIn can be the original image or horizontally resampled one */
-        imOut = ResampleVertical(imIn, ysize, filterp);
+        imOut = ResampleVertical(imIn, roi[1], roi[3], ysize, filterp);
         /* it's safe to call ImagingDelete with empty value
            if there was no previous step. */
         ImagingDelete(imTemp);

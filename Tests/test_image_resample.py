@@ -351,7 +351,7 @@ class CoreResampleCoefficientsTest(PillowTestCase):
 class CoreResampleRoiTest(PillowTestCase):
     def test_wrong_arguments(self):
         im = hopper()
-        for resample in (Image.LINEAR, Image.BOX, Image.BILINEAR, Image.HAMMING,
+        for resample in (Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
                 Image.BICUBIC, Image.LANCZOS):
             im.resize((32, 32), resample, (0, 0, im.width, im.height))
             im.resize((32, 32), resample, (20, 20, im.width, im.height))
@@ -388,7 +388,7 @@ class CoreResampleRoiTest(PillowTestCase):
         im = im.resize((im.width // sc[0] * sc[0],
                         im.height // sc[1] * sc[1]))
 
-        for resample in (Image.LINEAR, Image.BOX, Image.BILINEAR, Image.HAMMING,
+        for resample in (Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
                 Image.BICUBIC, Image.LANCZOS):
             roi = (o[0] * sc[0], o[1] * sc[1],
                    (o[0] + size[0]) * sc[0], (o[1] + size[1]) * sc[1])

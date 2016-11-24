@@ -1580,7 +1580,7 @@ _resize(ImagingObject* self, PyObject* args)
             a, filter, 1);
     }
     else {
-        imOut = ImagingResample(imIn, xsize, ysize, filter);
+        imOut = ImagingResample(imIn, xsize, ysize, filter, roi);
     }
 
     return PyImagingNew(imOut);
