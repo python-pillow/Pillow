@@ -530,8 +530,6 @@ class Image(object):
         new.info = self.info.copy()
         return new
 
-    _makeself = _new  # compatibility
-
     # Context Manager Support
     def __enter__(self):
         return self
