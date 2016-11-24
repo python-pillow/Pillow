@@ -378,6 +378,25 @@ class CoreResampleRoiTest(PillowTestCase):
             with self.assertRaisesRegexp(ValueError, "can't exceed"):
                 im.resize((32, 32), resample, (0, 0, im.width, im.height + 1))
 
+    def test_tiles(self):
+        im = hopper()
+        # should not be fractional
+        size = (28, 14)
+        sc = (3, 4)  # scale
+        o = (5, 10)  # offset
+        # fixed size divisible by scale
+        im = im.resize((im.width // sc[0] * sc[0],
+                        im.height // sc[1] * sc[1]))
+
+        for resample in (Image.LINEAR, Image.BOX, Image.BILINEAR, Image.HAMMING,
+                Image.BICUBIC, Image.LANCZOS):
+            roi = (o[0] * sc[0], o[1] * sc[1],
+                   (o[0] + size[0]) * sc[0], (o[1] + size[1]) * sc[1])
+            tile1 = im.resize(size, resample, roi)
+            big_size = (im.width // sc[0], im.height // sc[1])
+            tile2 = im.resize(big_size, resample)\
+                      .crop(o + (o[0] + size[0], o[1] + size[1]))
+
 
 if __name__ == '__main__':
     unittest.main()

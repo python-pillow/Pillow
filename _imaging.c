@@ -1560,15 +1560,17 @@ _resize(ImagingObject* self, PyObject* args)
         return ImagingError_ValueError("region of interest can't be empty");
     }
 
-    if (imIn->xsize == xsize && imIn->ysize == ysize) {
+    if (roi[0] == 0 && roi[1] == 0 && roi[2] == xsize && roi[3] == ysize) {
         imOut = ImagingCopy(imIn);
     }
     else if (filter == IMAGING_TRANSFORM_NEAREST) {
         double a[6];
 
         memset(a, 0, sizeof a);
-        a[0] = (double) imIn->xsize / xsize;
-        a[4] = (double) imIn->ysize / ysize;
+        a[0] = (double) (roi[2] - roi[0]) / xsize;
+        a[4] = (double) (roi[3] - roi[1]) / ysize;
+        a[2] = roi[0];
+        a[5] = roi[1];
 
         imOut = ImagingNew(imIn->mode, xsize, ysize);
 
