@@ -2164,7 +2164,7 @@ def fromarray(obj, mode=None):
             mode, rawmode = _fromarray_typemap[typekey]
         except KeyError:
             # print typekey
-            raise TypeError("Cannot handle this data type")
+            raise TypeError("Cannot handle this data type %s" % repr(typekey))
     else:
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
