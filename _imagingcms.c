@@ -727,7 +727,7 @@ static cmsBool _calculate_rgb_primaries(CmsProfileObject* self, cmsCIEXYZTRIPLE*
     cmsHPROFILE hXYZ;
     cmsHTRANSFORM hTransform;
 
-    /* http://littlecms2.blogspot.com/2009/07/less-is-more.html */
+    /* http://littlecms2.blogspot.com.au/2009/07/less-is-more.html */
 
     // double array of RGB values with max on each identity
     hXYZ = cmsCreateXYZProfile();
