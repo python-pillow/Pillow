@@ -454,6 +454,21 @@ rgbA2rgba(UINT8* out, const UINT8* in, int xsize)
     }
 }
 
+static void
+rgbA2bgra(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    unsigned int alpha, tmp;
+    for (x = 0; x < xsize; x++) {
+        alpha = in[3];
+        *out++ = MULDIV255(in[2], alpha, tmp);
+        *out++ = MULDIV255(in[1], alpha, tmp);
+        *out++ = MULDIV255(in[0], alpha, tmp);
+        *out++ = in[3];
+        in += 4;
+    }
+}
+
 /* RGBa -> RGBA conversion to remove premultiplication
    Needed for correct transforms/resizing on RGBA images */
 static void
@@ -471,6 +486,26 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
             *out++ = CLIP((255 * in[0]) / alpha);
             *out++ = CLIP((255 * in[1]) / alpha);
             *out++ = CLIP((255 * in[2]) / alpha);
+        }
+        *out++ = in[3];
+    }
+}
+
+static void
+bgra2rgbA(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    unsigned int alpha;
+    for (x = 0; x < xsize; x++, in+=4) {
+        alpha = in[3];
+        if (alpha == 255 || alpha == 0) {
+            *out++ = in[2];
+            *out++ = in[1];
+            *out++ = in[0];
+        } else {
+            *out++ = CLIP((255 * in[2]) / alpha);
+            *out++ = CLIP((255 * in[1]) / alpha);
+            *out++ = CLIP((255 * in[0]) / alpha);
         }
         *out++ = in[3];
     }
@@ -834,11 +869,13 @@ static struct {
     { "RGBA", "F", rgb2f },
     { "RGBA", "RGB", rgba2rgb },
     { "RGBA", "RGBa", rgbA2rgba },
+    { "RGBA", "BGRa", rgbA2bgra },
     { "RGBA", "RGBX", rgb2rgba },
     { "RGBA", "CMYK", rgb2cmyk },
     { "RGBA", "YCbCr", ImagingConvertRGB2YCbCr },
 
     { "RGBa", "RGBA", rgba2rgbA },
+    { "BGRa", "RGBA", bgra2rgbA },
 
     { "RGBX", "1", rgb2bit },
     { "RGBX", "L", rgb2l },

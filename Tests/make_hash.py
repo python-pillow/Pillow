@@ -8,7 +8,7 @@ modes = [
     "I", "I;16", "I;16L", "I;16B", "I;32L", "I;32B",
     "F",
     "P", "PA",
-    "RGB", "RGBA", "RGBa", "RGBX",
+    "RGB", "RGBA", "RGBa", "RGBX", "BGRa",
     "CMYK",
     "YCbCr",
     "LAB", "HSV",
