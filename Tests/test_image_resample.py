@@ -399,6 +399,18 @@ class CoreResampleRoiTest(PillowTestCase):
 
             self.assert_image_equal(tile1, tile2)
 
+    def test_subsample(self):
+        im = hopper()
+        reference = im.crop((0, 0, 125, 125)).resize((26, 26), Image.BICUBIC)
+        supersampled = im.resize((32, 32), Image.BOX)
+        without_roi = supersampled.resize((26, 26), Image.BICUBIC)
+        with_roi = supersampled.resize((26, 26), Image.BICUBIC, (0, 0, 31.25, 31.25))
+
+        self.assert_image_similar(reference, with_roi, 12)
+
+        with self.assertRaisesRegexp(AssertionError, "difference 3\d\."):
+            self.assert_image_similar(reference, without_roi, 10)
+
 
 if __name__ == '__main__':
     unittest.main()

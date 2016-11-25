@@ -125,7 +125,7 @@ static inline UINT8 clip8(int in)
 
 
 int
-precompute_coeffs(int inSize, int in0, int in1, int outSize,
+precompute_coeffs(int inSize, float in0, float in1, int outSize,
                   struct filter *filterp, int **xboundsp, double **kkp) {
     double support, scale, filterscale;
     double center, ww, ss;
@@ -238,7 +238,7 @@ normalize_coeffs_8bpc(int outSize, int kmax, double *prekk, INT32 **kkp)
 
 
 Imaging
-ImagingResampleHorizontal_8bpc(Imaging imIn, int x0, int x1, int xsize,
+ImagingResampleHorizontal_8bpc(Imaging imIn, float x0, float x1, int xsize,
                                struct filter *filterp)
 {
     ImagingSectionCookie cookie;
@@ -345,7 +345,7 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int x0, int x1, int xsize,
 
 
 Imaging
-ImagingResampleVertical_8bpc(Imaging imIn, int y0, int y1, int ysize,
+ImagingResampleVertical_8bpc(Imaging imIn, float y0, float y1, int ysize,
                              struct filter *filterp)
 {
     ImagingSectionCookie cookie;
@@ -452,7 +452,7 @@ ImagingResampleVertical_8bpc(Imaging imIn, int y0, int y1, int ysize,
 
 
 Imaging
-ImagingResampleHorizontal_32bpc(Imaging imIn, int x0, int x1, int xsize,
+ImagingResampleHorizontal_32bpc(Imaging imIn, float x0, float x1, int xsize,
                                 struct filter *filterp)
 {
     ImagingSectionCookie cookie;
@@ -514,7 +514,7 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int x0, int x1, int xsize,
 
 
 Imaging
-ImagingResampleVertical_32bpc(Imaging imIn, int y0, int y1, int ysize,
+ImagingResampleVertical_32bpc(Imaging imIn, float y0, float y1, int ysize,
                               struct filter *filterp)
 {
     ImagingSectionCookie cookie;
@@ -575,7 +575,7 @@ ImagingResampleVertical_32bpc(Imaging imIn, int y0, int y1, int ysize,
 }
 
 
-typedef Imaging (*ResampleFunction)(Imaging imIn, int x0, int x1, int xsize,
+typedef Imaging (*ResampleFunction)(Imaging imIn, float x0, float x1, int xsize,
                                     struct filter *filterp);
 
 
