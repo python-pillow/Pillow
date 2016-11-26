@@ -25,7 +25,7 @@ class TestFileWmf(PillowTestCase):
             # Compare to reference rendering
             imref = Image.open('Tests/images/drawing_wmf_ref.png')
             imref.load()
-            self.assert_image_similar(im, imref, 0)
+            self.assert_image_similar(im, imref, 0.5)
 
 
 if __name__ == '__main__':
