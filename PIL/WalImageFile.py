@@ -56,6 +56,7 @@ def open(filename):
         # load pixel data
         fp.seek(offset)
 
+        Image._decompression_bomb_check(size)
         im = Image.frombytes("P", size, fp.read(size[0] * size[1]))
         im.putpalette(quake2palette)
 
