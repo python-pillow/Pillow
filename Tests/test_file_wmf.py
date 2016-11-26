@@ -2,7 +2,6 @@ from helper import unittest, PillowTestCase
 from PIL import Image
 from io import BytesIO
 
-
 class TestFileWmf(PillowTestCase):
 
     def test_load_raw(self):
