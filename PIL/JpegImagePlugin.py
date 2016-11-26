@@ -32,6 +32,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 import array
 import struct
 import io

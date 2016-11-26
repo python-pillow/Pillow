@@ -5,6 +5,8 @@
 #
 # Copyright (c) 2014 Dov Grobgeld <dov.grobgeld@gmail.com>
 
+from __future__ import print_function
+
 from PIL import Image
 from PIL import _imagingmorph
 import re

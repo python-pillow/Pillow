@@ -15,6 +15,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 from PIL import Image, ImageFile, _binary
 
 __version__ = "0.2"
