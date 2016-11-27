@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- EMF: support negative bounding box coordinates #2249
+  [glexey]
+
+- Close file if opened in WalImageFile #2216
+  [radarhere]
+
 - Use Image._new() instead of _makeself() #2248
   [homm]
 
