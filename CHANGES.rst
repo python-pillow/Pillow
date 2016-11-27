@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Doc: Improved description of ImageOps.deform resample parameter #2256
+  [radarhere]
+  
 - EMF: support negative bounding box coordinates #2249
   [glexey]
 
