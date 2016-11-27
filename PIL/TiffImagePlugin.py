@@ -944,6 +944,11 @@ class TiffImageFile(ImageFile.ImageFile):
             self.seek(current)
         return self._is_animated
 
+    def close(self):
+        if self.__fp:
+            self.__fp = None
+        ImageFile.ImageFile.close(self)
+
     def seek(self, frame):
         "Select a given frame as current image"
         self._seek(max(frame, 0))  # Questionable backwards compatibility.

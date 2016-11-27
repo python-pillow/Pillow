@@ -117,6 +117,16 @@ class ImageFile(Image.Image):
         # directly after open, and closes file when finished.
         self.fp = None
 
+    def close(self):
+        if getattr(self, 'map', None):
+            self.map = None
+        try:
+            if self.fp:
+                self.fp.close()
+        except Exception as msg:
+            logger.debug("Error closing: %s", msg)
+        Image.Image.close(self)
+
     def load(self):
         "Load image data based on tile list"
 
