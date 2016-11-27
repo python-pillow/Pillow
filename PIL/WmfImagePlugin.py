@@ -14,6 +14,10 @@
 #
 # See the README file for information on usage and redistribution.
 #
+# WMF/EMF reference documentation:
+# https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-WMF/[MS-WMF].pdf
+# http://wvware.sourceforge.net/caolan/index.html
+# http://wvware.sourceforge.net/caolan/ora-wmf.html
 
 from PIL import Image, ImageFile, _binary
 
@@ -56,16 +60,9 @@ if hasattr(Image.core, "drawwmf"):
 # --------------------------------------------------------------------
 
 word = _binary.i16le
-
-
-def short(c, o=0):
-    v = word(c, o)
-    if v >= 32768:
-        v -= 65536
-    return v
-
+short = _binary.si16le
 dword = _binary.i32le
-
+_long = _binary.si32le
 
 #
 # --------------------------------------------------------------------
@@ -121,13 +118,13 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             # enhanced metafile
 
             # get bounding box
-            x0 = dword(s, 8)
-            y0 = dword(s, 12)
-            x1 = dword(s, 16)
-            y1 = dword(s, 20)
+            x0 = _long(s, 8)
+            y0 = _long(s, 12)
+            x1 = _long(s, 16)
+            y1 = _long(s, 20)
 
             # get frame (in 0.01 millimeter units)
-            frame = dword(s, 24), dword(s, 28), dword(s, 32), dword(s, 36)
+            frame = _long(s, 24), _long(s, 28), _long(s, 32), _long(s, 36)
 
             # normalize size to 72 dots per inch
             size = x1 - x0, y1 - y0
