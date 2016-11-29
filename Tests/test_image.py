@@ -256,7 +256,11 @@ class TestImage(PillowTestCase):
         with self.assertRaises(ValueError):
             Image.new('RGB', (0,))  # Tuple too short
         with self.assertRaises(ValueError):
-            Image.new('RGB', (0,0))  # w,h <= 0
+            Image.new('RGB', (-1,-1))  # w,h < 0
+
+        # this should pass with 0 sized images, #2259
+        im = Image.new('L', (0, 0))
+        self.assertEqual(im.size, (0, 0))
 
         self.assertTrue(Image.new('RGB', (1,1)))
         # Should pass lists too
