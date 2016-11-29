@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Fix TIFFImagePlugin ICC color profile saving. #2087
+  [cskau]
+  
 - Doc: Improved description of ImageOps.deform resample parameter #2256
   [radarhere]
   
