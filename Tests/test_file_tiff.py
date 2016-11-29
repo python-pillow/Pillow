@@ -499,5 +499,21 @@ class TestFileTiff(PillowTestCase):
         with Image.open(mp) as im:
             self.assertEqual(im.n_frames, 3)
 
+    def test_saving_icc_profile(self):
+        # Tests saving TIFF with icc_profile set.
+        # At the time of writing this will only work for non-compressed tiffs
+        # as libtiff does not support embedded ICC profiles, ImageFile._save(..)
+        # however does.
+        im = Image.new('RGB', (1, 1))
+        im.info['icc_profile'] = 'Dummy value'
+        
+        # Try save-load round trip to make sure both handle icc_profile.
+        tmpfile = self.tempfile('temp.tif')
+        im.save(tmpfile, 'TIFF', compression='raw')
+        reloaded = Image.open(tmpfile)
+        
+        self.assertEqual(b'Dummy value', reloaded.info['icc_profile'])
+
+
 if __name__ == '__main__':
     unittest.main()

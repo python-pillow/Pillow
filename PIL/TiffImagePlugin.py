@@ -1362,10 +1362,10 @@ def _save(im, fp, filename):
                 ifd[key] = im.tag_v2[key]
                 ifd.tagtype[key] = im.tag_v2.tagtype[key]
 
-        # preserve ICC profile (should also work when saving other formats
-        # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
-        if "icc_profile" in im.info:
-            ifd[ICCPROFILE] = im.info["icc_profile"]
+    # preserve ICC profile (should also work when saving other formats
+    # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
+    if "icc_profile" in im.info:
+        ifd[ICCPROFILE] = im.info["icc_profile"]
 
     for key, name in [(IMAGEDESCRIPTION, "description"),
                       (X_RESOLUTION, "resolution"),
