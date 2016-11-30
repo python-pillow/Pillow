@@ -238,11 +238,10 @@ normalize_coeffs_8bpc(int outSize, int kmax, double *prekk, INT32 **kkp)
 
 
 Imaging
-ImagingResampleHorizontal_8bpc(Imaging imIn, float x0, float x1, int xsize,
-                               struct filter *filterp)
+ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, float x0, float x1,
+                               int xsize, struct filter *filterp)
 {
     ImagingSectionCookie cookie;
-    Imaging imOut;
     int ss0, ss1, ss2, ss3;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
@@ -260,13 +259,6 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, float x0, float x1, int xsize,
     if ( ! kmax) {
         free(xbounds);
         return (Imaging) ImagingError_MemoryError();
-    }
-
-    imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
-    if ( ! imOut) {
-        free(kk);
-        free(xbounds);
-        return NULL;
     }
 
     ImagingSectionEnter(&cookie);
@@ -336,8 +328,8 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, float x0, float x1, int xsize,
             }
         }
     }
-
     ImagingSectionLeave(&cookie);
+
     free(kk);
     free(xbounds);
     return imOut;
@@ -345,11 +337,10 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, float x0, float x1, int xsize,
 
 
 Imaging
-ImagingResampleVertical_8bpc(Imaging imIn, float y0, float y1, int ysize,
-                             struct filter *filterp)
+ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, float y0, float y1,
+                             int ysize, struct filter *filterp)
 {
     ImagingSectionCookie cookie;
-    Imaging imOut;
     int ss0, ss1, ss2, ss3;
     int xx, yy, y, kmax, ymin, ymax;
     int *xbounds;
@@ -367,13 +358,6 @@ ImagingResampleVertical_8bpc(Imaging imIn, float y0, float y1, int ysize,
     if ( ! kmax) {
         free(xbounds);
         return (Imaging) ImagingError_MemoryError();
-    }
-
-    imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
-    if ( ! imOut) {
-        free(kk);
-        free(xbounds);
-        return NULL;
     }
 
     ImagingSectionEnter(&cookie);
@@ -443,8 +427,8 @@ ImagingResampleVertical_8bpc(Imaging imIn, float y0, float y1, int ysize,
             }
         }
     }
-
     ImagingSectionLeave(&cookie);
+
     free(kk);
     free(xbounds);
     return imOut;
@@ -452,11 +436,10 @@ ImagingResampleVertical_8bpc(Imaging imIn, float y0, float y1, int ysize,
 
 
 Imaging
-ImagingResampleHorizontal_32bpc(Imaging imIn, float x0, float x1, int xsize,
-                                struct filter *filterp)
+ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, float x0, float x1,
+                                int xsize, struct filter *filterp)
 {
     ImagingSectionCookie cookie;
-    Imaging imOut;
     double ss;
     int xx, yy, x, kmax, xmin, xmax;
     int *xbounds;
@@ -466,13 +449,6 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, float x0, float x1, int xsize,
                              &xbounds, &kk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
-    }
-
-    imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
-    if ( ! imOut) {
-        free(kk);
-        free(xbounds);
-        return NULL;
     }
 
     ImagingSectionEnter(&cookie);
@@ -505,8 +481,8 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, float x0, float x1, int xsize,
             }
             break;
     }
-
     ImagingSectionLeave(&cookie);
+
     free(kk);
     free(xbounds);
     return imOut;
@@ -514,11 +490,10 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, float x0, float x1, int xsize,
 
 
 Imaging
-ImagingResampleVertical_32bpc(Imaging imIn, float y0, float y1, int ysize,
-                              struct filter *filterp)
+ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, float y0, float y1,
+                              int ysize, struct filter *filterp)
 {
     ImagingSectionCookie cookie;
-    Imaging imOut;
     double ss;
     int xx, yy, y, kmax, ymin, ymax;
     int *xbounds;
@@ -528,13 +503,6 @@ ImagingResampleVertical_32bpc(Imaging imIn, float y0, float y1, int ysize,
                              &xbounds, &kk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
-    }
-
-    imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
-    if ( ! imOut) {
-        free(kk);
-        free(xbounds);
-        return NULL;
     }
 
     ImagingSectionEnter(&cookie);
@@ -567,16 +535,16 @@ ImagingResampleVertical_32bpc(Imaging imIn, float y0, float y1, int ysize,
             }
             break;
     }
-
     ImagingSectionLeave(&cookie);
+
     free(kk);
     free(xbounds);
     return imOut;
 }
 
 
-typedef Imaging (*ResampleFunction)(Imaging imIn, float x0, float x1, int xsize,
-                                    struct filter *filterp);
+typedef Imaging (*ResampleFunction)(Imaging imOut, Imaging imIn,
+    float x0, float x1, int xsize, struct filter *filterp);
 
 
 Imaging
@@ -637,21 +605,32 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float roi[4])
 
     /* two-pass resize, first pass */
     if (roi[0] || roi[2] != xsize) {
-        imTemp = ResampleHorizontal(imIn, roi[0], roi[2], xsize, filterp);
-        if ( ! imTemp)
+        imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
+        if ( ! imTemp) {
             return NULL;
+        }
+        if ( ! ResampleHorizontal(imTemp, imIn, roi[0], roi[2], xsize, filterp)) {
+            ImagingDelete(imTemp);
+            return NULL;
+        }
         imOut = imIn = imTemp;
     }
 
     /* second pass */
     if (roi[1] || roi[3] != ysize) {
-        /* imIn can be the original image or horizontally resampled one */
-        imOut = ResampleVertical(imIn, roi[1], roi[3], ysize, filterp);
-        /* it's safe to call ImagingDelete with empty value
-           if there was no previous step. */
-        ImagingDelete(imTemp);
-        if ( ! imOut)
+        imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
+        if ( ! imOut) {
             return NULL;
+        }
+        /* imIn can be the original image or horizontally resampled one */
+        if ( ! ResampleVertical(imOut, imIn, roi[1], roi[3], ysize, filterp)) {
+            ImagingDelete(imTemp);
+            ImagingDelete(imOut);
+            return NULL;
+        }
+        /* it's safe to call ImagingDelete with empty value
+           if previous step was not performed. */
+        ImagingDelete(imTemp);
     }
 
     /* none of the previous steps are performed, copying */
