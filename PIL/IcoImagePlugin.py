@@ -49,6 +49,7 @@ def _save(im, fp, filename):
     sizes = filter(lambda x: False if (x[0] > width or x[1] > height or
                                        x[0] > 256 or x[1] > 256) else True,
                    sizes)
+    sizes = list(sizes)
     fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes)*16
     for size in sizes:
