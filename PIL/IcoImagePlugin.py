@@ -44,7 +44,7 @@ def _save(im, fp, filename):
     fp.write(_MAGIC)  # (2+2)
     sizes = im.encoderinfo.get("sizes",
                                [(16, 16), (24, 24), (32, 32), (48, 48),
-                                (64, 64), (128, 128), (255, 255)])
+                                (64, 64), (128, 128), (256, 256)])
     width, height = im.size
     filter(lambda x: False if (x[0] > width or x[1] > height or
                                x[0] > 255 or x[1] > 255) else True, sizes)
@@ -52,8 +52,9 @@ def _save(im, fp, filename):
     offset = fp.tell() + len(sizes)*16
     for size in sizes:
         width, height = size
-        fp.write(struct.pack("B", width))  # bWidth(1)
-        fp.write(struct.pack("B", height))  # bHeight(1)
+        # 0 means 256
+        fp.write(struct.pack("B", width if width < 256 else 0))  # bWidth(1)
+        fp.write(struct.pack("B", height if height < 256 else 0))  # bHeight(1)
         fp.write(b"\0")  # bColorCount(1)
         fp.write(b"\0")  # bReserved(1)
         fp.write(b"\0\0")  # wPlanes(2)
