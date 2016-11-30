@@ -548,10 +548,15 @@ typedef Imaging (*ResampleFunction)(Imaging imOut, Imaging imIn,
 
 
 Imaging
+ImagingResampleInner(Imaging imIn, int xsize, int ysize,
+                     struct filter *filterp, float box[4],
+                     ResampleFunction ResampleHorizontal,
+                     ResampleFunction ResampleVertical);
+
+
+Imaging
 ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4])
 {
-    Imaging imTemp = NULL;
-    Imaging imOut = NULL;
     struct filter *filterp;
     ResampleFunction ResampleHorizontal;
     ResampleFunction ResampleVertical;
@@ -602,6 +607,20 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4])
             "unsupported resampling filter"
             );
     }
+
+    return ImagingResampleInner(imIn, xsize, ysize, filterp, box,
+                                ResampleHorizontal, ResampleVertical);
+}
+
+
+Imaging
+ImagingResampleInner(Imaging imIn, int xsize, int ysize,
+                     struct filter *filterp, float box[4],
+                     ResampleFunction ResampleHorizontal,
+                     ResampleFunction ResampleVertical)
+{
+    Imaging imTemp = NULL;
+    Imaging imOut = NULL;
 
     /* two-pass resize, first pass */
     if (box[0] || box[2] != xsize) {
