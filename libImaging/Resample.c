@@ -239,7 +239,7 @@ normalize_coeffs_8bpc(int outSize, int kmax, double *prekk, INT32 **kkp)
 
 Imaging
 ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, float x0, float x1,
-                               int xsize, struct filter *filterp)
+                               struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     int ss0, ss1, ss2, ss3;
@@ -248,13 +248,13 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, float x0, float x1,
     INT32 *k, *kk;
     double *prekk;
 
-    kmax = precompute_coeffs(imIn->xsize, x0, x1, xsize, filterp,
+    kmax = precompute_coeffs(imIn->xsize, x0, x1, imOut->xsize, filterp,
                              &xbounds, &prekk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
 
-    kmax = normalize_coeffs_8bpc(xsize, kmax, prekk, &kk);
+    kmax = normalize_coeffs_8bpc(imOut->xsize, kmax, prekk, &kk);
     free(prekk);
     if ( ! kmax) {
         free(xbounds);
@@ -264,7 +264,7 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, float x0, float x1,
     ImagingSectionEnter(&cookie);
     if (imIn->image8) {
         for (yy = 0; yy < imOut->ysize; yy++) {
-            for (xx = 0; xx < xsize; xx++) {
+            for (xx = 0; xx < imOut->xsize; xx++) {
                 xmin = xbounds[xx * 2 + 0];
                 xmax = xbounds[xx * 2 + 1];
                 k = &kk[xx * kmax];
@@ -277,7 +277,7 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, float x0, float x1,
     } else if (imIn->type == IMAGING_TYPE_UINT8) {
         if (imIn->bands == 2) {
             for (yy = 0; yy < imOut->ysize; yy++) {
-                for (xx = 0; xx < xsize; xx++) {
+                for (xx = 0; xx < imOut->xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
@@ -292,7 +292,7 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, float x0, float x1,
             }
         } else if (imIn->bands == 3) {
             for (yy = 0; yy < imOut->ysize; yy++) {
-                for (xx = 0; xx < xsize; xx++) {
+                for (xx = 0; xx < imOut->xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
@@ -309,7 +309,7 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, float x0, float x1,
             }
         } else {
             for (yy = 0; yy < imOut->ysize; yy++) {
-                for (xx = 0; xx < xsize; xx++) {
+                for (xx = 0; xx < imOut->xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
@@ -338,7 +338,7 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, float x0, float x1,
 
 Imaging
 ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, float y0, float y1,
-                             int ysize, struct filter *filterp)
+                             struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     int ss0, ss1, ss2, ss3;
@@ -347,13 +347,13 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, float y0, float y1,
     INT32 *k, *kk;
     double *prekk;
 
-    kmax = precompute_coeffs(imIn->ysize, y0, y1, ysize, filterp,
+    kmax = precompute_coeffs(imIn->ysize, y0, y1, imOut->ysize, filterp,
                              &xbounds, &prekk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
     }
 
-    kmax = normalize_coeffs_8bpc(ysize, kmax, prekk, &kk);
+    kmax = normalize_coeffs_8bpc(imOut->ysize, kmax, prekk, &kk);
     free(prekk);
     if ( ! kmax) {
         free(xbounds);
@@ -362,7 +362,7 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, float y0, float y1,
 
     ImagingSectionEnter(&cookie);
     if (imIn->image8) {
-        for (yy = 0; yy < ysize; yy++) {
+        for (yy = 0; yy < imOut->ysize; yy++) {
             k = &kk[yy * kmax];
             ymin = xbounds[yy * 2 + 0];
             ymax = xbounds[yy * 2 + 1];
@@ -375,7 +375,7 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, float y0, float y1,
         }
     } else if (imIn->type == IMAGING_TYPE_UINT8) {
         if (imIn->bands == 2) {
-            for (yy = 0; yy < ysize; yy++) {
+            for (yy = 0; yy < imOut->ysize; yy++) {
                 k = &kk[yy * kmax];
                 ymin = xbounds[yy * 2 + 0];
                 ymax = xbounds[yy * 2 + 1];
@@ -390,7 +390,7 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, float y0, float y1,
                 }
             }
         } else if (imIn->bands == 3) {
-            for (yy = 0; yy < ysize; yy++) {
+            for (yy = 0; yy < imOut->ysize; yy++) {
                 k = &kk[yy * kmax];
                 ymin = xbounds[yy * 2 + 0];
                 ymax = xbounds[yy * 2 + 1];
@@ -407,7 +407,7 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, float y0, float y1,
                 }
             }
         } else {
-            for (yy = 0; yy < ysize; yy++) {
+            for (yy = 0; yy < imOut->ysize; yy++) {
                 k = &kk[yy * kmax];
                 ymin = xbounds[yy * 2 + 0];
                 ymax = xbounds[yy * 2 + 1];
@@ -437,7 +437,7 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, float y0, float y1,
 
 Imaging
 ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, float x0, float x1,
-                                int xsize, struct filter *filterp)
+                                struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     double ss;
@@ -445,7 +445,7 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, float x0, float x1,
     int *xbounds;
     double *k, *kk;
 
-    kmax = precompute_coeffs(imIn->xsize, x0, x1, xsize, filterp,
+    kmax = precompute_coeffs(imIn->xsize, x0, x1, imOut->xsize, filterp,
                              &xbounds, &kk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
@@ -455,7 +455,7 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, float x0, float x1,
     switch(imIn->type) {
         case IMAGING_TYPE_INT32:
             for (yy = 0; yy < imOut->ysize; yy++) {
-                for (xx = 0; xx < xsize; xx++) {
+                for (xx = 0; xx < imOut->xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
@@ -469,7 +469,7 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, float x0, float x1,
 
         case IMAGING_TYPE_FLOAT32:
             for (yy = 0; yy < imOut->ysize; yy++) {
-                for (xx = 0; xx < xsize; xx++) {
+                for (xx = 0; xx < imOut->xsize; xx++) {
                     xmin = xbounds[xx * 2 + 0];
                     xmax = xbounds[xx * 2 + 1];
                     k = &kk[xx * kmax];
@@ -491,7 +491,7 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, float x0, float x1,
 
 Imaging
 ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, float y0, float y1,
-                              int ysize, struct filter *filterp)
+                              struct filter *filterp)
 {
     ImagingSectionCookie cookie;
     double ss;
@@ -499,7 +499,7 @@ ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, float y0, float y1,
     int *xbounds;
     double *k, *kk;
 
-    kmax = precompute_coeffs(imIn->ysize, y0, y1, ysize, filterp,
+    kmax = precompute_coeffs(imIn->ysize, y0, y1, imOut->ysize, filterp,
                              &xbounds, &kk);
     if ( ! kmax) {
         return (Imaging) ImagingError_MemoryError();
@@ -508,7 +508,7 @@ ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, float y0, float y1,
     ImagingSectionEnter(&cookie);
     switch(imIn->type) {
         case IMAGING_TYPE_INT32:
-            for (yy = 0; yy < ysize; yy++) {
+            for (yy = 0; yy < imOut->ysize; yy++) {
                 ymin = xbounds[yy * 2 + 0];
                 ymax = xbounds[yy * 2 + 1];
                 k = &kk[yy * kmax];
@@ -522,7 +522,7 @@ ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, float y0, float y1,
             break;
 
         case IMAGING_TYPE_FLOAT32:
-            for (yy = 0; yy < ysize; yy++) {
+            for (yy = 0; yy < imOut->ysize; yy++) {
                 ymin = xbounds[yy * 2 + 0];
                 ymax = xbounds[yy * 2 + 1];
                 k = &kk[yy * kmax];
@@ -544,7 +544,7 @@ ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, float y0, float y1,
 
 
 typedef Imaging (*ResampleFunction)(Imaging imOut, Imaging imIn,
-    float x0, float x1, int xsize, struct filter *filterp);
+    float x0, float x1, struct filter *filterp);
 
 
 Imaging
@@ -609,7 +609,7 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4])
         if ( ! imTemp) {
             return NULL;
         }
-        if ( ! ResampleHorizontal(imTemp, imIn, box[0], box[2], xsize, filterp)) {
+        if ( ! ResampleHorizontal(imTemp, imIn, box[0], box[2], filterp)) {
             ImagingDelete(imTemp);
             return NULL;
         }
@@ -623,7 +623,7 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4])
             return NULL;
         }
         /* imIn can be the original image or horizontally resampled one */
-        if ( ! ResampleVertical(imOut, imIn, box[1], box[3], ysize, filterp)) {
+        if ( ! ResampleVertical(imOut, imIn, box[1], box[3], filterp)) {
             ImagingDelete(imTemp);
             ImagingDelete(imOut);
             return NULL;
