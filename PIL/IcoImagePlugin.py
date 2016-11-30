@@ -216,13 +216,13 @@ class IcoFile(object):
                 total_bytes = int((w * im.size[1]) / 8)
 
                 self.buf.seek(and_mask_offset)
-                maskData = self.buf.read(total_bytes)
+                mask_data = self.buf.read(total_bytes)
 
                 # convert raw data to image
                 mask = Image.frombuffer(
                     '1',            # 1 bpp
                     im.size,        # (w, h)
-                    maskData,       # source chars
+                    mask_data,      # source chars
                     'raw',          # raw decoder
                     ('1;I', int(w/8), -1)  # 1bpp inverted, padded, reversed
                 )
@@ -278,6 +278,7 @@ class IcoImageFile(ImageFile.ImageFile):
         pass
 #
 # --------------------------------------------------------------------
+
 
 Image.register_open(IcoImageFile.format, IcoImageFile, _accept)
 Image.register_save(IcoImageFile.format, _save)
