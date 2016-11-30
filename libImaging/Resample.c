@@ -548,7 +548,7 @@ typedef Imaging (*ResampleFunction)(Imaging imOut, Imaging imIn,
 
 
 Imaging
-ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float roi[4])
+ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4])
 {
     Imaging imTemp = NULL;
     Imaging imOut = NULL;
@@ -604,12 +604,12 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float roi[4])
     }
 
     /* two-pass resize, first pass */
-    if (roi[0] || roi[2] != xsize) {
+    if (box[0] || box[2] != xsize) {
         imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
         if ( ! imTemp) {
             return NULL;
         }
-        if ( ! ResampleHorizontal(imTemp, imIn, roi[0], roi[2], xsize, filterp)) {
+        if ( ! ResampleHorizontal(imTemp, imIn, box[0], box[2], xsize, filterp)) {
             ImagingDelete(imTemp);
             return NULL;
         }
@@ -617,13 +617,13 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float roi[4])
     }
 
     /* second pass */
-    if (roi[1] || roi[3] != ysize) {
+    if (box[1] || box[3] != ysize) {
         imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
         if ( ! imOut) {
             return NULL;
         }
         /* imIn can be the original image or horizontally resampled one */
-        if ( ! ResampleVertical(imOut, imIn, roi[1], roi[3], ysize, filterp)) {
+        if ( ! ResampleVertical(imOut, imIn, box[1], box[3], ysize, filterp)) {
             ImagingDelete(imTemp);
             ImagingDelete(imOut);
             return NULL;

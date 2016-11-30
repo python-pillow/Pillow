@@ -1534,43 +1534,43 @@ _resize(ImagingObject* self, PyObject* args)
 
     int xsize, ysize;
     int filter = IMAGING_TRANSFORM_NEAREST;
-    float roi[4] = {0, 0, 0, 0};
+    float box[4] = {0, 0, 0, 0};
     
     imIn = self->image;
-    roi[2] = imIn->xsize;
-    roi[3] = imIn->ysize;
+    box[2] = imIn->xsize;
+    box[3] = imIn->ysize;
     
     if (!PyArg_ParseTuple(args, "(ii)|i(ffff)", &xsize, &ysize, &filter,
-                          &roi[0], &roi[1], &roi[2], &roi[3]))
+                          &box[0], &box[1], &box[2], &box[3]))
         return NULL;
 
     if (xsize < 1 || ysize < 1) {
         return ImagingError_ValueError("height and width must be > 0");
     }
 
-    if (roi[0] < 0 || roi[1] < 0) {
+    if (box[0] < 0 || box[1] < 0) {
         return ImagingError_ValueError("region of interest offset can't be negative");
     }
 
-    if (roi[2] > imIn->xsize || roi[3] > imIn->ysize) {
+    if (box[2] > imIn->xsize || box[3] > imIn->ysize) {
         return ImagingError_ValueError("region of interest can't exceed original image size");
     }
 
-    if (roi[2] - roi[0] <= 0 || roi[3] - roi[1] <= 0) {
+    if (box[2] - box[0] <= 0 || box[3] - box[1] <= 0) {
         return ImagingError_ValueError("region of interest can't be empty");
     }
 
-    if (roi[0] == 0 && roi[1] == 0 && roi[2] == xsize && roi[3] == ysize) {
+    if (box[0] == 0 && box[1] == 0 && box[2] == xsize && box[3] == ysize) {
         imOut = ImagingCopy(imIn);
     }
     else if (filter == IMAGING_TRANSFORM_NEAREST) {
         double a[6];
 
         memset(a, 0, sizeof a);
-        a[0] = (double) (roi[2] - roi[0]) / xsize;
-        a[4] = (double) (roi[3] - roi[1]) / ysize;
-        a[2] = roi[0];
-        a[5] = roi[1];
+        a[0] = (double) (box[2] - box[0]) / xsize;
+        a[4] = (double) (box[3] - box[1]) / ysize;
+        a[2] = box[0];
+        a[5] = box[1];
 
         imOut = ImagingNew(imIn->mode, xsize, ysize);
 
@@ -1580,7 +1580,7 @@ _resize(ImagingObject* self, PyObject* args)
             a, filter, 1);
     }
     else {
-        imOut = ImagingResample(imIn, xsize, ysize, filter, roi);
+        imOut = ImagingResample(imIn, xsize, ysize, filter, box);
     }
 
     return PyImagingNew(imOut);

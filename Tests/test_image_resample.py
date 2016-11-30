@@ -390,9 +390,9 @@ class CoreResampleRoiTest(PillowTestCase):
 
         for resample in (Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
                 Image.BICUBIC, Image.LANCZOS):
-            roi = (o[0] * sc[0], o[1] * sc[1],
+            box = (o[0] * sc[0], o[1] * sc[1],
                    (o[0] + size[0]) * sc[0], (o[1] + size[1]) * sc[1])
-            tile1 = im.resize(size, resample, roi)
+            tile1 = im.resize(size, resample, box)
             big_size = (im.width // sc[0], im.height // sc[1])
             tile2 = im.resize(big_size, resample)\
                       .crop(o + (o[0] + size[0], o[1] + size[1]))
@@ -403,13 +403,13 @@ class CoreResampleRoiTest(PillowTestCase):
         im = hopper()
         reference = im.crop((0, 0, 125, 125)).resize((26, 26), Image.BICUBIC)
         supersampled = im.resize((32, 32), Image.BOX)
-        without_roi = supersampled.resize((26, 26), Image.BICUBIC)
-        with_roi = supersampled.resize((26, 26), Image.BICUBIC, (0, 0, 31.25, 31.25))
+        without_box = supersampled.resize((26, 26), Image.BICUBIC)
+        with_box = supersampled.resize((26, 26), Image.BICUBIC, (0, 0, 31.25, 31.25))
 
-        self.assert_image_similar(reference, with_roi, 12)
+        self.assert_image_similar(reference, with_box, 12)
 
         with self.assertRaisesRegexp(AssertionError, "difference 3\d\."):
-            self.assert_image_similar(reference, without_roi, 10)
+            self.assert_image_similar(reference, without_box, 10)
 
 
 if __name__ == '__main__':
