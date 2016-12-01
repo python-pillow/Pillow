@@ -237,7 +237,7 @@ normalize_coeffs_8bpc(int outSize, int ksize, double *prekk)
 
 
 void    
-ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn,
+ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
                                int ksize, int *bounds, double *prekk)
 {
     ImagingSectionCookie cookie;
@@ -258,7 +258,7 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn,
                 k = &kk[xx * ksize];
                 ss0 = 1 << (PRECISION_BITS -1);
                 for (x = 0; x < xmax; x++)
-                    ss0 += ((UINT8) imIn->image8[yy][x + xmin]) * k[x];
+                    ss0 += ((UINT8) imIn->image8[yy + offset][x + xmin]) * k[x];
                 imOut->image8[yy][xx] = clip8(ss0);
             }
         }
@@ -271,8 +271,8 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn,
                     k = &kk[xx * ksize];
                     ss0 = ss3 = 1 << (PRECISION_BITS -1);
                     for (x = 0; x < xmax; x++) {
-                        ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
-                        ss3 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 3]) * k[x];
+                        ss0 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 0]) * k[x];
+                        ss3 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 3]) * k[x];
                     }
                     imOut->image[yy][xx*4 + 0] = clip8(ss0);
                     imOut->image[yy][xx*4 + 3] = clip8(ss3);
@@ -286,9 +286,9 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn,
                     k = &kk[xx * ksize];
                     ss0 = ss1 = ss2 = 1 << (PRECISION_BITS -1);
                     for (x = 0; x < xmax; x++) {
-                        ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
-                        ss1 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 1]) * k[x];
-                        ss2 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 2]) * k[x];
+                        ss0 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 0]) * k[x];
+                        ss1 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 1]) * k[x];
+                        ss2 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 2]) * k[x];
                     }
                     imOut->image[yy][xx*4 + 0] = clip8(ss0);
                     imOut->image[yy][xx*4 + 1] = clip8(ss1);
@@ -303,10 +303,10 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn,
                     k = &kk[xx * ksize];
                     ss0 = ss1 = ss2 = ss3 = 1 << (PRECISION_BITS -1);
                     for (x = 0; x < xmax; x++) {
-                        ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
-                        ss1 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 1]) * k[x];
-                        ss2 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 2]) * k[x];
-                        ss3 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 3]) * k[x];
+                        ss0 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 0]) * k[x];
+                        ss1 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 1]) * k[x];
+                        ss2 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 2]) * k[x];
+                        ss3 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 3]) * k[x];
                     }
                     imOut->image[yy][xx*4 + 0] = clip8(ss0);
                     imOut->image[yy][xx*4 + 1] = clip8(ss1);
@@ -321,7 +321,7 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn,
 
 
 void
-ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn,
+ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, int offset,
                              int ksize, int *bounds, double *prekk)
 {
     ImagingSectionCookie cookie;
@@ -405,7 +405,7 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn,
 
 
 void
-ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn,
+ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, int offset,
                                 int ksize, int *bounds, double *kk)
 {
     ImagingSectionCookie cookie;
@@ -423,7 +423,7 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn,
                     k = &kk[xx * ksize];
                     ss = 0.0;
                     for (x = 0; x < xmax; x++)
-                        ss += IMAGING_PIXEL_I(imIn, x + xmin, yy) * k[x];
+                        ss += IMAGING_PIXEL_I(imIn, x + xmin, yy + offset) * k[x];
                     IMAGING_PIXEL_I(imOut, xx, yy) = ROUND_UP(ss);
                 }
             }
@@ -437,7 +437,7 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn,
                     k = &kk[xx * ksize];
                     ss = 0.0;
                     for (x = 0; x < xmax; x++)
-                        ss += IMAGING_PIXEL_F(imIn, x + xmin, yy) * k[x];
+                        ss += IMAGING_PIXEL_F(imIn, x + xmin, yy + offset) * k[x];
                     IMAGING_PIXEL_F(imOut, xx, yy) = ss;
                 }
             }
@@ -448,7 +448,7 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn,
 
 
 void
-ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn,
+ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, int offset,
                               int ksize, int *bounds, double *kk)
 {
     ImagingSectionCookie cookie;
@@ -490,7 +490,7 @@ ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn,
 }
 
 
-typedef void (*ResampleFunction)(Imaging imOut, Imaging imIn,
+typedef void (*ResampleFunction)(Imaging imOut, Imaging imIn, int offset,
                                  int ksize, int *bounds, double *kk);
 
 
@@ -569,6 +569,8 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
     Imaging imTemp = NULL;
     Imaging imOut = NULL;
 
+    int i;
+    int yroi_min, yroi_max;
     int ksize_horiz, ksize_vert;
     int *bounds_horiz, *bounds_vert;
     double *kk_horiz, *kk_vert;
@@ -587,11 +589,22 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
         return NULL;
     }
 
+    // First used row in the source image
+    yroi_min = bounds_vert[0];
+    // Last used row in the source image
+    yroi_max = bounds_vert[ysize*2 - 2] + bounds_vert[ysize*2 - 1];
+
+
     /* two-pass resize, first pass */
     if (box[0] || box[2] != xsize) {
-        imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
+        // Shift bounds for vertical pass
+        for (i = 0; i < ysize; i++) {
+            bounds_vert[i * 2] -= yroi_min;
+        }
+
+        imTemp = ImagingNew(imIn->mode, xsize, yroi_max - yroi_min);
         if (imTemp) {
-            ResampleHorizontal(imTemp, imIn,
+            ResampleHorizontal(imTemp, imIn, yroi_min,
                                ksize_horiz, bounds_horiz, kk_horiz);
         }
         free(bounds_horiz);
@@ -609,7 +622,7 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
         imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
         if (imOut) {
             /* imIn can be the original image or horizontally resampled one */
-            ResampleVertical(imOut, imIn,
+            ResampleVertical(imOut, imIn, 0,
                              ksize_vert, bounds_vert, kk_vert);
         }
         /* it's safe to call ImagingDelete with empty value
