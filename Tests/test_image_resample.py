@@ -1,3 +1,5 @@
+from __future__ import division
+
 from helper import unittest, PillowTestCase, hopper
 from PIL import Image, ImageDraw, ImageMode
 
@@ -348,7 +350,7 @@ class CoreResampleCoefficientsTest(PillowTestCase):
         self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000) # fourth channel
 
 
-class CoreResampleRoiTest(PillowTestCase):
+class CoreResampleBoxTest(PillowTestCase):
     def test_wrong_arguments(self):
         im = hopper()
         for resample in (Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
@@ -378,38 +380,52 @@ class CoreResampleRoiTest(PillowTestCase):
             with self.assertRaisesRegexp(ValueError, "can't exceed"):
                 im.resize((32, 32), resample, (0, 0, im.width, im.height + 1))
 
+    def resize_tiled(self, im, dst_size, xtiles, ytiles):
+        def split_range(size, tiles):
+            scale = size / tiles
+            for i in range(tiles):
+                yield (int(round(scale * i)), int(round(scale * (i + 1))))
+
+        tiled = Image.new(im.mode, dst_size)
+        scale = (im.size[0] / tiled.size[0], im.size[1] / tiled.size[1])
+
+        for y0, y1 in split_range(dst_size[1], ytiles):
+            for x0, x1 in split_range(dst_size[0], xtiles):
+                box = (x0 * scale[0], y0 * scale[1],
+                       x1 * scale[0], y1 * scale[1])
+                tile = im.resize((x1 - x0, y1 - y0), Image.BICUBIC, box)
+                tiled.paste(tile, (x0, y0))
+        return tiled
+
     def test_tiles(self):
-        im = hopper()
-        # should not be fractional
-        size = (28, 14)
-        sc = (3, 4)  # scale
-        o = (5, 10)  # offset
-        # fixed size divisible by scale
-        im = im.resize((im.width // sc[0] * sc[0],
-                        im.height // sc[1] * sc[1]))
+        im = Image.open("Tests/images/flower.jpg")
+        assert im.size == (480, 360)
+        dst_size = (251, 188)
+        reference = im.resize(dst_size, Image.BICUBIC)
 
-        for resample in (Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
-                Image.BICUBIC, Image.LANCZOS):
-            box = (o[0] * sc[0], o[1] * sc[1],
-                   (o[0] + size[0]) * sc[0], (o[1] + size[1]) * sc[1])
-            tile1 = im.resize(size, resample, box)
-            big_size = (im.width // sc[0], im.height // sc[1])
-            tile2 = im.resize(big_size, resample)\
-                      .crop(o + (o[0] + size[0], o[1] + size[1]))
-
-            self.assert_image_equal(tile1, tile2)
+        for tiles in [(1, 1), (3, 3), (9, 7), (100, 100)]:
+            tiled = self.resize_tiled(im, dst_size, *tiles)
+            self.assert_image_similar(reference, tiled, 0.01)
 
     def test_subsample(self):
-        im = hopper()
-        reference = im.crop((0, 0, 125, 125)).resize((26, 26), Image.BICUBIC)
-        supersampled = im.resize((32, 32), Image.BOX)
-        without_box = supersampled.resize((26, 26), Image.BICUBIC)
-        with_box = supersampled.resize((26, 26), Image.BICUBIC, (0, 0, 31.25, 31.25))
+        # This test shows advantages of the subpixel resizing
+        # after supersampling (e.g. during JPEG decoding).
+        im = Image.open("Tests/images/flower.jpg")
+        assert im.size == (480, 360)
+        dst_size = (48, 36)
+        # Reference is cropped image resized to destination
+        reference = im.crop((0, 0, 473, 353)).resize(dst_size, Image.BICUBIC)
+        # Image.BOX emulates supersampling (480 / 8 = 60, 360 / 8 = 45)
+        supersampled = im.resize((60, 45), Image.BOX)
 
-        self.assert_image_similar(reference, with_box, 12)
+        with_box = supersampled.resize(dst_size, Image.BICUBIC,
+                                       (0, 0, 59.125, 44.125))
+        without_box = supersampled.resize(dst_size, Image.BICUBIC)
 
-        with self.assertRaisesRegexp(AssertionError, "difference 3\d\."):
-            self.assert_image_similar(reference, without_box, 10)
+        # error with box should be much smaller than without
+        self.assert_image_similar(reference, with_box, 6)
+        with self.assertRaisesRegexp(AssertionError, "difference 29\."):
+            self.assert_image_similar(reference, without_box, 5)
 
 
 if __name__ == '__main__':
