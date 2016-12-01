@@ -48,6 +48,19 @@ class TestFileIco(PillowTestCase):
         self.assert_image_equal(reloaded,
                                 hopper().resize((32, 32), Image.LANCZOS))
 
+    def test_save_256x256(self):
+        """Issue #2264 https://github.com/python-pillow/Pillow/issues/2264"""
+        # Arrange
+        im = Image.open("Tests/images/hopper_256x256.ico")
+        outfile = self.tempfile("temp_saved_hopper_256x256.ico")
+
+        # Act
+        im.save(outfile)
+        im_saved = Image.open(outfile)
+
+        # Assert
+        self.assertEqual(im_saved.size, (256, 256))
+
 
 if __name__ == '__main__':
     unittest.main()
