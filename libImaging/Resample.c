@@ -238,26 +238,16 @@ normalize_coeffs_8bpc(int outSize, int kmax, double *prekk, INT32 **kkp)
 
 
 Imaging
-ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, float x0, float x1,
-                               struct filter *filterp)
+ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn,
+                               int kmax, int *xbounds, double *prekk)
 {
     ImagingSectionCookie cookie;
     int ss0, ss1, ss2, ss3;
-    int xx, yy, x, kmax, xmin, xmax;
-    int *xbounds;
+    int xx, yy, x, xmin, xmax;
     INT32 *k, *kk;
-    double *prekk;
-
-    kmax = precompute_coeffs(imIn->xsize, x0, x1, imOut->xsize, filterp,
-                             &xbounds, &prekk);
-    if ( ! kmax) {
-        return (Imaging) ImagingError_MemoryError();
-    }
 
     kmax = normalize_coeffs_8bpc(imOut->xsize, kmax, prekk, &kk);
-    free(prekk);
     if ( ! kmax) {
-        free(xbounds);
         return (Imaging) ImagingError_MemoryError();
     }
 
@@ -331,32 +321,21 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, float x0, float x1,
     ImagingSectionLeave(&cookie);
 
     free(kk);
-    free(xbounds);
     return imOut;
 }
 
 
 Imaging
-ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, float y0, float y1,
-                             struct filter *filterp)
+ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn,
+                             int kmax, int *xbounds, double *prekk)
 {
     ImagingSectionCookie cookie;
     int ss0, ss1, ss2, ss3;
-    int xx, yy, y, kmax, ymin, ymax;
-    int *xbounds;
+    int xx, yy, y, ymin, ymax;
     INT32 *k, *kk;
-    double *prekk;
-
-    kmax = precompute_coeffs(imIn->ysize, y0, y1, imOut->ysize, filterp,
-                             &xbounds, &prekk);
-    if ( ! kmax) {
-        return (Imaging) ImagingError_MemoryError();
-    }
 
     kmax = normalize_coeffs_8bpc(imOut->ysize, kmax, prekk, &kk);
-    free(prekk);
     if ( ! kmax) {
-        free(xbounds);
         return (Imaging) ImagingError_MemoryError();
     }
 
@@ -430,26 +409,18 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, float y0, float y1,
     ImagingSectionLeave(&cookie);
 
     free(kk);
-    free(xbounds);
     return imOut;
 }
 
 
 Imaging
-ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, float x0, float x1,
-                                struct filter *filterp)
+ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn,
+                                int kmax, int *xbounds, double *kk)
 {
     ImagingSectionCookie cookie;
     double ss;
-    int xx, yy, x, kmax, xmin, xmax;
-    int *xbounds;
-    double *k, *kk;
-
-    kmax = precompute_coeffs(imIn->xsize, x0, x1, imOut->xsize, filterp,
-                             &xbounds, &kk);
-    if ( ! kmax) {
-        return (Imaging) ImagingError_MemoryError();
-    }
+    int xx, yy, x, xmin, xmax;
+    double *k;
 
     ImagingSectionEnter(&cookie);
     switch(imIn->type) {
@@ -483,27 +454,18 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, float x0, float x1,
     }
     ImagingSectionLeave(&cookie);
 
-    free(kk);
-    free(xbounds);
     return imOut;
 }
 
 
 Imaging
-ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, float y0, float y1,
-                              struct filter *filterp)
+ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn,
+                              int kmax, int *xbounds, double *kk)
 {
     ImagingSectionCookie cookie;
     double ss;
-    int xx, yy, y, kmax, ymin, ymax;
-    int *xbounds;
-    double *k, *kk;
-
-    kmax = precompute_coeffs(imIn->ysize, y0, y1, imOut->ysize, filterp,
-                             &xbounds, &kk);
-    if ( ! kmax) {
-        return (Imaging) ImagingError_MemoryError();
-    }
+    int xx, yy, y, ymin, ymax;
+    double *k;
 
     ImagingSectionEnter(&cookie);
     switch(imIn->type) {
@@ -537,14 +499,12 @@ ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, float y0, float y1,
     }
     ImagingSectionLeave(&cookie);
 
-    free(kk);
-    free(xbounds);
     return imOut;
 }
 
 
 typedef Imaging (*ResampleFunction)(Imaging imOut, Imaging imIn,
-    float x0, float x1, struct filter *filterp);
+                                    int kmax, int *xbounds, double *kk);
 
 
 Imaging
@@ -622,34 +582,62 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
     Imaging imTemp = NULL;
     Imaging imOut = NULL;
 
+    int kmax;
+    int *xbounds;
+    double *kk;
+
     /* two-pass resize, first pass */
     if (box[0] || box[2] != xsize) {
+        kmax = precompute_coeffs(imIn->xsize, box[0], box[2], xsize, filterp,
+                                 &xbounds, &kk);
+        if ( ! kmax) {
+            return (Imaging) ImagingError_MemoryError();
+        }
+
         imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
         if ( ! imTemp) {
+            free(xbounds);
+            free(kk);
             return NULL;
         }
-        if ( ! ResampleHorizontal(imTemp, imIn, box[0], box[2], filterp)) {
+        if ( ! ResampleHorizontal(imTemp, imIn, kmax, xbounds, kk)) {
             ImagingDelete(imTemp);
+            free(xbounds);
+            free(kk);
             return NULL;
         }
+        free(xbounds);
+        free(kk);
         imOut = imIn = imTemp;
     }
 
     /* second pass */
     if (box[1] || box[3] != ysize) {
+        kmax = precompute_coeffs(imIn->ysize, box[1], box[3], ysize, filterp,
+                                 &xbounds, &kk);
+        if ( ! kmax) {
+            return (Imaging) ImagingError_MemoryError();
+        }
+
         imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
         if ( ! imOut) {
+            free(xbounds);
+            free(kk);
             return NULL;
         }
         /* imIn can be the original image or horizontally resampled one */
-        if ( ! ResampleVertical(imOut, imIn, box[1], box[3], filterp)) {
+        if ( ! ResampleVertical(imOut, imIn, kmax, xbounds, kk)) {
             ImagingDelete(imTemp);
             ImagingDelete(imOut);
+            free(xbounds);
+            free(kk);
             return NULL;
         }
         /* it's safe to call ImagingDelete with empty value
            if previous step was not performed. */
         ImagingDelete(imTemp);
+        free(xbounds);
+        free(kk);
     }
 
     /* none of the previous steps are performed, copying */
