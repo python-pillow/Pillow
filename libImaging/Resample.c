@@ -569,52 +569,57 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
     Imaging imTemp = NULL;
     Imaging imOut = NULL;
 
-    int ksize;
-    int *bounds;
-    double *kk;
+    int ksize_horiz, ksize_vert;
+    int *bounds_horiz, *bounds_vert;
+    double *kk_horiz, *kk_vert;
+
+    ksize_horiz = precompute_coeffs(imIn->xsize, box[0], box[2], xsize,
+                                    filterp, &bounds_horiz, &kk_horiz);
+    if ( ! ksize_horiz) {
+        return NULL;
+    }
+
+    ksize_vert = precompute_coeffs(imIn->ysize, box[1], box[3], ysize,
+                                   filterp, &bounds_vert, &kk_vert);
+    if ( ! ksize_vert) {
+        free(bounds_horiz);
+        free(kk_horiz);
+        return NULL;
+    }
 
     /* two-pass resize, first pass */
     if (box[0] || box[2] != xsize) {
-        ksize = precompute_coeffs(imIn->xsize, box[0], box[2], xsize, filterp,
-                                  &bounds, &kk);
-        if ( ! ksize) {
-            return NULL;
-        }
-
         imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
+        if (imTemp) {
+            ResampleHorizontal(imTemp, imIn,
+                               ksize_horiz, bounds_horiz, kk_horiz);
+        }
+        free(bounds_horiz);
+        free(kk_horiz);
         if ( ! imTemp) {
-            free(bounds);
-            free(kk);
+            free(bounds_vert);
+            free(kk_vert);
             return NULL;
         }
-        ResampleHorizontal(imTemp, imIn, ksize, bounds, kk);
-        free(bounds);
-        free(kk);
         imOut = imIn = imTemp;
     }
 
     /* second pass */
     if (box[1] || box[3] != ysize) {
-        ksize = precompute_coeffs(imIn->ysize, box[1], box[3], ysize, filterp,
-                                  &bounds, &kk);
-        if ( ! ksize) {
-            ImagingDelete(imTemp);
-            return NULL;
-        }
-
         imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
-        if ( ! imOut) {
-            free(bounds);
-            free(kk);
-            return NULL;
+        if (imOut) {
+            /* imIn can be the original image or horizontally resampled one */
+            ResampleVertical(imOut, imIn,
+                             ksize_vert, bounds_vert, kk_vert);
         }
-        /* imIn can be the original image or horizontally resampled one */
-        ResampleVertical(imOut, imIn, ksize, bounds, kk);
         /* it's safe to call ImagingDelete with empty value
            if previous step was not performed. */
         ImagingDelete(imTemp);
-        free(bounds);
-        free(kk);
+        free(bounds_vert);
+        free(kk_vert);
+        if ( ! imOut) {
+            return NULL;
+        }
     }
 
     /* none of the previous steps are performed, copying */
