@@ -5,3 +5,4 @@ Internal Reference Docs
   :maxdepth: 2
           
   open_files
+  limits
