@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- ICO: Only save relevant sizes #2267
+  [hugovk]
+  
+- ICO: Allow saving .ico files of 256x256 instead of 255x255 #2265
+  [hugovk]
+
 - Fix TIFFImagePlugin ICC color profile saving. #2087
   [cskau]
   
