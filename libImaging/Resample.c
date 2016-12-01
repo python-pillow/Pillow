@@ -211,17 +211,14 @@ precompute_coeffs(int inSize, float in0, float in1, int outSize,
 }
 
 
-int
-normalize_coeffs_8bpc(int outSize, int kmax, double *prekk, INT32 **kkp)
+void
+normalize_coeffs_8bpc(int outSize, int kmax, double *prekk)
 {
     int x;
     INT32 *kk;
 
-    /* malloc check ok, overflow checked in precompute_coeffs */
-    kk = malloc(outSize * kmax * sizeof(INT32));
-    if ( ! kk) {
-        return 0;
-    }
+    // We are using the same buffer for normalized coefficients
+    kk = (INT32 *)prekk;
 
     for (x = 0; x < outSize * kmax; x++) {
         if (prekk[x] < 0) {
@@ -230,14 +227,11 @@ normalize_coeffs_8bpc(int outSize, int kmax, double *prekk, INT32 **kkp)
             kk[x] = (int) (0.5 + prekk[x] * (1 << PRECISION_BITS));
         }
     }
-
-    *kkp = kk;
-    return kmax;
 }
 
 
 
-Imaging
+void    
 ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn,
                                int kmax, int *xbounds, double *prekk)
 {
@@ -246,10 +240,8 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn,
     int xx, yy, x, xmin, xmax;
     INT32 *k, *kk;
 
-    kmax = normalize_coeffs_8bpc(imOut->xsize, kmax, prekk, &kk);
-    if ( ! kmax) {
-        return (Imaging) ImagingError_MemoryError();
-    }
+    kk = (INT32 *) prekk;
+    normalize_coeffs_8bpc(imOut->xsize, kmax, prekk);
 
     ImagingSectionEnter(&cookie);
     if (imIn->image8) {
@@ -319,13 +311,10 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn,
         }
     }
     ImagingSectionLeave(&cookie);
-
-    free(kk);
-    return imOut;
 }
 
 
-Imaging
+void
 ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn,
                              int kmax, int *xbounds, double *prekk)
 {
@@ -334,10 +323,8 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn,
     int xx, yy, y, ymin, ymax;
     INT32 *k, *kk;
 
-    kmax = normalize_coeffs_8bpc(imOut->ysize, kmax, prekk, &kk);
-    if ( ! kmax) {
-        return (Imaging) ImagingError_MemoryError();
-    }
+    kk = (INT32 *) prekk;
+    normalize_coeffs_8bpc(imOut->ysize, kmax, prekk);
 
     ImagingSectionEnter(&cookie);
     if (imIn->image8) {
@@ -407,13 +394,10 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn,
         }
     }
     ImagingSectionLeave(&cookie);
-
-    free(kk);
-    return imOut;
 }
 
 
-Imaging
+void
 ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn,
                                 int kmax, int *xbounds, double *kk)
 {
@@ -453,12 +437,10 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn,
             break;
     }
     ImagingSectionLeave(&cookie);
-
-    return imOut;
 }
 
 
-Imaging
+void
 ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn,
                               int kmax, int *xbounds, double *kk)
 {
@@ -498,12 +480,10 @@ ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn,
             break;
     }
     ImagingSectionLeave(&cookie);
-
-    return imOut;
 }
 
 
-typedef Imaging (*ResampleFunction)(Imaging imOut, Imaging imIn,
+typedef void (*ResampleFunction)(Imaging imOut, Imaging imIn,
                                     int kmax, int *xbounds, double *kk);
 
 
@@ -600,12 +580,7 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
             free(kk);
             return NULL;
         }
-        if ( ! ResampleHorizontal(imTemp, imIn, kmax, xbounds, kk)) {
-            ImagingDelete(imTemp);
-            free(xbounds);
-            free(kk);
-            return NULL;
-        }
+        ResampleHorizontal(imTemp, imIn, kmax, xbounds, kk);
         free(xbounds);
         free(kk);
         imOut = imIn = imTemp;
@@ -616,6 +591,7 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
         kmax = precompute_coeffs(imIn->ysize, box[1], box[3], ysize, filterp,
                                  &xbounds, &kk);
         if ( ! kmax) {
+            ImagingDelete(imTemp);
             return (Imaging) ImagingError_MemoryError();
         }
 
@@ -626,13 +602,7 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
             return NULL;
         }
         /* imIn can be the original image or horizontally resampled one */
-        if ( ! ResampleVertical(imOut, imIn, kmax, xbounds, kk)) {
-            ImagingDelete(imTemp);
-            ImagingDelete(imOut);
-            free(xbounds);
-            free(kk);
-            return NULL;
-        }
+        ResampleVertical(imOut, imIn, kmax, xbounds, kk);
         /* it's safe to call ImagingDelete with empty value
            if previous step was not performed. */
         ImagingDelete(imTemp);
