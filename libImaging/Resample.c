@@ -146,19 +146,24 @@ precompute_coeffs(int inSize, float in0, float in1, int outSize,
     kmax = (int) ceil(support) * 2 + 1;
 
     // check for overflow
-    if (outSize > INT_MAX / (kmax * sizeof(double)))
+    if (outSize > INT_MAX / (kmax * sizeof(double))) {
+        ImagingError_MemoryError();
         return 0;
+    }
 
     /* coefficient buffer */
     /* malloc check ok, overflow checked above */
     kk = malloc(outSize * kmax * sizeof(double));
-    if ( ! kk)
+    if ( ! kk) {
+        ImagingError_MemoryError();
         return 0;
+    }
 
     /* malloc check ok, kmax*sizeof(double) > 2*sizeof(int) */
     xbounds = malloc(outSize * 2 * sizeof(int));
     if ( ! xbounds) {
         free(kk);
+        ImagingError_MemoryError();
         return 0;
     }
 
@@ -571,7 +576,7 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
         kmax = precompute_coeffs(imIn->xsize, box[0], box[2], xsize, filterp,
                                  &xbounds, &kk);
         if ( ! kmax) {
-            return (Imaging) ImagingError_MemoryError();
+            return NULL;
         }
 
         imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
@@ -592,7 +597,7 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
                                  &xbounds, &kk);
         if ( ! kmax) {
             ImagingDelete(imTemp);
-            return (Imaging) ImagingError_MemoryError();
+            return NULL;
         }
 
         imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
