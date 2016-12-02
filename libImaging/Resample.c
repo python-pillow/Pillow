@@ -615,6 +615,10 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
             return NULL;
         }
         imOut = imIn = imTemp;
+    } else {
+        // Free in any case
+        free(bounds_horiz);
+        free(kk_horiz);
     }
 
     /* second pass */
@@ -633,6 +637,10 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
         if ( ! imOut) {
             return NULL;
         }
+    } else {
+        // Free in any case
+        free(bounds_vert);
+        free(kk_vert);
     }
 
     /* none of the previous steps are performed, copying */
