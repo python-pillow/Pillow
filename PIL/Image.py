@@ -1544,10 +1544,14 @@ class Image(object):
         ):
             raise ValueError("unknown resampling filter")
 
-        self.load()
-
         size = tuple(size)
-        if self.size == size:
+
+        if box is None:
+            box = (0, 0) + self.size
+        else:
+            box = tuple(box)
+
+        if self.size == size and box == (0, 0) + self.size:
             return self.copy()
 
         if self.mode in ("1", "P"):
@@ -1559,8 +1563,7 @@ class Image(object):
         if self.mode == 'RGBA':
             return self.convert('RGBa').resize(size, resample).convert('RGBA')
 
-        if box is None:
-            box = (0, 0) + self.size
+        self.load()
 
         return self._new(self.im.resize(size, resample, box))
 
