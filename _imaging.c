@@ -1549,15 +1549,15 @@ _resize(ImagingObject* self, PyObject* args)
     }
 
     if (box[0] < 0 || box[1] < 0) {
-        return ImagingError_ValueError("region of interest offset can't be negative");
+        return ImagingError_ValueError("box offset can't be negative");
     }
 
     if (box[2] > imIn->xsize || box[3] > imIn->ysize) {
-        return ImagingError_ValueError("region of interest can't exceed original image size");
+        return ImagingError_ValueError("box can't exceed original image size");
     }
 
     if (box[2] - box[0] <= 0 || box[3] - box[1] <= 0) {
-        return ImagingError_ValueError("region of interest can't be empty");
+        return ImagingError_ValueError("box can't be empty");
     }
 
     if (box[0] == 0 && box[1] == 0 && box[2] == xsize && box[3] == ysize) {
