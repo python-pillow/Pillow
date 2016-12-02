@@ -307,9 +307,9 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
 class CoreResamplePassesTest(PillowTestCase):
     @contextmanager
     def count(self, diff):
-        count = Image.core.getcount() + diff
+        count = Image.core.getcount()
         yield
-        self.assertEqual(Image.core.getcount(), count)
+        self.assertEqual(Image.core.getcount() - count, diff)
 
     def test_horizontal(self):
         im = hopper('L')
@@ -332,7 +332,8 @@ class CoreResamplePassesTest(PillowTestCase):
         with self.count(1):
             # the same size, but different box
             with_box = im.resize(im.size, Image.BILINEAR, box)
-        cropped = im.crop(box).resize(im.size, Image.BILINEAR)
+        with self.count(2):
+            cropped = im.crop(box).resize(im.size, Image.BILINEAR)
         self.assert_image_similar(with_box, cropped, 0.1)
 
     def test_box_vertical(self):
@@ -341,7 +342,8 @@ class CoreResamplePassesTest(PillowTestCase):
         with self.count(1):
             # the same size, but different box
             with_box = im.resize(im.size, Image.BILINEAR, box)
-        cropped = im.crop(box).resize(im.size, Image.BILINEAR)
+        with self.count(2):
+            cropped = im.crop(box).resize(im.size, Image.BILINEAR)
         self.assert_image_similar(with_box, cropped, 0.1)
 
 class CoreResampleCoefficientsTest(PillowTestCase):
