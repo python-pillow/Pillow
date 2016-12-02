@@ -1558,10 +1558,10 @@ class Image(object):
             resample = NEAREST
 
         if self.mode == 'LA':
-            return self.convert('La').resize(size, resample).convert('LA')
+            return self.convert('La').resize(size, resample, box).convert('LA')
 
         if self.mode == 'RGBA':
-            return self.convert('RGBa').resize(size, resample).convert('RGBA')
+            return self.convert('RGBa').resize(size, resample, box).convert('RGBA')
 
         self.load()
 
