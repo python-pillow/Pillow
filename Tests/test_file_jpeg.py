@@ -171,6 +171,12 @@ class TestFileJpeg(PillowTestCase):
         # this requires more bytes than pixels in the image
         im.save(f, format="JPEG", progressive=True, quality=100)
 
+    def test_progressive_cmyk_buffer(self):
+        # Issue 2272, quality 90 cmyk image is tripping the large buffer bug.
+        f = BytesIO()
+        im = self.gen_random_image((256,256), 'CMYK')
+        im.save(f, format='JPEG', progressive=True, quality=94)
+        
     def test_large_exif(self):
         # https://github.com/python-pillow/Pillow/issues/148
         f = self.tempfile('temp.jpg')

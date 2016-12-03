@@ -716,8 +716,11 @@ def _save(im, fp, filename):
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     bufsize = 0
     if optimize or progressive:
+        # CMYK can be bigger
+        if im.mode == 'CMYK':
+            bufsize = 4 * im.size[0] * im.size[1]
         # keep sets quality to 0, but the actual value may be high.
-        if quality >= 95 or quality == 0:
+        elif quality >= 95 or quality == 0:
             bufsize = 2 * im.size[0] * im.size[1]
         else:
             bufsize = im.size[0] * im.size[1]
