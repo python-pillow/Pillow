@@ -131,7 +131,7 @@ class TestImagePalette(PillowTestCase):
         
         rgb = b'\x00' * 2 + b'\x01' * 2 + b'\x02' * 2
         img = Image.frombytes('P', (6, 1), rgb)
-        img.putpalette('\xFF\x00\x00' '\x00\xFF\x00' '\x00\x00\xFF') # RGB
+        img.putpalette(b'\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF') # RGB
         img.save(outfile, format='PNG')
 
         reloaded = Image.open(outfile)
