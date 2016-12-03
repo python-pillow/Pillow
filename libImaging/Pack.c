@@ -194,6 +194,7 @@ packP2(UINT8* out, const UINT8* in, int pixels)
     case 2:
         out[0] = (in[0] << 6) |
                  ((in[1] & 3) << 4);
+        break;
     case 1:
         out[0] = (in[0] << 6);
     }
