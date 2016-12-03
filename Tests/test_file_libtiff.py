@@ -370,7 +370,8 @@ class TestFileLibTiff(LibTiffTestCase):
         fn = im.fp.fileno()
 
         os.fstat(fn)
-        im.load()  # this should close it.
+        im.load()
+        im.close() # this should close it.
         self.assertRaises(OSError, lambda: os.fstat(fn))
         im = None  # this should force even more closed.
         self.assertRaises(OSError, lambda: os.fstat(fn))
@@ -396,6 +397,19 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertFalse(im.tag.next)
         self.assertEqual(im.size, (20, 20))
         self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 0, 255))
+
+        TiffImagePlugin.READ_LIBTIFF = False
+
+    def test_multipage_nframes(self):
+        # issue #862
+        TiffImagePlugin.READ_LIBTIFF = True
+        im = Image.open('Tests/images/multipage.tiff')
+        frames = im.n_frames
+        self.assertEqual(frames, 3)
+        for idx in range(frames):
+            im.seek(0)
+            # Should not raise ValueError: I/O operation on closed file
+            im.load()
 
         TiffImagePlugin.READ_LIBTIFF = False
 
@@ -521,7 +535,7 @@ class TestFileLibTiff(LibTiffTestCase):
         except:
             self.fail("Should not get permission error here")
 
-    
+
 
 
 if __name__ == '__main__':
