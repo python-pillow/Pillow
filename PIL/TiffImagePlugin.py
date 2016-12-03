@@ -1006,9 +1006,6 @@ class TiffImageFile(ImageFile.ImageFile):
                 # Section 14: Differencing Predictor
                 self.decoderconfig = (self.tag_v2[PREDICTOR],)
 
-        if ICCPROFILE in self.tag_v2:
-            self.info['icc_profile'] = self.tag_v2[ICCPROFILE]
-
         return args
 
     def load(self):
@@ -1280,6 +1277,10 @@ class TiffImageFile(ImageFile.ImageFile):
             if DEBUG:
                 print("- unsupported data organization")
             raise SyntaxError("unknown data organization")
+
+        # Fix up info.
+        if ICCPROFILE in self.tag_v2:
+            self.info['icc_profile'] = self.tag_v2[ICCPROFILE]
 
         # fixup palette descriptor
 
