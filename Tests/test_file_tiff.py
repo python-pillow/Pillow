@@ -382,20 +382,6 @@ class TestFileTiff(PillowTestCase):
                 self.assertEqual(im2.mode, "L")
                 self.assert_image_equal(im, im2)
 
-    def test_page_number_x_0(self):
-        # Issue 973
-        # Test TIFF with tag 297 (Page Number) having value of 0 0.
-        # The first number is the current page number.
-        # The second is the total number of pages, zero means not available.
-        outfile = self.tempfile("temp.tif")
-        # Created by printing a page in Chrome to PDF, then:
-        # /usr/bin/gs -q -sDEVICE=tiffg3 -sOutputFile=total-pages-zero.tif
-        # -dNOPAUSE /tmp/test.pdf -c quit
-        infile = "Tests/images/total-pages-zero.tif"
-        im = Image.open(infile)
-        # Should not divide by zero
-        im.save(outfile)
-
     def test_with_underscores(self):
         kwargs = {'resolution_unit': 'inch',
                   'x_resolution': 72,
@@ -431,36 +417,6 @@ class TestFileTiff(PillowTestCase):
         # v2 interface
         self.assertEqual(im.tag_v2[X_RESOLUTION], 36)
         self.assertEqual(im.tag_v2[Y_RESOLUTION], 72)
-
-    def test_multipage_compression(self):
-        im = Image.open('Tests/images/compression.tif')
-
-        im.seek(0)
-        self.assertEqual(im._compression, 'tiff_ccitt')
-        self.assertEqual(im.size, (10, 10))
-
-        im.seek(1)
-        self.assertEqual(im._compression, 'packbits')
-        self.assertEqual(im.size, (10, 10))
-        im.load()
-
-        im.seek(0)
-        self.assertEqual(im._compression, 'tiff_ccitt')
-        self.assertEqual(im.size, (10, 10))
-        im.load()
-
-    def test_save_tiff_with_jpegtables(self):
-        # Arrange
-        outfile = self.tempfile("temp.tif")
-
-        # Created with ImageMagick: convert hopper.jpg hopper_jpg.tif
-        # Contains JPEGTables (347) tag
-        infile = "Tests/images/hopper_jpg.tif"
-        im = Image.open(infile)
-
-        # Act / Assert
-        # Should not raise UnicodeDecodeError or anything else
-        im.save(outfile)
 
     def test_lzw(self):
         # Act
