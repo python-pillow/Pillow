@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Update Maxblock heuristic #2275
+  [wiredfool]
+
 - Fix for 2-bit palette corruption #2274
   [pdknsk, wiredfool]
 
