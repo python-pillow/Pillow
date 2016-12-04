@@ -4,9 +4,12 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Fix for 2-bit palette corruption #2274
+  [pdknsk, wiredfool]
+
 - Tiff: Update info.icc_profile when using libtiff reader. #2193
   [lambdafu]
-  
+
 - Test: Fix bug in test_ifd_rational_save when libtiff is not available #2270
   [ChristopherHogan]  
 
