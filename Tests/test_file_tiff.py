@@ -444,10 +444,44 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.size, (10, 10))
         im.load()
 
+        self.assertRaises(EOFError, lambda: im.seek(2))
+            
         im.seek(0)
         self.assertEqual(im._compression, 'tiff_ccitt')
         self.assertEqual(im.size, (10, 10))
         im.load()
+
+        im.seek(1)
+        self.assertEqual(im._compression, 'packbits')
+        self.assertEqual(im.size, (10, 10))
+        im.load()
+
+        im.seek(0)
+        self.assertEqual(im._compression, 'tiff_ccitt')
+        self.assertEqual(im.size, (10, 10))
+        im.load()
+
+        im2 = Image.open('Tests/images/compression2.tif')
+
+        im2.seek(0)
+        self.assertEqual(im2._compression, 'packbits')
+        self.assertEqual(im2.size, (10, 10))
+        im2.load()
+
+        im2.seek(1)
+        self.assertEqual(im2._compression, 'tiff_ccitt')
+        self.assertEqual(im2.size, (10, 10))
+        im2.load()
+
+        im2.seek(0)
+        self.assertEqual(im2._compression, 'packbits')
+        self.assertEqual(im2.size, (10, 10))
+        im2.load()
+
+        im2.seek(1)
+        self.assertEqual(im2._compression, 'tiff_ccitt')
+        self.assertEqual(im2.size, (10, 10))
+        im2.load()
 
     def test_save_tiff_with_jpegtables(self):
         # Arrange
