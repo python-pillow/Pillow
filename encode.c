@@ -749,6 +749,19 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 
 #include <string.h>
 
+#define PUSHMETAARRAY(_type, _PyFunction)\
+    arrav = calloc(len, sizeof(_type));\
+    if (arrav) {\
+        for (i=0;i<len;i++) {\
+            ((_type *)arrav)[i] = (_type)_PyFunction(PyTuple_GetItem(value,i)); \
+        }\
+        status = ImagingLibTiffSetField(&encoder->state,\
+                                        (ttag_t) PyInt_AsLong(key),\
+                                        len, arrav);\
+        free(arrav);\
+    } 
+
+
 PyObject*
 PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 {
@@ -761,7 +774,8 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     int fp;
 
     PyObject *dir;
-    PyObject *key, *value;
+    PyObject *key, *value, *valuetuple;
+    int type, length, flarray;
     Py_ssize_t pos = 0;
     int status;
 
@@ -804,67 +818,116 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 
     for (pos = 0; pos < d_size; pos++) {
         key = PyList_GetItem(keys, pos);
-        value = PyList_GetItem(values, pos);
+        valuetuple = PyList_GetItem(values, pos);
         status = 0;
         TRACE(("Attempting to set key: %d\n", (int)PyInt_AsLong(key)));
-        if (PyInt_Check(value)) {
-            TRACE(("Setting from Int: %d %ld \n", (int)PyInt_AsLong(key),PyInt_AsLong(value)));
-            status = ImagingLibTiffSetField(&encoder->state,
-                                            (ttag_t) PyInt_AsLong(key),
-                                            PyInt_AsLong(value));
-        } else if (PyFloat_Check(value)) {
-            TRACE(("Setting from Float: %d, %f \n", (int)PyInt_AsLong(key),PyFloat_AsDouble(value)));
-            status = ImagingLibTiffSetField(&encoder->state,
-                                            (ttag_t) PyInt_AsLong(key),
-                                            (float)PyFloat_AsDouble(value));
-        } else if (PyBytes_Check(value)) {
-            TRACE(("Setting from Bytes: %d, %s \n", (int)PyInt_AsLong(key),PyBytes_AsString(value)));
-            status = ImagingLibTiffSetField(&encoder->state,
-                                            (ttag_t) PyInt_AsLong(key),
-                                            PyBytes_AsString(value));
-        } else if (PyTuple_Check(value)) {
-            Py_ssize_t len,i;
-            float *floatav;
-            int *intav;
-            TRACE(("Setting from Tuple: %d \n", (int)PyInt_AsLong(key)));
-            len = PyTuple_Size(value);
-            if (len) {
-                if (PyInt_Check(PyTuple_GetItem(value,0))) {
-                    TRACE((" %d elements, setting as ints \n", (int)len));
-                    /* malloc check ok, calloc checks for overflow */
-                    intav = calloc(len, sizeof(int));
-                    if (intav) {
-                        for (i=0;i<len;i++) {
-                            intav[i] = (int)PyInt_AsLong(PyTuple_GetItem(value,i));
-                        }
-                        status = ImagingLibTiffSetField(&encoder->state,
-                                                        (ttag_t) PyInt_AsLong(key),
-                                                        len, intav);
-                        free(intav);
-                    }
-                } else if (PyFloat_Check(PyTuple_GetItem(value,0))) {
-                    TRACE((" %d elements, setting as floats \n", (int)len));
-                    /* malloc check ok, calloc checks for overflow */
-                    floatav = calloc(len, sizeof(float));
-                    if (floatav) {
-                        for (i=0;i<len;i++) {
-                            floatav[i] = (float)PyFloat_AsDouble(PyTuple_GetItem(value,i));
-                        }
-                        status = ImagingLibTiffSetField(&encoder->state,
-                                                        (ttag_t) PyInt_AsLong(key),
-                                                        len, floatav);
-                        free(floatav);
-                    }
-                } else {
-                    TRACE(("Unhandled type in tuple for key %d : %s \n",
+
+        if (! PyTuple_Check(valuetuple)) {
+            PyErr_SetString(PyExc_ValueError, "Expected a tuple for tiff metadata");
+            return NULL;
+        }
+        /* undone checks */
+        type = PyInt_AsLong(PyTuple_GetItem(valuetuple,0));
+        flarray = PyInt_AsLong(PyTuple_GetItem(valuetuple,1));
+        length = PyInt_AsLong(PyTuple_GetItem(valuetuple,2));
+        value = PyTuple_GetItem(valuetuple,3);
+
+        if (flarray == 0) {
+            if (length != 1) { 
+                PyErr_SetString(PyExc_ValueError, "Expected length == 1 for non-array item");
+                return NULL;
+            }
+            switch (type) {
+            case 3:
+            case 4:
+            case 6:
+            case 8:
+            case 9:
+                if (PyInt_Check(value)) {
+                    TRACE(("Setting %d from Int: %d %ld \n", 
                            (int)PyInt_AsLong(key),
-                           PyBytes_AsString(PyObject_Str(value))));
+                           type,
+                           PyInt_AsLong(value)));
+                    status = ImagingLibTiffSetField(&encoder->state,
+                                                    (ttag_t) PyInt_AsLong(key),
+                                                    PyInt_AsLong(value));
+                } else {
+                    PyErr_SetString(PyExc_ValueError, "Expected int for metadata value");
+                    return NULL;
+                }
+                break;
+            case 5:
+            case 10:
+            case 11:
+            case 12:
+                if (PyFloat_Check(value)) {
+                    TRACE(("Setting from Float: %d, %f \n", (int)PyInt_AsLong(key),PyFloat_AsDouble(value)));
+                    status = ImagingLibTiffSetField(&encoder->state,
+                                                    (ttag_t) PyInt_AsLong(key),
+                                                    (float)PyFloat_AsDouble(value));
+                } else {
+                    PyErr_SetString(PyExc_ValueError, "Expected floatlike for metadata value");
+                    return NULL;
+                }
+                break;
+            default:
+                if (PyBytes_Check(value)) {
+                    TRACE(("Setting from Bytes: %d, %s \n", (int)PyInt_AsLong(key),PyBytes_AsString(value)));
+                    status = ImagingLibTiffSetField(&encoder->state,
+                                                    (ttag_t) PyInt_AsLong(key),
+                                                    PyBytes_AsString(value));
+                } else {
+                    PyErr_SetString(PyExc_ValueError, "Expected stringlike for metadata value");
+                    return NULL;
                 }
             }
         } else {
+            Py_ssize_t len,i;
+            void *arrav;
+
+            TRACE(("Setting from Tuple: %d \n", (int)PyInt_AsLong(key)));
+            len = PyTuple_Size(value);
+            if ((int)len == length) {
+                switch (type) {
+                case 3:
+                    TRACE((" %d elements, setting as short \n", (int)len));
+                    PUSHMETAARRAY(short, PyInt_AsLong);
+                    break;
+                case 4:
+                    TRACE((" %d elements, setting as ints \n", (int)len));
+                    PUSHMETAARRAY(int, PyInt_AsLong);
+                    /*arrav = calloc(len, sizeof(int));
+                    if (arrav) {
+                        for (i=0;i<len;i++) {
+                            (int *arrav)[i] = (int)PyInt_AsLong(PyTuple_GetItem(value,i));
+                        }
+                        status = ImagingLibTiffSetField(&encoder->state,
+                                                        (ttag_t) PyInt_AsLong(key),
+                                                        len, arrav);
+                        free(arrav);
+                        }*/
+                    break;
+                case 5:
+                case 10:
+                case 11:
+                    TRACE((" %d elements, setting as floats \n", (int)len));
+                    /* malloc check ok, calloc checks for overflow */
+                    PUSHMETAARRAY(float, PyFloat_AsDouble);
+                    break;
+                case 12:
+                    TRACE((" %d elements, setting as double \n", (int)len));
+                    PUSHMETAARRAY(double, PyFloat_AsDouble);
+                    break;
+                default:
+                    TRACE(("Unhandled type in tuple for key %d : %d, len: %d \n",
+                           (int)PyInt_AsLong(key),
+                           type, length));
+                }
+            }
+            /*        } else {
             TRACE(("Unhandled type for key %d : %s \n",
                    (int)PyInt_AsLong(key),
-                   PyBytes_AsString(PyObject_Str(value))));
+                   PyBytes_AsString(PyObject_Str(value))));*/
         }
         if (!status) {
             TRACE(("Error setting Field\n"));

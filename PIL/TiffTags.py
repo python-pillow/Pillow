@@ -130,6 +130,7 @@ TAGS_V2 = {
     324: ("TileOffsets", LONG, 0),
     325: ("TileByteCounts", LONG, 0),
 
+    330: ("SubIFD", SHORT, 1),
     332: ("InkSet", SHORT, 1),
     333: ("InkNames", ASCII, 1),
     334: ("NumberOfInks", SHORT, 1),
@@ -157,6 +158,12 @@ TAGS_V2 = {
     530: ("YCbCrSubSampling", SHORT, 2),
     531: ("YCbCrPositioning", SHORT, 1),
     532: ("ReferenceBlackWhite", LONG, 0),
+
+    # sgi, in core
+    32995:("Matteing", SHORT, 1),
+    32996:("DataType", SHORT, 0),
+    32997:("ImageDepth", LONG, 1),
+    32998:("TileDepth", LONG, 1),
 
     33432: ("Copyright", ASCII, 1),
 
@@ -417,6 +424,7 @@ TYPES = {}
 # 393:	case TIFFTAG_INKNAMES:
 
 # some of these are not in our TAGS_V2 dict and were included from tiff.h
+# Anything included here needs to have the correct type in TAGS_V2 above
 
 LIBTIFF_CORE = {255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
                 278, 280, 281, 340, 341, 282, 283, 284, 286, 287,
@@ -429,6 +437,8 @@ LIBTIFF_CORE = {255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
 LIBTIFF_CORE.remove(320)  # Array of short, crashes
 LIBTIFF_CORE.remove(301)  # Array of short, crashes
 LIBTIFF_CORE.remove(532)  # Array of long, crashes
+
+LIBTIFF_CORE.remove(330)  # subifd, requires extra support for uint64 payload
 
 LIBTIFF_CORE.remove(255)  # We don't have support for subfiletypes
 LIBTIFF_CORE.remove(322)  # We don't have support for tiled images in libtiff
