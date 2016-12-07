@@ -7,6 +7,18 @@ import tempfile
 import os
 import unittest
 
+from PIL import Image, ImageMath
+
+
+def convert_to_comparable(a, b):
+    new_a, new_b = a, b
+    if a.mode == 'P':
+        new_a = Image.new('L', a.size)
+        new_b = Image.new('L', b.size)
+        new_a.putdata(a.getdata())
+        new_b.putdata(b.getdata())
+    return new_a, new_b
+
 
 class PillowTestCase(unittest.TestCase):
 
@@ -88,6 +100,16 @@ class PillowTestCase(unittest.TestCase):
         except:
             for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
                 diff += abs(abyte-bbyte)
+
+        a, b = convert_to_comparable(a, b)
+
+        new_diff = 0
+        for ach, bch in zip(a.split(), b.split()):
+            chdiff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert('L')
+            new_diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
+
+        self.assertEqual(diff, new_diff)
+
         ave_diff = float(diff)/(a.size[0]*a.size[1])
         self.assertGreaterEqual(
             epsilon, ave_diff,
