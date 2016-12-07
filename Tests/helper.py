@@ -92,23 +92,12 @@ class PillowTestCase(unittest.TestCase):
             a.size, b.size,
             msg or "got size %r, expected %r" % (a.size, b.size))
 
-        diff = 0
-        try:
-            ord(b'0')
-            for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
-                diff += abs(ord(abyte)-ord(bbyte))
-        except:
-            for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
-                diff += abs(abyte-bbyte)
-
         a, b = convert_to_comparable(a, b)
 
-        new_diff = 0
+        diff = 0
         for ach, bch in zip(a.split(), b.split()):
             chdiff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert('L')
-            new_diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
-
-        self.assertEqual(diff, new_diff)
+            diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
 
         ave_diff = float(diff)/(a.size[0]*a.size[1])
         self.assertGreaterEqual(

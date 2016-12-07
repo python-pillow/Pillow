@@ -205,7 +205,7 @@ class TestImageCms(PillowTestCase):
 
         target = Image.open('Tests/images/hopper.Lab.tif')
 
-        self.assert_image_similar(i, target, 30)
+        self.assert_image_similar(i, target, 3.5)
 
     def test_lab_srgb(self):
         psRGB = ImageCms.createProfile("sRGB")
@@ -326,12 +326,12 @@ class TestImageCms(PillowTestCase):
 
         prepatch, these would segfault, postpatch they should emit a typeerror
         """
-        
+
         with self.assertRaises(TypeError):
             ImageCms.ImageCmsProfile(0).tobytes()
         with self.assertRaises(TypeError):
             ImageCms.ImageCmsProfile(1).tobytes()
-    
+
 
 if __name__ == '__main__':
     unittest.main()
