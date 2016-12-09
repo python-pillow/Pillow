@@ -157,7 +157,7 @@ TAGS_V2 = {
     529: ("YCbCrCoefficients", RATIONAL, 3),
     530: ("YCbCrSubSampling", SHORT, 2),
     531: ("YCbCrPositioning", SHORT, 1),
-    532: ("ReferenceBlackWhite", LONG, 0),
+    532: ("ReferenceBlackWhite", RATIONAL, 6),
 
     # sgi, in core
     32995:("Matteing", SHORT, 1),
@@ -436,7 +436,7 @@ LIBTIFF_CORE = {255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
 
 LIBTIFF_CORE.remove(320)  # Array of short, crashes
 LIBTIFF_CORE.remove(301)  # Array of short, crashes
-LIBTIFF_CORE.remove(532)  # Array of long, crashes
+#LIBTIFF_CORE.remove(532)  # Array of long, crashes
 
 LIBTIFF_CORE.remove(330)  # subifd, requires extra support for uint64 payload
 

@@ -222,7 +222,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         out = self.tempfile("temp.tif")
         TiffImagePlugin.WRITE_LIBTIFF = True
-
+        
         im.save(out, tiffinfo=new_ifd)
 
         TiffImagePlugin.WRITE_LIBTIFF = False

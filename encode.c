@@ -756,7 +756,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
             ((_type *)arrav)[i] = (_type)_PyFunction(PyTuple_GetItem(value,i)); \
         }\
         status = ImagingLibTiffSetField(&encoder->state,\
-                                        (ttag_t) PyInt_AsLong(key),\
+                                        tag,\
                                         len, arrav);\
         free(arrav);\
     } 
@@ -775,6 +775,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 
     PyObject *dir;
     PyObject *key, *value, *valuetuple;
+    ttag_t tag;
     int type, length, flarray;
     Py_ssize_t pos = 0;
     int status;
@@ -818,6 +819,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 
     for (pos = 0; pos < d_size; pos++) {
         key = PyList_GetItem(keys, pos);
+        tag = (ttag_t) PyInt_AsLong(key);
         valuetuple = PyList_GetItem(values, pos);
         status = 0;
         TRACE(("Attempting to set key: %d\n", (int)PyInt_AsLong(key)));
@@ -838,19 +840,48 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                 return NULL;
             }
             switch (type) {
-            case 3:
-            case 4:
-            case 6:
-            case 8:
-            case 9:
+            case TIFF_BYTE:
+            case TIFF_UNDEFINED:
+            case TIFF_SBYTE:
+            case TIFF_SHORT:
+            case TIFF_SSHORT:
                 if (PyInt_Check(value)) {
                     TRACE(("Setting %d from Int: %d %ld \n", 
                            (int)PyInt_AsLong(key),
                            type,
                            PyInt_AsLong(value)));
                     status = ImagingLibTiffSetField(&encoder->state,
-                                                    (ttag_t) PyInt_AsLong(key),
-                                                    PyInt_AsLong(value));
+                                                    tag,
+                                                    (int)PyInt_AsLong(value));
+                } else {
+                    PyErr_SetString(PyExc_ValueError, "Expected int for metadata value");
+                    return NULL;
+                }
+                break;
+            case TIFF_LONG:
+            case TIFF_IFD:
+                if (PyInt_Check(value)) {
+                    TRACE(("Setting %d from uInt: %d %ld \n", 
+                           (int)PyInt_AsLong(key),
+                           type,
+                           PyInt_AsLong(value)));
+                    status = ImagingLibTiffSetField(&encoder->state,
+                                                    tag,
+                                                    (uint32)PyLong_AsUnsignedLong(value));
+                } else {
+                    PyErr_SetString(PyExc_ValueError, "Expected int for metadata value");
+                    return NULL;
+                }
+                break;
+            case TIFF_SLONG:
+                if (PyInt_Check(value)) {
+                    TRACE(("Setting %d from Int: %d %ld \n", 
+                           (int)PyInt_AsLong(key),
+                           type,
+                           PyInt_AsLong(value)));
+                    status = ImagingLibTiffSetField(&encoder->state,
+                                                    tag,
+                                                    (int32)PyInt_AsLong(value));
                 } else {
                     PyErr_SetString(PyExc_ValueError, "Expected int for metadata value");
                     return NULL;
@@ -863,8 +894,8 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                 if (PyFloat_Check(value)) {
                     TRACE(("Setting from Float: %d, %f \n", (int)PyInt_AsLong(key),PyFloat_AsDouble(value)));
                     status = ImagingLibTiffSetField(&encoder->state,
-                                                    (ttag_t) PyInt_AsLong(key),
-                                                    (float)PyFloat_AsDouble(value));
+                                                    tag,
+                                                    (double)PyFloat_AsDouble(value));
                 } else {
                     PyErr_SetString(PyExc_ValueError, "Expected floatlike for metadata value");
                     return NULL;
@@ -874,7 +905,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                 if (PyBytes_Check(value)) {
                     TRACE(("Setting from Bytes: %d, %s \n", (int)PyInt_AsLong(key),PyBytes_AsString(value)));
                     status = ImagingLibTiffSetField(&encoder->state,
-                                                    (ttag_t) PyInt_AsLong(key),
+                                                    tag,
                                                     PyBytes_AsString(value));
                 } else {
                     PyErr_SetString(PyExc_ValueError, "Expected stringlike for metadata value");
@@ -885,49 +916,78 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
             Py_ssize_t len,i;
             void *arrav;
 
-            TRACE(("Setting from Tuple: %d \n", (int)PyInt_AsLong(key)));
+            TRACE(("Setting from Tuple: %d, type: %d \n", (int)PyInt_AsLong(key), type));
             len = PyTuple_Size(value);
-            if ((int)len == length) {
-                switch (type) {
-                case 3:
-                    TRACE((" %d elements, setting as short \n", (int)len));
-                    PUSHMETAARRAY(short, PyInt_AsLong);
-                    break;
-                case 4:
-                    TRACE((" %d elements, setting as ints \n", (int)len));
-                    PUSHMETAARRAY(int, PyInt_AsLong);
-                    /*arrav = calloc(len, sizeof(int));
-                    if (arrav) {
-                        for (i=0;i<len;i++) {
-                            (int *arrav)[i] = (int)PyInt_AsLong(PyTuple_GetItem(value,i));
-                        }
-                        status = ImagingLibTiffSetField(&encoder->state,
-                                                        (ttag_t) PyInt_AsLong(key),
-                                                        len, arrav);
-                        free(arrav);
-                        }*/
-                    break;
-                case 5:
-                case 10:
-                case 11:
-                    TRACE((" %d elements, setting as floats \n", (int)len));
-                    /* malloc check ok, calloc checks for overflow */
-                    PUSHMETAARRAY(float, PyFloat_AsDouble);
-                    break;
-                case 12:
-                    TRACE((" %d elements, setting as double \n", (int)len));
-                    PUSHMETAARRAY(double, PyFloat_AsDouble);
-                    break;
-                default:
-                    TRACE(("Unhandled type in tuple for key %d : %d, len: %d \n",
-                           (int)PyInt_AsLong(key),
-                           type, length));
+
+            switch (tag) {
+                /* special cases */
+            case TIFFTAG_PAGENUMBER:
+            case TIFFTAG_HALFTONEHINTS:
+            case TIFFTAG_YCBCRSUBSAMPLING:
+                /* not an array, passing two int items */
+                if (len != 2) {
+                    PyErr_SetString(PyExc_ValueError, "Requiring 2 items for for tag");
+                    return NULL;
                 }
+                status = ImagingLibTiffSetField(&encoder->state,
+                                                tag,
+                                                (int)PyInt_AsLong(PyTuple_GetItem(value,0)),
+                                                (int)PyInt_AsLong(PyTuple_GetItem(value,1)));
+                break;
+            case TIFFTAG_COLORMAP:
+                /* 3x uint16 * arrays of r,g,b palette values, len=2^^bpp */
+                break;
+            case TIFFTAG_SUBIFD:
+                /* int short length, uint32* data */
+                break;
+            case TIFFTAG_TRANSFERFUNCTION:
+                /* 1 or 3 uint16 * arrays len=2^^bpp */
+                break;
+            case TIFFTAG_REFERENCEBLACKWHITE:
+                /*  float *, array len==6 */
+                if (len != 6) {
+                    PyErr_SetString(PyExc_ValueError, "Requiring 6 items for for ReferenceBlackWhite");
+                    return NULL;
+                }
+                arrav = calloc(len, sizeof(float)); 
+                if (arrav) {                        
+                    for (i=0;i<len;i++) {
+                        ((float *)arrav)[i] = (float)PyFloat_AsDouble(PyTuple_GetItem(value,i));
+                    }                                                   
+                    status = ImagingLibTiffSetField(&encoder->state,
+                                                    tag,
+                                                    arrav);
+                    free(arrav);
+                }
+                break;
+            case TIFFTAG_INKNAMES:
+                /* int length, char * names */
+                break;
+            default:
+                if ((int)len == length) {
+                    switch (type) {
+                    case 3:
+                        TRACE((" %d elements, setting as short \n", (int)len));
+                        PUSHMETAARRAY(short, PyInt_AsLong);
+                        break;
+                    case 4:
+                        TRACE((" %d elements, setting as ints \n", (int)len));
+                        PUSHMETAARRAY(int, PyInt_AsLong);
+                        break;
+                    case 5:
+                    case 10:
+                    case 11:
+                    case 12:
+                        TRACE((" %d elements, setting as double \n", (int)len));
+                        PUSHMETAARRAY(double, PyFloat_AsDouble);
+                        break;
+                    default:
+                        TRACE(("Unhandled type in tuple for key %d : %d, len: %d \n",
+                               (int)PyInt_AsLong(key),
+                               type, length));
+                    }
+                } 
             }
-            /*        } else {
-            TRACE(("Unhandled type for key %d : %s \n",
-                   (int)PyInt_AsLong(key),
-                   PyBytes_AsString(PyObject_Str(value))));*/
         }
         if (!status) {
             TRACE(("Error setting Field\n"));

@@ -1448,6 +1448,8 @@ def _save(im, fp, filename):
         legacy_ifd = {}
         if hasattr(im, 'tag'):
             legacy_ifd = im.tag.to_v2()
+            if DEBUG:
+                print("Legacy IFD items: %s" % sorted(legacy_ifd.items()))
         for tag, value in itertools.chain(ifd.items(),
                                           getattr(im, 'tag_v2', {}).items(),
                                           legacy_ifd.items()):
