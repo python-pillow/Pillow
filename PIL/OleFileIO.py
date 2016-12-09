@@ -453,6 +453,9 @@ def isOleFile(filename):
         # filename is a bytes string containing the OLE file to be parsed:
         header = filename[:len(MAGIC)]
     else:
+        if len(filename) < MINIMAL_OLEFILE_SIZE:
+            return False
+
         # string-like object: filename of file on disk
         header = open(filename, 'rb').read(len(MAGIC))
     if header == MAGIC:
