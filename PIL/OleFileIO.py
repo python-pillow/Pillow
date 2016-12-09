@@ -396,10 +396,8 @@ VT_VECTOR = 0x1000;
 
 # map property id to name (for debugging purposes)
 
-VT = {}
-for keyword, var in list(vars().items()):
-    if keyword[:3] == "VT_":
-        VT[var] = keyword
+VT = dict((var, keyword) for keyword, var in vars().items() if keyword[:3] == 'VT_')
+
 
 #
 # --------------------------------------------------------------------
