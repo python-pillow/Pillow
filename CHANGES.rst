@@ -4,6 +4,15 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Tiff: Fix for writing Tiff to BytesIO using libtiff #2263
+  [wiredfool]
+
+- Doc: Design docs #2269
+  [wiredfool]
+
+- Test: Move tests requiring libtiff to test_file_libtiff #2273
+  [wiredfool]
+
 - Update Maxblock heuristic #2275
   [wiredfool]
 
