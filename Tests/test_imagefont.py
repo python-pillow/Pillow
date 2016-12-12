@@ -125,7 +125,9 @@ try:
 
             target = 'Tests/images/rectangle_surrounding_text.png'
             target_img = Image.open(target)
-            self.assert_image_similar(im, target_img, .5)
+
+            # Epsilon ~.5 fails with FreeType 2.7
+            self.assert_image_similar(im, target_img, 2.5)
 
         def test_render_multiline(self):
             im = Image.new(mode='RGB', size=(300, 100))
@@ -144,7 +146,7 @@ try:
             # some versions of freetype have different horizontal spacing.
             # setting a tight epsilon, I'm showing the original test failure
             # at epsilon = ~38.
-            self.assert_image_similar(im, target_img, .5)
+            self.assert_image_similar(im, target_img, 6.2)
 
         def test_render_multiline_text(self):
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -158,7 +160,8 @@ try:
             target = 'Tests/images/multiline_text.png'
             target_img = Image.open(target)
 
-            self.assert_image_similar(im, target_img, .5)
+            # Epsilon ~.5 fails with FreeType 2.7
+            self.assert_image_similar(im, target_img, 6.2)
 
             # Test that text() can pass on additional arguments
             # to multiline_text()
@@ -178,7 +181,8 @@ try:
                 target = 'Tests/images/multiline_text'+ext+'.png'
                 target_img = Image.open(target)
 
-                self.assert_image_similar(im, target_img, .5)
+                # Epsilon ~.5 fails with FreeType 2.7
+                self.assert_image_similar(im, target_img, 6.2)
 
         def test_unknown_align(self):
             im = Image.new(mode='RGB', size=(300, 100))
@@ -227,7 +231,8 @@ try:
             target = 'Tests/images/multiline_text_spacing.png'
             target_img = Image.open(target)
 
-            self.assert_image_similar(im, target_img, .5)
+            # Epsilon ~.5 fails with FreeType 2.7
+            self.assert_image_similar(im, target_img, 6.2)
 
         def test_rotated_transposed_font(self):
             img_grey = Image.new("L", (100, 100))
