@@ -936,6 +936,26 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                 break;
             case TIFFTAG_COLORMAP:
                 /* 3x uint16 * arrays of r,g,b palette values, len=2^^bpp */
+                {
+                    int stride = 256;
+                    TRACE(("Setting ColorMap\n"));
+                  if (len != 768) {
+                        PyErr_SetString(PyExc_ValueError, "Requiring 768 items for for Colormap");
+                        return NULL;
+                    }
+                    arrav = calloc(len, sizeof(uint16)); 
+                    if (arrav) {                        
+                        for (i=0;i<len;i++) {
+                            ((uint16 *)arrav)[i] = (uint16)PyInt_AsLong(PyTuple_GetItem(value,i));
+                        }                                                   
+                        status = ImagingLibTiffSetField(&encoder->state,
+                                                        tag,
+                                                        arrav,
+                                                        ((uint16 *)arrav) + stride,
+                                                        ((uint16 *)arrav) + 2 * stride);
+                        free(arrav);
+                    }
+                }
                 break;
             case TIFFTAG_SUBIFD:
                 /* int short length, uint32* data */

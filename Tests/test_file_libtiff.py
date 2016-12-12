@@ -194,6 +194,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 del(core_items[tag])
             except:
                 pass
+        del(core_items[320])  # colormap is special, tested below
 
         # Type codes:
         #     2: "ascii",
@@ -353,6 +354,19 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, compression='tiff_adobe_deflate')
         im2 = Image.open(out)
         self.assert_image_equal(im, im2)
+
+    def test_palette_save(self):
+        im = hopper('P')
+        out = self.tempfile('temp.tif')
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        im.save(out)
+        TiffImagePlugin.WRITE_LIBTIFF = False
+
+        reloaded = Image.open(out)
+        # colormap/palette tag
+        self.assertTrue(len(reloaded.tag_v2[320]), 768)
+        self.assert_image_equal(im, reloaded)
+        
 
     def xtest_bw_compression_w_rgb(self):
         """ This test passes, but when running all tests causes a failure due

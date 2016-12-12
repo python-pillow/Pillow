@@ -434,16 +434,13 @@ LIBTIFF_CORE = {255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
                 269  # this has been in our tests forever, and works
                 }
 
-LIBTIFF_CORE.remove(320)  # Array of short, crashes
-LIBTIFF_CORE.remove(301)  # Array of short, crashes
-#LIBTIFF_CORE.remove(532)  # Array of long, crashes
-
 LIBTIFF_CORE.remove(330)  # subifd, requires extra support for uint64 payload
 
 LIBTIFF_CORE.remove(255)  # We don't have support for subfiletypes
 LIBTIFF_CORE.remove(322)  # We don't have support for tiled images in libtiff
 LIBTIFF_CORE.remove(323)  # Tiled images
 LIBTIFF_CORE.remove(333)  # Ink Names either
+LIBTIFF_CORE.remove(301)  # Transfer Function. No support as of yet.
 
 # Note to advanced users: There may be combinations of these
 # parameters and values that when added properly, will work and
