@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # > pyroma .
 # ------------------------------
 # Checking .
@@ -89,7 +90,7 @@ def _lib_include(root):
 
 def _cmd_exists(cmd):
     return any(
-        os.access(os.path.join(path, cmd), os.X_OK) 
+        os.access(os.path.join(path, cmd), os.X_OK)
         for path in os.environ["PATH"].split(os.pathsep)
     )
 
@@ -547,7 +548,7 @@ class pil_build_ext(build_ext):
                 if f in ('jpeg', 'zlib'):
                     raise RequiredDependencyException(f)
                 raise DependencyException(f)
-            
+
         #
         # core library
 
