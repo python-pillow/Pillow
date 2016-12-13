@@ -6,3 +6,5 @@ Internal Reference Docs
           
   open_files
   limits
+  tiff_metadata
+
