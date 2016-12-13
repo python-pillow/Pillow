@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Remove vendored version of olefile Python package in favor of upstream #2199
+  [jdufresne]
+
 - Updated comments to use print as a function #2234
   [radarhere]
 
