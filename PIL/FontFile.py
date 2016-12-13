@@ -14,6 +14,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 import os
 from PIL import Image, _binary
 
@@ -88,7 +90,7 @@ class FontFile(object):
                     x = xx
                 s = src[0] + x0, src[1] + y0, src[2] + x0, src[3] + y0
                 self.bitmap.paste(im.crop(src), s)
-                # print chr(i), dst, s
+                # print(chr(i), dst, s)
                 self.metrics[i] = d, dst, s
 
     def save(self, filename):

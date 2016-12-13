@@ -338,7 +338,7 @@ class IFDRational(Rational):
              'rfloordiv','mod','rmod', 'pow','rpow', 'pos', 'neg',
              'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'nonzero',
              'ceil', 'floor', 'round']
-        print "\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a)
+        print("\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a))
         """
 
     __add__ = _delegate('__add__')
@@ -800,7 +800,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ifd = ImageFileDirectory_v1()
         ifd[key] = 'Some Data'
         ifd.tagtype[key] = 2
-        print ifd[key]
+        print(ifd[key])
         ('Some Data',)
 
     Also contains a dictionary of tag types as read from the tiff image file,
@@ -1194,7 +1194,7 @@ class TiffImageFile(ImageFile.ImageFile):
                                                      "tiff_sgilog24",
                                                      "tiff_raw_16"]:
                 # if DEBUG:
-                #     print "Activating g4 compression for whole file"
+                #     print("Activating g4 compression for whole file")
 
                 # Decoder expects entire file as one tile.
                 # There's a buffer size limit in load (64k)
