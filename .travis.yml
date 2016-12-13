@@ -46,6 +46,8 @@ install:
   - pushd depends && ./install_extra_test_images.sh && popd  
   
 
+  - travis_retry pip install -e .
+
 before_script:
 # Qt needs a display for some of the tests, and it's only run on the system site packages install
   - "export DISPLAY=:99.0"

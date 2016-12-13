@@ -17,11 +17,14 @@
 
 from __future__ import print_function
 
-from PIL import Image, ImageFile
-from PIL.OleFileIO import i8, i32, MAGIC, OleFileIO
+from PIL import Image, ImageFile, _binary
+
+import olefile
 
 __version__ = "0.1"
 
+i32 = _binary.i32le
+i8 = _binary.i8
 
 # we map from colour field tuples to (mode, rawmode) descriptors
 MODES = {
@@ -43,7 +46,7 @@ MODES = {
 # --------------------------------------------------------------------
 
 def _accept(prefix):
-    return prefix[:8] == MAGIC
+    return prefix[:8] == olefile.MAGIC
 
 
 ##
@@ -60,7 +63,7 @@ class FpxImageFile(ImageFile.ImageFile):
         # to be a FlashPix file
 
         try:
-            self.ole = OleFileIO(self.fp)
+            self.ole = olefile.OleFileIO(self.fp)
         except IOError:
             raise SyntaxError("not an FPX file; invalid OLE file")
 
