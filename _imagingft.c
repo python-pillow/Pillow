@@ -217,7 +217,7 @@ font_getsize(FontObject* self, PyObject* args)
     int xoffset, yoffset;
     const char *dir = NULL;
     size_t count;
-    GlyphInfo *glyph_info = NULL;;
+    GlyphInfo *glyph_info = NULL;
     PyObject *features = Py_None;
 
     /* calculate size and bearing for a given string */
@@ -481,15 +481,16 @@ failed:
     return count;
 
 #else
-    if (features != Py_None || dir != NULL)
-      PyErr_SetString(PyExc_KeyError, "Raqm is missing.");
-
     int error, load_flags;
     FT_ULong ch;
     Py_ssize_t count;
     FT_GlyphSlot glyph;
     FT_Bool kerning = FT_HAS_KERNING(self->face);
     FT_UInt last_index = 0;
+
+    if (features != Py_None || dir != NULL)
+      PyErr_SetString(PyExc_KeyError, "setting text direction or font features is not supported without libraqm");
+
 #if PY_VERSION_HEX >= 0x03000000
     if (!PyUnicode_Check(string)) {
 #else
