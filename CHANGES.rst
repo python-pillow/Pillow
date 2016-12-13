@@ -4,6 +4,24 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Updated comments to use print as a function #2234
+  [radarhere]
+
+- Set executable flag on selftest.py, setup.py and added shebang line #2282, #2277
+  [radarhere, homm]
+
+- Test: Increase epsilon for FreeType 2.7 as rendering is slightly different. #2286
+  [hugovk]
+
+- Test: Faster assert_image_similar #2279
+  [homm]
+
+- Removed depreciated internal "stretch" method #2276
+  [homm]
+  
+- Removed the handles_eof flag in decode.c #2223
+  [wiredfool]
+
 - Tiff: Fix for writing Tiff to BytesIO using libtiff #2263
   [wiredfool]
 
