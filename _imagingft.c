@@ -487,6 +487,7 @@ failed:
     FT_GlyphSlot glyph;
     FT_Bool kerning = FT_HAS_KERNING(self->face);
     FT_UInt last_index = 0;
+    int i;
 
     if (features != Py_None || dir != NULL)
       PyErr_SetString(PyExc_KeyError, "setting text direction or font features is not supported without libraqm");
@@ -515,7 +516,6 @@ failed:
     load_flags = FT_LOAD_RENDER|FT_LOAD_NO_BITMAP;
     if (mask)
         load_flags |= FT_LOAD_TARGET_MONO;
-    int i;
     for (i = 0; font_getchar(string, i, &ch); i++) {
         (*glyph_info)[i].index = FT_Get_Char_Index(self->face, ch);
         error = FT_Load_Glyph(self->face, (*glyph_info)[i].index, load_flags);
