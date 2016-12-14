@@ -54,8 +54,8 @@ them) of built in items that regular. These have one of three call
 signatures:
 
 * Individual: ``TIFFVSetField(tiff, tag, item)``
-* Multiple: ``TIFFVSetField(tiff, tag, ct, items* )``
-* Alternate Multiple: ``TIFFVSetField(tiff, tag, items* )``
+* Multiple, passcount=1: ``TIFFVSetField(tiff, tag, ct, items* )``
+* Multiple, passcount=0: ``TIFFVSetField(tiff, tag, items* )``
 
 In libtiff4, the individual integer like numeric items are passed as
 32 bit ints (signed or unsigned as appropriate) even if the actual

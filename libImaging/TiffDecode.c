@@ -336,6 +336,13 @@ int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
 
 }
 
+
+const TIFFFieldInfo* 
+ImagingLibTiffGetFieldInfo(ImagingCodecState state, ttag_t tag) {
+  	TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
+    return TIFFFieldWithTag(clientstate->tiff, tag);
+}
+
 int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...){
 	// after tif_dir.c->TIFFSetField.
 	TIFFSTATE *clientstate = (TIFFSTATE *)state->context;

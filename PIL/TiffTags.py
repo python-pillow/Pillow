@@ -95,8 +95,8 @@ TAGS_V2 = {
     278: ("RowsPerStrip", LONG, 1),
     279: ("StripByteCounts", LONG, 0),
 
-    280: ("MinSampleValue", LONG, 0),
-    281: ("MaxSampleValue", SHORT, 0),
+    280: ("MinSampleValue", LONG, 1),
+    281: ("MaxSampleValue", SHORT, 1),
     282: ("XResolution", RATIONAL, 1),
     283: ("YResolution", RATIONAL, 1),
     284: ("PlanarConfiguration", SHORT, 1, {"Contiguous": 1, "Separate": 2}),
@@ -121,7 +121,7 @@ TAGS_V2 = {
     316: ("HostComputer", ASCII, 1),
     317: ("Predictor", SHORT, 1, {"none": 1, "Horizontal Differencing": 2}),
     318: ("WhitePoint", RATIONAL, 2),
-    319: ("PrimaryChromaticities", SHORT, 6),
+    319: ("PrimaryChromaticities", RATIONAL, 6),
 
     320: ("ColorMap", SHORT, 0),
     321: ("HalftoneHints", SHORT, 2),
@@ -137,10 +137,10 @@ TAGS_V2 = {
     336: ("DotRange", SHORT, 0),
     337: ("TargetPrinter", ASCII, 1),
     338: ("ExtraSamples", SHORT, 0),
-    339: ("SampleFormat", SHORT, 0),
+    339: ("SampleFormat", SHORT, 1),
 
-    340: ("SMinSampleValue", DOUBLE, 0),
-    341: ("SMaxSampleValue", DOUBLE, 0),
+    340: ("SMinSampleValue", DOUBLE, 1),
+    341: ("SMaxSampleValue", DOUBLE, 1),
     342: ("TransferRange", SHORT, 6),
 
     # obsolete JPEG tags
@@ -161,7 +161,7 @@ TAGS_V2 = {
 
     # sgi, in core
     32995:("Matteing", SHORT, 1),
-    32996:("DataType", SHORT, 0),
+    32996:("DataType", SHORT, 1),
     32997:("ImageDepth", LONG, 1),
     32998:("TileDepth", LONG, 1),
 
@@ -431,7 +431,9 @@ LIBTIFF_CORE = {255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
                 296, 297, 321, 320, 338, 32995, 322, 323, 32998,
                 32996, 339, 32997, 330, 531, 530, 301, 532, 333,
                 # as above
-                269  # this has been in our tests forever, and works
+                269,  # this has been in our tests forever, and works
+                318, # Whitepoint, Specific test for it
+                319, # Primary Chromaticities
                 }
 
 LIBTIFF_CORE.remove(330)  # subifd, requires extra support for uint64 payload

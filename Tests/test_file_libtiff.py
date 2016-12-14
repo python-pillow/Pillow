@@ -517,6 +517,16 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, format='TIFF')
         TiffImagePlugin.WRITE_LIBTIFF = False
 
+        reloaded = Image.open(out)
+
+        self.assert_image_equal(im, reloaded)
+        for tag in (318, 319):
+            for ix in range(len(im.tag_v2[tag])):
+                self.assertAlmostEqual(float(im.tag_v2[tag][ix]),
+                                       float(reloaded.tag_v2[tag][ix]),
+                                       places=5)
+        
+
     def test_page_number_x_0(self):
         # Issue 973
         # Test TIFF with tag 297 (Page Number) having value of 0 0.

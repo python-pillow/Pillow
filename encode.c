@@ -754,11 +754,17 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     if (arrav) {\
         for (i=0;i<len;i++) {\
             ((_type *)arrav)[i] = (_type)_PyFunction(PyTuple_GetItem(value,i)); \
-        }\
-        status = ImagingLibTiffSetField(&encoder->state,\
-                                        tag,\
-                                        len, arrav);\
-        free(arrav);\
+        }                                                               \
+        if (fi->field_passcount) {                              \
+            status = ImagingLibTiffSetField(&encoder->state,    \
+                                            tag,                \
+                                            len, arrav);        \
+        } else {                                                \
+            status = ImagingLibTiffSetField(&encoder->state,    \
+                                            tag,                \
+                                            arrav);             \
+        }                                                       \
+        free(arrav);                                            \
     } 
 
 
@@ -783,6 +789,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     Py_ssize_t d_size;
     PyObject *keys, *values;
 
+    const TIFFFieldInfo* fi;
 
     if (! PyArg_ParseTuple(args, "sssisO", &mode, &rawmode, &compname, &fp, &filename, &dir)) {
         return NULL;
@@ -834,6 +841,13 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
         length = PyInt_AsLong(PyTuple_GetItem(valuetuple,2));
         value = PyTuple_GetItem(valuetuple,3);
 
+        fi = ImagingLibTiffGetFieldInfo(&encoder->state, tag);
+        if (!fi) {
+            /* undone, custom */
+            PyErr_SetString(PyExc_ValueError, "Couldn't find field info for tag.");
+            return NULL;
+        }
+         
         if (flarray == 0) {
             if (length != 1) { 
                 PyErr_SetString(PyExc_ValueError, "Expected length == 1 for non-array item");
@@ -969,21 +983,31 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                     PyErr_SetString(PyExc_ValueError, "Requiring 6 items for for ReferenceBlackWhite");
                     return NULL;
                 }
-                arrav = calloc(len, sizeof(float)); 
-                if (arrav) {                        
-                    for (i=0;i<len;i++) {
-                        ((float *)arrav)[i] = (float)PyFloat_AsDouble(PyTuple_GetItem(value,i));
-                    }                                                   
-                    status = ImagingLibTiffSetField(&encoder->state,
-                                                    tag,
-                                                    arrav);
-                    free(arrav);
-                }
+                PUSHMETAARRAY(float, PyFloat_AsDouble);
                 break;
             case TIFFTAG_INKNAMES:
                 /* int length, char * names */
                 break;
             default:
+                // Check for the right length for default case items
+                if (len > INT_MAX) {
+                    PyErr_SetString(PyExc_MemoryError, "Metadata size error - int overflow");
+                    return NULL;
+                }
+
+                if (fi->field_writecount == TIFF_VARIABLE ||
+                    fi->field_writecount == TIFF_VARIABLE2) {
+                    if (len != 1) {
+                        PyErr_SetString(PyExc_ValueError, "Expected 1 item for tag");
+                        return NULL;
+                    }
+                } else if (fi->field_writecount == TIFF_SPP) {
+                    /* need to check for samples per pixel here */
+                } else if (len != fi->field_writecount) {
+                    PyErr_SetString(PyExc_ValueError, "Incorrect number of items for tag");
+                    return NULL;
+                }
+
                 if ((int)len == length) {
                     switch (type) {
                     case 3:
@@ -997,6 +1021,9 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                     case 5:
                     case 10:
                     case 11:
+                        TRACE((" %d elements, setting as float \n", (int)len));
+                        PUSHMETAARRAY(float, PyFloat_AsDouble);
+                        break;
                     case 12:
                         TRACE((" %d elements, setting as double \n", (int)len));
                         PUSHMETAARRAY(double, PyFloat_AsDouble);
