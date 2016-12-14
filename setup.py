@@ -113,7 +113,6 @@ IMAGEQUANT_ROOT = None
 TIFF_ROOT = None
 FREETYPE_ROOT = None
 LCMS_ROOT = None
-
 RAQM_ROOT = None
 
 def _pkg_config(name):
@@ -518,6 +517,7 @@ class pil_build_ext(build_ext):
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 
         if feature.want('raqm'):
+            _dbg('Looking for raqm')
             if _find_include_file(self, "raqm.h"):
                 if _find_library_file(self, "raqm") and \
                    _find_library_file(self, "harfbuzz") and \
