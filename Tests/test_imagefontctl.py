@@ -129,6 +129,10 @@ except ImportError:
     class TestImagecomplextext(PillowTestCase):
         def test_skip(self):
             self.skipTest("ImportError")
+except KeyError:
+    class TestImagecomplextext(PillowTestCase):
+        def test_skip(self):
+            self.skipTest("KeyError")
 
 if __name__ == '__main__':
     unittest.main()
