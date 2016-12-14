@@ -666,11 +666,22 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         try:
             for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
                 tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
+                taginfo = TiffTags.lookup(tag)
                 if DEBUG:
-                    tagname = TiffTags.lookup(tag).name
                     typname = TYPES.get(typ, "unknown")
-                    print("tag: %s (%d) - type: %s (%d)" %
-                          (tagname, tag, typname, typ), end=" ")
+                    print("tag: %s (%d) - type: %s (%d) - spec type: %s - count: %d, spec ct: %d" %
+                          (taginfo.name, tag, typname, typ,
+                           taginfo.type, count, taginfo.length), end=" ")
+
+                if (taginfo.type and typ != taginfo.type):
+                    warnings.warn(("Possibly corrupt EXIF data.  " + 
+                                   "File tag type %s does not match spec %s for tag %s"
+                                   ) % (typ, taginfo.type, tag))
+                    
+                if (taginfo.length and count != taginfo.length):
+                    warnings.warn(("Possibly corrupt EXIF data.  " + 
+                                   "File tag count %s does not match spec %s for tag %s"
+                                   ) % (count, taginfo.length, tag))
 
                 try:
                     unit_size, handler = self._load_dispatch[typ]
