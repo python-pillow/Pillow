@@ -205,6 +205,7 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
     return 0;
 }
 
+#ifdef HAVE_RAQM
 static size_t
 text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
             PyObject *features ,GlyphInfo **glyph_info, int mask)
@@ -342,6 +343,7 @@ failed:
     raqm_destroy (rq);
     return count;
 }
+#endif
 
 static size_t
 text_layout_fallback(PyObject* string, FontObject* self, const char* dir,
