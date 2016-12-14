@@ -549,7 +549,11 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         if info.length == 1:
             if legacy_api and self.tagtype[tag] in [5, 10]:
                 values = values,
-            dest[tag], = values
+            try:
+                dest[tag], = values
+            except ValueError:
+                # there's a mismatch between the spec and the item from the file.
+                dest[tag] = values
         else:
             dest[tag] = values
 
@@ -1145,6 +1149,8 @@ class TiffImageFile(ImageFile.ImageFile):
             print("- size:", self.size)
 
         sampleFormat = self.tag_v2.get(SAMPLEFORMAT, (1,))
+        if not isinstance(sampleFormat, tuple):
+            sampleFormat = (sampleFormat,)
         if (len(sampleFormat) > 1
             and max(sampleFormat) == min(sampleFormat) == 1):
             # SAMPLEFORMAT is properly per band, so an RGB image will
