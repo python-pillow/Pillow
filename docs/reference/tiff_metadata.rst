@@ -54,22 +54,23 @@ them) of built in items that regular. These have one of three call
 signatures:
 
 * Individual: ``TIFFVSetField(tiff, tag, item)``
-* Multiple, passcount=1: ``TIFFVSetField(tiff, tag, ct, items* )``
 * Multiple, passcount=0: ``TIFFVSetField(tiff, tag, items* )``
+* Multiple, passcount=1: ``TIFFVSetField(tiff, tag, ct, items* )``
+
 
 In libtiff4, the individual integer like numeric items are passed as
 32 bit ints (signed or unsigned as appropriate) even if the actual
 item is a short or char. The individual rational and floating point
 types are all passed as a double.
 
-The multipile value items are passed as pointers to packed arrays of
+The multiple value items are passed as pointers to packed arrays of
 the correct type, short for short. 
 
 UNDONE -- This isn't quite true: The count is only used for items
 where field_passcount is true. Then if ``field->writecount`` ==
 ``TIFF_VARIABLE2``, then it's a ``uint32``, otherwise count is an int.
 Otherwise, if ``field_writecount`` is ``TIFF_VARIABLE`` or
-``TIFF_VARIABLE2``, then the count is not used and set to 1.  If it's
+``TIFF_VARIABLE2``, then the count is not passed and 1 item is read.  If it's
 ``TIFF_SPP``, then it's set to samplesperpixel. Otherwise, it's set to
 the ``field_writecount``.
 
