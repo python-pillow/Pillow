@@ -206,147 +206,9 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
 }
 
 static size_t
-text_layout(PyObject* string, FontObject* self, const char* dir,
-            PyObject *features ,GlyphInfo **glyph_info, int mask);
-
-static PyObject*
-font_getsize(FontObject* self, PyObject* args)
-{
-    int i, x, y_max, y_min;
-    FT_Face face;
-    int xoffset, yoffset;
-    const char *dir = NULL;
-    size_t count;
-    GlyphInfo *glyph_info = NULL;
-    PyObject *features = Py_None;
-
-    /* calculate size and bearing for a given string */
-
-    PyObject* string;
-    if (!PyArg_ParseTuple(args, "O|zO:getsize", &string, &dir, &features))
-        return NULL;
-
-    face = NULL;
-    xoffset = yoffset = 0;
-    y_max = y_min = 0;
-
-    count = text_layout(string, self, dir, features, &glyph_info, 0);
-    if (count == 0)
-        return NULL;
-
-    for (x = i = 0; i < count; i++) {
-        int index, error;
-        FT_BBox bbox;
-        FT_Glyph glyph;
-        face = self->face;
-        index = glyph_info[i].index;
-        /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
-         *   Yifu Yu<root@jackyyf.com>, 2014-10-15
-         */
-        error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
-        if (error)
-            return geterror(error);
-
-        if (i == 0 && face->glyph->metrics.horiBearingX < 0) {
-            xoffset = face->glyph->metrics.horiBearingX;
-            x -= xoffset;
-        }
-
-        x += glyph_info[i].x_advance;
-
-        if (i == count - 1)
-        {
-            int offset;
-            offset = glyph_info[i].x_advance -
-                    face->glyph->metrics.width -
-                    face->glyph->metrics.horiBearingX;
-            if (offset < 0)
-                x -= offset;
-        }
-
-        FT_Get_Glyph(face->glyph, &glyph);
-        FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_SUBPIXELS, &bbox);
-        bbox.yMax -= glyph_info[i].y_offset;
-        bbox.yMin -= glyph_info[i].y_offset;
-        if (bbox.yMax > y_max)
-            y_max = bbox.yMax;
-        if (bbox.yMin < y_min)
-            y_min = bbox.yMin;
-
-        /* find max distance of baseline from top */
-        if (face->glyph->metrics.horiBearingY > yoffset)
-            yoffset = face->glyph->metrics.horiBearingY;
-
-        //last_index = index;
-        FT_Done_Glyph(glyph);
-    }
-
-    if (face) {
-
-        /* left bearing */
-        if (xoffset < 0)
-            x -= xoffset;
-        else
-            xoffset = 0;
-        /* difference between the font ascender and the distance of
-         * the baseline from the top */
-        yoffset = PIXEL(self->face->size->metrics.ascender - yoffset);
-    }
-
-    return Py_BuildValue(
-        "(ii)(ii)",
-        PIXEL(x), PIXEL(y_max - y_min),
-        PIXEL(xoffset), yoffset
-        );
-}
-
-static PyObject*
-font_getabc(FontObject* self, PyObject* args)
-{
-    FT_ULong ch;
-    FT_Face face;
-    double a, b, c;
-
-    /* calculate ABC values for a given string */
-
-    PyObject* string;
-    if (!PyArg_ParseTuple(args, "O:getabc", &string))
-        return NULL;
-
-#if PY_VERSION_HEX >= 0x03000000
-    if (!PyUnicode_Check(string)) {
-#else
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
-#endif
-        PyErr_SetString(PyExc_TypeError, "expected string");
-        return NULL;
-    }
-
-    if (font_getchar(string, 0, &ch)) {
-        int index, error;
-        face = self->face;
-        index = FT_Get_Char_Index(face, ch);
-        /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
-        error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
-        if (error)
-            return geterror(error);
-        a = face->glyph->metrics.horiBearingX / 64.0;
-        b = face->glyph->metrics.width / 64.0;
-        c = (face->glyph->metrics.horiAdvance -
-             face->glyph->metrics.horiBearingX -
-             face->glyph->metrics.width) / 64.0;
-    } else
-        a = b = c = 0.0;
-
-    return Py_BuildValue("ddd", a, b, c);
-}
-
-
-static size_t
-text_layout(PyObject* string, FontObject* self, const char* dir,
+text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
             PyObject *features ,GlyphInfo **glyph_info, int mask)
 {
-#ifdef HAVE_RAQM
     int i = 0;
     raqm_t *rq;
     size_t count = 0;
@@ -479,8 +341,12 @@ text_layout(PyObject* string, FontObject* self, const char* dir,
 failed:
     raqm_destroy (rq);
     return count;
+}
 
-#else
+static size_t
+text_layout_fallback(PyObject* string, FontObject* self, const char* dir,
+            PyObject *features ,GlyphInfo **glyph_info, int mask)
+{
     int error, load_flags;
     FT_ULong ch;
     Py_ssize_t count;
@@ -489,9 +355,9 @@ failed:
     FT_UInt last_index = 0;
     int i;
 
-    if (features != Py_None || dir != NULL)
+    if (features != Py_None || dir != NULL) {
       PyErr_SetString(PyExc_KeyError, "setting text direction or font features is not supported without libraqm");
-
+    }
 #if PY_VERSION_HEX >= 0x03000000
     if (!PyUnicode_Check(string)) {
 #else
@@ -502,10 +368,12 @@ failed:
     }
 
     count = 0;
-    while (font_getchar(string, count, &ch))
+    while (font_getchar(string, count, &ch)) {
        count++;
-    if (count == 0)
+    }
+    if (count == 0) {
         return 0;
+    }
 
     (*glyph_info) = PyMem_New(GlyphInfo, count);
     if ((*glyph_info) == NULL) {
@@ -514,8 +382,9 @@ failed:
     }
 
     load_flags = FT_LOAD_RENDER|FT_LOAD_NO_BITMAP;
-    if (mask)
+    if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
+    }
     for (i = 0; font_getchar(string, i, &ch); i++) {
         (*glyph_info)[i].index = FT_Get_Char_Index(self->face, ch);
         error = FT_Load_Glyph(self->face, (*glyph_info)[i].index, load_flags);
@@ -538,7 +407,150 @@ failed:
         (*glyph_info)[i].cluster = ch;
     }
     return count;
+}
+
+static size_t
+text_layout(PyObject* string, FontObject* self, const char* dir,
+            PyObject *features, GlyphInfo **glyph_info, int mask)
+{
+    size_t count;
+#ifdef HAVE_RAQM
+    count = text_layout_raqm(string, self, dir, features, glyph_info,  mask);
+#else
+    count = text_layout_fallback(string, self, dir, features, glyph_info, mask);
 #endif
+    return count;
+}
+
+static PyObject*
+font_getsize(FontObject* self, PyObject* args)
+{
+    int i, x, y_max, y_min;
+    FT_Face face;
+    int xoffset, yoffset;
+    const char *dir = NULL;
+    size_t count;
+    GlyphInfo *glyph_info = NULL;
+    PyObject *features = Py_None;
+
+    /* calculate size and bearing for a given string */
+
+    PyObject* string;
+    if (!PyArg_ParseTuple(args, "O|zO:getsize", &string, &dir, &features))
+        return NULL;
+
+    face = NULL;
+    xoffset = yoffset = 0;
+    y_max = y_min = 0;
+
+    count = text_layout(string, self, dir, features, &glyph_info, 0);
+    if (count == 0)
+        return NULL;
+
+    for (x = i = 0; i < count; i++) {
+        int index, error;
+        FT_BBox bbox;
+        FT_Glyph glyph;
+        face = self->face;
+        index = glyph_info[i].index;
+        /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
+         *   Yifu Yu<root@jackyyf.com>, 2014-10-15
+         */
+        error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
+        if (error)
+            return geterror(error);
+
+        if (i == 0 && face->glyph->metrics.horiBearingX < 0) {
+            xoffset = face->glyph->metrics.horiBearingX;
+            x -= xoffset;
+        }
+
+        x += glyph_info[i].x_advance;
+
+        if (i == count - 1)
+        {
+            int offset;
+            offset = glyph_info[i].x_advance -
+                    face->glyph->metrics.width -
+                    face->glyph->metrics.horiBearingX;
+            if (offset < 0)
+                x -= offset;
+        }
+
+        FT_Get_Glyph(face->glyph, &glyph);
+        FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_SUBPIXELS, &bbox);
+        bbox.yMax -= glyph_info[i].y_offset;
+        bbox.yMin -= glyph_info[i].y_offset;
+        if (bbox.yMax > y_max)
+            y_max = bbox.yMax;
+        if (bbox.yMin < y_min)
+            y_min = bbox.yMin;
+
+        /* find max distance of baseline from top */
+        if (face->glyph->metrics.horiBearingY > yoffset)
+            yoffset = face->glyph->metrics.horiBearingY;
+
+        FT_Done_Glyph(glyph);
+    }
+
+    if (face) {
+
+        /* left bearing */
+        if (xoffset < 0)
+            x -= xoffset;
+        else
+            xoffset = 0;
+        /* difference between the font ascender and the distance of
+         * the baseline from the top */
+        yoffset = PIXEL(self->face->size->metrics.ascender - yoffset);
+    }
+
+    return Py_BuildValue(
+        "(ii)(ii)",
+        PIXEL(x), PIXEL(y_max - y_min),
+        PIXEL(xoffset), yoffset
+        );
+}
+
+static PyObject*
+font_getabc(FontObject* self, PyObject* args)
+{
+    FT_ULong ch;
+    FT_Face face;
+    double a, b, c;
+
+    /* calculate ABC values for a given string */
+
+    PyObject* string;
+    if (!PyArg_ParseTuple(args, "O:getabc", &string))
+        return NULL;
+
+#if PY_VERSION_HEX >= 0x03000000
+    if (!PyUnicode_Check(string)) {
+#else
+    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
+#endif
+        PyErr_SetString(PyExc_TypeError, "expected string");
+        return NULL;
+    }
+
+    if (font_getchar(string, 0, &ch)) {
+        int index, error;
+        face = self->face;
+        index = FT_Get_Char_Index(face, ch);
+        /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
+        error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
+        if (error)
+            return geterror(error);
+        a = face->glyph->metrics.horiBearingX / 64.0;
+        b = face->glyph->metrics.width / 64.0;
+        c = (face->glyph->metrics.horiAdvance -
+             face->glyph->metrics.horiBearingX -
+             face->glyph->metrics.width) / 64.0;
+    } else
+        a = b = c = 0.0;
+
+    return Py_BuildValue("ddd", a, b, c);
 }
 
 static PyObject*
@@ -562,13 +574,15 @@ font_render(FontObject* self, PyObject* args)
     GlyphInfo *glyph_info;
     PyObject *features = NULL;
 
-    if (!PyArg_ParseTuple(args, "On|izO:render", &string,  &id, &mask, &dir, &features))
+    if (!PyArg_ParseTuple(args, "On|izO:render", &string,  &id, &mask, &dir, &features)) {
         return NULL;
+    }
 
     glyph_info = NULL;
     count = text_layout(string, self, dir, features, &glyph_info, mask);
-    if (count == 0)
+    if (count == 0) {
         return NULL;
+    }
 
     im = (Imaging) id;
     /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
