@@ -240,8 +240,12 @@ Methods
                     the number of pixels between lines.
     :param align: If the text is passed on to multiline_text(),
                   "left", "center" or "right".
-    :param direction: Direction of the text. It can be 'rtl', 'ltr', 'ttb' or 'btt.
-    :param features: A list of font features used for text layout. For example, 'ligature, kerning, Medial ...etc.
+    :param direction: Direction of the text. It can be  'rtl', 'ltr', 'ttb' or 'btt'.
+    :param features: A list of font feature to be used during text layout. 
+                     This is usually used to turn on optional font features that are not enabled by 
+                     default, for example 'dlig' or 'ss01', but can be also used to turn off default 
+                     font features for example '-liga' to disable ligatures or '-kern' to disable kerning. 
+                     To get  all supported features, see  https://www.microsoft.com/typography/otspec/featurelist.htm
 
 .. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left",
                                                  direction=None, features=[])
@@ -254,8 +258,12 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
     :param align: "left", "center" or "right".
-    :param direction: Direction of the text.
-    :param features: Font features used for text layout.
+    :param direction: Direction of the text. It can be 'rtl', 'ltr', 'ttb' or 'btt'.
+    :param features:  A list of font feature to be used during text layout. 
+                  This is usually used to turn on optional font features that are not enabled by
+                  default, for example 'dlig' or 'ss01', but can be also used to turn off default
+                  font features for example '-liga' to disable ligatures or '-kern' to disable kerning.
+                  To get  all supported features, see  https://www.microsoft.com/typography/otspec/featurelist.htm
 
 .. py:method:: PIL.ImageDraw.Draw.textsize(text, font=None, spacing=0)
 
