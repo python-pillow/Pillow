@@ -125,10 +125,10 @@ try:
 
             self.assert_image_similar(im, target_img, .5)
 
-except (KeyError, ImportError):
+except ImportError:
     class TestImagecomplextext(PillowTestCase):
         def test_skip(self):
-            self.skipTest("KeyError")
+            self.skipTest("ImportError")
 
 if __name__ == '__main__':
     unittest.main()
