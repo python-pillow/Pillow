@@ -4,6 +4,7 @@ modules = {
     "pil": "PIL._imaging",
     "tkinter": "PIL._tkinter_finder",
     "freetype2": "PIL._imagingft",
+    "raqm": "PIL._imagingft",
     "littlecms2": "PIL._imagingcms",
     "webp": "PIL._webp",
 }
