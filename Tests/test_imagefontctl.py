@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 from helper import unittest, PillowTestCase
 from PIL import Image
-from PIL import ImageDraw
+from PIL import ImageDraw, ImageFont
+
+#check if raqm installed
+have_raqm = ImageFont.core.have_raqm
 
 FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans.ttf"
 
 try:
     from PIL import ImageFont
-
-    # check if raqm is available
+    
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
     im = Image.new(mode='RGB', size=(300, 100))
     draw = ImageDraw.Draw(im)
     draw.text((0, 0), 'TEST', font=ttf, fill=500, direction='ltr')
-
+    @unittest.skipIf(not have_raqm, "Raqm Library is not installed !")
     class TestImagecomplextext(PillowTestCase):
-
         def test_complex_text(self):
             ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
