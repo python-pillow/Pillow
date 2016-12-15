@@ -54,6 +54,7 @@ class TestFileIcns(PillowTestCase):
             self.assertEqual(im2.mode, 'RGBA')
             self.assertEqual(im2.size, (wr, hr))
 
+    @unittest.skipIf(SKIP_5_4_1_PYPY, "PyPy does not yet implement the new buffer interface")
     def test_older_icon(self):
         # This icon was made with Icon Composer rather than iconutil; it still
         # uses PNG rather than JP2, however (since it was made on 10.9).
