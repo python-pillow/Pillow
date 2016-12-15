@@ -6,6 +6,12 @@ from PIL import Image
 from PIL import ImageFile
 from PIL import EpsImagePlugin
 
+import sys
+
+# The the default version of PyPy in Trusty is PyPy 5.4.1.
+# There is a known error in it: TypeError: PyPy does not yet implement the new buffer interface (issue #2163).
+SKIP_5_4_1_PYPY = hasattr(sys, 'pypy_version_info') and (
+    sys.pypy_version_info >= (5, 4, 1, 'final', 0))
 
 codecs = dir(Image.core)
 
@@ -71,6 +77,7 @@ class TestImageFile(PillowTestCase):
 
         self.assertRaises(IOError, lambda: roundtrip("PDF"))
 
+    @unittest.skipIf(SKIP_5_4_1_PYPY, "PyPy does not yet implement the new buffer interface")
     def test_ico(self):
         with open('Tests/images/python.ico', 'rb') as f:
             data = f.read()
