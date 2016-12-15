@@ -41,6 +41,7 @@ class TestFileIcns(PillowTestCase):
         self.assertEqual(reread.size, (1024, 1024))
         self.assertEqual(reread.format, "ICNS")
 
+    @unittest.skipIf(SKIP_5_4_1_PYPY, "PyPy does not yet implement the new buffer interface")
     def test_sizes(self):
         # Check that we can load all of the sizes, and that the final pixel
         # dimensions are as expected
