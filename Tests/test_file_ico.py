@@ -1,7 +1,13 @@
 from helper import unittest, PillowTestCase, hopper
 
 import io
+import sys
 from PIL import Image, IcoImagePlugin
+
+# The the default version of PyPy in Trusty is PyPy 5.4.1.
+# There is a known error in it: TypeError: PyPy does not yet implement the new buffer interface (issue #2163).
+SKIP_5_4_1_PYPY = hasattr(sys, 'pypy_version_info') and (
+    sys.pypy_version_info >= (5, 4, 1, 'final', 0))
 
 # sample ppm stream
 TEST_ICO_FILE = "Tests/images/hopper.ico"
@@ -61,6 +67,7 @@ class TestFileIco(PillowTestCase):
         # Assert
         self.assertEqual(im_saved.size, (256, 256))
 
+    @unittest.skipIf(SKIP_5_4_1_PYPY, "PyPy does not yet implement the new buffer interface")
     def test_only_save_relevant_sizes(self):
         """Issue #2266 https://github.com/python-pillow/Pillow/issues/2266
         Should save in 16x16, 24x24, 32x32, 48x48 sizes
