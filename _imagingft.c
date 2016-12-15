@@ -43,14 +43,6 @@
 #define FT_ERROR_END_LIST    { 0, 0 } };
 #ifdef HAVE_RAQM
 #include <raqm.h>
-#else
-typedef enum
-{
-  RAQM_DIRECTION_DEFAULT,
-  RAQM_DIRECTION_RTL,
-  RAQM_DIRECTION_LTR,
-  RAQM_DIRECTION_TTB
-} raqm_direction_t;
 #endif
 
 typedef struct
@@ -829,6 +821,14 @@ setup_module(PyObject* m) {
     v = PyString_FromFormat("%d.%d.%d", major, minor, patch);
 #endif
     PyDict_SetItemString(d, "freetype2_version", v);
+
+
+#ifdef HAVE_RAQM
+    v = PyBool_FromLong(1);
+#else
+    v = PyBool_FromLong(0);
+#endif
+    PyDict_SetItemString(d, "have_raqm", v);
 
     return 0;
 }

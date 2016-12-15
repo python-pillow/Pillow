@@ -63,12 +63,13 @@ Methods
                  driver prefers; if empty, the renderer may return either
                  mode. Note that the mode is always a string, to simplify
                  C-level implementations.
-    :param direction: Direction of the text.  It can be 'rtl', 'ltr', 'ttb' or 'btt'.
+    :param direction: Direction of the text.  It can be 'rtl', 'ltr', 'ttb' or 'btt'. Requires  libraqm
     :param features: A list of font feature to be used during text layout. This is
                      usually used to turn on optional font features that are not enabled by default,
                      for example 'dlig' or 'ss01', but can be also used to turn off default font
                      features for example '-liga' to disable ligatures or '-kern' to disable kerning. 
                      To get  all supported features, see  https://www.microsoft.com/typography/otspec/featurelist.htm
+                     Requires  libraqm
 
                  .. versionadded:: 1.1.5
     :return: An internal PIL storage memory instance as defined by the
