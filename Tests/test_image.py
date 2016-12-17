@@ -2,7 +2,6 @@ from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 import os
-import sys
 
 
 class TestImage(PillowTestCase):
@@ -50,10 +49,9 @@ class TestImage(PillowTestCase):
             im = io.BytesIO(b'')
         self.assertRaises(IOError, lambda: Image.open(im))
 
-    @unittest.skipIf(sys.version_info < (3, 4),
-                     "pathlib only available in Python 3.4 or later")
+    @unittest.skipUnless(Image.HAS_PATHLIB, "requires pathlib/pathlib2")
     def test_pathlib(self):
-        from pathlib import Path
+        from PIL.Image import Path
         im = Image.open(Path("Tests/images/hopper.jpg"))
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
