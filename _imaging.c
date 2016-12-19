@@ -251,7 +251,9 @@ int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view)
     /* Use new buffer protocol if available
        (mmap doesn't support this in 2.7, go figure) */
     if (PyObject_CheckBuffer(buffer)) {
-        return PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
+        int success = PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
+        if (!success) { return success; }
+        PyErr_Clear();
     }
 
     /* Pretend we support the new protocol; PyBuffer_Release happily ignores
