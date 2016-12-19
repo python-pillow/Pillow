@@ -339,7 +339,7 @@ Prerequisites are installed on **Ubuntu 14.04 LTS** with::
 Prerequisites are installed on **Fedora 23** with::
 
     $ sudo dnf install libtiff-devel libjpeg-devel zlib-devel freetype-devel \
-        lcms2-devel libwebp-devel tcl-devel tk-devel
+        lcms2-devel libwebp-devel tcl-devel tk-devel libraqm-devel
 
 
 
