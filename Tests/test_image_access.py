@@ -7,7 +7,7 @@ except ImportError:
     pass
 
 from PIL import Image
-
+import sys
 
 class AccessTest(PillowTestCase):
     # initial value
@@ -248,6 +248,38 @@ class TestCffi(AccessTest):
                 # pixels can contain garbage if image is released
                 self.assertEqual(px[i, 0], 0)
 
+
+class TestEmbeddable(unittest.TestCase):
+    @unittest.skipIf(not sys.platform.startswith('win32'), "requires Windows")
+    def test_embeddable(self):
+        import subprocess
+        from distutils import ccompiler
+
+        with open('embed_pil.c', 'w') as fh:
+            fh.write("""
+#include "Python.h"
+
+int main(int argc, char* argv[])
+{
+    Py_SetPythonHome( "%s" );
+
+    Py_InitializeEx( 0 );
+    Py_DECREF(PyImport_ImportModule( "PIL.Image" ));
+    Py_Finalize();
+
+    Py_InitializeEx( 0 );
+    Py_DECREF(PyImport_ImportModule( "PIL.Image" ));
+    Py_Finalize();
+
+    return 0;
+}    
+        """ % sys.prefix.replace('\\', '\\\\'))
+
+        compiler = ccompiler.new_compiler()
+        objects = compiler.compile(['embed_pil.c'])
+        compiler.link_executable(objects, 'embed_pil')
+        
+        subprocess.call(['embed_pil.exe'])  
 
 if __name__ == '__main__':
     unittest.main()
