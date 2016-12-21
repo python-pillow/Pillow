@@ -4,6 +4,11 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- PyPy: Buffer interface workaround #2294
+  [wiredfool]
+
+- Test: Switch to Ubuntu Trusty 14.04 on Travis CI #2294
+
 - Remove vendored version of olefile Python package in favor of upstream #2199
   [jdufresne]
 
