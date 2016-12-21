@@ -56,7 +56,7 @@ class TestFileGif(PillowTestCase):
         # 256 color Palette image, posterize to > 128 and < 128 levels
         # Size bigger and smaller than 512x512
         # Check the palette for number of colors allocated.
-        # Check for correctness after conversion back to RGB        
+        # Check for correctness after conversion back to RGB
         def check(colors, size, expected_palette_length):
             # make an image with empty colors in the start of the palette range
             im = Image.frombytes('P', (colors,colors),
@@ -70,7 +70,7 @@ class TestFileGif(PillowTestCase):
             # check palette length
             palette_length = max(i+1 for i,v in enumerate(reloaded.histogram()) if v)
             self.assertEqual(expected_palette_length, palette_length)
-            
+
             self.assert_image_equal(im.convert('RGB'), reloaded.convert('RGB'))
 
 
@@ -280,6 +280,25 @@ class TestFileGif(PillowTestCase):
         reread = Image.open(out)
 
         self.assertEqual(reread.info['duration'], duration)
+
+    def test_multiple_duration(self):
+        duration_list = [1000, 2000, 3000]
+
+        out = self.tempfile('temp.gif')
+        im_list = [
+            Image.new('L', (100, 100), '#000'),
+            Image.new('L', (100, 100), '#111'),
+            Image.new('L', (100, 100), '#222'),
+        ]
+        im_list[0].save(out, save_all=True, append_images=im_list[1:], duration=duration_list)
+        reread = Image.open(out)
+
+        for duration in duration_list:
+            self.assertEqual(reread.info['duration'], duration)
+            try:
+                reread.seek(reread.tell() + 1)
+            except EOFError:
+                pass
 
     def test_number_of_loops(self):
         number_of_loops = 2

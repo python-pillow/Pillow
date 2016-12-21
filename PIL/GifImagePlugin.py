@@ -352,10 +352,21 @@ def _save(im, fp, filename, save_all=False):
 
         first_frame = None
         append_images = im.encoderinfo.get("append_images", [])
+        if "duration" in im.encoderinfo:
+            duration = im.encoderinfo["duration"]
+        else:
+            duration = None
+        frame_count = 0
         for imSequence in [im]+append_images:
             for im_frame in ImageSequence.Iterator(imSequence):
                 encoderinfo = im.encoderinfo.copy()
                 im_frame = _convert_mode(im_frame)
+                if duration is not None:
+                    if not isinstance(duration, list):
+                        encoderinfo["duration"] = duration
+                    else:
+                        encoderinfo["duration"] = duration[frame_count]
+                frame_count += 1
 
                 # To specify duration, add the time in milliseconds to getdata(),
                 # e.g. getdata(im_frame, duration=1000)
@@ -587,7 +598,7 @@ def _get_header_palette(palette_bytes):
     return palette_bytes
 
 # Force optimization so that we can test performance against
-# cases where it took lots of memory and time previously. 
+# cases where it took lots of memory and time previously.
 _FORCE_OPTIMIZE = False
 
 def _get_palette_bytes(im, palette, info):
@@ -613,12 +624,12 @@ def _get_palette_bytes(im, palette, info):
         # lengths are restricted to 3*(2**N) bytes. Max saving would
         # be 768 -> 6 bytes if we went all the way down to 2 colors.
         # * If we're over 128 colors, we can't save any space.
-        # * If there aren't any holes, it's not worth collapsing. 
+        # * If there aren't any holes, it's not worth collapsing.
         # * If we have a 'large' image, the palette is in the noise.
 
         # create the new palette if not every color is used
         if _FORCE_OPTIMIZE or im.mode == 'L' or \
-               (len(used_palette_colors) <= 128 and  
+               (len(used_palette_colors) <= 128 and
                 max(used_palette_colors) > len(used_palette_colors) and
                 im.width * im.height < 512 * 512):
             palette_bytes = b""
@@ -655,15 +666,15 @@ def _get_palette_bytes(im, palette, info):
             m_im.palette = ImagePalette.ImagePalette("RGB",
                                                    palette=mapping_palette*3,
                                                    size=768)
-            #possibly set palette dirty, then 
+            #possibly set palette dirty, then
             #m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
             # or just force it.
             # UNDONE -- this is part of the general issue with palettes
             m_im.im.putpalette(*m_im.palette.getdata())
-            
+
             m_im = m_im.convert('L')
-         
-            # Internally, we require 768 bytes for a palette. 
+
+            # Internally, we require 768 bytes for a palette.
             new_palette_bytes = (palette_bytes +
                                  (768 - len(palette_bytes)) * b'\x00')
             m_im.putpalette(new_palette_bytes)
@@ -672,9 +683,9 @@ def _get_palette_bytes(im, palette, info):
                                                    size=len(palette_bytes))
 
             # oh gawd, this is modifying the image in place so I can pass by ref.
-            # REFACTOR SOONEST 
+            # REFACTOR SOONEST
             im.frombytes(m_im.tobytes())
-            
+
     if not palette_bytes:
         palette_bytes = source_palette
 
