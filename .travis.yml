@@ -24,6 +24,7 @@ install:
   - "travis_retry pip install cffi"
   - "travis_retry pip install nose"
   - "travis_retry pip install check-manifest"
+  - "travis_retry pip install olefile"
     # Pyroma tests sometimes hang on PyPy; skip
   - if [ $TRAVIS_PYTHON_VERSION != "pypy" ]; then travis_retry pip install pyroma; fi
 
