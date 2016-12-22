@@ -290,7 +290,12 @@ class TestFileGif(PillowTestCase):
             Image.new('L', (100, 100), '#111'),
             Image.new('L', (100, 100), '#222'),
         ]
-        im_list[0].save(out, save_all=True, append_images=im_list[1:], duration=duration_list)
+        im_list[0].save(
+            out,
+            save_all=True,
+            append_images=im_list[1:],
+            duration=duration_list
+        )
         reread = Image.open(out)
 
         for duration in duration_list:
