@@ -361,11 +361,8 @@ def _save(im, fp, filename, save_all=False):
             for im_frame in ImageSequence.Iterator(imSequence):
                 encoderinfo = im.encoderinfo.copy()
                 im_frame = _convert_mode(im_frame)
-                if duration is not None:
-                    if not isinstance(duration, list):
-                        encoderinfo["duration"] = duration
-                    else:
-                        encoderinfo["duration"] = duration[frame_count]
+                if isinstance(duration, list):
+                    encoderinfo["duration"] = duration[frame_count]
                 frame_count += 1
 
                 # To specify duration, add the time in milliseconds to getdata(),
