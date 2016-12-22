@@ -111,8 +111,8 @@ additional frames when saving, the ``append_images`` parameter works with
 
 If present, the ``loop`` parameter can be used to set the number of times
 the GIF should loop, and the ``duration`` parameter can set the number of
-milliseconds between each frame. The ``duration`` parameter can be either
-an integer or a list of integer. Passing a list to ``duration`` parameter
+milliseconds between each frame. The ``duration`` parameter can be either an
+integer or a list of integers. Passing a list to the ``duration``parameter
 will set the ``duration`` of each frame respectively.
 
 Reading local images
