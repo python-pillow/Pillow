@@ -9,7 +9,7 @@ JPEG_VERSION=9b
 OPENJPEG_VERSION=2.1
 TIFF_VERSION=4.0.6
 LCMS2_VERSION=2.8
-LIBWEBP_VERSION=0.5.1
+LIBWEBP_VERSION=0.5.2
 
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
