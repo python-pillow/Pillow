@@ -9,11 +9,12 @@ notifications:
 python:
   - "pypy"
   - "pypy3"
-  - 3.5
+  - 3.6
   - 2.7
   - "2.7_with_system_site_packages" # For PyQt4
-  - 3.3
+  - 3.5
   - 3.4
+  - 3.3
   - nightly
 
 dist: trusty
