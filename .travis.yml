@@ -9,15 +9,16 @@ notifications:
 python:
   - "pypy"
   - "pypy3"
-  - 3.5
+  - 3.6
   - 2.7
   - "2.7_with_system_site_packages" # For PyQt4
-  - 3.3
+  - 3.5
   - 3.4
+  - 3.3
   - nightly
 
 dist: trusty
-  
+
 install:
   - "travis_retry sudo apt-get update"
   - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
@@ -43,10 +44,10 @@ install:
 
   # libimagequant
   - pushd depends && ./install_imagequant.sh && popd
-  
+
   # extra test images
-  - pushd depends && ./install_extra_test_images.sh && popd  
-  
+  - pushd depends && ./install_extra_test_images.sh && popd
+
 
   - travis_retry pip install -e .
 
