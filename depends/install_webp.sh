@@ -3,7 +3,7 @@
 
 archive=libwebp-0.5.2
 
-./download-and-extract.sh $archive https://github.com/python-pillow/pillow-depends/blob/master/$archive.tar.gz?raw=true
+./download-and-extract.sh $archive https://raw.githubusercontent.com/python-pillow/pillow-depends/master/$archive.tar.gz
 
 pushd $archive
 
