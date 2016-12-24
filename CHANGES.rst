@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Update libwebp to 0.5.2 #2302
+  [radarhere]
+
 - PyPy: Buffer interface workaround #2294
   [wiredfool]
 
