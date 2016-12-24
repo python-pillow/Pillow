@@ -17,7 +17,7 @@ Notes
 
 .. note:: Pillow >= 2.0.0 < 3.5.0 supports Python versions 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
 
-.. note:: Pillow >= 3.5.0 supports Python versions 2.7, 3.3, 3.4, 3.5
+.. note:: Pillow >= 3.5.0 supports Python versions 2.7, 3.3, 3.4, 3.5, 3.6
 
 Basic Installation
 ------------------
