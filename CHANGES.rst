@@ -78,9 +78,9 @@ Changelog (Pillow)
 - Use minimal scale for jpeg drafts #2240
   [homm]
 
-- Updated dependency scripts to use Webp 0.5.2, OpenJpeg 2.1.2, and TclTk 8.6.6 #2235, #2236, #2237, #2302
+- Updated dependency scripts to use FreeType 2.7, OpenJpeg 2.1.2, WebP 0.5.2 and Tcl/Tk 8.6.6 #2235, #2236, #2237, #2290, #2302
   [radarhere]
-
+  
 - Fix "invalid escape sequence" bytestring warnings in Python 3.6 #2186
   [timgraham]
 
