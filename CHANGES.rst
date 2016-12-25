@@ -4,9 +4,6 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
-- Update libwebp to 0.5.2 #2302
-  [radarhere]
-
 - PyPy: Buffer interface workaround #2294
   [wiredfool]
 
@@ -29,7 +26,7 @@ Changelog (Pillow)
 
 - Removed depreciated internal "stretch" method #2276
   [homm]
-  
+
 - Removed the handles_eof flag in decode.c #2223
   [wiredfool]
 
@@ -52,20 +49,20 @@ Changelog (Pillow)
   [lambdafu]
 
 - Test: Fix bug in test_ifd_rational_save when libtiff is not available #2270
-  [ChristopherHogan]  
+  [ChristopherHogan]
 
 - ICO: Only save relevant sizes #2267
   [hugovk]
-  
+
 - ICO: Allow saving .ico files of 256x256 instead of 255x255 #2265
   [hugovk]
 
 - Fix TIFFImagePlugin ICC color profile saving. #2087
   [cskau]
-  
+
 - Doc: Improved description of ImageOps.deform resample parameter #2256
   [radarhere]
-  
+
 - EMF: support negative bounding box coordinates #2249
   [glexey]
 
@@ -81,7 +78,7 @@ Changelog (Pillow)
 - Use minimal scale for jpeg drafts #2240
   [homm]
 
-- Updated dependency scripts to use Webp 0.5.1, OpenJpeg 2.1.2, and TclTk 8.6.6 #2235, #2236, #2237
+- Updated dependency scripts to use Webp 0.5.2, OpenJpeg 2.1.2, and TclTk 8.6.6 #2235, #2236, #2237, #2302
   [radarhere]
 
 - Fix "invalid escape sequence" bytestring warnings in Python 3.6 #2186
@@ -101,10 +98,10 @@ Changelog (Pillow)
 
 - Use a context manager in ImageFont._load_pilfont() to ensure file is always closed #2232
   [jdufresne]
-  
+
 - Use generator expressions instead of list comprehension #2225
   [jdufresne]
- 
+
 - Close file after reading in ImagePalette.load() #2215
   [jdufresne]
 
@@ -130,7 +127,7 @@ Changelog (Pillow)
   [garbas]
 
 - Search for tkinter first in builtins #2210
-  [matthew-brett]  
+  [matthew-brett]
 
 - Tests: Replace try/except/fail pattern with TestCase.assertRaises() #2200
   [jdufresne]
@@ -143,7 +140,7 @@ Changelog (Pillow)
 
 - Doc: Move ICO out of the list of read-only file formats #2180
   [alexwlchan]
-  
+
 - Doc: Fix formatting, too-short title underlines and malformed table #2175
   [hugovk]
 
