@@ -1,6 +1,12 @@
+import sys
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
+
+# The the default version of PyPy in Trusty is PyPy 5.4.1.
+# There is a known error in it: TypeError: PyPy does not yet implement the new buffer interface (issue #2163).
+SKIP_5_4_1_PYPY = hasattr(sys, 'pypy_version_info') and (
+    sys.pypy_version_info >= (5, 4, 1, 'final', 0))
 
 im = hopper().resize((128, 100))
 
@@ -24,6 +30,7 @@ class TestImageArray(PillowTestCase):
         self.assertEqual(test("RGBA"), (3, (100, 128, 4), '|u1', 51200))
         self.assertEqual(test("RGBX"), (3, (100, 128, 4), '|u1', 51200))
 
+    @unittest.skipIf(SKIP_5_4_1_PYPY, "PyPy does not yet implement the new buffer interface")
     def test_fromarray(self):
 
         class Wrapper(object):

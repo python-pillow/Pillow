@@ -4,6 +4,12 @@ from PIL import Image
 
 import sys
 
+# The the default version of PyPy in Trusty is PyPy 5.4.1.
+# There is a known error in it: TypeError: PyPy does not yet implement the new buffer interface (issue #2163).
+
+SKIP_5_4_1_PYPY = hasattr(sys, 'pypy_version_info') and (
+    sys.pypy_version_info >= (5, 4, 1, 'final', 0))
+
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
 
@@ -35,6 +41,7 @@ class TestFileIcns(PillowTestCase):
         self.assertEqual(reread.size, (1024, 1024))
         self.assertEqual(reread.format, "ICNS")
 
+    @unittest.skipIf(SKIP_5_4_1_PYPY, "PyPy does not yet implement the new buffer interface")
     def test_sizes(self):
         # Check that we can load all of the sizes, and that the final pixel
         # dimensions are as expected
@@ -48,6 +55,7 @@ class TestFileIcns(PillowTestCase):
             self.assertEqual(im2.mode, 'RGBA')
             self.assertEqual(im2.size, (wr, hr))
 
+    @unittest.skipIf(SKIP_5_4_1_PYPY, "PyPy does not yet implement the new buffer interface")
     def test_older_icon(self):
         # This icon was made with Icon Composer rather than iconutil; it still
         # uses PNG rather than JP2, however (since it was made on 10.9).
@@ -61,6 +69,7 @@ class TestFileIcns(PillowTestCase):
             self.assertEqual(im2.mode, 'RGBA')
             self.assertEqual(im2.size, (wr, hr))
 
+    @unittest.skipIf(SKIP_5_4_1_PYPY, "PyPy does not yet implement the new buffer interface")
     def test_jp2_icon(self):
         # This icon was made by using Uli Kusterer's oldiconutil to replace
         # the PNG images with JPEG 2000 ones.  The advantage of doing this is

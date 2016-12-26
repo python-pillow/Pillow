@@ -59,7 +59,7 @@ class TestImagePath(PillowTestCase):
         if hasattr(arr, 'tobytes'):
             p = ImagePath.Path(arr.tobytes())
         else:
-            p = ImagePath.Path(arr.tostring())
+            p = ImagePath.Path((arr.tostring(),))
         self.assertEqual(list(p), [(0.0, 1.0)])
 
     def test_overflow_segfault(self):
