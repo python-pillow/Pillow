@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Remove executable bit and shebang from OleFileIO.py #2308
+  [jwilk, radarhere]
+
 - PyPy: Buffer interface workaround #2294
   [wiredfool]
 
