@@ -290,6 +290,8 @@ class TestFileGif(PillowTestCase):
             Image.new('L', (100, 100), '#111'),
             Image.new('L', (100, 100), '#222'),
         ]
+
+        #duration as list
         im_list[0].save(
             out,
             save_all=True,
@@ -304,6 +306,24 @@ class TestFileGif(PillowTestCase):
                 reread.seek(reread.tell() + 1)
             except EOFError:
                 pass
+
+        # duration as tuple
+        im_list[0].save(
+            out,
+            save_all=True,
+            append_images=im_list[1:],
+            duration=tuple(duration_list)
+        )
+        reread = Image.open(out)
+
+        for duration in duration_list:
+            self.assertEqual(reread.info['duration'], duration)
+            try:
+                reread.seek(reread.tell() + 1)
+            except EOFError:
+                pass
+
+
 
     def test_number_of_loops(self):
         number_of_loops = 2
