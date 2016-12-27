@@ -1,5 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 
+from PIL import Image
+
 import copy
 
 
@@ -32,6 +34,13 @@ class TestImageCopy(PillowTestCase):
             out = copy.copy(im.crop(croppedCoordinates))
             self.assertEqual(out.mode, im.mode)
             self.assertEqual(out.size, croppedSize)
+
+    def test_copy_zero(self):
+        im = Image.new('RGB', (0,0))
+        out = im.copy()
+        self.assertEqual(out.mode, im.mode)
+        self.assertEqual(out.size, im.size)
+
 
 if __name__ == '__main__':
     unittest.main()

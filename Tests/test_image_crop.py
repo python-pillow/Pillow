@@ -83,6 +83,23 @@ class TestImageCrop(PillowTestCase):
         img = img.crop(extents)
         img.load()
 
+    def test_crop_zero(self):
+        
+        im = Image.new('RGB', (0, 0), 'white')
+        
+        cropped = im.crop((0, 0, 0, 0))
+        self.assertEqual(cropped.size, (0, 0))
+
+        cropped = im.crop((10, 10, 20, 20))
+        self.assertEqual(cropped.size, (10, 10))
+        self.assertEqual(cropped.getdata()[0], (0, 0, 0))
+
+        im = Image.new('RGB', (0, 0))
+        
+        cropped = im.crop((10, 10, 20, 20))
+        self.assertEqual(cropped.size, (10, 10))
+        self.assertEqual(cropped.getdata()[2], (0, 0, 0))
+
 
 
 if __name__ == '__main__':
