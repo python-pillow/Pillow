@@ -72,9 +72,6 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 **background**
     Default background color (a palette color index).
 
-**duration**
-    Time between frames in an animation (in milliseconds).
-
 **transparency**
     Transparency color index. This key is omitted if the image is not
     transparent.
@@ -82,9 +79,9 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 **version**
     Version (either ``GIF87a`` or ``GIF89a``).
 
-**duration**
-    May not be present. The time to display each frame of the GIF, in
-    milliseconds.
+**duration** 
+    May not be present. The time to display the current frame
+    of the GIF, in milliseconds.
 
 **loop**
     May not be present. The number of times the GIF should loop.
@@ -98,20 +95,37 @@ the file by seeking to the first frame. Random access is not supported.
 
 ``im.seek()`` raises an ``EOFError`` if you try to seek after the last frame.
 
-Saving sequences
-~~~~~~~~~~~~~~~~
+Saving
+~~~~~~
 
-When calling :py:meth:`~PIL.Image.Image.save`, if a multiframe image is used,
-by default only the first frame will be saved. To save all frames, the
-``save_all`` parameter must be present and set to ``True``. To append
-additional frames when saving, the ``append_images`` parameter works with
-``save_all`` to append a list of images containing the extra frames::
+When calling :py:meth:`~PIL.Image.Image.save`, the following options
+are available::
 
     im.save(out, save_all=True, append_images=[im1, im2, ...])
 
-If present, the ``loop`` parameter can be used to set the number of times
-the GIF should loop, and the ``duration`` parameter can set the number of
-milliseconds between each frame.
+**save_all**
+    If present and true, all frames of the image will be saved. If
+    not, then only the first frame of a multiframe image will be saved.
+
+**append_images**
+    A list of images to append as additional frames. Each of the
+    images in the list can be single or multiframe images.
+
+**duration**
+    The display duration of each frame of the multiframe gif, in
+    milliseconds. Pass a single integer for a constant duration, or a
+    list or tuple to set the duration for each frame separately.
+
+**loop**
+    Integer number of times the GIF should loop.
+
+**optimize**
+    If present and true, attempt to compress the palette by
+    eliminating unused colors. This is only useful if the palette can
+    be compressed to the next smaller power of 2 elements.
+
+**palette**
+    Use the specified palette for the saved image.
 
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~
