@@ -362,5 +362,28 @@ class TestFileGif(PillowTestCase):
         reread = Image.open(out)
         self.assertEqual(reread.n_frames, 10)
 
+    def test_transparent_optimize(self):
+        # from issue #2195, if the transparent color is incorrectly
+        # optimized out, gif loses transparency Need a palette that
+        # isn't using the 0 color, and one that's > 128 items where
+        # the transparent color is actually the top palette entry to
+        # trigger the bug.
+
+        from PIL import ImagePalette
+
+        data = bytes(bytearray(range(1,254)))
+        palette = ImagePalette.ImagePalette("RGB", list(range(256))*3)
+
+        im = Image.new('L', (253,1))
+        im.frombytes(data)
+        im.putpalette(palette)
+
+        out = self.tempfile('temp.gif')
+        im.save(out, transparency=253)
+        reloaded = Image.open(out)
+
+        self.assertEqual(reloaded.info['transparency'], 253)
+        
+
 if __name__ == '__main__':
     unittest.main()
