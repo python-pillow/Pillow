@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Allow passing a list or tuple of individual frame durations when saving a GIF #2298
+  [Xdynix]
+
+- Unified different GIF optimize conditions #2196
+  [radarhere]
+
 - Build: Refactor dependency installation #2305
   [hugovk]
 
