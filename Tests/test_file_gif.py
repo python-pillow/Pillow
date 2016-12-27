@@ -281,6 +281,30 @@ class TestFileGif(PillowTestCase):
 
         self.assertEqual(reread.info['duration'], duration)
 
+    def test_multiple_duration(self):
+        duration_list = [1000, 2000, 3000]
+
+        out = self.tempfile('temp.gif')
+        im_list = [
+            Image.new('L', (100, 100), '#000'),
+            Image.new('L', (100, 100), '#111'),
+            Image.new('L', (100, 100), '#222'),
+        ]
+        im_list[0].save(
+            out,
+            save_all=True,
+            append_images=im_list[1:],
+            duration=duration_list
+        )
+        reread = Image.open(out)
+
+        for duration in duration_list:
+            self.assertEqual(reread.info['duration'], duration)
+            try:
+                reread.seek(reread.tell() + 1)
+            except EOFError:
+                pass
+
     def test_number_of_loops(self):
         number_of_loops = 2
 
