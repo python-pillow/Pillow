@@ -36,9 +36,8 @@ class TestFilePpm(PillowTestCase):
 
     def test_truncated_file(self):
         path = self.tempfile('temp.pgm')
-        f = open(path, 'w')
-        f.write('P6')
-        f.close()
+        with open(path, 'w') as f:
+            f.write('P6')
 
         self.assertRaises(ValueError, lambda: Image.open(path))
 
@@ -47,8 +46,8 @@ class TestFilePpm(PillowTestCase):
         # Storage.c accepted negative values for xsize, ysize.  the
         # internal open_ppm function didn't check for sanity but it
         # has been removed. The default opener doesn't accept negative
-        # sizes. 
-        
+        # sizes.
+
         with self.assertRaises(IOError):
             Image.open('Tests/images/negative_size.ppm')
 

@@ -521,22 +521,20 @@ def _save_netpbm(im, fp, filename):
     import tempfile
     file = im._dump()
 
-    if im.mode != "RGB":
-        with open(filename, 'wb') as f:
-            stderr = tempfile.TemporaryFile()
-            check_call(["ppmtogif", file], stdout=f, stderr=stderr)
-    else:
-        with open(filename, 'wb') as f:
-
+    with open(filename, 'wb') as f:
+        if im.mode != "RGB":
+            with tempfile.TemporaryFile() as stderr:
+                check_call(["ppmtogif", file], stdout=f, stderr=stderr)
+        else:
             # Pipe ppmquant output into ppmtogif
             # "ppmquant 256 %s | ppmtogif > %s" % (file, filename)
             quant_cmd = ["ppmquant", "256", file]
             togif_cmd = ["ppmtogif"]
-            stderr = tempfile.TemporaryFile()
-            quant_proc = Popen(quant_cmd, stdout=PIPE, stderr=stderr)
-            stderr = tempfile.TemporaryFile()
-            togif_proc = Popen(togif_cmd, stdin=quant_proc.stdout, stdout=f,
-                               stderr=stderr)
+            with tempfile.TemporaryFile() as stderr:
+                quant_proc = Popen(quant_cmd, stdout=PIPE, stderr=stderr)
+            with tempfile.TemporaryFile() as stderr:
+                togif_proc = Popen(togif_cmd, stdin=quant_proc.stdout,
+                                   stdout=f, stderr=stderr)
 
             # Allow ppmquant to receive SIGPIPE if ppmtogif exits
             quant_proc.stdout.close()
