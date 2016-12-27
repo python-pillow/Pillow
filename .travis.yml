@@ -17,13 +17,14 @@ python:
   - nightly
 
 dist: trusty
-  
+
 install:
   - "travis_retry sudo apt-get update"
   - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
   - "travis_retry pip install cffi"
   - "travis_retry pip install nose"
   - "travis_retry pip install check-manifest"
+  - "travis_retry pip install olefile"
     # Pyroma tests sometimes hang on PyPy; skip
   - if [ $TRAVIS_PYTHON_VERSION != "pypy" ]; then travis_retry pip install pyroma; fi
 
@@ -43,12 +44,10 @@ install:
 
   # libimagequant
   - pushd depends && ./install_imagequant.sh && popd
-  
-  # extra test images
-  - pushd depends && ./install_extra_test_images.sh && popd  
-  
 
-  - travis_retry pip install -e .
+  # extra test images
+  - pushd depends && ./install_extra_test_images.sh && popd
+
 
 before_script:
 # Qt needs a display for some of the tests, and it's only run on the system site packages install
