@@ -4,6 +4,15 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Build: Refactor dependency installation #2305
+  [hugovk]
+
+- Test: Add python 3.6 to travis, tox #2304
+  [hugovk]
+
+- Test: Fix coveralls coverage for Python+C #2300
+  [hugovk]
+
 - Remove executable bit and shebang from OleFileIO.py #2308
   [jwilk, radarhere]
 
