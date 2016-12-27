@@ -434,13 +434,10 @@ def _get_local_header(fp, im, offset, flags):
         used_palette_colors = _get_optimize(im, im.encoderinfo)
         if used_palette_colors is not None:
             # adjust the transparency index after optimize
-            for i, palette_color in enumerate(used_palette_colors):
-                if palette_color == transparency:
-                    transparency = i
-                    transparent_color_exists = True
-                    break
-                else:
-                    transparent_color_exists = False
+            try:
+                transparency = used_palette_colors.index(transparency)
+            except ValueError:
+                transparent_color_exists = False
 
     if "duration" in im.encoderinfo:
         duration = int(im.encoderinfo["duration"] / 10)
@@ -569,11 +566,9 @@ def _get_used_palette_colors(im):
     used_palette_colors = []
 
     # check which colors are used
-    i = 0
-    for count in im.histogram():
+    for i, count in enumerate(im.histogram()):
         if count:
             used_palette_colors.append(i)
-        i += 1
 
     return used_palette_colors
 
