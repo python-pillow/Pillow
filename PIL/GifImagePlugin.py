@@ -378,7 +378,7 @@ def _save(im, fp, filename, save_all=False):
                         first_frame = None
 
                     # delta frame
-                    delta = ImageChops.subtract_modulo(im_frame, previous.copy())
+                    delta = ImageChops.subtract_modulo(im_frame, previous)
                     bbox = delta.getbbox()
 
                     if bbox:
