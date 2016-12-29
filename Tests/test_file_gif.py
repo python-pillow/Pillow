@@ -285,7 +285,7 @@ class TestFileGif(PillowTestCase):
         im_list = [
             Image.new('L', (100, 100), '#000'),
             Image.new('L', (100, 100), '#111'),
-            Image.new('L', (100, 100), '#222'),
+            Image.new('L', (100, 100), '#222')
         ]
 
         #duration as list
@@ -320,7 +320,31 @@ class TestFileGif(PillowTestCase):
             except EOFError:
                 pass
 
+    def test_identical_frames(self):
+        duration_list = [1000, 1500, 2000, 4000]
 
+        out = self.tempfile('temp.gif')
+        im_list = [
+            Image.new('L', (100, 100), '#000'),
+            Image.new('L', (100, 100), '#000'),
+            Image.new('L', (100, 100), '#000'),
+            Image.new('L', (100, 100), '#111')
+        ]
+
+        #duration as list
+        im_list[0].save(
+            out,
+            save_all=True,
+            append_images=im_list[1:],
+            duration=duration_list
+        )
+        reread = Image.open(out)
+
+        # Assert that the first three frames were combined
+        self.assertEqual(reread.n_frames, 2)
+
+        # Assert that the new duration is the total of the identical frames
+        self.assertEqual(reread.info['duration'], 4500)
 
     def test_number_of_loops(self):
         number_of_loops = 2
