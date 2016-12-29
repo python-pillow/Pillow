@@ -340,51 +340,58 @@ def _save(im, fp, filename, save_all=False):
         im.encoderinfo["optimize"] = im.encoderinfo.get("optimize", True)
 
     if save_all:
-        previous = None
-
-        first_frame = None
-        append_images = im.encoderinfo.get("append_images", [])
+        # To specify duration, add the time in milliseconds to getdata(),
+        # e.g. getdata(im_frame, duration=1000)
         if "duration" in im.encoderinfo:
             duration = im.encoderinfo["duration"]
         else:
             duration = None
+        im_frames = []
+        append_images = im.encoderinfo.get("append_images", [])
         frame_count = 0
         for imSequence in [im]+append_images:
             for im_frame in ImageSequence.Iterator(imSequence):
-                encoderinfo = im.encoderinfo.copy()
                 im_frame = _convert_mode(im_frame)
+
+                encoderinfo = im.encoderinfo.copy()
                 if isinstance(duration, (list, tuple)):
-                    encoderinfo["duration"] = duration[frame_count]
+                    encoderinfo['duration'] = duration[frame_count]
                 frame_count += 1
 
-                # To specify duration, add the time in milliseconds to getdata(),
-                # e.g. getdata(im_frame, duration=1000)
-                if not previous:
-                    # global header
-                    first_frame = getheader(im_frame, palette, encoderinfo)[0]
-                    first_frame += getdata(im_frame, (0, 0), **encoderinfo)
-                else:
-                    if first_frame:
-                        for s in first_frame:
-                            fp.write(s)
-                        first_frame = None
-
+                if im_frames:
                     # delta frame
-                    delta = ImageChops.subtract_modulo(im_frame, previous)
+                    previous = im_frames[-1]
+                    delta = ImageChops.subtract_modulo(im_frame,
+                                                       previous['im_frame'])
                     bbox = delta.getbbox()
-
-                    if bbox:
-                        # compress difference
-                        encoderinfo['include_color_table'] = True
-                        for s in getdata(im_frame.crop(bbox),
-                                         bbox[:2], **encoderinfo):
-                            fp.write(s)
-                    else:
-                        # FIXME: what should we do in this case?
-                        pass
-                previous = im_frame
-        if first_frame:
+                    if not bbox:
+                        # This frame is identical to the previous frame
+                        if duration:
+                            previous['encoderinfo']['duration'] += encoderinfo['duration']
+                        continue
+                else:
+                    bbox = None
+                im_frames.append({
+                    "im_frame":im_frame,
+                    "bbox":bbox,
+                    "encoderinfo":encoderinfo
+                })
+        if len(im_frames) < 2:
             save_all = False
+        else:
+            for data in im_frames:
+                if data['bbox'] is None:
+                    # global header
+                    header = getheader(data['im_frame'], palette, data['encoderinfo'])[0]
+                    for s in header + getdata(data['im_frame'],
+                                              (0, 0), **data['encoderinfo']):
+                        fp.write(s)
+                else:
+                    # compress difference
+                    data['encoderinfo']['include_color_table'] = True
+                    for s in getdata(data['im_frame'].crop(data['bbox']),
+                                     data['bbox'][:2], **data['encoderinfo']):
+                        fp.write(s)
     if not save_all:
         header = getheader(im_out, palette, im.encoderinfo)[0]
         for s in header:
