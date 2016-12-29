@@ -98,7 +98,7 @@ Changelog (Pillow)
 
 - Updated dependency scripts to use FreeType 2.7, OpenJpeg 2.1.2, WebP 0.5.2 and Tcl/Tk 8.6.6 #2235, #2236, #2237, #2290, #2302
   [radarhere]
-  
+
 - Fix "invalid escape sequence" bytestring warnings in Python 3.6 #2186
   [timgraham]
 
@@ -647,7 +647,7 @@ Changelog (Pillow)
 - ImageSequence Iterator is now an iterator #1649
   [radarhere]
 
-- Updated windows test builds to jpeg9b
+- Updated windows test builds to jpeg9b #1673
   [radarhere]
 
 - Fixed support for .gbr version 1 images, added support for version 2 in GbrImagePlugin #1653
