@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Depends: Updated pngquant to 2.8.2 #2319
+  [radarhere]
+
 - Test: Added correctness tests for opening SGI images #2324
   [wiredfool]
 
