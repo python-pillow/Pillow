@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, SgiImagePlugin
 
@@ -6,31 +6,37 @@ from PIL import Image, SgiImagePlugin
 class TestFileSgi(PillowTestCase):
 
     def test_rgb(self):
-        # Arrange
         # Created with ImageMagick then renamed:
-        # convert hopper.ppm hopper.sgi
+        # convert hopper.ppm -compress None sgi:hopper.rgb
         test_file = "Tests/images/hopper.rgb"
 
-        # Act / Assert
-        self.assertRaises(ValueError, lambda: Image.open(test_file))
+        im = Image.open(test_file)
+        self.assert_image_equal(im, hopper())
 
     def test_l(self):
-        # Arrange
-        # Created with ImageMagick then renamed:
-        # convert hopper.ppm -monochrome hopper.sgi
+        # Created with ImageMagick
+        # convert hopper.ppm -monochrome -compress None sgi:hopper.bw
         test_file = "Tests/images/hopper.bw"
 
-        # Act / Assert
-        self.assertRaises(ValueError, lambda: Image.open(test_file))
+        im = Image.open(test_file)
+        self.assert_image_similar(im, hopper('L'), 2)
 
     def test_rgba(self):
-        # Arrange
         # Created with ImageMagick:
-        # convert transparent.png transparent.sgi
+        # convert transparent.png -compress None transparent.sgi
         test_file = "Tests/images/transparent.sgi"
+        
+        im = Image.open(test_file)
+        target = Image.open('Tests/images/transparent.png')
+        self.assert_image_equal(im, target)
 
-        # Act / Assert
-        self.assertRaises(ValueError, lambda: Image.open(test_file))
+    def test_rle(self):
+        # convert hopper.ppm  hopper.sgi
+        # We don't support RLE compression, this should throw a value error
+        test_file = "Tests/images/hopper.sgi"
+
+        with self.assertRaises(ValueError):
+            Image.open(test_file)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
