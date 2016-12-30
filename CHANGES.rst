@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Test: Added correctness tests for opening SGI images #2324
+  [wiredfool]
+
 - Allow passing a list or tuple of individual frame durations when saving a GIF #2298
   [Xdynix]
 
