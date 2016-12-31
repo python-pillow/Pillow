@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- SGI: Save uncompressed SGI/BW/RGB/RGBA files #2325
+  [jbltx]
+  
 - Depends: Updated pngquant to 2.8.2 #2319
   [radarhere]
 
