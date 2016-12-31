@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Allow 0 size images, Fixes #2259, Reverts to pre-3.4 behavior.
+  [wiredfool]
+  
 - SGI: Save uncompressed SGI/BW/RGB/RGBA files #2325
   [jbltx]
   
