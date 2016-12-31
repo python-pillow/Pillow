@@ -13,8 +13,11 @@ class TestImageRotate(PillowTestCase):
             self.assertEqual(out.mode, mode)
             if angle % 180 == 0:
                 self.assertEqual(out.size, im.size)
+            elif im.size == (0, 0):
+                self.assertEqual(out.size, im.size)
             else:
                 self.assertNotEqual(out.size, im.size)
+
                 
         for mode in ("1", "P", "L", "RGB", "I", "F"):
             im = hopper(mode)
