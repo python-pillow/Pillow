@@ -89,6 +89,14 @@ class TestImagingCoreResize(PillowTestCase):
                         # as separately resized channel
                         self.assert_image_equal(ch, references[channels[i]])
 
+    def test_enlarge_zero(self):
+        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
+                Image.BICUBIC, Image.LANCZOS]:
+            r = self.resize(Image.new('RGB', (0,0), "white"), (212, 195), f)
+            self.assertEqual(r.mode, "RGB")
+            self.assertEqual(r.size, (212, 195))
+            self.assertEqual(r.getdata()[0], (0,0,0))
+
 
 class TestImageResize(PillowTestCase):
 

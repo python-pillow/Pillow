@@ -1994,8 +1994,8 @@ def _check_size(size):
         raise ValueError("Size must be a tuple")
     if len(size) != 2:
         raise ValueError("Size must be a tuple of length 2")
-    if size[0] <= 0 or size[1] <= 0:
-        raise ValueError("Width and Height must be > 0")
+    if size[0] < 0 or size[1] < 0:
+        raise ValueError("Width and Height must be => 0")
 
     return True
 
