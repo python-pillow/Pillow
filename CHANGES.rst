@@ -4,6 +4,9 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Test: Relax WMF test condition, fixes #2323
+  [wiredfool] 
+
 - Allow 0 size images, Fixes #2259, Reverts to pre-3.4 behavior.
   [wiredfool]
   
