@@ -32,6 +32,19 @@ class TestImageRotate(PillowTestCase):
             im = Image.new('RGB',(0,0))
             self.rotate(im, im.mode, angle)
 
+    def test_resample(self):
+        # >>> im = Image.open('Tests/images/hopper.ppm')
+        # >>> im = im.rotate(45, resample=Image.BICUBIC, expand=True)         
+        # >>> im.save('Tests/images/hopper_45.png')
+
+        target = Image.open('Tests/images/hopper_45.png')
+        for (resample, epsilon) in ((Image.NEAREST, 10),
+                                    (Image.BILINEAR, 5),
+                                    (Image.BICUBIC, 0)):
+            im = hopper()
+            im = im.rotate(45, resample=resample, expand=True)
+            self.assert_image_similar(im, target, epsilon)
+
     def test_center(self):
         im = hopper()
         self.rotate(im, im.mode, 45, center=(0, 0))
