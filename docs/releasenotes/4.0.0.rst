@@ -9,6 +9,11 @@ creating binaries, testing, or retaining compatibility with these
 releases. This release removes some workarounds for those Python
 releases, so the final working version of Pillow on 2.6 or 3.2 is 3.4.2.
 
+Support added for Python 3.6
+============================
+
+Pillow 4.0 supports Python 3.6.
+
 OleFileIO.py
 ============
 
