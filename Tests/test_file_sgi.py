@@ -45,6 +45,17 @@ class TestFileSgi(PillowTestCase):
                           lambda:
                           SgiImagePlugin.SgiImageFile(invalid_file))
 
+    def test_write(self):
+        def roundtrip(img):
+            out = self.tempfile('temp.sgi')
+            img.save(out, format='sgi')
+            reloaded = Image.open(out)
+            self.assert_image_equal(img, reloaded)
+
+        for mode in ('L', 'RGB', 'RGBA'):
+            roundtrip(hopper(mode))
+
+
 
 if __name__ == '__main__':
     unittest.main()

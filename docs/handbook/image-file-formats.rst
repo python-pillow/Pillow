@@ -471,6 +471,12 @@ PPM
 PIL reads and writes PBM, PGM and PPM files containing ``1``, ``L`` or ``RGB``
 data.
 
+SGI
+^^^
+
+Pillow reads and writes uncompressed ``L``, ``RGB``, and ``RGBA`` files.
+
+
 SPIDER
 ^^^^^^
 
@@ -807,10 +813,6 @@ PSD
 
 PIL identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
-SGI
-^^^
-
-PIL reads uncompressed ``L``, ``RGB``, and ``RGBA`` files.
 
 TGA
 ^^^
