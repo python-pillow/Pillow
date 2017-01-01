@@ -243,12 +243,6 @@ class ImageFile(Image.Image):
             # still raised if decoder fails to return anything
             raise_ioerror(err_code)
 
-        # post processing
-        if hasattr(self, "tile_post_rotate"):
-            # FIXME: This is a hack to handle rotated PCD's
-            self.im = self.im.rotate(self.tile_post_rotate)
-            self.size = self.im.size
-
         self.load_end()
 
         return Image.Image.load(self)
