@@ -1569,14 +1569,14 @@ class Image(object):
            (cubic spline interpolation in a 4x4 environment).
            If omitted, or if the image has mode "1" or "P", it is
            set :py:attr:`PIL.Image.NEAREST`. See :ref:`concept-filters`.
-        :param center: Optional center of rotation (a 2-tuple).  Origin is
-           the upper left corner.  Default is the center of the image.
-        :param translate: An optional final translation.
         :param expand: Optional expansion flag.  If true, expands the output
            image to make it large enough to hold the entire rotated image.
            If false or omitted, make the output image the same size as the
            input image.  Note that the expand flag assumes rotation around
            the center and no translation.
+        :param center: Optional center of rotation (a 2-tuple).  Origin is
+           the upper left corner.  Default is the center of the image.
+        :param translate: An optional post-rotate translation (a 2-tuple).
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
