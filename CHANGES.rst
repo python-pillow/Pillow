@@ -4,6 +4,12 @@ Changelog (Pillow)
 3.5.0 (unreleased)
 ------------------
 
+- Refactor out postprocessing hack to load_end in PcdImageFile
+  [wiredfool]
+
+- Add center and translate option to Image.rotate. #2328
+  [lambdafu]
+  
 - Test: Relax WMF test condition, fixes #2323
   [wiredfool] 
 
