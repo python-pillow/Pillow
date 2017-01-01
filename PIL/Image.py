@@ -1582,15 +1582,17 @@ class Image(object):
 
         angle = angle % 360.0
 
-        # Fast paths regardless of filter
-        if angle == 0:
-            return self.copy()
-        if angle == 180:
-            return self.transpose(ROTATE_180)
-        if angle == 90 and expand:
-            return self.transpose(ROTATE_90)
-        if angle == 270 and expand:
-            return self.transpose(ROTATE_270)
+        # Fast paths regardless of filter, as long as we're not
+        # translating or changing the center. 
+        if not (center or translate):
+            if angle == 0:
+                return self.copy()
+            if angle == 180:
+                return self.transpose(ROTATE_180)
+            if angle == 90 and expand:
+                return self.transpose(ROTATE_90)
+            if angle == 270 and expand:
+                return self.transpose(ROTATE_270)
 
         # Calculate the affine matrix.  Note that this is the reverse
         # transformation (from destination image to source) because we
