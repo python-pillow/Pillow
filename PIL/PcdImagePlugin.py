@@ -44,7 +44,7 @@ class PcdImageFile(ImageFile.ImageFile):
         orientation = i8(s[1538]) & 3
         self.tile_post_rotate = None
         if orientation == 1:
-            self.tile_post_rotate = 90  # hack
+            self.tile_post_rotate = 90
         elif orientation == 3:
             self.tile_post_rotate = -90
 
