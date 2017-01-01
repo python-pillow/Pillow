@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-3.5.0 (unreleased)
+4.0.0 (2017-01-01)
 ------------------
 
 - Refactor out postprocessing hack to load_end in PcdImageFile

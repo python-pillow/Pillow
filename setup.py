@@ -106,7 +106,7 @@ except (ImportError, OSError):
     _tkinter = None
 
 NAME = 'Pillow'
-PILLOW_VERSION = '3.5.0.dev0'
+PILLOW_VERSION = '4.4.0'
 JPEG_ROOT = None
 JPEG2K_ROOT = None
 ZLIB_ROOT = None

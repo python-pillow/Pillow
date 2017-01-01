@@ -71,7 +71,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-#define PILLOW_VERSION "3.5.0.dev0"
+#define PILLOW_VERSION "4.0.0"
 
 #include "Python.h"
 
