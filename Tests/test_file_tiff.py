@@ -479,10 +479,9 @@ class TestFileTiffW32(PillowTestCase):
             im.save(tmpfile)
 
         im = Image.open(tmpfile)
-        im.load()
         self.assertRaises(Exception, lambda: os.remove(tmpfile))
-
-        im.close()
+        im.load()
+        # this should not fail, as load should have closed the file. 
         os.remove(tmpfile)
 
 if __name__ == '__main__':
