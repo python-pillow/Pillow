@@ -170,6 +170,11 @@ Many of Pillow's features require external libraries:
   * Windows support: Libimagequant requires VS2013/MSVC 18 to compile,
     so it is unlikely to work with any Python prior to 3.5 on Windows.
 
+* **libraqm** provides complex text layout support.
+ *  libraqm provides bidirectional text support (using FriBiDi), shaping (using HarfBuzz), and proper script itemization. As a result,      	    Raqm can support most writing systems covered by Unicode.
+ * libraqm depends on the following libraries: FreeType, HarfBuzz, FriBiDi, make sure that install them before install libraqm if not 		   available as package in your system.
+ * setting text direction or font features is not supported without libraqm.
+
 Once you have installed the prerequisites, run::
 
     $ pip install Pillow
@@ -201,14 +206,16 @@ Build Options
 * Build flags: ``--disable-zlib``, ``--disable-jpeg``,
   ``--disable-tiff``, ``--disable-freetype``, ``--disable-tcl``,
   ``--disable-tk``, ``--disable-lcms``, ``--disable-webp``,
-  ``--disable-webpmux``, ``--disable-jpeg2000``, ``--disable-imagequant``.
+  ``--disable-webpmux``, ``--disable-jpeg2000``, 
+  ``--disable-imagequant``, ``--disable-raqm``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
 * Build flags: ``--enable-zlib``, ``--enable-jpeg``,
   ``--enable-tiff``, ``--enable-freetype``, ``--enable-tcl``,
   ``--enable-tk``, ``--enable-lcms``, ``--enable-webp``,
-  ``--enable-webpmux``, ``--enable-jpeg2000``, ``--enable-imagequant``.
+  ``--enable-webpmux``, ``--enable-jpeg2000``,
+  ``--enable-imagequant``,  ``--enable-raqm``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
   relies on WebP support. Tcl and Tk also must be used together.
@@ -221,7 +228,6 @@ Build Options
 * Build flag: ``--debug``. Adds a debugging flag to the include and
   library search process to dump all paths searched for and found to
   stdout.
-
 
 Sample Usage::
 
@@ -247,7 +253,16 @@ The easiest way to install external libraries is via `Homebrew
 
     $ brew install libtiff libjpeg webp little-cms2
 
-Install Pillow with::
+To install libraqm on MaxOS use Homebrew::
+    $ brew install freetype harfbuzz fribidi
+Once you have `libraqm source code  <https://github.com/HOST-Oman/libraqm>`_ and the dependencies , run the customary sequence of commands in the source code
+directory::
+
+    $ ./configure
+    $ make
+    $ make install
+
+Now install Pillow with::
 
     $ pip install Pillow
 
@@ -277,7 +292,7 @@ Or for Python 3::
 
 Prerequisites are installed on **FreeBSD 10** with::
 
-    $ sudo pkg install jpeg tiff webp lcms2 freetype2
+    $ sudo pkg install jpeg tiff webp lcms2 freetype2 harfbuzz fribidi
 
 
 Building on Linux
@@ -318,7 +333,7 @@ Prerequisites are installed on **Ubuntu 14.04 LTS** with::
 Prerequisites are installed on **Fedora 23** with::
 
     $ sudo dnf install libtiff-devel libjpeg-devel zlib-devel freetype-devel \
-        lcms2-devel libwebp-devel tcl-devel tk-devel
+        lcms2-devel libwebp-devel tcl-devel tk-devel libraqm-devel
 
 
 
