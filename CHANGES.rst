@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+4.1.0 (unreleased)
+------------------
+
+- Add test for crop operation with no argument #2333
+  [radarhere]
+
 4.0.0 (2017-01-01)
 ------------------
 
