@@ -15,9 +15,9 @@ Notes
 
 .. note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7.
 
-.. note:: Pillow >= 2.0.0 < 3.5.0 supports Python versions 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
+.. note:: Pillow >= 2.0.0 < 4.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
 
-.. note:: Pillow >= 3.5.0 supports Python versions 2.7, 3.3, 3.4, 3.5, 3.6
+.. note:: Pillow >= 4.0.0 supports Python versions 2.7, 3.3, 3.4, 3.5, 3.6
 
 Basic Installation
 ------------------
@@ -193,7 +193,7 @@ build with newly installed external libraries.
 Build Options
 ^^^^^^^^^^^^^
 
-* Environment Variable: ``MAX_CONCURRENCY=n``. By default, Pillow will
+* Environment variable: ``MAX_CONCURRENCY=n``. By default, Pillow will
   use multiprocessing to build the extension on all available CPUs,
   but not more than 4. Setting ``MAX_CONCURRENCY`` to 1 will disable
   parallel building.
@@ -223,7 +223,7 @@ Build Options
   stdout.
 
 
-Sample Usage::
+Sample usage::
 
     $ MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
 
