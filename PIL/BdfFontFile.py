@@ -17,7 +17,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
 from PIL import Image, FontFile
 from .exceptions import InvalidFileType
 
@@ -107,20 +106,6 @@ class BdfFontFile(FontFile.FontFile):
             if s[:i] in [b"COMMENT", b"COPYRIGHT"]:
                 if s.find(b"LogicalFontDescription") < 0:
                     comments.append(s[i+1:-1].decode('ascii'))
-
-        # font = props["FONT"].split("-")
-
-        # font[4] = bdf_slant[font[4].upper()]
-        # font[11] = bdf_spacing[font[11].upper()]
-
-        # ascent = int(props["FONT_ASCENT"])
-        # descent = int(props["FONT_DESCENT"])
-
-        # fontname = ";".join(font[1:])
-
-        # print("#", fontname)
-        # for i in comments:
-        #       print("#", i)
 
         while True:
             c = bdf_char(fp)

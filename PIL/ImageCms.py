@@ -15,7 +15,6 @@
 # See the README file for information on usage and redistribution.  See
 # below for the original description.
 
-from __future__ import print_function
 import sys
 
 from PIL import Image
@@ -27,6 +26,7 @@ except ImportError as ex:
     from _util import deferred_error
     _imagingcms = deferred_error(ex)
 from PIL._util import isStringType
+
 
 DESCRIPTION = """
 pyCMS
@@ -149,7 +149,6 @@ for flag in FLAGS.values():
 # Profile.
 
 class ImageCmsProfile(object):
-
     def __init__(self, profile):
         """
         :param profile: Either a string representing a filename,
@@ -166,7 +165,6 @@ class ImageCmsProfile(object):
             self._set(profile)
         else:
             raise TypeError("Invalid type for Profile")
-        
 
     def _set(self, profile, filename=None):
         self.profile = profile

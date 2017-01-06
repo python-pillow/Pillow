@@ -32,8 +32,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 import array
 import struct
 import io
@@ -319,7 +317,6 @@ class JpegImageFile(ImageFile.ImageFile):
 
             if i in MARKER:
                 name, description, handler = MARKER[i]
-                # print(hex(i), name, description)
                 if handler is not None:
                     handler(self, i)
                 if i == 0xFFDA:  # start of scan

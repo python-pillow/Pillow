@@ -19,8 +19,6 @@
 # http://wvware.sourceforge.net/caolan/index.html
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
 
-from __future__ import print_function
-
 from PIL import Image, ImageFile, _binary
 from .exceptions import InvalidFileType
 
@@ -111,8 +109,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             self.info["wmf_bbox"] = x0, y0, x1, y1
 
             self.info["dpi"] = 72
-
-            # print(self.mode, self.size, self.info)
 
             # sanity check (standard metafile header)
             if s[22:26] != b"\x01\x00\t\x00":

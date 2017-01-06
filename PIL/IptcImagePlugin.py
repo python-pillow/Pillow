@@ -15,7 +15,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
 import os
 import tempfile
 from PIL import Image, ImageFile, _binary
@@ -42,12 +41,6 @@ PAD = o8(0) * 4
 
 def i(c):
     return i32((PAD + c)[-4:])
-
-
-def dump(c):
-    for i in c:
-        print("%02x" % i8(i), end=' ')
-    print()
 
 
 ##
@@ -107,8 +100,6 @@ class IptcImageFile(ImageFile.ImageFile):
                     self.info[tag] = [self.info[tag], tagdata]
             else:
                 self.info[tag] = tagdata
-
-            # print(tag, self.info[tag])
 
         # mode
         layers = i8(self.info[(3, 60)][0])

@@ -1,12 +1,10 @@
 """
 Helper functions.
 """
-from __future__ import print_function
+import os
 import sys
 import tempfile
-import os
 import unittest
-
 from PIL import Image, ImageMath
 
 

@@ -24,12 +24,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 import logging
 import math
 import warnings
-
 from PIL import VERSION, PILLOW_VERSION, _plugins
 from .exceptions import PILReadError, NoPluginFound
 
@@ -419,7 +416,6 @@ def _getdecoder(mode, decoder_name, args, extra=()):
     try:
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
-        # print(decoder, mode, args + extra)
         return decoder(mode, *args + extra)
     except AttributeError:
         raise IOError("decoder %s not available" % decoder_name)
@@ -436,7 +432,6 @@ def _getencoder(mode, encoder_name, args, extra=()):
     try:
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
-        # print(encoder, mode, args + extra)
         return encoder(mode, *args + extra)
     except AttributeError:
         raise IOError("encoder %s not available" % encoder_name)
@@ -2195,7 +2190,6 @@ def fromarray(obj, mode=None):
             typekey = (1, 1) + shape[2:], arr['typestr']
             mode, rawmode = _fromarray_typemap[typekey]
         except KeyError:
-            # print(typekey)
             raise TypeError("Cannot handle this data type")
     else:
         rawmode = mode

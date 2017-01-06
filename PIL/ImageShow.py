@@ -12,8 +12,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 from PIL import Image
 import os
 import sys

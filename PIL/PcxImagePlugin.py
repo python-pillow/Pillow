@@ -25,8 +25,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 import logging
 from PIL import Image, ImageFile, ImagePalette, _binary
 from .exceptions import InvalidFileType, PILReadError
@@ -54,7 +52,6 @@ class PcxImageFile(ImageFile.ImageFile):
     format_description = "Paintbrush"
 
     def _open(self):
-
         # header
         s = self.fp.read(128)
         if not _accept(s):
