@@ -28,7 +28,6 @@ else:
 
 
 # Input, le = little endian, be = big endian
-# TODO: replace with more readable struct.unpack equivalent
 def i16le(c, o=0):
     """
     Converts a 2-bytes (16 bits) string to an unsigned integer.
