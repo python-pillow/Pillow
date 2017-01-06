@@ -15,13 +15,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, PngImagePlugin, _binary
 import io
 import os
 import shutil
 import struct
 import sys
 import tempfile
+from PIL import Image, ImageFile, PngImagePlugin, _binary
+from .exceptions import InvalidFileType, PILReadError
+
 
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
 if enable_jpeg2k:
@@ -42,7 +44,7 @@ def read_32t(fobj, start_length, size):
     fobj.seek(start)
     sig = fobj.read(4)
     if sig != b'\x00\x00\x00\x00':
-        raise SyntaxError('Unknown signature, expecting 0x00000000')
+        raise PILReadError("Unknown signature, expecting 0x00000000")
     return read_32(fobj, (start + 4, length - 4), size)
 
 
@@ -64,8 +66,8 @@ def read_32(fobj, start_length, size):
         im = Image.new("RGB", pixel_size, None)
         for band_ix in range(3):
             data = []
-            bytesleft = sizesq
-            while bytesleft > 0:
+            rem = sizesq
+            while rem > 0:
                 byte = fobj.read(1)
                 if not byte:
                     break
@@ -78,13 +80,11 @@ def read_32(fobj, start_length, size):
                 else:
                     blocksize = byte + 1
                     data.append(fobj.read(blocksize))
-                bytesleft -= blocksize
-                if bytesleft <= 0:
+                rem -= blocksize
+                if rem <= 0:
                     break
-            if bytesleft != 0:
-                raise SyntaxError(
-                    "Error reading channel [%r left]" % bytesleft
-                    )
+            if rem != 0:
+                raise PILReadError("Error reading channel (%r bytes left)" % rem)
             band = Image.frombuffer(
                 "L", pixel_size, b"".join(data), "raw", "L", 0, 1
                 )
@@ -187,12 +187,12 @@ class IcnsFile(object):
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
         if sig != b'icns':
-            raise SyntaxError('not an icns file')
+            raise InvalidFileType("not an icns file")
         i = HEADERSIZE
         while i < filesize:
             sig, blocksize = nextheader(fobj)
             if blocksize <= 0:
-                raise SyntaxError('invalid block header')
+                raise PILReadError("invalid block header")
             i += HEADERSIZE
             blocksize -= HEADERSIZE
             dct[sig] = (i, blocksize)
@@ -211,7 +211,7 @@ class IcnsFile(object):
     def bestsize(self):
         sizes = self.itersizes()
         if not sizes:
-            raise SyntaxError("No 32bit icon resources found")
+            raise PILReadError("No 32bit icon resources found")
         return max(sizes)
 
     def dataforsize(self, size):

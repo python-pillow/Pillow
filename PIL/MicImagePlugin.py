@@ -16,10 +16,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-
-from PIL import Image, TiffImagePlugin
-
 import olefile
+from PIL import Image, TiffImagePlugin
+from .exceptions import InvalidFileType, PILReadError
+
 
 __version__ = "0.1"
 
@@ -48,7 +48,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         try:
             self.ole = olefile.OleFileIO(self.fp)
         except IOError:
-            raise SyntaxError("not an MIC file; invalid OLE file")
+            raise InvalidFileType("not an MIC file; invalid OLE file")
 
         # find ACI subfiles with Image members (maybe not the
         # best way to identify MIC files, but what the... ;-)
@@ -61,7 +61,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         # if we didn't find any images, this is probably not
         # an MIC file.
         if not self.images:
-            raise SyntaxError("not an MIC file; no image entries")
+            raise PILReadError("not an MIC file; no image entries")
 
         self.__fp = self.fp
         self.frame = 0

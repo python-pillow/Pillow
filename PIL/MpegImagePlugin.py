@@ -16,6 +16,8 @@
 
 from PIL import Image, ImageFile
 from PIL._binary import i8
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.1"
 
@@ -65,11 +67,10 @@ class MpegImageFile(ImageFile.ImageFile):
     format_description = "MPEG"
 
     def _open(self):
-
         s = BitStream(self.fp)
 
         if s.read(32) != 0x1B3:
-            raise SyntaxError("not an MPEG file")
+            raise InvalidFileType("not an MPEG file")
 
         self.mode = "RGB"
         self.size = s.read(12), s.read(12)

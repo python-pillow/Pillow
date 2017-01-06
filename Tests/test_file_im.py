@@ -1,6 +1,8 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, ImImagePlugin
+from PIL.exceptions import InvalidFileType
+
 
 # sample im
 TEST_IM = "Tests/images/hopper.im"
@@ -43,7 +45,7 @@ class TestFileIm(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: ImImagePlugin.ImImageFile(invalid_file))
 
 

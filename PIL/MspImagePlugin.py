@@ -18,6 +18,8 @@
 
 
 from PIL import Image, ImageFile, _binary
+from .exceptions import InvalidFileType, PILReadError
+
 
 __version__ = "0.1"
 
@@ -46,14 +48,14 @@ class MspImageFile(ImageFile.ImageFile):
         # Header
         s = self.fp.read(32)
         if s[:4] not in [b"DanM", b"LinS"]:
-            raise SyntaxError("not an MSP file")
+            raise InvalidFileType("not an MSP file")
 
         # Header checksum
         checksum = 0
         for i in range(0, 32, 2):
             checksum = checksum ^ i16(s[i:i+2])
         if checksum != 0:
-            raise SyntaxError("bad MSP checksum")
+            raise PILReadError("bad MSP checksum")
 
         self.mode = "1"
         self.size = i16(s[4:]), i16(s[6:])

@@ -17,8 +17,9 @@
 #
 
 from __future__ import print_function
-
 from PIL import Image, BmpImagePlugin, _binary
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.1"
 
@@ -49,7 +50,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         # check magic
         s = self.fp.read(6)
         if not _accept(s):
-            raise SyntaxError("not a CUR file")
+            raise InvalidFileType("not a CUR file")
 
         # pick the largest cursor in the file
         m = b""

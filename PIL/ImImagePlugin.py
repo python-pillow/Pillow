@@ -29,6 +29,8 @@
 import re
 from PIL import Image, ImageFile, ImagePalette
 from PIL._binary import i8
+from .exceptions import InvalidFileType, PILReadError
+
 
 __version__ = "0.7"
 
@@ -111,12 +113,11 @@ class ImImageFile(ImageFile.ImageFile):
     format_description = "IFUNC Image Memory"
 
     def _open(self):
-
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 
         if b"\n" not in self.fp.read(100):
-            raise SyntaxError("not an IM file")
+            raise InvalidFileType("not an IM file")
         self.fp.seek(0)
 
         n = 0
@@ -129,7 +130,6 @@ class ImImageFile(ImageFile.ImageFile):
         self.rawmode = "L"
 
         while True:
-
             s = self.fp.read(1)
 
             # Some versions of IFUNC uses \n\r instead of \r\n...
@@ -143,7 +143,7 @@ class ImImageFile(ImageFile.ImageFile):
             s = s + self.fp.readline()
 
             if len(s) > 100:
-                raise SyntaxError("not an IM file")
+                raise InvalidFileType("not an IM file")
 
             if s[-2:] == b'\r\n':
                 s = s[:-2]
@@ -153,10 +153,9 @@ class ImImageFile(ImageFile.ImageFile):
             try:
                 m = split.match(s)
             except re.error as v:
-                raise SyntaxError("not an IM file")
+                raise InvalidFileType("not an IM file")
 
             if m:
-
                 k, v = m.group(1, 2)
 
                 # Don't know if this is the correct encoding,
@@ -187,12 +186,11 @@ class ImImageFile(ImageFile.ImageFile):
                     n += 1
 
             else:
-
-                raise SyntaxError("Syntax error in IM header: " +
-                                  s.decode('ascii', 'replace'))
+                s = s.decode("ascii", "replace")
+                raise PILReadError("Bad IM header: %r" % (s))
 
         if not n:
-            raise SyntaxError("Not an IM file")
+            raise InvalidFileType("Not an IM file")
 
         # Basic attributes
         self.size = self.info[SIZE]
@@ -202,7 +200,7 @@ class ImImageFile(ImageFile.ImageFile):
         while s and s[0:1] != b'\x1A':
             s = self.fp.read(1)
         if not s:
-            raise SyntaxError("File truncated")
+            raise PILReadError("File truncated")
 
         if LUT in self.info:
             # convert lookup table to palette or lut attribute

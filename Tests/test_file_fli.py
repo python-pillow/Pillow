@@ -1,6 +1,7 @@
+from PIL import Image, FliImagePlugin
+from PIL.exceptions import InvalidFileType
 from helper import unittest, PillowTestCase
 
-from PIL import Image, FliImagePlugin
 
 # sample ppm stream
 # created as an export of a palette image from Gimp2.6
@@ -20,7 +21,7 @@ class TestFileFli(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: FliImagePlugin.FliImageFile(invalid_file))
 
     def test_n_frames(self):

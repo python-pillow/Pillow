@@ -16,9 +16,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL import FontFile
-from PIL import _binary
+from PIL import FontFile, Image, _binary
+from .exceptions import InvalidFileType, PILReadError
+
 
 # --------------------------------------------------------------------
 # declarations
@@ -64,7 +64,7 @@ class PcfFontFile(FontFile.FontFile):
 
         magic = l32(fp.read(4))
         if magic != PCF_MAGIC:
-            raise SyntaxError("not a PCF file")
+            raise InvalidFileType("not a PCF file")
 
         FontFile.FontFile.__init__(self)
 
@@ -194,7 +194,7 @@ class PcfFontFile(FontFile.FontFile):
         nbitmaps = i32(fp.read(4))
 
         if nbitmaps != len(metrics):
-            raise IOError("Wrong number of bitmaps")
+            raise PILReadError("Wrong number of bitmaps")
 
         offsets = []
         for i in range(nbitmaps):

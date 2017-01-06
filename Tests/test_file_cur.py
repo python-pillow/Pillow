@@ -1,6 +1,7 @@
+from PIL import Image, CurImagePlugin
+from PIL.exceptions import InvalidFileType
 from helper import unittest, PillowTestCase
 
-from PIL import Image, CurImagePlugin
 
 TEST_FILE = "Tests/images/deerstalker.cur"
 
@@ -20,7 +21,7 @@ class TestFileCur(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: CurImagePlugin.CurImageFile(invalid_file))
 
         no_cursors_file = "Tests/images/no_cursors.cur"

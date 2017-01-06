@@ -1,11 +1,9 @@
+import zlib
+from io import BytesIO
+from PIL import Image, ImageFile, PngImagePlugin
+from PIL.exceptions import InvalidFileType, PILReadError
 from helper import unittest, PillowTestCase, hopper
 
-from io import BytesIO
-
-from PIL import Image
-from PIL import ImageFile
-from PIL import PngImagePlugin
-import zlib
 
 codecs = dir(Image.core)
 
@@ -84,7 +82,7 @@ class TestFilePng(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: PngImagePlugin.PngImageFile(invalid_file))
 
     def test_broken(self):
@@ -317,7 +315,7 @@ class TestFilePng(PillowTestCase):
 
             im = Image.open(BytesIO(test_file))
             self.assertTrue(im.fp is not None)
-            self.assertRaises((IOError, SyntaxError), im.verify)
+            self.assertRaises((IOError, PILReadError), im.verify)
 
     def test_verify_ignores_crc_error(self):
         # check ignores crc errors in ancillary chunks
@@ -326,7 +324,7 @@ class TestFilePng(PillowTestCase):
         broken_crc_chunk_data = chunk_data[:-1] + b'q'  # break CRC
 
         image_data = HEAD + broken_crc_chunk_data + TAIL
-        self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile, BytesIO(image_data))
+        self.assertRaises(PILReadError, PngImagePlugin.PngImageFile, BytesIO(image_data))
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
@@ -342,7 +340,7 @@ class TestFilePng(PillowTestCase):
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
-            self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile, BytesIO(image_data))
+            self.assertRaises(PILReadError, PngImagePlugin.PngImageFile, BytesIO(image_data))
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 

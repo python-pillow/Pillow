@@ -16,9 +16,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.4"
-
 from PIL import Image, ImageFile, ImagePalette, _binary
+from .exceptions import InvalidFileType, PILReadError
+
+
+__version__ = "0.4"
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -57,7 +59,6 @@ class PsdImageFile(ImageFile.ImageFile):
     format_description = "Adobe Photoshop"
 
     def _open(self):
-
         read = self.fp.read
 
         #
@@ -65,7 +66,7 @@ class PsdImageFile(ImageFile.ImageFile):
 
         s = read(26)
         if s[:4] != b"8BPS" or i16(s[4:]) != 1:
-            raise SyntaxError("not a PSD file")
+            raise InvalidFileType("not a PSD file")
 
         psd_bits = i16(s[22:])
         psd_channels = i16(s[12:])
@@ -74,7 +75,7 @@ class PsdImageFile(ImageFile.ImageFile):
         mode, channels = MODES[(psd_mode, psd_bits)]
 
         if channels > psd_channels:
-            raise IOError("not enough channels")
+            raise PILReadError("not enough channels")
 
         self.mode = mode
         self.size = i32(s[18:]), i32(s[14:])

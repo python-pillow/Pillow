@@ -39,6 +39,7 @@ from PIL import Image, ImageFile
 import os
 import struct
 import sys
+from .exceptions import InvalidFileType, PILReadError
 
 
 def isInt(f):
@@ -113,14 +114,14 @@ class SpiderImageFile(ImageFile.ImageFile):
                 t = struct.unpack('<27f', f)  # little-endian
                 hdrlen = isSpiderHeader(t)
             if hdrlen == 0:
-                raise SyntaxError("not a valid Spider file")
+                raise InvalidFileType("not a valid Spider file")
         except struct.error:
-            raise SyntaxError("not a valid Spider file")
+            raise InvalidFileType("not a valid Spider file")
 
         h = (99,) + t   # add 1 value : spider header index starts at 1
         iform = int(h[5])
         if iform != 1:
-            raise SyntaxError("not a Spider 2D image")
+            raise InvalidFileType("not a Spider 2D image")
 
         self.size = int(h[12]), int(h[2])  # size in pixels (width, height)
         self.istack = int(h[24])
@@ -143,7 +144,7 @@ class SpiderImageFile(ImageFile.ImageFile):
             offset = hdrlen + self.stkoffset
             self.istack = 2  # So Image knows it's still a stack
         else:
-            raise SyntaxError("inconsistent stack header values")
+            raise PILReadError("inconsistent stack header values")
 
         if self.bigendian:
             self.rawmode = "F;32BF"

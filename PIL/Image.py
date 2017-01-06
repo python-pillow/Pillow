@@ -26,11 +26,12 @@
 
 from __future__ import print_function
 
-from PIL import VERSION, PILLOW_VERSION, _plugins
-
 import logging
-import warnings
 import math
+import warnings
+
+from PIL import VERSION, PILLOW_VERSION, _plugins
+from .exceptions import PILReadError, NoPluginFound
 
 logger = logging.getLogger(__name__)
 
@@ -1583,7 +1584,7 @@ class Image(object):
         angle = angle % 360.0
 
         # Fast paths regardless of filter, as long as we're not
-        # translating or changing the center. 
+        # translating or changing the center.
         if not (center or translate):
             if angle == 0:
                 return self.copy()
@@ -2329,7 +2330,7 @@ def open(fp, mode="r"):
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
-            except (SyntaxError, IndexError, TypeError, struct.error):
+            except (PILReadError, NoPluginFound, IndexError, TypeError, struct.error):
                 # Leave disabled by default, spams the logs with image
                 # opening failures that are entirely expected.
                 # logger.debug("", exc_info=True)

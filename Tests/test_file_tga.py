@@ -1,7 +1,7 @@
 from helper import unittest, PillowTestCase
 
 from PIL import Image
-
+from PIL.exceptions import PILWriteError
 
 class TestFileTga(PillowTestCase):
 
@@ -42,7 +42,7 @@ class TestFileTga(PillowTestCase):
         self.assertEqual(test_im.size, (100, 100))
 
         # Unsupported mode save
-        self.assertRaises(IOError, lambda: im.convert("LA").save(test_file))
+        self.assertRaises(PILWriteError, lambda: im.convert("LA").save(test_file))
 
     def test_save_rle(self):
         test_file = "Tests/images/rgb32rle.tga"
@@ -61,7 +61,7 @@ class TestFileTga(PillowTestCase):
         self.assertEqual(test_im.size, (199, 199))
 
         # Unsupported mode save
-        self.assertRaises(IOError, lambda: im.convert("LA").save(test_file))
+        self.assertRaises(PILWriteError, lambda: im.convert("LA").save(test_file))
 
 
 if __name__ == '__main__':

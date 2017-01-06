@@ -14,10 +14,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-
 import string
-
 from PIL import Image, ImageFile
+from .exceptions import InvalidFileType, PILReadError, PILWriteError
+
 
 __version__ = "0.2"
 
@@ -31,7 +31,7 @@ try:
     if locale_enc is None:
         locale_lang, locale_enc = locale.getdefaultlocale()
     b_whitespace = b_whitespace.decode(locale_enc)
-except:
+except Exception:
     pass
 b_whitespace = b_whitespace.encode('ascii', 'ignore')
 
@@ -67,10 +67,10 @@ class PpmImageFile(ImageFile.ImageFile):
             if not c or c in b_whitespace:
                 break
             if c > b'\x79':
-                raise ValueError("Expected ASCII value, found binary")
+                raise PILReadError("Expected ASCII value, found binary")
             s = s + c
             if (len(s) > 9):
-                raise ValueError("Expected int, got > 9 digits")
+                raise PILReadError("Expected int, got > 9 digits")
         return s
 
     def _open(self):
@@ -78,7 +78,7 @@ class PpmImageFile(ImageFile.ImageFile):
         # check magic
         s = self.fp.read(1)
         if s != b"P":
-            raise SyntaxError("not a PPM file")
+            raise InvalidFileType("not a PPM file")
         mode = MODES[self._token(s)]
 
         if mode == "1":
@@ -94,7 +94,7 @@ class PpmImageFile(ImageFile.ImageFile):
                     if s not in b_whitespace:
                         break
                     if s == b"":
-                        raise ValueError("File does not extend beyond magic number")
+                        raise PILReadError("File does not extend beyond magic number")
                 if s != b"#":
                     break
                 s = self.fp.readline()
@@ -109,7 +109,7 @@ class PpmImageFile(ImageFile.ImageFile):
                 # maxgrey
                 if s > 255:
                     if not mode == 'L':
-                        raise ValueError("Too many colors for band: %s" % s)
+                        raise PILReadError("Too many colors for band: %s" % s)
                     if s < 2**16:
                         self.mode = 'I'
                         rawmode = 'I;16B'
@@ -142,7 +142,7 @@ def _save(im, fp, filename):
     elif im.mode == "RGBA":
         rawmode, head = "RGB", b"P6"
     else:
-        raise IOError("cannot write mode %s as PPM" % im.mode)
+        raise PILWriteError("cannot write mode %s as PPM" % im.mode)
     fp.write(head + ("\n%d %d\n" % im.size).encode('ascii'))
     if head == b"P6":
         fp.write(b"255\n")

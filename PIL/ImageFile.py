@@ -27,12 +27,14 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isPath
 import io
 import os
 import sys
 import struct
+from PIL import Image
+from PIL._util import isPath
+from .exceptions import PILReadError, NoPluginFound
+
 
 MAXBLOCK = 65536
 
@@ -100,10 +102,10 @@ class ImageFile(Image.Image):
                 KeyError,  # unsupported mode
                 EOFError,  # got header but not the first frame
                 struct.error) as v:
-            raise SyntaxError(v)
+            raise PILReadError(v)
 
         if not self.mode or self.size[0] <= 0:
-            raise SyntaxError("not identified by this driver")
+            raise NoPluginFound("not identified by this driver")
 
     def draft(self, mode, size):
         "Set draft mode"

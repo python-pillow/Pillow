@@ -15,6 +15,8 @@
 
 from math import pi, log, sin, sqrt
 from PIL._binary import o8
+from .exceptions import InvalidFileType
+
 
 # --------------------------------------------------------------------
 # Stuff to translate curve segments to palette values (derived from
@@ -102,9 +104,8 @@ class GradientFile(object):
 class GimpGradientFile(GradientFile):
 
     def __init__(self, fp):
-
         if fp.readline()[:13] != b"GIMP Gradient":
-            raise SyntaxError("not a GIMP gradient file")
+            raise InvalidFileType("not a GIMP gradient file")
 
         line = fp.readline()
 

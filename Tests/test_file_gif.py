@@ -1,9 +1,8 @@
+from io import BytesIO
+from PIL import Image, GifImagePlugin
+from PIL.exceptions import InvalidFileType
 from helper import unittest, PillowTestCase, hopper, netpbm_available
 
-from PIL import Image
-from PIL import GifImagePlugin
-
-from io import BytesIO
 
 codecs = dir(Image.core)
 
@@ -31,7 +30,7 @@ class TestFileGif(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: GifImagePlugin.GifImageFile(invalid_file))
 
     def test_optimize(self):
@@ -56,7 +55,7 @@ class TestFileGif(PillowTestCase):
         # 256 color Palette image, posterize to > 128 and < 128 levels
         # Size bigger and smaller than 512x512
         # Check the palette for number of colors allocated.
-        # Check for correctness after conversion back to RGB        
+        # Check for correctness after conversion back to RGB
         def check(colors, size, expected_palette_length):
             # make an image with empty colors in the start of the palette range
             im = Image.frombytes('P', (colors,colors),
@@ -70,7 +69,7 @@ class TestFileGif(PillowTestCase):
             # check palette length
             palette_length = max(i+1 for i,v in enumerate(reloaded.histogram()) if v)
             self.assertEqual(expected_palette_length, palette_length)
-            
+
             self.assert_image_equal(im.convert('RGB'), reloaded.convert('RGB'))
 
 
@@ -427,7 +426,7 @@ class TestFileGif(PillowTestCase):
         reloaded = Image.open(out)
 
         self.assertEqual(reloaded.info['transparency'], 253)
-        
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -16,10 +16,10 @@
 #
 
 from __future__ import print_function
-
-from PIL import Image, ImageFile, _binary
-
 import olefile
+from PIL import Image, ImageFile, _binary
+from .exceptions import InvalidFileType, PILReadError
+
 
 __version__ = "0.1"
 
@@ -65,10 +65,10 @@ class FpxImageFile(ImageFile.ImageFile):
         try:
             self.ole = olefile.OleFileIO(self.fp)
         except IOError:
-            raise SyntaxError("not an FPX file; invalid OLE file")
+            raise InvalidFileType("not an FPX file; invalid OLE file")
 
         if self.ole.root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
-            raise SyntaxError("not an FPX file; bad root CLSID")
+            raise InvalidFileType("not an FPX file; bad root CLSID")
 
         self._open_index(1)
 
@@ -148,7 +148,7 @@ class FpxImageFile(ImageFile.ImageFile):
         # print(size, self.mode, self.rawmode)
 
         if size != self.size:
-            raise IOError("subimage mismatch")
+            raise PILReadError("subimage mismatch")
 
         # get tile descriptors
         fp.seek(28 + offset)
@@ -203,7 +203,7 @@ class FpxImageFile(ImageFile.ImageFile):
                     self.tile_prefix = self.jpeg[jpeg_tables]
 
             else:
-                raise IOError("unknown/invalid compression")
+                raise PILReadError("unknown/invalid compression")
 
             x = x + xtile
             if x >= xsize:

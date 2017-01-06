@@ -14,6 +14,7 @@
 #
 
 from PIL._binary import o8
+from .exceptions import InvalidFileType
 
 
 ##
@@ -24,11 +25,9 @@ class PaletteFile(object):
     rawmode = "RGB"
 
     def __init__(self, fp):
-
         self.palette = [(i, i, i) for i in range(256)]
 
         while True:
-
             s = fp.readline()
 
             if not s:
@@ -36,7 +35,7 @@ class PaletteFile(object):
             if s[0:1] == b"#":
                 continue
             if len(s) > 100:
-                raise SyntaxError("bad palette file")
+                raise PILReadError("bad palette file")
 
             v = [int(x) for x in s.split()]
             try:

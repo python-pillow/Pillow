@@ -40,8 +40,10 @@ import io
 import warnings
 from struct import unpack_from
 from PIL import Image, ImageFile, TiffImagePlugin, _binary
+from .exceptions import InvalidFileType, PILReadError
 from PIL.JpegPresets import presets
 from PIL._util import isStringType
+
 
 i8 = _binary.i8
 o8 = _binary.o8
@@ -147,7 +149,7 @@ def SOF(self, marker):
 
     self.bits = i8(s[0])
     if self.bits != 8:
-        raise SyntaxError("cannot handle %d-bit layers" % self.bits)
+        raise NotImplementedError("cannot handle %d-bit layers" % self.bits)
 
     self.layers = i8(s[5])
     if self.layers == 1:
@@ -157,7 +159,7 @@ def SOF(self, marker):
     elif self.layers == 4:
         self.mode = "CMYK"
     else:
-        raise SyntaxError("cannot handle %d-layer images" % self.layers)
+        raise NotImplementedError("cannot handle %d-layer images" % self.layers)
 
     if marker in [0xFFC2, 0xFFC6, 0xFFCA, 0xFFCE]:
         self.info["progressive"] = self.info["progression"] = 1
@@ -194,14 +196,13 @@ def DQT(self, marker):
     s = ImageFile._safe_read(self.fp, n)
     while len(s):
         if len(s) < 65:
-            raise SyntaxError("bad quantization table marker")
+            raise PILReadError("bad quantization table marker")
         v = i8(s[0])
         if v//16 == 0:
             self.quantization[v & 15] = array.array("B", s[1:65])
             s = s[65:]
         else:
             return  # FIXME: add code to read 16-bit tables!
-            # raise SyntaxError, "bad quantization table element size"
 
 
 #
@@ -291,7 +292,7 @@ class JpegImageFile(ImageFile.ImageFile):
         s = self.fp.read(1)
 
         if i8(s) != 255:
-            raise SyntaxError("not a JPEG file")
+            raise InvalidFileType("not a JPEG file")
 
         # Create attributes
         self.bits = self.layers = 0
@@ -336,7 +337,7 @@ class JpegImageFile(ImageFile.ImageFile):
             elif i == 0xFF00:  # Skip extraneous data (escaped 0xFF)
                 s = self.fp.read(1)
             else:
-                raise SyntaxError("no marker found")
+                raise PILReadError("no marker found")
 
     def draft(self, mode, size):
 
@@ -482,12 +483,12 @@ def _getmp(self):
         info.load(file_contents)
         mp = dict(info)
     except:
-        raise SyntaxError("malformed MP Index (unreadable directory)")
+        raise PILReadError("malformed MP Index (unreadable directory)")
     # it's an error not to have a number of images
     try:
         quant = mp[0xB001]
     except KeyError:
-        raise SyntaxError("malformed MP Index (no number of images)")
+        raise PILReadError("malformed MP Index (no number of images)")
     # get MP entries
     mpentries = []
     try:
@@ -512,7 +513,7 @@ def _getmp(self):
             if mpentryattr['ImageDataFormat'] == 0:
                 mpentryattr['ImageDataFormat'] = 'JPEG'
             else:
-                raise SyntaxError("unsupported picture format in MPO")
+                raise PILReadError("unsupported picture format in MPO")
             mptypemap = {
                 0x000000: 'Undefined',
                 0x010001: 'Large Thumbnail (VGA Equivalent)',
@@ -528,7 +529,7 @@ def _getmp(self):
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
     except KeyError:
-        raise SyntaxError("malformed MP Index (bad MP Entry)")
+        raise PILReadError("malformed MP Index (bad MP Entry)")
     # Next we should try and parse the individual image unique ID list;
     # we don't because I've never seen this actually used in a real MPO
     # file and so can't test it.
@@ -759,7 +760,7 @@ def jpeg_factory(fp=None, filename=None):
     except (TypeError, IndexError):
         # It is really a JPEG
         pass
-    except SyntaxError:
+    except PILReadError:
         warnings.warn("Image appears to be a malformed MPO file, it will be "
                       "interpreted as a base JPEG file")
     return im

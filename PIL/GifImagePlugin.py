@@ -26,6 +26,8 @@
 
 from PIL import Image, ImageFile, ImagePalette, \
                 ImageChops, ImageSequence, _binary
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.9"
 
@@ -63,11 +65,10 @@ class GifImageFile(ImageFile.ImageFile):
         return None
 
     def _open(self):
-
         # Screen
         s = self.fp.read(13)
         if s[:6] not in [b"GIF87a", b"GIF89a"]:
-            raise SyntaxError("not a GIF file")
+            raise InvalidFileType("Invalid GIF header")
 
         self.info["version"] = s[:6]
         self.size = i16(s[6:]), i16(s[8:])

@@ -1,7 +1,8 @@
+import io
+from PIL import Image, EpsImagePlugin
+from PIL.exceptions import InvalidFileType
 from helper import unittest, PillowTestCase
 
-from PIL import Image, EpsImagePlugin
-import io
 
 # Our two EPS test files (they are identical except for their bounding boxes)
 file1 = "Tests/images/zero_bb.eps"
@@ -54,7 +55,7 @@ class TestFileEps(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: EpsImagePlugin.EpsImageFile(invalid_file))
 
     def test_cmyk(self):

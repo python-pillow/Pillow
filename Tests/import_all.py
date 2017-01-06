@@ -7,6 +7,7 @@ import traceback
 import sys
 sys.path.insert(0, ".")
 
+
 for file in glob.glob("PIL/*.py"):
     module = os.path.basename(file)[:-3]
     try:

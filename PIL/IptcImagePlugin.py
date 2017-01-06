@@ -16,10 +16,11 @@
 #
 
 from __future__ import print_function
-
-from PIL import Image, ImageFile, _binary
 import os
 import tempfile
+from PIL import Image, ImageFile, _binary
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.3"
 
@@ -72,7 +73,7 @@ class IptcImageFile(ImageFile.ImageFile):
 
         # syntax
         if i8(s[0]) != 0x1C or tag[0] < 1 or tag[0] > 9:
-            raise SyntaxError("invalid IPTC/NAA file")
+            raise InvalidFileType("invalid IPTC/NAA file")
 
         # field size
         size = i8(s[3])

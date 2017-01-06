@@ -1,6 +1,8 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, DcxImagePlugin
+from PIL.exceptions import InvalidFileType
+
 
 # Created with ImageMagick: convert hopper.ppm hopper.dcx
 TEST_FILE = "Tests/images/hopper.dcx"
@@ -22,7 +24,7 @@ class TestFileDcx(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError,
+            self.assertRaises(InvalidFileType,
                               lambda: DcxImagePlugin.DcxImageFile(fp))
 
     def test_tell(self):

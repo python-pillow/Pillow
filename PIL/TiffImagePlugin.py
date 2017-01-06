@@ -41,23 +41,18 @@
 
 from __future__ import division, print_function
 
-from PIL import Image, ImageFile
-from PIL import ImagePalette
-from PIL import _binary
-from PIL import TiffTags
-
 import collections
-from fractions import Fraction
-from numbers import Number, Rational
-
 import io
 import itertools
 import os
 import struct
 import sys
 import warnings
-
+from fractions import Fraction
+from numbers import Number, Rational
 from .TiffTags import TYPES
+from PIL import Image, ImageFile, ImagePalette, TiffTags, _binary
+from .exceptions import InvalidFileType
 
 
 __version__ = "1.3.5"
@@ -436,14 +431,14 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         :param prefix: Override the endianness of the file.
         """
         if ifh[:4] not in PREFIXES:
-            raise SyntaxError("not a TIFF file (header %r not valid)" % ifh)
+            raise InvalidFileType("not a TIFF file (header %r not valid)" % ifh)
         self._prefix = prefix if prefix is not None else ifh[:2]
         if self._prefix == MM:
             self._endian = ">"
         elif self._prefix == II:
             self._endian = "<"
         else:
-            raise SyntaxError("not a TIFF IFD")
+            raise InvalidFileType("not a TIFF IFD")
         self.reset()
         self.next, = self._unpack("L", ifh[4:])
         self._legacy_api = False
@@ -1156,7 +1151,7 @@ class TiffImageFile(ImageFile.ImageFile):
         except KeyError:
             if DEBUG:
                 print("- unsupported format")
-            raise SyntaxError("unknown pixel mode")
+            raise PILReadError("unknown pixel mode")
 
         if DEBUG:
             print("- raw mode:", rawmode)
@@ -1276,7 +1271,7 @@ class TiffImageFile(ImageFile.ImageFile):
         else:
             if DEBUG:
                 print("- unsupported data organization")
-            raise SyntaxError("unknown data organization")
+            raise PILReadError("unknown data organization")
 
         # Fix up info.
         if ICCPROFILE in self.tag_v2:

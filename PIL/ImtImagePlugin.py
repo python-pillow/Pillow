@@ -14,10 +14,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-
 import re
-
 from PIL import Image, ImageFile
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.2"
 
@@ -37,12 +37,11 @@ class ImtImageFile(ImageFile.ImageFile):
     format_description = "IM Tools"
 
     def _open(self):
-
         # Quick rejection: if there's not a LF among the first
         # 100 bytes, this is (probably) not a text header.
 
         if b"\n" not in self.fp.read(100):
-            raise SyntaxError("not an IM file")
+            raise InvalidFileType("not an IM file")
         self.fp.seek(0)
 
         xsize = ysize = 0

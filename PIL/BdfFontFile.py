@@ -18,9 +18,8 @@
 #
 
 from __future__ import print_function
-
-from PIL import Image
-from PIL import FontFile
+from PIL import Image, FontFile
+from .exceptions import InvalidFileType
 
 
 # --------------------------------------------------------------------
@@ -89,14 +88,12 @@ def bdf_char(f):
 # Font file plugin for the X11 BDF format.
 
 class BdfFontFile(FontFile.FontFile):
-
     def __init__(self, fp):
-
         FontFile.FontFile.__init__(self)
 
         s = fp.readline()
         if s[:13] != b"STARTFONT 2.1":
-            raise SyntaxError("not a valid BDF file")
+            raise InvalidFileType("not a valid BDF file")
 
         props = {}
         comments = []
