@@ -201,7 +201,7 @@ class TestImage(PillowTestCase):
         ext = Image.registered_extensions()
 
         # Assert
-        self.assertEqual(bool(ext), True)
+        self.assertTrue(bool(ext))
 
     def test_registered_extensions(self):
         # Arrange
@@ -212,7 +212,7 @@ class TestImage(PillowTestCase):
         ext = Image.registered_extensions()
 
         # Assert
-        self.assertEqual(bool(ext), True)
+        self.assertTrue(bool(ext))
 
     def test_effect_mandelbrot(self):
         # Arrange
