@@ -197,11 +197,20 @@ class TestImage(PillowTestCase):
         self.assertEqual(img_colors, expected_colors)
 
     def test_registered_extensions_uninitialized(self):
+        # Arrange
+        Image._initialized = 0
+        extension = Image.EXTENSION
+        Image.EXTENSION = {}
+
         # Act
-        ext = Image.registered_extensions()
+        Image.registered_extensions()
 
         # Assert
-        self.assertTrue(bool(ext))
+        self.assertEqual(Image._initialized, 2)
+
+        # Restore the original state and assert
+        Image.EXTENSION = extension
+        self.assertTrue(Image.EXTENSION)
 
     def test_registered_extensions(self):
         # Arrange
@@ -209,10 +218,12 @@ class TestImage(PillowTestCase):
         Image.open('Tests/images/rgb.jpg')
 
         # Act
-        ext = Image.registered_extensions()
+        extensions = Image.registered_extensions()
 
         # Assert
-        self.assertTrue(bool(ext))
+        self.assertTrue(bool(extensions))
+        for ext in ['.cur', '.icns', '.tif', '.tiff']:
+            self.assertIn(ext, extensions)
 
     def test_effect_mandelbrot(self):
         # Arrange
