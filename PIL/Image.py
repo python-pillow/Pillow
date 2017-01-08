@@ -2512,6 +2512,16 @@ def register_extension(id, extension):
     EXTENSION[extension.lower()] = id.upper()
 
 
+def registered_extensions():
+    """
+    Returns a dictionary containing all file extensions belonging
+    to registered plugins
+    """
+    if not bool(EXTENSION):
+        init()
+    return EXTENSION
+
+
 # --------------------------------------------------------------------
 # Simple display support.  User code may override this.
 
