@@ -93,7 +93,7 @@ Filters
 -------
 
 For geometry operations that may map multiple input pixels to a single output
-pixel, the Python Imaging Library provides four different resampling *filters*.
+pixel, the Python Imaging Library provides different resampling *filters*.
 
 ``NEAREST``
     Pick one nearest pixel from the input image. Ignore all other input pixels.
