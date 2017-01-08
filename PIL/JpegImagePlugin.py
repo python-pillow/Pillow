@@ -38,7 +38,6 @@ import array
 import struct
 import io
 import warnings
-from struct import unpack_from
 from PIL import Image, ImageFile, TiffImagePlugin, _binary
 from PIL.JpegPresets import presets
 from PIL._util import isStringType
@@ -493,7 +492,7 @@ def _getmp(self):
     try:
         rawmpentries = mp[0xB002]
         for entrynum in range(0, quant):
-            unpackedentry = unpack_from(
+            unpackedentry = struct.unpack_from(
                 '{}LLLHH'.format(endianness), rawmpentries, entrynum * 16)
             labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1',
                       'EntryNo2')
