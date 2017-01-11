@@ -250,10 +250,14 @@ class TestCffi(AccessTest):
 
 
 class TestEmbeddable(unittest.TestCase):
-    @unittest.skipIf(not sys.platform.startswith('win32'), "requires Windows")
+    @unittest.skipIf(not sys.platform.startswith('win32') or
+                     sys.version_info[:2] in ((3, 3), (3, 4)),
+                     "requires Python 2.7 or >=3.5 for Windows")
     def test_embeddable(self):
         import subprocess
-        from distutils import ccompiler
+        import ctypes
+        import setuptools
+        from distutils import ccompiler, sysconfig
 
         with open('embed_pil.c', 'w') as fh:
             fh.write("""
@@ -261,25 +265,43 @@ class TestEmbeddable(unittest.TestCase):
 
 int main(int argc, char* argv[])
 {
-    Py_SetPythonHome( "%s" );
+    char *home = "%s";
+#if PY_MAJOR_VERSION >= 3
+    wchar_t *whome = Py_DecodeLocale(home, NULL);
+    Py_SetPythonHome(whome);
+#else
+    Py_SetPythonHome(home);
+#endif
 
-    Py_InitializeEx( 0 );
-    Py_DECREF(PyImport_ImportModule( "PIL.Image" ));
+    Py_InitializeEx(0);
+    Py_DECREF(PyImport_ImportModule("PIL.Image"));
     Py_Finalize();
 
-    Py_InitializeEx( 0 );
-    Py_DECREF(PyImport_ImportModule( "PIL.Image" ));
+    Py_InitializeEx(0);
+    Py_DECREF(PyImport_ImportModule("PIL.Image"));
     Py_Finalize();
+
+#if PY_MAJOR_VERSION >= 3
+    PyMem_RawFree(whome);
+#endif
 
     return 0;
-}    
+}
         """ % sys.prefix.replace('\\', '\\\\'))
 
         compiler = ccompiler.new_compiler()
+        compiler.add_include_dir(sysconfig.get_python_inc())
+        compiler.add_library_dir(sysconfig.get_config_var('LIBDIR'))
         objects = compiler.compile(['embed_pil.c'])
         compiler.link_executable(objects, 'embed_pil')
         
-        subprocess.call(['embed_pil.exe'])  
+        # do not display the Windows Error Reporting dialog
+        ctypes.windll.kernel32.SetErrorMode(0x0002)
+        
+        process = subprocess.Popen(['embed_pil.exe'])
+        process.communicate()
+        self.assertEqual(process.returncode, 0)
+
 
 if __name__ == '__main__':
     unittest.main()
