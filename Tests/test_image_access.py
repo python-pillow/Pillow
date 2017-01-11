@@ -8,6 +8,7 @@ except ImportError:
 
 from PIL import Image
 import sys
+import os
 
 class AccessTest(PillowTestCase):
     # initial value
@@ -291,17 +292,22 @@ int main(int argc, char* argv[])
 
         compiler = ccompiler.new_compiler()
         compiler.add_include_dir(sysconfig.get_python_inc())
-        compiler.add_library_dir(sysconfig.get_config_var('LIBDIR'))
+        
+        libdir = sysconfig.get_config_var('LIBDIR') or sysconfig.get_python_inc().replace('include', 'libs')
+        print (libdir)
+        compiler.add_library_dir(libdir)
         objects = compiler.compile(['embed_pil.c'])
         compiler.link_executable(objects, 'embed_pil')
+
+        env = os.environ.copy()
+        env["PATH"] = sys.prefix + ';' + env["PATH"]
         
         # do not display the Windows Error Reporting dialog
         ctypes.windll.kernel32.SetErrorMode(0x0002)
         
-        process = subprocess.Popen(['embed_pil.exe'])
+        process = subprocess.Popen(['embed_pil.exe'], env=env)
         process.communicate()
         self.assertEqual(process.returncode, 0)
-
 
 if __name__ == '__main__':
     unittest.main()
