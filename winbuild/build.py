@@ -16,7 +16,7 @@ def setup_vms():
         for arch in ('', X64_EXT):
             ret.append("virtualenv -p c:/Python%s%s/python.exe --clear %s%s%s"
                        % (py, arch, VIRT_BASE, py, arch))
-            ret.append("%s%s%s\Scripts\pip.exe install nose" %
+            ret.append(r"%s%s%s\Scripts\pip.exe install nose" %
                        (VIRT_BASE, py, arch))
     return "\n".join(ret)
 
