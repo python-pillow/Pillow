@@ -497,6 +497,25 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(repr_png.format, 'PNG')
         self.assert_image_equal(im, repr_png)
 
+    def test_chunk_order(self):
+        im = Image.open("Tests/images/icc_profile.png")
+        test_file = self.tempfile("temp.png")
+        im.convert("P").save(test_file)
+
+        chunks = []
+        fp = open(test_file, "rb")
+        fp.read(8)
+        png = PngImagePlugin.PngStream(fp)
+        while True:
+            cid, pos, length = png.read()
+            chunks.append(cid)
+            try:
+                s = png.call(cid, pos, length)
+            except EOFError:
+                break
+            png.crc(cid, s)
+        self.assertLess(chunks.index(b"iCCP"), chunks.index(b"PLTE"))
+
 
 if __name__ == '__main__':
     unittest.main()

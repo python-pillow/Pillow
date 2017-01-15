@@ -715,6 +715,18 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
           b'\0',                                # 11: filter category
           b'\0')                                # 12: interlace flag
 
+    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
+    if icc:
+        # ICC profile
+        # according to PNG spec, the iCCP chunk contains:
+        # Profile name  1-79 bytes (character string)
+        # Null separator        1 byte (null character)
+        # Compression method    1 byte (0)
+        # Compressed profile    n bytes (zlib with deflate compression)
+        name = b"ICC Profile"
+        data = name + b"\0\0" + zlib.compress(icc)
+        chunk(fp, b"iCCP", data)
+
     if im.mode == "P":
         palette_byte_number = (2 ** bits) * 3
         palette_bytes = im.im.getpalette("RGB")[:palette_byte_number]
@@ -763,18 +775,6 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
     if info:
         for cid, data in info.chunks:
             chunk(fp, cid, data)
-
-    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
-    if icc:
-        # ICC profile
-        # according to PNG spec, the iCCP chunk contains:
-        # Profile name  1-79 bytes (character string)
-        # Null separator        1 byte (null character)
-        # Compression method    1 byte (0)
-        # Compressed profile    n bytes (zlib with deflate compression)
-        name = b"ICC Profile"
-        data = name + b"\0\0" + zlib.compress(icc)
-        chunk(fp, b"iCCP", data)
 
     ImageFile._save(im, _idat(fp, chunk),
                     [("zip", (0, 0)+im.size, 0, rawmode)])
