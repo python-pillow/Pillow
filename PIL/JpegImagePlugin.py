@@ -38,14 +38,10 @@ import array
 import struct
 import io
 import warnings
-from PIL import Image, ImageFile, TiffImagePlugin, _binary
-from PIL.JpegPresets import presets
-from PIL._util import isStringType
-
-i8 = _binary.i8
-o8 = _binary.o8
-i16 = _binary.i16be
-i32 = _binary.i32be
+from . import Image, ImageFile, TiffImagePlugin
+from ._binary import i8, o8, i16be as i16, i32be as i32
+from .JpegPresets import presets
+from ._util import isStringType
 
 __version__ = "0.6"
 

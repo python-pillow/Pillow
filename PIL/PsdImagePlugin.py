@@ -18,7 +18,8 @@
 
 __version__ = "0.4"
 
-from PIL import Image, ImageFile, ImagePalette, _binary
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8, i16be as i16, i32be as i32
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -32,13 +33,6 @@ MODES = {
     (8, 8): ("L", 1),  # duotone
     (9, 8): ("LAB", 3)
 }
-
-#
-# helpers
-
-i8 = _binary.i8
-i16 = _binary.i16be
-i32 = _binary.i32be
 
 
 # --------------------------------------------------------------------.

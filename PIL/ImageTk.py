@@ -32,7 +32,7 @@ except ImportError:
     tkinter = Tkinter
     del Tkinter
 
-from PIL import Image
+from . import Image
 from io import BytesIO
 
 
@@ -182,7 +182,7 @@ class PhotoImage(object):
         except tkinter.TclError:
             # activate Tkinter hook
             try:
-                from PIL import _imagingtk
+                from . import _imagingtk
                 try:
                     _imagingtk.tkinit(tk.interpaddr(), 1)
                 except AttributeError:

@@ -15,7 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import EpsImagePlugin
+from . import EpsImagePlugin
 import sys
 
 ##

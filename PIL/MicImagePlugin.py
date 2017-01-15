@@ -17,7 +17,7 @@
 #
 
 
-from PIL import Image, TiffImagePlugin
+from . import Image, TiffImagePlugin
 
 import olefile
 

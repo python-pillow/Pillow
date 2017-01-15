@@ -16,8 +16,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isPath
+from . import Image
+from ._util import isPath
 from io import BytesIO
 
 qt_is_installed = True

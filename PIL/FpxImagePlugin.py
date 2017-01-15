@@ -17,14 +17,12 @@
 
 from __future__ import print_function
 
-from PIL import Image, ImageFile, _binary
+from . import Image, ImageFile
+from ._binary import i32le as i32, i8
 
 import olefile
 
 __version__ = "0.1"
-
-i32 = _binary.i32le
-i8 = _binary.i8
 
 # we map from colour field tuples to (mode, rawmode) descriptors
 MODES = {

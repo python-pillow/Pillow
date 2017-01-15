@@ -25,17 +25,14 @@
 import struct
 from io import BytesIO
 
-from PIL import Image, ImageFile, BmpImagePlugin, PngImagePlugin, _binary
+from . import Image, ImageFile, BmpImagePlugin, PngImagePlugin
+from ._binary import i8, i16le as i16, i32le as i32
 from math import log, ceil
 
 __version__ = "0.1"
 
 #
 # --------------------------------------------------------------------
-
-i8 = _binary.i8
-i16 = _binary.i16le
-i32 = _binary.i32le
 
 _MAGIC = b"\0\0\1\0"
 

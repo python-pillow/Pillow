@@ -38,15 +38,12 @@ import re
 import zlib
 import struct
 
-from PIL import Image, ImageFile, ImagePalette, _binary
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8, i16be as i16, i32be as i32, o8, o16be as o16, o32be as o32
 
 __version__ = "0.9"
 
 logger = logging.getLogger(__name__)
-
-i8 = _binary.i8
-i16 = _binary.i16be
-i32 = _binary.i32be
 
 is_cid = re.compile(br"\w\w\w\w").match
 
@@ -620,10 +617,6 @@ class PngImageFile(ImageFile.ImageFile):
 
 # --------------------------------------------------------------------
 # PNG writer
-
-o8 = _binary.o8
-o16 = _binary.o16be
-o32 = _binary.o32be
 
 _OUTMODES = {
     # supported PIL modes, and corresponding rawmodes/bits/color combinations

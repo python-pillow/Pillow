@@ -24,17 +24,12 @@
 #
 
 
-from PIL import Image, ImageFile, ImagePalette, _binary
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8, i16le as i16, i32le as i32, \
+                     o8, o16le as o16, o32le as o32
 import math
 
 __version__ = "0.7"
-
-i8 = _binary.i8
-i16 = _binary.i16le
-i32 = _binary.i32le
-o8 = _binary.o8
-o16 = _binary.o16le
-o32 = _binary.o32le
 
 #
 # --------------------------------------------------------------------

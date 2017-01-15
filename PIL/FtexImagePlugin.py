@@ -42,7 +42,7 @@ Note: All data is stored in little-Endian (Intel) byte order.
 
 import struct
 from io import BytesIO
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 
 
 MAGIC = b"FTEX"

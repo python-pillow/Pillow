@@ -23,15 +23,14 @@
 
 from __future__ import print_function
 
-from PIL import Image, _binary
+from . import Image
+from ._binary import i32le as i32
 
 try:
     import builtins
 except ImportError:
     import __builtin__
     builtins = __builtin__
-
-i32 = _binary.i32le
 
 
 def open(filename):

@@ -17,7 +17,7 @@
 
 import re
 
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 
 __version__ = "0.2"
 

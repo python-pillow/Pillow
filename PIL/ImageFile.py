@@ -27,8 +27,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isPath
+from . import Image
+from ._util import isPath
 import io
 import os
 import sys

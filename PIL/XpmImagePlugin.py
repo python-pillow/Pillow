@@ -16,8 +16,8 @@
 
 
 import re
-from PIL import Image, ImageFile, ImagePalette
-from PIL._binary import i8, o8
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8, o8
 
 __version__ = "0.2"
 

@@ -18,16 +18,13 @@
 
 from __future__ import print_function
 
-from PIL import Image, BmpImagePlugin, _binary
+from . import Image, BmpImagePlugin
+from ._binary import i8, i16le as i16, i32le as i32
 
 __version__ = "0.1"
 
 #
 # --------------------------------------------------------------------
-
-i8 = _binary.i8
-i16 = _binary.i16le
-i32 = _binary.i32le
 
 
 def _accept(prefix):

@@ -41,10 +41,8 @@
 
 from __future__ import division, print_function
 
-from PIL import Image, ImageFile
-from PIL import ImagePalette
-from PIL import _binary
-from PIL import TiffTags
+from . import Image, ImageFile, ImagePalette, TiffTags
+from ._binary import i8, o8
 
 import collections
 from fractions import Fraction
@@ -70,9 +68,6 @@ IFD_LEGACY_API = True
 
 II = b"II"  # little-endian (Intel style)
 MM = b"MM"  # big-endian (Motorola style)
-
-i8 = _binary.i8
-o8 = _binary.o8
 
 #
 # --------------------------------------------------------------------
@@ -569,7 +564,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
     def _register_loader(idx, size):
         def decorator(func):
-            from PIL.TiffTags import TYPES
+            from .TiffTags import TYPES
             if func.__name__.startswith("load_"):
                 TYPES[idx] = func.__name__[5:].replace("_", " ")
             _load_dispatch[idx] = size, func
@@ -583,7 +578,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         return decorator
 
     def _register_basic(idx_fmt_name):
-        from PIL.TiffTags import TYPES
+        from .TiffTags import TYPES
         idx, fmt, name = idx_fmt_name
         TYPES[idx] = name
         size = struct.calcsize("=" + fmt)

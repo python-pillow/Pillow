@@ -23,15 +23,13 @@
 import re
 import io
 import sys
-from PIL import Image, ImageFile, _binary
+from . import Image, ImageFile
+from ._binary import i32le as i32, o32le as o32
 
 __version__ = "0.5"
 
 #
 # --------------------------------------------------------------------
-
-i32 = _binary.i32le
-o32 = _binary.o32le
 
 split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")

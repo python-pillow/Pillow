@@ -17,11 +17,10 @@
 #
 
 
-from PIL import Image, ImageFile, ImagePalette, _binary
+from . import Image, ImageFile, ImagePalette
+from ._binary import i32be as i32
 
 __version__ = "0.3"
-
-i32 = _binary.i32be
 
 
 def _accept(prefix):
@@ -63,11 +62,11 @@ class SunImageFile(ImageFile.ImageFile):
         self.size = i32(s[4:8]), i32(s[8:12])
 
         depth = i32(s[12:16])
-        data_length = i32(s[16:20])  # unreliable, ignore. 
+        data_length = i32(s[16:20])  # unreliable, ignore.
         file_type = i32(s[20:24])
         palette_type = i32(s[24:28]) # 0: None, 1: RGB, 2: Raw/arbitrary
         palette_length = i32(s[28:32])
-        
+
         if depth == 1:
             self.mode, rawmode = "1", "1;I"
         elif depth == 4:
@@ -85,23 +84,23 @@ class SunImageFile(ImageFile.ImageFile):
             else:
                 self.mode, rawmode = 'RGB', 'BGRX'
         else:
-            raise SyntaxError("Unsupported Mode/Bit Depth")    
-        
+            raise SyntaxError("Unsupported Mode/Bit Depth")
+
         if palette_length:
             if palette_length > 1024:
                 raise SyntaxError("Unsupported Color Palette Length")
 
             if palette_type != 1:
                 raise SyntaxError("Unsupported Palette Type")
-            
+
             offset = offset + palette_length
             self.palette = ImagePalette.raw("RGB;L", self.fp.read(palette_length))
             if self.mode == "L":
                 self.mode = "P"
                 rawmode = rawmode.replace('L', 'P')
-            
+
         # 16 bit boundaries on stride
-        stride = ((self.size[0] * depth + 15) // 16) * 2  
+        stride = ((self.size[0] * depth + 15) // 16) * 2
 
         # file type: Type is the version (or flavor) of the bitmap
         # file. The following values are typically found in the Type
@@ -127,7 +126,7 @@ class SunImageFile(ImageFile.ImageFile):
             self.tile = [("sun_rle", (0, 0)+self.size, offset, rawmode)]
         else:
             raise SyntaxError('Unsupported Sun Raster file type')
-        
+
 #
 # registry
 

@@ -24,19 +24,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, ImagePalette, \
-                ImageChops, ImageSequence, _binary
+from . import Image, ImageFile, ImagePalette, \
+              ImageChops, ImageSequence
+from ._binary import i8, i16le as i16, o8, o16le as o16
 
 __version__ = "0.9"
 
 
 # --------------------------------------------------------------------
 # Helpers
-
-i8 = _binary.i8
-i16 = _binary.i16le
-o8 = _binary.o8
-o16 = _binary.o16le
 
 
 # --------------------------------------------------------------------

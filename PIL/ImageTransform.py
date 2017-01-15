@@ -13,7 +13,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
+from . import Image
 
 
 class Transform(Image.ImageTransformHandler):
