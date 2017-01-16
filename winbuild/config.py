@@ -37,10 +37,10 @@ libs = {
         'dir': 'tiff-4.0.6',
     },
     'freetype': {
-        'url': 'http://download.savannah.gnu.org/releases/freetype/freetype-2.7.tar.gz',
-        'filename': PILLOW_DEPENDS_DIR + 'freetype-2.7.tar.gz',
-        'hash': 'md5:337139e5c7c5bd645fe130608e0fa8b5',
-        'dir': 'freetype-2.7',
+        'url': 'http://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'freetype-2.7.1.tar.gz',
+        'hash': 'md5:78701bee8d249578d83bb9a2f3aa3616',
+        'dir': 'freetype-2.7.1',
     },
     'lcms': {
         'url': SF_MIRROR+'/project/lcms/lcms/2.7/lcms2-2.7.zip',
