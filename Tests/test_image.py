@@ -196,6 +196,35 @@ class TestImage(PillowTestCase):
         img_colors = sorted(img.getcolors())
         self.assertEqual(img_colors, expected_colors)
 
+    def test_registered_extensions_uninitialized(self):
+        # Arrange
+        Image._initialized = 0
+        extension = Image.EXTENSION
+        Image.EXTENSION = {}
+
+        # Act
+        Image.registered_extensions()
+
+        # Assert
+        self.assertEqual(Image._initialized, 2)
+
+        # Restore the original state and assert
+        Image.EXTENSION = extension
+        self.assertTrue(Image.EXTENSION)
+
+    def test_registered_extensions(self):
+        # Arrange
+        # Open an image to trigger plugin registration
+        Image.open('Tests/images/rgb.jpg')
+
+        # Act
+        extensions = Image.registered_extensions()
+
+        # Assert
+        self.assertTrue(bool(extensions))
+        for ext in ['.cur', '.icns', '.tif', '.tiff']:
+            self.assertIn(ext, extensions)
+
     def test_effect_mandelbrot(self):
         # Arrange
         size = (512, 512)
