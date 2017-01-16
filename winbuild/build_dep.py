@@ -13,6 +13,7 @@ def _relpath(*args):
 def _relbuild(*args):
     return _relpath('build', *args)
 
+
 build_dir = _relpath('build')
 inc_dir = _relpath('depends')
 
@@ -108,7 +109,7 @@ set MSBUILD=C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe
 set CMAKE="cmake.exe"
 set INCLIB=%~dp0\depends
 set BUILD=%~dp0\build
-""" + "\n".join('set %s=%%BUILD%%\%s' % (k.upper(), v['dir'])
+""" + "\n".join(r'set %s=%%BUILD%%\%s' % (k.upper(), v['dir'])
                 for (k, v) in libs.items() if v['dir'])
 
 

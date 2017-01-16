@@ -19,10 +19,10 @@ libs = {
     #     'version': '2.0'
     # },
     'zlib': {
-        'url': 'http://zlib.net/zlib128.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'zlib128.zip',
-        'hash': 'md5:126f8676442ffbd97884eb4d6f32afb4',
-        'dir': 'zlib-1.2.8',
+        'url': 'http://zlib.net/zlib1210.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'zlib1210.zip',
+        'hash': 'md5:5327bdff96926cf9c479008bae983bc0',
+        'dir': 'zlib-1.2.10',
     },
     'jpeg': {
         'url': 'http://www.ijg.org/files/jpegsr9b.zip',
@@ -37,10 +37,10 @@ libs = {
         'dir': 'tiff-4.0.6',
     },
     'freetype': {
-        'url': 'http://download.savannah.gnu.org/releases/freetype/freetype-2.7.tar.gz',
-        'filename': PILLOW_DEPENDS_DIR + 'freetype-2.7.tar.gz',
-        'hash': 'md5:337139e5c7c5bd645fe130608e0fa8b5',
-        'dir': 'freetype-2.7',
+        'url': 'http://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'freetype-2.7.1.tar.gz',
+        'hash': 'md5:78701bee8d249578d83bb9a2f3aa3616',
+        'dir': 'freetype-2.7.1',
     },
     'lcms': {
         'url': SF_MIRROR+'/project/lcms/lcms/2.7/lcms2-2.7.zip',
