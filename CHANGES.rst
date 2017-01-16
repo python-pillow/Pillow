@@ -4,6 +4,21 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Expose registered file extensions in Image #2343
+  [iggomez, radarhere]
+
+- Make mode descriptor cache initialization thread-safe. #2351
+  [gunjambi]
+
+- Updated windows test dependencies: Freetype 2.7.1, zlib 1.2.10. #2331, #2332
+  [radarhere]
+
+- Followed upstream pngquant packaging reorg to libimagquant #2354
+  [radarhere]
+
+- Fix invalid string escapes #2352
+  [hugovk]
+
 - Add test for crop operation with no argument #2333
   [radarhere]
 
