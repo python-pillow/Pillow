@@ -19,10 +19,10 @@ libs = {
     #     'version': '2.0'
     # },
     'zlib': {
-        'url': 'http://zlib.net/zlib1210.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'zlib1210.zip',
-        'hash': 'md5:5327bdff96926cf9c479008bae983bc0',
-        'dir': 'zlib-1.2.10',
+        'url': 'http://zlib.net/zlib1211.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'zlib1211.zip',
+        'hash': 'md5:16b41357b2cd81bca5e1947238e64465',
+        'dir': 'zlib-1.2.11',
     },
     'jpeg': {
         'url': 'http://www.ijg.org/files/jpegsr9b.zip',
