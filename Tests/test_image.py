@@ -80,11 +80,11 @@ class TestImage(PillowTestCase):
         # Will error out on save on 3.0.0
         import tempfile
         im = hopper()
-        fp = tempfile.TemporaryFile()
-        im.save(fp, 'JPEG')
-        fp.seek(0)
-        reloaded = Image.open(fp)
-        self.assert_image_similar(im, reloaded, 20)
+        with tempfile.TemporaryFile() as fp:
+            im.save(fp, 'JPEG')
+            fp.seek(0)
+            reloaded = Image.open(fp)
+            self.assert_image_similar(im, reloaded, 20)
 
     def test_internals(self):
 

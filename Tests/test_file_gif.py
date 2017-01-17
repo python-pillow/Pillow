@@ -56,7 +56,7 @@ class TestFileGif(PillowTestCase):
         # 256 color Palette image, posterize to > 128 and < 128 levels
         # Size bigger and smaller than 512x512
         # Check the palette for number of colors allocated.
-        # Check for correctness after conversion back to RGB        
+        # Check for correctness after conversion back to RGB
         def check(colors, size, expected_palette_length):
             # make an image with empty colors in the start of the palette range
             im = Image.frombytes('P', (colors,colors),
@@ -70,7 +70,7 @@ class TestFileGif(PillowTestCase):
             # check palette length
             palette_length = max(i+1 for i,v in enumerate(reloaded.histogram()) if v)
             self.assertEqual(expected_palette_length, palette_length)
-            
+
             self.assert_image_equal(im.convert('RGB'), reloaded.convert('RGB'))
 
 
@@ -271,12 +271,11 @@ class TestFileGif(PillowTestCase):
         duration = 1000
 
         out = self.tempfile('temp.gif')
-        fp = open(out, "wb")
-        im = Image.new('L', (100, 100), '#000')
-        for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, duration=duration):
-            fp.write(s)
-        fp.write(b";")
-        fp.close()
+        with open(out, "wb") as fp:
+            im = Image.new('L', (100, 100), '#000')
+            for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, duration=duration):
+                fp.write(s)
+            fp.write(b";")
         reread = Image.open(out)
 
         self.assertEqual(reread.info['duration'], duration)
@@ -329,12 +328,11 @@ class TestFileGif(PillowTestCase):
         number_of_loops = 2
 
         out = self.tempfile('temp.gif')
-        fp = open(out, "wb")
-        im = Image.new('L', (100, 100), '#000')
-        for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, loop=number_of_loops):
-            fp.write(s)
-        fp.write(b";")
-        fp.close()
+        with open(out, "wb") as fp:
+            im = Image.new('L', (100, 100), '#000')
+            for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, loop=number_of_loops):
+                fp.write(s)
+            fp.write(b";")
         reread = Image.open(out)
 
         self.assertEqual(reread.info['loop'], number_of_loops)

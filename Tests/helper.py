@@ -151,7 +151,7 @@ class PillowTestCase(unittest.TestCase):
 
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")
-        (fd, path) = tempfile.mkstemp(template[4:], template[:4])
+        fd, path = tempfile.mkstemp(template[4:], template[:4])
         os.close(fd)
 
         self.addCleanup(self.delete_tempfile, path)

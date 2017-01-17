@@ -35,12 +35,10 @@ class TestPsDraw(PillowTestCase):
 
         # Arrange
         tempfile = self.tempfile('temp.ps')
-        fp = open(tempfile, "wb")
-
-        # Act
-        ps = PSDraw.PSDraw(fp)
-        self._create_document(ps)
-        fp.close()
+        with open(tempfile, "wb") as fp:
+            # Act
+            ps = PSDraw.PSDraw(fp)
+            self._create_document(ps)
 
         # Assert
         # Check non-zero file was created

@@ -83,9 +83,8 @@ def isSpiderHeader(t):
 
 
 def isSpiderImage(filename):
-    fp = open(filename, 'rb')
-    f = fp.read(92)   # read 23 * 4 bytes
-    fp.close()
+    with open(filename, 'rb') as fp:
+        f = fp.read(92)   # read 23 * 4 bytes
     t = struct.unpack('>23f', f)  # try big-endian first
     hdrlen = isSpiderHeader(t)
     if hdrlen == 0:
