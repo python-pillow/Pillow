@@ -24,13 +24,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
-from PIL import VERSION, PILLOW_VERSION, _plugins
-
 import logging
-import warnings
 import math
+import warnings
+from PIL import VERSION, PILLOW_VERSION, _plugins
+from .exceptions import PILReadError, NoPluginFound
 
 logger = logging.getLogger(__name__)
 
@@ -418,7 +416,6 @@ def _getdecoder(mode, decoder_name, args, extra=()):
     try:
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
-        # print(decoder, mode, args + extra)
         return decoder(mode, *args + extra)
     except AttributeError:
         raise IOError("decoder %s not available" % decoder_name)
@@ -435,7 +432,6 @@ def _getencoder(mode, encoder_name, args, extra=()):
     try:
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
-        # print(encoder, mode, args + extra)
         return encoder(mode, *args + extra)
     except AttributeError:
         raise IOError("encoder %s not available" % encoder_name)
@@ -1583,7 +1579,7 @@ class Image(object):
         angle = angle % 360.0
 
         # Fast paths regardless of filter, as long as we're not
-        # translating or changing the center. 
+        # translating or changing the center.
         if not (center or translate):
             if angle == 0:
                 return self.copy()
@@ -2194,7 +2190,6 @@ def fromarray(obj, mode=None):
             typekey = (1, 1) + shape[2:], arr['typestr']
             mode, rawmode = _fromarray_typemap[typekey]
         except KeyError:
-            # print(typekey)
             raise TypeError("Cannot handle this data type")
     else:
         rawmode = mode
@@ -2329,7 +2324,7 @@ def open(fp, mode="r"):
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
-            except (SyntaxError, IndexError, TypeError, struct.error):
+            except (PILReadError, NoPluginFound, IndexError, TypeError, struct.error):
                 # Leave disabled by default, spams the logs with image
                 # opening failures that are entirely expected.
                 # logger.debug("", exc_info=True)

@@ -17,10 +17,8 @@
 #
 
 import array
-from PIL import ImageColor
-from PIL import GimpPaletteFile
-from PIL import GimpGradientFile
-from PIL import PaletteFile
+from PIL import GimpPaletteFile, GimpGradientFile, ImageColor, PaletteFile
+from .exceptions import PILReadError
 
 
 class ImagePalette(object):
@@ -198,7 +196,6 @@ def load(filename):
     # FIXME: supports GIMP gradients only
 
     with open(filename, "rb") as fp:
-
         for paletteHandler in [
             GimpPaletteFile.GimpPaletteFile,
             GimpGradientFile.GimpGradientFile,
@@ -209,11 +206,9 @@ def load(filename):
                 lut = paletteHandler(fp).getpalette()
                 if lut:
                     break
-            except (SyntaxError, ValueError):
-                # import traceback
-                # traceback.print_exc()
+            except (PILReadError, ValueError):
                 pass
         else:
             raise IOError("cannot load palette")
 
-    return lut  # data, rawmode
+    return lut

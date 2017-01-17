@@ -1,11 +1,10 @@
-from __future__ import print_function
 import logging
-from io import BytesIO
 import struct
-
+from io import BytesIO
+from PIL import Image, TiffImagePlugin
+from PIL.exceptions import InvalidFileType
 from helper import unittest, PillowTestCase, hopper, py3
 
-from PIL import Image, TiffImagePlugin
 
 logger = logging.getLogger(__name__)
 
@@ -116,11 +115,11 @@ class TestFileTiff(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
 
         TiffImagePlugin.PREFIXES.append(b"\xff\xd8\xff\xe0")
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
         TiffImagePlugin.PREFIXES.pop()
 
@@ -462,12 +461,12 @@ class TestFileTiff(PillowTestCase):
         # however does.
         im = Image.new('RGB', (1, 1))
         im.info['icc_profile'] = 'Dummy value'
-        
+
         # Try save-load round trip to make sure both handle icc_profile.
         tmpfile = self.tempfile('temp.tif')
         im.save(tmpfile, 'TIFF', compression='raw')
         reloaded = Image.open(tmpfile)
-        
+
         self.assertEqual(b'Dummy value', reloaded.info['icc_profile'])
 
 

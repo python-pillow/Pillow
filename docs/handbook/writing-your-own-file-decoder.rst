@@ -51,6 +51,7 @@ true color.
 **SpamImagePlugin.py**::
 
     from PIL import Image, ImageFile
+    from PIL.exceptions import InvalidFileType, PILReadError
     import string
 
     class SpamImageFile(ImageFile.ImageFile):
@@ -59,11 +60,10 @@ true color.
         format_description = "Spam raster image"
 
         def _open(self):
-
             # check header
             header = self.fp.read(128)
             if header[:4] != "SPAM":
-                raise SyntaxError, "not a SPAM file"
+                raise InvalidFileType("not a SPAM file")
 
             header = string.split(header)
 
@@ -79,7 +79,7 @@ true color.
             elif bits == 24:
                 self.mode = "RGB"
             else:
-                raise SyntaxError, "unknown number of bits"
+                raise PILReadError("unknown number of bits")
 
             # data descriptor
             self.tile = [
@@ -95,7 +95,7 @@ The format handler must always set the
 :py:attr:`~PIL.Image.Image.size` and :py:attr:`~PIL.Image.Image.mode`
 attributes. If these are not set, the file cannot be opened. To
 simplify the decoder, the calling code considers exceptions like
-:py:exc:`SyntaxError`, :py:exc:`KeyError`, :py:exc:`IndexError`,
+:py:exc:`InvalidFileType`, :py:exc:`KeyError`, :py:exc:`IndexError`,
 :py:exc:`EOFError` and :py:exc:`struct.error` as a failure to identify
 the file.
 

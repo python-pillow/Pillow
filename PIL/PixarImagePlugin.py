@@ -20,6 +20,8 @@
 #
 
 from PIL import Image, ImageFile, _binary
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.1"
 
@@ -46,7 +48,7 @@ class PixarImageFile(ImageFile.ImageFile):
         # assuming a 4-byte magic label
         s = self.fp.read(4)
         if s != b"\200\350\000\000":
-            raise SyntaxError("not a PIXAR file")
+            raise InvalidFileType("not a PIXAR file")
 
         # read rest of header
         s = s + self.fp.read(508)

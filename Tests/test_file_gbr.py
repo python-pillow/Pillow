@@ -1,14 +1,14 @@
-from helper import unittest, PillowTestCase
-
 from PIL import Image, GbrImagePlugin
+from PIL.exceptions import InvalidFileType
+from helper import unittest, PillowTestCase
 
 
 class TestFileGbr(PillowTestCase):
 
     def test_invalid_file(self):
-        invalid_file = "Tests/images/flower.jpg"
+        invalid_file = "Tests/images/no_cursors.cur"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: GbrImagePlugin.GbrImageFile(invalid_file))
 
     def test_gbr_file(self):

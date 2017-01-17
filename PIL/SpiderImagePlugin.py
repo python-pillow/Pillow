@@ -14,12 +14,6 @@
 # Copyright (c) 2004 by Fredrik Lundh.
 #
 
-##
-# Image plugin for the Spider image format.  This format is is used
-# by the SPIDER software, in processing image data from electron
-# microscopy and tomography.
-##
-
 #
 # SpiderImagePlugin.py
 #
@@ -33,12 +27,11 @@
 # http://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
 #
 
-from __future__ import print_function
-
 from PIL import Image, ImageFile
 import os
 import struct
 import sys
+from .exceptions import InvalidFileType, PILReadError
 
 
 def isInt(f):
@@ -75,9 +68,9 @@ def isSpiderHeader(t):
     labrec = int(h[13])   # no. records in file header
     labbyt = int(h[22])   # total no. of bytes in header
     lenbyt = int(h[23])   # record length in bytes
-    # print("labrec = %d, labbyt = %d, lenbyt = %d" % (labrec,labbyt,lenbyt))
     if labbyt != (labrec * lenbyt):
         return 0
+
     # looks like a valid header
     return labbyt
 
@@ -112,14 +105,14 @@ class SpiderImageFile(ImageFile.ImageFile):
                 t = struct.unpack('<27f', f)  # little-endian
                 hdrlen = isSpiderHeader(t)
             if hdrlen == 0:
-                raise SyntaxError("not a valid Spider file")
+                raise InvalidFileType("not a valid Spider file")
         except struct.error:
-            raise SyntaxError("not a valid Spider file")
+            raise InvalidFileType("not a valid Spider file")
 
         h = (99,) + t   # add 1 value : spider header index starts at 1
         iform = int(h[5])
         if iform != 1:
-            raise SyntaxError("not a Spider 2D image")
+            raise InvalidFileType("not a Spider 2D image")
 
         self.size = int(h[12]), int(h[2])  # size in pixels (width, height)
         self.istack = int(h[24])
@@ -142,7 +135,7 @@ class SpiderImageFile(ImageFile.ImageFile):
             offset = hdrlen + self.stkoffset
             self.istack = 2  # So Image knows it's still a stack
         else:
-            raise SyntaxError("inconsistent stack header values")
+            raise PILReadError("inconsistent stack header values")
 
         if self.bigendian:
             self.rawmode = "F;32BF"
@@ -194,30 +187,6 @@ class SpiderImageFile(ImageFile.ImageFile):
         from PIL import ImageTk
         return ImageTk.PhotoImage(self.convert2byte(), palette=256)
 
-
-# --------------------------------------------------------------------
-# Image series
-
-# given a list of filenames, return a list of images
-def loadImageSeries(filelist=None):
-    " create a list of Image.images for use in montage "
-    if filelist is None or len(filelist) < 1:
-        return
-
-    imglist = []
-    for img in filelist:
-        if not os.path.exists(img):
-            print("unable to find %s" % img)
-            continue
-        try:
-            im = Image.open(img).convert2byte()
-        except:
-            if not isSpiderImage(img):
-                print(img + " is not a Spider image file")
-            continue
-        im.info['filename'] = img
-        imglist.append(im)
-    return imglist
 
 
 # --------------------------------------------------------------------
@@ -288,34 +257,3 @@ def _save_spider(im, fp, filename):
 
 Image.register_open(SpiderImageFile.format, SpiderImageFile)
 Image.register_save(SpiderImageFile.format, _save_spider)
-
-if __name__ == "__main__":
-
-    if not sys.argv[1:]:
-        print("Syntax: python SpiderImagePlugin.py [infile] [outfile]")
-        sys.exit()
-
-    filename = sys.argv[1]
-    if not isSpiderImage(filename):
-        print("input image must be in Spider format")
-        sys.exit()
-
-    outfile = ""
-    if len(sys.argv[1:]) > 1:
-        outfile = sys.argv[2]
-
-    im = Image.open(filename)
-    print("image: " + str(im))
-    print("format: " + str(im.format))
-    print("size: " + str(im.size))
-    print("mode: " + str(im.mode))
-    print("max, min: ", end=' ')
-    print(im.getextrema())
-
-    if outfile != "":
-        # perform some image operation
-        im = im.transpose(Image.FLIP_LEFT_RIGHT)
-        print(
-            "saving a flipped version of %s as %s " %
-            (os.path.basename(filename), outfile))
-        im.save(outfile, SpiderImageFile.format)

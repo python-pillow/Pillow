@@ -16,8 +16,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-
 from PIL import Image, ImageFile, ImagePalette, _binary
+from .exceptions import InvalidFileType, PILReadError, PILWriteError
+
 
 __version__ = "0.3"
 
@@ -69,7 +70,7 @@ class TgaImageFile(ImageFile.ImageFile):
         if colormaptype not in (0, 1) or\
            self.size[0] <= 0 or self.size[1] <= 0 or\
            depth not in (1, 8, 16, 24, 32):
-            raise SyntaxError("not a TGA file")
+            raise InvalidFileType("not a TGA file")
 
         # image mode
         if imagetype in (3, 11):
@@ -83,7 +84,7 @@ class TgaImageFile(ImageFile.ImageFile):
             if depth == 32:
                 self.mode = "RGBA"
         else:
-            raise SyntaxError("unknown TGA mode")
+            raise PILReadError("unknown TGA mode")
 
         # orientation
         orientation = flags & 0x30
@@ -92,7 +93,7 @@ class TgaImageFile(ImageFile.ImageFile):
         elif not orientation:
             orientation = -1
         else:
-            raise SyntaxError("unknown TGA orientation")
+            raise PILReadError("unknown TGA orientation")
 
         self.info["orientation"] = orientation
 
@@ -150,7 +151,7 @@ def _save(im, fp, filename, check=0):
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError:
-        raise IOError("cannot write mode %s as TGA" % im.mode)
+        raise PILWriteError("cannot write mode %s as TGA" % im.mode)
 
     if check:
         return check

@@ -25,10 +25,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isDirectory, isPath
 import os
 import sys
+from PIL import Image
+from PIL._util import isDirectory, isPath
+from .exceptions import InvalidFileType
 
 
 class _imagingft_not_installed(object):
@@ -61,7 +62,6 @@ class ImageFont(object):
     "PIL font wrapper"
 
     def _load_pilfont(self, filename):
-
         with open(filename, "rb") as fp:
             for ext in (".png", ".gif", ".pbm"):
                 try:
@@ -80,10 +80,9 @@ class ImageFont(object):
             return self._load_pilfont_data(fp, image)
 
     def _load_pilfont_data(self, file, image):
-
         # read PILfont header
         if file.readline() != b"PILfont\n":
-            raise SyntaxError("Not a PILfont file")
+            raise InvalidFileType("Not a PILfont file")
         file.readline().split(b";")
         self.info = []  # FIXME: should be a dictionary
         while True:

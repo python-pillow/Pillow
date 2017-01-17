@@ -1,11 +1,7 @@
-from __future__ import print_function
-
-from helper import unittest, PillowTestCase, hopper
-
+from fractions import Fraction
 from PIL import TiffImagePlugin, Image
 from PIL.TiffImagePlugin import IFDRational
-
-from fractions import Fraction
+from helper import unittest, PillowTestCase, hopper
 
 
 class Test_IFDRational(PillowTestCase):

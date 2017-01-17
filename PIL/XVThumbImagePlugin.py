@@ -18,6 +18,8 @@
 #
 
 from PIL import Image, ImageFile, ImagePalette, _binary
+from .exceptions import InvalidFileType, PILReadError
+
 
 __version__ = "0.1"
 
@@ -46,10 +48,9 @@ class XVThumbImageFile(ImageFile.ImageFile):
     format_description = "XV thumbnail image"
 
     def _open(self):
-
         # check magic
         if self.fp.read(6) != _MAGIC:
-            raise SyntaxError("not an XV thumbnail file")
+            raise InvalidFileType("not an XV thumbnail file")
 
         # Skip to beginning of next line
         self.fp.readline()
@@ -58,7 +59,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
         while True:
             s = self.fp.readline()
             if not s:
-                raise SyntaxError("Unexpected EOF reading XV thumbnail file")
+                raise PILReadError("Unexpected EOF reading XV thumbnail file")
             if s[0] != b'#':
                 break
 

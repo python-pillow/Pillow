@@ -1,8 +1,8 @@
+import os
+from PIL import Image, SunImagePlugin
+from PIL.exceptions import InvalidFileType
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image, SunImagePlugin
-
-import os
 
 EXTRA_DIR = 'Tests/images/sunraster'
 
@@ -20,9 +20,9 @@ class TestFileSun(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
 
         self.assert_image_similar(im, hopper(), 5) # visually verified
-        
+
         invalid_file = "Tests/images/flower.jpg"
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: SunImagePlugin.SunImageFile(invalid_file))
 
     def test_im1(self):
@@ -39,12 +39,12 @@ class TestFileSun(PillowTestCase):
                    in ('.sun', '.SUN', '.ras'))
         for path in files:
             with Image.open(path) as im:
-                im.load()  
+                im.load()
                 self.assertIsInstance(im, SunImagePlugin.SunImageFile)
                 target_path = "%s.png" % os.path.splitext(path)[0]
                 #im.save(target_file)
                 with Image.open(target_path) as target:
                     self.assert_image_equal(im, target)
-        
+
 if __name__ == '__main__':
     unittest.main()

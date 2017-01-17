@@ -10,6 +10,8 @@
 #
 
 from PIL import Image, ImageFile
+from .exceptions import InvalidFileType
+
 
 _handler = None
 
@@ -41,7 +43,7 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(8)):
-            raise SyntaxError("Not an HDF file")
+            raise InvalidFileType("Not an HDF file")
 
         self.fp.seek(offset)
 

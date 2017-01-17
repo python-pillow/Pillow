@@ -20,10 +20,12 @@
 # See the README file for information on usage and redistribution.
 #
 
-import re
 import io
+import re
 import sys
 from PIL import Image, ImageFile, _binary
+from .exceptions import InvalidFileType, PILReadError
+
 
 __version__ = "0.5"
 
@@ -235,12 +237,12 @@ class EpsImageFile(ImageFile.ImageFile):
 
         while s:
             if len(s) > 255:
-                raise SyntaxError("not an EPS file")
+                raise PILReadError("Size too large: %r" % (len(s)))
 
             try:
                 m = split.match(s)
             except re.error as v:
-                raise SyntaxError("not an EPS file")
+                raise InvalidFileType("not an EPS file")
 
             if m:
                 k, v = m.group(1, 2)
@@ -273,7 +275,7 @@ class EpsImageFile(ImageFile.ImageFile):
                     # tools mistakenly put in the Comments section
                     pass
                 else:
-                    raise IOError("bad EPS header")
+                    raise PILReadError("bad EPS header")
 
             s = fp.readline().strip('\r\n')
 
@@ -284,9 +286,8 @@ class EpsImageFile(ImageFile.ImageFile):
         # Scan for an "ImageData" descriptor
 
         while s[:1] == "%":
-
             if len(s) > 255:
-                raise SyntaxError("not an EPS file")
+                raise PILReadError("Size too large: %r" % (len(s)))
 
             if s[:11] == "%ImageData:":
                 # Encoded bitmapped image.
@@ -307,7 +308,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 break
 
         if not box:
-            raise IOError("cannot determine EPS bounding box")
+            raise PILReadError("cannot determine EPS bounding box")
 
     def _find_offset(self, fp):
 
@@ -327,7 +328,7 @@ class EpsImageFile(ImageFile.ImageFile):
             offset = i32(s[4:8])
             length = i32(s[8:12])
         else:
-            raise SyntaxError("not an EPS file")
+            raise InvalidFileType("not an EPS file")
 
         return (length, offset)
 

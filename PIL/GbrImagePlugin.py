@@ -25,6 +25,8 @@
 #   the color depth field. This is currently unsupported by Pillow.
 
 from PIL import Image, ImageFile, _binary
+from .exceptions import InvalidFileType
+
 
 i32 = _binary.i32be
 
@@ -42,20 +44,24 @@ class GbrImageFile(ImageFile.ImageFile):
     format_description = "GIMP brush file"
 
     def _open(self):
-        header_size = i32(self.fp.read(4))
-        version = i32(self.fp.read(4))
+        s = self.fp.read(4)
+        t = self.fp.read(4)
+        if len(s) < 4 or len(t) < 4:
+            raise InvalidFileType("not a GIMP brush")
+        header_size = i32(s)
+        version = i32(t)
         if header_size < 20:
-            raise SyntaxError("not a GIMP brush")
+            raise InvalidFileType("not a GIMP brush")
         if version not in (1, 2):
-            raise SyntaxError("Unsupported GIMP brush version: %s" % version)
+            raise NotImplementedError("Unsupported GIMP brush version: %s" % version)
 
         width = i32(self.fp.read(4))
         height = i32(self.fp.read(4))
         color_depth = i32(self.fp.read(4))
         if width <= 0 or height <= 0:
-            raise SyntaxError("not a GIMP brush")
+            raise InvalidFileType("not a GIMP brush")
         if color_depth not in (1, 4):
-            raise SyntaxError("Unsupported GIMP brush color depth: %s" % color_depth)
+            raise NotImplementedError("Unsupported GIMP brush color depth: %s" % color_depth)
 
         if version == 1:
             comment_length = header_size-20
@@ -63,7 +69,7 @@ class GbrImageFile(ImageFile.ImageFile):
             comment_length = header_size-28
             magic_number = self.fp.read(4)
             if magic_number != b'GIMP':
-                raise SyntaxError("not a GIMP brush, bad magic number")
+                raise InvalidFileType("not a GIMP brush, bad magic number")
             self.info['spacing'] = i32(self.fp.read(4))
 
         comment = self.fp.read(comment_length)[:-1]

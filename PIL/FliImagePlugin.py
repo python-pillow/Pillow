@@ -17,6 +17,8 @@
 
 
 from PIL import Image, ImageFile, ImagePalette, _binary
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.2"
 
@@ -50,7 +52,7 @@ class FliImageFile(ImageFile.ImageFile):
         if not (magic in [0xAF11, 0xAF12] and
                 i16(s[14:16]) in [0, 3] and  # flags
                 s[20:22] == b"\x00\x00"):  # reserved
-            raise SyntaxError("not an FLI/FLC file")
+            raise InvalidFileType("not an FLI/FLC file")
 
         # image characteristics
         self.mode = "P"

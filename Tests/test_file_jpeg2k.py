@@ -1,7 +1,9 @@
 from helper import unittest, PillowTestCase
 
-from PIL import Image, Jpeg2KImagePlugin
 from io import BytesIO
+from PIL import Image, Jpeg2KImagePlugin
+from PIL.exceptions import InvalidFileType
+
 
 codecs = dir(Image.core)
 
@@ -43,7 +45,7 @@ class TestFileJpeg2k(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda:
                           Jpeg2KImagePlugin.Jpeg2KImageFile(invalid_file))
 

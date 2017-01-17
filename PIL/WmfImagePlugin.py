@@ -19,9 +19,9 @@
 # http://wvware.sourceforge.net/caolan/index.html
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
 
-from __future__ import print_function
-
 from PIL import Image, ImageFile, _binary
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.2"
 
@@ -110,11 +110,9 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             self.info["dpi"] = 72
 
-            # print(self.mode, self.size, self.info)
-
             # sanity check (standard metafile header)
             if s[22:26] != b"\x01\x00\t\x00":
-                raise SyntaxError("Unsupported WMF file format")
+                raise NotImplementedError("Unsupported WMF file format")
 
         elif dword(s) == 1 and s[40:44] == b" EMF":
             # enhanced metafile
@@ -143,7 +141,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
                 self.info["dpi"] = xdpi, ydpi
 
         else:
-            raise SyntaxError("Unsupported file format")
+            raise InvalidFileType("Not a WMF file")
 
         self.mode = "RGB"
         self.size = size

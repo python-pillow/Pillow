@@ -23,6 +23,8 @@
 
 from PIL import Image, _binary
 from PIL.PcxImagePlugin import PcxImageFile
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.2"
 
@@ -44,11 +46,10 @@ class DcxImageFile(PcxImageFile):
     format_description = "Intel DCX"
 
     def _open(self):
-
         # Header
         s = self.fp.read(4)
         if i32(s) != MAGIC:
-            raise SyntaxError("not a DCX file")
+            raise InvalidFileType("Invalid DCS header")
 
         # Component directory
         self._offset = []

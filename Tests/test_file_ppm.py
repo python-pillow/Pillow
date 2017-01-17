@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase
 
 from PIL import Image
+from PIL.exceptions import PILReadError
 
 # sample ppm stream
 test_file = "Tests/images/hopper.ppm"
@@ -39,7 +40,7 @@ class TestFilePpm(PillowTestCase):
         with open(path, 'w') as f:
             f.write('P6')
 
-        self.assertRaises(ValueError, lambda: Image.open(path))
+        self.assertRaises(IOError, lambda: Image.open(path))
 
 
     def test_neg_ppm(self):

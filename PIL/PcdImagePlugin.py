@@ -14,8 +14,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-
 from PIL import Image, ImageFile, _binary
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.1"
 
@@ -39,7 +40,7 @@ class PcdImageFile(ImageFile.ImageFile):
         s = self.fp.read(2048)
 
         if s[:4] != b"PCD_":
-            raise SyntaxError("not a PCD file")
+            raise InvalidFileType("not a PCD file")
 
         orientation = i8(s[1538]) & 3
         self.tile_post_rotate = None

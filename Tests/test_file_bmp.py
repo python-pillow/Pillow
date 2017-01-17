@@ -1,7 +1,7 @@
-from helper import unittest, PillowTestCase, hopper
-
-from PIL import Image, BmpImagePlugin
 import io
+from PIL import Image, BmpImagePlugin
+from PIL.exceptions import InvalidFileType
+from helper import unittest, PillowTestCase, hopper
 
 
 class TestFileBmp(PillowTestCase):
@@ -27,7 +27,7 @@ class TestFileBmp(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError,
+            self.assertRaises(InvalidFileType,
                               lambda: BmpImagePlugin.BmpImageFile(fp))
 
     def test_save_to_bytes(self):

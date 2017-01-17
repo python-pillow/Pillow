@@ -1,8 +1,7 @@
-from __future__ import print_function
+import os
+from PIL import Image
 from helper import unittest, PillowTestCase
 
-from PIL import Image
-import os
 
 base = os.path.join('Tests', 'images', 'bmp')
 
@@ -22,7 +21,6 @@ class TestBmpReference(PillowTestCase):
                 im.load()
             except Exception:  # as msg:
                 pass
-                # print("Bad Image %s: %s" %(f,msg))
 
     def test_questionable(self):
         """ These shouldn't crash/dos, but it's not well defined that these
@@ -47,7 +45,6 @@ class TestBmpReference(PillowTestCase):
             except Exception:  # as msg:
                 if os.path.basename(f) in supported:
                     raise
-                # print("Bad Image %s: %s" %(f,msg))
 
     def test_good(self):
         """ These should all work. There's a set of target files in the

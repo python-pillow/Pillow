@@ -16,9 +16,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 from PIL import Image, BmpImagePlugin, _binary
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.1"
 
@@ -49,7 +49,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         # check magic
         s = self.fp.read(6)
         if not _accept(s):
-            raise SyntaxError("not a CUR file")
+            raise InvalidFileType("not a CUR file")
 
         # pick the largest cursor in the file
         m = b""
@@ -59,14 +59,6 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
                 m = s
             elif i8(s[0]) > i8(m[0]) and i8(s[1]) > i8(m[1]):
                 m = s
-            # print("width", i8(s[0]))
-            # print("height", i8(s[1]))
-            # print("colors", i8(s[2]))
-            # print("reserved", i8(s[3]))
-            # print("hotspot x", i16(s[4:]))
-            # print("hotspot y", i16(s[6:]))
-            # print("bytes", i32(s[8:]))
-            # print("offset", i32(s[12:]))
         if not m:
             raise TypeError("No cursors were found")
 

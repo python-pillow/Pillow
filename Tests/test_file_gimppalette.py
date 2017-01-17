@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase
 
 from PIL.GimpPaletteFile import GimpPaletteFile
+from PIL.exceptions import InvalidFileType, PILReadError
 
 
 class TestImage(PillowTestCase):
@@ -10,13 +11,13 @@ class TestImage(PillowTestCase):
             GimpPaletteFile(fp)
 
         with open('Tests/images/hopper.jpg', 'rb') as fp:
-            self.assertRaises(SyntaxError, lambda: GimpPaletteFile(fp))
+            self.assertRaises(InvalidFileType, lambda: GimpPaletteFile(fp))
 
         with open('Tests/images/bad_palette_file.gpl', 'rb') as fp:
-            self.assertRaises(SyntaxError, lambda: GimpPaletteFile(fp))
+            self.assertRaises(PILReadError, lambda: GimpPaletteFile(fp))
 
         with open('Tests/images/bad_palette_entry.gpl', 'rb') as fp:
-            self.assertRaises(ValueError, lambda: GimpPaletteFile(fp))
+            self.assertRaises(PILReadError, lambda: GimpPaletteFile(fp))
 
     def test_get_palette(self):
         # Arrange

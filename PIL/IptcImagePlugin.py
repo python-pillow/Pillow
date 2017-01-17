@@ -15,11 +15,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
-from PIL import Image, ImageFile, _binary
 import os
 import tempfile
+from PIL import Image, ImageFile, _binary
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.3"
 
@@ -41,12 +41,6 @@ PAD = o8(0) * 4
 
 def i(c):
     return i32((PAD + c)[-4:])
-
-
-def dump(c):
-    for i in c:
-        print("%02x" % i8(i), end=' ')
-    print()
 
 
 ##
@@ -72,7 +66,7 @@ class IptcImageFile(ImageFile.ImageFile):
 
         # syntax
         if i8(s[0]) != 0x1C or tag[0] < 1 or tag[0] > 9:
-            raise SyntaxError("invalid IPTC/NAA file")
+            raise InvalidFileType("invalid IPTC/NAA file")
 
         # field size
         size = i8(s[3])
@@ -106,8 +100,6 @@ class IptcImageFile(ImageFile.ImageFile):
                     self.info[tag] = [self.info[tag], tagdata]
             else:
                 self.info[tag] = tagdata
-
-            # print(tag, self.info[tag])
 
         # mode
         layers = i8(self.info[(3, 60)][0])

@@ -10,6 +10,8 @@
 #
 
 from PIL import Image, ImageFile
+from .exceptions import InvalidFileType
+
 
 _handler = None
 
@@ -37,11 +39,10 @@ class GribStubImageFile(ImageFile.StubImageFile):
     format_description = "GRIB"
 
     def _open(self):
-
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(8)):
-            raise SyntaxError("Not a GRIB file")
+            raise InvalidFileType("Not a GRIB file")
 
         self.fp.seek(offset)
 

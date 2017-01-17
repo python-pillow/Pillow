@@ -1,6 +1,8 @@
 from helper import unittest, PillowTestCase
 
 from PIL import Image, PsdImagePlugin
+from PIL.exceptions import InvalidFileType
+
 
 # sample ppm stream
 test_file = "Tests/images/hopper.psd"
@@ -18,7 +20,7 @@ class TestImagePsd(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: PsdImagePlugin.PsdImageFile(invalid_file))
 
     def test_n_frames(self):

@@ -31,14 +31,13 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 import logging
 import re
 import zlib
 import struct
-
 from PIL import Image, ImageFile, ImagePalette, _binary
+from .exceptions import InvalidFileType, PILReadError
+
 
 __version__ = "0.9"
 
@@ -118,7 +117,7 @@ class ChunkStream(object):
             length = i32(s)
 
         if not is_cid(cid):
-            raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
+            raise PILReadError("broken PNG file (chunk %s)" % repr(cid))
 
         return cid, pos, length
 
@@ -148,11 +147,9 @@ class ChunkStream(object):
             crc1 = Image.core.crc32(data, Image.core.crc32(cid))
             crc2 = i16(self.fp.read(2)), i16(self.fp.read(2))
             if crc1 != crc2:
-                raise SyntaxError("broken PNG file (bad header checksum in %r)"
-                                  % cid)
+                raise PILReadError("Bad header checksum in %r)" % (cid))
         except struct.error:
-            raise SyntaxError("broken PNG file (incomplete checksum in %r)"
-                              % cid)
+            raise PILReadError("Incomplete checksum in %r" % (cid))
 
     def crc_skip(self, cid, data):
         "Read checksum.  Used if the C module is not present"
@@ -313,8 +310,7 @@ class PngStream(ChunkStream):
         logger.debug("Compression method %s", i8(s[i]))
         comp_method = i8(s[i])
         if comp_method != 0:
-            raise SyntaxError("Unknown compression method %s in iCCP chunk" %
-                              comp_method)
+            raise PILReadError("Unknown compression method %s" % (comp_method))()
         try:
             icc_profile = _safe_zlib_decompress(s[i+2:])
         except ValueError:
@@ -339,7 +335,7 @@ class PngStream(ChunkStream):
         if i8(s[12]):
             self.im_info["interlace"] = 1
         if i8(s[11]):
-            raise SyntaxError("unknown filter category")
+            raise PILReadError("unknown filter category")
         return s
 
     def chunk_IDAT(self, pos, length):
@@ -437,7 +433,7 @@ class PngStream(ChunkStream):
         else:
             comp_method = 0
         if comp_method != 0:
-            raise SyntaxError("Unknown compression method %s in zTXt chunk" %
+            raise PILReadError("Unknown compression method %s in zTXt chunk" %
                               comp_method)
         try:
             v = _safe_zlib_decompress(v[1:])
@@ -520,7 +516,7 @@ class PngImageFile(ImageFile.ImageFile):
     def _open(self):
 
         if self.fp.read(8) != _MAGIC:
-            raise SyntaxError("not a PNG file")
+            raise InvalidFileType("not a PNG file")
 
         #
         # Parse headers up to the first IDAT chunk

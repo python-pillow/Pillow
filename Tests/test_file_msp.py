@@ -1,6 +1,7 @@
+from PIL import Image, MspImagePlugin
+from PIL.exceptions import InvalidFileType
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image, MspImagePlugin
 
 TEST_FILE = "Tests/images/hopper.msp"
 
@@ -21,7 +22,7 @@ class TestFileMsp(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: MspImagePlugin.MspImageFile(invalid_file))
 
     def test_open(self):

@@ -1,7 +1,7 @@
+from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
+from PIL.exceptions import InvalidFileType
 from helper import unittest, PillowTestCase
 
-from PIL import Image, FontFile, PcfFontFile
-from PIL import ImageFont, ImageDraw
 
 codecs = dir(Image.core)
 
@@ -32,7 +32,7 @@ class TestFontPcf(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError, lambda: PcfFontFile.PcfFontFile(fp))
+            self.assertRaises(InvalidFileType, lambda: PcfFontFile.PcfFontFile(fp))
 
     def xtest_draw(self):
 

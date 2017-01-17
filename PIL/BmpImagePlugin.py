@@ -23,9 +23,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-
-from PIL import Image, ImageFile, ImagePalette, _binary
 import math
+from PIL import Image, ImageFile, ImagePalette, _binary
+from .exceptions import InvalidFileType, PILReadError
+
 
 __version__ = "0.7"
 
@@ -199,7 +200,7 @@ class BmpImageFile(ImageFile.ImageFile):
         head_data = self.fp.read(14)
         # choke if the file does not have the required magic bytes
         if head_data[0:2] != b"BM":
-            raise SyntaxError("Not a BMP file")
+            raise InvalidFileType("Not a BMP file")
         # read the start position of the BMP image data (u32)
         offset = i32(head_data[10:14])
         # load bitmap information (offset=raster info)

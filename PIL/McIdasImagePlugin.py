@@ -18,6 +18,8 @@
 
 import struct
 from PIL import Image, ImageFile
+from .exceptions import InvalidFileType
+
 
 __version__ = "0.2"
 
@@ -35,11 +37,10 @@ class McIdasImageFile(ImageFile.ImageFile):
     format_description = "McIdas area file"
 
     def _open(self):
-
         # parse area file directory
         s = self.fp.read(256)
         if not _accept(s) or len(s) != 256:
-            raise SyntaxError("not an McIdas area file")
+            raise InvalidFileType("not an McIdas area file")
 
         self.area_descriptor_raw = s
         self.area_descriptor = w = [0] + list(struct.unpack("!64i", s))
@@ -56,7 +57,7 @@ class McIdasImageFile(ImageFile.ImageFile):
             mode = "I"
             rawmode = "I;32B"
         else:
-            raise SyntaxError("unsupported McIdas format")
+            raise NotImplementedError("unsupported McIdas format: %r" % (w[11]))
 
         self.mode = mode
         self.size = w[10], w[9]

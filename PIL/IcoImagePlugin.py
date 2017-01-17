@@ -21,12 +21,11 @@
 #   * https://en.wikipedia.org/wiki/ICO_(file_format)
 #   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
 
-
 import struct
 from io import BytesIO
-
-from PIL import Image, ImageFile, BmpImagePlugin, PngImagePlugin, _binary
 from math import log, ceil
+from PIL import Image, ImageFile, BmpImagePlugin, PngImagePlugin, _binary
+from .exceptions import InvalidFileType
 
 __version__ = "0.1"
 
@@ -91,7 +90,7 @@ class IcoFile(object):
         # check magic
         s = buf.read(6)
         if not _accept(s):
-            raise SyntaxError("not an ICO file")
+            raise InvalidFileType("not an ICO file")
 
         self.buf = buf
         self.entry = []

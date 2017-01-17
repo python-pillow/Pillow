@@ -1,9 +1,8 @@
+from io import BytesIO
+from PIL import Image, GifImagePlugin
+from PIL.exceptions import InvalidFileType
 from helper import unittest, PillowTestCase, hopper, netpbm_available
 
-from PIL import Image
-from PIL import GifImagePlugin
-
-from io import BytesIO
 
 codecs = dir(Image.core)
 
@@ -31,7 +30,7 @@ class TestFileGif(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: GifImagePlugin.GifImageFile(invalid_file))
 
     def test_optimize(self):
@@ -425,7 +424,7 @@ class TestFileGif(PillowTestCase):
         reloaded = Image.open(out)
 
         self.assertEqual(reloaded.info['transparency'], 253)
-        
+
 
 if __name__ == '__main__':
     unittest.main()

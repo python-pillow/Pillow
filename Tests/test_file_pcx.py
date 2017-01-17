@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, ImageFile, PcxImagePlugin
+from PIL.exceptions import InvalidFileType
 
 
 class TestFilePcx(PillowTestCase):
@@ -22,7 +23,7 @@ class TestFilePcx(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
+        self.assertRaises(InvalidFileType,
                           lambda: PcxImagePlugin.PcxImageFile(invalid_file))
 
     def test_odd(self):

@@ -25,6 +25,8 @@
 
 from PIL import ImageFile, ImagePalette, _binary
 from PIL._util import isPath
+from .exceptions import PILReadError
+
 
 __version__ = "0.1"
 
@@ -49,7 +51,6 @@ class GdImageFile(ImageFile.ImageFile):
     format_description = "GD uncompressed images"
 
     def _open(self):
-
         # Header
         s = self.fp.read(775)
 
@@ -87,5 +88,5 @@ def open(fp, mode="r"):
 
     try:
         return GdImageFile(fp, filename)
-    except SyntaxError:
-        raise IOError("cannot identify this image file")
+    except Exception as e:
+        raise PILReadError("cannot identify this image file: %s" % (e))

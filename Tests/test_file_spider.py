@@ -48,29 +48,6 @@ class TestImageSpider(PillowTestCase):
         self.assertEqual(im.n_frames, 1)
         self.assertFalse(im.is_animated)
 
-    def test_loadImageSeries(self):
-        # Arrange
-        not_spider_file = "Tests/images/hopper.ppm"
-        file_list = [TEST_FILE, not_spider_file, "path/not_found.ext"]
-
-        # Act
-        img_list = SpiderImagePlugin.loadImageSeries(file_list)
-
-        # Assert
-        self.assertEqual(len(img_list), 1)
-        self.assertIsInstance(img_list[0], Image.Image)
-        self.assertEqual(img_list[0].size, (128, 128))
-
-    def test_loadImageSeries_no_input(self):
-        # Arrange
-        file_list = None
-
-        # Act
-        img_list = SpiderImagePlugin.loadImageSeries(file_list)
-
-        # Assert
-        self.assertEqual(img_list, None)
-
     def test_isInt_not_a_number(self):
         # Arrange
         not_a_number = "a"

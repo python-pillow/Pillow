@@ -25,10 +25,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 import logging
 from PIL import Image, ImageFile, ImagePalette, _binary
+from .exceptions import InvalidFileType, PILReadError
+
 
 logger = logging.getLogger(__name__)
 
@@ -52,16 +52,15 @@ class PcxImageFile(ImageFile.ImageFile):
     format_description = "Paintbrush"
 
     def _open(self):
-
         # header
         s = self.fp.read(128)
         if not _accept(s):
-            raise SyntaxError("not a PCX file")
+            raise InvalidFileType("not a PCX file")
 
         # image
         bbox = i16(s, 4), i16(s, 6), i16(s, 8)+1, i16(s, 10)+1
         if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
-            raise SyntaxError("bad PCX image size")
+            raise PILReadError("bad PCX image size")
         logger.debug("BBox: %s %s %s %s", *bbox)
 
         # format

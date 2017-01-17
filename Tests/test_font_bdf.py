@@ -1,6 +1,8 @@
 from helper import unittest, PillowTestCase
 
 from PIL import FontFile, BdfFontFile
+from PIL.exceptions import InvalidFileType
+
 
 filename = "Tests/images/courB08.bdf"
 
@@ -17,7 +19,7 @@ class TestFontBdf(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError, lambda: BdfFontFile.BdfFontFile(fp))
+            self.assertRaises(InvalidFileType, lambda: BdfFontFile.BdfFontFile(fp))
 
 
 if __name__ == '__main__':

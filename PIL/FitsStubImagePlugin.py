@@ -10,6 +10,8 @@
 #
 
 from PIL import Image, ImageFile
+from .exceptions import InvalidFileType
+
 
 _handler = None
 
@@ -41,7 +43,7 @@ class FITSStubImageFile(ImageFile.StubImageFile):
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(6)):
-            raise SyntaxError("Not a FITS file")
+            raise InvalidFileType("Not a FITS file")
 
         # FIXME: add more sanity checks here; mandatory header items
         # include SIMPLE, BITPIX, NAXIS, etc.

@@ -16,21 +16,20 @@
 
 import re
 from PIL._binary import o8
+from .exceptions import InvalidFileType, PILReadError
 
 
 ##
 # File handler for GIMP's palette format.
 
 class GimpPaletteFile(object):
-
     rawmode = "RGB"
 
     def __init__(self, fp):
-
         self.palette = [o8(i)*3 for i in range(256)]
 
         if fp.readline()[:12] != b"GIMP Palette":
-            raise SyntaxError("not a GIMP palette file")
+            raise InvalidFileType("not a GIMP palette file")
 
         i = 0
 
@@ -44,11 +43,11 @@ class GimpPaletteFile(object):
             if re.match(br"\w+:|#", s):
                 continue
             if len(s) > 100:
-                raise SyntaxError("bad palette file")
+                raise PILReadError("bad palette file")
 
             v = tuple(map(int, s.split()[:3]))
             if len(v) != 3:
-                raise ValueError("bad palette entry")
+                raise PILReadError("bad palette entry")
 
             if 0 <= i <= 255:
                 self.palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
@@ -58,5 +57,4 @@ class GimpPaletteFile(object):
         self.palette = b"".join(self.palette)
 
     def getpalette(self):
-
         return self.palette, self.rawmode

@@ -12,10 +12,12 @@
 #
 # See the README file for information on usage and redistribution.
 #
-from PIL import Image, ImageFile
-import struct
-import os
 import io
+import os
+import struct
+from PIL import Image, ImageFile
+from .exceptions import PILReadError, InvalidFileType
+
 
 __version__ = "0.1"
 
@@ -70,7 +72,7 @@ def _parse_jp2_header(fp):
             hlen = 8
 
         if lbox < hlen:
-            raise SyntaxError('Invalid JP2 header length')
+            raise PILReadError("Invalid JP2 header length")
 
         if tbox == b'jp2h':
             header = fp.read(lbox - hlen)
@@ -79,7 +81,7 @@ def _parse_jp2_header(fp):
             fp.seek(lbox - hlen, os.SEEK_CUR)
 
     if header is None:
-        raise SyntaxError('could not find JP2 header')
+        raise PILReadError("Could not find JP2 header")
 
     size = None
     mode = None
@@ -143,7 +145,7 @@ def _parse_jp2_header(fp):
                     break
 
     if size is None or mode is None:
-        raise SyntaxError("Malformed jp2 header")
+        raise PILReadError("Malformed jp2 header")
 
     return (size, mode)
 
@@ -167,10 +169,10 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 self.codec = "jp2"
                 self.size, self.mode = _parse_jp2_header(self.fp)
             else:
-                raise SyntaxError('not a JPEG 2000 file')
+                raise InvalidFileType("not a JPEG 2000 file")
 
         if self.size is None or self.mode is None:
-            raise SyntaxError('unable to determine size/mode')
+            raise PILReadError("unable to determine size/mode")
 
         self.reduce = 0
         self.layers = 0

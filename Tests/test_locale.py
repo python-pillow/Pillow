@@ -1,9 +1,7 @@
-from __future__ import print_function
+import locale
+from PIL import Image
 from helper import unittest, PillowTestCase
 
-from PIL import Image
-
-import locale
 
 # ref https://github.com/python-pillow/Pillow/issues/272
 # on windows, in polish locale:

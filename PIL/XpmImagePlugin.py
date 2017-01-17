@@ -18,6 +18,8 @@
 import re
 from PIL import Image, ImageFile, ImagePalette
 from PIL._binary import i8, o8
+from .exceptions import InvalidFileType, PILReadError
+
 
 __version__ = "0.2"
 
@@ -40,13 +42,13 @@ class XpmImageFile(ImageFile.ImageFile):
     def _open(self):
 
         if not _accept(self.fp.read(9)):
-            raise SyntaxError("not an XPM file")
+            raise InvalidFileType("not an XPM file")
 
         # skip forward to next string
         while True:
             s = self.fp.readline()
             if not s:
-                raise SyntaxError("broken XPM file")
+                raise PILReadError("broken XPM file")
             m = xpm_head.match(s)
             if m:
                 break
