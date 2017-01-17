@@ -19,8 +19,7 @@
 
 from __future__ import print_function
 
-from PIL import Image
-from PIL import FontFile
+from . import Image, FontFile
 
 
 # --------------------------------------------------------------------

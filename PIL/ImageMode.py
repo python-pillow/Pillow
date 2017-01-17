@@ -35,7 +35,8 @@ def getmode(mode):
     global _modes
     if not _modes:
         # initialize mode cache
-        from PIL import Image
+
+        from . import Image
         modes = {}
         # core modes
         for m, (basemode, basetype, bands) in Image._MODEINFO.items():

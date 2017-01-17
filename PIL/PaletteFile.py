@@ -13,7 +13,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL._binary import o8
+from ._binary import o8
 
 
 ##

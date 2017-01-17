@@ -25,8 +25,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isDirectory, isPath
+from . import Image
+from ._util import isDirectory, isPath
 import os
 import sys
 
@@ -37,7 +37,7 @@ class _imagingft_not_installed(object):
         raise ImportError("The _imagingft C module is not installed")
 
 try:
-    from PIL import _imagingft as core
+    from . import _imagingft as core
 except ImportError:
     core = _imagingft_not_installed()
 

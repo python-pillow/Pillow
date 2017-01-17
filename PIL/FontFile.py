@@ -17,7 +17,7 @@
 from __future__ import print_function
 
 import os
-from PIL import Image, _binary
+from . import Image, _binary
 
 WIDTH = 800
 

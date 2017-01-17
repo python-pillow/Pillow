@@ -15,7 +15,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, PngImagePlugin, _binary
+from PIL import Image, ImageFile, PngImagePlugin
+from PIL._binary import i8
 import io
 import os
 import shutil
@@ -26,8 +27,6 @@ import tempfile
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
 if enable_jpeg2k:
     from PIL import Jpeg2KImagePlugin
-
-i8 = _binary.i8
 
 HEADERSIZE = 8
 

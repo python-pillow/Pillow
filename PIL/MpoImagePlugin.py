@@ -18,7 +18,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, JpegImagePlugin
+from . import Image, JpegImagePlugin
 
 __version__ = "0.1"
 

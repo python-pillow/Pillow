@@ -15,8 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL import _imagingmath
+from . import Image, _imagingmath
 
 try:
     import builtins

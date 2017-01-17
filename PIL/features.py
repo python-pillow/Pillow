@@ -1,4 +1,4 @@
-from PIL import Image
+from . import Image
 
 modules = {
     "pil": "PIL._imaging",

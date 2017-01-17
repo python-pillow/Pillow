@@ -7,7 +7,8 @@
 # Image plugin for Palm pixmap images (output only).
 ##
 
-from PIL import Image, ImageFile, _binary
+from . import Image, ImageFile
+from ._binary import o8, o16be as o16b
 
 __version__ = "1.0"
 
@@ -107,9 +108,6 @@ _COMPRESSION_TYPES = {
     "rle":      0x01,
     "scanline": 0x00,
     }
-
-o8 = _binary.o8
-o16b = _binary.o16be
 
 
 #

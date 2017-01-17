@@ -26,7 +26,7 @@
 
 from __future__ import print_function
 
-from PIL import VERSION, PILLOW_VERSION, _plugins
+from . import VERSION, PILLOW_VERSION, _plugins
 
 import logging
 import warnings
@@ -64,7 +64,7 @@ try:
     # import Image and use the Image.core variable instead.
     # Also note that Image.core is not a publicly documented interface,
     # and should be considered private and subject to change.
-    from PIL import _imaging as core
+    from . import _imaging as core
     if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
         raise ImportError("The _imaging extension was built for another "
                           "version of Pillow or PIL")
@@ -109,11 +109,9 @@ except ImportError:
     import __builtin__
     builtins = __builtin__
 
-from PIL import ImageMode
-from PIL._binary import i8
-from PIL._util import isPath
-from PIL._util import isStringType
-from PIL._util import deferred_error
+from . import ImageMode
+from ._binary import i8
+from ._util import isPath, isStringType, deferred_error
 
 import os
 import sys
@@ -355,23 +353,23 @@ def preinit():
         return
 
     try:
-        from PIL import BmpImagePlugin
+        from . import BmpImagePlugin
     except ImportError:
         pass
     try:
-        from PIL import GifImagePlugin
+        from . import GifImagePlugin
     except ImportError:
         pass
     try:
-        from PIL import JpegImagePlugin
+        from . import JpegImagePlugin
     except ImportError:
         pass
     try:
-        from PIL import PpmImagePlugin
+        from . import PpmImagePlugin
     except ImportError:
         pass
     try:
-        from PIL import PngImagePlugin
+        from . import PngImagePlugin
     except ImportError:
         pass
 #   try:
@@ -525,7 +523,7 @@ class Image(object):
         if self.palette:
             new.palette = self.palette.copy()
         if im.mode == "P" and not new.palette:
-            from PIL import ImagePalette
+            from . import ImagePalette
             new.palette = ImagePalette.ImagePalette()
         new.info = self.info.copy()
         return new
@@ -775,7 +773,7 @@ class Image(object):
             if HAS_CFFI and USE_CFFI_ACCESS:
                 if self.pyaccess:
                     return self.pyaccess
-                from PIL import PyAccess
+                from . import PyAccess
                 self.pyaccess = PyAccess.new(self, self.readonly)
                 if self.pyaccess:
                     return self.pyaccess
@@ -908,7 +906,7 @@ class Image(object):
         if mode == "P" and palette == ADAPTIVE:
             im = self.im.quantize(colors)
             new = self._new(im)
-            from PIL import ImagePalette
+            from . import ImagePalette
             new.palette = ImagePalette.raw("RGB", new.im.getpalette("RGB"))
             if delete_trns:
                 # This could possibly happen if we requantize to fewer colors.
@@ -1321,7 +1319,7 @@ class Image(object):
             box += (box[0]+size[0], box[1]+size[1])
 
         if isStringType(im):
-            from PIL import ImageColor
+            from . import ImageColor
             im = ImageColor.getcolor(im, self.mode)
 
         elif isImageType(im):
@@ -1468,7 +1466,7 @@ class Image(object):
 
         :param data: A palette sequence (either a list or a string).
         """
-        from PIL import ImagePalette
+        from . import ImagePalette
 
         if self.mode not in ("L", "P"):
             raise ValueError("illegal image mode")
@@ -1583,7 +1581,7 @@ class Image(object):
         angle = angle % 360.0
 
         # Fast paths regardless of filter, as long as we're not
-        # translating or changing the center. 
+        # translating or changing the center.
         if not (center or translate):
             if angle == 0:
                 return self.copy()
@@ -1977,14 +1975,14 @@ class Image(object):
 
     def toqimage(self):
         """Returns a QImage copy of this image"""
-        from PIL import ImageQt
+        from . import ImageQt
         if not ImageQt.qt_is_installed:
             raise ImportError("Qt bindings are not installed")
         return ImageQt.toqimage(self)
 
     def toqpixmap(self):
         """Returns a QPixmap copy of this image"""
-        from PIL import ImageQt
+        from . import ImageQt
         if not ImageQt.qt_is_installed:
             raise ImportError("Qt bindings are not installed")
         return ImageQt.toqpixmap(self)
@@ -2057,7 +2055,7 @@ def new(mode, size, color=0):
     if isStringType(color):
         # css3-style specifier
 
-        from PIL import ImageColor
+        from . import ImageColor
         color = ImageColor.getcolor(color, mode)
 
     return Image()._new(core.fill(mode, size, color))
@@ -2219,7 +2217,7 @@ def fromarray(obj, mode=None):
 
 def fromqimage(im):
     """Creates an image instance from a QImage image"""
-    from PIL import ImageQt
+    from . import ImageQt
     if not ImageQt.qt_is_installed:
         raise ImportError("Qt bindings are not installed")
     return ImageQt.fromqimage(im)
@@ -2227,7 +2225,7 @@ def fromqimage(im):
 
 def fromqpixmap(im):
     """Creates an image instance from a QPixmap image"""
-    from PIL import ImageQt
+    from . import ImageQt
     if not ImageQt.qt_is_installed:
         raise ImportError("Qt bindings are not installed")
     return ImageQt.fromqpixmap(im)
@@ -2531,7 +2529,7 @@ def _show(image, **options):
 
 
 def _showxv(image, title=None, **options):
-    from PIL import ImageShow
+    from . import ImageShow
     ImageShow.show(image, title, **options)
 
 

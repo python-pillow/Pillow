@@ -17,15 +17,14 @@
 #
 
 
-from PIL import Image, ImageFile, _binary
+from . import Image, ImageFile
+from ._binary import i16le as i16, o16le as o16
 
 __version__ = "0.1"
 
 
 #
 # read MSP files
-
-i16 = _binary.i16le
 
 
 def _accept(prefix):
@@ -65,8 +64,6 @@ class MspImageFile(ImageFile.ImageFile):
 
 #
 # write MSP files (uncompressed only)
-
-o16 = _binary.o16le
 
 
 def _save(im, fp, filename):

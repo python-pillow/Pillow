@@ -15,7 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
+from . import Image
 
 import sys
 if sys.platform not in ["win32", "darwin"]:
@@ -75,7 +75,7 @@ def grabclipboard():
         debug = 0  # temporary interface
         data = Image.core.grabclipboard(debug)
         if isinstance(data, bytes):
-            from PIL import BmpImagePlugin
+            from . import BmpImagePlugin
             import io
             return BmpImagePlugin.DibImageFile(io.BytesIO(data))
         return data

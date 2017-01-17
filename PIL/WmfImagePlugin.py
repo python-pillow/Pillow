@@ -21,7 +21,10 @@
 
 from __future__ import print_function
 
-from PIL import Image, ImageFile, _binary
+from . import Image, ImageFile
+from ._binary import i16le as word, si16le as short, i32le as dword, si32le as _long
+
+
 
 __version__ = "0.2"
 
@@ -58,13 +61,6 @@ if hasattr(Image.core, "drawwmf"):
                 )
 
     register_handler(WmfHandler())
-
-# --------------------------------------------------------------------
-
-word = _binary.i16le
-short = _binary.si16le
-dword = _binary.i32le
-_long = _binary.si32le
 
 #
 # --------------------------------------------------------------------

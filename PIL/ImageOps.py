@@ -17,8 +17,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isStringType
+from . import Image
+from ._util import isStringType
 import operator
 import functools
 
@@ -39,7 +39,7 @@ def _border(border):
 
 def _color(color, mode):
     if isStringType(color):
-        from PIL import ImageColor
+        from . import ImageColor
         color = ImageColor.getcolor(color, mode)
     return color
 
