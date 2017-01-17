@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Replaced absolute PIL imports with relative imports #2349
+  [radarhere]
+
+- Added context managers for file handling #2307
+  [radarhere]
+  
 - Expose registered file extensions in Image #2343
   [iggomez, radarhere]
 
