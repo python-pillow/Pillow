@@ -631,16 +631,11 @@ class pil_build_ext(build_ext):
         build_ext.build_extensions(self)
 
         #
-        # sanity and security checks
+        # sanity checks
 
-        unsafe_zlib = None
+        self.summary_report(feature)
 
-        if feature.zlib:
-            unsafe_zlib = self.check_zlib_version(self.compiler.include_dirs)
-
-        self.summary_report(feature, unsafe_zlib)
-
-    def summary_report(self, feature, unsafe_zlib):
+    def summary_report(self, feature):
 
         print("-" * 68)
         print("PIL SETUP SUMMARY")
@@ -676,16 +671,6 @@ class pil_build_ext(build_ext):
                 print("*** %s support not available" % option[1])
                 all = 0
 
-        if feature.zlib and unsafe_zlib:
-            print("")
-            print("*** Warning: zlib", unsafe_zlib)
-            print("may contain a security vulnerability.")
-            print("*** Consider upgrading to zlib 1.2.3 or newer.")
-            print("*** See: http://www.kb.cert.org/vuls/id/238678")
-            print(" http://www.kb.cert.org/vuls/id/680620")
-            print(" http://www.gzip.org/zlib/advisory-2002-03-11.txt")
-            print("")
-
         print("-" * 68)
 
         if not all:
@@ -696,21 +681,6 @@ class pil_build_ext(build_ext):
 
         print("To check the build, run the selftest.py script.")
         print("")
-
-    def check_zlib_version(self, include_dirs):
-        # look for unsafe versions of zlib
-        for subdir in include_dirs:
-            zlibfile = os.path.join(subdir, "zlib.h")
-            if os.path.isfile(zlibfile):
-                break
-        else:
-            return
-        for line in open(zlibfile).readlines():
-            m = re.match(r'#define\s+ZLIB_VERSION\s+"([^"]*)"', line)
-            if not m:
-                continue
-            if m.group(1) < "1.2.3":
-                return m.group(1)
 
     # https://hg.python.org/users/barry/rev/7e8deab93d5a
     def add_multiarch_paths(self):
