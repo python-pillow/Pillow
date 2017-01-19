@@ -16,7 +16,7 @@ Changelog (Pillow)
 - Make mode descriptor cache initialization thread-safe. #2351
   [gunjambi]
 
-- Updated windows test dependencies: Freetype 2.7.1, zlib 1.2.10. #2331, #2332
+- Updated Windows test dependencies: Freetype 2.7.1, zlib 1.2.11 #2331, #2332, #2357
   [radarhere]
 
 - Followed upstream pngquant packaging reorg to libimagquant #2354
