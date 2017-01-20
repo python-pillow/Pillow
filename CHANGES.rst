@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Removed PIL 1.0 era TK readme that concerns Windows 95/NT #2360
+  [wiredfool]
+
+- Prevent `nose -v` printing docstrings #2369
+  [hugovk]
+  
 - Replaced absolute PIL imports with relative imports #2349
   [radarhere]
 
