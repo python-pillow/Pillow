@@ -149,6 +149,10 @@ class PillowTestCase(unittest.TestCase):
         if skip:
             self.skipTest(msg or "Known Bad Test")
 
+    def shortDescription(self):
+        # Prevents `nose -v` printing docstrings
+        return None
+
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")
         fd, path = tempfile.mkstemp(template[4:], template[:4])
