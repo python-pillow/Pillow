@@ -13,19 +13,19 @@ coverage report
 pip install coveralls-merge
 coveralls-merge coverage.c.json
 
-if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then
+if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ] && [ "$DOCKER" == "" ]; then
 	pip install pep8 pyflakes
 	pep8 --statistics --count PIL/*.py
 	pep8 --statistics --count Tests/*.py
 	pyflakes *.py       | tee >(wc -l)
 	pyflakes PIL/*.py   | tee >(wc -l)
 	pyflakes Tests/*.py | tee >(wc -l)
-fi
 
-# Coverage and quality reports on just the latest diff.
-# (Installation is very slow on Py3, so just do it for Py2.)
-if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then depends/diffcover-install.sh; fi
-if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then depends/diffcover-run.sh; fi
+	# Coverage and quality reports on just the latest diff.
+	# (Installation is very slow on Py3, so just do it for Py2.)
+	depends/diffcover-install.sh
+	depends/diffcover-run.sh
+fi
 
 # after_all
 

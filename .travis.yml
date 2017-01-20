@@ -8,7 +8,7 @@ notifications:
 # Then run the remainder.
 
 matrix:
-  fast_finish: false
+  fast_finish: true
   allow_failures:
     - python: nightly
   include:
@@ -24,6 +24,7 @@ matrix:
     - python: '3.5'
     - python: '3.4'
     - python: '3.3'
+    - python: 'nightly'
   
 dist: trusty
 
