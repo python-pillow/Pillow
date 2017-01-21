@@ -715,6 +715,8 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
           b'\0',                                # 11: filter category
           b'\0')                                # 12: interlace flag
 
+    chunks = [b"cHRM", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
+
     icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
     if icc:
         # ICC profile
@@ -726,6 +728,18 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
         name = b"ICC Profile"
         data = name + b"\0\0" + zlib.compress(icc)
         chunk(fp, b"iCCP", data)
+    else:
+        chunks.remove(b"sRGB")
+
+    info = im.encoderinfo.get("pnginfo")
+    if info:
+        chunks_multiple_allowed = [b"sPLT", b"iTXt", b"tEXt", b"zTXt"]
+        for cid, data in info.chunks:
+            if cid in chunks:
+                chunks.remove(cid)
+                chunk(fp, cid, data)
+            elif cid in chunks_multiple_allowed:
+                chunk(fp, cid, data)
 
     if im.mode == "P":
         palette_byte_number = (2 ** bits) * 3
@@ -773,8 +787,11 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 
     info = im.encoderinfo.get("pnginfo")
     if info:
+        chunks = [b"bKGD", b"hIST"]
         for cid, data in info.chunks:
-            chunk(fp, cid, data)
+            if cid in chunks:
+                chunks.remove(cid)
+                chunk(fp, cid, data)
 
     ImageFile._save(im, _idat(fp, chunk),
                     [("zip", (0, 0)+im.size, 0, rawmode)])

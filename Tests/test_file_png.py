@@ -394,8 +394,8 @@ class TestFilePng(PillowTestCase):
         self.assertIsInstance(im.info["Text"], str)
 
     def test_unicode_text(self):
-        # Check preservation of non-ASCII characters on Python3
-        # This cannot really be meaningfully tested on Python2,
+        # Check preservation of non-ASCII characters on Python 3
+        # This cannot really be meaningfully tested on Python 2,
         # since it didn't preserve charsets to begin with.
 
         def rt_text(value):
