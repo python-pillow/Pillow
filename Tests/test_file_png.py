@@ -500,7 +500,7 @@ class TestFilePng(PillowTestCase):
     def test_chunk_order(self):
         im = Image.open("Tests/images/icc_profile.png")
         test_file = self.tempfile("temp.png")
-        im.convert("P").save(test_file)
+        im.convert("P").save(test_file, dpi=(100, 100))
 
         chunks = []
         fp = open(test_file, "rb")
@@ -514,7 +514,20 @@ class TestFilePng(PillowTestCase):
             except EOFError:
                 break
             png.crc(cid, s)
+
+        # https://www.w3.org/TR/PNG/#5ChunkOrdering
+        # IHDR - shall be first
+        self.assertEqual(chunks.index(b"IHDR"), 0)
+        # PLTE - before first IDAT
+        self.assertLess(chunks.index(b"PLTE"), chunks.index(b"IDAT"))
+        # iCCP - before PLTE and IDAT
         self.assertLess(chunks.index(b"iCCP"), chunks.index(b"PLTE"))
+        self.assertLess(chunks.index(b"iCCP"), chunks.index(b"IDAT"))
+        # tRNS - after PLTE, before IDAT
+        self.assertGreater(chunks.index(b"tRNS"), chunks.index(b"PLTE"))
+        self.assertLess(chunks.index(b"tRNS"), chunks.index(b"IDAT"))
+        # pHYs - before IDAT
+        self.assertLess(chunks.index(b"pHYs"), chunks.index(b"IDAT"))
 
 
 if __name__ == '__main__':
