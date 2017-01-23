@@ -106,8 +106,10 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
             mm_out_a = _mm256_add_epi32(_mm256_mullo_epi16(mm_src_a, vmm_max_alpha), mm_blend);
             mm_coef1 = _mm256_mullo_epi32(mm_src_a, vmm_max_alpha2);
             // 8 bits
-            mm_coef1 = _mm256_cvtps_epi32(_mm256_div_ps(_mm256_cvtepi32_ps(mm_coef1),
-                                                        _mm256_cvtepi32_ps(mm_out_a)));
+            mm_coef1 = _mm256_cvtps_epi32(
+                _mm256_mul_ps(_mm256_cvtepi32_ps(mm_coef1),
+                              _mm256_rcp_ps(_mm256_cvtepi32_ps(mm_out_a)))
+            );
             // 8 bits
             mm_coef2 = _mm256_sub_epi32(vmm_max_alpha, mm_coef1);
 
@@ -169,8 +171,10 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
             // coef1 = src->a * 255 * 255 / outa
             mm_coef1 = _mm_mullo_epi32(mm_src_a, mm_max_alpha2);
             // [8]  xx xx xx c3 xx xx xx c2 xx xx xx c1 xx xx xx c0
-            mm_coef1 = _mm_cvtps_epi32(_mm_div_ps(_mm_cvtepi32_ps(mm_coef1),
-                                                  _mm_cvtepi32_ps(mm_out_a)));
+            mm_coef1 = _mm_cvtps_epi32(
+                _mm_mul_ps(_mm_cvtepi32_ps(mm_coef1),
+                           _mm_rcp_ps(_mm_cvtepi32_ps(mm_out_a)))
+            );
             // [8]  xx xx xx c3 xx xx xx c2 xx xx xx c1 xx xx xx c0
             mm_coef2 = _mm_sub_epi32(mm_max_alpha, mm_coef1);
 
