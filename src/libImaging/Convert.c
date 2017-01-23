@@ -541,8 +541,6 @@ rgbA2rgba(UINT8* out, const UINT8* in, int xsize)
     }
 }
 
-int *rgba2rgbAtable = NULL;
-
 /* RGBa -> RGBA conversion to remove premultiplication
    Needed for correct transforms/resizing on RGBA images */
 static void
@@ -553,46 +551,43 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
 
 #if defined(__AVX2__)
 
-    int a, c;
-    if ( ! rgba2rgbAtable) {
-        rgba2rgbAtable = (int *) malloc(256 * 256 * 2 * 4);
-        for (c = 0; c < 256; c++) {
-            rgba2rgbAtable[c] = c;
-        }
-        for (a = 1; a < 256; a++) {
-            for (c = 0; c < 256; c++) {
-                rgba2rgbAtable[a * 256 + c] = CLIP((255 * c) / a);
-            }
-        }
-    }
-
     for (; x < xsize - 7; x += 8) {
-        __m256i pix0, pix1, pix2, pix3;
+        __m256 mmaf;
+        __m256i pix0, pix1, pix2, pix3, mma;
+        __m256 mma0, mma1, mma2, mma3;
+        __m256 half = _mm256_set1_ps(0.5);
         __m256i source = _mm256_loadu_si256((__m256i *) &in[x * 4]);
 
-        pix0 = _mm256_shuffle_epi8(source, _mm256_set_epi8(
-            -1,-1,-1,3, -1,-1,3,2, -1,-1,3,1, -1,-1,3,0,
-            -1,-1,-1,3, -1,-1,3,2, -1,-1,3,1, -1,-1,3,0));
-        pix0 = _mm256_i32gather_epi32(rgba2rgbAtable, pix0, 4);
+        mma = _mm256_and_si256(source, _mm256_set_epi8(
+            0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0,
+            0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0));
+        
+        mmaf = _mm256_cvtepi32_ps(_mm256_srli_epi32(source, 24));
+        mmaf = _mm256_mul_ps(_mm256_set1_ps(255), _mm256_rcp_ps(mmaf));
 
-        pix1 = _mm256_shuffle_epi8(source, _mm256_set_epi8(
-            -1,-1,-1,7, -1,-1,7,6, -1,-1,7,5, -1,-1,7,4,
-            -1,-1,-1,7, -1,-1,7,6, -1,-1,7,5, -1,-1,7,4));
-        pix1 = _mm256_i32gather_epi32(rgba2rgbAtable, pix1, 4);
+        mma0 = _mm256_shuffle_ps(mmaf, mmaf, 0x00);
+        mma1 = _mm256_shuffle_ps(mmaf, mmaf, 0x55);
+        mma2 = _mm256_shuffle_ps(mmaf, mmaf, 0xaa);
+        mma3 = _mm256_shuffle_ps(mmaf, mmaf, 0xff);
 
-        pix2 = _mm256_shuffle_epi8(source, _mm256_set_epi8(
-            -1,-1,-1,11, -1,-1,11,10, -1,-1,11,9, -1,-1,11,8,
-            -1,-1,-1,11, -1,-1,11,10, -1,-1,11,9, -1,-1,11,8));
-        pix2 = _mm256_i32gather_epi32(rgba2rgbAtable, pix2, 4);
+        pix1 = _mm256_unpacklo_epi8(source, _mm256_setzero_si256());
+        pix3 = _mm256_unpackhi_epi8(source, _mm256_setzero_si256());
+        pix0 = _mm256_unpacklo_epi16(pix1, _mm256_setzero_si256());
+        pix1 = _mm256_unpackhi_epi16(pix1, _mm256_setzero_si256());
+        pix2 = _mm256_unpacklo_epi16(pix3, _mm256_setzero_si256());
+        pix3 = _mm256_unpackhi_epi16(pix3, _mm256_setzero_si256());
 
-        pix3 = _mm256_shuffle_epi8(source, _mm256_set_epi8(
-            -1,-1,-1,15, -1,-1,15,14, -1,-1,15,13, -1,-1,15,12,
-            -1,-1,-1,15, -1,-1,15,14, -1,-1,15,13, -1,-1,15,12));
-        pix3 = _mm256_i32gather_epi32(rgba2rgbAtable, pix3, 4);
-
+        pix0 = _mm256_cvtps_epi32(_mm256_add_ps(_mm256_mul_ps(_mm256_cvtepi32_ps(pix0), mma0), half));
+        pix1 = _mm256_cvtps_epi32(_mm256_add_ps(_mm256_mul_ps(_mm256_cvtepi32_ps(pix1), mma1), half));
+        pix2 = _mm256_cvtps_epi32(_mm256_add_ps(_mm256_mul_ps(_mm256_cvtepi32_ps(pix2), mma2), half));
+        pix3 = _mm256_cvtps_epi32(_mm256_add_ps(_mm256_mul_ps(_mm256_cvtepi32_ps(pix3), mma3), half));
+        
         pix0 = _mm256_packus_epi32(pix0, pix1);
         pix2 = _mm256_packus_epi32(pix2, pix3);
         source = _mm256_packus_epi16(pix0, pix2);
+        source = _mm256_blendv_epi8(source, mma, _mm256_set_epi8(
+            0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0,
+            0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0));
         _mm256_storeu_si256((__m256i *) &out[x * 4], source);
     }
 
