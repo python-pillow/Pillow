@@ -553,9 +553,8 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
 
     for (; x < xsize - 7; x += 8) {
         __m256 mmaf;
-        __m256i pix0, pix1, pix2, pix3, mma;
-        __m256 mma0, mma1, mma2, mma3;
-        __m256 half = _mm256_set1_ps(0.5);
+        __m256i pix0, pix1, mma;
+        __m256i mma0, mma1;
         __m256i source = _mm256_loadu_si256((__m256i *) &in[x * 4]);
 
         mma = _mm256_and_si256(source, _mm256_set_epi8(
@@ -563,28 +562,23 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
             0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0));
         
         mmaf = _mm256_cvtepi32_ps(_mm256_srli_epi32(source, 24));
-        mmaf = _mm256_mul_ps(_mm256_set1_ps(255), _mm256_rcp_ps(mmaf));
+        mmaf = _mm256_mul_ps(_mm256_set1_ps(255 * 256), _mm256_rcp_ps(mmaf));
+        mma1 = _mm256_cvtps_epi32(_mm256_add_ps(_mm256_set1_ps(0.5), mmaf));
 
-        mma0 = _mm256_shuffle_ps(mmaf, mmaf, 0x00);
-        mma1 = _mm256_shuffle_ps(mmaf, mmaf, 0x55);
-        mma2 = _mm256_shuffle_ps(mmaf, mmaf, 0xaa);
-        mma3 = _mm256_shuffle_ps(mmaf, mmaf, 0xff);
+        mma0 = _mm256_shuffle_epi8(mma1, _mm256_set_epi8(
+            5,4,5,4, 5,4,5,4, 1,0,1,0, 1,0,1,0,
+            5,4,5,4, 5,4,5,4, 1,0,1,0, 1,0,1,0));
+        mma1 = _mm256_shuffle_epi8(mma1, _mm256_set_epi8(
+            13,12,13,12, 13,12,13,12, 9,8,9,8, 9,8,9,8,
+            13,12,13,12, 13,12,13,12, 9,8,9,8, 9,8,9,8));
 
-        pix1 = _mm256_unpacklo_epi8(source, _mm256_setzero_si256());
-        pix3 = _mm256_unpackhi_epi8(source, _mm256_setzero_si256());
-        pix0 = _mm256_unpacklo_epi16(pix1, _mm256_setzero_si256());
-        pix1 = _mm256_unpackhi_epi16(pix1, _mm256_setzero_si256());
-        pix2 = _mm256_unpacklo_epi16(pix3, _mm256_setzero_si256());
-        pix3 = _mm256_unpackhi_epi16(pix3, _mm256_setzero_si256());
+        pix0 = _mm256_unpacklo_epi8(_mm256_setzero_si256(), source);
+        pix1 = _mm256_unpackhi_epi8(_mm256_setzero_si256(), source);
 
-        pix0 = _mm256_cvtps_epi32(_mm256_add_ps(_mm256_mul_ps(_mm256_cvtepi32_ps(pix0), mma0), half));
-        pix1 = _mm256_cvtps_epi32(_mm256_add_ps(_mm256_mul_ps(_mm256_cvtepi32_ps(pix1), mma1), half));
-        pix2 = _mm256_cvtps_epi32(_mm256_add_ps(_mm256_mul_ps(_mm256_cvtepi32_ps(pix2), mma2), half));
-        pix3 = _mm256_cvtps_epi32(_mm256_add_ps(_mm256_mul_ps(_mm256_cvtepi32_ps(pix3), mma3), half));
-        
-        pix0 = _mm256_packus_epi32(pix0, pix1);
-        pix2 = _mm256_packus_epi32(pix2, pix3);
-        source = _mm256_packus_epi16(pix0, pix2);
+        pix0 = _mm256_mulhi_epu16(pix0, mma0);
+        pix1 = _mm256_mulhi_epu16(pix1, mma1);
+
+        source = _mm256_packus_epi16(pix0, pix1);
         source = _mm256_blendv_epi8(source, mma, _mm256_set_epi8(
             0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0,
             0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0));
@@ -595,37 +589,29 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
 
     for (; x < xsize - 3; x += 4) {
         __m128 mmaf;
-        __m128i pix0, pix1, pix2, pix3, mma;
-        __m128 mma0, mma1, mma2, mma3;
-        __m128 half = _mm_set1_ps(0.5);
+        __m128i pix0, pix1, mma;
+        __m128i mma0, mma1;
         __m128i source = _mm_loadu_si128((__m128i *) &in[x * 4]);
 
         mma = _mm_and_si128(source, _mm_set_epi8(
             0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0));
         
         mmaf = _mm_cvtepi32_ps(_mm_srli_epi32(source, 24));
-        mmaf = _mm_mul_ps(_mm_set1_ps(255), _mm_rcp_ps(mmaf));
+        mmaf = _mm_mul_ps(_mm_set1_ps(255 * 256), _mm_rcp_ps(mmaf));
+        mma1 = _mm_cvtps_epi32(_mm_add_ps(_mm_set1_ps(0.5), mmaf));
 
-        mma0 = _mm_shuffle_ps(mmaf, mmaf, 0x00);
-        mma1 = _mm_shuffle_ps(mmaf, mmaf, 0x55);
-        mma2 = _mm_shuffle_ps(mmaf, mmaf, 0xaa);
-        mma3 = _mm_shuffle_ps(mmaf, mmaf, 0xff);
+        mma0 = _mm_shuffle_epi8(mma1, _mm_set_epi8(
+            5,4,5,4, 5,4,5,4, 1,0,1,0, 1,0,1,0));
+        mma1 = _mm_shuffle_epi8(mma1, _mm_set_epi8(
+            13,12,13,12, 13,12,13,12, 9,8,9,8, 9,8,9,8));
 
-        pix1 = _mm_unpacklo_epi8(source, _mm_setzero_si128());
-        pix3 = _mm_unpackhi_epi8(source, _mm_setzero_si128());
-        pix0 = _mm_unpacklo_epi16(pix1, _mm_setzero_si128());
-        pix1 = _mm_unpackhi_epi16(pix1, _mm_setzero_si128());
-        pix2 = _mm_unpacklo_epi16(pix3, _mm_setzero_si128());
-        pix3 = _mm_unpackhi_epi16(pix3, _mm_setzero_si128());
+        pix0 = _mm_unpacklo_epi8(_mm_setzero_si128(), source);
+        pix1 = _mm_unpackhi_epi8(_mm_setzero_si128(), source);
 
-        pix0 = _mm_cvtps_epi32(_mm_add_ps(_mm_mul_ps(_mm_cvtepi32_ps(pix0), mma0), half));
-        pix1 = _mm_cvtps_epi32(_mm_add_ps(_mm_mul_ps(_mm_cvtepi32_ps(pix1), mma1), half));
-        pix2 = _mm_cvtps_epi32(_mm_add_ps(_mm_mul_ps(_mm_cvtepi32_ps(pix2), mma2), half));
-        pix3 = _mm_cvtps_epi32(_mm_add_ps(_mm_mul_ps(_mm_cvtepi32_ps(pix3), mma3), half));
-        
-        pix0 = _mm_packus_epi32(pix0, pix1);
-        pix2 = _mm_packus_epi32(pix2, pix3);
-        source = _mm_packus_epi16(pix0, pix2);
+        pix0 = _mm_mulhi_epu16(pix0, mma0);
+        pix1 = _mm_mulhi_epu16(pix1, mma1);
+
+        source = _mm_packus_epi16(pix0, pix1);
         source = _mm_blendv_epi8(source, mma, _mm_set_epi8(
             0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0));
         _mm_storeu_si128((__m128i *) &out[x * 4], source);
