@@ -93,6 +93,24 @@ class TestFileTiff(PillowTestCase):
 
         self.assertEqual(im.info['dpi'], (72., 72.))
 
+    def test_xyres_fallback_tiff(self):
+        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION, RESOLUTION_UNIT
+        filename = "Tests/images/compression.tif"
+        im = Image.open(filename)
+
+        # v2 api
+        self.assertIsInstance(im.tag_v2[X_RESOLUTION],
+                              TiffImagePlugin.IFDRational)
+        self.assertIsInstance(im.tag_v2[Y_RESOLUTION],
+                              TiffImagePlugin.IFDRational)
+        self.assertRaises(KeyError,
+                          lambda: im.tag_v2[RESOLUTION_UNIT])
+
+        # Legacy.
+        self.assertEqual(im.info['resolution'], (100., 100.))
+        # Fallback "inch".
+        self.assertEqual(im.info['dpi'], (100., 100.))
+
     def test_int_resolution(self):
         from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         filename = "Tests/images/pil168.tif"
