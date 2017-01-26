@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Tests: Added docker images for testing alternate platforms. See also https://github.com/python-pillow/docker-images. #2368
+  [wiredfool]
+  
 - Removed PIL 1.0 era TK readme that concerns Windows 95/NT #2360
   [wiredfool]
 
