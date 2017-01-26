@@ -557,20 +557,15 @@ def _get_optimize(im, info):
         # create the new palette if not every color is used
         optimise = _FORCE_OPTIMIZE or im.mode == 'L'
         if optimise or im.width * im.height < 512 * 512:
-            used_palette_colors = _get_used_palette_colors(im)
+            # check which colors are used
+            used_palette_colors = []
+            for i, count in enumerate(im.histogram()):
+                if count:
+                    used_palette_colors.append(i)
+
             if optimise or (len(used_palette_colors) <= 128 and
                 max(used_palette_colors) > len(used_palette_colors)):
                 return used_palette_colors
-
-def _get_used_palette_colors(im):
-    used_palette_colors = []
-
-    # check which colors are used
-    for i, count in enumerate(im.histogram()):
-        if count:
-            used_palette_colors.append(i)
-
-    return used_palette_colors
 
 def _get_color_table_size(palette_bytes):
     # calculate the palette size for the header
