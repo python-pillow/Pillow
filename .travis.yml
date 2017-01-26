@@ -6,49 +6,38 @@ notifications:
 # Run slow PyPy* first, to give them a headstart and reduce waiting time.
 # Run latest 3.x and 2.x next, to get quick compatibility results.
 # Then run the remainder.
-python:
-  - "pypy"
-  - "pypy3"
-  - 3.6
-  - 2.7
-  - "2.7_with_system_site_packages" # For PyQt4
-  - 3.5
-  - 3.4
-  - 3.3
-  - nightly
 
+matrix:
+  fast_finish: true
+  allow_failures:
+    - python: nightly
+  include:
+    - python: "pypy"
+    - python: "pypy3"
+    - python: '3.6'
+    - python: '2.7'
+    - env: DOCKER="alpine"
+    - env: DOCKER="ubuntu-trusty-x86"
+    - env: DOCKER="ubuntu-xenial-amd64"
+    - env: DOCKER="ubuntu-precise-amd64"     
+    - python:  "2.7_with_system_site_packages" # For PyQt4
+    - python: '3.5'
+    - python: '3.4'
+    - python: '3.3'
+    - python: 'nightly'
+  
 dist: trusty
 
+sudo: required
+
+services:
+  - docker
+
 install:
-  - "travis_retry sudo apt-get update"
-  - "travis_retry sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick"
-  - "travis_retry pip install cffi"
-  - "travis_retry pip install nose"
-  - "travis_retry pip install check-manifest"
-  - "travis_retry pip install olefile"
-    # Pyroma tests sometimes hang on PyPy; skip
-  - if [ $TRAVIS_PYTHON_VERSION != "pypy" ]; then travis_retry pip install pyroma; fi
+  - if [ "$DOCKER" == "" ]; then .travis/install.sh; fi
 
-  - "travis_retry pip install coverage"
-
-  # docs only on python 2.7
-  - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then travis_retry pip install -r requirements.txt ; fi
-
-  # clean checkout for manifest
-  - mkdir /tmp/check-manifest && cp -a . /tmp/check-manifest
-
-  # webp
-  - pushd depends && ./install_webp.sh && popd
-
-  # openjpeg
-  - pushd depends && ./install_openjpeg.sh && popd
-
-  # libimagequant
-  - pushd depends && ./install_imagequant.sh && popd
-
-  # extra test images
-  - pushd depends && ./install_extra_test_images.sh && popd
-
+before_install:
+  - if [ "$DOCKER" ]; then docker pull pythonpillow/$DOCKER; fi
 
 before_script:
 # Qt needs a display for some of the tests, and it's only run on the system site packages install
@@ -56,60 +45,16 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
 
 script:
-  - coverage erase
-  - python setup.py clean
-  - CFLAGS="-coverage" python setup.py build_ext --inplace
-
-  - coverage run --append --include=PIL/* selftest.py
-  - coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
-  - pushd /tmp/check-manifest && check-manifest --ignore ".coveragerc,.editorconfig,*.yml,*.yaml,tox.ini" && popd
-
-  # Docs
-  - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then make install && make doccheck; fi
+  - |
+       if [ "$DOCKER" == "" ]; then
+          .travis/script.sh
+       else
+          docker run -v $TRAVIS_BUILD_DIR:/Pillow pythonpillow/$DOCKER
+       fi
 
 after_success:
-   # gather the coverage data
-  - travis_retry sudo apt-get -qq install lcov
-  - lcov --capture --directory . -b . --output-file coverage.info
-   # filter to remove system headers
-  - lcov --remove coverage.info '/usr/*' -o coverage.filtered.info
-   # convert to json
-  - travis_retry gem install coveralls-lcov
-  - coveralls-lcov -v -n coverage.filtered.info > coverage.c.json
-
-  - coverage report
-  - travis_retry pip install coveralls-merge
-  - coveralls-merge coverage.c.json
-
-  - travis_retry pip install pep8 pyflakes
-  - pep8 --statistics --count PIL/*.py
-  - pep8 --statistics --count Tests/*.py
-  - pyflakes *.py       | tee >(wc -l)
-  - pyflakes PIL/*.py   | tee >(wc -l)
-  - pyflakes Tests/*.py | tee >(wc -l)
-
-    # Coverage and quality reports on just the latest diff.
-    # (Installation is very slow on Py3, so just do it for Py2.)
-  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then depends/diffcover-install.sh; fi
-  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then depends/diffcover-run.sh; fi
-
-  # after_all
-  - |
-      if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
-        python travis_after_all.py
-        export $(cat .to_export_back)
-        if [ "$BUILD_LEADER" = "YES" ]; then
-          if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-            echo "All jobs succeded! Triggering macOS build..."
-            # Trigger a macOS build at the pillow-wheels repo
-            ./build_children.sh
-          else
-            echo "Some jobs failed"
-          fi
-        fi
-      fi
-
+  - .travis/after_success.sh
+  
 after_failure:
   - |
       if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
@@ -130,11 +75,6 @@ after_script:
       if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         echo leader=$BUILD_LEADER status=$BUILD_AGGREGATE_STATUS
       fi
-
-matrix:
-  fast_finish: true
-  allow_failures:
-    - python: nightly
 
 env:
   global:
