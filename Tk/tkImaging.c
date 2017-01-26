@@ -24,10 +24,7 @@
  * This registers a Tcl command called "PyImagingPhoto", which is used
  * to communicate between PIL and Tk's PhotoImage handler.
  *
- * Compile and link tkImaging.c with tkappinit.c and _tkinter (see the
- * Setup file for details on how to use tkappinit.c).  Note that
- * _tkinter.c must be compiled with WITH_APPINIT.
- *
+
  * History:
  * 1995-09-12 fl  Created
  * 1996-04-08 fl  Ready for release
@@ -169,7 +166,7 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
     return TCL_OK;
 }
 
-
+/*  Warning -- this does not work at all */
 static int
 PyImagingPhotoGet(ClientData clientdata, Tcl_Interp* interp,
                int argc, const char **argv)
