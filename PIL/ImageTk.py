@@ -32,6 +32,13 @@ except ImportError:
     tkinter = Tkinter
     del Tkinter
 
+# required for pypy, which always has cffi installed
+try:
+    from cffi import FFI
+    ffi = FFI()
+except ImportError:
+    pass
+
 from . import Image
 from io import BytesIO
 
@@ -184,7 +191,13 @@ class PhotoImage(object):
             try:
                 from . import _imagingtk
                 try:
-                    _imagingtk.tkinit(tk.interpaddr(), 1)
+                    if hasattr(tk, 'interp'):
+                        # Pypy is using a ffi cdata element
+                        # (Pdb) self.tk.interp
+                        #  <cdata 'Tcl_Interp *' 0x3061b50>
+                        _imagingtk.tkinit(int(ffi.cast("uintptr_t", tk.interp)), 1)
+                    else:
+                        _imagingtk.tkinit(tk.interpaddr(), 1)
                 except AttributeError:
                     _imagingtk.tkinit(id(tk), 0)
                 tk.call("PyImagingPhoto", self.__photo, block.id)
