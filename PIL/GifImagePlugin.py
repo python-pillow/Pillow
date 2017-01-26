@@ -32,10 +32,6 @@ __version__ = "0.9"
 
 
 # --------------------------------------------------------------------
-# Helpers
-
-
-# --------------------------------------------------------------------
 # Identify/read GIF files
 
 def _accept(prefix):
@@ -501,6 +497,8 @@ def _get_local_header(fp, im, offset, flags):
 
 def _save_netpbm(im, fp, filename):
 
+    # Unused by default.
+    # To use, uncomment the register_save call at the end of the file.
     #
     # If you need real GIF compression and/or RGB quantization, you
     # can use the external NETPBM/PBMPLUS utilities.  See comments
