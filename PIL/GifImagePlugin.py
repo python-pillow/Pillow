@@ -555,12 +555,12 @@ def _get_optimize(im, info):
         # * If we have a 'large' image, the palette is in the noise.
 
         # create the new palette if not every color is used
-        used_palette_colors = _get_used_palette_colors(im)
-        if _FORCE_OPTIMIZE or im.mode == 'L' or \
-           (len(used_palette_colors) <= 128 and
-            max(used_palette_colors) > len(used_palette_colors) and
-            im.width * im.height < 512 * 512):
-            return used_palette_colors
+        optimise = _FORCE_OPTIMIZE or im.mode == 'L'
+        if optimise or im.width * im.height < 512 * 512:
+            used_palette_colors = _get_used_palette_colors(im)
+            if optimise or (len(used_palette_colors) <= 128 and
+                max(used_palette_colors) > len(used_palette_colors)):
+                return used_palette_colors
 
 def _get_used_palette_colors(im):
     used_palette_colors = []
