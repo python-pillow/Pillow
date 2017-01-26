@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Fixed segfault when using ImagingTk on pypy Issue #2376, #2359.
+  [wiredfool]
+
+- Fixed Integer overflow using ImagingTk on 32 bit platforms #2359
+  [wiredfool, QuLogic]
+
 - Tests: Added docker images for testing alternate platforms. See also https://github.com/python-pillow/docker-images. #2368
   [wiredfool]
   
