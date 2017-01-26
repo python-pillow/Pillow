@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- PNG: Moved iCCP chunk before PLTE chunk when saving as PNG, restricted chunks known value/ordering #2347
+  [radarhere]
+
 - Default to inch-interpretation for missing ResolutionUnit in TiffImagePlugin #2365
   [lambdafu]
 
