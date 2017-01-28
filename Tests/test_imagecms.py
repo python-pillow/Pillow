@@ -1,7 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 import datetime
 
-from PIL import Image
+from PIL import Image, ImageMode
 
 from io import BytesIO
 import os
@@ -332,6 +332,97 @@ class TestImageCms(PillowTestCase):
         with self.assertRaises(TypeError):
             ImageCms.ImageCmsProfile(1).tobytes()
 
+    def assert_aux_channel_preserved(self, mode, transform_in_place, preserved_channel):
+        def create_test_image():
+            # set up test image with something interesting in the tested aux
+            # channel.
+            nine_grid_deltas = [
+                (-1, -1), (-1, 0), (-1, 1),
+                ( 0, -1), ( 0, 0), ( 0, 1),
+                ( 1, -1), ( 1, 0), ( 1, 1),
+            ]
+            chans = []
+            bands = ImageMode.getmode(mode).bands
+            for band_ndx, band in enumerate(bands):
+                channel_type = 'L' # 8-bit unorm
+                channel_pattern = hopper(channel_type)
+
+                # paste pattern with varying offsets to avoid correlation
+                # potentially hiding some bugs (like channels getting mixed).
+                paste_offset = (
+                    int(band_ndx / float(len(bands)) * channel_pattern.size[0]),
+                    int(band_ndx / float(len(bands) * 2) * channel_pattern.size[1])
+                )
+                channel_data = Image.new(channel_type, channel_pattern.size)
+                for delta in nine_grid_deltas:
+                    channel_data.paste(channel_pattern, tuple(paste_offset[c] + delta[c]*channel_pattern.size[c] for c in range(2)))
+                chans.append(channel_data)
+            return Image.merge(mode, chans)
+
+        source_image = create_test_image()
+        preserved_channel_ndx = source_image.getbands().index(preserved_channel)
+        source_image_aux = source_image.split()[preserved_channel_ndx]
+
+        # create some transform, it doesn't matter which one
+        source_profile = ImageCms.createProfile("sRGB")
+        destination_profile = ImageCms.createProfile("sRGB")
+        t = ImageCms.buildTransform(source_profile, destination_profile, inMode=mode, outMode=mode)
+
+        # apply transform
+        if transform_in_place:
+            ImageCms.applyTransform(source_image, t, inPlace=True)
+            result_image = source_image
+        else:
+            result_image = ImageCms.applyTransform(source_image, t, inPlace=False)
+        result_image_aux = result_image.split()[preserved_channel_ndx]
+
+        self.assert_image_equal(source_image_aux, result_image_aux)
+
+    def test_preserve_auxiliary_channels_rgba(self):
+        self.assert_aux_channel_preserved(mode='RGBA', transform_in_place=False, preserved_channel='A')
+
+    def test_preserve_auxiliary_channels_rgba_in_place(self):
+        self.assert_aux_channel_preserved(mode='RGBA', transform_in_place=True, preserved_channel='A')
+
+    def test_preserve_auxiliary_channels_rgbx(self):
+        self.assert_aux_channel_preserved(mode='RGBX', transform_in_place=False, preserved_channel='X')
+
+    def test_preserve_auxiliary_channels_rgbx_in_place(self):
+        self.assert_aux_channel_preserved(mode='RGBX', transform_in_place=True, preserved_channel='X')
+
+    def test_auxiliary_channels_isolated(self):
+        # test data in aux channels does not affect non-aux channels
+        aux_channel_formats = [
+            # format, profile, color-only format, source test image
+            ('RGBA', 'sRGB', 'RGB', hopper('RGBA')),
+            ('RGBX', 'sRGB', 'RGB', hopper('RGBX')),
+            ('LAB', 'LAB', 'LAB', Image.open('Tests/images/hopper.Lab.tif')),
+        ]
+        for src_format in aux_channel_formats:
+            for dst_format in aux_channel_formats:
+                for transform_in_place in [True, False]:
+                    # inplace only if format doesn't change
+                    if transform_in_place and src_format[0] != dst_format[0]:
+                        continue
+
+                    # convert with and without AUX data, test colors are equal
+                    source_profile = ImageCms.createProfile(src_format[1])
+                    destination_profile = ImageCms.createProfile(dst_format[1])
+                    source_image = src_format[3]
+                    test_transform = ImageCms.buildTransform(source_profile, destination_profile, inMode=src_format[0], outMode=dst_format[0])
+
+                    # test conversion from aux-ful source
+                    if transform_in_place:
+                        test_image = source_image.copy()
+                        ImageCms.applyTransform(test_image, test_transform, inPlace=True)
+                    else:
+                        test_image = ImageCms.applyTransform(source_image, test_transform, inPlace=False)
+
+                    # reference conversion from aux-less source
+                    reference_transform = ImageCms.buildTransform(source_profile, destination_profile, inMode=src_format[2], outMode=dst_format[2])
+                    reference_image = ImageCms.applyTransform(source_image.convert(src_format[2]), reference_transform)
+
+                    self.assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 if __name__ == '__main__':
     unittest.main()
