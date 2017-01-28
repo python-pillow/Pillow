@@ -312,6 +312,9 @@ class TestImage(PillowTestCase):
         # Act / Assert
         self.assertRaises(NotImplementedError, lambda: im.offset(None))
 
+    def test_fromstring(self):
+        self.assertRaises(NotImplementedError, Image.fromstring)
+
 
 if __name__ == '__main__':
     unittest.main()
