@@ -305,6 +305,13 @@ class TestImage(PillowTestCase):
         with self.assertRaises(ValueError):
             Image.core.fill('RGB', (2,-2), (0,0,0))
 
+    def test_offset_not_implemented(self):
+        # Arrange
+        im = hopper()
+
+        # Act / Assert
+        self.assertRaises(NotImplementedError, lambda: im.offset(None))
+
 
 if __name__ == '__main__':
     unittest.main()
