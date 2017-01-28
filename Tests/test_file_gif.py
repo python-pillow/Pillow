@@ -269,11 +269,8 @@ class TestFileGif(PillowTestCase):
         duration = 1000
 
         out = self.tempfile('temp.gif')
-        with open(out, "wb") as fp:
-            im = Image.new('L', (100, 100), '#000')
-            for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, duration=duration):
-                fp.write(s)
-            fp.write(b";")
+        im = Image.new('L', (100, 100), '#000')
+        im.save(out, duration=duration)
         reread = Image.open(out)
 
         self.assertEqual(reread.info['duration'], duration)
@@ -350,11 +347,8 @@ class TestFileGif(PillowTestCase):
         number_of_loops = 2
 
         out = self.tempfile('temp.gif')
-        with open(out, "wb") as fp:
-            im = Image.new('L', (100, 100), '#000')
-            for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, loop=number_of_loops):
-                fp.write(s)
-            fp.write(b";")
+        im = Image.new('L', (100, 100), '#000')
+        im.save(out, loop=number_of_loops)
         reread = Image.open(out)
 
         self.assertEqual(reread.info['loop'], number_of_loops)

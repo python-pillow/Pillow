@@ -294,7 +294,7 @@ except ImportError:
 RAWMODE = {
     "1": "L",
     "L": "L",
-    "P": "P",
+    "P": "P"
 }
 
 
@@ -317,7 +317,6 @@ def _save_all(im, fp, filename):
 
 
 def _save(im, fp, filename, save_all=False):
-
     im.encoderinfo.update(im.info)
     if _imaging_gif:
         # call external driver
@@ -362,7 +361,7 @@ def _save(im, fp, filename, save_all=False):
                     # delta frame
                     previous = im_frames[-1]
                     delta = ImageChops.subtract_modulo(im_frame,
-                                                       previous['im_frame'])
+                                                       previous['im'])
                     bbox = delta.getbbox()
                     if not bbox:
                         # This frame is identical to the previous frame
@@ -372,37 +371,36 @@ def _save(im, fp, filename, save_all=False):
                 else:
                     bbox = None
                 im_frames.append({
-                    "im_frame":im_frame,
-                    "bbox":bbox,
-                    "encoderinfo":encoderinfo
+                    'im':im_frame,
+                    'bbox':bbox,
+                    'encoderinfo':encoderinfo
                 })
         if len(im_frames) < 2:
             save_all = False
         else:
-            for data in im_frames:
-                if data['bbox'] is None:
+            for frame_data in im_frames:
+                im_frame = frame_data['im']
+                if not frame_data['bbox']:
                     # global header
-                    header = getheader(data['im_frame'], palette, data['encoderinfo'])[0]
-                    for s in header + getdata(data['im_frame'],
-                                              (0, 0), **data['encoderinfo']):
+                    for s in getheader(im_frame, palette, frame_data['encoderinfo'])[0]:
                         fp.write(s)
+                    offset = (0, 0)
                 else:
                     # compress difference
-                    data['encoderinfo']['include_color_table'] = True
-                    for s in getdata(data['im_frame'].crop(data['bbox']),
-                                     data['bbox'][:2], **data['encoderinfo']):
-                        fp.write(s)
+                    frame_data['encoderinfo']['include_color_table'] = True
+
+                    im_frame = im_frame.crop(frame_data['bbox'])
+                    offset = frame_data['bbox'][:2]
+                for s in getdata(im_frame, offset, **frame_data['encoderinfo']):
+                    fp.write(s)
     if not save_all:
-        header = getheader(im_out, palette, im.encoderinfo)[0]
-        for s in header:
+        for s in getheader(im_out, palette, im.encoderinfo)[0]:
             fp.write(s)
 
+        # local image header
         flags = 0
-
         if get_interlace(im):
             flags = flags | 64
-
-        # local image header
         _get_local_header(fp, im, (0, 0), flags)
 
         im_out.encoderconfig = (8, get_interlace(im))
