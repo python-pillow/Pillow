@@ -15,7 +15,9 @@ Notes
 
 .. note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7.
 
-.. note:: Pillow >= 2.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
+.. note:: Pillow >= 2.0.0 < 4.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
+
+.. note:: Pillow >= 4.0.0 supports Python versions 2.7, 3.3, 3.4, 3.5, 3.6
 
 Basic Installation
 ------------------
@@ -59,7 +61,7 @@ or::
 
 
 macOS Installation
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 We provide binaries for macOS for each of the supported Python versions
 in the wheel format. These include support for all optional libraries
@@ -124,8 +126,8 @@ Many of Pillow's features require external libraries:
 
 * **libjpeg** provides JPEG functionality.
 
-  * Pillow has been tested with libjpeg versions **6b**, **8**, **9**, and
-    **9a** and libjpeg-turbo version **8**.
+  * Pillow has been tested with libjpeg versions **6b**, **8**, **9**, **9a**,
+    and **9b** and libjpeg-turbo version **8**.
   * Starting with Pillow 3.0.0, libjpeg is required by default, but
     may be disabled with the ``--disable-jpeg`` flag.
 
@@ -191,7 +193,7 @@ build with newly installed external libraries.
 Build Options
 ^^^^^^^^^^^^^
 
-* Environment Variable: ``MAX_CONCURRENCY=n``. By default, Pillow will
+* Environment variable: ``MAX_CONCURRENCY=n``. By default, Pillow will
   use multiprocessing to build the extension on all available CPUs,
   but not more than 4. Setting ``MAX_CONCURRENCY`` to 1 will disable
   parallel building.
@@ -221,7 +223,7 @@ Build Options
   stdout.
 
 
-Sample Usage::
+Sample usage::
 
     $ MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
 
@@ -231,7 +233,7 @@ or using pip::
 
 
 Building on macOS
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 The Xcode command line tools are required to compile portions of
 Pillow. The tools are installed by running ``xcode-select --install``
@@ -336,7 +338,9 @@ current versions of Linux, macOS, and Windows.
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Supported**|**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
-| Mac OS X 10.11 El Capitan        |Yes          | 2.7,3.3,3.4,3.5              | 3.3.0                          |x86-64                 |
+| macOS 10.12 Sierra               |Yes          | 3.4,3.5,3.6                  | 4.0.0                          |x86-64                 |
++----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
+| Mac OS X 10.11 El Capitan        |Yes          | 2.7,3.3,3.4,3.5              | 3.4.1                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Mac OS X 10.10 Yosemite          |Yes          | 2.7,3.3,3.4                  | 3.0.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
@@ -352,10 +356,10 @@ current versions of Linux, macOS, and Windows.
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Ubuntu Linux 10.04 LTS           |Yes          | 2.6                          | 2.3.0                          |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
-| Ubuntu Linux 12.04 LTS           |Yes          | 2.6,2.7,3.2,3.3,3.4,3.5      | 3.1.0                          |x86,x86-64             |
-|                                  |             | PyPy2.4,PyPy3,v2.3           |                                |                       |
+| Ubuntu Linux 12.04 LTS           |Yes          | 2.6,2.7,3.2,3.3,3.4,3.5      | 3.4.1 (CI target)              |x86,x86-64             |
+|                                  |             | PyPy5.3.1,PyPy3 v2.4.0       |                                |                       |
 |                                  |             |                              |                                |                       |
-|                                  |             | 2.7,3.2                      | 2.6.1                          |ppc                    |
+|                                  |             | 2.7,3.2                      | 3.4.1                          |ppc                    |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Ubuntu Linux 14.04 LTS           |Yes          | 2.7,3.4                      | 3.1.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
@@ -365,13 +369,15 @@ current versions of Linux, macOS, and Windows.
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Gentoo Linux                     |Yes          | 2.7,3.2                      | 2.1.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
+| Arch Linux                       |Yes          | 2.7,3.6                      | 4.0.0                          |x86,x86-64             |
++----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | FreeBSD 10.2                     |Yes          | 2.7,3.4                      | 3.1.0                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
-| Windows 7 Pro                    |Yes          | 2.7,3.2,3.3                  | 2.2.1                          |x86-64                 |
+| Windows 7 Pro                    |Yes          | 2.7,3.2,3.3                  | 3.4.1                          |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Windows Server 2008 R2 Enterprise|Yes          | 3.3                          |                                |x86-64                 |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
-| Windows Server 2012 R2           |Yes          | 2.7,3.3,3.4                  | 3.0.0                          |x86-64                 |
+| Windows Server 2012 R2           |Yes          | 2.7,3.3,3.4                  | 3.4.1 (CI target)              |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+
 | Windows 8 Pro                    |Yes          | 2.6,2.7,3.2,3.3,3.4a3        | 2.2.0                          |x86,x86-64             |
 +----------------------------------+-------------+------------------------------+--------------------------------+-----------------------+

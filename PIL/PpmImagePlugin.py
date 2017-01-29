@@ -17,7 +17,7 @@
 
 import string
 
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 
 __version__ = "0.2"
 
@@ -122,11 +122,6 @@ class PpmImageFile(ImageFile.ImageFile):
                      (0, 0, xsize, ysize),
                      self.fp.tell(),
                      (rawmode, 0, 1))]
-
-        # ALTERNATIVE: load via builtin debug function
-        # self.im = Image.core.open_ppm(self.filename)
-        # self.mode = self.im.mode
-        # self.size = self.im.size
 
 
 #

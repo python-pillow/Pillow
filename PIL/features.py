@@ -1,4 +1,4 @@
-from PIL import Image
+from . import Image
 
 modules = {
     "pil": "PIL._imaging",
@@ -17,7 +17,7 @@ def check_module(feature):
     module = modules[feature]
 
     method_to_call = None
-    if type(module) is tuple:
+    if isinstance(module, tuple):
         module, method_to_call = module
 
     try:

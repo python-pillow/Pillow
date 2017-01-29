@@ -41,10 +41,8 @@
 
 from __future__ import division, print_function
 
-from PIL import Image, ImageFile
-from PIL import ImagePalette
-from PIL import _binary
-from PIL import TiffTags
+from . import Image, ImageFile, ImagePalette, TiffTags
+from ._binary import i8, o8
 
 import collections
 from fractions import Fraction
@@ -70,9 +68,6 @@ IFD_LEGACY_API = True
 
 II = b"II"  # little-endian (Intel style)
 MM = b"MM"  # big-endian (Motorola style)
-
-i8 = _binary.i8
-o8 = _binary.o8
 
 #
 # --------------------------------------------------------------------
@@ -132,7 +127,7 @@ COMPRESSION_INFO = {
     34677: "tiff_sgilog24",
 }
 
-COMPRESSION_INFO_REV = dict([(v, k) for (k, v) in COMPRESSION_INFO.items()])
+COMPRESSION_INFO_REV = {v: k for k, v in COMPRESSION_INFO.items()}
 
 OPEN_INFO = {
     # (ByteOrder, PhotoInterpretation, SampleFormat, FillOrder, BitsPerSample,
@@ -278,12 +273,12 @@ class IFDRational(Rational):
         self._numerator = value
         self._val = float(1)
 
-        if type(value) == Fraction:
+        if isinstance(value, Fraction):
             self._numerator = value.numerator
             self._denominator = value.denominator
             self._val = value
 
-        if type(value) == IFDRational:
+        if isinstance(value, IFDRational):
             self._denominator = value.denominator
             self._numerator = value.numerator
             self._val = value._val
@@ -294,11 +289,7 @@ class IFDRational(Rational):
             return
 
         elif denominator == 1:
-            if sys.hexversion < 0x2070000 and type(value) == float:
-                # python 2.6 is different.
-                self._val = Fraction.from_float(value)
-            else:
-                self._val = Fraction(value)
+            self._val = Fraction(value)
         else:
             self._val = Fraction(value, denominator)
 
@@ -342,7 +333,7 @@ class IFDRational(Rational):
              'rfloordiv','mod','rmod', 'pow','rpow', 'pos', 'neg',
              'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'nonzero',
              'ceil', 'floor', 'round']
-        print "\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a)
+        print("\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a))
         """
 
     __add__ = _delegate('__add__')
@@ -573,7 +564,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
     def _register_loader(idx, size):
         def decorator(func):
-            from PIL.TiffTags import TYPES
+            from .TiffTags import TYPES
             if func.__name__.startswith("load_"):
                 TYPES[idx] = func.__name__[5:].replace("_", " ")
             _load_dispatch[idx] = size, func
@@ -587,12 +578,12 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         return decorator
 
     def _register_basic(idx_fmt_name):
-        from PIL.TiffTags import TYPES
+        from .TiffTags import TYPES
         idx, fmt, name = idx_fmt_name
         TYPES[idx] = name
         size = struct.calcsize("=" + fmt)
         _load_dispatch[idx] = size, lambda self, data, legacy_api=True: (
-            self._unpack("{0}{1}".format(len(data) // size, fmt), data))
+            self._unpack("{}{}".format(len(data) // size, fmt), data))
         _write_dispatch[idx] = lambda self, *values: (
             b"".join(self._pack(fmt, value) for value in values))
 
@@ -624,7 +615,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
     @_register_loader(5, 8)
     def load_rational(self, data, legacy_api=True):
-        vals = self._unpack("{0}L".format(len(data) // 4), data)
+        vals = self._unpack("{}L".format(len(data) // 4), data)
         combine = lambda a, b: (a, b) if legacy_api else IFDRational(a, b)
         return tuple(combine(num, denom)
                      for num, denom in zip(vals[::2], vals[1::2]))
@@ -644,7 +635,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
     @_register_loader(10, 8)
     def load_signed_rational(self, data, legacy_api=True):
-        vals = self._unpack("{0}l".format(len(data) // 4), data)
+        vals = self._unpack("{}l".format(len(data) // 4), data)
         combine = lambda a, b: (a, b) if legacy_api else IFDRational(a, b)
         return tuple(combine(num, denom)
                      for num, denom in zip(vals[::2], vals[1::2]))
@@ -804,7 +795,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ifd = ImageFileDirectory_v1()
         ifd[key] = 'Some Data'
         ifd.tagtype[key] = 2
-        print ifd[key]
+        print(ifd[key])
         ('Some Data',)
 
     Also contains a dictionary of tag types as read from the tiff image file,
@@ -1010,9 +1001,6 @@ class TiffImageFile(ImageFile.ImageFile):
                 # Section 14: Differencing Predictor
                 self.decoderconfig = (self.tag_v2[PREDICTOR],)
 
-        if ICCPROFILE in self.tag_v2:
-            self.info['icc_profile'] = self.tag_v2[ICCPROFILE]
-
         return args
 
     def load(self):
@@ -1056,7 +1044,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # io.BytesIO have a fileno, but returns an IOError if
             # it doesn't use a file descriptor.
             fp = False
-        
+
         if fp:
             args[2] = fp
 
@@ -1175,11 +1163,15 @@ class TiffImageFile(ImageFile.ImageFile):
         yres = self.tag_v2.get(Y_RESOLUTION, 1)
 
         if xres and yres:
-            resunit = self.tag_v2.get(RESOLUTION_UNIT, 1)
+            resunit = self.tag_v2.get(RESOLUTION_UNIT)
             if resunit == 2:  # dots per inch
                 self.info["dpi"] = xres, yres
             elif resunit == 3:  # dots per centimeter. convert to dpi
                 self.info["dpi"] = xres * 2.54, yres * 2.54
+            elif resunit == None: # used to default to 1, but now 2)
+                self.info["dpi"] = xres, yres
+                # For backward compatibility, we also preserve the old behavior.
+                self.info["resolution"] = xres, yres
             else:  # No absolute unit of measurement
                 self.info["resolution"] = xres, yres
 
@@ -1201,7 +1193,7 @@ class TiffImageFile(ImageFile.ImageFile):
                                                      "tiff_sgilog24",
                                                      "tiff_raw_16"]:
                 # if DEBUG:
-                #     print "Activating g4 compression for whole file"
+                #     print("Activating g4 compression for whole file")
 
                 # Decoder expects entire file as one tile.
                 # There's a buffer size limit in load (64k)
@@ -1246,12 +1238,12 @@ class TiffImageFile(ImageFile.ImageFile):
                 a = None
 
             else:
-                for i in range(len(offsets)):
+                for i, offset in enumerate(offsets):
                     a = self._decoder(rawmode, l, i)
                     self.tile.append(
                         (self._compression,
                             (0, min(y, ysize), w, min(y+h, ysize)),
-                            offsets[i], a))
+                            offset, a))
                     if DEBUG:
                         print("tiles: ", self.tile)
                     y = y + h
@@ -1284,6 +1276,10 @@ class TiffImageFile(ImageFile.ImageFile):
             if DEBUG:
                 print("- unsupported data organization")
             raise SyntaxError("unknown data organization")
+
+        # Fix up info.
+        if ICCPROFILE in self.tag_v2:
+            self.info['icc_profile'] = self.tag_v2[ICCPROFILE]
 
         # fixup palette descriptor
 
@@ -1366,10 +1362,10 @@ def _save(im, fp, filename):
                 ifd[key] = im.tag_v2[key]
                 ifd.tagtype[key] = im.tag_v2.tagtype[key]
 
-        # preserve ICC profile (should also work when saving other formats
-        # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
-        if "icc_profile" in im.info:
-            ifd[ICCPROFILE] = im.info["icc_profile"]
+    # preserve ICC profile (should also work when saving other formats
+    # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
+    if "icc_profile" in im.info:
+        ifd[ICCPROFILE] = im.info["icc_profile"]
 
     for key, name in [(IMAGEDESCRIPTION, "description"),
                       (X_RESOLUTION, "resolution"),
@@ -1518,7 +1514,7 @@ class AppendingTiffWriter:
     #    JPEGQTables = 519
     #    JPEGDCTables = 520
     #    JPEGACTables = 521
-    Tags = set((273, 288, 324, 519, 520, 521))
+    Tags = {273, 288, 324, 519, 520, 521}
 
     def __init__(self, fn, new=False):
         if hasattr(fn, 'read'):

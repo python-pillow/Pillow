@@ -58,7 +58,7 @@ iforms = [1, 3, -11, -12, -21, -22]
 
 # There is no magic number to identify Spider files, so just check a
 # series of header locations to see if they have reasonable values.
-# Returns no.of bytes in the header, if it is a valid Spider header,
+# Returns no. of bytes in the header, if it is a valid Spider header,
 # otherwise returns 0
 
 def isSpiderHeader(t):
@@ -75,7 +75,7 @@ def isSpiderHeader(t):
     labrec = int(h[13])   # no. records in file header
     labbyt = int(h[22])   # total no. of bytes in header
     lenbyt = int(h[23])   # record length in bytes
-    # print "labrec = %d, labbyt = %d, lenbyt = %d" % (labrec,labbyt,lenbyt)
+    # print("labrec = %d, labbyt = %d, lenbyt = %d" % (labrec,labbyt,lenbyt))
     if labbyt != (labrec * lenbyt):
         return 0
     # looks like a valid header
@@ -83,9 +83,8 @@ def isSpiderHeader(t):
 
 
 def isSpiderImage(filename):
-    fp = open(filename, 'rb')
-    f = fp.read(92)   # read 23 * 4 bytes
-    fp.close()
+    with open(filename, 'rb') as fp:
+        f = fp.read(92)   # read 23 * 4 bytes
     t = struct.unpack('>23f', f)  # try big-endian first
     hdrlen = isSpiderHeader(t)
     if hdrlen == 0:

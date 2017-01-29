@@ -78,11 +78,24 @@ class TestImageGetPixel(AccessTest):
             im.getpixel((0, 0)), c,
             "put/getpixel roundtrip failed for mode %s, color %s" % (mode, c))
 
+        # Check 0
+        im = Image.new(mode, (0, 0), None)
+        with self.assertRaises(IndexError):
+            im.putpixel((0, 0), c)
+        with self.assertRaises(IndexError):
+            im.getpixel((0, 0))
+            
         # check initial color
         im = Image.new(mode, (1, 1), c)
         self.assertEqual(
             im.getpixel((0, 0)), c,
             "initial color failed for mode %s, color %s " % (mode, c))
+
+        # Check 0
+        im = Image.new(mode, (0, 0), c)
+        with self.assertRaises(IndexError):
+            im.getpixel((0, 0))
+
 
     def test_basic(self):
         for mode in ("1", "L", "LA", "I", "I;16", "I;16B", "F",
@@ -192,11 +205,8 @@ class TestCffi(AccessTest):
 
         # Attempt to set the value on a read-only image
         access = PyAccess.new(im, True)
-        try:
+        with self.assertRaises(ValueError):
             access[(0, 0)] = color
-        except ValueError:
-            return
-        self.fail("Putpixel did not fail on a read-only image")
 
     def test_set_vs_c(self):
         rgb = hopper('RGB')

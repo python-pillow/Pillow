@@ -71,7 +71,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-#define PILLOW_VERSION "3.4.0.dev0"
+#define PILLOW_VERSION "4.1.0.dev0"
 
 #include "Python.h"
 
@@ -251,7 +251,9 @@ int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view)
     /* Use new buffer protocol if available
        (mmap doesn't support this in 2.7, go figure) */
     if (PyObject_CheckBuffer(buffer)) {
-        return PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
+        int success = PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
+        if (!success) { return success; }
+        PyErr_Clear();
     }
 
     /* Pretend we support the new protocol; PyBuffer_Release happily ignores
@@ -684,17 +686,6 @@ _radial_gradient(PyObject* self, PyObject* args)
         return NULL;
 
     return PyImagingNew(ImagingFillRadialGradient(mode));
-}
-
-static PyObject*
-_open_ppm(PyObject* self, PyObject* args)
-{
-    char* filename;
-
-    if (!PyArg_ParseTuple(args, "s", &filename))
-        return NULL;
-
-    return PyImagingNew(ImagingOpenPPM(filename));
 }
 
 static PyObject*
@@ -2988,9 +2979,6 @@ static struct PyMethodDef methods[] = {
     {"rankfilter", (PyCFunction)_rankfilter, 1},
 #endif
     {"resize", (PyCFunction)_resize, 1},
-    // There were two methods for image resize before.
-    // Starting from Pillow 2.7.0 stretch is depreciated.
-    {"stretch", (PyCFunction)_resize, 1},
     {"transpose", (PyCFunction)_transpose, 1},
     {"transform2", (PyCFunction)_transform2, 1},
 
@@ -3084,11 +3072,7 @@ _getattr_id(ImagingObject* self, void* closure)
 static PyObject*
 _getattr_ptr(ImagingObject* self, void* closure)
 {
-#if PY_VERSION_HEX >= 0x02070000
     return PyCapsule_New(self->image, IMAGING_MAGIC, NULL);
-#else
-    return PyCObject_FromVoidPtrAndDesc(self->image, IMAGING_MAGIC, NULL);
-#endif
 }
 
 static PyObject*
@@ -3423,9 +3407,6 @@ static PyMethodDef functions[] = {
     /* Utilities */
     {"crc32", (PyCFunction)_crc32, 1},
     {"getcodecstatus", (PyCFunction)_getcodecstatus, 1},
-
-    /* Debugging stuff */
-    {"open_ppm", (PyCFunction)_open_ppm, 1},
 
     /* Special effects (experimental) */
 #ifdef WITH_EFFECTS

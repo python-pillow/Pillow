@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL import ImagePalette
+from PIL import ImagePalette, Image
 
 ImagePalette = ImagePalette.ImagePalette
 
@@ -125,6 +125,19 @@ class TestImagePalette(PillowTestCase):
         self.assertEqual(rawmode, "RGB")
         self.assertEqual(data_in, data_out)
 
+    def test_2bit_palette(self):
+        # issue #2258, 2 bit palettes are corrupted.
+        outfile = self.tempfile('temp.png')
+        
+        rgb = b'\x00' * 2 + b'\x01' * 2 + b'\x02' * 2
+        img = Image.frombytes('P', (6, 1), rgb)
+        img.putpalette(b'\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF') # RGB
+        img.save(outfile, format='PNG')
+
+        reloaded = Image.open(outfile)
+
+        self.assert_image_equal(img, reloaded)
+    
 
 if __name__ == '__main__':
     unittest.main()

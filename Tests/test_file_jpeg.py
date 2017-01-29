@@ -1,7 +1,6 @@
 from helper import unittest, PillowTestCase, hopper, py3
 from helper import djpeg_available, cjpeg_available
 
-import random
 from io import BytesIO
 import os
 
@@ -29,6 +28,15 @@ class TestFileJpeg(PillowTestCase):
         im.bytes = test_bytes  # for testing only
         return im
 
+    def gen_random_image(self, size, mode='RGB'):
+        """ Generates a very hard to compress file
+        :param size: tuple
+        :param mode: optional image mode
+        
+        """
+        return Image.frombytes(mode, size,
+                               os.urandom(size[0]*size[1]*len(mode)))
+    
     def test_sanity(self):
 
         # internal version number
@@ -159,15 +167,16 @@ class TestFileJpeg(PillowTestCase):
 
     def test_progressive_large_buffer_highest_quality(self):
         f = self.tempfile('temp.jpg')
-        if py3:
-            a = bytes(random.randint(0, 255) for _ in range(256 * 256 * 3))
-        else:
-            a = b''.join(chr(random.randint(0, 255)) for _ in range(
-                256 * 256 * 3))
-        im = Image.frombuffer("RGB", (256, 256), a, "raw", "RGB", 0, 1)
+        im = self.gen_random_image((255,255))
         # this requires more bytes than pixels in the image
         im.save(f, format="JPEG", progressive=True, quality=100)
 
+    def test_progressive_cmyk_buffer(self):
+        # Issue 2272, quality 90 cmyk image is tripping the large buffer bug.
+        f = BytesIO()
+        im = self.gen_random_image((256,256), 'CMYK')
+        im.save(f, format='JPEG', progressive=True, quality=94)
+        
     def test_large_exif(self):
         # https://github.com/python-pillow/Pillow/issues/148
         f = self.tempfile('temp.jpg')
@@ -436,14 +445,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertEqual(tag_ids['RelatedImageLength'], 0x1002)
 
     def test_MAXBLOCK_scaling(self):
-        def gen_random_image(size):
-            """ Generates a very hard to compress file
-            :param size: tuple
-            """
-            return Image.frombytes('RGB',
-                                   size, os.urandom(size[0]*size[1] * 3))
-
-        im = gen_random_image((512, 512))
+        im = self.gen_random_image((512, 512))
         f = self.tempfile("temp.jpeg")
         im.save(f, quality=100, optimize=True)
 

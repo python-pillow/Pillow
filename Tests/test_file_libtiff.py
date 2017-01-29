@@ -39,6 +39,8 @@ class LibTiffTestCase(PillowTestCase):
         out = self.tempfile("temp.png")
         im.save(out)
 
+        out_bytes = io.BytesIO()
+        im.save(out_bytes, format='tiff', compression='group4')
 
 class TestFileLibTiff(LibTiffTestCase):
 
@@ -180,9 +182,9 @@ class TestFileLibTiff(LibTiffTestCase):
 
         # Get the list of the ones that we should be able to write
 
-        core_items = dict((tag, info) for tag, info in [(s, TiffTags.lookup(s)) for s
-                                                        in TiffTags.LIBTIFF_CORE]
-                          if info.type is not None)
+        core_items = {tag: info for tag, info in ((s, TiffTags.lookup(s)) for s
+                                                  in TiffTags.LIBTIFF_CORE)
+                      if info.type is not None}
 
         # Exclude ones that have special meaning
         # that we're already testing them
@@ -521,7 +523,60 @@ class TestFileLibTiff(LibTiffTestCase):
         except:
             self.fail("Should not get permission error here")
 
-    
+    def test_read_icc(self):
+        with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+            icc = img.info.get('icc_profile')
+            self.assertNotEqual(icc, None)
+        TiffImagePlugin.READ_LIBTIFF = True
+        with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+            icc_libtiff = img.info.get('icc_profile')
+            self.assertNotEqual(icc_libtiff, None)
+        TiffImagePlugin.READ_LIBTIFF = False
+        self.assertEqual(icc, icc_libtiff)
+
+    def test_multipage_compression(self):
+        im = Image.open('Tests/images/compression.tif')
+
+        im.seek(0)
+        self.assertEqual(im._compression, 'tiff_ccitt')
+        self.assertEqual(im.size, (10, 10))
+
+        im.seek(1)
+        self.assertEqual(im._compression, 'packbits')
+        self.assertEqual(im.size, (10, 10))
+        im.load()
+
+        im.seek(0)
+        self.assertEqual(im._compression, 'tiff_ccitt')
+        self.assertEqual(im.size, (10, 10))
+        im.load()
+
+    def test_save_tiff_with_jpegtables(self):
+        # Arrange
+        outfile = self.tempfile("temp.tif")
+
+        # Created with ImageMagick: convert hopper.jpg hopper_jpg.tif
+        # Contains JPEGTables (347) tag
+        infile = "Tests/images/hopper_jpg.tif"
+        im = Image.open(infile)
+
+        # Act / Assert
+        # Should not raise UnicodeDecodeError or anything else
+        im.save(outfile)
+
+    def test_page_number_x_0(self):
+        # Issue 973
+        # Test TIFF with tag 297 (Page Number) having value of 0 0.
+        # The first number is the current page number.
+        # The second is the total number of pages, zero means not available.
+        outfile = self.tempfile("temp.tif")
+        # Created by printing a page in Chrome to PDF, then:
+        # /usr/bin/gs -q -sDEVICE=tiffg3 -sOutputFile=total-pages-zero.tif
+        # -dNOPAUSE /tmp/test.pdf -c quit
+        infile = "Tests/images/total-pages-zero.tif"
+        im = Image.open(infile)
+        # Should not divide by zero
+        im.save(outfile)
 
 
 if __name__ == '__main__':

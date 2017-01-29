@@ -1,4 +1,4 @@
-version: 3.4.pre.{build}
+version: 4.1.pre.{build}
 clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%
@@ -19,6 +19,7 @@ install:
 - git clone https://github.com/python-pillow/pillow-depends.git c:\pillow-depends
 - xcopy c:\pillow-depends\*.zip c:\pillow\winbuild\
 - xcopy c:\pillow-depends\*.tar.gz c:\pillow\winbuild\
+- xcopy /s c:\pillow-depends\test_images\* c:\pillow\tests\images
 - cd c:\pillow\winbuild\
 - c:\python34\python.exe c:\pillow\winbuild\build_dep.py
 - c:\pillow\winbuild\build_deps.cmd

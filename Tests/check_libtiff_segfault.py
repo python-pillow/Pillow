@@ -10,13 +10,9 @@ class TestLibtiffSegfault(PillowTestCase):
             libtiff >= 4.0.0
             """
 
-        try:
+        with self.assertRaises(IOError):
             im = Image.open(TEST_FILE)
             im.load()
-        except IOError:
-            self.assertTrue(True, "Got expected IOError")
-        except Exception:
-            self.fail("Should have returned IOError")
 
 
 if __name__ == '__main__':

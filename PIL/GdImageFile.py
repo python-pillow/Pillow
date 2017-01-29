@@ -23,8 +23,9 @@
 # purposes only.
 
 
-from PIL import ImageFile, ImagePalette, _binary
-from PIL._util import isPath
+from . import ImageFile, ImagePalette
+from ._binary import i16be as i16
+from ._util import isPath
 
 __version__ = "0.1"
 
@@ -33,8 +34,6 @@ try:
 except ImportError:
     import __builtin__
     builtins = __builtin__
-
-i16 = _binary.i16be
 
 
 ##

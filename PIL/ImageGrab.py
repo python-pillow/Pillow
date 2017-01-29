@@ -15,7 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
+from . import Image
 
 import sys
 if sys.platform not in ["win32", "darwin"]:
@@ -41,7 +41,7 @@ def grab(bbox=None):
         size, data = grabber()
         im = Image.frombytes(
             "RGB", size, data,
-            # RGB, 32-bit line padding, origo in lower left corner
+            # RGB, 32-bit line padding, origin lower left corner
             "raw", "BGR", (size[0]*3 + 3) & -4, -1
             )
     if bbox:
@@ -75,7 +75,7 @@ def grabclipboard():
         debug = 0  # temporary interface
         data = Image.core.grabclipboard(debug)
         if isinstance(data, bytes):
-            from PIL import BmpImagePlugin
+            from . import BmpImagePlugin
             import io
             return BmpImagePlugin.DibImageFile(io.BytesIO(data))
         return data

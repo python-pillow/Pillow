@@ -56,11 +56,11 @@ class TestFileGif(PillowTestCase):
         # 256 color Palette image, posterize to > 128 and < 128 levels
         # Size bigger and smaller than 512x512
         # Check the palette for number of colors allocated.
-        # Check for correctness after conversion back to RGB        
+        # Check for correctness after conversion back to RGB
         def check(colors, size, expected_palette_length):
             # make an image with empty colors in the start of the palette range
             im = Image.frombytes('P', (colors,colors),
-                                 bytes(bytearray(list(range(256-colors,256))*colors)))
+                                 bytes(bytearray(range(256-colors,256))*colors))
             im = im.resize((size,size))
             outfile = BytesIO()
             im.save(outfile, 'GIF')
@@ -70,7 +70,7 @@ class TestFileGif(PillowTestCase):
             # check palette length
             palette_length = max(i+1 for i,v in enumerate(reloaded.histogram()) if v)
             self.assertEqual(expected_palette_length, palette_length)
-            
+
             self.assert_image_equal(im.convert('RGB'), reloaded.convert('RGB'))
 
 
@@ -271,26 +271,68 @@ class TestFileGif(PillowTestCase):
         duration = 1000
 
         out = self.tempfile('temp.gif')
-        fp = open(out, "wb")
-        im = Image.new('L', (100, 100), '#000')
-        for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, duration=duration):
-            fp.write(s)
-        fp.write(b";")
-        fp.close()
+        with open(out, "wb") as fp:
+            im = Image.new('L', (100, 100), '#000')
+            for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, duration=duration):
+                fp.write(s)
+            fp.write(b";")
         reread = Image.open(out)
 
         self.assertEqual(reread.info['duration'], duration)
+
+    def test_multiple_duration(self):
+        duration_list = [1000, 2000, 3000]
+
+        out = self.tempfile('temp.gif')
+        im_list = [
+            Image.new('L', (100, 100), '#000'),
+            Image.new('L', (100, 100), '#111'),
+            Image.new('L', (100, 100), '#222'),
+        ]
+
+        #duration as list
+        im_list[0].save(
+            out,
+            save_all=True,
+            append_images=im_list[1:],
+            duration=duration_list
+        )
+        reread = Image.open(out)
+
+        for duration in duration_list:
+            self.assertEqual(reread.info['duration'], duration)
+            try:
+                reread.seek(reread.tell() + 1)
+            except EOFError:
+                pass
+
+        # duration as tuple
+        im_list[0].save(
+            out,
+            save_all=True,
+            append_images=im_list[1:],
+            duration=tuple(duration_list)
+        )
+        reread = Image.open(out)
+
+        for duration in duration_list:
+            self.assertEqual(reread.info['duration'], duration)
+            try:
+                reread.seek(reread.tell() + 1)
+            except EOFError:
+                pass
+
+
 
     def test_number_of_loops(self):
         number_of_loops = 2
 
         out = self.tempfile('temp.gif')
-        fp = open(out, "wb")
-        im = Image.new('L', (100, 100), '#000')
-        for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, loop=number_of_loops):
-            fp.write(s)
-        fp.write(b";")
-        fp.close()
+        with open(out, "wb") as fp:
+            im = Image.new('L', (100, 100), '#000')
+            for s in GifImagePlugin.getheader(im)[0] + GifImagePlugin.getdata(im, loop=number_of_loops):
+                fp.write(s)
+            fp.write(b";")
         reread = Image.open(out)
 
         self.assertEqual(reread.info['loop'], number_of_loops)
@@ -338,7 +380,7 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(reread.info["version"], b"GIF87a")
 
         # Test that a GIF89a image is also saved in that format
-        im.info["version"] = "GIF89a"
+        im.info["version"] = b"GIF89a"
         im.save(out)
         reread = Image.open(out)
         self.assertEqual(reread.info["version"], b"GIF87a")
@@ -361,6 +403,29 @@ class TestFileGif(PillowTestCase):
 
         reread = Image.open(out)
         self.assertEqual(reread.n_frames, 10)
+
+    def test_transparent_optimize(self):
+        # from issue #2195, if the transparent color is incorrectly
+        # optimized out, gif loses transparency Need a palette that
+        # isn't using the 0 color, and one that's > 128 items where
+        # the transparent color is actually the top palette entry to
+        # trigger the bug.
+
+        from PIL import ImagePalette
+
+        data = bytes(bytearray(range(1,254)))
+        palette = ImagePalette.ImagePalette("RGB", list(range(256))*3)
+
+        im = Image.new('L', (253,1))
+        im.frombytes(data)
+        im.putpalette(palette)
+
+        out = self.tempfile('temp.gif')
+        im.save(out, transparency=253)
+        reloaded = Image.open(out)
+
+        self.assertEqual(reloaded.info['transparency'], 253)
+        
 
 if __name__ == '__main__':
     unittest.main()

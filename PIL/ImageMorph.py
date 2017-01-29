@@ -5,8 +5,9 @@
 #
 # Copyright (c) 2014 Dov Grobgeld <dov.grobgeld@gmail.com>
 
-from PIL import Image
-from PIL import _imagingmorph
+from __future__ import print_function
+
+from . import Image, _imagingmorph
 import re
 
 LUT_SIZE = 1 << 9
@@ -78,7 +79,7 @@ class LutBuilder(object):
     def build_default_lut(self):
         symbols = [0, 1]
         m = 1 << 4  # pos of current pixel
-        self.lut = bytearray([symbols[(i & m) > 0] for i in range(LUT_SIZE)])
+        self.lut = bytearray(symbols[(i & m) > 0] for i in range(LUT_SIZE))
 
     def get_lut(self):
         return self.lut
@@ -88,7 +89,7 @@ class LutBuilder(object):
         string permuted according to the permutation list.
         """
         assert(len(permutation) == 9)
-        return ''.join([pattern[p] for p in permutation])
+        return ''.join(pattern[p] for p in permutation)
 
     def _pattern_permute(self, basic_pattern, options, basic_result):
         """pattern_permute takes a basic pattern and its result and clones
@@ -152,14 +153,14 @@ class LutBuilder(object):
 
 #        # Debugging
 #        for p,r in patterns:
-#            print p,r
-#        print '--'
+#            print(p,r)
+#        print('--')
 
         # compile the patterns into regular expressions for speed
-        for i in range(len(patterns)):
-            p = patterns[i][0].replace('.', 'X').replace('X', '[01]')
+        for i, pattern in enumerate(patterns):
+            p = pattern[0].replace('.', 'X').replace('X', '[01]')
             p = re.compile(p)
-            patterns[i] = (p, patterns[i][1])
+            patterns[i] = (p, pattern[1])
 
         # Step through table and find patterns that match.
         # Note that all the patterns are searched. The last one

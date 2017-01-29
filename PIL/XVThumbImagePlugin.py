@@ -17,11 +17,10 @@
 # FIXME: make save work (this requires quantization support)
 #
 
-from PIL import Image, ImageFile, ImagePalette, _binary
+from . import Image, ImageFile, ImagePalette
+from ._binary import o8
 
 __version__ = "0.1"
-
-o8 = _binary.o8
 
 _MAGIC = b"P7 332"
 

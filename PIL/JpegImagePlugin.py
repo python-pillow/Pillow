@@ -32,19 +32,16 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 import array
 import struct
 import io
 import warnings
-from struct import unpack_from
-from PIL import Image, ImageFile, TiffImagePlugin, _binary
-from PIL.JpegPresets import presets
-from PIL._util import isStringType
-
-i8 = _binary.i8
-o8 = _binary.o8
-i16 = _binary.i16be
-i32 = _binary.i32be
+from . import Image, ImageFile, TiffImagePlugin
+from ._binary import i8, o8, i16be as i16, i32be as i32
+from .JpegPresets import presets
+from ._util import isStringType
 
 __version__ = "0.6"
 
@@ -316,7 +313,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
             if i in MARKER:
                 name, description, handler = MARKER[i]
-                # print hex(i), name, description
+                # print(hex(i), name, description)
                 if handler is not None:
                     handler(self, i)
                 if i == 0xFFDA:  # start of scan
@@ -341,6 +338,10 @@ class JpegImageFile(ImageFile.ImageFile):
         if len(self.tile) != 1:
             return
 
+        # Protect from second call
+        if self.decoderconfig:
+            return
+
         d, e, o, a = self.tile[0]
         scale = 0
 
@@ -349,7 +350,7 @@ class JpegImageFile(ImageFile.ImageFile):
             a = mode, ""
 
         if size:
-            scale = max(self.size[0] // size[0], self.size[1] // size[1])
+            scale = min(self.size[0] // size[0], self.size[1] // size[1])
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
@@ -377,7 +378,9 @@ class JpegImageFile(ImageFile.ImageFile):
             raise ValueError("Invalid Filename")
 
         try:
-            self.im = Image.core.open_ppm(path)
+            _im = Image.open(path)
+            _im.load()
+            self.im = _im.im
         finally:
             try:
                 os.unlink(path)
@@ -406,7 +409,7 @@ def _fixup_dict(src_dict):
         except: pass
         return value
 
-    return dict([(k, _fixup(v)) for k, v in src_dict.items()])
+    return {k: _fixup(v) for k, v in src_dict.items()}
 
 
 def _getexif(self):
@@ -485,8 +488,8 @@ def _getmp(self):
     try:
         rawmpentries = mp[0xB002]
         for entrynum in range(0, quant):
-            unpackedentry = unpack_from(
-                '{0}LLLHH'.format(endianness), rawmpentries, entrynum * 16)
+            unpackedentry = struct.unpack_from(
+                '{}LLLHH'.format(endianness), rawmpentries, entrynum * 16)
             labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1',
                       'EntryNo2')
             mpentry = dict(zip(labels, unpackedentry))
@@ -710,8 +713,11 @@ def _save(im, fp, filename):
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     bufsize = 0
     if optimize or progressive:
+        # CMYK can be bigger
+        if im.mode == 'CMYK':
+            bufsize = 4 * im.size[0] * im.size[1]
         # keep sets quality to 0, but the actual value may be high.
-        if quality >= 95 or quality == 0:
+        elif quality >= 95 or quality == 0:
             bufsize = 2 * im.size[0] * im.size[1]
         else:
             bufsize = im.size[0] * im.size[1]

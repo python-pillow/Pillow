@@ -19,6 +19,11 @@ class TestImageConvert(PillowTestCase):
             for mode in modes:
                 convert(im, mode)
 
+            # Check 0
+            im = Image.new(mode, (0,0))
+            for mode in modes:
+                convert(im, mode)
+                  
     def test_default(self):
 
         im = hopper("P")

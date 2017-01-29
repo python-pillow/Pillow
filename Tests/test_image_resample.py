@@ -1,3 +1,4 @@
+from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper
 from PIL import Image, ImageDraw, ImageMode
 
@@ -8,12 +9,9 @@ class TestImagingResampleVulnerability(PillowTestCase):
         im = hopper('L')
         xsize = 0x100000008 // 4
         ysize = 1000  # unimportant
-        try:
+        with self.assertRaises(MemoryError):
             # any resampling filter will do here
             im.im.resize((xsize, ysize), Image.BILINEAR)
-            self.fail("Resize should raise MemoryError on invalid xsize")
-        except MemoryError:
-            self.assertTrue(True, "Should raise MemoryError")
 
     def test_invalid_size(self):
         im = hopper()
@@ -21,17 +19,20 @@ class TestImagingResampleVulnerability(PillowTestCase):
         im.resize((100, 100))
         self.assertTrue(True, "Should not Crash")
 
-        try:
+        with self.assertRaises(ValueError):
             im.resize((-100, 100))
-            self.fail("Resize should raise a value error on x negative size")
-        except ValueError:
-            self.assertTrue(True, "Should raise ValueError")
 
-        try:
+        with self.assertRaises(ValueError):
             im.resize((100, -100))
-            self.fail("Resize should raise a value error on y negative size")
-        except ValueError:
-            self.assertTrue(True, "Should raise ValueError")
+
+    def test_modify_after_resizing(self):
+        im = hopper('RGB')
+        # get copy with same size
+        copy = im.resize(im.size)
+        # some in-place operation
+        copy.paste('black', (0, 0, im.width // 2, im.height // 2))
+        # image should be different
+        self.assertNotEqual(im.tobytes(), copy.tobytes())
 
 
 class TestImagingCoreResampleAccuracy(PillowTestCase):
@@ -241,10 +242,10 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
     def run_levels_case(self, i):
         px = i.load()
         for y in range(i.size[1]):
-            used_colors = set(px[x, y][0] for x in range(i.size[0]))
+            used_colors = {px[x, y][0] for x in range(i.size[0])}
             self.assertEqual(256, len(used_colors),
                 'All colors should present in resized image. '
-                'Only {0} on {1} line.'.format(len(used_colors), y))
+                'Only {} on {} line.'.format(len(used_colors), y))
 
     @unittest.skip("current implementation isn't precise enough")
     def test_levels_rgba(self):
@@ -264,7 +265,7 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         self.run_levels_case(case.resize((512, 32), Image.BICUBIC))
         self.run_levels_case(case.resize((512, 32), Image.LANCZOS))
 
-    def make_dity_case(self, mode, clean_pixel, dirty_pixel):
+    def make_dirty_case(self, mode, clean_pixel, dirty_pixel):
         i = Image.new(mode, (64, 64), dirty_pixel)
         px = i.load()
         xdiv4 = i.size[0] // 4
@@ -274,30 +275,30 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
                 px[x + xdiv4, y + ydiv4] = clean_pixel
         return i
 
-    def run_dity_case(self, i, clean_pixel):
+    def run_dirty_case(self, i, clean_pixel):
         px = i.load()
         for y in range(i.size[1]):
             for x in range(i.size[0]):
                 if px[x, y][-1] != 0 and px[x, y][:-1] != clean_pixel:
-                    message = 'pixel at ({0}, {1}) is differ:\n{2}\n{3}'\
+                    message = 'pixel at ({}, {}) is differ:\n{}\n{}'\
                         .format(x, y, px[x, y], clean_pixel)
                     self.assertEqual(px[x, y][:3], clean_pixel, message)
 
     def test_dirty_pixels_rgba(self):
-        case = self.make_dity_case('RGBA', (255, 255, 0, 128), (0, 0, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.BOX), (255, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.BILINEAR), (255, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.HAMMING), (255, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.BICUBIC), (255, 255, 0))
-        self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255, 255, 0))
+        case = self.make_dirty_case('RGBA', (255, 255, 0, 128), (0, 0, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BOX), (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BILINEAR), (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.HAMMING), (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BICUBIC), (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.LANCZOS), (255, 255, 0))
 
     def test_dirty_pixels_la(self):
-        case = self.make_dity_case('LA', (255, 128), (0, 0))
-        self.run_dity_case(case.resize((20, 20), Image.BOX), (255,))
-        self.run_dity_case(case.resize((20, 20), Image.BILINEAR), (255,))
-        self.run_dity_case(case.resize((20, 20), Image.HAMMING), (255,))
-        self.run_dity_case(case.resize((20, 20), Image.BICUBIC), (255,))
-        self.run_dity_case(case.resize((20, 20), Image.LANCZOS), (255,))
+        case = self.make_dirty_case('LA', (255, 128), (0, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BOX), (255,))
+        self.run_dirty_case(case.resize((20, 20), Image.BILINEAR), (255,))
+        self.run_dirty_case(case.resize((20, 20), Image.HAMMING), (255,))
+        self.run_dirty_case(case.resize((20, 20), Image.BICUBIC), (255,))
+        self.run_dirty_case(case.resize((20, 20), Image.LANCZOS), (255,))
 
 
 class CoreResamplePassesTest(PillowTestCase):
@@ -323,10 +324,10 @@ class CoreResamplePassesTest(PillowTestCase):
 class CoreResampleCoefficientsTest(PillowTestCase):
     def test_reduce(self):
         test_color = 254
-        # print ''
+        # print()
 
         for size in range(400000, 400010, 2):
-            # print '\r', size,
+            # print(size)
             i = Image.new('L', (size, 1), 0)
             draw = ImageDraw.Draw(i)
             draw.rectangle((0, 0, i.size[0] // 2 - 1, 0), test_color)
@@ -334,7 +335,18 @@ class CoreResampleCoefficientsTest(PillowTestCase):
             px = i.resize((5, i.size[1]), Image.BICUBIC).load()
             if px[2, 0] != test_color // 2:
                 self.assertEqual(test_color // 2, px[2, 0])
-                # print '\r>', size, test_color // 2, px[2, 0]
+                # print('>', size, test_color // 2, px[2, 0])
+
+    def test_nonzero_coefficients(self):
+        # regression test for the wrong coefficients calculation
+        # due to bug https://github.com/python-pillow/Pillow/issues/2161
+        im = Image.new('RGBA', (1280, 1280), (0x20, 0x40, 0x60, 0xff))
+        histogram = im.resize((256, 256), Image.BICUBIC).histogram()
+
+        self.assertEqual(histogram[0x100 * 0 + 0x20], 0x10000) # first channel
+        self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000) # second channel
+        self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000) # third channel
+        self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000) # fourth channel
 
 
 if __name__ == '__main__':

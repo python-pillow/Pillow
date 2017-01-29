@@ -93,6 +93,24 @@ class TestFileTiff(PillowTestCase):
 
         self.assertEqual(im.info['dpi'], (72., 72.))
 
+    def test_xyres_fallback_tiff(self):
+        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION, RESOLUTION_UNIT
+        filename = "Tests/images/compression.tif"
+        im = Image.open(filename)
+
+        # v2 api
+        self.assertIsInstance(im.tag_v2[X_RESOLUTION],
+                              TiffImagePlugin.IFDRational)
+        self.assertIsInstance(im.tag_v2[Y_RESOLUTION],
+                              TiffImagePlugin.IFDRational)
+        self.assertRaises(KeyError,
+                          lambda: im.tag_v2[RESOLUTION_UNIT])
+
+        # Legacy.
+        self.assertEqual(im.info['resolution'], (100., 100.))
+        # Fallback "inch".
+        self.assertEqual(im.info['dpi'], (100., 100.))
+
     def test_int_resolution(self):
         from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         filename = "Tests/images/pil168.tif"
@@ -119,7 +137,7 @@ class TestFileTiff(PillowTestCase):
         self.assertRaises(SyntaxError,
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
 
-        TiffImagePlugin.PREFIXES.append("\xff\xd8\xff\xe0")
+        TiffImagePlugin.PREFIXES.append(b"\xff\xd8\xff\xe0")
         self.assertRaises(SyntaxError,
                           lambda: TiffImagePlugin.TiffImageFile(invalid_file))
         TiffImagePlugin.PREFIXES.pop()
@@ -382,20 +400,6 @@ class TestFileTiff(PillowTestCase):
                 self.assertEqual(im2.mode, "L")
                 self.assert_image_equal(im, im2)
 
-    def test_page_number_x_0(self):
-        # Issue 973
-        # Test TIFF with tag 297 (Page Number) having value of 0 0.
-        # The first number is the current page number.
-        # The second is the total number of pages, zero means not available.
-        outfile = self.tempfile("temp.tif")
-        # Created by printing a page in Chrome to PDF, then:
-        # /usr/bin/gs -q -sDEVICE=tiffg3 -sOutputFile=total-pages-zero.tif
-        # -dNOPAUSE /tmp/test.pdf -c quit
-        infile = "Tests/images/total-pages-zero.tif"
-        im = Image.open(infile)
-        # Should not divide by zero
-        im.save(outfile)
-
     def test_with_underscores(self):
         kwargs = {'resolution_unit': 'inch',
                   'x_resolution': 72,
@@ -431,36 +435,6 @@ class TestFileTiff(PillowTestCase):
         # v2 interface
         self.assertEqual(im.tag_v2[X_RESOLUTION], 36)
         self.assertEqual(im.tag_v2[Y_RESOLUTION], 72)
-
-    def test_multipage_compression(self):
-        im = Image.open('Tests/images/compression.tif')
-
-        im.seek(0)
-        self.assertEqual(im._compression, 'tiff_ccitt')
-        self.assertEqual(im.size, (10, 10))
-
-        im.seek(1)
-        self.assertEqual(im._compression, 'packbits')
-        self.assertEqual(im.size, (10, 10))
-        im.load()
-
-        im.seek(0)
-        self.assertEqual(im._compression, 'tiff_ccitt')
-        self.assertEqual(im.size, (10, 10))
-        im.load()
-
-    def test_save_tiff_with_jpegtables(self):
-        # Arrange
-        outfile = self.tempfile("temp.tif")
-
-        # Created with ImageMagick: convert hopper.jpg hopper_jpg.tif
-        # Contains JPEGTables (347) tag
-        infile = "Tests/images/hopper_jpg.tif"
-        im = Image.open(infile)
-
-        # Act / Assert
-        # Should not raise UnicodeDecodeError or anything else
-        im.save(outfile)
 
     def test_lzw(self):
         # Act
@@ -498,6 +472,22 @@ class TestFileTiff(PillowTestCase):
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as im:
             self.assertEqual(im.n_frames, 3)
+
+    def test_saving_icc_profile(self):
+        # Tests saving TIFF with icc_profile set.
+        # At the time of writing this will only work for non-compressed tiffs
+        # as libtiff does not support embedded ICC profiles, ImageFile._save(..)
+        # however does.
+        im = Image.new('RGB', (1, 1))
+        im.info['icc_profile'] = 'Dummy value'
+        
+        # Try save-load round trip to make sure both handle icc_profile.
+        tmpfile = self.tempfile('temp.tif')
+        im.save(tmpfile, 'TIFF', compression='raw')
+        reloaded = Image.open(tmpfile)
+        
+        self.assertEqual(b'Dummy value', reloaded.info['icc_profile'])
+
 
 if __name__ == '__main__':
     unittest.main()

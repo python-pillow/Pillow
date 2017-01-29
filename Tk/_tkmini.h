@@ -59,7 +59,7 @@
 
 /*
  * Unless otherwise noted, these definitions are stable from Tcl / Tk 8.4
- * through Tck / Tk master as of 21 May 2016
+ * through Tcl / Tk master as of 21 May 2016
  */
 
 #ifdef __cplusplus

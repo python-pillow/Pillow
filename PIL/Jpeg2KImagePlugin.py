@@ -12,7 +12,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 import struct
 import os
 import io

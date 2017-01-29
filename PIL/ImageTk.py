@@ -32,7 +32,14 @@ except ImportError:
     tkinter = Tkinter
     del Tkinter
 
-from PIL import Image
+# required for pypy, which always has cffi installed
+try:
+    from cffi import FFI
+    ffi = FFI()
+except ImportError:
+    pass
+
+from . import Image
 from io import BytesIO
 
 
@@ -182,9 +189,15 @@ class PhotoImage(object):
         except tkinter.TclError:
             # activate Tkinter hook
             try:
-                from PIL import _imagingtk
+                from . import _imagingtk
                 try:
-                    _imagingtk.tkinit(tk.interpaddr(), 1)
+                    if hasattr(tk, 'interp'):
+                        # Pypy is using a ffi cdata element
+                        # (Pdb) self.tk.interp
+                        #  <cdata 'Tcl_Interp *' 0x3061b50>
+                        _imagingtk.tkinit(int(ffi.cast("uintptr_t", tk.interp)), 1)
+                    else:
+                        _imagingtk.tkinit(tk.interpaddr(), 1)
                 except AttributeError:
                     _imagingtk.tkinit(id(tk), 0)
                 tk.call("PyImagingPhoto", self.__photo, block.id)
@@ -264,6 +277,8 @@ class BitmapImage(object):
 
 
 def getimage(photo):
+    """ This function is unimplemented """
+    
     """Copies the contents of a PhotoImage to a PIL image memory."""
     photo.tk.call("PyImagingPhotoGet", photo)
 

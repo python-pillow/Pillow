@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # minimal sanity check
 from __future__ import print_function
 

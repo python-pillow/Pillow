@@ -25,8 +25,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isDirectory, isPath
+from . import Image
+from ._util import isDirectory, isPath
 import os
 import sys
 
@@ -37,7 +37,7 @@ class _imagingft_not_installed(object):
         raise ImportError("The _imagingft C module is not installed")
 
 try:
-    from PIL import _imagingft as core
+    from . import _imagingft as core
 except ImportError:
     core = _imagingft_not_installed()
 
@@ -62,23 +62,22 @@ class ImageFont(object):
 
     def _load_pilfont(self, filename):
 
-        fp = open(filename, "rb")
-
-        for ext in (".png", ".gif", ".pbm"):
-            try:
-                fullname = os.path.splitext(filename)[0] + ext
-                image = Image.open(fullname)
-            except:
-                pass
+        with open(filename, "rb") as fp:
+            for ext in (".png", ".gif", ".pbm"):
+                try:
+                    fullname = os.path.splitext(filename)[0] + ext
+                    image = Image.open(fullname)
+                except:
+                    pass
+                else:
+                    if image and image.mode in ("1", "L"):
+                        break
             else:
-                if image and image.mode in ("1", "L"):
-                    break
-        else:
-            raise IOError("cannot find glyph data file")
+                raise IOError("cannot find glyph data file")
 
-        self.file = fullname
+            self.file = fullname
 
-        return self._load_pilfont_data(fp, image)
+            return self._load_pilfont_data(fp, image)
 
     def _load_pilfont_data(self, file, image):
 

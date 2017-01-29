@@ -12,7 +12,6 @@ codecs = dir(Image.core)
 # sample png stream
 
 TEST_PNG_FILE = "Tests/images/hopper.png"
-TEST_DATA = open(TEST_PNG_FILE, "rb").read()
 
 # stuff to create inline PNG images
 
@@ -392,11 +391,11 @@ class TestFilePng(PillowTestCase):
         info = PngImagePlugin.PngInfo()
         info.add_text("Text", "Ascii")
         im = roundtrip(im, pnginfo=info)
-        self.assertEqual(type(im.info["Text"]), str)
+        self.assertIsInstance(im.info["Text"], str)
 
     def test_unicode_text(self):
-        # Check preservation of non-ASCII characters on Python3
-        # This cannot really be meaningfully tested on Python2,
+        # Check preservation of non-ASCII characters on Python 3
+        # This cannot really be meaningfully tested on Python 2,
         # since it didn't preserve charsets to begin with.
 
         def rt_text(value):
@@ -497,6 +496,38 @@ class TestFilePng(PillowTestCase):
         repr_png = Image.open(BytesIO(im._repr_png_()))
         self.assertEqual(repr_png.format, 'PNG')
         self.assert_image_equal(im, repr_png)
+
+    def test_chunk_order(self):
+        im = Image.open("Tests/images/icc_profile.png")
+        test_file = self.tempfile("temp.png")
+        im.convert("P").save(test_file, dpi=(100, 100))
+
+        chunks = []
+        fp = open(test_file, "rb")
+        fp.read(8)
+        png = PngImagePlugin.PngStream(fp)
+        while True:
+            cid, pos, length = png.read()
+            chunks.append(cid)
+            try:
+                s = png.call(cid, pos, length)
+            except EOFError:
+                break
+            png.crc(cid, s)
+
+        # https://www.w3.org/TR/PNG/#5ChunkOrdering
+        # IHDR - shall be first
+        self.assertEqual(chunks.index(b"IHDR"), 0)
+        # PLTE - before first IDAT
+        self.assertLess(chunks.index(b"PLTE"), chunks.index(b"IDAT"))
+        # iCCP - before PLTE and IDAT
+        self.assertLess(chunks.index(b"iCCP"), chunks.index(b"PLTE"))
+        self.assertLess(chunks.index(b"iCCP"), chunks.index(b"IDAT"))
+        # tRNS - after PLTE, before IDAT
+        self.assertGreater(chunks.index(b"tRNS"), chunks.index(b"PLTE"))
+        self.assertLess(chunks.index(b"tRNS"), chunks.index(b"IDAT"))
+        # pHYs - before IDAT
+        self.assertLess(chunks.index(b"pHYs"), chunks.index(b"IDAT"))
 
 
 if __name__ == '__main__':

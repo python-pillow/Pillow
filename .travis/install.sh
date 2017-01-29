@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -e
+
+sudo apt-get update
+sudo apt-get -qq install libfreetype6-dev liblcms2-dev\
+			 python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick
+pip install cffi
+pip install nose
+pip install check-manifest
+pip install olefile
+# Pyroma tests sometimes hang on PyPy; skip
+if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then pip install pyroma; fi
+
+pip install coverage
+
+# docs only on python 2.7
+if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then pip install -r requirements.txt ; fi
+
+# clean checkout for manifest
+mkdir /tmp/check-manifest && cp -a . /tmp/check-manifest
+
+# webp
+pushd depends && ./install_webp.sh && popd
+
+# openjpeg
+pushd depends && ./install_openjpeg.sh && popd
+
+# libimagequant
+pushd depends && ./install_imagequant.sh && popd
+
+# extra test images
+pushd depends && ./install_extra_test_images.sh && popd
+

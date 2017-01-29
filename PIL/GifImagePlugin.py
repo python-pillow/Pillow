@@ -24,19 +24,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, ImagePalette, \
-                ImageChops, ImageSequence, _binary
+from . import Image, ImageFile, ImagePalette, \
+              ImageChops, ImageSequence
+from ._binary import i8, i16le as i16, o8, o16le as o16
 
 __version__ = "0.9"
 
 
 # --------------------------------------------------------------------
 # Helpers
-
-i8 = _binary.i8
-i16 = _binary.i16le
-o8 = _binary.o8
-o16 = _binary.o16le
 
 
 # --------------------------------------------------------------------
@@ -352,10 +348,18 @@ def _save(im, fp, filename, save_all=False):
 
         first_frame = None
         append_images = im.encoderinfo.get("append_images", [])
+        if "duration" in im.encoderinfo:
+            duration = im.encoderinfo["duration"]
+        else:
+            duration = None
+        frame_count = 0
         for imSequence in [im]+append_images:
             for im_frame in ImageSequence.Iterator(imSequence):
                 encoderinfo = im.encoderinfo.copy()
                 im_frame = _convert_mode(im_frame)
+                if isinstance(duration, (list, tuple)):
+                    encoderinfo["duration"] = duration[frame_count]
+                frame_count += 1
 
                 # To specify duration, add the time in milliseconds to getdata(),
                 # e.g. getdata(im_frame, duration=1000)
@@ -434,18 +438,16 @@ def _get_local_header(fp, im, offset, flags):
         # optimize the block away if transparent color is not used
         transparent_color_exists = True
 
-        if _get_optimize(im, im.encoderinfo):
-            used_palette_colors = _get_used_palette_colors(im)
-
+        used_palette_colors = _get_optimize(im, im.encoderinfo)
+        if used_palette_colors is not None:
             # adjust the transparency index after optimize
-            if len(used_palette_colors) < 256:
-                for i in range(len(used_palette_colors)):
-                    if used_palette_colors[i] == transparency:
-                        transparency = i
-                        transparent_color_exists = True
-                        break
-                    else:
-                        transparent_color_exists = False
+            for i, palette_color in enumerate(used_palette_colors):
+                if palette_color == transparency:
+                    transparency = i
+                    transparent_color_exists = True
+                    break
+                else:
+                    transparent_color_exists = False
 
     if "duration" in im.encoderinfo:
         duration = int(im.encoderinfo["duration"] / 10)
@@ -515,22 +517,20 @@ def _save_netpbm(im, fp, filename):
     import tempfile
     file = im._dump()
 
-    if im.mode != "RGB":
-        with open(filename, 'wb') as f:
-            stderr = tempfile.TemporaryFile()
-            check_call(["ppmtogif", file], stdout=f, stderr=stderr)
-    else:
-        with open(filename, 'wb') as f:
-
+    with open(filename, 'wb') as f:
+        if im.mode != "RGB":
+            with tempfile.TemporaryFile() as stderr:
+                check_call(["ppmtogif", file], stdout=f, stderr=stderr)
+        else:
             # Pipe ppmquant output into ppmtogif
             # "ppmquant 256 %s | ppmtogif > %s" % (file, filename)
             quant_cmd = ["ppmquant", "256", file]
             togif_cmd = ["ppmtogif"]
-            stderr = tempfile.TemporaryFile()
-            quant_proc = Popen(quant_cmd, stdout=PIPE, stderr=stderr)
-            stderr = tempfile.TemporaryFile()
-            togif_proc = Popen(togif_cmd, stdin=quant_proc.stdout, stdout=f,
-                               stderr=stderr)
+            with tempfile.TemporaryFile() as stderr:
+                quant_proc = Popen(quant_cmd, stdout=PIPE, stderr=stderr)
+            with tempfile.TemporaryFile() as stderr:
+                togif_proc = Popen(togif_cmd, stdin=quant_proc.stdout,
+                                   stdout=f, stderr=stderr)
 
             # Allow ppmquant to receive SIGPIPE if ppmtogif exits
             quant_proc.stdout.close()
@@ -552,9 +552,28 @@ def _save_netpbm(im, fp, filename):
 # --------------------------------------------------------------------
 # GIF utilities
 
-def _get_optimize(im, info):
-    return im.mode in ("P", "L") and info and info.get("optimize", 0)
+# Force optimization so that we can test performance against
+# cases where it took lots of memory and time previously.
+_FORCE_OPTIMIZE = False
 
+def _get_optimize(im, info):
+    if im.mode in ("P", "L") and info and info.get("optimize", 0):
+        # Potentially expensive operation.
+
+        # The palette saves 3 bytes per color not used, but palette
+        # lengths are restricted to 3*(2**N) bytes. Max saving would
+        # be 768 -> 6 bytes if we went all the way down to 2 colors.
+        # * If we're over 128 colors, we can't save any space.
+        # * If there aren't any holes, it's not worth collapsing.
+        # * If we have a 'large' image, the palette is in the noise.
+
+        # create the new palette if not every color is used
+        used_palette_colors = _get_used_palette_colors(im)
+        if _FORCE_OPTIMIZE or im.mode == 'L' or \
+           (len(used_palette_colors) <= 128 and
+            max(used_palette_colors) > len(used_palette_colors) and
+            im.width * im.height < 512 * 512):
+            return used_palette_colors
 
 def _get_used_palette_colors(im):
     used_palette_colors = []
@@ -586,10 +605,6 @@ def _get_header_palette(palette_bytes):
         palette_bytes += o8(0) * 3 * actual_target_size_diff
     return palette_bytes
 
-# Force optimization so that we can test performance against
-# cases where it took lots of memory and time previously. 
-_FORCE_OPTIMIZE = False
-
 def _get_palette_bytes(im, palette, info):
     if im.mode == "P":
         if palette and isinstance(palette, bytes):
@@ -600,81 +615,66 @@ def _get_palette_bytes(im, palette, info):
         if palette and isinstance(palette, bytes):
             source_palette = palette[:768]
         else:
-            source_palette = bytearray([i//3 for i in range(768)])
+            source_palette = bytearray(i//3 for i in range(768))
 
-    used_palette_colors = palette_bytes = None
+    palette_bytes = None
 
-    if _get_optimize(im, info):
-        used_palette_colors = _get_used_palette_colors(im)
+    used_palette_colors = _get_optimize(im, info)
+    if used_palette_colors is not None:
+        palette_bytes = b""
+        new_positions = [0]*256
 
-        # Potentially expensive operation.
+        # pick only the used colors from the palette
+        for i, oldPosition in enumerate(used_palette_colors):
+            palette_bytes += source_palette[oldPosition*3:oldPosition*3+3]
+            new_positions[oldPosition] = i
 
-        # The palette saves 3 bytes per color not used, but palette
-        # lengths are restricted to 3*(2**N) bytes. Max saving would
-        # be 768 -> 6 bytes if we went all the way down to 2 colors.
-        # * If we're over 128 colors, we can't save any space.
-        # * If there aren't any holes, it's not worth collapsing. 
-        # * If we have a 'large' image, the palette is in the noise.
+        # replace the palette color id of all pixel with the new id
 
-        # create the new palette if not every color is used
-        if _FORCE_OPTIMIZE or im.mode == 'L' or \
-               (len(used_palette_colors) <= 128 and  
-                max(used_palette_colors) > len(used_palette_colors) and
-                im.width * im.height < 512 * 512):
-            palette_bytes = b""
-            new_positions = [0]*256
+        # Palette images are [0..255], mapped through a 1 or 3
+        # byte/color map.  We need to remap the whole image
+        # from palette 1 to palette 2. New_positions is
+        # an array of indexes into palette 1.  Palette 2 is
+        # palette 1 with any holes removed.
 
-            # pick only the used colors from the palette
-            for i, oldPosition in enumerate(used_palette_colors):
-                palette_bytes += source_palette[oldPosition*3:oldPosition*3+3]
-                new_positions[oldPosition] = i
+        # We're going to leverage the convert mechanism to use the
+        # C code to remap the image from palette 1 to palette 2,
+        # by forcing the source image into 'L' mode and adding a
+        # mapping 'L' mode palette, then converting back to 'L'
+        # sans palette thus converting the image bytes, then
+        # assigning the optimized RGB palette.
 
-            # replace the palette color id of all pixel with the new id
+        # perf reference, 9500x4000 gif, w/~135 colors
+        # 14 sec prepatch, 1 sec postpatch with optimization forced.
 
-            # Palette images are [0..255], mapped through a 1 or 3
-            # byte/color map.  We need to remap the whole image
-            # from palette 1 to palette 2. New_positions is
-            # an array of indexes into palette 1.  Palette 2 is
-            # palette 1 with any holes removed.
+        mapping_palette = bytearray(new_positions)
 
-            # We're going to leverage the convert mechanism to use the
-            # C code to remap the image from palette 1 to palette 2,
-            # by forcing the source image into 'L' mode and adding a
-            # mapping 'L' mode palette, then converting back to 'L'
-            # sans palette thus converting the image bytes, then
-            # assigning the optimized RGB palette.
+        m_im = im.copy()
+        m_im.mode = 'P'
 
-            # perf reference, 9500x4000 gif, w/~135 colors
-            # 14 sec prepatch, 1 sec postpatch with optimization forced.
+        m_im.palette = ImagePalette.ImagePalette("RGB",
+                                               palette=mapping_palette*3,
+                                               size=768)
+        #possibly set palette dirty, then
+        #m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
+        # or just force it.
+        # UNDONE -- this is part of the general issue with palettes
+        m_im.im.putpalette(*m_im.palette.getdata())
 
-            mapping_palette = bytearray(new_positions)
+        m_im = m_im.convert('L')
 
-            m_im = im.copy()
-            m_im.mode = 'P'
+        # Internally, we require 768 bytes for a palette.
+        new_palette_bytes = (palette_bytes +
+                             (768 - len(palette_bytes)) * b'\x00')
+        m_im.putpalette(new_palette_bytes)
+        m_im.palette = ImagePalette.ImagePalette("RGB",
+                                               palette=palette_bytes,
+                                               size=len(palette_bytes))
 
-            m_im.palette = ImagePalette.ImagePalette("RGB",
-                                                   palette=mapping_palette*3,
-                                                   size=768)
-            #possibly set palette dirty, then 
-            #m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
-            # or just force it.
-            # UNDONE -- this is part of the general issue with palettes
-            m_im.im.putpalette(*m_im.palette.getdata())
-            
-            m_im = m_im.convert('L')
-         
-            # Internally, we require 768 bytes for a palette. 
-            new_palette_bytes = (palette_bytes +
-                                 (768 - len(palette_bytes)) * b'\x00')
-            m_im.putpalette(new_palette_bytes)
-            m_im.palette = ImagePalette.ImagePalette("RGB",
-                                                   palette=palette_bytes,
-                                                   size=len(palette_bytes))
+        # oh gawd, this is modifying the image in place so I can pass by ref.
+        # REFACTOR SOONEST
+        im.frombytes(m_im.tobytes())
 
-            # oh gawd, this is modifying the image in place so I can pass by ref.
-            # REFACTOR SOONEST 
-            im.frombytes(m_im.tobytes())
-            
     if not palette_bytes:
         palette_bytes = source_palette
 
@@ -696,7 +696,7 @@ def getheader(im, palette=None, info=None):
             version = b"89a"
             break
     else:
-        if im.info.get("version") == "89a":
+        if im.info.get("version") == b"89a":
             version = b"89a"
 
     header = [

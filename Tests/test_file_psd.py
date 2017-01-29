@@ -4,7 +4,6 @@ from PIL import Image, PsdImagePlugin
 
 # sample ppm stream
 test_file = "Tests/images/hopper.psd"
-data = open(test_file, "rb").read()
 
 
 class TestImagePsd(PillowTestCase):

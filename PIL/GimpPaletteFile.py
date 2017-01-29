@@ -15,7 +15,7 @@
 #
 
 import re
-from PIL._binary import o8
+from ._binary import o8
 
 
 ##
@@ -41,7 +41,7 @@ class GimpPaletteFile(object):
             if not s:
                 break
             # skip fields and comment lines
-            if re.match(b"\w+:|#", s):
+            if re.match(br"\w+:|#", s):
                 continue
             if len(s) > 100:
                 raise SyntaxError("bad palette file")

@@ -27,8 +27,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isPath
+from . import Image
+from ._util import isPath
 import io
 import os
 import sys
@@ -150,15 +150,16 @@ class ImageFile(Image.Image):
 
         if use_mmap:
             # try memory mapping
-            d, e, o, a = self.tile[0]
-            if d == "raw" and a[0] == self.mode and a[0] in Image._MAPMODES:
+            decoder_name, extents, offset, args = self.tile[0]
+            if decoder_name == "raw" and len(args) >= 3 and args[0] == self.mode \
+                   and args[0] in Image._MAPMODES:
                 try:
                     if hasattr(Image.core, "map"):
-                        # use built-in mapper
+                        # use built-in mapper  WIN32 only
                         self.map = Image.core.map(self.filename)
-                        self.map.seek(o)
+                        self.map.seek(offset)
                         self.im = self.map.readimage(
-                            self.mode, self.size, a[1], a[2]
+                            self.mode, self.size, args[1], args[2]
                             )
                     else:
                         # use mmap, if possible
@@ -167,7 +168,7 @@ class ImageFile(Image.Image):
                         size = os.path.getsize(self.filename)
                         self.map = mmap.mmap(fp.fileno(), size, access=mmap.ACCESS_READ)
                         self.im = Image.core.map_buffer(
-                            self.map, self.size, d, e, o, a
+                            self.map, self.size, decoder_name, extents, offset, args
                             )
                     readonly = 1
                     # After trashing self.im, we might need to reload the palette data.
@@ -210,7 +211,7 @@ class ImageFile(Image.Image):
                             else:
                                 raise IOError("image file is truncated")
 
-                        if not s and not decoder.handles_eof:  # truncated jpeg
+                        if not s:  # truncated jpeg
                             self.tile = []
 
                             # JpegDecode needs to clean things up here either way
@@ -241,12 +242,6 @@ class ImageFile(Image.Image):
         if not self.map and not LOAD_TRUNCATED_IMAGES and err_code < 0:
             # still raised if decoder fails to return anything
             raise_ioerror(err_code)
-
-        # post processing
-        if hasattr(self, "tile_post_rotate"):
-            # FIXME: This is a hack to handle rotated PCD's
-            self.im = self.im.rotate(self.tile_post_rotate)
-            self.size = self.im.size
 
         self.load_end()
 
