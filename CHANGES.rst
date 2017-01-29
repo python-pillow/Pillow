@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Remove 'MIT-like' from license #2145
+  [wiredfool]
+
+- Tests: Add tests for several Image operations #2379
+  [radarhere]
+
 - PNG: Moved iCCP chunk before PLTE chunk when saving as PNG, restricted chunks known value/ordering #2347
   [radarhere]
 
