@@ -140,6 +140,10 @@ class TestImageTransform(PillowTestCase):
 
         self.test_mesh()
 
+    def test_missing_method_data(self):
+        self.assertRaises(ValueError, lambda:
+            hopper().transform((100, 100), None))
+
 
 class TestImageTransformAffine(PillowTestCase):
     transform = Image.AFFINE

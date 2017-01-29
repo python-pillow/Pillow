@@ -97,6 +97,9 @@ class TestImagingCoreResize(PillowTestCase):
             self.assertEqual(r.size, (212, 195))
             self.assertEqual(r.getdata()[0], (0,0,0))
 
+    def test_unknown_filter(self):
+        self.assertRaises(ValueError, self.resize, hopper(), (10, 10), 9)
+
 
 class TestImageResize(PillowTestCase):
 
