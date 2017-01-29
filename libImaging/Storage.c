@@ -398,6 +398,9 @@ ImagingNew(const char* mode, int xsize, int ysize)
     int bytes;
     Imaging im;
 
+    if (strcmp(mode, "") == 0)
+        return (Imaging) ImagingError_ValueError("empty mode");
+
     if (strlen(mode) == 1) {
         if (mode[0] == 'F' || mode[0] == 'I')
             bytes = 4;
