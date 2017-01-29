@@ -29,6 +29,7 @@ class TestImage(PillowTestCase):
         self.assertEqual(im3.getcolors(), [(10000, 0)])
 
         self.assertRaises(ValueError, lambda: Image.new("X", (100, 100)))
+        self.assertRaises(ValueError, lambda: Image.new("", (100, 100)))
         # self.assertRaises(
         #     MemoryError, lambda: Image.new("L", (1000000, 1000000)))
 
