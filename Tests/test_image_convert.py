@@ -150,6 +150,19 @@ class TestImageConvert(PillowTestCase):
         self.assertRaises(ValueError,
                           lambda: im.convert(mode='CMYK', matrix=matrix))
 
+    def test_matrix_wrong_mode(self):
+        # Arrange
+        im = hopper('L')
+        matrix = (
+            0.412453, 0.357580, 0.180423, 0,
+            0.212671, 0.715160, 0.072169, 0,
+            0.019334, 0.119193, 0.950227, 0)
+        self.assertEqual(im.mode, 'L')
+
+        # Act / Assert
+        self.assertRaises(ValueError,
+                          lambda: im.convert(mode='L', matrix=matrix))
+
     def test_matrix_rgb(self):
 
         def matrix_convert(mode):
