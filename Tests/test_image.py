@@ -315,6 +315,32 @@ class TestImage(PillowTestCase):
     def test_fromstring(self):
         self.assertRaises(NotImplementedError, Image.fromstring)
 
+    def test_linear_gradient_wrong_mode(self):
+        # Arrange
+        wrong_mode = "RGB"
+
+        # Act / Assert
+        self.assertRaises(ValueError,
+                          lambda: Image.linear_gradient(wrong_mode))
+        return
+
+    def test_linear_gradient(self):
+
+        # Arrange
+        for mode in ["L", "P"]:
+
+            # Act
+            im = Image.linear_gradient(mode)
+
+            # Assert
+            self.assertEqual(im.size, (256, 256))
+            self.assertEqual(im.mode, mode)
+            self.assertEqual(im.getpixel((0, 0)), 0)
+            self.assertEqual(im.getpixel((255, 255)), 255)
+            im2 = Image.open('Tests/images/linear_gradient_{}.png'.format(
+                                mode))
+            self.assert_image_equal(im, im2)
+
 
 if __name__ == '__main__':
     unittest.main()
