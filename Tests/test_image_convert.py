@@ -150,23 +150,27 @@ class TestImageConvert(PillowTestCase):
         self.assertRaises(ValueError,
                           lambda: im.convert(mode='CMYK', matrix=matrix))
 
-    def test_matrix(self):
-        # Arrange
-        im = hopper('RGB')
-        matrix = (
-            0.412453, 0.357580, 0.180423, 0,
-            0.212671, 0.715160, 0.072169, 0,
-            0.019334, 0.119193, 0.950227, 0)
-        self.assertEqual(im.mode, 'RGB')
+    def test_matrix_rgb(self):
 
-        # Act
-        # Convert an RGB image to the CIE XYZ colour space
-        converted_im = im.convert(mode='RGB', matrix=matrix)
+        def matrix_convert(mode):
+            # Arrange
+            im = hopper('RGB')
+            matrix = (
+                0.412453, 0.357580, 0.180423, 0,
+                0.212671, 0.715160, 0.072169, 0,
+                0.019334, 0.119193, 0.950227, 0)
+            self.assertEqual(im.mode, 'RGB')
 
-        # Assert
-        self.assertEqual(converted_im.mode, 'RGB')
-        self.assertEqual(converted_im.size, im.size)
+            # Act
+            # Convert an RGB image to the CIE XYZ colour space
+            converted_im = im.convert(mode=mode, matrix=matrix)
 
+            # Assert
+            self.assertEqual(converted_im.mode, mode)
+            self.assertEqual(converted_im.size, im.size)
+
+        matrix_convert('RGB')
+        matrix_convert('L')
 
 
 if __name__ == '__main__':
