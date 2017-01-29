@@ -279,21 +279,22 @@ class TestImage(PillowTestCase):
         self.assert_image_similar(im2, im3, 110)
 
     def test_check_size(self):
-        # Checking that the _check_size function throws value errors when we want it to.
+        # Checking that the _check_size function throws value errors
+        # when we want it to.
         with self.assertRaises(ValueError):
             Image.new('RGB', 0)  # not a tuple
         with self.assertRaises(ValueError):
             Image.new('RGB', (0,))  # Tuple too short
         with self.assertRaises(ValueError):
-            Image.new('RGB', (-1,-1))  # w,h < 0
+            Image.new('RGB', (-1, -1))  # w,h < 0
 
         # this should pass with 0 sized images, #2259
         im = Image.new('L', (0, 0))
         self.assertEqual(im.size, (0, 0))
 
-        self.assertTrue(Image.new('RGB', (1,1)))
+        self.assertTrue(Image.new('RGB', (1, 1)))
         # Should pass lists too
-        i = Image.new('RGB', [1,1])
+        i = Image.new('RGB', [1, 1])
         self.assertIsInstance(i.size, tuple)
 
     def test_storage_neg(self):
@@ -303,7 +304,7 @@ class TestImage(PillowTestCase):
         # Storage.c, rather than the size check above
 
         with self.assertRaises(ValueError):
-            Image.core.fill('RGB', (2,-2), (0,0,0))
+            Image.core.fill('RGB', (2, -2), (0, 0, 0))
 
     def test_offset_not_implemented(self):
         # Arrange
