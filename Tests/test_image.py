@@ -342,6 +342,32 @@ class TestImage(PillowTestCase):
                                 mode))
             self.assert_image_equal(im, im2)
 
+    def test_radial_gradient_wrong_mode(self):
+        # Arrange
+        wrong_mode = "RGB"
+
+        # Act / Assert
+        self.assertRaises(ValueError,
+                          lambda: Image.radial_gradient(wrong_mode))
+        return
+
+    def test_radial_gradient(self):
+
+        # Arrange
+        for mode in ["L", "P"]:
+
+            # Act
+            im = Image.radial_gradient(mode)
+
+            # Assert
+            self.assertEqual(im.size, (256, 256))
+            self.assertEqual(im.mode, mode)
+            self.assertEqual(im.getpixel((0, 0)), 255)
+            self.assertEqual(im.getpixel((128, 128)), 0)
+            im2 = Image.open('Tests/images/radial_gradient_{}.png'.format(
+                                mode))
+            self.assert_image_equal(im, im2)
+
 
 if __name__ == '__main__':
     unittest.main()
