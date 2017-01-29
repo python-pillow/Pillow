@@ -24,6 +24,15 @@ class TestFileMsp(PillowTestCase):
         self.assertRaises(SyntaxError,
                           lambda: MspImagePlugin.MspImageFile(invalid_file))
 
+    def test_bad_checksum(self):
+        # Arrange
+        # This was created by forcing Pillow to save with checksum=0
+        bad_checksum = "Tests/images/hopper_bad_checksum.msp"
+
+        # Act / Assert
+        self.assertRaises(SyntaxError,
+                          lambda: MspImagePlugin.MspImageFile(bad_checksum))
+
     def test_open(self):
         # Arrange
         # Act
