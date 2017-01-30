@@ -44,3 +44,4 @@ if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "mas
             echo "Some jobs failed"
         fi
     fi
+fi
