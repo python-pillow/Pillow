@@ -42,8 +42,7 @@ class TestFileMsp(PillowTestCase):
         im = Image.open(TEST_FILE)
 
         # Assert
-        self.assertEqual(im.size, (128, 128))
-        self.assert_image_equal(im, hopper("1"), 4)
+        self.assert_image_equal(im, hopper("1"))
         self.assertIsInstance(im, MspImagePlugin.MspImageFile)
 
     @unittest.skipIf(not os.path.exists(EXTRA_DIR),
