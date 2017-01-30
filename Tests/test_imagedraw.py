@@ -172,6 +172,28 @@ class TestImageDraw(PillowTestCase):
     def test_line2(self):
         self.helper_line(POINTS2)
 
+    def test_outline_curve(self):
+        # Arrange
+        im = Image.new("RGB", (100, 100), "white")
+        draw = ImageDraw.Draw(im)
+        x0, y0 = 5, 5
+        x1, y1 = 5, 50
+        x2, y2 = 95, 50
+        x3, y3 = 95, 5
+
+        # Act
+        s = ImageDraw.Outline()
+        s.move(x0, y0)
+        s.curve(x1, y1, x2, y2, x3, y3)
+        s.line(x0, y0)
+
+        draw.shape(s, fill=1)
+        del draw
+
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_outline_curve.png"))
+
     def helper_pieslice(self, bbox, start, end):
         # Arrange
         im = Image.new("RGB", (W, H))
