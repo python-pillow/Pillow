@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Exclude .travis and contents from manifest #2386
+  [radarhere]
+  
 - Remove 'MIT-like' from license #2145
   [wiredfool]
 
