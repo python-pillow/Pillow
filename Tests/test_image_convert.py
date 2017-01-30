@@ -187,6 +187,23 @@ class TestImageConvert(PillowTestCase):
         matrix_convert('RGB')
         matrix_convert('L')
 
+    def test_matrix_identity(self):
+        # Arrange
+        im = hopper('RGB')
+        identity_matrix = (
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0)
+        self.assertEqual(im.mode, 'RGB')
+
+        # Act
+        # Convert with an identity matrix
+        converted_im = im.convert(mode='RGB', matrix=identity_matrix)
+
+        # Assert
+        # No change
+        self.assert_image_equal(converted_im, im)
+
 
 if __name__ == '__main__':
     unittest.main()
