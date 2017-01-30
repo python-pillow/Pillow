@@ -1,11 +1,9 @@
 #!/bin/bash
 # install extra test images
 
-if [ ! -f test_images.tar.gz ]; then
-    wget -O 'test_images.tar.gz' 'https://github.com/python-pillow/pillow-depends/blob/master/test_images.tar.gz?raw=true'
-fi
-
 rm -r test_images
-tar -xvzf test_images.tar.gz
+
+# Use SVN to just fetch a single git subdirectory
+svn checkout https://github.com/python-pillow/pillow-depends/trunk/test_images
 
 cp -r test_images/* ../Tests/images
