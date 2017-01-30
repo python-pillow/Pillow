@@ -127,6 +127,14 @@ are available::
 **palette**
     Use the specified palette for the saved image.
 
+**disposal**
+    Indicates the way in which the graphic is to be treated after being displayed.
+
+    * 0 - No disposal specified.
+    * 1 - Do not dispose.
+    * 2 - Restore to background color.
+    * 3 - Restore to previous content.
+
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~
 
