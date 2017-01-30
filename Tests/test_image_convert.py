@@ -163,7 +163,7 @@ class TestImageConvert(PillowTestCase):
         self.assertRaises(ValueError,
                           lambda: im.convert(mode='L', matrix=matrix))
 
-    def test_matrix_rgb(self):
+    def test_matrix_xyz(self):
 
         def matrix_convert(mode):
             # Arrange
@@ -181,6 +181,8 @@ class TestImageConvert(PillowTestCase):
             # Assert
             self.assertEqual(converted_im.mode, mode)
             self.assertEqual(converted_im.size, im.size)
+            if converted_im.mode == 'RGB':
+                self.assert_image_similar(converted_im, im, 33)
 
         matrix_convert('RGB')
         matrix_convert('L')
