@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image, MspImagePlugin
+from PIL import Image, ImageFile, MspImagePlugin
 
 import os
 
@@ -48,14 +48,22 @@ class TestFileMsp(PillowTestCase):
 
     @unittest.skipIf(not os.path.exists(EXTRA_DIR),
                      "Extra image files not installed")
-    def test_others_windows_v2(self):
+    def test_open_windows_v2(self):
+        # Arrange
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
         files = (os.path.join(EXTRA_DIR, f) for f in os.listdir(EXTRA_DIR)
                  if os.path.splitext(f)[1] == '.msp')
         for path in files:
+
+            # Act
             with Image.open(path) as im:
+                im.load()
+
+                # Assert
                 self.assertEqual(im.mode, "1")
                 self.assertGreater(im.size, (360, 332))
                 self.assertIsInstance(im, MspImagePlugin.MspImageFile)
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     def test_cannot_save_wrong_mode(self):
         # Arrange
