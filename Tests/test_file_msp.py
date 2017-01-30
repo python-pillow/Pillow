@@ -62,6 +62,11 @@ class TestFileMsp(PillowTestCase):
                 self.assertEqual(im.mode, "1")
                 self.assertGreater(im.size, (360, 332))
                 self.assertIsInstance(im, MspImagePlugin.MspImageFile)
+                if "mandel" in path:
+                    self.assertEqual(im.getpixel((0, 0)), 0)
+                elif "mexhat" in path:
+                    self.assertEqual(im.getpixel((0, 0)), 255)
+                self.assertEqual(im.getpixel((200, 25)), 255)
         ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     def test_cannot_save_wrong_mode(self):
