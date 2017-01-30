@@ -503,15 +503,24 @@ def _write_local_header(fp, im, offset, flags):
         duration = int(im.encoderinfo["duration"] / 10)
     else:
         duration = 0
+
+    if "disposal" in im.encoderinfo:
+        disposal = int(im.encoderinfo['disposal'])
+        if not 0<= disposal <=3:
+            disposal = 2
+    else:
+        disposal = 2
+
     if transparent_color_exists or duration != 0:
-        transparency_flag = 1 if transparent_color_exists else 0
+        packed_flag = 1 if transparent_color_exists else 0
+        packed_flag |= disposal << 2
         if not transparent_color_exists:
             transparency = 0
 
         fp.write(b"!" +
                  o8(249) +                # extension intro
                  o8(4) +                  # length
-                 o8(transparency_flag) +  # packed fields
+                 o8(packed_flag) +        # packed fields
                  o16(duration) +          # duration
                  o8(transparency) +       # transparency index
                  o8(0))
