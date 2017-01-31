@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- BUG: '' in image mode no longer causes a crash #2380
+  [evalapply]
+  
 - Exclude .travis and contents from manifest #2386
   [radarhere]
   
