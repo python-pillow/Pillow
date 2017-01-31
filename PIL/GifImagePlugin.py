@@ -504,14 +504,9 @@ def _write_local_header(fp, im, offset, flags):
     else:
         duration = 0
 
-    if "disposal" in im.encoderinfo:
-        disposal = int(im.encoderinfo['disposal'])
-        if not 0<= disposal <=3:
-            disposal = 2
-    else:
-        disposal = 2
+    disposal = int(im.encoderinfo.get('disposal', 0))
 
-    if transparent_color_exists or duration != 0:
+    if transparent_color_exists or duration != 0 or disposal:
         packed_flag = 1 if transparent_color_exists else 0
         packed_flag |= disposal << 2
         if not transparent_color_exists:
