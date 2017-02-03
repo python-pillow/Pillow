@@ -10,8 +10,10 @@ gem install coveralls-lcov
 coveralls-lcov -v -n coverage.filtered.info > coverage.c.json
 
 coverage report
+pip install codecov
 pip install coveralls-merge
 coveralls-merge coverage.c.json
+codecov
 
 if [ "$DOCKER" == "" ]; then
 	pip install pep8 pyflakes
