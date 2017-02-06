@@ -4,7 +4,14 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
-- BUG: '' in image mode no longer causes a crash #2380
+
+- Test ImageDraw.Outline and and ImageDraw.Shape #2389
+  [hugovk]
+
+- Added PySide to ImageQt documentation #2392
+  [radarhere]
+
+- BUG: Empty image mode no longer causes a crash #2380
   [evalapply]
   
 - Exclude .travis and contents from manifest #2386
