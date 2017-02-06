@@ -144,6 +144,7 @@ def isImageType(t):
     """
     return hasattr(t, "im")
 
+
 #
 # Constants (also defined in _imagingmodule.c!)
 
@@ -338,6 +339,7 @@ def getmodebands(mode):
     :exception KeyError: If the input mode was not a standard mode.
     """
     return len(ImageMode.getmode(mode).bands)
+
 
 # --------------------------------------------------------------------
 # Helpers
@@ -691,8 +693,8 @@ class Image(object):
         return b"".join(data)
 
     def tostring(self, *args, **kw):
-        raise NotImplementedError("tostring() has been removed. " +
-                        "Please call tobytes() instead.")
+        raise NotImplementedError("tostring() has been removed. "
+                                  "Please call tobytes() instead.")
 
     def tobitmap(self, name="image"):
         """
@@ -742,8 +744,8 @@ class Image(object):
             raise ValueError("cannot decode image data")
 
     def fromstring(self, *args, **kw):
-        raise NotImplementedError("fromstring() has been removed. " +
-                        "Please call frombytes() instead.")
+        raise NotImplementedError("fromstring() has been removed. "
+                                  "Please call frombytes() instead.")
 
     def load(self):
         """
@@ -879,7 +881,7 @@ class Image(object):
                             try:
                                 t = trns_im.palette.getcolor(t)
                             except:
-                                raise ValueError("Couldn't allocate a palette " +
+                                raise ValueError("Couldn't allocate a palette "
                                                  "color for transparency")
                     trns_im.putpixel((0, 0), t)
 
@@ -1034,8 +1036,7 @@ class Image(object):
         if y1 < y0:
             y1 = y0
 
-        return self._new(self.im.crop(( x0, y0, x1, y1)))
-
+        return self._new(self.im.crop((x0, y0, x1, y1)))
 
     def draft(self, mode, size):
         """
@@ -1254,8 +1255,8 @@ class Image(object):
         return self.im.histogram()
 
     def offset(self, xoffset, yoffset=None):
-        raise NotImplementedError("offset() has been removed. " +
-                        "Please call ImageChops.offset() instead.")
+        raise NotImplementedError("offset() has been removed. "
+                                  "Please call ImageChops.offset() instead.")
 
     def paste(self, im, box=None, mask=None):
         """
@@ -1553,7 +1554,8 @@ class Image(object):
 
         return self._new(self.im.resize(size, resample))
 
-    def rotate(self, angle, resample=NEAREST, expand=0, center=None, translate=None):
+    def rotate(self, angle, resample=NEAREST, expand=0, center=None,
+               translate=None):
         """
         Returns a rotated copy of this image.  This method returns a
         copy of this image, rotated the given number of degrees counter
@@ -1622,10 +1624,13 @@ class Image(object):
             round(math.cos(angle), 15), round(math.sin(angle), 15), 0.0,
             round(-math.sin(angle), 15), round(math.cos(angle), 15), 0.0
         ]
+
         def transform(x, y, matrix):
             (a, b, c, d, e, f) = matrix
             return a*x + b*y + c, d*x + e*y + f
-        matrix[2], matrix[5] = transform(-center[0] - translate[0], -center[1] - translate[1], matrix)
+
+        matrix[2], matrix[5] = transform(-center[0] - translate[0],
+                                         -center[1] - translate[1], matrix)
         matrix[2] += center[0]
         matrix[5] += center[1]
 
@@ -1641,9 +1646,11 @@ class Image(object):
             nh = int(math.ceil(max(yy)) - math.floor(min(yy)))
 
             # We multiply a translation matrix from the right.  Because of its
-            # special form, this is the same as taking the image of the translation vector
-            # as new translation vector.
-            matrix[2], matrix[5] = transform(-(nw - w) / 2.0, -(nh - h) / 2.0, matrix)
+            # special form, this is the same as taking the image of the
+            # translation vector as new translation vector.
+            matrix[2], matrix[5] = transform(-(nw - w) / 2.0,
+                                             -(nh - h) / 2.0,
+                                             matrix)
             w, h = nw, nh
 
         return self.transform((w, h), AFFINE, matrix, resample)
@@ -1759,8 +1766,8 @@ class Image(object):
         PPM file, and calls either the **xv** utility or the **display**
         utility, depending on which one can be found.
 
-        On macOS, this method saves the image to a temporary BMP file, and opens
-        it with the native Preview application.
+        On macOS, this method saves the image to a temporary BMP file, and
+        opens it with the native Preview application.
 
         On Windows, it saves the image to a temporary BMP file, and uses
         the standard BMP display utility to show it (usually Paint).
@@ -1988,7 +1995,6 @@ class Image(object):
         return ImageQt.toqpixmap(self)
 
 
-
 # --------------------------------------------------------------------
 # Abstract handlers.
 
@@ -2013,6 +2019,7 @@ def _wedge():
 
     return Image()._new(core.wedge("L"))
 
+
 def _check_size(size):
     """
     Common check to enforce type and sanity check on size tuples
@@ -2029,6 +2036,7 @@ def _check_size(size):
         raise ValueError("Width and Height must be => 0")
 
     return True
+
 
 def new(mode, size, color=0):
     """
@@ -2101,7 +2109,7 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
 def fromstring(*args, **kw):
     raise NotImplementedError("fromstring() has been removed. " +
-                    "Please call frombytes() instead.")
+                              "Please call frombytes() instead.")
 
 
 def frombuffer(mode, size, data, decoder_name="raw", *args):
@@ -2229,6 +2237,7 @@ def fromqpixmap(im):
     if not ImageQt.qt_is_installed:
         raise ImportError("Qt bindings are not installed")
     return ImageQt.fromqpixmap(im)
+
 
 _fromarray_typemap = {
     # (shape, typestr) => mode, rawmode
@@ -2558,3 +2567,21 @@ def effect_noise(size, sigma):
     :param sigma: Standard deviation of noise.
     """
     return Image()._new(core.effect_noise(size, sigma))
+
+
+def linear_gradient(mode):
+    """
+    Generate 256x256 linear gradient from black to white, top to bottom.
+
+    :param mode: Input mode.
+    """
+    return Image()._new(core.linear_gradient(mode))
+
+
+def radial_gradient(mode):
+    """
+    Generate 256x256 radial gradient from black to white, centre to edge.
+
+    :param mode: Input mode.
+    """
+    return Image()._new(core.radial_gradient(mode))
