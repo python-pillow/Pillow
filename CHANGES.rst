@@ -4,6 +4,8 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Test linear and radial gradient effects #2382
+  [hugovk]
 
 - Test ImageDraw.Outline and and ImageDraw.Shape #2389
   [hugovk]
