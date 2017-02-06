@@ -328,6 +328,7 @@ class TestImage(PillowTestCase):
     def test_linear_gradient(self):
 
         # Arrange
+        target_file = "Tests/images/linear_gradient.png"
         for mode in ["L", "P"]:
 
             # Act
@@ -338,9 +339,8 @@ class TestImage(PillowTestCase):
             self.assertEqual(im.mode, mode)
             self.assertEqual(im.getpixel((0, 0)), 0)
             self.assertEqual(im.getpixel((255, 255)), 255)
-            im2 = Image.open('Tests/images/linear_gradient_{}.png'.format(
-                                mode))
-            self.assert_image_equal(im, im2)
+            target = Image.open(target_file).convert(mode)
+            self.assert_image_equal(im, target)
 
     def test_radial_gradient_wrong_mode(self):
         # Arrange
@@ -354,6 +354,7 @@ class TestImage(PillowTestCase):
     def test_radial_gradient(self):
 
         # Arrange
+        target_file = "Tests/images/radial_gradient.png"
         for mode in ["L", "P"]:
 
             # Act
@@ -364,9 +365,8 @@ class TestImage(PillowTestCase):
             self.assertEqual(im.mode, mode)
             self.assertEqual(im.getpixel((0, 0)), 255)
             self.assertEqual(im.getpixel((128, 128)), 0)
-            im2 = Image.open('Tests/images/radial_gradient_{}.png'.format(
-                                mode))
-            self.assert_image_equal(im, im2)
+            target = Image.open(target_file).convert(mode)
+            self.assert_image_equal(im, target)
 
 
 if __name__ == '__main__':
