@@ -291,6 +291,97 @@ findLCMStype(char* PILmode)
     }
 }
 
+#define Cms_Min(a, b) ((a) < (b) ? (a) : (b))
+
+static int
+pyCMSgetAuxChannelChannel (cmsUInt32Number format, int auxChannelNdx)
+{
+    int numColors = T_CHANNELS(format);
+    int numExtras = T_EXTRA(format);
+
+    if (T_SWAPFIRST(format) && T_DOSWAP(format)) {
+        // reverse order, before anything but last extra is shifted last
+        if (auxChannelNdx == numExtras - 1)
+            return numColors + numExtras - 1;
+        else
+            return numExtras - 2 - auxChannelNdx;
+    }
+    else if (T_SWAPFIRST(format)) {
+        // in order, after color channels, but last extra is shifted to first
+        if (auxChannelNdx == numExtras - 1)
+            return 0;
+        else
+            return numColors + 1 + auxChannelNdx;
+    }
+    else if (T_DOSWAP(format)) {
+        // reverse order, before anything
+        return numExtras - 1 - auxChannelNdx;
+    }
+    else {
+        // in order, after color channels
+        return numColors + auxChannelNdx;
+    }
+}
+
+static void
+pyCMScopyAux (cmsHTRANSFORM hTransform, Imaging imDst, const Imaging imSrc)
+{
+    cmsUInt32Number dstLCMSFormat;
+    cmsUInt32Number srcLCMSFormat;
+    int numSrcExtras;
+    int numDstExtras;
+    int numExtras;
+    int ySize;
+    int xSize;
+    int channelSize;
+    int srcChunkSize;
+    int dstChunkSize;
+    int e;
+
+    // trivially copied
+    if (imDst == imSrc)
+        return;
+
+    dstLCMSFormat = cmsGetTransformOutputFormat(hTransform);
+    srcLCMSFormat = cmsGetTransformInputFormat(hTransform);
+
+    // currently, all Pillow formats are chunky formats, but check it anyway
+    if (T_PLANAR(dstLCMSFormat) || T_PLANAR(srcLCMSFormat))
+        return;
+
+    // copy only if channel format is identical, except OPTIMIZED is ignored as it
+    // does not affect the aux channel
+    if (T_FLOAT(dstLCMSFormat) != T_FLOAT(srcLCMSFormat)
+        || T_FLAVOR(dstLCMSFormat) != T_FLAVOR(srcLCMSFormat)
+        || T_ENDIAN16(dstLCMSFormat) != T_ENDIAN16(srcLCMSFormat)
+        || T_BYTES(dstLCMSFormat) != T_BYTES(srcLCMSFormat))
+      return;
+
+    numSrcExtras = T_EXTRA(srcLCMSFormat);
+    numDstExtras = T_EXTRA(dstLCMSFormat);
+    numExtras = Cms_Min(numSrcExtras, numDstExtras);
+    ySize = Cms_Min(imSrc->ysize, imDst->ysize);
+    xSize = Cms_Min(imSrc->xsize, imDst->xsize);
+    channelSize = T_BYTES(dstLCMSFormat);
+    srcChunkSize = (T_CHANNELS(srcLCMSFormat) + T_EXTRA(srcLCMSFormat)) * channelSize;
+    dstChunkSize = (T_CHANNELS(dstLCMSFormat) + T_EXTRA(dstLCMSFormat)) * channelSize;
+
+    for (e = 0; e < numExtras; ++e) {
+        int y;
+        int dstChannel = pyCMSgetAuxChannelChannel(dstLCMSFormat, e);
+        int srcChannel = pyCMSgetAuxChannelChannel(srcLCMSFormat, e);
+
+        for (y = 0; y < ySize; y++) {
+            int x;
+            char* pDstExtras = imDst->image[y] + dstChannel * channelSize;
+            const char* pSrcExtras = imSrc->image[y] + srcChannel * channelSize;
+
+            for (x = 0; x < xSize; x++)
+                memcpy(pDstExtras + x * dstChunkSize, pSrcExtras + x * srcChunkSize, channelSize);
+        }
+    }
+}
+
 static int
 pyCMSdoTransform(Imaging im, Imaging imOut, cmsHTRANSFORM hTransform)
 {
@@ -301,8 +392,18 @@ pyCMSdoTransform(Imaging im, Imaging imOut, cmsHTRANSFORM hTransform)
 
     Py_BEGIN_ALLOW_THREADS
 
+    // transform color channels only
     for (i = 0; i < im->ysize; i++)
         cmsDoTransform(hTransform, im->image[i], imOut->image[i], im->xsize);
+
+    // lcms by default does nothing to the auxiliary channels leaving those
+    // unchanged. To do "the right thing" here, i.e. maintain identical results
+    // with and without inPlace, we replicate those channels to the output.
+    //
+    // As of lcms 2.8, a new cmsFLAGS_COPY_ALPHA flag is introduced which would
+    // do the same thing automagically. Unfortunately, lcms2.8 is not yet widely
+    // enough available on all platforms, so we polyfill it here for now.
+    pyCMScopyAux(hTransform, imOut, im);
 
     Py_END_ALLOW_THREADS
 
