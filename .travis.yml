@@ -9,22 +9,21 @@ notifications:
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - python: nightly
   include:
     - python: "pypy"
     - python: "pypy3"
     - python: '3.6'
     - python: '2.7'
     - env: DOCKER="alpine"
+    - env: DOCKER="arch" # contains PyQt5
     - env: DOCKER="ubuntu-trusty-x86"
     - env: DOCKER="ubuntu-xenial-amd64"
-    - env: DOCKER="ubuntu-precise-amd64"     
+    - env: DOCKER="ubuntu-precise-amd64"
+    - env: DOCKER="debian-stretch-x86"
     - python:  "2.7_with_system_site_packages" # For PyQt4
     - python: '3.5'
     - python: '3.4'
     - python: '3.3'
-    - python: 'nightly'
   
 dist: trusty
 
