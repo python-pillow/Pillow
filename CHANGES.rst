@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Preserve aux/alpha channels when performing Imagecms transforms #2355
+  [gunjambi]
+  
 - Test linear and radial gradient effects #2382
   [hugovk]
 
