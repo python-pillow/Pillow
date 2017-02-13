@@ -1715,7 +1715,10 @@ class Image(object):
         if not format:
             if ext not in EXTENSION:
                 init()
-            format = EXTENSION[ext]
+            try:
+                format = EXTENSION[ext]
+            except KeyError:
+                raise ValueError('unknown file extension: {}'.format(ext))
 
         if format.upper() not in SAVE:
             init()
