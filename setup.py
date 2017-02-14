@@ -718,7 +718,7 @@ try:
           long_description=_read('README.rst').decode('utf-8'),
           author='Alex Clark (Fork Author)',
           author_email='aclark@aclark.net',
-          url='http://python-pillow.org',
+          url='https://python-pillow.org',
           classifiers=[
               "Development Status :: 6 - Mature",
               "Topic :: Multimedia :: Graphics",
@@ -753,7 +753,7 @@ The headers or library files could not be found for %s,
 a required dependency when compiling Pillow from source.
 
 Please see the install instructions at:
-   http://pillow.readthedocs.io/en/latest/installation.html
+   https://pillow.readthedocs.io/en/latest/installation.html
 
 """ % (str(err))
     sys.stderr.write(msg)

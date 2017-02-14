@@ -6,7 +6,7 @@ Changelog (Pillow)
 
 - Preserve aux/alpha channels when performing Imagecms transforms #2355
   [gunjambi]
-  
+
 - Test linear and radial gradient effects #2382
   [hugovk]
 
@@ -18,10 +18,10 @@ Changelog (Pillow)
 
 - BUG: Empty image mode no longer causes a crash #2380
   [evalapply]
-  
+
 - Exclude .travis and contents from manifest #2386
   [radarhere]
-  
+
 - Remove 'MIT-like' from license #2145
   [wiredfool]
 
@@ -42,19 +42,19 @@ Changelog (Pillow)
 
 - Tests: Added docker images for testing alternate platforms. See also https://github.com/python-pillow/docker-images. #2368
   [wiredfool]
-  
+
 - Removed PIL 1.0 era TK readme that concerns Windows 95/NT #2360
   [wiredfool]
 
 - Prevent `nose -v` printing docstrings #2369
   [hugovk]
-  
+
 - Replaced absolute PIL imports with relative imports #2349
   [radarhere]
 
 - Added context managers for file handling #2307
   [radarhere]
-  
+
 - Expose registered file extensions in Image #2343
   [iggomez, radarhere]
 
@@ -81,16 +81,16 @@ Changelog (Pillow)
 
 - Add center and translate option to Image.rotate. #2328
   [lambdafu]
-  
+
 - Test: Relax WMF test condition, fixes #2323
-  [wiredfool] 
+  [wiredfool]
 
 - Allow 0 size images, Fixes #2259, Reverts to pre-3.4 behavior.
   [wiredfool]
-  
+
 - SGI: Save uncompressed SGI/BW/RGB/RGBA files #2325
   [jbltx]
-  
+
 - Depends: Updated pngquant to 2.8.2 #2319
   [radarhere]
 
@@ -1983,7 +1983,7 @@ Changelog (Pillow)
 - Use PyCapsule for py3.1 #238 (fixes #237)
   [wiredfool]
 
-- Workaround for: http://bugs.python.org/issue16754 in 3.2.x < 3.2.4 and 3.3.0.
+- Workaround for: https://bugs.python.org/issue16754 in 3.2.x < 3.2.4 and 3.3.0.
 
 2.0.0 (2013-03-15)
 ------------------
@@ -2132,7 +2132,7 @@ Changelog (Pillow)
 ----------------
 
 - Remove support for ``import Image``, etc. from the standard namespace. ``from PIL import Image`` etc. now required.
-- Forked PIL based on `Hanno Schlichting's re-packaging <http://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz>`_
+- Forked PIL based on `Hanno Schlichting's re-packaging <https://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz>`_
   [aclark4life]
 
 Pre-fork

@@ -100,7 +100,7 @@ class TestNumpy(PillowTestCase):
         self.assert_image(to_image(numpy.uint8, 4), "RGBA", (10, 10))
 
     # based on an erring example at
-    # http://stackoverflow.com/questions/10854903/what-is-causing-dimension-dependent-attributeerror-in-pil-fromarray-function
+    # https://stackoverflow.com/questions/10854903/what-is-causing-dimension-dependent-attributeerror-in-pil-fromarray-function
     def test_3d_array(self):
         size = (5, TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1])
         a = numpy.ones(size, dtype=numpy.uint8)

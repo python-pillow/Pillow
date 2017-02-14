@@ -243,7 +243,7 @@ have the full Xcode package installed.  It may be necessary to run
 tools.
 
 The easiest way to install external libraries is via `Homebrew
-<http://brew.sh/>`_. After you install Homebrew, run::
+<https://brew.sh/>`_. After you install Homebrew, run::
 
     $ brew install libtiff libjpeg webp little-cms2
 

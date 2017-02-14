@@ -18,7 +18,7 @@
 # the WalImageFile.open() function instead.
 
 # This reader is based on the specification available from:
-#    http://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
+#    https://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
 # and has been tested with a few sample files found using google.
 
 from __future__ import print_function

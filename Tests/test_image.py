@@ -168,7 +168,7 @@ class TestImage(PillowTestCase):
         self.assertTrue(im1 != im2)
 
     def test_alpha_composite(self):
-        # http://stackoverflow.com/questions/3374878
+        # https://stackoverflow.com/questions/3374878
         # Arrange
         from PIL import ImageDraw
 
