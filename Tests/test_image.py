@@ -87,6 +87,11 @@ class TestImage(PillowTestCase):
             reloaded = Image.open(fp)
             self.assert_image_similar(im, reloaded, 20)
 
+    def test_unknown_extension(self):
+        im = hopper()
+        temp_file = self.tempfile("temp.unknown")
+        self.assertRaises(ValueError, lambda: im.save(temp_file))
+
     def test_internals(self):
 
         im = Image.new("L", (100, 100))
