@@ -257,7 +257,7 @@ class GifImageFile(ImageFile.ImageFile):
 
             # only dispose the extent in this frame
             if self.dispose:
-                self.dispose = self.dispose.crop(self.dispose_extent)
+                self.dispose = self._crop(self.dispose, self.dispose_extent)
         except (AttributeError, KeyError):
             pass
 
@@ -280,7 +280,7 @@ class GifImageFile(ImageFile.ImageFile):
         if self._prev_im and self.disposal_method == 1:
             # we do this by pasting the updated area onto the previous
             # frame which we then use as the current image content
-            updated = self.im.crop(self.dispose_extent)
+            updated = self._crop(self.im, self.dispose_extent)
             self._prev_im.paste(updated, self.dispose_extent,
                                 updated.convert('RGBA'))
             self.im = self._prev_im
