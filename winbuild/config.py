@@ -37,7 +37,7 @@ libs = {
         'dir': 'tiff-4.0.6',
     },
     'freetype': {
-        'url': 'http://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.gz',
+        'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.gz',
         'filename': PILLOW_DEPENDS_DIR + 'freetype-2.7.1.tar.gz',
         'hash': 'md5:78701bee8d249578d83bb9a2f3aa3616',
         'dir': 'freetype-2.7.1',

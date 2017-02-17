@@ -79,7 +79,7 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 **version**
     Version (either ``GIF87a`` or ``GIF89a``).
 
-**duration** 
+**duration**
     May not be present. The time to display the current frame
     of the GIF, in milliseconds.
 
@@ -514,8 +514,8 @@ the output format must be specified explicitly::
 For more information about the SPIDER image processing package, see the
 `SPIDER homepage`_ at `Wadsworth Center`_.
 
-.. _SPIDER homepage: http://spider.wadsworth.org/spider_doc/spider/docs/spider.html
-.. _Wadsworth Center: http://www.wadsworth.org/
+.. _SPIDER homepage: https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
+.. _Wadsworth Center: https://www.wadsworth.org/
 
 TIFF
 ^^^^

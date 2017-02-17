@@ -118,7 +118,7 @@ class SunImageFile(ImageFile.ImageFile):
         # RGB looks similar to standard, but RGB byte order
         # TIFF and IFF mean that they were converted from T/IFF
         # Experimental means that it's something else.
-        # (http://www.fileformat.info/format/sunraster/egff.htm)
+        # (https://www.fileformat.info/format/sunraster/egff.htm)
 
         if file_type in (0, 1, 3, 4, 5):
             self.tile = [("raw", (0, 0)+self.size, offset, (rawmode, stride))]
