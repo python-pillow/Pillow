@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -35,9 +35,24 @@ class TestDecompressionBomb(PillowTestCase):
         self.assertEqual(Image.MAX_IMAGE_PIXELS, 10)
 
         # Act / Assert
-        self.assert_warning(
-            Image.DecompressionBombWarning,
-            lambda: Image.open(TEST_FILE))
+        self.assert_warning(Image.DecompressionBombWarning,
+                            lambda: Image.open(TEST_FILE))
+
+class TestDecompressionCrop(PillowTestCase):
+
+    def setUp(self):
+        self.src = hopper()
+        Image.MAX_IMAGE_PIXELS = self.src.height * self.src.width
+
+    def tearDown(self):
+        Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
+
+    def testEnlargeCrop(self):
+        # Crops can extend the extents, therefore we should have the
+        # same decompression bomb warnings on them.
+        box = (0, 0, self.src.width * 2, self.src.height * 2)
+        self.assert_warning(Image.DecompressionBombWarning,
+                            lambda: self.src.crop(box))    
 
 if __name__ == '__main__':
     unittest.main()
