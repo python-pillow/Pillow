@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- More explicit error message when saving to a file with invalid extension #2399
+  [ces42]
+  
+- Docs: Update some http urls to https #2403
+  [hugovk]
+  
 - Preserve aux/alpha channels when performing Imagecms transforms #2355
   [gunjambi]
 
