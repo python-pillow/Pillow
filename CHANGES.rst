@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Updated libwebp to 0.6.0 on appveyor #2395
+  [radarhere]
+
 - More explicit error message when saving to a file with invalid extension #2399
   [ces42]
   
