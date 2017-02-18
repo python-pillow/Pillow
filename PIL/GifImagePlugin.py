@@ -391,8 +391,7 @@ def _save(im, fp, filename, save_all=False):
 
                     im_frame = im_frame.crop(frame_data['bbox'])
                     offset = frame_data['bbox'][:2]
-                for s in getdata(im_frame, offset, **frame_data['encoderinfo']):
-                    fp.write(s)
+                _write_frame_data(fp, im_frame, offset, frame_data['encoderinfo'])
     if not save_all:
         for s in getheader(im_out, palette, im.encoderinfo)[0]:
             fp.write(s)
@@ -714,6 +713,19 @@ def getheader(im, palette=None, info=None):
     header.append(_get_header_palette(palette_bytes))
     return header, used_palette_colors
 
+def _write_frame_data(fp, im_frame, offset, params):
+    try:
+        im_frame.encoderinfo = params
+
+        # local image header
+        _get_local_header(fp, im_frame, offset, 0)
+
+        ImageFile._save(im_frame, fp, [("gif", (0, 0)+im_frame.size, 0,
+                                        RAWMODE[im_frame.mode])])
+
+        fp.write(b"\0")  # end of image data
+    finally:
+        del im_frame.encoderinfo
 
 def getdata(im, offset=(0, 0), **params):
     """Return a list of strings representing this image.
@@ -730,18 +742,7 @@ def getdata(im, offset=(0, 0), **params):
 
     fp = Collector()
 
-    try:
-        im.encoderinfo = params
-
-        # local image header
-        _get_local_header(fp, im, offset, 0)
-
-        ImageFile._save(im, fp, [("gif", (0, 0)+im.size, 0, RAWMODE[im.mode])])
-
-        fp.write(b"\0")  # end of image data
-
-    finally:
-        del im.encoderinfo
+    _write_frame_data(fp, im, offset, params)
 
     return fp.data
 
