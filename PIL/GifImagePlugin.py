@@ -382,7 +382,8 @@ def _save(im, fp, filename, save_all=False):
                 im_frame = frame_data['im']
                 if not frame_data['bbox']:
                     # global header
-                    for s in getheader(im_frame, palette, frame_data['encoderinfo'])[0]:
+                    for s in _get_global_header(im_frame, palette,
+                                                frame_data['encoderinfo']):
                         fp.write(s)
                     offset = (0, 0)
                 else:
@@ -393,7 +394,7 @@ def _save(im, fp, filename, save_all=False):
                     offset = frame_data['bbox'][:2]
                 _write_frame_data(fp, im_frame, offset, frame_data['encoderinfo'])
     if not save_all:
-        for s in getheader(im_out, palette, im.encoderinfo)[0]:
+        for s in _get_global_header(im_out, palette, im.encoderinfo):
             fp.write(s)
 
         # local image header
@@ -665,7 +666,7 @@ def _get_palette_bytes(im, palette, info):
     # returning palette, _not_ padded to 768 bytes like our internal ones.
     return palette_bytes, used_palette_colors
 
-def getheader(im, palette=None, info=None):
+def _get_global_header(im, palette, info):
     """Return a list of strings representing a GIF header"""
 
     # Header Block
@@ -683,34 +684,34 @@ def getheader(im, palette=None, info=None):
         if im.info.get("version") == b"89a":
             version = b"89a"
 
-    header = [
-        b"GIF"+version +        # signature + version
-        o16(im.size[0]) +       # canvas width
-        o16(im.size[1])         # canvas height
+    palette_bytes = _get_palette_bytes(im, palette, info)[0]
+    color_table_size = _get_color_table_size(palette_bytes)
+
+    background = info["background"] if "background" in info else 0
+
+    return [
+        b"GIF"+version +               # signature + version
+        o16(im.size[0]) +              # canvas width
+        o16(im.size[1]) +              # canvas height
+
+        # Logical Screen Descriptor
+        # size of global color table + global color table flag
+        o8(color_table_size + 128) +  # packed fields
+        # background + reserved/aspect
+        o8(background) + o8(0) +
+
+        # Global Color Table
+        _get_header_palette(palette_bytes)
     ]
 
-    palette_bytes, used_palette_colors = _get_palette_bytes(im, palette, info)
+def getheader(im, palette=None, info=[]):
+    used_palette_colors = _get_optimize(im, info)
 
-    # Logical Screen Descriptor
-    color_table_size = _get_color_table_size(palette_bytes)
-    # size of global color table + global color table flag
-    header.append(o8(color_table_size + 128))  # packed fields
-    # background + reserved/aspect
-    if info and "background" in info:
-        background = info["background"]
-    elif "background" in im.info:
-        # This elif is redundant within GifImagePlugin
-        # since im.info parameters are bundled into the info dictionary
-        # However, external scripts may call getheader directly
-        # So this maintains earlier behaviour
-        background = im.info["background"]
-    else:
-        background = 0
-    header.append(o8(background) + o8(0))
-    # end of Logical Screen Descriptor
+    if not "background" in info and "background" in im.info:
+        info["background"] = im.info["background"]
 
-    # Header + Logical Screen Descriptor + Global Color Table
-    header.append(_get_header_palette(palette_bytes))
+    header = _get_global_header(im, palette, info)
+
     return header, used_palette_colors
 
 def _write_frame_data(fp, im_frame, offset, params):
