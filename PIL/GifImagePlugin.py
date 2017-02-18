@@ -480,7 +480,7 @@ def _get_local_header(fp, im, offset, flags):
     include_color_table = im.encoderinfo.get('include_color_table')
     if include_color_table:
         palette = im.encoderinfo.get("palette", None)
-        palette_bytes = _get_palette_bytes(im, palette, im.encoderinfo)[0]
+        palette_bytes = _get_palette_bytes(im, palette, im.encoderinfo)
         color_table_size = _get_color_table_size(palette_bytes)
         if color_table_size:
             flags = flags | 128               # local color table flag
@@ -664,7 +664,7 @@ def _get_palette_bytes(im, palette, info):
         palette_bytes = source_palette
 
     # returning palette, _not_ padded to 768 bytes like our internal ones.
-    return palette_bytes, used_palette_colors
+    return palette_bytes
 
 def _get_global_header(im, palette, info):
     """Return a list of strings representing a GIF header"""
@@ -684,7 +684,7 @@ def _get_global_header(im, palette, info):
         if im.info.get("version") == b"89a":
             version = b"89a"
 
-    palette_bytes = _get_palette_bytes(im, palette, info)[0]
+    palette_bytes = _get_palette_bytes(im, palette, info)
     color_table_size = _get_color_table_size(palette_bytes)
 
     background = info["background"] if "background" in info else 0
