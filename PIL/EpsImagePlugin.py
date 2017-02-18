@@ -321,7 +321,7 @@ class EpsImageFile(ImageFile.ImageFile):
             # EPS can contain binary data
             # or start directly with latin coding
             # more info see:
-            # http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
+            # https://web.archive.org/web/20160528181353/http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
             offset = i32(s[4:8])
             length = i32(s[8:12])
         else:
