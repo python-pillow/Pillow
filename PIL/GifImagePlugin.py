@@ -311,6 +311,79 @@ def _convert_mode(im, initial_call=False):
             return im.convert("P")
     return im.convert("L")
 
+def _write_single_frame(im, fp, palette):
+    if im.mode in RAWMODE:
+        im_out = im.copy()
+    else:
+        im_out = _convert_mode(im, True)
+
+    for s in _get_global_header(im_out, palette, im.encoderinfo):
+        fp.write(s)
+
+    # local image header
+    flags = 0
+    if get_interlace(im):
+        flags = flags | 64
+    _get_local_header(fp, im, (0, 0), flags)
+
+    im_out.encoderconfig = (8, get_interlace(im))
+    ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
+                                  RAWMODE[im_out.mode])])
+
+    fp.write(b"\0")  # end of image data
+
+def _write_multiple_frames(im, fp, palette):
+    if "duration" in im.encoderinfo:
+        duration = im.encoderinfo["duration"]
+    else:
+        duration = None
+
+    im_frames = []
+    frame_count = 0
+    for imSequence in [im]+im.encoderinfo.get("append_images", []):
+        for im_frame in ImageSequence.Iterator(imSequence):
+            im_frame = _convert_mode(im_frame)
+
+            encoderinfo = im.encoderinfo.copy()
+            if isinstance(duration, (list, tuple)):
+                encoderinfo['duration'] = duration[frame_count]
+            frame_count += 1
+
+            if im_frames:
+                # delta frame
+                previous = im_frames[-1]
+                delta = ImageChops.subtract_modulo(im_frame,
+                                                   previous['im'])
+                bbox = delta.getbbox()
+                if not bbox:
+                    # This frame is identical to the previous frame
+                    if duration:
+                        previous['encoderinfo']['duration'] += encoderinfo['duration']
+                    continue
+            else:
+                bbox = None
+            im_frames.append({
+                'im':im_frame,
+                'bbox':bbox,
+                'encoderinfo':encoderinfo
+            })
+    if len(im_frames) > 1:
+        for frame_data in im_frames:
+            im_frame = frame_data['im']
+            if not frame_data['bbox']:
+                # global header
+                for s in _get_global_header(im_frame, palette,
+                                            frame_data['encoderinfo']):
+                    fp.write(s)
+                offset = (0, 0)
+            else:
+                # compress difference
+                frame_data['encoderinfo']['include_color_table'] = True
+
+                im_frame = im_frame.crop(frame_data['bbox'])
+                offset = frame_data['bbox'][:2]
+            _write_frame_data(fp, im_frame, offset, frame_data['encoderinfo'])
+        return True
 
 def _save_all(im, fp, filename):
     _save(im, fp, filename, save_all=True)
@@ -326,11 +399,6 @@ def _save(im, fp, filename, save_all=False):
         except IOError:
             pass  # write uncompressed file
 
-    if im.mode in RAWMODE:
-        im_out = im.copy()
-    else:
-        im_out = _convert_mode(im, True)
-
     # header
     try:
         palette = im.encoderinfo["palette"]
@@ -338,76 +406,8 @@ def _save(im, fp, filename, save_all=False):
         palette = None
         im.encoderinfo["optimize"] = im.encoderinfo.get("optimize", True)
 
-    if save_all:
-        # To specify duration, add the time in milliseconds to getdata(),
-        # e.g. getdata(im_frame, duration=1000)
-        if "duration" in im.encoderinfo:
-            duration = im.encoderinfo["duration"]
-        else:
-            duration = None
-        im_frames = []
-        append_images = im.encoderinfo.get("append_images", [])
-        frame_count = 0
-        for imSequence in [im]+append_images:
-            for im_frame in ImageSequence.Iterator(imSequence):
-                im_frame = _convert_mode(im_frame)
-
-                encoderinfo = im.encoderinfo.copy()
-                if isinstance(duration, (list, tuple)):
-                    encoderinfo['duration'] = duration[frame_count]
-                frame_count += 1
-
-                if im_frames:
-                    # delta frame
-                    previous = im_frames[-1]
-                    delta = ImageChops.subtract_modulo(im_frame,
-                                                       previous['im'])
-                    bbox = delta.getbbox()
-                    if not bbox:
-                        # This frame is identical to the previous frame
-                        if duration:
-                            previous['encoderinfo']['duration'] += encoderinfo['duration']
-                        continue
-                else:
-                    bbox = None
-                im_frames.append({
-                    'im':im_frame,
-                    'bbox':bbox,
-                    'encoderinfo':encoderinfo
-                })
-        if len(im_frames) < 2:
-            save_all = False
-        else:
-            for frame_data in im_frames:
-                im_frame = frame_data['im']
-                if not frame_data['bbox']:
-                    # global header
-                    for s in _get_global_header(im_frame, palette,
-                                                frame_data['encoderinfo']):
-                        fp.write(s)
-                    offset = (0, 0)
-                else:
-                    # compress difference
-                    frame_data['encoderinfo']['include_color_table'] = True
-
-                    im_frame = im_frame.crop(frame_data['bbox'])
-                    offset = frame_data['bbox'][:2]
-                _write_frame_data(fp, im_frame, offset, frame_data['encoderinfo'])
-    if not save_all:
-        for s in _get_global_header(im_out, palette, im.encoderinfo):
-            fp.write(s)
-
-        # local image header
-        flags = 0
-        if get_interlace(im):
-            flags = flags | 64
-        _get_local_header(fp, im, (0, 0), flags)
-
-        im_out.encoderconfig = (8, get_interlace(im))
-        ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
-                                      RAWMODE[im_out.mode])])
-
-        fp.write(b"\0")  # end of image data
+    if not save_all or not _write_multiple_frames(im, fp, palette):
+        _write_single_frame(im, fp, palette)
 
     fp.write(b";")  # end of file
 
@@ -728,6 +728,8 @@ def _write_frame_data(fp, im_frame, offset, params):
     finally:
         del im_frame.encoderinfo
 
+# To specify duration, add the time in milliseconds to getdata(),
+# e.g. getdata(im_frame, duration=1000)
 def getdata(im, offset=(0, 0), **params):
     """Return a list of strings representing this image.
        The first string is a local image header, the rest contains
