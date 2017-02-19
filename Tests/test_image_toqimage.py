@@ -5,7 +5,7 @@ from PIL import ImageQt
 
 
 if ImageQt.qt_is_installed:
-    from PIL.ImageQt import QImage, QPixmap
+    from PIL.ImageQt import QImage
 
     try:
         from PyQt5 import QtGui
@@ -35,6 +35,8 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
 
         app = QtGui.QApplication([])
         ex = Example()
+        assert(app)  # Silence warning
+        assert(ex)   # Silence warning
 
 
 if ImageQt.qt_is_installed:
@@ -43,7 +45,7 @@ if ImageQt.qt_is_installed:
         def __init__(self):
             super(Example, self).__init__()
 
-            img = hopper().resize((1000,1000))
+            img = hopper().resize((1000, 1000))
 
             qimage = ImageQt.ImageQt(img)
 
