@@ -21,7 +21,6 @@ if ImageQt.qt_is_installed:
             from PySide.QtGui import QWidget, QHBoxLayout, QLabel, QApplication
             QT_VERSION = 4
             
-
 class TestToQImage(PillowQtTestCase, PillowTestCase):
 
     def test_sanity(self):
@@ -84,16 +83,6 @@ if ImageQt.qt_is_installed:
             lbl = QLabel(self)
             # Segfault in the problem
             lbl.setPixmap(pixmap1.copy())
-
-
-
-
-def main():
-    app = QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
-
-
 
 
 if __name__ == '__main__':
