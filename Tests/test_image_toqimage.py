@@ -14,8 +14,6 @@ if ImageQt.qt_is_installed:
             from PyQt4 import QtGui
         except (ImportError, RuntimeError):
             from PySide import QtGui
-            
-
 
 
 class TestToQImage(PillowQtTestCase, PillowTestCase):
@@ -31,7 +29,6 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
             # Test saving the file
             tempfile = self.tempfile('temp_{}.png'.format(mode))
             data.save(tempfile)
-
 
     def test_segfault(self):
         PillowQtTestCase.setUp(self)
@@ -57,16 +54,6 @@ if ImageQt.qt_is_installed:
             lbl = QtGui.QLabel(self)
             # Segfault in the problem
             lbl.setPixmap(pixmap1.copy())
-
-
-
-
-def main():
-    app = QtGui.QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
-
-
 
 
 if __name__ == '__main__':
