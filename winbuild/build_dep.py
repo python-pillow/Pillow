@@ -10,10 +10,6 @@ def _relpath(*args):
     return os.path.join(os.getcwd(), *args)
 
 
-def _relbuild(*args):
-    return _relpath('build', *args)
-
-
 build_dir = _relpath('build')
 inc_dir = _relpath('depends')
 

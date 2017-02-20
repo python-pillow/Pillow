@@ -84,10 +84,6 @@ def _find_library_file(self, library):
     return ret
 
 
-def _lib_include(root):
-    # map root to (root/lib, root/include)
-    return os.path.join(root, "lib"), os.path.join(root, "include")
-
 def _cmd_exists(cmd):
     return any(
         os.access(os.path.join(path, cmd), os.X_OK)
