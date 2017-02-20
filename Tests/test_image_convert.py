@@ -181,8 +181,12 @@ class TestImageConvert(PillowTestCase):
             # Assert
             self.assertEqual(converted_im.mode, mode)
             self.assertEqual(converted_im.size, im.size)
+            target = Image.open('Tests/images/hopper-XYZ.png')
             if converted_im.mode == 'RGB':
-                self.assert_image_similar(converted_im, im, 33)
+                self.assert_image_similar(converted_im, target, 3)
+            else:
+                self.assert_image_similar(converted_im, target.split()[0], 1)
+
 
         matrix_convert('RGB')
         matrix_convert('L')
