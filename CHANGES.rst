@@ -4,6 +4,15 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Test: Added matrix convert tests #2381
+  [hugovk]
+
+- Replaced broken URL to partners.adobe.com #2413
+  [radarhere]
+  
+- Removed unused private functions in setup.py and build_dep.py #2414
+  [radarhere]
+
 - Test: Fixed Qt tests for QT5, Arch, and saving 1 bit PNG #2394
   [wiredfool] 
 
