@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Test: Fixed Qt tests for QT5, Arch, and saving 1 bit PNG #2394
+  [wiredfool] 
+
+- Test: docker builds for Arch and Debian Stretch #2394
+  [wiredfool]
+  
 - Updated libwebp to 0.6.0 on appveyor #2395
   [radarhere]
 
