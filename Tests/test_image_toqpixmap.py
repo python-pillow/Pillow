@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from helper import unittest, PillowTestCase, hopper, distro
 from test_imageqt import PillowQtTestCase, PillowQPixmapTestCase
 
 from PIL import ImageQt
@@ -9,6 +9,8 @@ if ImageQt.qt_is_installed:
 
 class TestToQPixmap(PillowQPixmapTestCase, PillowTestCase):
 
+    @unittest.skipIf(ImageQt.qt_version == '5' and distro() == 'arch',
+                     "Topixmap fails on Arch + QT5")
     def test_sanity(self):
         PillowQtTestCase.setUp(self)
 
