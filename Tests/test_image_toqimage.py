@@ -40,8 +40,8 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
             else:
                 self.assert_image_equal(rt, src)
 
-            if QT_VERSION == 5 and mode == '1':
-                # this combination appears to not save correctly
+            if mode == '1':
+                # BW appears to not save correctly on QT4 and QT5
                 # kicks out errors on console:
                 # libpng warning: Invalid color type/bit depth combination in IHDR
                 # libpng error: Invalid IHDR data
@@ -53,6 +53,10 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
 
             # Check that it actually worked. 
             reloaded = Image.open(tempfile)
+            # Gray images appear to come back in palette mode.
+            # They're roughly equivalent
+            if QT_VERSION == 4 and mode == 'L':
+                src = src.convert('P')
             self.assert_image_equal(reloaded, src)
 
 
