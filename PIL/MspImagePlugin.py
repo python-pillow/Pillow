@@ -24,7 +24,7 @@
 # See also: http://www.fileformat.info/format/mspaint/egff.htm
 
 from . import Image, ImageFile
-from ._binary import i16le as i16, o16le as o16
+from ._binary import i16le as i16, o16le as o16, i8
 import struct, io
 
 __version__ = "0.1"
@@ -131,7 +131,7 @@ class MspDecoder(ImageFile.PyDecoder):
                                   (rowlen, x))
                 idx = 0
                 while idx < rowlen:
-                    runtype = row[idx]
+                    runtype = i8(row[idx])
                     idx += 1
                     if runtype == 0:
                         (runcount, runval) = struct.unpack("Bc", row[idx:idx+2])
