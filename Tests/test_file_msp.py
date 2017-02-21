@@ -6,6 +6,7 @@ import os
 
 TEST_FILE = "Tests/images/hopper.msp"
 EXTRA_DIR = "Tests/images/picins"
+YA_EXTRA_DIR = "Tests/images/msp"
 
 
 class TestFileMsp(PillowTestCase):
@@ -45,29 +46,30 @@ class TestFileMsp(PillowTestCase):
         self.assert_image_equal(im, hopper("1"))
         self.assertIsInstance(im, MspImagePlugin.MspImageFile)
 
+    def _assert_file_image_equal(self, source_path, target_path):
+        with Image.open(source_path) as im:
+            target = Image.open(target_path)
+            self.assert_image_equal(im, target)
+
     @unittest.skipIf(not os.path.exists(EXTRA_DIR),
                      "Extra image files not installed")
     def test_open_windows_v2(self):
-        # Arrange
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
+
         files = (os.path.join(EXTRA_DIR, f) for f in os.listdir(EXTRA_DIR)
                  if os.path.splitext(f)[1] == '.msp')
         for path in files:
+            self._assert_file_image_equal(path,
+                                          path.replace('.msp','.png'))
 
-            # Act
-            with Image.open(path) as im:
-                im.load()
+    @unittest.skipIf(not os.path.exists(YA_EXTRA_DIR),
+                     "Even More Extra image files not installed")
+    def test_msp_v2(self):
+        for f in os.listdir(YA_EXTRA_DIR):
+            if not '.MSP' in f: continue
+            path = os.path.join(YA_EXTRA_DIR, f)
+            self._assert_file_image_equal(path,
+                                          path.replace('.MSP','.png'))
 
-                # Assert
-                self.assertEqual(im.mode, "1")
-                self.assertGreater(im.size, (360, 332))
-                self.assertIsInstance(im, MspImagePlugin.MspImageFile)
-                if "mandel" in path:
-                    self.assertEqual(im.getpixel((0, 0)), 0)
-                elif "mexhat" in path:
-                    self.assertEqual(im.getpixel((0, 0)), 255)
-                self.assertEqual(im.getpixel((200, 25)), 255)
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     def test_cannot_save_wrong_mode(self):
         # Arrange
