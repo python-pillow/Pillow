@@ -2547,7 +2547,7 @@ def register_decoder(name, decoder):
     :param decoder: A callable(mode, args) that returns an
                     ImageFile.PyDecoder object
 
-    .. versionadded:: 3.3.0                
+    .. versionadded:: 4.1.0                
     """
     DECODERS[name] = decoder
 
@@ -2561,7 +2561,7 @@ def register_encoder(name, encoder):
     :param encoder: A callable(mode, args) that returns an
                     ImageFile.PyEncoder object
 
-    .. versionadded:: 3.3.0
+    .. versionadded:: 4.1.0
     """
     ENCODERS[name] = encoder
 
