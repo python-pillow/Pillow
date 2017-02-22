@@ -5,7 +5,7 @@ from PIL import ImageQt, Image
 
 
 if ImageQt.qt_is_installed:
-    from PIL.ImageQt import QImage, QPixmap
+    from PIL.ImageQt import QImage
 
     try:
         from PyQt5 import QtGui
@@ -20,7 +20,6 @@ if ImageQt.qt_is_installed:
             from PySide import QtGui
             from PySide.QtGui import QWidget, QHBoxLayout, QLabel, QApplication
             QT_VERSION = 4
-            
 
 class TestToQImage(PillowQtTestCase, PillowTestCase):
 
@@ -59,12 +58,13 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
                 src = src.convert('P')
             self.assert_image_equal(reloaded, src)
 
-
     def test_segfault(self):
         PillowQtTestCase.setUp(self)
 
         app = QApplication([])
         ex = Example()
+        assert(app)  # Silence warning
+        assert(ex)   # Silence warning
 
 
 if ImageQt.qt_is_installed:
@@ -73,7 +73,7 @@ if ImageQt.qt_is_installed:
         def __init__(self):
             super(Example, self).__init__()
 
-            img = hopper().resize((1000,1000))
+            img = hopper().resize((1000, 1000))
 
             qimage = ImageQt.ImageQt(img)
 
@@ -84,16 +84,6 @@ if ImageQt.qt_is_installed:
             lbl = QLabel(self)
             # Segfault in the problem
             lbl.setPixmap(pixmap1.copy())
-
-
-
-
-def main():
-    app = QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
-
-
 
 
 if __name__ == '__main__':
