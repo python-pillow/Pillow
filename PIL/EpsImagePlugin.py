@@ -22,6 +22,7 @@
 
 import re
 import io
+import os
 import sys
 from . import Image, ImageFile
 from ._binary import i32le as i32, o32le as o32
@@ -57,8 +58,8 @@ def has_ghostscript():
     if not sys.platform.startswith('win'):
         import subprocess
         try:
-            gs = subprocess.Popen(['gs', '--version'], stdout=subprocess.PIPE)
-            gs.stdout.read()
+            with open(os.devnull, 'wb') as devnull:
+                subprocess.check_call(['gs', '--version'], stdout=devnull)
             return True
         except OSError:
             # no ghostscript
@@ -137,12 +138,8 @@ def Ghostscript(tile, size, fp, scale=1):
 
     # push data through ghostscript
     try:
-        gs = subprocess.Popen(command, stdin=subprocess.PIPE,
-                              stdout=subprocess.PIPE)
-        gs.stdin.close()
-        status = gs.wait()
-        if status:
-            raise IOError("gs failed (status %d)" % status)
+        with open(os.devnull, 'w+b') as devnull:
+            subprocess.check_call(command, stdin=devnull, stdout=devnull)
         im = Image.open(outfile)
         im.load()
     finally:
