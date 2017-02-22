@@ -204,6 +204,14 @@ class TestNumpy(PillowTestCase):
 
         self.assertEqual(len(im.getdata()), len(arr))
 
+    def test_zero_size(self):
+        # Shouldn't cause floating point exception
+        # See https://github.com/python-pillow/Pillow/issues/2259
+
+        im = Image.fromarray(numpy.empty((0, 0), dtype=numpy.uint8))
+
+        self.assertEqual(im.size, (0, 0))
+
 
 if __name__ == '__main__':
     unittest.main()
