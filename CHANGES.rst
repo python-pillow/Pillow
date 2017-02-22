@@ -25,7 +25,7 @@ Changelog (Pillow)
 - Removed unused private functions in setup.py and build_dep.py #2414
   [radarhere]
 
-- Test: Fixed Qt tests for QT5, Arch, and saving 1 bit PNG #2394
+- Test: Fixed Qt tests for QT5 and saving 1 bit PNG #2394
   [wiredfool] 
 
 - Test: docker builds for Arch and Debian Stretch #2394
