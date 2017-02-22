@@ -1377,11 +1377,6 @@ def _save(im, fp, filename):
                       (DATE_TIME, "date_time"),
                       (ARTIST, "artist"),
                       (COPYRIGHT, "copyright")]:
-        name_with_spaces = name.replace("_", " ")
-        if "_" in name and name_with_spaces in im.encoderinfo:
-            warnings.warn("%r is deprecated; use %r instead" %
-                          (name_with_spaces, name), DeprecationWarning)
-            ifd[key] = im.encoderinfo[name.replace("_", " ")]
         if name in im.encoderinfo:
             ifd[key] = im.encoderinfo[name]
 

@@ -329,8 +329,8 @@ def _save(im, fp, filename):
     from subprocess import Popen, PIPE, CalledProcessError
 
     convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
-    with tempfile.TemporaryFile() as stderr:
-        convert_proc = Popen(convert_cmd, stdout=PIPE, stderr=stderr)
+    with open(os.devnull, 'wb') as devnull:
+        convert_proc = Popen(convert_cmd, stdout=PIPE, stderr=devnull)
 
     convert_proc.stdout.close()
 

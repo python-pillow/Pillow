@@ -31,7 +31,6 @@
 #
 
 import numbers
-import warnings
 
 from . import Image, ImageColor
 from ._util import isStringType
@@ -86,20 +85,6 @@ class ImageDraw(object):
             self.fontmode = "L"  # aliasing is okay for other modes
         self.fill = 0
         self.font = None
-
-    def setink(self, ink):
-        raise NotImplementedError("setink() has been removed. " +
-                                  "Please use keyword arguments instead.")
-
-    def setfill(self, onoff):
-        raise NotImplementedError("setfill() has been removed. " +
-                                  "Please use keyword arguments instead.")
-
-    def setfont(self, font):
-        warnings.warn("setfont() is deprecated. " +
-                      "Please set the attribute directly instead.")
-        # compatibility
-        self.font = font
 
     def getfont(self):
         """Get the current default font."""

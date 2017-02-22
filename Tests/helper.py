@@ -218,25 +218,25 @@ def command_succeeds(cmd):
     command succeeds, or False if an OSError was raised by subprocess.Popen.
     """
     import subprocess
-    with open(os.devnull, 'w') as f:
+    with open(os.devnull, 'wb') as f:
         try:
-            subprocess.Popen(cmd, stdout=f, stderr=subprocess.STDOUT).wait()
+            subprocess.call(cmd, stdout=f, stderr=subprocess.STDOUT)
         except OSError:
             return False
     return True
 
 
 def djpeg_available():
-    return command_succeeds(['djpeg', '--help'])
+    return command_succeeds(['djpeg', '-version'])
 
 
 def cjpeg_available():
-    return command_succeeds(['cjpeg', '--help'])
+    return command_succeeds(['cjpeg', '-version'])
 
 
 def netpbm_available():
-    return (command_succeeds(["ppmquant", "--help"]) and
-            command_succeeds(["ppmtogif", "--help"]))
+    return (command_succeeds(["ppmquant", "--version"]) and
+            command_succeeds(["ppmtogif", "--version"]))
 
 
 def imagemagick_available():
@@ -253,6 +253,12 @@ if sys.platform == 'win32':
 else:
     IMCONVERT = 'convert'
 
+def distro():
+    if os.path.exists('/etc/os-release'):
+        with open('/etc/os-release', 'r') as f:
+            for line in f:
+                if 'ID=' in line:
+                    return line.strip().split('=')[1]
 
 class cached_property(object):
     def __init__(self, func):

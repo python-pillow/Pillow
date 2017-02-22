@@ -44,14 +44,6 @@ class TestImageDraw(PillowTestCase):
         draw.polygon(list(range(100)))
         draw.rectangle(list(range(4)))
 
-    def test_removed_methods(self):
-        im = hopper()
-
-        draw = ImageDraw.Draw(im)
-
-        self.assertRaises(Exception, lambda: draw.setink(0))
-        self.assertRaises(Exception, lambda: draw.setfill(0))
-
     def test_valueerror(self):
         im = Image.open("Tests/images/chi.gif")
 

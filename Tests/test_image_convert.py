@@ -20,10 +20,10 @@ class TestImageConvert(PillowTestCase):
                 convert(im, mode)
 
             # Check 0
-            im = Image.new(mode, (0,0))
+            im = Image.new(mode, (0, 0))
             for mode in modes:
                 convert(im, mode)
-                  
+
     def test_default(self):
 
         im = hopper("P")
@@ -136,6 +136,77 @@ class TestImageConvert(PillowTestCase):
         comparable = im.convert('P').convert('LA').split()[1]
 
         self.assert_image_similar(alpha, comparable, 5)
+
+    def test_matrix_illegal_conversion(self):
+        # Arrange
+        im = hopper('CMYK')
+        matrix = (
+            0.412453, 0.357580, 0.180423, 0,
+            0.212671, 0.715160, 0.072169, 0,
+            0.019334, 0.119193, 0.950227, 0)
+        self.assertNotEqual(im.mode, 'RGB')
+
+        # Act / Assert
+        self.assertRaises(ValueError,
+                          lambda: im.convert(mode='CMYK', matrix=matrix))
+
+    def test_matrix_wrong_mode(self):
+        # Arrange
+        im = hopper('L')
+        matrix = (
+            0.412453, 0.357580, 0.180423, 0,
+            0.212671, 0.715160, 0.072169, 0,
+            0.019334, 0.119193, 0.950227, 0)
+        self.assertEqual(im.mode, 'L')
+
+        # Act / Assert
+        self.assertRaises(ValueError,
+                          lambda: im.convert(mode='L', matrix=matrix))
+
+    def test_matrix_xyz(self):
+
+        def matrix_convert(mode):
+            # Arrange
+            im = hopper('RGB')
+            matrix = (
+                0.412453, 0.357580, 0.180423, 0,
+                0.212671, 0.715160, 0.072169, 0,
+                0.019334, 0.119193, 0.950227, 0)
+            self.assertEqual(im.mode, 'RGB')
+
+            # Act
+            # Convert an RGB image to the CIE XYZ colour space
+            converted_im = im.convert(mode=mode, matrix=matrix)
+
+            # Assert
+            self.assertEqual(converted_im.mode, mode)
+            self.assertEqual(converted_im.size, im.size)
+            target = Image.open('Tests/images/hopper-XYZ.png')
+            if converted_im.mode == 'RGB':
+                self.assert_image_similar(converted_im, target, 3)
+            else:
+                self.assert_image_similar(converted_im, target.split()[0], 1)
+
+
+        matrix_convert('RGB')
+        matrix_convert('L')
+
+    def test_matrix_identity(self):
+        # Arrange
+        im = hopper('RGB')
+        identity_matrix = (
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0)
+        self.assertEqual(im.mode, 'RGB')
+
+        # Act
+        # Convert with an identity matrix
+        converted_im = im.convert(mode='RGB', matrix=identity_matrix)
+
+        # Assert
+        # No change
+        self.assert_image_equal(converted_im, im)
 
 
 if __name__ == '__main__':
