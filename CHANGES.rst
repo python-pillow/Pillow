@@ -4,6 +4,18 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Removed use of spaces in TIFF kwargs names, deprecated in 2.7 #1390
+  [radarhere]
+  
+- Removed deprecated ImageDraw setink, setfill, setfont methods #2220
+  [jdufresne]
+
+- Send unwanted subprocess output to /dev/null #2253
+  [jdufresne]
+
+- Fix division by zero when creating 0x0 image from numpy array #2419
+  [hugovk]
+
 - Test: Added matrix convert tests #2381
   [hugovk]
 
