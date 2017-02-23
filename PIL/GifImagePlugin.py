@@ -695,7 +695,9 @@ def getheader(im, palette=None, info=[]):
     if not "background" in info and "background" in im.info:
         info["background"] = im.info["background"]
 
-    im = _normalize_palette(im, palette, info)
+    im_mod = _normalize_palette(im, palette, info)
+    im.palette = im_mod.palette
+    im.im = im_mod.im
     header = _get_global_header(im, info)
 
     return header, used_palette_colors
