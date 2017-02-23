@@ -340,7 +340,7 @@ def _write_multiple_frames(im, fp, palette):
     for imSequence in [im]+im.encoderinfo.get("append_images", []):
         for im_frame in ImageSequence.Iterator(imSequence):
             im_frame = _convert_mode(im_frame)
-            im_frame = _normalize_palette(im_frame, palette, encoderinfo)
+            im_frame = _normalize_palette(im_frame, palette, im.encoderinfo)
             
             encoderinfo = im.encoderinfo.copy()
             if isinstance(duration, (list, tuple)):
