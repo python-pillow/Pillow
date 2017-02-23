@@ -610,7 +610,7 @@ class PyDecoder(object):
             (x0, y0, x1, y1) = (0, 0, 0, 0)
 
         
-        if x0 ==0 and x1 ==0:
+        if x0 == 0 and x1 == 0:
             self.state.xsize, self.state.ysize = self.im.size
         else:
             self.state.xoff = x0
@@ -619,7 +619,7 @@ class PyDecoder(object):
             self.state.ysize = y1 - y0
 
         if self.state.xsize <= 0 or self.state.ysize <= 0:
-            raise ValueError("Size Cannot be Negative")
+            raise ValueError("Size cannot be negative")
         
         if (self.state.xsize + self.state.xoff > self.im.size[0] or
             self.state.ysize + self.state.yoff > self.im.size[1]):

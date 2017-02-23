@@ -90,13 +90,13 @@ class MspDecoder(ImageFile.PyDecoder):
     #
     # Pseudocode of the decoder:
     # Read a BYTE value as the RunType
-	#  If the RunType value is zero
-	# 	Read next byte as the RunCount
-	# 	Read the next byte as the RunValue
-	# 	Write the RunValue byte RunCount times
-	#  If the RunType value is non-zero
-	# 	Use this value as the RunCount
-	# 	Read and write the next RunCount bytes literally
+    #  If the RunType value is zero
+    #   Read next byte as the RunCount
+    #   Read the next byte as the RunValue
+    #   Write the RunValue byte RunCount times
+    #  If the RunType value is non-zero
+    #   Use this value as the RunCount
+    #   Read and write the next RunCount bytes literally
     # 
     #  e.g.:
     #  0x00 03 ff 05 00 01 02 03 04
@@ -113,7 +113,6 @@ class MspDecoder(ImageFile.PyDecoder):
         img = io.BytesIO()
         blank_line = bytearray((0xff,)*((self.state.xsize+7)//8))
         try:
-            last_pos = 0
             self.fd.seek(32)
             rowmap = struct.unpack_from("<%dH" % (self.state.ysize),
                                         self.fd.read(self.state.ysize*2))

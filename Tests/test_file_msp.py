@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image, ImageFile, MspImagePlugin
+from PIL import Image, MspImagePlugin
 
 import os
 

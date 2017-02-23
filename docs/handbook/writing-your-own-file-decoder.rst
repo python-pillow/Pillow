@@ -26,14 +26,14 @@ Pillow decodes files in 2 stages:
    called, which sets up a decoder for each tile and feeds the data to
    it.
 
-A image plug-in should contain a format handler derived from the
+An image plug-in should contain a format handler derived from the
 :py:class:`PIL.ImageFile.ImageFile` base class. This class should
 provide an :py:meth:`_open` method, which reads the file header and
 sets up at least the :py:attr:`~PIL.Image.Image.mode` and
 :py:attr:`~PIL.Image.Image.size` attributes. To be able to load the
 file, the method must also create a list of :py:attr:`tile`
 descriptors, which contain a decoder name, extents of the tile, and
-any decoder specific data. The format handler class must be explicitly
+any decoder-specific data. The format handler class must be explicitly
 registered, via a call to the :py:mod:`~PIL.Image` module.
 
 .. note:: For performance reasons, it is important that the
@@ -403,8 +403,8 @@ Python file decoders should derive from
 :py:class:`PIL.ImageFile.PyDecoder` and should at least override the
 decode method. File decoders should be registered using
 :py:meth:`PIL.Image.register_decoder`. As in the C implementation of
-the file decoders, there are three stages in the lifetime of a Python
-based file decoder:
+the file decoders, there are three stages in the lifetime of a
+Python-based file decoder:
 
 1. Setup: Pillow looks for the decoder in the registry, then
    instantiates the class.
