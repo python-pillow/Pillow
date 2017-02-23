@@ -311,7 +311,7 @@ def _write_single_frame(im, fp, palette):
     im_out = _normalize_mode(im, True)
     im_out = _normalize_palette(im_out, palette, im.encoderinfo)
 
-    for s in _get_global_header(im_out, palette, im.encoderinfo):
+    for s in _get_global_header(im_out, im.encoderinfo):
         fp.write(s)
 
     # local image header
@@ -371,7 +371,7 @@ def _write_multiple_frames(im, fp, palette):
             im_frame = frame_data['im']
             if not frame_data['bbox']:
                 # global header
-                for s in _get_global_header(im_frame, palette,
+                for s in _get_global_header(im_frame,
                                             frame_data['encoderinfo']):
                     fp.write(s)
                 offset = (0, 0)
@@ -633,7 +633,7 @@ def _get_palette_bytes(im):
      """
      return im.palette.palette
 
-def _get_global_header(im, palette, info):
+def _get_global_header(im, info):
     """Return a list of strings representing a GIF header"""
 
     # Header Block
@@ -678,7 +678,7 @@ def getheader(im, palette=None, info=[]):
         info["background"] = im.info["background"]
 
     im = _normalize_palette(im, palette, info)
-    header = _get_global_header(im, palette, info)
+    header = _get_global_header(im, info)
 
     return header, used_palette_colors
 
