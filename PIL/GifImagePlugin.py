@@ -537,6 +537,16 @@ def _save_netpbm(im, fp, filename):
 _FORCE_OPTIMIZE = False
 
 def _get_optimize(im, info):
+    """
+    Palette optimization is a potentially expensive operation.
+    
+    This function determines if the palette should be optimized using
+    some heuristics, then returns the list of palette entries in use.
+    
+    :param im: Image object
+    :param info: encoderinfo 
+    :returns: list of indexes of palette entries in use, or None
+    """
     if im.mode in ("P", "L") and info and info.get("optimize", 0):
         # Potentially expensive operation.
 
@@ -579,6 +589,16 @@ def _get_header_palette(palette_bytes):
     return palette_bytes
 
 def _get_palette_bytes(im, palette, info):
+    """
+    Gets the palette for inclusion in the gif header, if optimization is
+    requested or required, the palette is rewritten and the image is
+    mutatated in place. 
+    
+    :param im: Image object
+    :param palette: bytes object containing the source palette, or ....
+    :param info: encoderinfo 
+    :returns: Bytes, len<=768 suitable for inclusion in gif header
+    """
     if im.mode == "P":
         if palette and isinstance(palette, bytes):
             source_palette = palette[:768]
@@ -594,61 +614,14 @@ def _get_palette_bytes(im, palette, info):
 
     used_palette_colors = _get_optimize(im, info)
     if used_palette_colors is not None:
-        palette_bytes = b""
-        new_positions = [0]*256
-
-        # pick only the used colors from the palette
-        for i, oldPosition in enumerate(used_palette_colors):
-            palette_bytes += source_palette[oldPosition*3:oldPosition*3+3]
-            new_positions[oldPosition] = i
-
-        # replace the palette color id of all pixel with the new id
-
-        # Palette images are [0..255], mapped through a 1 or 3
-        # byte/color map.  We need to remap the whole image
-        # from palette 1 to palette 2. New_positions is
-        # an array of indexes into palette 1.  Palette 2 is
-        # palette 1 with any holes removed.
-
-        # We're going to leverage the convert mechanism to use the
-        # C code to remap the image from palette 1 to palette 2,
-        # by forcing the source image into 'L' mode and adding a
-        # mapping 'L' mode palette, then converting back to 'L'
-        # sans palette thus converting the image bytes, then
-        # assigning the optimized RGB palette.
-
-        # perf reference, 9500x4000 gif, w/~135 colors
-        # 14 sec prepatch, 1 sec postpatch with optimization forced.
-
-        mapping_palette = bytearray(new_positions)
-
-        m_im = im.copy()
-        m_im.mode = 'P'
-
-        m_im.palette = ImagePalette.ImagePalette("RGB",
-                                               palette=mapping_palette*3,
-                                               size=768)
-        #possibly set palette dirty, then
-        #m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
-        # or just force it.
-        # UNDONE -- this is part of the general issue with palettes
-        m_im.im.putpalette(*m_im.palette.getdata())
-
-        m_im = m_im.convert('L')
-
-        # Internally, we require 768 bytes for a palette.
-        new_palette_bytes = (palette_bytes +
-                             (768 - len(palette_bytes)) * b'\x00')
-        m_im.putpalette(new_palette_bytes)
-        m_im.palette = ImagePalette.ImagePalette("RGB",
-                                               palette=palette_bytes,
-                                               size=len(palette_bytes))
-
+        m_im = im.remap_palette(used_palette_colors, source_palette)
+        palette_bytes = m_im.palette.palette
+        
         # oh gawd, this is modifying the image in place so I can pass by ref.
         # REFACTOR SOONEST
-        im.frombytes(m_im.tobytes())
-
-    if not palette_bytes:
+        im.im = m_im.im
+        im.palette = m_im.palette
+    else:
         palette_bytes = source_palette
 
     # returning palette, _not_ padded to 768 bytes like our internal ones.
