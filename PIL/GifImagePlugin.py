@@ -312,6 +312,8 @@ def _write_single_frame(im, fp, palette):
     else:
         im_out = _convert_mode(im, True)
 
+    im_out = _normalize_palette(im_out, palette, im.encoderinfo)
+
     for s in _get_global_header(im_out, palette, im.encoderinfo):
         fp.write(s)
 
@@ -338,7 +340,8 @@ def _write_multiple_frames(im, fp, palette):
     for imSequence in [im]+im.encoderinfo.get("append_images", []):
         for im_frame in ImageSequence.Iterator(imSequence):
             im_frame = _convert_mode(im_frame)
-
+            im_frame = _normalize_palette(im_frame, palette, encoderinfo)
+            
             encoderinfo = im.encoderinfo.copy()
             if isinstance(duration, (list, tuple)):
                 encoderinfo['duration'] = duration[frame_count]
@@ -347,8 +350,12 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
-                delta = ImageChops.subtract_modulo(im_frame,
-                                                   previous['im'])
+                if _get_palette_bytes(im_frame) == _get_palette_bytes(previous['im']):
+                    delta = ImageChops.subtract_modulo(im_frame,
+                                                       previous['im'])
+                else:
+                    delta = ImageChops.subtract_modulo(im_frame.convert('RGB'),
+                                                       previous['im'].convert('RGB'))
                 bbox = delta.getbbox()
                 if not bbox:
                     # This frame is identical to the previous frame
@@ -362,6 +369,7 @@ def _write_multiple_frames(im, fp, palette):
                 'bbox':bbox,
                 'encoderinfo':encoderinfo
             })
+            
     if len(im_frames) > 1:
         for frame_data in im_frames:
             im_frame = frame_data['im']
@@ -588,16 +596,17 @@ def _get_header_palette(palette_bytes):
         palette_bytes += o8(0) * 3 * actual_target_size_diff
     return palette_bytes
 
-def _get_palette_bytes(im, palette, info):
+def _normalize_palette(im, palette, info):
     """
-    Gets the palette for inclusion in the gif header, if optimization is
-    requested or required, the palette is rewritten and the image is
-    mutatated in place. 
-    
+    Normalizes the palette for image.
+      - Sets the palette to the incoming palette, if provided.
+      - Ensures that there's a palette for L mode images
+      - Optimizes the palette if necessary/desired.
+
     :param im: Image object
     :param palette: bytes object containing the source palette, or ....
     :param info: encoderinfo 
-    :returns: Bytes, len<=768 suitable for inclusion in gif header
+    :returns: Image object
     """
     if im.mode == "P":
         if palette and isinstance(palette, bytes):
@@ -609,23 +618,24 @@ def _get_palette_bytes(im, palette, info):
             source_palette = palette[:768]
         else:
             source_palette = bytearray(i//3 for i in range(768))
-
-    palette_bytes = None
+        im.palette = ImagePalette.ImagePalette("RGB",
+                                               palette=source_palette)
 
     used_palette_colors = _get_optimize(im, info)
     if used_palette_colors is not None:
-        m_im = im.remap_palette(used_palette_colors, source_palette)
-        palette_bytes = m_im.palette.palette
-        
-        # oh gawd, this is modifying the image in place so I can pass by ref.
-        # REFACTOR SOONEST
-        im.im = m_im.im
-        im.palette = m_im.palette
-    else:
-        palette_bytes = source_palette
+        return im.remap_palette(used_palette_colors, source_palette)
 
-    # returning palette, _not_ padded to 768 bytes like our internal ones.
-    return palette_bytes
+    im.palette.palette = source_palette
+    return im
+
+def _get_palette_bytes(im, *args):
+     """
+     Gets the palette for inclusion in the gif header
+
+     :param im: Image object
+     :returns: Bytes, len<=768 suitable for inclusion in gif header
+     """
+     return im.palette.palette
 
 def _get_global_header(im, palette, info):
     """Return a list of strings representing a GIF header"""
@@ -671,6 +681,7 @@ def getheader(im, palette=None, info=[]):
     if not "background" in info and "background" in im.info:
         info["background"] = im.info["background"]
 
+    im = _normalize_palette(im, palette, info)
     header = _get_global_header(im, palette, info)
 
     return header, used_palette_colors
