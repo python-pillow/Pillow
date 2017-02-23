@@ -354,9 +354,6 @@ interest in this object are:
   member is an opaque struct that can be used by the decoder to store
   any format specific state or options.
 
-**handles_eof**
-  UNDONE, set if your code handles EOF errors.
-
 **pulls_fd**
   **EXPERIMENTAL** -- **WARNING**, interface may change. If set to 1,
   ``state->fd`` will be a pointer to the Python file like object.  The

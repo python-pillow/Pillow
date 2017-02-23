@@ -541,7 +541,6 @@ class PyDecoder(object):
     See :ref:`Writing Your Own File Decoder in Python<file-decoders-py>`
     """
 
-    _handles_eof = False
     _pulls_fd = False
 
     def __init__(self, mode, *args):
@@ -560,10 +559,6 @@ class PyDecoder(object):
         """
         self.args = args
     
-    @property
-    def handles_eof(self):
-        return self._handles_eof
-
     @property
     def pulls_fd(self):
         return self._pulls_fd
