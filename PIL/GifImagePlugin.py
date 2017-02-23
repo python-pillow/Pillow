@@ -286,11 +286,6 @@ class GifImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # Write GIF files
 
-try:
-    import _imaging_gif
-except ImportError:
-    _imaging_gif = None
-
 RAWMODE = {
     "1": "L",
     "L": "L",
@@ -391,13 +386,6 @@ def _save_all(im, fp, filename):
 
 def _save(im, fp, filename, save_all=False):
     im.encoderinfo.update(im.info)
-    if _imaging_gif:
-        # call external driver
-        try:
-            _imaging_gif.save(im, fp, filename)
-            return
-        except IOError:
-            pass  # write uncompressed file
 
     # header
     try:
