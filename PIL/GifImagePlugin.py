@@ -295,6 +295,7 @@ RAWMODE = {
 
 def _normalize_mode(im, initial_call=False):
     if im.mode in RAWMODE:
+        im.load()
         return im
     if Image.getmodebase(im.mode) == "RGB":
         if initial_call:
@@ -326,16 +327,15 @@ def _write_single_frame(im, fp, palette):
     fp.write(b"\0")  # end of image data
 
 def _write_multiple_frames(im, fp, palette):
-    if "duration" in im.encoderinfo:
-        duration = im.encoderinfo["duration"]
-    else:
-        duration = None
+
+    duration = im.encoderinfo.get("duration", None)
 
     im_frames = []
     frame_count = 0
     for imSequence in [im]+im.encoderinfo.get("append_images", []):
         for im_frame in ImageSequence.Iterator(imSequence):
-            im_frame = _normalize_mode(im_frame)
+            # a copy is required here since seek can still mutate the image
+            im_frame = _normalize_mode(im_frame.copy())
             im_frame = _normalize_palette(im_frame, palette, im.encoderinfo)
             
             encoderinfo = im.encoderinfo.copy()
