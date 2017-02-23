@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Test: Removed unrunnable code in test_image_toqimage #2415
+  [hugovk]
+
 - Removed use of spaces in TIFF kwargs names, deprecated in 2.7 #1390
   [radarhere]
   
