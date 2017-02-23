@@ -293,25 +293,21 @@ RAWMODE = {
 }
 
 
-def _convert_mode(im, initial_call=False):
-    # convert on the fly (EXPERIMENTAL -- I'm not sure PIL
-    # should automatically convert images on save...)
+def _normalize_mode(im, initial_call=False):
+    if im.mode in RAWMODE:
+        return im
     if Image.getmodebase(im.mode) == "RGB":
         if initial_call:
             palette_size = 256
             if im.palette:
                 palette_size = len(im.palette.getdata()[1]) // 3
-            return im.convert("P", palette=1, colors=palette_size)
+            return im.convert("P", palette=Image.ADAPTIVE, colors=palette_size)
         else:
             return im.convert("P")
     return im.convert("L")
 
 def _write_single_frame(im, fp, palette):
-    if im.mode in RAWMODE:
-        im_out = im.copy()
-    else:
-        im_out = _convert_mode(im, True)
-
+    im_out = _normalize_mode(im, True)
     im_out = _normalize_palette(im_out, palette, im.encoderinfo)
 
     for s in _get_global_header(im_out, palette, im.encoderinfo):
@@ -339,7 +335,7 @@ def _write_multiple_frames(im, fp, palette):
     frame_count = 0
     for imSequence in [im]+im.encoderinfo.get("append_images", []):
         for im_frame in ImageSequence.Iterator(imSequence):
-            im_frame = _convert_mode(im_frame)
+            im_frame = _normalize_mode(im_frame)
             im_frame = _normalize_palette(im_frame, palette, im.encoderinfo)
             
             encoderinfo = im.encoderinfo.copy()
