@@ -583,6 +583,13 @@ def _get_color_table_size(palette_bytes):
     return color_table_size
 
 def _get_header_palette(palette_bytes):
+    """
+    Returns the palette, null padded to the next power of 2 (*3) bytes
+    suitable for direct inclusion in the GIF header
+
+    :param palette_bytes: Unpadded palette bytes, in RGBRGB form
+    :returns: Null padded palette
+    """
     color_table_size = _get_color_table_size(palette_bytes)
 
     # add the missing amount of bytes
@@ -672,6 +679,17 @@ def _get_global_header(im, info):
     ]
 
 def getheader(im, palette=None, info=[]):
+    """
+    Legacy Method to get Gif data from image.
+
+    Warning:: May modify image data.
+
+    :param im: Image object
+    :param palette: bytes object containing the source palette, or ....
+    :param info: encoderinfo 
+    :returns: tuple of(list of header items, optimized palette)
+
+    """
     used_palette_colors = _get_optimize(im, info)
 
     if not "background" in info and "background" in im.info:
