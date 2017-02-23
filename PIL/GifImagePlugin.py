@@ -337,7 +337,7 @@ def _write_multiple_frames(im, fp, palette):
             # a copy is required here since seek can still mutate the image
             im_frame = _normalize_mode(im_frame.copy())
             im_frame = _normalize_palette(im_frame, palette, im.encoderinfo)
-            
+
             encoderinfo = im.encoderinfo.copy()
             if isinstance(duration, (list, tuple)):
                 encoderinfo['duration'] = duration[frame_count]
@@ -365,7 +365,7 @@ def _write_multiple_frames(im, fp, palette):
                 'bbox':bbox,
                 'encoderinfo':encoderinfo
             })
-            
+
     if len(im_frames) > 1:
         for frame_data in im_frames:
             im_frame = frame_data['im']
@@ -472,7 +472,7 @@ def _get_local_header(fp, im, offset, flags):
     include_color_table = im.encoderinfo.get('include_color_table')
     if include_color_table:
         palette = im.encoderinfo.get("palette", None)
-        palette_bytes = _get_palette_bytes(im, palette, im.encoderinfo)
+        palette_bytes = _get_palette_bytes(im)
         color_table_size = _get_color_table_size(palette_bytes)
         if color_table_size:
             flags = flags | 128               # local color table flag
@@ -543,12 +543,12 @@ _FORCE_OPTIMIZE = False
 def _get_optimize(im, info):
     """
     Palette optimization is a potentially expensive operation.
-    
+
     This function determines if the palette should be optimized using
     some heuristics, then returns the list of palette entries in use.
-    
+
     :param im: Image object
-    :param info: encoderinfo 
+    :param info: encoderinfo
     :returns: list of indexes of palette entries in use, or None
     """
     if im.mode in ("P", "L") and info and info.get("optimize", 0):
@@ -601,7 +601,7 @@ def _normalize_palette(im, palette, info):
 
     :param im: Image object
     :param palette: bytes object containing the source palette, or ....
-    :param info: encoderinfo 
+    :param info: encoderinfo
     :returns: Image object
     """
     if im.mode == "P":
@@ -624,7 +624,7 @@ def _normalize_palette(im, palette, info):
     im.palette.palette = source_palette
     return im
 
-def _get_palette_bytes(im, *args):
+def _get_palette_bytes(im):
      """
      Gets the palette for inclusion in the gif header
 
@@ -651,7 +651,7 @@ def _get_global_header(im, palette, info):
         if im.info.get("version") == b"89a":
             version = b"89a"
 
-    palette_bytes = _get_palette_bytes(im, palette, info)
+    palette_bytes = _get_palette_bytes(im)
     color_table_size = _get_color_table_size(palette_bytes)
 
     background = info["background"] if "background" in info else 0
