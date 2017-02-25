@@ -719,10 +719,14 @@ def _write_frame_data(fp, im_frame, offset, params):
 # To specify duration, add the time in milliseconds to getdata(),
 # e.g. getdata(im_frame, duration=1000)
 def getdata(im, offset=(0, 0), **params):
-    """Return a list of strings representing this image.
-       The first string is a local image header, the rest contains
-       encoded image data."""
+    """
+    Legacy Method
 
+    Return a list of strings representing this image.
+    The first string is a local image header, the rest contains
+    encoded image data.
+
+    """
     class Collector(object):
         data = []
 
