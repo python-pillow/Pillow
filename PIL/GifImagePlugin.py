@@ -533,9 +533,6 @@ def _save_netpbm(im, fp, filename):
         pass
 
 
-# --------------------------------------------------------------------
-# GIF utilities
-
 # Force optimization so that we can test performance against
 # cases where it took lots of memory and time previously.
 _FORCE_OPTIMIZE = False
@@ -678,6 +675,23 @@ def _get_global_header(im, info):
         _get_header_palette(palette_bytes)
     ]
 
+def _write_frame_data(fp, im_frame, offset, params):
+    try:
+        im_frame.encoderinfo = params
+
+        # local image header
+        _write_local_header(fp, im_frame, offset, 0)
+
+        ImageFile._save(im_frame, fp, [("gif", (0, 0)+im_frame.size, 0,
+                                        RAWMODE[im_frame.mode])])
+
+        fp.write(b"\0")  # end of image data
+    finally:
+        del im_frame.encoderinfo
+
+# --------------------------------------------------------------------
+# Legacy GIF utilities
+
 def getheader(im, palette=None, info=[]):
     """
     Legacy Method to get Gif data from image.
@@ -702,20 +716,6 @@ def getheader(im, palette=None, info=[]):
 
     return header, used_palette_colors
 
-def _write_frame_data(fp, im_frame, offset, params):
-    try:
-        im_frame.encoderinfo = params
-
-        # local image header
-        _write_local_header(fp, im_frame, offset, 0)
-
-        ImageFile._save(im_frame, fp, [("gif", (0, 0)+im_frame.size, 0,
-                                        RAWMODE[im_frame.mode])])
-
-        fp.write(b"\0")  # end of image data
-    finally:
-        del im_frame.encoderinfo
-
 # To specify duration, add the time in milliseconds to getdata(),
 # e.g. getdata(im_frame, duration=1000)
 def getdata(im, offset=(0, 0), **params):
@@ -725,6 +725,11 @@ def getdata(im, offset=(0, 0), **params):
     Return a list of strings representing this image.
     The first string is a local image header, the rest contains
     encoded image data.
+
+    :param im: Image object
+    :param offset: Tuple of (x, y) pixels. Defaults to (0,0)
+    :param **params: E.g. duration or other encoder info parameters
+    :returns: List of Bytes containing gif encoded frame data
 
     """
     class Collector(object):
