@@ -17,22 +17,15 @@ ImagingResampleHorizontalConvolution8u4x(
 
         __m256i sss0, sss1;
         __m256i zero = _mm256_setzero_si256();
-        __m256i initial = _mm256_set1_epi32((1 << (coefs_precision -1)));
+        __m256i initial = _mm256_set1_epi32(1 << (coefs_precision -1));
         sss0 = initial;
         sss1 = initial;
 
         for (; x < xmax - 3; x += 4) {
-            __m256i pix, mmk0, mmk1, source, ksource;
-            __m128i tmp = _mm_loadl_epi64((__m128i *) &k[x]);
-            ksource = _mm256_insertf128_si256(
-                _mm256_castsi128_si256(tmp), tmp, 1);
+            __m256i pix, mmk0, mmk1, source;
 
-            mmk0 = _mm256_shuffle_epi8(ksource, _mm256_set_epi8(
-                3,2, 1,0, 3,2, 1,0, 3,2, 1,0, 3,2, 1,0,
-                3,2, 1,0, 3,2, 1,0, 3,2, 1,0, 3,2, 1,0));
-            mmk1 = _mm256_shuffle_epi8(ksource, _mm256_set_epi8(
-                7,6, 5,4, 7,6, 5,4, 7,6, 5,4, 7,6, 5,4,
-                7,6, 5,4, 7,6, 5,4, 7,6, 5,4, 7,6, 5,4));
+            mmk0 = _mm256_set1_epi32(*(INT32 *) &k[x]);
+            mmk1 = _mm256_set1_epi32(*(INT32 *) &k[x + 2]);
 
             source = _mm256_inserti128_si256(_mm256_castsi128_si256(
                 _mm_loadu_si128((__m128i *) &lineIn0[x + xmin])),
@@ -61,10 +54,8 @@ ImagingResampleHorizontalConvolution8u4x(
 
         for (; x < xmax - 1; x += 2) {
             __m256i pix, mmk;
-            __m128i ksource = _mm_cvtsi32_si128(*(int *) &k[x]);
-            ksource = _mm_shuffle_epi8(ksource, _mm_set_epi8(
-                3,2, 1,0, 3,2, 1,0, 3,2, 1,0, 3,2, 1,0));
-            mmk = _mm256_inserti128_si256(_mm256_castsi128_si256(ksource), ksource, 1);
+
+            mmk = _mm256_set1_epi32(*(INT32 *) &k[x]);
 
             pix = _mm256_inserti128_si256(_mm256_castsi128_si256(
                 _mm_loadl_epi64((__m128i *) &lineIn0[x + xmin])),
@@ -115,7 +106,7 @@ ImagingResampleHorizontalConvolution8u4x(
 #else
 
         __m128i sss0, sss1, sss2, sss3;
-        __m128i initial = _mm_set1_epi32((1 << (coefs_precision -1)));
+        __m128i initial = _mm_set1_epi32(1 << (coefs_precision -1));
         sss0 = initial;
         sss1 = initial;
         sss2 = initial;
@@ -128,13 +119,8 @@ ImagingResampleHorizontalConvolution8u4x(
             __m128i mask_hi = _mm_set_epi8(
                 -1,15, -1,11, -1,14, -1,10, -1,13, -1,9, -1,12, -1,8);
 
-            // [16] xx xx xx xx k3 k2 k1 k0
-            __m128i ksource = _mm_loadl_epi64((__m128i *) &k[x]);
-            // [16] k1 k0 k1 k0 k1 k0 k1 k0
-            mmk_lo = _mm_shuffle_epi8(ksource, _mm_set_epi8(
-                3,2, 1,0, 3,2, 1,0, 3,2, 1,0, 3,2, 1,0));
-            mmk_hi = _mm_shuffle_epi8(ksource, _mm_set_epi8(
-                7,6, 5,4, 7,6, 5,4, 7,6, 5,4, 7,6, 5,4));
+            mmk_lo = _mm_set1_epi32(*(INT32 *) &k[x]);
+            mmk_hi = _mm_set1_epi32(*(INT32 *) &k[x + 2]);
 
             // [8] a3 b3 g3 r3 a2 b2 g2 r2 a1 b1 g1 r1 a0 b0 g0 r0
             source = _mm_loadu_si128((__m128i *) &lineIn0[x + xmin]);
@@ -170,7 +156,7 @@ ImagingResampleHorizontalConvolution8u4x(
                 -1,7, -1,3, -1,6, -1,2, -1,5, -1,1, -1,4, -1,0);
 
             // [16] k1 k0 k1 k0 k1 k0 k1 k0
-            mmk = _mm_set1_epi32(*(int *) &k[x]);
+            mmk = _mm_set1_epi32(*(INT32 *) &k[x]);
 
             // [8] x x x x x x x x a1 b1 g1 r1 a0 b0 g0 r0
             pix = _mm_loadl_epi64((__m128i *) &lineIn0[x + xmin]);
@@ -359,14 +345,10 @@ ImagingResampleHorizontalConvolution8u(UINT32 *lineOut, UINT32 *lineIn,
 #endif
 
         for (; x < xmax - 1; x += 2) {
-            __m128i pix, mmk;
+            __m128i mmk = _mm_set1_epi32(*(INT32 *) &k[x]);
             __m128i source = _mm_loadl_epi64((__m128i *) &lineIn[x + xmin]);
-            __m128i ksource = _mm_cvtsi32_si128(*(int *) &k[x]);
-
-            pix = _mm_shuffle_epi8(source, _mm_set_epi8(
+            __m128i pix = _mm_shuffle_epi8(source, _mm_set_epi8(
                 -1,7, -1,3, -1,6, -1,2, -1,5, -1,1, -1,4, -1,0));
-            mmk = _mm_shuffle_epi8(ksource, _mm_set_epi8(
-                3,2, 1,0, 3,2, 1,0, 3,2, 1,0, 3,2, 1,0));
             sss = _mm_add_epi32(sss, _mm_madd_epi16(pix, mmk));
         }
 
