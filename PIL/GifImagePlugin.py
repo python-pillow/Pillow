@@ -318,7 +318,7 @@ def _write_single_frame(im, fp, palette):
     flags = 0
     if get_interlace(im):
         flags = flags | 64
-    _get_local_header(fp, im, (0, 0), flags)
+    _write_local_header(fp, im, (0, 0), flags)
 
     im_out.encoderconfig = (8, get_interlace(im))
     ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
@@ -417,7 +417,7 @@ def get_interlace(im):
     return interlace
 
 
-def _get_local_header(fp, im, offset, flags):
+def _write_local_header(fp, im, offset, flags):
     transparent_color_exists = False
     try:
         transparency = im.encoderinfo["transparency"]
@@ -707,7 +707,7 @@ def _write_frame_data(fp, im_frame, offset, params):
         im_frame.encoderinfo = params
 
         # local image header
-        _get_local_header(fp, im_frame, offset, 0)
+        _write_local_header(fp, im_frame, offset, 0)
 
         ImageFile._save(im_frame, fp, [("gif", (0, 0)+im_frame.size, 0,
                                         RAWMODE[im_frame.mode])])
