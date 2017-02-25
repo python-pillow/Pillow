@@ -415,10 +415,7 @@ def _save(im, fp, filename, save_all=False):
 
 
 def get_interlace(im):
-    try:
-        interlace = im.encoderinfo["interlace"]
-    except KeyError:
-        interlace = 1
+    interlace = im.encoderinfo.get("interlace", 1)
 
     # workaround for @PIL153
     if min(im.size) < 16:
@@ -484,10 +481,7 @@ def _get_local_header(fp, im, offset, flags):
                  o8(0))
     include_color_table = im.encoderinfo.get('include_color_table')
     if include_color_table:
-        try:
-            palette = im.encoderinfo["palette"]
-        except KeyError:
-            palette = None
+        palette = im.encoderinfo.get("palette", None)
         palette_bytes = _get_palette_bytes(im, palette, im.encoderinfo)[0]
         color_table_size = _get_color_table_size(palette_bytes)
         if color_table_size:

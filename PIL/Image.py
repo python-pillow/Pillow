@@ -2194,10 +2194,7 @@ def fromarray(obj, mode=None):
     arr = obj.__array_interface__
     shape = arr['shape']
     ndim = len(shape)
-    try:
-        strides = arr['strides']
-    except KeyError:
-        strides = None
+    strides = arr.get('strides', None)
     if mode is None:
         try:
             typekey = (1, 1) + shape[2:], arr['typestr']

@@ -325,10 +325,7 @@ def _save(im, fp, filename, check=0):
     except KeyError:
         raise ValueError("Cannot save %s images as IM" % im.mode)
 
-    try:
-        frames = im.encoderinfo["frames"]
-    except KeyError:
-        frames = 1
+    frames = im.encoderinfo.get("frames", 1)
 
     if check:
         return check
