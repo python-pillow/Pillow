@@ -38,10 +38,7 @@ class UI(Label):
 
         self.update()
 
-        try:
-            duration = im.info["duration"]
-        except KeyError:
-            duration = 100
+        duration = im.info.get("duration", 100)
         self.after(duration, self.next)
 
     def next(self):
@@ -64,10 +61,7 @@ class UI(Label):
             except EOFError:
                 return  # end of file
 
-        try:
-            duration = im.info["duration"]
-        except KeyError:
-            duration = 100
+        duration = im.info.get("duration", 100)
         self.after(duration, self.next)
 
         self.update_idletasks()
