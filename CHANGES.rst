@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Replaced KeyError catch with dictionary get method #2424
+  [radarhere]
+
 - Test: Removed unrunnable code in test_image_toqimage #2415
   [hugovk]
 
