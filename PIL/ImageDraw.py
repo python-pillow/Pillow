@@ -334,7 +334,7 @@ def floodfill(image, xy, value, border=None):
         if background == value:
             return  # seed point already has fill color
         pixel[x, y] = value
-    except IndexError:
+    except (ValueError, IndexError):
         return  # seed point outside image
     edge = [(x, y)]
     if border is None:
