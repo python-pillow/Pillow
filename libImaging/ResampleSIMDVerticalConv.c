@@ -7,11 +7,11 @@ ImagingResampleVerticalConvolution8u(UINT32 *lineOut, Imaging imIn,
     int xx = 0;
     int xsize = imIn->xsize;
 
-    __m128i initial = _mm_set1_epi32((1 << (coefs_precision -1)) + xmax / 2);
+    __m128i initial = _mm_set1_epi32(1 << (coefs_precision -1));
 
 #if defined(__AVX2__)
 
-    __m256i initial_256 = _mm256_set1_epi32((1 << (coefs_precision -1)) + xmax / 2);
+    __m256i initial_256 = _mm256_set1_epi32(1 << (coefs_precision -1));
 
     for (; xx < xsize - 7; xx += 8) {
         __m256i sss0 = initial_256;
@@ -21,12 +21,10 @@ ImagingResampleVerticalConvolution8u(UINT32 *lineOut, Imaging imIn,
         x = 0;
         for (; x < xmax - 1; x += 2) {
             __m256i source, source1, source2;
-            __m256i pix, mmk, mmk1;
-            mmk = _mm256_set1_epi32(k[x]);
-            mmk1 = _mm256_set1_epi32(k[x + 1]);
-            mmk = _mm256_unpacklo_epi16(
-                _mm256_packs_epi32(mmk, mmk),
-                _mm256_packs_epi32(mmk1, mmk1));
+            __m256i pix, mmk;
+
+            // Load two coefficients at once
+            mmk = _mm256_set1_epi32(*(INT32 *) &k[x]);
             
             source1 = _mm256_loadu_si256(  // top line
                 (__m256i *) &imIn->image32[x + xmin][xx]);
@@ -89,12 +87,10 @@ ImagingResampleVerticalConvolution8u(UINT32 *lineOut, Imaging imIn,
         x = 0;
         for (; x < xmax - 1; x += 2) {
             __m128i source, source1, source2;
-            __m128i pix, mmk, mmk1;
-            mmk = _mm_set1_epi32(k[x]);
-            mmk1 = _mm_set1_epi32(k[x + 1]);
-            mmk = _mm_unpacklo_epi16(
-                _mm_packs_epi32(mmk, mmk),
-                _mm_packs_epi32(mmk1, mmk1));
+            __m128i pix, mmk;
+
+            // Load two coefficients at once
+            mmk = _mm_set1_epi32(*(INT32 *) &k[x]);
             
             source1 = _mm_loadu_si128(  // top line
                 (__m128i *) &imIn->image32[x + xmin][xx]);
@@ -191,12 +187,10 @@ ImagingResampleVerticalConvolution8u(UINT32 *lineOut, Imaging imIn,
         x = 0;
         for (; x < xmax - 1; x += 2) {
             __m128i source, source1, source2;
-            __m128i pix, mmk, mmk1;
-            mmk = _mm_set1_epi32(k[x]);
-            mmk1 = _mm_set1_epi32(k[x + 1]);
-            mmk = _mm_unpacklo_epi16(
-                _mm_packs_epi32(mmk, mmk),
-                _mm_packs_epi32(mmk1, mmk1));
+            __m128i pix, mmk;
+
+            // Load two coefficients at once
+            mmk = _mm_set1_epi32(*(INT32 *) &k[x]);
 
             source1 = _mm_loadl_epi64(  // top line
                 (__m128i *) &imIn->image32[x + xmin][xx]);
@@ -235,12 +229,10 @@ ImagingResampleVerticalConvolution8u(UINT32 *lineOut, Imaging imIn,
         x = 0;
         for (; x < xmax - 1; x += 2) {
             __m128i source, source1, source2;
-            __m128i pix, mmk, mmk1;
-            mmk = _mm_set1_epi32(k[x]);
-            mmk1 = _mm_set1_epi32(k[x + 1]);
-            mmk = _mm_unpacklo_epi16(
-                _mm_packs_epi32(mmk, mmk),
-                _mm_packs_epi32(mmk1, mmk1));
+            __m128i pix, mmk;
+            
+            // Load two coefficients at once
+            mmk = _mm_set1_epi32(*(INT32 *) &k[x]);
 
             source1 = _mm_cvtsi32_si128(  // top line
                 *(int *) &imIn->image32[x + xmin][xx]);
