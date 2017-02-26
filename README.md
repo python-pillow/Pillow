@@ -59,7 +59,7 @@ Tons of tests can be found on the [Pillow Performance][pillow-perf-page] page.
 There are benchmarks against different versions of Pillow and Pillow-SIMD
 as well as ImageMagick, Skia, OpenCV and IPP.
 
-The results show that Pillow is always faster than ImageMagick, 
+The results show that for resizing Pillow is always faster than ImageMagick, 
 Pillow-SIMD, in turn, is even faster than the original Pillow by the factor of 4-6. 
 In general, Pillow-SIMD with AVX2 is always **16 to 40 times faster** than 
 ImageMagick and outperforms Skia, the high-speed graphics library used in Chromium.
