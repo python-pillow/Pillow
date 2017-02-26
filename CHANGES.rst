@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Remove unused imports #1822
+  [radarhere]
+
 - Replaced KeyError catch with dictionary get method #2424
   [radarhere]
 
