@@ -69,6 +69,18 @@ class TestImagePsd(PillowTestCase):
 
         self.assertRaises(EOFError, lambda: im.seek(-1))
 
+    def test_icc_profile(self):
+        im = Image.open(test_file)
+        self.assertIn("icc_profile", im.info)
+
+        icc_profile = im.info["icc_profile"]
+        self.assertEqual(len(icc_profile), 3144)
+
+    def test_no_icc_profile(self):
+        im = Image.open("Tests/images/hopper_merged.psd")
+
+        self.assertNotIn("icc_profile", im.info)
+
 
 if __name__ == '__main__':
     unittest.main()
