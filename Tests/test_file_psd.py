@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import hopper, unittest, PillowTestCase
 
 from PIL import Image, PsdImagePlugin
 
@@ -14,6 +14,9 @@ class TestImagePsd(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "PSD")
+
+        im2 = hopper()
+        self.assert_image_similar(im, im2, 4.8)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
