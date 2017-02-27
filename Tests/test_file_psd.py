@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import hopper, unittest, PillowTestCase
 
 from PIL import Image, PsdImagePlugin
 
@@ -14,6 +14,9 @@ class TestImagePsd(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "PSD")
+
+        im2 = hopper()
+        self.assert_image_similar(im, im2, 4.8)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -42,6 +45,41 @@ class TestImagePsd(PillowTestCase):
                 break
             except EOFError:
                 self.assertTrue(im.tell() < n_frames)
+
+    def test_seek_tell(self):
+        im = Image.open(test_file)
+
+        layer_number = im.tell()
+        self.assertEqual(layer_number, 0)
+
+        im.seek(0)
+        layer_number = im.tell()
+        self.assertEqual(layer_number, 0)
+
+        im.seek(1)
+        layer_number = im.tell()
+        self.assertEqual(layer_number, 1)
+
+        im.seek(2)
+        layer_number = im.tell()
+        self.assertEqual(layer_number, 2)
+
+    def test_seek_eoferror(self):
+        im = Image.open(test_file)
+
+        self.assertRaises(EOFError, lambda: im.seek(-1))
+
+    def test_icc_profile(self):
+        im = Image.open(test_file)
+        self.assertIn("icc_profile", im.info)
+
+        icc_profile = im.info["icc_profile"]
+        self.assertEqual(len(icc_profile), 3144)
+
+    def test_no_icc_profile(self):
+        im = Image.open("Tests/images/hopper_merged.psd")
+
+        self.assertNotIn("icc_profile", im.info)
 
 
 if __name__ == '__main__':
