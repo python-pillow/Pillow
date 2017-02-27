@@ -46,6 +46,29 @@ class TestImagePsd(PillowTestCase):
             except EOFError:
                 self.assertTrue(im.tell() < n_frames)
 
+    def test_seek_tell(self):
+        im = Image.open(test_file)
+
+        layer_number = im.tell()
+        self.assertEqual(layer_number, 0)
+
+        im.seek(0)
+        layer_number = im.tell()
+        self.assertEqual(layer_number, 0)
+
+        im.seek(1)
+        layer_number = im.tell()
+        self.assertEqual(layer_number, 1)
+
+        im.seek(2)
+        layer_number = im.tell()
+        self.assertEqual(layer_number, 2)
+
+    def test_seek_eoferror(self):
+        im = Image.open(test_file)
+
+        self.assertRaises(EOFError, lambda: im.seek(-1))
+
 
 if __name__ == '__main__':
     unittest.main()
