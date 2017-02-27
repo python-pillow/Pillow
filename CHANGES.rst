@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Test PsdImageFile for correctness #2427
+  [hugovk]
+
 - Remove unused imports #1822
   [radarhere]
 
