@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Test PixarImageFile for correctness #2428
+  [hugovk]
+  
 - Test PsdImageFile for correctness #2427
   [hugovk]
 
