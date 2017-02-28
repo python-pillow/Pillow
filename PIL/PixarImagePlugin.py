@@ -24,6 +24,7 @@ from ._binary import i16le as i16
 
 __version__ = "0.1"
 
+
 #
 # helpers
 
@@ -60,6 +61,7 @@ class PixarImageFile(ImageFile.ImageFile):
 
         # create tile descriptor (assuming "dumped")
         self.tile = [("raw", (0, 0)+self.size, 1024, (self.mode, 0, 1))]
+
 
 #
 # --------------------------------------------------------------------
