@@ -18,7 +18,7 @@ Changelog (Pillow)
 
 - Removed use of spaces in TIFF kwargs names, deprecated in 2.7 #1390
   [radarhere]
-  
+
 - Removed deprecated ImageDraw setink, setfill, setfont methods #2220
   [jdufresne]
 
@@ -33,25 +33,25 @@ Changelog (Pillow)
 
 - Replaced broken URL to partners.adobe.com #2413
   [radarhere]
-  
+
 - Removed unused private functions in setup.py and build_dep.py #2414
   [radarhere]
 
 - Test: Fixed Qt tests for QT5 and saving 1 bit PNG #2394
-  [wiredfool] 
+  [wiredfool]
 
 - Test: docker builds for Arch and Debian Stretch #2394
   [wiredfool]
-  
+
 - Updated libwebp to 0.6.0 on appveyor #2395
   [radarhere]
 
 - More explicit error message when saving to a file with invalid extension #2399
   [ces42]
-  
+
 - Docs: Update some http urls to https #2403
   [hugovk]
-  
+
 - Preserve aux/alpha channels when performing Imagecms transforms #2355
   [gunjambi]
 
@@ -316,7 +316,7 @@ Changelog (Pillow)
 3.4.2 (2016-10-18)
 ------------------
 
-- Fix Resample coefficient calculation #2161
+- Fix Resample coefficient calculation #2162
   [homm]
 
 
