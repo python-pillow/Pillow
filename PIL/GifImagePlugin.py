@@ -353,40 +353,42 @@ def _save(im, fp, filename, save_all=False):
         else:
             duration = None
         frame_count = 0
+        im_frames = []
         for imSequence in [im]+append_images:
             for im_frame in ImageSequence.Iterator(imSequence):
-                encoderinfo = im.encoderinfo.copy()
-                im_frame = _convert_mode(im_frame)
-                if isinstance(duration, (list, tuple)):
-                    encoderinfo["duration"] = duration[frame_count]
-                frame_count += 1
+                im_frames.append(_convert_mode(im_frame))
+        for im_frame in im_frames:
+            encoderinfo = im.encoderinfo.copy()
+            if isinstance(duration, (list, tuple)):
+                encoderinfo["duration"] = duration[frame_count]
+            frame_count += 1
 
-                # To specify duration, add the time in milliseconds to getdata(),
-                # e.g. getdata(im_frame, duration=1000)
-                if not previous:
-                    # global header
-                    first_frame = getheader(im_frame, palette, encoderinfo)[0]
-                    first_frame += getdata(im_frame, (0, 0), **encoderinfo)
+            # To specify duration, add the time in milliseconds to getdata(),
+            # e.g. getdata(im_frame, duration=1000)
+            if not previous:
+                # global header
+                first_frame = getheader(im_frame, palette, encoderinfo, im_frames[1:])[0]
+                first_frame += getdata(im_frame, (0, 0), **encoderinfo)
+            else:
+                if first_frame:
+                    for s in first_frame:
+                        fp.write(s)
+                    first_frame = None
+
+                # delta frame
+                delta = ImageChops.subtract_modulo(im_frame, previous.copy())
+                bbox = delta.getbbox()
+
+                if bbox:
+                    # compress difference
+                    encoderinfo['include_color_table'] = True
+                    for s in getdata(im_frame.crop(bbox),
+                                     bbox[:2], **encoderinfo):
+                        fp.write(s)
                 else:
-                    if first_frame:
-                        for s in first_frame:
-                            fp.write(s)
-                        first_frame = None
-
-                    # delta frame
-                    delta = ImageChops.subtract_modulo(im_frame, previous.copy())
-                    bbox = delta.getbbox()
-
-                    if bbox:
-                        # compress difference
-                        encoderinfo['include_color_table'] = True
-                        for s in getdata(im_frame.crop(bbox),
-                                         bbox[:2], **encoderinfo):
-                            fp.write(s)
-                    else:
-                        # FIXME: what should we do in this case?
-                        pass
-                previous = im_frame
+                    # FIXME: what should we do in this case?
+                    pass
+            previous = im_frame
         if first_frame:
             save_all = False
     if not save_all:
@@ -549,7 +551,7 @@ def _save_netpbm(im, fp, filename):
 # cases where it took lots of memory and time previously.
 _FORCE_OPTIMIZE = False
 
-def _get_optimize(im, info):
+def _get_optimize(im, info, more_frames=[]):
     if im.mode in ("P", "L") and info and info.get("optimize", 0):
         # Potentially expensive operation.
 
@@ -562,6 +564,9 @@ def _get_optimize(im, info):
 
         # create the new palette if not every color is used
         used_palette_colors = _get_used_palette_colors(im)
+        for im_frame in more_frames:
+            used_palette_colors += _get_used_palette_colors(im_frame)
+        used_palette_colors.sort()
         if _FORCE_OPTIMIZE or im.mode == 'L' or \
            (len(used_palette_colors) <= 128 and
             max(used_palette_colors) > len(used_palette_colors) and
@@ -598,7 +603,7 @@ def _get_header_palette(palette_bytes):
         palette_bytes += o8(0) * 3 * actual_target_size_diff
     return palette_bytes
 
-def _get_palette_bytes(im, palette, info):
+def _get_palette_bytes(im, palette, info, more_frames=[]):
     if im.mode == "P":
         if palette and isinstance(palette, bytes):
             source_palette = palette[:768]
@@ -612,7 +617,7 @@ def _get_palette_bytes(im, palette, info):
 
     palette_bytes = None
 
-    used_palette_colors = _get_optimize(im, info)
+    used_palette_colors = _get_optimize(im, info, more_frames)
     if used_palette_colors is not None:
         palette_bytes = b""
         new_positions = [0]*256
@@ -674,7 +679,7 @@ def _get_palette_bytes(im, palette, info):
     # returning palette, _not_ padded to 768 bytes like our internal ones.
     return palette_bytes, used_palette_colors
 
-def getheader(im, palette=None, info=None):
+def getheader(im, palette=None, info=None, more_frames=[]):
     """Return a list of strings representing a GIF header"""
 
     # Header Block
@@ -698,7 +703,7 @@ def getheader(im, palette=None, info=None):
         o16(im.size[1])         # canvas height
     ]
 
-    palette_bytes, used_palette_colors = _get_palette_bytes(im, palette, info)
+    palette_bytes, used_palette_colors = _get_palette_bytes(im, palette, info, more_frames)
 
     # Logical Screen Descriptor
     color_table_size = _get_color_table_size(palette_bytes)
