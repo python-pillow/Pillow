@@ -365,6 +365,7 @@ def _save(im, fp, filename, save_all=False):
                 # e.g. getdata(im_frame, duration=1000)
                 if not previous:
                     # global header
+                    previous = im_frame.copy()
                     first_frame = getheader(im_frame, palette, encoderinfo)[0]
                     first_frame += getdata(im_frame, (0, 0), **encoderinfo)
                 else:
@@ -386,7 +387,7 @@ def _save(im, fp, filename, save_all=False):
                     else:
                         # FIXME: what should we do in this case?
                         pass
-                previous = im_frame
+                    previous = im_frame
         if first_frame:
             save_all = False
     if not save_all:
