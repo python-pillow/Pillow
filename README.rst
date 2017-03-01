@@ -16,7 +16,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
     * - tests
       - | |linux| |macos| |windows| |coverage| |health|
     * - package
-      - |zenodo| |version| |downloads|
+      - |zenodo| |version|
 
 .. |docs| image:: https://readthedocs.org/projects/pillow/badge/?version=latest
    :target: https://pillow.readthedocs.io/?badge=latest
@@ -49,9 +49,9 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://pypi.python.org/pypi/Pillow/
    :alt: Latest PyPI version
 
-.. |downloads| image:: https://img.shields.io/pypi/dm/pillow.svg
-   :target: https://pypi.python.org/pypi/Pillow/
-   :alt: Number of PyPI downloads
+#.. |downloads| image:: https://img.shields.io/pypi/dm/pillow.svg
+#   :target: https://pypi.python.org/pypi/Pillow/
+#   :alt: Number of PyPI downloads
 
 .. end-badges
 
