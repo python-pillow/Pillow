@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Test FitsStubImagePlugin for correctness #2430
+  [hugovk]
+  
+- Test Hdf5StubImagePlugin for correctness #2431
+  [hugovk]
+  
 - Test PixarImageFile for correctness #2428
   [hugovk]
   
