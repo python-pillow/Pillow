@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, hopper
 from PIL import Image
 
 class TestFileWmf(PillowTestCase):
@@ -24,6 +24,13 @@ class TestFileWmf(PillowTestCase):
             imref = Image.open('Tests/images/drawing_wmf_ref.png')
             imref.load()
             self.assert_image_similar(im, imref, 2.0)
+
+    def test_save(self):
+        im = hopper()
+
+        for ext in [".wmf", ".emf"]:
+            tmpfile = self.tempfile("temp"+ext)
+            self.assertRaises(IOError, lambda: im.save(tmpfile))
 
 
 if __name__ == '__main__':

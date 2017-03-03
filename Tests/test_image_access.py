@@ -84,7 +84,7 @@ class TestImageGetPixel(AccessTest):
             im.putpixel((0, 0), c)
         with self.assertRaises(IndexError):
             im.getpixel((0, 0))
-            
+
         # check initial color
         im = Image.new(mode, (1, 1), c)
         self.assertEqual(
@@ -233,6 +233,9 @@ class TestCffi(AccessTest):
         # self._test_set_access(im, -(2**13)+1)
         # im = Image.new('I;32B', (10, 10), 2**10)
         # self._test_set_access(im, 2**13-1)
+
+    def test_not_implemented(self):
+        self.assertIsNone(PyAccess.new(hopper("BGR;15")))
 
     # ref https://github.com/python-pillow/Pillow/pull/2009
     def test_reference_counting(self):

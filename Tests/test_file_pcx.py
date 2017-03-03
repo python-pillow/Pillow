@@ -19,6 +19,10 @@ class TestFilePcx(PillowTestCase):
         for mode in ('1', 'L', 'P', 'RGB'):
             self._roundtrip(hopper(mode))
 
+        # Test an unsupported mode
+        f = self.tempfile("temp.pcx")
+        self.assertRaises(ValueError, lambda: hopper("RGBA").save(f))
+
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 

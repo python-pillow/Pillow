@@ -292,14 +292,24 @@ class TestImageDraw(PillowTestCase):
         draw = ImageDraw.Draw(im)
         draw.rectangle(BBOX2, outline="yellow", fill="green")
         centre_point = (int(W/2), int(H/2))
+        red = ImageColor.getrgb("red")
+        im_floodfill = Image.open("Tests/images/imagedraw_floodfill.png")
 
         # Act
-        ImageDraw.floodfill(im, centre_point, ImageColor.getrgb("red"))
-        del draw
+        ImageDraw.floodfill(im, centre_point, red)
 
         # Assert
-        self.assert_image_equal(
-            im, Image.open("Tests/images/imagedraw_floodfill.png"))
+        self.assert_image_equal(im, im_floodfill)
+
+        # Test that using the same colour does not change the image
+        ImageDraw.floodfill(im, centre_point, red)
+        self.assert_image_equal(im, im_floodfill)
+
+        # Test that filling outside the image does not change the image
+        ImageDraw.floodfill(im, (W, H), red)
+        self.assert_image_equal(im, im_floodfill)
+        del draw
+
 
     @unittest.skipIf(hasattr(sys, 'pypy_version_info'),
                      "Causes fatal RPython error on PyPy")

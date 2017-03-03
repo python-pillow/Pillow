@@ -29,6 +29,16 @@ class TestFileIptc(PillowTestCase):
         self.assertEqual(iptc[(2, 90)], b"Budapest")
         self.assertEqual(iptc[(2, 101)], b"Hungary")
 
+    def test_getiptcinfo_tiff_none(self):
+        # Arrange
+        im = Image.open("Tests/images/hopper.tif")
+
+        # Act
+        iptc = IptcImagePlugin.getiptcinfo(im)
+
+        # Assert
+        self.assertIsNone(iptc)
+
     def test_i(self):
         # Arrange
         c = b"a"

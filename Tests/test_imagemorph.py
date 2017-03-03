@@ -73,9 +73,17 @@ class MorphTests(PillowTestCase):
                 'corner', 'dilation4', 'dilation8',
                 'erosion4', 'erosion8', 'edge'):
             lb = ImageMorph.LutBuilder(op_name=op)
+            self.assertIsNone(lb.get_lut())
+
             lut = lb.build_lut()
             with open('Tests/images/%s.lut' % op, 'rb') as f:
                 self.assertEqual(lut, bytearray(f.read()))
+
+    def test_no_operator_loaded(self):
+        mop = ImageMorph.MorphOp()
+        self.assertRaises(Exception, lambda: mop.apply(None))
+        self.assertRaises(Exception, lambda: mop.match(None))
+        self.assertRaises(Exception, lambda: mop.save_lut(None))
 
     # Test the named patterns
     def test_erosion8(self):
