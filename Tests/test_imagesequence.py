@@ -58,7 +58,6 @@ class TestImageSequence(PillowTestCase):
         for frame in ImageSequence.Iterator(im):
             if firstFrame is None:
                 firstFrame = frame.copy()
-            pass
         for frame in ImageSequence.Iterator(im):
             self.assert_image_equal(frame, firstFrame)
             break
