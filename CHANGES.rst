@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Health fixes #2437
+  [radarhere]
+
 - Test FitsStubImagePlugin for correctness #2430
   [hugovk]
   
