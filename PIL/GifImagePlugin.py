@@ -321,6 +321,38 @@ def _normalize_mode(im, initial_call=False):
             return im.convert("P")
     return im.convert("L")
 
+def _normalize_palette(im, palette, info):
+    """
+    Normalizes the palette for image.
+      - Sets the palette to the incoming palette, if provided.
+      - Ensures that there's a palette for L mode images
+      - Optimizes the palette if necessary/desired.
+
+    :param im: Image object
+    :param palette: bytes object containing the source palette, or ....
+    :param info: encoderinfo 
+    :returns: Image object
+    """
+    if im.mode == "P":
+        if palette and isinstance(palette, bytes):
+            source_palette = palette[:768]
+        else:
+            source_palette = im.im.getpalette("RGB")[:768]
+    else:  # L-mode
+        if palette and isinstance(palette, bytes):
+            source_palette = palette[:768]
+        else:
+            source_palette = bytearray(i//3 for i in range(768))
+        im.palette = ImagePalette.ImagePalette("RGB",
+                                               palette=source_palette)
+
+    used_palette_colors = _get_optimize(im, info)
+    if used_palette_colors is not None:
+        return im.remap_palette(used_palette_colors, source_palette)
+
+    im.palette.palette = source_palette
+    return im
+
 def _write_single_frame(im, fp, palette):
     im_out = _normalize_mode(im, True)
     im_out = _normalize_palette(im_out, palette, im.encoderinfo)
@@ -609,38 +641,6 @@ def _get_header_palette(palette_bytes):
     if actual_target_size_diff > 0:
         palette_bytes += o8(0) * 3 * actual_target_size_diff
     return palette_bytes
-
-def _normalize_palette(im, palette, info):
-    """
-    Normalizes the palette for image.
-      - Sets the palette to the incoming palette, if provided.
-      - Ensures that there's a palette for L mode images
-      - Optimizes the palette if necessary/desired.
-
-    :param im: Image object
-    :param palette: bytes object containing the source palette, or ....
-    :param info: encoderinfo
-    :returns: Image object
-    """
-    if im.mode == "P":
-        if palette and isinstance(palette, bytes):
-            source_palette = palette[:768]
-        else:
-            source_palette = im.im.getpalette("RGB")[:768]
-    else:  # L-mode
-        if palette and isinstance(palette, bytes):
-            source_palette = palette[:768]
-        else:
-            source_palette = bytearray(i//3 for i in range(768))
-        im.palette = ImagePalette.ImagePalette("RGB",
-                                               palette=source_palette)
-
-    used_palette_colors = _get_optimize(im, info)
-    if used_palette_colors is not None:
-        return im.remap_palette(used_palette_colors, source_palette)
-
-    im.palette.palette = source_palette
-    return im
 
 def _get_palette_bytes(im):
      """
