@@ -39,7 +39,7 @@ import struct
 import io
 import warnings
 from . import Image, ImageFile, TiffImagePlugin
-from ._binary import i8, o8, i16be as i16, i32be as i32
+from ._binary import i8, o8, i16be as i16
 from .JpegPresets import presets
 from ._util import isStringType
 

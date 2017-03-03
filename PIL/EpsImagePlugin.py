@@ -25,7 +25,7 @@ import io
 import os
 import sys
 from . import Image, ImageFile
-from ._binary import i32le as i32, o32le as o32
+from ._binary import i32le as i32
 
 __version__ = "0.5"
 
