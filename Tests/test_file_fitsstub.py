@@ -32,7 +32,7 @@ class TestFileFitsStub(PillowTestCase):
         im = Image.open(TEST_FILE)
 
         # Act / Assert: stub cannot load without an implemented handler
-        self.assertRaises(IOError, lambda: im.load())
+        self.assertRaises(IOError, im.load)
 
     def test_save(self):
         # Arrange
