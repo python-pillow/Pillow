@@ -478,5 +478,17 @@ class TestFileGif(PillowTestCase):
         im.putpalette(palette)
         self.assert_image_equal(reloaded, im)
 
+    def test_save_I(self):
+        # Test saving something that would trigger the auto-convert to 'L'
+
+        im = hopper('I')
+
+        out = self.tempfile('temp.gif')
+        im.save(out)
+
+        reloaded = Image.open(out)
+        self.assert_image_equal(reloaded.convert('L'), im.convert('L'))
+
+
 if __name__ == '__main__':
     unittest.main()
