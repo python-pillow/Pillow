@@ -1,7 +1,6 @@
 from helper import unittest, PillowTestCase, hopper, netpbm_available
 
-from PIL import Image
-from PIL import GifImagePlugin
+from PIL import Image, ImagePalette, GifImagePlugin
 
 from io import BytesIO
 
@@ -452,6 +451,32 @@ class TestFileGif(PillowTestCase):
         reread = Image.open(out)
         self.assertEqual(reread.n_frames, 2)
 
+    def test_palette_save_L(self):
+        # generate an L mode image with a separate palette
+        
+        im = hopper('P')
+        im_l = im.split()[0]
+        palette = im.palette.getdata()
+
+        out = self.tempfile('temp.gif')
+        im_l.save(out, palette=palette)
+
+        reloaded = Image.open(out)
+        self.assert_image_equal(reloaded, im)
+
+    def test_palette_save_P(self):
+        # pass in a different palette, then construct what the image
+        # would look like.
+
+        im = hopper('P')
+        palette = ImagePalette.ImagePalette('RGB')
+
+        out = self.tempfile('temp.gif')
+        im.save(out, palette=palette.getdata())
+
+        reloaded = Image.open(out)
+        im.putpalette(palette)
+        self.assert_image_equal(reloaded, im)
 
 if __name__ == '__main__':
     unittest.main()
