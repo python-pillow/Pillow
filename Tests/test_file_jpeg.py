@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, py3
+from helper import unittest, PillowTestCase, hopper
 from helper import djpeg_available, cjpeg_available
 
 from io import BytesIO
@@ -32,11 +32,11 @@ class TestFileJpeg(PillowTestCase):
         """ Generates a very hard to compress file
         :param size: tuple
         :param mode: optional image mode
-        
+
         """
         return Image.frombytes(mode, size,
                                os.urandom(size[0]*size[1]*len(mode)))
-    
+
     def test_sanity(self):
 
         # internal version number
@@ -176,7 +176,7 @@ class TestFileJpeg(PillowTestCase):
         f = BytesIO()
         im = self.gen_random_image((256,256), 'CMYK')
         im.save(f, format='JPEG', progressive=True, quality=94)
-        
+
     def test_large_exif(self):
         # https://github.com/python-pillow/Pillow/issues/148
         f = self.tempfile('temp.jpg')

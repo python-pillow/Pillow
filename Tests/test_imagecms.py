@@ -343,7 +343,7 @@ class TestImageCms(PillowTestCase):
             ]
             chans = []
             bands = ImageMode.getmode(mode).bands
-            for band_ndx, band in enumerate(bands):
+            for band_ndx in range(len(bands)):
                 channel_type = 'L' # 8-bit unorm
                 channel_pattern = hopper(channel_type)
 

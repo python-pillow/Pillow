@@ -1168,7 +1168,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.info["dpi"] = xres, yres
             elif resunit == 3:  # dots per centimeter. convert to dpi
                 self.info["dpi"] = xres * 2.54, yres * 2.54
-            elif resunit == None: # used to default to 1, but now 2)
+            elif resunit is None: # used to default to 1, but now 2)
                 self.info["dpi"] = xres, yres
                 # For backward compatibility, we also preserve the old behavior.
                 self.info["resolution"] = xres, yres

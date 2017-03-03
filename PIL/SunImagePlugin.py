@@ -37,7 +37,8 @@ class SunImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-        # The Sun Raster file header is 32 bytes in length and has the following format:
+        # The Sun Raster file header is 32 bytes in length
+        # and has the following format:
 
         #     typedef struct _SunRaster
         #     {

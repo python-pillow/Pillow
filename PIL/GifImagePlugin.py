@@ -508,7 +508,6 @@ def _save_netpbm(im, fp, filename):
 
     import os
     from subprocess import Popen, check_call, PIPE, CalledProcessError
-    import tempfile
     file = im._dump()
 
     with open(filename, 'wb') as f:

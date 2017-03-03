@@ -25,7 +25,7 @@ import io
 import os
 import sys
 from . import Image, ImageFile
-from ._binary import i32le as i32, o32le as o32
+from ._binary import i32le as i32
 
 __version__ = "0.5"
 
@@ -84,7 +84,6 @@ def Ghostscript(tile, size, fp, scale=1):
            float((72.0 * size[1]) / (bbox[3]-bbox[1])))
     # print("Ghostscript", scale, size, orig_size, bbox, orig_bbox, res)
 
-    import os
     import subprocess
     import tempfile
 

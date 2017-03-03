@@ -90,8 +90,6 @@ class TestFileGif(PillowTestCase):
         check(256, 511, 256)
 
     def test_optimize_full_l(self):
-        from io import BytesIO
-
         im = Image.frombytes("L", (16, 16), bytes(bytearray(range(256))))
         test_file = BytesIO()
         im.save(test_file, "GIF", optimize=True)
@@ -425,7 +423,7 @@ class TestFileGif(PillowTestCase):
         reloaded = Image.open(out)
 
         self.assertEqual(reloaded.info['transparency'], 253)
-        
+
 
 if __name__ == '__main__':
     unittest.main()
