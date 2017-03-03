@@ -167,7 +167,6 @@ class PillowTestCase(unittest.TestCase):
 
         outfile = self.tempfile("temp.png")
         if command_succeeds([IMCONVERT, f, outfile]):
-            from PIL import Image
             return Image.open(outfile)
         raise IOError()
 
@@ -179,7 +178,6 @@ py3 = (sys.version_info >= (3, 0))
 
 def fromstring(data):
     from io import BytesIO
-    from PIL import Image
     return Image.open(BytesIO(data))
 
 
@@ -191,7 +189,6 @@ def tostring(im, string_format, **options):
 
 
 def hopper(mode=None, cache={}):
-    from PIL import Image
     if mode is None:
         # Always return fresh not-yet-loaded version of image.
         # Operations on not-yet-loaded images is separate class of errors
