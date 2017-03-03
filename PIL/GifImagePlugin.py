@@ -24,8 +24,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, ImageFile, ImagePalette, \
-              ImageChops, ImageSequence
+from . import Image, ImageFile, ImagePalette, ImageChops, ImageSequence
 from ._binary import i8, i16le as i16, o8, o16le as o16
 
 __version__ = "0.9"
@@ -294,6 +293,21 @@ RAWMODE = {
 
 
 def _normalize_mode(im, initial_call=False):
+    """
+    Takes an image (or frame), returns an image in a mode that is appropriate
+    for saving in a Gif.
+
+    It may return the original image, or it may return an image converted to
+    palette or 'L' mode.
+
+    UNDONE: What is the point of mucking with the initial call palette, for
+    an image that shouldn't have a palette, or it would be a mode 'P' and
+    get returned in the RAWMODE clause.
+    
+    :param im: Image object
+    :param initial_call: Default false, set to true for a single frame.
+    :returns: Image object
+    """
     if im.mode in RAWMODE:
         im.load()
         return im
