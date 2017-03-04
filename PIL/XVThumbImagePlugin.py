@@ -65,7 +65,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
         s = s.strip().split()
 
         self.mode = "P"
-        self.size = int(s[0:1]), int(s[1:2])
+        self.size = int(s[0]), int(s[1])
 
         self.palette = ImagePalette.raw("RGB", PALETTE)
 
@@ -73,6 +73,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
             ("raw", (0, 0)+self.size,
              self.fp.tell(), (self.mode, 0, 1)
              )]
+
 
 # --------------------------------------------------------------------
 
