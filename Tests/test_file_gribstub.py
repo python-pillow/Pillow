@@ -27,6 +27,13 @@ class TestFileGribStub(PillowTestCase):
                           lambda:
                           GribStubImagePlugin.GribStubImageFile(invalid_file))
 
+    def test_load(self):
+        # Arrange
+        im = Image.open(TEST_FILE)
+
+        # Act / Assert: stub cannot load without an implemented handler
+        self.assertRaises(IOError, lambda: im.load())
+
     def test_save(self):
         # Arrange
         im = hopper()
@@ -34,13 +41,6 @@ class TestFileGribStub(PillowTestCase):
 
         # Act / Assert: stub cannot save without an implemented handler
         self.assertRaises(IOError, lambda: im.save(tmpfile))
-
-    def test_load(self):
-        # Arrange
-        im = Image.open(TEST_FILE)
-
-        # Act / Assert: stub cannot load without an implemented handler
-        self.assertRaises(IOError, lambda: im.load())
 
 
 if __name__ == '__main__':
