@@ -15,9 +15,21 @@ class TestFileXVThumb(PillowTestCase):
         self.assertEqual(im.format, "XVThumb")
         self.assert_image_similar(im, hopper("P"), 49)
 
+    def test_unexpected_eof(self):
+        # Test unexpected EOF reading XV thumbnail file
+        # Arrange
+        bad_file = "Tests/images/hopper_bad.p7"
+
+        # Act / Assert
+        self.assertRaises(SyntaxError,
+                          lambda:
+                          XVThumbImagePlugin.XVThumbImageFile(bad_file))
+
     def test_invalid_file(self):
+        # Arrange
         invalid_file = "Tests/images/flower.jpg"
 
+        # Act / Assert
         self.assertRaises(SyntaxError,
                           lambda:
                           XVThumbImagePlugin.XVThumbImageFile(invalid_file))
