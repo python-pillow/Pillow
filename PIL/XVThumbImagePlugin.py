@@ -47,7 +47,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
     def _open(self):
 
         # check magic
-        if self.fp.read(6) != _MAGIC:
+        if not _accept(self.fp.read(6)):
             raise SyntaxError("not an XV thumbnail file")
 
         # Skip to beginning of next line
