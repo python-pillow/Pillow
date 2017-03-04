@@ -1,9 +1,19 @@
-from helper import unittest, PillowTestCase
+from helper import hopper, unittest, PillowTestCase
 
-from PIL import XVThumbImagePlugin
+from PIL import Image, XVThumbImagePlugin
+
+TEST_FILE = "Tests/images/hopper.p7"
 
 
 class TestFileXVThumb(PillowTestCase):
+
+    def test_open(self):
+        # Act
+        im = Image.open(TEST_FILE)
+
+        # Assert
+        self.assertEqual(im.format, "XVThumb")
+        self.assert_image_similar(im, hopper("P"), 49)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
