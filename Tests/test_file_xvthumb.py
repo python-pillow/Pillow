@@ -13,7 +13,10 @@ class TestFileXVThumb(PillowTestCase):
 
         # Assert
         self.assertEqual(im.format, "XVThumb")
-        self.assert_image_similar(im, hopper("P"), 49)
+
+        # Create a Hopper image with a similar XV palette
+        im_hopper = hopper().quantize(palette=im)
+        self.assert_image_similar(im, im_hopper, 9)
 
     def test_unexpected_eof(self):
         # Test unexpected EOF reading XV thumbnail file
