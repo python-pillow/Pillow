@@ -124,8 +124,12 @@ are available::
     eliminating unused colors. This is only useful if the palette can
     be compressed to the next smaller power of 2 elements.
 
-**palette**
-    Use the specified palette for the saved image.
+**palette** 
+    Use the specified palette for the saved image. The palette should
+    be a bytes or bytearray object containing the palette entries in
+    RGBRGB... form. It should be no more than 768 bytes. Alternately,
+    the palette can be passed in as an
+    :py:class:`PIL.ImagePalette.ImagePalette` object.
 
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~

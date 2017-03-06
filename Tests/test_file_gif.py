@@ -455,24 +455,40 @@ class TestFileGif(PillowTestCase):
         # generate an L mode image with a separate palette
         
         im = hopper('P')
-        im_l = im.split()[0]
-        palette = im.palette.getdata()
+        im_l = Image.frombytes('L', im.size, im.tobytes())
+        palette = bytes(bytearray(im.getpalette()))
 
         out = self.tempfile('temp.gif')
         im_l.save(out, palette=palette)
 
         reloaded = Image.open(out)
-        self.assert_image_equal(reloaded, im)
 
+        self.assert_image_equal(reloaded.convert('RGB'), im.convert('RGB'))
+    
     def test_palette_save_P(self):
         # pass in a different palette, then construct what the image
         # would look like.
+        # Forcing a non-straight grayscale palette.
 
         im = hopper('P')
-        palette = ImagePalette.ImagePalette('RGB')
+        palette = bytes(bytearray([255-i//3 for i in range(768)]))
 
         out = self.tempfile('temp.gif')
-        im.save(out, palette=palette.getdata())
+        im.save(out, palette=palette)
+
+        reloaded = Image.open(out)
+        im.putpalette(palette)
+        self.assert_image_equal(reloaded, im)
+
+    def test_palette_save_ImagePalette(self):
+        # pass in a different palette, as an ImagePalette.ImagePalette
+        # effectively the same as test_palette_save_P
+
+        im = hopper('P')
+        palette = ImagePalette.ImagePalette('RGB', list(range(256))[::-1]*3)
+
+        out = self.tempfile('temp.gif')
+        im.save(out, palette=palette)
 
         reloaded = Image.open(out)
         im.putpalette(palette)

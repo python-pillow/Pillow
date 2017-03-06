@@ -27,6 +27,8 @@
 from . import Image, ImageFile, ImagePalette, ImageChops, ImageSequence
 from ._binary import i8, i16le as i16, o8, o16le as o16
 
+import itertools
+
 __version__ = "0.9"
 
 
@@ -333,15 +335,22 @@ def _normalize_palette(im, palette, info):
     :param info: encoderinfo 
     :returns: Image object
     """
+    source_palette = None
+    if palette:
+        # a bytes palette
+        if isinstance(palette, (bytes, bytearray, list)):
+            source_palette = bytearray(palette[:768])
+        if isinstance(palette, ImagePalette.ImagePalette):
+            source_palette = bytearray(itertools.chain.from_iterable(
+                                zip(palette.palette[:256],
+                                    palette.palette[256:512],
+                                    palette.palette[512:768])))
+            
     if im.mode == "P":
-        if palette and isinstance(palette, bytes):
-            source_palette = palette[:768]
-        else:
+        if not source_palette:
             source_palette = im.im.getpalette("RGB")[:768]
     else:  # L-mode
-        if palette and isinstance(palette, bytes):
-            source_palette = palette[:768]
-        else:
+        if not source_palette:
             source_palette = bytearray(i//3 for i in range(768))
         im.palette = ImagePalette.ImagePalette("RGB",
                                                palette=source_palette)
@@ -436,7 +445,6 @@ def _save_all(im, fp, filename):
 
 def _save(im, fp, filename, save_all=False):
     im.encoderinfo.update(im.info)
-
     # header
     try:
         palette = im.encoderinfo["palette"]
