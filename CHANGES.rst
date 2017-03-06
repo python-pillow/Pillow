@@ -12,17 +12,8 @@ Changelog (Pillow)
  
 - Health fixes #2437
   [radarhere]
-
-- Test FitsStubImagePlugin for correctness #2430
-  [hugovk]
   
-- Test Hdf5StubImagePlugin for correctness #2431
-  [hugovk]
-  
-- Test PixarImageFile for correctness #2428
-  [hugovk]
-  
-- Test PsdImageFile for correctness #2427
+- Test: Correctness tests ContainerIO, XVThumbImagePlugin, BufrStubImagePlugin, GribStubImagePlugin, FitsStubImagePlugin, Hdf5StubImagePlugin, PixarImageFile, PsdImageFile #2443, #2442, #2441, #2440, #2431, #2430, #2428, #2427
   [hugovk]
 
 - Remove unused imports #1822
