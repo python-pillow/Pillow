@@ -714,7 +714,7 @@ def _write_frame_data(fp, im_frame, offset, params):
 # --------------------------------------------------------------------
 # Legacy GIF utilities
 
-def getheader(im, palette=None, info=[]):
+def getheader(im, palette=None, info=None):
     """
     Legacy Method to get Gif data from image.
 
@@ -727,6 +727,9 @@ def getheader(im, palette=None, info=[]):
 
     """
     used_palette_colors = _get_optimize(im, info)
+
+    if info is None:
+        info = {}
 
     if not "background" in info and "background" in im.info:
         info["background"] = im.info["background"]
