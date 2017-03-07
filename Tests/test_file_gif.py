@@ -505,6 +505,35 @@ class TestFileGif(PillowTestCase):
         reloaded = Image.open(out)
         self.assert_image_equal(reloaded.convert('L'), im.convert('L'))
 
+    def test_getdata(self):
+        # test getheader/getdata against legacy values
+        # Create a 'P' image with holes in the palette
+        im = Image._wedge().resize((16,16))
+        im.putpalette(ImagePalette.ImagePalette('RGB'))
+        im.info = {'background':0}
+        
+        passed_palette = bytes(bytearray([255-i//3 for i in range(768)]))
+
+        GifImagePlugin._FORCE_OPTIMIZE = True
+        try:
+            h = GifImagePlugin.getheader(im, passed_palette)
+            d = GifImagePlugin.getdata(im)
+
+            import cPickle as pickle
+            # Enable to get target values on pre-refactor version
+            # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
+            #    f.write(pickle.dumps((h,d)))
+            with open('Tests/images/gif_header_data.pkl', 'rb') as f:
+                (h_target,d_target) = pickle.loads(f.read())
+            
+            self.assertEqual(h, h_target)
+            self.assertEqual(d, d_target)
+        finally:
+            GifImagePlugin._FORCE_OPTIMIZE = False
+
+
+    
+
 
 if __name__ == '__main__':
     unittest.main()

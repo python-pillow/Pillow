@@ -685,13 +685,13 @@ def _get_global_header(im, info):
     return [
         b"GIF"+version +               # signature + version
         o16(im.size[0]) +              # canvas width
-        o16(im.size[1]) +              # canvas height
+        o16(im.size[1]),               # canvas height
 
         # Logical Screen Descriptor
         # size of global color table + global color table flag
-        o8(color_table_size + 128) +  # packed fields
+        o8(color_table_size + 128),   # packed fields
         # background + reserved/aspect
-        o8(background) + o8(0) +
+        o8(background) + o8(0), 
 
         # Global Color Table
         _get_header_palette(palette_bytes)
