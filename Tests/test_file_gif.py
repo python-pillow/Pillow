@@ -508,9 +508,9 @@ class TestFileGif(PillowTestCase):
     def test_getdata(self):
         # test getheader/getdata against legacy values
         # Create a 'P' image with holes in the palette
-        im = Image._wedge().resize((16,16))
+        im = Image._wedge().resize((16, 16))
         im.putpalette(ImagePalette.ImagePalette('RGB'))
-        im.info = {'background':0}
+        im.info = {'background': 0}
         
         passed_palette = bytes(bytearray([255-i//3 for i in range(768)]))
 
@@ -519,12 +519,12 @@ class TestFileGif(PillowTestCase):
             h = GifImagePlugin.getheader(im, passed_palette)
             d = GifImagePlugin.getdata(im)
 
-            import cPickle as pickle
+            import pickle
             # Enable to get target values on pre-refactor version
-            # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
-            #    f.write(pickle.dumps((h,d)))
+            #with open('Tests/images/gif_header_data.pkl', 'wb') as f:
+            #    pickle.dump((h, d), f, 1)
             with open('Tests/images/gif_header_data.pkl', 'rb') as f:
-                (h_target,d_target) = pickle.loads(f.read())
+                (h_target, d_target) = pickle.load(f)
             
             self.assertEqual(h, h_target)
             self.assertEqual(d, d_target)
