@@ -176,6 +176,20 @@ class TestPyDecoder(PillowTestCase):
 
         self.assertRaises(ValueError, lambda: d.set_as_raw(b'\x00'))
 
+    def test_extents_none(self):
+        buf = BytesIO(b'\x00'*255)
+
+        im = MockImageFile(buf)
+        im.tile = [("MOCK", None, 32, None)]
+        d = self.get_decoder()
+
+        im.load()
+
+        self.assertEqual(d.state.xoff, 0)
+        self.assertEqual(d.state.yoff, 0)
+        self.assertEqual(d.state.xsize, 200)
+        self.assertEqual(d.state.ysize, 200)
+
     def test_negsize(self):
         buf = BytesIO(b'\x00'*255)
 
