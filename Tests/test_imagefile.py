@@ -174,6 +174,7 @@ class TestPyDecoder(PillowTestCase):
         self.assertEqual(d.state.xsize, xsize)
         self.assertEqual(d.state.ysize, ysize)
 
+        self.assertRaises(ValueError, lambda: d.set_as_raw(b'\x00'))
 
     def test_negsize(self):
         buf = BytesIO(b'\x00'*255)
