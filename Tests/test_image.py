@@ -375,5 +375,30 @@ class TestImage(PillowTestCase):
             self.assert_image_equal(im, target)
 
 
+class MockEncoder(object):pass
+
+def mock_encode(*args):
+    encoder = MockEncoder()
+    encoder.args = args
+    return encoder
+
+class TestRegistry(PillowTestCase):
+
+    def test_encode_registry(self):
+
+        Image.register_encoder('MOCK', mock_encode)
+        self.assert_('MOCK' in Image.ENCODERS)
+
+        enc = Image._getencoder('RGB', 'MOCK', ('args',), extra=('extra',))
+
+        self.assertIsInstance(enc, MockEncoder)
+        self.assertEqual(enc.args, ('RGB', 'args', 'extra'))
+
+    def test_encode_registry_fail(self):
+        self.assertRaises(IOError, lambda: Image._getencoder('RGB',
+                                                             'DoesNotExist',
+                                                             ('args',),
+                                                             extra=('extra',)))
+
 if __name__ == '__main__':
     unittest.main()
