@@ -193,10 +193,7 @@ class ImageFile(Image.Image):
                 decoder = Image._getdecoder(self.mode, decoder_name,
                                       args, self.decoderconfig)
                 seek(offset)
-                try:
-                    decoder.setimage(self.im, extents)
-                except ValueError:
-                    continue
+                decoder.setimage(self.im, extents)
                 if decoder.pulls_fd:
                     decoder.setfd(self.fp)
                     status, err_code = decoder.decode(b"")
