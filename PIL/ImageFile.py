@@ -581,9 +581,9 @@ class PyDecoder(object):
 
     def setfd(self, fd):
         """
-        Called from ImageFile to set the python file like object
+        Called from ImageFile to set the python file-like object
 
-        :param fd: A python file like object
+        :param fd: A python file-like object
         :returns: None
         """
         self.fd = fd
