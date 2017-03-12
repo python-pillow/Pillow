@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Pure Python Decoders, including Python decoder to fix for MSP images #1938
+  [wiredfool, hugovk]
+  
 - Reorganized GifImagePlugin, fixes #2314.  #2374
   [radarhere, wiredfool]
 
