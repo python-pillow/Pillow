@@ -15,7 +15,11 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+# More info on this format: https://archive.org/details/gg243631
+# Page 313:
+# Figure 205. Windows Paint Version 1: "DanM" Format
+# Figure 206. Windows Paint Version 2: "LinS" Format. Used in Windows V2.03
+#
 
 from . import Image, ImageFile
 from ._binary import i16le as i16, o16le as o16
@@ -91,6 +95,7 @@ def _save(im, fp, filename):
 
     # image body
     ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 32, ("1", 0, 1))])
+
 
 #
 # registry
