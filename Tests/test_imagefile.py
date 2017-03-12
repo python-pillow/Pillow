@@ -135,5 +135,84 @@ class TestImageFile(PillowTestCase):
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
+
+class MockPyDecoder(ImageFile.PyDecoder):
+    def decode(self, buffer):
+        #eof
+        return (-1, 0)
+
+xoff, yoff, xsize, ysize = 10, 20, 100, 100
+class MockImageFile(ImageFile.ImageFile):
+    def _open(self):
+        self.rawmode = 'RGBA'
+        self.mode = 'RGBA'
+        self.size = (200, 200)
+        self.tile = [("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize), 32, None)]
+
+class TestPyDecoder(PillowTestCase):
+
+    def get_decoder(self):
+        decoder = MockPyDecoder(None)
+
+        def closure(mode, *args):
+            decoder.__init__(mode, *args)
+            return decoder
+
+        Image.register_decoder('MOCK', closure)
+        return decoder
+
+    def test_setimage(self):
+        buf = BytesIO(b'\x00'*255)
+
+        im = MockImageFile(buf)
+        d = self.get_decoder()
+
+        im.load()
+
+        self.assertEqual(d.state.xoff, xoff)
+        self.assertEqual(d.state.yoff, yoff)
+        self.assertEqual(d.state.xsize, xsize)
+        self.assertEqual(d.state.ysize, ysize)
+
+        self.assertRaises(ValueError, lambda: d.set_as_raw(b'\x00'))
+
+    def test_extents_none(self):
+        buf = BytesIO(b'\x00'*255)
+
+        im = MockImageFile(buf)
+        im.tile = [("MOCK", None, 32, None)]
+        d = self.get_decoder()
+
+        im.load()
+
+        self.assertEqual(d.state.xoff, 0)
+        self.assertEqual(d.state.yoff, 0)
+        self.assertEqual(d.state.xsize, 200)
+        self.assertEqual(d.state.ysize, 200)
+
+    def test_negsize(self):
+        buf = BytesIO(b'\x00'*255)
+
+        im = MockImageFile(buf)
+        im.tile = [("MOCK", (xoff, yoff, -10, yoff+ysize), 32, None)]
+        d = self.get_decoder()
+
+        self.assertRaises(ValueError, im.load)
+
+        im.tile = [("MOCK", (xoff, yoff, xoff+xsize, -10), 32, None)]
+        self.assertRaises(ValueError, im.load)
+
+    def test_oversize(self):
+        buf = BytesIO(b'\x00'*255)
+
+        im = MockImageFile(buf)
+        im.tile = [("MOCK", (xoff, yoff, xoff+xsize + 100, yoff+ysize), 32, None)]
+        d = self.get_decoder()
+
+        self.assertRaises(ValueError, im.load)
+
+        im.tile = [("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize + 100), 32, None)]
+        self.assertRaises(ValueError, im.load)
+
 if __name__ == '__main__':
     unittest.main()

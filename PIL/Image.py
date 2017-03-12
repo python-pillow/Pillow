@@ -208,6 +208,8 @@ MIME = {}
 SAVE = {}
 SAVE_ALL = {}
 EXTENSION = {}
+DECODERS = {}
+ENCODERS = {}
 
 # --------------------------------------------------------------------
 # Modes supported by this version
@@ -414,6 +416,11 @@ def _getdecoder(mode, decoder_name, args, extra=()):
         args = (args,)
 
     try:
+        decoder = DECODERS[decoder_name]
+        return decoder(mode, *args + extra)
+    except KeyError:
+        pass
+    try:
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
         # print(decoder, mode, args + extra)
@@ -430,6 +437,11 @@ def _getencoder(mode, encoder_name, args, extra=()):
     elif not isinstance(args, tuple):
         args = (args,)
 
+    try:
+        encoder = ENCODERS[encoder_name]
+        return encoder(mode, *args + extra)
+    except KeyError:
+        pass
     try:
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
@@ -2602,6 +2614,33 @@ def registered_extensions():
     if not bool(EXTENSION):
         init()
     return EXTENSION
+
+def register_decoder(name, decoder):
+    """
+    Registers an image decoder.  This function should not be
+    used in application code.
+
+    :param name: The name of the decoder
+    :param decoder: A callable(mode, args) that returns an
+                    ImageFile.PyDecoder object
+
+    .. versionadded:: 4.1.0                
+    """
+    DECODERS[name] = decoder
+
+
+def register_encoder(name, encoder):
+    """
+    Registers an image encoder.  This function should not be
+    used in application code.
+
+    :param name: The name of the encoder
+    :param encoder: A callable(mode, args) that returns an
+                    ImageFile.PyEncoder object
+
+    .. versionadded:: 4.1.0
+    """
+    ENCODERS[name] = encoder
 
 
 # --------------------------------------------------------------------
