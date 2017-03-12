@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Reorganized GifImagePlugin, fixes #2314.  #2374
+  [radarhere, wiredfool]
+
 - Doc: Reordered operating systems in Compatibility Matrix #2436
   [radarhere]
 
