@@ -2,11 +2,10 @@ from helper import hopper, unittest, PillowTestCase
 
 from PIL import Image, PixarImagePlugin
 
-# sample ppm stream
 TEST_FILE = "Tests/images/hopper.pxr"
 
 
-class TestImagePsd(PillowTestCase):
+class TestFilePixar(PillowTestCase):
 
     def test_sanity(self):
         im = Image.open(TEST_FILE)

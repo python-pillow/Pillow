@@ -2,7 +2,6 @@ from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, XpmImagePlugin
 
-# sample ppm stream
 TEST_FILE = "Tests/images/hopper.xpm"
 
 
