@@ -96,6 +96,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
         return self.frame
 
+
 #
 # --------------------------------------------------------------------
 

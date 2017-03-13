@@ -1,9 +1,45 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, hopper
 
-from PIL import MicImagePlugin
+from PIL import Image, MicImagePlugin
+
+TEST_FILE = "Tests/images/hopper.mic"
 
 
 class TestFileMic(PillowTestCase):
+
+    def test_sanity(self):
+        im = Image.open(TEST_FILE)
+        im.load()
+        self.assertEqual(im.mode, "RGBA")
+        self.assertEqual(im.size, (128, 128))
+        self.assertEqual(im.format, "MIC")
+
+        im2 = hopper("RGBA")
+        self.assert_image_similar(im, im2, 123.5)
+
+    def test_n_frames(self):
+        im = Image.open(TEST_FILE)
+
+        self.assertEqual(im.n_frames, 1)
+
+    def test_is_animated(self):
+        im = Image.open(TEST_FILE)
+
+        self.assertFalse(im.is_animated)
+
+    def test_tell(self):
+        im = Image.open(TEST_FILE)
+
+        self.assertEqual(im.tell(), 0)
+
+    def test_seek(self):
+        im = Image.open(TEST_FILE)
+
+        im.seek(0)
+        self.assertEqual(im.tell(), 0)
+
+        self.assertRaises(EOFError, lambda: im.seek(99))
+        self.assertEqual(im.tell(), 0)
 
     def test_invalid_file(self):
         # Test an invalid OLE file
