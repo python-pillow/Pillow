@@ -117,6 +117,11 @@ def APP(self, marker):
         # plus constant header size
         self.info["mpoffset"] = self.fp.tell() - n + 4
 
+    # If DPI isn't in JPEG header, fetch from EXIF
+    if "dpi" not in self.info and "exif" in self.info:
+        x_resolution = self._getexif()[0x011A]
+        self.info["dpi"] = x_resolution[0] / x_resolution[1]
+
 
 def COM(self, marker):
     #
