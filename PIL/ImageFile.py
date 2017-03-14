@@ -242,15 +242,15 @@ class ImageFile(Image.Image):
         self.tile = []
         self.readonly = readonly
 
-        if self._exclusive_fp:
+        self.load_end()
+
+        if self._exclusive_fp and self._close_exclusive_fp_after_loading:
             self.fp.close()
         self.fp = None
 
         if not self.map and not LOAD_TRUNCATED_IMAGES and err_code < 0:
             # still raised if decoder fails to return anything
             raise_ioerror(err_code)
-
-        self.load_end()
 
         return Image.Image.load(self)
 

@@ -109,6 +109,7 @@ class ImImageFile(ImageFile.ImageFile):
 
     format = "IM"
     format_description = "IFUNC Image Memory"
+    _close_exclusive_fp_after_loading = False
 
     def _open(self):
 
@@ -234,7 +235,6 @@ class ImImageFile(ImageFile.ImageFile):
         self.__offset = offs = self.fp.tell()
 
         self.__fp = self.fp  # FIXME: hack
-        self._exclusive_fp = False
 
         if self.rawmode[:2] == "F;":
 

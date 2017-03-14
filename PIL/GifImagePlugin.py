@@ -47,6 +47,8 @@ class GifImageFile(ImageFile.ImageFile):
 
     format = "GIF"
     format_description = "Compuserve GIF"
+    _close_exclusive_fp_after_loading = False
+    
     global_palette = None
 
     def data(self):
@@ -80,7 +82,6 @@ class GifImageFile(ImageFile.ImageFile):
                     break
 
         self.__fp = self.fp  # FIXME: hack
-        self._exclusive_fp = False
         self.__rewind = self.fp.tell()
         self._n_frames = None
         self._is_animated = None

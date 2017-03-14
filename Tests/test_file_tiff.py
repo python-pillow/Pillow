@@ -472,7 +472,6 @@ class TestFileTiff(PillowTestCase):
     def test_close_on_load(self):
         # same as test_fd_leak, but runs on unixlike os
         tmpfile = self.tempfile("temp.tif")
-        import os
 
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
             im.save(tmpfile)

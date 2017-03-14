@@ -41,7 +41,8 @@ class DcxImageFile(PcxImageFile):
 
     format = "DCX"
     format_description = "Intel DCX"
-
+    _close_exclusive_fp_after_loading = False
+    
     def _open(self):
 
         # Header
@@ -58,7 +59,6 @@ class DcxImageFile(PcxImageFile):
             self._offset.append(offset)
 
         self.__fp = self.fp
-        self._exclusive_fp = False
         self.seek(0)
 
     @property

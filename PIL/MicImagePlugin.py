@@ -39,6 +39,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
     format = "MIC"
     format_description = "Microsoft Image Composer"
+    _close_exclusive_fp_after_loading = False
 
     def _open(self):
 
@@ -64,7 +65,6 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
             raise SyntaxError("not an MIC file; no image entries")
 
         self.__fp = self.fp
-        self._exclusive_fp = False
         self.frame = 0
 
         if len(self.images) > 1:

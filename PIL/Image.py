@@ -506,6 +506,7 @@ class Image(object):
     """
     format = None
     format_description = None
+    _close_exclusive_fp_after_loading = True
 
     def __init__(self):
         # FIXME: take "new" parameters / other image?
@@ -560,6 +561,7 @@ class Image(object):
         """
         try:
             self.fp.close()
+            self.fp = None
         except Exception as msg:
             logger.debug("Error closing: %s", msg)
 
@@ -567,6 +569,13 @@ class Image(object):
         # deferred error that will better explain that the core image
         # object is gone.
         self.im = deferred_error(ValueError("Operation on closed image"))
+
+    if sys.version_info >= (3,4,0):
+        def __del__(self):
+            if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp') 
+                and self.fp and self._exclusive_fp):
+                self.fp.close()
+            self.fp = None
 
     def _copy(self):
         self.load()
@@ -2440,8 +2449,7 @@ def open(fp, mode="r"):
             im = _open_core(fp, filename, prefix)
 
     if im:
-        if getattr(im, '_exclusive_fp', 'undef') is None:
-            im._exclusive_fp = exclusive_fp
+        im._exclusive_fp = exclusive_fp
         return im
 
     if exclusive_fp:

@@ -37,7 +37,8 @@ class FliImageFile(ImageFile.ImageFile):
 
     format = "FLI"
     format_description = "Autodesk FLI/FLC Animation"
-
+    _close_exclusive_fp_after_loading = False
+    
     def _open(self):
 
         # HEAD
@@ -84,7 +85,6 @@ class FliImageFile(ImageFile.ImageFile):
         # set things up to decode first frame
         self.__frame = -1
         self.__fp = self.fp
-        self._exclusive_fp = False
         self.__rewind = self.fp.tell()
         self._n_frames = None
         self._is_animated = None
