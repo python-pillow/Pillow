@@ -25,12 +25,12 @@
 # See the README file for information on usage and redistribution.
 #
 
-try:
+import sys
+
+if sys.version_info[0] > 2:
     import tkinter
-except ImportError:
-    import Tkinter
-    tkinter = Tkinter
-    del Tkinter
+else:
+    import Tkinter as tkinter
 
 # required for pypy, which always has cffi installed
 try:
