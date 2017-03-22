@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Remove superfluous import of FixTk #2455
+  [cgohlke)
+
+- Fix import of tkinter/Tkinter #2456
+  [cgohlke)
+
 - Pure Python Decoders, including Python decoder to fix for MSP images #1938
   [wiredfool, hugovk]
   
