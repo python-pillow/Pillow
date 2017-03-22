@@ -46,15 +46,6 @@ class _imaging_not_installed(object):
 # Limit to around a quarter gigabyte for a 24 bit (3 bpp) image
 MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
 
-try:
-    # give Tk a chance to set up the environment, in case we're
-    # using an _imaging module linked against libtcl/libtk (use
-    # __import__ to hide this from naive packagers; we don't really
-    # depend on Tk unless ImageTk is used, and that module already
-    # imports Tkinter)
-    __import__("FixTk")
-except ImportError:
-    pass
 
 try:
     # If the _imaging C module is not present, Pillow will not load.
