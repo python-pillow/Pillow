@@ -144,7 +144,7 @@ def _dxt1(data, width, height):
                         else:
                             r, g, b = 0, 0, 0
 
-                    idx = 4 * ((y + j) * width + (x + i))
+                    idx = 4 * ((y + j) * width + x + i)
                     ret[idx:idx+4] = struct.pack('4B', r, g, b, 255)
 
     return bytes(ret)
@@ -201,7 +201,7 @@ def _dxt5(data, width, height):
                     elif cc == 3:
                         r, g, b = _c3(r0, r1), _c3(g0, g1), _c3(b0, b1)
 
-                    idx = 4 * ((y + j) * width + (x + i))
+                    idx = 4 * ((y + j) * width + x + i)
                     ret[idx:idx+4] = struct.pack('4B', r, g, b, alpha)
 
     return bytes(ret)
@@ -241,8 +241,7 @@ class DdsImageFile(ImageFile.ImageFile):
             self.decoder = "DXT5"
             codec = _dxt5
         else:
-            raise NotImplementedError("Unimplemented pixel format %r" %
-                                      (fourcc))
+            raise NotImplementedError("Unimplemented pixel format %r" % fourcc)
 
         self.tile = [
             (self.decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))
