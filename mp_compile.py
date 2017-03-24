@@ -73,7 +73,7 @@ def install():
         try:
             # bug, only enable if we can make a Pool. see issue #790 and
             # https://stackoverflow.com/questions/6033599/oserror-38-errno-38-with-multiprocessing
-            pool = Pool(2)
+            Pool(2)
             CCompiler.compile = _mp_compile
         except Exception as msg:
             print("Exception installing mp_compile, proceeding without:"
