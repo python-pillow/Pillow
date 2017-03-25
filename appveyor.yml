@@ -16,7 +16,9 @@ environment:
   - PYTHON: C:/Python33-x64
 
 install:
-- git clone --depth 1 https://github.com/python-pillow/pillow-depends.git c:\pillow-depends
+- curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
+- 7z x pillow-depends.zip -oc:\
+- mv c:\pillow-depends-master c:\pillow-depends
 - xcopy c:\pillow-depends\*.zip c:\pillow\winbuild\
 - xcopy c:\pillow-depends\*.tar.gz c:\pillow\winbuild\
 - xcopy /s c:\pillow-depends\test_images\* c:\pillow\tests\images
