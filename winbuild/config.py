@@ -31,10 +31,10 @@ libs = {
         'dir': 'jpeg-9b',
     },
     'tiff': {
-        'url': 'ftp://ftp.remotesensing.org/pub/libtiff/tiff-4.0.6.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'tiff-4.0.6.zip',
-        'hash': 'md5:f5b485d750b2001255ed64224b98b857',
-        'dir': 'tiff-4.0.6',
+        'url': 'ftp://ftp.remotesensing.org/pub/libtiff/tiff-4.0.7.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'tiff-4.0.7.zip',
+        'hash': 'md5:876ad5f2f471954ddec915b77e7f75dd',
+        'dir': 'tiff-4.0.7',
     },
     'freetype': {
         'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.gz',
