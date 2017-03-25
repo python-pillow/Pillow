@@ -3,7 +3,7 @@ clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%
 #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-# Uncomment previous line to get RDP access during the build. 
+# Uncomment previous line to get RDP access during the build.
 
 environment:
   X64_EXT: -x64
@@ -16,7 +16,7 @@ environment:
   - PYTHON: C:/Python33-x64
 
 install:
-- git clone https://github.com/python-pillow/pillow-depends.git c:\pillow-depends
+- git clone --depth 1 https://github.com/python-pillow/pillow-depends.git c:\pillow-depends
 - xcopy c:\pillow-depends\*.zip c:\pillow\winbuild\
 - xcopy c:\pillow-depends\*.tar.gz c:\pillow\winbuild\
 - xcopy /s c:\pillow-depends\test_images\* c:\pillow\tests\images
@@ -53,15 +53,15 @@ after_test:
 
 deploy:
   provider: S3
-  access_key_id: AKIAIRAXC62ZNTVQJMOQ 
+  access_key_id: AKIAIRAXC62ZNTVQJMOQ
   secret_access_key:
     secure: Hwb6klTqtBeMgxAjRoDltiiqpuH8xbwD4UooDzBSiCWXjuFj1lyl4kHgHwTCCGqi
   bucket: pillow-nightly
   folder: win/$(APPVEYOR_BUILD_NUMBER)/
   artifact: /.*egg|wheel/
-  on: 
+  on:
     branch: master
-    
+
 # Uncomment the following line to get RDP access after the build/test and block for
 # up to the timeout limit (~1hr)
 #
