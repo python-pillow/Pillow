@@ -28,7 +28,7 @@ libs = {
         'dir': 'jpeg-9b',
     },
     'tiff': {
-        'url': 'ftp://ftp.remotesensing.org/pub/libtiff/tiff-4.0.7.zip',
+        'url': 'ftp://download.osgeo.org/libtiff/tiff-4.0.7.zip',
         'filename': PILLOW_DEPENDS_DIR + 'tiff-4.0.7.zip',
         'dir': 'tiff-4.0.7',
     },
