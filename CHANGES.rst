@@ -4,6 +4,15 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
+- Fetch DPI from EXIF if not specified in JPEG header #2449
+  [hugovk]
+
+- Removed winbuild checksum verification #2468
+  [radarhere]
+
+- Git: Set ContainerIO test file as binary #2469
+  [cgohlke]
+  
 - Remove superfluous import of FixTk #2455
   [cgohlke)
 
