@@ -167,14 +167,14 @@ class TestFileJpeg(PillowTestCase):
 
     def test_progressive_large_buffer_highest_quality(self):
         f = self.tempfile('temp.jpg')
-        im = self.gen_random_image((255,255))
+        im = self.gen_random_image((255, 255))
         # this requires more bytes than pixels in the image
         im.save(f, format="JPEG", progressive=True, quality=100)
 
     def test_progressive_cmyk_buffer(self):
         # Issue 2272, quality 90 cmyk image is tripping the large buffer bug.
         f = BytesIO()
-        im = self.gen_random_image((256,256), 'CMYK')
+        im = self.gen_random_image((256, 256), 'CMYK')
         im.save(f, format='JPEG', progressive=True, quality=94)
 
     def test_large_exif(self):
@@ -499,6 +499,14 @@ class TestFileJpeg(PillowTestCase):
         reloaded = Image.open(outfile)
         reloaded.load()
         self.assertEqual(im.info['dpi'], reloaded.info['dpi'])
+
+    def test_dpi_from_exif(self):
+        # Arrange
+        # This Photoshop CC 2017 image has DPI in EXIF not metadata
+        im = Image.open("Tests/images/photoshop-200dpi.jpg")
+
+        # Act / Assert
+        self.assertEqual(im.info.get("dpi"), 200)
 
 
 if __name__ == '__main__':
