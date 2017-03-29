@@ -2382,6 +2382,7 @@ def open(fp, mode="r"):
     if mode != "r":
         raise ValueError("bad mode %r" % mode)
 
+    exclusive_fp = False
     filename = ""
     if isPath(fp):
         filename = fp
@@ -2395,11 +2396,13 @@ def open(fp, mode="r"):
 
     if filename:
         fp = builtins.open(filename, "rb")
+        exclusive_fp = True
 
     try:
         fp.seek(0)
     except (AttributeError, io.UnsupportedOperation):
         fp = io.BytesIO(fp.read())
+        exclusive_fp = True
 
     prefix = fp.read(16)
 
@@ -2428,8 +2431,12 @@ def open(fp, mode="r"):
             im = _open_core(fp, filename, prefix)
 
     if im:
+        if getattr(im, '_exclusive_fp', 'undef') is None:
+            im._exclusive_fp = exclusive_fp
         return im
 
+    if exclusive_fp:
+        fp.close()
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
 
