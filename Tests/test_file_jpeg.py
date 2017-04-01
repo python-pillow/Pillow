@@ -506,7 +506,7 @@ class TestFileJpeg(PillowTestCase):
         im = Image.open("Tests/images/photoshop-200dpi.jpg")
 
         # Act / Assert
-        self.assertEqual(im.info.get("dpi"), 200)
+        self.assertEqual(im.info.get("dpi"), (200, 200))
 
 
 if __name__ == '__main__':
