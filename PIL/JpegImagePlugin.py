@@ -122,16 +122,10 @@ def APP(self, marker):
         exif = self._getexif()
         try:
             x_resolution = exif[0x011A]
-            try:
-                y_resolution = exif[0x011B]
-            except KeyError:
-                # Some EXIF only contains an X value
-                y_resolution = x_resolution
-            x_dpi = x_resolution[0] / x_resolution[1]
-            y_dpi = y_resolution[0] / y_resolution[1]
-            self.info["dpi"] = x_dpi, y_dpi
+            dpi = x_resolution[0] / x_resolution[1]
+            self.info["dpi"] = dpi, dpi
         except KeyError:
-            pass
+            self.info["dpi"] = 72, 72
 
 
 def COM(self, marker):
