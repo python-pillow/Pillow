@@ -515,7 +515,9 @@ class TestFileJpeg(PillowTestCase):
         im = Image.open("Tests/images/no-dpi-in-exif.jpg")
 
         # Act / Assert
-        self.assertIsNone(im.info.get("dpi"))
+        # "When the image resolution is unknown, 72 [dpi] is designated."
+        # http://www.exiv2.org/tags.html
+        self.assertEqual(im.info.get("dpi"), (72, 72))
 
 
 if __name__ == '__main__':
