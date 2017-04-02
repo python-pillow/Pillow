@@ -508,10 +508,19 @@ class TestFileJpeg(PillowTestCase):
         # Act / Assert
         self.assertEqual(im.info.get("dpi"), (200, 200))
 
+    def test_dpi_from_dpcm_exif(self):
+        # Arrange
+        # This is photoshop-200dpi.jpg with EXIF resolution unit set to cm:
+        # exiftool -exif:ResolutionUnit=cm photoshop-200dpi.jpg
+        im = Image.open("Tests/images/exif-200dpcm.jpg")
+
+        # Act / Assert
+        self.assertEqual(im.info.get("dpi"), (508, 508))
+
     def test_no_dpi_in_exif(self):
         # Arrange
         # This is photoshop-200dpi.jpg with resolution removed from EXIF:
-        # exiftool "-*resolution*"= photoshop-no-dpi.jpg
+        # exiftool "-*resolution*"= photoshop-200dpi.jpg
         im = Image.open("Tests/images/no-dpi-in-exif.jpg")
 
         # Act / Assert
