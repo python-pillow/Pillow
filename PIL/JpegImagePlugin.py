@@ -121,8 +121,12 @@ def APP(self, marker):
     if "dpi" not in self.info and "exif" in self.info:
         exif = self._getexif()
         try:
+            resolution_unit = exif[0x0128]
             x_resolution = exif[0x011A]
             dpi = x_resolution[0] / x_resolution[1]
+            if resolution_unit == 3: # cm
+                # 1 dpcm = 2.54 dpi
+                dpi *= 2.54
             self.info["dpi"] = dpi, dpi
         except KeyError:
             self.info["dpi"] = 72, 72
