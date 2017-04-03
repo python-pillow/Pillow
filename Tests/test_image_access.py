@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from helper import unittest, PillowTestCase, hopper, on_appveyor
 
 try:
     from PIL import PyAccess
@@ -7,7 +7,8 @@ except ImportError:
     pass
 
 from PIL import Image
-
+import sys
+import os
 
 class AccessTest(PillowTestCase):
     # initial value
@@ -248,6 +249,67 @@ class TestCffi(AccessTest):
                 # pixels can contain garbage if image is released
                 self.assertEqual(px[i, 0], 0)
 
+
+class TestEmbeddable(unittest.TestCase):
+    @unittest.skipIf(not sys.platform.startswith('win32') or
+                     sys.version_info[:2] in ((3, 3), (3, 4)) or
+                     on_appveyor(),   # failing on appveyor when run from
+                                      # subprocess, not from shell
+                     "requires Python 2.7 or >=3.5 for Windows")
+    def test_embeddable(self):
+        import subprocess
+        import ctypes
+        import setuptools
+        from distutils import ccompiler, sysconfig
+
+        with open('embed_pil.c', 'w') as fh:
+            fh.write("""
+#include "Python.h"
+
+int main(int argc, char* argv[])
+{
+    char *home = "%s";
+#if PY_MAJOR_VERSION >= 3
+    wchar_t *whome = Py_DecodeLocale(home, NULL);
+    Py_SetPythonHome(whome);
+#else
+    Py_SetPythonHome(home);
+#endif
+
+    Py_InitializeEx(0);
+    Py_DECREF(PyImport_ImportModule("PIL.Image"));
+    Py_Finalize();
+
+    Py_InitializeEx(0);
+    Py_DECREF(PyImport_ImportModule("PIL.Image"));
+    Py_Finalize();
+
+#if PY_MAJOR_VERSION >= 3
+    PyMem_RawFree(whome);
+#endif
+
+    return 0;
+}
+        """ % sys.prefix.replace('\\', '\\\\'))
+
+        compiler = ccompiler.new_compiler()
+        compiler.add_include_dir(sysconfig.get_python_inc())
+        
+        libdir = sysconfig.get_config_var('LIBDIR') or sysconfig.get_python_inc().replace('include', 'libs')
+        print (libdir)
+        compiler.add_library_dir(libdir)
+        objects = compiler.compile(['embed_pil.c'])
+        compiler.link_executable(objects, 'embed_pil')
+
+        env = os.environ.copy()
+        env["PATH"] = sys.prefix + ';' + env["PATH"]
+        
+        # do not display the Windows Error Reporting dialog
+        ctypes.windll.kernel32.SetErrorMode(0x0002)
+        
+        process = subprocess.Popen(['embed_pil.exe'], env=env)
+        process.communicate()
+        self.assertEqual(process.returncode, 0)
 
 if __name__ == '__main__':
     unittest.main()
