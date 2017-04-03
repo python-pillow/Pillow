@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-4.1.0 (unreleased)
+4.1.0 (2017-04-03)
 ------------------
 
 - Close files after loading if possible #2330
