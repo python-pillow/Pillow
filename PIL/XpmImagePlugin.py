@@ -116,8 +116,6 @@ class XpmImageFile(ImageFile.ImageFile):
         for i in range(ysize):
             s[i] = self.fp.readline()[1:xsize+1].ljust(xsize)
 
-        self.fp = None
-
         return b"".join(s)
 
 #

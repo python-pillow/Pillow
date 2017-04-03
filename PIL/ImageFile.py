@@ -88,10 +88,13 @@ class ImageFile(Image.Image):
             # filename
             self.fp = open(fp, "rb")
             self.filename = fp
+            self._exclusive_fp = True
         else:
             # stream
             self.fp = fp
             self.filename = filename
+            # can be overridden
+            self._exclusive_fp = None
 
         try:
             self._open()
@@ -100,6 +103,9 @@ class ImageFile(Image.Image):
                 KeyError,  # unsupported mode
                 EOFError,  # got header but not the first frame
                 struct.error) as v:
+            # close the file only if we have opened it this constructor
+            if self._exclusive_fp:
+                self.fp.close()
             raise SyntaxError(v)
 
         if not self.mode or self.size[0] <= 0:
@@ -115,6 +121,8 @@ class ImageFile(Image.Image):
 
         # raise exception if something's wrong.  must be called
         # directly after open, and closes file when finished.
+        if self._exclusive_fp:
+            self.fp.close()
         self.fp = None
 
     def load(self):
@@ -234,13 +242,15 @@ class ImageFile(Image.Image):
         self.tile = []
         self.readonly = readonly
 
-        self.fp = None  # might be shared
+        self.load_end()
+
+        if self._exclusive_fp and self._close_exclusive_fp_after_loading:
+            self.fp.close()
+        self.fp = None
 
         if not self.map and not LOAD_TRUNCATED_IMAGES and err_code < 0:
             # still raised if decoder fails to return anything
             raise_ioerror(err_code)
-
-        self.load_end()
 
         return Image.Image.load(self)
 

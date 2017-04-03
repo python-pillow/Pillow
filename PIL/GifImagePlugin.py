@@ -47,6 +47,8 @@ class GifImageFile(ImageFile.ImageFile):
 
     format = "GIF"
     format_description = "Compuserve GIF"
+    _close_exclusive_fp_after_loading = False
+    
     global_palette = None
 
     def data(self):

@@ -1,6 +1,7 @@
 import logging
 from io import BytesIO
 import struct
+import sys
 
 from helper import unittest, PillowTestCase, hopper, py3
 
@@ -468,6 +469,44 @@ class TestFileTiff(PillowTestCase):
 
         self.assertEqual(b'Dummy value', reloaded.info['icc_profile'])
 
+    def test_close_on_load(self):
+        # same as test_fd_leak, but runs on unixlike os
+        tmpfile = self.tempfile("temp.tif")
+
+        with Image.open("Tests/images/uint16_1_4660.tif") as im:
+            im.save(tmpfile)
+
+        im = Image.open(tmpfile)
+        fp = im.fp
+        self.assertFalse(fp.closed)
+        im.load()
+        self.assertTrue(fp.closed)
+
+        
+
+@unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
+class TestFileTiffW32(PillowTestCase):
+    def test_fd_leak(self):
+        tmpfile = self.tempfile("temp.tif")
+        import os
+
+        # this is an mmaped file. 
+        with Image.open("Tests/images/uint16_1_4660.tif") as im:
+            im.save(tmpfile)
+
+        im = Image.open(tmpfile)
+        fp = im.fp
+        self.assertFalse(fp.closed)
+        self.assertRaises(Exception, lambda: os.remove(tmpfile))
+        im.load()
+        self.assertTrue(fp.closed)
+
+        # this closes the mmap
+        im.close()
+        
+        # this should not fail, as load should have closed the file pointer,
+        # and close should have closed the mmap
+        os.remove(tmpfile)
 
 if __name__ == '__main__':
     unittest.main()

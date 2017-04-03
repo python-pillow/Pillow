@@ -497,6 +497,7 @@ class Image(object):
     """
     format = None
     format_description = None
+    _close_exclusive_fp_after_loading = True
 
     def __init__(self):
         # FIXME: take "new" parameters / other image?
@@ -551,13 +552,24 @@ class Image(object):
         """
         try:
             self.fp.close()
+            self.fp = None
         except Exception as msg:
             logger.debug("Error closing: %s", msg)
 
+        if getattr(self, 'map', None):
+            self.map = None
+    
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
         self.im = deferred_error(ValueError("Operation on closed image"))
+
+    if sys.version_info >= (3,4,0):
+        def __del__(self):
+            if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp') 
+                and self.fp and self._exclusive_fp):
+                self.fp.close()
+            self.fp = None
 
     def _copy(self):
         self.load()
@@ -2382,6 +2394,7 @@ def open(fp, mode="r"):
     if mode != "r":
         raise ValueError("bad mode %r" % mode)
 
+    exclusive_fp = False
     filename = ""
     if isPath(fp):
         filename = fp
@@ -2395,11 +2408,13 @@ def open(fp, mode="r"):
 
     if filename:
         fp = builtins.open(filename, "rb")
+        exclusive_fp = True
 
     try:
         fp.seek(0)
     except (AttributeError, io.UnsupportedOperation):
         fp = io.BytesIO(fp.read())
+        exclusive_fp = True
 
     prefix = fp.read(16)
 
@@ -2428,8 +2443,11 @@ def open(fp, mode="r"):
             im = _open_core(fp, filename, prefix)
 
     if im:
+        im._exclusive_fp = exclusive_fp
         return im
 
+    if exclusive_fp:
+        fp.close()
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
 

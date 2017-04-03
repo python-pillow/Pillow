@@ -97,6 +97,7 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     format = "SPIDER"
     format_description = "Spider 2D image"
+    _close_exclusive_fp_after_loading = False
 
     def _open(self):
         # check header

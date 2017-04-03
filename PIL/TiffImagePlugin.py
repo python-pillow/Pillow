@@ -884,6 +884,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
     format = "TIFF"
     format_description = "Adobe TIFF"
+    _close_exclusive_fp_after_loading = False
 
     def _open(self):
         "Open the first image in a TIFF file"
@@ -969,6 +970,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
+        self.__next = self.tag_v2.next
         # fill the legacy tag/ifd entries
         self.tag = self.ifd = ImageFileDirectory_v1.from_v2(self.tag_v2)
         self.__frame = frame
@@ -1007,6 +1009,12 @@ class TiffImageFile(ImageFile.ImageFile):
         if self.use_load_libtiff:
             return self._load_libtiff()
         return super(TiffImageFile, self).load()
+
+    def load_end(self):
+        # allow closing if we're on the first frame, there's no next
+        # This is the ImageFile.load path only, libtiff specific below.
+        if self.__frame == 0 and not self.__next:
+            self._close_exclusive_fp_after_loading = True
 
     def _load_libtiff(self):
         """ Overload method triggered when we detect a compressed tiff
@@ -1085,15 +1093,13 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tile = []
         self.readonly = 0
         # libtiff closed the fp in a, we need to close self.fp, if possible
-        if hasattr(self.fp, 'close'):
-            if not self.__next:
+        if self._exclusive_fp:
+            if self.__frame == 0 and not self.__next:
                 self.fp.close()
-        self.fp = None  # might be shared
+                self.fp = None  # might be shared
 
         if err < 0:
             raise IOError(err)
-
-        self.load_end()
 
         return Image.Image.load(self)
 

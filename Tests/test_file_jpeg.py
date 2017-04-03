@@ -3,6 +3,7 @@ from helper import djpeg_available, cjpeg_available
 
 from io import BytesIO
 import os
+import sys
 
 from PIL import Image
 from PIL import ImageFile
@@ -528,6 +529,28 @@ class TestFileJpeg(PillowTestCase):
         # http://www.exiv2.org/tags.html
         self.assertEqual(im.info.get("dpi"), (72, 72))
 
+
+@unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
+class TestFileCloseW32(PillowTestCase):
+    def setUp(self):
+        if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
+            self.skipTest("jpeg support not available")
+            
+    def test_fd_leak(self):
+        tmpfile = self.tempfile("temp.jpg")
+        import os
+
+        with Image.open("Tests/images/hopper.jpg") as im:
+            im.save(tmpfile)
+
+        im = Image.open(tmpfile)
+        fp = im.fp
+        self.assertFalse(fp.closed)
+        self.assertRaises(Exception, lambda: os.remove(tmpfile))
+        im.load()
+        self.assertTrue(fp.closed)
+        # this should not fail, as load should have closed the file. 
+        os.remove(tmpfile)
 
 if __name__ == '__main__':
     unittest.main()

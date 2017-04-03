@@ -109,6 +109,7 @@ class ImImageFile(ImageFile.ImageFile):
 
     format = "IM"
     format_description = "IFUNC Image Memory"
+    _close_exclusive_fp_after_loading = False
 
     def _open(self):
 

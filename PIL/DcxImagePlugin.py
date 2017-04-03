@@ -41,7 +41,8 @@ class DcxImageFile(PcxImageFile):
 
     format = "DCX"
     format_description = "Intel DCX"
-
+    _close_exclusive_fp_after_loading = False
+    
     def _open(self):
 
         # Header

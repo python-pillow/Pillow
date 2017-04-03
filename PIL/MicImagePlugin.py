@@ -39,6 +39,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
     format = "MIC"
     format_description = "Microsoft Image Composer"
+    _close_exclusive_fp_after_loading = False
 
     def _open(self):
 
