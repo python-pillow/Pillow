@@ -88,9 +88,12 @@ Registering plugins
     ignore them.
 
 .. autofunction:: register_open
+.. autofunction:: register_decoder
 .. autofunction:: register_mime
 .. autofunction:: register_save
+.. autofunction:: register_encoder
 .. autofunction:: register_extension
+
 
 The Image Class
 ---------------
@@ -135,6 +138,7 @@ ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
 .. automethod:: PIL.Image.Image.putpixel
 .. automethod:: PIL.Image.Image.quantize
 .. automethod:: PIL.Image.Image.resize
+.. automethod:: PIL.Image.Image.remap_palette
 .. automethod:: PIL.Image.Image.rotate
 .. automethod:: PIL.Image.Image.save
 .. automethod:: PIL.Image.Image.seek
