@@ -4,7 +4,13 @@ Changelog (Pillow)
 4.1.0 (unreleased)
 ------------------
 
-- Fetch DPI from EXIF if not specified in JPEG header #2449
+- Close files after loading if possible #2330
+  [homm, wiredfool]
+
+- Fix Image Access to be reloadable when embedding the Python interpreter #2296
+  [wiredfool, cgohlke]
+
+- Fetch DPI from EXIF if not specified in JPEG header #2449, #2472
   [hugovk]
 
 - Removed winbuild checksum verification #2468
