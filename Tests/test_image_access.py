@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from helper import unittest, PillowTestCase, hopper, on_appveyor
 
 try:
     from PIL import PyAccess
@@ -252,7 +252,9 @@ class TestCffi(AccessTest):
 
 class TestEmbeddable(unittest.TestCase):
     @unittest.skipIf(not sys.platform.startswith('win32') or
-                     sys.version_info[:2] in ((3, 3), (3, 4)),
+                     sys.version_info[:2] in ((3, 3), (3, 4)) or
+                     on_appveyor(),   # failing on appveyor when run from
+                                      # subprocess, not from shell
                      "requires Python 2.7 or >=3.5 for Windows")
     def test_embeddable(self):
         import subprocess
