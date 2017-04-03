@@ -490,6 +490,7 @@ class TestFileTiffW32(PillowTestCase):
         tmpfile = self.tempfile("temp.tif")
         import os
 
+        # this is an mmaped file. 
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
             im.save(tmpfile)
 
@@ -499,7 +500,12 @@ class TestFileTiffW32(PillowTestCase):
         self.assertRaises(Exception, lambda: os.remove(tmpfile))
         im.load()
         self.assertTrue(fp.closed)
-        # this should not fail, as load should have closed the file. 
+
+        # this closes the mmap
+        im.close()
+        
+        # this should not fail, as load should have closed the file pointer,
+        # and close should have closed the mmap
         os.remove(tmpfile)
 
 if __name__ == '__main__':
