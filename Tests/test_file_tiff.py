@@ -469,8 +469,8 @@ class TestFileTiff(PillowTestCase):
 
         self.assertEqual(b'Dummy value', reloaded.info['icc_profile'])
 
-    def test_close_on_load(self):
-        # same as test_fd_leak, but runs on unixlike os
+    def test_close_on_load_exclusive(self):
+        # similar to test_fd_leak, but runs on unixlike os
         tmpfile = self.tempfile("temp.tif")
 
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
@@ -481,6 +481,19 @@ class TestFileTiff(PillowTestCase):
         self.assertFalse(fp.closed)
         im.load()
         self.assertTrue(fp.closed)
+
+    def test_close_on_load_nonexclusive(self):
+        tmpfile = self.tempfile("temp.tif")
+        
+        with Image.open("Tests/images/uint16_1_4660.tif") as im:
+            im.save(tmpfile)
+
+        f = open(tmpfile, 'rb')
+        im = Image.open(f)
+        fp = im.fp
+        self.assertFalse(fp.closed)
+        im.load()
+        self.assertFalse(fp.closed)
 
         
 
