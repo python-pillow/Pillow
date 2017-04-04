@@ -360,7 +360,7 @@ These platforms are built and tested for every change.
 | Windows Server 2012 R2           | 2.7,3.3,3.4                   |x86, x86-64            |
 +----------------------------------+-------------------------------+-----------------------+
 
-* Mac OS X CI is not run for every commit, but is run for every release.
+\* Mac OS X CI is not run for every commit, but is run for every release.
 
 Other Platforms
 ^^^^^^^^^^^^^^^
