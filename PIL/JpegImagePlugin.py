@@ -123,7 +123,10 @@ def APP(self, marker):
         try:
             resolution_unit = exif[0x0128]
             x_resolution = exif[0x011A]
-            dpi = x_resolution[0] / x_resolution[1]
+            try:
+                dpi = x_resolution[0] / x_resolution[1]
+            except TypeError:
+                dpi = x_resolution
             if resolution_unit == 3: # cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
