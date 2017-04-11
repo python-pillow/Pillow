@@ -501,13 +501,23 @@ class TestFileJpeg(PillowTestCase):
         reloaded.load()
         self.assertEqual(im.info['dpi'], reloaded.info['dpi'])
 
-    def test_dpi_from_exif(self):
+    def test_dpi_tuple_from_exif(self):
         # Arrange
         # This Photoshop CC 2017 image has DPI in EXIF not metadata
+        # EXIF XResolution is (2000000, 10000)
         im = Image.open("Tests/images/photoshop-200dpi.jpg")
 
         # Act / Assert
         self.assertEqual(im.info.get("dpi"), (200, 200))
+
+    def test_dpi_int_from_exif(self):
+        # Arrange
+        # This image has DPI in EXIF not metadata
+        # EXIF XResolution is 72
+        im = Image.open("Tests/images/exif-72dpi-int.jpg")
+
+        # Act / Assert
+        self.assertEqual(im.info.get("dpi"), (72, 72))
 
     def test_dpi_from_dpcm_exif(self):
         # Arrange
@@ -535,7 +545,7 @@ class TestFileCloseW32(PillowTestCase):
     def setUp(self):
         if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
             self.skipTest("jpeg support not available")
-            
+
     def test_fd_leak(self):
         tmpfile = self.tempfile("temp.jpg")
         import os
@@ -549,8 +559,9 @@ class TestFileCloseW32(PillowTestCase):
         self.assertRaises(Exception, lambda: os.remove(tmpfile))
         im.load()
         self.assertTrue(fp.closed)
-        # this should not fail, as load should have closed the file. 
+        # this should not fail, as load should have closed the file.
         os.remove(tmpfile)
+
 
 if __name__ == '__main__':
     unittest.main()
