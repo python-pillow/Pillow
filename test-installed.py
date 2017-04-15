@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import nose
 import os
 import sys
