@@ -380,7 +380,7 @@ def init():
     """
 
     global _initialized
-    if _initialized >= 2:
+    if _initialized == 2:
         return 0
 
     for plugin in _plugins:
