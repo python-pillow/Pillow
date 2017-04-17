@@ -803,7 +803,7 @@ class Image(object):
         the image after using this method, you must reopen the image
         file.
         """
-        pass
+        raise NotImplementedError("File verification not yet implemented")
 
     def convert(self, mode=None, matrix=None, dither=None,
                 palette=WEB, colors=256):
