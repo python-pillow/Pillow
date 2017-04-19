@@ -1044,6 +1044,9 @@ class Image(object):
 
         x0, y0, x1, y1 = map(int, map(round, box))
 
+        if x0 == 0 and y0 == 0 and (x1, y1) == self.size:
+            return self.copy()
+
         if x1 < x0:
             x1 = x0
         if y1 < y0:
@@ -1532,16 +1535,16 @@ class Image(object):
     def remap_palette(self, dest_map, source_palette=None):
         """
         Rewrites the image to reorder the palette.
-        
+
         :param dest_map: A list of indexes into the original palette.
            e.g. [1,0] would swap a two item palette, and list(range(255))
            is the identity transform.
         :param source_palette: Bytes or None.
-        :returns:  An :py:class:`~PIL.Image.Image` object. 
-        
+        :returns:  An :py:class:`~PIL.Image.Image` object.
+
         """
         from . import ImagePalette
-        
+
         if self.mode not in ("L", "P"):
             raise ValueError("illegal image mode")
 
@@ -1550,7 +1553,7 @@ class Image(object):
                 source_palette = self.im.getpalette("RGB")[:768]
             else:  # L-mode
                 source_palette = bytearray(i//3 for i in range(768))
-           
+
 
         palette_bytes = b""
         new_positions = [0]*256
@@ -1603,8 +1606,8 @@ class Image(object):
                                                  size=len(palette_bytes))
 
         return m_im
-        
-        
+
+
 
     def resize(self, size, resample=NEAREST):
         """
@@ -2633,7 +2636,7 @@ def register_decoder(name, decoder):
     :param decoder: A callable(mode, args) that returns an
                     ImageFile.PyDecoder object
 
-    .. versionadded:: 4.1.0                
+    .. versionadded:: 4.1.0
     """
     DECODERS[name] = decoder
 
