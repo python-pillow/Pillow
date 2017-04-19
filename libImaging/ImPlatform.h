@@ -10,7 +10,7 @@
 #include "Python.h"
 
 /* Workaround issue #2479 */
-#if PY_VERSION_HEX < 0x03070000 && defined(PySlice_GetIndicesEx)
+#if PY_VERSION_HEX < 0x03070000 && defined(PySlice_GetIndicesEx) && !defined(PYPY_VERSION)
 #undef PySlice_GetIndicesEx
 #endif
 
