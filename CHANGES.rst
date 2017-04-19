@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Return copy on Image crop if crop dimensions match the image #2471
+  [radarhere]
+
 - Test: Optimize CI speed #2464, #2466
   [hugovk]
 
