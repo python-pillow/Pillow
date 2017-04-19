@@ -9,6 +9,11 @@
 
 #include "Python.h"
 
+/* Workaround issue #2479 */
+#if PY_VERSION_HEX < 0x03070000 && defined(PySlice_GetIndicesEx)
+#undef PySlice_GetIndicesEx
+#endif
+
 /* Check that we have an ANSI compliant compiler */
 #ifndef HAVE_PROTOTYPES
 #error Sorry, this library requires support for ANSI prototypes.
