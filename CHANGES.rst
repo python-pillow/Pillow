@@ -1,6 +1,18 @@
 Changelog (Pillow)
 ==================
 
+4.2.0 (unreleased)
+------------------
+
+- Test: Optimize CI speed #2464, #2466
+  [hugovk]
+
+- Docs: Removed broken download counter badge #2487
+  [hugovk]
+
+- Docs: Fixed rst syntax error #2477
+  [thebjorn]
+  
 4.1.0 (2017-04-03)
 ------------------
 
