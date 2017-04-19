@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Fix for file with DPI in EXIF but not metadata, and XResolution is an int rather than tuple #2484
+  [hugovk]
+
 - Return copy on Image crop if crop dimensions match the image #2471
   [radarhere]
 
