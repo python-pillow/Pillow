@@ -5,7 +5,7 @@ notifications:
 
 # Run slow PyPy* first, to give them a headstart and reduce waiting time.
 # Run latest 3.x and 2.x next, to get quick compatibility results.
-# Then run the remainder.
+# Then run the remainder, with fastest Docker jobs last.
 
 matrix:
   fast_finish: true
@@ -14,17 +14,17 @@ matrix:
     - python: "pypy3"
     - python: '3.6'
     - python: '2.7'
+    - python:  "2.7_with_system_site_packages" # For PyQt4
+    - python: '3.5'
+    - python: '3.4'
+    - python: '3.3'
     - env: DOCKER="alpine"
     - env: DOCKER="arch" # contains PyQt5
     - env: DOCKER="ubuntu-trusty-x86"
     - env: DOCKER="ubuntu-xenial-amd64"
     - env: DOCKER="ubuntu-precise-amd64"
     - env: DOCKER="debian-stretch-x86"
-    - python:  "2.7_with_system_site_packages" # For PyQt4
-    - python: '3.5'
-    - python: '3.4'
-    - python: '3.3'
-  
+
 dist: trusty
 
 sudo: required
@@ -53,7 +53,7 @@ script:
 
 after_success:
   - .travis/after_success.sh
-  
+
 after_failure:
   - |
       if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
