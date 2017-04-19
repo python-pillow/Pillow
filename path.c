@@ -27,6 +27,7 @@
 
 
 #include "Python.h"
+#include "Imaging.h"
 
 #include <math.h>
 

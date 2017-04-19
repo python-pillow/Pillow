@@ -1,5 +1,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include "Imaging.h"
 #include "py3.h"
 #include <webp/encode.h>
 #include <webp/decode.h>
