@@ -71,8 +71,6 @@
  * See the README file for information on usage and redistribution.
  */
 
-#define PILLOW_VERSION "4.2.0.dev0"
-
 #include "Python.h"
 
 #ifdef HAVE_LIBZ
