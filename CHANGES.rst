@@ -1,6 +1,22 @@
 Changelog (Pillow)
 ==================
 
+4.1.1 (2017-04-20)
+------------------
+
+- Undef PySlice_GetIndicesEx, see https://bugs.python.org/issue29943 #2493
+  [cgohlke]
+
+- Fix for file with DPI in EXIF but not metadata, and XResolution is an int rather than tuple #2484
+  [hugovk]
+
+- Docs: Removed broken download counter badge #2487
+  [hugovk]
+
+- Docs: Fixed rst syntax error #2477
+  [thebjorn]
+
+
 4.1.0 (2017-04-03)
 ------------------
 
