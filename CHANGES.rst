@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Undef PySlice_GetIndicesEx, see https://bugs.python.org/issue29943 #2493
+  [cgohlke]
+
 - Fix for file with DPI in EXIF but not metadata, and XResolution is an int rather than tuple #2484
   [hugovk]
 
