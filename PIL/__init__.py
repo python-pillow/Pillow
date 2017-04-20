@@ -12,7 +12,7 @@
 # ;-)
 
 VERSION = '1.1.7'  # PIL version
-PILLOW_VERSION = '4.1.0'  # Pillow
+PILLOW_VERSION = '4.1.1'  # Pillow
 
 __version__ = PILLOW_VERSION
 
