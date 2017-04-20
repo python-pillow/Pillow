@@ -25,7 +25,7 @@ class TestFileSgi(PillowTestCase):
         # Created with ImageMagick:
         # convert transparent.png -compress None transparent.sgi
         test_file = "Tests/images/transparent.sgi"
-        
+
         im = Image.open(test_file)
         target = Image.open('Tests/images/transparent.png')
         self.assert_image_equal(im, target)
@@ -54,7 +54,6 @@ class TestFileSgi(PillowTestCase):
 
         for mode in ('L', 'RGB', 'RGBA'):
             roundtrip(hopper(mode))
-
 
 
 if __name__ == '__main__':

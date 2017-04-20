@@ -307,7 +307,7 @@ def _normalize_mode(im, initial_call=False):
     UNDONE: What is the point of mucking with the initial call palette, for
     an image that shouldn't have a palette, or it would be a mode 'P' and
     get returned in the RAWMODE clause.
-    
+
     :param im: Image object
     :param initial_call: Default false, set to true for a single frame.
     :returns: Image object
@@ -325,6 +325,7 @@ def _normalize_mode(im, initial_call=False):
             return im.convert("P")
     return im.convert("L")
 
+
 def _normalize_palette(im, palette, info):
     """
     Normalizes the palette for image.
@@ -334,7 +335,7 @@ def _normalize_palette(im, palette, info):
 
     :param im: Image object
     :param palette: bytes object containing the source palette, or ....
-    :param info: encoderinfo 
+    :param info: encoderinfo
     :returns: Image object
     """
     source_palette = None
@@ -347,7 +348,7 @@ def _normalize_palette(im, palette, info):
                                 zip(palette.palette[:256],
                                     palette.palette[256:512],
                                     palette.palette[512:768])))
-            
+
     if im.mode == "P":
         if not source_palette:
             source_palette = im.im.getpalette("RGB")[:768]
@@ -363,6 +364,7 @@ def _normalize_palette(im, palette, info):
 
     im.palette.palette = source_palette
     return im
+
 
 def _write_single_frame(im, fp, palette):
     im_out = _normalize_mode(im, True)
@@ -382,6 +384,7 @@ def _write_single_frame(im, fp, palette):
                                   RAWMODE[im_out.mode])])
 
     fp.write(b"\0")  # end of image data
+
 
 def _write_multiple_frames(im, fp, palette):
 
@@ -418,9 +421,9 @@ def _write_multiple_frames(im, fp, palette):
             else:
                 bbox = None
             im_frames.append({
-                'im':im_frame,
-                'bbox':bbox,
-                'encoderinfo':encoderinfo
+                'im': im_frame,
+                'bbox': bbox,
+                'encoderinfo': encoderinfo
             })
 
     if len(im_frames) > 1:
@@ -440,6 +443,7 @@ def _write_multiple_frames(im, fp, palette):
                 offset = frame_data['bbox'][:2]
             _write_frame_data(fp, im_frame, offset, frame_data['encoderinfo'])
         return True
+
 
 def _save_all(im, fp, filename):
     _save(im, fp, filename, save_all=True)
@@ -593,6 +597,7 @@ def _save_netpbm(im, fp, filename):
 # cases where it took lots of memory and time previously.
 _FORCE_OPTIMIZE = False
 
+
 def _get_optimize(im, info):
     """
     Palette optimization is a potentially expensive operation.
@@ -624,8 +629,9 @@ def _get_optimize(im, info):
                     used_palette_colors.append(i)
 
             if optimise or (len(used_palette_colors) <= 128 and
-                max(used_palette_colors) > len(used_palette_colors)):
+               max(used_palette_colors) > len(used_palette_colors)):
                 return used_palette_colors
+
 
 def _get_color_table_size(palette_bytes):
     # calculate the palette size for the header
@@ -634,6 +640,7 @@ def _get_color_table_size(palette_bytes):
     if color_table_size < 0:
         color_table_size = 0
     return color_table_size
+
 
 def _get_header_palette(palette_bytes):
     """
@@ -652,14 +659,16 @@ def _get_header_palette(palette_bytes):
         palette_bytes += o8(0) * 3 * actual_target_size_diff
     return palette_bytes
 
-def _get_palette_bytes(im):
-     """
-     Gets the palette for inclusion in the gif header
 
-     :param im: Image object
-     :returns: Bytes, len<=768 suitable for inclusion in gif header
-     """
-     return im.palette.palette
+def _get_palette_bytes(im):
+    """
+    Gets the palette for inclusion in the gif header
+
+    :param im: Image object
+    :returns: Bytes, len<=768 suitable for inclusion in gif header
+    """
+    return im.palette.palette
+
 
 def _get_global_header(im, info):
     """Return a list of strings representing a GIF header"""
@@ -671,7 +680,7 @@ def _get_global_header(im, info):
     for extensionKey in ["transparency", "duration", "loop", "comment"]:
         if info and extensionKey in info:
             if ((extensionKey == "duration" and info[extensionKey] == 0) or
-                (extensionKey == "comment" and not (1 <= len(info[extensionKey]) <= 255))):
+               (extensionKey == "comment" and not (1 <= len(info[extensionKey]) <= 255))):
                 continue
             version = b"89a"
             break
@@ -693,11 +702,12 @@ def _get_global_header(im, info):
         # size of global color table + global color table flag
         o8(color_table_size + 128),   # packed fields
         # background + reserved/aspect
-        o8(background) + o8(0), 
+        o8(background) + o8(0),
 
         # Global Color Table
         _get_header_palette(palette_bytes)
     ]
+
 
 def _write_frame_data(fp, im_frame, offset, params):
     try:
@@ -716,6 +726,7 @@ def _write_frame_data(fp, im_frame, offset, params):
 # --------------------------------------------------------------------
 # Legacy GIF utilities
 
+
 def getheader(im, palette=None, info=None):
     """
     Legacy Method to get Gif data from image.
@@ -724,7 +735,7 @@ def getheader(im, palette=None, info=None):
 
     :param im: Image object
     :param palette: bytes object containing the source palette, or ....
-    :param info: encoderinfo 
+    :param info: encoderinfo
     :returns: tuple of(list of header items, optimized palette)
 
     """
@@ -733,7 +744,7 @@ def getheader(im, palette=None, info=None):
     if info is None:
         info = {}
 
-    if not "background" in info and "background" in im.info:
+    if "background" not in info and "background" in im.info:
         info["background"] = im.info["background"]
 
     im_mod = _normalize_palette(im, palette, info)
@@ -742,6 +753,7 @@ def getheader(im, palette=None, info=None):
     header = _get_global_header(im, info)
 
     return header, used_palette_colors
+
 
 # To specify duration, add the time in milliseconds to getdata(),
 # e.g. getdata(im_frame, duration=1000)

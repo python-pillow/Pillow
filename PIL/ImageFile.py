@@ -160,7 +160,7 @@ class ImageFile(Image.Image):
             # try memory mapping
             decoder_name, extents, offset, args = self.tile[0]
             if decoder_name == "raw" and len(args) >= 3 and args[0] == self.mode \
-                   and args[0] in Image._MAPMODES:
+               and args[0] in Image._MAPMODES:
                 try:
                     if hasattr(Image.core, "map"):
                         # use built-in mapper  WIN32 only
@@ -199,7 +199,7 @@ class ImageFile(Image.Image):
 
             for decoder_name, extents, offset, args in self.tile:
                 decoder = Image._getdecoder(self.mode, decoder_name,
-                                      args, self.decoderconfig)
+                                            args, self.decoderconfig)
                 seek(offset)
                 decoder.setimage(self.im, extents)
                 if decoder.pulls_fd:
@@ -540,6 +540,7 @@ class PyCodecState(object):
         return (self.xoff, self.yoff,
                 self.xoff+self.xsize, self.yoff+self.ysize)
 
+
 class PyDecoder(object):
     """
     Python implementation of a format decoder. Override this class and
@@ -565,7 +566,7 @@ class PyDecoder(object):
         :returns: None
         """
         self.args = args
-    
+
     @property
     def pulls_fd(self):
         return self._pulls_fd
@@ -597,7 +598,7 @@ class PyDecoder(object):
         :returns: None
         """
         self.fd = fd
-        
+
     def setimage(self, im, extents=None):
         """
         Called from ImageFile to set the core output image for the decoder
@@ -607,7 +608,7 @@ class PyDecoder(object):
             for this tile
         :returns: None
         """
-        
+
         # following c code
         self.im = im
 
@@ -616,7 +617,6 @@ class PyDecoder(object):
         else:
             (x0, y0, x1, y1) = (0, 0, 0, 0)
 
-        
         if x0 == 0 and x1 == 0:
             self.state.xsize, self.state.ysize = self.im.size
         else:
@@ -627,11 +627,11 @@ class PyDecoder(object):
 
         if self.state.xsize <= 0 or self.state.ysize <= 0:
             raise ValueError("Size cannot be negative")
-        
+
         if (self.state.xsize + self.state.xoff > self.im.size[0] or
-            self.state.ysize + self.state.yoff > self.im.size[1]):
+           self.state.ysize + self.state.yoff > self.im.size[1]):
             raise ValueError("Tile cannot extend outside image")
-           
+
     def set_as_raw(self, data, rawmode=None):
         """
         Convenience method to set the internal image from a stream of raw data
@@ -641,13 +641,13 @@ class PyDecoder(object):
              it will default to the mode of the image
         :returns: None
         """
-        
+
         if not rawmode:
             rawmode = self.mode
         d = Image._getdecoder(self.mode, 'raw', (rawmode))
         d.setimage(self.im, self.state.extents())
         s = d.decode(data)
-                
+
         if s[0] >= 0:
             raise ValueError("not enough image data")
         if s[1] != 0:

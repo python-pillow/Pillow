@@ -616,7 +616,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     @_register_loader(5, 8)
     def load_rational(self, data, legacy_api=True):
         vals = self._unpack("{}L".format(len(data) // 4), data)
-        combine = lambda a, b: (a, b) if legacy_api else IFDRational(a, b)
+
+        def combine(a, b): return (a, b) if legacy_api else IFDRational(a, b)
         return tuple(combine(num, denom)
                      for num, denom in zip(vals[::2], vals[1::2]))
 
@@ -636,7 +637,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     @_register_loader(10, 8)
     def load_signed_rational(self, data, legacy_api=True):
         vals = self._unpack("{}l".format(len(data) // 4), data)
-        combine = lambda a, b: (a, b) if legacy_api else IFDRational(a, b)
+
+        def combine(a, b): return (a, b) if legacy_api else IFDRational(a, b)
         return tuple(combine(num, denom)
                      for num, denom in zip(vals[::2], vals[1::2]))
 
@@ -1136,7 +1138,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         sampleFormat = self.tag_v2.get(SAMPLEFORMAT, (1,))
         if (len(sampleFormat) > 1
-            and max(sampleFormat) == min(sampleFormat) == 1):
+           and max(sampleFormat) == min(sampleFormat) == 1):
             # SAMPLEFORMAT is properly per band, so an RGB image will
             # be (1,1,1).  But, we don't support per band pixel types,
             # and anything more than one band is a uint8. So, just
@@ -1174,7 +1176,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.info["dpi"] = xres, yres
             elif resunit == 3:  # dots per centimeter. convert to dpi
                 self.info["dpi"] = xres * 2.54, yres * 2.54
-            elif resunit is None: # used to default to 1, but now 2)
+            elif resunit is None:  # used to default to 1, but now 2)
                 self.info["dpi"] = xres, yres
                 # For backward compatibility, we also preserve the old behavior.
                 self.info["resolution"] = xres, yres
@@ -1492,6 +1494,7 @@ def _save(im, fp, filename):
         # just to access o32 and o16 (using correct byte order)
         im._debug_multipage = ifd
 
+
 class AppendingTiffWriter:
     fieldSizes = [
         0,  # None
@@ -1679,12 +1682,12 @@ class AppendingTiffWriter:
 
     def fixIFD(self):
         numTags = self.readShort()
-        #trace("fixing IFD at %X; number of tags: %u (0x%X)", self.f.tell()-2,
+        # trace("fixing IFD at %X; number of tags: %u (0x%X)", self.f.tell()-2,
         #      numTags, numTags)
 
         for i in range(numTags):
             tag, fieldType, count = struct.unpack(self.tagFormat, self.f.read(8))
-            #trace("  at %X: tag %u (0x%X), type %u, count %u", self.f.tell()-8,
+            # trace("  at %X: tag %u (0x%X), type %u, count %u", self.f.tell()-8,
             #      tag, tag, fieldType, count)
 
             fieldSize = self.fieldSizes[fieldType]
@@ -1736,6 +1739,7 @@ class AppendingTiffWriter:
                 self.rewriteLastShort(offset)
             else:
                 self.rewriteLastLong(offset)
+
 
 def _save_all(im, fp, filename):
     if not hasattr(im, "n_frames"):

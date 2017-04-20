@@ -1,6 +1,6 @@
 from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper
-from PIL import Image, ImageDraw, ImageMode
+from PIL import Image, ImageDraw
 
 
 class TestImagingResampleVulnerability(PillowTestCase):
@@ -244,8 +244,8 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         for y in range(i.size[1]):
             used_colors = {px[x, y][0] for x in range(i.size[0])}
             self.assertEqual(256, len(used_colors),
-                'All colors should present in resized image. '
-                'Only {} on {} line.'.format(len(used_colors), y))
+                            'All colors should present in resized image. '
+                            'Only {} on {} line.'.format(len(used_colors), y))
 
     @unittest.skip("current implementation isn't precise enough")
     def test_levels_rgba(self):
@@ -343,10 +343,10 @@ class CoreResampleCoefficientsTest(PillowTestCase):
         im = Image.new('RGBA', (1280, 1280), (0x20, 0x40, 0x60, 0xff))
         histogram = im.resize((256, 256), Image.BICUBIC).histogram()
 
-        self.assertEqual(histogram[0x100 * 0 + 0x20], 0x10000) # first channel
-        self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000) # second channel
-        self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000) # third channel
-        self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000) # fourth channel
+        self.assertEqual(histogram[0x100 * 0 + 0x20], 0x10000)  # first channel
+        self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000)  # second channel
+        self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000)  # third channel
+        self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000)  # fourth channel
 
 
 if __name__ == '__main__':

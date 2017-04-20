@@ -1,7 +1,8 @@
-from helper import unittest, PillowTestCase, hopper, distro
+from helper import unittest, PillowTestCase, hopper
 from test_imageqt import PillowQtTestCase, PillowQPixmapTestCase
 
 from PIL import ImageQt
+
 
 class TestFromQPixmap(PillowQPixmapTestCase, PillowTestCase):
 

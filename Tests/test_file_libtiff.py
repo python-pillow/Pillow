@@ -42,6 +42,7 @@ class LibTiffTestCase(PillowTestCase):
         out_bytes = io.BytesIO()
         im.save(out_bytes, format='tiff', compression='group4')
 
+
 class TestFileLibTiff(LibTiffTestCase):
 
     def test_g4_tiff(self):
@@ -532,7 +533,7 @@ class TestFileLibTiff(LibTiffTestCase):
         count = im.n_frames
         im.close()
         try:
-            os.remove(tmpfile) # Windows PermissionError here!
+            os.remove(tmpfile)  # Windows PermissionError here!
         except:
             self.fail("Should not get permission error here")
 

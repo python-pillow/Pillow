@@ -187,7 +187,6 @@ class TestImageConvert(PillowTestCase):
             else:
                 self.assert_image_similar(converted_im, target.split()[0], 1)
 
-
         matrix_convert('RGB')
         matrix_convert('L')
 

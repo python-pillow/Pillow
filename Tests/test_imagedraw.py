@@ -310,7 +310,6 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(im, im_floodfill)
         del draw
 
-
     @unittest.skipIf(hasattr(sys, 'pypy_version_info'),
                      "Causes fatal RPython error on PyPy")
     def test_floodfill_border(self):

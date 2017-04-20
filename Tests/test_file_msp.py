@@ -59,17 +59,17 @@ class TestFileMsp(PillowTestCase):
                  if os.path.splitext(f)[1] == '.msp')
         for path in files:
             self._assert_file_image_equal(path,
-                                          path.replace('.msp','.png'))
+                                          path.replace('.msp', '.png'))
 
     @unittest.skipIf(not os.path.exists(YA_EXTRA_DIR),
                      "Even More Extra image files not installed")
     def test_msp_v2(self):
         for f in os.listdir(YA_EXTRA_DIR):
-            if not '.MSP' in f: continue
+            if '.MSP' not in f:
+                continue
             path = os.path.join(YA_EXTRA_DIR, f)
             self._assert_file_image_equal(path,
-                                          path.replace('.MSP','.png'))
-
+                                          path.replace('.MSP', '.png'))
 
     def test_cannot_save_wrong_mode(self):
         # Arrange

@@ -20,7 +20,8 @@ if ImageQt.qt_is_installed:
             from PySide import QtGui
             from PySide.QtGui import QWidget, QHBoxLayout, QLabel, QApplication
             QT_VERSION = 4
-            
+
+
 class TestToQImage(PillowQtTestCase, PillowTestCase):
 
     def test_sanity(self):
@@ -45,19 +46,18 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
                 # libpng warning: Invalid color type/bit depth combination in IHDR
                 # libpng error: Invalid IHDR data
                 continue
-            
+
             # Test saving the file
             tempfile = self.tempfile('temp_{}.png'.format(mode))
             data.save(tempfile)
 
-            # Check that it actually worked. 
+            # Check that it actually worked.
             reloaded = Image.open(tempfile)
             # Gray images appear to come back in palette mode.
             # They're roughly equivalent
             if QT_VERSION == 4 and mode == 'L':
                 src = src.convert('P')
             self.assert_image_equal(reloaded, src)
-
 
     def test_segfault(self):
         PillowQtTestCase.setUp(self)

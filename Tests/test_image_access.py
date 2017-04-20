@@ -97,7 +97,6 @@ class TestImageGetPixel(AccessTest):
         with self.assertRaises(IndexError):
             im.getpixel((0, 0))
 
-
     def test_basic(self):
         for mode in ("1", "L", "LA", "I", "I;16", "I;16B", "F",
                      "P", "PA", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr"):

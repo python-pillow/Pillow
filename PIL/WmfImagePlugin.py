@@ -25,7 +25,6 @@ from . import Image, ImageFile
 from ._binary import i16le as word, si16le as short, i32le as dword, si32le as _long
 
 
-
 __version__ = "0.2"
 
 _handler = None
@@ -65,6 +64,7 @@ if hasattr(Image.core, "drawwmf"):
 #
 # --------------------------------------------------------------------
 # Read WMF file
+
 
 def _accept(prefix):
     return (

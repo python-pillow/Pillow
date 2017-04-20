@@ -36,7 +36,7 @@ class TestImageCopy(PillowTestCase):
             self.assertEqual(out.size, croppedSize)
 
     def test_copy_zero(self):
-        im = Image.new('RGB', (0,0))
+        im = Image.new('RGB', (0, 0))
         out = im.copy()
         self.assertEqual(out.mode, im.mode)
         self.assertEqual(out.size, im.size)

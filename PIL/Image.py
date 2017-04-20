@@ -558,16 +558,16 @@ class Image(object):
 
         if getattr(self, 'map', None):
             self.map = None
-    
+
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
         self.im = deferred_error(ValueError("Operation on closed image"))
 
-    if sys.version_info >= (3,4,0):
+    if sys.version_info >= (3, 4, 0):
         def __del__(self):
-            if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp') 
-                and self.fp and self._exclusive_fp):
+            if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp')
+               and self.fp and self._exclusive_fp):
                 self.fp.close()
             self.fp = None
 
@@ -1554,7 +1554,6 @@ class Image(object):
             else:  # L-mode
                 source_palette = bytearray(i//3 for i in range(768))
 
-
         palette_bytes = b""
         new_positions = [0]*256
 
@@ -1589,8 +1588,8 @@ class Image(object):
         m_im.palette = ImagePalette.ImagePalette("RGB",
                                                  palette=mapping_palette*3,
                                                  size=768)
-        #possibly set palette dirty, then
-        #m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
+        # possibly set palette dirty, then
+        # m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
         # or just force it.
         # UNDONE -- this is part of the general issue with palettes
         m_im.im.putpalette(*m_im.palette.getdata())
@@ -1606,8 +1605,6 @@ class Image(object):
                                                  size=len(palette_bytes))
 
         return m_im
-
-
 
     def resize(self, size, resample=NEAREST):
         """
@@ -2626,6 +2623,7 @@ def registered_extensions():
     if not bool(EXTENSION):
         init()
     return EXTENSION
+
 
 def register_decoder(name, decoder):
     """
