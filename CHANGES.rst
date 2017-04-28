@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-4.1.1 (2017-04-20)
+4.1.1 (2017-04-28)
 ------------------
 
 - Undef PySlice_GetIndicesEx, see https://bugs.python.org/issue29943 #2493
