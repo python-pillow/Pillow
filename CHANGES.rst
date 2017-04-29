@@ -4,16 +4,19 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
-- Undef PySlice_GetIndicesEx, see https://bugs.python.org/issue29943 #2493
-  [cgohlke]
-
-- Fix for file with DPI in EXIF but not metadata, and XResolution is an int rather than tuple #2484
-  [hugovk]
-
 - Return copy on Image crop if crop dimensions match the image #2471
   [radarhere]
 
 - Test: Optimize CI speed #2464, #2466
+  [hugovk]
+
+4.1.1 (2017-04-28)
+------------------
+
+- Undef PySlice_GetIndicesEx, see https://bugs.python.org/issue29943 #2493
+  [cgohlke]
+
+- Fix for file with DPI in EXIF but not metadata, and XResolution is an int rather than tuple #2484
   [hugovk]
 
 - Docs: Removed broken download counter badge #2487
@@ -21,7 +24,7 @@ Changelog (Pillow)
 
 - Docs: Fixed rst syntax error #2477
   [thebjorn]
-  
+
 4.1.0 (2017-04-03)
 ------------------
 
@@ -39,7 +42,7 @@ Changelog (Pillow)
 
 - Git: Set ContainerIO test file as binary #2469
   [cgohlke]
-  
+
 - Remove superfluous import of FixTk #2455
   [cgohlke)
 
@@ -48,7 +51,7 @@ Changelog (Pillow)
 
 - Pure Python Decoders, including Python decoder to fix for MSP images #1938
   [wiredfool, hugovk]
-  
+
 - Reorganized GifImagePlugin, fixes #2314.  #2374
   [radarhere, wiredfool]
 
@@ -57,10 +60,10 @@ Changelog (Pillow)
 
 - Test: Additional tests for BurfStub, Eps, Container, GribStub, IPTC, Wmf, XVThumb, ImageDraw, ImageMorph ImageShow #2425
   [radarhere]
- 
+
 - Health fixes #2437
   [radarhere]
-  
+
 - Test: Correctness tests ContainerIO, XVThumbImagePlugin, BufrStubImagePlugin, GribStubImagePlugin, FitsStubImagePlugin, Hdf5StubImagePlugin, PixarImageFile, PsdImageFile #2443, #2442, #2441, #2440, #2431, #2430, #2428, #2427
   [hugovk]
 
