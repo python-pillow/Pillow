@@ -11,7 +11,7 @@ disclosure or corruption.
 
 Specifically, when parameters from the image are passed into
 ``Image.core.map_buffer``, the size of the image was calculated with
-``xsize``*``ysize``*``bytes_per_pixel``. This will overflow if the
+``xsize`` * ``ysize`` * ``bytes_per_pixel``. This will overflow if the
 result is larger than SIZE_MAX. This is possible on a 32-bit system.
 
 Furthermore this ``size`` value was added to a potentially attacker
