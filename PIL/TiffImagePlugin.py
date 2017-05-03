@@ -541,7 +541,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
         dest = self._tags_v1 if legacy_api else self._tags_v2
 
-        if info.length == 1:
+        if info.length == 1 and len(values) > 0:
             if legacy_api and self.tagtype[tag] in [5, 10]:
                 values = values,
             dest[tag], = values
