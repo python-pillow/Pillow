@@ -2538,7 +2538,7 @@ Pre-fork
 
         import numpy, Image
 
-        im = Image.open('lena.jpg')
+        im = Image.open('hopper.jpg')
 
         a = numpy.asarray(im) # a is readonly
 
