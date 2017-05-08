@@ -182,7 +182,7 @@ class GifImageFile(ImageFile.ImageFile):
                     flags = i8(block[0])
                     if flags & 1:
                         self.info["transparency"] = i8(block[3])
-                    self.info["duration"] = i16(block[1:3]) * 10
+                    self.info["duration"] = i16(block[1:3])
 
                     # disposal method - find the value of bits 4 - 6
                     dispose_bits = 0b00011100 & flags
@@ -493,7 +493,7 @@ def _write_local_header(fp, im, offset, flags):
                 transparent_color_exists = False
 
     if "duration" in im.encoderinfo:
-        duration = int(im.encoderinfo["duration"] / 10)
+        duration = int(im.encoderinfo["duration"])
     else:
         duration = 0
     if transparent_color_exists or duration != 0:
