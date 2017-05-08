@@ -115,7 +115,7 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
 
     class MacViewer(Viewer):
-        format = "BMP"
+        format = "PNG"
 
         def get_command(self, file, **options):
             # on darwin open returns immediately resulting in the temp
@@ -142,6 +142,8 @@ else:
         return None
 
     class UnixViewer(Viewer):
+        format = "PNG"
+
         def show_file(self, file, **options):
             command, executable = self.get_command_ex(file, **options)
             command = "(%s %s; rm -f %s)&" % (command, quote(file),
