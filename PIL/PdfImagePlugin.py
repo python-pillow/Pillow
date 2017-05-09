@@ -23,6 +23,12 @@
 from . import Image, ImageFile
 from ._binary import i8
 import io
+import sys
+if sys.platform == "darwin":
+    from PIL._util import isPath
+    import os
+    import tempfile
+    import subprocess
 
 __version__ = "0.4"
 
@@ -247,8 +253,36 @@ def _save(im, fp, filename, save_all=False):
     if hasattr(fp, "flush"):
         fp.flush()
 
+def _accept(prefix):
+     return prefix[:5] == "%PDF-"
+
+def _convertToPng(fp, filename):
+    fh, filepath = tempfile.mkstemp('.png')
+    os.close(fh)
+    if isPath(fp):
+        # filename
+        filename = fp
+    else:
+        # stream
+        fh, filename = tempfile.mkstemp('.pdf')
+        os.write(fh, fp.read())
+        os.close(fh)
+    with open(os.devnull, 'w') as fp:
+        subprocess.call(['sips', '-s', 'format', 'png', filename, '--out', filepath], stdout=fp)
+
+    if os.stat(filepath).st_size == 0:
+        raise SyntaxError("PDF file could not be converted")
+
+    im = Image.open(filepath)
+    im.load()
+    os.unlink(filepath)
+    return im
+
 #
 # --------------------------------------------------------------------
+
+if sys.platform == "darwin":
+    Image.register_open("PDF", _convertToPng, _accept)
 
 Image.register_save("PDF", _save)
 Image.register_save_all("PDF", _save_all)
