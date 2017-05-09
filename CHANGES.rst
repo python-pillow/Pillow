@@ -3372,7 +3372,7 @@ Pre-fork
       to any other format, via a lookup table.  That table should
       contain 256 values for each band in the output image.
 
-    + Some file drivers (including FLI/FLC, GIF, and IM) accidently
+    + Some file drivers (including FLI/FLC, GIF, and IM) accidentally
       overwrote the offset method with an internal attribute.  All
       drivers have been updated to use private attributes where
       possible.
