@@ -37,7 +37,7 @@ if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "mas
     export $(cat .to_export_back)
     if [ "$BUILD_LEADER" = "YES" ]; then
         if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-            echo "All jobs succeded! Triggering macOS build..."
+            echo "All jobs succeeded! Triggering macOS build..."
             # Trigger a macOS build at the pillow-wheels repo
             ./build_children.sh
         else
