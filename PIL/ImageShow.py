@@ -71,7 +71,6 @@ class Viewer(object):
             base = Image.getmodebase(image.mode)
         if base != image.mode and image.mode != "1" and image.mode != "RGBA":
             image = image.convert(base)
-        image.info['showing'] = True
 
         return self.show_image(image, **options)
 
