@@ -592,7 +592,7 @@ class Image(object):
         else:
             if not file.endswith(format):
                 file = file + "." + format
-            self.save(file, format)
+            self.save(file, format, compress_level=1)
         return file
 
     def __eq__(self, other):
