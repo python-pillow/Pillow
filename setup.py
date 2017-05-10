@@ -97,7 +97,7 @@ def _read(file):
 
 def get_version():
     version_file = 'PIL/version.py'
-    with open(version_file, 'ra') as f:
+    with open(version_file, 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
 
