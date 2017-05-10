@@ -55,6 +55,7 @@ after_test:
 
 deploy:
   provider: S3
+  region: us-west-2
   access_key_id: AKIAIRAXC62ZNTVQJMOQ
   secret_access_key:
     secure: Hwb6klTqtBeMgxAjRoDltiiqpuH8xbwD4UooDzBSiCWXjuFj1lyl4kHgHwTCCGqi
