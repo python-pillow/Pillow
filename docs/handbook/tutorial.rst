@@ -13,7 +13,7 @@ To load an image from a file, use the :py:func:`~PIL.Image.open` function
 in the :py:mod:`~PIL.Image` module::
 
     >>> from PIL import Image
-    >>> im = Image.open("lena.ppm")
+    >>> im = Image.open("hopper.ppm")
 
 If successful, this function returns an :py:class:`~PIL.Image.Image` object.
 You can now use instance attributes to examine the file contents::
@@ -276,7 +276,7 @@ Converting between modes
 
 ::
 
-    im = Image.open("lena.ppm").convert("L")
+    im = Image.open("hopper.ppm").convert("L")
 
 The library supports transformations between each supported mode and the “L”
 and “RGB” modes. To convert between other modes, you may have to use an
@@ -435,8 +435,8 @@ Drawing Postscript
     from PIL import Image
     from PIL import PSDraw
 
-    im = Image.open("lena.ppm")
-    title = "lena"
+    im = Image.open("hopper.ppm")
+    title = "hopper"
     box = (1*72, 2*72, 7*72, 10*72) # in points
 
     ps = PSDraw.PSDraw() # default is sys.stdout
@@ -459,7 +459,7 @@ As described earlier, the :py:func:`~PIL.Image.open` function of the
 :py:mod:`~PIL.Image` module is used to open an image file. In most cases, you
 simply pass it the filename as an argument::
 
-    im = Image.open("lena.ppm")
+    im = Image.open("hopper.ppm")
 
 If everything goes well, the result is an :py:class:`PIL.Image.Image` object.
 Otherwise, an :exc:`IOError` exception is raised.
@@ -473,7 +473,7 @@ Reading from an open file
 
 ::
 
-    fp = open("lena.ppm", "rb")
+    fp = open("hopper.ppm", "rb")
     im = Image.open(fp)
 
 To read an image from string data, use the :py:class:`~StringIO.StringIO`
@@ -499,9 +499,9 @@ Reading from a tar archive
 
 ::
 
-    from PIL import TarIO
+    from PIL import Image, TarIO
 
-    fp = TarIO.TarIO("Imaging.tar", "Imaging/test/lena.ppm")
+    fp = TarIO.TarIO("Tests/images/hopper.tar", "hopper.jpg")
     im = Image.open(fp)
 
 Controlling the decoder

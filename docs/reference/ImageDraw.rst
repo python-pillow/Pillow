@@ -20,7 +20,7 @@ Example: Draw a gray cross over an image
 
     from PIL import Image, ImageDraw
 
-    im = Image.open("lena.pgm")
+    im = Image.open("hopper.jpg")
 
     draw = ImageDraw.Draw(im)
     draw.line((0, 0) + im.size, fill=128)
@@ -81,7 +81,7 @@ Example: Draw Partial Opacity Text
 
     from PIL import Image, ImageDraw, ImageFont
     # get an image
-    base = Image.open('Pillow/Tests/images/lena.png').convert('RGBA')
+    base = Image.open('Pillow/Tests/images/hopper.png').convert('RGBA')
 
     # make a blank image for the text, initialized to transparent text color
     txt = Image.new('RGBA', base.size, (255,255,255,0))
