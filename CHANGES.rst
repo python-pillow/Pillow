@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- CI: Added region for s3 deployment on appveyor #2515
+  [wiredfool]
+  
 - Doc: Updated references to point to existing files #2507
   [radarhere]  
 
