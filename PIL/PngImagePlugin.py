@@ -687,6 +687,9 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
             mode = "%s;%d" % (mode, bits)
 
     # encoder options
+    if (im.info.get('showing', False)):
+        im.encoderinfo['compress_level'] = 1
+        im.info.pop('showing', None)
     im.encoderconfig = (im.encoderinfo.get("optimize", False),
                         im.encoderinfo.get("compress_level", -1),
                         im.encoderinfo.get("compress_type", -1),
