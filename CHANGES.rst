@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Doc: Updated references to point to existing files #2507
+  [radarhere]  
+
 - Return copy on Image crop if crop dimensions match the image #2471
   [radarhere]
 
@@ -2529,7 +2532,7 @@ Pre-fork
 
         import numpy, Image
 
-        im = Image.open('hopper.jpg')
+        im = Image.open('lena.jpg')
 
         a = numpy.asarray(im) # a is readonly
 
