@@ -117,33 +117,6 @@ class TestImage(PillowTestCase):
         self.assertFalse(item == None)
         self.assertFalse(item == num)
 
-    def test_expand_x(self):
-        # Arrange
-        im = hopper()
-        orig_size = im.size
-        xmargin = 5
-
-        # Act
-        im = im._expand(xmargin)
-
-        # Assert
-        self.assertEqual(im.size[0], orig_size[0] + 2*xmargin)
-        self.assertEqual(im.size[1], orig_size[1] + 2*xmargin)
-
-    def test_expand_xy(self):
-        # Arrange
-        im = hopper()
-        orig_size = im.size
-        xmargin = 5
-        ymargin = 3
-
-        # Act
-        im = im._expand(xmargin, ymargin)
-
-        # Assert
-        self.assertEqual(im.size[0], orig_size[0] + 2*xmargin)
-        self.assertEqual(im.size[1], orig_size[1] + 2*ymargin)
-
     def test_getbands(self):
         # Arrange
         im = hopper()

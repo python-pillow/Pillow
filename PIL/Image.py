@@ -1071,12 +1071,6 @@ class Image(object):
         """
         pass
 
-    def _expand(self, xmargin, ymargin=None):
-        if ymargin is None:
-            ymargin = xmargin
-        self.load()
-        return self._new(self.im.expand(xmargin, ymargin, 0))
-
     def filter(self, filter):
         """
         Filters this image using the given filter.  For a list of
