@@ -84,7 +84,7 @@ release-test:
 	viewdoc
 
 sdist:
-	python setup.py sdist --format=gztar,zip
+	python setup.py sdist --format=gztar
 
 test:
 	python test-installed.py
@@ -95,10 +95,10 @@ upload-test:
 #       username:
 #       password:
 #       repository = http://test.pythonpackages.com
-	python setup.py sdist --format=gztar,zip upload -r test
+	python setup.py sdist --format=gztar upload -r test
 
 upload:
-	python setup.py sdist --format=gztar,zip upload
+	python setup.py sdist --format=gztar upload
 
 readme:
 	viewdoc
