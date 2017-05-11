@@ -29,7 +29,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "s#iiifss#s#",
                 (char**)&rgb, &size, &width, &height, &lossless, &quality_factor, &mode,
                 &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
-        Py_RETURN_NONE;
+        return NULL;
     }
     if (strcmp(mode, "RGBA")==0){
         if (size < width * height * 4){
@@ -145,7 +145,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
     char* mode = "RGB";
 
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     if (!WebPInitDecoderConfig(&config)) {
