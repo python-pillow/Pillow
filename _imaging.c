@@ -96,8 +96,6 @@
 #define WITH_THREADING /* "friendly" threading support */
 #define WITH_UNSHARPMASK /* Kevin Cazabon's unsharpmask module */
 
-#define WITH_DEBUG /* extra debugging interfaces */
-
 #undef    VERBOSE
 
 #define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
@@ -2922,8 +2920,6 @@ _getcodecstatus(PyObject* self, PyObject* args)
 /* -------------------------------------------------------------------- */
 
 
-#ifdef WITH_DEBUG
-
 static PyObject*
 _save_ppm(ImagingObject* self, PyObject* args)
 {
@@ -2939,7 +2935,6 @@ _save_ppm(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-#endif
 
 /* -------------------------------------------------------------------- */
 
@@ -3035,9 +3030,7 @@ static struct PyMethodDef methods[] = {
     {"new_array", (PyCFunction)_new_array, 1},
     {"new_block", (PyCFunction)_new_block, 1},
 
-#ifdef WITH_DEBUG
     {"save_ppm", (PyCFunction)_save_ppm, 1},
-#endif
 
     {NULL, NULL} /* sentinel */
 };
