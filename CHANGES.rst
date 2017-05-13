@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Use PNG for Image.show() #2527
+  [HinTak, wiredfool]
+
 - Remove WITH_DEBUG compilation flag #2522
   [wiredfool]
   
