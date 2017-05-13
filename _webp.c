@@ -10,12 +10,85 @@
 #include <webp/mux.h>
 #endif
 
-PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
-{
+
+struct option {
     int width;
     int height;
     int lossless;
-    float quality_factor;
+    float quality;
+    int preset;
+    int method;
+    int target_size;
+    float target_PSNR;
+    int segments;
+    int sns_strength;
+    int filter_strength;
+    int filter_sharpness;
+    int filter_type;
+    int autofilter;
+    int alpha_compression;
+    int alpha_filtering;
+    int alpha_quality;
+    int pass;
+    int preprocessing;
+    int partitions;
+    int partition_limit;
+    int emulate_jpeg_size;
+    int thread_level;
+    int low_memory;
+} opt;
+
+int getSizeAfterEncode(struct option *opt, uint8_t** rgb, uint8_t** output, int is_rgba) {
+    WebPConfig config;
+    if (!WebPConfigPreset(&config, opt->preset, opt->quality)) return 0;
+    config.lossless = opt->lossless;
+    if (opt->preset == 0) {
+        config.method = opt->method;
+        config.target_size = opt->target_size;
+        config.target_PSNR = opt->target_PSNR;
+        config.segments = opt->segments;
+        config.sns_strength = opt->sns_strength;
+        config.filter_strength = opt->filter_strength;
+        config.filter_sharpness = opt->filter_sharpness;
+        config.filter_type = opt->filter_type;
+        config.autofilter = opt->autofilter;
+        config.alpha_compression = opt->alpha_compression;
+        config.alpha_filtering = opt->alpha_filtering;
+        config.alpha_quality = opt->alpha_quality;
+        config.pass = opt->pass;
+        config.preprocessing = opt->preprocessing;
+        config.partitions = opt->partitions;
+        config.partition_limit = opt->partition_limit;
+        config.emulate_jpeg_size = opt->emulate_jpeg_size;
+        config.thread_level = opt->thread_level;
+        config.low_memory = opt->low_memory;
+    }
+
+    WebPPicture pic;
+    WebPPictureInit(&pic);
+
+    WebPMemoryWriter wrt;
+    WebPMemoryWriterInit(&wrt);
+    pic.use_argb = !!opt->lossless;
+    pic.writer = WebPMemoryWrite;
+    pic.custom_ptr = &wrt;
+    pic.width = opt->width;
+    pic.height = opt->height;
+
+    if (is_rgba) {
+        if (!WebPPictureImportRGBA(&pic, *rgb, 4* opt->width)) return 0;
+    } else {
+        if (!WebPPictureImportRGB(&pic, *rgb, 3* opt->width)) return 0;
+    }
+
+    WebPEncode(&config, &pic);
+    WebPPictureFree(&pic);
+    (*output) = wrt.mem;
+    return wrt.size;
+}
+
+PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
+{
     uint8_t *rgb;
     uint8_t *icc_bytes;
     uint8_t *exif_bytes;
@@ -23,37 +96,60 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     char *mode;
     Py_ssize_t size;
     Py_ssize_t icc_size;
-    Py_ssize_t  exif_size;
+    Py_ssize_t exif_size;
     size_t ret_size;
 
-    if (!PyArg_ParseTuple(args, "s#iiifss#s#",
-                (char**)&rgb, &size, &width, &height, &lossless, &quality_factor, &mode,
-                &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
+    if (!PyArg_ParseTuple(args, "s#iiifss#s#iiifiiiiiiiiiiiiiiii",
+                (char**)&rgb, &size,
+                &opt.width, &opt.height, &opt.lossless,
+                &opt.quality,
+                &mode,
+                &icc_bytes, &icc_size, &exif_bytes, &exif_size,
+                &opt.preset, &opt.method, &opt.target_size, &opt.target_PSNR,
+                &opt.segments, &opt.sns_strength,
+                &opt.filter_strength, &opt.filter_sharpness, &opt.filter_type,
+                &opt.autofilter,
+                &opt.alpha_compression, &opt.alpha_filtering, &opt.alpha_quality,
+                &opt.pass, &opt.preprocessing, &opt.partitions, &opt.partition_limit,
+                &opt.emulate_jpeg_size, &opt.thread_level, &opt.low_memory
+                )) {
         Py_RETURN_NONE;
     }
     if (strcmp(mode, "RGBA")==0){
-        if (size < width * height * 4){
+        if (size < opt.width * opt.height * 4){
             Py_RETURN_NONE;
         }
         #if WEBP_ENCODER_ABI_VERSION >= 0x0100
-        if (lossless) {
-            ret_size = WebPEncodeLosslessRGBA(rgb, width, height, 4* width, &output);
+        if (opt.lossless) {
+            ret_size = getSizeAfterEncode(&opt, &rgb, &output, 1);
+            if (!ret_size) {
+                Py_RETURN_NONE;
+            }
         } else
         #endif
         {
-            ret_size = WebPEncodeRGBA(rgb, width, height, 4* width, quality_factor, &output);
+            ret_size = getSizeAfterEncode(&opt, &rgb, &output, 1);
+            if (!ret_size) {
+                Py_RETURN_NONE;
+            }
         }
     } else if (strcmp(mode, "RGB")==0){
-        if (size < width * height * 3){
+        if (size < opt.width * opt.height * 3){
             Py_RETURN_NONE;
         }
         #if WEBP_ENCODER_ABI_VERSION >= 0x0100
-        if (lossless) {
-            ret_size = WebPEncodeLosslessRGB(rgb, width, height, 3* width, &output);
+        if (opt.lossless) {
+            ret_size = getSizeAfterEncode(&opt, &rgb, &output, 0);
+            if (!ret_size) {
+                Py_RETURN_NONE;
+            }
         } else
         #endif
         {
-            ret_size = WebPEncodeRGB(rgb, width, height, 3* width, quality_factor, &output);
+            ret_size = getSizeAfterEncode(&opt, &rgb, &output, 0);
+            if (!ret_size) {
+                Py_RETURN_NONE;
+            }
         }
     } else {
         Py_RETURN_NONE;
