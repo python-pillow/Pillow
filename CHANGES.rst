@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Flake8 #2460
+  [radarhere]
+
 - Doc: Release Process Changes #2516
   [wiredfool]
   
