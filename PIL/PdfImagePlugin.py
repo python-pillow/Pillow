@@ -20,7 +20,7 @@
 # Image plugin for PDF images (output only).
 ##
 
-from . import Image, ImageFile
+from . import Image, ImageFile, ImageSequence
 from ._binary import i8
 import io
 
@@ -133,13 +133,24 @@ def _save(im, fp, filename, save_all=False):
 
     #
     # pages
-    numberOfPages = 1
+    ims = [im]
     if save_all:
-        try:
-            numberOfPages = im.n_frames
-        except AttributeError:
-            # Image format does not have n_frames. It is a single frame image
-            pass
+        append_images = im.encoderinfo.get("append_images", [])
+        for append_im in append_images:
+            if append_im.mode != im.mode:
+                append_im = append_im.convert(im.mode)
+                append_im.encoderinfo = im.encoderinfo.copy()
+            ims.append(append_im)
+    numberOfPages = 0
+    for im in ims:
+        im_numberOfPages = 1
+        if save_all:
+            try:
+                im_numberOfPages = im.n_frames
+            except AttributeError:
+                # Image format does not have n_frames. It is a single frame image
+                pass
+        numberOfPages += im_numberOfPages
     pages = [str(pageNumber*3+4)+" 0 R"
              for pageNumber in range(0, numberOfPages)]
 
@@ -151,90 +162,92 @@ def _save(im, fp, filename, save_all=False):
         Kids="["+"\n".join(pages)+"]")
     _endobj(fp)
 
-    for pageNumber in range(0, numberOfPages):
-        im.seek(pageNumber)
+    pageNumber = 0
+    for imSequence in ims:
+        for im in ImageSequence.Iterator(imSequence):
+            #
+            # image
 
-        #
-        # image
+            op = io.BytesIO()
 
-        op = io.BytesIO()
+            if filter == "/ASCIIHexDecode":
+                if bits == 1:
+                    # FIXME: the hex encoder doesn't support packed 1-bit
+                    # images; do things the hard way...
+                    data = im.tobytes("raw", "1")
+                    im = Image.new("L", (len(data), 1), None)
+                    im.putdata(data)
+                ImageFile._save(im, op, [("hex", (0, 0)+im.size, 0, im.mode)])
+            elif filter == "/DCTDecode":
+                Image.SAVE["JPEG"](im, op, filename)
+            elif filter == "/FlateDecode":
+                ImageFile._save(im, op, [("zip", (0, 0)+im.size, 0, im.mode)])
+            elif filter == "/RunLengthDecode":
+                ImageFile._save(im, op, [("packbits", (0, 0)+im.size, 0, im.mode)])
+            else:
+                raise ValueError("unsupported PDF filter (%s)" % filter)
 
-        if filter == "/ASCIIHexDecode":
-            if bits == 1:
-                # FIXME: the hex encoder doesn't support packed 1-bit
-                # images; do things the hard way...
-                data = im.tobytes("raw", "1")
-                im = Image.new("L", (len(data), 1), None)
-                im.putdata(data)
-            ImageFile._save(im, op, [("hex", (0, 0)+im.size, 0, im.mode)])
-        elif filter == "/DCTDecode":
-            Image.SAVE["JPEG"](im, op, filename)
-        elif filter == "/FlateDecode":
-            ImageFile._save(im, op, [("zip", (0, 0)+im.size, 0, im.mode)])
-        elif filter == "/RunLengthDecode":
-            ImageFile._save(im, op, [("packbits", (0, 0)+im.size, 0, im.mode)])
-        else:
-            raise ValueError("unsupported PDF filter (%s)" % filter)
+            #
+            # Get image characteristics
 
-        #
-        # Get image characteristics
+            width, height = im.size
 
-        width, height = im.size
+            xref.append(fp.tell())
+            _obj(
+                fp, pageNumber*3+3,
+                Type="/XObject",
+                Subtype="/Image",
+                Width=width,  # * 72.0 / resolution,
+                Height=height,  # * 72.0 / resolution,
+                Length=len(op.getvalue()),
+                Filter=filter,
+                BitsPerComponent=bits,
+                DecodeParams=params,
+                ColorSpace=colorspace)
 
-        xref.append(fp.tell())
-        _obj(
-            fp, pageNumber*3+3,
-            Type="/XObject",
-            Subtype="/Image",
-            Width=width,  # * 72.0 / resolution,
-            Height=height,  # * 72.0 / resolution,
-            Length=len(op.getvalue()),
-            Filter=filter,
-            BitsPerComponent=bits,
-            DecodeParams=params,
-            ColorSpace=colorspace)
+            fp.write("stream\n")
+            fp.fp.write(op.getvalue())
+            fp.write("\nendstream\n")
 
-        fp.write("stream\n")
-        fp.fp.write(op.getvalue())
-        fp.write("\nendstream\n")
+            _endobj(fp)
 
-        _endobj(fp)
+            #
+            # page
 
-        #
-        # page
+            xref.append(fp.tell())
+            _obj(fp, pageNumber*3+4)
+            fp.write(
+                "<<\n/Type /Page\n/Parent 2 0 R\n"
+                "/Resources <<\n/ProcSet [ /PDF %s ]\n"
+                "/XObject << /image %d 0 R >>\n>>\n"
+                "/MediaBox [ 0 0 %d %d ]\n/Contents %d 0 R\n>>\n" % (
+                    procset,
+                    pageNumber*3+3,
+                    int(width * 72.0 / resolution),
+                    int(height * 72.0 / resolution),
+                    pageNumber*3+5))
+            _endobj(fp)
 
-        xref.append(fp.tell())
-        _obj(fp, pageNumber*3+4)
-        fp.write(
-            "<<\n/Type /Page\n/Parent 2 0 R\n"
-            "/Resources <<\n/ProcSet [ /PDF %s ]\n"
-            "/XObject << /image %d 0 R >>\n>>\n"
-            "/MediaBox [ 0 0 %d %d ]\n/Contents %d 0 R\n>>\n" % (
-                procset,
-                pageNumber*3+3,
-                int(width * 72.0 / resolution),
-                int(height * 72.0 / resolution),
-                pageNumber*3+5))
-        _endobj(fp)
+            #
+            # page contents
 
-        #
-        # page contents
+            op = TextWriter(io.BytesIO())
 
-        op = TextWriter(io.BytesIO())
+            op.write(
+                "q %d 0 0 %d 0 0 cm /image Do Q\n" % (
+                    int(width * 72.0 / resolution),
+                    int(height * 72.0 / resolution)))
 
-        op.write(
-            "q %d 0 0 %d 0 0 cm /image Do Q\n" % (
-                int(width * 72.0 / resolution),
-                int(height * 72.0 / resolution)))
+            xref.append(fp.tell())
+            _obj(fp, pageNumber*3+5, Length=len(op.fp.getvalue()))
 
-        xref.append(fp.tell())
-        _obj(fp, pageNumber*3+5, Length=len(op.fp.getvalue()))
+            fp.write("stream\n")
+            fp.fp.write(op.fp.getvalue())
+            fp.write("\nendstream\n")
 
-        fp.write("stream\n")
-        fp.fp.write(op.fp.getvalue())
-        fp.write("\nendstream\n")
+            _endobj(fp)
 
-        _endobj(fp)
+            pageNumber += 1
 
     #
     # trailer

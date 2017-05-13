@@ -74,6 +74,12 @@ class TestFilePdf(PillowTestCase):
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
 
+        # Append images
+        im.save(outfile, save_all=True, append_images=[hopper()])
+
+        self.assertTrue(os.path.isfile(outfile))
+        self.assertGreater(os.path.getsize(outfile), 0)
+
 
 if __name__ == '__main__':
     unittest.main()
