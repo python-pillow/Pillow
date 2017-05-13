@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Fix return value on parameter parse error in _webp.c #2521
+  [adw1n]
+
 - Set executable flag on scripts with shebang line #2295
   [radarhere]
 
