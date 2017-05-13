@@ -1058,9 +1058,6 @@ class Image(object):
 
         x0, y0, x1, y1 = map(int, map(round, box))
 
-        if x0 == 0 and y0 == 0 and (x1, y1) == self.size:
-            return self.copy()
-
         if x1 < x0:
             x1 = x0
         if y1 < y0:
