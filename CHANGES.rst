@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Remove WITH_DEBUG compilation flag #2522
+  [wiredfool]
+  
 - Fix return value on parameter parse error in _webp.c #2521
   [adw1n]
 
