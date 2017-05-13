@@ -10,8 +10,9 @@ try:
 except (OSError, ImportError) as v:
     # Skipped via setUp()
     HAS_TK = False
-    
+
 TK_MODES = ('1', 'L', 'P', 'RGB', 'RGBA')
+
 
 class TestImageTk(PillowTestCase):
 
@@ -21,7 +22,7 @@ class TestImageTk(PillowTestCase):
         try:
             # setup tk
             app = tk.Frame()
-            #root = tk.Tk()
+            # root = tk.Tk()
         except (tk.TclError) as v:
             self.skipTest("TCL Error: %s" % v)
 
@@ -46,12 +47,11 @@ class TestImageTk(PillowTestCase):
         im = ImageTk._get_image_from_kw(kw)
         self.assertEqual(im, None)
 
-
     def test_photoimage(self):
         for mode in TK_MODES:
             # test as image:
             im = hopper(mode)
-            
+
             # this should not crash
             im_tk = ImageTk.PhotoImage(im)
 
@@ -59,35 +59,32 @@ class TestImageTk(PillowTestCase):
             self.assertEqual(im_tk.height(), im.height)
 
             # _tkinter.TclError: this function is not yet supported
-            #reloaded = ImageTk.getimage(im_tk)
-            #self.assert_image_equal(reloaded, im)
-
-            
+            # reloaded = ImageTk.getimage(im_tk)
+            # self.assert_image_equal(reloaded, im)
 
     def test_photoimage_blank(self):
         # test a image using mode/size:
         for mode in TK_MODES:
-            im_tk = ImageTk.PhotoImage(mode, (100,100))
-            
+            im_tk = ImageTk.PhotoImage(mode, (100, 100))
+
             self.assertEqual(im_tk.width(), 100)
             self.assertEqual(im_tk.height(), 100)
-            
-            #reloaded = ImageTk.getimage(im_tk)
-            #self.assert_image_equal(reloaded, im)
+
+            # reloaded = ImageTk.getimage(im_tk)
+            # self.assert_image_equal(reloaded, im)
 
     def test_bitmapimage(self):
         im = hopper('1')
 
         # this should not crash
         im_tk = ImageTk.BitmapImage(im)
-        
+
         self.assertEqual(im_tk.width(), im.width)
         self.assertEqual(im_tk.height(), im.height)
-        
-        #reloaded = ImageTk.getimage(im_tk)
-        #self.assert_image_equal(reloaded, im)
-    
 
-            
+        # reloaded = ImageTk.getimage(im_tk)
+        # self.assert_image_equal(reloaded, im)
+
+
 if __name__ == '__main__':
     unittest.main()

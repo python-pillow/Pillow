@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 from PIL import Image
 
+
 class TestFileWmf(PillowTestCase):
 
     def test_load_raw(self):

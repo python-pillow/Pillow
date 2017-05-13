@@ -62,7 +62,6 @@ class TestImageSequence(PillowTestCase):
             self.assert_image_equal(frame, firstFrame)
             break
 
-
     def test_palette_mmap(self):
         # Using mmap in ImageFile can require to reload the palette.
         im = Image.open('Tests/images/multipage-mmap.tiff')

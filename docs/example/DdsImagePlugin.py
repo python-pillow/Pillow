@@ -144,7 +144,7 @@ def _dxt1(data, width, height):
                         else:
                             r, g, b = 0, 0, 0
 
-                    idx = 4 * ((y + j) * width + (x + i))
+                    idx = 4 * ((y + j) * width + x + i)
                     ret[idx:idx+4] = struct.pack('4B', r, g, b, 255)
 
     return bytes(ret)
@@ -201,7 +201,7 @@ def _dxt5(data, width, height):
                     elif cc == 3:
                         r, g, b = _c3(r0, r1), _c3(g0, g1), _c3(b0, b1)
 
-                    idx = 4 * ((y + j) * width + (x + i))
+                    idx = 4 * ((y + j) * width + x + i)
                     ret[idx:idx+4] = struct.pack('4B', r, g, b, alpha)
 
     return bytes(ret)
@@ -233,7 +233,6 @@ class DdsImageFile(ImageFile.ImageFile):
         bitcount, rmask, gmask, bmask, amask = struct.unpack("<5I",
                                                              header.read(20))
 
-
         if fourcc == b"DXT1":
             self.decoder = "DXT1"
             codec = _dxt1
@@ -241,14 +240,12 @@ class DdsImageFile(ImageFile.ImageFile):
             self.decoder = "DXT5"
             codec = _dxt5
         else:
-            raise NotImplementedError("Unimplemented pixel format %r" %
-                                      (fourcc))
+            raise NotImplementedError("Unimplemented pixel format %r" % fourcc)
 
         self.tile = [
             (self.decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))
         ]
 
-        
     def load_seek(self, pos):
         pass
 
@@ -261,8 +258,8 @@ class DXT1Decoder(ImageFile.PyDecoder):
             self.set_as_raw(_dxt1(self.fd, self.state.xsize, self.state.ysize))
         except struct.error:
             raise IOError("Truncated DDS file")
-         
-        return 0,0
+        return 0, 0
+
 
 class DXT5Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
@@ -272,7 +269,7 @@ class DXT5Decoder(ImageFile.PyDecoder):
             self.set_as_raw(_dxt5(self.fd, self.state.xsize, self.state.ysize))
         except struct.error:
             raise IOError("Truncated DDS file")
-        return 0,0
+        return 0, 0
 
 Image.register_decoder('DXT1', DXT1Decoder)
 Image.register_decoder('DXT5', DXT5Decoder)

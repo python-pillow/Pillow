@@ -25,7 +25,8 @@
 
 from . import Image, ImageFile
 from ._binary import i16le as i16, o16le as o16, i8
-import struct, io
+import struct
+import io
 
 __version__ = "0.1"
 
@@ -97,7 +98,7 @@ class MspDecoder(ImageFile.PyDecoder):
     #  If the RunType value is non-zero
     #   Use this value as the RunCount
     #   Read and write the next RunCount bytes literally
-    # 
+    #
     #  e.g.:
     #  0x00 03 ff 05 00 01 02 03 04
     #  would yield the bytes:
@@ -105,11 +106,10 @@ class MspDecoder(ImageFile.PyDecoder):
     #
     # which are then interpreted as a bit packed mode '1' image
 
-    
     _pulls_fd = True
 
     def decode(self, buffer):
-        
+
         img = io.BytesIO()
         blank_line = bytearray((0xff,)*((self.state.xsize+7)//8))
         try:
@@ -140,17 +140,17 @@ class MspDecoder(ImageFile.PyDecoder):
                         runcount = runtype
                         img.write(row[idx:idx+runcount])
                         idx += runcount
-                        
+
             except struct.error:
-                raise IOError("Corrupted MSP file in row %d" %x)
-            
+                raise IOError("Corrupted MSP file in row %d" % x)
+
         self.set_as_raw(img.getvalue(), ("1", 0, 1))
-                
-        return 0,0
+
+        return 0, 0
 
 
 Image.register_decoder('MSP', MspDecoder)
-   
+
 
 #
 # write MSP files (uncompressed only)

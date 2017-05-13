@@ -138,16 +138,19 @@ class TestImageFile(PillowTestCase):
 
 class MockPyDecoder(ImageFile.PyDecoder):
     def decode(self, buffer):
-        #eof
+        # eof
         return (-1, 0)
 
 xoff, yoff, xsize, ysize = 10, 20, 100, 100
+
+
 class MockImageFile(ImageFile.ImageFile):
     def _open(self):
         self.rawmode = 'RGBA'
         self.mode = 'RGBA'
         self.size = (200, 200)
         self.tile = [("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize), 32, None)]
+
 
 class TestPyDecoder(PillowTestCase):
 

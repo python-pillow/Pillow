@@ -37,6 +37,7 @@ def i16le(c, o=0):
     """
     return unpack("<H", c[o:o+2])[0]
 
+
 def si16le(c, o=0):
     """
     Converts a 2-bytes (16 bits) string to a signed integer.
@@ -55,6 +56,7 @@ def i32le(c, o=0):
     o: offset of bytes to convert in string
     """
     return unpack("<I", c[o:o+4])[0]
+
 
 def si32le(c, o=0):
     """

@@ -124,14 +124,14 @@ def _save(im, fp, filename):
     fp.write(struct.pack('>l', pinmin))
     fp.write(struct.pack('>l', pinmax))
 
-    fp.write(struct.pack('4s', b'')) # dummy
-    fp.write(struct.pack('79s', imgName)) # truncates to 79 chars
-    fp.write(struct.pack('s', b'')) # force null byte after imgname
+    fp.write(struct.pack('4s', b''))  # dummy
+    fp.write(struct.pack('79s', imgName))  # truncates to 79 chars
+    fp.write(struct.pack('s', b''))  # force null byte after imgname
     fp.write(struct.pack('>l', colormap))
 
-    fp.write(struct.pack('404s', b'')) # dummy
+    fp.write(struct.pack('404s', b''))  # dummy
 
-    #assert we've got the right number of bands.
+    # assert we've got the right number of bands.
     if len(im.getbands()) != z:
         raise ValueError("incorrect number of bands in SGI write: %s vs %s" %
                          (z, len(im.getbands())))

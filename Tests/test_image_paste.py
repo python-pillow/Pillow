@@ -9,9 +9,9 @@ class TestImagingPaste(PillowTestCase):
 
     def assert_9points_image(self, im, expected):
         expected = [
-                point[0]
+            point[0]
             if im.mode == 'L' else
-                point[:len(im.mode)]
+            point[:len(im.mode)]
             for point in expected
         ]
         px = im.load()
@@ -249,7 +249,7 @@ class TestImagingPaste(PillowTestCase):
         im2 = Image.new('RGB', (50, 50))
 
         im.copy().paste(im2)
-        im.copy().paste(im2, (0,0))
+        im.copy().paste(im2, (0, 0))
 
 
 if __name__ == '__main__':

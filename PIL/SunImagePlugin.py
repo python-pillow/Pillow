@@ -52,7 +52,6 @@ class SunImageFile(ImageFile.ImageFile):
         #         DWORD ColorMapLength;   /* Size of the color map in bytes */
         #     } SUNRASTER;
 
-
         # HEAD
         s = self.fp.read(32)
         if i32(s) != 0x59a66a95:
@@ -63,9 +62,9 @@ class SunImageFile(ImageFile.ImageFile):
         self.size = i32(s[4:8]), i32(s[8:12])
 
         depth = i32(s[12:16])
-        data_length = i32(s[16:20])  # unreliable, ignore.
+        data_length = i32(s[16:20])   # unreliable, ignore.
         file_type = i32(s[20:24])
-        palette_type = i32(s[24:28]) # 0: None, 1: RGB, 2: Raw/arbitrary
+        palette_type = i32(s[24:28])  # 0: None, 1: RGB, 2: Raw/arbitrary
         palette_length = i32(s[28:32])
 
         if depth == 1:

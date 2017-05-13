@@ -250,12 +250,14 @@ if sys.platform == 'win32':
 else:
     IMCONVERT = 'convert'
 
+
 def distro():
     if os.path.exists('/etc/os-release'):
         with open('/etc/os-release', 'r') as f:
             for line in f:
                 if 'ID=' in line:
                     return line.strip().split('=')[1]
+
 
 class cached_property(object):
     def __init__(self, func):

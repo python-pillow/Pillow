@@ -58,20 +58,19 @@ class TestFileGif(PillowTestCase):
         # Check for correctness after conversion back to RGB
         def check(colors, size, expected_palette_length):
             # make an image with empty colors in the start of the palette range
-            im = Image.frombytes('P', (colors,colors),
-                                 bytes(bytearray(range(256-colors,256))*colors))
-            im = im.resize((size,size))
+            im = Image.frombytes('P', (colors, colors),
+                                 bytes(bytearray(range(256-colors, 256))*colors))
+            im = im.resize((size, size))
             outfile = BytesIO()
             im.save(outfile, 'GIF')
             outfile.seek(0)
             reloaded = Image.open(outfile)
 
             # check palette length
-            palette_length = max(i+1 for i,v in enumerate(reloaded.histogram()) if v)
+            palette_length = max(i+1 for i, v in enumerate(reloaded.histogram()) if v)
             self.assertEqual(expected_palette_length, palette_length)
 
             self.assert_image_equal(im.convert('RGB'), reloaded.convert('RGB'))
-
 
         # These do optimize the palette
         check(128, 511, 128)
@@ -284,7 +283,7 @@ class TestFileGif(PillowTestCase):
             Image.new('L', (100, 100), '#222')
         ]
 
-        #duration as list
+        # duration as list
         im_list[0].save(
             out,
             save_all=True,
@@ -327,7 +326,7 @@ class TestFileGif(PillowTestCase):
             Image.new('L', (100, 100), '#111')
         ]
 
-        #duration as list
+        # duration as list
         im_list[0].save(
             out,
             save_all=True,
@@ -428,10 +427,10 @@ class TestFileGif(PillowTestCase):
 
         from PIL import ImagePalette
 
-        data = bytes(bytearray(range(1,254)))
+        data = bytes(bytearray(range(1, 254)))
         palette = ImagePalette.ImagePalette("RGB", list(range(256))*3)
 
-        im = Image.new('L', (253,1))
+        im = Image.new('L', (253, 1))
         im.frombytes(data)
         im.putpalette(palette)
 
@@ -444,8 +443,8 @@ class TestFileGif(PillowTestCase):
     def test_bbox(self):
         out = self.tempfile('temp.gif')
 
-        im = Image.new('RGB', (100,100), '#fff')
-        ims = [Image.new("RGB", (100,100), '#000')]
+        im = Image.new('RGB', (100, 100), '#fff')
+        ims = [Image.new("RGB", (100, 100), '#000')]
         im.save(out, save_all=True, append_images=ims)
 
         reread = Image.open(out)
@@ -453,7 +452,7 @@ class TestFileGif(PillowTestCase):
 
     def test_palette_save_L(self):
         # generate an L mode image with a separate palette
-        
+
         im = hopper('P')
         im_l = Image.frombytes('L', im.size, im.tobytes())
         palette = bytes(bytearray(im.getpalette()))
@@ -464,7 +463,7 @@ class TestFileGif(PillowTestCase):
         reloaded = Image.open(out)
 
         self.assert_image_equal(reloaded.convert('RGB'), im.convert('RGB'))
-    
+
     def test_palette_save_P(self):
         # pass in a different palette, then construct what the image
         # would look like.
@@ -511,7 +510,7 @@ class TestFileGif(PillowTestCase):
         im = Image._wedge().resize((16, 16))
         im.putpalette(ImagePalette.ImagePalette('RGB'))
         im.info = {'background': 0}
-        
+
         passed_palette = bytes(bytearray([255-i//3 for i in range(768)]))
 
         GifImagePlugin._FORCE_OPTIMIZE = True
@@ -521,18 +520,15 @@ class TestFileGif(PillowTestCase):
 
             import pickle
             # Enable to get target values on pre-refactor version
-            #with open('Tests/images/gif_header_data.pkl', 'wb') as f:
+            # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
             #    pickle.dump((h, d), f, 1)
             with open('Tests/images/gif_header_data.pkl', 'rb') as f:
                 (h_target, d_target) = pickle.load(f)
-            
+
             self.assertEqual(h, h_target)
             self.assertEqual(d, d_target)
         finally:
             GifImagePlugin._FORCE_OPTIMIZE = False
-
-
-    
 
 
 if __name__ == '__main__':

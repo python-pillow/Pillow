@@ -375,12 +375,15 @@ class TestImage(PillowTestCase):
             self.assert_image_equal(im, target)
 
 
-class MockEncoder(object):pass
+class MockEncoder(object):
+    pass
+
 
 def mock_encode(*args):
     encoder = MockEncoder()
     encoder.args = args
     return encoder
+
 
 class TestRegistry(PillowTestCase):
 

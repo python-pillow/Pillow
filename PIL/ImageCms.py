@@ -166,7 +166,6 @@ class ImageCmsProfile(object):
             self._set(profile)
         else:
             raise TypeError("Invalid type for Profile")
-        
 
     def _set(self, profile, filename=None):
         self.profile = profile
