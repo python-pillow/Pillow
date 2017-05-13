@@ -588,7 +588,7 @@ class Image(object):
 
         self.load()
         if not format or format == "PPM":
-            self.im.save_ppm(file, **options)
+            self.im.save_ppm(file)
         else:
             if not file.endswith(format):
                 file = file + "." + format
