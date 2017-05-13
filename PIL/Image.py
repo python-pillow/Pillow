@@ -577,7 +577,7 @@ class Image(object):
         self.pyaccess = None
         self.readonly = 0
 
-    def _dump(self, file=None, format=None):
+    def _dump(self, file=None, format=None, **options):
         import tempfile
         suffix = ''
         if format:
@@ -592,7 +592,7 @@ class Image(object):
         else:
             if not file.endswith(format):
                 file = file + "." + format
-            self.save(file, format)
+            self.save(file, format, **options)
         return file
 
     def __eq__(self, other):
