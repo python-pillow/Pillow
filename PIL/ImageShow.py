@@ -77,6 +77,7 @@ class Viewer(object):
     # hook methods
 
     format = None
+    options = {}
 
     def get_format(self, image):
         """Return format name, or None to save as PGM/PPM"""
@@ -87,7 +88,7 @@ class Viewer(object):
 
     def save_image(self, image):
         """Save to temporary file, and return filename"""
-        return image._dump(format=self.get_format(image), compress_level=1)
+        return image._dump(format=self.get_format(image), **self.options)
 
     def show_image(self, image, **options):
         """Display given image"""
@@ -116,6 +117,7 @@ elif sys.platform == "darwin":
 
     class MacViewer(Viewer):
         format = "PNG"
+        options = {'compress-level': 1}
 
         def get_command(self, file, **options):
             # on darwin open returns immediately resulting in the temp
@@ -143,6 +145,7 @@ else:
 
     class UnixViewer(Viewer):
         format = "PNG"
+        options = {'compress-level': 1}
 
         def show_file(self, file, **options):
             command, executable = self.get_command_ex(file, **options)
