@@ -94,10 +94,11 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_bitmap.png"))
 
-    def helper_chord(self, bbox, start, end):
+    def helper_chord(self, mode, bbox, start, end):
         # Arrange
-        im = Image.new("RGB", (W, H))
+        im = Image.new(mode, (W, H))
         draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_chord_{}.png".format(mode)
 
         # Act
         draw.chord(bbox, start, end, fill="red", outline="yellow")
@@ -105,15 +106,17 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         self.assert_image_similar(
-            im, Image.open("Tests/images/imagedraw_chord.png"), 1)
+            im, Image.open(expected), 1)
 
     def test_chord1(self):
-        self.helper_chord(BBOX1, 0, 180)
-        self.helper_chord(BBOX1, 0.5, 180.4)
+        for mode in ["RGB", "L"]:
+            self.helper_chord(mode, BBOX1, 0, 180)
+            self.helper_chord(mode, BBOX1, 0.5, 180.4)
 
     def test_chord2(self):
-        self.helper_chord(BBOX2, 0, 180)
-        self.helper_chord(BBOX2, 0.5, 180.4)
+        for mode in ["RGB", "L"]:
+            self.helper_chord(mode, BBOX2, 0, 180)
+            self.helper_chord(mode, BBOX2, 0.5, 180.4)
 
     def helper_ellipse(self, bbox):
         # Arrange
