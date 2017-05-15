@@ -605,11 +605,6 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
 
     DRAWINIT();
 
-    if (width <= 1) {
-        draw->line(im, x0, y0, x1, y1, ink);
-        return 0;
-    }
-
     dx = x1-x0;
     dy = y1-y0;
     if (dx == 0 && dy == 0) {
