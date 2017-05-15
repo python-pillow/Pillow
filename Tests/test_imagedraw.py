@@ -311,6 +311,23 @@ class TestImageDraw(PillowTestCase):
     def test_rectangle2(self):
         self.helper_rectangle(BBOX2)
 
+    def test_big_rectangle(self):
+        # Test drawing a rectangle bigger than the image
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        bbox = [(-1, -1), (W+1, H+1)]
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_big_rectangle.png"
+
+        # Act
+        draw.rectangle(bbox, fill="orange")
+        del draw
+        im.show()
+        im.save(expected)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
+
     def test_floodfill(self):
         # Arrange
         im = Image.new("RGB", (W, H))
