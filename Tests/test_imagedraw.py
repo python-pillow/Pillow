@@ -278,17 +278,19 @@ class TestImageDraw(PillowTestCase):
     def test_polygon_kite(self):
         # Test drawing lines of different gradients (dx>dy, dy>dx) and
         # vertical (dx==0) and horizontal (dy==0) lines
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw.Draw(im)
+        for mode in ["RGB", "L"]:
+            # Arrange
+            im = Image.new(mode, (W, H))
+            draw = ImageDraw.Draw(im)
+            expected = "Tests/images/imagedraw_polygon_kite_{}.png".format(mode)
 
-        # Act
-        draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
-        del draw
+            # Act
+            draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
+            del draw
 
-        # Assert
-        self.assert_image_equal(
-            im, Image.open("Tests/images/imagedraw_polygon_kite.png"))
+            # Assert
+            self.assert_image_equal(
+                im, Image.open(expected))
 
     def helper_rectangle(self, bbox):
         # Arrange
