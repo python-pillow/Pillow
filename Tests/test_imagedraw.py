@@ -30,6 +30,8 @@ BBOX2 = [X0, Y0, X1, Y1]
 POINTS1 = [(10, 10), (20, 40), (30, 30)]
 POINTS2 = [10, 10, 20, 40, 30, 30]
 
+KITE_POINTS = [(10, 50), (70, 10), (90, 50), (70, 90), (10, 50)]
+
 
 class TestImageDraw(PillowTestCase):
 
@@ -266,6 +268,21 @@ class TestImageDraw(PillowTestCase):
 
     def test_polygon2(self):
         self.helper_polygon(POINTS2)
+
+    def test_polygon_kite(self):
+        # Test drawing lines of different gradients (dx>dy, dy>dx) and
+        # vertical (dx==0) and horizontal (dy==0) lines
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+
+        # Act
+        draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
+        del draw
+
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_polygon_kite.png"))
 
     def helper_rectangle(self, bbox):
         # Arrange
