@@ -80,6 +80,37 @@ class TestImageDraw(PillowTestCase):
         self.helper_arc(BBOX2, 0, 180)
         self.helper_arc(BBOX2, 0.5, 180.4)
 
+    def test_arc_end_le_start(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        start = 270.5
+        end = 0
+
+        # Act
+        draw.arc(BBOX1, start=start, end=end)
+        del draw
+
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_arc_end_le_start.png"))
+
+    def test_arc_no_loops(self):
+        # No need to go in loops
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        start = 5
+        end = 370
+
+        # Act
+        draw.arc(BBOX1, start=start, end=end)
+        del draw
+
+        # Assert
+        self.assert_image_similar(
+            im, Image.open("Tests/images/imagedraw_arc_no_loops.png"), 1)
+
     def test_bitmap(self):
         # Arrange
         small = Image.open("Tests/images/pil123rgba.png").resize((50, 50))
@@ -322,8 +353,6 @@ class TestImageDraw(PillowTestCase):
         # Act
         draw.rectangle(bbox, fill="orange")
         del draw
-        im.show()
-        im.save(expected)
 
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
