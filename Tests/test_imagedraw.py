@@ -503,6 +503,20 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(img, expected,
                                 'line oblique 45 inverted 3px wide B failed')
 
+    def test_wide_line_dot(self):
+        # Test drawing a wide "line" from one point to another just draws
+        # a single point
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_wide_line_dot.png"
+
+        # Act
+        draw.line([(50, 50), (50, 50)], width=3)
+        del draw
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
 
 if __name__ == '__main__':
     unittest.main()
