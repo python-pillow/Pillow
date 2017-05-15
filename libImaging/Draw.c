@@ -1026,20 +1026,6 @@ ImagingOutlineCurve(ImagingOutline outline, float x1, float y1,
 }
 
 int
-ImagingOutlineCurve2(ImagingOutline outline, float cx, float cy,
-                     float x3, float y3)
-{
-    /* add bezier curve based on three control points (as
-       in the Flash file format) */
-
-    return ImagingOutlineCurve(
-        outline,
-        (outline->x + cx + cx)/3, (outline->y + cy + cy)/3,
-        (cx + cx + x3)/3, (cy + cy + y3)/3,
-        x3, y3);
-}
-
-int
 ImagingOutlineClose(ImagingOutline outline)
 {
     if (outline->x == outline->x0 && outline->y == outline->y0)
