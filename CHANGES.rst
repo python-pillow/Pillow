@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Test: Use Codecov for coverage #2528
+  [hugovk]
+
 - Use PNG for Image.show() #2527
   [HinTak, wiredfool]
 
