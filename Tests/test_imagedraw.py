@@ -136,8 +136,7 @@ class TestImageDraw(PillowTestCase):
         del draw
 
         # Assert
-        self.assert_image_similar(
-            im, Image.open(expected), 1)
+        self.assert_image_similar(im, Image.open(expected), 1)
 
     def test_chord1(self):
         for mode in ["RGB", "L"]:
@@ -160,8 +159,7 @@ class TestImageDraw(PillowTestCase):
         del draw
 
         # Assert
-        self.assert_image_similar(
-            im, Image.open(expected), 1)
+        self.assert_image_similar(im, Image.open(expected), 1)
 
     def test_ellipse1(self):
         for mode in ["RGB", "L"]:
@@ -313,15 +311,15 @@ class TestImageDraw(PillowTestCase):
             # Arrange
             im = Image.new(mode, (W, H))
             draw = ImageDraw.Draw(im)
-            expected = "Tests/images/imagedraw_polygon_kite_{}.png".format(mode)
+            expected = "Tests/images/imagedraw_polygon_kite_{}.png".format(
+                mode)
 
             # Act
             draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
             del draw
 
             # Assert
-            self.assert_image_equal(
-                im, Image.open(expected))
+            self.assert_image_equal(im, Image.open(expected))
 
     def helper_rectangle(self, bbox):
         # Arrange
@@ -563,6 +561,7 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
+
 
 if __name__ == '__main__':
     unittest.main()

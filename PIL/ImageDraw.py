@@ -283,6 +283,7 @@ def Draw(im, mode=None):
     except AttributeError:
         return ImageDraw(im, mode)
 
+
 # experimental access to the outline API
 try:
     Outline = Image.core.outline
