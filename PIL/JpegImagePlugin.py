@@ -499,7 +499,7 @@ def _getmp(self):
     try:
         quant = mp[0xB001]
     except KeyError:
-        raise SyntaxError("malformed MP Index (no number of images)")
+        raise TypeError("malformed MP Index (no number of images)")
     # get MP entries
     mpentries = []
     try:
@@ -524,7 +524,7 @@ def _getmp(self):
             if mpentryattr['ImageDataFormat'] == 0:
                 mpentryattr['ImageDataFormat'] = 'JPEG'
             else:
-                raise SyntaxError("unsupported picture format in MPO")
+                raise TypeError("unsupported picture format in MPO")
             mptypemap = {
                 0x000000: 'Undefined',
                 0x010001: 'Large Thumbnail (VGA Equivalent)',
@@ -540,7 +540,7 @@ def _getmp(self):
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
     except KeyError:
-        raise SyntaxError("malformed MP Index (bad MP Entry)")
+        raise TypeError("malformed MP Index (bad MP Entry)")
     # Next we should try and parse the individual image unique ID list;
     # we don't because I've never seen this actually used in a real MPO
     # file and so can't test it.
