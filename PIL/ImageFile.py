@@ -380,11 +380,8 @@ class Parser(object):
 
             # attempt to open this file
             try:
-                try:
-                    fp = io.BytesIO(self.data)
+                with io.BytesIO(self.data) as fp:
                     im = Image.open(fp)
-                finally:
-                    fp.close()  # explicitly close the virtual file
             except IOError:
                 # traceback.print_exc()
                 pass  # not enough data
@@ -432,12 +429,11 @@ class Parser(object):
         if self.data:
             # incremental parsing not possible; reopen the file
             # not that we have all data
-            try:
-                fp = io.BytesIO(self.data)
-                self.image = Image.open(fp)
-            finally:
-                self.image.load()
-                fp.close()  # explicitly close the virtual file
+            with io.BytesIO(self.data) as fp:
+                try:
+                    self.image = Image.open(fp)
+                finally:
+                    self.image.load()
         return self.image
 
 

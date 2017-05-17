@@ -95,6 +95,11 @@ class TestImageFile(PillowTestCase):
     def test_raise_ioerror(self):
         self.assertRaises(IOError, lambda: ImageFile.raise_ioerror(1))
 
+    def test_raise_typeerror(self):
+        with self.assertRaises(TypeError):
+            parser = ImageFile.Parser()
+            parser.feed(1)
+
     def test_truncated_with_errors(self):
         if "zip_encoder" not in codecs:
             self.skipTest("PNG (zlib) encoder not available")
