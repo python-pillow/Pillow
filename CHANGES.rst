@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Raise TypeError and not also UnboundLocalError in ImageFile.Parser() #2525
+  [joshblum]
+
 - Test: Use Codecov for coverage #2528
   [hugovk]
 
