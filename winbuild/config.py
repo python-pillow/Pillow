@@ -33,9 +33,9 @@ libs = {
         'dir': 'tiff-4.0.7',
     },
     'freetype': {
-        'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.gz',
-        'filename': PILLOW_DEPENDS_DIR + 'freetype-2.7.1.tar.gz',
-        'dir': 'freetype-2.7.1',
+        'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.8.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'freetype-2.8.tar.gz',
+        'dir': 'freetype-2.8',
     },
     'lcms': {
         'url': SF_MIRROR+'/project/lcms/lcms/2.7/lcms2-2.7.zip',
