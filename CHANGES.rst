@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Update FreeType to 2.8
+  [radarhere]
+
 - Raise TypeError and not also UnboundLocalError in ImageFile.Parser() #2525
   [joshblum]
 
