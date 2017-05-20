@@ -4,7 +4,7 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
-- Update FreeType to 2.8
+- Update FreeType to 2.8 #2535
   [radarhere]
 
 - Raise TypeError and not also UnboundLocalError in ImageFile.Parser() #2525
@@ -18,7 +18,7 @@ Changelog (Pillow)
 
 - Remove WITH_DEBUG compilation flag #2522
   [wiredfool]
-  
+
 - Fix return value on parameter parse error in _webp.c #2521
   [adw1n]
 
@@ -30,12 +30,12 @@ Changelog (Pillow)
 
 - Doc: Release Process Changes #2516
   [wiredfool]
-  
+
 - CI: Added region for s3 deployment on appveyor #2515
   [wiredfool]
-  
+
 - Doc: Updated references to point to existing files #2507
-  [radarhere]  
+  [radarhere]
 
 - Return copy on Image crop if crop dimensions match the image #2471
   [radarhere]
