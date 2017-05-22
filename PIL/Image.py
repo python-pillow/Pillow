@@ -2444,6 +2444,7 @@ def open(fp, mode="r"):
 
     if im:
         im._exclusive_fp = exclusive_fp
+        fp.close()
         return im
 
     if exclusive_fp:
