@@ -4,7 +4,7 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
-- Update FreeType to 2.8 #2535
+- Dependencies: Update FreeType to 2.8 and LibTIFF to 4.0.8 #2535 #2537
   [radarhere]
 
 - Raise TypeError and not also UnboundLocalError in ImageFile.Parser() #2525
