@@ -85,6 +85,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         err = inflateInit(&context->z_stream);
         if (err < 0) {
             state->errcode = IMAGING_CODEC_CONFIG;
+            free(context->previous);
             return -1;
         }
 
