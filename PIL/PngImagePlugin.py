@@ -113,7 +113,8 @@ class ChunkStream(object):
             length = i32(s)
 
         if not is_cid(cid):
-            raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
+            if not ImageFile.LOAD_TRUNCATED_IMAGES:
+                raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
 
         return cid, pos, length
 
