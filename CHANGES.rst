@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Remove 'not yet implemented' methods from PIL 1.1.4 #2538
+  [hugovk]
+  
 - Dependencies: Update FreeType to 2.8 and LibTIFF to 4.0.8 #2535 #2537
   [radarhere]
 
