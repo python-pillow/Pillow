@@ -314,22 +314,6 @@ path_compact(PyPathObject* self, PyObject* args)
 }
 
 static PyObject*
-path_clip_polygon(PyPathObject* self, PyObject* args)
-{
-    /* Clip path representing a single polygon */
-    PyErr_SetString(PyExc_RuntimeError, "not yet implemented");
-    return NULL;
-}
-
-static PyObject*
-path_clip_polyline(PyPathObject* self, PyObject* args)
-{
-    /* Clip path representing a single polyline (outline) */
-    PyErr_SetString(PyExc_RuntimeError, "not yet implemented");
-    return NULL;
-}
-
-static PyObject*
 path_getbbox(PyPathObject* self, PyObject* args)
 {
     /* Find bounding box */
@@ -534,8 +518,6 @@ path_transform(PyPathObject* self, PyObject* args)
 static struct PyMethodDef methods[] = {
     {"getbbox", (PyCFunction)path_getbbox, 1},
     {"tolist", (PyCFunction)path_tolist, 1},
-    {"clip_polygon", (PyCFunction)path_clip_polygon, 1},
-    {"clip_polyline", (PyCFunction)path_clip_polyline, 1},
     {"compact", (PyCFunction)path_compact, 1},
     {"map", (PyCFunction)path_map, 1},
     {"transform", (PyCFunction)path_transform, 1},
