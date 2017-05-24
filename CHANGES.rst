@@ -7,7 +7,7 @@ Changelog (Pillow)
 - Remove 'not yet implemented' methods from PIL 1.1.4 #2538
   [hugovk]
   
-- Dependencies: Update FreeType to 2.8 and LibTIFF to 4.0.8 #2535 #2537
+- Dependencies: Update FreeType to 2.8, LibTIFF to 4.0.8 and libimagequant to 2.9.1 #2535 #2537 #2540
   [radarhere]
 
 - Raise TypeError and not also UnboundLocalError in ImageFile.Parser() #2525
