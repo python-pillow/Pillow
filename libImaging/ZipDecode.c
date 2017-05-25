@@ -281,7 +281,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
 
 int ImagingZipDecodeCleanup(ImagingCodecState state){
-    /* called to fee the decompression engine when the decode terminates
+    /* called to free the decompression engine when the decode terminates
        due to a corrupt or truncated image
     */
     ZIPSTATE* context = (ZIPSTATE*) state->context;
