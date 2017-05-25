@@ -137,6 +137,8 @@ class FreeTypeFont(object):
         return self.font.ascent, self.font.descent
 
     def getsize(self, text):
+        if bytes is not str and isinstance(text, bytes):
+            text = text.decode()
         size, offset = self.font.getsize(text)
         return (size[0] + offset[0], size[1] + offset[1])
 

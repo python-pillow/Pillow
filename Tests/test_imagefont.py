@@ -460,11 +460,15 @@ try:
             self.assertEqual(t.font.x_ppem, 20)
             self.assertEqual(t.font.y_ppem, 20)
             self.assertEqual(t.font.glyphs, 4177)
-            self.assertEqual(t.getsize('A'), (12, 16))
-            self.assertEqual(t.getsize('AB'), (24, 16))
-            self.assertEqual(t.getsize('M'), (12, 16))
-            self.assertEqual(t.getsize('y'), (12, 20))
-            self.assertEqual(t.getsize('a'), (12, 16))
+            for text, size in [
+                ['A', (12, 16)],
+                ['AB', (24, 16)],
+                ['M', (12, 16)],
+                ['y', (12, 20)],
+                ['a', (12, 16)]
+            ]:
+                self.assertEqual(t.getsize(text), size)
+                self.assertEqual(t.getsize(text.encode()), size)
 
 
 except ImportError:
