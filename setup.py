@@ -465,9 +465,10 @@ class pil_build_ext(build_ext):
                 # Add the directory to the include path so we can include
                 # <openjpeg.h> rather than having to cope with the versioned
                 # include path
-                print()
-                print("====> Adding {} to {}".format(best_path, self.compiler.include_dirs))
-                print()
+                # FIXME (melvyn-sopacua):
+                # At this point it's possible that best_path is already in
+                # self.compiler.include_dirs. Should investigate how that is
+                # possible.
                 _add_directory(self.compiler.include_dirs, best_path, 0)
                 feature.jpeg2000 = 'openjp2'
                 feature.openjpeg_version = '.'.join(str(x) for x in best_version)
