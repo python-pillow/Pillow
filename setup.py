@@ -63,6 +63,9 @@ def _add_directory(path, subdir, where=None):
         else:
             _dbg('Inserting path %s', subdir)
             path.insert(where, subdir)
+    elif subdir in path and where is not None:
+        path.remove(subdir)
+        path.insert(where, subdir)
 
 
 def _find_include_file(self, include):
@@ -462,6 +465,9 @@ class pil_build_ext(build_ext):
                 # Add the directory to the include path so we can include
                 # <openjpeg.h> rather than having to cope with the versioned
                 # include path
+                print()
+                print("====> Adding {} to {}".format(best_path, self.compiler.include_dirs))
+                print()
                 _add_directory(self.compiler.include_dirs, best_path, 0)
                 feature.jpeg2000 = 'openjp2'
                 feature.openjpeg_version = '.'.join(str(x) for x in best_version)
