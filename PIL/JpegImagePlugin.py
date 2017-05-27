@@ -554,7 +554,6 @@ RAWMODE = {
     "1": "L",
     "L": "L",
     "RGB": "RGB",
-    "RGBA": "RGB",
     "RGBX": "RGB",
     "CMYK": "CMYK;I",  # assume adobe conventions
     "YCbCr": "YCbCr",
@@ -602,14 +601,6 @@ def _save(im, fp, filename):
         rawmode = RAWMODE[im.mode]
     except KeyError:
         raise IOError("cannot write mode %s as JPEG" % im.mode)
-
-    if im.mode == 'RGBA':
-        warnings.warn(
-            'You are saving RGBA image as JPEG. The alpha channel will be '
-            'discarded. This conversion is deprecated and will be disabled '
-            'in Pillow 3.7. Please, convert the image to RGB explicitly.',
-            DeprecationWarning
-        )
 
     info = im.encoderinfo
 
