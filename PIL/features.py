@@ -2,7 +2,7 @@ from . import Image
 
 modules = {
     "pil": "PIL._imaging",
-    "tkinter": "PIL._imagingtk",
+    "tkinter": "PIL._tkinter_finder",
     "freetype2": "PIL._imagingft",
     "littlecms2": "PIL._imagingcms",
     "webp": "PIL._webp",
