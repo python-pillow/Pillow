@@ -3,7 +3,7 @@
 set -e
 
 sudo apt-get update
-sudo apt-get -qq install libfreetype6-dev liblcms2-dev\
+sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk \
 			 python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick
 pip install cffi
 pip install nose
