@@ -270,24 +270,3 @@ Methods
     :param text: Text to be measured.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
-
-Legacy API
-----------
-
-The :py:class:`~PIL.ImageDraw.Draw` class contains a constructor and a number
-of methods which are provided for backwards compatibility only. For this to
-work properly, you should either use options on the drawing primitives, or
-these methods. Do not mix the old and new calling conventions.
-
-
-.. py:function:: PIL.ImageDraw.ImageDraw(image)
-
-    :rtype: :py:class:`~PIL.ImageDraw.Draw`
-
-.. py:method:: PIL.ImageDraw.Draw.setfont(font)
-
-    .. deprecated:: 1.1.5
-
-    Sets the default font to use for the text method.
-
-    :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
