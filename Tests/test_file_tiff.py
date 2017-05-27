@@ -6,6 +6,7 @@ import sys
 from helper import unittest, PillowTestCase, hopper, py3
 
 from PIL import Image, TiffImagePlugin
+from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION, RESOLUTION_UNIT
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,6 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.mode, 'RGB')
 
     def test_xyres_tiff(self):
-        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         filename = "Tests/images/pil168.tif"
         im = Image.open(filename)
 
@@ -94,7 +94,6 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.info['dpi'], (72., 72.))
 
     def test_xyres_fallback_tiff(self):
-        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION, RESOLUTION_UNIT
         filename = "Tests/images/compression.tif"
         im = Image.open(filename)
 
@@ -112,7 +111,6 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.info['dpi'], (100., 100.))
 
     def test_int_resolution(self):
-        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         filename = "Tests/images/pil168.tif"
         im = Image.open(filename)
 
@@ -123,7 +121,6 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.info['dpi'], (71., 71.))
 
     def test_save_setting_missing_resolution(self):
-        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         b = BytesIO()
         Image.open("Tests/images/10ct_32bit_128.tiff").save(
             b, format="tiff", resolution=123.45)
@@ -447,8 +444,8 @@ class TestFileTiff(PillowTestCase):
     def test_saving_icc_profile(self):
         # Tests saving TIFF with icc_profile set.
         # At the time of writing this will only work for non-compressed tiffs
-        # as libtiff does not support embedded ICC profiles, ImageFile._save(..)
-        # however does.
+        # as libtiff does not support embedded ICC profiles,
+        # ImageFile._save(..) however does.
         im = Image.new('RGB', (1, 1))
         im.info['icc_profile'] = 'Dummy value'
 
@@ -486,7 +483,6 @@ class TestFileTiff(PillowTestCase):
         self.assertFalse(fp.closed)
 
 
-
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileTiffW32(PillowTestCase):
     def test_fd_leak(self):
@@ -510,6 +506,7 @@ class TestFileTiffW32(PillowTestCase):
         # this should not fail, as load should have closed the file pointer,
         # and close should have closed the mmap
         os.remove(tmpfile)
+
 
 if __name__ == '__main__':
     unittest.main()
