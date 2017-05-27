@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Build: Ignore OpenJpeg 1.5 on FreeBSD #2544
+  [melvyn-sopacua]
+
 - Remove 'not yet implemented' methods from PIL 1.1.4 #2538
   [hugovk]
   
