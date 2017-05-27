@@ -1,0 +1,9 @@
+4.2.0
+-----
+
+Removed Deprecated Items
+========================
+
+Several deprecated items have been removed.
+
+* The methods :py:meth:`PIL.ImageWin.Dib.fromstring` and :py:meth:`PIL.ImageWin.Dib.tostring` have been removed.
