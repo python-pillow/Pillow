@@ -274,16 +274,6 @@ class TestFileTiff(PillowTestCase):
         # Assert
         self.assertIsInstance(ret, str)
 
-    def test_as_dict_deprecation(self):
-        # Arrange
-        filename = "Tests/images/pil136.tiff"
-        im = Image.open(filename)
-
-        self.assert_warning(DeprecationWarning, im.tag_v2.as_dict)
-        self.assert_warning(DeprecationWarning, im.tag.as_dict)
-        self.assertEqual(dict(im.tag_v2), im.tag_v2.as_dict())
-        self.assertEqual(dict(im.tag), im.tag.as_dict())
-
     def test_dict(self):
         # Arrange
         filename = "Tests/images/pil136.tiff"
@@ -484,7 +474,7 @@ class TestFileTiff(PillowTestCase):
 
     def test_close_on_load_nonexclusive(self):
         tmpfile = self.tempfile("temp.tif")
-        
+
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
             im.save(tmpfile)
 
@@ -495,7 +485,7 @@ class TestFileTiff(PillowTestCase):
         im.load()
         self.assertFalse(fp.closed)
 
-        
+
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileTiffW32(PillowTestCase):
@@ -503,7 +493,7 @@ class TestFileTiffW32(PillowTestCase):
         tmpfile = self.tempfile("temp.tif")
         import os
 
-        # this is an mmaped file. 
+        # this is an mmaped file.
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
             im.save(tmpfile)
 
@@ -516,7 +506,7 @@ class TestFileTiffW32(PillowTestCase):
 
         # this closes the mmap
         im.close()
-        
+
         # this should not fail, as load should have closed the file pointer,
         # and close should have closed the mmap
         os.remove(tmpfile)

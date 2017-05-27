@@ -462,15 +462,6 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     def __str__(self):
         return str(dict(self))
 
-    def as_dict(self):
-        """Return a dictionary of the image's tags.
-
-        .. deprecated:: 3.0.0
-        """
-        warnings.warn("as_dict() is deprecated. " +
-                      "Please use dict(ifd) instead.", DeprecationWarning)
-        return dict(self)
-
     def named(self):
         """
         :returns: dict of name|key: value
