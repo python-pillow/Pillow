@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Docs: Update install docs for FreeBSD #2546
+  [wiredfool]
+
 - Build: Ignore OpenJpeg 1.5 on FreeBSD #2544
   [melvyn-sopacua]
 
