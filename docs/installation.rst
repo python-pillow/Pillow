@@ -159,7 +159,7 @@ Many of Pillow's features require external libraries:
 
   * Pillow has been tested with openjpeg **2.0.0** and **2.1.0**.
   * Pillow does **not** support the earlier **1.5** series which ships
-    with Ubuntu and Debian.
+    with Ubuntu <= 14.04 and Debian Jessie.
 
 * **libimagequant** provides improved color quantization
 
@@ -265,7 +265,7 @@ Windows build in the ``winbuild`` directory.
 Building on FreeBSD
 ^^^^^^^^^^^^^^^^^^^
 
-.. Note:: Only FreeBSD 10 tested
+.. Note:: Only FreeBSD 10 and 11 tested
 
 Make sure you have Python's development libraries installed.::
 
@@ -275,9 +275,9 @@ Or for Python 3::
 
     $ sudo pkg install python3
 
-Prerequisites are installed on **FreeBSD 10** with::
+Prerequisites are installed on **FreeBSD 10 or 11** with::
 
-    $ sudo pkg install jpeg tiff webp lcms2 freetype2
+    $ sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg
 
 
 Building on Linux
@@ -403,6 +403,10 @@ These platforms have been reported to work at the versions mentioned.
 | Gentoo Linux                     | 2.7,3.2                      | 2.1.0                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | FreeBSD 10.2                     | 2.7,3.4                      | 3.1.0                          |x86-64                 |
++----------------------------------+------------------------------+--------------------------------+-----------------------+
+| FreeBSD 10.3                     | 2.7,3.4,3.5                  | 4.1.1                          |x86-64                 |
++----------------------------------+------------------------------+--------------------------------+-----------------------+
+| FreeBSD 11.0                     | 2.7,3.4,3.5,3.6              | 4.1.1                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | Windows 8.1 Pro                  | 2.6,2.7,3.2,3.3,3.4          | 2.4.0                          |x86,x86-64             |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
