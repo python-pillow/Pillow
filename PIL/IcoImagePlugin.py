@@ -176,8 +176,8 @@ class IcoFile(object):
             # figure out where AND mask image starts
             mode = a[0]
             bpp = 8
-            for k in BmpImagePlugin.BIT2MODE.keys():
-                if mode == BmpImagePlugin.BIT2MODE[k][1]:
+            for k, v in BmpImagePlugin.BIT2MODE.items():
+                if mode == v[1]:
                     bpp = k
                     break
 

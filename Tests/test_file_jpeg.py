@@ -439,7 +439,7 @@ class TestFileJpeg(PillowTestCase):
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
         from PIL import ExifTags
-        tag_ids = dict(zip(ExifTags.TAGS.values(), ExifTags.TAGS.keys()))
+        tag_ids = {v: k for k, v in ExifTags.TAGS.items()}
 
         # Assert
         self.assertEqual(tag_ids['RelatedImageWidth'], 0x1001)

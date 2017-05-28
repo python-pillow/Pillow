@@ -190,7 +190,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # Exclude ones that have special meaning
         # that we're already testing them
         im = Image.open('Tests/images/hopper_g4.tif')
-        for tag in im.tag_v2.keys():
+        for tag in im.tag_v2:
             try:
                 del(core_items[tag])
             except:

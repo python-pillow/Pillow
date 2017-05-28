@@ -95,7 +95,7 @@ class IptcImageFile(ImageFile.ImageFile):
                 tagdata = self.fp.read(size)
             else:
                 tagdata = None
-            if tag in list(self.info.keys()):
+            if tag in self.info:
                 if isinstance(self.info[tag], list):
                     self.info[tag].append(tagdata)
                 else:
