@@ -176,6 +176,24 @@ class MorphTests(PillowTestCase):
         self.assertEqual(len(coords), 4)
         self.assertEqual(tuple(coords), ((2, 2), (4, 2), (2, 4), (4, 4)))
 
+    def test_mirroring(self):
+        # Test 'M' for mirroring
+        mop = ImageMorph.MorphOp(patterns=['1:(... ... ...)->0',
+                                           'M:(00. 01. ...)->1'])
+        count, Aout = mop.apply(self.A)
+        self.assertEqual(count, 7)
+        self.assert_img_equal_img_string(Aout,
+                                         """
+
+                                         .......
+                                         .......
+                                         ..1.1..
+                                         .......
+                                         .......
+                                         .......
+                                         .......
+                                         """)
+
     def test_non_binary_images(self):
         im = hopper('RGB')
         mop = ImageMorph.MorphOp(op_name="erosion8")
