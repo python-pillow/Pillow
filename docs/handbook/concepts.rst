@@ -45,8 +45,8 @@ image. The current release supports the following standard modes:
 PIL also provides limited support for a few special modes, including ``LA`` (L
 with alpha), ``RGBX`` (true color with padding) and ``RGBa`` (true color with
 premultiplied alpha). However, PIL doesn’t support user-defined modes; if you
-to handle band combinations that are not listed above, use a sequence of Image
-objects.
+need to handle band combinations that are not listed above, use a sequence of
+Image objects.
 
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
 attribute. This is a string containing one of the above values.
@@ -114,7 +114,7 @@ pixel, the Python Imaging Library provides different resampling *filters*.
     in the input image is used.
 
 ``HAMMING``
-    Produces more sharp image than ``BILINEAR``, doesn't have dislocations
+    Produces a sharper image than ``BILINEAR``, doesn't have dislocations
     on local level like with ``BOX``.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
