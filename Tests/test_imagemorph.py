@@ -261,6 +261,19 @@ class MorphTests(PillowTestCase):
         # Act / Assert
         self.assertRaises(Exception, lambda: mop.load_lut(invalid_mrl))
 
+    def test_roundtrip_mrl(self):
+        # Arrange
+        tempfile = self.tempfile('temp.mrl')
+        mop = ImageMorph.MorphOp(op_name='corner')
+        initial_lut = mop.lut
+
+        # Act
+        mop.save_lut(tempfile)
+        mop.load_lut(tempfile)
+
+        # Act / Assert
+        self.assertEqual(mop.lut, initial_lut)
+
     def test_set_lut(self):
         # Arrange
         lb = ImageMorph.LutBuilder(op_name='corner')
