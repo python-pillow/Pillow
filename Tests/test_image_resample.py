@@ -158,14 +158,12 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
 
     def test_enlarge_hamming(self):
         for mode in ['RGBX', 'RGB', 'La', 'L']:
-            case = self.make_case(mode, (4, 4), 0xe1)
-            case = case.resize((8, 8), Image.HAMMING)
-            data = ('e1 e1 ea d1'
-                    'e1 e1 ea d1'
-                    'ea ea f4 d9'
-                    'd1 d1 d9 c4')
+            case = self.make_case(mode, (2, 2), 0xe1)
+            case = case.resize((4, 4), Image.HAMMING)
+            data = ('e1 d2'
+                    'd2 c5')
             for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (8, 8)))
+                self.check_case(channel, self.make_sample(data, (4, 4)))
 
     def test_enlarge_bicubic(self):
         for mode in ['RGBX', 'RGB', 'La', 'L']:

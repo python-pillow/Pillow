@@ -32,6 +32,8 @@ static inline double hamming_filter(double x)
         x = -x;
     if (x == 0.0)
         return 1.0;
+    if (x >= 1.0)
+        return 0.0;
     x = x * M_PI;
     return sin(x) / x * (0.54f + 0.46f * cos(x));
 }
