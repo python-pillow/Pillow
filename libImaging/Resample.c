@@ -168,10 +168,12 @@ precompute_coeffs(int inSize, int outSize, struct filter *filterp,
         center = (xx + 0.5) * scale;
         ww = 0.0;
         ss = 1.0 / filterscale;
-        xmin = (int) floor(center - support);
+        // Round the value
+        xmin = (int) (center - support + 0.5);
         if (xmin < 0)
             xmin = 0;
-        xmax = (int) ceil(center + support);
+        // Round the value
+        xmax = (int) (center + support + 0.5);
         if (xmax > inSize)
             xmax = inSize;
         xmax -= xmin;
@@ -180,21 +182,6 @@ precompute_coeffs(int inSize, int outSize, struct filter *filterp,
             double w = filterp->filter((x + xmin - center + 0.5) * ss);
             k[x] = w;
             ww += w;
-            
-            // We can skip extreme coefficients if they are zeroes.
-            if (w == 0) {
-                // Skip from the start.
-                if (x == 0) {
-                    // At next loop `x` will be 0.
-                    x -= 1;
-                    // But `w` will not be 0, because it based on `xmin`.
-                    xmin += 1;
-                    xmax -= 1;
-                } else if (x == xmax - 1) {
-                    // Truncate the last coefficient for current `xx`.
-                    xmax -= 1;
-                }
-            }
         }
         for (x = 0; x < xmax; x++) {
             if (ww != 0.0)
