@@ -476,8 +476,8 @@ Reading from an open file
 ::
 
     from PIL import Image
-    fp = open("hopper.ppm", "rb")
-    im = Image.open(fp)
+    with open("hopper.ppm", "rb") as fp:
+        im = Image.open(fp)
 
 To read an image from string data, use the :py:class:`~StringIO.StringIO`
 class:
