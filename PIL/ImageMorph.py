@@ -234,7 +234,7 @@ class MorphOp(object):
         with open(filename, 'rb') as f:
             self.lut = bytearray(f.read())
 
-        if len(self.lut) != 8192:
+        if len(self.lut) != LUT_SIZE:
             self.lut = None
             raise Exception('Wrong size operator file!')
 
