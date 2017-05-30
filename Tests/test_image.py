@@ -390,7 +390,7 @@ class TestRegistry(PillowTestCase):
     def test_encode_registry(self):
 
         Image.register_encoder('MOCK', mock_encode)
-        self.assert_('MOCK' in Image.ENCODERS)
+        self.assertIn('MOCK', Image.ENCODERS)
 
         enc = Image._getencoder('RGB', 'MOCK', ('args',), extra=('extra',))
 
