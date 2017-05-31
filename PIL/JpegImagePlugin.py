@@ -768,7 +768,7 @@ def jpeg_factory(fp=None, filename=None):
             # It's actually an MPO
             from .MpoImagePlugin import MpoImageFile
             im = MpoImageFile(fp, filename)
-    except (TypeError, IndexError):
+    except (TypeError, IndexError, ValueError):
         # It is really a JPEG
         pass
     except SyntaxError:
