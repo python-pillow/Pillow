@@ -545,6 +545,10 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             if legacy_api and self.tagtype[tag] in [5, 10]:
                 values = values,
             dest[tag], = values
+        elif tag == ICCPROFILE and self.tagtype[tag] == 7:
+            dest[tag], = values
+        elif tag == ICCPROFILE and self.tagtype[tag] == 1:
+            dest[tag] = bytes(values)
         else:
             dest[tag] = values
 
