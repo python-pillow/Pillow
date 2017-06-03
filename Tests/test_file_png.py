@@ -316,7 +316,7 @@ class TestFilePng(PillowTestCase):
                 test_file = f.read()[:offset]
 
             im = Image.open(BytesIO(test_file))
-            self.assertTrue(im.fp is not None)
+            self.assertIsNotNone(im.fp)
             self.assertRaises((IOError, SyntaxError), im.verify)
 
     def test_verify_ignores_crc_error(self):
@@ -331,7 +331,7 @@ class TestFilePng(PillowTestCase):
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
             im = load(image_data)
-            self.assertTrue(im is not None)
+            self.assertIsNotNone(im)
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
@@ -462,7 +462,7 @@ class TestFilePng(PillowTestCase):
 
     def test_save_icc_profile(self):
         im = Image.open("Tests/images/icc_profile_none.png")
-        self.assertEqual(im.info['icc_profile'], None)
+        self.assertIsNone(im.info['icc_profile'])
 
         with_icc = Image.open("Tests/images/icc_profile.png")
         expected_icc = with_icc.info['icc_profile']
@@ -485,7 +485,7 @@ class TestFilePng(PillowTestCase):
 
     def test_roundtrip_no_icc_profile(self):
         im = Image.open("Tests/images/icc_profile_none.png")
-        self.assertEqual(im.info['icc_profile'], None)
+        self.assertIsNone(im.info['icc_profile'])
 
         im = roundtrip(im)
         self.assertNotIn('icc_profile', im.info)

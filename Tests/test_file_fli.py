@@ -38,7 +38,7 @@ class TestFileFli(PillowTestCase):
                 im.seek(n_frames)
                 break
             except EOFError:
-                self.assertTrue(im.tell() < n_frames)
+                self.assertLess(im.tell(), n_frames)
 
 
 if __name__ == '__main__':

@@ -173,8 +173,7 @@ class TestFileLibTiff(LibTiffTestCase):
                                 'RowsPerStrip',
                                 'StripOffsets']
             for field in requested_fields:
-                self.assertTrue(field in reloaded,
-                                "%s not in metadata" % field)
+                self.assertIn(field, reloaded, "%s not in metadata" % field)
 
     def test_additional_metadata(self):
         # these should not crash. Seriously dummy data, most of it doesn't make

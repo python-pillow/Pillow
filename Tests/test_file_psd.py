@@ -44,7 +44,7 @@ class TestImagePsd(PillowTestCase):
                 im.seek(n_frames+1)
                 break
             except EOFError:
-                self.assertTrue(im.tell() < n_frames)
+                self.assertLess(im.tell(), n_frames)
 
     def test_seek_tell(self):
         im = Image.open(test_file)

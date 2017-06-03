@@ -20,15 +20,15 @@ class TestImageGetColors(PillowTestCase):
         self.assertEqual(getcolors("I"), 255)
         self.assertEqual(getcolors("F"), 255)
         self.assertEqual(getcolors("P"), 90)  # fixed palette
-        self.assertEqual(getcolors("RGB"), None)
-        self.assertEqual(getcolors("RGBA"), None)
-        self.assertEqual(getcolors("CMYK"), None)
-        self.assertEqual(getcolors("YCbCr"), None)
+        self.assertIsNone(getcolors("RGB"))
+        self.assertIsNone(getcolors("RGBA"))
+        self.assertIsNone(getcolors("CMYK"))
+        self.assertIsNone(getcolors("YCbCr"))
 
-        self.assertEqual(getcolors("L", 128), None)
+        self.assertIsNone(getcolors("L", 128))
         self.assertEqual(getcolors("L", 1024), 255)
 
-        self.assertEqual(getcolors("RGB", 8192), None)
+        self.assertIsNone(getcolors("RGB", 8192))
         self.assertEqual(getcolors("RGB", 16384), 10100)
         self.assertEqual(getcolors("RGB", 100000), 10100)
 
@@ -48,7 +48,7 @@ class TestImageGetColors(PillowTestCase):
                     (7960, (31, 20, 33))]
 
         A = im.getcolors(maxcolors=2)
-        self.assertEqual(A, None)
+        self.assertIsNone(A)
 
         A = im.getcolors(maxcolors=3)
         A.sort()

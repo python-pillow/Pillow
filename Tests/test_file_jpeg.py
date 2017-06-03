@@ -93,7 +93,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertEqual(test(72), (72, 72))
         self.assertEqual(test(300), (300, 300))
         self.assertEqual(test(100, 200), (100, 200))
-        self.assertEqual(test(0), None)  # square pixels
+        self.assertIsNone(test(0))  # square pixels
 
     def test_icc(self):
         # Test ICC support

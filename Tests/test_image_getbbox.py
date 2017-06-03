@@ -14,7 +14,7 @@ class TestImageGetBbox(PillowTestCase):
 
         # 8-bit mode
         im = Image.new("L", (100, 100), 0)
-        self.assertEqual(im.getbbox(), None)
+        self.assertIsNone(im.getbbox())
 
         im.paste(255, (10, 25, 90, 75))
         self.assertEqual(im.getbbox(), (10, 25, 90, 75))
@@ -27,7 +27,7 @@ class TestImageGetBbox(PillowTestCase):
 
         # 32-bit mode
         im = Image.new("RGB", (100, 100), 0)
-        self.assertEqual(im.getbbox(), None)
+        self.assertIsNone(im.getbbox())
 
         im.paste(255, (10, 25, 90, 75))
         self.assertEqual(im.getbbox(), (10, 25, 90, 75))
