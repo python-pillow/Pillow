@@ -170,7 +170,7 @@ class TestImage(PillowTestCase):
         im2 = Image.new('RGB', (25, 25), 'white')
 
         # Act / Assert
-        self.assertTrue(im1 != im2)
+        self.assertNotEqual(im1, im2)
 
     def test_alpha_composite(self):
         # https://stackoverflow.com/questions/3374878

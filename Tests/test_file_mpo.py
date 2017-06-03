@@ -110,7 +110,7 @@ class TestFileMpo(PillowTestCase):
                 im.seek(n_frames)
                 break
             except EOFError:
-                self.assertTrue(im.tell() < n_frames)
+                self.assertLess(im.tell(), n_frames)
 
     def test_image_grab(self):
         for test_file in test_files:

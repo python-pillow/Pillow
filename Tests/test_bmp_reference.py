@@ -99,8 +99,7 @@ class TestBmpReference(PillowTestCase):
                                os.path.join(base, 'g', 'pal8rle.bmp'),
                                os.path.join(base, 'g', 'pal4rle.bmp'))
                 if f not in unsupported:
-                    self.assertTrue(
-                        False, "Unsupported Image %s: %s" % (f, msg))
+                    self.fail("Unsupported Image %s: %s" % (f, msg))
 
 
 if __name__ == '__main__':

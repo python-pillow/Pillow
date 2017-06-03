@@ -34,10 +34,10 @@ class Test_IFDRational(PillowTestCase):
 
         xres = IFDRational(72)
         yres = IFDRational(72)
-        self.assertTrue(xres._val is not None)
-        self.assertTrue(xres.numerator is not None)
-        self.assertTrue(xres.denominator is not None)
-        self.assertTrue(yres._val is not None)
+        self.assertIsNotNone(xres._val)
+        self.assertIsNotNone(xres.numerator)
+        self.assertIsNotNone(xres.denominator)
+        self.assertIsNotNone(yres._val)
 
         self.assertTrue(xres and 1)
         self.assertTrue(xres and yres)

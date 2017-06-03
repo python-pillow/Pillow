@@ -96,7 +96,7 @@ class TestFileWebpMetadata(PillowTestCase):
 
         file_path = "Tests/images/flower.jpg"
         image = Image.open(file_path)
-        self.assertTrue('exif' in image.info)
+        self.assertIn('exif', image.info)
 
         test_buffer = BytesIO()
 
