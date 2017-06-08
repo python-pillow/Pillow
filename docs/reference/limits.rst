@@ -10,7 +10,7 @@ Internal Limits
 * Image sizes cannot be negative. These are checked both in
   ``Storage.c`` and ``Image.py``
 
-* Image sizes may be 0. (At least, prior to 3.4)
+* Image sizes may be 0. (Although not in 3.4)
 
 * Maximum pixel dimensions are limited to INT32, or 2^31 by the sizes
   in the image header.
