@@ -10,8 +10,8 @@ notifications:
 matrix:
   fast_finish: true
   include:
-    - python: "pypy"
-    - python: "pypy3"
+    - python: "pypy-5.7.1"
+    - python: "pypy3.3-5.2-alpha1"
     - python: '3.6'
     - python: '2.7'
     - python:  "2.7_with_system_site_packages" # For PyQt4
