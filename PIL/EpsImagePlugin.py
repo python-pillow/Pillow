@@ -209,7 +209,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 fp = open(self.fp.name, "Ur")
             else:
                 # Python3, can use bare open command.
-                fp = open(self.fp.name, "Ur", encoding='latin-1')
+                fp = open(self.fp.name, "r", encoding='latin-1')
         except:
             # Expect this for bytesio/stringio
             fp = PSFile(self.fp)
