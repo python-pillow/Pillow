@@ -134,7 +134,7 @@ class pil_build_ext(build_ext):
         features = ['zlib', 'jpeg', 'tiff', 'freetype', 'lcms', 'webp',
                     'webpmux', 'jpeg2000', 'imagequant']
 
-        required = {'jpeg', 'zlib'}
+        required = ['jpeg', 'zlib']
 
         def __init__(self):
             for f in self.features:
