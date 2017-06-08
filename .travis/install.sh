@@ -9,12 +9,10 @@ pip install cffi
 pip install nose
 pip install check-manifest
 pip install olefile
-# Pyroma tests sometimes hang on PyPy; skip
-if [ "$TRAVIS_PYTHON_VERSION" != "pypy" ]; then pip install pyroma; fi
-
+pip install pyroma
 pip install coverage
 
-# docs only on python 2.7
+# docs only on Python 2.7
 if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then pip install -r requirements.txt ; fi
 
 # clean checkout for manifest
