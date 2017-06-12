@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- CI: Update pypy on TravisCI
+  [hugovk]
+
 - ImageMorph: Fix wrong expected size of MRLs read from disk #2561
   [dov]
 
