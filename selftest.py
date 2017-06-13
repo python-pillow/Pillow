@@ -178,25 +178,14 @@ if __name__ == "__main__":
         ("freetype2", "FREETYPE2"),
         ("littlecms2", "LITTLECMS2"),
         ("webp", "WEBP"),
-        ("transp_webp", "Transparent WEBP")
-    ]:
-        supported = features.check_module(name)
-
-        if supported is None:
-            # A method was being tested, but the module required
-            # for the method could not be correctly imported
-            pass
-        elif supported:
-            print("---", feature, "support ok")
-        else:
-            print("***", feature, "support not installed")
-    for name, feature in [
+        ("transp_webp", "Transparent WEBP"),
+        ("webp_mux", "WEBPMUX"),
         ("jpg", "JPEG"),
         ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),
         ("libtiff", "LIBTIFF")
     ]:
-        if features.check_codec(name):
+        if features.check(name):
             print("---", feature, "support ok")
         else:
             print("***", feature, "support not installed")
