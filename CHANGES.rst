@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Tiff: Support append_images for saving multipage TIFFs #2406
+  [blochl]
+
+- Doc: Clarify that draft is only implemented for JPEG and PCD #2409
+  [wiredfool]
+
 - Test: MicImagePlugin #2447
   [hugovk]
 
