@@ -1,0 +1,11 @@
+4.2.0
+-----
+
+Removed Deprecated Items
+========================
+
+Several deprecated items have been removed.
+
+* The methods :py:meth:`PIL.ImageWin.Dib.fromstring`, :py:meth:`PIL.ImageWin.Dib.tostring` and :py:meth:`PIL.TiffImagePlugin.ImageFileDirectory_v2.as_dict` have been removed.
+
+* Before Pillow 4.2.0, attempting to save an RGBA image as JPEG would discard the alpha channel. From Pillow 3.4.0, a deprecation warning was shown. From Pillow 4.2.0, the deprecation warning is removed and an :py:exc:`IOError` is raised.

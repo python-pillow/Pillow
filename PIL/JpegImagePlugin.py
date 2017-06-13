@@ -127,7 +127,7 @@ def APP(self, marker):
                 dpi = x_resolution[0] / x_resolution[1]
             except TypeError:
                 dpi = x_resolution
-            if resolution_unit == 3: # cm
+            if resolution_unit == 3:  # cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
             self.info["dpi"] = dpi, dpi
@@ -423,7 +423,8 @@ def _fixup_dict(src_dict):
         try:
             if len(value) == 1 and not isinstance(value, dict):
                 return value[0]
-        except: pass
+        except:
+            pass
         return value
 
     return {k: _fixup(v) for k, v in src_dict.items()}
@@ -554,7 +555,6 @@ RAWMODE = {
     "1": "L",
     "L": "L",
     "RGB": "RGB",
-    "RGBA": "RGB",
     "RGBX": "RGB",
     "CMYK": "CMYK;I",  # assume adobe conventions
     "YCbCr": "YCbCr",
@@ -602,14 +602,6 @@ def _save(im, fp, filename):
         rawmode = RAWMODE[im.mode]
     except KeyError:
         raise IOError("cannot write mode %s as JPEG" % im.mode)
-
-    if im.mode == 'RGBA':
-        warnings.warn(
-            'You are saving RGBA image as JPEG. The alpha channel will be '
-            'discarded. This conversion is deprecated and will be disabled '
-            'in Pillow 3.7. Please, convert the image to RGB explicitly.',
-            DeprecationWarning
-        )
 
     info = im.encoderinfo
 
@@ -705,8 +697,8 @@ def _save(im, fp, filename):
     # "progressive" is the official name, but older documentation
     # says "progression"
     # FIXME: issue a warning if the wrong form is used (post-1.1.7)
-    progressive = info.get("progressive", False) or\
-                  info.get("progression", False)
+    progressive = (info.get("progressive", False) or
+                   info.get("progression", False))
 
     optimize = info.get("optimize", False)
 

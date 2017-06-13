@@ -242,6 +242,7 @@ def _limit_rational(val, max_val):
     n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
 
+
 ##
 # Wrapper for TIFF IFDs.
 
@@ -462,15 +463,6 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     def __str__(self):
         return str(dict(self))
 
-    def as_dict(self):
-        """Return a dictionary of the image's tags.
-
-        .. deprecated:: 3.0.0
-        """
-        warnings.warn("as_dict() is deprecated. " +
-                      "Please use dict(ifd) instead.", DeprecationWarning)
-        return dict(self)
-
     def named(self):
         """
         :returns: dict of name|key: value
@@ -535,7 +527,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                             self.tagtype[tag] = 2
 
         if self.tagtype[tag] == 7 and bytes is not str:
-            values = [value.encode("ascii", 'replace') if isinstance(value, str) else value]
+            values = [value.encode("ascii", 'replace') if isinstance(
+                      value, str) else value]
 
         values = tuple(info.cvt_enum(value) for value in values)
 
@@ -588,9 +581,13 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             b"".join(self._pack(fmt, value) for value in values))
 
     list(map(_register_basic,
-             [(3, "H", "short"), (4, "L", "long"),
-              (6, "b", "signed byte"), (8, "h", "signed short"),
-              (9, "l", "signed long"), (11, "f", "float"), (12, "d", "double")]))
+             [(3, "H", "short"),
+              (4, "L", "long"),
+              (6, "b", "signed byte"),
+              (8, "h", "signed short"),
+              (9, "l", "signed long"),
+              (11, "f", "float"),
+              (12, "d", "double")]))
 
     @_register_loader(1, 1)  # Basic type, except for the legacy API.
     def load_byte(self, data, legacy_api=True):
@@ -662,7 +659,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
         try:
             for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
-                tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
+                tag, typ, count, data = self._unpack("HHL4s",
+                                                     self._ensure_read(fp, 12))
                 if DEBUG:
                     tagname = TiffTags.lookup(tag).name
                     typname = TYPES.get(typ, "unknown")
@@ -690,8 +688,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
                 if len(data) != size:
                     warnings.warn("Possibly corrupt EXIF data.  "
-                                  "Expecting to read %d bytes but only got %d. "
-                                  "Skipping tag %s" % (size, len(data), tag))
+                                  "Expecting to read %d bytes but only got %d."
+                                  " Skipping tag %s" % (size, len(data), tag))
                     continue
 
                 if not data:
@@ -750,7 +748,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             if len(data) <= 4:
                 entries.append((tag, typ, count, data.ljust(4, b"\0"), b""))
             else:
-                entries.append((tag, typ, count, self._pack("L", offset), data))
+                entries.append((tag, typ, count, self._pack("L", offset),
+                                data))
                 offset += (len(data) + 1) // 2 * 2  # pad to word
 
         # update strip offset data to point beyond auxiliary data
@@ -778,6 +777,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                 fp.write(b"\0")
 
         return offset
+
 
 ImageFileDirectory_v2._load_dispatch = _load_dispatch
 ImageFileDirectory_v2._write_dispatch = _write_dispatch
@@ -1178,7 +1178,8 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.info["dpi"] = xres * 2.54, yres * 2.54
             elif resunit is None:  # used to default to 1, but now 2)
                 self.info["dpi"] = xres, yres
-                # For backward compatibility, we also preserve the old behavior.
+                # For backward compatibility,
+                # we also preserve the old behavior
                 self.info["resolution"] = xres, yres
             else:  # No absolute unit of measurement
                 self.info["resolution"] = xres, yres
@@ -1294,6 +1295,8 @@ class TiffImageFile(ImageFile.ImageFile):
         if self.mode == "P":
             palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+
+
 #
 # --------------------------------------------------------------------
 # Write TIFF files
@@ -1682,13 +1685,10 @@ class AppendingTiffWriter:
 
     def fixIFD(self):
         numTags = self.readShort()
-        # trace("fixing IFD at %X; number of tags: %u (0x%X)", self.f.tell()-2,
-        #      numTags, numTags)
 
         for i in range(numTags):
-            tag, fieldType, count = struct.unpack(self.tagFormat, self.f.read(8))
-            # trace("  at %X: tag %u (0x%X), type %u, count %u", self.f.tell()-8,
-            #      tag, tag, fieldType, count)
+            tag, fieldType, count = struct.unpack(self.tagFormat,
+                                                  self.f.read(8))
 
             fieldSize = self.fieldSizes[fieldType]
             totalSize = fieldSize * count
@@ -1755,6 +1755,7 @@ def _save_all(im, fp, filename):
                 tf.newFrame()
     finally:
         im.seek(cur_idx)
+
 
 #
 # --------------------------------------------------------------------

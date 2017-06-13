@@ -476,17 +476,11 @@ class TestFileJpeg(PillowTestCase):
             img.save(out, "JPEG")
 
     def test_save_wrong_modes(self):
-        out = BytesIO()
-        for mode in ['LA', 'La', 'RGBa', 'P']:
-            img = Image.new(mode, (20, 20))
-            self.assertRaises(IOError, img.save, out, "JPEG")
-
-    def test_save_modes_with_warnings(self):
         # ref https://github.com/python-pillow/Pillow/issues/2005
         out = BytesIO()
-        for mode in ['RGBA']:
+        for mode in ['LA', 'La', 'RGBA', 'RGBa', 'P']:
             img = Image.new(mode, (20, 20))
-            self.assert_warning(DeprecationWarning, img.save, out, "JPEG")
+            self.assertRaises(IOError, img.save, out, "JPEG")
 
     def test_save_tiff_with_dpi(self):
         # Arrange
