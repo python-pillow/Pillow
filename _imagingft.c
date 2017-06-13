@@ -45,6 +45,9 @@
 #include <raqm.h>
 #endif
 
+#define LAYOUT_FALLBACK 0
+#define LAYOUT_RAQM 1
+
 typedef struct
 {
   int index, x_offset, x_advance, y_offset;
@@ -67,6 +70,7 @@ typedef struct {
     PyObject_HEAD
     FT_Face face;
     unsigned char *font_bytes;
+    int layout_engine;
 } FontObject;
 
 static PyTypeObject Font_Type;
@@ -100,11 +104,13 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     char* filename = NULL;
     int size;
     int index = 0;
+    int layout_engine = 0;
     unsigned char* encoding;
     unsigned char* font_bytes;
     int font_bytes_size = 0;
     static char* kwlist[] = {
-        "filename", "size", "index", "encoding", "font_bytes", NULL
+        "filename", "size", "index", "encoding", "font_bytes", 
+        "layout_engine", NULL
     };
 
     if (!library) {
@@ -115,10 +121,10 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         return NULL;
     }
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|iss#", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|iss#i", kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
                                      &size, &index, &encoding, &font_bytes,
-                                     &font_bytes_size)) {
+                                     &font_bytes_size, &layout_engine)) {
         return NULL;
     }
 
@@ -130,6 +136,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     }
 
     self->face = NULL;
+    self->layout_engine = layout_engine;
 
     if (filename && font_bytes_size <= 0) {
         self->font_bytes = NULL;
@@ -409,7 +416,11 @@ text_layout(PyObject* string, FontObject* self, const char* dir,
 {
     size_t count;
 #ifdef HAVE_RAQM
-    count = text_layout_raqm(string, self, dir, features, glyph_info,  mask);
+    if (self->layout_engine == LAYOUT_RAQM) {
+        count = text_layout_raqm(string, self, dir, features, glyph_info,  mask);
+    } else {
+        count = text_layout_fallback(string, self, dir, features, glyph_info, mask);
+    }
 #else
     count = text_layout_fallback(string, self, dir, features, glyph_info, mask);
 #endif

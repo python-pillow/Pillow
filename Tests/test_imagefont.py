@@ -379,12 +379,12 @@ try:
             # Make a copy of FreeTypeFont so we can patch the original
             free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)
             with SimplePatcher(ImageFont, '_FreeTypeFont', free_type_font):
-                def loadable_font(filepath, size, index, encoding):
+                def loadable_font(filepath, size, index, encoding, *args, **kwargs):
                     if filepath == path_to_fake:
                         return ImageFont._FreeTypeFont(FONT_PATH, size, index,
-                                                       encoding)
+                                                       encoding, *args, **kwargs)
                     return ImageFont._FreeTypeFont(filepath, size, index,
-                                                   encoding)
+                                                   encoding, *args, **kwargs)
                 with SimplePatcher(ImageFont, 'FreeTypeFont', loadable_font):
                     font = ImageFont.truetype(fontname)
                     # Make sure it's loaded

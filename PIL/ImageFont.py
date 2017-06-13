@@ -41,6 +41,9 @@ try:
 except ImportError:
     core = _imagingft_not_installed()
 
+LAYOUT_BASIC = 0
+LAYOUT_RAQM = 1
+
 # FIXME: add support for pilfont2 format (see FontFile.py)
 
 # --------------------------------------------------------------------
@@ -115,7 +118,8 @@ class ImageFont(object):
 class FreeTypeFont(object):
     "FreeType font wrapper (requires _imagingft service)"
 
-    def __init__(self, font=None, size=10, index=0, encoding=""):
+    def __init__(self, font=None, size=10, index=0, encoding="",
+                 layout_engine=None):
         # FIXME: use service provider instead
 
         self.path = font
@@ -123,12 +127,21 @@ class FreeTypeFont(object):
         self.index = index
         self.encoding = encoding
 
+        if layout_engine not in (LAYOUT_BASIC, LAYOUT_RAQM):
+            layout_engine = LAYOUT_BASIC
+            if core.HAVE_RAQM:
+                layout_engine = LAYOUT_RAQM
+        if layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
+            layout_engine = LAYOUT_BASIC
+
+        self.layout_engine = layout_engine
+
         if isPath(font):
-            self.font = core.getfont(font, size, index, encoding)
+            self.font = core.getfont(font, size, index, encoding, layout_engine=layout_engine)
         else:
             self.font_bytes = font.read()
             self.font = core.getfont(
-                "", size, index, encoding, self.font_bytes)
+                "", size, index, encoding, self.font_bytes, layout_engine)
 
     def getname(self):
         return self.font.family, self.font.style
@@ -152,7 +165,8 @@ class FreeTypeFont(object):
         self.font.render(text, im.id, mode == "1", direction, features)
         return im, offset
 
-    def font_variant(self, font=None, size=None, index=None, encoding=None):
+    def font_variant(self, font=None, size=None, index=None, encoding=None,
+                     layout_engine=None):
         """
         Create a copy of this FreeTypeFont object,
         using any specified arguments to override the settings.
@@ -165,8 +179,9 @@ class FreeTypeFont(object):
         return FreeTypeFont(font=self.path if font is None else font,
                             size=self.size if size is None else size,
                             index=self.index if index is None else index,
-                            encoding=self.encoding if encoding is None else
-                            encoding)
+                            encoding=self.encoding if encoding is None else encoding,
+                            layout_engine=self.layout_engine if layout_engine is None else layout_engine
+                            )
 
 
 class TransposedFont(object):
@@ -212,7 +227,8 @@ def load(filename):
     return f
 
 
-def truetype(font=None, size=10, index=0, encoding=""):
+def truetype(font=None, size=10, index=0, encoding="",
+             layout_engine=None):
     """
     Load a TrueType or OpenType font file, and create a font object.
     This function loads a font object from the given file, and creates
@@ -230,12 +246,14 @@ def truetype(font=None, size=10, index=0, encoding=""):
                      Symbol), "ADOB" (Adobe Standard), "ADBE" (Adobe Expert),
                      and "armn" (Apple Roman). See the FreeType documentation
                      for more information.
+    :param layout_engine: Which layout engine to use, if available:
+                     `ImageFont.LAYOUT_BASIC` or `ImageFont.LAYOUT_RAQM`.                  
     :return: A font object.
     :exception IOError: If the file could not be read.
     """
 
     try:
-        return FreeTypeFont(font, size, index, encoding)
+        return FreeTypeFont(font, size, index, encoding, layout_engine)
     except IOError:
         ttf_filename = os.path.basename(font)
 
@@ -266,16 +284,16 @@ def truetype(font=None, size=10, index=0, encoding=""):
                 for walkfilename in walkfilenames:
                     if ext and walkfilename == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
-                        return FreeTypeFont(fontpath, size, index, encoding)
+                        return FreeTypeFont(fontpath, size, index, encoding, layout_engine)
                     elif not ext and os.path.splitext(walkfilename)[0] == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
                         if os.path.splitext(fontpath)[1] == '.ttf':
-                            return FreeTypeFont(fontpath, size, index, encoding)
+                            return FreeTypeFont(fontpath, size, index, encoding, layout_engine)
                         if not ext and first_font_with_a_different_extension is None:
                             first_font_with_a_different_extension = fontpath
         if first_font_with_a_different_extension:
             return FreeTypeFont(first_font_with_a_different_extension, size,
-                                index, encoding)
+                                index, encoding, layout_engine)
         raise
 
 
