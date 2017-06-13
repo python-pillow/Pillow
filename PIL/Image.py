@@ -274,7 +274,7 @@ def _conv_type_shape(im):
         return shape+(extra,), typ
 
 
-MODES = sorted(_MODEINFO.keys())
+MODES = sorted(_MODEINFO)
 
 # raw modes that may be memory mapped.  NOTE: if you change this, you
 # may have to modify the stride calculation in map.c too!

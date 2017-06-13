@@ -12,7 +12,7 @@ from config import (compilers, compiler_from_env, pythons, pyversion_from_env,
 
 def setup_vms():
     ret = []
-    for py in pythons.keys():
+    for py in pythons:
         for arch in ('', X64_EXT):
             ret.append("virtualenv -p c:/Python%s%s/python.exe --clear %s%s%s"
                        % (py, arch, VIRT_BASE, py, arch))

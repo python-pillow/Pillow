@@ -119,7 +119,7 @@ class TestImageColor(PillowTestCase):
     # look for rounding errors (based on code by Tim Hatch)
     def test_rounding_errors(self):
 
-        for color in list(ImageColor.colormap.keys()):
+        for color in ImageColor.colormap:
             expected = Image.new(
                 "RGB", (1, 1), color).convert("L").getpixel((0, 0))
             actual = ImageColor.getcolor(color, 'L')
