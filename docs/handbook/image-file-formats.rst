@@ -124,7 +124,7 @@ are available::
     eliminating unused colors. This is only useful if the palette can
     be compressed to the next smaller power of 2 elements.
 
-**palette** 
+**palette**
     Use the specified palette for the saved image. The palette should
     be a bytes or bytearray object containing the palette entries in
     RGBRGB... form. It should be no more than 768 bytes. Alternately,
@@ -788,6 +788,8 @@ MIC
 PIL identifies and reads Microsoft Image Composer (MIC) files. When opened, the
 first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
 :py:meth:`~file.tell` to read other sprites from the file.
+
+Note that there may be an embedded gamma of 2.2 in MIC files.
 
 MPO
 ^^^

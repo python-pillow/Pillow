@@ -2,7 +2,6 @@ from helper import hopper, unittest, PillowTestCase
 
 from PIL import Image, PsdImagePlugin
 
-# sample ppm stream
 test_file = "Tests/images/hopper.psd"
 
 

@@ -3,7 +3,6 @@ from helper import unittest, PillowTestCase, hopper
 import io
 from PIL import Image, IcoImagePlugin
 
-# sample ppm stream
 TEST_ICO_FILE = "Tests/images/hopper.ico"
 
 
