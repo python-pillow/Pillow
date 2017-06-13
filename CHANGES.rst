@@ -4,10 +4,31 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
-- Update Feature Detection
+- Remove deprecated code #2549
+  [hugovk]
+  
+- Added append_images to PDF saving #2526
+  [radarhere]
+ 
+- Remove unused function core image function new_array #2548
+  [hugovk]
+
+- Remove unnecessary calls to dict.keys() #2551
+  [jdufresne]
+  
+- Add more ImageDraw.py tests and remove unused Draw.c code #2533
+  [hugovk]
+
+- Test: More tests for ImageMorph #2554
+  [hugovk]
+
+- Test: McIDAS area file #2552
+  [radarhere]
+
+- Update Feature Detection #2520
   [wiredfool]
 
-- CI: Update pypy on TravisCI
+- CI: Update pypy on TravisCI #2573
   [hugovk]
 
 - ImageMorph: Fix wrong expected size of MRLs read from disk #2561
