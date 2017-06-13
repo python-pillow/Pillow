@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Use round() instead of floor() to eliminate zero coefficients in resample #2558
+  [homm]
+
 - Remove deprecated code #2549
   [hugovk]
   
