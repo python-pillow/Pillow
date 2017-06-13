@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Test: MicImagePlugin #2447
+  [hugovk]
+
 - Use round() instead of floor() to eliminate zero coefficients in resample #2558
   [homm]
 
