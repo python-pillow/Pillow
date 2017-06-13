@@ -135,25 +135,11 @@ _outline_close(OutlineObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject*
-_outline_transform(OutlineObject* self, PyObject* args)
-{
-    double a[6];
-    if (!PyArg_ParseTuple(args, "(dddddd)", a+0, a+1, a+2, a+3, a+4, a+5))
-        return NULL;
-
-    ImagingOutlineTransform(self->outline, a);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
 static struct PyMethodDef _outline_methods[] = {
     {"line", (PyCFunction)_outline_line, 1},
     {"curve", (PyCFunction)_outline_curve, 1},
     {"move", (PyCFunction)_outline_move, 1},
     {"close", (PyCFunction)_outline_close, 1},
-    {"transform", (PyCFunction)_outline_transform, 1},
     {NULL, NULL} /* sentinel */
 };
 
