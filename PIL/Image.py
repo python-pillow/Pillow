@@ -1051,7 +1051,7 @@ class Image(object):
         in place.  If the image has already been loaded, this method has no
         effect.
 
-        Warning: This method is not implemented for most images. It is
+        Note: This method is not implemented for most images. It is
         currently implemented only for JPEG and PCD images.
 
         :param mode: The requested mode.
