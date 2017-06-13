@@ -632,18 +632,6 @@ _new(PyObject* self, PyObject* args)
 }
 
 static PyObject*
-_new_array(PyObject* self, PyObject* args)
-{
-    char* mode;
-    int xsize, ysize;
-
-    if (!PyArg_ParseTuple(args, "s(ii)", &mode, &xsize, &ysize))
-        return NULL;
-
-    return PyImagingNew(ImagingNewArray(mode, xsize, ysize));
-}
-
-static PyObject*
 _new_block(PyObject* self, PyObject* args)
 {
     char* mode;
@@ -3027,7 +3015,6 @@ static struct PyMethodDef methods[] = {
 #endif
 
     /* Misc. */
-    {"new_array", (PyCFunction)_new_array, 1},
     {"new_block", (PyCFunction)_new_block, 1},
 
     {"save_ppm", (PyCFunction)_save_ppm, 1},
