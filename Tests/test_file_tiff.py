@@ -441,6 +441,18 @@ class TestFileTiff(PillowTestCase):
         with Image.open(mp) as im:
             self.assertEqual(im.n_frames, 3)
 
+        # Test appending images
+        mp = io.BytesIO()
+        im = Image.new('RGB', (100, 100), '#f00')
+        ims = [Image.new('RGB', (100, 100), color) for color
+               in ['#0f0', '#00f']]
+        im.save(mp, format="TIFF", save_all=True, append_images=ims)
+
+        mp.seek(0, os.SEEK_SET)
+        reread = Image.open(mp)
+        self.assertEqual(reread.n_frames, 3)
+
+
     def test_saving_icc_profile(self):
         # Tests saving TIFF with icc_profile set.
         # At the time of writing this will only work for non-compressed tiffs
