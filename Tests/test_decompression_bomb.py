@@ -21,7 +21,7 @@ class TestDecompressionBomb(PillowTestCase):
         # Arrange
         # Turn limit off
         Image.MAX_IMAGE_PIXELS = None
-        self.assertEqual(Image.MAX_IMAGE_PIXELS, None)
+        self.assertIsNone(Image.MAX_IMAGE_PIXELS)
 
         # Act / Assert
         # Implicit assert: no warning.

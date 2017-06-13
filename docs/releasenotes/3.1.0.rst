@@ -68,7 +68,7 @@ Out of Spec Metadata
 ++++++++++++++++++++
 
 In Pillow 3.0 and 3.1, images that contain metadata that is internally
-consistent but not in agreement with the TIFF spec may cause an
+consistent, but not in agreement with the TIFF spec, may cause an
 exception when reading the metadata.  This can happen when a tag that
 is specified to have a single value is stored with an array of values.
 

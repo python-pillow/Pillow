@@ -66,6 +66,7 @@ class McIdasImageFile(ImageFile.ImageFile):
 
         self.tile = [("raw", (0, 0) + self.size, offset, (rawmode, stride, 1))]
 
+
 # --------------------------------------------------------------------
 # registry
 

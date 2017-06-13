@@ -276,6 +276,7 @@ Converting between modes
 
 ::
 
+    from PIL import Image
     im = Image.open("hopper.ppm").convert("L")
 
 The library supports transformations between each supported mode and the “L”
@@ -459,6 +460,7 @@ As described earlier, the :py:func:`~PIL.Image.open` function of the
 :py:mod:`~PIL.Image` module is used to open an image file. In most cases, you
 simply pass it the filename as an argument::
 
+    from PIL import Image
     im = Image.open("hopper.ppm")
 
 If everything goes well, the result is an :py:class:`PIL.Image.Image` object.
@@ -473,8 +475,9 @@ Reading from an open file
 
 ::
 
-    fp = open("hopper.ppm", "rb")
-    im = Image.open(fp)
+    from PIL import Image
+    with open("hopper.ppm", "rb") as fp:
+        im = Image.open(fp)
 
 To read an image from string data, use the :py:class:`~StringIO.StringIO`
 class:

@@ -170,7 +170,7 @@ class TestImage(PillowTestCase):
         im2 = Image.new('RGB', (25, 25), 'white')
 
         # Act / Assert
-        self.assertTrue(im1 != im2)
+        self.assertNotEqual(im1, im2)
 
     def test_alpha_composite(self):
         # https://stackoverflow.com/questions/3374878
@@ -390,7 +390,7 @@ class TestRegistry(PillowTestCase):
     def test_encode_registry(self):
 
         Image.register_encoder('MOCK', mock_encode)
-        self.assert_('MOCK' in Image.ENCODERS)
+        self.assertIn('MOCK', Image.ENCODERS)
 
         enc = Image._getencoder('RGB', 'MOCK', ('args',), extra=('extra',))
 

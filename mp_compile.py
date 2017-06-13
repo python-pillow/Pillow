@@ -54,7 +54,8 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
 
 def install():
 
-    fl_pypy3 = hasattr(sys, 'pypy_version_info') and sys.version_info > (3, 0)
+    fl_pypy3 = (hasattr(sys, 'pypy_version_info') and
+                (3, 0) < sys.version_info < (3, 3))
     fl_win = sys.platform.startswith('win')
     fl_cygwin = sys.platform.startswith('cygwin')
 
@@ -81,5 +82,6 @@ def install():
     else:
         print("Single threaded build, not installing mp_compile:"
               "%s processes" % MAX_PROCS)
+
 
 install()

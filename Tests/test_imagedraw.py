@@ -30,6 +30,8 @@ BBOX2 = [X0, Y0, X1, Y1]
 POINTS1 = [(10, 10), (20, 40), (30, 30)]
 POINTS2 = [10, 10, 20, 40, 30, 30]
 
+KITE_POINTS = [(10, 50), (70, 10), (90, 50), (70, 90), (10, 50)]
+
 
 class TestImageDraw(PillowTestCase):
 
@@ -78,6 +80,37 @@ class TestImageDraw(PillowTestCase):
         self.helper_arc(BBOX2, 0, 180)
         self.helper_arc(BBOX2, 0.5, 180.4)
 
+    def test_arc_end_le_start(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        start = 270.5
+        end = 0
+
+        # Act
+        draw.arc(BBOX1, start=start, end=end)
+        del draw
+
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_arc_end_le_start.png"))
+
+    def test_arc_no_loops(self):
+        # No need to go in loops
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        start = 5
+        end = 370
+
+        # Act
+        draw.arc(BBOX1, start=start, end=end)
+        del draw
+
+        # Assert
+        self.assert_image_similar(
+            im, Image.open("Tests/images/imagedraw_arc_no_loops.png"), 1)
+
     def test_bitmap(self):
         # Arrange
         small = Image.open("Tests/images/pil123rgba.png").resize((50, 50))
@@ -92,45 +125,49 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_bitmap.png"))
 
-    def helper_chord(self, bbox, start, end):
+    def helper_chord(self, mode, bbox, start, end):
         # Arrange
-        im = Image.new("RGB", (W, H))
+        im = Image.new(mode, (W, H))
         draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_chord_{}.png".format(mode)
 
         # Act
         draw.chord(bbox, start, end, fill="red", outline="yellow")
         del draw
 
         # Assert
-        self.assert_image_similar(
-            im, Image.open("Tests/images/imagedraw_chord.png"), 1)
+        self.assert_image_similar(im, Image.open(expected), 1)
 
     def test_chord1(self):
-        self.helper_chord(BBOX1, 0, 180)
-        self.helper_chord(BBOX1, 0.5, 180.4)
+        for mode in ["RGB", "L"]:
+            self.helper_chord(mode, BBOX1, 0, 180)
+            self.helper_chord(mode, BBOX1, 0.5, 180.4)
 
     def test_chord2(self):
-        self.helper_chord(BBOX2, 0, 180)
-        self.helper_chord(BBOX2, 0.5, 180.4)
+        for mode in ["RGB", "L"]:
+            self.helper_chord(mode, BBOX2, 0, 180)
+            self.helper_chord(mode, BBOX2, 0.5, 180.4)
 
-    def helper_ellipse(self, bbox):
+    def helper_ellipse(self, mode, bbox):
         # Arrange
-        im = Image.new("RGB", (W, H))
+        im = Image.new(mode, (W, H))
         draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_ellipse_{}.png".format(mode)
 
         # Act
         draw.ellipse(bbox, fill="green", outline="blue")
         del draw
 
         # Assert
-        self.assert_image_similar(
-            im, Image.open("Tests/images/imagedraw_ellipse.png"), 1)
+        self.assert_image_similar(im, Image.open(expected), 1)
 
     def test_ellipse1(self):
-        self.helper_ellipse(BBOX1)
+        for mode in ["RGB", "L"]:
+            self.helper_ellipse(mode, BBOX1)
 
     def test_ellipse2(self):
-        self.helper_ellipse(BBOX2)
+        for mode in ["RGB", "L"]:
+            self.helper_ellipse(mode, BBOX2)
 
     def test_ellipse_edge(self):
         # Arrange
@@ -267,6 +304,23 @@ class TestImageDraw(PillowTestCase):
     def test_polygon2(self):
         self.helper_polygon(POINTS2)
 
+    def test_polygon_kite(self):
+        # Test drawing lines of different gradients (dx>dy, dy>dx) and
+        # vertical (dx==0) and horizontal (dy==0) lines
+        for mode in ["RGB", "L"]:
+            # Arrange
+            im = Image.new(mode, (W, H))
+            draw = ImageDraw.Draw(im)
+            expected = "Tests/images/imagedraw_polygon_kite_{}.png".format(
+                mode)
+
+            # Act
+            draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
+            del draw
+
+            # Assert
+            self.assert_image_equal(im, Image.open(expected))
+
     def helper_rectangle(self, bbox):
         # Arrange
         im = Image.new("RGB", (W, H))
@@ -285,6 +339,21 @@ class TestImageDraw(PillowTestCase):
 
     def test_rectangle2(self):
         self.helper_rectangle(BBOX2)
+
+    def test_big_rectangle(self):
+        # Test drawing a rectangle bigger than the image
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        bbox = [(-1, -1), (W+1, H+1)]
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_big_rectangle.png"
+
+        # Act
+        draw.rectangle(bbox, fill="orange")
+        del draw
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
 
     def test_floodfill(self):
         # Arrange
@@ -477,6 +546,21 @@ class TestImageDraw(PillowTestCase):
         draw.line((5, 14, 14, 5), BLACK, 3)
         self.assert_image_equal(img, expected,
                                 'line oblique 45 inverted 3px wide B failed')
+
+    def test_wide_line_dot(self):
+        # Test drawing a wide "line" from one point to another just draws
+        # a single point
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_wide_line_dot.png"
+
+        # Act
+        draw.line([(50, 50), (50, 50)], width=3)
+        del draw
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
 
 
 if __name__ == '__main__':

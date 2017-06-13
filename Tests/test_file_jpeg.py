@@ -93,7 +93,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertEqual(test(72), (72, 72))
         self.assertEqual(test(300), (300, 300))
         self.assertEqual(test(100, 200), (100, 200))
-        self.assertEqual(test(0), None)  # square pixels
+        self.assertIsNone(test(0))  # square pixels
 
     def test_icc(self):
         # Test ICC support
@@ -439,7 +439,7 @@ class TestFileJpeg(PillowTestCase):
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
         from PIL import ExifTags
-        tag_ids = dict(zip(ExifTags.TAGS.values(), ExifTags.TAGS.keys()))
+        tag_ids = {v: k for k, v in ExifTags.TAGS.items()}
 
         # Assert
         self.assertEqual(tag_ids['RelatedImageWidth'], 0x1001)

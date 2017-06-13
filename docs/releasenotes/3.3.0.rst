@@ -29,9 +29,9 @@ Resizing
 ========
 
 Image resampling for 8-bit per channel images was rewritten using only integer
-computings. This is faster on most of the platforms and doesn't introduce
-precision errors on the wide range of scales. With other performance
-improvements, this makes resampling 60% faster on average.
+computings. This is faster on most platforms and doesn't introduce precision
+errors on the wide range of scales. With other performance improvements, this
+makes resampling 60% faster on average.
 
 Color calculation for images in the ``LA`` mode on semitransparent pixels
 was fixed.
@@ -41,7 +41,7 @@ Rotation
 ========
 
 Rotation for angles divisible by 90 degrees now always uses transposition.
-This greatly improve both quality and performance in this cases.
+This greatly improves both quality and performance in this case.
 Also, the bug with wrong image size calculation when rotating by 90 degrees
 was fixed.
 
@@ -52,4 +52,3 @@ Image Metadata
 The return type for binary data in version 2 Exif and Tiff metadata
 has been changed from a tuple of integers to bytes. This is a change
 from the behavior since ``3.0.0``.
-

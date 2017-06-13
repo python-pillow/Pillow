@@ -123,7 +123,7 @@ class LutBuilder(object):
                            .replace('0', 'Z')
                            .replace('1', '0')
                            .replace('Z', '1'))
-                res = '%d' % (1-int(res))
+                res = 1-int(res)
                 patterns.append((pattern, res))
 
         return patterns
@@ -152,8 +152,8 @@ class LutBuilder(object):
             patterns += self._pattern_permute(pattern, options, result)
 
 #        # Debugging
-#        for p,r in patterns:
-#            print(p,r)
+#        for p, r in patterns:
+#            print(p, r)
 #        print('--')
 
         # compile the patterns into regular expressions for speed
@@ -234,7 +234,7 @@ class MorphOp(object):
         with open(filename, 'rb') as f:
             self.lut = bytearray(f.read())
 
-        if len(self.lut) != 8192:
+        if len(self.lut) != LUT_SIZE:
             self.lut = None
             raise Exception('Wrong size operator file!')
 

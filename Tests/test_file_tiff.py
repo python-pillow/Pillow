@@ -234,7 +234,7 @@ class TestFileTiff(PillowTestCase):
                 im.seek(n_frames)
                 break
             except EOFError:
-                self.assertTrue(im.tell() < n_frames)
+                self.assertLess(im.tell(), n_frames)
 
     def test_multipage(self):
         # issue #862
@@ -481,7 +481,6 @@ class TestFileTiff(PillowTestCase):
         self.assertFalse(fp.closed)
         im.load()
         self.assertFalse(fp.closed)
-
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileTiffW32(PillowTestCase):

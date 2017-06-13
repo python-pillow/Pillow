@@ -16,8 +16,8 @@ class TestImagingResampleVulnerability(PillowTestCase):
     def test_invalid_size(self):
         im = hopper()
 
+        # Should not crash
         im.resize((100, 100))
-        self.assertTrue(True, "Should not Crash")
 
         with self.assertRaises(ValueError):
             im.resize((-100, 100))

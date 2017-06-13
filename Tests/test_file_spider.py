@@ -69,7 +69,7 @@ class TestImageSpider(PillowTestCase):
         img_list = SpiderImagePlugin.loadImageSeries(file_list)
 
         # Assert
-        self.assertEqual(img_list, None)
+        self.assertIsNone(img_list)
 
     def test_isInt_not_a_number(self):
         # Arrange

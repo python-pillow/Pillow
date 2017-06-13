@@ -45,7 +45,7 @@ class TestImageTk(PillowTestCase):
 
         # Test no relevant entry
         im = ImageTk._get_image_from_kw(kw)
-        self.assertEqual(im, None)
+        self.assertIsNone(im)
 
     def test_photoimage(self):
         for mode in TK_MODES:
