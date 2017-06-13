@@ -828,7 +828,7 @@ setup_module(PyObject* m) {
 #else
     v = PyBool_FromLong(0);
 #endif
-    PyDict_SetItemString(d, "have_raqm", v);
+    PyDict_SetItemString(d, "HAVE_RAQM", v);
 
     return 0;
 }
