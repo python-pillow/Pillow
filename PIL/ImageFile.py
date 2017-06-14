@@ -186,7 +186,7 @@ class ImageFile(Image.Image):
                     self.map = None
 
         self.load_prepare()
-
+        err_code = -3 # initialize to unknown error
         if not self.map:
             # sort tiles in file order
             self.tile.sort(key=_tilesort)
