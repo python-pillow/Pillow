@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- ImageFile: Ensure that the `err_code` variable is initialized in case of exception. #2363
+  [alexkiro]
+  
 - Tiff: Support append_images for saving multipage TIFFs #2406
   [blochl]
 
