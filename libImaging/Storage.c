@@ -117,7 +117,8 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize,
         im->type = IMAGING_TYPE_INT32;
 
     } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 \
-                           || strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0)  {
+                           || strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0 \
+                           || strcmp(mode, "I;16S") == 0)  {
         /* EXPERIMENTAL */
         /* 16-bit raw integer images */
         im->bands = 1;
