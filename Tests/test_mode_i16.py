@@ -79,6 +79,7 @@ class TestModeI16(PillowTestCase):
         basic("I;16")
         basic("I;16B")
         basic("I;16L")
+        basic("I;16S")
 
         basic("I")
 
@@ -92,6 +93,7 @@ class TestModeI16(PillowTestCase):
         self.assertEqual(tobytes("L"), b"\x01")
         self.assertEqual(tobytes("I;16"), b"\x01\x00")
         self.assertEqual(tobytes("I;16B"), b"\x00\x01")
+        self.assertEqual(tobytes("I;16S"), b"\x01\x00")
         self.assertEqual(tobytes("I"), b"\x01\x00\x00\x00"[::order])
 
     def test_convert(self):
@@ -105,6 +107,10 @@ class TestModeI16(PillowTestCase):
         self.verify(im.convert("I;16B"))
         self.verify(im.convert("I;16B").convert("L"))
         self.verify(im.convert("I;16B").convert("I"))
+
+        self.verify(im.convert("I;16S"))
+        self.verify(im.convert("I;16S").convert("L"))
+        self.verify(im.convert("I;16S").convert("I"))
 
 
 if __name__ == '__main__':

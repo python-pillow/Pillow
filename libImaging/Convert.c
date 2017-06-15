@@ -694,6 +694,17 @@ I_I16B(UINT8* out, const UINT8* in_, int xsize)
     }
 }
 
+static void
+I_I16S(UINT8* out, const UINT8* in_, int xsize)
+{
+    int x, v;
+    INT32* in = (INT32*) in_;
+    for (x = 0; x < xsize; x++, in++) {
+        v = CLIP16(*in);
+        *out++ = (UINT8) v;
+        *out++ = (UINT8) (v >> 8);
+    }
+}
 
 static void
 I16L_I(UINT8* out_, const UINT8* in, int xsize)
@@ -715,6 +726,15 @@ I16B_I(UINT8* out_, const UINT8* in, int xsize)
 }
 
 static void
+I16S_I(UINT8* out_, const UINT8* in, int xsize)
+{
+    int x;
+    INT32* out = (INT32*) out_;
+    for (x = 0; x < xsize; x++, in += 2)
+      *out++ = (INT16)(in[0] + ((int) in[1] << 8));
+}
+
+static void
 I16L_F(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
@@ -731,6 +751,15 @@ I16B_F(UINT8* out_, const UINT8* in, int xsize)
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++, in += 2)
         *out++ = (FLOAT32) (in[1] + ((int) in[0] << 8));
+}
+
+static void
+I16S_F(UINT8* out_, const UINT8* in, int xsize)
+{
+    int x;
+    FLOAT32* out = (FLOAT32*) out_;
+    for (x = 0; x < xsize; x++, in += 2)
+        *out++ = (FLOAT32) (INT16) (in[0] + ((int) in[1] << 8));
 }
 
 static void
@@ -754,6 +783,16 @@ L_I16B(UINT8* out, const UINT8* in, int xsize)
 }
 
 static void
+L_I16S(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in++) {
+        *out++ = *in;
+        *out++ = 0;
+    }
+}
+
+static void
 I16L_L(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
@@ -773,6 +812,19 @@ I16B_L(UINT8* out, const UINT8* in, int xsize)
             *out++ = 255;
         else
             *out++ = in[1];
+}
+
+static void
+I16S_L(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 2)
+        if (in[1] & 0x80)
+	    *out++ = 0;  /* Negative -> 0 */
+        else if (in[1] != 0)
+	    *out++ = 255;  /* Greater than 255 -> 255 */
+        else
+            *out++ = in[0];
 }
 
 static struct {
@@ -873,9 +925,15 @@ static struct {
     { "L", "I;16B", L_I16B },
     { "I;16B", "L", I16B_L },
 
+    { "I", "I;16S", I_I16S },
+    { "I;16S", "I", I16S_I },
+    { "L", "I;16S", L_I16S },
+    { "I;16S", "L", I16S_L },
+
     { "I;16", "F", I16L_F },
     { "I;16L", "F", I16L_F },
     { "I;16B", "F", I16B_F },
+    { "I;16S", "F", I16S_F },
 
     { NULL }
 };
