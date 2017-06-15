@@ -223,7 +223,7 @@ _MODEINFO = {
     "LAB": ("RGB", "L", ("L", "A", "B")),
     "HSV": ("RGB", "L", ("H", "S", "V")),
 
-    # Experimental modes include I;16, I;16L, I;16B, RGBa, BGR;15, and
+    # Experimental modes include I;16, I;16L, I;16B, I;16S, RGBa, BGR;15, and
     # BGR;24.  Use these modes only if you know exactly what you're
     # doing...
 
