@@ -1373,6 +1373,34 @@ class Image(object):
         else:
             self.im.paste(im, box)
 
+    def alpha_composite(self, im, box=None):
+        """ 'In-place' analog of Image.alpha_composite
+
+        :param im: image to composite over this one
+        :param box: Optional 2 or 4 tuple. If a 2 tuple, the upper
+        left corner. If 4 tuple, (x0,y0,x1,y1)
+
+        Note: Not currently implemented in-place.
+        """
+        if box is None:
+            box = (0, 0, im.width, im.height)                
+            overlay = im
+            if self.size == im.size:
+                src = self
+            else:
+                src = self.crop(box)
+        else:
+            if len(box) == 2:
+                # upper left corner given; get size from overlay image
+                size = im.size
+                box += (box[0]+size[0], box[1]+size[1])
+                
+            src = self.crop(box)
+            overlay = im.crop((0, 0, box[2]-box[0], box[3]-box[1]))
+            
+        result = alpha_composite(src, overlay)
+        self.paste(result, box)
+        
     def point(self, lut, mode=None):
         """
         Maps this image through a lookup table or function.
