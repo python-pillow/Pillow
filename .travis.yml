@@ -48,6 +48,8 @@ script:
        if [ "$DOCKER" == "" ]; then
           .travis/script.sh
        else
+          # the Pillow user in the docker container is UID 1000
+          sudo chown -R 1000 $TRAVIS_BUILD_DIR
           docker run -v $TRAVIS_BUILD_DIR:/Pillow pythonpillow/$DOCKER
        fi
 
