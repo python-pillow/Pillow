@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Add decompression bomb check to Image.crop #2410
+  [wiredfool]
+
 - ImageFile: Ensure that the `err_code` variable is initialized in case of exception. #2363
   [alexkiro]
   
