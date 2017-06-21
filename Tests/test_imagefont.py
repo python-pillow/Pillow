@@ -71,7 +71,6 @@ class TestImageFont(PillowTestCase):
     def test_font_with_name(self):
         self.get_font()
         self._render(FONT_PATH)
-        self._clean()
 
     def _font_as_bytes(self):
         with open(FONT_PATH, 'rb') as f:
@@ -86,12 +85,10 @@ class TestImageFont(PillowTestCase):
         # shared_bytes = self._font_as_bytes()
         # self._render(shared_bytes)
         # self.assertRaises(Exception, lambda: _render(shared_bytes))
-        self._clean()
 
     def test_font_with_open_file(self):
         with open(FONT_PATH, 'rb') as f:
             self._render(f)
-        self._clean()
 
     def _render(self, font):
         txt = "Hello World!"
@@ -103,11 +100,7 @@ class TestImageFont(PillowTestCase):
         d = ImageDraw.Draw(img)
         d.text((10, 10), txt, font=ttf, fill='black')
 
-        img.save('font.png')
         return img
-
-    def _clean(self):
-        os.unlink('font.png')
 
     def test_render_equal(self):
         img_path = self._render(FONT_PATH)
@@ -116,7 +109,6 @@ class TestImageFont(PillowTestCase):
         img_filelike = self._render(font_filelike)
 
         self.assert_image_equal(img_path, img_filelike)
-        self._clean()
 
     def test_textsize_equal(self):
         im = Image.new(mode='RGB', size=(300, 100))
