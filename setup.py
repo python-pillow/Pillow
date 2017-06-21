@@ -584,7 +584,10 @@ class pil_build_ext(build_ext):
         if struct.unpack("h", "\0\1".encode('ascii'))[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
 
-        defs.append(("PILLOW_VERSION", '"%s"'%PILLOW_VERSION))
+        if sys.platform == "win32":
+            defs.append(("PILLOW_VERSION", '"\\"%s\\""'%PILLOW_VERSION))
+        else:
+            defs.append(("PILLOW_VERSION", '"%s"'%PILLOW_VERSION))
 
         exts = [(Extension("PIL._imaging",
                            files,

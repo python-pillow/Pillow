@@ -3435,6 +3435,7 @@ static PyMethodDef functions[] = {
 static int
 setup_module(PyObject* m) {
     PyObject* d = PyModule_GetDict(m);
+    const char* version = (char*)PILLOW_VERSION;
 
     /* Ready object types */
     if (PyType_Ready(&Imaging_Type) < 0)
@@ -3479,7 +3480,7 @@ setup_module(PyObject* m) {
   }
 #endif
 
-    PyDict_SetItemString(d, "PILLOW_VERSION", PyUnicode_FromString(PILLOW_VERSION));
+    PyDict_SetItemString(d, "PILLOW_VERSION", PyUnicode_FromString(version));
 
     return 0;
 }
