@@ -1042,18 +1042,31 @@ class Image(object):
         if box is None:
             return self.copy()
 
-        x0, y0, x1, y1 = map(int, map(round, box))
+        return self._new(self._crop(self.im, box))
 
-        if x0 == 0 and y0 == 0 and (x1, y1) == self.size:
-            return self.copy()
+    def _crop(self, im, box):
+        """
+        Returns a rectangular region from the core image object im.
+
+        This is equivalent to calling im.crop((x0, y0, x1, y1)), but
+        includes additional sanity checks.
+
+        :param im: a core image object
+        :param box: The crop rectangle, as a (left, upper, right, lower)-tuple.
+        :returns: A core image object.
+        """
+
+        x0, y0, x1, y1 = map(int, map(round, box))
 
         if x1 < x0:
             x1 = x0
         if y1 < y0:
             y1 = y0
 
-        return self._new(self.im.crop((x0, y0, x1, y1)))
+        _decompression_bomb_check((x1, y1))
 
+        return im.crop((x0, y0, x1, y1))
+         
     def draft(self, mode, size):
         """
         Configures the image file loader so it returns a version of the
