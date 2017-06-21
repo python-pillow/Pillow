@@ -64,7 +64,7 @@ Fonts
 PIL can use bitmap fonts or OpenType/TrueType fonts.
 
 Bitmap fonts are stored in PIL’s own format, where each font typically consists
-of a two files, one named .pil and the other usually named .pbm. The former
+of two files, one named .pil and the other usually named .pbm. The former
 contains font metrics, the latter raster data.
 
 To load a bitmap font, use the load functions in the :py:mod:`~PIL.ImageFont`
