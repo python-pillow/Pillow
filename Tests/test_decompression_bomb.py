@@ -48,7 +48,7 @@ class TestDecompressionCrop(PillowTestCase):
 
     def setUp(self):
         self.src = hopper()
-        Image.MAX_IMAGE_PIXELS = self.src.height * self.src.width
+        Image.MAX_IMAGE_PIXELS = self.src.height * self.src.width * 4 - 1
 
     def tearDown(self):
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
