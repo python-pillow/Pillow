@@ -29,14 +29,20 @@ class TestDecompressionBomb(PillowTestCase):
         Image.open(TEST_FILE)
 
     def test_warning(self):
-        # Arrange
-        # Set limit to a low, easily testable value
-        Image.MAX_IMAGE_PIXELS = 10
-        self.assertEqual(Image.MAX_IMAGE_PIXELS, 10)
+        # Set limit to trigger warning on the test file
+        Image.MAX_IMAGE_PIXELS = 128 * 128 -1
+        self.assertEqual(Image.MAX_IMAGE_PIXELS, 128 * 128 - 1)
 
-        # Act / Assert
         self.assert_warning(Image.DecompressionBombWarning,
                             lambda: Image.open(TEST_FILE))
+
+    def test_exception(self):
+        # Set limit to trigger exception on the test file
+        Image.MAX_IMAGE_PIXELS = 64 * 128 -1
+        self.assertEqual(Image.MAX_IMAGE_PIXELS, 64 * 128 - 1)
+
+        self.assertRaises(Image.DecompressionBombError,
+                          lambda: Image.open(TEST_FILE))
 
 class TestDecompressionCrop(PillowTestCase):
 
@@ -53,6 +59,7 @@ class TestDecompressionCrop(PillowTestCase):
         box = (0, 0, self.src.width * 2, self.src.height * 2)
         self.assert_warning(Image.DecompressionBombWarning,
                             lambda: self.src.crop(box))    
+
 
 if __name__ == '__main__':
     unittest.main()
