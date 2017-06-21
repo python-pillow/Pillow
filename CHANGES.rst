@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- CI: Change the owner of the TRAVIS_BUILD_DIR, fixing broken docker runs #2587
+  [wiredfool]
+
 - Fix truncated PNG loading for some images, Fix memory leak on truncated PNG images. #2541
   [homm]
   
