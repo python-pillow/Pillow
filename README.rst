@@ -38,10 +38,6 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://coveralls.io/github/python-pillow/Pillow?branch=master
    :alt: Code coverage
 
-.. |health| image:: https://landscape.io/github/python-pillow/Pillow/master/landscape.svg
-   :target: https://landscape.io/github/python-pillow/Pillow/master
-   :alt: Code health
-
 .. |zenodo| image:: https://zenodo.org/badge/17549/python-pillow/Pillow.svg
    :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
 
