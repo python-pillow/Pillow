@@ -44,6 +44,26 @@ class SimplePatcher(object):
 class TestImageFont(PillowTestCase):
     LAYOUT_ENGINE = ImageFont.LAYOUT_BASIC
 
+    # Freetype has different metrics depending on the version.
+    # (and, other things, but first things first)
+    METRICS = { ('2', '3'): {'multiline': 30,
+                             'textsize': 12,
+                             'getters': (13, 16)},
+                ('2', '7'): {'multiline': 6.2,
+                             'textsize': 2.5,
+                             'getters': (12, 16)},
+                ('2', '8'): {'multiline': 6.2,
+                             'textsize': 2.5,
+                             'getters': (12, 16)},
+                'Default': {'multiline': 0.5,
+                            'textsize': 0.5,
+                            'getters': (12, 16)},
+                }
+
+    def setUp(self):
+        freetype_version = tuple(ImageFont.core.freetype2_version.split('.'))[:2]
+        self.metrics = self.METRICS.get(freetype_version, self.METRICS['Default'])
+    
     def get_font(self):
         return ImageFont.truetype(FONT_PATH, FONT_SIZE,
                                   layout_engine=self.LAYOUT_ENGINE)
@@ -125,7 +145,7 @@ class TestImageFont(PillowTestCase):
         target_img = Image.open(target)
 
         # Epsilon ~.5 fails with FreeType 2.7
-        self.assert_image_similar(im, target_img, 2.5)
+        self.assert_image_similar(im, target_img, self.metrics['textsize'])
 
     def test_render_multiline(self):
         im = Image.new(mode='RGB', size=(300, 100))
@@ -144,7 +164,7 @@ class TestImageFont(PillowTestCase):
         # some versions of freetype have different horizontal spacing.
         # setting a tight epsilon, I'm showing the original test failure
         # at epsilon = ~38.
-        self.assert_image_similar(im, target_img, 6.2)
+        self.assert_image_similar(im, target_img, self.metrics['multiline'])
 
     def test_render_multiline_text(self):
         ttf = self.get_font()
@@ -159,7 +179,7 @@ class TestImageFont(PillowTestCase):
         target_img = Image.open(target)
 
         # Epsilon ~.5 fails with FreeType 2.7
-        self.assert_image_similar(im, target_img, 6.2)
+        self.assert_image_similar(im, target_img, self.metrics['multiline'])
 
         # Test that text() can pass on additional arguments
         # to multiline_text()
@@ -180,7 +200,7 @@ class TestImageFont(PillowTestCase):
             target_img = Image.open(target)
 
             # Epsilon ~.5 fails with FreeType 2.7
-            self.assert_image_similar(im, target_img, 6.2)
+            self.assert_image_similar(im, target_img, self.metrics['multiline'])
 
     def test_unknown_align(self):
         im = Image.new(mode='RGB', size=(300, 100))
@@ -228,9 +248,11 @@ class TestImageFont(PillowTestCase):
 
         target = 'Tests/images/multiline_text_spacing.png'
         target_img = Image.open(target)
-
+        from PIL import ImageChops
+        
+        ImageChops.difference(im, target_img).save('multiline.png')
         # Epsilon ~.5 fails with FreeType 2.7
-        self.assert_image_similar(im, target_img, 6.2)
+        self.assert_image_similar(im, target_img, self.metrics['multiline'])
 
     def test_rotated_transposed_font(self):
         img_grey = Image.new("L", (100, 100))
@@ -460,7 +482,7 @@ class TestImageFont(PillowTestCase):
         self.assertEqual(t.font.glyphs, 4177)
         self.assertEqual(t.getsize('A'), (12, 16))
         self.assertEqual(t.getsize('AB'), (24, 16))
-        self.assertEqual(t.getsize('M'), (12, 16))
+        self.assertEqual(t.getsize('M'), self.metrics['getters'])
         self.assertEqual(t.getsize('y'), (12, 20))
         self.assertEqual(t.getsize('a'), (12, 16))
 
