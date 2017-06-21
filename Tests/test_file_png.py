@@ -1,13 +1,15 @@
 from helper import unittest, PillowTestCase, hopper
+from PIL import Image, ImageFile, PngImagePlugin
 
 from io import BytesIO
-
-from PIL import Image
-from PIL import ImageFile
-from PIL import PngImagePlugin
 import zlib
+import sys
 
 codecs = dir(Image.core)
+
+# For Truncated phng memory leak
+MEM_LIMIT = 1  # max increase in MB
+ITERATIONS = 100
 
 # sample png stream
 
@@ -528,6 +530,34 @@ class TestFilePng(PillowTestCase):
         self.assertLess(chunks.index(b"tRNS"), chunks.index(b"IDAT"))
         # pHYs - before IDAT
         self.assertLess(chunks.index(b"pHYs"), chunks.index(b"IDAT"))
+
+
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+class TestTruncatedPngPLeaks(PillowTestCase):
+
+    def setUp(self):
+        if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
+            self.skipTest("zip/deflate support not available")
+
+    def _get_mem_usage(self):
+        from resource import getpagesize, getrusage, RUSAGE_SELF
+        mem = getrusage(RUSAGE_SELF).ru_maxrss
+        return mem * getpagesize() / 1024 / 1024
+
+    def test_leak_load(self):
+        with open('Tests/images/hopper.png', 'rb') as f:
+            DATA = BytesIO(f.read(16 * 1024))
+
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        start_mem = self._get_mem_usage()
+        try:
+            for _ in range(ITERATIONS):
+                with Image.open(DATA) as im:
+                    im.load()
+                mem = (self._get_mem_usage() - start_mem)
+                self.assertLess(mem, MEM_LIMIT, msg='memory usage limit exceeded')
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 if __name__ == '__main__':

@@ -779,6 +779,7 @@ PyImaging_ZipDecoderNew(PyObject* self, PyObject* args)
         return NULL;
 
     decoder->decode = ImagingZipDecode;
+    decoder->cleanup = ImagingZipDecodeCleanup;
 
     ((ZIPSTATE*)decoder->state.context)->interlaced = interlaced;
 
