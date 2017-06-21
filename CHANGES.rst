@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Fix truncated PNG loading for some images, Fix memory leak on truncated PNG images. #2541
+  [homm]
+  
 - Add decompression bomb check to Image.crop #2410
   [wiredfool]
 
