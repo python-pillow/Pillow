@@ -39,7 +39,7 @@ class TestImagecomplextext(PillowTestCase):
         target = 'Tests/images/test_y_offset.png'
         target_img = Image.open(target)
 
-        self.assert_image_similar(im, target_img, 1.5)
+        self.assert_image_similar(im, target_img, 1.7)
 
     def test_complex_unicode_text(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
