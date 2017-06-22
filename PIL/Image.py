@@ -875,8 +875,8 @@ class Image(object):
                     mode = "RGB"
             else:
                 return self.copy()
-
-        self.load()
+        else:
+            self.load()
 
         if matrix:
             # matrix conversion
@@ -1062,10 +1062,10 @@ class Image(object):
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        self.load()
         if box is None:
             return self.copy()
 
+        self.load()
         return self._new(self._crop(self.im, box))
 
     def _crop(self, im, box):
@@ -1390,9 +1390,10 @@ class Image(object):
                     im = im.convert(self.mode)
             im = im.im
 
-        self.load()
         if self.readonly:
             self._copy()
+        else:
+            self.load()
 
         if mask:
             mask.load()
@@ -1498,9 +1499,10 @@ class Image(object):
            other color value.
         """
 
-        self.load()
         if self.readonly:
             self._copy()
+        else:
+            self.load()
 
         if self.mode not in ("LA", "RGBA"):
             # attempt to promote self to a matching alpha mode
@@ -1556,9 +1558,10 @@ class Image(object):
         :param offset: An optional offset value.  The default is 0.0.
         """
 
-        self.load()
         if self.readonly:
             self._copy()
+        else:
+            self.load()
 
         self.im.putdata(data, scale, offset)
 
@@ -1612,10 +1615,9 @@ class Image(object):
         :param value: The pixel value.
         """
 
-        self.load()
         if self.readonly:
             self._copy()
-            self.load()
+        self.load()
 
         if self.pyaccess:
             return self.pyaccess.putpixel(xy, value)
