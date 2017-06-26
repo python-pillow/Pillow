@@ -1373,16 +1373,27 @@ class Image(object):
         else:
             self.im.paste(im, box)
 
-    def alpha_composite(self, im, box=None):
+    def alpha_composite(self, im, box=None, source=(0,0)):
         """ 'In-place' analog of Image.alpha_composite
 
         :param im: image to composite over this one
-        :param box: Optional 2 or 4 tuple. If a 2 tuple, the upper
-        left corner. If 4 tuple, (x0,y0,x1,y1)
-
+        :param box: Optional 2 or 4 tuple specificing the bounds in
+          the destination image.  If a 2 tuple, the upper left
+          corner. If 4 tuple, (x0,y0,x1,y1)
+        :param source: Optional 2 tuple, (x0, y0) for the upper left
+          corner in the source image.
+          
         Note: Not currently implemented in-place.
         """
-        if box is None:
+
+        if not isinstance(source, tuple):
+            raise ValueError("Source must be a tuple")
+        if not len(source) == 2:
+            raise ValueError("Source must be a 2-tuple")
+        if min(source) < 0:
+            raise ValueError("Source must be non-negative")
+        
+        if box is None and source == (0, 0):
             box = (0, 0, im.width, im.height)                
             overlay = im
             if self.size == im.size:
@@ -1396,7 +1407,9 @@ class Image(object):
                 box += (box[0]+size[0], box[1]+size[1])
                 
             src = self.crop(box)
-            overlay = im.crop((0, 0, box[2]-box[0], box[3]-box[1]))
+            overlay = im.crop((source[0], source[1],
+                               source[0] + box[2] - box[0],
+                               source[1] + box[3] - box[1]))
             
         result = alpha_composite(src, overlay)
         self.paste(result, box)

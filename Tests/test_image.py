@@ -231,7 +231,14 @@ class TestImage(PillowTestCase):
         self.assert_image_equal(box.crop((96, 96, 128, 128)),
                                 src.crop((0, 0, 32, 32)))
         self.assertEqual(box.size, (128, 128))
-        
+
+        # source point
+        source = src.copy()
+        source.alpha_composite(over, (32, 32, 96, 96), (32, 32))
+
+        self.assert_image_equal(source.crop((32, 32, 96, 96)),
+                                target.crop((32, 32, 96, 96)))
+        self.assertEqual(source.size, (128, 128))
 
     def test_registered_extensions_uninitialized(self):
         # Arrange
