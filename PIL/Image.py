@@ -1373,45 +1373,51 @@ class Image(object):
         else:
             self.im.paste(im, box)
 
-    def alpha_composite(self, im, box=None, source=(0,0)):
+    def alpha_composite(self, im, dest=(0,0), source=(0,0)):
         """ 'In-place' analog of Image.alpha_composite
 
         :param im: image to composite over this one
-        :param box: Optional 2 or 4 tuple specificing the bounds in
-          the destination image.  If a 2 tuple, the upper left
-          corner. If 4 tuple, (x0,y0,x1,y1)
-        :param source: Optional 2 tuple, (x0, y0) for the upper left
-          corner in the source image.
+        :param dest: Optional 2 tuple specificing the upper left corner
+          in the this image.
+        :param source: Optional 2 or 4 tuple, (x0, y0) for the upper
+          left corner in the source image. If a 4 tuple, the bounds of
+          the source rectangle.
           
         Note: Not currently implemented in-place.
         """
 
         if not isinstance(source, tuple):
             raise ValueError("Source must be a tuple")
-        if not len(source) == 2:
-            raise ValueError("Source must be a 2-tuple")
+        if not isinstance(dest, tuple):
+            raise ValueError("Destination must be a tuple")
+        if not len(source) in (2, 4):
+            raise ValueError("Source must be a 2 or 4-tuple")
+        if not len(dest) == 2:
+            raise ValueError("Destination must be a 2-tuple")
         if min(source) < 0:
             raise ValueError("Source must be non-negative")
-        
-        if box is None and source == (0, 0):
-            box = (0, 0, im.width, im.height)                
+        if min(dest) < 0:
+            raise ValueError("Destination must be non-negative")
+
+        if len(source) == 2:
+            source = source + im.size
+
+        # over image, crop if it's not the whole thing. 
+        if source == (0,0) + im.size:
             overlay = im
-            if self.size == im.size:
-                src = self
-            else:
-                src = self.crop(box)
         else:
-            if len(box) == 2:
-                # upper left corner given; get size from overlay image
-                size = im.size
-                box += (box[0]+size[0], box[1]+size[1])
-                
-            src = self.crop(box)
-            overlay = im.crop((source[0], source[1],
-                               source[0] + box[2] - box[0],
-                               source[1] + box[3] - box[1]))
+            overlay = im.crop(source)
+
+        # target for the paste
+        box = dest + (dest[0] + overlay.width, dest[1] + overlay.height)
             
-        result = alpha_composite(src, overlay)
+        # destination image. don't copy if we're using the whole image.
+        if dest == (0,0) + self.size:
+            background = self
+        else:
+            background = self.crop(box)
+                        
+        result = alpha_composite(background, overlay)
         self.paste(result, box)
         
     def point(self, lut, mode=None):

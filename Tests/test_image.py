@@ -225,7 +225,7 @@ class TestImage(PillowTestCase):
 
         # offset and crop
         box = src.copy()
-        box.alpha_composite(over, (64, 64, 96, 96))
+        box.alpha_composite(over, (64, 64), (0, 0, 32, 32))
         self.assert_image_equal(box.crop((64, 64, 96, 96)),
                                 target.crop((0, 0, 32, 32)))
         self.assert_image_equal(box.crop((96, 96, 128, 128)),
@@ -234,7 +234,7 @@ class TestImage(PillowTestCase):
 
         # source point
         source = src.copy()
-        source.alpha_composite(over, (32, 32, 96, 96), (32, 32))
+        source.alpha_composite(over, (32, 32), (32, 32, 96, 96))
 
         self.assert_image_equal(source.crop((32, 32, 96, 96)),
                                 target.crop((32, 32, 96, 96)))
