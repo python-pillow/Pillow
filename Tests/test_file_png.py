@@ -8,8 +8,8 @@ import sys
 codecs = dir(Image.core)
 
 # For Truncated phng memory leak
-MEM_LIMIT = 1  # max increase in MB
-ITERATIONS = 100
+MEM_LIMIT = 2  # max increase in MB
+ITERATIONS = 100 # Leak is 56k/iteration, this will leak 5.6megs
 
 # sample png stream
 
@@ -542,13 +542,24 @@ class TestTruncatedPngPLeaks(PillowTestCase):
     def _get_mem_usage(self):
         from resource import getpagesize, getrusage, RUSAGE_SELF
         mem = getrusage(RUSAGE_SELF).ru_maxrss
-        return mem * getpagesize() / 1024 / 1024
+        if sys.platform == 'darwin':
+            # man 2 getrusage:
+            #     ru_maxrss    the maximum resident set size utilized (in bytes).
+            return mem / 1024 / 1024 # megs
+        else:
+            # linux
+            # man 2 getrusage
+            #        ru_maxrss (since Linux 2.6.32)
+            #  This is the maximum resident set size used (in  kilobytes). 
+            return mem / 1024 # megs
 
     def test_leak_load(self):
         with open('Tests/images/hopper.png', 'rb') as f:
             DATA = BytesIO(f.read(16 * 1024))
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
+        with Image.open(DATA) as im:
+            im.load()
         start_mem = self._get_mem_usage()
         try:
             for _ in range(ITERATIONS):
