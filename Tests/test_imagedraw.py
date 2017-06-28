@@ -400,6 +400,28 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_floodfill2.png"))
 
+
+    @unittest.skipIf(hasattr(sys, 'pypy_version_info'),
+                     "Causes fatal RPython error on PyPy")
+    def test_floodfill_thresh(self):
+        # floodfill() is experimental
+
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        draw.rectangle(BBOX2, outline="yellow", fill="green")
+        centre_point = (int(W/2), int(H/2))
+
+        # Act
+        ImageDraw.floodfill(
+            im, centre_point, ImageColor.getrgb("red"),
+            thresh=100)
+        del draw
+
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_floodfill2.png"))
+
     def create_base_image_draw(self, size,
                                mode=DEFAULT_MODE,
                                background1=WHITE,

@@ -315,7 +315,7 @@ def getdraw(im=None, hints=None):
     return im, handler
 
 
-def floodfill(image, xy, value, border=None):
+def floodfill(image, xy, value, border=None, thresh=0):
     """
     (experimental) Fills a bounded region with a given color.
 
@@ -326,6 +326,10 @@ def floodfill(image, xy, value, border=None):
         pixels with a color different from the border color.  If not given,
         the region consists of pixels having the same color as the seed
         pixel.
+    :param thresh: Optional threshold value which specifies a maximum 
+        tolerable difference of a pixel value from the 'background' in 
+        order for it to be replaced. Useful for filling regions of non-
+        homogenous, but similar, colors.
     """
     # based on an implementation by Eric S. Raymond
     pixel = image.load()
@@ -348,7 +352,7 @@ def floodfill(image, xy, value, border=None):
                     except IndexError:
                         pass
                     else:
-                        if p == background:
+                        if _color_diff(p, background) <= thresh:
                             pixel[s, t] = value
                             newedge.append((s, t))
             edge = newedge
@@ -366,3 +370,10 @@ def floodfill(image, xy, value, border=None):
                             pixel[s, t] = value
                             newedge.append((s, t))
             edge = newedge
+
+  
+def _color_diff(rgb1, rgb2):
+    """
+    Uses distance formula to calculate difference between two rgb values.
+    """
+    return ((rgb1[0]-rgb2[0])**2 + (rgb1[1]-rgb2[1])**2 + (rgb1[2]-rgb2[2])**2)**.5
