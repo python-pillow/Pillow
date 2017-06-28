@@ -409,15 +409,15 @@ class TestImageDraw(PillowTestCase):
         # Arrange
         im = Image.new("RGB", (W, H))
         draw = ImageDraw.Draw(im)
-        draw.rectangle(BBOX2, outline="yellow", fill="green")
+        draw.rectangle(BBOX2, outline="darkgreen", fill="green")
         centre_point = (int(W/2), int(H/2))
 
         # Act
         ImageDraw.floodfill(
             im, centre_point, ImageColor.getrgb("red"),
-            thresh=100)
+            thresh=30)
         del draw
-
+        im.save("x.png")
         # Assert
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_floodfill2.png"))

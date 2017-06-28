@@ -336,7 +336,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
     x, y = xy
     try:
         background = pixel[x, y]
-        if background == value:
+        if _color_diff(value, background) <= thresh:
             return  # seed point already has fill color
         pixel[x, y] = value
     except (ValueError, IndexError):
