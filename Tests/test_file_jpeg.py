@@ -143,10 +143,8 @@ class TestFileJpeg(PillowTestCase):
         try:
             im.save(f, format='JPEG', progressive=True,quality=95,
                     icc_profile=icc_profile, optimize=True)
-            assert True
         except IOError:
-            assert False, "Failed saving image with icc larger than image size"
-
+            self.fail("Failed saving image with icc larger than image size")
 
     def test_optimize(self):
         im1 = self.roundtrip(hopper())
