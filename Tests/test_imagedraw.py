@@ -417,7 +417,6 @@ class TestImageDraw(PillowTestCase):
             im, centre_point, ImageColor.getrgb("red"),
             thresh=30)
         del draw
-        im.save("x.png")
         # Assert
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_floodfill2.png"))
