@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- JPEG: Adjust buffer size when icc_profile > MAXBLOCK #2596
+  [Darou]
+
+- Specify Pillow Version in one place #2517
+  [wiredfool]
+  
 - CI: Change the owner of the TRAVIS_BUILD_DIR, fixing broken docker runs #2587
   [wiredfool]
 
