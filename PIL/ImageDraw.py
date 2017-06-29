@@ -329,7 +329,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
     :param thresh: Optional threshold value which specifies a maximum 
         tolerable difference of a pixel value from the 'background' in 
         order for it to be replaced. Useful for filling regions of non-
-        homogenous, but similar, colors.
+        homogeneous, but similar, colors.
     """
     # based on an implementation by Eric S. Raymond
     pixel = image.load()
