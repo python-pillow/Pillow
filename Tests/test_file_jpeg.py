@@ -133,6 +133,19 @@ class TestFileJpeg(PillowTestCase):
         test(ImageFile.MAXBLOCK+1)  # full buffer block plus one byte
         test(ImageFile.MAXBLOCK*4+3)  # large block
 
+    def test_large_icc_meta(self):
+        # https://github.com/python-pillow/Pillow/issues/148
+        # Sometimes the meta data on the icc_profile block is bigger than
+        # Image.MAXBLOCK or the image size.
+        im = Image.open('Tests/images/icc_profile_big.jpg')
+        f = self.tempfile("temp.jpg")
+        icc_profile = im.info["icc_profile"]
+        try:
+            im.save(f, format='JPEG', progressive=True,quality=95,
+                    icc_profile=icc_profile, optimize=True)
+        except IOError:
+            self.fail("Failed saving image with icc larger than image size")
+
     def test_optimize(self):
         im1 = self.roundtrip(hopper())
         im2 = self.roundtrip(hopper(), optimize=0)
