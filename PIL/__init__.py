@@ -11,8 +11,10 @@
 
 # ;-)
 
-VERSION = '1.1.7'  # PIL version
-PILLOW_VERSION = '4.2.0.dev0'  # Pillow
+from . import version
+
+VERSION = '1.1.7'  # PIL Version
+PILLOW_VERSION =  version.__version__
 
 __version__ = PILLOW_VERSION
 

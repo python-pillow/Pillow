@@ -98,6 +98,12 @@ def _read(file):
         return fp.read()
 
 
+def get_version():
+    version_file = 'PIL/version.py'
+    with open(version_file, 'r') as f:
+        exec(compile(f.read(), version_file, 'exec'))
+    return locals()['__version__']
+
 try:
     import _tkinter
 except (ImportError, OSError):
@@ -105,7 +111,7 @@ except (ImportError, OSError):
     _tkinter = None
 
 NAME = 'Pillow'
-PILLOW_VERSION = '4.2.0.dev0'
+PILLOW_VERSION = get_version()
 JPEG_ROOT = None
 JPEG2K_ROOT = None
 ZLIB_ROOT = None
@@ -584,6 +590,11 @@ class pil_build_ext(build_ext):
             libs.extend(["kernel32", "user32", "gdi32"])
         if struct.unpack("h", "\0\1".encode('ascii'))[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
+
+        if sys.platform == "win32":
+            defs.append(("PILLOW_VERSION", '"\\"%s\\""'%PILLOW_VERSION))
+        else:
+            defs.append(("PILLOW_VERSION", '"%s"'%PILLOW_VERSION))
 
         exts = [(Extension("PIL._imaging",
                            files,
