@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (unreleased)
 ------------------
 
+- Added dBATCH parameter to ghostscript command #2588
+  [radarhere]
+
 - JPEG: Adjust buffer size when icc_profile > MAXBLOCK #2596
   [Darou]
 
