@@ -374,6 +374,6 @@ def floodfill(image, xy, value, border=None, thresh=0):
   
 def _color_diff(rgb1, rgb2):
     """
-    Uses distance formula to calculate difference between two rgb values.
+    Uses 1-norm distance to calculate difference between two rgb values.
     """
-    return ((rgb1[0]-rgb2[0])**2 + (rgb1[1]-rgb2[1])**2 + (rgb1[2]-rgb2[2])**2)**.5
+    return abs(rgb1[0]-rgb2[0]) +  abs(rgb1[1]-rgb2[1]) +  abs(rgb1[2]-rgb2[2])
