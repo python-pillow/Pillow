@@ -243,25 +243,30 @@ class ImageDraw(object):
                 left += (max_width - widths[idx])
             else:
                 assert False, 'align must be "left", "center" or "right"'
-            self.text((left, top), line, fill, font, anchor, direction=direction, features=features)
+            self.text((left, top), line, fill, font, anchor,
+                      direction=direction, features=features)
             top += line_spacing
             left = xy[0]
 
-    def textsize(self, text, font=None, *args, **kwargs):
+    def textsize(self, text, font=None, spacing=4, direction=None,
+                 features=None):
         """Get the size of a given string, in pixels."""
         if self._multiline_check(text):
-            return self.multiline_textsize(text, font, *args, **kwargs)
+            return self.multiline_textsize(text, font, spacing,
+                                           direction, features)
 
         if font is None:
             font = self.getfont()
-        return font.getsize(text)
+        return font.getsize(text, direction, features)
 
-    def multiline_textsize(self, text, font=None, spacing=4):
+    def multiline_textsize(self, text, font=None, spacing=4, direction=None,
+                           features=None):
         max_width = 0
         lines = self._multiline_split(text)
         line_spacing = self.textsize('A', font=font)[1] + spacing
         for line in lines:
-            line_width, line_height = self.textsize(line, font)
+            line_width, line_height = self.textsize(line, font, spacing,
+                                                    direction, features)
             max_width = max(max_width, line_width)
         return max_width, len(lines)*line_spacing
 

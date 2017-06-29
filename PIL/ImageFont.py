@@ -106,9 +106,12 @@ class ImageFont(object):
 
         self.font = Image.core.font(image.im, data)
 
-        # delegate critical operations to internal type
-        self.getsize = self.font.getsize
-        self.getmask = self.font.getmask
+    def getsize(self, text, *args, **kwargs):
+        return self.font.getsize(text)
+
+    def getmask(self, text, mode="", *args, **kwargs):
+        return self.font.getmask(text, mode)
+
 
 
 ##
@@ -200,14 +203,14 @@ class TransposedFont(object):
         self.font = font
         self.orientation = orientation  # any 'transpose' argument, or None
 
-    def getsize(self, text):
+    def getsize(self, text, *args, **kwargs):
         w, h = self.font.getsize(text)
         if self.orientation in (Image.ROTATE_90, Image.ROTATE_270):
             return h, w
         return w, h
 
-    def getmask(self, text, mode=""):
-        im = self.font.getmask(text, mode)
+    def getmask(self, text, mode="", *args, **kwargs):
+        im = self.font.getmask(text, mode, *args, **kwargs)
         if self.orientation is not None:
             return im.transpose(self.orientation)
         return im
