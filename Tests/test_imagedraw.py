@@ -401,8 +401,6 @@ class TestImageDraw(PillowTestCase):
             im, Image.open("Tests/images/imagedraw_floodfill2.png"))
 
 
-    @unittest.skipIf(hasattr(sys, 'pypy_version_info'),
-                     "Causes fatal RPython error on PyPy")
     def test_floodfill_thresh(self):
         # floodfill() is experimental
 
