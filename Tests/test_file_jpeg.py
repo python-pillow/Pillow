@@ -135,7 +135,7 @@ class TestFileJpeg(PillowTestCase):
 
     def test_large_icc_meta(self):
         # https://github.com/python-pillow/Pillow/issues/148
-        # Sometimes the meta data on the icc_profile block is biger than
+        # Sometimes the meta data on the icc_profile block is bigger than
         # Image.MAXBLOCK or the image size.
         im = Image.open('Tests/images/icc_profile_big.jpg')
         f = self.tempfile("temp.jpg")
