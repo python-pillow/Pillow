@@ -46,7 +46,7 @@ class TestImagecomplextext(PillowTestCase):
 
         im = Image.new(mode='RGB', size=(300, 100))
         draw = ImageDraw.Draw(im)
-        draw.text((0, 0), u'السلام عليكم', font=ttf, fill=500)
+        draw.text((0, 0), 'السلام عليكم', font=ttf, fill=500)
 
         target = 'Tests/images/test_complex_unicode_text.png'
         target_img = Image.open(target)
