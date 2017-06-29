@@ -104,6 +104,8 @@ An instance of the :py:class:`~PIL.Image.Image` class has the following
 methods. Unless otherwise stated, all methods return a new instance of the
 :py:class:`~PIL.Image.Image` class, holding the resulting image.
 
+
+.. automethod:: PIL.Image.Image.alpha_composite
 .. automethod:: PIL.Image.Image.convert
 
 The following example converts an RGB image (linearly calibrated according to

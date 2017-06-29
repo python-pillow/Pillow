@@ -1374,16 +1374,17 @@ class Image(object):
             self.im.paste(im, box)
 
     def alpha_composite(self, im, dest=(0,0), source=(0,0)):
-        """ 'In-place' analog of Image.alpha_composite
+        """ 'In-place' analog of Image.alpha_composite. Composites an image
+        onto this image.
 
         :param im: image to composite over this one
-        :param dest: Optional 2 tuple specificing the upper left corner
-          in the this image.
-        :param source: Optional 2 or 4 tuple, (x0, y0) for the upper
-          left corner in the source image. If a 4 tuple, the bounds of
-          the source rectangle.
+        :param dest: Optional 2 tuple (top, left) specifying the upper
+          left corner in this (destination) image.
+        :param source: Optional 2 (top, left) tuple for the upper left
+          corner in the overlay source image, or 4 tuple (top, left, bottom,
+          right) for the bounds of the source rectangle
           
-        Note: Not currently implemented in-place.
+        Performance Note: Not currently implemented in-place in the core layer.
         """
 
         if not isinstance(source, tuple):
