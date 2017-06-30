@@ -95,12 +95,14 @@ class TestImagecomplextext(PillowTestCase):
         im = Image.new(mode='RGB', size=(300, 100))
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), 'filling', font=ttf, fill=500, features=['-liga'])
-
         target = 'Tests/images/test_ligature_features.png'
         target_img = Image.open(target)
 
         self.assert_image_similar(im, target_img, .5)
 
+        liga_size = ttf.getsize('fi', features=['-liga'])
+        self.assertEqual(liga_size,(13,19))
+        
     def test_kerning_features(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
