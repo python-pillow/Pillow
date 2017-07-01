@@ -261,7 +261,7 @@ The easiest way to install external libraries is via `Homebrew
 
     $ brew install libtiff libjpeg webp little-cms2
 
-To install libraqm on MaxOS use Homebrew to install its dependencies::
+To install libraqm on macOS use Homebrew to install its dependencies::
     $ brew install freetype harfbuzz fribidi
 
 Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
