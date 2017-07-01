@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (2017-07-01)
 ------------------
 
+- CI: Amazon Linux and Centos6 docker images added to TravisCI #2585
+  [wiredfool]
+  
 - Image.alpha_composite added #2595
   [wiredfool]
   
