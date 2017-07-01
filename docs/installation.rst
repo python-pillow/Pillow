@@ -28,12 +28,6 @@ Basic Installation
     most common image formats. See :ref:`external-libraries` for a
     full list of external libraries supported.
 
-.. note::
-
-   The basic installation works on Windows and macOS using the binaries
-   from PyPI. Other installations require building from source as
-   detailed below.
-
 Install Pillow with :command:`pip`::
 
     $ pip install Pillow
@@ -72,11 +66,15 @@ except OpenJPEG::
 Linux Installation
 ^^^^^^^^^^^^^^^^^^
 
-We do not provide binaries for Linux. Most major Linux distributions,
-including Fedora, Debian/Ubuntu and ArchLinux include Pillow in
-packages that previously contained PIL e.g. ``python-imaging``. Please
-consider using native operating system packages first to avoid
-installation problems and/or missing library support later.
+We provide binaries for Linux for each of the supported Python
+versions in the manylinux wheel format. These include support for all
+optional libraries except Raqm::
+
+  $ pip install Pillow
+
+Most major Linux distributions, including Fedora, Debian/Ubuntu and
+ArchLinux also include Pillow in packages that previously contained
+PIL e.g. ``python-imaging``.
 
 FreeBSD Installation
 ^^^^^^^^^^^^^^^^^^^^
@@ -120,7 +118,9 @@ External Libraries
 .. note::
 
    There are scripts to install the dependencies for some operating
-   systems included in the ``depends`` directory.
+   systems included in the ``depends`` directory. Also see the
+   Dockerfiles in our `docker images repo
+   <https://github.com/python-pillow/docker-images>`_.
 
 Many of Pillow's features require external libraries:
 
@@ -178,7 +178,9 @@ Many of Pillow's features require external libraries:
   * libraqm depends on the following libraries: FreeType, HarfBuzz,
     FriBiDi, make sure that install them before install libraqm if not
     available as package in your system.
-  * setting text direction or font features is not supported without libraqm.
+  * setting text direction or font features is not supported without
+    libraqm.
+  * Windows support: Raqm support is currently unsupported on Windows.
 
 Once you have installed the prerequisites, run::
 
@@ -259,14 +261,10 @@ The easiest way to install external libraries is via `Homebrew
 
     $ brew install libtiff libjpeg webp little-cms2
 
-To install libraqm on MaxOS use Homebrew::
+To install libraqm on MaxOS use Homebrew to install its dependencies::
     $ brew install freetype harfbuzz fribidi
-Once you have `libraqm source code  <https://github.com/HOST-Oman/libraqm>`_ and the dependencies , run the customary sequence of commands in the source code
-directory::
 
-    $ ./configure
-    $ make
-    $ make install
+Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 
 Now install Pillow with::
 
@@ -299,6 +297,8 @@ Or for Python 3::
 Prerequisites are installed on **FreeBSD 10 or 11** with::
 
     $ sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi
+
+Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 
 
 Building on Linux
@@ -334,7 +334,10 @@ Prerequisites are installed on **Ubuntu 12.04 LTS** or **Raspian Wheezy
 Prerequisites are installed on **Ubuntu 14.04 LTS** with::
 
     $ sudo apt-get install libtiff5-dev libjpeg8-dev zlib1g-dev \
-        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python-tk
+        libfreetype6-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev \
+        tcl8.6-dev tk8.6-dev python-tk
+
+Then see ``depends/install_raqm.sh`` to install libraqm.
 
 Prerequisites are installed on **Fedora 23** with::
 
