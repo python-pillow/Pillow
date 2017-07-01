@@ -24,6 +24,8 @@ matrix:
     - env: DOCKER="ubuntu-xenial-amd64"
     - env: DOCKER="ubuntu-precise-amd64"
     - env: DOCKER="debian-stretch-x86"
+    - env: DOCKER="centos-6-amd64"
+    - env: DOCKER="amazon-amd64"
 
 dist: trusty
 
