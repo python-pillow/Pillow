@@ -110,6 +110,7 @@ are available::
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
+    This is currently only supported for GIF, PDF and TIFF.
 
 **duration**
     The display duration of each frame of the multiframe gif, in
