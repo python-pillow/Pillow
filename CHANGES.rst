@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (2017-07-01)
 ------------------
 
+- Doc: Clarified Image.save:append_images documentation #2604
+  [radarhere]
+
 - CI: Amazon Linux and Centos6 docker images added to TravisCI #2585
   [wiredfool]
   
