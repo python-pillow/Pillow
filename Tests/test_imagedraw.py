@@ -400,6 +400,26 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_floodfill2.png"))
 
+
+    def test_floodfill_thresh(self):
+        # floodfill() is experimental
+
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        draw.rectangle(BBOX2, outline="darkgreen", fill="green")
+        centre_point = (int(W/2), int(H/2))
+
+        # Act
+        ImageDraw.floodfill(
+            im, centre_point, ImageColor.getrgb("red"),
+            thresh=30)
+        del draw
+        
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_floodfill2.png"))
+
     def create_base_image_draw(self, size,
                                mode=DEFAULT_MODE,
                                background1=WHITE,
