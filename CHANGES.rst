@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.2.0 (2017-07-01)
 ------------------
 
+- Image.alpha_composite added #2595
+  [wiredfool]
+  
 - Complex Text Support #2576
   [ShamsaHamed, Fahad-Alsaidi, wiredfool]
   
