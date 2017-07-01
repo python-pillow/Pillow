@@ -176,8 +176,8 @@ Many of Pillow's features require external libraries:
     shaping (using HarfBuzz), and proper script itemization. As a
     result, Raqm can support most writing systems covered by Unicode.
   * libraqm depends on the following libraries: FreeType, HarfBuzz,
-    FriBiDi, make sure that install them before install libraqm if not
-    available as package in your system.
+    FriBiDi, make sure that you install them before install libraqm
+    if not available as package in your system.
   * setting text direction or font features is not supported without
     libraqm.
   * Windows support: Raqm support is currently unsupported on Windows.
@@ -213,7 +213,7 @@ Build Options
 * Build flags: ``--disable-zlib``, ``--disable-jpeg``,
   ``--disable-tiff``, ``--disable-freetype``, ``--disable-tcl``,
   ``--disable-tk``, ``--disable-lcms``, ``--disable-webp``,
-  ``--disable-webpmux``, ``--disable-jpeg2000``, 
+  ``--disable-webpmux``, ``--disable-jpeg2000``,
   ``--disable-imagequant``, ``--disable-raqm``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
