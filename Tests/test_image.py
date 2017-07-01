@@ -202,6 +202,44 @@ class TestImage(PillowTestCase):
         img_colors = sorted(img.getcolors())
         self.assertEqual(img_colors, expected_colors)
 
+    def test_alpha_inplace(self):
+        src = Image.new('RGBA', (128,128), 'blue')
+
+        over = Image.new('RGBA', (128,128), 'red')
+        mask = hopper('L')
+        over.putalpha(mask)
+
+        target = Image.alpha_composite(src, over)
+
+        # basic
+        full = src.copy()
+        full.alpha_composite(over)
+        self.assert_image_equal(full, target)
+
+        # with offset down to right
+        offset = src.copy()
+        offset.alpha_composite(over, (64, 64))
+        self.assert_image_equal(offset.crop((64, 64, 127, 127)),
+                                target.crop((0, 0, 63, 63)))
+        self.assertEqual(offset.size, (128, 128))
+
+        # offset and crop
+        box = src.copy()
+        box.alpha_composite(over, (64, 64), (0, 0, 32, 32))
+        self.assert_image_equal(box.crop((64, 64, 96, 96)),
+                                target.crop((0, 0, 32, 32)))
+        self.assert_image_equal(box.crop((96, 96, 128, 128)),
+                                src.crop((0, 0, 32, 32)))
+        self.assertEqual(box.size, (128, 128))
+
+        # source point
+        source = src.copy()
+        source.alpha_composite(over, (32, 32), (32, 32, 96, 96))
+
+        self.assert_image_equal(source.crop((32, 32, 96, 96)),
+                                target.crop((32, 32, 96, 96)))
+        self.assertEqual(source.size, (128, 128))
+
     def test_registered_extensions_uninitialized(self):
         # Arrange
         Image._initialized = 0

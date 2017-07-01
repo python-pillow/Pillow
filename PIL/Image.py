@@ -1376,6 +1376,54 @@ class Image(object):
         else:
             self.im.paste(im, box)
 
+    def alpha_composite(self, im, dest=(0,0), source=(0,0)):
+        """ 'In-place' analog of Image.alpha_composite. Composites an image
+        onto this image.
+
+        :param im: image to composite over this one
+        :param dest: Optional 2 tuple (top, left) specifying the upper
+          left corner in this (destination) image.
+        :param source: Optional 2 (top, left) tuple for the upper left
+          corner in the overlay source image, or 4 tuple (top, left, bottom,
+          right) for the bounds of the source rectangle
+          
+        Performance Note: Not currently implemented in-place in the core layer.
+        """
+
+        if not isinstance(source, tuple):
+            raise ValueError("Source must be a tuple")
+        if not isinstance(dest, tuple):
+            raise ValueError("Destination must be a tuple")
+        if not len(source) in (2, 4):
+            raise ValueError("Source must be a 2 or 4-tuple")
+        if not len(dest) == 2:
+            raise ValueError("Destination must be a 2-tuple")
+        if min(source) < 0:
+            raise ValueError("Source must be non-negative")
+        if min(dest) < 0:
+            raise ValueError("Destination must be non-negative")
+
+        if len(source) == 2:
+            source = source + im.size
+
+        # over image, crop if it's not the whole thing. 
+        if source == (0,0) + im.size:
+            overlay = im
+        else:
+            overlay = im.crop(source)
+
+        # target for the paste
+        box = dest + (dest[0] + overlay.width, dest[1] + overlay.height)
+            
+        # destination image. don't copy if we're using the whole image.
+        if dest == (0,0) + self.size:
+            background = self
+        else:
+            background = self.crop(box)
+                        
+        result = alpha_composite(background, overlay)
+        self.paste(result, box)
+        
     def point(self, lut, mode=None):
         """
         Maps this image through a lookup table or function.
