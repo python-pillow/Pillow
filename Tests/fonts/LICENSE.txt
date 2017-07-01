@@ -1,0 +1,6 @@
+
+NotoNastaliqUrdu-Regular.ttf:
+
+(from https://github.com/googlei18n/noto-fonts)
+
+All Noto fonts are published under the SIL Open Font License (OFL) v1.1 (http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL), which allows you to copy, modify, and redistribute them if you need to.

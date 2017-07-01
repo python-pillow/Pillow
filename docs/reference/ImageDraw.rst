@@ -227,7 +227,7 @@ Methods
 
     Draw a shape.
 
-.. py:method:: PIL.ImageDraw.Draw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left")
+.. py:method:: PIL.ImageDraw.Draw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None)
 
     Draws the string at the given position.
 
@@ -240,9 +240,28 @@ Methods
                     the number of pixels between lines.
     :param align: If the text is passed on to multiline_text(),
                   "left", "center" or "right".
+    :param direction: Direction of the text. It can be 'rtl' (right to
+                      left), 'ltr' (left to right), 'ttb' (top to
+                      bottom) or 'btt' (bottom to top). Requires
+                      libraqm.
 
+                      .. versionadded:: 4.2.0
 
-.. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left")
+    :param features: A list of OpenType font features to be used during text
+                     layout. This is usually used to turn on optional
+                     font features that are not enabled by default,
+                     for example 'dlig' or 'ss01', but can be also
+                     used to turn off default font features for
+                     example '-liga' to disable ligatures or '-kern'
+                     to disable kerning.  To get all supported
+                     features, see
+                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     Requires libraqm.
+
+                     .. versionadded:: 4.2.0
+
+.. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left",
+                                                 direction=None, features=None)
 
     Draws the string at the given position.
 
@@ -252,8 +271,28 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
     :param align: "left", "center" or "right".
+    :param direction: Direction of the text. It can be 'rtl' (right to
+                      left), 'ltr' (left to right), 'ttb' (top to
+                      bottom) or 'btt' (bottom to top). Requires
+                      libraqm.
 
-.. py:method:: PIL.ImageDraw.Draw.textsize(text, font=None, spacing=0)
+                      .. versionadded:: 4.2.0
+
+    :param features: A list of OpenType font features to be used during text
+                     layout. This is usually used to turn on optional
+                     font features that are not enabled by default,
+                     for example 'dlig' or 'ss01', but can be also
+                     used to turn off default font features for
+                     example '-liga' to disable ligatures or '-kern'
+                     to disable kerning.  To get all supported
+                     features, see
+                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     Requires libraqm.
+
+                     .. versionadded:: 4.2.0
+
+.. py:method:: PIL.ImageDraw.Draw.textsize(text, font=None, spacing=4, direction=None,
+                           features=None)
 
     Return the size of the given string, in pixels.
 
@@ -262,11 +301,51 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: If the text is passed on to multiline_textsize(),
                     the number of pixels between lines.
+    :param direction: Direction of the text. It can be 'rtl' (right to
+                      left), 'ltr' (left to right), 'ttb' (top to
+                      bottom) or 'btt' (bottom to top). Requires
+                      libraqm.
 
-.. py:method:: PIL.ImageDraw.Draw.multiline_textsize(text, font=None, spacing=0)
+                      .. versionadded:: 4.2.0
+
+    :param features: A list of OpenType font features to be used during text
+                     layout. This is usually used to turn on optional
+                     font features that are not enabled by default,
+                     for example 'dlig' or 'ss01', but can be also
+                     used to turn off default font features for
+                     example '-liga' to disable ligatures or '-kern'
+                     to disable kerning.  To get all supported
+                     features, see
+                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     Requires libraqm.
+
+                     .. versionadded:: 4.2.0
+
+
+.. py:method:: PIL.ImageDraw.Draw.multiline_textsize(text, font=None, spacing=4, direction=None,
+                           features=None)
 
     Return the size of the given string, in pixels.
 
     :param text: Text to be measured.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
+    :param direction: Direction of the text. It can be 'rtl' (right to
+                      left), 'ltr' (left to right), 'ttb' (top to
+                      bottom) or 'btt' (bottom to top). Requires
+                      libraqm.
+
+                      .. versionadded:: 4.2.0
+
+    :param features: A list of OpenType font features to be used during text
+                     layout. This is usually used to turn on optional
+                     font features that are not enabled by default,
+                     for example 'dlig' or 'ss01', but can be also
+                     used to turn off default font features for
+                     example '-liga' to disable ligatures or '-kern'
+                     to disable kerning.  To get all supported
+                     features, see
+                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     Requires libraqm.
+
+                     .. versionadded:: 4.2.0

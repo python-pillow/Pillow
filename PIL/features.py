@@ -45,6 +45,7 @@ def get_supported_codecs():
 features = {
     "webp_mux": ("PIL._webp", 'HAVE_WEBPMUX'),
     "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY"),
+    "raqm": ("PIL._imagingft", "HAVE_RAQM")
 }
 
 def check_feature(feature):
