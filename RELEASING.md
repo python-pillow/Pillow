@@ -8,10 +8,7 @@ Released quarterly on the first day of January, April, July, October.
 * [ ] Develop and prepare release in ``master`` branch.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) and [AppVeyor CI](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
 * [ ] Check that all of the wheel builds [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels) pass the tests in TravisCI.
-* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
-```
-    PIL/__init__.py setup.py _imaging.c appveyor.yml
-```
+* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in `PIL/version.py`
 * [ ] Update `CHANGES.rst`.
 * [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
 * [ ] Create branch and tag for release e.g.:
@@ -41,13 +38,7 @@ Released as needed for security, installation or critical bug fixes.
 ```
     git checkout -t remotes/origin/2.9.x
 ```
-* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
-```
-    PIL/__init__.py
-    setup.py
-    _imaging.c
-    appveyor.yml
-```
+* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in `PIL/version.py`
 * [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
 ```
