@@ -1,8 +1,14 @@
 Changelog (Pillow)
 ==================
 
-4.2.0 (unreleased)
+4.2.0 (2017-07-01)
 ------------------
+
+- Complex Text Support #2576
+  [ShamsaHamed, Fahad-Alsaidi, wiredfool]
+  
+- Added threshold parameter to ImageDraw.floodfill #2599
+  [nediamond]
 
 - Added dBATCH parameter to ghostscript command #2588
   [radarhere]
