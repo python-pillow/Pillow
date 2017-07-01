@@ -325,12 +325,6 @@ Or for Python 3::
 
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-Prerequisites are installed on **Ubuntu 12.04 LTS** or **Raspian Wheezy
-7.0** with::
-
-    $ sudo apt-get install libtiff4-dev libjpeg8-dev zlib1g-dev \
-        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.5-dev tk8.5-dev python-tk
-
 Prerequisites are installed on **Ubuntu 14.04 LTS** with::
 
     $ sudo apt-get install libtiff5-dev libjpeg8-dev zlib1g-dev \
