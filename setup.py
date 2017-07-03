@@ -599,7 +599,7 @@ class pil_build_ext(build_ext):
         if struct.unpack("h", "\0\1".encode('ascii'))[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
 
-        if sys.platform == "win32":
+        if sys.platform == "win32" and not hasattr(sys, 'pypy_version_info'):
             defs.append(("PILLOW_VERSION", '"\\"%s\\""'%PILLOW_VERSION))
         else:
             defs.append(("PILLOW_VERSION", '"%s"'%PILLOW_VERSION))
