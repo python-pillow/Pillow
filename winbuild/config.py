@@ -5,6 +5,7 @@ PILLOW_DEPENDS_DIR = 'C:\\pillow-depends\\'
 
 pythons = {  # '26': 7,
            '27': 7,
+           'pypy2': 7,
            # '32': 7,
            '33': 7.1,
            '34': 7.1}

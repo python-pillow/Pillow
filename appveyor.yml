@@ -7,13 +7,21 @@ init:
 
 environment:
   X64_EXT: -x64
+  EXECUTABLE: python.exe
+  PIP_DIR: Scripts
+  VENV: NO
   matrix:
+  - PYTHON: C:/vp/pypy2
+    EXECUTABLE: bin/pypy.exe
+    PIP_DIR: bin
+    VENV: YES
   - PYTHON: C:/Python27-x64
   - PYTHON: C:/Python34
   - PYTHON: C:/Python27
   - PYTHON: C:/Python34-x64
   - PYTHON: C:/Python33
   - PYTHON: C:/Python33-x64
+
 
 install:
 - curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
@@ -23,19 +31,24 @@ install:
 - xcopy c:\pillow-depends\*.tar.gz c:\pillow\winbuild\
 - xcopy /s c:\pillow-depends\test_images\* c:\pillow\tests\images
 - cd c:\pillow\winbuild\
+- ps: |
+      if ($env:PYTHON -eq "c:/vp/pypy2")
+      {
+        c:\pillow\winbuild\appveyor_install_pypy.cmd
+      }
 - c:\python34\python.exe c:\pillow\winbuild\build_dep.py
 - c:\pillow\winbuild\build_deps.cmd
 
 build_script:
-- '%PYTHON%\python.exe c:\pillow\winbuild\build.py'
+- '%PYTHON%\%EXECUTABLE% c:\pillow\winbuild\build.py'
 - cd c:\pillow
 - dir dist\*.egg
-- '%PYTHON%\python.exe selftest.py --installed'
+- '%PYTHON%\%EXECUTABLE% selftest.py --installed'
 
 test_script:
 - cd c:\pillow
-- '%PYTHON%\Scripts\pip.exe install nose'
-- '%PYTHON%\python.exe test-installed.py -v -s'
+- '%PYTHON%\%PIP_DIR%\pip.exe install nose'
+- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s'
 
 matrix:
   fast_finish: true
@@ -47,9 +60,9 @@ artifacts:
   name: wheel
 
 after_test:
-  - '%PYTHON%\Scripts\pip.exe install wheel'
+  - '%PYTHON%\%PIP_DIR%\pip.exe install wheel'
   - cd c:\pillow\winbuild\
-  - '%PYTHON%\python.exe c:\pillow\winbuild\build.py --wheel'
+  - '%PYTHON%\%EXECUTABLE% c:\pillow\winbuild\build.py --wheel'
   - cd c:\pillow
   - ps: Get-ChildItem .\dist\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
