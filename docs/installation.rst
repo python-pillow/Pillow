@@ -24,9 +24,9 @@ Basic Installation
 
     The following instructions will install Pillow with support for most common image formats. See :ref:`external-libraries` for a full list of external libraries supported.
 
-Install Pillow with :command:`pip`::
+Install Pillow with :command: `pip <https://pip.readthedocs.io/en/stable/installing/>`_ ::
 
-    $ pip install Pillow
+    $ sudo pip install Pillow
 
 Or use :command:`easy_install` for installing `Python Eggs <http://peak.telecommunity.com/DevCenter/PythonEggs>`_ as :command:`pip` does not support them::
 
@@ -86,7 +86,7 @@ Many of Pillow's features require external libraries:
 
 Once you have installed the prerequisites,run::
 
-    $ pip install Pillow
+    $ sudo pip install Pillow
 
 If the prerequisites are installed in the standard library locations
 for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
@@ -136,7 +136,7 @@ The easiest way to install external libraries is via `Homebrew <http://brew.sh/>
 
 Install Pillow with::
 
-    $ pip install Pillow
+    $ sudo pip install Pillow
 
 Windows Installation
 --------------------
@@ -163,7 +163,7 @@ Python Wheels
 
 ::
 
-    $ pip install Pillow
+    $ sudo pip install Pillow
 
 If the above does not work, it's likely because we haven't uploaded a
 wheel for the latest version of Pillow. In that case, try pinning it
@@ -171,7 +171,7 @@ to a specific version:
 
 ::
 
-    $ pip install Pillow==2.6.1
+    $ sudo pip install Pillow==2.6.1
 
 FreeBSD Installation
 --------------------
