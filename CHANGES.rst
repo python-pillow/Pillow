@@ -1,7 +1,7 @@
 Changelog (Pillow)
 ==================
 
-4.3.0 (unreleased)
+4.2.1 (unreleased)
 ------------------
 
 - CI: Fix version specification and test on CI for PyPy/Windows #2608
