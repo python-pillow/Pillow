@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+4.3.0 (unreleased)
+------------------
+
+- PDF: Renamed parameter to not shadow built-in dict #2612
+  [kijeong]
+
 4.2.1 (unreleased)
 ------------------
 
