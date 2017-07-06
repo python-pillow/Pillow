@@ -10,7 +10,7 @@ Changelog (Pillow)
 - PDF: Renamed parameter to not shadow built-in dict #2612
   [kijeong]
 
-4.2.1 (unreleased)
+4.2.1 (2017-07-06)
 ------------------
 
 - CI: Fix version specification and test on CI for PyPy/Windows #2608
