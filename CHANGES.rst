@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Dependencies: Updated libimagequant to 2.10.0 #2605
+  [radarhere]
+  
 - PDF: Renamed parameter to not shadow built-in dict #2612
   [kijeong]
 
