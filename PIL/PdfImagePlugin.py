@@ -37,11 +37,11 @@ __version__ = "0.4"
 #  4. page
 #  5. page contents
 
-def _obj(fp, obj, **dict):
+def _obj(fp, obj, **dictionary):
     fp.write("%d 0 obj\n" % obj)
-    if dict:
+    if dictionary:
         fp.write("<<\n")
-        for k, v in dict.items():
+        for k, v in dictionary.items():
             if v is not None:
                 fp.write("/%s %s\n" % (k, v))
         fp.write(">>\n")
