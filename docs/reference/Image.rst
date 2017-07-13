@@ -165,6 +165,14 @@ Attributes
 
 Instances of the :py:class:`Image` class have the following attributes:
 
+.. py:attribute:: filename
+
+    The filename or path of the source file. Only images created with the 
+    factory function `open` have a filename attribute. If the input is a 
+    file like object, the filename attribute is set to an empty string.
+    
+    :type: :py:class: `string`
+
 .. py:attribute:: format
 
     The file format of the source file. For images created by the library
