@@ -7,7 +7,7 @@ Changelog (Pillow)
 - Docs: added the description of the filename attribute to images.rst #2621
   [dasdachs]
 
-- Dependencies: Updated libimagequant to 2.10.0 #2605
+- Dependencies: Updated libimagequant to 2.10.1 #2616
   [radarhere]
   
 - PDF: Renamed parameter to not shadow built-in dict #2612
