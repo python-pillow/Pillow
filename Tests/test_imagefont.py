@@ -393,6 +393,11 @@ class TestImageFont(PillowTestCase):
         # Assert
         self.assert_image_equal(im, target_img)
 
+    def test_getsize_empty(self):
+        font = self.get_font()
+        # should not crash. 
+        self.assertEqual((0, 0), font.getsize(''))
+
     def _test_fake_loading_font(self, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
         free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)
