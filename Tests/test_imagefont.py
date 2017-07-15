@@ -63,11 +63,11 @@ class TestImageFont(PillowTestCase):
     def setUp(self):
         freetype_version = tuple(ImageFont.core.freetype2_version.split('.'))[:2]
         self.metrics = self.METRICS.get(freetype_version, self.METRICS['Default'])
-    
+
     def get_font(self):
         return ImageFont.truetype(FONT_PATH, FONT_SIZE,
                                   layout_engine=self.LAYOUT_ENGINE)
-    
+
     def test_sanity(self):
         self.assertRegexpMatches(
             ImageFont.core.freetype2_version, r"\d+\.\d+\.\d+$")
@@ -248,9 +248,7 @@ class TestImageFont(PillowTestCase):
 
         target = 'Tests/images/multiline_text_spacing.png'
         target_img = Image.open(target)
-        from PIL import ImageChops
-        
-        ImageChops.difference(im, target_img).save('multiline.png')
+
         # Epsilon ~.5 fails with FreeType 2.7
         self.assert_image_similar(im, target_img, self.metrics['multiline'])
 
