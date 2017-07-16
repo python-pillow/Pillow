@@ -109,7 +109,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     unsigned char* font_bytes;
     int font_bytes_size = 0;
     static char* kwlist[] = {
-        "filename", "size", "index", "encoding", "font_bytes", 
+        "filename", "size", "index", "encoding", "font_bytes",
         "layout_engine", NULL
     };
 
@@ -449,8 +449,6 @@ font_getsize(FontObject* self, PyObject* args)
     y_max = y_min = 0;
 
     count = text_layout(string, self, dir, features, &glyph_info, 0);
-    if (count == 0)
-        return NULL;
 
     for (x = i = 0; i < count; i++) {
         int index, error;
