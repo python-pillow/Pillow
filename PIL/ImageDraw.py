@@ -87,7 +87,10 @@ class ImageDraw(object):
         self.font = None
 
     def getfont(self):
-        """Get the current default font."""
+        """
+        Get the current default font.
+
+        :returns: An image font."""
         if not self.font:
             # FIXME: should add a font repository
             from . import ImageFont
@@ -330,8 +333,8 @@ def floodfill(image, xy, value, border=None, thresh=0):
         pixels with a color different from the border color.  If not given,
         the region consists of pixels having the same color as the seed
         pixel.
-    :param thresh: Optional threshold value which specifies a maximum 
-        tolerable difference of a pixel value from the 'background' in 
+    :param thresh: Optional threshold value which specifies a maximum
+        tolerable difference of a pixel value from the 'background' in
         order for it to be replaced. Useful for filling regions of non-
         homogeneous, but similar, colors.
     """
@@ -375,7 +378,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
                             newedge.append((s, t))
             edge = newedge
 
-  
+
 def _color_diff(rgb1, rgb2):
     """
     Uses 1-norm distance to calculate difference between two rgb values.

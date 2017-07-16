@@ -121,6 +121,12 @@ Functions
 Methods
 -------
 
+.. py:method:: PIL.ImageDraw.ImageDraw.getfont()
+
+    Get the current default font.
+
+    :returns: An image font.
+
 .. py:method:: PIL.ImageDraw.ImageDraw.arc(xy, start, end, fill=None)
 
     Draws an arc (a portion of a circle outline) between the start and end
@@ -348,3 +354,32 @@ Methods
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
+
+.. py:method:: PIL.ImageDraw.getdraw(im=None, hints=None)
+
+    .. warning:: This method is experimental.
+
+    A more advanced 2D drawing interface for PIL images,
+    based on the WCK interface.
+
+    :param im: The image to draw in.
+    :param hints: An optional list of hints.
+    :returns: A (drawing context, drawing resource factory) tuple.
+
+.. py:method:: PIL.ImageDraw.floodfill(image, xy, value, border=None, thresh=0)
+
+    .. warning:: This method is experimental.
+
+    Fills a bounded region with a given color.
+
+    :param image: Target image.
+    :param xy: Seed position (a 2-item coordinate tuple).
+    :param value: Fill color.
+    :param border: Optional border value.  If given, the region consists of
+        pixels with a color different from the border color.  If not given,
+        the region consists of pixels having the same color as the seed
+        pixel.
+    :param thresh: Optional threshold value which specifies a maximum
+        tolerable difference of a pixel value from the 'background' in
+        order for it to be replaced. Useful for filling regions of non-
+        homogeneous, but similar, colors.
