@@ -1069,7 +1069,7 @@ class Image(object):
         _decompression_bomb_check((x1, y1))
 
         return im.crop((x0, y0, x1, y1))
-         
+
     def draft(self, mode, size):
         """
         Configures the image file loader so it returns a version of the
@@ -1381,12 +1381,12 @@ class Image(object):
         onto this image.
 
         :param im: image to composite over this one
-        :param dest: Optional 2 tuple (top, left) specifying the upper
+        :param dest: Optional 2 tuple (left, top) specifying the upper
           left corner in this (destination) image.
-        :param source: Optional 2 (top, left) tuple for the upper left
-          corner in the overlay source image, or 4 tuple (top, left, bottom,
-          right) for the bounds of the source rectangle
-          
+        :param source: Optional 2 (left, top) tuple for the upper left
+          corner in the overlay source image, or 4 tuple (left, top, right,
+          bottom) for the bounds of the source rectangle
+
         Performance Note: Not currently implemented in-place in the core layer.
         """
 
@@ -1406,7 +1406,7 @@ class Image(object):
         if len(source) == 2:
             source = source + im.size
 
-        # over image, crop if it's not the whole thing. 
+        # over image, crop if it's not the whole thing.
         if source == (0,0) + im.size:
             overlay = im
         else:
@@ -1414,16 +1414,16 @@ class Image(object):
 
         # target for the paste
         box = dest + (dest[0] + overlay.width, dest[1] + overlay.height)
-            
+
         # destination image. don't copy if we're using the whole image.
         if dest == (0,0) + self.size:
             background = self
         else:
             background = self.crop(box)
-                        
+
         result = alpha_composite(background, overlay)
         self.paste(result, box)
-        
+
     def point(self, lut, mode=None):
         """
         Maps this image through a lookup table or function.
