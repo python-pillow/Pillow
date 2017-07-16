@@ -121,7 +121,13 @@ Functions
 Methods
 -------
 
-.. py:method:: PIL.ImageDraw.Draw.arc(xy, start, end, fill=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.getfont()
+
+    Get the current default font.
+
+    :returns: An image font.
+
+.. py:method:: PIL.ImageDraw.ImageDraw.arc(xy, start, end, fill=None)
 
     Draws an arc (a portion of a circle outline) between the start and end
     angles, inside the given bounding box.
@@ -133,7 +139,7 @@ Methods
     :param end: Ending angle, in degrees.
     :param fill: Color to use for the arc.
 
-.. py:method:: PIL.ImageDraw.Draw.bitmap(xy, bitmap, fill=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.bitmap(xy, bitmap, fill=None)
 
     Draws a bitmap (mask) at the given position, using the current fill color
     for the non-zero portions. The bitmap should be a valid transparency mask
@@ -144,9 +150,9 @@ Methods
     To paste pixel data into an image, use the
     :py:meth:`~PIL.Image.Image.paste` method on the image itself.
 
-.. py:method:: PIL.ImageDraw.Draw.chord(xy, start, end, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.chord(xy, start, end, fill=None, outline=None)
 
-    Same as :py:meth:`~PIL.ImageDraw.Draw.arc`, but connects the end points
+    Same as :py:meth:`~PIL.ImageDraw.ImageDraw.arc`, but connects the end points
     with a straight line.
 
     :param xy: Four points to define the bounding box. Sequence of
@@ -154,7 +160,7 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.Draw.ellipse(xy, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.ellipse(xy, fill=None, outline=None)
 
     Draws an ellipse inside the given bounding box.
 
@@ -163,7 +169,7 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.Draw.line(xy, fill=None, width=0)
+.. py:method:: PIL.ImageDraw.ImageDraw.line(xy, fill=None, width=0)
 
     Draws a line between the coordinates in the **xy** list.
 
@@ -177,7 +183,7 @@ Methods
 
         .. note:: This option was broken until version 1.1.6.
 
-.. py:method:: PIL.ImageDraw.Draw.pieslice(xy, start, end, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None)
 
     Same as arc, but also draws straight lines between the end points and the
     center of the bounding box.
@@ -190,7 +196,7 @@ Methods
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
 
-.. py:method:: PIL.ImageDraw.Draw.point(xy, fill=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.point(xy, fill=None)
 
     Draws points (individual pixels) at the given coordinates.
 
@@ -198,7 +204,7 @@ Methods
                numeric values like ``[x, y, x, y, ...]``.
     :param fill: Color to use for the point.
 
-.. py:method:: PIL.ImageDraw.Draw.polygon(xy, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.polygon(xy, fill=None, outline=None)
 
     Draws a polygon.
 
@@ -211,7 +217,7 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.Draw.rectangle(xy, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.rectangle(xy, fill=None, outline=None)
 
     Draws a rectangle.
 
@@ -221,13 +227,13 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.Draw.shape(shape, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.shape(shape, fill=None, outline=None)
 
     .. warning:: This method is experimental.
 
     Draw a shape.
 
-.. py:method:: PIL.ImageDraw.Draw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None)
 
     Draws the string at the given position.
 
@@ -260,7 +266,7 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-.. py:method:: PIL.ImageDraw.Draw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left",
+.. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left",
                                                  direction=None, features=None)
 
     Draws the string at the given position.
@@ -291,7 +297,7 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-.. py:method:: PIL.ImageDraw.Draw.textsize(text, font=None, spacing=4, direction=None,
+.. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None,
                            features=None)
 
     Return the size of the given string, in pixels.
@@ -321,8 +327,7 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-
-.. py:method:: PIL.ImageDraw.Draw.multiline_textsize(text, font=None, spacing=4, direction=None,
+.. py:method:: PIL.ImageDraw.ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None,
                            features=None)
 
     Return the size of the given string, in pixels.
@@ -349,3 +354,32 @@ Methods
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
+
+.. py:method:: PIL.ImageDraw.getdraw(im=None, hints=None)
+
+    .. warning:: This method is experimental.
+
+    A more advanced 2D drawing interface for PIL images,
+    based on the WCK interface.
+
+    :param im: The image to draw in.
+    :param hints: An optional list of hints.
+    :returns: A (drawing context, drawing resource factory) tuple.
+
+.. py:method:: PIL.ImageDraw.floodfill(image, xy, value, border=None, thresh=0)
+
+    .. warning:: This method is experimental.
+
+    Fills a bounded region with a given color.
+
+    :param image: Target image.
+    :param xy: Seed position (a 2-item coordinate tuple).
+    :param value: Fill color.
+    :param border: Optional border value.  If given, the region consists of
+        pixels with a color different from the border color.  If not given,
+        the region consists of pixels having the same color as the seed
+        pixel.
+    :param thresh: Optional threshold value which specifies a maximum
+        tolerable difference of a pixel value from the 'background' in
+        order for it to be replaced. Useful for filling regions of non-
+        homogeneous, but similar, colors.
