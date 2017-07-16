@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Docs: Improved ImageDraw documentation #2626
+  [radarhere]
+
 - Docs: Corrected alpha_composite args documentation #2627
   [radarhere]
   
