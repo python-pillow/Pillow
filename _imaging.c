@@ -2215,7 +2215,7 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
 
     if (len) {
         *text = calloc(len,1);
-        if (text) {
+        if (*text) {
             memcpy(*text, buffer, len);
         }
         if(bytes) {
@@ -2231,7 +2231,7 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
     if (PyString_Check(encoded_string)) {
         PyString_AsStringAndSize(encoded_string, &buffer, &len);
         *text = calloc(len,1);
-        if (text) {
+        if (*text) {
             memcpy(*text, buffer, len);
         }
         return;
