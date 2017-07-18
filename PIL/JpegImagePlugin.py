@@ -119,8 +119,8 @@ def APP(self, marker):
 
     # If DPI isn't in JPEG header, fetch from EXIF
     if "dpi" not in self.info and "exif" in self.info:
-        exif = self._getexif()
         try:
+            exif = self._getexif()
             resolution_unit = exif[0x0128]
             x_resolution = exif[0x011A]
             try:
@@ -131,7 +131,9 @@ def APP(self, marker):
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
             self.info["dpi"] = dpi, dpi
-        except KeyError:
+        except (KeyError, SyntaxError):
+            # SyntaxError for invalid/unreadable exif
+            # KeyError for dpi not included
             self.info["dpi"] = 72, 72
 
 
