@@ -497,6 +497,11 @@ font_getsize(FontObject* self, PyObject* args)
         FT_Done_Glyph(glyph);
     }
 
+    if (glyph_info) {
+        PyMem_Free(glyph_info);
+        glyph_info = NULL;
+    }
+            
     if (face) {
 
         /* left bearing */
