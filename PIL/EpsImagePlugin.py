@@ -129,6 +129,7 @@ def Ghostscript(tile, size, fp, scale=1):
                "-c", "%d %d translate" % (-bbox[0], -bbox[1]),
                                              # adjust for image origin
                "-f", infile,                 # input file
+               "-c", "showpage",             # showpage (see: https://bugs.ghostscript.com/show_bug.cgi?id=698272)
                ]
 
     if gs_windows_binary is not None:
