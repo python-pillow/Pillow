@@ -71,6 +71,10 @@ class TestFileEps(PillowTestCase):
             target = Image.open('Tests/images/pil_sample_rgb.jpg')
             self.assert_image_similar(cmyk_image, target, 10)
 
+    def test_showpage(self):
+        plot_image = Image.open("Tests/images/d15-120f10.eps")
+        plot_image.load()
+
     def test_file_object(self):
         # issue 479
         image1 = Image.open(file1)
