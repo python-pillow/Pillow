@@ -21,18 +21,10 @@
 #
 
 
-<<<<<<< HEAD
-from PIL import Image, ImageFile, _binary
-import struct
-import os
-
-__version__ = "0.3"
-=======
 from . import Image, ImageFile
 from ._binary import i8, o8, i16be as i16
 import struct
 import os
->>>>>>> pillow/master
 
 __version__ = "0.3"
 
@@ -116,19 +108,6 @@ def _save(im, fp, filename):
     pinmin = 0
     # Maximum Byte value (255 = 8bits per pixel)
     pinmax = 255
-<<<<<<< HEAD
-    # Image name (79 characters max)
-    imgName = os.path.splitext(os.path.basename(filename))[0][0:78]
-    # Standard representation of pixel in the file
-    colormap = 0
-    channels = []
-    for channelIndex in range(0, z):
-        channelData = list(im.getdata(channelIndex))
-        channels.append(channelData)
-    fp.write(struct.pack('>h', magicNumber))
-    fp.write(struct.pack('c', chr(rle)))
-    fp.write(struct.pack('c', chr(bpc)))
-=======
     # Image name (79 characters max, truncated below in write)
     imgName = os.path.splitext(os.path.basename(filename))[0]
     if str is not bytes:
@@ -138,33 +117,12 @@ def _save(im, fp, filename):
     fp.write(struct.pack('>h', magicNumber))
     fp.write(o8(rle))
     fp.write(o8(bpc))
->>>>>>> pillow/master
     fp.write(struct.pack('>H', dim))
     fp.write(struct.pack('>H', x))
     fp.write(struct.pack('>H', y))
     fp.write(struct.pack('>H', z))
     fp.write(struct.pack('>l', pinmin))
     fp.write(struct.pack('>l', pinmax))
-<<<<<<< HEAD
-    for i in range(0, 4):
-        fp.write(struct.pack('c', chr(0)))
-    for c in imgName:
-        fp.write(struct.pack('c', c))
-    fp.write(struct.pack('c', chr(0)))
-    if len(imgName) < 78:
-        charIndex = len(imgName)
-        for charIndex in range(len(imgName), 79):
-            fp.write(struct.pack('c', chr(0)))
-    fp.write(struct.pack('>l', colormap))
-    for i in range(0, 404):
-        fp.write(struct.pack('c', chr(0)))
-    for zChannel in range(0, z):
-        dIndex = 0
-        for yPos in range(0, y):
-            for xPos in range(0, x):
-                fp.write(struct.pack('c', chr(channels[zChannel][dIndex])))
-                dIndex += 1
-=======
 
     fp.write(struct.pack('4s', b''))  # dummy
     fp.write(struct.pack('79s', imgName))  # truncates to 79 chars
@@ -181,7 +139,6 @@ def _save(im, fp, filename):
     for channel in im.split():
         fp.write(channel.tobytes())
 
->>>>>>> pillow/master
     fp.close()
 
 
