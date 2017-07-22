@@ -45,8 +45,8 @@ class SgiImageFile(ImageFile.ImageFile):
     def _open(self):
 
         # HEAD
-        offset = 512
-        s = self.fp.read(offset)
+        headlen = 512
+        s = self.fp.read(headlen)
 
         # magic number : 474
         if i16(s) != 474:
@@ -55,8 +55,8 @@ class SgiImageFile(ImageFile.ImageFile):
         # compression : verbatim or RLE
         compression = i8(s[2])
 
-        # depth : 1 or 2 bytes (8bits or 16bits)
-        depth = i8(s[3]) * 8
+        # bpc : 1 or 2 bytes (8bits or 16bits)
+        bpc = i8(s[3])
 
         # dimension : 1, 2 or 3 (depending on xsize, ysize and zsize)
         dimension = i16(s[4:])
@@ -71,14 +71,14 @@ class SgiImageFile(ImageFile.ImageFile):
         zsize = i16(s[10:])
 
         # layout
-        layout = depth, dimension, zsize
+        layout = bpc, dimension, zsize
 
         # determine mode from bits/zsize
-        if layout == (8, 2, 1) or layout == (8, 1, 1):
+        if layout == (1, 2, 1) or layout == (1, 1, 1):
             self.mode = "L"
-        elif layout == (8, 3, 3):
+        elif layout == (1, 3, 3):
             self.mode = "RGB"
-        elif layout == (8, 3, 4):
+        elif layout == (1, 3, 4):
             self.mode = "RGBA"
         else:
             raise ValueError("Unsupported SGI image mode")
@@ -90,16 +90,17 @@ class SgiImageFile(ImageFile.ImageFile):
 
         # decoder info
         if compression == 0:
-            pagesize = xsize * ysize * (depth / 8)
+            pagesize = xsize * ysize * bpc
             self.tile = []
+            offset = headlen
             for layer in self.mode:
                 self.tile.append(
                     ("raw", (0, 0) + self.size,
                         offset, (layer, 0, orientation)))
-                offset = offset + pagesize
+                offset += pagesize
         elif compression == 1:
             self.tile = [("sgi_rle", (0, 0) + self.size,
-                          offset, (self.mode, orientation, depth))]
+                          headlen, (self.mode, orientation, bpc * 8))]
 
 
 def _save(im, fp, filename):
