@@ -1,5 +1,3 @@
-from __future__ import division
-
 import io
 import struct
 
@@ -8,7 +6,7 @@ from helper import unittest, PillowTestCase, hopper
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import _limit_rational, IFDRational
 
-tag_ids = dict((info.name, info.value) for info in TiffTags.TAGS_V2.values())
+tag_ids = {info.name: info.value for info in TiffTags.TAGS_V2.values()}
 
 
 class TestFileTiffMetadata(PillowTestCase):
@@ -123,10 +121,9 @@ class TestFileTiffMetadata(PillowTestCase):
         reloaded = loaded.tag_v2.named()
 
         for k, v in original.items():
-            if type(v) == IFDRational:
+            if isinstance(v, IFDRational):
                 original[k] = IFDRational(*_limit_rational(v, 2**31))
-            if type(v) == tuple and \
-               type(v[0]) == IFDRational:
+            if isinstance(v, tuple) and isinstance(v[0], IFDRational):
                 original[k] = tuple([IFDRational(
                                      *_limit_rational(elt, 2**31)) for elt in v])
 
@@ -136,8 +133,8 @@ class TestFileTiffMetadata(PillowTestCase):
         for tag, value in reloaded.items():
             if tag in ignored:
                 continue
-            if (type(original[tag]) == tuple
-               and type(original[tag][0]) == IFDRational):
+            if (isinstance(original[tag], tuple)
+               and isinstance(original[tag][0], IFDRational)):
                 # Need to compare element by element in the tuple,
                 # not comparing tuples of object references
                 self.assert_deep_equal(original[tag],
@@ -175,7 +172,7 @@ class TestFileTiffMetadata(PillowTestCase):
 
         im.save(out)
         reloaded = Image.open(out)
-        self.assert_(type(im.info['icc_profile']) is not tuple)
+        self.assertNotIsInstance(im.info['icc_profile'], tuple)
         self.assertEqual(im.info['icc_profile'], reloaded.info['icc_profile'])
 
     def test_iccprofile_binary(self):
@@ -207,6 +204,21 @@ class TestFileTiffMetadata(PillowTestCase):
         reloaded = Image.open(out)
         self.assertEqual(0, reloaded.tag_v2[41988][0].numerator)
         self.assertEqual(0, reloaded.tag_v2[41988][0].denominator)
+
+    def test_expty_values(self):
+        data = io.BytesIO(
+            b'II*\x00\x08\x00\x00\x00\x03\x00\x1a\x01\x05\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x1b\x01\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x98\x82\x02\x00\x07\x00\x00\x002\x00\x00\x00\x00\x00\x00\x00a '
+            b'text\x00\x00')
+        head = data.read(8)
+        info = TiffImagePlugin.ImageFileDirectory_v2(head)
+        info.load(data)
+        try:
+            info = dict(info)
+        except ValueError:
+            self.fail("Should not be struct value error there.")
+        self.assertIn(33432, info)
 
 
 if __name__ == '__main__':

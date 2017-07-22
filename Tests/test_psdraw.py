@@ -31,16 +31,14 @@ class TestPsDraw(PillowTestCase):
     def test_draw_postscript(self):
 
         # Based on Pillow tutorial, but there is no textsize:
-        # https://pillow.readthedocs.io/en/latest/handbook/tutorial.html
+        # https://pillow.readthedocs.io/en/latest/handbook/tutorial.html#drawing-postscript
 
         # Arrange
         tempfile = self.tempfile('temp.ps')
-        fp = open(tempfile, "wb")
-
-        # Act
-        ps = PSDraw.PSDraw(fp)
-        self._create_document(ps)
-        fp.close()
+        with open(tempfile, "wb") as fp:
+            # Act
+            ps = PSDraw.PSDraw(fp)
+            self._create_document(ps)
 
         # Assert
         # Check non-zero file was created

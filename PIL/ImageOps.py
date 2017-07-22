@@ -17,8 +17,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isStringType
+from . import Image
+from ._util import isStringType
 import operator
 import functools
 
@@ -39,7 +39,7 @@ def _border(border):
 
 def _color(color, mode):
     if isStringType(color):
-        from PIL import ImageColor
+        from . import ImageColor
         color = ImageColor.getcolor(color, mode)
     return color
 
@@ -206,7 +206,8 @@ def deform(image, deformer, resample=Image.BILINEAR):
     :param image: The image to deform.
     :param deformer: A deformer object.  Any object that implements a
                     **getmesh** method can be used.
-    :param resample: What resampling filter to use.
+    :param resample: An optional resampling filter. Same values possible as
+       in the PIL.Image.transform function.
     :return: An image.
     """
     return image.transform(

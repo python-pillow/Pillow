@@ -388,6 +388,8 @@ typedef struct ImagingCodecStateInstance *ImagingCodecState;
 typedef int (*ImagingCodec)(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
 
+extern int ImagingBcnDecode(Imaging im, ImagingCodecState state,
+			    UINT8* buffer, int bytes);
 extern int ImagingBitDecode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
 extern int ImagingEpsEncode(Imaging im, ImagingCodecState state,
@@ -453,6 +455,7 @@ extern int ImagingXbmEncode(Imaging im, ImagingCodecState state,
 #ifdef	HAVE_LIBZ
 extern int ImagingZipDecode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
+extern int ImagingZipDecodeCleanup(ImagingCodecState state);
 extern int ImagingZipEncode(Imaging im, ImagingCodecState state,
 			    UINT8* buffer, int bytes);
 extern int ImagingZipEncodeCleanup(ImagingCodecState state);

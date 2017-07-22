@@ -1,3 +1,4 @@
+from __future__ import print_function
 from helper import unittest, PillowTestCase
 
 from PIL import Image
@@ -8,10 +9,10 @@ import locale
 # on windows, in polish locale:
 
 # import locale
-# print locale.setlocale(locale.LC_ALL, 'polish')
+# print(locale.setlocale(locale.LC_ALL, 'polish'))
 # import string
-# print len(string.whitespace)
-# print ord(string.whitespace[6])
+# print(len(string.whitespace))
+# print(ord(string.whitespace[6]))
 
 # Polish_Poland.1250
 # 7

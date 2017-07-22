@@ -14,8 +14,16 @@
 #
 # See the README file for information on usage and redistribution.
 #
+# WMF/EMF reference documentation:
+# https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-WMF/[MS-WMF].pdf
+# http://wvware.sourceforge.net/caolan/index.html
+# http://wvware.sourceforge.net/caolan/ora-wmf.html
 
-from PIL import Image, ImageFile, _binary
+from __future__ import print_function
+
+from . import Image, ImageFile
+from ._binary import i16le as word, si16le as short, i32le as dword, si32le as _long
+
 
 __version__ = "0.2"
 
@@ -25,12 +33,12 @@ if str != bytes:
     long = int
 
 
-##
-# Install application-specific WMF image handler.
-#
-# @param handler Handler object.
-
 def register_handler(handler):
+    """
+    Install application-specific WMF image handler.
+
+    :param handler: Handler object.
+    """
     global _handler
     _handler = handler
 
@@ -53,23 +61,10 @@ if hasattr(Image.core, "drawwmf"):
 
     register_handler(WmfHandler())
 
-# --------------------------------------------------------------------
-
-word = _binary.i16le
-
-
-def short(c, o=0):
-    v = word(c, o)
-    if v >= 32768:
-        v -= 65536
-    return v
-
-dword = _binary.i32le
-
-
 #
 # --------------------------------------------------------------------
 # Read WMF file
+
 
 def _accept(prefix):
     return (
@@ -111,7 +106,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             self.info["dpi"] = 72
 
-            # print self.mode, self.size, self.info
+            # print(self.mode, self.size, self.info)
 
             # sanity check (standard metafile header)
             if s[22:26] != b"\x01\x00\t\x00":
@@ -121,13 +116,13 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             # enhanced metafile
 
             # get bounding box
-            x0 = dword(s, 8)
-            y0 = dword(s, 12)
-            x1 = dword(s, 16)
-            y1 = dword(s, 20)
+            x0 = _long(s, 8)
+            y0 = _long(s, 12)
+            x1 = _long(s, 16)
+            y1 = _long(s, 20)
 
             # get frame (in 0.01 millimeter units)
-            frame = dword(s, 24), dword(s, 28), dword(s, 32), dword(s, 36)
+            frame = _long(s, 24), _long(s, 28), _long(s, 32), _long(s, 36)
 
             # normalize size to 72 dots per inch
             size = x1 - x0, y1 - y0

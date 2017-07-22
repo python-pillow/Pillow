@@ -20,13 +20,13 @@
 #
 
 import re
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 
 __version__ = "0.6"
 
 # XBM header
 xbm_head = re.compile(
-    b"\s*#define[ \t]+.*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
+    br"\s*#define[ \t]+.*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
     b"#define[ \t]+.*_height[ \t]+(?P<height>[0-9]+)[\r\n]+"
     b"(?P<hotspot>"
     b"#define[ \t]+[^_]*_x_hot[ \t]+(?P<xhot>[0-9]+)[\r\n]+"

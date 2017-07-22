@@ -14,7 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import ContainerIO
+from . import ContainerIO
 
 
 ##
@@ -23,14 +23,13 @@ from PIL import ContainerIO
 
 class TarIO(ContainerIO.ContainerIO):
 
-    ##
-    # Create file object.
-    #
-    # @param tarfile Name of TAR file.
-    # @param file Name of member file.
-
     def __init__(self, tarfile, file):
+        """
+        Create file object.
 
+        :param tarfile: Name of TAR file.
+        :param file: Name of member file.
+        """
         fh = open(tarfile, "rb")
 
         while True:

@@ -16,8 +16,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isPath
+from . import Image
+from ._util import isPath
 from io import BytesIO
 
 qt_is_installed = True
@@ -47,10 +47,11 @@ def rgb(r, g, b, a=255):
     return (qRgba(r, g, b, a) & 0xffffffff)
 
 
-# :param im A PIL Image object, or a file name
-# (given either as Python string or a PyQt string object)
-
 def fromqimage(im):
+    """
+    :param im: A PIL Image object, or a file name
+    (given either as Python string or a PyQt string object)
+    """
     buffer = QBuffer()
     buffer.open(QIODevice.ReadWrite)
     # preserve alha channel with png
@@ -156,26 +157,30 @@ def _toqclass_helper(im):
     else:
         raise ValueError("unsupported image mode %r" % im.mode)
 
-    # must keep a reference, or Qt will crash!
     __data = data or align8to32(im.tobytes(), im.size[0], im.mode)
     return {
         'data': __data, 'im': im, 'format': format, 'colortable': colortable
     }
 
-##
-# An PIL image wrapper for Qt.  This is a subclass of PyQt's QImage
-# class.
-#
-# @param im A PIL Image object, or a file name (given either as Python
-#     string or a PyQt string object).
-
 if qt_is_installed:
     class ImageQt(QImage):
 
         def __init__(self, im):
+            """
+            An PIL image wrapper for Qt.  This is a subclass of PyQt's QImage
+            class.
+
+            :param im: A PIL Image object, or a file name (given either as Python
+                string or a PyQt string object).
+            """
             im_data = _toqclass_helper(im)
+            # must keep a reference, or Qt will crash!
+            # All QImage constructors that take data operate on an existing
+            # buffer, so this buffer has to hang on for the life of the image.
+            # Fixes https://github.com/python-pillow/Pillow/issues/1370
+            self.__data = im_data['data']
             QImage.__init__(self,
-                            im_data['data'], im_data['im'].size[0],
+                            self.__data, im_data['im'].size[0],
                             im_data['im'].size[1], im_data['format'])
             if im_data['colortable']:
                 self.setColorTable(im_data['colortable'])

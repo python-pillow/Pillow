@@ -14,7 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
+from . import Image
 
 
 # the Python class below is overridden by the C implementation.

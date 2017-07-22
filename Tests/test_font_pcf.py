@@ -55,7 +55,7 @@ class TestFontPcf(PillowTestCase):
         self.assert_image_equal(image, compare)
 
     def test_high_characters(self):
-        message = "".join([chr(i+1) for i in range(140, 232)])
+        message = "".join(chr(i+1) for i in range(140, 232))
         self._test_high_characters(message)
         # accept bytes instances in Py3.
         if bytes is not str:

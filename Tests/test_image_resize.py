@@ -39,14 +39,14 @@ class TestImagingCoreResize(PillowTestCase):
             self.assertEqual(r.im.bands, im.im.bands)
 
     def test_reduce_filters(self):
-        for f in [Image.LINEAR, Image.BOX, Image.BILINEAR, Image.HAMMING,
+        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
                 Image.BICUBIC, Image.LANCZOS]:
             r = self.resize(hopper("RGB"), (15, 12), f)
             self.assertEqual(r.mode, "RGB")
             self.assertEqual(r.size, (15, 12))
 
     def test_enlarge_filters(self):
-        for f in [Image.LINEAR, Image.BOX, Image.BILINEAR, Image.HAMMING,
+        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
                 Image.BICUBIC, Image.LANCZOS]:
             r = self.resize(hopper("RGB"), (212, 195), f)
             self.assertEqual(r.mode, "RGB")
@@ -66,13 +66,13 @@ class TestImagingCoreResize(PillowTestCase):
         }
         samples['dirty'].putpixel((1, 1), 128)
 
-        for f in [Image.LINEAR, Image.BOX, Image.BILINEAR, Image.HAMMING,
+        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
                 Image.BICUBIC, Image.LANCZOS]:
             # samples resized with current filter
-            references = dict(
-                (name, self.resize(ch, (4, 4), f))
+            references = {
+                name: self.resize(ch, (4, 4), f)
                 for name, ch in samples.items()
-            )
+            }
 
             for mode, channels_set in [
                 ('RGB', ('blank', 'filled', 'dirty')),
@@ -88,6 +88,17 @@ class TestImagingCoreResize(PillowTestCase):
                         # check what resized channel in image is the same
                         # as separately resized channel
                         self.assert_image_equal(ch, references[channels[i]])
+
+    def test_enlarge_zero(self):
+        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
+                Image.BICUBIC, Image.LANCZOS]:
+            r = self.resize(Image.new('RGB', (0, 0), "white"), (212, 195), f)
+            self.assertEqual(r.mode, "RGB")
+            self.assertEqual(r.size, (212, 195))
+            self.assertEqual(r.getdata()[0], (0, 0, 0))
+
+    def test_unknown_filter(self):
+        self.assertRaises(ValueError, self.resize, hopper(), (10, 10), 9)
 
 
 class TestImageResize(PillowTestCase):

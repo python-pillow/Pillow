@@ -31,7 +31,7 @@ class TestFileJpeg2k(PillowTestCase):
 
     def test_sanity(self):
         # Internal version number
-        self.assertRegexpMatches(Image.core.jp2klib_version, '\d+\.\d+\.\d+$')
+        self.assertRegexpMatches(Image.core.jp2klib_version, r'\d+\.\d+\.\d+$')
 
         im = Image.open('Tests/images/test-card-lossless.jp2')
         px = im.load()
@@ -174,15 +174,8 @@ class TestFileJpeg2k(PillowTestCase):
     def test_unbound_local(self):
         # prepatch, a malformed jp2 file could cause an UnboundLocalError
         # exception.
-        try:
-            jp2 = Image.open('Tests/images/unbound_variable.jp2')
-            self.assertTrue(False, 'Expecting an exception')
-        except SyntaxError as err:
-            self.assertTrue(True, 'Expecting a syntax error')
-        except IOError as err:
-            self.assertTrue(True, 'Expecting an IO error')
-        except UnboundLocalError as err:
-            self.assertTrue(False, "Prepatch error")
+        with self.assertRaises(IOError):
+            Image.open('Tests/images/unbound_variable.jp2')
 
 if __name__ == '__main__':
     unittest.main()

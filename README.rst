@@ -14,9 +14,9 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
     * - docs
       - |docs|
     * - tests
-      - | |linux| |osx| |windows| |coverage| |health|
+      - | |linux| |macos| |windows| |coverage|
     * - package
-      - |zenodo| |version| |downloads|
+      - |zenodo| |version|
 
 .. |docs| image:: https://readthedocs.org/projects/pillow/badge/?version=latest
    :target: https://pillow.readthedocs.io/?badge=latest
@@ -26,9 +26,9 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://travis-ci.org/python-pillow/Pillow
    :alt: Travis CI build status (Linux)
 
-.. |osx| image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg?label=OS%20X%20build
+.. |macos| image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg?label=macOS%20build
    :target: https://travis-ci.org/python-pillow/pillow-wheels
-   :alt: Travis CI build status (OS X)
+   :alt: Travis CI build status (macOS)
 
 .. |windows| image:: https://img.shields.io/appveyor/ci/python-pillow/Pillow/master.svg?label=Windows%20build
    :target: https://ci.appveyor.com/project/python-pillow/Pillow
@@ -38,20 +38,12 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://coveralls.io/github/python-pillow/Pillow?branch=master
    :alt: Code coverage
 
-.. |health| image:: https://landscape.io/github/python-pillow/Pillow/master/landscape.svg
-   :target: https://landscape.io/github/python-pillow/Pillow/master
-   :alt: Code health
-
 .. |zenodo| image:: https://zenodo.org/badge/17549/python-pillow/Pillow.svg
    :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
 
 .. |version| image:: https://img.shields.io/pypi/v/pillow.svg
    :target: https://pypi.python.org/pypi/Pillow/
    :alt: Latest PyPI version
-
-.. |downloads| image:: https://img.shields.io/pypi/dm/pillow.svg
-   :target: https://pypi.python.org/pypi/Pillow/
-   :alt: Number of PyPI downloads
 
 .. end-badges
 

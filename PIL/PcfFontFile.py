@@ -16,9 +16,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL import FontFile
-from PIL import _binary
+from . import Image, FontFile
+from ._binary import i8, i16le as l16, i32le as l32, i16be as b16, i32be as b32
 
 # --------------------------------------------------------------------
 # declarations
@@ -41,12 +40,6 @@ BYTES_PER_ROW = [
     lambda bits: ((bits+31) >> 3) & ~3,
     lambda bits: ((bits+63) >> 3) & ~7,
 ]
-
-i8 = _binary.i8
-l16 = _binary.i16le
-l32 = _binary.i32le
-b16 = _binary.i16be
-b32 = _binary.i32be
 
 
 def sz(s, o):

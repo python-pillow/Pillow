@@ -54,7 +54,7 @@ class TestNumpy(PillowTestCase):
                 i = Image.fromarray(a)
                 if list(i.split()[0].getdata()) != list(range(100)):
                     print("data mismatch for", dtype)
-            # print dtype, list(i.getdata())
+            # print(dtype, list(i.getdata()))
             return i
 
         # Check supported 1-bit integer formats
@@ -100,7 +100,7 @@ class TestNumpy(PillowTestCase):
         self.assert_image(to_image(numpy.uint8, 4), "RGBA", (10, 10))
 
     # based on an erring example at
-    # http://stackoverflow.com/questions/10854903/what-is-causing-dimension-dependent-attributeerror-in-pil-fromarray-function
+    # https://stackoverflow.com/questions/10854903/what-is-causing-dimension-dependent-attributeerror-in-pil-fromarray-function
     def test_3d_array(self):
         size = (5, TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1])
         a = numpy.ones(size, dtype=numpy.uint8)
@@ -135,7 +135,12 @@ class TestNumpy(PillowTestCase):
         img = Image.fromarray(arr * 255).convert('1')
         self.assertEqual(img.mode, '1')
         arr_back = numpy.array(img)
-        numpy.testing.assert_array_equal(arr, arr_back)
+        # numpy 1.8 and earlier return this as a boolean. (trusty/precise)
+        if arr_back.dtype == numpy.bool:
+            arr_bool = numpy.array([[1, 0, 0, 1, 0], [0, 1, 0, 0, 0]], 'bool')
+            numpy.testing.assert_array_equal(arr_bool, arr_back)
+        else:
+            numpy.testing.assert_array_equal(arr, arr_back)
 
     def test_save_tiff_uint16(self):
         # Tests that we're getting the pixel value in the right byte order.
@@ -198,6 +203,14 @@ class TestNumpy(PillowTestCase):
         im.putdata(arr)
 
         self.assertEqual(len(im.getdata()), len(arr))
+
+    def test_zero_size(self):
+        # Shouldn't cause floating point exception
+        # See https://github.com/python-pillow/Pillow/issues/2259
+
+        im = Image.fromarray(numpy.empty((0, 0), dtype=numpy.uint8))
+
+        self.assertEqual(im.size, (0, 0))
 
 
 if __name__ == '__main__':

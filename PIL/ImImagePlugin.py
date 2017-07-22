@@ -27,8 +27,8 @@
 
 
 import re
-from PIL import Image, ImageFile, ImagePalette
-from PIL._binary import i8
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8
 
 __version__ = "0.7"
 
@@ -109,6 +109,7 @@ class ImImageFile(ImageFile.ImageFile):
 
     format = "IM"
     format_description = "IFUNC Image Memory"
+    _close_exclusive_fp_after_loading = False
 
     def _open(self):
 
@@ -325,10 +326,7 @@ def _save(im, fp, filename, check=0):
     except KeyError:
         raise ValueError("Cannot save %s images as IM" % im.mode)
 
-    try:
-        frames = im.encoderinfo["frames"]
-    except KeyError:
-        frames = 1
+    frames = im.encoderinfo.get("frames", 1)
 
     if check:
         return check

@@ -21,14 +21,20 @@
 #
 
 
+<<<<<<< HEAD
 from PIL import Image, ImageFile, _binary
 import struct
 import os
 
 __version__ = "0.3"
+=======
+from . import Image, ImageFile
+from ._binary import i8, o8, i16be as i16
+import struct
+import os
+>>>>>>> pillow/master
 
-i8 = _binary.i8
-i16 = _binary.i16be
+__version__ = "0.3"
 
 
 def _accept(prefix):
@@ -110,6 +116,7 @@ def _save(im, fp, filename):
     pinmin = 0
     # Maximum Byte value (255 = 8bits per pixel)
     pinmax = 255
+<<<<<<< HEAD
     # Image name (79 characters max)
     imgName = os.path.splitext(os.path.basename(filename))[0][0:78]
     # Standard representation of pixel in the file
@@ -121,12 +128,24 @@ def _save(im, fp, filename):
     fp.write(struct.pack('>h', magicNumber))
     fp.write(struct.pack('c', chr(rle)))
     fp.write(struct.pack('c', chr(bpc)))
+=======
+    # Image name (79 characters max, truncated below in write)
+    imgName = os.path.splitext(os.path.basename(filename))[0]
+    if str is not bytes:
+        imgName = imgName.encode('ascii', 'ignore')
+    # Standard representation of pixel in the file
+    colormap = 0
+    fp.write(struct.pack('>h', magicNumber))
+    fp.write(o8(rle))
+    fp.write(o8(bpc))
+>>>>>>> pillow/master
     fp.write(struct.pack('>H', dim))
     fp.write(struct.pack('>H', x))
     fp.write(struct.pack('>H', y))
     fp.write(struct.pack('>H', z))
     fp.write(struct.pack('>l', pinmin))
     fp.write(struct.pack('>l', pinmax))
+<<<<<<< HEAD
     for i in range(0, 4):
         fp.write(struct.pack('c', chr(0)))
     for c in imgName:
@@ -145,6 +164,24 @@ def _save(im, fp, filename):
             for xPos in range(0, x):
                 fp.write(struct.pack('c', chr(channels[zChannel][dIndex])))
                 dIndex += 1
+=======
+
+    fp.write(struct.pack('4s', b''))  # dummy
+    fp.write(struct.pack('79s', imgName))  # truncates to 79 chars
+    fp.write(struct.pack('s', b''))  # force null byte after imgname
+    fp.write(struct.pack('>l', colormap))
+
+    fp.write(struct.pack('404s', b''))  # dummy
+
+    # assert we've got the right number of bands.
+    if len(im.getbands()) != z:
+        raise ValueError("incorrect number of bands in SGI write: %s vs %s" %
+                         (z, len(im.getbands())))
+
+    for channel in im.split():
+        fp.write(channel.tobytes())
+
+>>>>>>> pillow/master
     fp.close()
 
 

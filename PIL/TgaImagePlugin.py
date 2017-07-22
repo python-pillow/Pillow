@@ -17,7 +17,8 @@
 #
 
 
-from PIL import Image, ImageFile, ImagePalette, _binary
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8, i16le as i16, o8, o16le as o16
 
 __version__ = "0.3"
 
@@ -25,9 +26,6 @@ __version__ = "0.3"
 #
 # --------------------------------------------------------------------
 # Read RGA file
-
-i8 = _binary.i8
-i16 = _binary.i16le
 
 
 MODES = {
@@ -131,10 +129,6 @@ class TgaImageFile(ImageFile.ImageFile):
 #
 # --------------------------------------------------------------------
 # Write TGA file
-
-o8 = _binary.o8
-o16 = _binary.o16le
-o32 = _binary.o32le
 
 SAVE = {
     "1": ("1", 1, 0, 3),

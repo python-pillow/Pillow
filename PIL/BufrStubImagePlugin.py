@@ -9,17 +9,17 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 
 _handler = None
 
 
-##
-# Install application-specific BUFR image handler.
-#
-# @param handler Handler object.
-
 def register_handler(handler):
+    """
+    Install application-specific BUFR image handler.
+
+    :param handler: Handler object.
+    """
     global _handler
     _handler = handler
 
@@ -40,7 +40,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
 
         offset = self.fp.tell()
 
-        if not _accept(self.fp.read(8)):
+        if not _accept(self.fp.read(4)):
             raise SyntaxError("Not a BUFR file")
 
         self.fp.seek(offset)

@@ -21,14 +21,13 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, _binary
-from PIL.PcxImagePlugin import PcxImageFile
+from . import Image
+from ._binary import i32le as i32
+from .PcxImagePlugin import PcxImageFile
 
 __version__ = "0.2"
 
 MAGIC = 0x3ADE68B1  # QUIZ: what's this value, then?
-
-i32 = _binary.i32le
 
 
 def _accept(prefix):
@@ -42,7 +41,8 @@ class DcxImageFile(PcxImageFile):
 
     format = "DCX"
     format_description = "Intel DCX"
-
+    _close_exclusive_fp_after_loading = False
+    
     def _open(self):
 
         # Header

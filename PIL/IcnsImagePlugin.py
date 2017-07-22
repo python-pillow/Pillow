@@ -2,7 +2,7 @@
 # The Python Imaging Library.
 # $Id$
 #
-# Mac OS X icns file decoder, based on icns.py by Bob Ippolito.
+# macOS icns file decoder, based on icns.py by Bob Ippolito.
 #
 # history:
 # 2004-10-09 fl   Turned into a PIL plugin; removed 2.3 dependencies.
@@ -15,7 +15,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, PngImagePlugin, _binary
+from PIL import Image, ImageFile, PngImagePlugin
+from PIL._binary import i8
 import io
 import os
 import shutil
@@ -26,8 +27,6 @@ import tempfile
 enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
 if enable_jpeg2k:
     from PIL import Jpeg2KImagePlugin
-
-i8 = _binary.i8
 
 HEADERSIZE = 8
 
@@ -302,9 +301,9 @@ def _save(im, fp, filename):
     """
     Saves the image as a series of PNG files,
     that are then converted to a .icns file
-    using the OS X command line utility 'iconutil'.
+    using the macOS command line utility 'iconutil'.
 
-    OS X only.
+    macOS only.
     """
     if hasattr(fp, "flush"):
         fp.flush()
@@ -330,8 +329,8 @@ def _save(im, fp, filename):
     from subprocess import Popen, PIPE, CalledProcessError
 
     convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
-    stderr = tempfile.TemporaryFile()
-    convert_proc = Popen(convert_cmd, stdout=PIPE, stderr=stderr)
+    with open(os.devnull, 'wb') as devnull:
+        convert_proc = Popen(convert_cmd, stdout=PIPE, stderr=devnull)
 
     convert_proc.stdout.close()
 

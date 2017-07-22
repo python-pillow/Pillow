@@ -36,7 +36,7 @@ docserve:
 	cd docs/_build/html && python -mSimpleHTTPServer 2> /dev/null&
 
 help:
-	@echo "Welcome to Pillow development. Please use \`make <target>' where <target> is one of"
+	@echo "Welcome to Pillow development. Please use \`make <target>\` where <target> is one of"
 	@echo "  clean          remove build products"
 	@echo "  coverage       run coverage test (in progress)"
 	@echo "  doc            make html docs"
@@ -58,6 +58,13 @@ install:
 	python setup.py install
 	python selftest.py --installed
 
+debug:
+# make a debug version if we don't have a -dbg python. Leaves in symbols
+# for our stuff, kills optimization, and redirects to dev null so we 
+# see any build failures.
+	make clean > /dev/null
+	CFLAGS='-g -O0' python setup.py build_ext install > /dev/null
+
 install-req:
 	pip install -r requirements.txt
 
@@ -77,7 +84,7 @@ release-test:
 	viewdoc
 
 sdist:
-	python setup.py sdist --format=gztar,zip
+	python setup.py sdist --format=gztar
 
 test:
 	python test-installed.py
@@ -88,10 +95,10 @@ upload-test:
 #       username:
 #       password:
 #       repository = http://test.pythonpackages.com
-	python setup.py sdist --format=gztar,zip upload -r test
+	python setup.py sdist --format=gztar upload -r test
 
 upload:
-	python setup.py sdist --format=gztar,zip upload
+	python setup.py sdist --format=gztar upload
 
 readme:
 	viewdoc

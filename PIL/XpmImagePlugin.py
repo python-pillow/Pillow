@@ -16,8 +16,8 @@
 
 
 import re
-from PIL import Image, ImageFile, ImagePalette
-from PIL._binary import i8, o8
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8, o8
 
 __version__ = "0.2"
 
@@ -115,8 +115,6 @@ class XpmImageFile(ImageFile.ImageFile):
 
         for i in range(ysize):
             s[i] = self.fp.readline()[1:xsize+1].ljust(xsize)
-
-        self.fp = None
 
         return b"".join(s)
 

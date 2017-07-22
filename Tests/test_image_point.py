@@ -35,6 +35,9 @@ class TestImagePoint(PillowTestCase):
         int_lut = [x//2 for x in range(256)]
         self.assert_image_equal(out.convert('L'), im.point(int_lut, 'L'))
 
+    def test_f_mode(self):
+        self.assertRaises(ValueError, lambda: hopper('F').point(None))
+
 
 if __name__ == '__main__':
     unittest.main()

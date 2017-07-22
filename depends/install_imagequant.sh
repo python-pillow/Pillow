@@ -1,12 +1,14 @@
 #!/bin/bash
 # install libimagequant
 
-git clone -b 2.6.0 https://github.com/pornel/pngquant
+archive=libimagequant-2.10.1
 
-pushd pngquant
+./download-and-extract.sh $archive https://raw.githubusercontent.com/python-pillow/pillow-depends/master/$archive.tar.gz
 
-make -C lib shared
-sudo cp lib/libimagequant.so* /usr/lib/
-sudo cp lib/libimagequant.h /usr/include/
+pushd $archive
+
+make shared
+sudo cp libimagequant.so* /usr/lib/
+sudo cp libimagequant.h /usr/include/
 
 popd

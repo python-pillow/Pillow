@@ -9,17 +9,17 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 
 _handler = None
 
 
-##
-# Install application-specific HDF5 image handler.
-#
-# @param handler Handler object.
-
 def register_handler(handler):
+    """
+    Install application-specific HDF5 image handler.
+
+    :param handler: Handler object.
+    """
     global _handler
     _handler = handler
 

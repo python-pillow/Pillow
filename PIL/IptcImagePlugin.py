@@ -17,16 +17,12 @@
 
 from __future__ import print_function
 
-from PIL import Image, ImageFile, _binary
+from . import Image, ImageFile
+from ._binary import i8, i16be as i16, i32be as i32, o8
 import os
 import tempfile
 
 __version__ = "0.3"
-
-i8 = _binary.i8
-i16 = _binary.i16be
-i32 = _binary.i32be
-o8 = _binary.o8
 
 COMPRESSION = {
     1: "raw",
@@ -99,7 +95,7 @@ class IptcImageFile(ImageFile.ImageFile):
                 tagdata = self.fp.read(size)
             else:
                 tagdata = None
-            if tag in list(self.info.keys()):
+            if tag in self.info:
                 if isinstance(self.info[tag], list):
                     self.info[tag].append(tagdata)
                 else:
@@ -107,7 +103,7 @@ class IptcImageFile(ImageFile.ImageFile):
             else:
                 self.info[tag] = tagdata
 
-            # print tag, self.info[tag]
+            # print(tag, self.info[tag])
 
         # mode
         layers = i8(self.info[(3, 60)][0])
@@ -168,14 +164,9 @@ class IptcImageFile(ImageFile.ImageFile):
         o.close()
 
         try:
-            try:
-                # fast
-                self.im = Image.core.open_ppm(outfile)
-            except:
-                # slightly slower
-                im = Image.open(outfile)
-                im.load()
-                self.im = im.im
+            _im = Image.open(outfile)
+            _im.load()
+            self.im = _im.im
         finally:
             try:
                 os.unlink(outfile)
@@ -188,16 +179,15 @@ Image.register_open(IptcImageFile.format, IptcImageFile)
 Image.register_extension(IptcImageFile.format, ".iim")
 
 
-##
-# Get IPTC information from TIFF, JPEG, or IPTC file.
-#
-# @param im An image containing IPTC data.
-# @return A dictionary containing IPTC information, or None if
-#     no IPTC information block was found.
-
 def getiptcinfo(im):
+    """
+    Get IPTC information from TIFF, JPEG, or IPTC file.
 
-    from PIL import TiffImagePlugin, JpegImagePlugin
+    :param im: An image containing IPTC data.
+    :returns: A dictionary containing IPTC information, or None if
+        no IPTC information block was found.
+    """
+    from . import TiffImagePlugin, JpegImagePlugin
     import io
 
     data = None

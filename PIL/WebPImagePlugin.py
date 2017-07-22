@@ -1,7 +1,5 @@
-from PIL import Image
-from PIL import ImageFile
+from . import Image, ImageFile, _webp
 from io import BytesIO
-from PIL import _webp
 
 
 _VALID_WEBP_MODES = {
@@ -43,7 +41,7 @@ class WebPImageFile(ImageFile.ImageFile):
         self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
 
     def _getexif(self):
-        from PIL.JpegImagePlugin import _getexif
+        from .JpegImagePlugin import _getexif
         return _getexif(self)
 
 

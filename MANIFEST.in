@@ -23,6 +23,8 @@ prune docs/_static
 exclude .coveragerc
 exclude .editorconfig
 exclude .landscape.yaml
+exclude .travis
+exclude .travis/*
 exclude appveyor.yml
 exclude build_children.sh
 exclude tox.ini

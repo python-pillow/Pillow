@@ -16,17 +16,15 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
 
-from PIL import Image, BmpImagePlugin, _binary
+from . import Image, BmpImagePlugin
+from ._binary import i8, i16le as i16, i32le as i32
 
 __version__ = "0.1"
 
 #
 # --------------------------------------------------------------------
-
-i8 = _binary.i8
-i16 = _binary.i16le
-i32 = _binary.i32le
 
 
 def _accept(prefix):
@@ -58,14 +56,14 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
                 m = s
             elif i8(s[0]) > i8(m[0]) and i8(s[1]) > i8(m[1]):
                 m = s
-            # print "width", i8(s[0])
-            # print "height", i8(s[1])
-            # print "colors", i8(s[2])
-            # print "reserved", i8(s[3])
-            # print "hotspot x", i16(s[4:])
-            # print "hotspot y", i16(s[6:])
-            # print "bytes", i32(s[8:])
-            # print "offset", i32(s[12:])
+            # print("width", i8(s[0]))
+            # print("height", i8(s[1]))
+            # print("colors", i8(s[2]))
+            # print("reserved", i8(s[3]))
+            # print("hotspot x", i16(s[4:]))
+            # print("hotspot y", i16(s[6:]))
+            # print("bytes", i32(s[8:]))
+            # print("offset", i32(s[12:]))
         if not m:
             raise TypeError("No cursors were found")
 

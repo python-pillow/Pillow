@@ -14,7 +14,7 @@
 #
 
 # mode descriptor cache
-_modes = {}
+_modes = None
 
 
 class ModeDescriptor(object):
@@ -32,19 +32,24 @@ class ModeDescriptor(object):
 
 def getmode(mode):
     """Gets a mode descriptor for the given mode."""
+    global _modes
     if not _modes:
         # initialize mode cache
-        from PIL import Image
+
+        from . import Image
+        modes = {}
         # core modes
         for m, (basemode, basetype, bands) in Image._MODEINFO.items():
-            _modes[m] = ModeDescriptor(m, bands, basemode, basetype)
+            modes[m] = ModeDescriptor(m, bands, basemode, basetype)
         # extra experimental modes
-        _modes["RGBa"] = ModeDescriptor("RGBa", ("R", "G", "B", "a"), "RGB", "L")
-        _modes["LA"] = ModeDescriptor("LA", ("L", "A"), "L", "L")
-        _modes["La"] = ModeDescriptor("La", ("L", "a"), "L", "L")
-        _modes["PA"] = ModeDescriptor("PA", ("P", "A"), "RGB", "L")
+        modes["RGBa"] = ModeDescriptor("RGBa", ("R", "G", "B", "a"), "RGB", "L")
+        modes["LA"] = ModeDescriptor("LA", ("L", "A"), "L", "L")
+        modes["La"] = ModeDescriptor("La", ("L", "a"), "L", "L")
+        modes["PA"] = ModeDescriptor("PA", ("P", "A"), "RGB", "L")
         # mapping modes
-        _modes["I;16"] = ModeDescriptor("I;16", "I", "L", "L")
-        _modes["I;16L"] = ModeDescriptor("I;16L", "I", "L", "L")
-        _modes["I;16B"] = ModeDescriptor("I;16B", "I", "L", "L")
+        modes["I;16"] = ModeDescriptor("I;16", "I", "L", "L")
+        modes["I;16L"] = ModeDescriptor("I;16L", "I", "L", "L")
+        modes["I;16B"] = ModeDescriptor("I;16B", "I", "L", "L")
+        # set global mode cache atomically
+        _modes = modes
     return _modes[mode]

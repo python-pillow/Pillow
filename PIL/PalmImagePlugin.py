@@ -7,7 +7,8 @@
 # Image plugin for Palm pixmap images (output only).
 ##
 
-from PIL import Image, ImageFile, _binary
+from . import Image, ImageFile
+from ._binary import o8, o16be as o16b
 
 __version__ = "1.0"
 
@@ -80,13 +81,12 @@ _Palm8BitColormapValues = (
 
 # so build a prototype image to be used for palette resampling
 def build_prototype_image():
-    image = Image.new("L", (1, len(_Palm8BitColormapValues),))
+    image = Image.new("L", (1, len(_Palm8BitColormapValues)))
     image.putdata(list(range(len(_Palm8BitColormapValues))))
     palettedata = ()
-    for i in range(len(_Palm8BitColormapValues)):
-        palettedata = palettedata + _Palm8BitColormapValues[i]
-    for i in range(256 - len(_Palm8BitColormapValues)):
-        palettedata = palettedata + (0, 0, 0)
+    for colormapValue in _Palm8BitColormapValues:
+        palettedata += colormapValue
+    palettedata += (0, 0, 0)*(256 - len(_Palm8BitColormapValues))
     image.putpalette(palettedata)
     return image
 
@@ -108,9 +108,6 @@ _COMPRESSION_TYPES = {
     "rle":      0x01,
     "scanline": 0x00,
     }
-
-o8 = _binary.o8
-o16b = _binary.o16be
 
 
 #

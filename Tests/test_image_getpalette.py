@@ -9,15 +9,15 @@ class TestImageGetPalette(PillowTestCase):
             if p:
                 return p[:10]
             return None
-        self.assertEqual(palette("1"), None)
-        self.assertEqual(palette("L"), None)
-        self.assertEqual(palette("I"), None)
-        self.assertEqual(palette("F"), None)
+        self.assertIsNone(palette("1"))
+        self.assertIsNone(palette("L"))
+        self.assertIsNone(palette("I"))
+        self.assertIsNone(palette("F"))
         self.assertEqual(palette("P"), [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-        self.assertEqual(palette("RGB"), None)
-        self.assertEqual(palette("RGBA"), None)
-        self.assertEqual(palette("CMYK"), None)
-        self.assertEqual(palette("YCbCr"), None)
+        self.assertIsNone(palette("RGB"))
+        self.assertIsNone(palette("RGBA"))
+        self.assertIsNone(palette("CMYK"))
+        self.assertIsNone(palette("YCbCr"))
 
 
 if __name__ == '__main__':

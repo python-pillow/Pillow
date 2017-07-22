@@ -16,7 +16,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
 
 .. image:: https://travis-ci.org/python-pillow/pillow-wheels.svg?branch=latest
    :target: https://travis-ci.org/python-pillow/pillow-wheels
-   :alt: Travis CI build status (OS X)
+   :alt: Travis CI build status (macOS)
 
 .. image:: https://img.shields.io/appveyor/ci/python-pillow/Pillow/master.svg?label=Windows%20build
    :target: https://ci.appveyor.com/project/python-pillow/Pillow
@@ -25,10 +25,6 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
 .. image:: https://img.shields.io/pypi/v/pillow.svg
    :target: https://pypi.python.org/pypi/Pillow/
    :alt: Latest PyPI version
-
-.. image:: https://img.shields.io/pypi/dm/pillow.svg
-   :target: https://pypi.python.org/pypi/Pillow/
-   :alt: Number of PyPI downloads
 
 .. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.svg?branch=master
    :target: https://coveralls.io/github/python-pillow/Pillow?branch=master

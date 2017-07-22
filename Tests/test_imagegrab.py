@@ -38,11 +38,11 @@ class TestImageGrabImport(PillowTestCase):
 
         # Assert
         if sys.platform in ["win32", "darwin"]:
-            self.assertIsNone(exception, None)
+            self.assertIsNone(exception)
         else:
             self.assertIsInstance(exception, ImportError)
             self.assertEqual(str(exception),
-                             "ImageGrab is OS X and Windows only")
+                             "ImageGrab is macOS and Windows only")
 
 
 if __name__ == '__main__':
