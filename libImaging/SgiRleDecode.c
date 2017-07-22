@@ -54,7 +54,6 @@ int
 ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
 		    UINT8* buf, int bytes)
 {
-	int n, depth;
     UINT8* ptr;
 
     ptr = buf;
@@ -90,9 +89,11 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     readlongtab(&ptr, state->ysize * zsize, lengthtab);
 
     /* get scanlines informations */
-    for (int rowno = 0; rowno < state->ysize; ++rowno) {
+    int rowno;
+    for (rowno = 0; rowno < state->ysize; ++rowno) {
 
-    	for (int channo = 0; channo < zsize; ++channo) {
+        int channo;
+    	for (channo = 0; channo < zsize; ++channo) {
 
     		unsigned long rleoffset = starttab[rowno + channo * state->ysize];
 
@@ -115,7 +116,8 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     		expandrow(scanline, rledata, 0);
 
             /* populate the state buffer */
-    		for (int x = 0; x < state->xsize; ++x) {
+            int x;
+    		for (x = 0; x < state->xsize; ++x) {
    				state->buffer[x * zsize + channo] = scanline[x];
     		}
 
