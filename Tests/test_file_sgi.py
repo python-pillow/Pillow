@@ -31,12 +31,13 @@ class TestFileSgi(PillowTestCase):
         self.assert_image_equal(im, target)
 
     def test_rle(self):
+        # Created with ImageMagick:
         # convert hopper.ppm  hopper.sgi
-        # We don't support RLE compression, this should throw a value error
         test_file = "Tests/images/hopper.sgi"
 
-        with self.assertRaises(ValueError):
-            Image.open(test_file)
+        im = Image.open(test_file)
+        target = Image.open('Tests/images/hopper.rgb')
+        self.assert_image_equal(im, target)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"

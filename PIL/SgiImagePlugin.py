@@ -9,6 +9,7 @@
 #
 #
 # History:
+# 2017-22-07 mb   Add RLE decompression
 # 2016-16-10 mb   Add save method without compression
 # 1995-09-10 fl   Created
 #
@@ -44,40 +45,62 @@ class SgiImageFile(ImageFile.ImageFile):
     def _open(self):
 
         # HEAD
-        s = self.fp.read(512)
+        offset = 512
+        s = self.fp.read(offset)
+
+        # magic number : 474
         if i16(s) != 474:
             raise ValueError("Not an SGI image file")
 
-        # relevant header entries
+        # compression : verbatim or RLE
         compression = i8(s[2])
 
-        # bytes, dimension, zsize
-        layout = i8(s[3]), i16(s[4:]), i16(s[10:])
+        # depth : 1 or 2 bytes (8bits or 16bits)
+        depth = i8(s[3]) * 8
 
-        # determine mode from bytes/zsize
-        if layout == (1, 2, 1) or layout == (1, 1, 1):
+        # dimension : 1, 2 or 3 (depending on xsize, ysize and zsize)
+        dimension = i16(s[4:])
+
+        # xsize : width
+        xsize = i16(s[6:])
+
+        # ysize : height
+        ysize = i16(s[8:])
+
+        # zsize : channels count
+        zsize = i16(s[10:])
+
+        # layout
+        layout = depth, dimension, zsize
+
+        # determine mode from bits/zsize
+        if layout == (8, 2, 1) or layout == (8, 1, 1):
             self.mode = "L"
-        elif layout == (1, 3, 3):
+        elif layout == (8, 3, 3):
             self.mode = "RGB"
-        elif layout == (1, 3, 4):
+        elif layout == (8, 3, 4):
             self.mode = "RGBA"
         else:
             raise ValueError("Unsupported SGI image mode")
 
-        # size
-        self.size = i16(s[6:]), i16(s[8:])
+        self.size = xsize, ysize
+
+        # orientation -1 : scanlines begins at the bottom-left corner
+        orientation = -1
 
         # decoder info
         if compression == 0:
-            offset = 512
-            pagesize = self.size[0]*self.size[1]*layout[0]
+            pagesize = xsize * ysize * (depth / 8)
             self.tile = []
             for layer in self.mode:
                 self.tile.append(
-                    ("raw", (0, 0)+self.size, offset, (layer, 0, -1)))
+                    ("raw", (0, 0) + self.size,
+                        offset, (layer, 0, orientation)))
                 offset = offset + pagesize
         elif compression == 1:
-            raise ValueError("SGI RLE encoding not supported")
+            self.tile = [("sgi_rle", (0, 0) + self.size,
+                          offset, (self.mode, orientation, depth))]
+            # raise ValueError("SGI RLE encoding not supported")
 
 
 def _save(im, fp, filename):
