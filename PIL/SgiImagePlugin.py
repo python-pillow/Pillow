@@ -100,7 +100,6 @@ class SgiImageFile(ImageFile.ImageFile):
         elif compression == 1:
             self.tile = [("sgi_rle", (0, 0) + self.size,
                           offset, (self.mode, orientation, depth))]
-            # raise ValueError("SGI RLE encoding not supported")
 
 
 def _save(im, fp, filename):
