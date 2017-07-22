@@ -200,7 +200,7 @@ class ImageFile(Image.Image):
             for decoder_name, extents, offset, args in self.tile:
                 decoder = Image._getdecoder(self.mode, decoder_name,
                                             args, self.decoderconfig)
-                seek(int(offset))
+                seek(offset)
                 decoder.setimage(self.im, extents)
                 if decoder.pulls_fd:
                     decoder.setfd(self.fp)
