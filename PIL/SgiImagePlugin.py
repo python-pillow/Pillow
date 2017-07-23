@@ -34,9 +34,20 @@ def _accept(prefix):
     return len(prefix) >= 2 and i16(prefix) == 474
 
 
+MODES = {
+    (1, 1, 1): "L",
+    (1, 2, 1): "L",
+    (2, 1, 1): "L;16B",
+    (2, 2, 1): "L;16B",
+    (1, 3, 3): "RGB",
+    (2, 3, 3): "RGB;16B",
+    (1, 3, 4): "RGBA",
+    (2, 3, 4): "RGBA;16B"
+}
+
+
 ##
 # Image plugin for SGI images.
-
 class SgiImageFile(ImageFile.ImageFile):
 
     format = "SGI"
@@ -74,16 +85,17 @@ class SgiImageFile(ImageFile.ImageFile):
         layout = bpc, dimension, zsize
 
         # determine mode from bits/zsize
-        if layout == (1, 2, 1) or layout == (1, 1, 1):
-            self.mode = "L"
-        elif layout == (1, 3, 3):
-            self.mode = "RGB"
-        elif layout == (1, 3, 4):
-            self.mode = "RGBA"
-        else:
+        rawmode = ""
+        try:
+            rawmode = MODES[layout]
+        except KeyError:
+            pass
+
+        if rawmode == "":
             raise ValueError("Unsupported SGI image mode")
 
         self.size = xsize, ysize
+        self.mode = rawmode.split(";")[0]
 
         # orientation -1 : scanlines begins at the bottom-left corner
         orientation = -1
@@ -91,13 +103,17 @@ class SgiImageFile(ImageFile.ImageFile):
         # decoder info
         if compression == 0:
             pagesize = xsize * ysize * bpc
-            self.tile = []
-            offset = headlen
-            for layer in self.mode:
-                self.tile.append(
-                    ("raw", (0, 0) + self.size,
-                        offset, (layer, 0, orientation)))
-                offset += pagesize
+            if bpc == 2:
+                self.tile = [("SGI16", (0, 0) + self.size,
+                              headlen, (self.mode, 0, orientation))]
+            else:
+                self.tile = []
+                offset = headlen
+                for layer in self.mode:
+                    self.tile.append(
+                        ("raw", (0, 0) + self.size,
+                            offset, (layer, 0, orientation)))
+                    offset += pagesize
         elif compression == 1:
             self.tile = [("sgi_rle", (0, 0) + self.size,
                           headlen, (self.mode, orientation, bpc * 8))]
@@ -165,9 +181,30 @@ def _save(im, fp, filename):
     fp.close()
 
 
+class SGI16Decoder(ImageFile.PyDecoder):
+    _pulls_fd = False
+
+    def decode(self, buffer):
+        pagesize = self.state.xsize * self.state.ysize
+        zsize = len(self.mode)
+        data = bytearray(pagesize * zsize)
+        i = 0
+        for y in reversed(range(self.state.ysize)):
+            for x in range(self.state.xsize):
+                for z in range(zsize):
+                    bi = (x + y * self.state.xsize + z * pagesize) * 2
+                    pixel = i16(buffer, o=bi)
+                    pixel = int(pixel // 256)
+                    data[i] = o8(pixel)
+                    i += 1
+        self.set_as_raw(bytes(data))
+        return -1, 0
+
 #
 # registry
 
+
+Image.register_decoder("SGI16", SGI16Decoder)
 Image.register_open(SgiImageFile.format, SgiImageFile, _accept)
 Image.register_save(SgiImageFile.format, _save)
 Image.register_mime(SgiImageFile.format, "image/sgi")

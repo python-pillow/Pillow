@@ -12,16 +12,17 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 #include "stdio.h"
 
-static unsigned long getlong(UINT8 *buf)
+typedef unsigned long ULONG;
+
+static ULONG getlong(UINT8 *buf)
 {
-	return (unsigned long)(buf[0]<<24)+(buf[1]<<16)+(buf[2]<<8)+(buf[3]<<0);
+	return (ULONG)(buf[0]<<24)+(buf[1]<<16)+(buf[2]<<8)+(buf[3]<<0);
 }
 
-static void readlongtab(UINT8** buf, int n, unsigned long *tab)
+static void readlongtab(UINT8** buf, int n, ULONG *tab)
 {
 	int i;
 	for (i = 0; i < n; i++) {
@@ -54,9 +55,16 @@ int
 ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
 		    UINT8* buf, int bytes)
 {
-    UINT8* ptr;
+    UINT8 *ptr, *rledata, *scanline;
+    ULONG *starttab, *lengthtab;
+    ULONG rleoffset, rlelength, prevrlelength;
+    int zsize, tablen, rowno, channo, x;
 
     ptr = buf;
+
+    /* get the channels count */
+    zsize = im->bands;
+    prevrlelength = (ULONG)state->xsize;
 
     if (state->state == 0) {
 
@@ -67,62 +75,58 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
 	} else
 	    state->ystep = 1;
 
-	state->state = 1;
-
-    }
-
-    /* get the channels count */
-    int zsize = state->bits / state->count;
+    free(state->buffer);
 
     /* allocate memory for the buffer used for full lines later */
     state->buffer = (UINT8*)malloc(sizeof(UINT8) * state->xsize * zsize);
 
+    /* allocate memory for compressed and uncompressed rows */
+    rledata = (UINT8*)malloc(sizeof(UINT8) * state->xsize);
+    scanline = (UINT8*)malloc(sizeof(UINT8) * state->xsize);
+
+	state->state = 1;
+
+    }
 
     /* get RLE offset and length tabs  */
-    unsigned long *starttab, *lengthtab;
-    int tablen = state->ysize * zsize * sizeof(unsigned long);
+    tablen = state->ysize * zsize * sizeof(ULONG);
 
-    starttab = (unsigned long *)malloc(tablen);
-    lengthtab = (unsigned long *)malloc(tablen);
+    starttab = (ULONG*)malloc(tablen);
+    lengthtab = (ULONG*)malloc(tablen);
 
     readlongtab(&ptr, state->ysize * zsize, starttab);
     readlongtab(&ptr, state->ysize * zsize, lengthtab);
 
     /* get scanlines informations */
-    int rowno;
     for (rowno = 0; rowno < state->ysize; ++rowno) {
 
-        int channo;
     	for (channo = 0; channo < zsize; ++channo) {
 
-    		unsigned long rleoffset = starttab[rowno + channo * state->ysize];
+    		rleoffset = starttab[rowno + channo * state->ysize];
+            rlelength = lengthtab[rowno + channo * state->ysize];
 
             /* 
              * we also need to substract the file header and RLE tabs length
              * from the offset
              */
             rleoffset -= 512;
-            rleoffset -= tablen;
+            rleoffset -= tablen;    		
 
-    		unsigned long rlelength = lengthtab[rowno + channo * state->ysize];
+            if (prevrlelength != rlelength)
+                rledata = (UINT8*)realloc(rledata, sizeof(UINT8) * rlelength);
 
-    		UINT8* rledata;
-    		rledata = (UINT8*)malloc(sizeof(UINT8) * rlelength);
+            prevrlelength = rlelength;
+
     		memcpy(rledata, &ptr[rleoffset], rlelength * sizeof(UINT8));
-    		UINT8* scanline;
-    		scanline = (UINT8*)malloc(sizeof(UINT8) * state->xsize);
 
             /* decompress raw data */
     		expandrow(scanline, rledata, 0);
 
             /* populate the state buffer */
-            int x;
     		for (x = 0; x < state->xsize; ++x) {
    				state->buffer[x * zsize + channo] = scanline[x];
     		}
 
-    		free(rledata);
-    		free(scanline);
     	}
 
         /* Unpack the full line stored in the state buffer */
@@ -132,9 +136,11 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
 
     	state->y += state->ystep;
     }
-    
+
+    free(rledata);
+    free(scanline);    
     free(starttab);
     free(lengthtab);
 
-    return -1;
+    return -1; /* end of file (errcode=0) */
 }
