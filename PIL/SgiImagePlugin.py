@@ -116,7 +116,7 @@ class SgiImageFile(ImageFile.ImageFile):
                     offset += pagesize
         elif compression == 1:
             self.tile = [("sgi_rle", (0, 0) + self.size,
-                          headlen, (self.mode, orientation, bpc * 8))]
+                          headlen, (rawmode, orientation, bpc))]
 
 
 def _save(im, fp, filename):
@@ -185,18 +185,24 @@ class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = False
 
     def decode(self, buffer):
+        rawmode, stride, orientation = self.args
         pagesize = self.state.xsize * self.state.ysize
         zsize = len(self.mode)
         data = bytearray(pagesize * zsize)
         i = 0
-        for y in reversed(range(self.state.ysize)):
+        y = 0
+        if orientation < 0:
+            y = self.state.ysize - 1
+        while y >= 0 and y < self.state.ysize:
             for x in range(self.state.xsize):
                 for z in range(zsize):
-                    bi = (x + y * self.state.xsize + z * pagesize) * 2
+                    bi = (x + y * self.state.xsize +
+                          y * stride + z * pagesize) * 2
                     pixel = i16(buffer, o=bi)
                     pixel = int(pixel // 256)
                     data[i] = o8(pixel)
                     i += 1
+            y += orientation
         self.set_as_raw(bytes(data))
         return -1, 0
 

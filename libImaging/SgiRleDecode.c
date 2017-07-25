@@ -15,6 +15,8 @@
 #include "Imaging.h"
 #include "stdio.h"
 
+#define SGI_HEAD_LEN 512
+
 typedef unsigned long ULONG;
 
 static ULONG getlong(UINT8 *buf)
@@ -22,20 +24,12 @@ static ULONG getlong(UINT8 *buf)
 	return (ULONG)(buf[0]<<24)+(buf[1]<<16)+(buf[2]<<8)+(buf[3]<<0);
 }
 
-static void readlongtab(UINT8** buf, int n, ULONG *tab)
-{
-	int i;
-	for (i = 0; i < n; i++) {
-        tab[i] = getlong(*buf);
-        *buf += 4;
-    }
-}
-
-static void expandrow(UINT8* optr,UINT8* iptr, int z)
+static void expandrow(UINT8* optr,UINT8* iptr, int ooffset, int ioffset)
 {
 	UINT8 pixel, count;
 
-	optr += z;
+    optr += ooffset;
+	iptr += ioffset;
 	while(1) {
 		pixel = *iptr++;
 		if ( !(count = (pixel & 0x7f)) )
@@ -55,47 +49,57 @@ int
 ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
 		    UINT8* buf, int bytes)
 {
-    UINT8 *ptr, *rledata, *scanline;
+    UINT8 *ptr, *scanline;
     ULONG *starttab, *lengthtab;
-    ULONG rleoffset, rlelength, prevrlelength;
-    int zsize, tablen, rowno, channo, x;
+    ULONG rleoffset, rlelength;
+    int zsize, tablen, rowno, channo, bpc;
 
+    /* "working copy" of buffer pointer */
     ptr = buf;
 
     /* get the channels count */
     zsize = im->bands;
-    prevrlelength = (ULONG)state->xsize;
 
+    /* get bytes channel per pixel */
+    bpc = state->count;
+
+    /* initialization */
     if (state->state == 0) {
 
-	/* check image orientation */
-	if (state->ystep < 0) {
-	    state->y = state->ysize-1;
-	    state->ystep = -1;
-	} else
-	    state->ystep = 1;
+    	/* check image orientation */
+    	if (state->ystep < 0) {
+    	    state->y = state->ysize-1;
+    	    state->ystep = -1;
+    	} else {
+            state->ystep = 1;
+            state->y = 0;
+        }
 
-    free(state->buffer);
+        free(state->buffer);
 
-    /* allocate memory for the buffer used for full lines later */
-    state->buffer = (UINT8*)malloc(sizeof(UINT8) * state->xsize * zsize);
+        /* allocate memory for the buffer used for full lines later */
+        state->buffer = (UINT8*)malloc(sizeof(UINT8) * state->xsize * zsize);
 
-    /* allocate memory for compressed and uncompressed rows */
-    rledata = (UINT8*)malloc(sizeof(UINT8) * state->xsize);
-    scanline = (UINT8*)malloc(sizeof(UINT8) * state->xsize);
+        /* allocate memory for compressed and uncompressed rows */
+        scanline = (UINT8*)malloc(sizeof(UINT8) * state->xsize);
 
-	state->state = 1;
+        /* allocate memory for rle tabs */
+        tablen = state->ysize * zsize * sizeof(ULONG);
 
+        starttab = (ULONG*)malloc(tablen);
+        lengthtab = (ULONG*)malloc(tablen);
+
+    	state->state = 1;
     }
 
     /* get RLE offset and length tabs  */
-    tablen = state->ysize * zsize * sizeof(ULONG);
-
-    starttab = (ULONG*)malloc(tablen);
-    lengthtab = (ULONG*)malloc(tablen);
-
-    readlongtab(&ptr, state->ysize * zsize, starttab);
-    readlongtab(&ptr, state->ysize * zsize, lengthtab);
+    int i;
+    for (i = 0; i < state->ysize * zsize; i++) {
+        starttab[i] = getlong(&ptr[i * 4]);
+    }
+    for (i = 0; i < state->ysize * zsize; i++) {
+        lengthtab[i] = getlong(&ptr[tablen + i * 4]);
+    }
 
     /* get scanlines informations */
     for (rowno = 0; rowno < state->ysize; ++rowno) {
@@ -109,22 +113,14 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
              * we also need to substract the file header and RLE tabs length
              * from the offset
              */
-            rleoffset -= 512;
-            rleoffset -= tablen;    		
-
-            if (prevrlelength != rlelength)
-                rledata = (UINT8*)realloc(rledata, sizeof(UINT8) * rlelength);
-
-            prevrlelength = rlelength;
-
-    		memcpy(rledata, &ptr[rleoffset], rlelength * sizeof(UINT8));
+            rleoffset -= SGI_HEAD_LEN;
 
             /* decompress raw data */
-    		expandrow(scanline, rledata, 0);
+    		expandrow(scanline, ptr, 0, rleoffset);
 
             /* populate the state buffer */
-    		for (x = 0; x < state->xsize; ++x) {
-   				state->buffer[x * zsize + channo] = scanline[x];
+    		for (state->x = 0; state->x < sizeof(*scanline) * state->xsize; state->x += 1) {
+   				state->buffer[state->x * zsize + channo] = (UINT8)(scanline[state->x]);
     		}
 
     	}
@@ -137,7 +133,6 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     	state->y += state->ystep;
     }
 
-    free(rledata);
     free(scanline);    
     free(starttab);
     free(lengthtab);
