@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Bug: Fix JPEG DPI when EXIF is invalid #2632
+  [wiredfool]
+
 - Bug: Fix for font getsize on empty string #2624
   [radarhere]
 
