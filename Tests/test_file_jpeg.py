@@ -546,6 +546,15 @@ class TestFileJpeg(PillowTestCase):
         # http://www.exiv2.org/tags.html
         self.assertEqual(im.info.get("dpi"), (72, 72))
 
+    def test_invalid_exif(self):
+        # This is no-dpi-in-exif with the tiff header of the exif block
+        # hexedited from MM * to FF FF FF FF
+        im = Image.open("Tests/images/invalid-exif.jpg")
+
+        # This should return the default, and not a SyntaxError or
+        # OSError for unidentified image.
+        self.assertEqual(im.info.get("dpi"), (72, 72))
+
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileCloseW32(PillowTestCase):
