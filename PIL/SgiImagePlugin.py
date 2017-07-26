@@ -23,9 +23,10 @@
 
 
 from . import Image, ImageFile
-from ._binary import i8, o8, i16be as i16
+from ._binary import i8, o8, i16be as i16, o16be as o16
 import struct
 import os
+
 
 __version__ = "0.3"
 
@@ -123,14 +124,22 @@ def _save(im, fp, filename):
     if im.mode != "RGB" and im.mode != "RGBA" and im.mode != "L":
         raise ValueError("Unsupported SGI image mode")
 
+    # Get the keyword arguments
+    info = im.encoderinfo
+
+    # Byte-per-pixel precision, 1 = 8bits per pixel
+    bpc = info.get("bpc", 1)
+
+    if bpc != 1 and bpc != 2:
+        raise ValueError("Unsupported number of bytes per pixel")
+
     # Flip the image, since the origin of SGI file is the bottom-left corner
     im = im.transpose(Image.FLIP_TOP_BOTTOM)
     # Define the file as SGI File Format
     magicNumber = 474
     # Run-Length Encoding Compression - Unsupported at this time
     rle = 0
-    # Byte-per-pixel precision, 1 = 8bits per pixel
-    bpc = 1
+
     # Number of dimensions (x,y,z)
     dim = 3
     # X Dimension = width / Y Dimension = height
@@ -176,19 +185,27 @@ def _save(im, fp, filename):
     fp.write(struct.pack('404s', b''))  # dummy
 
     for channel in im.split():
-        fp.write(channel.tobytes())
+        rawchannel = channel.tobytes()
+        if bpc == 1:
+            fp.write(rawchannel)
+        else:
+            for pixel in rawchannel:
+                fp.write(o16(i8(pixel) * 256))
 
     fp.close()
 
 
 class SGI16Decoder(ImageFile.PyDecoder):
-    _pulls_fd = False
+    _pulls_fd = True
 
     def decode(self, buffer):
         rawmode, stride, orientation = self.args
         pagesize = self.state.xsize * self.state.ysize
         zsize = len(self.mode)
         data = bytearray(pagesize * zsize)
+        self.fd.seek(512)
+        s = self.fd.read(2 * pagesize * zsize)
+        print(len(s))
         i = 0
         y = 0
         if orientation < 0:
@@ -198,7 +215,7 @@ class SGI16Decoder(ImageFile.PyDecoder):
                 for z in range(zsize):
                     bi = (x + y * self.state.xsize +
                           y * stride + z * pagesize) * 2
-                    pixel = i16(buffer, o=bi)
+                    pixel = i16(s, o=bi)
                     pixel = int(pixel // 256)
                     data[i] = o8(pixel)
                     i += 1
