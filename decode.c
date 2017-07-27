@@ -38,6 +38,7 @@
 #include "Lzw.h"
 #include "Raw.h"
 #include "Bit.h"
+#include "Sgi.h"
 
 
 /* -------------------------------------------------------------------- */
@@ -683,11 +684,11 @@ PyImaging_SgiRleDecoderNew(PyObject* self, PyObject* args)
     char* mode;
     char* rawmode;
     int ystep = 1;
-    int depth = 8;
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &ystep, &depth))
+    int bpc = 1;
+    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &ystep, &bpc))
         return NULL;
 
-    decoder = PyImaging_DecoderNew(0);
+    decoder = PyImaging_DecoderNew(sizeof(SGISTATE));
     if (decoder == NULL)
         return NULL;
 
@@ -695,9 +696,14 @@ PyImaging_SgiRleDecoderNew(PyObject* self, PyObject* args)
         return NULL;
 
     decoder->decode = ImagingSgiRleDecode;
-
+    decoder->cleanup = ImagingSgiRleDecodeCleanup;
     decoder->state.ystep = ystep;
-    decoder->state.count = depth;
+
+    ((SGISTATE*)decoder->state.context)->bpc = bpc;
+    ((SGISTATE*)decoder->state.context)->rowno = 0;
+    ((SGISTATE*)decoder->state.context)->channo = 0;
+    ((SGISTATE*)decoder->state.context)->starttabidx = 0;
+    ((SGISTATE*)decoder->state.context)->lengthtabidx = 0;
 
     return (PyObject*) decoder;
 }
