@@ -695,15 +695,11 @@ PyImaging_SgiRleDecoderNew(PyObject* self, PyObject* args)
     if (get_unpacker(decoder, mode, rawmode) < 0)
         return NULL;
 
+    decoder->pulls_fd = 1;
     decoder->decode = ImagingSgiRleDecode;
-    decoder->cleanup = ImagingSgiRleDecodeCleanup;
     decoder->state.ystep = ystep;
 
     ((SGISTATE*)decoder->state.context)->bpc = bpc;
-    ((SGISTATE*)decoder->state.context)->rowno = 0;
-    ((SGISTATE*)decoder->state.context)->channo = 0;
-    ((SGISTATE*)decoder->state.context)->starttabidx = 0;
-    ((SGISTATE*)decoder->state.context)->lengthtabidx = 0;
 
     return (PyObject*) decoder;
 }
