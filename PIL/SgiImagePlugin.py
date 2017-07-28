@@ -26,6 +26,7 @@ from . import Image, ImageFile
 from ._binary import i8, o8, i16be as i16, o16be as o16
 import struct
 import os
+import sys
 
 
 __version__ = "0.3"
@@ -217,7 +218,10 @@ class SGI16Decoder(ImageFile.PyDecoder):
                           y * stride + z * pagesize) * 2
                     pixel = i16(s, o=bi)
                     pixel = int(pixel // 256)
-                    data[i] = o8(pixel)
+                    if sys.version_info.major == 3:
+                        data[i] = pixel
+                    else:
+                        data[i] = o8(pixel)
                     i += 1
             y += orientation
         self.set_as_raw(bytes(data))
