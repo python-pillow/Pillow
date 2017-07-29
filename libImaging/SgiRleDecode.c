@@ -92,24 +92,21 @@ int
 ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
 		    UINT8* buf, int bytes)
 {
-    uint32_t *starttab, *lengthtab, rleoffset, rlelength;
-    int tablen, i, j, rowno, channo;
-    long bufsize;
     UINT8 *ptr;
-    SGISTATE *context;
+    SGISTATE *c;
 
     /* Get all data from File descriptor */    
+    c = (SGISTATE*)state->context;
     _imaging_seek_pyFd(state->fd, 0L, SEEK_END);
-    bufsize = _imaging_tell_pyFd(state->fd);
-    bufsize -= SGI_HEADER_SIZE;
-    ptr = malloc(sizeof(UINT8) * bufsize);
+    c->bufsize = _imaging_tell_pyFd(state->fd);
+    c->bufsize -= SGI_HEADER_SIZE;
+    ptr = malloc(sizeof(UINT8) * c->bufsize);
     _imaging_seek_pyFd(state->fd, SGI_HEADER_SIZE, SEEK_SET);
-    _imaging_read_pyFd(state->fd, (char*)ptr, bufsize);
+    _imaging_read_pyFd(state->fd, (char*)ptr, c->bufsize);
 
 
     /* decoder initialization */
     state->count = 0;
-    context = (SGISTATE*)state->context;
     state->y = 0;
     if (state->ystep < 0)
         state->y = im->ysize - 1;
@@ -119,39 +116,39 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     /* Allocate memory for RLE tables and rows */
     free(state->buffer);
     state->buffer = malloc(sizeof(UINT8) * 2 * im->xsize * im->bands);
-    tablen = im->bands * im->ysize;
-    starttab = calloc(tablen, sizeof(uint32_t));
-    lengthtab = calloc(tablen, sizeof(uint32_t));
+    c->tablen = im->bands * im->ysize;
+    c->starttab = calloc(c->tablen, sizeof(uint32_t));
+    c->lengthtab = calloc(c->tablen, sizeof(uint32_t));
 
     /* populate offsets table */
-    for (i = 0, j = 0; i < tablen; i++, j+=4)
-        read4B(&starttab[i], &ptr[j]);
+    for (c->tabindex = 0, c->bufindex = 0; c->tabindex < c->tablen; c->tabindex++, c->bufindex+=4)
+        read4B(&c->starttab[c->tabindex], &ptr[c->bufindex]);
     /* populate lengths table */
-    for (i = 0, j = tablen * sizeof(uint32_t); i < tablen; i++, j+=4)
-        read4B(&lengthtab[i], &ptr[j]);
+    for (c->tabindex = 0, c->bufindex = c->tablen * sizeof(uint32_t); c->tabindex < c->tablen; c->tabindex++, c->bufindex+=4)
+        read4B(&c->lengthtab[c->tabindex], &ptr[c->bufindex]);
 
-    state->count += tablen * sizeof(uint32_t) * 2;
+    state->count += c->tablen * sizeof(uint32_t) * 2;
 
     /* read compressed rows */
-    for (rowno = 0; rowno < im->ysize; rowno++, state->y += state->ystep)
+    for (c->rowno = 0; c->rowno < im->ysize; c->rowno++, state->y += state->ystep)
     {
-        for (channo = 0; channo < im->bands; channo++)
+        for (c->channo = 0; c->channo < im->bands; c->channo++)
         {
-            rleoffset = starttab[rowno + channo * im->ysize];
-            rlelength = lengthtab[rowno + channo * im->ysize];
-            rleoffset -= SGI_HEADER_SIZE;
+            c->rleoffset = c->starttab[c->rowno + c->channo * im->ysize];
+            c->rlelength = c->lengthtab[c->rowno + c->channo * im->ysize];
+            c->rleoffset -= SGI_HEADER_SIZE;
             
             /* row decompression */
-            if (context->bpc ==1) {
-                if(expandrow(&state->buffer[channo], &ptr[rleoffset], rlelength, im->bands))
+            if (c->bpc ==1) {
+                if(expandrow(&state->buffer[c->channo], &ptr[c->rleoffset], c->rlelength, im->bands))
                     goto sgi_finish_decode;
             }
             else {
-                if(expandrow2((UINT16*)&state->buffer[channo * 2], (UINT16*)&ptr[rleoffset], rlelength, im->bands))
+                if(expandrow2((UINT16*)&state->buffer[c->channo * 2], (UINT16*)&ptr[c->rleoffset], c->rlelength, im->bands))
                     goto sgi_finish_decode;
             }
             
-            state->count += rlelength;
+            state->count += c->rlelength;
         }
         
         /* store decompressed data in image */
@@ -159,13 +156,13 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
         
     }
 
-    bufsize++;
+    c->bufsize++;
 
-sgi_finish_decode:
+sgi_finish_decode: ;
     
-    free(starttab);
-    free(lengthtab);
+    free(c->starttab);
+    free(c->lengthtab);
     free(ptr);
    
-    return state->count - bufsize;
+    return state->count - c->bufsize;
 }
