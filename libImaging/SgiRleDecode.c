@@ -20,9 +20,9 @@
 #define RLE_COPY_FLAG 0x80
 #define RLE_MAX_RUN 0x7f
 
-static void read4B(uint32_t* dest, UINT8* buf)
+static void read4B(UINT32* dest, UINT8* buf)
 {
-    *dest = (uint32_t)((buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]);
+    *dest = (UINT32)((buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]);
 }
 
 static int expandrow(UINT8* dest, UINT8* src, int n, int z)
@@ -117,17 +117,17 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     free(state->buffer);
     state->buffer = malloc(sizeof(UINT8) * 2 * im->xsize * im->bands);
     c->tablen = im->bands * im->ysize;
-    c->starttab = calloc(c->tablen, sizeof(uint32_t));
-    c->lengthtab = calloc(c->tablen, sizeof(uint32_t));
+    c->starttab = calloc(c->tablen, sizeof(UINT32));
+    c->lengthtab = calloc(c->tablen, sizeof(UINT32));
 
     /* populate offsets table */
     for (c->tabindex = 0, c->bufindex = 0; c->tabindex < c->tablen; c->tabindex++, c->bufindex+=4)
         read4B(&c->starttab[c->tabindex], &ptr[c->bufindex]);
     /* populate lengths table */
-    for (c->tabindex = 0, c->bufindex = c->tablen * sizeof(uint32_t); c->tabindex < c->tablen; c->tabindex++, c->bufindex+=4)
+    for (c->tabindex = 0, c->bufindex = c->tablen * sizeof(UINT32); c->tabindex < c->tablen; c->tabindex++, c->bufindex+=4)
         read4B(&c->lengthtab[c->tabindex], &ptr[c->bufindex]);
 
-    state->count += c->tablen * sizeof(uint32_t) * 2;
+    state->count += c->tablen * sizeof(UINT32) * 2;
 
     /* read compressed rows */
     for (c->rowno = 0; c->rowno < im->ysize; c->rowno++, state->y += state->ystep)
