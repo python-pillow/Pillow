@@ -1,5 +1,4 @@
 /* Sgi.h */
-#include <stdint.h>
 
 typedef struct {
 
@@ -9,16 +8,16 @@ typedef struct {
     int bpc;
 
     /* RLE offsets table */
-    uint32_t *starttab;
+    UINT32 *starttab;
 
     /* RLE lengths table */
-    uint32_t *lengthtab;
+    UINT32 *lengthtab;
 
     /* current row offset */
-    uint32_t rleoffset;
+    UINT32 rleoffset;
 
     /* current row length */
-    uint32_t rlelength;
+    UINT32 rlelength;
 
     /* RLE table size */
     int tablen;
