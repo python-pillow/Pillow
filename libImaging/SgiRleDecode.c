@@ -93,7 +93,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
 		    UINT8* buf, int bytes)
 {
     uint32_t *starttab, *lengthtab, rleoffset, rlelength;
-    int tablen, i, j, rowno, channo, bpc;
+    int tablen, i, j, rowno, channo;
     long bufsize;
     UINT8 *ptr;
     SGISTATE *context;
@@ -104,7 +104,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     bufsize -= SGI_HEADER_SIZE;
     ptr = malloc(sizeof(UINT8) * bufsize);
     _imaging_seek_pyFd(state->fd, SGI_HEADER_SIZE, SEEK_SET);
-    _imaging_read_pyFd(state->fd, ptr, bufsize);
+    _imaging_read_pyFd(state->fd, (char*)ptr, bufsize);
 
 
     /* decoder initialization */

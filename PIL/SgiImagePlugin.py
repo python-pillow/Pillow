@@ -151,6 +151,11 @@ def _save(im, fp, filename):
         dim = 2
     # Z Dimension: Number of channels
     z = len(im.mode)
+
+    # assert we've got the right number of bands.
+    if len(im.getbands()) != z:
+        raise ValueError("incorrect number of bands in SGI write: %s vs %s" %
+                         (z, len(im.getbands())))
     if dim == 1 or dim == 2:
         z = 1
     # assert we've got the right number of bands.
@@ -177,12 +182,10 @@ def _save(im, fp, filename):
     fp.write(struct.pack('>H', z))
     fp.write(struct.pack('>l', pinmin))
     fp.write(struct.pack('>l', pinmax))
-
     fp.write(struct.pack('4s', b''))  # dummy
     fp.write(struct.pack('79s', imgName))  # truncates to 79 chars
     fp.write(struct.pack('s', b''))  # force null byte after imgname
     fp.write(struct.pack('>l', colormap))
-
     fp.write(struct.pack('404s', b''))  # dummy
 
     for channel in im.split():
