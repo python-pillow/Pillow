@@ -4,6 +4,8 @@ from PIL import Image
 from PIL import ImageSequence
 from PIL import SpiderImagePlugin
 
+import tempfile
+
 TEST_FILE = "Tests/images/hopper.spider"
 
 
@@ -29,6 +31,21 @@ class TestImageSpider(PillowTestCase):
         self.assertEqual(im2.mode, "F")
         self.assertEqual(im2.size, (128, 128))
         self.assertEqual(im2.format, "SPIDER")
+
+    def test_tempfile(self):
+        # Arrange
+        im = hopper()
+
+        # Act
+        with tempfile.TemporaryFile() as fp:
+            im.save(fp, "SPIDER")
+
+            # Assert
+            fp.seek(0)
+            reloaded = Image.open(fp)
+            self.assertEqual(reloaded.mode, "F")
+            self.assertEqual(reloaded.size, (128, 128))
+            self.assertEqual(reloaded.format, "SPIDER")
 
     def test_isSpiderImage(self):
         self.assertTrue(SpiderImagePlugin.isSpiderImage(TEST_FILE))
