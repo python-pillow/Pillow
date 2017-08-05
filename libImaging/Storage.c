@@ -371,26 +371,17 @@ ImagingAllocateBlock(Imaging im)
 Imaging
 ImagingNew(const char* mode, int xsize, int ysize)
 {
-    int bytes;
     Imaging im;
-
-    if (strlen(mode) == 1) {
-        if (mode[0] == 'F' || mode[0] == 'I')
-            bytes = 4;
-        else
-            bytes = 1;
-    } else
-        bytes = strlen(mode) || 1; /* close enough */
 
     if (xsize < 0 || ysize < 0) {
         return (Imaging) ImagingError_ValueError("bad image size");
     }
 
     im = ImagingNewPrologue(mode, xsize, ysize);
-    if (!im)
+    if ( ! im)
         return NULL;
 
-    if ((int64_t) xsize * (int64_t) ysize <= THRESHOLD / bytes) {
+    if (im->ysize && im->linesize <= THRESHOLD / im->ysize) {
         if (ImagingAllocateBlock(im)) {
             return im;
         }
