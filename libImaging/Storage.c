@@ -50,12 +50,13 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size)
 {
     Imaging im;
 
-    im = (Imaging) calloc(1, size);
-    if (!im)
-        return (Imaging) ImagingError_MemoryError();
-
     /* linesize overflow check, roughly the current largest space req'd */
     if (xsize > (INT_MAX / 4) - 1) {
+        return (Imaging) ImagingError_MemoryError();
+    }
+
+    im = (Imaging) calloc(1, size);
+    if (!im) {
         return (Imaging) ImagingError_MemoryError();
     }
 
@@ -228,8 +229,7 @@ Imaging
 ImagingNewPrologue(const char *mode, int xsize, int ysize)
 {
     return ImagingNewPrologueSubtype(
-        mode, xsize, ysize, sizeof(struct ImagingMemoryInstance)
-        );
+        mode, xsize, ysize, sizeof(struct ImagingMemoryInstance));
 }
 
 Imaging
@@ -371,7 +371,6 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
         }
 
         im->destroy = ImagingDestroyBlock;
-
     }
 
     return ImagingNewEpilogue(im);
