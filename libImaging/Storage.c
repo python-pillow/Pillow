@@ -344,7 +344,8 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
     if (im->linesize &&
         im->ysize > INT_MAX / im->linesize) {
         /* punt if we're going to overflow */
-        return NULL;
+        ImagingDelete(im);
+        return (Imaging) ImagingError_MemoryError();
     }
 
     if (im->ysize * im->linesize <= 0) {
