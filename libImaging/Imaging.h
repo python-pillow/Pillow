@@ -172,7 +172,6 @@ extern Imaging ImagingNewPrologue(const char *mode,
 extern Imaging ImagingNewPrologueSubtype(const char *mode,
                                   int xsize, int ysize,
                                   int structure_size);
-extern void ImagingNewEpilogue(Imaging im);
 
 extern void ImagingCopyInfo(Imaging destination, Imaging source);
 
