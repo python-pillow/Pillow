@@ -277,7 +277,7 @@ ImagingDestroyArray(Imaging im)
 }
 
 Imaging
-ImagingAllocateArray(Imaging im)
+ImagingAllocateArray(Imaging im, int dirty)
 {
     ImagingSectionCookie cookie;
 
@@ -289,7 +289,11 @@ ImagingAllocateArray(Imaging im)
     /* Allocate image as an array of lines */
     for (y = 0; y < im->ysize; y++) {
         /* malloc check linesize checked in prologue */
-        p = (char *) calloc(1, im->linesize);
+        if (dirty) {
+            p = (char *) malloc(im->linesize);
+        } else {
+            p = (char *) calloc(1, im->linesize);
+        }
         if (!p) {
             ImagingDestroyArray(im);
             break;
@@ -321,7 +325,7 @@ ImagingDestroyBlock(Imaging im)
 }
 
 Imaging
-ImagingAllocateBlock(Imaging im)
+ImagingAllocateBlock(Imaging im, int dirty)
 {
     Py_ssize_t y, i;
 
@@ -341,8 +345,13 @@ ImagingAllocateBlock(Imaging im)
            platforms */
         im->block = (char *) malloc(1);
     } else {
-        /* malloc check ok, overflow check above */
-        im->block = (char *) calloc(im->ysize, im->linesize);
+        if (dirty) {
+            /* malloc check ok, overflow check above */
+            im->block = (char *) malloc(im->ysize * im->linesize);
+        } else {
+            /* malloc check ok, overflow check above */
+            im->block = (char *) calloc(im->ysize, im->linesize);
+        }
     }
 
     if ( ! im->block) {
@@ -369,7 +378,7 @@ ImagingAllocateBlock(Imaging im)
 #endif
 
 Imaging
-ImagingNew(const char* mode, int xsize, int ysize)
+ImagingNewInternal(const char* mode, int xsize, int ysize, int dirty)
 {
     Imaging im;
 
@@ -382,19 +391,31 @@ ImagingNew(const char* mode, int xsize, int ysize)
         return NULL;
 
     if (im->ysize && im->linesize <= THRESHOLD / im->ysize) {
-        if (ImagingAllocateBlock(im)) {
+        if (ImagingAllocateBlock(im, dirty)) {
             return im;
         }
         /* assume memory error; try allocating in array mode instead */
         ImagingError_Clear();
     }
 
-    if (ImagingAllocateArray(im)) {
+    if (ImagingAllocateArray(im, dirty)) {
         return im;
     }
 
     ImagingDelete(im);
     return NULL;
+}
+
+Imaging
+ImagingNew(const char* mode, int xsize, int ysize)
+{
+    return ImagingNewInternal(mode, xsize, ysize, 0);
+}
+
+Imaging
+ImagingNewDirty(const char* mode, int xsize, int ysize)
+{
+    return ImagingNewInternal(mode, xsize, ysize, 1);
 }
 
 Imaging
@@ -406,7 +427,7 @@ ImagingNewBlock(const char* mode, int xsize, int ysize)
     if ( ! im)
         return NULL;
 
-    if (ImagingAllocateBlock(im)) {
+    if (ImagingAllocateBlock(im, 0)) {
         return im;
     }
 

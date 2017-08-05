@@ -159,6 +159,7 @@ struct ImagingPaletteInstance {
 extern int ImagingNewCount;
 
 extern Imaging ImagingNew(const char* mode, int xsize, int ysize);
+extern Imaging ImagingNewDirty(const char* mode, int xsize, int ysize);
 extern Imaging ImagingNew2(const char* mode, Imaging imOut, Imaging imIn);
 extern void    ImagingDelete(Imaging im);
 
