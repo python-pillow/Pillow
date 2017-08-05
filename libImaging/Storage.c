@@ -46,11 +46,9 @@ int ImagingNewCount = 0;
  */
 
 Imaging
-ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize,
-                          int size)
+ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size)
 {
     Imaging im;
-    ImagingSectionCookie cookie;
 
     im = (Imaging) calloc(1, size);
     if (!im)
@@ -212,13 +210,9 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize,
     /* Setup image descriptor */
     strcpy(im->mode, mode);
 
-    ImagingSectionEnter(&cookie);
-
     /* Pointer array (allocate at least one line, to avoid MemoryError
        exceptions on platforms where calloc(0, x) returns NULL) */
     im->image = (char **) calloc((ysize > 0) ? ysize : 1, sizeof(void *));
-
-    ImagingSectionLeave(&cookie);
 
     if (!im->image) {
         free(im);
