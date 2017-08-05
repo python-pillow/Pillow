@@ -232,15 +232,9 @@ ImagingNewPrologue(const char *mode, int xsize, int ysize)
         mode, xsize, ysize, sizeof(struct ImagingMemoryInstance));
 }
 
-Imaging
+void
 ImagingNewEpilogue(Imaging im)
 {
-    /* If the raster data allocator didn't setup a destructor,
-       assume that it couldn't allocate the required amount of
-       memory. */
-    if (!im->destroy)
-        return (Imaging) ImagingError_MemoryError();
-
     /* Initialize alias pointers to pixel data. */
     switch (im->pixelsize) {
     case 1: case 2: case 3:
@@ -250,8 +244,6 @@ ImagingNewEpilogue(Imaging im)
         im->image32 = (INT32 **) im->image;
         break;
     }
-
-    return im;
 }
 
 void
@@ -316,10 +308,15 @@ ImagingNewArray(const char *mode, int xsize, int ysize)
 
     ImagingSectionLeave(&cookie);
 
-    if (y == im->ysize)
-        im->destroy = ImagingDestroyArray;
+    if (y != im->ysize) {
+        ImagingDelete(im);
+        return (Imaging) ImagingError_MemoryError();
+    }
+    
+    im->destroy = ImagingDestroyArray;
+    ImagingNewEpilogue(im);
 
-    return ImagingNewEpilogue(im);
+    return im;
 }
 
 
@@ -364,16 +361,20 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
         im->block = (char *) calloc(im->ysize, im->linesize);
     }
 
-    if (im->block) {
-        for (y = i = 0; y < im->ysize; y++) {
-            im->image[y] = im->block + i;
-            i += im->linesize;
-        }
-
-        im->destroy = ImagingDestroyBlock;
+    if ( ! im->block) {
+        ImagingDelete(im);
+        return (Imaging) ImagingError_MemoryError();
     }
 
-    return ImagingNewEpilogue(im);
+    for (y = i = 0; y < im->ysize; y++) {
+        im->image[y] = im->block + i;
+        i += im->linesize;
+    }
+    
+    im->destroy = ImagingDestroyBlock;
+    ImagingNewEpilogue(im);
+
+    return im;
 }
 
 /* --------------------------------------------------------------------

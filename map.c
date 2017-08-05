@@ -229,8 +229,7 @@ mapping_readimage(ImagingMapperObject* mapper, PyObject* args)
 
     im->destroy = ImagingDestroyMap;
 
-    if (!ImagingNewEpilogue(im))
-        return NULL;
+    ImagingNewEpilogue(im);
 
     mapper->offset += size;
 
@@ -387,8 +386,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     ((ImagingBufferInstance*) im)->target = target;
     ((ImagingBufferInstance*) im)->view = view;
 
-    if (!ImagingNewEpilogue(im))
-        return NULL;
+    ImagingNewEpilogue(im);
 
     return PyImagingNew(im);
 }
