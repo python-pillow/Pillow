@@ -24,7 +24,7 @@ class TestImage(PillowTestCase):
         ]:
             with self.assertRaises(ValueError) as e:
                 Image.new(mode, (1, 1));
-            self.assertEqual(e.exception.message, 'unrecognized image mode')
+            self.assertEqual(str(e.exception), 'unrecognized image mode')
 
     def test_sanity(self):
 
