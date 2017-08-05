@@ -215,9 +215,19 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size)
        exceptions on platforms where calloc(0, x) returns NULL) */
     im->image = (char **) calloc((ysize > 0) ? ysize : 1, sizeof(void *));
 
-    if (!im->image) {
+    if ( ! im->image) {
         free(im);
         return (Imaging) ImagingError_MemoryError();
+    }
+
+    /* Initialize alias pointers to pixel data. */
+    switch (im->pixelsize) {
+    case 1: case 2: case 3:
+        im->image8 = (UINT8 **) im->image;
+        break;
+    case 4:
+        im->image32 = (INT32 **) im->image;
+        break;
     }
 
     ImagingNewCount++;
@@ -230,20 +240,6 @@ ImagingNewPrologue(const char *mode, int xsize, int ysize)
 {
     return ImagingNewPrologueSubtype(
         mode, xsize, ysize, sizeof(struct ImagingMemoryInstance));
-}
-
-void
-ImagingNewEpilogue(Imaging im)
-{
-    /* Initialize alias pointers to pixel data. */
-    switch (im->pixelsize) {
-    case 1: case 2: case 3:
-        im->image8 = (UINT8 **) im->image;
-        break;
-    case 4:
-        im->image32 = (INT32 **) im->image;
-        break;
-    }
 }
 
 void
@@ -312,9 +308,8 @@ ImagingNewArray(const char *mode, int xsize, int ysize)
         ImagingDelete(im);
         return (Imaging) ImagingError_MemoryError();
     }
-    
+
     im->destroy = ImagingDestroyArray;
-    ImagingNewEpilogue(im);
 
     return im;
 }
@@ -338,8 +333,9 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
     Py_ssize_t y, i;
 
     im = ImagingNewPrologue(mode, xsize, ysize);
-    if (!im)
+    if ( ! im) {
         return NULL;
+    }
 
     /* We shouldn't overflow, since the threshold defined
        below says that we're only going to allocate max 4M
@@ -372,7 +368,6 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
     }
     
     im->destroy = ImagingDestroyBlock;
-    ImagingNewEpilogue(im);
 
     return im;
 }
