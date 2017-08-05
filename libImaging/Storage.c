@@ -277,17 +277,12 @@ ImagingDestroyArray(Imaging im)
 }
 
 Imaging
-ImagingNewArray(const char *mode, int xsize, int ysize)
+ImagingAllocateArray(Imaging im)
 {
-    Imaging im;
     ImagingSectionCookie cookie;
 
     int y;
     char* p;
-
-    im = ImagingNewPrologue(mode, xsize, ysize);
-    if (!im)
-        return NULL;
 
     ImagingSectionEnter(&cookie);
 
@@ -305,7 +300,6 @@ ImagingNewArray(const char *mode, int xsize, int ysize)
     ImagingSectionLeave(&cookie);
 
     if (y != im->ysize) {
-        ImagingDelete(im);
         return (Imaging) ImagingError_MemoryError();
     }
 
@@ -327,15 +321,9 @@ ImagingDestroyBlock(Imaging im)
 }
 
 Imaging
-ImagingNewBlock(const char *mode, int xsize, int ysize)
+ImagingAllocateBlock(Imaging im)
 {
-    Imaging im;
     Py_ssize_t y, i;
-
-    im = ImagingNewPrologue(mode, xsize, ysize);
-    if ( ! im) {
-        return NULL;
-    }
 
     /* We shouldn't overflow, since the threshold defined
        below says that we're only going to allocate max 4M
@@ -344,7 +332,6 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
     if (im->linesize &&
         im->ysize > INT_MAX / im->linesize) {
         /* punt if we're going to overflow */
-        ImagingDelete(im);
         return (Imaging) ImagingError_MemoryError();
     }
 
@@ -359,7 +346,6 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
     }
 
     if ( ! im->block) {
-        ImagingDelete(im);
         return (Imaging) ImagingError_MemoryError();
     }
 
@@ -400,15 +386,41 @@ ImagingNew(const char* mode, int xsize, int ysize)
         return (Imaging) ImagingError_ValueError("bad image size");
     }
 
+    im = ImagingNewPrologue(mode, xsize, ysize);
+    if (!im)
+        return NULL;
+
     if ((int64_t) xsize * (int64_t) ysize <= THRESHOLD / bytes) {
-        im = ImagingNewBlock(mode, xsize, ysize);
-        if (im)
+        if (ImagingAllocateBlock(im)) {
             return im;
+        }
         /* assume memory error; try allocating in array mode instead */
         ImagingError_Clear();
     }
 
-    return ImagingNewArray(mode, xsize, ysize);
+    if (ImagingAllocateArray(im)) {
+        return im;
+    }
+
+    ImagingDelete(im);
+    return NULL;
+}
+
+Imaging
+ImagingNewBlock(const char* mode, int xsize, int ysize)
+{
+    Imaging im;
+
+    im = ImagingNewPrologue(mode, xsize, ysize);
+    if ( ! im)
+        return NULL;
+
+    if (ImagingAllocateBlock(im)) {
+        return im;
+    }
+
+    ImagingDelete(im);
+    return NULL;
 }
 
 Imaging

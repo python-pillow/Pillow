@@ -163,7 +163,6 @@ extern Imaging ImagingNew2(const char* mode, Imaging imOut, Imaging imIn);
 extern void    ImagingDelete(Imaging im);
 
 extern Imaging ImagingNewBlock(const char* mode, int xsize, int ysize);
-extern Imaging ImagingNewArray(const char* mode, int xsize, int ysize);
 extern Imaging ImagingNewMap(const char* filename, int readonly,
                              const char* mode, int xsize, int ysize);
 
