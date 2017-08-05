@@ -205,7 +205,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size)
 
     } else {
         free(im);
-        return (Imaging) ImagingError_ValueError("unrecognized mode");
+        return (Imaging) ImagingError_ValueError("unrecognized image mode");
     }
 
     /* Setup image descriptor */
@@ -387,16 +387,13 @@ ImagingNew(const char* mode, int xsize, int ysize)
     int bytes;
     Imaging im;
 
-    if (strcmp(mode, "") == 0)
-        return (Imaging) ImagingError_ValueError("empty mode");
-
     if (strlen(mode) == 1) {
         if (mode[0] == 'F' || mode[0] == 'I')
             bytes = 4;
         else
             bytes = 1;
     } else
-        bytes = strlen(mode); /* close enough */
+        bytes = strlen(mode) || 1; /* close enough */
 
     if (xsize < 0 || ysize < 0) {
         return (Imaging) ImagingError_ValueError("bad image size");
