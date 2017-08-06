@@ -73,7 +73,7 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
 
 Imaging
 ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
-              FLOAT32 offset, FLOAT32 divisor)
+              FLOAT32 offset)
 {
     Imaging imOut;
     int x, y;
@@ -138,7 +138,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
         for (y = 1; y < im->ysize-1; y++) {
             imOut->image[y][0] = im->image8[y][0];
             for (x = 1; x < im->xsize-1; x++) {
-                sum = KERNEL3x3(im->image8, kernel, 1) / divisor + offset;
+                sum = KERNEL3x3(im->image8, kernel, 1) + offset;
                 if (sum <= 0)
                     imOut->image8[y][x] = 0;
                 else if (sum >= 255)
@@ -159,7 +159,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
             for (x = 0; x < 2; x++)
                 imOut->image8[y][x] = im->image8[y][x];
             for (; x < im->xsize-2; x++) {
-                sum = KERNEL5x5(im->image8, kernel, 1) / divisor + offset;
+                sum = KERNEL5x5(im->image8, kernel, 1) + offset;
                 if (sum <= 0)
                     imOut->image8[y][x] = 0;
                 else if (sum >= 255)
