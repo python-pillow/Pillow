@@ -792,23 +792,6 @@ _copy(ImagingObject* self, PyObject* args)
 }
 
 static PyObject*
-_copy2(ImagingObject* self, PyObject* args)
-{
-    ImagingObject* imagep1;
-    ImagingObject* imagep2;
-    if (!PyArg_ParseTuple(args, "O!O!",
-                          &Imaging_Type, &imagep1,
-                          &Imaging_Type, &imagep2))
-        return NULL;
-
-    if (!ImagingCopy2(imagep1->image, imagep2->image))
-        return NULL;
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-static PyObject*
 _crop(ImagingObject* self, PyObject* args)
 {
     int x0, y0, x1, y1;
@@ -2940,7 +2923,6 @@ static struct PyMethodDef methods[] = {
     {"convert_matrix", (PyCFunction)_convert_matrix, 1},
     {"convert_transparent", (PyCFunction)_convert_transparent, 1},
     {"copy", (PyCFunction)_copy, 1},
-    {"copy2", (PyCFunction)_copy2, 1},
     {"crop", (PyCFunction)_crop, 1},
     {"expand", (PyCFunction)_expand_image, 1},
     {"filter", (PyCFunction)_filter, 1},
@@ -3321,7 +3303,6 @@ static PyMethodDef functions[] = {
 
     /* Functions */
     {"convert", (PyCFunction)_convert2, 1},
-    {"copy", (PyCFunction)_copy2, 1},
 
     /* Codecs */
     {"bcn_decoder", (PyCFunction)PyImaging_BcnDecoderNew, 1},
