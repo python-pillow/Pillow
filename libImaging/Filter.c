@@ -33,13 +33,13 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
     int x, y;
 
     if (xmargin < 0 && ymargin < 0)
-	return (Imaging) ImagingError_ValueError("bad kernel size");
+        return (Imaging) ImagingError_ValueError("bad kernel size");
 
     imOut = ImagingNew(
         imIn->mode, imIn->xsize+2*xmargin, imIn->ysize+2*ymargin
         );
     if (!imOut)
-	return NULL;
+        return NULL;
 
 #define EXPAND_LINE(type, image, yin, yout) {\
     for (x = 0; x < xmargin; x++)\
@@ -61,9 +61,9 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
     }
 
     if (imIn->image8) {
-	EXPAND(UINT8, image8);
+        EXPAND(UINT8, image8);
     } else {
-	EXPAND(INT32, image32);
+        EXPAND(INT32, image32);
     }
 
     ImagingCopyInfo(imOut, imIn);
@@ -80,20 +80,20 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
     FLOAT32 sum;
 
     if (!im || strcmp(im->mode, "L") != 0)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     if (im->xsize < xsize || im->ysize < ysize)
         return ImagingCopy(im);
 
     if ((xsize != 3 && xsize != 5) || xsize != ysize)
-	return (Imaging) ImagingError_ValueError("bad kernel size");
+        return (Imaging) ImagingError_ValueError("bad kernel size");
 
     imOut = ImagingNew(im->mode, im->xsize, im->ysize);
     if (!imOut)
-	return NULL;
+        return NULL;
 
     /* brute force kernel implementations */
-#define	KERNEL3x3(image, kernel, d) ( \
+#define KERNEL3x3(image, kernel, d) ( \
     (int) image[y+1][x-d] * kernel[0] + \
     (int) image[y+1][x]   * kernel[1] + \
     (int) image[y+1][x+d] * kernel[2] + \
@@ -104,7 +104,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
     (int) image[y-1][x]   * kernel[7] + \
     (int) image[y-1][x+d] * kernel[8])
 
-#define	KERNEL5x5(image, kernel, d) ( \
+#define KERNEL5x5(image, kernel, d) ( \
     (int) image[y+2][x-d-d] * kernel[0] + \
     (int) image[y+2][x-d]   * kernel[1] + \
     (int) image[y+2][x]     * kernel[2] + \
@@ -132,47 +132,47 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
     (int) image[y-2][x+d+d] * kernel[24])
 
     if (xsize == 3) {
-	/* 3x3 kernel. */
-	for (x = 0; x < im->xsize; x++)
-	    imOut->image[0][x] = im->image8[0][x];
-	for (y = 1; y < im->ysize-1; y++) {
-	    imOut->image[y][0] = im->image8[y][0];
-	    for (x = 1; x < im->xsize-1; x++) {
-		sum = KERNEL3x3(im->image8, kernel, 1) / divisor + offset;
-		if (sum <= 0)
-		    imOut->image8[y][x] = 0;
-		else if (sum >= 255)
-		    imOut->image8[y][x] = 255;
-		else
-		    imOut->image8[y][x] = (UINT8) sum;
-	     }
-	    imOut->image8[y][x] = im->image8[y][x];
-	}
-	for (x = 0; x < im->xsize; x++)
-	    imOut->image8[y][x] = im->image8[y][x];
+        /* 3x3 kernel. */
+        for (x = 0; x < im->xsize; x++)
+            imOut->image[0][x] = im->image8[0][x];
+        for (y = 1; y < im->ysize-1; y++) {
+            imOut->image[y][0] = im->image8[y][0];
+            for (x = 1; x < im->xsize-1; x++) {
+                sum = KERNEL3x3(im->image8, kernel, 1) / divisor + offset;
+                if (sum <= 0)
+                    imOut->image8[y][x] = 0;
+                else if (sum >= 255)
+                    imOut->image8[y][x] = 255;
+                else
+                    imOut->image8[y][x] = (UINT8) sum;
+             }
+            imOut->image8[y][x] = im->image8[y][x];
+        }
+        for (x = 0; x < im->xsize; x++)
+            imOut->image8[y][x] = im->image8[y][x];
     } else {
-	/* 5x5 kernel. */
-	for (y = 0; y < 2; y++)
-	    for (x = 0; x < im->xsize; x++)
-		imOut->image8[y][x] = im->image8[y][x];
-	for (; y < im->ysize-2; y++) {
-	    for (x = 0; x < 2; x++)
-		imOut->image8[y][x] = im->image8[y][x];
-	    for (; x < im->xsize-2; x++) {
-		sum = KERNEL5x5(im->image8, kernel, 1) / divisor + offset;
-		if (sum <= 0)
-		    imOut->image8[y][x] = 0;
-		else if (sum >= 255)
-		    imOut->image8[y][x] = 255;
-		else
-		    imOut->image8[y][x] = (UINT8) sum;
-	    }
-	    for (; x < im->xsize; x++)
-		imOut->image8[y][x] = im->image8[y][x];
-	}
-	for (; y < im->ysize; y++)
-	    for (x = 0; x < im->xsize; x++)
-		imOut->image8[y][x] = im->image8[y][x];
+        /* 5x5 kernel. */
+        for (y = 0; y < 2; y++)
+            for (x = 0; x < im->xsize; x++)
+                imOut->image8[y][x] = im->image8[y][x];
+        for (; y < im->ysize-2; y++) {
+            for (x = 0; x < 2; x++)
+                imOut->image8[y][x] = im->image8[y][x];
+            for (; x < im->xsize-2; x++) {
+                sum = KERNEL5x5(im->image8, kernel, 1) / divisor + offset;
+                if (sum <= 0)
+                    imOut->image8[y][x] = 0;
+                else if (sum >= 255)
+                    imOut->image8[y][x] = 255;
+                else
+                    imOut->image8[y][x] = (UINT8) sum;
+            }
+            for (; x < im->xsize; x++)
+                imOut->image8[y][x] = im->image8[y][x];
+        }
+        for (; y < im->ysize; y++)
+            for (x = 0; x < im->xsize; x++)
+                imOut->image8[y][x] = im->image8[y][x];
     }
     return imOut;
 }
