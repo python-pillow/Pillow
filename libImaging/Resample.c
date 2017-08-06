@@ -249,7 +249,7 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
         return (Imaging) ImagingError_MemoryError();
     }
 
-    imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
+    imOut = ImagingNewDirty(imIn->mode, xsize, imIn->ysize);
     if ( ! imOut) {
         free(kk);
         free(xbounds);
@@ -354,7 +354,7 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
         return (Imaging) ImagingError_MemoryError();
     }
 
-    imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
+    imOut = ImagingNewDirty(imIn->mode, imIn->xsize, ysize);
     if ( ! imOut) {
         free(kk);
         free(xbounds);
@@ -451,7 +451,7 @@ ImagingResampleHorizontal_32bpc(Imaging imIn, int xsize, struct filter *filterp)
         return (Imaging) ImagingError_MemoryError();
     }
 
-    imOut = ImagingNew(imIn->mode, xsize, imIn->ysize);
+    imOut = ImagingNewDirty(imIn->mode, xsize, imIn->ysize);
     if ( ! imOut) {
         free(kk);
         free(xbounds);
@@ -511,7 +511,7 @@ ImagingResampleVertical_32bpc(Imaging imIn, int ysize, struct filter *filterp)
         return (Imaging) ImagingError_MemoryError();
     }
 
-    imOut = ImagingNew(imIn->mode, imIn->xsize, ysize);
+    imOut = ImagingNewDirty(imIn->mode, imIn->xsize, ysize);
     if ( ! imOut) {
         free(kk);
         free(xbounds);
