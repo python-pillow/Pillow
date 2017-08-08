@@ -1959,6 +1959,22 @@ class Image(object):
                 ims.append(self._new(self.im.getband(i)))
         return tuple(ims)
 
+    def getchannel(self, channel):
+        """
+        Returns an image contained single channel of the source image.
+
+        :param channel: What channel to return. Could be index
+        (0 for "R" channel of "RGB") or channel name
+        ("A" for alpha channel of "RGBA").
+        :returns: An image in "L" mode.
+        """
+
+        if isStringType(channel) and len(channel) == 1:
+            if channel in self.im.mode:
+                channel = self.im.mode.index(channel)
+
+        return self._new(self.im.getband(channel))
+
     def tell(self):
         """
         Returns the current frame number. See :py:meth:`~PIL.Image.Image.seek`.
