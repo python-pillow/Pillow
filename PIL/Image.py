@@ -1968,6 +1968,7 @@ class Image(object):
         ("A" for alpha channel of "RGBA").
         :returns: An image in "L" mode.
         """
+        self.load()
 
         if isStringType(channel) and len(channel) == 1:
             if channel in self.im.mode:
