@@ -30,14 +30,14 @@ ImagingGetBand(Imaging imIn, int band)
 
     /* Check arguments */
     if (!imIn || imIn->type != IMAGING_TYPE_UINT8)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     if (band < 0 || band >= imIn->bands)
-	return (Imaging) ImagingError_ValueError("band index out of range");
+        return (Imaging) ImagingError_ValueError("band index out of range");
 
     /* Shortcuts */
     if (imIn->bands == 1)
-	return ImagingCopy(imIn);
+        return ImagingCopy(imIn);
 
     /* Special case for LXXA etc */
     if (imIn->bands == 2 && band == 1)
@@ -45,16 +45,16 @@ ImagingGetBand(Imaging imIn, int band)
 
     imOut = ImagingNew("L", imIn->xsize, imIn->ysize);
     if (!imOut)
-	return NULL;
+        return NULL;
 
     /* Extract band from image */
     for (y = 0; y < imIn->ysize; y++) {
-	UINT8* in = (UINT8*) imIn->image[y] + band;
-	UINT8* out = imOut->image8[y];
-	for (x = 0; x < imIn->xsize; x++) {
-	    out[x] = *in;
-	    in += 4;
-	}
+        UINT8* in = (UINT8*) imIn->image[y] + band;
+        UINT8* out = imOut->image8[y];
+        for (x = 0; x < imIn->xsize; x++) {
+            out[x] = *in;
+            in += 4;
+        }
     }
 
     return imOut;
@@ -67,19 +67,19 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band)
 
     /* Check arguments */
     if (!imIn || imIn->bands != 1 || !imOut)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     if (band < 0 || band >= imOut->bands)
-	return (Imaging) ImagingError_ValueError("band index out of range");
+        return (Imaging) ImagingError_ValueError("band index out of range");
 
     if (imIn->type  != imOut->type  ||
-	imIn->xsize != imOut->xsize ||
-	imIn->ysize != imOut->ysize)
-	return (Imaging) ImagingError_Mismatch();
+        imIn->xsize != imOut->xsize ||
+        imIn->ysize != imOut->ysize)
+        return (Imaging) ImagingError_Mismatch();
 
     /* Shortcuts */
     if (imOut->bands == 1)
-	return ImagingCopy2(imOut, imIn);
+        return ImagingCopy2(imOut, imIn);
 
     /* Special case for LXXA etc */
     if (imOut->bands == 2 && band == 1)
@@ -87,12 +87,12 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band)
 
     /* Insert band into image */
     for (y = 0; y < imIn->ysize; y++) {
-	UINT8* in = imIn->image8[y];
-	UINT8* out = (UINT8*) imOut->image[y] + band;
-	for (x = 0; x < imIn->xsize; x++) {
-	    *out = in[x];
-	    out += 4;
-	}
+        UINT8* in = imIn->image8[y];
+        UINT8* out = (UINT8*) imOut->image[y] + band;
+        for (x = 0; x < imIn->xsize; x++) {
+            *out = in[x];
+            out += 4;
+        }
     }
 
     return imOut;
@@ -105,10 +105,10 @@ ImagingFillBand(Imaging imOut, int band, int color)
 
     /* Check arguments */
     if (!imOut || imOut->type != IMAGING_TYPE_UINT8)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     if (band < 0 || band >= imOut->bands)
-	return (Imaging) ImagingError_ValueError("band index out of range");
+        return (Imaging) ImagingError_ValueError("band index out of range");
 
     /* Special case for LXXA etc */
     if (imOut->bands == 2 && band == 1)
@@ -118,11 +118,11 @@ ImagingFillBand(Imaging imOut, int band, int color)
 
     /* Insert color into image */
     for (y = 0; y < imOut->ysize; y++) {
-	UINT8* out = (UINT8*) imOut->image[y] + band;
-	for (x = 0; x < imOut->xsize; x++) {
-	    *out = (UINT8) color;
-	    out += 4;
-	}
+        UINT8* out = (UINT8*) imOut->image[y] + band;
+        for (x = 0; x < imOut->xsize; x++) {
+            *out = (UINT8) color;
+            out += 4;
+        }
     }
 
     return imOut;
