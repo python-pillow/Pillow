@@ -562,8 +562,8 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
             0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0));
         
         mmaf = _mm256_cvtepi32_ps(_mm256_srli_epi32(source, 24));
-        mmaf = _mm256_mul_ps(_mm256_set1_ps(255 * 256), _mm256_rcp_ps(mmaf));
-        mma1 = _mm256_cvtps_epi32(_mm256_add_ps(_mm256_set1_ps(0.5), mmaf));
+        mmaf = _mm256_mul_ps(_mm256_set1_ps(255.5 * 256), _mm256_rcp_ps(mmaf));
+        mma1 = _mm256_cvtps_epi32(mmaf);
 
         mma0 = _mm256_shuffle_epi8(mma1, _mm256_set_epi8(
             5,4,5,4, 5,4,5,4, 1,0,1,0, 1,0,1,0,
@@ -597,8 +597,8 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
             0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0, 0xff,0,0,0));
         
         mmaf = _mm_cvtepi32_ps(_mm_srli_epi32(source, 24));
-        mmaf = _mm_mul_ps(_mm_set1_ps(255 * 256), _mm_rcp_ps(mmaf));
-        mma1 = _mm_cvtps_epi32(_mm_add_ps(_mm_set1_ps(0.5), mmaf));
+        mmaf = _mm_mul_ps(_mm_set1_ps(255.5 * 256), _mm_rcp_ps(mmaf));
+        mma1 = _mm_cvtps_epi32(mmaf);
 
         mma0 = _mm_shuffle_epi8(mma1, _mm_set_epi8(
             5,4,5,4, 5,4,5,4, 1,0,1,0, 1,0,1,0));
