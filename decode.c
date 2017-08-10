@@ -846,7 +846,6 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
 #ifdef JCS_EXTENSIONS
     #if defined(LIBJPEG_TURBO_VERSION_NUMBER)
         #if LIBJPEG_TURBO_VERSION_NUMBER >= 1002010
-            printf("LIBJPEG_TURBO_VERSION_NUMBER\n");
             use_jcs_extensions = 1;
         #endif
     #else
