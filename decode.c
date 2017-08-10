@@ -842,6 +842,17 @@ PyImaging_ZipDecoderNew(PyObject* self, PyObject* args)
 
 #include "Jpeg.h"
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
+// There is no way to compare versions on compile time,
+// so we have to do that in runtime.
+#ifdef LIBJPEG_TURBO_VERSION
+char *libjpeg_turbo_version = TOSTRING(LIBJPEG_TURBO_VERSION);
+#else
+char *libjpeg_turbo_version = NULL;
+#endif
+
 PyObject*
 PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
 {
@@ -852,6 +863,8 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
     char* jpegmode; /* what's in the file */
     int scale = 1;
     int draft = 0;
+    int use_jcs_extensions = 0;
+
     if (!PyArg_ParseTuple(args, "ssz|ii", &mode, &rawmode, &jpegmode,
                           &scale, &draft))
         return NULL;
@@ -863,11 +876,21 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
     if (decoder == NULL)
         return NULL;
 
-#if defined(JCS_EXTENSIONS)
+#ifdef JCS_EXTENSIONS
+    #if defined(LIBJPEG_TURBO_VERSION_NUMBER)
+        #if LIBJPEG_TURBO_VERSION_NUMBER >= 1002010
+            printf("LIBJPEG_TURBO_VERSION_NUMBER\n");
+            use_jcs_extensions = 1;
+        #endif
+    #else
+        if (libjpeg_turbo_version) {
+            use_jcs_extensions = strcmp(libjpeg_turbo_version, "1.2.1") >= 0;
+        }
+    #endif
     // libjpeg-turbo supports different output formats.
     // We are choosing Pillow's native format (3 color bytes + 1 padding)
     // to avoid extra conversion in Unpack.c.
-    if (strcmp(rawmode, "RGB") == 0) {
+    if (use_jcs_extensions && strcmp(rawmode, "RGB") == 0) {
         rawmode = "RGBX";
     }
 #endif
