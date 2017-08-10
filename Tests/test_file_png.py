@@ -1,18 +1,19 @@
 from helper import unittest, PillowTestCase, hopper
+from PIL import Image, ImageFile, PngImagePlugin
 
 from io import BytesIO
-
-from PIL import Image
-from PIL import ImageFile
-from PIL import PngImagePlugin
 import zlib
+import sys
 
 codecs = dir(Image.core)
+
+# For Truncated phng memory leak
+MEM_LIMIT = 2  # max increase in MB
+ITERATIONS = 100 # Leak is 56k/iteration, this will leak 5.6megs
 
 # sample png stream
 
 TEST_PNG_FILE = "Tests/images/hopper.png"
-TEST_DATA = open(TEST_PNG_FILE, "rb").read()
 
 # stuff to create inline PNG images
 
@@ -317,7 +318,7 @@ class TestFilePng(PillowTestCase):
                 test_file = f.read()[:offset]
 
             im = Image.open(BytesIO(test_file))
-            self.assertTrue(im.fp is not None)
+            self.assertIsNotNone(im.fp)
             self.assertRaises((IOError, SyntaxError), im.verify)
 
     def test_verify_ignores_crc_error(self):
@@ -332,7 +333,7 @@ class TestFilePng(PillowTestCase):
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
             im = load(image_data)
-            self.assertTrue(im is not None)
+            self.assertIsNotNone(im)
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
@@ -392,11 +393,11 @@ class TestFilePng(PillowTestCase):
         info = PngImagePlugin.PngInfo()
         info.add_text("Text", "Ascii")
         im = roundtrip(im, pnginfo=info)
-        self.assertEqual(type(im.info["Text"]), str)
+        self.assertIsInstance(im.info["Text"], str)
 
     def test_unicode_text(self):
-        # Check preservation of non-ASCII characters on Python3
-        # This cannot really be meaningfully tested on Python2,
+        # Check preservation of non-ASCII characters on Python 3
+        # This cannot really be meaningfully tested on Python 2,
         # since it didn't preserve charsets to begin with.
 
         def rt_text(value):
@@ -463,7 +464,7 @@ class TestFilePng(PillowTestCase):
 
     def test_save_icc_profile(self):
         im = Image.open("Tests/images/icc_profile_none.png")
-        self.assertEqual(im.info['icc_profile'], None)
+        self.assertIsNone(im.info['icc_profile'])
 
         with_icc = Image.open("Tests/images/icc_profile.png")
         expected_icc = with_icc.info['icc_profile']
@@ -486,7 +487,7 @@ class TestFilePng(PillowTestCase):
 
     def test_roundtrip_no_icc_profile(self):
         im = Image.open("Tests/images/icc_profile_none.png")
-        self.assertEqual(im.info['icc_profile'], None)
+        self.assertIsNone(im.info['icc_profile'])
 
         im = roundtrip(im)
         self.assertNotIn('icc_profile', im.info)
@@ -497,6 +498,77 @@ class TestFilePng(PillowTestCase):
         repr_png = Image.open(BytesIO(im._repr_png_()))
         self.assertEqual(repr_png.format, 'PNG')
         self.assert_image_equal(im, repr_png)
+
+    def test_chunk_order(self):
+        im = Image.open("Tests/images/icc_profile.png")
+        test_file = self.tempfile("temp.png")
+        im.convert("P").save(test_file, dpi=(100, 100))
+
+        chunks = []
+        fp = open(test_file, "rb")
+        fp.read(8)
+        png = PngImagePlugin.PngStream(fp)
+        while True:
+            cid, pos, length = png.read()
+            chunks.append(cid)
+            try:
+                s = png.call(cid, pos, length)
+            except EOFError:
+                break
+            png.crc(cid, s)
+
+        # https://www.w3.org/TR/PNG/#5ChunkOrdering
+        # IHDR - shall be first
+        self.assertEqual(chunks.index(b"IHDR"), 0)
+        # PLTE - before first IDAT
+        self.assertLess(chunks.index(b"PLTE"), chunks.index(b"IDAT"))
+        # iCCP - before PLTE and IDAT
+        self.assertLess(chunks.index(b"iCCP"), chunks.index(b"PLTE"))
+        self.assertLess(chunks.index(b"iCCP"), chunks.index(b"IDAT"))
+        # tRNS - after PLTE, before IDAT
+        self.assertGreater(chunks.index(b"tRNS"), chunks.index(b"PLTE"))
+        self.assertLess(chunks.index(b"tRNS"), chunks.index(b"IDAT"))
+        # pHYs - before IDAT
+        self.assertLess(chunks.index(b"pHYs"), chunks.index(b"IDAT"))
+
+
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+class TestTruncatedPngPLeaks(PillowTestCase):
+
+    def setUp(self):
+        if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
+            self.skipTest("zip/deflate support not available")
+
+    def _get_mem_usage(self):
+        from resource import getpagesize, getrusage, RUSAGE_SELF
+        mem = getrusage(RUSAGE_SELF).ru_maxrss
+        if sys.platform == 'darwin':
+            # man 2 getrusage:
+            #     ru_maxrss    the maximum resident set size utilized (in bytes).
+            return mem / 1024 / 1024 # megs
+        else:
+            # linux
+            # man 2 getrusage
+            #        ru_maxrss (since Linux 2.6.32)
+            #  This is the maximum resident set size used (in  kilobytes). 
+            return mem / 1024 # megs
+
+    def test_leak_load(self):
+        with open('Tests/images/hopper.png', 'rb') as f:
+            DATA = BytesIO(f.read(16 * 1024))
+
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        with Image.open(DATA) as im:
+            im.load()
+        start_mem = self._get_mem_usage()
+        try:
+            for _ in range(ITERATIONS):
+                with Image.open(DATA) as im:
+                    im.load()
+                mem = (self._get_mem_usage() - start_mem)
+                self.assertLess(mem, MEM_LIMIT, msg='memory usage limit exceeded')
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 if __name__ == '__main__':

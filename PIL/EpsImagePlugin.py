@@ -22,16 +22,15 @@
 
 import re
 import io
+import os
 import sys
-from PIL import Image, ImageFile, _binary
+from . import Image, ImageFile
+from ._binary import i32le as i32
 
 __version__ = "0.5"
 
 #
 # --------------------------------------------------------------------
-
-i32 = _binary.i32le
-o32 = _binary.o32le
 
 split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
@@ -59,8 +58,8 @@ def has_ghostscript():
     if not sys.platform.startswith('win'):
         import subprocess
         try:
-            gs = subprocess.Popen(['gs', '--version'], stdout=subprocess.PIPE)
-            gs.stdout.read()
+            with open(os.devnull, 'wb') as devnull:
+                subprocess.check_call(['gs', '--version'], stdout=devnull)
             return True
         except OSError:
             # no ghostscript
@@ -85,7 +84,6 @@ def Ghostscript(tile, size, fp, scale=1):
            float((72.0 * size[1]) / (bbox[3]-bbox[1])))
     # print("Ghostscript", scale, size, orig_size, bbox, orig_bbox, res)
 
-    import os
     import subprocess
     import tempfile
 
@@ -123,6 +121,7 @@ def Ghostscript(tile, size, fp, scale=1):
                "-q",                         # quiet mode
                "-g%dx%d" % size,             # set output geometry (pixels)
                "-r%fx%f" % res,              # set input DPI (dots per inch)
+               "-dBATCH",                    # exit after processing
                "-dNOPAUSE",                  # don't pause between pages,
                "-dSAFER",                    # safe mode
                "-sDEVICE=ppmraw",            # ppm driver
@@ -139,12 +138,8 @@ def Ghostscript(tile, size, fp, scale=1):
 
     # push data through ghostscript
     try:
-        gs = subprocess.Popen(command, stdin=subprocess.PIPE,
-                              stdout=subprocess.PIPE)
-        gs.stdin.close()
-        status = gs.wait()
-        if status:
-            raise IOError("gs failed (status %d)" % status)
+        with open(os.devnull, 'w+b') as devnull:
+            subprocess.check_call(command, stdin=devnull, stdout=devnull)
         im = Image.open(outfile)
         im.load()
     finally:
@@ -323,7 +318,7 @@ class EpsImageFile(ImageFile.ImageFile):
             # EPS can contain binary data
             # or start directly with latin coding
             # more info see:
-            # http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
+            # https://web.archive.org/web/20160528181353/http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
             offset = i32(s[4:8])
             length = i32(s[8:12])
         else:

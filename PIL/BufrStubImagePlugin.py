@@ -9,7 +9,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 
 _handler = None
 
@@ -40,7 +40,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
 
         offset = self.fp.tell()
 
-        if not _accept(self.fp.read(8)):
+        if not _accept(self.fp.read(4)):
             raise SyntaxError("Not a BUFR file")
 
         self.fp.seek(offset)

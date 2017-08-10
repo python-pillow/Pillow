@@ -9,7 +9,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile
+from . import Image, ImageFile
+from ._binary import i8
 
 _handler = None
 
@@ -28,7 +29,7 @@ def register_handler(handler):
 # Image adapter
 
 def _accept(prefix):
-    return prefix[0:4] == b"GRIB" and prefix[7] == b'\x01'
+    return prefix[0:4] == b"GRIB" and i8(prefix[7]) == 1
 
 
 class GribStubImageFile(ImageFile.StubImageFile):

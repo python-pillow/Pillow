@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, EpsImagePlugin
 import io
@@ -93,6 +93,11 @@ class TestFileEps(PillowTestCase):
         image1_scale1_compare = Image.open(file1_compare).convert("RGB")
         image1_scale1_compare.load()
         self.assert_image_similar(img, image1_scale1_compare, 5)
+
+    def test_image_mode_not_supported(self):
+        im = hopper("RGBA")
+        tmpfile = self.tempfile('temp.eps')
+        self.assertRaises(ValueError, lambda: im.save(tmpfile))
 
     def test_render_scale1(self):
         # We need png support for these render test

@@ -24,17 +24,12 @@
 #
 
 
-from PIL import Image, ImageFile, ImagePalette, _binary
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8, i16le as i16, i32le as i32, \
+                     o8, o16le as o16, o32le as o32
 import math
 
 __version__ = "0.7"
-
-i8 = _binary.i8
-i16 = _binary.i16le
-i32 = _binary.i32le
-o8 = _binary.o8
-o16 = _binary.o16le
-o32 = _binary.o32le
 
 #
 # --------------------------------------------------------------------
@@ -73,7 +68,7 @@ class BmpImageFile(ImageFile.ImageFile):
         read, seek = self.fp.read, self.fp.seek
         if header:
             seek(header)
-        file_info = dict()
+        file_info = {}
         file_info['header_size'] = i32(read(4))  # read bmp header size @offset 14 (this is part of the header size)
         file_info['direction'] = -1
         # --------------------- If requested, read header at a specific position
@@ -136,12 +131,13 @@ class BmpImageFile(ImageFile.ImageFile):
         # ----------------- Process BMP with Bitfields compression (not palette)
         if file_info['compression'] == self.BITFIELDS:
             SUPPORTED = {
-                32: [(0xff0000, 0xff00, 0xff, 0x0), (0xff0000, 0xff00, 0xff, 0xff000000), (0x0, 0x0, 0x0, 0x0)],
+                32: [(0xff0000, 0xff00, 0xff, 0x0), (0xff0000, 0xff00, 0xff, 0xff000000), (0x0, 0x0, 0x0, 0x0), (0xff000000, 0xff0000, 0xff00, 0x0)],
                 24: [(0xff0000, 0xff00, 0xff)],
                 16: [(0xf800, 0x7e0, 0x1f), (0x7c00, 0x3e0, 0x1f)]
             }
             MASK_MODES = {
                 (32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX",
+                (32, (0xff000000, 0xff0000, 0xff00, 0x0)): "XBGR",
                 (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA",
                 (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
                 (24, (0xff0000, 0xff00, 0xff)): "BGR",

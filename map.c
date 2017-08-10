@@ -342,7 +342,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
             stride = xsize * 4;
     }
 
-    if (ysize > INT_MAX / stride) {
+    if (stride > 0 && ysize > INT_MAX / stride) {
         PyErr_SetString(PyExc_MemoryError, "Integer overflow in ysize");
         return NULL;
     }
@@ -352,7 +352,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     if (offset > PY_SSIZE_T_MAX - size) {
         PyErr_SetString(PyExc_MemoryError, "Integer overflow in offset");
         return NULL;
-    }        
+    }
 
     /* check buffer size */
     if (PyImaging_GetBuffer(target, &view) < 0)

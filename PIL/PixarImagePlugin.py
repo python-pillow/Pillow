@@ -19,15 +19,14 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, _binary
+from . import Image, ImageFile
+from ._binary import i16le as i16
 
 __version__ = "0.1"
 
+
 #
 # helpers
-
-i16 = _binary.i16le
-
 
 def _accept(prefix):
     return prefix[:4] == b"\200\350\000\000"
@@ -62,6 +61,7 @@ class PixarImageFile(ImageFile.ImageFile):
 
         # create tile descriptor (assuming "dumped")
         self.tile = [("raw", (0, 0)+self.size, 1024, (self.mode, 0, 1))]
+
 
 #
 # --------------------------------------------------------------------

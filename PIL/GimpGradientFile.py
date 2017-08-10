@@ -14,7 +14,7 @@
 #
 
 from math import pi, log, sin, sqrt
-from PIL._binary import o8
+from ._binary import o8
 
 # --------------------------------------------------------------------
 # Stuff to translate curve segments to palette values (derived from

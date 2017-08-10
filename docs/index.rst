@@ -26,17 +26,9 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://pypi.python.org/pypi/Pillow/
    :alt: Latest PyPI version
 
-.. image:: https://img.shields.io/pypi/dm/pillow.svg
-   :target: https://pypi.python.org/pypi/Pillow/
-   :alt: Number of PyPI downloads
-
 .. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.svg?branch=master
    :target: https://coveralls.io/github/python-pillow/Pillow?branch=master
    :alt: Code coverage
-
-.. image:: https://landscape.io/github/python-pillow/Pillow/master/landscape.svg
-   :target: https://landscape.io/github/python-pillow/Pillow/master
-   :alt: Code health
 
 .. toctree::
    :maxdepth: 2

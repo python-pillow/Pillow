@@ -7,10 +7,8 @@ Released quarterly on the first day of January, April, July, October.
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174
 * [ ] Develop and prepare release in ``master`` branch.
 * [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) and [AppVeyor CI](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
-* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
-```
-    PIL/__init__.py setup.py _imaging.c appveyor.yml
-```
+* [ ] Check that all of the wheel builds [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels) pass the tests in TravisCI.
+* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in `PIL/version.py`
 * [ ] Update `CHANGES.rst`.
 * [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
 * [ ] Create branch and tag for release e.g.:
@@ -20,12 +18,12 @@ Released quarterly on the first day of January, April, July, October.
     $ git push --all
     $ git push --tags
 ```
-* [ ] Create and upload source distributions e.g.:
+* [ ] Create source distributions e.g.:
 ```
     $ make sdist
-    $ make upload
 ```
-* [ ] Create and upload [binary distributions](#binary-distributions)
+* [ ] Create binary distributions [binary distributions](#binary-distributions)
+* [ ] Upload all binaries and source distributions with ``twine upload dist/Pillow-4.1.0-*``
 * [ ] Manually hide old versions on PyPI such that only the latest major release is visible when viewing https://pypi.python.org/pypi/Pillow (https://pypi.python.org/pypi?:action=pkg_edit&name=Pillow)
 
 ## Point Release
@@ -40,24 +38,18 @@ Released as needed for security, installation or critical bug fixes.
 ```
     git checkout -t remotes/origin/2.9.x
 ```
-* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in:
-```
-    PIL/__init__.py
-    setup.py
-    _imaging.c
-    appveyor.yml
-```
+* [ ] In compliance with https://www.python.org/dev/peps/pep-0440/, update version identifier in `PIL/version.py`
 * [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
 ```
     $ git tag 2.9.1
     $ git push --tags
 ```
-* [ ] Create and upload source distributions e.g.:
+* [ ] Create source distributions e.g.:
 ```
-    $ make sdistup
+    $ make sdist
 ```
-* [ ] Create and upload [binary distributions](#binary-distributions)
+* [ ] Create [binary distributions](#binary-distributions)
 
 ## Embargoed Release
 
@@ -76,11 +68,11 @@ Released as needed privately to individual vendors for critical security-related
     git push origin 2.5.x
     git push origin --tags
 ```
-* [ ] Create and upload source distributions e.g.:
+* [ ] Create source distributions e.g.:
 ```
-    $ make sdistup
+    $ make sdist
 ```
-* [ ] Create and upload [binary distributions](#binary-distributions)
+* [ ] Create [binary distributions](#binary-distributions)
 
 ## Binary Distributions
 
@@ -88,8 +80,8 @@ Released as needed privately to individual vendors for critical security-related
 * [ ] Contact @cgohlke for Windows binaries via release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174.
 * [ ] Download and extract tarball from @cgohlke and ``twine upload *``.
 
-### macOS
-* [ ] Use the [Pillow macOS Wheel Builder](https://github.com/python-pillow/pillow-wheels):
+### Mac and Linux
+* [ ] Use the [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels):
 ```
     $ git checkout https://github.com/python-pillow/pillow-wheels
     $ cd pillow-wheels
@@ -97,12 +89,13 @@ Released as needed privately to individual vendors for critical security-related
     $ git submodule update
     $ cd Pillow
     $ git fetch --all
-    $ git commit -a -m "Pillow -> 2.9.0"
-    $ git push
+    $ git checkout [[release tag]]
+    $ cd ..
+    $ git commit -m "Pillow -> 2.9.0" Pillow
+    $ git push 
 ```
-* [ ] Download distributions from the [Pillow macOS Wheel Builder container](http://cdf58691c5cf45771290-6a3b6a0f5f6ab91aadc447b2a897dd9a.r50.cf2.rackcdn.com/) and ``twine upload *``.
+* [ ] Download distributions from the [Pillow Wheel Builder container](http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com/).
 
-### Linux
 
 ## Publicize Release
 

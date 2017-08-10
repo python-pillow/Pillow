@@ -25,16 +25,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 import logging
-from PIL import Image, ImageFile, ImagePalette, _binary
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8, i16le as i16, o8, o16le as o16
 
 logger = logging.getLogger(__name__)
-
-i8 = _binary.i8
-i16 = _binary.i16le
-o8 = _binary.o8
 
 __version__ = "0.6"
 
@@ -122,8 +117,6 @@ SAVE = {
     "P": (5, 8, 1, "P"),
     "RGB": (5, 8, 3, "RGB;L"),
 }
-
-o16 = _binary.o16le
 
 
 def _save(im, fp, filename, check=0):

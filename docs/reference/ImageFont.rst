@@ -9,7 +9,7 @@ this class store bitmap fonts, and are used with the
 :py:meth:`PIL.ImageDraw.Draw.text` method.
 
 PIL uses its own font file format to store bitmap fonts. You can use the
-:command`pilfont` utility to convert BDF and PCF font descriptors (X window
+:command:`pilfont` utility to convert BDF and PCF font descriptors (X window
 font formats) to this format.
 
 Starting with version 1.1.4, PIL can be configured to support TrueType and
@@ -51,7 +51,7 @@ Methods
 
     :return: (width, height)
 
-.. py:method:: PIL.ImageFont.ImageFont.getmask(text, mode='')
+.. py:method:: PIL.ImageFont.ImageFont.getmask(text, mode='', direction=None, features=[])
 
     Create a bitmap for the text.
 
@@ -65,5 +65,26 @@ Methods
                  C-level implementations.
 
                  .. versionadded:: 1.1.5
+
+    :param direction: Direction of the text. It can be 'rtl' (right to
+                      left), 'ltr' (left to right), 'ttb' (top to
+                      bottom) or 'btt' (bottom to top). Requires
+                      libraqm.
+
+                      .. versionadded:: 4.2.0
+
+    :param features: A list of OpenType font features to be used during text
+                     layout. This is usually used to turn on optional
+                     font features that are not enabled by default,
+                     for example 'dlig' or 'ss01', but can be also
+                     used to turn off default font features for
+                     example '-liga' to disable ligatures or '-kern'
+                     to disable kerning.  To get all supported
+                     features, see
+                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     Requires libraqm.
+
+                     .. versionadded:: 4.2.0
+
     :return: An internal PIL storage memory instance as defined by the
              :py:mod:`PIL.Image.core` interface module.

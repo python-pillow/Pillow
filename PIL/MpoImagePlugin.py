@@ -18,7 +18,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, JpegImagePlugin
+from . import Image, JpegImagePlugin
 
 __version__ = "0.1"
 
@@ -39,7 +39,8 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
     format = "MPO"
     format_description = "MPO (CIPA DC-007)"
-
+    _close_exclusive_fp_after_loading = False
+    
     def _open(self):
         self.fp.seek(0)  # prep the fp in order to pass the JPEG test
         JpegImagePlugin.JpegImageFile._open(self)

@@ -1,0 +1,24 @@
+4.1.1
+-----
+
+Fix Regression with reading DPI from EXIF data
+==============================================
+
+Some JPEG images don't contain DPI information in the image metadata,
+but do contain it in the EXIF data. A patch was added in 4.1.0 to read
+from the EXIF data, but it did not accept all possible types that
+could be included there.  This fix adds the ability to read ints as
+well as rational values.
+
+
+Incompatibility between 3.6.0 and 3.6.1
+=======================================
+
+CPython 3.6.1 added a new symbol, PySlice_GetIndicesEx, which was not
+present in 3.6.0. This had the effect of causing binaries compiled on
+CPython 3.6.1 to not work on installations of C-Python 3.6.0. This fix
+undefines PySlice_GetIndicesEx if it exists to restore compatibility
+with both 3.6.0 and 3.6.1. See https://bugs.python.org/issue29943 for
+more details.
+
+

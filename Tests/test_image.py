@@ -29,6 +29,7 @@ class TestImage(PillowTestCase):
         self.assertEqual(im3.getcolors(), [(10000, 0)])
 
         self.assertRaises(ValueError, lambda: Image.new("X", (100, 100)))
+        self.assertRaises(ValueError, lambda: Image.new("", (100, 100)))
         # self.assertRaises(
         #     MemoryError, lambda: Image.new("L", (1000000, 1000000)))
 
@@ -63,16 +64,33 @@ class TestImage(PillowTestCase):
             os.remove(temp_file)
         im.save(Path(temp_file))
 
+    def test_fp_name(self):
+        temp_file = self.tempfile("temp.jpg")
+
+        class FP(object):
+            def write(a, b):
+                pass
+        fp = FP()
+        fp.name = temp_file
+
+        im = hopper()
+        im.save(fp)
+
     def test_tempfile(self):
         # see #1460, pathlib support breaks tempfile.TemporaryFile on py27
         # Will error out on save on 3.0.0
         import tempfile
         im = hopper()
-        fp = tempfile.TemporaryFile()
-        im.save(fp, 'JPEG')
-        fp.seek(0)
-        reloaded = Image.open(fp)
-        self.assert_image_similar(im, reloaded, 20)
+        with tempfile.TemporaryFile() as fp:
+            im.save(fp, 'JPEG')
+            fp.seek(0)
+            reloaded = Image.open(fp)
+            self.assert_image_similar(im, reloaded, 20)
+
+    def test_unknown_extension(self):
+        im = hopper()
+        temp_file = self.tempfile("temp.unknown")
+        self.assertRaises(ValueError, lambda: im.save(temp_file))
 
     def test_internals(self):
 
@@ -152,10 +170,10 @@ class TestImage(PillowTestCase):
         im2 = Image.new('RGB', (25, 25), 'white')
 
         # Act / Assert
-        self.assertTrue(im1 != im2)
+        self.assertNotEqual(im1, im2)
 
     def test_alpha_composite(self):
-        # http://stackoverflow.com/questions/3374878
+        # https://stackoverflow.com/questions/3374878
         # Arrange
         from PIL import ImageDraw
 
@@ -183,6 +201,73 @@ class TestImage(PillowTestCase):
         # Assert
         img_colors = sorted(img.getcolors())
         self.assertEqual(img_colors, expected_colors)
+
+    def test_alpha_inplace(self):
+        src = Image.new('RGBA', (128,128), 'blue')
+
+        over = Image.new('RGBA', (128,128), 'red')
+        mask = hopper('L')
+        over.putalpha(mask)
+
+        target = Image.alpha_composite(src, over)
+
+        # basic
+        full = src.copy()
+        full.alpha_composite(over)
+        self.assert_image_equal(full, target)
+
+        # with offset down to right
+        offset = src.copy()
+        offset.alpha_composite(over, (64, 64))
+        self.assert_image_equal(offset.crop((64, 64, 127, 127)),
+                                target.crop((0, 0, 63, 63)))
+        self.assertEqual(offset.size, (128, 128))
+
+        # offset and crop
+        box = src.copy()
+        box.alpha_composite(over, (64, 64), (0, 0, 32, 32))
+        self.assert_image_equal(box.crop((64, 64, 96, 96)),
+                                target.crop((0, 0, 32, 32)))
+        self.assert_image_equal(box.crop((96, 96, 128, 128)),
+                                src.crop((0, 0, 32, 32)))
+        self.assertEqual(box.size, (128, 128))
+
+        # source point
+        source = src.copy()
+        source.alpha_composite(over, (32, 32), (32, 32, 96, 96))
+
+        self.assert_image_equal(source.crop((32, 32, 96, 96)),
+                                target.crop((32, 32, 96, 96)))
+        self.assertEqual(source.size, (128, 128))
+
+    def test_registered_extensions_uninitialized(self):
+        # Arrange
+        Image._initialized = 0
+        extension = Image.EXTENSION
+        Image.EXTENSION = {}
+
+        # Act
+        Image.registered_extensions()
+
+        # Assert
+        self.assertEqual(Image._initialized, 2)
+
+        # Restore the original state and assert
+        Image.EXTENSION = extension
+        self.assertTrue(Image.EXTENSION)
+
+    def test_registered_extensions(self):
+        # Arrange
+        # Open an image to trigger plugin registration
+        Image.open('Tests/images/rgb.jpg')
+
+        # Act
+        extensions = Image.registered_extensions()
+
+        # Assert
+        self.assertTrue(bool(extensions))
+        for ext in ['.cur', '.icns', '.tif', '.tiff']:
+            self.assertIn(ext, extensions)
 
     def test_effect_mandelbrot(self):
         # Arrange
@@ -238,18 +323,23 @@ class TestImage(PillowTestCase):
         self.assert_image_similar(im2, im3, 110)
 
     def test_check_size(self):
-        # Checking that the _check_size function throws value errors when we want it to.
+        # Checking that the _check_size function throws value errors
+        # when we want it to.
         with self.assertRaises(ValueError):
             Image.new('RGB', 0)  # not a tuple
         with self.assertRaises(ValueError):
             Image.new('RGB', (0,))  # Tuple too short
         with self.assertRaises(ValueError):
-            Image.new('RGB', (0,0))  # w,h <= 0
+            Image.new('RGB', (-1, -1))  # w,h < 0
 
-        self.assertTrue(Image.new('RGB', (1,1)))
+        # this should pass with 0 sized images, #2259
+        im = Image.new('L', (0, 0))
+        self.assertEqual(im.size, (0, 0))
+
+        self.assertTrue(Image.new('RGB', (1, 1)))
         # Should pass lists too
-        i = Image.new('RGB', [1,1])
-        self.assertEqual(type(i.size), tuple)
+        i = Image.new('RGB', [1, 1])
+        self.assertIsInstance(i.size, tuple)
 
     def test_storage_neg(self):
         # Storage.c accepted negative values for xsize, ysize.  Was
@@ -258,11 +348,98 @@ class TestImage(PillowTestCase):
         # Storage.c, rather than the size check above
 
         with self.assertRaises(ValueError):
-            Image.core.fill('RGB', (2,-2), (0,0,0))
+            Image.core.fill('RGB', (2, -2), (0, 0, 0))
+
+    def test_offset_not_implemented(self):
+        # Arrange
+        im = hopper()
+
+        # Act / Assert
+        self.assertRaises(NotImplementedError, lambda: im.offset(None))
+
+    def test_fromstring(self):
+        self.assertRaises(NotImplementedError, Image.fromstring)
+
+    def test_linear_gradient_wrong_mode(self):
+        # Arrange
+        wrong_mode = "RGB"
+
+        # Act / Assert
+        self.assertRaises(ValueError,
+                          lambda: Image.linear_gradient(wrong_mode))
+        return
+
+    def test_linear_gradient(self):
+
+        # Arrange
+        target_file = "Tests/images/linear_gradient.png"
+        for mode in ["L", "P"]:
+
+            # Act
+            im = Image.linear_gradient(mode)
+
+            # Assert
+            self.assertEqual(im.size, (256, 256))
+            self.assertEqual(im.mode, mode)
+            self.assertEqual(im.getpixel((0, 0)), 0)
+            self.assertEqual(im.getpixel((255, 255)), 255)
+            target = Image.open(target_file).convert(mode)
+            self.assert_image_equal(im, target)
+
+    def test_radial_gradient_wrong_mode(self):
+        # Arrange
+        wrong_mode = "RGB"
+
+        # Act / Assert
+        self.assertRaises(ValueError,
+                          lambda: Image.radial_gradient(wrong_mode))
+        return
+
+    def test_radial_gradient(self):
+
+        # Arrange
+        target_file = "Tests/images/radial_gradient.png"
+        for mode in ["L", "P"]:
+
+            # Act
+            im = Image.radial_gradient(mode)
+
+            # Assert
+            self.assertEqual(im.size, (256, 256))
+            self.assertEqual(im.mode, mode)
+            self.assertEqual(im.getpixel((0, 0)), 255)
+            self.assertEqual(im.getpixel((128, 128)), 0)
+            target = Image.open(target_file).convert(mode)
+            self.assert_image_equal(im, target)
 
 
+class MockEncoder(object):
+    pass
 
 
+def mock_encode(*args):
+    encoder = MockEncoder()
+    encoder.args = args
+    return encoder
+
+
+class TestRegistry(PillowTestCase):
+
+    def test_encode_registry(self):
+
+        Image.register_encoder('MOCK', mock_encode)
+        self.assertIn('MOCK', Image.ENCODERS)
+
+        enc = Image._getencoder('RGB', 'MOCK', ('args',), extra=('extra',))
+
+        self.assertIsInstance(enc, MockEncoder)
+        self.assertEqual(enc.args, ('RGB', 'args', 'extra'))
+
+    def test_encode_registry_fail(self):
+        self.assertRaises(IOError, lambda: Image._getencoder('RGB',
+                                                             'DoesNotExist',
+                                                             ('args',),
+                                                             extra=('extra',)))
 
 if __name__ == '__main__':
     unittest.main()

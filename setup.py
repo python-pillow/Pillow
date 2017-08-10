@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # > pyroma .
 # ------------------------------
 # Checking .
@@ -31,7 +32,7 @@ _LIB_IMAGING = (
     "Draw", "Effects", "EpsEncode", "File", "Fill", "Filter", "FliDecode",
     "Geometry", "GetBBox", "GifDecode", "GifEncode", "HexDecode", "Histo",
     "JpegDecode", "JpegEncode", "LzwDecode", "Matrix", "ModeFilter",
-    "MspDecode", "Negative", "Offset", "Pack", "PackDecode", "Palette", "Paste",
+    "Negative", "Offset", "Pack", "PackDecode", "Palette", "Paste",
     "Quant", "QuantOctree", "QuantHash", "QuantHeap", "PcdDecode", "PcxDecode",
     "PcxEncode", "Point", "RankFilter", "RawDecode", "RawEncode", "Storage",
     "SunRleDecode", "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask",
@@ -40,6 +41,8 @@ _LIB_IMAGING = (
 
 DEBUG = False
 
+class DependencyException(Exception): pass
+class RequiredDependencyException(Exception): pass
 
 def _dbg(s, tp=None):
     if DEBUG:
@@ -60,6 +63,9 @@ def _add_directory(path, subdir, where=None):
         else:
             _dbg('Inserting path %s', subdir)
             path.insert(where, subdir)
+    elif subdir in path and where is not None:
+        path.remove(subdir)
+        path.insert(where, subdir)
 
 
 def _find_include_file(self, include):
@@ -72,20 +78,7 @@ def _find_include_file(self, include):
 
 
 def _find_library_file(self, library):
-    # Fix for 3.2.x <3.2.4, 3.3.0, shared lib extension is the python shared
-    # lib extension, not the system shared lib extension: e.g. .cpython-33.so
-    # vs .so. See Python bug http://bugs.python.org/16754
-    if 'cpython' in self.compiler.shared_lib_extension:
-        _dbg('stripping cpython from shared library extension %s',
-             self.compiler.shared_lib_extension)
-        existing = self.compiler.shared_lib_extension
-        self.compiler.shared_lib_extension = "." + existing.split('.')[-1]
-        ret = self.compiler.find_library_file(self.compiler.library_dirs,
-                                              library)
-        self.compiler.shared_lib_extension = existing
-    else:
-        ret = self.compiler.find_library_file(self.compiler.library_dirs,
-                                              library)
+    ret = self.compiler.find_library_file(self.compiler.library_dirs, library)
     if ret:
         _dbg('Found library %s at %s', (library, ret))
     else:
@@ -94,14 +87,22 @@ def _find_library_file(self, library):
     return ret
 
 
-def _lib_include(root):
-    # map root to (root/lib, root/include)
-    return os.path.join(root, "lib"), os.path.join(root, "include")
-
+def _cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
 
 def _read(file):
-    return open(file, 'rb').read()
+    with open(file, 'rb') as fp:
+        return fp.read()
 
+
+def get_version():
+    version_file = 'PIL/version.py'
+    with open(version_file, 'r') as f:
+        exec(compile(f.read(), version_file, 'exec'))
+    return locals()['__version__']
 
 try:
     import _tkinter
@@ -110,7 +111,7 @@ except (ImportError, OSError):
     _tkinter = None
 
 NAME = 'Pillow'
-PILLOW_VERSION = '3.5.0.dev0'
+PILLOW_VERSION = get_version()
 JPEG_ROOT = None
 JPEG2K_ROOT = None
 ZLIB_ROOT = None
@@ -118,14 +119,28 @@ IMAGEQUANT_ROOT = None
 TIFF_ROOT = None
 FREETYPE_ROOT = None
 LCMS_ROOT = None
+RAQM_ROOT = None
 
+def _pkg_config(name):
+    try:
+        command = [
+            'pkg-config',
+            '--libs-only-L', name,
+            '--cflags-only-I', name,
+        ]
+        if not DEBUG:
+            command.append('--silence-errors')
+        libs = subprocess.check_output(command).decode('utf8').split(' ')
+        return libs[1][2:].strip(), libs[0][2:].strip()
+    except:
+        pass
 
 class pil_build_ext(build_ext):
     class feature:
-        features = ['zlib', 'jpeg', 'tiff', 'freetype', 'lcms', 'webp',
+        features = ['zlib', 'jpeg', 'tiff', 'freetype', 'raqm', 'lcms', 'webp',
                     'webpmux', 'jpeg2000', 'imagequant']
 
-        required = set(['jpeg', 'zlib'])
+        required = {'jpeg', 'zlib'}
 
         def __init__(self):
             for f in self.features:
@@ -184,15 +199,37 @@ class pil_build_ext(build_ext):
 
         _add_directory(include_dirs, "libImaging")
 
+        pkg_config = None
+        if _cmd_exists('pkg-config'):
+            pkg_config = _pkg_config
+
         #
         # add configured kits
+        for root_name, lib_name in dict(JPEG_ROOT="libjpeg",
+                                        JPEG2K_ROOT="libopenjp2",
+                                        TIFF_ROOT=("libtiff-5", "libtiff-4"),
+                                        ZLIB_ROOT="zlib",
+                                        FREETYPE_ROOT="freetype2",
+                                        LCMS_ROOT="lcms2",
+                                        IMAGEQUANT_ROOT="libimagequant"
+                                        ).items():
+            root = globals()[root_name]
+            if root is None and pkg_config:
+                if isinstance(lib_name, tuple):
+                    for lib_name2 in lib_name:
+                        _dbg('Looking for `%s` using pkg-config.' % lib_name2)
+                        root = pkg_config(lib_name2)
+                        if root:
+                            break
+                else:
+                    _dbg('Looking for `%s` using pkg-config.' % lib_name)
+                    root = pkg_config(lib_name)
 
-        for root in (JPEG_ROOT, JPEG2K_ROOT, TIFF_ROOT, ZLIB_ROOT,
-                     FREETYPE_ROOT, LCMS_ROOT, IMAGEQUANT_ROOT):
-            if isinstance(root, type(())):
+            if isinstance(root, tuple):
                 lib_root, include_root = root
             else:
                 lib_root = include_root = root
+
             _add_directory(library_dirs, lib_root)
             _add_directory(include_dirs, include_root)
 
@@ -363,8 +400,7 @@ class pil_build_ext(build_ext):
             best_path = None
             for name in os.listdir(program_files):
                 if name.startswith('OpenJPEG '):
-                    version = tuple([int(x) for x in name[9:].strip().split(
-                        '.')])
+                    version = tuple(int(x) for x in name[9:].strip().split('.'))
                     if version > best_version:
                         best_version = version
                         best_path = os.path.join(program_files, name)
@@ -424,7 +460,7 @@ class pil_build_ext(build_ext):
                         os.path.isfile(os.path.join(directory, name,
                                                     'openjpeg.h')):
                         _dbg('Found openjpeg.h in %s/%s', (directory, name))
-                        version = tuple([int(x) for x in name[9:].split('.')])
+                        version = tuple(int(x) for x in name[9:].split('.'))
                         if best_version is None or version > best_version:
                             best_version = version
                             best_path = os.path.join(directory, name)
@@ -435,10 +471,13 @@ class pil_build_ext(build_ext):
                 # Add the directory to the include path so we can include
                 # <openjpeg.h> rather than having to cope with the versioned
                 # include path
+                # FIXME (melvyn-sopacua):
+                # At this point it's possible that best_path is already in
+                # self.compiler.include_dirs. Should investigate how that is
+                # possible.
                 _add_directory(self.compiler.include_dirs, best_path, 0)
                 feature.jpeg2000 = 'openjp2'
-                feature.openjpeg_version = '.'.join([str(x) for x in
-                                                     best_version])
+                feature.openjpeg_version = '.'.join(str(x) for x in best_version)
 
         if feature.want('imagequant'):
             _dbg('Looking for imagequant')
@@ -483,6 +522,14 @@ class pil_build_ext(build_ext):
                     if subdir:
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 
+        if feature.want('raqm'):
+            _dbg('Looking for raqm')
+            if _find_include_file(self, "raqm.h"):
+                if _find_library_file(self, "raqm") and \
+                   _find_library_file(self, "harfbuzz") and \
+                   _find_library_file(self, "fribidi"):
+                    feature.raqm = ["raqm", "harfbuzz", "fribidi"]
+
         if feature.want('lcms'):
             _dbg('Looking for lcms')
             if _find_include_file(self, "lcms2.h"):
@@ -516,12 +563,8 @@ class pil_build_ext(build_ext):
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
                 if f in ('jpeg', 'zlib'):
-                    raise ValueError(
-                        '%s is required unless explicitly disabled'
-                        ' using --disable-%s, aborting' % (f, f))
-                raise ValueError(
-                    '--enable-%s requested but %s not found, aborting.' %
-                    (f, f))
+                    raise RequiredDependencyException(f)
+                raise DependencyException(f)
 
         #
         # core library
@@ -556,6 +599,11 @@ class pil_build_ext(build_ext):
         if struct.unpack("h", "\0\1".encode('ascii'))[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
 
+        if sys.platform == "win32" and not hasattr(sys, 'pypy_version_info'):
+            defs.append(("PILLOW_VERSION", '"\\"%s\\""'%PILLOW_VERSION))
+        else:
+            defs.append(("PILLOW_VERSION", '"%s"'%PILLOW_VERSION))
+
         exts = [(Extension("PIL._imaging",
                            files,
                            libraries=libs,
@@ -565,9 +613,14 @@ class pil_build_ext(build_ext):
         # additional libraries
 
         if feature.freetype:
-            exts.append(Extension("PIL._imagingft",
-                                  ["_imagingft.c"],
-                                  libraries=["freetype"]))
+            libs = ["freetype"]
+            defs = []
+            if feature.raqm:
+                libs.extend(feature.raqm)
+                defs.append(('HAVE_RAQM', None))
+            exts.append(Extension(
+                "PIL._imagingft", ["_imagingft.c"], libraries=libs,
+                define_macros=defs))
 
         if feature.lcms:
             extra = []
@@ -605,16 +658,11 @@ class pil_build_ext(build_ext):
         build_ext.build_extensions(self)
 
         #
-        # sanity and security checks
+        # sanity checks
 
-        unsafe_zlib = None
+        self.summary_report(feature)
 
-        if feature.zlib:
-            unsafe_zlib = self.check_zlib_version(self.compiler.include_dirs)
-
-        self.summary_report(feature, unsafe_zlib)
-
-    def summary_report(self, feature, unsafe_zlib):
+    def summary_report(self, feature):
 
         print("-" * 68)
         print("PIL SETUP SUMMARY")
@@ -634,6 +682,7 @@ class pil_build_ext(build_ext):
             (feature.imagequant, "LIBIMAGEQUANT"),
             (feature.tiff, "LIBTIFF"),
             (feature.freetype, "FREETYPE2"),
+            (feature.raqm, "RAQM"),
             (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"),
@@ -650,16 +699,6 @@ class pil_build_ext(build_ext):
                 print("*** %s support not available" % option[1])
                 all = 0
 
-        if feature.zlib and unsafe_zlib:
-            print("")
-            print("*** Warning: zlib", unsafe_zlib)
-            print("may contain a security vulnerability.")
-            print("*** Consider upgrading to zlib 1.2.3 or newer.")
-            print("*** See: http://www.kb.cert.org/vuls/id/238678")
-            print(" http://www.kb.cert.org/vuls/id/680620")
-            print(" http://www.gzip.org/zlib/advisory-2002-03-11.txt")
-            print("")
-
         print("-" * 68)
 
         if not all:
@@ -670,21 +709,6 @@ class pil_build_ext(build_ext):
 
         print("To check the build, run the selftest.py script.")
         print("")
-
-    def check_zlib_version(self, include_dirs):
-        # look for unsafe versions of zlib
-        for subdir in include_dirs:
-            zlibfile = os.path.join(subdir, "zlib.h")
-            if os.path.isfile(zlibfile):
-                break
-        else:
-            return
-        for line in open(zlibfile).readlines():
-            m = re.match(r'#define\s+ZLIB_VERSION\s+"([^"]*)"', line)
-            if not m:
-                continue
-            if m.group(1) < "1.2.3":
-                return m.group(1)
 
     # https://hg.python.org/users/barry/rev/7e8deab93d5a
     def add_multiarch_paths(self):
@@ -702,9 +726,8 @@ class pil_build_ext(build_ext):
                 return
         try:
             if ret >> 8 == 0:
-                fp = open(tmpfile, 'r')
-                multiarch_path_component = fp.readline().strip()
-                fp.close()
+                with open(tmpfile, 'r') as fp:
+                    multiarch_path_component = fp.readline().strip()
                 _add_directory(self.compiler.library_dirs,
                                '/usr/lib/' + multiarch_path_component)
                 _add_directory(self.compiler.include_dirs,
@@ -716,38 +739,60 @@ class pil_build_ext(build_ext):
 def debug_build():
     return hasattr(sys, 'gettotalrefcount')
 
+try:
+    setup(name=NAME,
+          version=PILLOW_VERSION,
+          description='Python Imaging Library (Fork)',
+          long_description=_read('README.rst').decode('utf-8'),
+          author='Alex Clark (Fork Author)',
+          author_email='aclark@aclark.net',
+          url='https://python-pillow.org',
+          classifiers=[
+              "Development Status :: 6 - Mature",
+              "Topic :: Multimedia :: Graphics",
+              "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+              "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+              "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+              "Topic :: Multimedia :: Graphics :: Viewers",
+              "Programming Language :: Python :: 2",
+              "Programming Language :: Python :: 2.7",
+              "Programming Language :: Python :: 3",
+              "Programming Language :: Python :: 3.3",
+              "Programming Language :: Python :: 3.4",
+              "Programming Language :: Python :: 3.5",
+              "Programming Language :: Python :: 3.6",
+              'Programming Language :: Python :: Implementation :: CPython',
+              'Programming Language :: Python :: Implementation :: PyPy',
+          ],
+          cmdclass={"build_ext": pil_build_ext},
+          ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
+          include_package_data=True,
+          packages=find_packages(),
+          scripts=glob.glob("Scripts/*.py"),
+          install_requires=['olefile'],
+          test_suite='nose.collector',
+          keywords=["Imaging", ],
+          license='Standard PIL License',
+          zip_safe=not debug_build(), )
+except RequiredDependencyException as err:
+    msg = """
 
-setup(name=NAME,
-      version=PILLOW_VERSION,
-      description='Python Imaging Library (Fork)',
-      long_description=_read('README.rst').decode('utf-8'),
-      author='Alex Clark (Fork Author)',
-      author_email='aclark@aclark.net',
-      url='http://python-pillow.org',
-      classifiers=[
-          "Development Status :: 6 - Mature",
-          "Topic :: Multimedia :: Graphics",
-          "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
-          "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
-          "Topic :: Multimedia :: Graphics :: Graphics Conversion",
-          "Topic :: Multimedia :: Graphics :: Viewers",
-          "Programming Language :: Python :: 2",
-          "Programming Language :: Python :: 2.6",
-          "Programming Language :: Python :: 2.7",
-          "Programming Language :: Python :: 3",
-          "Programming Language :: Python :: 3.2",
-          "Programming Language :: Python :: 3.3",
-          "Programming Language :: Python :: 3.4",
-          "Programming Language :: Python :: 3.5",
-          'Programming Language :: Python :: Implementation :: CPython',
-          'Programming Language :: Python :: Implementation :: PyPy',
-      ],
-      cmdclass={"build_ext": pil_build_ext},
-      ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
-      include_package_data=True,
-      packages=find_packages(),
-      scripts=glob.glob("Scripts/*.py"),
-      test_suite='nose.collector',
-      keywords=["Imaging", ],
-      license='Standard PIL License',
-      zip_safe=not debug_build(), )
+The headers or library files could not be found for %s,
+a required dependency when compiling Pillow from source.
+
+Please see the install instructions at:
+   https://pillow.readthedocs.io/en/latest/installation.html
+
+""" % (str(err))
+    sys.stderr.write(msg)
+    raise RequiredDependencyException(msg)
+except DependencyException as err:
+    msg = """
+
+The headers or library files could not be found for %s,
+which was requested by the option flag --enable-%s
+
+""" % (str(err), str(err))
+    sys.stderr.write(msg)
+    raise DependencyException(msg)
+

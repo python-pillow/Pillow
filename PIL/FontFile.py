@@ -14,8 +14,10 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 import os
-from PIL import Image, _binary
+from . import Image, _binary
 
 WIDTH = 800
 
@@ -88,7 +90,7 @@ class FontFile(object):
                     x = xx
                 s = src[0] + x0, src[1] + y0, src[2] + x0, src[3] + y0
                 self.bitmap.paste(im.crop(src), s)
-                # print chr(i), dst, s
+                # print(chr(i), dst, s)
                 self.metrics[i] = d, dst, s
 
     def save(self, filename):
@@ -100,14 +102,13 @@ class FontFile(object):
         self.bitmap.save(os.path.splitext(filename)[0] + ".pbm", "PNG")
 
         # font metrics
-        fp = open(os.path.splitext(filename)[0] + ".pil", "wb")
-        fp.write(b"PILfont\n")
-        fp.write((";;;;;;%d;\n" % self.ysize).encode('ascii'))  # HACK!!!
-        fp.write(b"DATA\n")
-        for id in range(256):
-            m = self.metrics[id]
-            if not m:
-                puti16(fp, [0] * 10)
-            else:
-                puti16(fp, m[0] + m[1] + m[2])
-        fp.close()
+        with open(os.path.splitext(filename)[0] + ".pil", "wb") as fp:
+            fp.write(b"PILfont\n")
+            fp.write((";;;;;;%d;\n" % self.ysize).encode('ascii'))  # HACK!!!
+            fp.write(b"DATA\n")
+            for id in range(256):
+                m = self.metrics[id]
+                if not m:
+                    puti16(fp, [0] * 10)
+                else:
+                    puti16(fp, m[0] + m[1] + m[2])

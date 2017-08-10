@@ -1,10 +1,11 @@
-from helper import PillowTestCase
-
+from helper import unittest, PillowTestCase
+from distutils.version import StrictVersion
 try:
     import numpy as np
     from numpy.testing import assert_equal
 
     from scipy import misc
+    import scipy
     HAS_SCIPY = True
 except ImportError:
     HAS_SCIPY = False
@@ -27,6 +28,11 @@ class Test_scipy_resize(PillowTestCase):
             im1 = misc.imresize(im, T(1.101))
             self.assertEqual(im1.shape, (11, 22))
 
+    # this test fails prior to scipy 0.14.0b1
+    # https://github.com/scipy/scipy/commit/855ff1fff805fb91840cf36b7082d18565fc8352
+    @unittest.skipIf(HAS_SCIPY and
+					 (StrictVersion(scipy.__version__) < StrictVersion('0.14.0')),
+                     "Test fails on scipy < 0.14.0")
     def test_imresize4(self):
         im = np.array([[1, 2],
                        [3, 4]])
@@ -41,3 +47,7 @@ class Test_scipy_resize(PillowTestCase):
         assert_equal(im2, res)
         assert_equal(im3, res)
         assert_equal(im4, res)
+
+
+if __name__ == '__main__':
+    unittest.main()

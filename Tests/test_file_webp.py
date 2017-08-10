@@ -77,6 +77,11 @@ class TestFileWebp(PillowTestCase):
 
         self.assertRaises(IOError, lambda: hopper("L").save(temp_file))
 
+    def test_WebPEncode_with_invalid_args(self):
+        self.assertRaises(TypeError, _webp.WebPEncode)
+
+    def test_WebPDecode_with_invalid_args(self):
+        self.assertRaises(TypeError, _webp.WebPDecode)
 
 if __name__ == '__main__':
     unittest.main()

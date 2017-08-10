@@ -52,7 +52,6 @@ typedef struct {
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject* lock;
-    int handles_eof;
     int pulls_fd;
 } ImagingDecoderObject;
 
@@ -94,9 +93,6 @@ PyImaging_DecoderNew(int contextsize)
 
     /* Initialize the cleanup function pointer */
     decoder->cleanup = NULL;
-
-    /* Most decoders don't want to handle EOF themselves */
-    decoder->handles_eof = 0;
 
     /* set if the decoder needs to pull data from the fd, instead of
        having it pushed */
@@ -240,12 +236,6 @@ _setfd(ImagingDecoderObject* decoder, PyObject* args)
 
 
 static PyObject *
-_get_handles_eof(ImagingDecoderObject *decoder)
-{
-    return PyBool_FromLong(decoder->handles_eof);
-}
-
-static PyObject *
 _get_pulls_fd(ImagingDecoderObject *decoder)
 {
     return PyBool_FromLong(decoder->pulls_fd);
@@ -260,9 +250,6 @@ static struct PyMethodDef methods[] = {
 };
 
 static struct PyGetSetDef getseters[] = {
-    {"handles_eof", (getter)_get_handles_eof, NULL,
-     "True if this decoder expects to handle EOF itself.",
-     NULL},
    {"pulls_fd", (getter)_get_pulls_fd, NULL,
      "True if this decoder expects to pull from self.fd itself.",
      NULL},
@@ -570,27 +557,6 @@ PyImaging_LibTiffDecoderNew(PyObject* self, PyObject* args)
 
 #endif
 
-/* -------------------------------------------------------------------- */
-/* MSP                                                                  */
-/* -------------------------------------------------------------------- */
-
-PyObject*
-PyImaging_MspDecoderNew(PyObject* self, PyObject* args)
-{
-    ImagingDecoderObject* decoder;
-
-    decoder = PyImaging_DecoderNew(0);
-    if (decoder == NULL)
-        return NULL;
-
-    if (get_unpacker(decoder, "1", "1") < 0)
-        return NULL;
-
-    decoder->decode = ImagingMspDecode;
-
-    return (PyObject*) decoder;
-}
-
 
 /* -------------------------------------------------------------------- */
 /* PackBits                                                             */
@@ -813,6 +779,7 @@ PyImaging_ZipDecoderNew(PyObject* self, PyObject* args)
         return NULL;
 
     decoder->decode = ImagingZipDecode;
+    decoder->cleanup = ImagingZipDecodeCleanup;
 
     ((ZIPSTATE*)decoder->state.context)->interlaced = interlaced;
 
@@ -950,7 +917,6 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
     if (decoder == NULL)
         return NULL;
 
-    decoder->handles_eof = 1;
     decoder->pulls_fd = 1;
     decoder->decode = ImagingJpeg2KDecode;
     decoder->cleanup = ImagingJpeg2KDecodeCleanup;

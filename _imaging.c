@@ -71,8 +71,6 @@
  * See the README file for information on usage and redistribution.
  */
 
-#define PILLOW_VERSION "3.5.0.dev0"
-
 #include "Python.h"
 
 #ifdef HAVE_LIBZ
@@ -95,8 +93,6 @@
 #define WITH_MODEFILTER /* mode filter */
 #define WITH_THREADING /* "friendly" threading support */
 #define WITH_UNSHARPMASK /* Kevin Cazabon's unsharpmask module */
-
-#define WITH_DEBUG /* extra debugging interfaces */
 
 #undef    VERBOSE
 
@@ -251,7 +247,9 @@ int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view)
     /* Use new buffer protocol if available
        (mmap doesn't support this in 2.7, go figure) */
     if (PyObject_CheckBuffer(buffer)) {
-        return PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
+        int success = PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
+        if (!success) { return success; }
+        PyErr_Clear();
     }
 
     /* Pretend we support the new protocol; PyBuffer_Release happily ignores
@@ -629,18 +627,6 @@ _new(PyObject* self, PyObject* args)
         return NULL;
 
     return PyImagingNew(ImagingNew(mode, xsize, ysize));
-}
-
-static PyObject*
-_new_array(PyObject* self, PyObject* args)
-{
-    char* mode;
-    int xsize, ysize;
-
-    if (!PyArg_ParseTuple(args, "s(ii)", &mode, &xsize, &ysize))
-        return NULL;
-
-    return PyImagingNew(ImagingNewArray(mode, xsize, ysize));
 }
 
 static PyObject*
@@ -2920,8 +2906,6 @@ _getcodecstatus(PyObject* self, PyObject* args)
 /* -------------------------------------------------------------------- */
 
 
-#ifdef WITH_DEBUG
-
 static PyObject*
 _save_ppm(ImagingObject* self, PyObject* args)
 {
@@ -2937,7 +2921,6 @@ _save_ppm(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
-#endif
 
 /* -------------------------------------------------------------------- */
 
@@ -2977,9 +2960,6 @@ static struct PyMethodDef methods[] = {
     {"rankfilter", (PyCFunction)_rankfilter, 1},
 #endif
     {"resize", (PyCFunction)_resize, 1},
-    // There were two methods for image resize before.
-    // Starting from Pillow 2.7.0 stretch is depreciated.
-    {"stretch", (PyCFunction)_resize, 1},
     {"transpose", (PyCFunction)_transpose, 1},
     {"transform2", (PyCFunction)_transform2, 1},
 
@@ -3033,12 +3013,9 @@ static struct PyMethodDef methods[] = {
 #endif
 
     /* Misc. */
-    {"new_array", (PyCFunction)_new_array, 1},
     {"new_block", (PyCFunction)_new_block, 1},
 
-#ifdef WITH_DEBUG
     {"save_ppm", (PyCFunction)_save_ppm, 1},
-#endif
 
     {NULL, NULL} /* sentinel */
 };
@@ -3073,11 +3050,7 @@ _getattr_id(ImagingObject* self, void* closure)
 static PyObject*
 _getattr_ptr(ImagingObject* self, void* closure)
 {
-#if PY_VERSION_HEX >= 0x02070000
     return PyCapsule_New(self->image, IMAGING_MAGIC, NULL);
-#else
-    return PyCObject_FromVoidPtrAndDesc(self->image, IMAGING_MAGIC, NULL);
-#endif
 }
 
 static PyObject*
@@ -3295,7 +3268,6 @@ extern PyObject* PyImaging_JpegDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_TiffLzwDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_LibTiffDecoderNew(PyObject* self, PyObject* args);
-extern PyObject* PyImaging_MspDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_PackbitsDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_PcdDecoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_PcxDecoderNew(PyObject* self, PyObject* args);
@@ -3373,7 +3345,6 @@ static PyMethodDef functions[] = {
     {"libtiff_decoder", (PyCFunction)PyImaging_LibTiffDecoderNew, 1},
     {"libtiff_encoder", (PyCFunction)PyImaging_LibTiffEncoderNew, 1},
 #endif
-    {"msp_decoder", (PyCFunction)PyImaging_MspDecoderNew, 1},
     {"packbits_decoder", (PyCFunction)PyImaging_PackbitsDecoderNew, 1},
     {"pcd_decoder", (PyCFunction)PyImaging_PcdDecoderNew, 1},
     {"pcx_decoder", (PyCFunction)PyImaging_PcxDecoderNew, 1},
@@ -3444,6 +3415,7 @@ static PyMethodDef functions[] = {
 static int
 setup_module(PyObject* m) {
     PyObject* d = PyModule_GetDict(m);
+    const char* version = (char*)PILLOW_VERSION;
 
     /* Ready object types */
     if (PyType_Ready(&Imaging_Type) < 0)
@@ -3488,7 +3460,7 @@ setup_module(PyObject* m) {
   }
 #endif
 
-    PyDict_SetItemString(d, "PILLOW_VERSION", PyUnicode_FromString(PILLOW_VERSION));
+    PyDict_SetItemString(d, "PILLOW_VERSION", PyUnicode_FromString(version));
 
     return 0;
 }

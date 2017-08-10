@@ -605,11 +605,6 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
 
     DRAWINIT();
 
-    if (width <= 1) {
-        draw->line(im, x0, y0, x1, y1, ink);
-        return 0;
-    }
-
     dx = x1-x0;
     dy = y1-y0;
     if (dx == 0 && dy == 0) {
@@ -1028,20 +1023,6 @@ ImagingOutlineCurve(ImagingOutline outline, float x1, float y1,
     outline->y = yo;
 
     return 0;
-}
-
-int
-ImagingOutlineCurve2(ImagingOutline outline, float cx, float cy,
-                     float x3, float y3)
-{
-    /* add bezier curve based on three control points (as
-       in the Flash file format) */
-
-    return ImagingOutlineCurve(
-        outline,
-        (outline->x + cx + cx)/3, (outline->y + cy + cy)/3,
-        (cx + cx + x3)/3, (cy + cy + y3)/3,
-        x3, y3);
 }
 
 int

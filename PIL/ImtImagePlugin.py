@@ -17,7 +17,7 @@
 
 import re
 
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 
 __version__ = "0.2"
 
@@ -69,7 +69,7 @@ class ImtImageFile(ImageFile.ImageFile):
                 s = s + self.fp.readline()
                 if len(s) == 1 or len(s) > 100:
                     break
-                if s[0] == b"*":
+                if s[0] == ord(b"*"):
                     continue  # comment
 
                 m = field.match(s)

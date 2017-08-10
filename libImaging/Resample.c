@@ -32,6 +32,8 @@ static inline double hamming_filter(double x)
         x = -x;
     if (x == 0.0)
         return 1.0;
+    if (x >= 1.0)
+        return 0.0;
     x = x * M_PI;
     return sin(x) / x * (0.54f + 0.46f * cos(x));
 }
@@ -166,26 +168,18 @@ precompute_coeffs(int inSize, int outSize, struct filter *filterp,
         center = (xx + 0.5) * scale;
         ww = 0.0;
         ss = 1.0 / filterscale;
-        xmin = (int) floor(center - support);
+        // Round the value
+        xmin = (int) (center - support + 0.5);
         if (xmin < 0)
             xmin = 0;
-        xmax = (int) ceil(center + support);
+        // Round the value
+        xmax = (int) (center + support + 0.5);
         if (xmax > inSize)
             xmax = inSize;
         xmax -= xmin;
         k = &kk[xx * kmax];
         for (x = 0; x < xmax; x++) {
             double w = filterp->filter((x + xmin - center + 0.5) * ss);
-            if (w == 0) {
-                if (x == 0) {
-                    x -= 1;
-                    xmin += 1;
-                    xmax -= 1;
-                } else if (x == xmax - 1) {
-                    xmax -= 1;
-                }
-                continue;
-            }
             k[x] = w;
             ww += w;
         }

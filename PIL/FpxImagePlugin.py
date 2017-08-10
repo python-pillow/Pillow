@@ -15,12 +15,14 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
 
-from PIL import Image, ImageFile
-from PIL.OleFileIO import i8, i32, MAGIC, OleFileIO
+from . import Image, ImageFile
+from ._binary import i32le as i32, i8
+
+import olefile
 
 __version__ = "0.1"
-
 
 # we map from colour field tuples to (mode, rawmode) descriptors
 MODES = {
@@ -42,7 +44,7 @@ MODES = {
 # --------------------------------------------------------------------
 
 def _accept(prefix):
-    return prefix[:8] == MAGIC
+    return prefix[:8] == olefile.MAGIC
 
 
 ##
@@ -59,7 +61,7 @@ class FpxImageFile(ImageFile.ImageFile):
         # to be a FlashPix file
 
         try:
-            self.ole = OleFileIO(self.fp)
+            self.ole = olefile.OleFileIO(self.fp)
         except IOError:
             raise SyntaxError("not an FPX file; invalid OLE file")
 
@@ -112,7 +114,7 @@ class FpxImageFile(ImageFile.ImageFile):
             if id in prop:
                 self.jpeg[i] = prop[id]
 
-        # print len(self.jpeg), "tables loaded"
+        # print(len(self.jpeg), "tables loaded")
 
         self._open_subimage(1, self.maxid)
 
@@ -141,7 +143,7 @@ class FpxImageFile(ImageFile.ImageFile):
         offset = i32(s, 28)
         length = i32(s, 32)
 
-        # print size, self.mode, self.rawmode
+        # print(size, self.mode, self.rawmode)
 
         if size != self.size:
             raise IOError("subimage mismatch")

@@ -32,7 +32,7 @@ add_item(const char* mode)
 {
     UINT32 i = hash(mode);
     /* printf("hash %s => %d\n", mode, i); */
-    if (access_table[i].mode) {
+    if (access_table[i].mode && strcmp(access_table[i].mode, mode) != 0) {
         fprintf(stderr, "AccessInit: hash collision: %d for both %s and %s\n",
                 i, mode, access_table[i].mode);
         exit(1);

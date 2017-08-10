@@ -148,7 +148,7 @@ Blur performance
 
 Box filter computation time is constant relative to the radius and depends
 on source image size only. Because the new Gaussian blur implementation
-is based on box filter, its computation time also doesn't depends on the blur
+is based on box filter, its computation time also doesn't depend on the blur
 radius.
 
 For example, previously, if the execution time for a given test image was 1
@@ -172,4 +172,3 @@ specified as strings with included spaces (e.g. 'x resolution'). This
 was difficult to use as kwargs without constructing and passing a
 dictionary. These parameters now use the underscore character instead
 of space. (e.g. 'x_resolution')
-

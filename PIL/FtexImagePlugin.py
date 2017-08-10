@@ -13,7 +13,7 @@ packed custom format called FTEX. This file format uses file extensions FTC and 
 * FTC files are compressed textures (using standard texture compression).
 * FTU files are not compressed.
 Texture File Format
-The FTC and FTU texture files both use the same format, called. This
+The FTC and FTU texture files both use the same format. This
 has the following structure:
 {header}
 {format_directory}
@@ -42,7 +42,7 @@ Note: All data is stored in little-Endian (Intel) byte order.
 
 import struct
 from io import BytesIO
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 
 
 MAGIC = b"FTEX"

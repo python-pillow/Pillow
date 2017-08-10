@@ -272,7 +272,7 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 /* -------------------------------------------------------------------- */
 
 int ImagingJpegDecodeCleanup(ImagingCodecState state){
-	/* called to fee the decompression engine when the decode terminates
+	/* called to free the decompression engine when the decode terminates
 	   due to a corrupt or truncated image
 	*/
     JPEGSTATE* context = (JPEGSTATE*) state->context;

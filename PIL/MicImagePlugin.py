@@ -17,8 +17,9 @@
 #
 
 
-from PIL import Image, TiffImagePlugin
-from PIL.OleFileIO import MAGIC, OleFileIO
+from . import Image, TiffImagePlugin
+
+import olefile
 
 __version__ = "0.1"
 
@@ -28,7 +29,7 @@ __version__ = "0.1"
 
 
 def _accept(prefix):
-    return prefix[:8] == MAGIC
+    return prefix[:8] == olefile.MAGIC
 
 
 ##
@@ -38,6 +39,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
     format = "MIC"
     format_description = "Microsoft Image Composer"
+    _close_exclusive_fp_after_loading = False
 
     def _open(self):
 
@@ -45,7 +47,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         # to be a Microsoft Image Composer file
 
         try:
-            self.ole = OleFileIO(self.fp)
+            self.ole = olefile.OleFileIO(self.fp)
         except IOError:
             raise SyntaxError("not an MIC file; invalid OLE file")
 
@@ -94,6 +96,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
     def tell(self):
 
         return self.frame
+
 
 #
 # --------------------------------------------------------------------

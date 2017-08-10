@@ -9,7 +9,7 @@ def pixel(im):
     if hasattr(im, "im"):
         return "%s %r" % (im.mode, im.getpixel((0, 0)))
     else:
-        if isinstance(im, type(0)):
+        if isinstance(im, int):
             return int(im)  # hack to deal with booleans
         print(im)
 

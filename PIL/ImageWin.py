@@ -17,7 +17,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
+from . import Image
 
 
 class HDC(object):
@@ -181,14 +181,6 @@ class Dib(object):
         :return: A bytes object containing display data.
         """
         return self.image.tobytes()
-
-    def fromstring(self, *args, **kw):
-        raise NotImplementedError("fromstring() has been removed. " +
-                                  "Please use frombytes() instead.")
-
-    def tostring(self, *args, **kw):
-        raise NotImplementedError("tostring() has been removed. " +
-                                  "Please use tobytes() instead.")
 
 
 class Window(object):

@@ -5,11 +5,22 @@ from __future__ import print_function
 import sys
 import tempfile
 import os
+import unittest
 
-if sys.version_info[:2] <= (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
+from PIL import Image, ImageMath
+
+
+def convert_to_comparable(a, b):
+    new_a, new_b = a, b
+    if a.mode == 'P':
+        new_a = Image.new('L', a.size)
+        new_b = Image.new('L', b.size)
+        new_a.putdata(a.getdata())
+        new_b.putdata(b.getdata())
+    elif a.mode == 'I;16':
+        new_a = a.convert('I')
+        new_b = b.convert('I')
+    return new_a, new_b
 
 
 class PillowTestCase(unittest.TestCase):
@@ -49,7 +60,7 @@ class PillowTestCase(unittest.TestCase):
                 len(a), len(b),
                 msg or "got length %s, expected %s" % (len(a), len(b)))
             self.assertTrue(
-                all([x == y for x, y in zip(a, b)]),
+                all(x == y for x, y in zip(a, b)),
                 msg or "got %s, expected %s" % (a, b))
         except:
             self.assertEqual(a, b, msg)
@@ -84,14 +95,13 @@ class PillowTestCase(unittest.TestCase):
             a.size, b.size,
             msg or "got size %r, expected %r" % (a.size, b.size))
 
+        a, b = convert_to_comparable(a, b)
+
         diff = 0
-        try:
-            ord(b'0')
-            for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
-                diff += abs(ord(abyte)-ord(bbyte))
-        except:
-            for abyte, bbyte in zip(a.tobytes(), b.tobytes()):
-                diff += abs(abyte-bbyte)
+        for ach, bch in zip(a.split(), b.split()):
+            chdiff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert('L')
+            diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
+
         ave_diff = float(diff)/(a.size[0]*a.size[1])
         self.assertGreaterEqual(
             epsilon, ave_diff,
@@ -139,9 +149,13 @@ class PillowTestCase(unittest.TestCase):
         if skip:
             self.skipTest(msg or "Known Bad Test")
 
+    def shortDescription(self):
+        # Prevents `nose -v` printing docstrings
+        return None
+
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")
-        (fd, path) = tempfile.mkstemp(template[4:], template[:4])
+        fd, path = tempfile.mkstemp(template[4:], template[:4])
         os.close(fd)
 
         self.addCleanup(self.delete_tempfile, path)
@@ -153,7 +167,6 @@ class PillowTestCase(unittest.TestCase):
 
         outfile = self.tempfile("temp.png")
         if command_succeeds([IMCONVERT, f, outfile]):
-            from PIL import Image
             return Image.open(outfile)
         raise IOError()
 
@@ -165,7 +178,6 @@ py3 = (sys.version_info >= (3, 0))
 
 def fromstring(data):
     from io import BytesIO
-    from PIL import Image
     return Image.open(BytesIO(data))
 
 
@@ -177,7 +189,6 @@ def tostring(im, string_format, **options):
 
 
 def hopper(mode=None, cache={}):
-    from PIL import Image
     if mode is None:
         # Always return fresh not-yet-loaded version of image.
         # Operations on not-yet-loaded images is separate class of errors
@@ -204,25 +215,25 @@ def command_succeeds(cmd):
     command succeeds, or False if an OSError was raised by subprocess.Popen.
     """
     import subprocess
-    with open(os.devnull, 'w') as f:
+    with open(os.devnull, 'wb') as f:
         try:
-            subprocess.Popen(cmd, stdout=f, stderr=subprocess.STDOUT).wait()
+            subprocess.call(cmd, stdout=f, stderr=subprocess.STDOUT)
         except OSError:
             return False
     return True
 
 
 def djpeg_available():
-    return command_succeeds(['djpeg', '--help'])
+    return command_succeeds(['djpeg', '-version'])
 
 
 def cjpeg_available():
-    return command_succeeds(['cjpeg', '--help'])
+    return command_succeeds(['cjpeg', '-version'])
 
 
 def netpbm_available():
-    return (command_succeeds(["ppmquant", "--help"]) and
-            command_succeeds(["ppmtogif", "--help"]))
+    return (command_succeeds(["ppmquant", "--version"]) and
+            command_succeeds(["ppmtogif", "--version"]))
 
 
 def imagemagick_available():
@@ -238,6 +249,14 @@ if sys.platform == 'win32':
         IMCONVERT = os.path.join(IMCONVERT, 'convert.exe')
 else:
     IMCONVERT = 'convert'
+
+
+def distro():
+    if os.path.exists('/etc/os-release'):
+        with open('/etc/os-release', 'r') as f:
+            for line in f:
+                if 'ID=' in line:
+                    return line.strip().split('=')[1]
 
 
 class cached_property(object):

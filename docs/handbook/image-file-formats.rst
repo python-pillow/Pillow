@@ -72,9 +72,6 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 **background**
     Default background color (a palette color index).
 
-**duration**
-    Time between frames in an animation (in milliseconds).
-
 **transparency**
     Transparency color index. This key is omitted if the image is not
     transparent.
@@ -83,8 +80,8 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     Version (either ``GIF87a`` or ``GIF89a``).
 
 **duration**
-    May not be present. The time to display each frame of the GIF, in
-    milliseconds.
+    May not be present. The time to display the current frame
+    of the GIF, in milliseconds.
 
 **loop**
     May not be present. The number of times the GIF should loop.
@@ -98,20 +95,42 @@ the file by seeking to the first frame. Random access is not supported.
 
 ``im.seek()`` raises an ``EOFError`` if you try to seek after the last frame.
 
-Saving sequences
-~~~~~~~~~~~~~~~~
+Saving
+~~~~~~
 
-When calling :py:meth:`~PIL.Image.Image.save`, if a multiframe image is used,
-by default only the first frame will be saved. To save all frames, the
-``save_all`` parameter must be present and set to ``True``. To append
-additional frames when saving, the ``append_images`` parameter works with
-``save_all`` to append a list of images containing the extra frames::
+When calling :py:meth:`~PIL.Image.Image.save`, the following options
+are available::
 
     im.save(out, save_all=True, append_images=[im1, im2, ...])
 
-If present, the ``loop`` parameter can be used to set the number of times
-the GIF should loop, and the ``duration`` parameter can set the number of
-milliseconds between each frame.
+**save_all**
+    If present and true, all frames of the image will be saved. If
+    not, then only the first frame of a multiframe image will be saved.
+
+**append_images**
+    A list of images to append as additional frames. Each of the
+    images in the list can be single or multiframe images.
+    This is currently only supported for GIF, PDF and TIFF.
+
+**duration**
+    The display duration of each frame of the multiframe gif, in
+    milliseconds. Pass a single integer for a constant duration, or a
+    list or tuple to set the duration for each frame separately.
+
+**loop**
+    Integer number of times the GIF should loop.
+
+**optimize**
+    If present and true, attempt to compress the palette by
+    eliminating unused colors. This is only useful if the palette can
+    be compressed to the next smaller power of 2 elements.
+
+**palette**
+    Use the specified palette for the saved image. The palette should
+    be a bytes or bytearray object containing the palette entries in
+    RGBRGB... form. It should be no more than 768 bytes. Alternately,
+    the palette can be passed in as an
+    :py:class:`PIL.ImagePalette.ImagePalette` object.
 
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~
@@ -148,6 +167,19 @@ sets the following :py:attr:`~PIL.Image.Image.info` property:
     will be reset to a 2-tuple containing pixel dimensions (so, e.g. if you
     ask for ``(512, 512, 2)``, the final value of
     :py:attr:`~PIL.Image.Image.size` will be ``(1024, 1024)``).
+
+ICO
+^^^
+
+ICO is used to store icons on Windows. The largest available icon is read.
+
+The :py:meth:`~PIL.Image.Image.save` method supports the following options:
+
+**sizes**
+    A list of sizes including in this ico file; these are a 2-tuple,
+    ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
+    (64, 64), (128, 128), (255, 255)]``. Any sizes bigger than the original
+    size or 255 will be ignored.
 
 IM
 ^^
@@ -444,6 +476,12 @@ PPM
 PIL reads and writes PBM, PGM and PPM files containing ``1``, ``L`` or ``RGB``
 data.
 
+SGI
+^^^
+
+Pillow reads and writes uncompressed ``L``, ``RGB``, and ``RGBA`` files.
+
+
 SPIDER
 ^^^^^^
 
@@ -481,8 +519,8 @@ the output format must be specified explicitly::
 For more information about the SPIDER image processing package, see the
 `SPIDER homepage`_ at `Wadsworth Center`_.
 
-.. _SPIDER homepage: http://spider.wadsworth.org/spider_doc/spider/docs/spider.html
-.. _Wadsworth Center: http://www.wadsworth.org/
+.. _SPIDER homepage: https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
+.. _Wadsworth Center: https://www.wadsworth.org/
 
 TIFF
 ^^^^
@@ -542,7 +580,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 **save_all**
     If true, Pillow will save all frames of the image to a multiframe tiff document.
-    
+
     .. versionadded:: 3.4.0
 
 **tiffinfo**
@@ -730,19 +768,6 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     Transparency color index. This key is omitted if the image is not
     transparent.
 
-ICO
-^^^
-
-ICO is used to store icons on Windows. The largest available icon is read.
-
-The :py:meth:`~PIL.Image.Image.save` method supports the following options:
-
-**sizes**
-    A list of sizes including in this ico file; these are a 2-tuple,
-    ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
-    (64, 64), (128, 128), (255, 255)]``. Any size is bigger then the original
-    size or 255 will be ignored.
-
 IMT
 ^^^
 
@@ -764,6 +789,8 @@ MIC
 PIL identifies and reads Microsoft Image Composer (MIC) files. When opened, the
 first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
 :py:meth:`~file.tell` to read other sprites from the file.
+
+Note that there may be an embedded gamma of 2.2 in MIC files.
 
 MPO
 ^^^
@@ -793,10 +820,6 @@ PSD
 
 PIL identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
-SGI
-^^^
-
-PIL reads uncompressed ``L``, ``RGB``, and ``RGBA`` files.
 
 TGA
 ^^^
