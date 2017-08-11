@@ -406,6 +406,7 @@ extern int ImagingHexDecode(Imaging im, ImagingCodecState state,
 extern int ImagingJpegDecode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);
 extern int ImagingJpegDecodeCleanup(ImagingCodecState state);
+extern int ImagingJpegUseJCSExtensions(void);
 
 extern int ImagingJpegEncode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);

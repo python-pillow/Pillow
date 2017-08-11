@@ -38,6 +38,35 @@
 #include "Jpeg.h"
 
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
+// There is no way to compare versions on compile time,
+// so we have to do that in runtime.
+#ifdef LIBJPEG_TURBO_VERSION
+char *libjpeg_turbo_version = TOSTRING(LIBJPEG_TURBO_VERSION);
+#else
+char *libjpeg_turbo_version = NULL;
+#endif
+
+int
+ImagingJpegUseJCSExtensions()
+{
+    int use_jcs_extensions = 0;
+    #ifdef JCS_EXTENSIONS
+        #if defined(LIBJPEG_TURBO_VERSION_NUMBER)
+            #if LIBJPEG_TURBO_VERSION_NUMBER >= 1002010
+                use_jcs_extensions = 1;
+            #endif
+        #else
+            if (libjpeg_turbo_version) {
+                use_jcs_extensions = strcmp(libjpeg_turbo_version, "1.2.1") >= 0;
+            }
+        #endif
+    #endif
+    return use_jcs_extensions;
+}
+
 /* -------------------------------------------------------------------- */
 /* Suspending input handler                                             */
 /* -------------------------------------------------------------------- */
