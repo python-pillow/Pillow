@@ -1542,7 +1542,7 @@ _resize(ImagingObject* self, PyObject* args)
         return ImagingError_ValueError("box can't exceed original image size");
     }
 
-    if (box[2] - box[0] <= 0 || box[3] - box[1] <= 0) {
+    if (box[2] - box[0] < 0 || box[3] - box[1] < 0) {
         return ImagingError_ValueError("box can't be empty");
     }
 
