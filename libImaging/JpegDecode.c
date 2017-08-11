@@ -218,7 +218,7 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             context->cinfo.out_color_space = JCS_GRAYSCALE;
         else if (strcmp(context->rawmode, "RGB") == 0)
             context->cinfo.out_color_space = JCS_RGB;
-    #if defined(JCS_EXTENSIONS)
+    #ifdef JCS_EXTENSIONS
         else if (strcmp(context->rawmode, "RGBX") == 0)
                 context->cinfo.out_color_space = JCS_EXT_RGBX;
     #endif

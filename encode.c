@@ -691,6 +691,13 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     if (encoder == NULL)
         return NULL;
 
+    // libjpeg-turbo supports different output formats.
+    // We are choosing Pillow's native format (3 color bytes + 1 padding)
+    // to avoid extra conversion in Pack.c.
+    if (ImagingJpegUseJCSExtensions() && strcmp(rawmode, "RGB") == 0) {
+        rawmode = "RGBX";
+    }
+
     if (get_packer(encoder, mode, rawmode) < 0)
         return NULL;
 
@@ -718,6 +725,8 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
         rawExif = NULL;
 
     encoder->encode = ImagingJpegEncode;
+
+    strncpy(((JPEGENCODERSTATE*)encoder->state.context)->rawmode, rawmode, 8);
 
     ((JPEGENCODERSTATE*)encoder->state.context)->quality = quality;
     ((JPEGENCODERSTATE*)encoder->state.context)->qtables = qarrays;
