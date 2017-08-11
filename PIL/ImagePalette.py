@@ -17,10 +17,7 @@
 #
 
 import array
-from PIL import ImageColor
-from PIL import GimpPaletteFile
-from PIL import GimpGradientFile
-from PIL import PaletteFile
+from . import ImageColor, GimpPaletteFile, GimpGradientFile, PaletteFile
 
 
 class ImagePalette(object):

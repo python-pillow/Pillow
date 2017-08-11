@@ -1,9 +1,9 @@
-from __future__ import division
+from __future__ import division, print_function
 
 from contextlib import contextmanager
 
 from helper import unittest, PillowTestCase, hopper
-from PIL import Image, ImageDraw, ImageMode
+from PIL import Image, ImageDraw
 
 
 class TestImagingResampleVulnerability(PillowTestCase):
@@ -19,8 +19,8 @@ class TestImagingResampleVulnerability(PillowTestCase):
     def test_invalid_size(self):
         im = hopper()
 
+        # Should not crash
         im.resize((100, 100))
-        self.assertTrue(True, "Should not Crash")
 
         with self.assertRaises(ValueError):
             im.resize((-100, 100))
@@ -161,14 +161,12 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
 
     def test_enlarge_hamming(self):
         for mode in ['RGBX', 'RGB', 'La', 'L']:
-            case = self.make_case(mode, (4, 4), 0xe1)
-            case = case.resize((8, 8), Image.HAMMING)
-            data = ('e1 e1 ea d1'
-                    'e1 e1 ea d1'
-                    'ea ea f4 d9'
-                    'd1 d1 d9 c4')
+            case = self.make_case(mode, (2, 2), 0xe1)
+            case = case.resize((4, 4), Image.HAMMING)
+            data = ('e1 d2'
+                    'd2 c5')
             for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (8, 8)))
+                self.check_case(channel, self.make_sample(data, (4, 4)))
 
     def test_enlarge_bicubic(self):
         for mode in ['RGBX', 'RGB', 'La', 'L']:
@@ -247,8 +245,8 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         for y in range(i.size[1]):
             used_colors = {px[x, y][0] for x in range(i.size[0])}
             self.assertEqual(256, len(used_colors),
-                'All colors should present in resized image. '
-                'Only {} on {} line.'.format(len(used_colors), y))
+                            'All colors should present in resized image. '
+                            'Only {} on {} line.'.format(len(used_colors), y))
 
     @unittest.skip("current implementation isn't precise enough")
     def test_levels_rgba(self):
@@ -349,10 +347,10 @@ class CoreResamplePassesTest(PillowTestCase):
 class CoreResampleCoefficientsTest(PillowTestCase):
     def test_reduce(self):
         test_color = 254
-        # print ''
+        # print()
 
         for size in range(400000, 400010, 2):
-            # print '\r', size,
+            # print(size)
             i = Image.new('L', (size, 1), 0)
             draw = ImageDraw.Draw(i)
             draw.rectangle((0, 0, i.size[0] // 2 - 1, 0), test_color)
@@ -360,7 +358,7 @@ class CoreResampleCoefficientsTest(PillowTestCase):
             px = i.resize((5, i.size[1]), Image.BICUBIC).load()
             if px[2, 0] != test_color // 2:
                 self.assertEqual(test_color // 2, px[2, 0])
-                # print '\r>', size, test_color // 2, px[2, 0]
+                # print('>', size, test_color // 2, px[2, 0])
 
     def test_nonzero_coefficients(self):
         # regression test for the wrong coefficients calculation
@@ -368,10 +366,10 @@ class CoreResampleCoefficientsTest(PillowTestCase):
         im = Image.new('RGBA', (1280, 1280), (0x20, 0x40, 0x60, 0xff))
         histogram = im.resize((256, 256), Image.BICUBIC).histogram()
 
-        self.assertEqual(histogram[0x100 * 0 + 0x20], 0x10000) # first channel
-        self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000) # second channel
-        self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000) # third channel
-        self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000) # fourth channel
+        self.assertEqual(histogram[0x100 * 0 + 0x20], 0x10000)  # first channel
+        self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000)  # second channel
+        self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000)  # third channel
+        self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000)  # fourth channel
 
 
 class CoreResampleBoxTest(PillowTestCase):

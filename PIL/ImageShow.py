@@ -69,7 +69,7 @@ class Viewer(object):
             # FIXME: auto-contrast if max() > 255?
         else:
             base = Image.getmodebase(image.mode)
-        if base != image.mode and image.mode != "1":
+        if base != image.mode and image.mode != "1" and image.mode != "RGBA":
             image = image.convert(base)
 
         return self.show_image(image, **options)
@@ -77,6 +77,7 @@ class Viewer(object):
     # hook methods
 
     format = None
+    options = {}
 
     def get_format(self, image):
         """Return format name, or None to save as PGM/PPM"""
@@ -87,7 +88,7 @@ class Viewer(object):
 
     def save_image(self, image):
         """Save to temporary file, and return filename"""
-        return image._dump(format=self.get_format(image))
+        return image._dump(format=self.get_format(image), **self.options)
 
     def show_image(self, image, **options):
         """Display given image"""
@@ -115,7 +116,8 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
 
     class MacViewer(Viewer):
-        format = "BMP"
+        format = "PNG"
+        options = {'compress_level': 1}
 
         def get_command(self, file, **options):
             # on darwin open returns immediately resulting in the temp
@@ -142,6 +144,9 @@ else:
         return None
 
     class UnixViewer(Viewer):
+        format = "PNG"
+        options = {'compress_level': 1}
+
         def show_file(self, file, **options):
             command, executable = self.get_command_ex(file, **options)
             command = "(%s %s; rm -f %s)&" % (command, quote(file),

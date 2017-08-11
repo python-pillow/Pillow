@@ -2,7 +2,6 @@ from helper import unittest, PillowTestCase
 
 from PIL import Image, FliImagePlugin
 
-# sample ppm stream
 # created as an export of a palette image from Gimp2.6
 # save as...-> hopper.fli, default options.
 test_file = "Tests/images/hopper.fli"
@@ -38,7 +37,7 @@ class TestFileFli(PillowTestCase):
                 im.seek(n_frames)
                 break
             except EOFError:
-                self.assertTrue(im.tell() < n_frames)
+                self.assertLess(im.tell(), n_frames)
 
 
 if __name__ == '__main__':

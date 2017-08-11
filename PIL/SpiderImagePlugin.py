@@ -27,10 +27,10 @@
 # image data from electron microscopy and tomography.
 #
 # Spider home page:
-# http://spider.wadsworth.org/spider_doc/spider/docs/spider.html
+# https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
 #
 # Details about the Spider image format:
-# http://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
+# https://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
 #
 
 from __future__ import print_function
@@ -75,7 +75,7 @@ def isSpiderHeader(t):
     labrec = int(h[13])   # no. records in file header
     labbyt = int(h[22])   # total no. of bytes in header
     lenbyt = int(h[23])   # record length in bytes
-    # print "labrec = %d, labbyt = %d, lenbyt = %d" % (labrec,labbyt,lenbyt)
+    # print("labrec = %d, labbyt = %d, lenbyt = %d" % (labrec,labbyt,lenbyt))
     if labbyt != (labrec * lenbyt):
         return 0
     # looks like a valid header
@@ -83,9 +83,8 @@ def isSpiderHeader(t):
 
 
 def isSpiderImage(filename):
-    fp = open(filename, 'rb')
-    f = fp.read(92)   # read 23 * 4 bytes
-    fp.close()
+    with open(filename, 'rb') as fp:
+        f = fp.read(92)   # read 23 * 4 bytes
     t = struct.unpack('>23f', f)  # try big-endian first
     hdrlen = isSpiderHeader(t)
     if hdrlen == 0:
@@ -98,6 +97,7 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     format = "SPIDER"
     format_description = "Spider 2D image"
+    _close_exclusive_fp_after_loading = False
 
     def _open(self):
         # check header

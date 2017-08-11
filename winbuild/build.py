@@ -12,11 +12,11 @@ from config import (compilers, compiler_from_env, pythons, pyversion_from_env,
 
 def setup_vms():
     ret = []
-    for py in pythons.keys():
+    for py in pythons:
         for arch in ('', X64_EXT):
             ret.append("virtualenv -p c:/Python%s%s/python.exe --clear %s%s%s"
                        % (py, arch, VIRT_BASE, py, arch))
-            ret.append("%s%s%s\Scripts\pip.exe install nose" %
+            ret.append(r"%s%s%s\Scripts\pip.exe install nose" %
                        (VIRT_BASE, py, arch))
     return "\n".join(ret)
 
@@ -72,6 +72,11 @@ def build_one(py_ver, compiler):
         args['python_path'] = "%PYTHON%"
     else:
         args['python_path'] = "%s%s\\Scripts" % (VIRT_BASE, py_ver)
+
+    args['executable'] = "python.exe"
+    if 'EXECUTABLE' in os.environ:
+        args['executable'] = "%EXECUTABLE%"
+        
     args['py_ver'] = py_ver
     if '34' in py_ver:
         args['tcl_ver'] = '86'
@@ -87,7 +92,7 @@ set INCLUDE=%%INCLUDE%%;%%INCLIB%%\%(inc_dir)s;%%INCLIB%%\tcl%(tcl_ver)s\include
 
 setlocal
 set LIB=%%LIB%%;C:\Python%(py_ver)s\tcl
-call %(python_path)s\python.exe setup.py %%BLDOPT%%
+call %(python_path)s\%(executable)s setup.py %%BLDOPT%%
 endlocal
 
 endlocal

@@ -8,7 +8,7 @@ New resizing filters
 Two new filters available for ``Image.resize()`` and ``Image.thumbnail()``
 functions: ``BOX`` and ``HAMMING``. ``BOX`` is the high-performance filter with
 two times shorter window than ``BILINEAR``. It can be used for image reduction
-3 and more times and produces a more sharp result than ``BILINEAR``.
+3 and more times and produces a sharper result than ``BILINEAR``.
 
 ``HAMMING`` filter has the same performance as ``BILINEAR`` filter while
 providing the image downscaling quality comparable to ``BICUBIC``.
@@ -20,12 +20,12 @@ Deprecation Warning when Saving JPEGs
 JPEG images cannot contain an alpha channel. Pillow prior to 3.4.0
 silently drops the alpha channel. With this release Pillow will now
 issue a ``DeprecationWarning`` when attempting to save a ``RGBA`` mode
-image as a JPEG. This will become an error in Pillow 3.7.
+image as a JPEG. This will become an error in Pillow 4.2.
 
 New DDS Decoders
 ================
 
-Pillow can now decode DXT3 images, as well as the previously support
+Pillow can now decode DXT3 images, as well as the previously supported
 DXT1 and DXT5 formats. All three formats are now decoded in C code for
 better performance.
 
@@ -44,7 +44,7 @@ in effect, e.g.::
 Save multiple frame TIFF
 ========================
 
-Multiple frames can now be saved in a TIFF file by using the ``save_all`` option. 
+Multiple frames can now be saved in a TIFF file by using the ``save_all`` option.
 e.g.::
 
     im.save("filename.tiff", format="TIFF", save_all=True)

@@ -4,7 +4,7 @@
 :py:mod:`TiffTags` Module
 =========================
 
-The :py:mod:`TiffTags` module exposes many of the stantard TIFF
+The :py:mod:`TiffTags` module exposes many of the standard TIFF
 metadata tag numbers, names, and type information.
 
 .. method:: lookup(tag)

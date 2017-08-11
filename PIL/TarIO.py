@@ -14,7 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import ContainerIO
+from . import ContainerIO
 
 
 ##

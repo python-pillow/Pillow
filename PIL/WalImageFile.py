@@ -18,20 +18,17 @@
 # the WalImageFile.open() function instead.
 
 # This reader is based on the specification available from:
-#    http://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
+#    https://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
 # and has been tested with a few sample files found using google.
 
-from __future__ import print_function
-
-from PIL import Image, _binary
+from . import Image
+from ._binary import i32le as i32
 
 try:
     import builtins
 except ImportError:
     import __builtin__
     builtins = __builtin__
-
-i32 = _binary.i32le
 
 
 def open(filename):
@@ -47,33 +44,35 @@ def open(filename):
     # FIXME: modify to return a WalImageFile instance instead of
     # plain Image object ?
 
+    def imopen(fp):
+        # read header fields
+        header = fp.read(32+24+32+12)
+        size = i32(header, 32), i32(header, 36)
+        offset = i32(header, 40)
+
+        # load pixel data
+        fp.seek(offset)
+
+        Image._decompression_bomb_check(size)
+        im = Image.frombytes("P", size, fp.read(size[0] * size[1]))
+        im.putpalette(quake2palette)
+
+        im.format = "WAL"
+        im.format_description = "Quake2 Texture"
+
+        # strings are null-terminated
+        im.info["name"] = header[:32].split(b"\0", 1)[0]
+        next_name = header[56:56+32].split(b"\0", 1)[0]
+        if next_name:
+            im.info["next_name"] = next_name
+
+        return im
+
     if hasattr(filename, "read"):
-        fp = filename
+        return imopen(filename)
     else:
-        fp = builtins.open(filename, "rb")
-
-    # read header fields
-    header = fp.read(32+24+32+12)
-    size = i32(header, 32), i32(header, 36)
-    offset = i32(header, 40)
-
-    # load pixel data
-    fp.seek(offset)
-
-    im = Image.frombytes("P", size, fp.read(size[0] * size[1]))
-    im.putpalette(quake2palette)
-
-    im.format = "WAL"
-    im.format_description = "Quake2 Texture"
-
-    # strings are null-terminated
-    im.info["name"] = header[:32].split(b"\0", 1)[0]
-    next_name = header[56:56+32].split(b"\0", 1)[0]
-    if next_name:
-        im.info["next_name"] = next_name
-
-    return im
-
+        with builtins.open(filename, "rb") as fp:
+            return imopen(fp)
 
 quake2palette = (
     # default palette taken from piffo 0.93 by Hans Häggström

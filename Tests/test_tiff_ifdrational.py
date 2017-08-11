@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import TiffImagePlugin, Image
@@ -36,10 +34,10 @@ class Test_IFDRational(PillowTestCase):
 
         xres = IFDRational(72)
         yres = IFDRational(72)
-        self.assertTrue(xres._val is not None)
-        self.assertTrue(xres.numerator is not None)
-        self.assertTrue(xres.denominator is not None)
-        self.assertTrue(yres._val is not None)
+        self.assertIsNotNone(xres._val)
+        self.assertIsNotNone(xres.numerator)
+        self.assertIsNotNone(xres.denominator)
+        self.assertIsNotNone(yres._val)
 
         self.assertTrue(xres and 1)
         self.assertTrue(xres and yres)
@@ -47,7 +45,7 @@ class Test_IFDRational(PillowTestCase):
     def test_ifd_rational_save(self):
         methods = (True, False)
         if 'libtiff_encoder' not in dir(Image.core):
-            methods = (False)
+            methods = (False,)
 
         for libtiff in methods:
             TiffImagePlugin.WRITE_LIBTIFF = libtiff

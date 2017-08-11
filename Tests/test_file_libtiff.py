@@ -39,6 +39,9 @@ class LibTiffTestCase(PillowTestCase):
         out = self.tempfile("temp.png")
         im.save(out)
 
+        out_bytes = io.BytesIO()
+        im.save(out_bytes, format='tiff', compression='group4')
+
 
 class TestFileLibTiff(LibTiffTestCase):
 
@@ -170,8 +173,7 @@ class TestFileLibTiff(LibTiffTestCase):
                                 'RowsPerStrip',
                                 'StripOffsets']
             for field in requested_fields:
-                self.assertTrue(field in reloaded,
-                                "%s not in metadata" % field)
+                self.assertIn(field, reloaded, "%s not in metadata" % field)
 
     def test_additional_metadata(self):
         # these should not crash. Seriously dummy data, most of it doesn't make
@@ -187,7 +189,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # Exclude ones that have special meaning
         # that we're already testing them
         im = Image.open('Tests/images/hopper_g4.tif')
-        for tag in im.tag_v2.keys():
+        for tag in im.tag_v2:
             try:
                 del(core_items[tag])
             except:
@@ -399,6 +401,19 @@ class TestFileLibTiff(LibTiffTestCase):
 
         TiffImagePlugin.READ_LIBTIFF = False
 
+    def test_multipage_nframes(self):
+        # issue #862
+        TiffImagePlugin.READ_LIBTIFF = True
+        im = Image.open('Tests/images/multipage.tiff')
+        frames = im.n_frames
+        self.assertEqual(frames, 3)
+        for idx in range(frames):
+            im.seek(0)
+            # Should not raise ValueError: I/O operation on closed file
+            im.load()
+
+        TiffImagePlugin.READ_LIBTIFF = False
+
     def test__next(self):
         TiffImagePlugin.READ_LIBTIFF = True
         im = Image.open('Tests/images/hopper.tif')
@@ -517,11 +532,50 @@ class TestFileLibTiff(LibTiffTestCase):
         count = im.n_frames
         im.close()
         try:
-            os.remove(tmpfile) # Windows PermissionError here!
+            os.remove(tmpfile)  # Windows PermissionError here!
         except:
             self.fail("Should not get permission error here")
 
-    
+    def test_read_icc(self):
+        with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+            icc = img.info.get('icc_profile')
+            self.assertNotEqual(icc, None)
+        TiffImagePlugin.READ_LIBTIFF = True
+        with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+            icc_libtiff = img.info.get('icc_profile')
+            self.assertNotEqual(icc_libtiff, None)
+        TiffImagePlugin.READ_LIBTIFF = False
+        self.assertEqual(icc, icc_libtiff)
+
+    def test_multipage_compression(self):
+        im = Image.open('Tests/images/compression.tif')
+
+        im.seek(0)
+        self.assertEqual(im._compression, 'tiff_ccitt')
+        self.assertEqual(im.size, (10, 10))
+
+        im.seek(1)
+        self.assertEqual(im._compression, 'packbits')
+        self.assertEqual(im.size, (10, 10))
+        im.load()
+
+        im.seek(0)
+        self.assertEqual(im._compression, 'tiff_ccitt')
+        self.assertEqual(im.size, (10, 10))
+        im.load()
+
+    def test_save_tiff_with_jpegtables(self):
+        # Arrange
+        outfile = self.tempfile("temp.tif")
+
+        # Created with ImageMagick: convert hopper.jpg hopper_jpg.tif
+        # Contains JPEGTables (347) tag
+        infile = "Tests/images/hopper_jpg.tif"
+        im = Image.open(infile)
+
+        # Act / Assert
+        # Should not raise UnicodeDecodeError or anything else
+        im.save(outfile)
 
 
 if __name__ == '__main__':

@@ -58,7 +58,7 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 if (bytes < 3)
                     break;
 
-                /* from (http://www.fileformat.info/format/sunraster/egff.htm)
+                /* from (https://www.fileformat.info/format/sunraster/egff.htm)
 
                    For example, a run of 100 pixels with the value of
                    0Ah would encode as the values 80h 64h 0Ah. A
@@ -67,8 +67,8 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                    would be stored in the RLE stream as 12h 34h 56h
                    78h.  100 pixels, n=100, not 100 pixels, n=99.
 
-                   But Wait! There's More! 
-                   (http://www.fileformat.info/format/sunraster/spec/598a59c4fac64c52897585d390d86360/view.htm)
+                   But Wait! There's More!
+                   (https://www.fileformat.info/format/sunraster/spec/598a59c4fac64c52897585d390d86360/view.htm)
 
                    If the first byte is 0x80, and the second byte is
                    not zero, the record is three bytes long. The
@@ -78,7 +78,7 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                    2 specs, same site, but Imagemagick and GIMP seem
                    to agree on the second one.
                 */
-                n += 1; 
+                n += 1;
 
                 if (state->x + n > state->bytes) {
                     extra_bytes = n;  /* full value */
@@ -96,8 +96,8 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
         } else {
 
-            /* Literal byte */ 
-            n = 1; 
+            /* Literal byte */
+            n = 1;
 
             state->buffer[state->x] = ptr[0];
 
@@ -108,7 +108,7 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
         for (;;) {
             state->x += n;
-        
+
             if (state->x >= state->bytes) {
 
                 /* Got a full line, unpack it */
@@ -123,7 +123,7 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     return -1;
                 }
             }
-            
+
             if (extra_bytes == 0) {
                 break;
             }

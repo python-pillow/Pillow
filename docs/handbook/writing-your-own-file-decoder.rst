@@ -9,7 +9,10 @@ itself. Such plug-ins usually have names like
 :file:`XxxImagePlugin.py`, where ``Xxx`` is a unique format name
 (usually an abbreviation).
 
-.. warning:: Pillow >= 2.1.0 no longer automatically imports any file in the Python path with a name ending in :file:`ImagePlugin.py`.  You will need to import your image plugin manually.
+.. warning:: Pillow >= 2.1.0 no longer automatically imports any file
+             in the Python path with a name ending in
+             :file:`ImagePlugin.py`.  You will need to import your
+             image plugin manually.
 
 Pillow decodes files in 2 stages:
 
@@ -23,21 +26,19 @@ Pillow decodes files in 2 stages:
    called, which sets up a decoder for each tile and feeds the data to
    it.
 
-A decoder plug-in should contain a decoder class, based on the
-:py:class:`PIL.ImageFile.ImageFile` base class. This class should provide an
-:py:meth:`_open` method, which reads the file header and sets up at least the
-:py:attr:`~PIL.Image.Image.mode` and :py:attr:`~PIL.Image.Image.size`
-attributes. To be able to load the file, the method must also create a list of
-:py:attr:`tile` descriptors. The class must be explicitly registered, via a
-call to the :py:mod:`~PIL.Image` module.
+An image plug-in should contain a format handler derived from the
+:py:class:`PIL.ImageFile.ImageFile` base class. This class should
+provide an :py:meth:`_open` method, which reads the file header and
+sets up at least the :py:attr:`~PIL.Image.Image.mode` and
+:py:attr:`~PIL.Image.Image.size` attributes. To be able to load the
+file, the method must also create a list of :py:attr:`tile`
+descriptors, which contain a decoder name, extents of the tile, and
+any decoder-specific data. The format handler class must be explicitly
+registered, via a call to the :py:mod:`~PIL.Image` module.
 
-For performance reasons, it is important that the :py:meth:`_open` method
-quickly rejects files that do not have the appropriate contents.
-
-The ``raw`` decoder is useful for uncompressed image formats, but many
-formats require more control of the decoding context, either with a
-decoder written in ``C`` or by linking in an external library to do
-the decoding. (Examples of this include PNG, Tiff, and Jpeg support)
+.. note:: For performance reasons, it is important that the
+  :py:meth:`_open` method quickly rejects files that do not have the
+  appropriate contents.
 
 Example
 -------
@@ -94,12 +95,12 @@ true color.
 The format handler must always set the
 :py:attr:`~PIL.Image.Image.size` and :py:attr:`~PIL.Image.Image.mode`
 attributes. If these are not set, the file cannot be opened. To
-simplify the decoder, the calling code considers exceptions like
+simplify the plugin, the calling code considers exceptions like
 :py:exc:`SyntaxError`, :py:exc:`KeyError`, :py:exc:`IndexError`,
 :py:exc:`EOFError` and :py:exc:`struct.error` as a failure to identify
 the file.
 
-Note that the decoder must be explicitly registered using
+Note that the image plugin must be explicitly registered using
 :py:func:`PIL.Image.register_open`. Although not required, it is also a good
 idea to register any extensions used by this format.
 
@@ -136,6 +137,9 @@ The fields are used as follows:
 
 Note that the :py:attr:`tile` attribute contains a list of tile descriptors,
 not just a single descriptor.
+
+Decoders
+========
 
 The raw decoder
 ---------------
@@ -304,13 +308,14 @@ The fields are used as follows:
 
 .. _file-decoders:
 
-Writing Your Own File Decoder
-=============================
+Writing Your Own File Decoder in C
+==================================
 
 There are 3 stages in a file decoder's lifetime:
 
-1. Setup: Pillow looks for a function named ``[decodername]_decoder``
-   on the internal core image object.  That function is called with the ``args`` tuple
+1. Setup: Pillow looks for a function in the decoder registry, falling
+   back to a function named ``[decodername]_decoder`` on the internal
+   core image object.  That function is called with the ``args`` tuple
    from the ``tile`` setup in the ``_open`` method.
 
 2. Decoding: The decoder's decode function is repeatedly called with
@@ -348,9 +353,6 @@ interest in this object are:
   An ImagingCodecStateInstance, will be set by Pillow. The **context**
   member is an opaque struct that can be used by the decoder to store
   any format specific state or options.
-
-**handles_eof**
-  UNDONE, set if your code handles EOF errors.
 
 **pulls_fd**
   **EXPERIMENTAL** -- **WARNING**, interface may change. If set to 1,
@@ -391,3 +393,25 @@ The cleanup function is called after the decoder returns a negative
 value, or if there is a read error from the file. This function should
 free any allocated memory and release any resources from external
 libraries.
+
+.. _file-decoders-py:
+
+Writing Your Own File Decoder in Python
+=======================================
+
+Python file decoders should derive from
+:py:class:`PIL.ImageFile.PyDecoder` and should at least override the
+decode method. File decoders should be registered using
+:py:meth:`PIL.Image.register_decoder`. As in the C implementation of
+the file decoders, there are three stages in the lifetime of a
+Python-based file decoder:
+
+1. Setup: Pillow looks for the decoder in the registry, then
+   instantiates the class.
+
+2. Decoding: The decoder instance's ``decode`` method is repeatedly
+   called with a buffer of data to be interpreted.
+
+3. Cleanup: The decoder instance's ``cleanup`` method is called.
+
+

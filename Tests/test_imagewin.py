@@ -107,15 +107,6 @@ class TestImageWinDib(PillowTestCase):
         # Confirm they're the same
         self.assertEqual(dib1.tobytes(), dib2.tobytes())
 
-    def test_removed_methods(self):
-        # Arrange
-        im = hopper()
-        dib = ImageWin.Dib(im)
-
-        # Act/Assert
-        self.assertRaises(Exception, dib.tostring)
-        self.assertRaises(Exception, dib.fromstring)
-
 
 if __name__ == '__main__':
     unittest.main()

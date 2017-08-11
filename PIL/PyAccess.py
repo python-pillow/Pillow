@@ -20,8 +20,6 @@
 #      Access.c implementation.
 #
 
-from __future__ import print_function
-
 import logging
 import sys
 
@@ -167,7 +165,7 @@ class _PyAccess8(PyAccess):
         try:
             # integer
             self.pixels[y][x] = min(color, 255)
-        except:
+        except TypeError:
             # tuple
             self.pixels[y][x] = min(color[0], 255)
 
@@ -184,7 +182,7 @@ class _PyAccessI16_N(PyAccess):
         try:
             # integer
             self.pixels[y][x] = min(color, 65535)
-        except:
+        except TypeError:
             # tuple
             self.pixels[y][x] = min(color[0], 65535)
 
@@ -272,7 +270,7 @@ class _PyAccessF(PyAccess):
         try:
             # not a tuple
             self.pixels[y][x] = color
-        except:
+        except TypeError:
             # tuple
             self.pixels[y][x] = color[0]
 

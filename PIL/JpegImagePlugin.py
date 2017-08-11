@@ -32,19 +32,16 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import print_function
+
 import array
 import struct
 import io
 import warnings
-from struct import unpack_from
-from PIL import Image, ImageFile, TiffImagePlugin, _binary
-from PIL.JpegPresets import presets
-from PIL._util import isStringType
-
-i8 = _binary.i8
-o8 = _binary.o8
-i16 = _binary.i16be
-i32 = _binary.i32be
+from . import Image, ImageFile, TiffImagePlugin
+from ._binary import i8, o8, i16be as i16
+from .JpegPresets import presets
+from ._util import isStringType
 
 __version__ = "0.6"
 
@@ -119,6 +116,25 @@ def APP(self, marker):
         # offset is current location minus buffer size
         # plus constant header size
         self.info["mpoffset"] = self.fp.tell() - n + 4
+
+    # If DPI isn't in JPEG header, fetch from EXIF
+    if "dpi" not in self.info and "exif" in self.info:
+        try:
+            exif = self._getexif()
+            resolution_unit = exif[0x0128]
+            x_resolution = exif[0x011A]
+            try:
+                dpi = x_resolution[0] / x_resolution[1]
+            except TypeError:
+                dpi = x_resolution
+            if resolution_unit == 3:  # cm
+                # 1 dpcm = 2.54 dpi
+                dpi *= 2.54
+            self.info["dpi"] = dpi, dpi
+        except (KeyError, SyntaxError):
+            # SyntaxError for invalid/unreadable exif
+            # KeyError for dpi not included
+            self.info["dpi"] = 72, 72
 
 
 def COM(self, marker):
@@ -316,7 +332,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
             if i in MARKER:
                 name, description, handler = MARKER[i]
-                # print hex(i), name, description
+                # print(hex(i), name, description)
                 if handler is not None:
                     handler(self, i)
                 if i == 0xFFDA:  # start of scan
@@ -409,7 +425,8 @@ def _fixup_dict(src_dict):
         try:
             if len(value) == 1 and not isinstance(value, dict):
                 return value[0]
-        except: pass
+        except:
+            pass
         return value
 
     return {k: _fixup(v) for k, v in src_dict.items()}
@@ -491,7 +508,7 @@ def _getmp(self):
     try:
         rawmpentries = mp[0xB002]
         for entrynum in range(0, quant):
-            unpackedentry = unpack_from(
+            unpackedentry = struct.unpack_from(
                 '{}LLLHH'.format(endianness), rawmpentries, entrynum * 16)
             labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1',
                       'EntryNo2')
@@ -540,7 +557,6 @@ RAWMODE = {
     "1": "L",
     "L": "L",
     "RGB": "RGB",
-    "RGBA": "RGB",
     "RGBX": "RGB",
     "CMYK": "CMYK;I",  # assume adobe conventions
     "YCbCr": "YCbCr",
@@ -588,14 +604,6 @@ def _save(im, fp, filename):
         rawmode = RAWMODE[im.mode]
     except KeyError:
         raise IOError("cannot write mode %s as JPEG" % im.mode)
-
-    if im.mode == 'RGBA':
-        warnings.warn(
-            'You are saving RGBA image as JPEG. The alpha channel will be '
-            'discarded. This conversion is deprecated and will be disabled '
-            'in Pillow 3.7. Please, convert the image to RGB explicitly.',
-            DeprecationWarning
-        )
 
     info = im.encoderinfo
 
@@ -691,8 +699,8 @@ def _save(im, fp, filename):
     # "progressive" is the official name, but older documentation
     # says "progression"
     # FIXME: issue a warning if the wrong form is used (post-1.1.7)
-    progressive = info.get("progressive", False) or\
-                  info.get("progression", False)
+    progressive = (info.get("progressive", False) or
+                   info.get("progression", False))
 
     optimize = info.get("optimize", False)
 
@@ -716,15 +724,19 @@ def _save(im, fp, filename):
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     bufsize = 0
     if optimize or progressive:
+        # CMYK can be bigger
+        if im.mode == 'CMYK':
+            bufsize = 4 * im.size[0] * im.size[1]
         # keep sets quality to 0, but the actual value may be high.
-        if quality >= 95 or quality == 0:
+        elif quality >= 95 or quality == 0:
             bufsize = 2 * im.size[0] * im.size[1]
         else:
             bufsize = im.size[0] * im.size[1]
 
     # The exif info needs to be written as one block, + APP1, + one spare byte.
-    # Ensure that our buffer is big enough
-    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(info.get("exif", b"")) + 5)
+    # Ensure that our buffer is big enough. Same with the icc_profile block.
+    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(info.get("exif", b"")) + 5,
+                  len(extra) + 1)
 
     ImageFile._save(im, fp, [("jpeg", (0, 0)+im.size, 0, rawmode)], bufsize)
 

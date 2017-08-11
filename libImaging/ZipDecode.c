@@ -85,6 +85,8 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         err = inflateInit(&context->z_stream);
         if (err < 0) {
             state->errcode = IMAGING_CODEC_CONFIG;
+            free(context->previous);
+            context->previous = NULL;
             return -1;
         }
 
@@ -126,6 +128,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             else
                 state->errcode = IMAGING_CODEC_CONFIG;
             free(context->previous);
+            context->previous = NULL;
             inflateEnd(&context->z_stream);
             return -1;
         }
@@ -191,6 +194,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             default:
                 state->errcode = IMAGING_CODEC_UNKNOWN;
                 free(context->previous);
+                context->previous = NULL;
                 inflateEnd(&context->z_stream);
                 return -1;
             }
@@ -258,6 +262,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 state->errcode = IMAGING_CODEC_BROKEN; */
 
             free(context->previous);
+            context->previous = NULL;
             inflateEnd(&context->z_stream);
             return -1; /* end of file (errcode=0) */
 
@@ -272,6 +277,22 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
     return bytes; /* consumed all of it */
 
+}
+
+
+int ImagingZipDecodeCleanup(ImagingCodecState state){
+    /* called to free the decompression engine when the decode terminates
+       due to a corrupt or truncated image
+    */
+    ZIPSTATE* context = (ZIPSTATE*) state->context;
+
+    /* Clean up */
+    if (context->previous) {
+        inflateEnd(&context->z_stream);
+        free(context->previous);
+        context->previous = NULL;
+    }
+    return -1;
 }
 
 #endif

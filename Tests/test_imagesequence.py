@@ -58,11 +58,9 @@ class TestImageSequence(PillowTestCase):
         for frame in ImageSequence.Iterator(im):
             if firstFrame is None:
                 firstFrame = frame.copy()
-            pass
         for frame in ImageSequence.Iterator(im):
             self.assert_image_equal(frame, firstFrame)
             break
-
 
     def test_palette_mmap(self):
         # Using mmap in ImageFile can require to reload the palette.

@@ -73,9 +73,17 @@ class MorphTests(PillowTestCase):
                 'corner', 'dilation4', 'dilation8',
                 'erosion4', 'erosion8', 'edge'):
             lb = ImageMorph.LutBuilder(op_name=op)
+            self.assertIsNone(lb.get_lut())
+
             lut = lb.build_lut()
             with open('Tests/images/%s.lut' % op, 'rb') as f:
                 self.assertEqual(lut, bytearray(f.read()))
+
+    def test_no_operator_loaded(self):
+        mop = ImageMorph.MorphOp()
+        self.assertRaises(Exception, lambda: mop.apply(None))
+        self.assertRaises(Exception, lambda: mop.match(None))
+        self.assertRaises(Exception, lambda: mop.save_lut(None))
 
     # Test the named patterns
     def test_erosion8(self):
@@ -168,6 +176,40 @@ class MorphTests(PillowTestCase):
         self.assertEqual(len(coords), 4)
         self.assertEqual(tuple(coords), ((2, 2), (4, 2), (2, 4), (4, 4)))
 
+    def test_mirroring(self):
+        # Test 'M' for mirroring
+        mop = ImageMorph.MorphOp(patterns=['1:(... ... ...)->0',
+                                           'M:(00. 01. ...)->1'])
+        count, Aout = mop.apply(self.A)
+        self.assertEqual(count, 7)
+        self.assert_img_equal_img_string(Aout,
+                                         """
+                                         .......
+                                         .......
+                                         ..1.1..
+                                         .......
+                                         .......
+                                         .......
+                                         .......
+                                         """)
+
+    def test_negate(self):
+        # Test 'N' for negate
+        mop = ImageMorph.MorphOp(patterns=['1:(... ... ...)->0',
+                                           'N:(00. 01. ...)->1'])
+        count, Aout = mop.apply(self.A)
+        self.assertEqual(count, 8)
+        self.assert_img_equal_img_string(Aout,
+                                         """
+                                         .......
+                                         .......
+                                         ..1....
+                                         .......
+                                         .......
+                                         .......
+                                         .......
+                                         """)
+
     def test_non_binary_images(self):
         im = hopper('RGB')
         mop = ImageMorph.MorphOp(op_name="erosion8")
@@ -175,6 +217,74 @@ class MorphTests(PillowTestCase):
         self.assertRaises(Exception, lambda: mop.apply(im))
         self.assertRaises(Exception, lambda: mop.match(im))
         self.assertRaises(Exception, lambda: mop.get_on_pixels(im))
+
+    def test_add_patterns(self):
+        # Arrange
+        lb = ImageMorph.LutBuilder(op_name='corner')
+        self.assertEqual(lb.patterns, ['1:(... ... ...)->0',
+                                       '4:(00. 01. ...)->1'])
+        new_patterns = ['M:(00. 01. ...)->1',
+                        'N:(00. 01. ...)->1']
+
+        # Act
+        lb.add_patterns(new_patterns)
+
+        # Assert
+        self.assertEqual(
+            lb.patterns,
+            ['1:(... ... ...)->0',
+             '4:(00. 01. ...)->1',
+             'M:(00. 01. ...)->1',
+             'N:(00. 01. ...)->1'])
+
+    def test_unknown_pattern(self):
+        self.assertRaises(
+            Exception,
+            lambda: ImageMorph.LutBuilder(op_name='unknown'))
+
+    def test_pattern_syntax_error(self):
+        # Arrange
+        lb = ImageMorph.LutBuilder(op_name='corner')
+        new_patterns = ['a pattern with a syntax error']
+        lb.add_patterns(new_patterns)
+
+        # Act / Assert
+        self.assertRaises(
+            Exception,
+            lambda: lb.build_lut())
+
+    def test_load_invalid_mrl(self):
+        # Arrange
+        invalid_mrl = 'Tests/images/hopper.png'
+        mop = ImageMorph.MorphOp()
+
+        # Act / Assert
+        self.assertRaises(Exception, lambda: mop.load_lut(invalid_mrl))
+
+    def test_roundtrip_mrl(self):
+        # Arrange
+        tempfile = self.tempfile('temp.mrl')
+        mop = ImageMorph.MorphOp(op_name='corner')
+        initial_lut = mop.lut
+
+        # Act
+        mop.save_lut(tempfile)
+        mop.load_lut(tempfile)
+
+        # Act / Assert
+        self.assertEqual(mop.lut, initial_lut)
+
+    def test_set_lut(self):
+        # Arrange
+        lb = ImageMorph.LutBuilder(op_name='corner')
+        lut = lb.build_lut()
+        mop = ImageMorph.MorphOp()
+
+        # Act
+        mop.set_lut(lut)
+
+        # Assert
+        self.assertEqual(mop.lut, lut)
 
 
 if __name__ == '__main__':

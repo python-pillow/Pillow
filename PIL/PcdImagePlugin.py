@@ -15,11 +15,10 @@
 #
 
 
-from PIL import Image, ImageFile, _binary
+from . import Image, ImageFile
+from ._binary import i8
 
 __version__ = "0.1"
-
-i8 = _binary.i8
 
 
 ##
@@ -42,14 +41,22 @@ class PcdImageFile(ImageFile.ImageFile):
             raise SyntaxError("not a PCD file")
 
         orientation = i8(s[1538]) & 3
+        self.tile_post_rotate = None
         if orientation == 1:
-            self.tile_post_rotate = 90  # hack
+            self.tile_post_rotate = 90
         elif orientation == 3:
             self.tile_post_rotate = -90
 
         self.mode = "RGB"
         self.size = 768, 512  # FIXME: not correct for rotated images!
         self.tile = [("pcd", (0, 0)+self.size, 96*2048, None)]
+
+    def load_end(self):
+        if self.tile_post_rotate:
+            # Handle rotated PCDs
+            self.im = self.im.rotate(self.tile_post_rotate)
+            self.size = self.im.size
+
 
 #
 # registry

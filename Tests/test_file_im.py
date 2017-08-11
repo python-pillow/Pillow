@@ -30,7 +30,7 @@ class TestFileIm(PillowTestCase):
                 im.seek(n_frames)
                 break
             except EOFError:
-                self.assertTrue(im.tell() < n_frames)
+                self.assertLess(im.tell(), n_frames)
 
     def test_roundtrip(self):
         out = self.tempfile('temp.im')

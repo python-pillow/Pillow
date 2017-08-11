@@ -1,5 +1,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include "Imaging.h"
 #include "py3.h"
 #include <webp/encode.h>
 #include <webp/decode.h>
@@ -28,7 +29,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "s#iiifss#s#",
                 (char**)&rgb, &size, &width, &height, &lossless, &quality_factor, &mode,
                 &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
-        Py_RETURN_NONE;
+        return NULL;
     }
     if (strcmp(mode, "RGBA")==0){
         if (size < width * height * 4){
@@ -144,7 +145,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
     char* mode = "RGB";
 
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     if (!WebPInitDecoderConfig(&config)) {
@@ -246,8 +247,12 @@ PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
  * The version of webp that ships with (0.1.3) Ubuntu 12.04 doesn't handle alpha well.
  * Files that are valid with 0.3 are reported as being invalid.
  */
+int WebPDecoderBuggyAlpha() {
+    return WebPGetDecoderVersion()==0x0103;
+}
+
 PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
-    return Py_BuildValue("i", WebPGetDecoderVersion()==0x0103);
+    return Py_BuildValue("i", WebPDecoderBuggyAlpha());
 }
 
 static PyMethodDef webpMethods[] =
@@ -267,6 +272,11 @@ void addMuxFlagToModule(PyObject* m) {
 #endif
 }
 
+void addTransparencyFlagToModule(PyObject* m) {
+    PyModule_AddObject(m, "HAVE_TRANSPARENCY",
+		       PyBool_FromLong(!WebPDecoderBuggyAlpha()));
+}
+
 
 #if PY_VERSION_HEX >= 0x03000000
 PyMODINIT_FUNC
@@ -283,6 +293,7 @@ PyInit__webp(void) {
 
     m = PyModule_Create(&module_def);
     addMuxFlagToModule(m);
+    addTransparencyFlagToModule(m);
     return m;
 }
 #else
@@ -291,5 +302,6 @@ init_webp(void)
 {
     PyObject* m = Py_InitModule("_webp", webpMethods);
     addMuxFlagToModule(m);
+    addTransparencyFlagToModule(m);
 }
 #endif

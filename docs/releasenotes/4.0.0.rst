@@ -1,0 +1,51 @@
+4.0.0
+-----
+
+Python 2.6 and 3.2 Dropped
+==========================
+
+Pillow 4.0 no longer supports Python 2.6 and 3.2. We will not be
+creating binaries, testing, or retaining compatibility with these
+releases. This release removes some workarounds for those Python
+releases, so the final working version of Pillow on 2.6 or 3.2 is 3.4.2.
+
+Support added for Python 3.6
+============================
+
+Pillow 4.0 supports Python 3.6.
+
+OleFileIO.py
+============
+
+OleFileIO.py has been removed as a vendored file and is now installed
+from the upstream olefile pypi package. All internal dependencies are
+redirected to the olefile package. Direct accesses to
+``PIL.OlefileIO`` raises a deprecation warning, then patches the
+upstream olefile into ``sys.modules`` in its place.
+
+SGI image save 
+==============
+
+It is now possible to save images in modes ``L``, ``RGB``, and
+``RGBA`` to the uncompressed SGI image format. 
+
+Zero sized images
+=================
+
+Pillow 3.4.0 removed support for creating images with (0,0) size. This
+has been reenabled, restoring pre 3.4 behavior. 
+
+Internal handles_eof flag
+=========================
+
+The ``handles_eof flag`` for decoding images has been removed, as there
+were no internal users of the flag. Anyone maintaining image decoders
+outside of the Pillow source tree should consider using the cleanup
+function pointers instead. 
+
+Image.core.stretch removed
+==========================
+
+The stretch function on the core image object has been removed. This
+used to be for enlarging the image, but has been aliased to resize
+recently. 

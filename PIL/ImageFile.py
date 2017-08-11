@@ -27,8 +27,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL._util import isPath
+from . import Image
+from ._util import isPath
 import io
 import os
 import sys
@@ -88,10 +88,13 @@ class ImageFile(Image.Image):
             # filename
             self.fp = open(fp, "rb")
             self.filename = fp
+            self._exclusive_fp = True
         else:
             # stream
             self.fp = fp
             self.filename = filename
+            # can be overridden
+            self._exclusive_fp = None
 
         try:
             self._open()
@@ -100,6 +103,9 @@ class ImageFile(Image.Image):
                 KeyError,  # unsupported mode
                 EOFError,  # got header but not the first frame
                 struct.error) as v:
+            # close the file only if we have opened it this constructor
+            if self._exclusive_fp:
+                self.fp.close()
             raise SyntaxError(v)
 
         if not self.mode or self.size[0] <= 0:
@@ -115,6 +121,8 @@ class ImageFile(Image.Image):
 
         # raise exception if something's wrong.  must be called
         # directly after open, and closes file when finished.
+        if self._exclusive_fp:
+            self.fp.close()
         self.fp = None
 
     def load(self):
@@ -152,7 +160,7 @@ class ImageFile(Image.Image):
             # try memory mapping
             decoder_name, extents, offset, args = self.tile[0]
             if decoder_name == "raw" and len(args) >= 3 and args[0] == self.mode \
-                   and args[0] in Image._MAPMODES:
+               and args[0] in Image._MAPMODES:
                 try:
                     if hasattr(Image.core, "map"):
                         # use built-in mapper  WIN32 only
@@ -178,7 +186,7 @@ class ImageFile(Image.Image):
                     self.map = None
 
         self.load_prepare()
-
+        err_code = -3 # initialize to unknown error
         if not self.map:
             # sort tiles in file order
             self.tile.sort(key=_tilesort)
@@ -191,12 +199,9 @@ class ImageFile(Image.Image):
 
             for decoder_name, extents, offset, args in self.tile:
                 decoder = Image._getdecoder(self.mode, decoder_name,
-                                      args, self.decoderconfig)
+                                            args, self.decoderconfig)
                 seek(offset)
-                try:
-                    decoder.setimage(self.im, extents)
-                except ValueError:
-                    continue
+                decoder.setimage(self.im, extents)
                 if decoder.pulls_fd:
                     decoder.setfd(self.fp)
                     status, err_code = decoder.decode(b"")
@@ -211,7 +216,7 @@ class ImageFile(Image.Image):
                             else:
                                 raise IOError("image file is truncated")
 
-                        if not s and not decoder.handles_eof:  # truncated jpeg
+                        if not s:  # truncated jpeg
                             self.tile = []
 
                             # JpegDecode needs to clean things up here either way
@@ -237,19 +242,15 @@ class ImageFile(Image.Image):
         self.tile = []
         self.readonly = readonly
 
-        self.fp = None  # might be shared
+        self.load_end()
+
+        if self._exclusive_fp and self._close_exclusive_fp_after_loading:
+            self.fp.close()
+        self.fp = None
 
         if not self.map and not LOAD_TRUNCATED_IMAGES and err_code < 0:
             # still raised if decoder fails to return anything
             raise_ioerror(err_code)
-
-        # post processing
-        if hasattr(self, "tile_post_rotate"):
-            # FIXME: This is a hack to handle rotated PCD's
-            self.im = self.im.rotate(self.tile_post_rotate)
-            self.size = self.im.size
-
-        self.load_end()
 
         return Image.Image.load(self)
 
@@ -379,11 +380,8 @@ class Parser(object):
 
             # attempt to open this file
             try:
-                try:
-                    fp = io.BytesIO(self.data)
+                with io.BytesIO(self.data) as fp:
                     im = Image.open(fp)
-                finally:
-                    fp.close()  # explicitly close the virtual file
             except IOError:
                 # traceback.print_exc()
                 pass  # not enough data
@@ -431,12 +429,11 @@ class Parser(object):
         if self.data:
             # incremental parsing not possible; reopen the file
             # not that we have all data
-            try:
-                fp = io.BytesIO(self.data)
-                self.image = Image.open(fp)
-            finally:
-                self.image.load()
-                fp.close()  # explicitly close the virtual file
+            with io.BytesIO(self.data) as fp:
+                try:
+                    self.image = Image.open(fp)
+                finally:
+                    self.image.load()
         return self.image
 
 
@@ -526,3 +523,128 @@ def _safe_read(fp, size):
         data.append(block)
         size -= len(block)
     return b"".join(data)
+
+
+class PyCodecState(object):
+    def __init__(self):
+        self.xsize = 0
+        self.ysize = 0
+        self.xoff = 0
+        self.yoff = 0
+
+    def extents(self):
+        return (self.xoff, self.yoff,
+                self.xoff+self.xsize, self.yoff+self.ysize)
+
+
+class PyDecoder(object):
+    """
+    Python implementation of a format decoder. Override this class and
+    add the decoding logic in the `decode` method.
+
+    See :ref:`Writing Your Own File Decoder in Python<file-decoders-py>`
+    """
+
+    _pulls_fd = False
+
+    def __init__(self, mode, *args):
+        self.im = None
+        self.state = PyCodecState()
+        self.fd = None
+        self.mode = mode
+        self.init(args)
+
+    def init(self, args):
+        """
+        Override to perform decoder specific initialization
+
+        :param args: Array of args items from the tile entry
+        :returns: None
+        """
+        self.args = args
+
+    @property
+    def pulls_fd(self):
+        return self._pulls_fd
+
+    def decode(self, buffer):
+        """
+        Override to perform the decoding process.
+
+        :param buffer: A bytes object with the data to be decoded.  If `handles_eof`
+             is set, then `buffer` will be empty and `self.fd` will be set.
+        :returns: A tuple of (bytes consumed, errcode). If finished with decoding
+             return <0 for the bytes consumed. Err codes are from `ERRORS`
+        """
+        raise NotImplementedError()
+
+    def cleanup(self):
+        """
+        Override to perform decoder specific cleanup
+
+        :returns: None
+        """
+        pass
+
+    def setfd(self, fd):
+        """
+        Called from ImageFile to set the python file-like object
+
+        :param fd: A python file-like object
+        :returns: None
+        """
+        self.fd = fd
+
+    def setimage(self, im, extents=None):
+        """
+        Called from ImageFile to set the core output image for the decoder
+
+        :param im: A core image object
+        :param extents: a 4 tuple of (x0, y0, x1, y1) defining the rectangle
+            for this tile
+        :returns: None
+        """
+
+        # following c code
+        self.im = im
+
+        if extents:
+            (x0, y0, x1, y1) = extents
+        else:
+            (x0, y0, x1, y1) = (0, 0, 0, 0)
+
+        if x0 == 0 and x1 == 0:
+            self.state.xsize, self.state.ysize = self.im.size
+        else:
+            self.state.xoff = x0
+            self.state.yoff = y0
+            self.state.xsize = x1 - x0
+            self.state.ysize = y1 - y0
+
+        if self.state.xsize <= 0 or self.state.ysize <= 0:
+            raise ValueError("Size cannot be negative")
+
+        if (self.state.xsize + self.state.xoff > self.im.size[0] or
+           self.state.ysize + self.state.yoff > self.im.size[1]):
+            raise ValueError("Tile cannot extend outside image")
+
+    def set_as_raw(self, data, rawmode=None):
+        """
+        Convenience method to set the internal image from a stream of raw data
+
+        :param data: Bytes to be set
+        :param rawmode: The rawmode to be used for the decoder. If not specified,
+             it will default to the mode of the image
+        :returns: None
+        """
+
+        if not rawmode:
+            rawmode = self.mode
+        d = Image._getdecoder(self.mode, 'raw', (rawmode))
+        d.setimage(self.im, self.state.extents())
+        s = d.decode(data)
+
+        if s[0] >= 0:
+            raise ValueError("not enough image data")
+        if s[1] != 0:
+            raise ValueError("cannot decode image data")

@@ -5,8 +5,9 @@
 #
 # Copyright (c) 2014 Dov Grobgeld <dov.grobgeld@gmail.com>
 
-from PIL import Image
-from PIL import _imagingmorph
+from __future__ import print_function
+
+from . import Image, _imagingmorph
 import re
 
 LUT_SIZE = 1 << 9
@@ -122,7 +123,7 @@ class LutBuilder(object):
                            .replace('0', 'Z')
                            .replace('1', '0')
                            .replace('Z', '1'))
-                res = '%d' % (1-int(res))
+                res = 1-int(res)
                 patterns.append((pattern, res))
 
         return patterns
@@ -151,9 +152,9 @@ class LutBuilder(object):
             patterns += self._pattern_permute(pattern, options, result)
 
 #        # Debugging
-#        for p,r in patterns:
-#            print p,r
-#        print '--'
+#        for p, r in patterns:
+#            print(p, r)
+#        print('--')
 
         # compile the patterns into regular expressions for speed
         for i, pattern in enumerate(patterns):
@@ -233,7 +234,7 @@ class MorphOp(object):
         with open(filename, 'rb') as f:
             self.lut = bytearray(f.read())
 
-        if len(self.lut) != 8192:
+        if len(self.lut) != LUT_SIZE:
             self.lut = None
             raise Exception('Wrong size operator file!')
 

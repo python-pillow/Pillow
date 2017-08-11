@@ -64,15 +64,18 @@ ImagingFillLinearGradient(const char *mode)
     Imaging im;
     int y;
 
-    if (strlen(mode) != 1)
-	return (Imaging) ImagingError_ModeError();
+    if (strlen(mode) != 1) {
+        return (Imaging) ImagingError_ModeError();
+    }
 
     im = ImagingNew(mode, 256, 256);
-    if (!im)
-	return NULL;
+    if (!im) {
+        return NULL;
+    }
 
-    for (y = 0; y < 256; y++)
-	memset(im->image8[y], (unsigned char) y, 256);
+    for (y = 0; y < 256; y++) {
+        memset(im->image8[y], (unsigned char) y, 256);
+    }
 
     return im;
 }
@@ -84,21 +87,25 @@ ImagingFillRadialGradient(const char *mode)
     int x, y;
     int d;
 
-    if (strlen(mode) != 1)
-	return (Imaging) ImagingError_ModeError();
+    if (strlen(mode) != 1) {
+        return (Imaging) ImagingError_ModeError();
+    }
 
     im = ImagingNew(mode, 256, 256);
-    if (!im)
-	return NULL;
+    if (!im) {
+        return NULL;
+    }
 
-    for (y = 0; y < 256; y++)
-	for (x = 0; x < 256; x++) {
-	    d = (int) sqrt((double) ((x-128)*(x-128) + (y-128)*(y-128)) * 2.0);
-	    if (d >= 255)
-		im->image8[y][x] = 255;
-	    else
-		im->image8[y][x] = d;
-	}
+    for (y = 0; y < 256; y++) {
+        for (x = 0; x < 256; x++) {
+            d = (int) sqrt((double) ((x-128)*(x-128) + (y-128)*(y-128)) * 2.0);
+            if (d >= 255) {
+                im->image8[y][x] = 255;
+            } else {
+                im->image8[y][x] = d;
+            }
+        }
+    }
 
     return im;
 }

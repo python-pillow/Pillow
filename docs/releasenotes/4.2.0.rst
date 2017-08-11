@@ -1,0 +1,51 @@
+4.2.0
+-----
+
+Added Complex Text Rendering
+============================
+
+Pillow now supports complex text rendering for scripts requiring glyph
+composition and bidirectional flow. This optional feature adds three
+dependencies: harfbuzz, fribidi, and raqm. See the install
+documentation for further details. This feature is tested and works on
+Unix and Mac, but has not yet been built on Windows platforms.
+
+New Optional Parameters
+=======================
+
+* :py:meth:`PIL.ImageDraw.floodfill` has a new optional parameter:
+  threshold. This specifies a tolerance for the color to replace with
+  the flood fill.
+
+* The TIFF and PDF image writers now support the ``append_images``
+  optional parameter for specifying additional images to create
+  multipage outputs.
+
+New DecompressionBomb Warning
+=============================
+
+:py:meth:`PIL.Image.Image.crop` now may raise a DecompressionBomb
+warning if the crop region enlarges the image over the threshold
+specified by :py:attr:`PIL.Image.MAX_PIXELS`.
+
+Removed Deprecated Items
+========================
+
+Several deprecated items have been removed.
+
+* The methods :py:meth:`PIL.ImageWin.Dib.fromstring`,
+  :py:meth:`PIL.ImageWin.Dib.tostring` and
+  :py:meth:`PIL.TiffImagePlugin.ImageFileDirectory_v2.as_dict` have
+  been removed.
+
+* Before Pillow 4.2.0, attempting to save an RGBA image as JPEG would
+  discard the alpha channel. From Pillow 3.4.0, a deprecation warning
+  was shown. From Pillow 4.2.0, the deprecation warning is removed and
+  an :py:exc:`IOError` is raised.
+
+Removed Core Image Function
+===========================
+
+The unused function ``Image.core.new_array`` was removed. This is an
+internal function that should not have been used by user code, but it
+was accessible from the python layer.

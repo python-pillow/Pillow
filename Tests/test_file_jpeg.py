@@ -1,9 +1,9 @@
-from helper import unittest, PillowTestCase, hopper, py3
+from helper import unittest, PillowTestCase, hopper
 from helper import djpeg_available, cjpeg_available
 
-import random
 from io import BytesIO
 import os
+import sys
 
 from PIL import Image
 from PIL import ImageFile
@@ -28,6 +28,15 @@ class TestFileJpeg(PillowTestCase):
         im = Image.open(out)
         im.bytes = test_bytes  # for testing only
         return im
+
+    def gen_random_image(self, size, mode='RGB'):
+        """ Generates a very hard to compress file
+        :param size: tuple
+        :param mode: optional image mode
+
+        """
+        return Image.frombytes(mode, size,
+                               os.urandom(size[0]*size[1]*len(mode)))
 
     def test_sanity(self):
 
@@ -84,7 +93,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertEqual(test(72), (72, 72))
         self.assertEqual(test(300), (300, 300))
         self.assertEqual(test(100, 200), (100, 200))
-        self.assertEqual(test(0), None)  # square pixels
+        self.assertIsNone(test(0))  # square pixels
 
     def test_icc(self):
         # Test ICC support
@@ -124,6 +133,19 @@ class TestFileJpeg(PillowTestCase):
         test(ImageFile.MAXBLOCK+1)  # full buffer block plus one byte
         test(ImageFile.MAXBLOCK*4+3)  # large block
 
+    def test_large_icc_meta(self):
+        # https://github.com/python-pillow/Pillow/issues/148
+        # Sometimes the meta data on the icc_profile block is bigger than
+        # Image.MAXBLOCK or the image size.
+        im = Image.open('Tests/images/icc_profile_big.jpg')
+        f = self.tempfile("temp.jpg")
+        icc_profile = im.info["icc_profile"]
+        try:
+            im.save(f, format='JPEG', progressive=True,quality=95,
+                    icc_profile=icc_profile, optimize=True)
+        except IOError:
+            self.fail("Failed saving image with icc larger than image size")
+
     def test_optimize(self):
         im1 = self.roundtrip(hopper())
         im2 = self.roundtrip(hopper(), optimize=0)
@@ -159,14 +181,15 @@ class TestFileJpeg(PillowTestCase):
 
     def test_progressive_large_buffer_highest_quality(self):
         f = self.tempfile('temp.jpg')
-        if py3:
-            a = bytes(random.randint(0, 255) for _ in range(256 * 256 * 3))
-        else:
-            a = b''.join(chr(random.randint(0, 255)) for _ in range(
-                256 * 256 * 3))
-        im = Image.frombuffer("RGB", (256, 256), a, "raw", "RGB", 0, 1)
+        im = self.gen_random_image((255, 255))
         # this requires more bytes than pixels in the image
         im.save(f, format="JPEG", progressive=True, quality=100)
+
+    def test_progressive_cmyk_buffer(self):
+        # Issue 2272, quality 90 cmyk image is tripping the large buffer bug.
+        f = BytesIO()
+        im = self.gen_random_image((256, 256), 'CMYK')
+        im.save(f, format='JPEG', progressive=True, quality=94)
 
     def test_large_exif(self):
         # https://github.com/python-pillow/Pillow/issues/148
@@ -429,21 +452,14 @@ class TestFileJpeg(PillowTestCase):
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
         from PIL import ExifTags
-        tag_ids = dict(zip(ExifTags.TAGS.values(), ExifTags.TAGS.keys()))
+        tag_ids = {v: k for k, v in ExifTags.TAGS.items()}
 
         # Assert
         self.assertEqual(tag_ids['RelatedImageWidth'], 0x1001)
         self.assertEqual(tag_ids['RelatedImageLength'], 0x1002)
 
     def test_MAXBLOCK_scaling(self):
-        def gen_random_image(size):
-            """ Generates a very hard to compress file
-            :param size: tuple
-            """
-            return Image.frombytes('RGB',
-                                   size, os.urandom(size[0]*size[1] * 3))
-
-        im = gen_random_image((512, 512))
+        im = self.gen_random_image((512, 512))
         f = self.tempfile("temp.jpeg")
         im.save(f, quality=100, optimize=True)
 
@@ -473,17 +489,11 @@ class TestFileJpeg(PillowTestCase):
             img.save(out, "JPEG")
 
     def test_save_wrong_modes(self):
-        out = BytesIO()
-        for mode in ['LA', 'La', 'RGBa', 'P']:
-            img = Image.new(mode, (20, 20))
-            self.assertRaises(IOError, img.save, out, "JPEG")
-
-    def test_save_modes_with_warnings(self):
         # ref https://github.com/python-pillow/Pillow/issues/2005
         out = BytesIO()
-        for mode in ['RGBA']:
+        for mode in ['LA', 'La', 'RGBA', 'RGBa', 'P']:
             img = Image.new(mode, (20, 20))
-            self.assert_warning(DeprecationWarning, img.save, out, "JPEG")
+            self.assertRaises(IOError, img.save, out, "JPEG")
 
     def test_save_tiff_with_dpi(self):
         # Arrange
@@ -497,6 +507,76 @@ class TestFileJpeg(PillowTestCase):
         reloaded = Image.open(outfile)
         reloaded.load()
         self.assertEqual(im.info['dpi'], reloaded.info['dpi'])
+
+    def test_dpi_tuple_from_exif(self):
+        # Arrange
+        # This Photoshop CC 2017 image has DPI in EXIF not metadata
+        # EXIF XResolution is (2000000, 10000)
+        im = Image.open("Tests/images/photoshop-200dpi.jpg")
+
+        # Act / Assert
+        self.assertEqual(im.info.get("dpi"), (200, 200))
+
+    def test_dpi_int_from_exif(self):
+        # Arrange
+        # This image has DPI in EXIF not metadata
+        # EXIF XResolution is 72
+        im = Image.open("Tests/images/exif-72dpi-int.jpg")
+
+        # Act / Assert
+        self.assertEqual(im.info.get("dpi"), (72, 72))
+
+    def test_dpi_from_dpcm_exif(self):
+        # Arrange
+        # This is photoshop-200dpi.jpg with EXIF resolution unit set to cm:
+        # exiftool -exif:ResolutionUnit=cm photoshop-200dpi.jpg
+        im = Image.open("Tests/images/exif-200dpcm.jpg")
+
+        # Act / Assert
+        self.assertEqual(im.info.get("dpi"), (508, 508))
+
+    def test_no_dpi_in_exif(self):
+        # Arrange
+        # This is photoshop-200dpi.jpg with resolution removed from EXIF:
+        # exiftool "-*resolution*"= photoshop-200dpi.jpg
+        im = Image.open("Tests/images/no-dpi-in-exif.jpg")
+
+        # Act / Assert
+        # "When the image resolution is unknown, 72 [dpi] is designated."
+        # http://www.exiv2.org/tags.html
+        self.assertEqual(im.info.get("dpi"), (72, 72))
+
+    def test_invalid_exif(self):
+        # This is no-dpi-in-exif with the tiff header of the exif block
+        # hexedited from MM * to FF FF FF FF
+        im = Image.open("Tests/images/invalid-exif.jpg")
+
+        # This should return the default, and not a SyntaxError or
+        # OSError for unidentified image.
+        self.assertEqual(im.info.get("dpi"), (72, 72))
+
+
+@unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
+class TestFileCloseW32(PillowTestCase):
+    def setUp(self):
+        if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
+            self.skipTest("jpeg support not available")
+
+    def test_fd_leak(self):
+        tmpfile = self.tempfile("temp.jpg")
+        import os
+
+        with Image.open("Tests/images/hopper.jpg") as im:
+            im.save(tmpfile)
+
+        im = Image.open(tmpfile)
+        fp = im.fp
+        self.assertFalse(fp.closed)
+        self.assertRaises(Exception, lambda: os.remove(tmpfile))
+        im.load()
+        self.assertTrue(fp.closed)
+        # this should not fail, as load should have closed the file.
+        os.remove(tmpfile)
 
 
 if __name__ == '__main__':

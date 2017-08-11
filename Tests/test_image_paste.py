@@ -9,9 +9,9 @@ class TestImagingPaste(PillowTestCase):
 
     def assert_9points_image(self, im, expected):
         expected = [
-                point[0]
+            point[0]
             if im.mode == 'L' else
-                point[:len(im.mode)]
+            point[:len(im.mode)]
             for point in expected
         ]
         px = im.load()
@@ -27,6 +27,15 @@ class TestImagingPaste(PillowTestCase):
             px[self.size - 1, self.size - 1],
         ]
         self.assertEqual(actual, expected)
+
+    def assert_9points_paste(self, im, im2, mask, expected):
+        im3 = im.copy()
+        im3.paste(im2, (0, 0), mask)
+        self.assert_9points_image(im3, expected)
+
+        # Abbreviated syntax
+        im.paste(im2, mask)
+        self.assert_9points_image(im, expected)
 
     @cached_property
     def mask_1(self):
@@ -91,9 +100,7 @@ class TestImagingPaste(PillowTestCase):
             im = Image.new(mode, (200, 200), 'white')
             im2 = getattr(self, 'gradient_' + mode)
 
-            im.paste(im2, (0, 0), self.mask_1)
-
-            self.assert_9points_image(im, [
+            self.assert_9points_paste(im, im2, self.mask_1, [
                 (255, 255, 255, 255),
                 (255, 255, 255, 255),
                 (127, 254, 127, 0),
@@ -110,9 +117,7 @@ class TestImagingPaste(PillowTestCase):
             im = Image.new(mode, (200, 200), 'white')
             im2 = getattr(self, 'gradient_' + mode)
 
-            im.paste(im2, (0, 0), self.mask_L)
-
-            self.assert_9points_image(im, [
+            self.assert_9points_paste(im, im2, self.mask_L, [
                 (128, 191, 255, 191),
                 (208, 239, 239, 208),
                 (255, 255, 255, 255),
@@ -129,9 +134,7 @@ class TestImagingPaste(PillowTestCase):
             im = Image.new(mode, (200, 200), 'white')
             im2 = getattr(self, 'gradient_' + mode)
 
-            im.paste(im2, (0, 0), self.gradient_RGBA)
-
-            self.assert_9points_image(im, [
+            self.assert_9points_paste(im, im2, self.gradient_RGBA, [
                 (128, 191, 255, 191),
                 (208, 239, 239, 208),
                 (255, 255, 255, 255),
@@ -148,9 +151,7 @@ class TestImagingPaste(PillowTestCase):
             im = Image.new(mode, (200, 200), 'white')
             im2 = getattr(self, 'gradient_' + mode)
 
-            im.paste(im2, (0, 0), self.gradient_RGBa)
-
-            self.assert_9points_image(im, [
+            self.assert_9points_paste(im, im2, self.gradient_RGBa, [
                 (128, 255, 126, 255),
                 (0, 127, 126, 255),
                 (126, 253, 126, 255),
@@ -180,9 +181,7 @@ class TestImagingPaste(PillowTestCase):
             im = Image.new(mode, (200, 200), (50, 60, 70, 80)[:len(mode)])
             color = (10, 20, 30, 40)[:len(mode)]
 
-            im.paste(color, (0, 0), self.mask_1)
-
-            self.assert_9points_image(im, [
+            self.assert_9points_paste(im, color, self.mask_1, [
                 (50, 60, 70, 80),
                 (50, 60, 70, 80),
                 (10, 20, 30, 40),
@@ -199,9 +198,7 @@ class TestImagingPaste(PillowTestCase):
             im = getattr(self, 'gradient_' + mode).copy()
             color = 'white'
 
-            im.paste(color, (0, 0), self.mask_L)
-
-            self.assert_9points_image(im, [
+            self.assert_9points_paste(im, color, self.mask_L, [
                 (127, 191, 254, 191),
                 (111, 207, 206, 110),
                 (127, 254, 127, 0),
@@ -218,9 +215,7 @@ class TestImagingPaste(PillowTestCase):
             im = getattr(self, 'gradient_' + mode).copy()
             color = 'white'
 
-            im.paste(color, (0, 0), self.gradient_RGBA)
-
-            self.assert_9points_image(im, [
+            self.assert_9points_paste(im, color, self.gradient_RGBA, [
                 (127, 191, 254, 191),
                 (111, 207, 206, 110),
                 (127, 254, 127, 0),
@@ -237,9 +232,7 @@ class TestImagingPaste(PillowTestCase):
             im = getattr(self, 'gradient_' + mode).copy()
             color = 'white'
 
-            im.paste(color, (0, 0), self.gradient_RGBa)
-
-            self.assert_9points_image(im, [
+            self.assert_9points_paste(im, color, self.gradient_RGBa, [
                 (255, 63, 126, 63),
                 (47, 143, 142, 46),
                 (126, 253, 126, 255),
@@ -256,7 +249,7 @@ class TestImagingPaste(PillowTestCase):
         im2 = Image.new('RGB', (50, 50))
 
         im.copy().paste(im2)
-        im.copy().paste(im2, (0,0))
+        im.copy().paste(im2, (0, 0))
 
 
 if __name__ == '__main__':

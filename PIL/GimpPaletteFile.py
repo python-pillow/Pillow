@@ -15,7 +15,7 @@
 #
 
 import re
-from PIL._binary import o8
+from ._binary import o8
 
 
 ##

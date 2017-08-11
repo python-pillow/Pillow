@@ -31,22 +31,17 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
-
 import logging
 import re
 import zlib
 import struct
 
-from PIL import Image, ImageFile, ImagePalette, _binary
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8, i16be as i16, i32be as i32, o16be as o16, o32be as o32
 
 __version__ = "0.9"
 
 logger = logging.getLogger(__name__)
-
-i8 = _binary.i8
-i16 = _binary.i16be
-i32 = _binary.i32be
 
 is_cid = re.compile(br"\w\w\w\w").match
 
@@ -118,7 +113,8 @@ class ChunkStream(object):
             length = i32(s)
 
         if not is_cid(cid):
-            raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
+            if not ImageFile.LOAD_TRUNCATED_IMAGES:
+                raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
 
         return cid, pos, length
 
@@ -621,10 +617,6 @@ class PngImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # PNG writer
 
-o8 = _binary.o8
-o16 = _binary.o16be
-o32 = _binary.o32be
-
 _OUTMODES = {
     # supported PIL modes, and corresponding rawmodes/bits/color combinations
     "1":    ("1",       b'\x01\x00'),
@@ -722,6 +714,32 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
           b'\0',                                # 11: filter category
           b'\0')                                # 12: interlace flag
 
+    chunks = [b"cHRM", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
+
+    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
+    if icc:
+        # ICC profile
+        # according to PNG spec, the iCCP chunk contains:
+        # Profile name  1-79 bytes (character string)
+        # Null separator        1 byte (null character)
+        # Compression method    1 byte (0)
+        # Compressed profile    n bytes (zlib with deflate compression)
+        name = b"ICC Profile"
+        data = name + b"\0\0" + zlib.compress(icc)
+        chunk(fp, b"iCCP", data)
+    else:
+        chunks.remove(b"sRGB")
+
+    info = im.encoderinfo.get("pnginfo")
+    if info:
+        chunks_multiple_allowed = [b"sPLT", b"iTXt", b"tEXt", b"zTXt"]
+        for cid, data in info.chunks:
+            if cid in chunks:
+                chunks.remove(cid)
+                chunk(fp, cid, data)
+            elif cid in chunks_multiple_allowed:
+                chunk(fp, cid, data)
+
     if im.mode == "P":
         palette_byte_number = (2 ** bits) * 3
         palette_bytes = im.im.getpalette("RGB")[:palette_byte_number]
@@ -768,20 +786,11 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 
     info = im.encoderinfo.get("pnginfo")
     if info:
+        chunks = [b"bKGD", b"hIST"]
         for cid, data in info.chunks:
-            chunk(fp, cid, data)
-
-    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
-    if icc:
-        # ICC profile
-        # according to PNG spec, the iCCP chunk contains:
-        # Profile name  1-79 bytes (character string)
-        # Null separator        1 byte (null character)
-        # Compression method    1 byte (0)
-        # Compressed profile    n bytes (zlib with deflate compression)
-        name = b"ICC Profile"
-        data = name + b"\0\0" + zlib.compress(icc)
-        chunk(fp, b"iCCP", data)
+            if cid in chunks:
+                chunks.remove(cid)
+                chunk(fp, cid, data)
 
     ImageFile._save(im, _idat(fp, chunk),
                     [("zip", (0, 0)+im.size, 0, rawmode)])

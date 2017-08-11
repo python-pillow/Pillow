@@ -16,7 +16,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePath
+from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
 
 
 class Pen(object):

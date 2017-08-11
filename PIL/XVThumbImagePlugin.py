@@ -17,11 +17,10 @@
 # FIXME: make save work (this requires quantization support)
 #
 
-from PIL import Image, ImageFile, ImagePalette, _binary
+from . import Image, ImageFile, ImagePalette
+from ._binary import i8, o8
 
 __version__ = "0.1"
-
-o8 = _binary.o8
 
 _MAGIC = b"P7 332"
 
@@ -48,7 +47,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
     def _open(self):
 
         # check magic
-        if self.fp.read(6) != _MAGIC:
+        if not _accept(self.fp.read(6)):
             raise SyntaxError("not an XV thumbnail file")
 
         # Skip to beginning of next line
@@ -59,14 +58,14 @@ class XVThumbImageFile(ImageFile.ImageFile):
             s = self.fp.readline()
             if not s:
                 raise SyntaxError("Unexpected EOF reading XV thumbnail file")
-            if s[0] != b'#':
+            if i8(s[0]) != 35:  # ie. when not a comment: '#'
                 break
 
         # parse header line (already read)
         s = s.strip().split()
 
         self.mode = "P"
-        self.size = int(s[0:1]), int(s[1:2])
+        self.size = int(s[0]), int(s[1])
 
         self.palette = ImagePalette.raw("RGB", PALETTE)
 
@@ -74,6 +73,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
             ("raw", (0, 0)+self.size,
              self.fp.tell(), (self.mode, 0, 1)
              )]
+
 
 # --------------------------------------------------------------------
 

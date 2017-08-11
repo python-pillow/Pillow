@@ -54,7 +54,8 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
 
 def install():
 
-    fl_pypy3 = hasattr(sys, 'pypy_version_info') and sys.version_info > (3, 0)
+    fl_pypy3 = (hasattr(sys, 'pypy_version_info') and
+                (3, 0) < sys.version_info < (3, 3))
     fl_win = sys.platform.startswith('win')
     fl_cygwin = sys.platform.startswith('cygwin')
 
@@ -72,8 +73,8 @@ def install():
         # explicitly don't enable if environment says 1 processor
         try:
             # bug, only enable if we can make a Pool. see issue #790 and
-            # http://stackoverflow.com/questions/6033599/oserror-38-errno-38-with-multiprocessing
-            pool = Pool(2)
+            # https://stackoverflow.com/questions/6033599/oserror-38-errno-38-with-multiprocessing
+            Pool(2)
             CCompiler.compile = _mp_compile
         except Exception as msg:
             print("Exception installing mp_compile, proceeding without:"
@@ -81,5 +82,6 @@ def install():
     else:
         print("Single threaded build, not installing mp_compile:"
               "%s processes" % MAX_PROCS)
+
 
 install()

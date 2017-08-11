@@ -25,17 +25,14 @@
 import struct
 from io import BytesIO
 
-from PIL import Image, ImageFile, BmpImagePlugin, PngImagePlugin, _binary
+from . import Image, ImageFile, BmpImagePlugin, PngImagePlugin
+from ._binary import i8, i16le as i16, i32le as i32
 from math import log, ceil
 
 __version__ = "0.1"
 
 #
 # --------------------------------------------------------------------
-
-i8 = _binary.i8
-i16 = _binary.i16le
-i32 = _binary.i32le
 
 _MAGIC = b"\0\0\1\0"
 
@@ -44,16 +41,19 @@ def _save(im, fp, filename):
     fp.write(_MAGIC)  # (2+2)
     sizes = im.encoderinfo.get("sizes",
                                [(16, 16), (24, 24), (32, 32), (48, 48),
-                                (64, 64), (128, 128), (255, 255)])
+                                (64, 64), (128, 128), (256, 256)])
     width, height = im.size
-    filter(lambda x: False if (x[0] > width or x[1] > height or
-                               x[0] > 255 or x[1] > 255) else True, sizes)
+    sizes = filter(lambda x: False if (x[0] > width or x[1] > height or
+                                       x[0] > 256 or x[1] > 256) else True,
+                   sizes)
+    sizes = list(sizes)
     fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes)*16
     for size in sizes:
         width, height = size
-        fp.write(struct.pack("B", width))  # bWidth(1)
-        fp.write(struct.pack("B", height))  # bHeight(1)
+        # 0 means 256
+        fp.write(struct.pack("B", width if width < 256 else 0))  # bWidth(1)
+        fp.write(struct.pack("B", height if height < 256 else 0))  # bHeight(1)
         fp.write(b"\0")  # bColorCount(1)
         fp.write(b"\0")  # bReserved(1)
         fp.write(b"\0\0")  # wPlanes(2)
@@ -176,8 +176,8 @@ class IcoFile(object):
             # figure out where AND mask image starts
             mode = a[0]
             bpp = 8
-            for k in BmpImagePlugin.BIT2MODE.keys():
-                if mode == BmpImagePlugin.BIT2MODE[k][1]:
+            for k, v in BmpImagePlugin.BIT2MODE.items():
+                if mode == v[1]:
                     bpp = k
                     break
 
@@ -215,13 +215,13 @@ class IcoFile(object):
                 total_bytes = int((w * im.size[1]) / 8)
 
                 self.buf.seek(and_mask_offset)
-                maskData = self.buf.read(total_bytes)
+                mask_data = self.buf.read(total_bytes)
 
                 # convert raw data to image
                 mask = Image.frombuffer(
                     '1',            # 1 bpp
                     im.size,        # (w, h)
-                    maskData,       # source chars
+                    mask_data,      # source chars
                     'raw',          # raw decoder
                     ('1;I', int(w/8), -1)  # 1bpp inverted, padded, reversed
                 )
@@ -277,6 +277,7 @@ class IcoImageFile(ImageFile.ImageFile):
         pass
 #
 # --------------------------------------------------------------------
+
 
 Image.register_open(IcoImageFile.format, IcoImageFile, _accept)
 Image.register_save(IcoImageFile.format, _save)

@@ -17,8 +17,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
-from PIL import FontFile
+from __future__ import print_function
+
+from . import Image, FontFile
 
 
 # --------------------------------------------------------------------
@@ -119,9 +120,9 @@ class BdfFontFile(FontFile.FontFile):
 
         # fontname = ";".join(font[1:])
 
-        # print "#", fontname
+        # print("#", fontname)
         # for i in comments:
-        #       print "#", i
+        #       print("#", i)
 
         while True:
             c = bdf_char(fp)
