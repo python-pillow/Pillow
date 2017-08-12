@@ -1975,9 +1975,12 @@ class Image(object):
         """
         self.load()
 
-        if isStringType(channel) and len(channel) == 1:
-            if channel in self.im.mode:
-                channel = self.im.mode.index(channel)
+        if isStringType(channel):
+            try:
+                channel = self.getbands().index(channel)
+            except ValueError:
+                raise ValueError(
+                    'The image has no channel "{}"'.format(channel))
 
         return self._new(self.im.getband(channel))
 
