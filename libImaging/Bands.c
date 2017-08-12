@@ -72,6 +72,19 @@ ImagingGetBand(Imaging imIn, int band)
     return imOut;
 }
 
+
+int
+ImagingSplit(Imaging imIn, Imaging bands[4])
+{
+    int i;
+    for (i = 0; i < imIn->bands; i++) {
+        bands[i] = ImagingNew("L", imIn->xsize, imIn->ysize);
+    }
+
+    return imIn->bands;
+}
+
+
 Imaging
 ImagingPutBand(Imaging imOut, Imaging imIn, int band)
 {
