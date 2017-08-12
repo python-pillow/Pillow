@@ -1112,7 +1112,9 @@ class Image(object):
             raise TypeError("filter argument should be ImageFilter.Filter " +
                             "instance or class")
 
-        if self.im.bands == 1:
+        multiband = getattr(filter, 'is_multiband', False)
+
+        if self.im.bands == 1 or multiband:
             return self._new(filter.filter(self.im))
         # fix to handle multiband images since _imaging doesn't
         ims = []

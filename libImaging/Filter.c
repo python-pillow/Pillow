@@ -100,21 +100,26 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
     (UINT8) in_1[x]   * kernel[7] + \
     (UINT8) in_1[x+d] * kernel[8])
 
-    int x, y;
+    int x, y = 0;
 
     memcpy(imOut->image[0], im->image[0], im->linesize);
-    for (y = 1; y < im->ysize-1; y++) {
-        UINT8* in_1 = (UINT8*) im->image[y-1];
-        UINT8* in0 = (UINT8*) im->image[y];
-        UINT8* in1 = (UINT8*) im->image[y+1];
-        UINT8* out = (UINT8*) imOut->image[y];
+    if (im->bands == 1) {
+        for (y = 1; y < im->ysize-1; y++) {
+            UINT8* in_1 = (UINT8*) im->image[y-1];
+            UINT8* in0 = (UINT8*) im->image[y];
+            UINT8* in1 = (UINT8*) im->image[y+1];
+            UINT8* out = (UINT8*) imOut->image[y];
 
-        out[0] = in0[0];
-        for (x = 1; x < im->xsize-1; x++) {
-            float sum = KERNEL3x3(in_1, in, in1, kernel, 1) + offset;
-            out[x] = clip8(sum);
-         }
-        out[x] = in0[x];
+            out[0] = in0[0];
+            for (x = 1; x < im->xsize-1; x++) {
+                out[x] = clip8(KERNEL3x3(in_1, in, in1, kernel, 1) + offset);
+             }
+            out[x] = in0[x];
+        }
+    } else if (im->bands == 3) {
+        printf("%s\n", "hi there");
+        for (y = 1; y < im->ysize-1; y++) {
+        }
     }
     memcpy(imOut->image[y], im->image[y], im->linesize);
 }
@@ -124,10 +129,10 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
               FLOAT32 offset)
 {
     Imaging imOut;
-    int x, y;
+    int x, y = 0;
     ImagingSectionCookie cookie;
 
-    if (!im || strcmp(im->mode, "L") != 0)
+    if ( ! im || im->type != IMAGING_TYPE_UINT8)
         return (Imaging) ImagingError_ModeError();
 
     if (im->xsize < xsize || im->ysize < ysize)
@@ -178,15 +183,17 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
         /* 5x5 kernel. */
         memcpy(imOut->image[0], im->image[0], im->linesize);
         memcpy(imOut->image[1], im->image[1], im->linesize);
-        for (y = 2; y < im->ysize-2; y++) {
-            for (x = 0; x < 2; x++)
-                imOut->image8[y][x] = im->image8[y][x];
-            for (; x < im->xsize-2; x++) {
-                float sum = KERNEL5x5(im->image8, kernel, 1) + offset;
-                imOut->image8[y][x] = clip8(sum);
+        if (im->bands == 1) {
+            for (y = 2; y < im->ysize-2; y++) {
+                for (x = 0; x < 2; x++)
+                    imOut->image8[y][x] = im->image8[y][x];
+                for (; x < im->xsize-2; x++) {
+                    float sum = KERNEL5x5(im->image8, kernel, 1) + offset;
+                    imOut->image8[y][x] = clip8(sum);
+                }
+                for (; x < im->xsize; x++)
+                    imOut->image8[y][x] = im->image8[y][x];
             }
-            for (; x < im->xsize; x++)
-                imOut->image8[y][x] = im->image8[y][x];
         }
         memcpy(imOut->image[y], im->image[y], im->linesize);
         memcpy(imOut->image[y+1], im->image[y+1], im->linesize);
