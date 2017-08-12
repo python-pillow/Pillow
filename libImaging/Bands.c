@@ -127,3 +127,42 @@ ImagingFillBand(Imaging imOut, int band, int color)
 
     return imOut;
 }
+
+Imaging
+ImagingMerge(const char* mode, Imaging bands[4])
+{
+    int i;
+    int bandsCount = 0;
+    Imaging imOut;
+    Imaging firstBand;
+
+    firstBand = bands[0];
+    if ( ! firstBand) {
+        return (Imaging) ImagingError_ValueError("At least one band required");
+    }
+
+    for (i = 0; i < 4; ++i) {
+        if ( ! bands[i]) {
+            break;
+        }
+        if (bands[i]->bands != 1 || bands[i]->type != IMAGING_TYPE_UINT8) {
+            return (Imaging) ImagingError_ModeError();
+        }
+        if (bands[i]->xsize != firstBand->xsize
+            || bands[i]->ysize != firstBand->ysize) {
+            return (Imaging) ImagingError_Mismatch();
+        }
+    }
+    bandsCount = i;
+
+    imOut = ImagingNew(mode, firstBand->xsize, firstBand->ysize);
+    if ( ! imOut)
+        return NULL;
+
+    if (imOut->bands != bandsCount) {
+        ImagingDelete(imOut);
+        return (Imaging) ImagingError_ValueError("wrong number of bands");
+    }
+
+    return imOut;
+}
