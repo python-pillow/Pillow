@@ -76,9 +76,64 @@ ImagingGetBand(Imaging imIn, int band)
 int
 ImagingSplit(Imaging imIn, Imaging bands[4])
 {
-    int i;
+    int i, x, y;
+
+    /* Check arguments */
+    if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
+        (Imaging) ImagingError_ModeError();
+        return 0;
+    }
+
+    /* Shortcuts */
+    if (imIn->bands == 1) {
+        bands[0] = ImagingCopy(imIn);
+        return imIn->bands;
+    }
+
     for (i = 0; i < imIn->bands; i++) {
         bands[i] = ImagingNew("L", imIn->xsize, imIn->ysize);
+    }
+
+    /* Extract bands from image */
+    if (imIn->bands == 2) {
+        for (y = 0; y < imIn->ysize; y++) {
+            UINT8* in = (UINT8*) imIn->image[y];
+            UINT8* out0 = bands[0]->image8[y];
+            UINT8* out1 = bands[1]->image8[y];
+            for (x = 0; x < imIn->xsize; x++) {
+                out0[x] = in[0];
+                out1[x] = in[3];
+                in += 4;
+            }
+        }
+    } else if (imIn->bands == 3) {
+        for (y = 0; y < imIn->ysize; y++) {
+            UINT8* in = (UINT8*) imIn->image[y];
+            UINT8* out0 = bands[0]->image8[y];
+            UINT8* out1 = bands[1]->image8[y];
+            UINT8* out2 = bands[2]->image8[y];
+            for (x = 0; x < imIn->xsize; x++) {
+                out0[x] = in[0];
+                out1[x] = in[1];
+                out2[x] = in[2];
+                in += 4;
+            }
+        }
+    } else {
+        for (y = 0; y < imIn->ysize; y++) {
+            UINT8* in = (UINT8*) imIn->image[y];
+            UINT8* out0 = bands[0]->image8[y];
+            UINT8* out1 = bands[1]->image8[y];
+            UINT8* out2 = bands[2]->image8[y];
+            UINT8* out3 = bands[3]->image8[y];
+            for (x = 0; x < imIn->xsize; x++) {
+                out0[x] = in[0];
+                out1[x] = in[1];
+                out2[x] = in[2];
+                out3[x] = in[3];
+                in += 4;
+            }
+        }
     }
 
     return imIn->bands;
