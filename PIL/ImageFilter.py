@@ -39,6 +39,7 @@ class Kernel(Filter):
     :param offset: Offset. If given, this value is added to the result,
                     after it has been divided by the scale factor.
     """
+    is_multiband = True
 
     def __init__(self, size, kernel, scale=None, offset=0):
         if scale is None:
@@ -148,6 +149,7 @@ class GaussianBlur(Filter):
     :param radius: Blur radius.
     """
     name = "GaussianBlur"
+    is_multiband = True
 
     def __init__(self, radius=2):
         self.radius = radius
@@ -171,6 +173,7 @@ class UnsharpMask(Filter):
 
     """
     name = "UnsharpMask"
+    is_multiband = True
 
     def __init__(self, radius=2, percent=150, threshold=3):
         self.radius = radius
