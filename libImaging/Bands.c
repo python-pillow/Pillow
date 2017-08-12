@@ -100,7 +100,13 @@ ImagingSplit(Imaging imIn, Imaging bands[4])
             UINT8* in = (UINT8*) imIn->image[y];
             UINT8* out0 = bands[0]->image8[y];
             UINT8* out1 = bands[1]->image8[y];
-            for (x = 0; x < imIn->xsize; x++) {
+            x = 0;
+            for (; x < imIn->xsize - 3; x += 4) {
+                *((UINT32*) (out0 + x)) = MAKE_UINT32(in[0], in[4], in[8], in[12]);
+                *((UINT32*) (out1 + x)) = MAKE_UINT32(in[0+3], in[4+3], in[8+3], in[12+3]);
+                in += 16;
+            }
+            for (; x < imIn->xsize; x++) {
                 out0[x] = in[0];
                 out1[x] = in[3];
                 in += 4;
@@ -112,7 +118,14 @@ ImagingSplit(Imaging imIn, Imaging bands[4])
             UINT8* out0 = bands[0]->image8[y];
             UINT8* out1 = bands[1]->image8[y];
             UINT8* out2 = bands[2]->image8[y];
-            for (x = 0; x < imIn->xsize; x++) {
+            x = 0;
+            for (; x < imIn->xsize - 3; x += 4) {
+                *((UINT32*) (out0 + x)) = MAKE_UINT32(in[0], in[4], in[8], in[12]);
+                *((UINT32*) (out1 + x)) = MAKE_UINT32(in[0+1], in[4+1], in[8+1], in[12+1]);
+                *((UINT32*) (out2 + x)) = MAKE_UINT32(in[0+2], in[4+2], in[8+2], in[12+2]);
+                in += 16;
+            }
+            for (; x < imIn->xsize; x++) {
                 out0[x] = in[0];
                 out1[x] = in[1];
                 out2[x] = in[2];
@@ -126,7 +139,15 @@ ImagingSplit(Imaging imIn, Imaging bands[4])
             UINT8* out1 = bands[1]->image8[y];
             UINT8* out2 = bands[2]->image8[y];
             UINT8* out3 = bands[3]->image8[y];
-            for (x = 0; x < imIn->xsize; x++) {
+            x = 0;
+            for (; x < imIn->xsize - 3; x += 4) {
+                *((UINT32*) (out0 + x)) = MAKE_UINT32(in[0], in[4], in[8], in[12]);
+                *((UINT32*) (out1 + x)) = MAKE_UINT32(in[0+1], in[4+1], in[8+1], in[12+1]);
+                *((UINT32*) (out2 + x)) = MAKE_UINT32(in[0+2], in[4+2], in[8+2], in[12+2]);
+                *((UINT32*) (out3 + x)) = MAKE_UINT32(in[0+3], in[4+3], in[8+3], in[12+3]);
+                in += 16;
+            }
+            for (; x < imIn->xsize; x++) {
                 out0[x] = in[0];
                 out1[x] = in[1];
                 out2[x] = in[2];
