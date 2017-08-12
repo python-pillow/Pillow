@@ -26,6 +26,16 @@
 
 #include "Imaging.h"
 
+
+static inline UINT8 clip8(float in)
+{
+    if (in <= 0.0)
+        return 0;
+    if (in >= 255.0)
+        return 255;
+    return (UINT8) in;
+}
+
 Imaging
 ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
 {
@@ -134,17 +144,12 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
     if (xsize == 3) {
         /* 3x3 kernel. */
         for (x = 0; x < im->xsize; x++)
-            imOut->image[0][x] = im->image8[0][x];
+            imOut->image8[0][x] = im->image8[0][x];
         for (y = 1; y < im->ysize-1; y++) {
-            imOut->image[y][0] = im->image8[y][0];
+            imOut->image8[y][0] = im->image8[y][0];
             for (x = 1; x < im->xsize-1; x++) {
                 sum = KERNEL3x3(im->image8, kernel, 1) + offset;
-                if (sum <= 0)
-                    imOut->image8[y][x] = 0;
-                else if (sum >= 255)
-                    imOut->image8[y][x] = 255;
-                else
-                    imOut->image8[y][x] = (UINT8) sum;
+                imOut->image8[y][x] = clip8(sum);
              }
             imOut->image8[y][x] = im->image8[y][x];
         }
@@ -160,12 +165,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
                 imOut->image8[y][x] = im->image8[y][x];
             for (; x < im->xsize-2; x++) {
                 sum = KERNEL5x5(im->image8, kernel, 1) + offset;
-                if (sum <= 0)
-                    imOut->image8[y][x] = 0;
-                else if (sum >= 255)
-                    imOut->image8[y][x] = 255;
-                else
-                    imOut->image8[y][x] = (UINT8) sum;
+                imOut->image8[y][x] = clip8(sum);
             }
             for (; x < im->xsize; x++)
                 imOut->image8[y][x] = im->image8[y][x];
