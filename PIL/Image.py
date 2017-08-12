@@ -1948,7 +1948,7 @@ class Image(object):
         blue).
 
         If you need only one band, :py:meth:`~PIL.Image.Image.getchannel`
-        method can be more convinient and faster.
+        method can be more convenient and faster.
 
         :returns: A tuple containing bands.
         """
@@ -1964,7 +1964,7 @@ class Image(object):
 
     def getchannel(self, channel):
         """
-        Returns an image contained single channel of the source image.
+        Returns an image containing a single channel of the source image.
 
         :param channel: What channel to return. Could be index
           (0 for "R" channel of "RGB") or channel name
