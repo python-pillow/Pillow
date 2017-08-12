@@ -5,6 +5,13 @@
 
 #define ROUND_UP(f) ((int) ((f) >= 0.0 ? (f) + 0.5F : (f) - 0.5F))
 
+#ifdef WORDS_BIGENDIAN
+    #define MAKE_UINT32(u0, u1, u2, u3) (u3 | (u2<<8) | (u1<<16) | (u0<<24))
+#else
+    #define MAKE_UINT32(u0, u1, u2, u3) (u0 | (u1<<8) | (u2<<16) | (u3<<24))
+#endif
+
+
 struct filter {
     double (*filter)(double x);
     double support;
@@ -281,8 +288,8 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                         ss0 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 0]) * k[x];
                         ss3 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 3]) * k[x];
                     }
-                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
-                    imOut->image[yy][xx*4 + 3] = clip8(ss3);
+                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
+                        clip8(ss0), 0, 0, clip8(ss3));
                 }
             }
         } else if (imIn->bands == 3) {
@@ -297,9 +304,8 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                         ss1 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 1]) * k[x];
                         ss2 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 2]) * k[x];
                     }
-                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
-                    imOut->image[yy][xx*4 + 1] = clip8(ss1);
-                    imOut->image[yy][xx*4 + 2] = clip8(ss2);
+                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
+                        clip8(ss0), clip8(ss1), clip8(ss2), 0);
                 }
             }
         } else {
@@ -315,10 +321,8 @@ ImagingResampleHorizontal_8bpc(Imaging imIn, int xsize, struct filter *filterp)
                         ss2 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 2]) * k[x];
                         ss3 += ((UINT8) imIn->image[yy][(x + xmin)*4 + 3]) * k[x];
                     }
-                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
-                    imOut->image[yy][xx*4 + 1] = clip8(ss1);
-                    imOut->image[yy][xx*4 + 2] = clip8(ss2);
-                    imOut->image[yy][xx*4 + 3] = clip8(ss3);
+                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
+                        clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
                 }
             }
         }
@@ -386,8 +390,8 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
                         ss0 += ((UINT8) imIn->image[y + ymin][xx*4 + 0]) * k[y];
                         ss3 += ((UINT8) imIn->image[y + ymin][xx*4 + 3]) * k[y];
                     }
-                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
-                    imOut->image[yy][xx*4 + 3] = clip8(ss3);
+                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
+                        clip8(ss0), 0, 0, clip8(ss3));
                 }
             }
         } else if (imIn->bands == 3) {
@@ -402,9 +406,8 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
                         ss1 += ((UINT8) imIn->image[y + ymin][xx*4 + 1]) * k[y];
                         ss2 += ((UINT8) imIn->image[y + ymin][xx*4 + 2]) * k[y];
                     }
-                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
-                    imOut->image[yy][xx*4 + 1] = clip8(ss1);
-                    imOut->image[yy][xx*4 + 2] = clip8(ss2);
+                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
+                        clip8(ss0), clip8(ss1), clip8(ss2), 0);
                 }
             }
         } else {
@@ -420,10 +423,8 @@ ImagingResampleVertical_8bpc(Imaging imIn, int ysize, struct filter *filterp)
                         ss2 += ((UINT8) imIn->image[y + ymin][xx*4 + 2]) * k[y];
                         ss3 += ((UINT8) imIn->image[y + ymin][xx*4 + 3]) * k[y];
                     }
-                    imOut->image[yy][xx*4 + 0] = clip8(ss0);
-                    imOut->image[yy][xx*4 + 1] = clip8(ss1);
-                    imOut->image[yy][xx*4 + 2] = clip8(ss2);
-                    imOut->image[yy][xx*4 + 3] = clip8(ss3);
+                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
+                        clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
                 }
             }
         }
