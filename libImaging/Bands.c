@@ -131,14 +131,14 @@ ImagingFillBand(Imaging imOut, int band, int color)
 Imaging
 ImagingMerge(const char* mode, Imaging bands[4])
 {
-    int i;
+    int i, x, y;
     int bandsCount = 0;
     Imaging imOut;
     Imaging firstBand;
 
     firstBand = bands[0];
     if ( ! firstBand) {
-        return (Imaging) ImagingError_ValueError("At least one band required");
+        return (Imaging) ImagingError_ValueError("wrong number of bands");
     }
 
     for (i = 0; i < 4; ++i) {
@@ -162,6 +162,50 @@ ImagingMerge(const char* mode, Imaging bands[4])
     if (imOut->bands != bandsCount) {
         ImagingDelete(imOut);
         return (Imaging) ImagingError_ValueError("wrong number of bands");
+    }
+
+    if (imOut->bands == 1)
+        return ImagingCopy2(imOut, firstBand);
+
+    if (imOut->bands == 2) {
+        for (y = 0; y < imOut->ysize; y++) {
+            UINT8* in0 = bands[0]->image8[y];
+            UINT8* in1 = bands[1]->image8[y];
+            UINT8* out = (UINT8*) imOut->image[y];
+            for (x = 0; x < imOut->xsize; x++) {
+                out[0] = *in0;
+                out[3] = *in1;
+                out += 4;
+            }
+        }
+    } else if (imOut->bands == 3) {
+        for (y = 0; y < imOut->ysize; y++) {
+            UINT8* in0 = bands[0]->image8[y];
+            UINT8* in1 = bands[1]->image8[y];
+            UINT8* in2 = bands[2]->image8[y];
+            UINT8* out = (UINT8*) imOut->image[y];
+            for (x = 0; x < imOut->xsize; x++) {
+                out[0] = *in0;
+                out[1] = *in1;
+                out[2] = *in2;
+                out += 4;
+            }
+        }
+    } else if (imOut->bands == 4) {
+        for (y = 0; y < imOut->ysize; y++) {
+            UINT8* in0 = bands[0]->image8[y];
+            UINT8* in1 = bands[1]->image8[y];
+            UINT8* in2 = bands[2]->image8[y];
+            UINT8* in3 = bands[3]->image8[y];
+            UINT8* out = (UINT8*) imOut->image[y];
+            for (x = 0; x < imOut->xsize; x++) {
+                out[0] = *in0;
+                out[1] = *in1;
+                out[2] = *in2;
+                out[3] = *in3;
+                out += 4;
+            }
+        }
     }
 
     return imOut;
