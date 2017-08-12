@@ -136,6 +136,9 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
     if (!imOut)
         return NULL;
 
+    // Add one time for rounding
+    offset += 0.5;
+
 #define KERNEL5x5(image, kernel, d) ( \
     (int) image[y+2][x-d-d] * kernel[0] + \
     (int) image[y+2][x-d]   * kernel[1] + \
