@@ -143,8 +143,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
 
     if (xsize == 3) {
         /* 3x3 kernel. */
-        for (x = 0; x < im->xsize; x++)
-            imOut->image8[0][x] = im->image8[0][x];
+        memcpy(imOut->image[0], im->image[0], im->linesize);
         for (y = 1; y < im->ysize-1; y++) {
             imOut->image8[y][0] = im->image8[y][0];
             for (x = 1; x < im->xsize-1; x++) {
@@ -153,14 +152,12 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
              }
             imOut->image8[y][x] = im->image8[y][x];
         }
-        for (x = 0; x < im->xsize; x++)
-            imOut->image8[y][x] = im->image8[y][x];
+        memcpy(imOut->image[y], im->image[y], im->linesize);
     } else {
         /* 5x5 kernel. */
-        for (y = 0; y < 2; y++)
-            for (x = 0; x < im->xsize; x++)
-                imOut->image8[y][x] = im->image8[y][x];
-        for (; y < im->ysize-2; y++) {
+        memcpy(imOut->image[0], im->image[0], im->linesize);
+        memcpy(imOut->image[1], im->image[1], im->linesize);
+        for (y = 2; y < im->ysize-2; y++) {
             for (x = 0; x < 2; x++)
                 imOut->image8[y][x] = im->image8[y][x];
             for (; x < im->xsize-2; x++) {
@@ -170,9 +167,8 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
             for (; x < im->xsize; x++)
                 imOut->image8[y][x] = im->image8[y][x];
         }
-        for (; y < im->ysize; y++)
-            for (x = 0; x < im->xsize; x++)
-                imOut->image8[y][x] = im->image8[y][x];
+        memcpy(imOut->image[y], im->image[y], im->linesize);
+        memcpy(imOut->image[y+1], im->image[y+1], im->linesize);
     }
     return imOut;
 }
