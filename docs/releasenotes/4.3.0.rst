@@ -2,7 +2,7 @@
 -----
 
 Get One Channel From Image
-============================
+==========================
 
 New method :py:meth:`PIL.Image.Image.getchannel` added.
 It returns single channel by index or name. For example,
