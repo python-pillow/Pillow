@@ -76,7 +76,7 @@ ImagingGetBand(Imaging imIn, int band)
 int
 ImagingSplit(Imaging imIn, Imaging bands[4])
 {
-    int i, x, y;
+    int i, j, x, y;
 
     /* Check arguments */
     if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
@@ -92,6 +92,12 @@ ImagingSplit(Imaging imIn, Imaging bands[4])
 
     for (i = 0; i < imIn->bands; i++) {
         bands[i] = ImagingNew("L", imIn->xsize, imIn->ysize);
+        if ( ! bands[i]) {
+            for (j = 0; j < i; ++j) {
+                ImagingDelete(bands[j]);
+            }
+            return 0;
+        }
     }
 
     /* Extract bands from image */
