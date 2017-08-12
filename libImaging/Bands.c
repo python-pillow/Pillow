@@ -24,12 +24,8 @@
 
 #ifdef WORDS_BIGENDIAN
     #define MAKE_UINT32(u0, u1, u2, u3) (u3 | (u2<<8) | (u1<<16) | (u0<<24))
-    #define MAKE_UINT32_3(u0, u1, u2)   ((u2<<8) | (u1<<16) | (u0<<24))
-    #define MAKE_UINT32_2(u0, u3)       (u3 | (u0<<24))
 #else
     #define MAKE_UINT32(u0, u1, u2, u3) (u0 | (u1<<8) | (u2<<16) | (u3<<24))
-    #define MAKE_UINT32_3(u0, u1, u2)   (u0 | (u1<<8) | (u2<<16))
-    #define MAKE_UINT32_2(u0, u3)       (u0 | (u3<<24))
 #endif
 
 
@@ -184,7 +180,7 @@ ImagingMerge(const char* mode, Imaging bands[4])
             UINT8* in1 = bands[1]->image8[y];
             UINT32* out = (UINT32*) imOut->image32[y];
             for (x = 0; x < imOut->xsize; x++) {
-                out[x] = MAKE_UINT32_2(in0[x], in1[x]);
+                out[x] = MAKE_UINT32(in0[x], 0, 0, in1[x]);
             }
         }
     } else if (imOut->bands == 3) {
@@ -194,7 +190,7 @@ ImagingMerge(const char* mode, Imaging bands[4])
             UINT8* in2 = bands[2]->image8[y];
             UINT32* out = (UINT32*) imOut->image32[y];
             for (x = 0; x < imOut->xsize; x++) {
-                out[x] = MAKE_UINT32_3(in0[x], in1[x], in2[x]);
+                out[x] = MAKE_UINT32(in0[x], in1[x], in2[x], 0);
             }
         }
     } else if (imOut->bands == 4) {
