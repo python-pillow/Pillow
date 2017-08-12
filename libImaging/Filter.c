@@ -27,6 +27,13 @@
 #include "Imaging.h"
 
 
+#ifdef WORDS_BIGENDIAN
+    #define MAKE_UINT32(u0, u1, u2, u3) (u3 | (u2<<8) | (u1<<16) | (u0<<24))
+#else
+    #define MAKE_UINT32(u0, u1, u2, u3) (u0 | (u1<<8) | (u2<<16) | (u3<<24))
+#endif
+
+
 static inline UINT8 clip8(float in)
 {
     if (in <= 0.0)
@@ -89,7 +96,7 @@ void
 ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
                  float offset)
 {
-#define KERNEL3x3(in_1, in, in1, kernel, d) ( \
+#define KERNEL3x3(in_1, in, in1, x, kernel, d) ( \
     (UINT8) in1[x-d]  * kernel[0] + \
     (UINT8) in1[x]    * kernel[1] + \
     (UINT8) in1[x+d]  * kernel[2] + \
@@ -100,7 +107,7 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
     (UINT8) in_1[x]   * kernel[7] + \
     (UINT8) in_1[x+d] * kernel[8])
 
-    int x, y = 0;
+    int x = 0, y = 0;
 
     memcpy(imOut->image[0], im->image[0], im->linesize);
     if (im->bands == 1) {
@@ -112,13 +119,47 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
 
             out[0] = in0[0];
             for (x = 1; x < im->xsize-1; x++) {
-                out[x] = clip8(KERNEL3x3(in_1, in, in1, kernel, 1) + offset);
+                float ss = KERNEL3x3(in_1, in, in1, x, kernel, 1);
+                out[x] = clip8(ss + offset);
              }
             out[x] = in0[x];
         }
-    } else if (im->bands == 3) {
-        printf("%s\n", "hi there");
+    } else {
         for (y = 1; y < im->ysize-1; y++) {
+            UINT8* in_1 = (UINT8*) im->image[y-1];
+            UINT8* in0 = (UINT8*) im->image[y];
+            UINT8* in1 = (UINT8*) im->image[y+1];
+            UINT32* out = (UINT32*) imOut->image[y];
+
+            out[0] = ((UINT32*) in0)[0];
+            if (im->bands == 2) {
+                for (x = 1; x < im->xsize-1; x++) {
+                    float ss0 = KERNEL3x3(in_1, in, in1, x*4+0, kernel, 4);
+                    float ss3 = KERNEL3x3(in_1, in, in1, x*4+3, kernel, 4);
+                    out[x] = MAKE_UINT32(
+                        clip8(ss0 + offset), 0, 0, clip8(ss3 + offset));
+                }
+            } else if (im->bands == 3) {
+                for (x = 1; x < im->xsize-1; x++) {
+                    float ss0 = KERNEL3x3(in_1, in, in1, x*4+0, kernel, 4);
+                    float ss1 = KERNEL3x3(in_1, in, in1, x*4+1, kernel, 4);
+                    float ss2 = KERNEL3x3(in_1, in, in1, x*4+2, kernel, 4);
+                    out[x] = MAKE_UINT32(
+                        clip8(ss0 + offset), clip8(ss1 + offset),
+                        clip8(ss2 + offset), 0);
+                }
+            } else if (im->bands == 4) {
+                for (x = 1; x < im->xsize-1; x++) {
+                    float ss0 = KERNEL3x3(in_1, in, in1, x*4+0, kernel, 4);
+                    float ss1 = KERNEL3x3(in_1, in, in1, x*4+1, kernel, 4);
+                    float ss2 = KERNEL3x3(in_1, in, in1, x*4+2, kernel, 4);
+                    float ss3 = KERNEL3x3(in_1, in, in1, x*4+3, kernel, 4);
+                    out[x] = MAKE_UINT32(
+                        clip8(ss0 + offset), clip8(ss1 + offset),
+                        clip8(ss2 + offset), clip8(ss3 + offset));
+                }
+            }
+            out[x] = ((UINT32*) in0)[x];
         }
     }
     memcpy(imOut->image[y], im->image[y], im->linesize);
