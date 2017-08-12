@@ -22,6 +22,13 @@
 #define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
 
 
+#ifdef WORDS_BIGENDIAN
+    #define MAKE_UINT32(u0, u1, u2, u3) (u3 | (u2<<8)  | (u1<<16)  | (u0<<24))
+#else
+    #define MAKE_UINT32(u0, u1, u2, u3) (u0 | (u1<<8)  | (u2<<16)  | (u3<<24))
+#endif
+
+
 Imaging
 ImagingGetBand(Imaging imIn, int band)
 {
@@ -51,7 +58,12 @@ ImagingGetBand(Imaging imIn, int band)
     for (y = 0; y < imIn->ysize; y++) {
         UINT8* in = (UINT8*) imIn->image[y] + band;
         UINT8* out = imOut->image8[y];
-        for (x = 0; x < imIn->xsize; x++) {
+        x = 0;
+        for (; x < imIn->xsize - 3; x += 4) {
+            *((UINT32*) (out + x)) = MAKE_UINT32(in[0], in[4], in[8], in[12]);
+            in += 16;
+        }
+        for (; x < imIn->xsize; x++) {
             out[x] = *in;
             in += 4;
         }
