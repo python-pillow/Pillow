@@ -41,6 +41,7 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
 {
     Imaging imOut;
     int x, y;
+    ImagingSectionCookie cookie;
 
     if (xmargin < 0 && ymargin < 0)
         return (Imaging) ImagingError_ValueError("bad kernel size");
@@ -70,11 +71,13 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
         EXPAND_LINE(type, image, imIn->ysize-1, ymargin+imIn->ysize+y);\
     }
 
+    ImagingSectionEnter(&cookie);
     if (imIn->image8) {
         EXPAND(UINT8, image8);
     } else {
         EXPAND(INT32, image32);
     }
+    ImagingSectionLeave(&cookie);
 
     ImagingCopyInfo(imOut, imIn);
 
@@ -122,6 +125,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
 {
     Imaging imOut;
     int x, y;
+    ImagingSectionCookie cookie;
 
     if (!im || strcmp(im->mode, "L") != 0)
         return (Imaging) ImagingError_ModeError();
@@ -166,6 +170,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
     (int) image[y-2][x+d]   * kernel[23] + \
     (int) image[y-2][x+d+d] * kernel[24])
 
+    ImagingSectionEnter(&cookie);
     if (xsize == 3) {
         /* 3x3 kernel. */
         ImagingFilter3x3(imOut, im, kernel, offset);
@@ -186,6 +191,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
         memcpy(imOut->image[y], im->image[y], im->linesize);
         memcpy(imOut->image[y+1], im->image[y+1], im->linesize);
     }
+    ImagingSectionLeave(&cookie);
     return imOut;
 }
 
