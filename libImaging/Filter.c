@@ -120,6 +120,8 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
 
     memcpy(imOut->image[0], im->image[0], im->linesize);
     if (im->bands == 1) {
+        // Add one time for rounding
+        offset += 0.5;
         for (y = 1; y < im->ysize-1; y++) {
             UINT8* in_1 = (UINT8*) im->image[y-1];
             UINT8* in0 = (UINT8*) im->image[y];
@@ -137,6 +139,8 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
             out[x] = in0[x];
         }
     } else {
+        // Add one time for rounding
+        offset += 0.5;
         for (y = 1; y < im->ysize-1; y++) {
             UINT8* in_1 = (UINT8*) im->image[y-1];
             UINT8* in0 = (UINT8*) im->image[y];
@@ -218,6 +222,8 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
     memcpy(imOut->image[0], im->image[0], im->linesize);
     memcpy(imOut->image[1], im->image[1], im->linesize);
     if (im->bands == 1) {
+        // Add one time for rounding
+        offset += 0.5;
         for (y = 2; y < im->ysize-2; y++) {
             UINT8* in_2 = (UINT8*) im->image[y-2];
             UINT8* in_1 = (UINT8*) im->image[y-1];
@@ -241,6 +247,8 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
             out[x+1] = in0[x+1];
         }
     } else {
+        // Add one time for rounding
+        offset += 0.5;
         for (y = 2; y < im->ysize-2; y++) {
             UINT8* in_2 = (UINT8*) im->image[y-2];
             UINT8* in_1 = (UINT8*) im->image[y-1];
@@ -347,9 +355,6 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
     imOut = ImagingNew(im->mode, im->xsize, im->ysize);
     if (!imOut)
         return NULL;
-
-    // Add one time for rounding
-    offset += 0.5;
 
     ImagingSectionEnter(&cookie);
     if (xsize == 3) {
