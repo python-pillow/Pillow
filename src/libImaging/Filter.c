@@ -97,11 +97,6 @@ void
 ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
                  float offset)
 {
-#define KERNEL1x3(in0, x, kernel, d) ( \
-    _i2f((UINT8) in0[x-d])  * (kernel)[0] + \
-    _i2f((UINT8) in0[x])    * (kernel)[1] + \
-    _i2f((UINT8) in0[x+d])  * (kernel)[2])
-
 #define MM_KERNEL1x3_LOAD(row, x) \
     pix0##row = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in1[x])); \
     pix1##row = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in0[x])); \
@@ -117,20 +112,27 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
     memcpy(imOut->image[0], im->image[0], im->linesize);
     if (im->bands == 1) {
         // Add one time for rounding
-        offset += 0.5;
+        offset += 0.5 / 4;
         for (y = 1; y < im->ysize-1; y++) {
             UINT8* in_1 = (UINT8*) im->image[y-1];
             UINT8* in0 = (UINT8*) im->image[y];
             UINT8* in1 = (UINT8*) im->image[y+1];
             UINT8* out = (UINT8*) imOut->image[y];
+            __m128 kernel0 = _mm_set_ps(0, kernel[2], kernel[1], kernel[0]);
+            __m128 kernel1 = _mm_set_ps(0, kernel[5], kernel[4], kernel[3]);
+            __m128 kernel2 = _mm_set_ps(0, kernel[8], kernel[7], kernel[6]);
 
             out[0] = in0[0];
             for (x = 1; x < im->xsize-1; x++) {
-                float ss = offset;
-                ss += KERNEL1x3(in1, x, &kernel[0], 1);
-                ss += KERNEL1x3(in0, x, &kernel[3], 1);
-                ss += KERNEL1x3(in_1, x, &kernel[6], 1);
-                out[x] = clip8(ss);
+                __m128 ss = _mm_set1_ps(offset);;
+                __m128 pix00, pix10, pix20;
+                MM_KERNEL1x3_LOAD(0, x-1);
+                ss = _mm_add_ps(ss, _mm_mul_ps(pix00, kernel0));
+                ss = _mm_add_ps(ss, _mm_mul_ps(pix10, kernel1));
+                ss = _mm_add_ps(ss, _mm_mul_ps(pix20, kernel2));
+                ss = _mm_hadd_ps(ss, ss);
+                ss = _mm_hadd_ps(ss, ss);
+                out[x] = clip8(_mm_cvtss_f32(ss));
              }
             out[x] = in0[x];
         }
