@@ -26,6 +26,15 @@
 
 #include "Imaging.h"
 
+#include <emmintrin.h>
+#include <mmintrin.h>
+#include <smmintrin.h>
+
+#if defined(__AVX2__)
+    #include <immintrin.h>
+#endif
+
+
 
 static inline UINT8 clip8(float in)
 {
@@ -93,6 +102,14 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
     _i2f((UINT8) in0[x])    * (kernel)[1] + \
     _i2f((UINT8) in0[x+d])  * (kernel)[2])
 
+#define MM_KERNEL1x3(ss, in0, x, kernel, d) \
+    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[0]), \
+        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x-d])))); \
+    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[1]), \
+        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+0])))); \
+    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[2]), \
+        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+d]))));
+
     int x = 0, y = 0;
 
     memcpy(imOut->image[0], im->image[0], im->linesize);
@@ -116,65 +133,25 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
             out[x] = in0[x];
         }
     } else {
-        // Add one time for rounding
-        offset += 0.5;
         for (y = 1; y < im->ysize-1; y++) {
-            UINT8* in_1 = (UINT8*) im->image[y-1];
-            UINT8* in0 = (UINT8*) im->image[y];
-            UINT8* in1 = (UINT8*) im->image[y+1];
+            UINT32* in_1 = (UINT32*) im->image[y-1];
+            UINT32* in0 = (UINT32*) im->image[y];
+            UINT32* in1 = (UINT32*) im->image[y+1];
             UINT32* out = (UINT32*) imOut->image[y];
 
             out[0] = ((UINT32*) in0)[0];
-            if (im->bands == 2) {
-                for (x = 1; x < im->xsize-1; x++) {
-                    float ss0 = offset;
-                    float ss3 = offset;
-                    ss0 += KERNEL1x3(in1, x*4+0, &kernel[0], 4);
-                    ss3 += KERNEL1x3(in1, x*4+3, &kernel[0], 4);
-                    ss0 += KERNEL1x3(in0, x*4+0, &kernel[3], 4);
-                    ss3 += KERNEL1x3(in0, x*4+3, &kernel[3], 4);
-                    ss0 += KERNEL1x3(in_1, x*4+0, &kernel[6], 4);
-                    ss3 += KERNEL1x3(in_1, x*4+3, &kernel[6], 4);
-                    out[x] = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
-                }
-            } else if (im->bands == 3) {
-                for (x = 1; x < im->xsize-1; x++) {
-                    float ss0 = offset;
-                    float ss1 = offset;
-                    float ss2 = offset;
-                    ss0 += KERNEL1x3(in1, x*4+0, &kernel[0], 4);
-                    ss1 += KERNEL1x3(in1, x*4+1, &kernel[0], 4);
-                    ss2 += KERNEL1x3(in1, x*4+2, &kernel[0], 4);
-                    ss0 += KERNEL1x3(in0, x*4+0, &kernel[3], 4);
-                    ss1 += KERNEL1x3(in0, x*4+1, &kernel[3], 4);
-                    ss2 += KERNEL1x3(in0, x*4+2, &kernel[3], 4);
-                    ss0 += KERNEL1x3(in_1, x*4+0, &kernel[6], 4);
-                    ss1 += KERNEL1x3(in_1, x*4+1, &kernel[6], 4);
-                    ss2 += KERNEL1x3(in_1, x*4+2, &kernel[6], 4);
-                    out[x] = MAKE_UINT32(
-                        clip8(ss0), clip8(ss1), clip8(ss2), 0);
-                }
-            } else if (im->bands == 4) {
-                for (x = 1; x < im->xsize-1; x++) {
-                    float ss0 = offset;
-                    float ss1 = offset;
-                    float ss2 = offset;
-                    float ss3 = offset;
-                    ss0 += KERNEL1x3(in1, x*4+0, &kernel[0], 4);
-                    ss1 += KERNEL1x3(in1, x*4+1, &kernel[0], 4);
-                    ss2 += KERNEL1x3(in1, x*4+2, &kernel[0], 4);
-                    ss3 += KERNEL1x3(in1, x*4+3, &kernel[0], 4);
-                    ss0 += KERNEL1x3(in0, x*4+0, &kernel[3], 4);
-                    ss1 += KERNEL1x3(in0, x*4+1, &kernel[3], 4);
-                    ss2 += KERNEL1x3(in0, x*4+2, &kernel[3], 4);
-                    ss3 += KERNEL1x3(in0, x*4+3, &kernel[3], 4);
-                    ss0 += KERNEL1x3(in_1, x*4+0, &kernel[6], 4);
-                    ss1 += KERNEL1x3(in_1, x*4+1, &kernel[6], 4);
-                    ss2 += KERNEL1x3(in_1, x*4+2, &kernel[6], 4);
-                    ss3 += KERNEL1x3(in_1, x*4+3, &kernel[6], 4);
-                    out[x] = MAKE_UINT32(
-                        clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
-                }
+            for (x = 1; x < im->xsize-1; x++) {
+                __m128 ss = _mm_set1_ps(offset);
+                __m128i ssi;
+
+                MM_KERNEL1x3(ss, in1, x, &kernel[0], 1);
+                MM_KERNEL1x3(ss, in0, x, &kernel[3], 1);
+                MM_KERNEL1x3(ss, in_1, x, &kernel[6], 1);
+
+                ssi = _mm_cvtps_epi32(ss);
+                ssi = _mm_packs_epi32(ssi, ssi);
+                ssi = _mm_packus_epi16(ssi, ssi);
+                out[x] = _mm_cvtsi128_si32(ssi);
             }
             out[x] = ((UINT32*) in0)[x];
         }
