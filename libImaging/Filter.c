@@ -92,12 +92,6 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
 }
 
 
-#ifdef __GNUC__
-    #define GCC_VERSION (__GNUC__ * 10000 \
-                       + __GNUC_MINOR__ * 100 \
-                       + __GNUC_PATCHLEVEL__)
-#endif
-
 /* This is work around bug in GCC prior 4.9 in 64 bit mode.
    GCC generates code with partial dependency which 3 times slower.
    See: http://stackoverflow.com/a/26588074/253146 */
