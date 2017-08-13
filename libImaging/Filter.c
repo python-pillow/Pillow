@@ -97,7 +97,7 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
    See: http://stackoverflow.com/a/26588074/253146 */
 #if defined(__x86_64__) && defined(__SSE__) &&  ! defined(__NO_INLINE__) && \
     ! defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900)
-static float __attribute__((always_inline)) i2f(int v) {
+static float __attribute__((always_inline)) inline i2f(int v) {
     float x;
     __asm__("xorps %0, %0; cvtsi2ss %1, %0" : "=X"(x) : "r"(v) );
     return x;
