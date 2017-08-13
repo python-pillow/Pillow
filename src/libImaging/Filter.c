@@ -109,13 +109,15 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
     (_i2f((UINT8)in0[x - d]) * (kernel)[0] + _i2f((UINT8)in0[x]) * (kernel)[1] + \
      _i2f((UINT8)in0[x + d]) * (kernel)[2])
 
-#define MM_KERNEL1x3(ss, in0, x, kernel, d) \
-    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[0]), \
-        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x-d])))); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[1]), \
-        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+0])))); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[2]), \
-        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+d]))));
+#define MM_KERNEL1x3_LOAD(row, x) \
+    pix0##row = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in1[x])); \
+    pix1##row = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in0[x])); \
+    pix2##row = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in_1[x]));
+
+#define MM_KERNEL1x3_SUM(row, kindex) \
+    ss = _mm_add_ps(ss, _mm_mul_ps(pix0##row, _mm_set1_ps(kernel[0 + kindex]))); \
+    ss = _mm_add_ps(ss, _mm_mul_ps(pix1##row, _mm_set1_ps(kernel[3 + kindex]))); \
+    ss = _mm_add_ps(ss, _mm_mul_ps(pix2##row, _mm_set1_ps(kernel[6 + kindex])));
 
     int x = 0, y = 0;
 
@@ -145,13 +147,11 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
             UINT32* in0 = (UINT32*) im->image[y];
             UINT32* in1 = (UINT32*) im->image[y+1];
             UINT32* out = (UINT32*) imOut->image[y];
-            __m128 pix00 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[0]));
-            __m128 pix01 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[1]));
-            __m128 pix10 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[0]));
-            __m128 pix11 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[1]));
-            __m128 pix20 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[0]));
-            __m128 pix21 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[1]));
+            __m128 pix00, pix10, pix20;
+            __m128 pix01, pix11, pix21;
             __m128 pix02, pix12, pix22;
+            MM_KERNEL1x3_LOAD(0, 0);
+            MM_KERNEL1x3_LOAD(1, 1);
 
             out[0] = in0[0];
             x = 1;
@@ -160,49 +160,24 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 __m128i ssi0, ssi1, ssi2;
 
                 ss = _mm_set1_ps(offset);
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[0]), pix00));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[3]), pix10));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[6]), pix20));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[1]), pix01));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[4]), pix11));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[7]), pix21));
-                pix02 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+1]));
-                pix12 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+1]));
-                pix22 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+1]));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[2]), pix02));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[5]), pix12));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[8]), pix22));
+                MM_KERNEL1x3_SUM(0, 0);
+                MM_KERNEL1x3_SUM(1, 1);
+                MM_KERNEL1x3_LOAD(2, x+1);
+                MM_KERNEL1x3_SUM(2, 2);
                 ssi0 = _mm_cvtps_epi32(ss);
 
-
                 ss = _mm_set1_ps(offset);
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[0]), pix01));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[3]), pix11));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[6]), pix21));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[1]), pix02));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[4]), pix12));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[7]), pix22));
-                pix00 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+2]));
-                pix10 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+2]));
-                pix20 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+2]));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[2]), pix00));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[5]), pix10));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[8]), pix20));
+                MM_KERNEL1x3_SUM(1, 0);
+                MM_KERNEL1x3_SUM(2, 1);
+                MM_KERNEL1x3_LOAD(0, x+2);
+                MM_KERNEL1x3_SUM(0, 2);
                 ssi1 = _mm_cvtps_epi32(ss);
 
                 ss = _mm_set1_ps(offset);
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[0]), pix02));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[3]), pix12));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[6]), pix22));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[1]), pix00));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[4]), pix10));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[7]), pix20));
-                pix01 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+3]));
-                pix11 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+3]));
-                pix21 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+3]));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[2]), pix01));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[5]), pix11));
-                ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[8]), pix21));
+                MM_KERNEL1x3_SUM(2, 0);
+                MM_KERNEL1x3_SUM(0, 1);
+                MM_KERNEL1x3_LOAD(1, x+3);
+                MM_KERNEL1x3_SUM(1, 2);
                 ssi2 = _mm_cvtps_epi32(ss);
 
                 ssi0 = _mm_packs_epi32(ssi0, ssi1);
@@ -212,16 +187,17 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
             }
             for (; x < im->xsize-1; x++) {
                 __m128 ss = _mm_set1_ps(offset);
-                __m128i ssi;
-
-                MM_KERNEL1x3(ss, in1, x, &kernel[0], 1);
-                MM_KERNEL1x3(ss, in0, x, &kernel[3], 1);
-                MM_KERNEL1x3(ss, in_1, x, &kernel[6], 1);
-
-                ssi = _mm_cvtps_epi32(ss);
-                ssi = _mm_packs_epi32(ssi, ssi);
-                ssi = _mm_packus_epi16(ssi, ssi);
-                out[x] = _mm_cvtsi128_si32(ssi);
+                __m128i ssi0;
+                MM_KERNEL1x3_LOAD(0, x-1);
+                MM_KERNEL1x3_SUM(0, 0);
+                MM_KERNEL1x3_LOAD(0, x+0);
+                MM_KERNEL1x3_SUM(0, 1);
+                MM_KERNEL1x3_LOAD(0, x+1);
+                MM_KERNEL1x3_SUM(0, 2);
+                ssi0 = _mm_cvtps_epi32(ss);
+                ssi0 = _mm_packs_epi32(ssi0, ssi0);
+                ssi0 = _mm_packus_epi16(ssi0, ssi0);
+                out[x] = _mm_cvtsi128_si32(ssi0);
             }
             out[x] = in0[x];
         }
@@ -236,18 +212,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
      _i2f((UINT8)in0[x - d]) * (kernel)[1] + _i2f((UINT8)in0[x]) * (kernel)[2] + \
      _i2f((UINT8)in0[x + d]) * (kernel)[3] +                                     \
      _i2f((UINT8)in0[x + d + d]) * (kernel)[4])
-
-#define MM_KERNEL1x5(ss, in0, x, kernel, d) \
-    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[0]), \
-        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x-d-d])))); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[1]), \
-        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x-d])))); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[2]), \
-        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+0])))); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[3]), \
-        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+d])))); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps((kernel)[4]), \
-        _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+d+d]))));
 
 #define MM_KERNEL1x5_LOAD(row, x) \
     pix0##row = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in2[x])); \
@@ -372,18 +336,21 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
             }
             for (; x < im->xsize-2; x++) {
                 __m128 ss = _mm_set1_ps(offset);
-                __m128i ssi;
-
-                MM_KERNEL1x5(ss, in2, x, &kernel[0], 1);
-                MM_KERNEL1x5(ss, in1, x, &kernel[5], 1);
-                MM_KERNEL1x5(ss, in0, x, &kernel[10], 1);
-                MM_KERNEL1x5(ss, in_1, x, &kernel[15], 1);
-                MM_KERNEL1x5(ss, in_2, x, &kernel[20], 1);
-
-                ssi = _mm_cvtps_epi32(ss);
-                ssi = _mm_packs_epi32(ssi, ssi);
-                ssi = _mm_packus_epi16(ssi, ssi);
-                out[x] = _mm_cvtsi128_si32(ssi);
+                __m128i ssi0;
+                MM_KERNEL1x5_LOAD(0, x-2);
+                MM_KERNEL1x5_SUM(0, 0);
+                MM_KERNEL1x5_LOAD(0, x-1);
+                MM_KERNEL1x5_SUM(0, 1);
+                MM_KERNEL1x5_LOAD(0, x+0);
+                MM_KERNEL1x5_SUM(0, 2);
+                MM_KERNEL1x5_LOAD(0, x+1);
+                MM_KERNEL1x5_SUM(0, 3);
+                MM_KERNEL1x5_LOAD(0, x+2);
+                MM_KERNEL1x5_SUM(0, 4);
+                ssi0 = _mm_cvtps_epi32(ss);
+                ssi0 = _mm_packs_epi32(ssi0, ssi0);
+                ssi0 = _mm_packus_epi16(ssi0, ssi0);
+                out[x] = _mm_cvtsi128_si32(ssi0);
             }
             out[x] = in0[x];
             out[x+1] = in0[x+1];
