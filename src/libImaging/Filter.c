@@ -107,11 +107,11 @@ void
 ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
                  float offset)
 {
-#define MM_KERNEL1x3_SUM1(ss, row) \
+#define MM_KERNEL1x3_SUM1(ss, row, kernel) \
     ss = _mm_set1_ps(offset); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(pix0##row, kernel0)); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(pix1##row, kernel1)); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(pix2##row, kernel2));
+    ss = _mm_add_ps(ss, _mm_mul_ps(pix0##row, kernel0##kernel)); \
+    ss = _mm_add_ps(ss, _mm_mul_ps(pix1##row, kernel1##kernel)); \
+    ss = _mm_add_ps(ss, _mm_mul_ps(pix2##row, kernel2##kernel));
 
 #define MM_KERNEL1x3_LOAD(row, x) \
     pix0##row = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in1[x])); \
@@ -132,9 +132,12 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
             UINT8* in0 = (UINT8*) im->image[y];
             UINT8* in1 = (UINT8*) im->image[y+1];
             UINT8* out = (UINT8*) imOut->image[y];
-            __m128 kernel0 = _mm_set_ps(0, kernel[2], kernel[1], kernel[0]);
-            __m128 kernel1 = _mm_set_ps(0, kernel[5], kernel[4], kernel[3]);
-            __m128 kernel2 = _mm_set_ps(0, kernel[8], kernel[7], kernel[6]);
+            __m128 kernel00 = _mm_set_ps(0, kernel[2], kernel[1], kernel[0]);
+            __m128 kernel10 = _mm_set_ps(0, kernel[5], kernel[4], kernel[3]);
+            __m128 kernel20 = _mm_set_ps(0, kernel[8], kernel[7], kernel[6]);
+            __m128 kernel01 = _mm_set_ps(kernel[2], kernel[1], kernel[0], 0);
+            __m128 kernel11 = _mm_set_ps(kernel[5], kernel[4], kernel[3], 0);
+            __m128 kernel21 = _mm_set_ps(kernel[8], kernel[7], kernel[6], 0);
 
             out[0] = in0[0];
             x = 1;
@@ -144,14 +147,12 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
                 __m128i ssi0;
 
                 MM_KERNEL1x3_LOAD(0, x-1);
-                MM_KERNEL1x3_SUM1(ss0, 0);
-                MM_KERNEL1x3_LOAD(0, x+0);
-                MM_KERNEL1x3_SUM1(ss1, 0);
+                MM_KERNEL1x3_SUM1(ss0, 0, 0);
+                MM_KERNEL1x3_SUM1(ss1, 0, 1);
                 MM_KERNEL1x3_LOAD(0, x+1);
-                MM_KERNEL1x3_SUM1(ss2, 0);
-                MM_KERNEL1x3_LOAD(0, x+2);
-                MM_KERNEL1x3_SUM1(ss3, 0);
-
+                MM_KERNEL1x3_SUM1(ss2, 0, 0);
+                MM_KERNEL1x3_SUM1(ss3, 0, 1);
+                
                 ss0 = _mm_hadd_ps(ss0, ss1);
                 ss1 = _mm_hadd_ps(ss2, ss3);
                 ss0 = _mm_hadd_ps(ss0, ss1);
@@ -166,10 +167,7 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
                 __m128i ssi0;
 
                 MM_KERNEL1x3_LOAD(0, x-1);
-                ss = _mm_set1_ps(offset);
-                ss = _mm_add_ps(ss, _mm_mul_ps(pix00, kernel0));
-                ss = _mm_add_ps(ss, _mm_mul_ps(pix10, kernel1));
-                ss = _mm_add_ps(ss, _mm_mul_ps(pix20, kernel2));
+                MM_KERNEL1x3_SUM1(ss, 0, 0);
 
                 ss = _mm_hadd_ps(ss, ss);
                 ss = _mm_hadd_ps(ss, ss);
