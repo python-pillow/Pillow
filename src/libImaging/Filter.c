@@ -316,11 +316,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 __m128i ssi0, ssi1, ssi2, ssi3;
 
                 ss = _mm_set1_ps(offset);
-                pix04 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in2)[x+2]));
-                pix14 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+2]));
-                pix24 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+2]));
-                pix34 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+2]));
-                pix44 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_2)[x+2]));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[0]),  pix00));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[5]),  pix10));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[10]), pix20));
@@ -341,6 +336,11 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[13]), pix23));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[18]), pix33));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[23]), pix43));
+                pix04 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in2)[x+2]));
+                pix14 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+2]));
+                pix24 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+2]));
+                pix34 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+2]));
+                pix44 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_2)[x+2]));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[4]),  pix04));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[9]),  pix14));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[14]), pix24));
@@ -349,11 +349,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 ssi0 = _mm_cvtps_epi32(ss);
 
                 ss = _mm_set1_ps(offset);
-                pix00 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in2)[x+3]));
-                pix10 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+3]));
-                pix20 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+3]));
-                pix30 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+3]));
-                pix40 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_2)[x+3]));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[0]),  pix01));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[5]),  pix11));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[10]), pix21));
@@ -374,6 +369,11 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[13]), pix24));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[18]), pix34));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[23]), pix44));
+                pix00 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in2)[x+3]));
+                pix10 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+3]));
+                pix20 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+3]));
+                pix30 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+3]));
+                pix40 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_2)[x+3]));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[4]),  pix00));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[9]),  pix10));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[14]), pix20));
@@ -382,11 +382,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 ssi1 = _mm_cvtps_epi32(ss);
 
                 ss = _mm_set1_ps(offset);
-                pix01 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in2)[x+4]));
-                pix11 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+4]));
-                pix21 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+4]));
-                pix31 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+4]));
-                pix41 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_2)[x+4]));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[0]),  pix02));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[5]),  pix12));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[10]), pix22));
@@ -407,6 +402,11 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[13]), pix20));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[18]), pix30));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[23]), pix40));
+                pix01 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in2)[x+4]));
+                pix11 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+4]));
+                pix21 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+4]));
+                pix31 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+4]));
+                pix41 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_2)[x+4]));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[4]),  pix01));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[9]),  pix11));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[14]), pix21));
@@ -415,11 +415,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 ssi2 = _mm_cvtps_epi32(ss);
 
                 ss = _mm_set1_ps(offset);
-                pix02 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in2)[x+5]));
-                pix12 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+5]));
-                pix22 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+5]));
-                pix32 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+5]));
-                pix42 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_2)[x+5]));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[0]),  pix03));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[5]),  pix13));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[10]), pix23));
@@ -440,6 +435,11 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[13]), pix21));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[18]), pix31));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[23]), pix41));
+                pix02 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in2)[x+5]));
+                pix12 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+5]));
+                pix22 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+5]));
+                pix32 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+5]));
+                pix42 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_2)[x+5]));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[4]),  pix02));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[9]),  pix12));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[14]), pix22));
@@ -453,11 +453,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 _mm_storeu_si128((__m128i*) &out[x], ssi0);
 
                 ss = _mm_set1_ps(offset);
-                pix03 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in2)[x+6]));
-                pix13 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+6]));
-                pix23 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+6]));
-                pix33 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+6]));
-                pix43 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_2)[x+6]));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[0]),  pix04));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[5]),  pix14));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[10]), pix24));
@@ -478,6 +473,11 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[13]), pix22));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[18]), pix32));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[23]), pix42));
+                pix03 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in2)[x+6]));
+                pix13 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in1)[x+6]));
+                pix23 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in0)[x+6]));
+                pix33 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_1)[x+6]));
+                pix43 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i *) &(in_2)[x+6]));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[4]),  pix03));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[9]),  pix13));
                 ss = _mm_add_ps(ss, _mm_mul_ps(_mm_set1_ps(kernel[14]), pix23));
