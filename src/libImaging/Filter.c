@@ -113,6 +113,12 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
     ss = _mm_add_ps(ss, _mm_mul_ps(pix1##row, kernel1##kernel)); \
     ss = _mm_add_ps(ss, _mm_mul_ps(pix2##row, kernel2##kernel));
 
+#define MM_KERNEL1x3_SUM1_2(ss, row, kernel) \
+    ss = _mm_set1_ps(offset); \
+    ss = _mm_add_ps(ss, _mm_mul_ps(pix3##row, kernel0##kernel)); \
+    ss = _mm_add_ps(ss, _mm_mul_ps(pix0##row, kernel1##kernel)); \
+    ss = _mm_add_ps(ss, _mm_mul_ps(pix1##row, kernel2##kernel));
+
 #define MM_KERNEL1x3_LOAD(row, x) \
     pix0##row = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in1[x])); \
     pix1##row = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in0[x])); \
@@ -127,40 +133,94 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
 
     memcpy(imOut->image[0], im->image[0], im->linesize);
     if (im->bands == 1) {
-        for (y = 1; y < im->ysize-1; y++) {
+        __m128 kernel00 = _mm_set_ps(0, kernel[2], kernel[1], kernel[0]);
+        __m128 kernel10 = _mm_set_ps(0, kernel[5], kernel[4], kernel[3]);
+        __m128 kernel20 = _mm_set_ps(0, kernel[8], kernel[7], kernel[6]);
+        __m128 kernel01 = _mm_set_ps(kernel[2], kernel[1], kernel[0], 0);
+        __m128 kernel11 = _mm_set_ps(kernel[5], kernel[4], kernel[3], 0);
+        __m128 kernel21 = _mm_set_ps(kernel[8], kernel[7], kernel[6], 0);
+        y = 1;
+        for (; y < im->ysize-1-1; y += 2) {
             UINT8* in_1 = (UINT8*) im->image[y-1];
             UINT8* in0 = (UINT8*) im->image[y];
             UINT8* in1 = (UINT8*) im->image[y+1];
-            UINT8* out = (UINT8*) imOut->image[y];
-            __m128 kernel00 = _mm_set_ps(0, kernel[2], kernel[1], kernel[0]);
-            __m128 kernel10 = _mm_set_ps(0, kernel[5], kernel[4], kernel[3]);
-            __m128 kernel20 = _mm_set_ps(0, kernel[8], kernel[7], kernel[6]);
-            __m128 kernel01 = _mm_set_ps(kernel[2], kernel[1], kernel[0], 0);
-            __m128 kernel11 = _mm_set_ps(kernel[5], kernel[4], kernel[3], 0);
-            __m128 kernel21 = _mm_set_ps(kernel[8], kernel[7], kernel[6], 0);
+            UINT8* in2 = (UINT8*) im->image[y+2];
+            UINT8* out0 = (UINT8*) imOut->image[y];
+            UINT8* out1 = (UINT8*) imOut->image[y+1];
 
-            out[0] = in0[0];
+            out0[0] = in0[0];
+            out1[0] = in1[0];
             x = 1;
             for (; x < im->xsize-1-3; x += 4) {
-                __m128 ss0, ss1, ss2, ss3;
-                __m128 pix00, pix10, pix20;
+                __m128 ss0, ss1, ss2, ss3, ss4, ss5;
+                __m128 pix00, pix10, pix20, pix30;
                 __m128i ssi0;
 
                 MM_KERNEL1x3_LOAD(0, x-1);
                 MM_KERNEL1x3_SUM1(ss0, 0, 0);
                 MM_KERNEL1x3_SUM1(ss1, 0, 1);
-                MM_KERNEL1x3_LOAD(0, x+1);
-                MM_KERNEL1x3_SUM1(ss2, 0, 0);
-                MM_KERNEL1x3_SUM1(ss3, 0, 1);
-                
                 ss0 = _mm_hadd_ps(ss0, ss1);
-                ss1 = _mm_hadd_ps(ss2, ss3);
+                pix30 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in2[x-1]));
+                MM_KERNEL1x3_SUM1_2(ss3, 0, 0);
+                MM_KERNEL1x3_SUM1_2(ss4, 0, 1);
+                ss3 = _mm_hadd_ps(ss3, ss4);
+
+                MM_KERNEL1x3_LOAD(0, x+1);
+                MM_KERNEL1x3_SUM1(ss1, 0, 0);
+                MM_KERNEL1x3_SUM1(ss2, 0, 1);
+                ss1 = _mm_hadd_ps(ss1, ss2);
+                pix30 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in2[x+1]));
+                MM_KERNEL1x3_SUM1_2(ss4, 0, 0);
+                MM_KERNEL1x3_SUM1_2(ss5, 0, 1);
+                ss4 = _mm_hadd_ps(ss4, ss5);
+                
                 ss0 = _mm_hadd_ps(ss0, ss1);
                 ssi0 = _mm_cvtps_epi32(ss0);
                 ssi0 = _mm_packs_epi32(ssi0, ssi0);
                 ssi0 = _mm_packus_epi16(ssi0, ssi0);
-                *((UINT32*) &out[x]) = _mm_cvtsi128_si32(ssi0);
+                *((UINT32*) &out0[x]) = _mm_cvtsi128_si32(ssi0);
+
+                ss3 = _mm_hadd_ps(ss3, ss4);
+                ssi0 = _mm_cvtps_epi32(ss3);
+                ssi0 = _mm_packs_epi32(ssi0, ssi0);
+                ssi0 = _mm_packus_epi16(ssi0, ssi0);
+                *((UINT32*) &out1[x]) = _mm_cvtsi128_si32(ssi0);
             }
+            for (; x < im->xsize-1; x++) {
+                __m128 ss0, ss1;
+                __m128 pix00, pix10, pix20, pix30;
+                __m128i ssi0;
+
+                MM_KERNEL1x3_LOAD(0, x-1);
+                MM_KERNEL1x3_SUM1(ss0, 0, 0);
+                pix30 = _mm_cvtepi32_ps(_mm_cvtepu8_epi32(*(__m128i*) &in2[x-1]));
+                MM_KERNEL1x3_SUM1_2(ss1, 0, 0);
+
+                ss0 = _mm_hadd_ps(ss0, ss0);
+                ss0 = _mm_hadd_ps(ss0, ss0);
+                ssi0 = _mm_cvtps_epi32(ss0);
+                ssi0 = _mm_packs_epi32(ssi0, ssi0);
+                ssi0 = _mm_packus_epi16(ssi0, ssi0);
+                out0[x] = _mm_cvtsi128_si32(ssi0);
+
+                ss1 = _mm_hadd_ps(ss1, ss1);
+                ss1 = _mm_hadd_ps(ss1, ss1);
+                ssi0 = _mm_cvtps_epi32(ss1);
+                ssi0 = _mm_packs_epi32(ssi0, ssi0);
+                ssi0 = _mm_packus_epi16(ssi0, ssi0);
+                out1[x] = _mm_cvtsi128_si32(ssi0);
+            }
+            out0[x] = in0[x];
+            out1[x] = in1[x];
+        }
+        for (; y < im->ysize-1; y++) {
+            UINT8* in_1 = (UINT8*) im->image[y-1];
+            UINT8* in0 = (UINT8*) im->image[y];
+            UINT8* in1 = (UINT8*) im->image[y+1];
+            UINT8* out = (UINT8*) imOut->image[y];
+
+            out[0] = in0[0];
+            x = 1;
             for (; x < im->xsize-1; x++) {
                 __m128 ss;
                 __m128 pix00, pix10, pix20;
