@@ -2267,8 +2267,8 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
 
     im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
     if (!im) {
-        return NULL;
         free(text);
+        return NULL;
     }
 
     b = 0;
