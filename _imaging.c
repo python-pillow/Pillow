@@ -2201,7 +2201,7 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
     /* Allocates *text, returns a 'new reference'. Caller is required to free */
 
     PyObject* bytes = NULL;
-    ssize_t len = 0;
+    Py_ssize_t len = 0;
     char *buffer;
 
     *text = NULL;
