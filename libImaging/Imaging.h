@@ -467,7 +467,6 @@ typedef void (*ImagingShuffler)(UINT8* out, const UINT8* in, int pixels);
 /* Public shufflers */
 extern void ImagingPackRGB(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingPackBGR(UINT8* out, const UINT8* in, int pixels);
-extern void ImagingUnpackRGB(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingUnpackBGR(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingUnpackYCC(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingUnpackYCCA(UINT8* out, const UINT8* in, int pixels);
