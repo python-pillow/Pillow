@@ -105,7 +105,6 @@ class TestImageFilter(PillowTestCase):
         reference = reference.split() * 2
 
         for mode in ['L', 'LA', 'RGB', 'CMYK']:
-            print mode
             self.assert_image_equal(
                 Image.merge(mode, source[:len(mode)]).filter(kernel),
                 Image.merge(mode, reference[:len(mode)]),
