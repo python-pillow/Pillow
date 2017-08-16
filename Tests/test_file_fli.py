@@ -29,7 +29,7 @@ class TestFileFli(PillowTestCase):
 
     def test_tell(self):
         # Arrange
-        im = Image.open(test_file)
+        im = Image.open(static_test_file)
 
         # Act
         frame = im.tell()
@@ -49,7 +49,7 @@ class TestFileFli(PillowTestCase):
         self.assertFalse(im.is_animated)
 
         im = Image.open(animated_test_file)
-        self.assertEqual(im.n_frames, 385)
+        self.assertEqual(im.n_frames, 384)
         self.assertTrue(im.is_animated)
 
     def test_eoferror(self):
@@ -66,7 +66,7 @@ class TestFileFli(PillowTestCase):
 
     def test_seek_outside(self):
         # Test negative seek
-        im = Image.open(test_file)
+        im = Image.open(static_test_file)
         im.seek(-1)
         self.assertEqual(im.tell(), 0)
 
