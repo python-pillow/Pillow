@@ -1958,9 +1958,7 @@ class Image(object):
         if self.im.bands == 1:
             ims = [self.copy()]
         else:
-            ims = []
-            for i in range(self.im.bands):
-                ims.append(self._new(self.im.getband(i)))
+            ims = map(self._new, self.im.split())
         return tuple(ims)
 
     def getchannel(self, channel):

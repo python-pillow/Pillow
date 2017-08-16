@@ -1888,6 +1888,32 @@ _putband(ImagingObject* self, PyObject* args)
     return Py_None;
 }
 
+static PyObject*
+_split(ImagingObject* self, PyObject* args)
+{
+    int fails = 0;
+    Py_ssize_t i;
+    PyObject* list;
+    PyObject* imaging_object;
+    Imaging bands[4] = {NULL, NULL, NULL, NULL};
+
+    if ( ! ImagingSplit(self->image, bands))
+        return NULL;
+
+    list = PyTuple_New(self->image->bands);
+    for (i = 0; i < self->image->bands; i++) {
+        imaging_object = PyImagingNew(bands[i]);
+        if ( ! imaging_object)
+            fails += 1;
+        PyTuple_SET_ITEM(list, i, imaging_object);
+    }
+    if (fails) {
+        Py_DECREF(list);
+        list = NULL;
+    }
+    return list;
+}
+
 /* -------------------------------------------------------------------- */
 
 #ifdef WITH_IMAGECHOPS
@@ -2954,6 +2980,7 @@ static struct PyMethodDef methods[] = {
 
     {"getband", (PyCFunction)_getband, 1},
     {"putband", (PyCFunction)_putband, 1},
+    {"split", (PyCFunction)_split, 1},
     {"fillband", (PyCFunction)_fillband, 1},
 
     {"setmode", (PyCFunction)im_setmode, 1},
