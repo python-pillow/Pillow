@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Storage cleanup #2654
+  [homm]
+
 - Test: Test animated FLI file #2650
   [hugovk]
 
