@@ -27,6 +27,16 @@ class TestFileFli(PillowTestCase):
         self.assertEqual(im.info["duration"], 71)
         self.assertTrue(im.is_animated)
 
+    def test_tell(self):
+        # Arrange
+        im = Image.open(static_test_file)
+
+        # Act
+        frame = im.tell()
+
+        # Assert
+        self.assertEqual(frame, 0)
+
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
@@ -39,7 +49,7 @@ class TestFileFli(PillowTestCase):
         self.assertFalse(im.is_animated)
 
         im = Image.open(animated_test_file)
-        self.assertEqual(im.n_frames, 385)
+        self.assertEqual(im.n_frames, 384)
         self.assertTrue(im.is_animated)
 
     def test_eoferror(self):
@@ -53,6 +63,15 @@ class TestFileFli(PillowTestCase):
                 break
             except EOFError:
                 self.assertLess(im.tell(), n_frames)
+
+    def test_seek_outside(self):
+        # Test negative seek
+        im = Image.open(static_test_file)
+        im.seek(-1)
+        self.assertEqual(im.tell(), 0)
+
+        # Test seek past end of file
+        self.assertRaises(EOFError, lambda: im.seek(2))
 
     def test_seek_tell(self):
         im = Image.open(animated_test_file)
