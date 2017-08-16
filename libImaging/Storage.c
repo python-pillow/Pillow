@@ -46,18 +46,17 @@ int ImagingNewCount = 0;
  */
 
 Imaging
-ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize,
-                          int size)
+ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size)
 {
     Imaging im;
-    ImagingSectionCookie cookie;
-
-    im = (Imaging) calloc(1, size);
-    if (!im)
-        return (Imaging) ImagingError_MemoryError();
 
     /* linesize overflow check, roughly the current largest space req'd */
     if (xsize > (INT_MAX / 4) - 1) {
+        return (Imaging) ImagingError_MemoryError();
+    }
+
+    im = (Imaging) calloc(1, size);
+    if (!im) {
         return (Imaging) ImagingError_MemoryError();
     }
 
@@ -206,46 +205,20 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize,
 
     } else {
         free(im);
-        return (Imaging) ImagingError_ValueError("unrecognized mode");
+        return (Imaging) ImagingError_ValueError("unrecognized image mode");
     }
 
     /* Setup image descriptor */
     strcpy(im->mode, mode);
 
-    ImagingSectionEnter(&cookie);
-
     /* Pointer array (allocate at least one line, to avoid MemoryError
        exceptions on platforms where calloc(0, x) returns NULL) */
     im->image = (char **) calloc((ysize > 0) ? ysize : 1, sizeof(void *));
 
-    ImagingSectionLeave(&cookie);
-
-    if (!im->image) {
+    if ( ! im->image) {
         free(im);
         return (Imaging) ImagingError_MemoryError();
     }
-
-    ImagingNewCount++;
-
-    return im;
-}
-
-Imaging
-ImagingNewPrologue(const char *mode, int xsize, int ysize)
-{
-    return ImagingNewPrologueSubtype(
-        mode, xsize, ysize, sizeof(struct ImagingMemoryInstance)
-        );
-}
-
-Imaging
-ImagingNewEpilogue(Imaging im)
-{
-    /* If the raster data allocator didn't setup a destructor,
-       assume that it couldn't allocate the required amount of
-       memory. */
-    if (!im->destroy)
-        return (Imaging) ImagingError_MemoryError();
 
     /* Initialize alias pointers to pixel data. */
     switch (im->pixelsize) {
@@ -257,7 +230,16 @@ ImagingNewEpilogue(Imaging im)
         break;
     }
 
+    ImagingNewCount++;
+
     return im;
+}
+
+Imaging
+ImagingNewPrologue(const char *mode, int xsize, int ysize)
+{
+    return ImagingNewPrologueSubtype(
+        mode, xsize, ysize, sizeof(struct ImagingMemoryInstance));
 }
 
 void
@@ -295,17 +277,12 @@ ImagingDestroyArray(Imaging im)
 }
 
 Imaging
-ImagingNewArray(const char *mode, int xsize, int ysize)
+ImagingAllocateArray(Imaging im)
 {
-    Imaging im;
     ImagingSectionCookie cookie;
 
     int y;
     char* p;
-
-    im = ImagingNewPrologue(mode, xsize, ysize);
-    if (!im)
-        return NULL;
 
     ImagingSectionEnter(&cookie);
 
@@ -322,10 +299,13 @@ ImagingNewArray(const char *mode, int xsize, int ysize)
 
     ImagingSectionLeave(&cookie);
 
-    if (y == im->ysize)
-        im->destroy = ImagingDestroyArray;
+    if (y != im->ysize) {
+        return (Imaging) ImagingError_MemoryError();
+    }
 
-    return ImagingNewEpilogue(im);
+    im->destroy = ImagingDestroyArray;
+
+    return im;
 }
 
 
@@ -341,14 +321,9 @@ ImagingDestroyBlock(Imaging im)
 }
 
 Imaging
-ImagingNewBlock(const char *mode, int xsize, int ysize)
+ImagingAllocateBlock(Imaging im)
 {
-    Imaging im;
     Py_ssize_t y, i;
-
-    im = ImagingNewPrologue(mode, xsize, ysize);
-    if (!im)
-        return NULL;
 
     /* We shouldn't overflow, since the threshold defined
        below says that we're only going to allocate max 4M
@@ -357,7 +332,7 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
     if (im->linesize &&
         im->ysize > INT_MAX / im->linesize) {
         /* punt if we're going to overflow */
-        return NULL;
+        return (Imaging) ImagingError_MemoryError();
     }
 
     if (im->ysize * im->linesize <= 0) {
@@ -370,17 +345,18 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
         im->block = (char *) calloc(im->ysize, im->linesize);
     }
 
-    if (im->block) {
-        for (y = i = 0; y < im->ysize; y++) {
-            im->image[y] = im->block + i;
-            i += im->linesize;
-        }
-
-        im->destroy = ImagingDestroyBlock;
-
+    if ( ! im->block) {
+        return (Imaging) ImagingError_MemoryError();
     }
 
-    return ImagingNewEpilogue(im);
+    for (y = i = 0; y < im->ysize; y++) {
+        im->image[y] = im->block + i;
+        i += im->linesize;
+    }
+    
+    im->destroy = ImagingDestroyBlock;
+
+    return im;
 }
 
 /* --------------------------------------------------------------------
@@ -395,33 +371,47 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
 Imaging
 ImagingNew(const char* mode, int xsize, int ysize)
 {
-    int bytes;
     Imaging im;
-
-    if (strcmp(mode, "") == 0)
-        return (Imaging) ImagingError_ValueError("empty mode");
-
-    if (strlen(mode) == 1) {
-        if (mode[0] == 'F' || mode[0] == 'I')
-            bytes = 4;
-        else
-            bytes = 1;
-    } else
-        bytes = strlen(mode); /* close enough */
 
     if (xsize < 0 || ysize < 0) {
         return (Imaging) ImagingError_ValueError("bad image size");
     }
 
-    if ((int64_t) xsize * (int64_t) ysize <= THRESHOLD / bytes) {
-        im = ImagingNewBlock(mode, xsize, ysize);
-        if (im)
+    im = ImagingNewPrologue(mode, xsize, ysize);
+    if ( ! im)
+        return NULL;
+
+    if (im->ysize && im->linesize <= THRESHOLD / im->ysize) {
+        if (ImagingAllocateBlock(im)) {
             return im;
+        }
         /* assume memory error; try allocating in array mode instead */
         ImagingError_Clear();
     }
 
-    return ImagingNewArray(mode, xsize, ysize);
+    if (ImagingAllocateArray(im)) {
+        return im;
+    }
+
+    ImagingDelete(im);
+    return NULL;
+}
+
+Imaging
+ImagingNewBlock(const char* mode, int xsize, int ysize)
+{
+    Imaging im;
+
+    im = ImagingNewPrologue(mode, xsize, ysize);
+    if ( ! im)
+        return NULL;
+
+    if (ImagingAllocateBlock(im)) {
+        return im;
+    }
+
+    ImagingDelete(im);
+    return NULL;
 }
 
 Imaging
