@@ -1948,6 +1948,9 @@ class Image(object):
         containing a copy of one of the original bands (red, green,
         blue).
 
+        If you need only one band, :py:meth:`~PIL.Image.Image.getchannel`
+        method can be more convenient and faster.
+
         :returns: A tuple containing bands.
         """
 
@@ -1959,6 +1962,28 @@ class Image(object):
             for i in range(self.im.bands):
                 ims.append(self._new(self.im.getband(i)))
         return tuple(ims)
+
+    def getchannel(self, channel):
+        """
+        Returns an image containing a single channel of the source image.
+
+        :param channel: What channel to return. Could be index
+          (0 for "R" channel of "RGB") or channel name
+          ("A" for alpha channel of "RGBA").
+        :returns: An image in "L" mode.
+
+        .. versionadded:: 4.3.0
+        """
+        self.load()
+
+        if isStringType(channel):
+            try:
+                channel = self.getbands().index(channel)
+            except ValueError:
+                raise ValueError(
+                    'The image has no channel "{}"'.format(channel))
+
+        return self._new(self.im.getband(channel))
 
     def tell(self):
         """
