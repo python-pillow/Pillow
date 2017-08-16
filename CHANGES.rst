@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- CI: Add Fedora 24 and 26 to Docker tests
+  [wiredfool]
+
 - JPEG: Fix ZeroDivisionError when EXIF contains invalid DPI (0/0). #2667
   [vytisb]
 
@@ -26,6 +29,9 @@ Changelog (Pillow)
   [homm]
 
 - Remove unused im.copy2 and core.copy methods #2657
+  [homm]
+
+- Fast Image.split() #2676
   [homm]
 
 - Fast image allocation #2655
