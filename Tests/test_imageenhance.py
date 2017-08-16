@@ -34,7 +34,7 @@ class TestImageEnhance(PillowTestCase):
 
     def _check_alpha(self, im, original, op, amount):
         self.assertEqual(im.getbands(), original.getbands())
-        self.assert_image_equal(im.split()[-1], original.split()[-1],
+        self.assert_image_equal(im.getchannel('A'), original.getchannel('A'),
                                 "Diff on %s: %s" % (op, amount))
 
     def test_alpha(self):

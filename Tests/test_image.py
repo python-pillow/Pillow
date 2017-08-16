@@ -7,6 +7,25 @@ import sys
 
 class TestImage(PillowTestCase):
 
+    def test_image_modes_success(self):
+        for mode in [
+            '1', 'P', 'PA',
+            'L', 'LA', 'La',
+            'F', 'I', 'I;16', 'I;16L', 'I;16B', 'I;16N',
+            'RGB', 'RGBX', 'RGBA', 'RGBa',
+            'CMYK', 'YCbCr', 'LAB', 'HSV',
+        ]:
+            Image.new(mode, (1, 1))
+
+    def test_image_modes_fail(self):
+        for mode in [
+            '', 'bad', 'very very long',
+            'BGR;15', 'BGR;16', 'BGR;24', 'BGR;32'
+        ]:
+            with self.assertRaises(ValueError) as e:
+                Image.new(mode, (1, 1));
+            self.assertEqual(str(e.exception), 'unrecognized image mode')
+
     def test_sanity(self):
 
         im = Image.new("L", (100, 100))
@@ -145,14 +164,28 @@ class TestImage(PillowTestCase):
         self.assertEqual(im.size[1], orig_size[1] + 2*ymargin)
 
     def test_getbands(self):
-        # Arrange
+        # Assert
+        self.assertEqual(hopper('RGB').getbands(), ('R', 'G', 'B'))
+        self.assertEqual(hopper('YCbCr').getbands(), ('Y', 'Cb', 'Cr'))
+
+    def test_getchannel_wrong_params(self):
         im = hopper()
 
-        # Act
-        bands = im.getbands()
+        self.assertRaises(ValueError, im.getchannel, -1)
+        self.assertRaises(ValueError, im.getchannel, 3)
+        self.assertRaises(ValueError, im.getchannel, 'Z')
+        self.assertRaises(ValueError, im.getchannel, '1')
 
-        # Assert
-        self.assertEqual(bands, ('R', 'G', 'B'))
+    def test_getchannel(self):
+        im = hopper('YCbCr')
+        Y, Cb, Cr = im.split()
+
+        self.assert_image_equal(Y, im.getchannel(0))
+        self.assert_image_equal(Y, im.getchannel('Y'))
+        self.assert_image_equal(Cb, im.getchannel(1))
+        self.assert_image_equal(Cb, im.getchannel('Cb'))
+        self.assert_image_equal(Cr, im.getchannel(2))
+        self.assert_image_equal(Cr, im.getchannel('Cr'))
 
     def test_getbbox(self):
         # Arrange
