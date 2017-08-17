@@ -24,6 +24,25 @@
 # See the README file for information on usage and redistribution.
 #
 
+if False:
+    from typing import Any, Text, Optional, Tuple, List, Sequence, Union, Callable, Dict
+
+    # Type aliases; names subject to change
+    LURD = Tuple[int, int, int, int]  # left, up(per), right, down = x0, y0, x1, y1
+    XY = Tuple[int, int]
+    Coord = XY
+    Size = XY  # NOTE: All XY aliases will be interchangeable
+    Matrix4 = Tuple[float, float, float, float]
+    Matrix12 = Tuple[float, float, float, float, float, float, float, float, float, float, float, float]
+
+    # Just required for typing, or gradual module inclusion while adding annotation?
+    from io import BytesIO
+    import pathlib
+    import ImagingPalette
+    from ImageFilter import Filter
+    from ImageFile import PyDecoder
+    from ImageFile import PyEncoder
+
 from . import VERSION, PILLOW_VERSION, _plugins
 
 import logging
@@ -138,6 +157,7 @@ except ImportError:
 
 
 def isImageType(t):
+    # type: (object) -> bool
     """
     Checks if an object is an image object.
 
@@ -211,14 +231,14 @@ if hasattr(core, 'DEFAULT_STRATEGY'):
 # --------------------------------------------------------------------
 # Registries
 
-ID = []
-OPEN = {}
+ID = []  # type: List[Text]
+OPEN = {}  # type: Dict[Text, Tuple[Callable, Optional[Callable[..., bool]]]]
 MIME = {}
-SAVE = {}
-SAVE_ALL = {}
-EXTENSION = {}
-DECODERS = {}
-ENCODERS = {}
+SAVE = {}  # type: Dict[Text, Callable]
+SAVE_ALL = {}  # type: Dict[Text, Callable]
+EXTENSION = {}  # type: Dict[Text, Text]
+DECODERS = {}  # type: Dict[Text, Callable[..., PyDecoder]]
+ENCODERS = {}  # type: Dict[Text, Callable[..., PyEncoder]]
 
 # --------------------------------------------------------------------
 # Modes supported by this version
@@ -284,6 +304,7 @@ _MODE_CONV = {
 
 
 def _conv_type_shape(im):
+    # type: (Image) -> Tuple
     typ, extra = _MODE_CONV[im.mode]
     if extra is None:
         return (im.size[1], im.size[0]), typ
@@ -299,6 +320,7 @@ _MAPMODES = ("L", "P", "RGBX", "RGBA", "CMYK", "I;16", "I;16L", "I;16B")
 
 
 def getmodebase(mode):
+    # type: (Text) -> Text
     """
     Gets the "base" mode for given mode.  This function returns "L" for
     images that contain grayscale data, and "RGB" for images that
@@ -312,6 +334,7 @@ def getmodebase(mode):
 
 
 def getmodetype(mode):
+    # type: (Text) -> Text
     """
     Gets the storage type mode.  Given a mode, this function returns a
     single-layer mode suitable for storing individual bands.
@@ -324,6 +347,7 @@ def getmodetype(mode):
 
 
 def getmodebandnames(mode):
+    # type: (Text) -> Tuple
     """
     Gets a list of individual band names.  Given a mode, this function returns
     a tuple containing the names of individual bands (use
@@ -339,6 +363,7 @@ def getmodebandnames(mode):
 
 
 def getmodebands(mode):
+    # type: (Text) -> int
     """
     Gets the number of individual bands for this mode.
 
@@ -356,6 +381,7 @@ _initialized = 0
 
 
 def preinit():
+    # type: () -> None
     "Explicitly load standard file format drivers."
 
     global _initialized
@@ -391,6 +417,7 @@ def preinit():
 
 
 def init():
+    # type: () -> int
     """
     Explicitly initializes the Python Imaging Library. This function
     loads all available file format drivers.
@@ -411,11 +438,14 @@ def init():
         _initialized = 2
         return 1
 
+    # FIXME: mypy suggests a default return may be necessary here?
+
 
 # --------------------------------------------------------------------
 # Codec factories (used by tobytes/frombytes and ImageFile.load)
 
 def _getdecoder(mode, decoder_name, args, extra=()):
+    # type: (Text, Text, Optional[Tuple], Tuple) -> PyDecoder
 
     # tweak arguments
     if args is None:
@@ -438,6 +468,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
 
 
 def _getencoder(mode, encoder_name, args, extra=()):
+    # type: (Text, Text, Optional[Tuple], Tuple) -> PyEncoder
 
     # tweak arguments
     if args is None:
@@ -517,26 +548,30 @@ class Image(object):
     _close_exclusive_fp_after_loading = True
 
     def __init__(self):
+        # type: () -> None
         # FIXME: take "new" parameters / other image?
         # FIXME: turn mode and size into delegating properties?
         self.im = None
         self.mode = ""
         self.size = (0, 0)
-        self.palette = None
-        self.info = {}
+        self.palette = None  # type: Optional[ImagePalette.ImagePalette]
+        self.info = {}  # type: Dict[Text, Any]
         self.category = NORMAL
         self.readonly = 0
         self.pyaccess = None
 
     @property
     def width(self):
+        # type: () -> int
         return self.size[0]
 
     @property
     def height(self):
+        # type: () -> int
         return self.size[1]
 
     def _new(self, im):
+        # type: (Image) -> Image
         new = Image()
         new.im = im
         new.mode = im.mode
@@ -552,12 +587,15 @@ class Image(object):
 
     # Context Manager Support
     def __enter__(self):
+        # type: () -> Image
         return self
 
     def __exit__(self, *args):
+        # type: (*Any) -> None
         self.close()
 
     def close(self):
+        # type: () -> None
         """
         Closes the file pointer, if possible.
 
@@ -584,12 +622,14 @@ class Image(object):
 
     if sys.version_info >= (3, 4, 0):
         def __del__(self):
+            # type: () -> None
             if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp')
                and self.fp and self._exclusive_fp):
                 self.fp.close()
             self.fp = None
 
     def _copy(self):
+        # type: () -> None
         self.load()
         self.im = self.im.copy()
         self.pyaccess = None
@@ -602,6 +642,7 @@ class Image(object):
             self.load()
 
     def _dump(self, file=None, format=None, **options):
+        # type: (Optional[Text], Optional[Text], **Any) -> Text
         import tempfile
 
         suffix = ''
@@ -626,6 +667,7 @@ class Image(object):
         return filename
 
     def __eq__(self, other):
+        # type: (Image) -> bool
         return (isinstance(other, Image) and
                 self.__class__.__name__ == other.__class__.__name__ and
                 self.mode == other.mode and
@@ -637,10 +679,12 @@ class Image(object):
                 self.tobytes() == other.tobytes())
 
     def __ne__(self, other):
+        # type: (Image) -> bool
         eq = (self == other)
         return not eq
 
     def __repr__(self):
+        # type: () -> Text
         return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
             self.__class__.__module__, self.__class__.__name__,
             self.mode, self.size[0], self.size[1],
@@ -648,6 +692,7 @@ class Image(object):
             )
 
     def _repr_png_(self):
+        # type: () -> bytes
         """ iPython display hook support
 
         :returns: png version of the image as bytes
@@ -659,6 +704,7 @@ class Image(object):
 
     @property
     def __array_interface__(self):
+        # type: () -> Dict[Text, Any]
         # numpy array interface support
         new = {}
         shape, typestr = _conv_type_shape(self)
@@ -674,6 +720,7 @@ class Image(object):
         return new
 
     def __getstate__(self):
+        # type: () -> List
         return [
             self.info,
             self.mode,
@@ -682,6 +729,7 @@ class Image(object):
             self.tobytes()]
 
     def __setstate__(self, state):
+        # type: (List) -> None
         Image.__init__(self)
         self.tile = []
         info, mode, size, palette, data = state
@@ -694,6 +742,7 @@ class Image(object):
         self.frombytes(data)
 
     def tobytes(self, encoder_name="raw", *args):
+        # type: (Text, *Text) -> bytes
         """
         Return image as a bytes object.
 
@@ -737,10 +786,12 @@ class Image(object):
         return b"".join(data)
 
     def tostring(self, *args, **kw):
+        # type: (*Any, **Any) -> None
         raise NotImplementedError("tostring() has been removed. "
                                   "Please call tobytes() instead.")
 
     def tobitmap(self, name="image"):
+        # type: (Text) -> bytes
         """
         Returns the image converted to an X11 bitmap.
 
@@ -762,6 +813,7 @@ class Image(object):
             ])
 
     def frombytes(self, data, decoder_name="raw", *args):
+        # type: (Any, Text, *Any) -> None
         """
         Loads this image with pixel data from a bytes object.
 
@@ -788,10 +840,12 @@ class Image(object):
             raise ValueError("cannot decode image data")
 
     def fromstring(self, *args, **kw):
+        # type: (*Any, **Any) -> None
         raise NotImplementedError("fromstring() has been removed. "
                                   "Please call frombytes() instead.")
 
     def load(self):
+        # type: () -> Any
         """
         Allocates storage for the image and loads the pixel data.  In
         normal cases, you don't need to call this method, since the
@@ -826,6 +880,7 @@ class Image(object):
             return self.im.pixel_access(self.readonly)
 
     def verify(self):
+        # type: () -> None
         """
         Verifies the contents of a file. For data read from a file, this
         method attempts to determine if the file is broken, without
@@ -838,6 +893,7 @@ class Image(object):
 
     def convert(self, mode=None, matrix=None, dither=None,
                 palette=WEB, colors=256):
+        # type: (Optional[Text], Optional[Union[Matrix4, Matrix12]], Optional[int], Optional[int], int) -> Image
         """
         Returns a converted copy of this image. For the "P" mode, this
         method translates pixels through the palette.  If mode is
@@ -1000,6 +1056,7 @@ class Image(object):
         return new_im
 
     def quantize(self, colors=256, method=None, kmeans=0, palette=None):
+        # type: (int, Optional[int], int, Optional[ImagingPalette]) -> Image
         """
         Convert the image to 'P' mode with the specified number
         of colors.
@@ -1044,6 +1101,7 @@ class Image(object):
         return self._new(self.im.quantize(colors, method, kmeans))
 
     def copy(self):
+        # type: () -> Image
         """
         Copies this image. Use this method if you wish to paste things
         into an image, but still retain the original.
@@ -1057,6 +1115,7 @@ class Image(object):
     __copy__ = copy
 
     def crop(self, box=None):
+        # type: (Optional[LURD]) -> Image
         """
         Returns a rectangular region from this image. The box is a
         4-tuple defining the left, upper, right, and lower pixel
@@ -1076,6 +1135,7 @@ class Image(object):
         return self._new(self._crop(self.im, box))
 
     def _crop(self, im, box):
+        # type: (Image, LURD) -> Image
         """
         Returns a rectangular region from the core image object im.
 
@@ -1099,6 +1159,8 @@ class Image(object):
         return im.crop((x0, y0, x1, y1))
 
     def draft(self, mode, size):
+        # type: (Any, Any) -> Any
+        # TODO unclear types
         """
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
@@ -1119,12 +1181,14 @@ class Image(object):
         pass
 
     def _expand(self, xmargin, ymargin=None):
+        # type: (int, Optional[int]) -> Image
         if ymargin is None:
             ymargin = xmargin
         self.load()
         return self._new(self.im.expand(xmargin, ymargin, 0))
 
     def filter(self, filter):
+        # type: (Filter) -> Image
         """
         Filters this image using the given filter.  For a list of
         available filters, see the :py:mod:`~PIL.ImageFilter` module.
@@ -1152,6 +1216,7 @@ class Image(object):
         return merge(self.mode, ims)
 
     def getbands(self):
+        # type: () -> Tuple[Any]
         """
         Returns a tuple containing the name of each band in this image.
         For example, **getbands** on an RGB image returns ("R", "G", "B").
@@ -1162,6 +1227,7 @@ class Image(object):
         return ImageMode.getmode(self.mode).bands
 
     def getbbox(self):
+        # type: () -> Optional[LURD]
         """
         Calculates the bounding box of the non-zero regions in the
         image.
@@ -1176,6 +1242,7 @@ class Image(object):
         return self.im.getbbox()
 
     def getcolors(self, maxcolors=256):
+        # type: (int) -> Optional[List[Tuple[int, int]]]
         """
         Returns a list of colors used in this image.
 
@@ -1198,6 +1265,7 @@ class Image(object):
         return self.im.getcolors(maxcolors)
 
     def getdata(self, band=None):
+        # type: (Optional[int]) -> Sequence
         """
         Returns the contents of this image as a sequence object
         containing pixel values.  The sequence object is flattened, so
@@ -1221,6 +1289,7 @@ class Image(object):
         return self.im  # could be abused
 
     def getextrema(self):
+        # type: () -> Tuple
         """
         Gets the the minimum and maximum pixel values for each band in
         the image.
@@ -1239,6 +1308,7 @@ class Image(object):
         return self.im.getextrema()
 
     def getim(self):
+        # type: () -> Any
         """
         Returns a capsule that points to the internal image memory.
 
@@ -1249,6 +1319,7 @@ class Image(object):
         return self.im.ptr
 
     def getpalette(self):
+        # type: () -> Optional[List[int]]
         """
         Returns the image palette as a list.
 
@@ -1266,6 +1337,7 @@ class Image(object):
             return None  # no palette
 
     def getpixel(self, xy):
+        # type: (Coord) -> Tuple[Any]
         """
         Returns the pixel value at a given position.
 
@@ -1280,6 +1352,7 @@ class Image(object):
         return self.im.getpixel(xy)
 
     def getprojection(self):
+        # type: () -> Tuple[List[Any], List[Any]]
         """
         Get projection to x and y axes
 
@@ -1292,6 +1365,7 @@ class Image(object):
         return [i8(c) for c in x], [i8(c) for c in y]
 
     def histogram(self, mask=None, extrema=None):
+        # type: (Optional[Image], Optional[Any]) -> List[int]
         """
         Returns a histogram for the image. The histogram is returned as
         a list of pixel counts, one for each pixel value in the source
@@ -1321,10 +1395,12 @@ class Image(object):
         return self.im.histogram()
 
     def offset(self, xoffset, yoffset=None):
+        # type: (Any, Any) -> Any
         raise NotImplementedError("offset() has been removed. "
                                   "Please call ImageChops.offset() instead.")
 
     def paste(self, im, box=None, mask=None):
+        # type: (Union[Image, int, Tuple, Text], Optional[Union[LURD, Coord]], Optional[Image]) -> None
         """
         Pastes another image into this image. The box argument is either
         a 2-tuple giving the upper left corner, a 4-tuple defining the
@@ -1406,6 +1482,7 @@ class Image(object):
             self.im.paste(im, box)
 
     def alpha_composite(self, im, dest=(0,0), source=(0,0)):
+        # type: (Image, Coord, Union[Coord, LURD]) -> None
         """ 'In-place' analog of Image.alpha_composite. Composites an image
         onto this image.
 
@@ -1454,6 +1531,7 @@ class Image(object):
         self.paste(result, box)
 
     def point(self, lut, mode=None):
+        # type: (Union[List, Callable[[Any], Any]], Optional[Text]) -> Image
         """
         Maps this image through a lookup table or function.
 
@@ -1493,6 +1571,7 @@ class Image(object):
         return self._new(self.im.point(lut, mode))
 
     def putalpha(self, alpha):
+        # type: (Union[Image, int, Tuple]) -> None
         """
         Adds or replaces the alpha layer in this image.  If the image
         does not have an alpha layer, it's converted to "LA" or "RGBA".
@@ -1547,6 +1626,7 @@ class Image(object):
         self.im.putband(alpha.im, band)
 
     def putdata(self, data, scale=1.0, offset=0.0):
+        # type: (Sequence[Any], float, float) -> None
         """
         Copies pixel data to this image.  This method copies data from a
         sequence object into the image, starting at the upper left
@@ -1564,6 +1644,7 @@ class Image(object):
         self.im.putdata(data, scale, offset)
 
     def putpalette(self, data, rawmode="RGB"):
+        # type: (Sequence[Union[int, bytes]], Text) -> None
         """
         Attaches a palette to this image.  The image must be a "P" or
         "L" image, and the palette sequence must contain 768 integer
@@ -1595,6 +1676,7 @@ class Image(object):
         self.load()  # install new palette
 
     def putpixel(self, xy, value):
+        # type: (Coord, Union[int, Tuple]) -> Any
         """
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
@@ -1623,6 +1705,7 @@ class Image(object):
         return self.im.putpixel(xy, value)
 
     def remap_palette(self, dest_map, source_palette=None):
+        # type: (Sequence[int], Optional[bytes]) -> Image
         """
         Rewrites the image to reorder the palette.
 
@@ -1699,6 +1782,7 @@ class Image(object):
         return m_im
 
     def resize(self, size, resample=NEAREST, box=None):
+        # type: (Size, int) -> Image
         """
         Returns a resized copy of this image.
 
@@ -1748,6 +1832,7 @@ class Image(object):
 
     def rotate(self, angle, resample=NEAREST, expand=0, center=None,
                translate=None):
+        # type: (float, int, bool, Optional[Coord], Optional[XY]) -> Image
         """
         Returns a rotated copy of this image.  This method returns a
         copy of this image, rotated the given number of degrees counter
@@ -1822,6 +1907,7 @@ class Image(object):
         ]
 
         def transform(x, y, matrix):
+            # type: (float, float, Sequence[float]) -> Tuple[float, float]
             (a, b, c, d, e, f) = matrix
             return a*x + b*y + c, d*x + e*y + f
 
@@ -1852,6 +1938,7 @@ class Image(object):
         return self.transform((w, h), AFFINE, matrix, resample)
 
     def save(self, fp, format=None, **params):
+        # type: (Union[Text, pathlib.Path, BytesIO], Optional[Text], **Any) -> None
         """
         Saves this image under the given filename.  If no format is
         specified, the format to use is determined from the filename
@@ -1934,6 +2021,7 @@ class Image(object):
                 fp.close()
 
     def seek(self, frame):
+        # type: (int) -> None
         """
         Seeks to the given frame in this sequence file. If you seek
         beyond the end of the sequence, the method raises an
@@ -1955,6 +2043,7 @@ class Image(object):
             raise EOFError
 
     def show(self, title=None, command=None):
+        # type: (Optional[Text], Optional[Text]) -> None
         """
         Displays this image. This method is mainly intended for
         debugging purposes.
@@ -1977,6 +2066,7 @@ class Image(object):
         _show(self, title=title, command=command)
 
     def split(self):
+        # type: () -> Tuple
         """
         Split this image into individual bands. This method returns a
         tuple of individual image bands from an image. For example,
@@ -1998,6 +2088,7 @@ class Image(object):
         return tuple(ims)
 
     def getchannel(self, channel):
+        # type: (Union[int, str]) -> Image
         """
         Returns an image containing a single channel of the source image.
 
@@ -2020,6 +2111,7 @@ class Image(object):
         return self._new(self.im.getband(channel))
 
     def tell(self):
+        # type: () -> int
         """
         Returns the current frame number. See :py:meth:`~PIL.Image.Image.seek`.
 
@@ -2028,6 +2120,7 @@ class Image(object):
         return 0
 
     def thumbnail(self, size, resample=BICUBIC):
+        # type: (Size, int) -> None
         """
         Make this image into a thumbnail.  This method modifies the
         image to contain a thumbnail version of itself, no larger than
@@ -2078,6 +2171,7 @@ class Image(object):
     # instead of bloating the method docs, add a separate chapter.
     def transform(self, size, method, data=None, resample=NEAREST,
                   fill=1, fillcolor=None):
+        # type: (Size, int, Optional[Any], int, Any, Optional[Union[int, float, Tuple, Text]]) -> Image
         """
         Transforms this image.  This method creates a new image with the
         given size, and the same mode as the original, and copies data
@@ -2135,6 +2229,7 @@ class Image(object):
 
     def __transformer(self, box, image, method, data,
                       resample=NEAREST, fill=1):
+        # type: (LURD, Image, int, Any, int, Any) -> None
         w = box[2] - box[0]
         h = box[3] - box[1]
 
@@ -2183,6 +2278,7 @@ class Image(object):
         self.im.transform2(box, image.im, method, data, resample, fill)
 
     def transpose(self, method):
+        # type: (int) -> Image
         """
         Transpose image (flip or rotate in 90 degree steps)
 
@@ -2197,6 +2293,7 @@ class Image(object):
         return self._new(self.im.transpose(method))
 
     def effect_spread(self, distance):
+        # type: (int) -> Image
         """
         Randomly spread pixels in an image.
 
@@ -2206,6 +2303,7 @@ class Image(object):
         return self._new(self.im.effect_spread(distance))
 
     def toqimage(self):
+        # type: () -> QImage
         """Returns a QImage copy of this image"""
         from . import ImageQt
         if not ImageQt.qt_is_installed:
@@ -2213,6 +2311,7 @@ class Image(object):
         return ImageQt.toqimage(self)
 
     def toqpixmap(self):
+        # type: () -> QPixmap
         """Returns a QPixmap copy of this image"""
         from . import ImageQt
         if not ImageQt.qt_is_installed:
@@ -2240,12 +2339,14 @@ class ImageTransformHandler(object):
 # Debugging
 
 def _wedge():
+    # type: () -> Image
     "Create greyscale wedge (for debugging only)"
 
     return Image()._new(core.wedge("L"))
 
 
 def _check_size(size):
+    # type: (Size) -> bool
     """
     Common check to enforce type and sanity check on size tuples
 
@@ -2264,6 +2365,7 @@ def _check_size(size):
 
 
 def new(mode, size, color=0):
+    # type: (Text, Size, Optional[Union[int, float, Tuple, Text]]) -> Image
     """
     Creates a new image with the given mode and size.
 
@@ -2295,6 +2397,7 @@ def new(mode, size, color=0):
 
 
 def frombytes(mode, size, data, decoder_name="raw", *args):
+    # type: (Text, Size, Sequence[bytes], Text, *Any) -> Image
     """
     Creates a copy of an image memory from pixel data in a buffer.
 
@@ -2333,11 +2436,13 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
 
 def fromstring(*args, **kw):
+    # type: (*Any, **Any) -> Any
     raise NotImplementedError("fromstring() has been removed. " +
                               "Please call frombytes() instead.")
 
 
 def frombuffer(mode, size, data, decoder_name="raw", *args):
+    # type: (Text, Size, Sequence[bytes], Text, *Any) -> Image
     """
     Creates an image memory referencing pixel data in a byte buffer.
 
@@ -2399,6 +2504,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
 
 def fromarray(obj, mode=None):
+    # type: (object, Optional[Text]) -> Image
     """
     Creates an image memory from an object exporting the array interface
     (using the buffer protocol).
@@ -2446,6 +2552,7 @@ def fromarray(obj, mode=None):
 
 
 def fromqimage(im):
+    # type: (QImage) -> Image
     """Creates an image instance from a QImage image"""
     from . import ImageQt
     if not ImageQt.qt_is_installed:
@@ -2454,6 +2561,7 @@ def fromqimage(im):
 
 
 def fromqpixmap(im):
+    # type: (QPixmap) -> Image
     """Creates an image instance from a QPixmap image"""
     from . import ImageQt
     if not ImageQt.qt_is_installed:
@@ -2490,6 +2598,7 @@ _fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
 
 
 def _decompression_bomb_check(size):
+    # type: (Size) -> None
     if MAX_IMAGE_PIXELS is None:
         return
 
@@ -2510,6 +2619,7 @@ def _decompression_bomb_check(size):
 
 
 def open(fp, mode="r"):
+    # type: (Union[Text, pathlib.Path, BytesIO], Text) -> Image
     """
     Opens and identifies the given image file.
 
@@ -2554,6 +2664,7 @@ def open(fp, mode="r"):
     preinit()
 
     def _open_core(fp, filename, prefix):
+#        # type: (Any, Text, Text): -> Optional[Image]
         for i in ID:
             try:
                 factory, accept = OPEN[i]
@@ -2589,6 +2700,7 @@ def open(fp, mode="r"):
 
 
 def alpha_composite(im1, im2):
+    # type: (Image, Image) -> Image
     """
     Alpha composite im2 over im1.
 
@@ -2604,6 +2716,7 @@ def alpha_composite(im1, im2):
 
 
 def blend(im1, im2, alpha):
+    # type: (Image, Image, float) -> Image
     """
     Creates a new image by interpolating between two input images, using
     a constant alpha.::
@@ -2627,6 +2740,7 @@ def blend(im1, im2, alpha):
 
 
 def composite(image1, image2, mask):
+    # type: (Image, Image, Image) -> Image
     """
     Create composite image by blending images using a transparency mask.
 
@@ -2644,6 +2758,7 @@ def composite(image1, image2, mask):
 
 
 def eval(image, *args):
+    # type: (Image, *Any) -> Image
     """
     Applies the function (which should take one argument) to each pixel
     in the given image. If the image has more than one band, the same
@@ -2660,6 +2775,7 @@ def eval(image, *args):
 
 
 def merge(mode, bands):
+    # type: (Text, Sequence[Image]) -> Image
     """
     Merge a set of single band images into a new multiband image.
 
@@ -2687,6 +2803,7 @@ def merge(mode, bands):
 # Plugin registry
 
 def register_open(id, factory, accept=None):
+    # type: (Text, Callable, Optional[Callable[..., bool]]) -> None
     """
     Register an image file plugin.  This function should not be used
     in application code.
@@ -2702,6 +2819,7 @@ def register_open(id, factory, accept=None):
 
 
 def register_mime(id, mimetype):
+    # type: (Text, Text) -> None
     """
     Registers an image MIME type.  This function should not be used
     in application code.
@@ -2713,6 +2831,7 @@ def register_mime(id, mimetype):
 
 
 def register_save(id, driver):
+    # type: (Text, Callable) -> None
     """
     Registers an image save function.  This function should not be
     used in application code.
@@ -2724,6 +2843,7 @@ def register_save(id, driver):
 
 
 def register_save_all(id, driver):
+    # type: (Text, Callable) -> None
     """
     Registers an image function to save all the frames
     of a multiframe format.  This function should not be
@@ -2736,6 +2856,7 @@ def register_save_all(id, driver):
 
 
 def register_extension(id, extension):
+    # type: (Text, Text) -> None
     """
     Registers an image extension.  This function should not be
     used in application code.
@@ -2757,6 +2878,7 @@ def register_extensions(id, extensions):
         register_extension(id, extension)
 
 def registered_extensions():
+    # type: () -> Dict[Text, Text]
     """
     Returns a dictionary containing all file extensions belonging
     to registered plugins
@@ -2767,6 +2889,7 @@ def registered_extensions():
 
 
 def register_decoder(name, decoder):
+    # type: (Text, Callable[..., PyDecoder]) -> None
     """
     Registers an image decoder.  This function should not be
     used in application code.
@@ -2781,6 +2904,7 @@ def register_decoder(name, decoder):
 
 
 def register_encoder(name, encoder):
+    # type: (Text, Callable[..., PyEncoder]) -> None
     """
     Registers an image encoder.  This function should not be
     used in application code.
@@ -2811,6 +2935,7 @@ def _showxv(image, title=None, **options):
 # Effects
 
 def effect_mandelbrot(size, extent, quality):
+    # type: (Size, LURD, int) -> Image
     """
     Generate a Mandelbrot set covering the given extent.
 
@@ -2824,6 +2949,7 @@ def effect_mandelbrot(size, extent, quality):
 
 
 def effect_noise(size, sigma):
+    # type: (Size, float) -> Image
     """
     Generate Gaussian noise centered around 128.
 
@@ -2835,6 +2961,7 @@ def effect_noise(size, sigma):
 
 
 def linear_gradient(mode):
+    # type: (Text) -> Image
     """
     Generate 256x256 linear gradient from black to white, top to bottom.
 
@@ -2844,6 +2971,7 @@ def linear_gradient(mode):
 
 
 def radial_gradient(mode):
+    # type: (Text) -> Image
     """
     Generate 256x256 radial gradient from black to white, centre to edge.
 
