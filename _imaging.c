@@ -1889,6 +1889,29 @@ _putband(ImagingObject* self, PyObject* args)
 }
 
 static PyObject*
+_merge(PyObject* self, PyObject* args)
+{
+    char* mode;
+    ImagingObject *band0 = NULL;
+    ImagingObject *band1 = NULL;
+    ImagingObject *band2 = NULL;
+    ImagingObject *band3 = NULL;
+    Imaging bands[4] = {NULL, NULL, NULL, NULL};
+
+    if (!PyArg_ParseTuple(args, "sO!|O!O!O!", &mode,
+                          &Imaging_Type, &band0, &Imaging_Type, &band1,
+                          &Imaging_Type, &band2, &Imaging_Type, &band3))
+        return NULL;
+
+    if (band0) bands[0] = band0->image;
+    if (band1) bands[1] = band1->image;
+    if (band2) bands[2] = band2->image;
+    if (band3) bands[3] = band3->image;
+
+    return PyImagingNew(ImagingMerge(mode, bands));
+}
+
+static PyObject*
 _split(ImagingObject* self, PyObject* args)
 {
     int fails = 0;
@@ -3325,6 +3348,7 @@ static PyMethodDef functions[] = {
     {"blend", (PyCFunction)_blend, 1},
     {"fill", (PyCFunction)_fill, 1},
     {"new", (PyCFunction)_new, 1},
+    {"merge", (PyCFunction)_merge, 1},
 
     {"getcount", (PyCFunction)_getcount, 1},
 
