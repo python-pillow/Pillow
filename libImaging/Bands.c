@@ -262,7 +262,7 @@ ImagingMerge(const char* mode, Imaging bands[4])
     }
     bandsCount = i;
 
-    imOut = ImagingNew(mode, firstBand->xsize, firstBand->ysize);
+    imOut = ImagingNewDirty(mode, firstBand->xsize, firstBand->ysize);
     if ( ! imOut)
         return NULL;
 
