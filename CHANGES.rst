@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Basic support for Termux (android) in setup.py #2684
+  [wiredfool]
+
+- Bug: Fix Image.fromarray for numpy.bool type. #2683
+  [wiredfool]
+
 - CI: Add Fedora 24 and 26 to Docker tests
   [wiredfool]
 
@@ -31,6 +37,9 @@ Changelog (Pillow)
 - Remove unused im.copy2 and core.copy methods #2657
   [homm]
 
+- Fast Image.merge() #2677
+  [homm]
+  
 - Fast Image.split() #2676
   [homm]
 
