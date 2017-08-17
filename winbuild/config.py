@@ -55,15 +55,15 @@ libs = {
         'version': '8.5.19',
     },
     'tcl-8.6': {
-        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.6/tcl866-src.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'tcl866-src.zip',
+        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.7/tcl867-src.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'tcl867-src.zip',
         'dir': '',
     },
     'tk-8.6': {
-        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.6/tk866-src.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'tk866-src.zip',
+        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.7/tk867-src.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'tk867-src.zip',
         'dir': '',
-        'version': '8.6.6',
+        'version': '8.6.7',
     },
     'webp': {
         'url': 'http://downloads.webmproject.org/releases/webp/libwebp-0.6.0.tar.gz',
@@ -71,9 +71,9 @@ libs = {
         'dir': 'libwebp-0.6.0',
     },
     'openjpeg': {
-        'url': SF_MIRROR+'/project/openjpeg/openjpeg/2.1.2/openjpeg-2.1.2.tar.gz',
-        'filename': PILLOW_DEPENDS_DIR + 'openjpeg-2.1.2.tar.gz',
-        'dir': 'openjpeg-2.1.2',
+        'url': SF_MIRROR+'/project/openjpeg/openjpeg/2.2.0/openjpeg-2.2.0.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'openjpeg-2.2.0.tar.gz',
+        'dir': 'openjpeg-2.2.0',
     },
 }
 

@@ -26,6 +26,8 @@ matrix:
     - env: DOCKER="debian-stretch-x86"
     - env: DOCKER="centos-6-amd64"
     - env: DOCKER="amazon-amd64"
+    - env: DOCKER="fedora-24-amd64"
+    - env: DOCKER="fedora-26-amd64"
 
 dist: trusty
 
