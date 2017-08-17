@@ -91,7 +91,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4])
     }
 
     for (i = 0; i < imIn->bands; i++) {
-        bands[i] = ImagingNew("L", imIn->xsize, imIn->ysize);
+        bands[i] = ImagingNewDirty("L", imIn->xsize, imIn->ysize);
         if ( ! bands[i]) {
             for (j = 0; j < i; ++j) {
                 ImagingDelete(bands[j]);
