@@ -27,14 +27,7 @@
 if False:
     from typing import Any, Text, Optional, Tuple, List, Sequence, Union, Callable, Dict
 
-    # Type aliases; names subject to change
-    LURD = Tuple[int, int, int, int]  # left, up(per), right, down = x0, y0, x1, y1
-    XY = Tuple[int, int]
-    Coord = XY
-    Size = XY  # NOTE: All XY aliases will be interchangeable
-    Matrix4 = Tuple[float, float, float, float]
-    Matrix12 = Tuple[float, float, float, float, float, float, float, float, float, float, float, float]
-    Mode = str
+    from PIL.aliases import *
 
     # Just required for typing, or gradual module inclusion while adding annotation?
     from io import BytesIO
@@ -43,6 +36,7 @@ if False:
     from . import ImageFilter
     from ImageFile import PyDecoder
     from ImageFile import PyEncoder
+    from _imaging import ImagingCore
 
 from . import VERSION, PILLOW_VERSION, _plugins
 
@@ -552,7 +546,7 @@ class Image(object):
         # type: () -> None
         # FIXME: take "new" parameters / other image?
         # FIXME: turn mode and size into delegating properties?
-        self.im = None  # type: Optional[Any]
+        self.im = None  # type: Optional[ImagingCore]
         self.mode = ""
         self.size = (0, 0)
         self.palette = None  # type: Optional[ImagePalette.ImagePalette]
@@ -1135,7 +1129,7 @@ class Image(object):
         return self._new(self._crop(self.im, box))
 
     def _crop(self, im, box):
-        # type: (Image, LURD) -> Image
+        # type: (ImagingCore, LURD) -> Image
         """
         Returns a rectangular region from the core image object im.
 
