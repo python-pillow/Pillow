@@ -667,7 +667,7 @@ class Image(object):
 
         return filename
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # type: ignore # type: (Image) -> bool
         # type: (Image) -> bool
         return (isinstance(other, Image) and
                 self.__class__.__name__ == other.__class__.__name__ and
@@ -679,13 +679,12 @@ class Image(object):
                 self.getpalette() == other.getpalette() and
                 self.tobytes() == other.tobytes())
 
-    def __ne__(self, other):
-        # type: (Image) -> bool
+    def __ne__(self, other):  # type: ignore # type: (Image) -> bool
         eq = (self == other)
         return not eq
 
     def __repr__(self):
-        # type: () -> Text
+        # type: () -> str
         return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
             self.__class__.__module__, self.__class__.__name__,
             self.mode, self.size[0], self.size[1],
