@@ -32,11 +32,12 @@ if False:
     # Just required for typing, or gradual module inclusion while adding annotation?
     from io import BytesIO
     import pathlib
-    import ImagingPalette
-    from . import ImageFilter
-    from ImageFile import PyDecoder
-    from ImageFile import PyEncoder
-    from _imaging import ImagingCore
+#    from . import ImagingPalette  ## This will need a stub?
+    from . import ImagePalette
+    from .ImageFilter import Filter
+    from .ImageFile import PyDecoder
+    PyEncoder = Any  ## FIXME: PyEncoder is not defined anywhere? Needs stub/class?
+    from ._imaging import ImagingCore
 
 from . import VERSION, PILLOW_VERSION, _plugins
 
@@ -1182,7 +1183,7 @@ class Image(object):
         return self._new(self.im.expand(xmargin, ymargin, 0))
 
     def filter(self, filter):
-        # type: (ImageFilter.Filter) -> Image
+        # type: (Filter) -> Image
         """
         Filters this image using the given filter.  For a list of
         available filters, see the :py:mod:`~PIL.ImageFilter` module.
