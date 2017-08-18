@@ -208,13 +208,18 @@ class TestFileGif(PillowTestCase):
             self.assertEqual(framecount, 5)
 
     def test_n_frames(self):
-        im = Image.open(TEST_GIF)
-        self.assertEqual(im.n_frames, 1)
-        self.assertFalse(im.is_animated)
+        for path, n_frames in [
+            [TEST_GIF, 1],
+            ['Tests/images/iss634.gif', 42]
+        ]:
+            # Test is_animated before n_frames
+            im = Image.open(path)
+            self.assertEqual(im.is_animated, n_frames != 1)
 
-        im = Image.open("Tests/images/iss634.gif")
-        self.assertEqual(im.n_frames, 42)
-        self.assertTrue(im.is_animated)
+            # Test is_animated after n_frames
+            im = Image.open(path)
+            self.assertEqual(im.n_frames, n_frames)
+            self.assertEqual(im.is_animated, n_frames != 1)
 
     def test_eoferror(self):
         im = Image.open(TEST_GIF)
