@@ -34,6 +34,7 @@ if False:
     Size = XY  # NOTE: All XY aliases will be interchangeable
     Matrix4 = Tuple[float, float, float, float]
     Matrix12 = Tuple[float, float, float, float, float, float, float, float, float, float, float, float]
+    Mode = str
 
     # Just required for typing, or gradual module inclusion while adding annotation?
     from io import BytesIO
@@ -306,7 +307,7 @@ _MAPMODES = ("L", "P", "RGBX", "RGBA", "CMYK", "I;16", "I;16L", "I;16B")
 
 
 def getmodebase(mode):
-    # type: (Text) -> Text
+    # type: (Mode) -> Mode
     """
     Gets the "base" mode for given mode.  This function returns "L" for
     images that contain grayscale data, and "RGB" for images that
@@ -320,7 +321,7 @@ def getmodebase(mode):
 
 
 def getmodetype(mode):
-    # type: (Text) -> Text
+    # type: (Mode) -> Mode
     """
     Gets the storage type mode.  Given a mode, this function returns a
     single-layer mode suitable for storing individual bands.
@@ -333,7 +334,7 @@ def getmodetype(mode):
 
 
 def getmodebandnames(mode):
-    # type: (Text) -> Tuple
+    # type: (Mode) -> Tuple
     """
     Gets a list of individual band names.  Given a mode, this function returns
     a tuple containing the names of individual bands (use
@@ -349,7 +350,7 @@ def getmodebandnames(mode):
 
 
 def getmodebands(mode):
-    # type: (Text) -> int
+    # type: (Mode) -> int
     """
     Gets the number of individual bands for this mode.
 
@@ -431,7 +432,7 @@ def init():
 # Codec factories (used by tobytes/frombytes and ImageFile.load)
 
 def _getdecoder(mode, decoder_name, args, extra=()):
-    # type: (Text, Text, Optional[Tuple], Tuple) -> PyDecoder
+    # type: (Mode, Text, Optional[Tuple], Tuple) -> PyDecoder
 
     # tweak arguments
     if args is None:
@@ -454,7 +455,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
 
 
 def _getencoder(mode, encoder_name, args, extra=()):
-    # type: (Text, Text, Optional[Tuple], Tuple) -> PyEncoder
+    # type: (Mode, Text, Optional[Tuple], Tuple) -> PyEncoder
 
     # tweak arguments
     if args is None:
@@ -537,7 +538,7 @@ class Image(object):
         # type: () -> None
         # FIXME: take "new" parameters / other image?
         # FIXME: turn mode and size into delegating properties?
-        self.im = None
+        self.im = None  # type: Optional[Any]
         self.mode = ""
         self.size = (0, 0)
         self.palette = None  # type: Optional[ImagePalette.ImagePalette]
@@ -873,7 +874,7 @@ class Image(object):
 
     def convert(self, mode=None, matrix=None, dither=None,
                 palette=WEB, colors=256):
-        # type: (Optional[Text], Optional[Union[Matrix4, Matrix12]], Optional[int], Optional[int], int) -> Image
+        # type: (Optional[Mode], Optional[Union[Matrix4, Matrix12]], Optional[int], Optional[int], int) -> Image
         """
         Returns a converted copy of this image. For the "P" mode, this
         method translates pixels through the palette.  If mode is
@@ -1512,7 +1513,7 @@ class Image(object):
         self.paste(result, box)
 
     def point(self, lut, mode=None):
-        # type: (Union[List, Callable[[Any], Any]], Optional[Text]) -> Image
+        # type: (Union[List, Callable[[Any], Any]], Optional[Mode]) -> Image
         """
         Maps this image through a lookup table or function.
 
@@ -1630,7 +1631,7 @@ class Image(object):
         self.im.putdata(data, scale, offset)
 
     def putpalette(self, data, rawmode="RGB"):
-        # type: (Sequence[Union[int, bytes]], Text) -> None
+        # type: (Sequence[Union[int, bytes]], Mode) -> None
         """
         Attaches a palette to this image.  The image must be a "P" or
         "L" image, and the palette sequence must contain 768 integer
@@ -2349,7 +2350,7 @@ def _check_size(size):
 
 
 def new(mode, size, color=0):
-    # type: (Text, Size, Optional[Union[int, float, Tuple, Text]]) -> Image
+    # type: (Mode, Size, Optional[Union[int, float, Tuple, Text]]) -> Image
     """
     Creates a new image with the given mode and size.
 
@@ -2381,7 +2382,7 @@ def new(mode, size, color=0):
 
 
 def frombytes(mode, size, data, decoder_name="raw", *args):
-    # type: (Text, Size, Sequence[bytes], Text, *Any) -> Image
+    # type: (Mode, Size, Sequence[bytes], Text, *Any) -> Image
     """
     Creates a copy of an image memory from pixel data in a buffer.
 
@@ -2426,7 +2427,7 @@ def fromstring(*args, **kw):
 
 
 def frombuffer(mode, size, data, decoder_name="raw", *args):
-    # type: (Text, Size, Sequence[bytes], Text, *Any) -> Image
+    # type: (Mode, Size, Sequence[bytes], Text, *Any) -> Image
     """
     Creates an image memory referencing pixel data in a byte buffer.
 
@@ -2488,7 +2489,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
 
 def fromarray(obj, mode=None):
-    # type: (object, Optional[Text]) -> Image
+    # type: (object, Optional[Mode]) -> Image
     """
     Creates an image memory from an object exporting the array interface
     (using the buffer protocol).
@@ -2758,7 +2759,7 @@ def eval(image, *args):
 
 
 def merge(mode, bands):
-    # type: (Text, Sequence[Image]) -> Image
+    # type: (Mode, Sequence[Image]) -> Image
     """
     Merge a set of single band images into a new multiband image.
 
@@ -2934,7 +2935,7 @@ def effect_noise(size, sigma):
 
 
 def linear_gradient(mode):
-    # type: (Text) -> Image
+    # type: (Mode) -> Image
     """
     Generate 256x256 linear gradient from black to white, top to bottom.
 
@@ -2944,7 +2945,7 @@ def linear_gradient(mode):
 
 
 def radial_gradient(mode):
-    # type: (Text) -> Image
+    # type: (Mode) -> Image
     """
     Generate 256x256 radial gradient from black to white, centre to edge.
 
