@@ -40,7 +40,7 @@ if False:
     from io import BytesIO
     import pathlib
     import ImagingPalette
-    from ImageFilter import Filter
+    from . import ImageFilter
     from ImageFile import PyDecoder
     from ImageFile import PyEncoder
 
@@ -1171,7 +1171,7 @@ class Image(object):
         return self._new(self.im.expand(xmargin, ymargin, 0))
 
     def filter(self, filter):
-        # type: (Filter) -> Image
+        # type: (ImageFilter.Filter) -> Image
         """
         Filters this image using the given filter.  For a list of
         available filters, see the :py:mod:`~PIL.ImageFilter` module.
