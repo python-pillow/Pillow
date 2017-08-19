@@ -509,6 +509,10 @@ extern Py_ssize_t _imaging_tell_pyFd(PyObject *fd);
 #define	IMAGING_CODEC_CONFIG	-8
 #define	IMAGING_CODEC_MEMORY	-9
 
+
+
+#include "ImagingUtils.h"
+
 #if defined(__cplusplus)
 }
 #endif

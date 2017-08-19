@@ -464,14 +464,6 @@ unpackP4L(UINT8* out, const UINT8* in, int pixels)
 }
 
 
-#ifdef WORDS_BIGENDIAN
-    #define MAKE_UINT32(u0, u1, u2, u3) (u3 | (u2<<8) | (u1<<16) | (u0<<24))
-    #define CHANNEL_4_MASK 0x000000ff
-#else
-    #define MAKE_UINT32(u0, u1, u2, u3) (u0 | (u1<<8) | (u2<<16) | (u3<<24))
-    #define CHANNEL_4_MASK 0xff000000
-#endif
-
 /* Unpack to "RGB" image */
 
 void
@@ -481,7 +473,7 @@ ImagingUnpackRGB(UINT8* _out, const UINT8* in, int pixels)
     UINT32* out = (UINT32*) _out;
     /* RGB triplets */
     for (; i < pixels-1; i++) {
-        out[i] = CHANNEL_4_MASK | *(UINT32*)&in[0];
+        out[i] = MASK_UINT32_CHANNEL_3 | *(UINT32*)&in[0];
         in += 3;
     }
     for (; i < pixels; i++) {
