@@ -2637,7 +2637,7 @@ def open(fp, mode="r"):
     if mode != "r":
         raise ValueError("bad mode %r" % mode)
 
-    exclusive_fp = False
+    exclusive_fp = False  # type: bool
     filename = ""
     if isPath(fp):
         filename = fp
