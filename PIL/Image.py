@@ -553,7 +553,7 @@ class Image(object):
         return self.size[1]
 
     def _new(self, im):
-        # type: (Image) -> Image
+        # type: (ImagingCore) -> Image
         new = Image()
         new.im = im
         new.mode = im.mode
@@ -1112,7 +1112,7 @@ class Image(object):
         return self._new(self._crop(self.im, box))
 
     def _crop(self, im, box):
-        # type: (ImagingCore, LURD) -> Image
+        # type: (ImagingCore, LURD) -> ImagingCore
         """
         Returns a rectangular region from the core image object im.
 
