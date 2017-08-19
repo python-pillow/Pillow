@@ -2641,10 +2641,10 @@ def merge(mode, bands):
 
     if getmodebands(mode) != len(bands) or "*" in mode:
         raise ValueError("wrong number of bands")
-    for im in bands[1:]:
-        if im.mode != getmodetype(mode):
+    for band in bands[1:]:
+        if band.mode != getmodetype(mode):
             raise ValueError("mode mismatch")
-        if im.size != bands[0].size:
+        if band.size != bands[0].size:
             raise ValueError("size mismatch")
     for band in bands:
         band.load()
