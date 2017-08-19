@@ -19,3 +19,9 @@
 /* like (a * b + 127) / 255), but much faster on most platforms */
 #define MULDIV255(a, b, tmp)\
     (tmp = (a) * (b) + 128, SHIFTFORDIV255(tmp))
+
+#define BLEND(mask, in1, in2, tmp1, tmp2)\
+        (MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
+
+#define PREBLEND(mask, in1, in2, tmp1)\
+        (MULDIV255(in1, (255 - mask), tmp1) + in2)
