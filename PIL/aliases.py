@@ -8,4 +8,5 @@ Size = XY  # NOTE: All XY aliases will be interchangeable
 Matrix4 = Tuple[float, float, float, float]
 Matrix12 = Tuple[float, float, float, float, float, float, float, float, float, float, float, float]
 Mode = str
+Extrema = Union[Tuple[Any, Any], Tuple[Tuple[Any, Any], ...]]  # Any -> float?
 
