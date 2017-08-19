@@ -153,7 +153,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
 
 def _save(im, fp, filename):
-    if _handler is None or not hasattr("_handler", "save"):
+    if _handler is None or not hasattr(_handler, "save"):
         raise IOError("WMF save handler not installed")
     _handler.save(im, fp, filename)
 
