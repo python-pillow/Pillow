@@ -547,11 +547,11 @@ class Image(object):
         # type: () -> None
         # FIXME: take "new" parameters / other image?
         # FIXME: turn mode and size into delegating properties?
-        self.im = None  # type: Optional[ImagingCore]
-        self.mode = ""
-        self.size = (0, 0)
+        self.im = None       # type: Optional[ImagingCore]
+        self.mode = ""       # type: Mode
+        self.size = (0, 0)   # type: Size
         self.palette = None  # type: Optional[ImagePalette.ImagePalette]
-        self.info = {}  # type: Dict[Text, Any]
+        self.info = {}       # type: Dict[Text, Any]
         self.category = NORMAL
         self.readonly = 0
         self.pyaccess = None
