@@ -1283,7 +1283,7 @@ class Image(object):
         return self.im  # could be abused
 
     def getextrema(self):
-        # type: () -> Tuple
+        # type: () -> Extrema
         """
         Gets the the minimum and maximum pixel values for each band in
         the image.
@@ -1359,7 +1359,7 @@ class Image(object):
         return [i8(c) for c in x], [i8(c) for c in y]
 
     def histogram(self, mask=None, extrema=None):
-        # type: (Optional[Image], Optional[Any]) -> List[int]
+        # type: (Optional[Image], Optional[Extrema]) -> List[int]
         """
         Returns a histogram for the image. The histogram is returned as
         a list of pixel counts, one for each pixel value in the source
