@@ -1346,7 +1346,7 @@ class Image(object):
         return self.im.getpixel(xy)
 
     def getprojection(self):
-        # type: () -> Tuple[List[Any], List[Any]]
+        # type: () -> Tuple[List[int], List[int]]
         """
         Get projection to x and y axes
 
