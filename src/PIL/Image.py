@@ -1153,8 +1153,8 @@ class Image(object):
         return im.crop((x0, y0, x1, y1))
 
     def draft(self, mode, size):
-        # type: (Any, Any) -> Any
-        # TODO unclear types
+        # type: (Mode, Size) -> Any
+        # TODO: return type clarification
         """
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
