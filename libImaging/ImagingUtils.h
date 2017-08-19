@@ -11,3 +11,11 @@
     #define MASK_UINT32_CHANNEL_2 0x00ff0000
     #define MASK_UINT32_CHANNEL_3 0xff000000
 #endif
+
+
+#define SHIFTFORDIV255(a)\
+    ((((a) >> 8) + a) >> 8)
+
+/* like (a * b + 127) / 255), but much faster on most platforms */
+#define MULDIV255(a, b, tmp)\
+    (tmp = (a) * (b) + 128, SHIFTFORDIV255(tmp))

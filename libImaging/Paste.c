@@ -23,20 +23,11 @@
 
 #include "Imaging.h"
 
-/* like (a * b + 127) / 255), but much faster on most platforms */
-#define MULDIV255NEW(a, tmp)\
-        (tmp = (a) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
-
-#define MULDIV255OLD(a, tmp)\
-        (((a) + 127) / 255)
-
-#define MULDIV255 MULDIV255NEW
-
 #define BLEND(mask, in1, in2, tmp1)\
-        MULDIV255(in1 * (255 - mask) + in2 * mask, tmp1)
+        (MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp1))
 
 #define PREBLEND(mask, in1, in2, tmp1)\
-        (MULDIV255(in1 * (255 - mask), tmp1) + in2)
+        (MULDIV255(in1, (255 - mask), tmp1) + in2)
 
 static inline void
 paste(Imaging imOut, Imaging imIn, int dx, int dy, int sx, int sy,

@@ -42,10 +42,6 @@
 #define INK8(ink) (*(UINT8*)ink)
 #define INK32(ink) (*(INT32*)ink)
 
-/* like (a * b + 127) / 255), but much faster on most platforms */
-#define MULDIV255(a, b, tmp)\
-        (tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
-
 #define BLEND(mask, in1, in2, tmp1, tmp2)\
         (MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
 

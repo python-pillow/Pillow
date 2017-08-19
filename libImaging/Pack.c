@@ -72,9 +72,6 @@
 #define C64L C64N
 #endif
 
-/* like (a * b + 127) / 255), but much faster on most platforms */
-#define MULDIV255(a, b, tmp)\
-        (tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
 
 static void
 pack1(UINT8* out, const UINT8* in, int pixels)
