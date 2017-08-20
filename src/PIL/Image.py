@@ -1184,7 +1184,7 @@ class Image(object):
         return self._new(self.im.expand(xmargin, ymargin, 0))
 
     def filter(self, filter):
-        # type: (Filter) -> Image
+        # type: (Union[Filter, Callable[[], Filter]]) -> Image
         """
         Filters this image using the given filter.  For a list of
         available filters, see the :py:mod:`~PIL.ImageFilter` module.
