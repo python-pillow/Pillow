@@ -2051,7 +2051,7 @@ class Image(object):
         _show(self, title=title, command=command)
 
     def split(self):
-        # type: () -> Tuple
+        # type: () -> Tuple[Image, ...]
         """
         Split this image into individual bands. This method returns a
         tuple of individual image bands from an image. For example,
