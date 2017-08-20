@@ -1626,7 +1626,7 @@ class Image(object):
         self.im.putdata(data, scale, offset)
 
     def putpalette(self, data, rawmode="RGB"):
-        # type: (Sequence[Union[int, bytes]], Mode) -> None
+        # type: (Union[ImagePalette.ImagePalette, Sequence[Union[int, bytes]]], Mode) -> None
         """
         Attaches a palette to this image.  The image must be a "P" or
         "L" image, and the palette sequence must contain 768 integer
