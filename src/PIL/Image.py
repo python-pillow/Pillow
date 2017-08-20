@@ -1527,7 +1527,7 @@ class Image(object):
         self.paste(result, box)
 
     def point(self, lut, mode=None):
-        # type: (Union[List, Callable[[Any], Any]], Optional[Mode]) -> Image
+        # type: (Union[List[float], Callable[[float], float], ImagePointHandler], Optional[Mode]) -> Image
         """
         Maps this image through a lookup table or function.
 
