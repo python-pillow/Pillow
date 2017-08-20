@@ -539,7 +539,7 @@ class Image(object):
         self.palette = None  # type: Optional[ImagePalette.ImagePalette]
         self.info = {}       # type: Dict[Text, Any]
         self.category = NORMAL
-        self.readonly = 0
+        self.readonly = 0    # type: int
         self.pyaccess = None
 
     @property
