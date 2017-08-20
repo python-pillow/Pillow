@@ -583,21 +583,27 @@ class Image(object):
 
     def _dump(self, file=None, format=None, **options):
         import tempfile
+
         suffix = ''
         if format:
             suffix = '.'+format
+
         if not file:
-            f, file = tempfile.mkstemp(suffix)
+            f, filename = tempfile.mkstemp(suffix)
             os.close(f)
+        else:
+            filename = file
+            if not filename.endswith(suffix):
+                filename = filename + suffix
 
         self.load()
+
         if not format or format == "PPM":
-            self.im.save_ppm(file)
+            self.im.save_ppm(filename)
         else:
-            if not file.endswith(format):
-                file = file + "." + format
-            self.save(file, format, **options)
-        return file
+            self.save(filename, format, **options)
+
+        return filename
 
     def __eq__(self, other):
         return (self.__class__.__name__ == other.__class__.__name__ and
