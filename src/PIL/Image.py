@@ -725,7 +725,7 @@ class Image(object):
             self.tobytes()]
 
     def __setstate__(self, state):
-        # type: (List) -> None
+        # type: (Tuple) -> None
         Image.__init__(self)
         self.tile = []  # type: List[Tuple] ## FIXME More detail? Should tile be in __init__ & _new?
         info, mode, size, palette, data = state
