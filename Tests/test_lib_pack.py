@@ -96,6 +96,17 @@ class TestLibPack(PillowTestCase):
         self.assertEqual(unpack_1("1", "1;R", 170), (0, X, 0, X, 0, X, 0, X))
         self.assertEqual(unpack_1("1", "1;IR", 170), (X, 0, X, 0, X, 0, X, 0))
 
+        self.assertEqual(unpack("P", "P;1", 1), 0)
+        self.assertEqual(unpack("P", "P;2", 2), 0)
+        self.assertEqual(unpack("P", "P;2L", 2), 0)
+        self.assertEqual(unpack("P", "P;4", 4), 0)
+        self.assertEqual(unpack("P", "P;4L", 4), 0)
+        self.assertEqual(unpack("P", "P",  8), 1)
+        self.assertEqual(unpack("P", "P;R", 8), 128)
+
+        self.assertEqual(unpack("PA", "PA",  16), (1, 2))
+        self.assertEqual(unpack("PA", "PA;L", 16), (1, 2))
+
         self.assertEqual(unpack("L", "L;2", 1), 0)
         self.assertEqual(unpack("L", "L;4", 1), 0)
         self.assertEqual(unpack("L", "L", 1), 1)
@@ -133,6 +144,8 @@ class TestLibPack(PillowTestCase):
         self.assertEqual(unpack("RGBA", "RGBA;15", 2), (8, 131, 0, 0))
         self.assertEqual(unpack("RGBA", "BGRA;15", 2), (0, 131, 8, 0))
         self.assertEqual(unpack("RGBA", "RGBA;4B", 2), (17, 0, 34, 0))
+        self.assertEqual(unpack("RGBA", "RGBA;L", 4), (1, 2, 3, 4))
+        self.assertEqual(unpack("RGBA", "LA", 2), (1, 1, 1, 2))
         self.assertEqual(unpack("RGBA", "LA;16B", 4), (1, 1, 1, 3))
         self.assertEqual(unpack("RGBA", "RGBA;16B", 8), (1, 3, 5, 7))
 
@@ -151,6 +164,11 @@ class TestLibPack(PillowTestCase):
 
         self.assertEqual(unpack("CMYK", "CMYK", 4), (1, 2, 3, 4))
         self.assertEqual(unpack("CMYK", "CMYK;I", 4), (254, 253, 252, 251))
+
+        self.assertEqual(unpack("CMYK", "C;I", 1), (254, 0, 0, 0))
+        self.assertEqual(unpack("CMYK", "M;I", 1), (0, 254, 0, 0))
+        self.assertEqual(unpack("CMYK", "Y;I", 1), (0, 0, 254, 0))
+        self.assertEqual(unpack("CMYK", "K;I", 1), (0, 0, 0, 254))
 
         self.assertRaises(ValueError, lambda: unpack("L", "L", 0))
         self.assertRaises(ValueError, lambda: unpack("RGB", "RGB", 2))
