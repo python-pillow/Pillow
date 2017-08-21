@@ -31,11 +31,11 @@ if False:
 
     # Just required for typing, or gradual module inclusion while adding annotation?
     import pathlib
-#    from . import ImagingPalette  ## This will need a stub?
+#    from . import ImagingPalette  ## FIXME TYPING This will need a stub?
     from . import ImagePalette
     from .ImageFilter import Filter
     from .ImageFile import PyDecoder
-    PyEncoder = Any  ## FIXME: PyEncoder is not defined anywhere? Needs stub/class?
+    PyEncoder = Any  ## FIXME TYPING: PyEncoder is not defined anywhere? Needs stub/class?
     from ._imaging import ImagingCore
 
 from . import VERSION, PILLOW_VERSION, _plugins
@@ -419,7 +419,7 @@ def init():
         _initialized = 2
         return 1
 
-    # FIXME: mypy suggests a default return may be necessary here?
+    # FIXME TYPING: mypy suggests a default return may be necessary here?
 
 
 # --------------------------------------------------------------------
@@ -706,7 +706,8 @@ class Image(object):
     def __setstate__(self, state):
         # type: (Tuple) -> None
         Image.__init__(self)
-        self.tile = []  # type: List[Tuple] ## FIXME More detail? Should tile be in __init__ & _new?
+        self.tile = []  # type: List[Tuple] ## FIXME Should tile be in __init__ & _new?
+        # FIXME TYPING: ^ Maybe Optional[List[Tuple[Text, LURD, int, Optional[Tuple]]]] ?
         info, mode, size, palette, data = state
         self.info = info
         self.mode = mode
@@ -788,7 +789,7 @@ class Image(object):
             ])
 
     def frombytes(self, data, decoder_name="raw", *args):
-        # type: (Any, Text, *Any) -> None
+        # type: (Any, Text, *Any) -> None  ### FIXME TYPING: What type is data? bytearray?
         """
         Loads this image with pixel data from a bytes object.
 
@@ -1137,7 +1138,8 @@ class Image(object):
 
     def draft(self, mode, size):
         # type: (Mode, Size) -> Any
-        # TODO: return type clarification
+        # FIXME TYPING: return type clarification
+        # FIXME TYPING: thumbnail calls as (None, size), so is it Optional[Mode]?
         """
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
@@ -1190,7 +1192,7 @@ class Image(object):
         return merge(self.mode, ims)
 
     def getbands(self):
-        # type: () -> Tuple[Any]
+        # type: () -> Tuple[Any]  ## FIXME TYPING: Define a type alias, or just use Mode?
         """
         Returns a tuple containing the name of each band in this image.
         For example, **getbands** on an RGB image returns ("R", "G", "B").
@@ -1216,7 +1218,7 @@ class Image(object):
         return self.im.getbbox()
 
     def getcolors(self, maxcolors=256):
-        # type: (int) -> Optional[List[Tuple[int, int]]]
+        # type: (int) -> Optional[List[Tuple[int, int]]]  ### FIXME TYPING Should be Tuple[int, 'Color'] ?
         """
         Returns a list of colors used in this image.
 
@@ -1282,7 +1284,7 @@ class Image(object):
         return self.im.getextrema()
 
     def getim(self):
-        # type: () -> Any
+        # type: () -> Any  ## FIXME TYPING: Can this be improved upon? Ask python/typeshed?
         """
         Returns a capsule that points to the internal image memory.
 
@@ -1311,7 +1313,7 @@ class Image(object):
             return None  # no palette
 
     def getpixel(self, xy):
-        # type: (Coord) -> Tuple[Any]
+        # type: (Coord) -> Tuple[Any]  ## FIXME TYPING: Once Color[spec] is aliases, this can be done?
         """
         Returns the pixel value at a given position.
 
@@ -1605,7 +1607,7 @@ class Image(object):
         self.im.putband(alpha.im, band)
 
     def putdata(self, data, scale=1.0, offset=0.0):
-        # type: (Sequence[Any], float, float) -> None
+        # type: (Sequence[Any], float, float) -> None  ## FIXME TYPING: Sequence[bytes] ?
         """
         Copies pixel data to this image.  This method copies data from a
         sequence object into the image, starting at the upper left
@@ -1657,6 +1659,7 @@ class Image(object):
 
     def putpixel(self, xy, value):
         # type: (Coord, Union[int, Tuple]) -> Any
+        ## FIXME TYPING: ImagingCore.putpixel returns None, so this can too?
         """
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
@@ -2154,7 +2157,7 @@ class Image(object):
     # FIXME: the different transform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
     def transform(self, size, method, data=None, resample=NEAREST, fill=1):
-        # type: (Size, int, Optional[Any], int, Any) -> Image
+        # type: (Size, int, Optional[Any], int, Any) -> Image  ## FIXME TYPING: What are Any here?
         """
         Transforms this image.  This method creates a new image with the
         given size, and the same mode as the original, and copies data
@@ -2208,7 +2211,7 @@ class Image(object):
 
     def __transformer(self, box, image, method, data,
                       resample=NEAREST, fill=1):
-        # type: (LURD, Image, int, Any, int, Any) -> None
+        # type: (LURD, Image, int, Any, int, Any) -> None  # FIXME TYPING: What are Any here?
         w = box[2] - box[0]
         h = box[3] - box[1]
 
@@ -2642,7 +2645,7 @@ def open(fp, mode="r"):
     preinit()
 
     def _open_core(fp, filename, prefix):
-#        # type: (Any, Text, Text): -> Optional[Image]
+#        # type: (Any, Text, Text): -> Optional[Image]  # FIXME TYPING: Is Any BinaryIO here?
         for i in ID:
             try:
                 factory, accept = OPEN[i]
