@@ -1624,16 +1624,18 @@ class Image(object):
 
         if source_palette is None:
             if self.mode == "P":
-                source_palette = self.im.getpalette("RGB")[:768]
+                real_source_palette = self.im.getpalette("RGB")[:768]
             else:  # L-mode
-                source_palette = bytearray(i//3 for i in range(768))
+                real_source_palette = bytearray(i//3 for i in range(768))
+        else:
+            real_source_palette = source_palette
 
         palette_bytes = b""
         new_positions = [0]*256
 
         # pick only the used colors from the palette
         for i, oldPosition in enumerate(dest_map):
-            palette_bytes += source_palette[oldPosition*3:oldPosition*3+3]
+            palette_bytes += real_source_palette[oldPosition*3:oldPosition*3+3]
             new_positions[oldPosition] = i
 
         # replace the palette color id of all pixel with the new id
