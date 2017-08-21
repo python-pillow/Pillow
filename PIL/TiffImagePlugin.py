@@ -241,7 +241,12 @@ OPEN_INFO = {
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
 
-PREFIXES = [b"MM\000\052", b"II\052\000", b"II\xBC\000"]
+PREFIXES = [
+    b"MM\x00\x2A",  # Valid TIFF header with big-endian byte order
+    b"II\x2A\x00",  # Valid TIFF header with little-endian byte order
+    b"MM\x2A\x00",  # Invalid TIFF header, probably big-endian
+    b"II\x00\x2A",  # Invalid TIFF header, probably little-endian
+]
 
 
 def _accept(prefix):
