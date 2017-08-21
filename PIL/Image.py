@@ -1815,7 +1815,7 @@ class Image(object):
 
     def rotate(self, angle, resample=NEAREST, expand=0, center=None,
                translate=None):
-        # type: (float, int, bool, Optional[Coord], Optional[XY]) -> Image
+        # type: (float, int, int, Optional[Coord], Optional[XY]) -> Image
         """
         Returns a rotated copy of this image.  This method returns a
         copy of this image, rotated the given number of degrees counter
