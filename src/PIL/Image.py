@@ -299,7 +299,7 @@ _MODE_CONV = {
 
 
 def _conv_type_shape(im):
-    # type: (Image) -> Tuple
+    # type: (Image) -> Tuple[Size, Tuple[Text, Optional[int]]]  # NOTE: Size inverted compared to normal
     typ, extra = _MODE_CONV[im.mode]
     if extra is None:
         return (im.size[1], im.size[0]), typ
@@ -342,7 +342,7 @@ def getmodetype(mode):
 
 
 def getmodebandnames(mode):
-    # type: (Mode) -> Tuple
+    # type: (Mode) -> Tuple[Any, ...]  ## FIXME TYPING: Any is 'Band' or Mode?
     """
     Gets a list of individual band names.  Given a mode, this function returns
     a tuple containing the names of individual bands (use
@@ -724,7 +724,7 @@ class Image(object):
             self.tobytes()]
 
     def __setstate__(self, state):
-        # type: (Tuple) -> None
+        # type: (Tuple[Any, Mode, Size, Any, Any]) -> None  ## FIXME TYPING: Define types better
         Image.__init__(self)
         self.tile = []  # type: List[Tuple] ## FIXME Should tile be in __init__ & _new?
         # FIXME TYPING: ^ Maybe Optional[List[Tuple[Text, LURD, int, Optional[Tuple]]]] ?
@@ -809,7 +809,7 @@ class Image(object):
             ])
 
     def frombytes(self, data, decoder_name="raw", *args):
-        # type: (Any, Text, *Any) -> None  ### FIXME TYPING: What type is data? bytearray?
+        # type: (bytes, Text, *Any) -> None
         """
         Loads this image with pixel data from a bytes object.
 
@@ -1155,9 +1155,8 @@ class Image(object):
         return im.crop((x0, y0, x1, y1))
 
     def draft(self, mode, size):
-        # type: (Mode, Size) -> Any
-        # FIXME TYPING: return type clarification
-        # FIXME TYPING: thumbnail calls as (None, size), so is it Optional[Mode]?
+        # type: (Optional[Mode], Size) -> Any
+        # FIXME TYPING: return type clarification (returns self, like JPEG? inconsistent?)
         """
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
@@ -1239,7 +1238,7 @@ class Image(object):
         return self.im.getbbox()
 
     def getcolors(self, maxcolors=256):
-        # type: (int) -> Optional[List[Tuple[int, int]]]  ### FIXME TYPING Should be Tuple[int, 'Color'] ?
+        # type: (int) -> Optional[List[Tuple[int, Color]]]  ### FIXME TYPING: Check this
         """
         Returns a list of colors used in this image.
 
@@ -1334,7 +1333,7 @@ class Image(object):
             return None  # no palette
 
     def getpixel(self, xy):
-        # type: (Coord) -> Tuple[Any]  ## FIXME TYPING: Once Color[spec] is aliases, this can be done?
+        # type: (Coord) -> Optional[Color]  ## FIXME TYPING: Check this
         """
         Returns the pixel value at a given position.
 
@@ -1397,7 +1396,8 @@ class Image(object):
                                   "Please call ImageChops.offset() instead.")
 
     def paste(self, im, box=None, mask=None):
-        # type: (Union[Image, int, Tuple, Text], Optional[Union[LURD, Coord]], Optional[Image]) -> None
+        # type: (Union[Image, Color, Text], Optional[Union[LURD, Coord]], Optional[Image]) -> None
+        ## FIXME TYPING: Check this ^
         """
         Pastes another image into this image. The box argument is either
         a 2-tuple giving the upper left corner, a 4-tuple defining the
@@ -1568,7 +1568,7 @@ class Image(object):
         return self._new(self.im.point(lut, mode))
 
     def putalpha(self, alpha):
-        # type: (Union[Image, int, Tuple]) -> None
+        # type: (Union[Image, Color]) -> None  ## FIXME TYPING: Check this
         """
         Adds or replaces the alpha layer in this image.  If the image
         does not have an alpha layer, it's converted to "LA" or "RGBA".
@@ -1623,7 +1623,7 @@ class Image(object):
         self.im.putband(alpha.im, band)
 
     def putdata(self, data, scale=1.0, offset=0.0):
-        # type: (Sequence[Any], float, float) -> None  ## FIXME TYPING: Sequence[bytes] ?
+        # type: (Sequence[Union[bytes, int, float]], float, float) -> None
         """
         Copies pixel data to this image.  This method copies data from a
         sequence object into the image, starting at the upper left
@@ -1673,8 +1673,8 @@ class Image(object):
         self.load()  # install new palette
 
     def putpixel(self, xy, value):
-        # type: (Coord, Union[int, Tuple]) -> Any
-        ## FIXME TYPING: ImagingCore.putpixel returns None, so this can too?
+        # type: (Coord, Union[int, Tuple]) -> None  ## FIXME TYPING: value is 'Color', rather than Union?
+        ## FIXME: ImagingCore.putpixel returns None, so this can too?
         """
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
@@ -2169,7 +2169,7 @@ class Image(object):
     # instead of bloating the method docs, add a separate chapter.
     def transform(self, size, method, data=None, resample=NEAREST,
                   fill=1, fillcolor=None):
-        # type: (Size, int, Optional[Any], int, Any, Optional[Union[int, float, Tuple, Text]]) -> Image
+        # type: (Size, int, Optional[List[float]], int, int, Optional[Union[int, float, Tuple, Text]]) -> Image
         """
         Transforms this image.  This method creates a new image with the
         given size, and the same mode as the original, and copies data
@@ -2363,7 +2363,7 @@ def _check_size(size):
 
 
 def new(mode, size, color=0):
-    # type: (Mode, Size, Optional[Union[int, float, Tuple, Text]]) -> Image
+    # type: (Mode, Size, Optional[Union[Color, Text]]) -> Image  ## FIXME TYPING: Check this
     """
     Creates a new image with the given mode and size.
 
@@ -2662,7 +2662,7 @@ def open(fp, mode="r"):
     preinit()
 
     def _open_core(fp, filename, prefix):
-#        # type: (Any, Text, Text): -> Optional[Image]  # FIXME TYPING: Is Any BinaryIO here?
+        # type: (BinaryIO, Text, Text) -> Optional[Image]
         for i in ID:
             try:
                 factory, accept = OPEN[i]
