@@ -1240,7 +1240,7 @@ class Image(object):
         return self.im.getcolors(maxcolors)
 
     def getdata(self, band=None):
-        # type: (Optional[int]) -> Sequence
+        # type: (Optional[int]) -> ImagingCore
         """
         Returns the contents of this image as a sequence object
         containing pixel values.  The sequence object is flattened, so
