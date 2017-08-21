@@ -1433,7 +1433,7 @@ _putpalettealphas(ImagingObject* self, PyObject* args)
     int i;
     UINT8 *values;
     int length;
-    if (!PyArg_ParseTuple(args, "s#", &values, &length))
+    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH, &values, &length))
         return NULL;
 
     if (!self->image->palette) {
