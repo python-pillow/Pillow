@@ -365,6 +365,14 @@ class pil_build_ext(build_ext):
                 # work ;-)
                 self.add_multiarch_paths()
 
+                # termux support for android.
+                # system libraries (zlib) are installed in /system/lib
+                # headers are at $PREFIX/include
+                # user libs are at $PREFIX/lib
+                if os.environ.get('ANDROID_ROOT', None):
+                    _add_directory(library_dirs,
+                                  os.path.join(os.environ['ANDROID_ROOT'],'lib'))
+
         elif sys.platform.startswith("gnu"):
             self.add_multiarch_paths()
 
