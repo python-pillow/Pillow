@@ -25,12 +25,11 @@
 #
 
 if False:
-    from typing import Any, Text, Optional, Tuple, List, Sequence, Union, Callable, Dict
+    from typing import Any, Text, Optional, Tuple, List, Sequence, Union, Callable, Dict, BinaryIO
 
     from PIL.aliases import *
 
     # Just required for typing, or gradual module inclusion while adding annotation?
-    from io import BytesIO
     import pathlib
 #    from . import ImagingPalette  ## This will need a stub?
     from . import ImagePalette
@@ -1921,7 +1920,7 @@ class Image(object):
         return self.transform((w, h), AFFINE, matrix, resample)
 
     def save(self, fp, format=None, **params):
-        # type: (Union[Text, pathlib.Path, BytesIO], Optional[Text], **Any) -> None
+        # type: (Union[Text, pathlib.Path, BinaryIO], Optional[Text], **Any) -> None
         """
         Saves this image under the given filename.  If no format is
         specified, the format to use is determined from the filename
@@ -2593,7 +2592,7 @@ def _decompression_bomb_check(size):
 
 
 def open(fp, mode="r"):
-    # type: (Union[Text, pathlib.Path, BytesIO], Text) -> Image
+    # type: (Union[Text, pathlib.Path, BinaryIO], Text) -> Image
     """
     Opens and identifies the given image file.
 
