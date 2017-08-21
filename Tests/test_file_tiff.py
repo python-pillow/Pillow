@@ -51,6 +51,14 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.tile, [('raw', (0, 0, 55, 43), 8, ('RGBa', 0, 1))])
         im.load()
 
+    def test_16bit_RGBa_tiff(self):
+        im = Image.open("Tests/images/tiff_16bit_RGBa.tiff")
+
+        self.assertEqual(im.mode, "RGBA")
+        self.assertEqual(im.size, (100, 40))
+        self.assertEqual(im.tile, [('tiff_lzw', (0, 0, 100, 40), 50, 'RGBa;16B')])
+        im.load()
+
     def test_gimp_tiff(self):
         # Read TIFF JPEG images from GIMP [@PIL168]
 
