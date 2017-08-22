@@ -3,6 +3,9 @@ from helper import unittest, PillowTestCase, py3
 from PIL import Image
 
 
+X = 255
+
+
 class TestLibPack(PillowTestCase):
 
     def pack(self):
@@ -58,7 +61,6 @@ class TestLibPack(PillowTestCase):
         self.assertEqual(pack("YCbCr", "YCbCr"), [1, 2, 3])
 
     def test_unpack(self):
-
         def unpack(mode, rawmode, bytes_):
             im = None
 
@@ -70,17 +72,6 @@ class TestLibPack(PillowTestCase):
             im = Image.frombytes(mode, (1, 1), data, "raw", rawmode, 0, 1)
 
             return im.getpixel((0, 0))
-
-        self.assertEqual(unpack("RGBX", "RGBX", 4), (1, 2, 3, 4))  # 4->255?
-        self.assertEqual(unpack("RGBX", "BGRX", 4), (3, 2, 1, 255))
-        self.assertEqual(unpack("RGBX", "XRGB", 4), (2, 3, 4, 255))
-        self.assertEqual(unpack("RGBX", "XBGR", 4), (4, 3, 2, 255))
-        self.assertEqual(unpack("RGBX", "RGB;15", 2), (8, 131, 0, 255))
-        self.assertEqual(unpack("RGBX", "BGR;15", 2), (0, 131, 8, 255))
-        self.assertEqual(unpack("RGBX", "RGB;4B", 2), (17, 0, 34, 255))
-
-        self.assertEqual(unpack("CMYK", "CMYK", 4), (1, 2, 3, 4))
-        self.assertEqual(unpack("CMYK", "CMYK;I", 4), (254, 253, 252, 251))
 
         self.assertRaises(ValueError, lambda: unpack("L", "L", 0))
         self.assertRaises(ValueError, lambda: unpack("RGB", "RGB", 2))
@@ -102,8 +93,6 @@ class TestLibUnpack(PillowTestCase):
             self.assertEqual(pixel, im.getpixel((x, 0)))
 
     def test_1(self):
-        X = 255
-
         self.assert_unpack("1", "1", b'\x01', 0, 0, 0, 0, 0, 0, 0, X)
         self.assert_unpack("1", "1;I", b'\x01', X, X, X, X, X, X, X, 0)
         self.assert_unpack("1", "1;R", b'\x01', X, 0, 0, 0, 0, 0, 0, 0)
@@ -214,6 +203,67 @@ class TestLibUnpack(PillowTestCase):
             (2,3,4,1), (6,7,8,5), (10,11,12,9))
         self.assert_unpack("RGBa", "aBGR", 4,
             (4,3,2,1), (8,7,6,5), (12,11,10,9))
+
+    def test_RGBX(self):
+        self.assert_unpack("RGBX", "RGB", 3, (1,2,3,X), (4,5,6,X), (7,8,9,X))
+        self.assert_unpack("RGBX", "RGB;L", 3, (1,4,7,X), (2,5,8,X), (3,6,9,X))
+        self.assert_unpack("RGBX", "RGB;16B", 6, (1,3,5,X), (7,9,11,X))
+        self.assert_unpack("RGBX", "BGR", 3, (3,2,1,X), (6,5,4,X), (9,8,7,X))
+        self.assert_unpack("RGBX", "RGB;15", 2, (8,131,0,X), (24,0,8,X))
+        self.assert_unpack("RGBX", "BGR;15", 2, (0,131,8,X), (8,0,24,X))
+        self.assert_unpack("RGBX", "RGB;4B", 2, (17,0,34,X), (51,0,68,X))
+        self.assert_unpack("RGBX", "RGBX", 4,
+            (1,2,3,4), (5,6,7,8), (9,10,11,12))
+        self.assert_unpack("RGBX", "RGBX;L", 4,
+            (1,4,7,10), (2,5,8,11), (3,6,9,12))
+        self.assert_unpack("RGBX", "BGRX", 4, (3,2,1,X), (7,6,5,X), (11,10,9,X))
+        self.assert_unpack("RGBX", "XRGB", 4, (2,3,4,X), (6,7,8,X), (10,11,12,X))
+        self.assert_unpack("RGBX", "XBGR", 4, (4,3,2,X), (8,7,6,X), (12,11,10,X))
+        self.assert_unpack("RGBX", "YCC;P",
+            b'D]\x9c\x82\x1a\x91\xfaOC\xe7J\x12',  # random data
+            (127,102,0,X), (192,227,0,X), (213,255,170,X), (98,255,133,X))
+        self.assert_unpack("RGBX", "R", 1, (1,0,0,0), (2,0,0,0), (3,0,0,0))
+        self.assert_unpack("RGBX", "G", 1, (0,1,0,0), (0,2,0,0), (0,3,0,0))
+        self.assert_unpack("RGBX", "B", 1, (0,0,1,0), (0,0,2,0), (0,0,3,0))
+        self.assert_unpack("RGBX", "X", 1, (0,0,0,1), (0,0,0,2), (0,0,0,3))
+
+    def test_CMYK(self):
+        self.assert_unpack("CMYK", "CMYK", 4, (1,2,3,4), (5,6,7,8), (9,10,11,12))
+        self.assert_unpack("CMYK", "CMYK;I", 4,
+            (254,253,252,251), (250,249,248,247), (246,245,244,243))
+        self.assert_unpack("CMYK", "CMYK;L", 4,
+            (1,4,7,10), (2,5,8,11), (3,6,9,12))
+        self.assert_unpack("CMYK", "C", 1, (1,0,0,0), (2,0,0,0), (3,0,0,0))
+        self.assert_unpack("CMYK", "M", 1, (0,1,0,0), (0,2,0,0), (0,3,0,0))
+        self.assert_unpack("CMYK", "Y", 1, (0,0,1,0), (0,0,2,0), (0,0,3,0))
+        self.assert_unpack("CMYK", "K", 1, (0,0,0,1), (0,0,0,2), (0,0,0,3))
+        self.assert_unpack("CMYK", "C;I", 1,
+            (254,0,0,0), (253,0,0,0), (252,0,0,0))
+        self.assert_unpack("CMYK", "M;I", 1,
+            (0,254,0,0), (0,253,0,0), (0,252,0,0))
+        self.assert_unpack("CMYK", "Y;I", 1,
+            (0,0,254,0), (0,0,253,0), (0,0,252,0))
+        self.assert_unpack("CMYK", "K;I", 1,
+            (0,0,0,254), (0,0,0,253), (0,0,0,252))
+
+    def test_YCbCr(self):
+        self.assert_unpack("YCbCr", "YCbCr", 3, (1,2,3), (4,5,6), (7,8,9))
+        self.assert_unpack("YCbCr", "YCbCr;L", 3, (1,4,7), (2,5,8), (3,6,9))
+        self.assert_unpack("YCbCr", "YCbCrX", 4, (1,2,3), (5,6,7), (9,10,11))
+        self.assert_unpack("YCbCr", "YCbCrK", 4, (1,2,3), (5,6,7), (9,10,11))
+
+    def test_LAB(self):
+        self.assert_unpack("LAB", "LAB", 3,
+            (1,130,131), (4,133,134), (7,136,137))
+        self.assert_unpack("LAB", "L", 1, (1,0,0), (2,0,0), (3,0,0))
+        self.assert_unpack("LAB", "A", 1, (0,1,0), (0,2,0), (0,3,0))
+        self.assert_unpack("LAB", "B", 1, (0,0,1), (0,0,2), (0,0,3))
+
+    def test_HSV(self):
+        self.assert_unpack("HSV", "HSV", 3, (1,2,3), (4,5,6), (7,8,9))
+        self.assert_unpack("HSV", "H", 1, (1,0,0), (2,0,0), (3,0,0))
+        self.assert_unpack("HSV", "S", 1, (0,1,0), (0,2,0), (0,3,0))
+        self.assert_unpack("HSV", "V", 1, (0,0,1), (0,0,2), (0,0,3))
 
 
 if __name__ == '__main__':
