@@ -605,7 +605,8 @@ class Image(object):
         return filename
 
     def __eq__(self, other):
-        return (self.__class__.__name__ == other.__class__.__name__ and
+        return (isinstance(other, Image) and
+                self.__class__.__name__ == other.__class__.__name__ and
                 self.mode == other.mode and
                 self.size == other.size and
                 self.info == other.info and
