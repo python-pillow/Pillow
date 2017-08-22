@@ -281,11 +281,11 @@ _MODE_CONV = {
     "I;32S": ('<i4', None),
     "I;32BS": ('>i4', None),
     "I;32LS": ('<i4', None),
-}
+}  # type: Dict[Text, Tuple[Text, Optional[int]]]
 
 
 def _conv_type_shape(im):
-    # type: (Image) -> Tuple[Size, Tuple[Text, Optional[int]]]  # NOTE: Size inverted compared to normal
+    # type: (Image) -> Tuple[Union[Size, Tuple[int, int, int]], Text]  # NOTE: Size inverted compared to normal
     typ, extra = _MODE_CONV[im.mode]
     if extra is None:
         return (im.size[1], im.size[0]), typ
