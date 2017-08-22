@@ -489,21 +489,26 @@ def _getencoder(mode, encoder_name, args, extra=()):
 # Simple expression analyzer
 
 def coerce_e(value):
+    # type: (Any) -> _E  ## FIXME TYPING: As detailed as possible?
     return value if isinstance(value, _E) else _E(value)
 
 
 class _E(object):
     def __init__(self, data):
+        # type: (Any) -> None  ## FIXME TYPING: As detailed as possible?
         self.data = data
 
     def __add__(self, other):
+        # type: (Any) -> _E  ## FIXME TYPING: As detailed as possible?
         return _E((self.data, "__add__", coerce_e(other).data))
 
     def __mul__(self, other):
+        # type: (Any) -> _E  ## FIXME TYPING: As detailed as possible?
         return _E((self.data, "__mul__", coerce_e(other).data))
 
 
 def _getscaleoffset(expr):
+    # type: (Any) -> Tuple[Any, Any]  ## FIXME TYPING: Can be improved?
     stub = ["stub"]
     data = expr(_E(stub)).data
     try:
