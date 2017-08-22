@@ -270,12 +270,11 @@ _MODE_CONV = {
 
 
 def _conv_type_shape(im):
-    shape = im.size[1], im.size[0]
     typ, extra = _MODE_CONV[im.mode]
     if extra is None:
-        return shape, typ
+        return (im.size[1], im.size[0]), typ
     else:
-        return shape+(extra,), typ
+        return (im.size[1], im.size[0], extra), typ
 
 
 MODES = sorted(_MODEINFO)
