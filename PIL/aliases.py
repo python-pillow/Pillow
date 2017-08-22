@@ -10,3 +10,4 @@ Matrix4 = Tuple[float, float, float, float]
 Matrix12 = Tuple[float, float, float, float, float, float, float, float, float, float, float, float]
 Mode = str
 Extrema = Union[Tuple[float, float], Tuple[int, int], Tuple[Tuple[int, int], ...]]
+Color = Union[int, float, Tuple[int, int], Tuple[int, int, int], Tuple[int, int, int, int]]
