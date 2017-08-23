@@ -321,23 +321,23 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("F", "F;32BF", 4,
             2.387939260590663e-38, 6.301941157072183e-36)
         self.assert_unpack("F", "F;64F",
-            '333333\xc3?\x00\x00\x00\x00\x00J\x93\xc0',  # by struct.pack
+            b'333333\xc3?\x00\x00\x00\x00\x00J\x93\xc0',  # by struct.pack
             0.15000000596046448, -1234.5)
         self.assert_unpack("F", "F;64BF",
-            '?\xc3333333\xc0\x93J\x00\x00\x00\x00\x00',  # by struct.pack
+            b'?\xc3333333\xc0\x93J\x00\x00\x00\x00\x00',  # by struct.pack
             0.15000000596046448, -1234.5)
 
         if sys.byteorder == 'little':
             self.assert_unpack("F", "F;32NF", 4,
                 1.539989614439558e-36, 4.063216068939723e-34)
             self.assert_unpack("F", "F;64NF",
-                '333333\xc3?\x00\x00\x00\x00\x00J\x93\xc0',
+                b'333333\xc3?\x00\x00\x00\x00\x00J\x93\xc0',
                 0.15000000596046448, -1234.5)
         else:
             self.assert_unpack("F", "F;32NF", 4,
                 2.387939260590663e-38, 6.301941157072183e-36)
             self.assert_unpack("F", "F;64NF",
-                '?\xc3333333\xc0\x93J\x00\x00\x00\x00\x00',
+                b'?\xc3333333\xc0\x93J\x00\x00\x00\x00\x00',
                 0.15000000596046448, -1234.5)
 
     def test_I16(self):
@@ -353,6 +353,7 @@ class TestLibUnpack(PillowTestCase):
         self.assertRaises(ValueError, self.assert_unpack, "L", "L", 0, 0)
         self.assertRaises(ValueError, self.assert_unpack, "RGB", "RGB", 2, 0)
         self.assertRaises(ValueError, self.assert_unpack, "CMYK", "CMYK", 2, 0)
+
 
 if __name__ == '__main__':
     unittest.main()
