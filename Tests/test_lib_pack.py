@@ -1,3 +1,5 @@
+import sys
+
 from helper import unittest, PillowTestCase, py3
 
 from PIL import Image
@@ -59,23 +61,6 @@ class TestLibPack(PillowTestCase):
 
         self.assertEqual(pack("CMYK", "CMYK"), [1, 2, 3, 4])
         self.assertEqual(pack("YCbCr", "YCbCr"), [1, 2, 3])
-
-    def test_unpack(self):
-        def unpack(mode, rawmode, bytes_):
-            im = None
-
-            if py3:
-                data = bytes(range(1, bytes_+1))
-            else:
-                data = ''.join(chr(i) for i in range(1, bytes_+1))
-
-            im = Image.frombytes(mode, (1, 1), data, "raw", rawmode, 0, 1)
-
-            return im.getpixel((0, 0))
-
-        self.assertRaises(ValueError, lambda: unpack("L", "L", 0))
-        self.assertRaises(ValueError, lambda: unpack("RGB", "RGB", 2))
-        self.assertRaises(ValueError, lambda: unpack("CMYK", "CMYK", 2))
 
 
 class TestLibUnpack(PillowTestCase):
@@ -265,6 +250,109 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("HSV", "S", 1, (0,1,0), (0,2,0), (0,3,0))
         self.assert_unpack("HSV", "V", 1, (0,0,1), (0,0,2), (0,0,3))
 
+    def test_I(self):
+        self.assert_unpack("I", "I", 4, 0x04030201, 0x08070605)
+        self.assert_unpack("I", "I;8", 1, 0x01, 0x02, 0x03, 0x04)
+        self.assert_unpack("I", "I;8S", b'\x01\x83', 1, -125)
+        self.assert_unpack("I", "I;16", 2, 0x0201, 0x0403)
+        self.assert_unpack("I", "I;16S", b'\x83\x01\x01\x83', 0x0183, -31999)
+        self.assert_unpack("I", "I;16B", 2, 0x0102, 0x0304)
+        self.assert_unpack("I", "I;16BS", b'\x83\x01\x01\x83', -31999, 0x0183)
+        self.assert_unpack("I", "I;32", 4, 0x04030201, 0x08070605)
+        self.assert_unpack("I", "I;32S",
+            b'\x83\x00\x00\x01\x01\x00\x00\x83',
+            0x01000083, -2097151999)
+        self.assert_unpack("I", "I;32B", 4, 0x01020304, 0x05060708)
+        self.assert_unpack("I", "I;32BS",
+            b'\x83\x00\x00\x01\x01\x00\x00\x83',
+            -2097151999, 0x01000083)
+
+        if sys.byteorder == 'little':
+            self.assert_unpack("I", "I;16N", 2, 0x0201, 0x0403)
+            self.assert_unpack("I", "I;16NS", b'\x83\x01\x01\x83', 0x0183, -31999)
+            self.assert_unpack("I", "I;32N", 4, 0x04030201, 0x08070605)
+            self.assert_unpack("I", "I;32NS",
+                b'\x83\x00\x00\x01\x01\x00\x00\x83',
+                0x01000083, -2097151999)
+        else:
+            self.assert_unpack("I", "I;16N", 2, 0x0102, 0x0304)
+            self.assert_unpack("I", "I;16NS", b'\x83\x01\x01\x83', -31999, 0x0183)
+            self.assert_unpack("I", "I;32N", 4, 0x01020304, 0x05060708)
+            self.assert_unpack("I", "I;32NS",
+                b'\x83\x00\x00\x01\x01\x00\x00\x83',
+                -2097151999, 0x01000083)
+
+    def test_F_int(self):
+        self.assert_unpack("F", "F;8", 1, 0x01, 0x02, 0x03, 0x04)
+        self.assert_unpack("F", "F;8S", b'\x01\x83', 1, -125)
+        self.assert_unpack("F", "F;16", 2, 0x0201, 0x0403)
+        self.assert_unpack("F", "F;16S", b'\x83\x01\x01\x83', 0x0183, -31999)
+        self.assert_unpack("F", "F;16B", 2, 0x0102, 0x0304)
+        self.assert_unpack("F", "F;16BS", b'\x83\x01\x01\x83', -31999, 0x0183)
+        self.assert_unpack("F", "F;32", 4, 67305984, 134678016)
+        self.assert_unpack("F", "F;32S",
+            b'\x83\x00\x00\x01\x01\x00\x00\x83',
+            16777348, -2097152000)
+        self.assert_unpack("F", "F;32B", 4, 0x01020304, 0x05060708)
+        self.assert_unpack("F", "F;32BS",
+            b'\x83\x00\x00\x01\x01\x00\x00\x83',
+            -2097152000, 16777348)
+
+        if sys.byteorder == 'little':
+            self.assert_unpack("F", "F;16N", 2, 0x0201, 0x0403)
+            self.assert_unpack("F", "F;16NS", b'\x83\x01\x01\x83', 0x0183, -31999)
+            self.assert_unpack("F", "F;32N", 4, 67305984, 134678016)
+            self.assert_unpack("F", "F;32NS",
+                b'\x83\x00\x00\x01\x01\x00\x00\x83',
+                16777348, -2097152000)
+        else:
+            self.assert_unpack("F", "F;16N", 2, 0x0102, 0x0304)
+            self.assert_unpack("F", "F;16NS", b'\x83\x01\x01\x83', -31999, 0x0183)
+            self.assert_unpack("F", "F;32N", 4, 0x01020304, 0x05060708)
+            self.assert_unpack("F", "F;32NS",
+                b'\x83\x00\x00\x01\x01\x00\x00\x83',
+                -2097152000, 16777348)
+
+    def test_F_float(self):
+        self.assert_unpack("F", "F", 4,
+            1.539989614439558e-36, 4.063216068939723e-34)
+        self.assert_unpack("F", "F;32F", 4,
+            1.539989614439558e-36, 4.063216068939723e-34)
+        self.assert_unpack("F", "F;32BF", 4,
+            2.387939260590663e-38, 6.301941157072183e-36)
+        self.assert_unpack("F", "F;64F",
+            '333333\xc3?\x00\x00\x00\x00\x00J\x93\xc0',  # by struct.pack
+            0.15000000596046448, -1234.5)
+        self.assert_unpack("F", "F;64BF",
+            '?\xc3333333\xc0\x93J\x00\x00\x00\x00\x00',  # by struct.pack
+            0.15000000596046448, -1234.5)
+
+        if sys.byteorder == 'little':
+            self.assert_unpack("F", "F;32NF", 4,
+                1.539989614439558e-36, 4.063216068939723e-34)
+            self.assert_unpack("F", "F;64NF",
+                '333333\xc3?\x00\x00\x00\x00\x00J\x93\xc0',
+                0.15000000596046448, -1234.5)
+        else:
+            self.assert_unpack("F", "F;32NF", 4,
+                2.387939260590663e-38, 6.301941157072183e-36)
+            self.assert_unpack("F", "F;64NF",
+                '?\xc3333333\xc0\x93J\x00\x00\x00\x00\x00',
+                0.15000000596046448, -1234.5)
+
+    def test_I16(self):
+        self.assert_unpack("I;16", "I;16", 2, 0x0201, 0x0403, 0x0605)
+        self.assert_unpack("I;16B", "I;16B", 2, 0x0102, 0x0304, 0x0506)
+        self.assert_unpack("I;16L", "I;16L", 2, 0x0201, 0x0403, 0x0605)
+        self.assert_unpack("I;16", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+        self.assert_unpack("I;16B", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+        self.assert_unpack("I;16L", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+        self.assert_unpack("I;16", "I;12", 2, 0x0010, 0x0203, 0x0040, 0x0506)
+
+    def test_value_error(self):
+        self.assertRaises(ValueError, self.assert_unpack, "L", "L", 0, 0)
+        self.assertRaises(ValueError, self.assert_unpack, "RGB", "RGB", 2, 0)
+        self.assertRaises(ValueError, self.assert_unpack, "CMYK", "CMYK", 2, 0)
 
 if __name__ == '__main__':
     unittest.main()
