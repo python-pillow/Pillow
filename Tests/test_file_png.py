@@ -505,17 +505,17 @@ class TestFilePng(PillowTestCase):
         im.convert("P").save(test_file, dpi=(100, 100))
 
         chunks = []
-        fp = open(test_file, "rb")
-        fp.read(8)
-        png = PngImagePlugin.PngStream(fp)
-        while True:
-            cid, pos, length = png.read()
-            chunks.append(cid)
-            try:
-                s = png.call(cid, pos, length)
-            except EOFError:
-                break
-            png.crc(cid, s)
+        with open(test_file, "rb") as fp:
+            fp.read(8)
+            png = PngImagePlugin.PngStream(fp)
+            while True:
+                cid, pos, length = png.read()
+                chunks.append(cid)
+                try:
+                    s = png.call(cid, pos, length)
+                except EOFError:
+                    break
+                png.crc(cid, s)
 
         # https://www.w3.org/TR/PNG/#5ChunkOrdering
         # IHDR - shall be first

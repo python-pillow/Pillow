@@ -495,12 +495,12 @@ class TestFileTiff(PillowTestCase):
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
             im.save(tmpfile)
 
-        f = open(tmpfile, 'rb')
-        im = Image.open(f)
-        fp = im.fp
-        self.assertFalse(fp.closed)
-        im.load()
-        self.assertFalse(fp.closed)
+        with open(tmpfile, 'rb') as f:
+            im = Image.open(f)
+            fp = im.fp
+            self.assertFalse(fp.closed)
+            im.load()
+            self.assertFalse(fp.closed)
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileTiffW32(PillowTestCase):
