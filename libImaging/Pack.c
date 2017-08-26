@@ -560,8 +560,8 @@ static struct {
     /* true colour w. padding */
     {"RGBX",    "RGBX",         32,     copy4},
     {"RGBX",    "RGBX;L",       32,     packRGBXL},
-    {"RGBX",    "RGB",          32,     ImagingPackRGB},
-    {"RGBX",    "BGR",          32,     ImagingPackBGR},
+    {"RGBX",    "RGB",          24,     ImagingPackRGB},
+    {"RGBX",    "BGR",          24,     ImagingPackBGR},
     {"RGBX",    "BGRX",         32,     ImagingPackBGRX},
     {"RGBX",    "XBGR",         32,     ImagingPackXBGR},
     {"RGBX",    "R",            8,      band0},
@@ -600,13 +600,13 @@ static struct {
     {"HSV",     "V",           8,      band2},
 
     /* integer */
-    {"I",       "I",            32,     copy4},
+    {"I",       "I",            32,     packI32S},
     {"I",       "I;16B",        16,     packI16B},
     {"I",       "I;32S",        32,     packI32S},
     {"I",       "I;32NS",       32,     copy4},
 
     /* floating point */
-    {"F",       "F",            32,     copy4},
+    {"F",       "F",            32,     packI32S},
     {"F",       "F;32F",        32,     packI32S},
     {"F",       "F;32NF",       32,     copy4},
 
