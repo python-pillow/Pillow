@@ -7,6 +7,8 @@ Get One Channel From Image
 New method :py:meth:`PIL.Image.Image.getchannel` added.
 It returns single channel by index or name. For example,
 ``image.getchannel("A")`` will return alpha channel as separate image.
+``getchannel`` should work up to 6 times faster than ``image.split()[0]``
+in previous Pillow versions.
 
 Removed Core Image Debugging Code
 =================================
@@ -14,3 +16,55 @@ Removed Core Image Debugging Code
 Debugging code within ``Image.core.grabclipboard`` was removed. It had been
 marked as ``will be removed in future versions`` since PIL. When enabled, it
 identified the format of the clipboard data.
+
+
+Partial Resampling
+==================
+
+New argument ``box`` for :py:meth:`PIL.Image.Image.resize` method allows
+set rect within source image which will be resized.
+This is very similar to ``image.crop(box).resize(size)`` sequence
+except that ``box`` can be with subpixel accuracy.
+
+
+Loading 16-bit TIFF Images
+==========================
+
+Pillow now can read 16-bit multichannel TIFF files including files
+with alpha transparency. Such files are converted to internal
+8-bit representation.
+
+
+Performance
+===========
+
+Many performance improvements were done, including:
+
+* Many memory bandwidth-bounded operations such as crop, image allocation,
+  conversion, split into bands and merging from bands
+  are accelerated up to 2 times
+* Upscaling of multichannel images (such as RGB) is accelerated by 5-10%
+* Using recent libjpeg-turbo version (most installations nowadays)
+  JPEG loading is accelerated up to 15% and JPEG saving up to 20%
+
+
+Import and Export bytes on big-endian systems
+=============================================
+
+Methods :py:func:`PIL.Image.frombytes` and :py:meth:`PIL.Image.Image.tobytes`
+used to import/export bytes for ``I`` (32-bit integer) and
+``F`` (32-bit float) modes in platform-specific bytes order.
+Now they work in little-endian mode, which is aligned with
+internal documentation and other modes. If you need native bytes order,
+you should explicitly use rawmodes with native bytes order:
+``I;32N`` and ``F;32N``.
+
+
+Removed Internal Methods
+========================
+
+From time to time we are cleaning up our internal API,
+which is however accessible from the Python code.
+This time ``PIL.Image.core.copy`` and ``PIL.Image.Image.im.copy2`` methods
+were removed.
+>>>>>>> Release notes for my changes
