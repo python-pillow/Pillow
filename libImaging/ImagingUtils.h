@@ -20,8 +20,11 @@
 #define MULDIV255(a, b, tmp)\
     (tmp = (a) * (b) + 128, SHIFTFORDIV255(tmp))
 
-#define BLEND(mask, in1, in2, tmp1, tmp2)\
-        (MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
+#define DIV255(a, tmp)\
+    (tmp = (a) + 128, SHIFTFORDIV255(tmp))
+
+#define BLEND(mask, in1, in2, tmp1)\
+    DIV255(in1 * (255 - mask) + in2 * mask, tmp1)
 
 #define PREBLEND(mask, in1, in2, tmp1)\
-        (MULDIV255(in1, (255 - mask), tmp1) + in2)
+    (MULDIV255(in1, (255 - mask), tmp1) + in2)
