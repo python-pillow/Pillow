@@ -194,7 +194,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		    context->cinfo.comp_info[2].v_samp_factor = 1;
 		    break;
 		}
-	    case 2:  /* 2x2, 1x1, 1x1 (4:1:1) : High */
+	    case 2:  /* 2x2, 1x1, 1x1 (4:2:0) : High */
 		{
 		    context->cinfo.comp_info[0].h_samp_factor = 2;
 		    context->cinfo.comp_info[0].v_samp_factor = 2;

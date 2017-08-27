@@ -30,7 +30,7 @@ for chroma information than for luma information.
 (ref.: https://en.wikipedia.org/wiki/Chroma_subsampling)
 
 Possible subsampling values are 0, 1 and 2 that correspond to 4:4:4, 4:2:2 and
-4:1:1 (or 4:2:0?).
+4:2:0.
 
 You can get the subsampling of a JPEG with the
 `JpegImagePlugin.get_subsampling(im)` function.
@@ -67,7 +67,7 @@ Libjpeg ref.: https://web.archive.org/web/20120328125543/http://www.jpegcameras.
 """
 
 presets = {
-            'web_low':      {'subsampling':  2,  # "4:1:1"
+            'web_low':      {'subsampling':  2,  # "4:2:0"
                              'quantization': [
                                [20, 16, 25, 39, 50, 46, 62, 68,
                                 16, 18, 23, 38, 38, 53, 65, 68,
@@ -86,7 +86,7 @@ presets = {
                                 68, 68, 68, 68, 68, 68, 68, 68,
                                 68, 68, 68, 68, 68, 68, 68, 68]
                               ]},
-            'web_medium':   {'subsampling':  2,  # "4:1:1"
+            'web_medium':   {'subsampling':  2,  # "4:2:0"
                              'quantization': [
                                [16, 11, 11, 16, 23, 27, 31, 30,
                                 11, 12, 12, 15, 20, 23, 23, 30,
@@ -162,7 +162,7 @@ presets = {
                                  3,  3,  3,  3,  3,  3,  3,  3,
                                  3,  3,  3,  3,  3,  3,  3,  3]
                              ]},
-            'low':          {'subsampling':  2,  # "4:1:1"
+            'low':          {'subsampling':  2,  # "4:2:0"
                              'quantization': [
                                [18, 14, 14, 21, 30, 35, 34, 17,
                                 14, 16, 16, 19, 26, 23, 12, 12,
@@ -181,7 +181,7 @@ presets = {
                                 17, 12, 12, 12, 12, 12, 12, 12,
                                 17, 12, 12, 12, 12, 12, 12, 12]
                              ]},
-            'medium':       {'subsampling':  2,  # "4:1:1"
+            'medium':       {'subsampling':  2,  # "4:2:0"
                              'quantization': [
                                [12,  8,  8, 12, 17, 21, 24, 17,
                                  8,  9,  9, 11, 15, 19, 12, 12,

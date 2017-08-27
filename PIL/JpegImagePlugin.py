@@ -635,7 +635,11 @@ def _save(im, fp, filename):
         subsampling = 0
     elif subsampling == "4:2:2":
         subsampling = 1
+    elif subsampling == "4:2:0":
+        subsampling = 2
     elif subsampling == "4:1:1":
+        # For compatibility. Before Pillow 4.3, 4:1:1 actually meant 4:2:0.
+        # Set 4:2:0 if someone is still using that value.
         subsampling = 2
     elif subsampling == "keep":
         if im.format != "JPEG":

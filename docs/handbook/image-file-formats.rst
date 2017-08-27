@@ -275,11 +275,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If present, sets the subsampling for the encoder.
 
     * ``keep``: Only valid for JPEG files, will retain the original image setting.
-    * ``4:4:4``, ``4:2:2``, ``4:1:1``: Specific sampling values
+    * ``4:4:4``, ``4:2:2``, ``4:2:0``: Specific sampling values
     * ``-1``: equivalent to ``keep``
     * ``0``: equivalent to ``4:4:4``
     * ``1``: equivalent to ``4:2:2``
-    * ``2``: equivalent to ``4:1:1``
+    * ``2``: equivalent to ``4:2:0``
 
 **qtables**
     If present, sets the qtables for the encoder. This is listed as an
