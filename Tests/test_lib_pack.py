@@ -243,6 +243,7 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("RGB", "RGB", 3, (1,2,3), (4,5,6), (7,8,9))
         self.assert_unpack("RGB", "RGB;L", 3, (1,4,7), (2,5,8), (3,6,9))
         self.assert_unpack("RGB", "RGB;R", 3, (128,64,192), (32,160,96))
+        self.assert_unpack("RGB", "RGB;16L", 6, (2,4,6), (8,10,12))
         self.assert_unpack("RGB", "RGB;16B", 6, (1,3,5), (7,9,11))
         self.assert_unpack("RGB", "BGR", 3, (3,2,1), (6,5,4), (9,8,7))
         self.assert_unpack("RGB", "RGB;15", 2, (8,131,0), (24,0,8))
@@ -270,8 +271,26 @@ class TestLibUnpack(PillowTestCase):
             (1,2,3,4), (5,6,7,8), (9,10,11,12))
         self.assert_unpack("RGBA", "RGBa", 4,
             (63,127,191,4), (159,191,223,8), (191,212,233,12))
+        self.assert_unpack("RGBA", "RGBa",
+            b'\x01\x02\x03\x00\x10\x20\x30\xff',
+            (0,0,0,0), (16,32,48,255))
+        self.assert_unpack("RGBA", "RGBa;16L", 8,
+            (63,127,191,8), (159,191,223,16), (191,212,233,24))
+        self.assert_unpack("RGBA", "RGBa;16L",
+            b'\x88\x01\x88\x02\x88\x03\x88\x00'
+            b'\x88\x10\x88\x20\x88\x30\x88\xff',
+            (0,0,0,0), (16,32,48,255))
+        self.assert_unpack("RGBA", "RGBa;16B", 8,
+            (36,109,182,7), (153,187,221,15), (188,210,232,23))
+        self.assert_unpack("RGBA", "RGBa;16B",
+            b'\x01\x88\x02\x88\x03\x88\x00\x88'
+            b'\x10\x88\x20\x88\x30\x88\xff\x88',
+            (0,0,0,0), (16,32,48,255))
         self.assert_unpack("RGBA", "BGRa", 4,
             (191,127,63,4), (223,191,159,8), (233,212,191,12))
+        self.assert_unpack("RGBA", "BGRa",
+            b'\x01\x02\x03\x00\x10\x20\x30\xff',
+            (0,0,0,0), (48,32,16,255))
         self.assert_unpack("RGBA", "RGBA;I", 4,
             (254,253,252,4), (250,249,248,8), (246,245,244,12))
         self.assert_unpack("RGBA", "RGBA;L", 4,
@@ -279,6 +298,7 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("RGBA", "RGBA;15", 2, (8,131,0,0), (24,0,8,0))
         self.assert_unpack("RGBA", "BGRA;15", 2, (0,131,8,0), (8,0,24,0))
         self.assert_unpack("RGBA", "RGBA;4B", 2, (17,0,34,0), (51,0,68,0))
+        self.assert_unpack("RGBA", "RGBA;16L", 8, (2,4,6,8), (10,12,14,16))
         self.assert_unpack("RGBA", "RGBA;16B", 8, (1,3,5,7), (9,11,13,15))
         self.assert_unpack("RGBA", "BGRA", 4,
             (3,2,1,4), (7,6,5,8), (11,10,9,12))
@@ -316,6 +336,8 @@ class TestLibUnpack(PillowTestCase):
             (1,2,3,4), (5,6,7,8), (9,10,11,12))
         self.assert_unpack("RGBX", "RGBX;L", 4,
             (1,4,7,10), (2,5,8,11), (3,6,9,12))
+        self.assert_unpack("RGBX", "RGBX;16L", 8, (2,4,6,8), (10,12,14,16))
+        self.assert_unpack("RGBX", "RGBX;16B", 8, (1,3,5,7), (9,11,13,15))
         self.assert_unpack("RGBX", "BGRX", 4, (3,2,1,X), (7,6,5,X), (11,10,9,X))
         self.assert_unpack("RGBX", "XRGB", 4, (2,3,4,X), (6,7,8,X), (10,11,12,X))
         self.assert_unpack("RGBX", "XBGR", 4, (4,3,2,X), (8,7,6,X), (12,11,10,X))
@@ -462,7 +484,7 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("I;16", "I;16", 2, 0x0201, 0x0403, 0x0605)
         self.assert_unpack("I;16B", "I;16B", 2, 0x0102, 0x0304, 0x0506)
         self.assert_unpack("I;16L", "I;16L", 2, 0x0201, 0x0403, 0x0605)
-        self.assert_unpack("I;16", "I;12", 2, 0x0010, 0x0203, 0x0040, 0x0506)
+        self.assert_unpack("I;16", "I;12", 2, 0x0010, 0x0203, 0x0040)
         if sys.byteorder == 'little':
             self.assert_unpack("I;16", "I;16N", 2, 0x0201, 0x0403, 0x0605)
             self.assert_unpack("I;16B", "I;16N", 2, 0x0201, 0x0403, 0x0605)
