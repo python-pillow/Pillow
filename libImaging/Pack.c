@@ -600,13 +600,13 @@ static struct {
     {"HSV",     "V",           8,      band2},
 
     /* integer */
-    {"I",       "I",            32,     packI32S},
+    {"I",       "I",            32,     copy4},
     {"I",       "I;16B",        16,     packI16B},
     {"I",       "I;32S",        32,     packI32S},
     {"I",       "I;32NS",       32,     copy4},
 
     /* floating point */
-    {"F",       "F",            32,     packI32S},
+    {"F",       "F",            32,     copy4},
     {"F",       "F;32F",        32,     packI32S},
     {"F",       "F;32NF",       32,     copy4},
 
