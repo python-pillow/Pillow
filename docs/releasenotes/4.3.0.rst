@@ -48,18 +48,6 @@ Many performance improvements were done, including:
   JPEG loading is accelerated up to 15% and JPEG saving up to 20%
 
 
-Import and Export bytes on big-endian systems
-=============================================
-
-Methods :py:func:`PIL.Image.frombytes` and :py:meth:`PIL.Image.Image.tobytes`
-used to import/export bytes for ``I`` (32-bit integer) and
-``F`` (32-bit float) modes in platform-specific bytes order.
-Now they work in little-endian mode, which is aligned with
-internal documentation and other modes. If you need native bytes order,
-you should explicitly use rawmodes with native bytes order:
-``I;32N`` and ``F;32N``.
-
-
 Removed Internal Methods
 ========================
 
