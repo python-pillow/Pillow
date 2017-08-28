@@ -1176,6 +1176,8 @@ static struct {
        endian byte order (default is little endian); "L" line
        interleave, "S" signed, "F" floating point */
 
+    /* exception: rawmodes "I" and "F" are always native endian byte order */
+
     /* bilevel */
     {"1",       "1",            1,      unpack1},
     {"1",       "1;I",          1,      unpack1I},
