@@ -56,8 +56,9 @@ try:
     from . import _imaging as core
     if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
         raise ImportError("The _imaging extension was built for another "
-                          "version of Pillow or PIL: Core Version: %s"
-                          "Pillow Version:  %s" %
+                          "version of Pillow or PIL:\n"
+                          "Core version: %s\n"
+                          "Pillow version: %s" %
                           (getattr(core, 'PILLOW_VERSION', None),
                            PILLOW_VERSION))
 
@@ -1673,7 +1674,7 @@ class Image(object):
 
         return m_im
 
-    def resize(self, size, resample=NEAREST):
+    def resize(self, size, resample=NEAREST, box=None):
         """
         Returns a resized copy of this image.
 
@@ -1686,6 +1687,10 @@ class Image(object):
            If omitted, or if the image has mode "1" or "P", it is
            set :py:attr:`PIL.Image.NEAREST`.
            See: :ref:`concept-filters`.
+        :param box: An optional 4-tuple of floats giving the region
+           of the source image which should be scaled.
+           The values should be within (0, 0, width, height) rectangle.
+           If omitted or None, the entire source is used.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -1694,22 +1699,28 @@ class Image(object):
         ):
             raise ValueError("unknown resampling filter")
 
-        self.load()
-
         size = tuple(size)
-        if self.size == size:
+
+        if box is None:
+            box = (0, 0) + self.size
+        else:
+            box = tuple(box)
+
+        if self.size == size and box == (0, 0) + self.size:
             return self.copy()
 
         if self.mode in ("1", "P"):
             resample = NEAREST
 
         if self.mode == 'LA':
-            return self.convert('La').resize(size, resample).convert('LA')
+            return self.convert('La').resize(size, resample, box).convert('LA')
 
         if self.mode == 'RGBA':
-            return self.convert('RGBa').resize(size, resample).convert('RGBA')
+            return self.convert('RGBa').resize(size, resample, box).convert('RGBA')
 
-        return self._new(self.im.resize(size, resample))
+        self.load()
+
+        return self._new(self.im.resize(size, resample, box))
 
     def rotate(self, angle, resample=NEAREST, expand=0, center=None,
                translate=None):
@@ -1947,6 +1958,9 @@ class Image(object):
         containing a copy of one of the original bands (red, green,
         blue).
 
+        If you need only one band, :py:meth:`~PIL.Image.Image.getchannel`
+        method can be more convenient and faster.
+
         :returns: A tuple containing bands.
         """
 
@@ -1954,10 +1968,30 @@ class Image(object):
         if self.im.bands == 1:
             ims = [self.copy()]
         else:
-            ims = []
-            for i in range(self.im.bands):
-                ims.append(self._new(self.im.getband(i)))
+            ims = map(self._new, self.im.split())
         return tuple(ims)
+
+    def getchannel(self, channel):
+        """
+        Returns an image containing a single channel of the source image.
+
+        :param channel: What channel to return. Could be index
+          (0 for "R" channel of "RGB") or channel name
+          ("A" for alpha channel of "RGBA").
+        :returns: An image in "L" mode.
+
+        .. versionadded:: 4.3.0
+        """
+        self.load()
+
+        if isStringType(channel):
+            try:
+                channel = self.getbands().index(channel)
+            except ValueError:
+                raise ValueError(
+                    'The image has no channel "{}"'.format(channel))
+
+        return self._new(self.im.getband(channel))
 
     def tell(self):
         """
@@ -2399,7 +2433,7 @@ def fromqpixmap(im):
 _fromarray_typemap = {
     # (shape, typestr) => mode, rawmode
     # first two members of shape are set to one
-    # ((1, 1), "|b1"): ("1", "1"), # broken
+    ((1, 1), "|b1"): ("1", "1;8"), 
     ((1, 1), "|u1"): ("L", "L"),
     ((1, 1), "|i1"): ("I", "I;8"),
     ((1, 1), "<u2"): ("I", "I;16"),
@@ -2612,11 +2646,9 @@ def merge(mode, bands):
             raise ValueError("mode mismatch")
         if im.size != bands[0].size:
             raise ValueError("size mismatch")
-    im = core.new(mode, bands[0].size)
-    for i in range(getmodebands(mode)):
-        bands[i].load()
-        im.putband(bands[i].im, i)
-    return bands[0]._new(im)
+    for band in bands:
+        band.load()
+    return bands[0]._new(core.merge(mode, *[b.im for b in bands]))
 
 
 # --------------------------------------------------------------------

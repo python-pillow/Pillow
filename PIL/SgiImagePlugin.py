@@ -104,6 +104,11 @@ def _save(im, fp, filename):
     z = len(im.mode)
     if dim == 1 or dim == 2:
         z = 1
+    # assert we've got the right number of bands.
+    if len(im.getbands()) != z:
+        raise ValueError("incorrect number of bands in SGI write: %s vs %s" %
+                         (z, len(im.getbands())))
+
     # Minimum Byte value
     pinmin = 0
     # Maximum Byte value (255 = 8bits per pixel)
@@ -130,11 +135,6 @@ def _save(im, fp, filename):
     fp.write(struct.pack('>l', colormap))
 
     fp.write(struct.pack('404s', b''))  # dummy
-
-    # assert we've got the right number of bands.
-    if len(im.getbands()) != z:
-        raise ValueError("incorrect number of bands in SGI write: %s vs %s" %
-                         (z, len(im.getbands())))
 
     for channel in im.split():
         fp.write(channel.tobytes())

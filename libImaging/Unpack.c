@@ -185,6 +185,19 @@ unpack1IR(UINT8* out, const UINT8* in, int pixels)
     }
 }
 
+static void
+unpack18(UINT8* out, const UINT8* in, int pixels)
+{
+    /* Unpack a '|b1' image, which is a numpy boolean. 
+       1 == true, 0==false, in bytes */
+
+    int i;
+    for (i = 0; i < pixels; i++) {
+        out[i] = in[i] > 0 ? 255 : 0;
+    }
+}
+
+
 
 /* Unpack to "L" image */
 
@@ -1163,11 +1176,14 @@ static struct {
        endian byte order (default is little endian); "L" line
        interleave, "S" signed, "F" floating point */
 
+    /* exception: rawmodes "I" and "F" are always native endian byte order */
+
     /* bilevel */
     {"1",       "1",            1,      unpack1},
     {"1",       "1;I",          1,      unpack1I},
     {"1",       "1;R",          1,      unpack1R},
     {"1",       "1;IR",         1,      unpack1IR},
+    {"1",       "1;8",          1,      unpack18},
 
     /* greyscale */
     {"L",       "L;2",          2,      unpackL2},
