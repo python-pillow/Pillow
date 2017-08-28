@@ -87,10 +87,12 @@ class TestModeI16(PillowTestCase):
         def tobytes(mode):
             return Image.new(mode, (1, 1), 1).tobytes()
 
+        order = 1 if Image._ENDIAN == '<' else -1
+
         self.assertEqual(tobytes("L"), b"\x01")
         self.assertEqual(tobytes("I;16"), b"\x01\x00")
         self.assertEqual(tobytes("I;16B"), b"\x00\x01")
-        self.assertEqual(tobytes("I"), b"\x01\x00\x00\x00")
+        self.assertEqual(tobytes("I"), b"\x01\x00\x00\x00"[::order])
 
     def test_convert(self):
 

@@ -1176,6 +1176,8 @@ static struct {
        endian byte order (default is little endian); "L" line
        interleave, "S" signed, "F" floating point */
 
+    /* exception: rawmodes "I" and "F" are always native endian byte order */
+
     /* bilevel */
     {"1",       "1",            1,      unpack1},
     {"1",       "1;I",          1,      unpack1I},
@@ -1318,7 +1320,7 @@ static struct {
     {"HSV",  	"V",            8,      band2},
 
     /* integer variations */
-    {"I",       "I",            32,     unpackI32},
+    {"I",       "I",            32,     copy4},
     {"I",       "I;8",          8,      unpackI8},
     {"I",       "I;8S",         8,      unpackI8S},
     {"I",       "I;16",         16,     unpackI16},
@@ -1335,7 +1337,7 @@ static struct {
     {"I",       "I;32NS",       32,     unpackI32NS},
 
     /* floating point variations */
-    {"F",       "F",            32,     unpackI32},
+    {"F",       "F",            32,     copy4},
     {"F",       "F;8",          8,      unpackF8},
     {"F",       "F;8S",         8,      unpackF8S},
     {"F",       "F;16",         16,     unpackF16},
