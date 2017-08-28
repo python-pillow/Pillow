@@ -201,6 +201,17 @@ OPEN_INFO = {
     (II, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
     (MM, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
 
+    (II, 2, (1,), 1, (16, 16, 16), ()): ("RGB", "RGB;16L"),
+    (MM, 2, (1,), 1, (16, 16, 16), ()): ("RGB", "RGB;16B"),
+    (II, 2, (1,), 1, (16, 16, 16, 16), ()): ("RGBA", "RGBA;16L"),
+    (MM, 2, (1,), 1, (16, 16, 16, 16), ()): ("RGBA", "RGBA;16B"),
+    (II, 2, (1,), 1, (16, 16, 16, 16), (0,)): ("RGBX", "RGBX;16L"),
+    (MM, 2, (1,), 1, (16, 16, 16, 16), (0,)): ("RGBX", "RGBX;16B"),
+    (II, 2, (1,), 1, (16, 16, 16, 16), (1,)): ("RGBA", "RGBa;16L"),
+    (MM, 2, (1,), 1, (16, 16, 16, 16), (1,)): ("RGBA", "RGBa;16B"),
+    (II, 2, (1,), 1, (16, 16, 16, 16), (2,)): ("RGBA", "RGBA;16L"),
+    (MM, 2, (1,), 1, (16, 16, 16, 16), (2,)): ("RGBA", "RGBA;16B"),
+
     (II, 3, (1,), 1, (1,), ()): ("P", "P;1"),
     (MM, 3, (1,), 1, (1,), ()): ("P", "P;1"),
     (II, 3, (1,), 2, (1,), ()): ("P", "P;1R"),
@@ -230,7 +241,12 @@ OPEN_INFO = {
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
 
-PREFIXES = [b"MM\000\052", b"II\052\000", b"II\xBC\000"]
+PREFIXES = [
+    b"MM\x00\x2A",  # Valid TIFF header with big-endian byte order
+    b"II\x2A\x00",  # Valid TIFF header with little-endian byte order
+    b"MM\x2A\x00",  # Invalid TIFF header, assume big-endian
+    b"II\x00\x2A",  # Invalid TIFF header, assume little-endian
+]
 
 
 def _accept(prefix):
