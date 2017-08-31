@@ -2899,11 +2899,13 @@ def register_encoder(name, encoder):
 # Simple display support.  User code may override this.
 
 def _show(image, **options):
+    # type: (Image, **Any) -> None
     # override me, as necessary
     _showxv(image, **options)
 
 
 def _showxv(image, title=None, **options):
+    # type: (Image, Optional[Text], **Any) -> None
     from . import ImageShow
     ImageShow.show(image, title, **options)
 
