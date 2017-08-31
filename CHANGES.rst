@@ -3,7 +3,9 @@ Changelog (Pillow)
 
 4.3.0 (unreleased)
 ------------------
-
+- Faster packing and unpacking for RGB, LA, and related storage modes #2693
+  [homm]
+  
 - Use RGBX rawmode for RGB JPEG images where possible #1989 
   [homm]
 
