@@ -299,7 +299,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertEqual(getsampling(im), (1, 1, 1, 1, 1, 1))
         im = self.roundtrip(hopper(), subsampling=1)  # 4:2:2
         self.assertEqual(getsampling(im), (2, 1, 1, 1, 1, 1))
-        im = self.roundtrip(hopper(), subsampling=2)  # 4:1:1
+        im = self.roundtrip(hopper(), subsampling=2)  # 4:2:0
         self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
         im = self.roundtrip(hopper(), subsampling=3)  # default (undefined)
         self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
@@ -308,6 +308,8 @@ class TestFileJpeg(PillowTestCase):
         self.assertEqual(getsampling(im), (1, 1, 1, 1, 1, 1))
         im = self.roundtrip(hopper(), subsampling="4:2:2")
         self.assertEqual(getsampling(im), (2, 1, 1, 1, 1, 1))
+        im = self.roundtrip(hopper(), subsampling="4:2:0")
+        self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
         im = self.roundtrip(hopper(), subsampling="4:1:1")
         self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
 
