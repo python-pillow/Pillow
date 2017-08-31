@@ -983,7 +983,7 @@ class Image(object):
                        2 = fast octree
                        3 = libimagequant
         :param kmeans: Integer
-        :param palette: Quantize to the :py:class:`PIL.ImagingPalette` palette.
+        :param palette: Quantize to the palette of given :py:class:`PIL.Image.Image`.
         :returns: A new image
 
         """
