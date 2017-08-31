@@ -1772,7 +1772,7 @@ class Image(object):
         return m_im
 
     def resize(self, size, resample=NEAREST, box=None):
-        # type: (Size, int) -> Image
+        # type: (Size, int, Optional[LURD]) -> Image
         """
         Returns a resized copy of this image.
 
