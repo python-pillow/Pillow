@@ -270,12 +270,11 @@ _MODE_CONV = {
 
 
 def _conv_type_shape(im):
-    shape = im.size[1], im.size[0]
     typ, extra = _MODE_CONV[im.mode]
     if extra is None:
-        return shape, typ
+        return (im.size[1], im.size[0]), typ
     else:
-        return shape+(extra,), typ
+        return (im.size[1], im.size[0], extra), typ
 
 
 MODES = sorted(_MODEINFO)
@@ -583,24 +582,31 @@ class Image(object):
 
     def _dump(self, file=None, format=None, **options):
         import tempfile
+
         suffix = ''
         if format:
             suffix = '.'+format
+
         if not file:
-            f, file = tempfile.mkstemp(suffix)
+            f, filename = tempfile.mkstemp(suffix)
             os.close(f)
+        else:
+            filename = file
+            if not filename.endswith(suffix):
+                filename = filename + suffix
 
         self.load()
+
         if not format or format == "PPM":
-            self.im.save_ppm(file)
+            self.im.save_ppm(filename)
         else:
-            if not file.endswith(format):
-                file = file + "." + format
-            self.save(file, format, **options)
-        return file
+            self.save(filename, format, **options)
+
+        return filename
 
     def __eq__(self, other):
-        return (self.__class__.__name__ == other.__class__.__name__ and
+        return (isinstance(other, Image) and
+                self.__class__.__name__ == other.__class__.__name__ and
                 self.mode == other.mode and
                 self.size == other.size and
                 self.info == other.info and
@@ -1618,16 +1624,18 @@ class Image(object):
 
         if source_palette is None:
             if self.mode == "P":
-                source_palette = self.im.getpalette("RGB")[:768]
+                real_source_palette = self.im.getpalette("RGB")[:768]
             else:  # L-mode
-                source_palette = bytearray(i//3 for i in range(768))
+                real_source_palette = bytearray(i//3 for i in range(768))
+        else:
+            real_source_palette = source_palette
 
         palette_bytes = b""
         new_positions = [0]*256
 
         # pick only the used colors from the palette
         for i, oldPosition in enumerate(dest_map):
-            palette_bytes += source_palette[oldPosition*3:oldPosition*3+3]
+            palette_bytes += real_source_palette[oldPosition*3:oldPosition*3+3]
             new_positions[oldPosition] = i
 
         # replace the palette color id of all pixel with the new id
@@ -1783,9 +1791,13 @@ class Image(object):
         w, h = self.size
 
         if translate is None:
-            translate = [0, 0]
+            post_trans = (0, 0)
+        else:
+            post_trans = translate
         if center is None:
-            center = [w / 2.0, h / 2.0]
+            rotn_center = (w / 2.0, h / 2.0)  # FIXME These should be rounded to ints?
+        else:
+            rotn_center = center
 
         angle = - math.radians(angle)
         matrix = [
@@ -1797,10 +1809,10 @@ class Image(object):
             (a, b, c, d, e, f) = matrix
             return a*x + b*y + c, d*x + e*y + f
 
-        matrix[2], matrix[5] = transform(-center[0] - translate[0],
-                                         -center[1] - translate[1], matrix)
-        matrix[2] += center[0]
-        matrix[5] += center[1]
+        matrix[2], matrix[5] = transform(-rotn_center[0] - post_trans[0],
+                                         -rotn_center[1] - post_trans[1], matrix)
+        matrix[2] += rotn_center[0]
+        matrix[5] += rotn_center[1]
 
         if expand:
             # calculate output size
@@ -2641,10 +2653,10 @@ def merge(mode, bands):
 
     if getmodebands(mode) != len(bands) or "*" in mode:
         raise ValueError("wrong number of bands")
-    for im in bands[1:]:
-        if im.mode != getmodetype(mode):
+    for band in bands[1:]:
+        if band.mode != getmodetype(mode):
             raise ValueError("mode mismatch")
-        if im.size != bands[0].size:
+        if band.size != bands[0].size:
             raise ValueError("size mismatch")
     for band in bands:
         band.load()
