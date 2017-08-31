@@ -527,11 +527,12 @@ class Image(object):
         new.im = im
         new.mode = im.mode
         new.size = im.size
-        if self.palette:
-            new.palette = self.palette.copy()
-        if im.mode == "P" and not new.palette:
-            from . import ImagePalette
-            new.palette = ImagePalette.ImagePalette()
+        if im.mode in ('P', 'PA'):
+            if self.palette:
+                new.palette = self.palette.copy()
+            else:
+                from . import ImagePalette
+                new.palette = ImagePalette.ImagePalette()
         new.info = self.info.copy()
         return new
 
