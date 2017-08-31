@@ -553,11 +553,14 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
     Imaging imTemp = NULL;
     Imaging imOut = NULL;
 
-    int i;
+    int i, need_horizontal, need_vertical;
     int ybox_first, ybox_last;
     int ksize_horiz, ksize_vert;
     int *bounds_horiz, *bounds_vert;
     double *kk_horiz, *kk_vert;
+
+    need_horizontal = xsize != imIn->xsize || box[0] || box[2] != xsize;
+    need_vertical = ysize != imIn->ysize || box[1] || box[3] != ysize;
 
     ksize_horiz = precompute_coeffs(imIn->xsize, box[0], box[2], xsize,
                                     filterp, &bounds_horiz, &kk_horiz);
@@ -579,8 +582,8 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
     ybox_last = bounds_vert[ysize*2 - 2] + bounds_vert[ysize*2 - 1];
 
 
-    /* two-pass resize, first pass */
-    if (box[0] || box[2] != xsize) {
+    /* two-pass resize, horizontal pass */
+    if (need_horizontal) {
         // Shift bounds for vertical pass
         for (i = 0; i < ysize; i++) {
             bounds_vert[i * 2] -= ybox_first;
@@ -605,8 +608,8 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
         free(kk_horiz);
     }
 
-    /* second pass */
-    if (box[1] || box[3] != ysize) {
+    /* vertical pass */
+    if (need_vertical) {
         imOut = ImagingNewDirty(imIn->mode, imIn->xsize, ysize);
         if (imOut) {
             /* imIn can be the original image or horizontally resampled one */
