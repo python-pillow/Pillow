@@ -1530,8 +1530,8 @@ _resize(ImagingObject* self, PyObject* args)
     }
 
     // If box's coordinates are int and box size matches requested size
-    if (box[0] - (int) box[0] == 0 && box[1] - (int) box[1] == 0
-            && box[2] - box[0] == xsize && box[3] - box[1] == ysize) {
+    if (box[0] - (int) box[0] == 0 && box[2] - box[0] == xsize
+            && box[1] - (int) box[1] == 0 && box[3] - box[1] == ysize) {
         imOut = ImagingCrop(imIn, box[0], box[1], box[2], box[3]);
     }
     else if (filter == IMAGING_TRANSFORM_NEAREST) {

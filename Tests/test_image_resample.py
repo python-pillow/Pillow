@@ -344,6 +344,7 @@ class CoreResamplePassesTest(PillowTestCase):
             cropped = im.crop(box).resize(im.size, Image.BILINEAR)
         self.assert_image_similar(with_box, cropped, 0.1)
 
+
 class CoreResampleCoefficientsTest(PillowTestCase):
     def test_reduce(self):
         test_color = 254
@@ -457,6 +458,86 @@ class CoreResampleBoxTest(PillowTestCase):
                 with_box = im.resize((32, 32), resample, box)
                 cropped = im.crop(box).resize((32, 32), resample)
                 self.assert_image_similar(cropped, with_box, 0.4)
+
+    def test_passthrough(self):
+        "When no resize is required"
+        im = hopper()
+
+        for size, box in [
+            ((40, 50), (0, 0, 40, 50)),
+            ((40, 50), (0, 10, 40, 60)),
+            ((40, 50), (10, 0, 50, 50)),
+            ((40, 50), (10, 20, 50, 70)),
+        ]:
+            try:
+                res = im.resize(size, Image.LANCZOS, box)
+                self.assertEqual(res.size, size)
+                self.assert_image_equal(res, im.crop(box))
+            except AssertionError:
+                print('>>>', size, box)
+                raise
+
+    def test_no_passthrough(self):
+        "When resize is required"
+        im = hopper()
+
+        for size, box in [
+            ((40, 50), (0.4, 0.4, 40.4, 50.4)),
+            ((40, 50), (0.4, 10.4, 40.4, 60.4)),
+            ((40, 50), (10.4, 0.4, 50.4, 50.4)),
+            ((40, 50), (10.4, 20.4, 50.4, 70.4)),
+        ]:
+            try:
+                res = im.resize(size, Image.LANCZOS, box)
+                self.assertEqual(res.size, size)
+                with self.assertRaisesRegexp(AssertionError, "difference \d"):
+                    # check that the difference at least that much
+                    self.assert_image_similar(res, im.crop(box), 20)
+            except AssertionError:
+                print('>>>', size, box)
+                raise
+
+    def test_skip_horizontal(self):
+        "Can skip resize in one dimension"
+        im = hopper()
+
+        for flt in [Image.NEAREST, Image.BICUBIC]:
+            for size, box in [
+                ((40, 50), (0, 0, 40, 90)),
+                ((40, 50), (0, 20, 40, 90)),
+                ((40, 50), (10, 0, 50, 90)),
+                ((40, 50), (10, 20, 50, 90)),
+            ]:
+                try:
+                    res = im.resize(size, flt, box)
+                    self.assertEqual(res.size, size)
+                    # Borders should be slightly different
+                    self.assert_image_similar(
+                        res, im.crop(box).resize(size, flt), 0.4)
+                except AssertionError:
+                    print('>>>', size, box, flt)
+                    raise
+
+    def test_skip_vertical(self):
+        "Can skip resize in one dimension"
+        im = hopper()
+
+        for flt in [Image.NEAREST, Image.BICUBIC]:
+            for size, box in [
+                ((40, 50), (0, 0, 90, 50)),
+                ((40, 50), (20, 0, 90, 50)),
+                ((40, 50), (0, 10, 90, 60)),
+                ((40, 50), (20, 10, 90, 60)),
+            ]:
+                try:
+                    res = im.resize(size, flt, box)
+                    self.assertEqual(res.size, size)
+                    # Borders should be slightly different
+                    self.assert_image_similar(
+                        res, im.crop(box).resize(size, flt), 0.4)
+                except AssertionError:
+                    print('>>>', size, box, flt)
+                    raise
 
 
 if __name__ == '__main__':
