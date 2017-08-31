@@ -466,13 +466,9 @@ extern int ImagingZipEncodeCleanup(ImagingCodecState state);
 typedef void (*ImagingShuffler)(UINT8* out, const UINT8* in, int pixels);
 
 /* Public shufflers */
-extern void ImagingPackRGB(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingPackBGR(UINT8* out, const UINT8* in, int pixels);
-extern void ImagingUnpackRGB(UINT8* out, const UINT8* in, int pixels);
-extern void ImagingUnpackBGR(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingUnpackYCC(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingUnpackYCCA(UINT8* out, const UINT8* in, int pixels);
-extern void ImagingUnpackYCbCr(UINT8* out, const UINT8* in, int pixels);
 
 extern void ImagingConvertRGB2YCbCr(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingConvertYCbCr2RGB(UINT8* out, const UINT8* in, int pixels);
@@ -513,6 +509,10 @@ extern Py_ssize_t _imaging_tell_pyFd(PyObject *fd);
 #define	IMAGING_CODEC_UNKNOWN	-3
 #define	IMAGING_CODEC_CONFIG	-8
 #define	IMAGING_CODEC_MEMORY	-9
+
+
+
+#include "ImagingUtils.h"
 
 #if defined(__cplusplus)
 }

@@ -5,12 +5,6 @@
 
 #define ROUND_UP(f) ((int) ((f) >= 0.0 ? (f) + 0.5F : (f) - 0.5F))
 
-#ifdef WORDS_BIGENDIAN
-    #define MAKE_UINT32(u0, u1, u2, u3) (u3 | (u2<<8) | (u1<<16) | (u0<<24))
-#else
-    #define MAKE_UINT32(u0, u1, u2, u3) (u0 | (u1<<8) | (u2<<16) | (u3<<24))
-#endif
-
 
 struct filter {
     double (*filter)(double x);
