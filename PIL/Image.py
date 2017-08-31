@@ -54,6 +54,7 @@ class DecompressionBombWarning(RuntimeWarning):
 class _imaging_not_installed(object):
     # module placeholder
     def __getattr__(self, id):
+        # type: (str) -> Any
         raise ImportError("The _imaging C module is not installed")
 
 
