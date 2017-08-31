@@ -554,7 +554,7 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
     Imaging imOut = NULL;
 
     int i;
-    int yroi_min, yroi_max;
+    int ybox_first, ybox_last;
     int ksize_horiz, ksize_vert;
     int *bounds_horiz, *bounds_vert;
     double *kk_horiz, *kk_vert;
@@ -574,21 +574,21 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
     }
 
     // First used row in the source image
-    yroi_min = bounds_vert[0];
+    ybox_first = bounds_vert[0];
     // Last used row in the source image
-    yroi_max = bounds_vert[ysize*2 - 2] + bounds_vert[ysize*2 - 1];
+    ybox_last = bounds_vert[ysize*2 - 2] + bounds_vert[ysize*2 - 1];
 
 
     /* two-pass resize, first pass */
     if (box[0] || box[2] != xsize) {
         // Shift bounds for vertical pass
         for (i = 0; i < ysize; i++) {
-            bounds_vert[i * 2] -= yroi_min;
+            bounds_vert[i * 2] -= ybox_first;
         }
 
-        imTemp = ImagingNewDirty(imIn->mode, xsize, yroi_max - yroi_min);
+        imTemp = ImagingNewDirty(imIn->mode, xsize, ybox_last - ybox_first);
         if (imTemp) {
-            ResampleHorizontal(imTemp, imIn, yroi_min,
+            ResampleHorizontal(imTemp, imIn, ybox_first,
                                ksize_horiz, bounds_horiz, kk_horiz);
         }
         free(bounds_horiz);
