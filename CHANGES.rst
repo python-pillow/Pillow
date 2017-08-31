@@ -4,6 +4,15 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Code tweaks to ease type annotations #2687
+  [neiljp]
+
+- Fixed incorrect use of 's#' to byteslike object #2691
+  [wiredfool]
+
+- Fix JPEG subsampling labels for subsampling=2  #2698
+  [homm]
+
 - Region of interest (box) for resampling #2254
   [homm]
 
