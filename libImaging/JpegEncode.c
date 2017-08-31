@@ -135,6 +135,10 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         case 32:
             context->cinfo.input_components = 4;
             context->cinfo.in_color_space = JCS_CMYK;
+        #ifdef JCS_EXTENSIONS
+            if (strcmp(context->rawmode, "RGBX") == 0)
+                context->cinfo.in_color_space = JCS_EXT_RGBX;
+        #endif
             break;
         default:
             state->errcode = IMAGING_CODEC_CONFIG;
