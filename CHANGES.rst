@@ -4,6 +4,15 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Use RGBX rawmode for RGB JPEG images where possible #1989 
+  [homm]
+
+- Remove palettes from non-palette modes in _new #2702
+  [wiredfool]
+
+- Delete transparency info when convert'ing RGB/L to RGBA #2633
+  [olt]
+
 - Code tweaks to ease type annotations #2687
   [neiljp]
 
