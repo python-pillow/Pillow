@@ -41,10 +41,6 @@
 #define CLIP(v) ((v) <= 0 ? 0 : (v) >= 255 ? 255 : (v))
 #define CLIP16(v) ((v) <= -32768 ? -32768 : (v) >= 32767 ? 32767 : (v))
 
-/* like (a * b + 127) / 255), but much faster on most platforms */
-#define MULDIV255(a, b, tmp)\
-        (tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
-
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
 #define L(rgb)\
     ((INT32) (rgb)[0]*299 + (INT32) (rgb)[1]*587 + (INT32) (rgb)[2]*114)
@@ -536,12 +532,15 @@ rgb2cmyk(UINT8* out, const UINT8* in, int xsize)
 static void
 cmyk2rgb(UINT8* out, const UINT8* in, int xsize)
 {
-    int x;
-    for (x = 0; x < xsize; x++, in += 4) {
-        *out++ = CLIP(255 - (in[0] + in[3]));
-        *out++ = CLIP(255 - (in[1] + in[3]));
-        *out++ = CLIP(255 - (in[2] + in[3]));
-        *out++ = 255;
+    int x, nk, tmp;
+    for (x = 0; x < xsize; x++) {
+        nk = 255 - in[3];
+        out[0] = CLIP(nk - MULDIV255(in[0], nk, tmp));
+        out[1] = CLIP(nk - MULDIV255(in[1], nk, tmp));
+        out[2] = CLIP(nk - MULDIV255(in[2], nk, tmp));
+        out[3] = 255;
+        out += 4;
+        in += 4;
     }
 }
 

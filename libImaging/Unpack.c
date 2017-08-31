@@ -185,6 +185,19 @@ unpack1IR(UINT8* out, const UINT8* in, int pixels)
     }
 }
 
+static void
+unpack18(UINT8* out, const UINT8* in, int pixels)
+{
+    /* Unpack a '|b1' image, which is a numpy boolean. 
+       1 == true, 0==false, in bytes */
+
+    int i;
+    for (i = 0; i < pixels; i++) {
+        out[i] = in[i] > 0 ? 255 : 0;
+    }
+}
+
+
 
 /* Unpack to "L" image */
 
@@ -313,26 +326,25 @@ unpackL4IR(UINT8* out, const UINT8* in, int pixels)
 }
 
 static void
-unpackLA(UINT8* out, const UINT8* in, int pixels)
+unpackLA(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* LA, pixel interleaved */
     for (i = 0; i < pixels; i++) {
-        out[R] = out[G] = out[B] = in[0];
-        out[A] = in[1];
-        in += 2; out += 4;
+        out[i] = MAKE_UINT32(in[0], in[0], in[0], in[1]);
+        in += 2;
     }
 }
 
 static void
-unpackLAL(UINT8* out, const UINT8* in, int pixels)
+unpackLAL(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* LA, line interleaved */
     for (i = 0; i < pixels; i++) {
-        out[R] = out[G] = out[B] = in[i];
-        out[A] = in[i+pixels];
-        out += 4;
+        out[i] = MAKE_UINT32(in[i], in[i], in[i], in[i+pixels]);
     }
 }
 
@@ -463,75 +475,82 @@ unpackP4L(UINT8* out, const UINT8* in, int pixels)
     }
 }
 
+
 /* Unpack to "RGB" image */
 
 void
-ImagingUnpackRGB(UINT8* out, const UINT8* in, int pixels)
+ImagingUnpackRGB(UINT8* _out, const UINT8* in, int pixels)
 {
-    int i;
+    int i = 0;
+    UINT32* out = (UINT32*) _out;
     /* RGB triplets */
-    for (i = 0; i < pixels; i++) {
-        out[R] = in[0];
-        out[G] = in[1];
-        out[B] = in[2];
-        out[A] = 255;
-        out += 4; in += 3;
+    for (; i < pixels-1; i++) {
+        out[i] = MASK_UINT32_CHANNEL_3 | *(UINT32*)&in[0];
+        in += 3;
+    }
+    for (; i < pixels; i++) {
+        out[i] = MAKE_UINT32(in[0], in[1], in[2], 255);
+        in += 3;
     }
 }
 
 void
-unpackRGB16B(UINT8* out, const UINT8* in, int pixels)
+unpackRGB16L(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
+    /* 16-bit RGB triplets, little-endian order */
+    for (i = 0; i < pixels; i++) {
+        out[i] = MAKE_UINT32(in[1], in[3], in[5], 255);
+        in += 6;
+    }
+}
+
+void
+unpackRGB16B(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
     /* 16-bit RGB triplets, big-endian order */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[0];
-        out[G] = in[2];
-        out[B] = in[4];
-        out[A] = 255;
-        out += 4; in += 6;
+        out[i] = MAKE_UINT32(in[0], in[2], in[4], 255);
+        in += 6;
     }
 }
 
 static void
-unpackRGBL(UINT8* out, const UINT8* in, int pixels)
+unpackRGBL(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* RGB, line interleaved */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[i];
-        out[G] = in[i+pixels];
-        out[B] = in[i+pixels+pixels];
-        out[A] = 255;
-        out += 4;
+        out[i] = MAKE_UINT32(in[i], in[i+pixels], in[i+pixels+pixels], 255);
     }
 }
 
 static void
-unpackRGBR(UINT8* out, const UINT8* in, int pixels)
+unpackRGBR(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* RGB, bit reversed */
     for (i = 0; i < pixels; i++) {
-        out[R] = BITFLIP[in[0]];
-        out[G] = BITFLIP[in[1]];
-        out[B] = BITFLIP[in[2]];
-        out[A] = 255;
-        out += 4; in += 3;
+        out[i] = MAKE_UINT32(BITFLIP[in[0]], BITFLIP[in[1]],
+                             BITFLIP[in[2]], 255);
+        in += 3;
     }
 }
 
 void
-ImagingUnpackBGR(UINT8* out, const UINT8* in, int pixels)
+ImagingUnpackBGR(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* RGB, reversed bytes */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[2];
-        out[G] = in[1];
-        out[B] = in[0];
-        out[A] = 255;
-        out += 4; in += 3;
+        out[i] = MAKE_UINT32(in[2], in[1], in[0], 255);
+        in += 3;
     }
 }
 
@@ -656,118 +675,148 @@ ImagingUnpackRGBA4B(UINT8* out, const UINT8* in, int pixels)
 }
 
 static void
-ImagingUnpackBGRX(UINT8* out, const UINT8* in, int pixels)
+ImagingUnpackBGRX(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* RGB, reversed bytes with padding */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[2];
-        out[G] = in[1];
-        out[B] = in[0];
-        out[A] = 255;
-        out += 4; in += 4;
+        out[i] = MAKE_UINT32(in[2], in[1], in[0], 255);
+        in += 4;
     }
 }
 
 static void
-ImagingUnpackXRGB(UINT8* out, const UINT8* in, int pixels)
+ImagingUnpackXRGB(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* RGB, leading pad */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[1];
-        out[G] = in[2];
-        out[B] = in[3];
-        out[A] = 255;
-        out += 4; in += 4;
+        out[i] = MAKE_UINT32(in[1], in[2], in[3], 255);
+        in += 4;
     }
 }
 
 static void
-ImagingUnpackXBGR(UINT8* out, const UINT8* in, int pixels)
+ImagingUnpackXBGR(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* RGB, reversed bytes, leading pad */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[3];
-        out[G] = in[2];
-        out[B] = in[1];
-        out[A] = 255;
-        out += 4; in += 4;
+        out[i] = MAKE_UINT32(in[3], in[2], in[1], 255);
+        in += 4;
     }
 }
 
 /* Unpack to "RGBA" image */
 
 static void
-unpackRGBALA(UINT8* out, const UINT8* in, int pixels)
+unpackRGBALA(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* greyscale with alpha */
     for (i = 0; i < pixels; i++) {
-        out[R] = out[G] = out[B] = in[0];
-        out[A] = in[1];
-        out += 4; in += 2;
+        out[i] = MAKE_UINT32(in[0], in[0], in[0], in[1]);
+        in += 2;
     }
 }
 
 static void
-unpackRGBALA16B(UINT8* out, const UINT8* in, int pixels)
+unpackRGBALA16B(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* 16-bit greyscale with alpha, big-endian */
     for (i = 0; i < pixels; i++) {
-        out[R] = out[G] = out[B] = in[0];
-        out[A] = in[2];
-        out += 4; in += 4;
+        out[i] = MAKE_UINT32(in[0], in[0], in[0], in[2]);
+        in += 4;
     }
 }
 
 static void
-unpackRGBa(UINT8* out, const UINT8* in, int pixels)
+unpackRGBa16L(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
+    /* premultiplied 16-bit RGBA, little-endian */
+    for (i = 0; i < pixels; i++) {
+        int a = in[7];
+        if ( ! a) {
+            out[i] = 0;
+        } else if (a == 255) {
+            out[i] = MAKE_UINT32(in[1], in[3], in[5], a);
+        } else {
+            out[i] = MAKE_UINT32(CLIP(in[1] * 255 / a),
+                                 CLIP(in[3] * 255 / a),
+                                 CLIP(in[5] * 255 / a), a);
+        }
+        in += 8;
+    }
+}
+
+static void
+unpackRGBa16B(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
+    /* premultiplied 16-bit RGBA, big-endian */
+    for (i = 0; i < pixels; i++) {
+        int a = in[6];
+        if ( ! a) {
+            out[i] = 0;
+        } else if (a == 255) {
+            out[i] = MAKE_UINT32(in[0], in[2], in[4], a);
+        } else {
+            out[i] = MAKE_UINT32(CLIP(in[0] * 255 / a),
+                                 CLIP(in[2] * 255 / a),
+                                 CLIP(in[4] * 255 / a), a);
+        }
+        in += 8;
+    }
+}
+
+static void
+unpackRGBa(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
     /* premultiplied RGBA */
     for (i = 0; i < pixels; i++) {
         int a = in[3];
-        if (!a)
-            out[R] = out[G] = out[B] = out[A] = 0;
-        else if (a == 255) {
-            out[R] = in[0];
-            out[G] = in[1];
-            out[B] = in[2];
-            out[A] = a;
+        if ( ! a) {
+            out[i] = 0;
+        } else if (a == 255) {
+            out[i] = MAKE_UINT32(in[0], in[1], in[2], a);
         } else {
-            out[R] = CLIP(in[0] * 255 / a);
-            out[G] = CLIP(in[1] * 255 / a);
-            out[B] = CLIP(in[2] * 255 / a);
-            out[A] = a;
+            out[i] = MAKE_UINT32(CLIP(in[0] * 255 / a),
+                                 CLIP(in[1] * 255 / a),
+                                 CLIP(in[2] * 255 / a), a);
         }
-        out += 4; in += 4;
+        in += 4;
     }
 }
 
 static void
-unpackBGRa(UINT8* out, const UINT8* in, int pixels)
+unpackBGRa(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* premultiplied BGRA */
     for (i = 0; i < pixels; i++) {
         int a = in[3];
-        if (!a)
-            out[R] = out[G] = out[B] = out[A] = 0;
-        else if (a == 255) {
-            out[R] = in[2];
-            out[G] = in[1];
-            out[B] = in[0];
-            out[A] = a;
+        if ( ! a) {
+            out[i] = 0;
+        } else if (a == 255) {
+            out[i] = MAKE_UINT32(in[2], in[1], in[0], a);
         } else {
-            out[R] = CLIP(in[2] * 255 / a);
-            out[G] = CLIP(in[1] * 255 / a);
-            out[B] = CLIP(in[0] * 255 / a);
-            out[A] = a;
+            out[i] = MAKE_UINT32(CLIP(in[2] * 255 / a),
+                                 CLIP(in[1] * 255 / a),
+                                 CLIP(in[0] * 255 / a), a);
         }
-        out += 4; in += 4;
+        in += 4;
     }
 }
 
@@ -786,73 +835,74 @@ unpackRGBAI(UINT8* out, const UINT8* in, int pixels)
 }
 
 static void
-unpackRGBAL(UINT8* out, const UINT8* in, int pixels)
+unpackRGBAL(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-
+    UINT32* out = (UINT32*) _out;
     /* RGBA, line interleaved */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[i];
-        out[G] = in[i+pixels];
-        out[B] = in[i+pixels+pixels];
-        out[A] = in[i+pixels+pixels+pixels];
-        out += 4;
+        out[i] = MAKE_UINT32(in[i], in[i+pixels], in[i+pixels+pixels],
+                             in[i+pixels+pixels+pixels]);
     }
 }
 
 void
-unpackRGBA16B(UINT8* out, const UINT8* in, int pixels)
+unpackRGBA16L(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
+    /* 16-bit RGBA, little-endian order */
+    for (i = 0; i < pixels; i++) {
+        out[i] = MAKE_UINT32(in[1], in[3], in[5], in[7]);
+        in += 8;
+    }
+}
+
+void
+unpackRGBA16B(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
     /* 16-bit RGBA, big-endian order */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[0];
-        out[G] = in[2];
-        out[B] = in[4];
-        out[A] = in[6];
-        out += 4; in += 8;
+        out[i] = MAKE_UINT32(in[0], in[2], in[4], in[6]);
+        in += 8;
     }
 }
 
 static void
-unpackARGB(UINT8* out, const UINT8* in, int pixels)
+unpackARGB(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* RGBA, leading pad */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[1];
-        out[G] = in[2];
-        out[B] = in[3];
-        out[A] = in[0];
-        out += 4; in += 4;
+        out[i] = MAKE_UINT32(in[1], in[2], in[3], in[0]);
+        in += 4;
     }
 }
 
 static void
-unpackABGR(UINT8* out, const UINT8* in, int pixels)
+unpackABGR(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* RGBA, reversed bytes */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[3];
-        out[G] = in[2];
-        out[B] = in[1];
-        out[A] = in[0];
-        out += 4; in += 4;
+        out[i] = MAKE_UINT32(in[3], in[2], in[1], in[0]);
+        in += 4;
     }
 }
 
 static void
-unpackBGRA(UINT8* out, const UINT8* in, int pixels)
+unpackBGRA(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* RGBA, reversed bytes */
     for (i = 0; i < pixels; i++) {
-        out[R] = in[2];
-        out[G] = in[1];
-        out[B] = in[0];
-        out[A] = in[3];
-        out += 4; in += 4;
+        out[i] = MAKE_UINT32(in[2], in[1], in[0], in[3]);
+        in += 4;
     }
 }
 
@@ -860,16 +910,14 @@ unpackBGRA(UINT8* out, const UINT8* in, int pixels)
 /* Unpack to "CMYK" image */
 
 static void
-unpackCMYKI(UINT8* out, const UINT8* in, int pixels)
+unpackCMYKI(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+    UINT32* out = (UINT32*) _out;
     /* CMYK, inverted bytes (Photoshop 2.5) */
     for (i = 0; i < pixels; i++) {
-        out[C] = ~in[0];
-        out[M] = ~in[1];
-        out[Y] = ~in[2];
-        out[K] = ~in[3];
-        out += 4; in += 4;
+        out[i] = ~MAKE_UINT32(in[0], in[1], in[2], in[3]);
+        in += 4;
     }
 }
 
@@ -1163,11 +1211,14 @@ static struct {
        endian byte order (default is little endian); "L" line
        interleave, "S" signed, "F" floating point */
 
+    /* exception: rawmodes "I" and "F" are always native endian byte order */
+
     /* bilevel */
     {"1",       "1",            1,      unpack1},
     {"1",       "1;I",          1,      unpack1I},
     {"1",       "1;R",          1,      unpack1R},
     {"1",       "1;IR",         1,      unpack1IR},
+    {"1",       "1;8",          1,      unpack18},
 
     /* greyscale */
     {"L",       "L;2",          2,      unpackL2},
@@ -1207,6 +1258,7 @@ static struct {
     {"RGB",     "RGB",          24,     ImagingUnpackRGB},
     {"RGB",     "RGB;L",        24,     unpackRGBL},
     {"RGB",     "RGB;R",        24,     unpackRGBR},
+    {"RGB",     "RGB;16L",      48,     unpackRGB16L},
     {"RGB",     "RGB;16B",      48,     unpackRGB16B},
     {"RGB",     "BGR",          24,     ImagingUnpackBGR},
     {"RGB",     "RGB;15",       16,     ImagingUnpackRGB15},
@@ -1230,12 +1282,15 @@ static struct {
     {"RGBA",    "LA;16B",       32,     unpackRGBALA16B},
     {"RGBA",    "RGBA",         32,     copy4},
     {"RGBA",    "RGBa",         32,     unpackRGBa},
+    {"RGBA",    "RGBa;16L",     64,     unpackRGBa16L},
+    {"RGBA",    "RGBa;16B",     64,     unpackRGBa16B},
     {"RGBA",    "BGRa",         32,     unpackBGRa},
     {"RGBA",    "RGBA;I",       32,     unpackRGBAI},
     {"RGBA",    "RGBA;L",       32,     unpackRGBAL},
     {"RGBA",    "RGBA;15",      16,     ImagingUnpackRGBA15},
     {"RGBA",    "BGRA;15",      16,     ImagingUnpackBGRA15},
     {"RGBA",    "RGBA;4B",      16,     ImagingUnpackRGBA4B},
+    {"RGBA",    "RGBA;16L",     64,     unpackRGBA16L},
     {"RGBA",    "RGBA;16B",     64,     unpackRGBA16B},
     {"RGBA",    "BGRA",         32,     unpackBGRA},
     {"RGBA",    "ARGB",         32,     unpackARGB},
@@ -1263,6 +1318,8 @@ static struct {
     {"RGBX",    "BGR;5",        16,     ImagingUnpackBGR15}, /* compat */
     {"RGBX",    "RGBX",         32,     copy4},
     {"RGBX",    "RGBX;L",       32,     unpackRGBAL},
+    {"RGBX",    "RGBX;16L",     64,     unpackRGBA16L},
+    {"RGBX",    "RGBX;16B",     64,     unpackRGBA16B},
     {"RGBX",    "BGRX",         32,     ImagingUnpackBGRX},
     {"RGBX",    "XRGB",         24,     ImagingUnpackXRGB},
     {"RGBX",    "XBGR",         32,     ImagingUnpackXBGR},

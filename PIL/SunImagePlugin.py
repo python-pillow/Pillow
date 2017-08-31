@@ -105,13 +105,13 @@ class SunImageFile(ImageFile.ImageFile):
         # file type: Type is the version (or flavor) of the bitmap
         # file. The following values are typically found in the Type
         # field:
-        # 0000h	Old
-        # 0001h	Standard
-        # 0002h	Byte-encoded
-        # 0003h	RGB format
-        # 0004h	TIFF format
-        # 0005h	IFF format
-        # FFFFh	Experimental
+        # 0000h Old
+        # 0001h Standard
+        # 0002h Byte-encoded
+        # 0003h RGB format
+        # 0004h TIFF format
+        # 0005h IFF format
+        # FFFFh Experimental
 
         # Old and standard are the same, except for the length tag.
         # byte-encoded is run-length-encoded

@@ -42,13 +42,6 @@
 #define INK8(ink) (*(UINT8*)ink)
 #define INK32(ink) (*(INT32*)ink)
 
-/* like (a * b + 127) / 255), but much faster on most platforms */
-#define MULDIV255(a, b, tmp)\
-        (tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
-
-#define BLEND(mask, in1, in2, tmp1, tmp2)\
-        (MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
-
 /*
  * Rounds around zero (up=away from zero, down=torwards zero)
  * This guarantees that ROUND_UP|DOWN(f) == -ROUND_UP|DOWN(-f)
@@ -88,14 +81,14 @@ point32(Imaging im, int x, int y, int ink)
 static inline void
 point32rgba(Imaging im, int x, int y, int ink)
 {
-    unsigned int tmp1, tmp2;
+    unsigned int tmp1;
 
     if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
         UINT8* out = (UINT8*) im->image[y]+x*4;
         UINT8* in = (UINT8*) &ink;
-        out[0] = BLEND(in[3], out[0], in[0], tmp1, tmp2);
-        out[1] = BLEND(in[3], out[1], in[1], tmp1, tmp2);
-        out[2] = BLEND(in[3], out[2], in[2], tmp1, tmp2);
+        out[0] = BLEND(in[3], out[0], in[0], tmp1);
+        out[1] = BLEND(in[3], out[1], in[1], tmp1);
+        out[2] = BLEND(in[3], out[2], in[2], tmp1);
     }
 }
 
@@ -147,7 +140,7 @@ static inline void
 hline32rgba(Imaging im, int x0, int y0, int x1, int ink)
 {
     int tmp;
-    unsigned int tmp1, tmp2;
+    unsigned int tmp1;
 
     if (y0 >= 0 && y0 < im->ysize) {
         if (x0 > x1)
@@ -164,9 +157,9 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink)
             UINT8* out = (UINT8*) im->image[y0]+x0*4;
             UINT8* in = (UINT8*) &ink;
             while (x0 <= x1) {
-                out[0] = BLEND(in[3], out[0], in[0], tmp1, tmp2);
-                out[1] = BLEND(in[3], out[1], in[1], tmp1, tmp2);
-                out[2] = BLEND(in[3], out[2], in[2], tmp1, tmp2);
+                out[0] = BLEND(in[3], out[0], in[0], tmp1);
+                out[1] = BLEND(in[3], out[1], in[1], tmp1);
+                out[2] = BLEND(in[3], out[2], in[2], tmp1);
                 x0++; out += 4;
             }
         }

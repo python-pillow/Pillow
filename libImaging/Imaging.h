@@ -266,6 +266,7 @@ extern Imaging ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius,
     int passes);
 extern Imaging ImagingGetBand(Imaging im, int band);
+extern Imaging ImagingMerge(const char* mode, Imaging bands[4]);
 extern int ImagingSplit(Imaging im, Imaging bands[4]);
 extern int ImagingGetBBox(Imaging im, int bbox[4]);
 typedef struct { int x, y; INT32 count; INT32 pixel; } ImagingColorItem;
@@ -290,7 +291,7 @@ extern Imaging ImagingRankFilter(Imaging im, int size, int rank);
 extern Imaging ImagingRotate90(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
-extern Imaging ImagingResample(Imaging imIn, int xsize, int ysize, int filter);
+extern Imaging ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]);
 extern Imaging ImagingTranspose(Imaging imOut, Imaging imIn);
 extern Imaging ImagingTransform(
     Imaging imOut, Imaging imIn, int method, int x0, int y0, int x1, int y1,
@@ -406,6 +407,7 @@ extern int ImagingHexDecode(Imaging im, ImagingCodecState state,
 extern int ImagingJpegDecode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);
 extern int ImagingJpegDecodeCleanup(ImagingCodecState state);
+extern int ImagingJpegUseJCSExtensions(void);
 
 extern int ImagingJpegEncode(Imaging im, ImagingCodecState state,
 			     UINT8* buffer, int bytes);
@@ -464,13 +466,9 @@ extern int ImagingZipEncodeCleanup(ImagingCodecState state);
 typedef void (*ImagingShuffler)(UINT8* out, const UINT8* in, int pixels);
 
 /* Public shufflers */
-extern void ImagingPackRGB(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingPackBGR(UINT8* out, const UINT8* in, int pixels);
-extern void ImagingUnpackRGB(UINT8* out, const UINT8* in, int pixels);
-extern void ImagingUnpackBGR(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingUnpackYCC(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingUnpackYCCA(UINT8* out, const UINT8* in, int pixels);
-extern void ImagingUnpackYCbCr(UINT8* out, const UINT8* in, int pixels);
 
 extern void ImagingConvertRGB2YCbCr(UINT8* out, const UINT8* in, int pixels);
 extern void ImagingConvertYCbCr2RGB(UINT8* out, const UINT8* in, int pixels);
@@ -511,6 +509,10 @@ extern Py_ssize_t _imaging_tell_pyFd(PyObject *fd);
 #define	IMAGING_CODEC_UNKNOWN	-3
 #define	IMAGING_CODEC_CONFIG	-8
 #define	IMAGING_CODEC_MEMORY	-9
+
+
+
+#include "ImagingUtils.h"
 
 #if defined(__cplusplus)
 }

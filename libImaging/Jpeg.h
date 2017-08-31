@@ -88,6 +88,9 @@ typedef struct {
     /* Chroma Subsampling (-1=default, 0=none, 1=medium, 2=high) */
     int subsampling;
 
+    /* Converter input mode (input to the shuffler) */
+    char rawmode[8+1];
+
     /* Custom quantization tables () */
     unsigned int *qtables;
 

@@ -446,6 +446,33 @@ class TestImage(PillowTestCase):
             self.assert_image_equal(im, target)
 
 
+    def test__new(self):
+        from PIL import ImagePalette
+        
+        im = hopper('RGB')
+        im_p = hopper('P')
+
+        blank_p = Image.new('P', (10,10))
+        blank_pa = Image.new('PA', (10,10))
+        blank_p.palette = None
+        blank_pa.palette = None
+        
+        def _make_new(base_image, im, palette_result=None):
+            new_im = base_image._new(im)
+            self.assertEqual(new_im.mode, im.mode)
+            self.assertEqual(new_im.size, im.size)
+            self.assertEqual(new_im.info, base_image.info)
+            if palette_result is not None:
+                self.assertEqual(new_im.palette.tobytes(), palette_result.tobytes())
+            else:
+                self.assertEqual(new_im.palette, None)
+            
+        _make_new(im, im_p, im_p.palette)
+        _make_new(im_p, im, None)
+        _make_new(im, blank_p, ImagePalette.ImagePalette())
+        _make_new(im, blank_pa, ImagePalette.ImagePalette())
+        
+
 class MockEncoder(object):
     pass
 

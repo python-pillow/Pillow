@@ -1,4 +1,7 @@
-from __future__ import print_function
+from __future__ import division, print_function
+
+from contextlib import contextmanager
+
 from helper import unittest, PillowTestCase, hopper
 from PIL import Image, ImageDraw
 
@@ -300,24 +303,46 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
 
 
 class CoreResamplePassesTest(PillowTestCase):
+    @contextmanager
+    def count(self, diff):
+        count = Image.core.getcount()
+        yield
+        self.assertEqual(Image.core.getcount() - count, diff)
+
     def test_horizontal(self):
         im = hopper('L')
-        count = Image.core.getcount()
-        im.resize((im.size[0] + 10, im.size[1]), Image.BILINEAR)
-        self.assertEqual(Image.core.getcount(), count + 1)
+        with self.count(1):
+            im.resize((im.size[0] - 10, im.size[1]), Image.BILINEAR)
 
     def test_vertical(self):
         im = hopper('L')
-        count = Image.core.getcount()
-        im.resize((im.size[0], im.size[1] + 10), Image.BILINEAR)
-        self.assertEqual(Image.core.getcount(), count + 1)
+        with self.count(1):
+            im.resize((im.size[0], im.size[1] - 10), Image.BILINEAR)
 
     def test_both(self):
         im = hopper('L')
-        count = Image.core.getcount()
-        im.resize((im.size[0] + 10, im.size[1] + 10), Image.BILINEAR)
-        self.assertEqual(Image.core.getcount(), count + 2)
+        with self.count(2):
+            im.resize((im.size[0] - 10, im.size[1] - 10), Image.BILINEAR)
 
+    def test_box_horizontal(self):
+        im = hopper('L')
+        box = (20, 0, im.size[0] - 20, im.size[1])
+        with self.count(1):
+            # the same size, but different box
+            with_box = im.resize(im.size, Image.BILINEAR, box)
+        with self.count(2):
+            cropped = im.crop(box).resize(im.size, Image.BILINEAR)
+        self.assert_image_similar(with_box, cropped, 0.1)
+
+    def test_box_vertical(self):
+        im = hopper('L')
+        box = (0, 20, im.size[0], im.size[1] - 20)
+        with self.count(1):
+            # the same size, but different box
+            with_box = im.resize(im.size, Image.BILINEAR, box)
+        with self.count(2):
+            cropped = im.crop(box).resize(im.size, Image.BILINEAR)
+        self.assert_image_similar(with_box, cropped, 0.1)
 
 class CoreResampleCoefficientsTest(PillowTestCase):
     def test_reduce(self):
@@ -345,6 +370,93 @@ class CoreResampleCoefficientsTest(PillowTestCase):
         self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000)  # second channel
         self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000)  # third channel
         self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000)  # fourth channel
+
+
+class CoreResampleBoxTest(PillowTestCase):
+    def test_wrong_arguments(self):
+        im = hopper()
+        for resample in (Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
+                Image.BICUBIC, Image.LANCZOS):
+            im.resize((32, 32), resample, (0, 0, im.width, im.height))
+            im.resize((32, 32), resample, (20, 20, im.width, im.height))
+            im.resize((32, 32), resample, (20, 20, 20, 100))
+            im.resize((32, 32), resample, (20, 20, 100, 20))
+
+            with self.assertRaisesRegexp(TypeError, "must be sequence of length 4"):
+                im.resize((32, 32), resample, (im.width, im.height))
+
+            with self.assertRaisesRegexp(ValueError, "can't be negative"):
+                im.resize((32, 32), resample, (-20, 20, 100, 100))
+            with self.assertRaisesRegexp(ValueError, "can't be negative"):
+                im.resize((32, 32), resample, (20, -20, 100, 100))
+
+            with self.assertRaisesRegexp(ValueError, "can't be empty"):
+                im.resize((32, 32), resample, (20.1, 20, 20, 100))
+            with self.assertRaisesRegexp(ValueError, "can't be empty"):
+                im.resize((32, 32), resample, (20, 20.1, 100, 20))
+            with self.assertRaisesRegexp(ValueError, "can't be empty"):
+                im.resize((32, 32), resample, (20.1, 20.1, 20, 20))
+
+            with self.assertRaisesRegexp(ValueError, "can't exceed"):
+                im.resize((32, 32), resample, (0, 0, im.width + 1, im.height))
+            with self.assertRaisesRegexp(ValueError, "can't exceed"):
+                im.resize((32, 32), resample, (0, 0, im.width, im.height + 1))
+
+    def resize_tiled(self, im, dst_size, xtiles, ytiles):
+        def split_range(size, tiles):
+            scale = size / tiles
+            for i in range(tiles):
+                yield (int(round(scale * i)), int(round(scale * (i + 1))))
+
+        tiled = Image.new(im.mode, dst_size)
+        scale = (im.size[0] / tiled.size[0], im.size[1] / tiled.size[1])
+
+        for y0, y1 in split_range(dst_size[1], ytiles):
+            for x0, x1 in split_range(dst_size[0], xtiles):
+                box = (x0 * scale[0], y0 * scale[1],
+                       x1 * scale[0], y1 * scale[1])
+                tile = im.resize((x1 - x0, y1 - y0), Image.BICUBIC, box)
+                tiled.paste(tile, (x0, y0))
+        return tiled
+
+    def test_tiles(self):
+        im = Image.open("Tests/images/flower.jpg")
+        assert im.size == (480, 360)
+        dst_size = (251, 188)
+        reference = im.resize(dst_size, Image.BICUBIC)
+
+        for tiles in [(1, 1), (3, 3), (9, 7), (100, 100)]:
+            tiled = self.resize_tiled(im, dst_size, *tiles)
+            self.assert_image_similar(reference, tiled, 0.01)
+
+    def test_subsample(self):
+        # This test shows advantages of the subpixel resizing
+        # after supersampling (e.g. during JPEG decoding).
+        im = Image.open("Tests/images/flower.jpg")
+        assert im.size == (480, 360)
+        dst_size = (48, 36)
+        # Reference is cropped image resized to destination
+        reference = im.crop((0, 0, 473, 353)).resize(dst_size, Image.BICUBIC)
+        # Image.BOX emulates supersampling (480 / 8 = 60, 360 / 8 = 45)
+        supersampled = im.resize((60, 45), Image.BOX)
+
+        with_box = supersampled.resize(dst_size, Image.BICUBIC,
+                                       (0, 0, 59.125, 44.125))
+        without_box = supersampled.resize(dst_size, Image.BICUBIC)
+
+        # error with box should be much smaller than without
+        self.assert_image_similar(reference, with_box, 6)
+        with self.assertRaisesRegexp(AssertionError, "difference 29\."):
+            self.assert_image_similar(reference, without_box, 5)
+
+    def test_formats(self):
+        for resample in [Image.NEAREST, Image.BILINEAR]:
+            for mode in ['RGB', 'L', 'RGBA', 'LA', 'I', '']:
+                im = hopper(mode)
+                box = (20, 20, im.size[0] - 20, im.size[1] - 20)
+                with_box = im.resize((32, 32), resample, box)
+                cropped = im.crop(box).resize((32, 32), resample)
+                self.assert_image_similar(cropped, with_box, 0.4)
 
 
 if __name__ == '__main__':

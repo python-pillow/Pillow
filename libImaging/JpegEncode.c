@@ -135,6 +135,10 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         case 32:
             context->cinfo.input_components = 4;
             context->cinfo.in_color_space = JCS_CMYK;
+        #ifdef JCS_EXTENSIONS
+            if (strcmp(context->rawmode, "RGBX") == 0)
+                context->cinfo.in_color_space = JCS_EXT_RGBX;
+        #endif
             break;
         default:
             state->errcode = IMAGING_CODEC_CONFIG;
@@ -194,7 +198,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		    context->cinfo.comp_info[2].v_samp_factor = 1;
 		    break;
 		}
-	    case 2:  /* 2x2, 1x1, 1x1 (4:1:1) : High */
+	    case 2:  /* 2x2, 1x1, 1x1 (4:2:0) : High */
 		{
 		    context->cinfo.comp_info[0].h_samp_factor = 2;
 		    context->cinfo.comp_info[0].v_samp_factor = 2;

@@ -72,9 +72,6 @@
 #define C64L C64N
 #endif
 
-/* like (a * b + 127) / 255), but much faster on most platforms */
-#define MULDIV255(a, b, tmp)\
-        (tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
 
 static void
 pack1(UINT8* out, const UINT8* in, int pixels)
@@ -227,13 +224,17 @@ packLAL(UINT8* out, const UINT8* in, int pixels)
 void
 ImagingPackRGB(UINT8* out, const UINT8* in, int pixels)
 {
-    int i;
+    int i = 0;
     /* RGB triplets */
-    for (i = 0; i < pixels; i++) {
-        out[0] = in[R];
-        out[1] = in[G];
-        out[2] = in[B];
-        out += 3; in += 4;
+    for (; i < pixels-1; i++) {
+        ((UINT32*)out)[0] = ((UINT32*)in)[i];
+        out += 3;
+    }
+    for (; i < pixels; i++) {
+        out[0] = in[i*4+R];
+        out[1] = in[i*4+G];
+        out[2] = in[i*4+B];
+        out += 3;
     }
 }
 
@@ -559,8 +560,8 @@ static struct {
     /* true colour w. padding */
     {"RGBX",    "RGBX",         32,     copy4},
     {"RGBX",    "RGBX;L",       32,     packRGBXL},
-    {"RGBX",    "RGB",          32,     ImagingPackRGB},
-    {"RGBX",    "BGR",          32,     ImagingPackBGR},
+    {"RGBX",    "RGB",          24,     ImagingPackRGB},
+    {"RGBX",    "BGR",          24,     ImagingPackBGR},
     {"RGBX",    "BGRX",         32,     ImagingPackBGRX},
     {"RGBX",    "XBGR",         32,     ImagingPackXBGR},
     {"RGBX",    "R",            8,      band0},
