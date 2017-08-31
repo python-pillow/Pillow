@@ -416,7 +416,6 @@ class TestImage(PillowTestCase):
         # Act / Assert
         self.assertRaises(ValueError,
                           Image.linear_gradient, wrong_mode)
-        return
 
     def test_linear_gradient(self):
 
@@ -442,7 +441,6 @@ class TestImage(PillowTestCase):
         # Act / Assert
         self.assertRaises(ValueError,
                           Image.radial_gradient, wrong_mode)
-        return
 
     def test_radial_gradient(self):
 
