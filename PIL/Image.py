@@ -884,8 +884,10 @@ class Image(object):
             if self.mode in ('L', 'RGB') and mode == 'RGBA':
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
-                return self._new(self.im.convert_transparent(
+                new_im = self._new(self.im.convert_transparent(
                     mode, self.info['transparency']))
+                del(new_im.info['transparency'])
+                return new_im
             elif self.mode in ('L', 'RGB', 'P') and mode in ('L', 'RGB', 'P'):
                 t = self.info['transparency']
                 if isinstance(t, bytes):

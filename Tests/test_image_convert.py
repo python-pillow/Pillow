@@ -122,6 +122,10 @@ class TestImageConvert(PillowTestCase):
         self.assertIn('transparency', p.info)
         p.save(f)
 
+        p = im.convert('RGBA')
+        self.assertNotIn('transparency', p.info)
+        p.save(f)
+
         p = self.assert_warning(
             UserWarning,
             lambda: im.convert('P', palette=Image.ADAPTIVE))
