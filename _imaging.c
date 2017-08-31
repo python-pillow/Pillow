@@ -1529,8 +1529,10 @@ _resize(ImagingObject* self, PyObject* args)
         return ImagingError_ValueError("box can't be empty");
     }
 
-    if (box[0] == 0 && box[1] == 0 && box[2] == xsize && box[3] == ysize) {
-        imOut = ImagingCopy(imIn);
+    // If box's coordinates are int and box size matches requested size
+    if (box[0] - (int) box[0] == 0 && box[1] - (int) box[1] == 0
+            && box[2] - box[0] == xsize && box[3] - box[1] == ysize) {
+        imOut = ImagingCrop(imIn, box[0], box[1], box[2], box[3]);
     }
     else if (filter == IMAGING_TRANSFORM_NEAREST) {
         double a[6];
