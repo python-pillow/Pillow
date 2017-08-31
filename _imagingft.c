@@ -585,7 +585,7 @@ font_render(FontObject* self, PyObject* args)
     glyph_info = NULL;
     count = text_layout(string, self, dir, features, &glyph_info, mask);
     if (count == 0) {
-        return NULL;
+        Py_RETURN_NONE;
     }
 
     im = (Imaging) id;
