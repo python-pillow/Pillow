@@ -460,7 +460,7 @@ class CoreResampleBoxTest(PillowTestCase):
                 self.assert_image_similar(cropped, with_box, 0.4)
 
     def test_passthrough(self):
-        "When no resize is required"
+        # When no resize is required
         im = hopper()
 
         for size, box in [
@@ -478,7 +478,7 @@ class CoreResampleBoxTest(PillowTestCase):
                 raise
 
     def test_no_passthrough(self):
-        "When resize is required"
+        # When resize is required
         im = hopper()
 
         for size, box in [
@@ -498,7 +498,7 @@ class CoreResampleBoxTest(PillowTestCase):
                 raise
 
     def test_skip_horizontal(self):
-        "Can skip resize in one dimension"
+        # Can skip resize for one dimension
         im = hopper()
 
         for flt in [Image.NEAREST, Image.BICUBIC]:
@@ -519,7 +519,7 @@ class CoreResampleBoxTest(PillowTestCase):
                     raise
 
     def test_skip_vertical(self):
-        "Can skip resize in one dimension"
+        # Can skip resize for one dimension
         im = hopper()
 
         for flt in [Image.NEAREST, Image.BICUBIC]:
