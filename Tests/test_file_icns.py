@@ -1,7 +1,8 @@
 from helper import unittest, PillowTestCase
 
-from PIL import Image
+from PIL import Image, IcnsImagePlugin
 
+import io
 import sys
 
 # sample icon file
@@ -81,6 +82,23 @@ class TestFileIcns(PillowTestCase):
             im2.load()
             self.assertEqual(im2.mode, 'RGBA')
             self.assertEqual(im2.size, (wr, hr))
+
+    def test_getimage(self):
+        with open(TEST_FILE, 'rb') as fp:
+            icns_file = IcnsImagePlugin.IcnsFile(fp)
+
+            im = icns_file.getimage()
+            self.assertEqual(im.mode, "RGBA")
+            self.assertEqual(im.size, (1024, 1024))
+
+            im = icns_file.getimage((512, 512))
+            self.assertEqual(im.mode, "RGBA")
+            self.assertEqual(im.size, (512, 512))
+
+    def test_not_an_icns_file(self):
+        with io.BytesIO(b'invalid\n') as fp:
+            self.assertRaises(SyntaxError,
+                lambda: IcnsImagePlugin.IcnsFile(fp))
 
 
 if __name__ == '__main__':

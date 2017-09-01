@@ -70,6 +70,9 @@ class TestImage(PillowTestCase):
             im = io.BytesIO(b'')
         self.assertRaises(IOError, lambda: Image.open(im))
 
+    def test_bad_mode(self):
+        self.assertRaises(ValueError, lambda: Image.open("filename", "bad mode"))
+
     @unittest.skipIf(sys.version_info < (3, 4),
                      "pathlib only available in Python 3.4 or later")
     def test_pathlib(self):
@@ -273,6 +276,20 @@ class TestImage(PillowTestCase):
                                 target.crop((32, 32, 96, 96)))
         self.assertEqual(source.size, (128, 128))
 
+        # errors
+        self.assertRaises(ValueError,
+            lambda: source.alpha_composite(over, "invalid source"))
+        self.assertRaises(ValueError,
+            lambda: source.alpha_composite(over, (0, 0), "invalid destination"))
+        self.assertRaises(ValueError,
+            lambda: source.alpha_composite(over, (0)))
+        self.assertRaises(ValueError,
+            lambda: source.alpha_composite(over, (0, 0), (0)))
+        self.assertRaises(ValueError,
+            lambda: source.alpha_composite(over, (0, -1)))
+        self.assertRaises(ValueError,
+            lambda: source.alpha_composite(over, (0, 0), (0, -1)))
+
     def test_registered_extensions_uninitialized(self):
         # Arrange
         Image._initialized = 0
@@ -444,6 +461,11 @@ class TestImage(PillowTestCase):
             self.assertEqual(im.getpixel((128, 128)), 0)
             target = Image.open(target_file).convert(mode)
             self.assert_image_equal(im, target)
+
+    def test_remap_palette(self):
+        # Test illegal image mode
+        im = hopper()
+        self.assertRaises(ValueError, lambda: im.remap_palette(None))
 
 
 class MockEncoder(object):

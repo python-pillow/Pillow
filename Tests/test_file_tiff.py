@@ -85,6 +85,10 @@ class TestFileTiff(PillowTestCase):
         im = Image.open("Tests/images/copyleft.tiff")
         self.assertEqual(im.mode, 'RGB')
 
+    def test_set_legacy_api(self):
+        with self.assertRaises(Exception):
+            ImageFileDirectory_v2.legacy_api = None
+
     def test_xyres_tiff(self):
         filename = "Tests/images/pil168.tif"
         im = Image.open(filename)

@@ -43,18 +43,27 @@ class TestFileIm(PillowTestCase):
                 self.assertLess(im.tell(), n_frames)
 
     def test_roundtrip(self):
-        out = self.tempfile('temp.im')
-        im = hopper()
-        im.save(out)
-        reread = Image.open(out)
+        for mode in ["RGB", "P"]:
+            out = self.tempfile('temp.im')
+            im = hopper(mode)
+            im.save(out)
+            reread = Image.open(out)
 
-        self.assert_image_equal(reread, im)
+            self.assert_image_equal(reread, im)
+
+    def test_save_unsupported_mode(self):
+        out = self.tempfile('temp.im')
+        im = hopper("HSV")
+        self.assertRaises(ValueError, lambda: im.save(out))
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
                           lambda: ImImagePlugin.ImImageFile(invalid_file))
+
+    def test_number(self):
+        self.assertEqual(1.2, ImImagePlugin.number("1.2"))
 
 
 if __name__ == '__main__':

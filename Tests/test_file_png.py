@@ -531,6 +531,12 @@ class TestFilePng(PillowTestCase):
         # pHYs - before IDAT
         self.assertLess(chunks.index(b"pHYs"), chunks.index(b"IDAT"))
 
+    def test_getchunks(self):
+        im = hopper()
+
+        chunks = PngImagePlugin.getchunks(im)
+        self.assertEqual(len(chunks), 3)
+
 
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
 class TestTruncatedPngPLeaks(PillowTestCase):

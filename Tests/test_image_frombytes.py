@@ -11,6 +11,9 @@ class TestImageFromBytes(PillowTestCase):
 
         self.assert_image_equal(im1, im2)
 
+    def test_not_implemented(self):
+        self.assertRaises(NotImplementedError, Image.fromstring)
+
 
 if __name__ == '__main__':
     unittest.main()

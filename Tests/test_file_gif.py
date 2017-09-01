@@ -375,29 +375,31 @@ class TestFileGif(PillowTestCase):
     def test_version(self):
         out = self.tempfile('temp.gif')
 
+        def assertVersionAfterSave(im, version):
+            im.save(out)
+            reread = Image.open(out)
+            self.assertEqual(reread.info["version"], version)
+
         # Test that GIF87a is used by default
         im = Image.new('L', (100, 100), '#000')
-        im.save(out)
-        reread = Image.open(out)
-        self.assertEqual(reread.info["version"], b"GIF87a")
+        assertVersionAfterSave(im, b"GIF87a")
+
+        # Test setting the version to 89a
+        im = Image.new('L', (100, 100), '#000')
+        im.info["version"] = b"89a"
+        assertVersionAfterSave(im, b"GIF89a")
 
         # Test that adding a GIF89a feature changes the version
         im.info["transparency"] = 1
-        im.save(out)
-        reread = Image.open(out)
-        self.assertEqual(reread.info["version"], b"GIF89a")
+        assertVersionAfterSave(im, b"GIF89a")
 
         # Test that a GIF87a image is also saved in that format
         im = Image.open("Tests/images/test.colors.gif")
-        im.save(out)
-        reread = Image.open(out)
-        self.assertEqual(reread.info["version"], b"GIF87a")
+        assertVersionAfterSave(im, b"GIF87a")
 
         # Test that a GIF89a image is also saved in that format
         im.info["version"] = b"GIF89a"
-        im.save(out)
-        reread = Image.open(out)
-        self.assertEqual(reread.info["version"], b"GIF87a")
+        assertVersionAfterSave(im, b"GIF87a")
 
     def test_append_images(self):
         out = self.tempfile('temp.gif')

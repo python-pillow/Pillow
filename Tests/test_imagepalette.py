@@ -2,20 +2,18 @@ from helper import unittest, PillowTestCase
 
 from PIL import ImagePalette, Image
 
-ImagePalette = ImagePalette.ImagePalette
-
 
 class TestImagePalette(PillowTestCase):
 
     def test_sanity(self):
 
-        ImagePalette("RGB", list(range(256))*3)
-        self.assertRaises(
-            ValueError, lambda: ImagePalette("RGB", list(range(256))*2))
+        ImagePalette.ImagePalette("RGB", list(range(256))*3)
+        self.assertRaises(ValueError,
+            lambda: ImagePalette.ImagePalette("RGB", list(range(256))*2))
 
     def test_getcolor(self):
 
-        palette = ImagePalette()
+        palette = ImagePalette.ImagePalette()
 
         test_map = {}
         for i in range(256):
@@ -24,34 +22,34 @@ class TestImagePalette(PillowTestCase):
         self.assertEqual(len(test_map), 256)
         self.assertRaises(ValueError, lambda: palette.getcolor((1, 2, 3)))
 
+        # Test unknown color specifier
+        self.assertRaises(ValueError, lambda: palette.getcolor("unknown"))
+
     def test_file(self):
 
-        palette = ImagePalette("RGB", list(range(256))*3)
+        palette = ImagePalette.ImagePalette("RGB", list(range(256))*3)
 
         f = self.tempfile("temp.lut")
 
         palette.save(f)
 
-        from PIL.ImagePalette import load, raw
-
-        p = load(f)
+        p = ImagePalette.load(f)
 
         # load returns raw palette information
         self.assertEqual(len(p[0]), 768)
         self.assertEqual(p[1], "RGB")
 
-        p = raw(p[1], p[0])
-        self.assertIsInstance(p, ImagePalette)
+        p = ImagePalette.raw(p[1], p[0])
+        self.assertIsInstance(p, ImagePalette.ImagePalette)
         self.assertEqual(p.palette, palette.tobytes())
 
     def test_make_linear_lut(self):
         # Arrange
-        from PIL.ImagePalette import make_linear_lut
         black = 0
         white = 255
 
         # Act
-        lut = make_linear_lut(black, white)
+        lut = ImagePalette.make_linear_lut(black, white)
 
         # Assert
         self.assertIsInstance(lut, list)
@@ -63,22 +61,20 @@ class TestImagePalette(PillowTestCase):
     def test_make_linear_lut_not_yet_implemented(self):
         # Update after FIXME
         # Arrange
-        from PIL.ImagePalette import make_linear_lut
         black = 1
         white = 255
 
         # Act
         self.assertRaises(
             NotImplementedError,
-            lambda: make_linear_lut(black, white))
+            lambda: ImagePalette.make_linear_lut(black, white))
 
     def test_make_gamma_lut(self):
         # Arrange
-        from PIL.ImagePalette import make_gamma_lut
         exp = 5
 
         # Act
-        lut = make_gamma_lut(exp)
+        lut = ImagePalette.make_gamma_lut(exp)
 
         # Assert
         self.assertIsInstance(lut, list)
@@ -92,8 +88,7 @@ class TestImagePalette(PillowTestCase):
 
     def test_rawmode_valueerrors(self):
         # Arrange
-        from PIL.ImagePalette import raw
-        palette = raw("RGB", list(range(256))*3)
+        palette = ImagePalette.raw("RGB", list(range(256))*3)
 
         # Act / Assert
         self.assertRaises(ValueError, palette.tobytes)
@@ -104,7 +99,7 @@ class TestImagePalette(PillowTestCase):
     def test_getdata(self):
         # Arrange
         data_in = list(range(256))*3
-        palette = ImagePalette("RGB", data_in)
+        palette = ImagePalette.ImagePalette("RGB", data_in)
 
         # Act
         mode, data_out = palette.getdata()
@@ -114,9 +109,8 @@ class TestImagePalette(PillowTestCase):
 
     def test_rawmode_getdata(self):
         # Arrange
-        from PIL.ImagePalette import raw
         data_in = list(range(256))*3
-        palette = raw("RGB", data_in)
+        palette = ImagePalette.raw("RGB", data_in)
 
         # Act
         rawmode, data_out = palette.getdata()
@@ -137,6 +131,10 @@ class TestImagePalette(PillowTestCase):
         reloaded = Image.open(outfile)
 
         self.assert_image_equal(img, reloaded)
+
+    def test_invalid_palette(self):
+        self.assertRaises(IOError,
+            lambda: ImagePalette.load("Tests/images/hopper.jpg"))
 
 
 if __name__ == '__main__':
