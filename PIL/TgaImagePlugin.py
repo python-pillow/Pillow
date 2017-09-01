@@ -139,15 +139,12 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename, check=0):
+def _save(im, fp, filename):
 
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError:
         raise IOError("cannot write mode %s as TGA" % im.mode)
-
-    if check:
-        return check
 
     if colormaptype:
         colormapfirst, colormaplength, colormapentry = 0, 256, 24
