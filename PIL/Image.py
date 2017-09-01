@@ -1426,7 +1426,7 @@ class Image(object):
         box = dest + (dest[0] + overlay.width, dest[1] + overlay.height)
 
         # destination image. don't copy if we're using the whole image.
-        if dest == (0,0) + self.size:
+        if box == (0,0) + self.size:
             background = self
         else:
             background = self.crop(box)
