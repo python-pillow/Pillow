@@ -114,7 +114,7 @@ class TestImageResize(PillowTestCase):
 
         # Test unknown resampling filter
         im = hopper()
-        self.assertRaises(ValueError, lambda: im.resize((10, 10), "unknown"))
+        self.assertRaises(ValueError, im.resize, (10, 10), "unknown")
 
 
 if __name__ == '__main__':

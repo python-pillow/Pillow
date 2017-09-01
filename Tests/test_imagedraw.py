@@ -56,8 +56,7 @@ class TestImageDraw(PillowTestCase):
     def test_mode_mismatch(self):
         im = hopper("RGB").copy()
 
-        self.assertRaises(ValueError,
-                          lambda: ImageDraw.ImageDraw(im, mode="L"))
+        self.assertRaises(ValueError, ImageDraw.ImageDraw, im, mode="L")
 
     def helper_arc(self, bbox, start, end):
         # Arrange

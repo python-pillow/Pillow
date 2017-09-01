@@ -9,8 +9,7 @@ class TestFileMcIdas(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda:
-                          McIdasImagePlugin.McIdasImageFile(invalid_file))
+                          McIdasImagePlugin.McIdasImageFile, invalid_file)
 
     def test_valid_file(self):
         # Arrange

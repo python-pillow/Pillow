@@ -24,7 +24,7 @@ class TestFileSun(PillowTestCase):
 
         invalid_file = "Tests/images/flower.jpg"
         self.assertRaises(SyntaxError,
-                          lambda: SunImagePlugin.SunImageFile(invalid_file))
+                          SunImagePlugin.SunImageFile, invalid_file)
 
     def test_im1(self):
         im = Image.open('Tests/images/sunraster.im1')

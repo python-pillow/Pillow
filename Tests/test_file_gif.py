@@ -31,7 +31,7 @@ class TestFileGif(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: GifImagePlugin.GifImageFile(invalid_file))
+                          GifImagePlugin.GifImageFile, invalid_file)
 
     def test_optimize(self):
         def test_grayscale(optimize):

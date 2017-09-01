@@ -51,7 +51,7 @@ class TestFilePalm(PillowTestCase):
         mode = "RGB"
 
         # Act / Assert
-        self.assertRaises(IOError, lambda: self.helper_save_as_palm(mode))
+        self.assertRaises(IOError, self.helper_save_as_palm, mode)
 
 
 if __name__ == '__main__':

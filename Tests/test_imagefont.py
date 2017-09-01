@@ -106,7 +106,7 @@ class TestImageFont(PillowTestCase):
         # Usage note:  making two fonts from the same buffer fails.
         # shared_bytes = self._font_as_bytes()
         # self._render(shared_bytes)
-        # self.assertRaises(Exception, lambda: _render(shared_bytes))
+        # self.assertRaises(Exception, _render, shared_bytes)
 
     def test_font_with_open_file(self):
         with open(FONT_PATH, 'rb') as f:
@@ -211,9 +211,9 @@ class TestImageFont(PillowTestCase):
 
         # Act/Assert
         self.assertRaises(AssertionError,
-                          lambda: draw.multiline_text((0, 0), TEST_TEXT,
-                                                      font=ttf,
-                                                      align="unknown"))
+                          draw.multiline_text, (0, 0), TEST_TEXT,
+                                                       font=ttf,
+                                                       align="unknown")
 
     def test_draw_align(self):
         im = Image.new('RGB', (300, 100), 'white')
@@ -384,7 +384,7 @@ class TestImageFont(PillowTestCase):
         filename = "somefilenamethatdoesntexist.ttf"
 
         # Act/Assert
-        self.assertRaises(IOError, lambda: ImageFont.load_path(filename))
+        self.assertRaises(IOError, ImageFont.load_path, filename)
 
     def test_default_font(self):
         # Arrange

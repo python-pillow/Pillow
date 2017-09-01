@@ -34,7 +34,7 @@ class TestImageFilter(PillowTestCase):
         filter(ImageFilter.UnsharpMask)
         filter(ImageFilter.UnsharpMask(10))
 
-        self.assertRaises(TypeError, lambda: filter("hello"))
+        self.assertRaises(TypeError, filter, "hello")
 
     def test_crash(self):
 
@@ -83,7 +83,7 @@ class TestImageFilter(PillowTestCase):
 
         self.assertEqual(rankfilter("1"), (0, 4, 8))
         self.assertEqual(rankfilter("L"), (0, 4, 8))
-        self.assertRaises(ValueError, lambda: rankfilter("P"))
+        self.assertRaises(ValueError, rankfilter, "P")
         self.assertEqual(rankfilter("RGB"), ((0, 0, 0), (4, 0, 0), (8, 0, 0)))
         self.assertEqual(rankfilter("I"), (0, 4, 8))
         self.assertEqual(rankfilter("F"), (0.0, 4.0, 8.0))

@@ -84,12 +84,12 @@ class TestImageSpider(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/invalid.spider"
 
-        self.assertRaises(IOError, lambda: Image.open(invalid_file))
+        self.assertRaises(IOError, Image.open, invalid_file)
 
     def test_nonstack_file(self):
         im = Image.open(TEST_FILE)
 
-        self.assertRaises(EOFError, lambda: im.seek(0))
+        self.assertRaises(EOFError, im.seek, 0)
 
     def test_nonstack_dos(self):
         im = Image.open(TEST_FILE)

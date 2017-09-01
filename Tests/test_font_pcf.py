@@ -32,7 +32,7 @@ class TestFontPcf(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError, lambda: PcfFontFile.PcfFontFile(fp))
+            self.assertRaises(SyntaxError, PcfFontFile.PcfFontFile, fp)
 
     def xtest_draw(self):
 

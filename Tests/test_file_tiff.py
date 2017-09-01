@@ -144,11 +144,11 @@ class TestFileTiff(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: TiffImagePlugin.TiffImageFile(invalid_file))
+                          TiffImagePlugin.TiffImageFile, invalid_file)
 
         TiffImagePlugin.PREFIXES.append(b"\xff\xd8\xff\xe0")
         self.assertRaises(SyntaxError,
-                          lambda: TiffImagePlugin.TiffImageFile(invalid_file))
+                          TiffImagePlugin.TiffImageFile, invalid_file)
         TiffImagePlugin.PREFIXES.pop()
 
     def test_bad_exif(self):
@@ -167,7 +167,7 @@ class TestFileTiff(PillowTestCase):
     def test_save_unsupported_mode(self):
         im = hopper("HSV")
         outfile = self.tempfile("temp.tif")
-        self.assertRaises(IOError, lambda: im.save(outfile))
+        self.assertRaises(IOError, im.save, outfile)
 
     def test_little_endian(self):
         im = Image.open('Tests/images/16bit.cropped.tif')
@@ -344,7 +344,7 @@ class TestFileTiff(PillowTestCase):
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
         self.assertEqual(im.tell(), 0)
-        self.assertRaises(EOFError, lambda: im.seek(1))
+        self.assertRaises(EOFError, im.seek, 1)
 
     def test__limit_rational_int(self):
         from PIL.TiffImagePlugin import _limit_rational
@@ -519,7 +519,7 @@ class TestFileTiffW32(PillowTestCase):
         im = Image.open(tmpfile)
         fp = im.fp
         self.assertFalse(fp.closed)
-        self.assertRaises(Exception, lambda: os.remove(tmpfile))
+        self.assertRaises(Exception, os.remove, tmpfile)
         im.load()
         self.assertTrue(fp.closed)
 

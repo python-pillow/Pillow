@@ -21,13 +21,14 @@ class TestFilePcx(PillowTestCase):
 
         # Test an unsupported mode
         f = self.tempfile("temp.pcx")
-        self.assertRaises(ValueError, lambda: hopper("RGBA").save(f))
+        im = hopper("RGBA")
+        self.assertRaises(ValueError, im.save, f)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: PcxImagePlugin.PcxImageFile(invalid_file))
+                          PcxImagePlugin.PcxImageFile, invalid_file)
 
     def test_odd(self):
         # see issue #523, odd sized images should have a stride that's even.

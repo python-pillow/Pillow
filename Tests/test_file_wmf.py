@@ -50,7 +50,7 @@ class TestFileWmf(PillowTestCase):
 
         for ext in [".wmf", ".emf"]:
             tmpfile = self.tempfile("temp"+ext)
-            self.assertRaises(IOError, lambda: im.save(tmpfile))
+            self.assertRaises(IOError, im.save, tmpfile)
 
 
 if __name__ == '__main__':

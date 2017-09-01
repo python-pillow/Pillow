@@ -54,13 +54,13 @@ class TestFileIm(PillowTestCase):
     def test_save_unsupported_mode(self):
         out = self.tempfile('temp.im')
         im = hopper("HSV")
-        self.assertRaises(ValueError, lambda: im.save(out))
+        self.assertRaises(ValueError, im.save, out)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: ImImagePlugin.ImImageFile(invalid_file))
+                          ImImagePlugin.ImImageFile, invalid_file)
 
     def test_number(self):
         self.assertEqual(1.2, ImImagePlugin.number("1.2"))

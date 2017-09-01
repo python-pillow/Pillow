@@ -33,7 +33,7 @@ class TestImageShow(PillowTestCase):
 
         self.assertIsNone(viewer.get_format(None))
 
-        self.assertRaises(NotImplementedError, lambda: viewer.get_command(None))
+        self.assertRaises(NotImplementedError, viewer.get_command, None)
 
 
 if __name__ == '__main__':

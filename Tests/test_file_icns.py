@@ -98,7 +98,7 @@ class TestFileIcns(PillowTestCase):
     def test_not_an_icns_file(self):
         with io.BytesIO(b'invalid\n') as fp:
             self.assertRaises(SyntaxError,
-                lambda: IcnsImagePlugin.IcnsFile(fp))
+                              IcnsImagePlugin.IcnsFile, fp)
 
 
 if __name__ == '__main__':

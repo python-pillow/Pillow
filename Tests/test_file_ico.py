@@ -18,7 +18,7 @@ class TestFileIco(PillowTestCase):
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
             self.assertRaises(SyntaxError,
-                              lambda: IcoImagePlugin.IcoImageFile(fp))
+                              IcoImagePlugin.IcoImageFile, fp)
 
     def test_save_to_bytes(self):
         output = io.BytesIO()

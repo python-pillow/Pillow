@@ -22,7 +22,7 @@ class TestFilePixar(PillowTestCase):
 
         self.assertRaises(
             SyntaxError,
-            lambda: PixarImagePlugin.PixarImageFile(invalid_file))
+            PixarImagePlugin.PixarImageFile, invalid_file)
 
 
 if __name__ == '__main__':

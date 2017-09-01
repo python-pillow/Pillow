@@ -26,7 +26,7 @@ class TestImageStat(PillowTestCase):
 
         self.assertRaises(AttributeError, lambda: st.spam)
 
-        self.assertRaises(TypeError, lambda: ImageStat.Stat(1))
+        self.assertRaises(TypeError, ImageStat.Stat, 1)
 
     def test_hopper(self):
 

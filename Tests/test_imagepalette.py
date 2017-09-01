@@ -9,7 +9,7 @@ class TestImagePalette(PillowTestCase):
 
         ImagePalette.ImagePalette("RGB", list(range(256))*3)
         self.assertRaises(ValueError,
-            lambda: ImagePalette.ImagePalette("RGB", list(range(256))*2))
+            ImagePalette.ImagePalette, "RGB", list(range(256))*2)
 
     def test_getcolor(self):
 
@@ -20,10 +20,10 @@ class TestImagePalette(PillowTestCase):
             test_map[palette.getcolor((i, i, i))] = i
 
         self.assertEqual(len(test_map), 256)
-        self.assertRaises(ValueError, lambda: palette.getcolor((1, 2, 3)))
+        self.assertRaises(ValueError, palette.getcolor, (1, 2, 3))
 
         # Test unknown color specifier
-        self.assertRaises(ValueError, lambda: palette.getcolor("unknown"))
+        self.assertRaises(ValueError, palette.getcolor, "unknown")
 
     def test_file(self):
 
@@ -65,9 +65,8 @@ class TestImagePalette(PillowTestCase):
         white = 255
 
         # Act
-        self.assertRaises(
-            NotImplementedError,
-            lambda: ImagePalette.make_linear_lut(black, white))
+        self.assertRaises(NotImplementedError,
+            ImagePalette.make_linear_lut, black, white)
 
     def test_make_gamma_lut(self):
         # Arrange
@@ -92,9 +91,9 @@ class TestImagePalette(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(ValueError, palette.tobytes)
-        self.assertRaises(ValueError, lambda: palette.getcolor((1, 2, 3)))
+        self.assertRaises(ValueError, palette.getcolor, (1, 2, 3))
         f = self.tempfile("temp.lut")
-        self.assertRaises(ValueError, lambda: palette.save(f))
+        self.assertRaises(ValueError, palette.save, f)
 
     def test_getdata(self):
         # Arrange
@@ -134,7 +133,7 @@ class TestImagePalette(PillowTestCase):
 
     def test_invalid_palette(self):
         self.assertRaises(IOError,
-            lambda: ImagePalette.load("Tests/images/hopper.jpg"))
+            ImagePalette.load, "Tests/images/hopper.jpg")
 
 
 if __name__ == '__main__':

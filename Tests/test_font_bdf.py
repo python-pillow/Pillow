@@ -17,7 +17,7 @@ class TestFontBdf(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError, lambda: BdfFontFile.BdfFontFile(fp))
+            self.assertRaises(SyntaxError, BdfFontFile.BdfFontFile, fp)
 
 
 if __name__ == '__main__':

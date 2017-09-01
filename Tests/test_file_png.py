@@ -87,14 +87,14 @@ class TestFilePng(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: PngImagePlugin.PngImageFile(invalid_file))
+                          PngImagePlugin.PngImageFile, invalid_file)
 
     def test_broken(self):
         # Check reading of totally broken files.  In this case, the test
         # file was checked into Subversion as a text file.
 
         test_file = "Tests/images/broken.png"
-        self.assertRaises(IOError, lambda: Image.open(test_file))
+        self.assertRaises(IOError, Image.open, test_file)
 
     def test_bad_text(self):
         # Make sure PIL can read malformed tEXt chunks (@PIL152)
@@ -424,7 +424,7 @@ class TestFilePng(PillowTestCase):
             data = b'\x89' + fd.read()
 
         pngfile = BytesIO(data)
-        self.assertRaises(IOError, lambda: Image.open(pngfile))
+        self.assertRaises(IOError, Image.open, pngfile)
 
     def test_trns_rgb(self):
         # Check writing and reading of tRNS chunks for RGB images.
