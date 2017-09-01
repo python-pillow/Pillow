@@ -467,14 +467,6 @@ PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
     size = GlobalSize(handle);
     data = GlobalLock(handle);
 
-#if 0
-    /* calculate proper size for string formats */
-    if (format == CF_TEXT || format == CF_OEMTEXT)
-        size = strlen(data);
-    else if (format == CF_UNICODETEXT)
-        size = wcslen(data) * 2;
-#endif
-
     result = PyBytes_FromStringAndSize(data, size);
 
     GlobalUnlock(handle);
