@@ -1400,9 +1400,9 @@ class Image(object):
         Performance Note: Not currently implemented in-place in the core layer.
         """
 
-        if not isinstance(source, tuple):
+        if not isinstance(source, (list, tuple)):
             raise ValueError("Source must be a tuple")
-        if not isinstance(dest, tuple):
+        if not isinstance(dest, (list, tuple)):
             raise ValueError("Destination must be a tuple")
         if not len(source) in (2, 4):
             raise ValueError("Source must be a 2 or 4-tuple")
