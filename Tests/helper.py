@@ -170,6 +170,41 @@ class PillowTestCase(unittest.TestCase):
             return Image.open(outfile)
         raise IOError()
 
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+class PillowLeakTestCase(PillowTestCase):
+    # requires unix/osx
+    iterations = 100 # count
+    mem_limit = 512 # k
+    
+    def _get_mem_usage(self):
+        """
+        Gets the RUSAGE memory usage, returns in K. Encapsulates the difference
+        between OSX and Linux rss reporting
+
+        :returns; memory usage in kilobytes
+        """
+        
+        from resource import getpagesize, getrusage, RUSAGE_SELF
+        mem = getrusage(RUSAGE_SELF).ru_maxrss
+        if sys.platform == 'darwin':
+            # man 2 getrusage:
+            #     ru_maxrss    the maximum resident set size utilized (in bytes).
+            return mem / 1024 # Kb
+        else:
+            # linux
+            # man 2 getrusage
+            #        ru_maxrss (since Linux 2.6.32)
+            #  This is the maximum resident set size used (in  kilobytes). 
+            return mem # Kb
+
+    def _test_leak(self, core):
+        start_mem = self._get_mem_usage()
+        for cycle in range(self.iterations):
+            core()
+            mem = (self._get_mem_usage() - start_mem)
+            self.assertLess(mem, self.mem_limit,
+                            msg='memory usage limit exceeded in iteration %d' % cycle)
+
 
 # helpers
 
