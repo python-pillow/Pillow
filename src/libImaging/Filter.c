@@ -262,14 +262,11 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
     pix2##row = _mm256_permute2f128_ps(pix2##from0, pix2##from1, control);
 
 #define MM256_OUT(x) \
-    ssi = _mm_cvtps_epi32(_mm_add_ps( \
+    _mm_cvtps_epi32(_mm_add_ps( \
         _mm256_extractf128_ps(ss, 0), \
         _mm256_extractf128_ps(ss, 1) \
-    )); \
-    ssi = _mm_packs_epi32(ssi, ssi); \
-    ssi = _mm_packus_epi16(ssi, ssi); \
-    out[x] = _mm_cvtsi128_si32(ssi);
-
+    ))
+    
             __m256 kernel00 = _mm256_insertf128_ps(
                 _mm256_set1_ps(kernel[0+0]),
                 _mm_set1_ps(kernel[0+1]), 1);
@@ -284,26 +281,96 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
             __m256 kernel21 = _mm256_castps128_ps256(_mm_set1_ps(kernel[6+2]));
             __m256 pix00, pix10, pix20;
             __m256 pix01, pix11, pix21;
+            __m256 pix02, pix12, pix22;
 
             out[0] = in0[0];
             x = 1;
             MM256_LOAD(0, 0);
-            for (; x < im->xsize-1-1; x += 2) {
+            for (; x < im->xsize-1-7; x += 8) {
                 __m256 ss;
-                __m128i ssi;
+                __m128i ssi0, ssi1, ssi2, ssi3;
 
                 ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
                 MM256_SUM(0, 0);
                 MM256_LOAD(1, x+1);
                 MM256_SUM(1, 1);
-                MM256_OUT(x);
+                ssi0 = MM256_OUT(x);
+
+                ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
+                MM256_SUM(1, 0);
+                MM256_LOAD(2, x+3);
+                MM256_SUM(2, 1);
+                ssi2 = MM256_OUT(x+2);
+
+                ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
+                MM256_PERMUTE(0, 0, 1, 0x21);
+                MM256_SUM(0, 0);
+                MM256_PERMUTE(1, 1, 2, 0x21);
+                MM256_SUM(1, 1);
+                ssi1 = MM256_OUT(x+1);
+
+                ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
+                MM256_SUM(1, 0);
+                MM256_PERMUTE(0, 2, 2, 0x21);
+                MM256_SUM(0, 1);
+                ssi3 = MM256_OUT(x+3);
+
+                ssi0 = _mm_packs_epi32(ssi0, ssi1);
+                ssi2 = _mm_packs_epi32(ssi2, ssi3);
+                ssi0 = _mm_packus_epi16(ssi0, ssi2);
+                _mm_storeu_si128((__m128i*) &out[x], ssi0);
+                
+                ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
+                MM256_SUM(2, 0);
+                MM256_LOAD(1, x+5);
+                MM256_SUM(1, 1);
+                ssi0 = MM256_OUT(x+4);
+                
+                ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
+                MM256_SUM(1, 0);
+                MM256_LOAD(0, x+7);
+                MM256_SUM(0, 1);
+                ssi2 = MM256_OUT(x+6);
+                
+                ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
+                MM256_PERMUTE(2, 2, 1, 0x21);
+                MM256_SUM(2, 0);
+                MM256_PERMUTE(1, 1, 0, 0x21);
+                MM256_SUM(1, 1);
+                ssi1 = MM256_OUT(x+5);
+                
+                ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
+                MM256_SUM(1, 0);
+                MM256_PERMUTE(2, 0, 0, 0x21);
+                MM256_SUM(2, 1);
+                ssi3 = MM256_OUT(x+7);
+
+                ssi0 = _mm_packs_epi32(ssi0, ssi1);
+                ssi2 = _mm_packs_epi32(ssi2, ssi3);
+                ssi0 = _mm_packus_epi16(ssi0, ssi2);
+                _mm_storeu_si128((__m128i*) &out[x+4], ssi0);
+            }
+
+            for (; x < im->xsize-1-1; x += 2) {
+                __m256 ss;
+                __m128i ssi0, ssi1;
+
+                ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
+                MM256_SUM(0, 0);
+                MM256_LOAD(1, x+1);
+                MM256_SUM(1, 1);
+                ssi0 = MM256_OUT(x);
 
                 ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
                 MM256_PERMUTE(0, 0, 1, 0x21);
                 MM256_SUM(0, 0);
                 MM256_PERMUTE(1, 0, 1, 0xf3);
                 MM256_SUM(1, 1);
-                MM256_OUT(x+1);
+                ssi1 = MM256_OUT(x+1);
+
+                ssi0 = _mm_packs_epi32(ssi0, ssi1);
+                ssi0 = _mm_packus_epi16(ssi0, ssi0);
+                _mm_storel_epi64((__m128i*) &out[x], ssi0);
 
                 MM256_PERMUTE(0, 0, 1, 0x21);
             }
