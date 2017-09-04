@@ -255,7 +255,7 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
             pix00 = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in1[0]));
             pix10 = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in0[0]));
             pix20 = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in_1[0]));
-            for (; x < im->xsize-1; x += 1) {
+            for (; x < im->xsize-1-1; x += 2) {
                 __m256 ss;
                 __m128i ssi;
 
@@ -278,6 +278,30 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
                 ssi = _mm_packs_epi32(ssi, ssi);
                 ssi = _mm_packus_epi16(ssi, ssi);
                 out[x] = _mm_cvtsi128_si32(ssi);
+
+                pix00 = _mm256_permute2f128_ps(pix00, pix01, 0x21);
+                pix10 = _mm256_permute2f128_ps(pix10, pix11, 0x21);
+                pix20 = _mm256_permute2f128_ps(pix20, pix21, 0x21);
+
+                pix01 = _mm256_permute2f128_ps(pix01, pix01, 0xf1);
+                pix11 = _mm256_permute2f128_ps(pix11, pix11, 0xf1);
+                pix21 = _mm256_permute2f128_ps(pix21, pix21, 0xf1);
+
+                ss = _mm256_set1_ps(offset);
+                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix00, kernel00));
+                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix01, kernel01));
+                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix10, kernel10));
+                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix11, kernel11));
+                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix20, kernel20));
+                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix21, kernel21));
+
+                ssi = _mm_cvtps_epi32(_mm_add_ps(
+                    _mm256_extractf128_ps(ss, 0),
+                    _mm256_extractf128_ps(ss, 1)
+                ));
+                ssi = _mm_packs_epi32(ssi, ssi);
+                ssi = _mm_packus_epi16(ssi, ssi);
+                out[x+1] = _mm_cvtsi128_si32(ssi);
 
                 pix00 = _mm256_permute2f128_ps(pix00, pix01, 0x21);
                 pix10 = _mm256_permute2f128_ps(pix10, pix11, 0x21);
