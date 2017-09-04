@@ -3,6 +3,16 @@ Changelog (Pillow)
 
 4.3.0 (unreleased)
 ------------------
+
+- Tests:  cleanup, more tests. Fixed WMF save handler #2689
+  [radarhere]
+
+- Removed debugging interface for Image.core.grabclipboard #2708
+  [radarhere]
+
+- Doc syntax fix #2710
+  [radarhere]
+
 - Faster packing and unpacking for RGB, LA, and related storage modes #2693
   [homm]
   
