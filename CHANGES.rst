@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Fix for SystemError when rendering an empty string, added in 4.2.0 #2706
+  [wiredfool]
+  
+- Fix for memory leaks in font handling added in 4.2.0 #2634
+  [wiredfool]
+
 - Tests:  cleanup, more tests. Fixed WMF save handler #2689
   [radarhere]
 
