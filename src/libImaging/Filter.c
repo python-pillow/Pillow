@@ -235,6 +235,31 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
             UINT32* in1 = (UINT32*) im->image[y+1];
             UINT32* out = (UINT32*) imOut->image[y];
 #if defined(__AVX2__)
+
+#define MM256_LOAD(row, x) \
+    pix0##row = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in1[x])); \
+    pix1##row = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in0[x])); \
+    pix2##row = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in_1[x]));
+
+#define MM256_SUM(pixrow, kernelrow) \
+    ss = _mm256_add_ps(ss, _mm256_mul_ps(pix0##pixrow, kernel0##kernelrow)); \
+    ss = _mm256_add_ps(ss, _mm256_mul_ps(pix1##pixrow, kernel1##kernelrow)); \
+    ss = _mm256_add_ps(ss, _mm256_mul_ps(pix2##pixrow, kernel2##kernelrow));
+
+#define MM256_PERMUTE(row, from0, from1, control) \
+    pix0##row = _mm256_permute2f128_ps(pix0##from0, pix0##from1, control); \
+    pix1##row = _mm256_permute2f128_ps(pix1##from0, pix1##from1, control); \
+    pix2##row = _mm256_permute2f128_ps(pix2##from0, pix2##from1, control);
+
+#define MM256_OUT(x) \
+    ssi = _mm_cvtps_epi32(_mm_add_ps( \
+        _mm256_extractf128_ps(ss, 0), \
+        _mm256_extractf128_ps(ss, 1) \
+    )); \
+    ssi = _mm_packs_epi32(ssi, ssi); \
+    ssi = _mm_packus_epi16(ssi, ssi); \
+    out[x] = _mm_cvtsi128_si32(ssi);
+
             __m256 kernel00 = _mm256_insertf128_ps(
                 _mm256_set1_ps(kernel[0+0]),
                 _mm_set1_ps(kernel[0+1]), 1);
@@ -252,60 +277,25 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
 
             out[0] = in0[0];
             x = 1;
-            pix00 = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in1[0]));
-            pix10 = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in0[0]));
-            pix20 = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in_1[0]));
+            MM256_LOAD(0, 0);
             for (; x < im->xsize-1-1; x += 2) {
                 __m256 ss;
                 __m128i ssi;
 
-                pix01 = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in1[x+1]));
-                pix11 = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in0[x+1]));
-                pix21 = _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(*(__m128i*) &in_1[x+1]));
+                ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
+                MM256_SUM(0, 0);
+                MM256_LOAD(1, x+1);
+                MM256_SUM(1, 1);
+                MM256_OUT(x);
 
-                ss = _mm256_set1_ps(offset);
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix00, kernel00));
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix01, kernel01));
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix10, kernel10));
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix11, kernel11));
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix20, kernel20));
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix21, kernel21));
+                ss = _mm256_castps128_ps256(_mm_set1_ps(offset));
+                MM256_PERMUTE(0, 0, 1, 0x21);
+                MM256_SUM(0, 0);
+                MM256_PERMUTE(1, 0, 1, 0xf3);
+                MM256_SUM(1, 1);
+                MM256_OUT(x+1);
 
-                ssi = _mm_cvtps_epi32(_mm_add_ps(
-                    _mm256_extractf128_ps(ss, 0),
-                    _mm256_extractf128_ps(ss, 1)
-                ));
-                ssi = _mm_packs_epi32(ssi, ssi);
-                ssi = _mm_packus_epi16(ssi, ssi);
-                out[x] = _mm_cvtsi128_si32(ssi);
-
-                pix00 = _mm256_permute2f128_ps(pix00, pix01, 0x21);
-                pix10 = _mm256_permute2f128_ps(pix10, pix11, 0x21);
-                pix20 = _mm256_permute2f128_ps(pix20, pix21, 0x21);
-
-                pix01 = _mm256_permute2f128_ps(pix01, pix01, 0xf1);
-                pix11 = _mm256_permute2f128_ps(pix11, pix11, 0xf1);
-                pix21 = _mm256_permute2f128_ps(pix21, pix21, 0xf1);
-
-                ss = _mm256_set1_ps(offset);
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix00, kernel00));
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix01, kernel01));
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix10, kernel10));
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix11, kernel11));
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix20, kernel20));
-                ss = _mm256_add_ps(ss, _mm256_mul_ps(pix21, kernel21));
-
-                ssi = _mm_cvtps_epi32(_mm_add_ps(
-                    _mm256_extractf128_ps(ss, 0),
-                    _mm256_extractf128_ps(ss, 1)
-                ));
-                ssi = _mm_packs_epi32(ssi, ssi);
-                ssi = _mm_packus_epi16(ssi, ssi);
-                out[x+1] = _mm_cvtsi128_si32(ssi);
-
-                pix00 = _mm256_permute2f128_ps(pix00, pix01, 0x21);
-                pix10 = _mm256_permute2f128_ps(pix10, pix11, 0x21);
-                pix20 = _mm256_permute2f128_ps(pix20, pix21, 0x21);
+                MM256_PERMUTE(0, 0, 1, 0x21);
             }
             out[x] = in0[x];
 #else
