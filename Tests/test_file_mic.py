@@ -42,19 +42,19 @@ class TestFileMic(PillowTestCase):
         im.seek(0)
         self.assertEqual(im.tell(), 0)
 
-        self.assertRaises(EOFError, lambda: im.seek(99))
+        self.assertRaises(EOFError, im.seek, 99)
         self.assertEqual(im.tell(), 0)
 
     def test_invalid_file(self):
         # Test an invalid OLE file
         invalid_file = "Tests/images/flower.jpg"
         self.assertRaises(SyntaxError,
-                          lambda: MicImagePlugin.MicImageFile(invalid_file))
+                          MicImagePlugin.MicImageFile, invalid_file)
 
         # Test a valid OLE file, but not a MIC file
         ole_file = "Tests/images/test-ole-file.doc"
         self.assertRaises(SyntaxError,
-                          lambda: MicImagePlugin.MicImageFile(ole_file))
+                          MicImagePlugin.MicImageFile, ole_file)
 
 
 if __name__ == '__main__':

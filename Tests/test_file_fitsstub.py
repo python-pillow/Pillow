@@ -24,8 +24,7 @@ class TestFileFitsStub(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(SyntaxError,
-                          lambda:
-                          FitsStubImagePlugin.FITSStubImageFile(invalid_file))
+                          FitsStubImagePlugin.FITSStubImageFile, invalid_file)
 
     def test_load(self):
         # Arrange
@@ -41,10 +40,10 @@ class TestFileFitsStub(PillowTestCase):
         dummy_filename = "dummy.filename"
 
         # Act / Assert: stub cannot save without an implemented handler
-        self.assertRaises(IOError, lambda: im.save(dummy_filename))
+        self.assertRaises(IOError, im.save, dummy_filename)
         self.assertRaises(
             IOError,
-            lambda: FitsStubImagePlugin._save(im, dummy_fp, dummy_filename))
+            FitsStubImagePlugin._save, im, dummy_fp, dummy_filename)
 
 
 if __name__ == '__main__':

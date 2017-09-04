@@ -17,8 +17,8 @@ class TestFontPcf(PillowTestCase):
             self.skipTest("zlib support not available")
 
     def save_font(self):
-        test_file = open(fontname, "rb")
-        font = PcfFontFile.PcfFontFile(test_file)
+        with open(fontname, "rb") as test_file:
+            font = PcfFontFile.PcfFontFile(test_file)
         self.assertIsInstance(font, FontFile.FontFile)
         self.assertEqual(len([_f for _f in font.glyph if _f]), 192)
 
@@ -32,7 +32,7 @@ class TestFontPcf(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError, lambda: PcfFontFile.PcfFontFile(fp))
+            self.assertRaises(SyntaxError, PcfFontFile.PcfFontFile, fp)
 
     def xtest_draw(self):
 

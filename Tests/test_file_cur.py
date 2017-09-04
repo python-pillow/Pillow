@@ -21,7 +21,7 @@ class TestFileCur(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: CurImagePlugin.CurImageFile(invalid_file))
+                          CurImagePlugin.CurImageFile, invalid_file)
 
         no_cursors_file = "Tests/images/no_cursors.cur"
 

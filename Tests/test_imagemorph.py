@@ -81,9 +81,9 @@ class MorphTests(PillowTestCase):
 
     def test_no_operator_loaded(self):
         mop = ImageMorph.MorphOp()
-        self.assertRaises(Exception, lambda: mop.apply(None))
-        self.assertRaises(Exception, lambda: mop.match(None))
-        self.assertRaises(Exception, lambda: mop.save_lut(None))
+        self.assertRaises(Exception, mop.apply, None)
+        self.assertRaises(Exception, mop.match, None)
+        self.assertRaises(Exception, mop.save_lut, None)
 
     # Test the named patterns
     def test_erosion8(self):
@@ -214,9 +214,9 @@ class MorphTests(PillowTestCase):
         im = hopper('RGB')
         mop = ImageMorph.MorphOp(op_name="erosion8")
 
-        self.assertRaises(Exception, lambda: mop.apply(im))
-        self.assertRaises(Exception, lambda: mop.match(im))
-        self.assertRaises(Exception, lambda: mop.get_on_pixels(im))
+        self.assertRaises(Exception, mop.apply, im)
+        self.assertRaises(Exception, mop.match, im)
+        self.assertRaises(Exception, mop.get_on_pixels, im)
 
     def test_add_patterns(self):
         # Arrange
@@ -240,7 +240,7 @@ class MorphTests(PillowTestCase):
     def test_unknown_pattern(self):
         self.assertRaises(
             Exception,
-            lambda: ImageMorph.LutBuilder(op_name='unknown'))
+            ImageMorph.LutBuilder, op_name='unknown')
 
     def test_pattern_syntax_error(self):
         # Arrange
@@ -249,9 +249,7 @@ class MorphTests(PillowTestCase):
         lb.add_patterns(new_patterns)
 
         # Act / Assert
-        self.assertRaises(
-            Exception,
-            lambda: lb.build_lut())
+        self.assertRaises(Exception, lb.build_lut)
 
     def test_load_invalid_mrl(self):
         # Arrange
@@ -259,7 +257,7 @@ class MorphTests(PillowTestCase):
         mop = ImageMorph.MorphOp()
 
         # Act / Assert
-        self.assertRaises(Exception, lambda: mop.load_lut(invalid_mrl))
+        self.assertRaises(Exception, mop.load_lut, invalid_mrl)
 
     def test_roundtrip_mrl(self):
         # Arrange

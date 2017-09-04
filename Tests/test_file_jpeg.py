@@ -314,7 +314,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
 
         self.assertRaises(
-            TypeError, lambda: self.roundtrip(hopper(), subsampling="1:1:1"))
+            TypeError, self.roundtrip, hopper(), subsampling="1:1:1")
 
     def test_exif(self):
         im = Image.open("Tests/images/pil_sample_rgb.jpg")
@@ -423,18 +423,18 @@ class TestFileJpeg(PillowTestCase):
         self._n_qtables_helper(4, "Tests/images/pil_sample_cmyk.jpg")
 
         # not a sequence
-        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables='a'))
+        self.assertRaises(Exception, self.roundtrip, im, qtables='a')
         # sequence wrong length
-        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[]))
+        self.assertRaises(Exception, self.roundtrip, im, qtables=[])
         # sequence wrong length
         self.assertRaises(Exception,
-                          lambda: self.roundtrip(im, qtables=[1, 2, 3, 4, 5]))
+                          self.roundtrip, im, qtables=[1, 2, 3, 4, 5])
 
         # qtable entry not a sequence
-        self.assertRaises(Exception, lambda: self.roundtrip(im, qtables=[1]))
+        self.assertRaises(Exception, self.roundtrip, im, qtables=[1])
         # qtable entry has wrong number of items
         self.assertRaises(Exception,
-                          lambda: self.roundtrip(im, qtables=[[1, 2, 3, 4]]))
+                          self.roundtrip, im, qtables=[[1, 2, 3, 4]])
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
     def test_load_djpeg(self):
@@ -479,7 +479,7 @@ class TestFileJpeg(PillowTestCase):
         # Act
         # Shouldn't raise error
         fn = "Tests/images/sugarshack_bad_mpo_header.jpg"
-        im = self.assert_warning(UserWarning, lambda: Image.open(fn))
+        im = self.assert_warning(UserWarning, Image.open, fn)
 
         # Assert
         self.assertEqual(im.format, "JPEG")
@@ -584,7 +584,7 @@ class TestFileCloseW32(PillowTestCase):
         im = Image.open(tmpfile)
         fp = im.fp
         self.assertFalse(fp.closed)
-        self.assertRaises(Exception, lambda: os.remove(tmpfile))
+        self.assertRaises(Exception, os.remove, tmpfile)
         im.load()
         self.assertTrue(fp.closed)
         # this should not fail, as load should have closed the file.

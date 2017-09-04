@@ -75,7 +75,8 @@ class TestFileWebp(PillowTestCase):
     def test_write_unsupported_mode(self):
         temp_file = self.tempfile("temp.webp")
 
-        self.assertRaises(IOError, lambda: hopper("L").save(temp_file))
+        im = hopper("L")
+        self.assertRaises(IOError, im.save, temp_file)
 
     def test_WebPEncode_with_invalid_args(self):
         self.assertRaises(TypeError, _webp.WebPEncode)

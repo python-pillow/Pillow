@@ -107,7 +107,7 @@ class TestImageConvert(PillowTestCase):
 
         p = self.assert_warning(
             UserWarning,
-            lambda: im.convert('P', palette=Image.ADAPTIVE))
+            im.convert, 'P', palette=Image.ADAPTIVE)
         self.assertNotIn('transparency', p.info)
         p.save(f)
 
@@ -131,7 +131,7 @@ class TestImageConvert(PillowTestCase):
 
         p = self.assert_warning(
             UserWarning,
-            lambda: im.convert('P', palette=Image.ADAPTIVE))
+            im.convert, 'P', palette=Image.ADAPTIVE)
         self.assertNotIn('transparency', p.info)
         p.save(f)
 
@@ -155,7 +155,7 @@ class TestImageConvert(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(ValueError,
-                          lambda: im.convert(mode='CMYK', matrix=matrix))
+                          im.convert, mode='CMYK', matrix=matrix)
 
     def test_matrix_wrong_mode(self):
         # Arrange
@@ -168,7 +168,7 @@ class TestImageConvert(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(ValueError,
-                          lambda: im.convert(mode='L', matrix=matrix))
+                          im.convert, mode='L', matrix=matrix)
 
     def test_matrix_xyz(self):
 

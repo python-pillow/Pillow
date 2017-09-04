@@ -37,26 +37,26 @@ class TestImageOpsUsm(PillowTestCase):
     def test_usm_formats(self):
 
         usm = ImageOps.unsharp_mask
-        self.assertRaises(ValueError, lambda: usm(im.convert("1")))
+        self.assertRaises(ValueError, usm, im.convert("1"))
         usm(im.convert("L"))
-        self.assertRaises(ValueError, lambda: usm(im.convert("I")))
-        self.assertRaises(ValueError, lambda: usm(im.convert("F")))
+        self.assertRaises(ValueError, usm, im.convert("I"))
+        self.assertRaises(ValueError, usm, im.convert("F"))
         usm(im.convert("RGB"))
         usm(im.convert("RGBA"))
         usm(im.convert("CMYK"))
-        self.assertRaises(ValueError, lambda: usm(im.convert("YCbCr")))
+        self.assertRaises(ValueError, usm, im.convert("YCbCr"))
 
     def test_blur_formats(self):
 
         blur = ImageOps.gaussian_blur
-        self.assertRaises(ValueError, lambda: blur(im.convert("1")))
+        self.assertRaises(ValueError, blur, im.convert("1"))
         blur(im.convert("L"))
-        self.assertRaises(ValueError, lambda: blur(im.convert("I")))
-        self.assertRaises(ValueError, lambda: blur(im.convert("F")))
+        self.assertRaises(ValueError, blur, im.convert("I"))
+        self.assertRaises(ValueError, blur, im.convert("F"))
         blur(im.convert("RGB"))
         blur(im.convert("RGBA"))
         blur(im.convert("CMYK"))
-        self.assertRaises(ValueError, lambda: blur(im.convert("YCbCr")))
+        self.assertRaises(ValueError, blur, im.convert("YCbCr"))
 
     def test_usm_accuracy(self):
 

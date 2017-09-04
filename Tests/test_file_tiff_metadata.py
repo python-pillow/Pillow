@@ -161,7 +161,7 @@ class TestFileTiffMetadata(PillowTestCase):
         head = f.read(8)
         info = TiffImagePlugin.ImageFileDirectory(head)
         try:
-            self.assert_warning(UserWarning, lambda: info.load(f))
+            self.assert_warning(UserWarning, info.load, f)
         except struct.error:
             self.fail("Should not be struct errors there.")
 

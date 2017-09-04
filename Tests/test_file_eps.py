@@ -55,7 +55,7 @@ class TestFileEps(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: EpsImagePlugin.EpsImageFile(invalid_file))
+                          EpsImagePlugin.EpsImageFile, invalid_file)
 
     def test_cmyk(self):
         cmyk_image = Image.open("Tests/images/pil_sample_cmyk.eps")
@@ -97,7 +97,7 @@ class TestFileEps(PillowTestCase):
     def test_image_mode_not_supported(self):
         im = hopper("RGBA")
         tmpfile = self.tempfile('temp.eps')
-        self.assertRaises(ValueError, lambda: im.save(tmpfile))
+        self.assertRaises(ValueError, im.save, tmpfile)
 
     def test_render_scale1(self):
         # We need png support for these render test

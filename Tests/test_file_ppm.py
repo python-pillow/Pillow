@@ -39,7 +39,7 @@ class TestFilePpm(PillowTestCase):
         with open(path, 'w') as f:
             f.write('P6')
 
-        self.assertRaises(ValueError, lambda: Image.open(path))
+        self.assertRaises(ValueError, Image.open, path)
 
     def test_neg_ppm(self):
         # Storage.c accepted negative values for xsize, ysize.  the

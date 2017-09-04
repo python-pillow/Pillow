@@ -1,5 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
+
 from PIL import Image
+from PIL import WmfImagePlugin
 
 
 class TestFileWmf(PillowTestCase):
@@ -26,12 +28,29 @@ class TestFileWmf(PillowTestCase):
             imref.load()
             self.assert_image_similar(im, imref, 2.0)
 
+    def test_register_handler(self):
+        class TestHandler:
+            methodCalled = False
+
+            def save(self, im, fp, filename):
+                self.methodCalled = True
+        handler = TestHandler()
+        WmfImagePlugin.register_handler(handler)
+
+        im = hopper()
+        tmpfile = self.tempfile("temp.wmf")
+        im.save(tmpfile)
+        self.assertTrue(handler.methodCalled)
+
+        # Restore the state before this test
+        WmfImagePlugin.register_handler(None)
+
     def test_save(self):
         im = hopper()
 
         for ext in [".wmf", ".emf"]:
             tmpfile = self.tempfile("temp"+ext)
-            self.assertRaises(IOError, lambda: im.save(tmpfile))
+            self.assertRaises(IOError, im.save, tmpfile)
 
 
 if __name__ == '__main__':

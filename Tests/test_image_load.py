@@ -19,7 +19,7 @@ class TestImageLoad(PillowTestCase):
         im = Image.open("Tests/images/hopper.gif")
         im.close()
         self.assertRaises(ValueError, im.load)
-        self.assertRaises(ValueError, lambda: im.getpixel((0, 0)))
+        self.assertRaises(ValueError, im.getpixel, (0, 0))
 
     def test_contextmanager(self):
         fn = None
@@ -27,7 +27,7 @@ class TestImageLoad(PillowTestCase):
             fn = im.fp.fileno()
             os.fstat(fn)
 
-        self.assertRaises(OSError, lambda: os.fstat(fn))
+        self.assertRaises(OSError, os.fstat, fn)
 
 if __name__ == '__main__':
     unittest.main()

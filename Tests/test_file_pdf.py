@@ -59,7 +59,7 @@ class TestFilePdf(PillowTestCase):
         im = hopper("LA")
         outfile = self.tempfile("temp_LA.pdf")
 
-        self.assertRaises(ValueError, lambda: im.save(outfile))
+        self.assertRaises(ValueError, im.save, outfile)
 
     def test_save_all(self):
         # Single frame image

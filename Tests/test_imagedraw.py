@@ -51,13 +51,11 @@ class TestImageDraw(PillowTestCase):
 
         draw = ImageDraw.Draw(im)
         draw.line(((0, 0)), fill=(0, 0, 0))
-        del draw
 
     def test_mode_mismatch(self):
         im = hopper("RGB").copy()
 
-        self.assertRaises(ValueError,
-                          lambda: ImageDraw.ImageDraw(im, mode="L"))
+        self.assertRaises(ValueError, ImageDraw.ImageDraw, im, mode="L")
 
     def helper_arc(self, bbox, start, end):
         # Arrange
@@ -66,7 +64,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.arc(bbox, start, end)
-        del draw
 
         # Assert
         self.assert_image_similar(
@@ -89,7 +86,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.arc(BBOX1, start=start, end=end)
-        del draw
 
         # Assert
         self.assert_image_equal(
@@ -105,7 +101,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.arc(BBOX1, start=start, end=end)
-        del draw
 
         # Assert
         self.assert_image_similar(
@@ -119,7 +114,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.bitmap((10, 10), small)
-        del draw
 
         # Assert
         self.assert_image_equal(
@@ -133,7 +127,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.chord(bbox, start, end, fill="red", outline="yellow")
-        del draw
 
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
@@ -156,7 +149,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.ellipse(bbox, fill="green", outline="blue")
-        del draw
 
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
@@ -176,7 +168,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.ellipse(((0, 0), (W-1, H)), fill="white")
-        del draw
 
         # Assert
         self.assert_image_similar(
@@ -189,7 +180,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.line(points, fill="yellow", width=2)
-        del draw
 
         # Assert
         self.assert_image_equal(
@@ -217,7 +207,6 @@ class TestImageDraw(PillowTestCase):
         s.line(x0, y0)
 
         draw.shape(s, fill=1)
-        del draw
 
         # Assert
         self.assert_image_equal(
@@ -239,7 +228,6 @@ class TestImageDraw(PillowTestCase):
         s.line(x0, y0)
 
         draw.shape(s, outline="blue")
-        del draw
 
         # Assert
         self.assert_image_equal(
@@ -252,7 +240,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.pieslice(bbox, start, end, fill="white", outline="blue")
-        del draw
 
         # Assert
         self.assert_image_similar(
@@ -273,7 +260,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.point(points, fill="yellow")
-        del draw
 
         # Assert
         self.assert_image_equal(
@@ -292,7 +278,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.polygon(points, fill="red", outline="blue")
-        del draw
 
         # Assert
         self.assert_image_equal(
@@ -316,7 +301,6 @@ class TestImageDraw(PillowTestCase):
 
             # Act
             draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
-            del draw
 
             # Assert
             self.assert_image_equal(im, Image.open(expected))
@@ -328,7 +312,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.rectangle(bbox, fill="black", outline="green")
-        del draw
 
         # Assert
         self.assert_image_equal(
@@ -350,7 +333,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.rectangle(bbox, fill="orange")
-        del draw
 
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
@@ -377,7 +359,6 @@ class TestImageDraw(PillowTestCase):
         # Test that filling outside the image does not change the image
         ImageDraw.floodfill(im, (W, H), red)
         self.assert_image_equal(im, im_floodfill)
-        del draw
 
     @unittest.skipIf(hasattr(sys, 'pypy_version_info'),
                      "Causes fatal RPython error on PyPy")
@@ -394,7 +375,6 @@ class TestImageDraw(PillowTestCase):
         ImageDraw.floodfill(
             im, centre_point, ImageColor.getrgb("red"),
             border=ImageColor.getrgb("black"))
-        del draw
 
         # Assert
         self.assert_image_equal(
@@ -414,8 +394,7 @@ class TestImageDraw(PillowTestCase):
         ImageDraw.floodfill(
             im, centre_point, ImageColor.getrgb("red"),
             thresh=30)
-        del draw
-        
+
         # Assert
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_floodfill2.png"))
@@ -577,7 +556,6 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.line([(50, 50), (50, 50)], width=3)
-        del draw
 
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)

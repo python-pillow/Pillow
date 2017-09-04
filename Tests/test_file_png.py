@@ -87,14 +87,14 @@ class TestFilePng(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: PngImagePlugin.PngImageFile(invalid_file))
+                          PngImagePlugin.PngImageFile, invalid_file)
 
     def test_broken(self):
         # Check reading of totally broken files.  In this case, the test
         # file was checked into Subversion as a text file.
 
         test_file = "Tests/images/broken.png"
-        self.assertRaises(IOError, lambda: Image.open(test_file))
+        self.assertRaises(IOError, Image.open, test_file)
 
     def test_bad_text(self):
         # Make sure PIL can read malformed tEXt chunks (@PIL152)
@@ -424,7 +424,7 @@ class TestFilePng(PillowTestCase):
             data = b'\x89' + fd.read()
 
         pngfile = BytesIO(data)
-        self.assertRaises(IOError, lambda: Image.open(pngfile))
+        self.assertRaises(IOError, Image.open, pngfile)
 
     def test_trns_rgb(self):
         # Check writing and reading of tRNS chunks for RGB images.
@@ -505,17 +505,17 @@ class TestFilePng(PillowTestCase):
         im.convert("P").save(test_file, dpi=(100, 100))
 
         chunks = []
-        fp = open(test_file, "rb")
-        fp.read(8)
-        png = PngImagePlugin.PngStream(fp)
-        while True:
-            cid, pos, length = png.read()
-            chunks.append(cid)
-            try:
-                s = png.call(cid, pos, length)
-            except EOFError:
-                break
-            png.crc(cid, s)
+        with open(test_file, "rb") as fp:
+            fp.read(8)
+            png = PngImagePlugin.PngStream(fp)
+            while True:
+                cid, pos, length = png.read()
+                chunks.append(cid)
+                try:
+                    s = png.call(cid, pos, length)
+                except EOFError:
+                    break
+                png.crc(cid, s)
 
         # https://www.w3.org/TR/PNG/#5ChunkOrdering
         # IHDR - shall be first
@@ -530,6 +530,12 @@ class TestFilePng(PillowTestCase):
         self.assertLess(chunks.index(b"tRNS"), chunks.index(b"IDAT"))
         # pHYs - before IDAT
         self.assertLess(chunks.index(b"pHYs"), chunks.index(b"IDAT"))
+
+    def test_getchunks(self):
+        im = hopper()
+
+        chunks = PngImagePlugin.getchunks(im)
+        self.assertEqual(len(chunks), 3)
 
 
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")

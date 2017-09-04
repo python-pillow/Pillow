@@ -362,10 +362,9 @@ class TestFileLibTiff(LibTiffTestCase):
         im = hopper('RGB')
         out = self.tempfile('temp.tif')
 
-        self.assertRaises(
-            IOError, lambda: im.save(out, compression='tiff_ccitt'))
-        self.assertRaises(IOError, lambda: im.save(out, compression='group3'))
-        self.assertRaises(IOError, lambda: im.save(out, compression='group4'))
+        self.assertRaises(IOError, im.save, out, compression='tiff_ccitt')
+        self.assertRaises(IOError, im.save, out, compression='group3')
+        self.assertRaises(IOError, im.save, out, compression='group4')
 
     def test_fp_leak(self):
         im = Image.open("Tests/images/hopper_g4_500.tif")
@@ -373,10 +372,10 @@ class TestFileLibTiff(LibTiffTestCase):
 
         os.fstat(fn)
         im.load()  # this should close it.
-        self.assertRaises(OSError, lambda: os.fstat(fn))
+        self.assertRaises(OSError, os.fstat, fn)
         im = None  # this should force even more closed.
-        self.assertRaises(OSError, lambda: os.fstat(fn))
-        self.assertRaises(OSError, lambda: os.close(fn))
+        self.assertRaises(OSError, os.fstat, fn)
+        self.assertRaises(OSError, os.close, fn)
 
     def test_multipage(self):
         # issue #862

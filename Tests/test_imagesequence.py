@@ -22,7 +22,7 @@ class TestImageSequence(PillowTestCase):
 
         self.assertEqual(index, 1)
 
-        self.assertRaises(AttributeError, lambda: ImageSequence.Iterator(0))
+        self.assertRaises(AttributeError, ImageSequence.Iterator, 0)
 
     def test_iterator(self):
         im = Image.open('Tests/images/multipage.tiff')
@@ -30,7 +30,7 @@ class TestImageSequence(PillowTestCase):
         for index in range(0, im.n_frames):
             self.assertEqual(i[index], next(i))
         self.assertRaises(IndexError, lambda: i[index+1])
-        self.assertRaises(StopIteration, lambda: next(i))
+        self.assertRaises(StopIteration, next, i)
 
     def _test_multipage_tiff(self):
         im = Image.open('Tests/images/multipage.tiff')
