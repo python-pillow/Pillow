@@ -459,6 +459,22 @@ class TestImage(PillowTestCase):
             target = Image.open(target_file).convert(mode)
             self.assert_image_equal(im, target)
 
+    def test_register_extensions(self):
+        test_format = "a"
+        exts = ["b", "c"]
+        for ext in exts:
+            Image.register_extension(test_format, ext)
+        ext_individual = Image.EXTENSION.copy()
+        for ext in exts:
+            del Image.EXTENSION[ext]
+
+        Image.register_extensions(test_format, exts)
+        ext_multiple = Image.EXTENSION.copy()
+        for ext in exts:
+            del Image.EXTENSION[ext]
+
+        self.assertEqual(ext_individual, ext_multiple)
+
     def test_remap_palette(self):
         # Test illegal image mode
         im = hopper()
@@ -467,7 +483,7 @@ class TestImage(PillowTestCase):
 
     def test__new(self):
         from PIL import ImagePalette
-        
+
         im = hopper('RGB')
         im_p = hopper('P')
 
@@ -475,7 +491,7 @@ class TestImage(PillowTestCase):
         blank_pa = Image.new('PA', (10,10))
         blank_p.palette = None
         blank_pa.palette = None
-        
+
         def _make_new(base_image, im, palette_result=None):
             new_im = base_image._new(im)
             self.assertEqual(new_im.mode, im.mode)
@@ -485,12 +501,12 @@ class TestImage(PillowTestCase):
                 self.assertEqual(new_im.palette.tobytes(), palette_result.tobytes())
             else:
                 self.assertEqual(new_im.palette, None)
-            
+
         _make_new(im, im_p, im_p.palette)
         _make_new(im_p, im, None)
         _make_new(im, blank_p, ImagePalette.ImagePalette())
         _make_new(im, blank_pa, ImagePalette.ImagePalette())
-        
+
 
 class MockEncoder(object):
     pass
