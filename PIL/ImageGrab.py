@@ -72,8 +72,7 @@ def grabclipboard():
         os.unlink(filepath)
         return im
     else:
-        debug = 0  # temporary interface
-        data = Image.core.grabclipboard(debug)
+        data = Image.core.grabclipboard()
         if isinstance(data, bytes):
             from . import BmpImagePlugin
             import io
