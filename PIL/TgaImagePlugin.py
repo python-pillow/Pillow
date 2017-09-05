@@ -181,9 +181,9 @@ def _save(im, fp, filename, check=0):
 
     ImageFile._save(
         im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
-    
+
     # write targa version 2 footer
-    fp.write(b"\000" * 8 + "TRUEVISION-XFILE." + b"\000")
+    fp.write(b"\000" * 8 + b"TRUEVISION-XFILE." + b"\000")
 
 #
 # --------------------------------------------------------------------
