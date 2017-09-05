@@ -142,6 +142,8 @@ TAGS_V2 = {
     341: ("SMaxSampleValue", DOUBLE, 0),
     342: ("TransferRange", SHORT, 6),
 
+    347: ("JPEGTables", UNDEFINED, 1),
+    
     # obsolete JPEG tags
     512: ("JPEGProc", SHORT, 1),
     513: ("JPEGInterchangeFormat", LONG, 1),
@@ -158,7 +160,10 @@ TAGS_V2 = {
     531: ("YCbCrPositioning", SHORT, 1),
     532: ("ReferenceBlackWhite", LONG, 0),
 
+    700: ('XMP', BYTE, 1),
+    
     33432: ("Copyright", ASCII, 1),
+    34377: ('PhotoshopInfo', BYTE, 1),
 
     # FIXME add more tags here
     34665: ("ExifIFD", SHORT, 1),
