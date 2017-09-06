@@ -364,6 +364,21 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
 
                 MM256_PERMUTE(0, 0, 1, 0x21);
             }
+            for (; x < im->xsize-1; x++) {
+                __m128 pix00, pix10, pix20;
+                __m128 ss = _mm_set1_ps(offset);
+                __m128i ssi0;
+                MM_KERNEL1x3_LOAD(0, x-1);
+                MM_KERNEL1x3_SUM(0, 0);
+                MM_KERNEL1x3_LOAD(0, x+0);
+                MM_KERNEL1x3_SUM(0, 1);
+                MM_KERNEL1x3_LOAD(0, x+1);
+                MM_KERNEL1x3_SUM(0, 2);
+                ssi0 = _mm_cvtps_epi32(ss);
+                ssi0 = _mm_packs_epi32(ssi0, ssi0);
+                ssi0 = _mm_packus_epi16(ssi0, ssi0);
+                out[x] = _mm_cvtsi128_si32(ssi0);
+            }
             out[x] = in0[x];
 #else
             __m128 pix00, pix10, pix20;
