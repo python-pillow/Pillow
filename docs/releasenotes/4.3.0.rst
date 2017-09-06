@@ -7,3 +7,10 @@ Get One Channel From Image
 New method :py:meth:`PIL.Image.Image.getchannel` added.
 It returns single channel by index or name. For example,
 ``image.getchannel("A")`` will return alpha channel as separate image.
+
+Removed Core Image Debugging Code
+=================================
+
+Debugging code within ``Image.core.grabclipboard`` was removed. It had been
+marked as ``will be removed in future versions`` since PIL. When enabled, it
+identified the format of the clipboard data.
