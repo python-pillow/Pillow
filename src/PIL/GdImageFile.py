@@ -25,15 +25,8 @@
 
 from . import ImageFile, ImagePalette
 from ._binary import i16be as i16
-from ._util import isPath
 
 __version__ = "0.1"
-
-try:
-    import builtins
-except ImportError:
-    import __builtin__
-    builtins = __builtin__
 
 
 ##
@@ -78,13 +71,7 @@ def open(fp, mode="r"):
     if mode != "r":
         raise ValueError("bad mode")
 
-    if isPath(fp):
-        filename = fp
-        fp = builtins.open(fp, "rb")
-    else:
-        filename = ""
-
     try:
-        return GdImageFile(fp, filename)
+        return GdImageFile(fp)
     except SyntaxError:
         raise IOError("cannot identify this image file")
