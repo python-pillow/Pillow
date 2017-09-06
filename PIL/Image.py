@@ -1494,14 +1494,13 @@ class Image(object):
                 mode = getmodebase(self.mode) + "A"
                 try:
                     self.im.setmode(mode)
-                    self.pyaccess = None
                 except (AttributeError, ValueError):
                     # do things the hard way
                     im = self.im.convert(mode)
                     if im.mode not in ("LA", "RGBA"):
                         raise ValueError  # sanity check
                     self.im = im
-                    self.pyaccess = None
+                self.pyaccess = None
                 self.mode = self.im.mode
             except (KeyError, ValueError):
                 raise ValueError("illegal image mode")
@@ -2448,7 +2447,7 @@ def fromqpixmap(im):
 _fromarray_typemap = {
     # (shape, typestr) => mode, rawmode
     # first two members of shape are set to one
-    ((1, 1), "|b1"): ("1", "1;8"), 
+    ((1, 1), "|b1"): ("1", "1;8"),
     ((1, 1), "|u1"): ("L", "L"),
     ((1, 1), "|i1"): ("I", "I;8"),
     ((1, 1), "<u2"): ("I", "I;16"),
