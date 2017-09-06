@@ -592,6 +592,12 @@ class Image(object):
         self.pyaccess = None
         self.readonly = 0
 
+    def _mutable(self):
+        if self.readonly:
+            self._copy()
+        else:
+            self.load()
+
     def _dump(self, file=None, format=None, **options):
         import tempfile
 
@@ -1390,10 +1396,7 @@ class Image(object):
                     im = im.convert(self.mode)
             im = im.im
 
-        if self.readonly:
-            self._copy()
-        else:
-            self.load()
+        self._mutable()
 
         if mask:
             mask.load()
@@ -1499,10 +1502,7 @@ class Image(object):
            other color value.
         """
 
-        if self.readonly:
-            self._copy()
-        else:
-            self.load()
+        self._mutable()
 
         if self.mode not in ("LA", "RGBA"):
             # attempt to promote self to a matching alpha mode
@@ -1558,10 +1558,7 @@ class Image(object):
         :param offset: An optional offset value.  The default is 0.0.
         """
 
-        if self.readonly:
-            self._copy()
-        else:
-            self.load()
+        self._mutable()
 
         self.im.putdata(data, scale, offset)
 
