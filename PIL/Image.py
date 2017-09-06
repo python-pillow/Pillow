@@ -1601,7 +1601,6 @@ class Image(object):
         self.load()
         if self.readonly:
             self._copy()
-            self.pyaccess = None
             self.load()
 
         if self.pyaccess:
