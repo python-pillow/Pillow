@@ -871,18 +871,16 @@ class Image(object):
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if not mode:
+        self.load()
+
+        if not mode and self.mode == "P":
             # determine default mode
-            if self.mode == "P":
-                self.load()
-                if self.palette:
-                    mode = self.palette.mode
-                else:
-                    mode = "RGB"
+            if self.palette:
+                mode = self.palette.mode
             else:
-                return self.copy()
-        else:
-            self.load()
+                mode = "RGB"
+        if not mode or (mode == self.mode and not matrix):
+            return self.copy()
 
         if matrix:
             # matrix conversion
