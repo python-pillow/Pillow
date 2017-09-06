@@ -51,7 +51,7 @@ class GdImageFile(ImageFile.ImageFile):
         # transparency index
         tindex = i16(s[5:7])
         if tindex < 256:
-            self.info["transparent"] = tindex
+            self.info["transparency"] = tindex
 
         self.palette = ImagePalette.raw("RGB", s[7:])
 
