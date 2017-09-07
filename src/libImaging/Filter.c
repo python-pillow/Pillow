@@ -29,21 +29,11 @@
 #include <emmintrin.h>
 #include <mmintrin.h>
 #include <smmintrin.h>
-
 #if defined(__AVX2__)
     #include <immintrin.h>
 #endif
 
 
-
-static inline UINT8 clip8(float in)
-{
-    if (in <= 0.0)
-        return 0;
-    if (in >= 255.0)
-        return 255;
-    return (UINT8) in;
-}
 
 Imaging
 ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
@@ -471,8 +461,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
     memcpy(imOut->image[0], im->image[0], im->linesize);
     memcpy(imOut->image[1], im->image[1], im->linesize);
     if (im->bands == 1) {
-        // Add one time for rounding
-        offset += 0.5;
         for (y = 2; y < im->ysize-2; y++) {
             UINT8* in_2 = (UINT8*) im->image[y-2];
             UINT8* in_1 = (UINT8*) im->image[y-1];
@@ -533,14 +521,31 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
                 ssi0 = _mm_packus_epi16(ssi0, ssi0);
                 *((UINT32*) &out[x]) = _mm_cvtsi128_si32(ssi0);
             }
-            for (; x < im->xsize-2; x++) {
-                float ss = offset;
-                ss += KERNEL1x5(in2, x, &kernel[0], 1);
-                ss += KERNEL1x5(in1, x, &kernel[5], 1);
-                ss += KERNEL1x5(in0, x, &kernel[10], 1);
-                ss += KERNEL1x5(in_1, x, &kernel[15], 1);
-                ss += KERNEL1x5(in_2, x, &kernel[20], 1);
-                out[x] = clip8(ss);
+            for (; x < im->xsize-2; x ++) {
+                __m128 ss0;
+                __m128i ssi0;
+                __m128 pix00, pix10, pix20, pix30, pix40;
+
+                MM_KERNEL1x5_LOAD(0, x-2);
+
+                ss0 = _mm_setzero_ps();
+                ss0 = _mm_add_ps(ss0, _mm_mul_ps(pix00, kernel01));
+                ss0 = _mm_add_ps(ss0, _mm_mul_ps(pix10, kernel11));
+                ss0 = _mm_add_ps(ss0, _mm_mul_ps(pix20, kernel21));
+                ss0 = _mm_add_ps(ss0, _mm_mul_ps(pix30, kernel31));
+                ss0 = _mm_add_ps(ss0, _mm_mul_ps(pix40, kernel41));
+                ss0 = _mm_add_ps(ss0, _mm_mul_ps(
+                    _mm_set_ps(in_1[x+2], in0[x+2], in1[x+2], in2[x+2]),
+                    kernelx1));
+
+                ss0 = _mm_add_ps(ss0, _mm_set_ps(
+                    0, 0, offset, kernel[24] * in_2[x+2]));
+                ss0 = _mm_hadd_ps(ss0, ss0);
+                ss0 = _mm_hadd_ps(ss0, ss0);
+                ssi0 = _mm_cvtps_epi32(ss0);
+                ssi0 = _mm_packs_epi32(ssi0, ssi0);
+                ssi0 = _mm_packus_epi16(ssi0, ssi0);
+                out[x] = _mm_cvtsi128_si32(ssi0);
             }
             out[x+0] = in0[x+0];
             out[x+1] = in0[x+1];
