@@ -202,8 +202,8 @@ class TestFileTiffMetadata(PillowTestCase):
         im.save(out, tiffinfo=info, compression='raw')
 
         reloaded = Image.open(out)
-        self.assertEqual(0, reloaded.tag_v2[41988][0].numerator)
-        self.assertEqual(0, reloaded.tag_v2[41988][0].denominator)
+        self.assertEqual(0, reloaded.tag_v2[41988].numerator)
+        self.assertEqual(0, reloaded.tag_v2[41988].denominator)
 
     def test_expty_values(self):
         data = io.BytesIO(
