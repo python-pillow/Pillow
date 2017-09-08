@@ -193,8 +193,8 @@ TAGS_V2 = {
 
     50741: ("MakerNoteSafety", SHORT, 1, {"Unsafe": 0, "Safe": 1}),
     50780: ("BestQualityScale", RATIONAL, 1),
-    50838: ("ImageJMetaDataByteCounts", LONG, 1),
-    50839: ("ImageJMetaData", UNDEFINED, 1)
+    50838: ("ImageJMetaDataByteCounts", LONG, 0), # Can be more than one 
+    50839: ("ImageJMetaData", UNDEFINED, 1)       # see Issue #2006
 }
 
 # Legacy Tags structure

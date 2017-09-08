@@ -56,7 +56,7 @@ class TestFileTiffMetadata(PillowTestCase):
         loaded = Image.open(f)
 
         self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (len(bindata),))
-        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], len(bindata))
+        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (len(bindata),))
 
         self.assertEqual(loaded.tag[ImageJMetaData], bindata)
         self.assertEqual(loaded.tag_v2[ImageJMetaData], bindata)
