@@ -10,49 +10,45 @@ It returns single channel by index or name. For example,
 ``getchannel`` should work up to 6 times faster than ``image.split()[0]``
 in previous Pillow versions.
 
-Removed Core Image Debugging Code
-=================================
-
-Debugging code within ``Image.core.grabclipboard`` was removed. It had been
-marked as ``will be removed in future versions`` since PIL. When enabled, it
-identified the format of the clipboard data.
-
 
 Partial Resampling
 ==================
 
-New argument ``box`` for :py:meth:`PIL.Image.Image.resize` method allows
-set rect within source image which will be resized.
-This is very similar to ``image.crop(box).resize(size)`` sequence
-except that ``box`` can be with subpixel accuracy.
+Added new argument ``box`` for :py:meth:`PIL.Image.Image.resize`. This
+argument defines a source rectangle from within the source image to be
+resized.  This is very similar to the ``image.crop(box).resize(size)``
+sequence except that ``box`` can be specified with subpixel accuracy.
 
 
 Loading 16-bit TIFF Images
 ==========================
 
 Pillow now can read 16-bit multichannel TIFF files including files
-with alpha transparency. Such files are converted to internal
-8-bit representation.
+with alpha transparency. The image data is truncated to 8-bit
+precision.
 
 
 Performance
 ===========
 
-Many performance improvements were done, including:
+This release contains several performance improvements:
 
 * Many memory bandwidth-bounded operations such as crop, image allocation,
-  conversion, split into bands and merging from bands
-  are accelerated up to 2 times
+  conversion, split into bands and merging from bands are up to 2x faster.
 * Upscaling of multichannel images (such as RGB) is accelerated by 5-10%
-* Using recent libjpeg-turbo version (most installations nowadays)
-  JPEG loading is accelerated up to 15% and JPEG saving up to 20%
+* JPEG loading is accelerated up to 15% and JPEG saving up to 20% when
+  using a recent version of libjpeg-turbo.
 
 
-Removed Internal Methods
-========================
+Core Image API Changes
+======================
 
-From time to time we are cleaning up our internal API,
-which is however accessible from the Python code.
-This time ``PIL.Image.core.copy`` and ``PIL.Image.Image.im.copy2`` methods
-were removed.
->>>>>>> Release notes for my changes
+These are internal functions that should not have been used by user
+code, but they were accessible from the python layer.
+
+Debugging code within ``Image.core.grabclipboard`` was removed. It had been
+marked as ``will be removed in future versions`` since PIL. When enabled, it
+identified the format of the clipboard data.
+
+The ``PIL.Image.core.copy`` and ``PIL.Image.Image.im.copy2`` methods
+have been removed.
