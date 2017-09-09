@@ -72,8 +72,14 @@ class TestFileEps(PillowTestCase):
             self.assert_image_similar(cmyk_image, target, 10)
 
     def test_showpage(self):
-        plot_image = Image.open("Tests/images/d15-120f10.eps")
+        # See https://github.com/python-pillow/Pillow/issues/2615
+        plot_image = Image.open("Tests/images/reqd_showpage.eps")
+        target = Image.open("Tests/images/reqd_showpage.png")
+
+        #should not crash/hang
         plot_image.load()
+        #  fonts could be slightly different
+        self.assert_image_similar(plot_image, target, 2)
 
     def test_file_object(self):
         # issue 479
