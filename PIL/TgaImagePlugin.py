@@ -179,6 +179,9 @@ def _save(im, fp, filename):
     ImageFile._save(
         im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
 
+    # write targa version 2 footer
+    fp.write(b"\000" * 8 + b"TRUEVISION-XFILE." + b"\000")
+
 #
 # --------------------------------------------------------------------
 # Registry
