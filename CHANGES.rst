@@ -4,6 +4,24 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- DOC: Fix type of palette parameter in Image.quantize. #2703
+  [kkopachev]
+
+- DOC: Fix Ico docs to match code #2712
+  [hugovk]
+
+- Added file pointer save to SpiderImagePlugin #2647
+  [radarhere]
+  
+- Add targa version 2 footer #2713
+  [jhultgre]
+
+- Removed redundant lines #2714
+  [radarhere]
+
+- Travis CI: Use default pypy/pypy3 #2721
+  [hugovk]
+
 - Fix for SystemError when rendering an empty string, added in 4.2.0 #2706
   [wiredfool]
   
