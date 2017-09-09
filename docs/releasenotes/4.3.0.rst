@@ -7,10 +7,48 @@ Get One Channel From Image
 New method :py:meth:`PIL.Image.Image.getchannel` added.
 It returns single channel by index or name. For example,
 ``image.getchannel("A")`` will return alpha channel as separate image.
+``getchannel`` should work up to 6 times faster than ``image.split()[0]``
+in previous Pillow versions.
 
-Removed Core Image Debugging Code
-=================================
+
+Partial Resampling
+==================
+
+Added new argument ``box`` for :py:meth:`PIL.Image.Image.resize`. This
+argument defines a source rectangle from within the source image to be
+resized.  This is very similar to the ``image.crop(box).resize(size)``
+sequence except that ``box`` can be specified with subpixel accuracy.
+
+
+Loading 16-bit TIFF Images
+==========================
+
+Pillow now can read 16-bit multichannel TIFF files including files
+with alpha transparency. The image data is truncated to 8-bit
+precision.
+
+
+Performance
+===========
+
+This release contains several performance improvements:
+
+* Many memory bandwidth-bounded operations such as crop, image allocation,
+  conversion, split into bands and merging from bands are up to 2x faster.
+* Upscaling of multichannel images (such as RGB) is accelerated by 5-10%
+* JPEG loading is accelerated up to 15% and JPEG saving up to 20% when
+  using a recent version of libjpeg-turbo.
+
+
+Core Image API Changes
+======================
+
+These are internal functions that should not have been used by user
+code, but they were accessible from the python layer.
 
 Debugging code within ``Image.core.grabclipboard`` was removed. It had been
 marked as ``will be removed in future versions`` since PIL. When enabled, it
 identified the format of the clipboard data.
+
+The ``PIL.Image.core.copy`` and ``PIL.Image.Image.im.copy2`` methods
+have been removed.
