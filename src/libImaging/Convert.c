@@ -238,11 +238,27 @@ rgb2bit(UINT8 *out, const UINT8 *in, int xsize) {
 }
 
 static void
-rgb2l(UINT8 *out, const UINT8 *in, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++, in += 4) {
+rgb2l(UINT8* out, const UINT8* in, int xsize)
+{
+    int x = 0;
+    __m128i coeff = _mm_set_epi16(
+        0, 3735, 19235, 9798, 0, 3735, 19235, 9798);
+    for (; x < xsize - 3; x += 4, in += 16) {
+        __m128i pix0, pix1;
+        __m128i source = _mm_loadu_si128((__m128i*)in);
+        pix0 = _mm_unpacklo_epi8(source, _mm_setzero_si128());
+        pix1 = _mm_unpackhi_epi8(source, _mm_setzero_si128());
+        pix0 = _mm_madd_epi16(pix0, coeff);
+        pix1 = _mm_madd_epi16(pix1, coeff);
+        pix0 = _mm_hadd_epi32(pix0, pix1);
+        pix0 = _mm_srli_epi32(pix0, 15);
+        pix0 = _mm_packus_epi32(pix0, pix0);
+        pix0 = _mm_packus_epi16(pix0, pix0);
+        *(UINT32*)&out[x] = _mm_cvtsi128_si32(pix0);
+    }
+    for (; x < xsize; x++, in += 4) {
         /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
-        *out++ = L24(in) >> 16;
+        out[x] = L24(in) >> 16;
     }
 }
 
@@ -439,9 +455,27 @@ rgb2rgba(UINT8 *out, const UINT8 *in, int xsize) {
 }
 
 static void
-rgba2la(UINT8 *out, const UINT8 *in, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++, in += 4, out += 4) {
+rgba2la(UINT8* out, const UINT8* in, int xsize)
+{
+    int x = 0;
+    __m128i coeff = _mm_set_epi16(
+        0, 3735, 19235, 9798, 0, 3735, 19235, 9798);
+    for (; x < xsize - 3; x += 4, in += 16, out += 16) {
+        __m128i pix0, pix1;
+        __m128i source = _mm_loadu_si128((__m128i*)in);
+        __m128i alpha = _mm_and_si128(source, _mm_set1_epi32(0xff000000));
+        pix0 = _mm_unpacklo_epi8(source, _mm_setzero_si128());
+        pix1 = _mm_unpackhi_epi8(source, _mm_setzero_si128());
+        pix0 = _mm_madd_epi16(pix0, coeff);
+        pix1 = _mm_madd_epi16(pix1, coeff);
+        pix0 = _mm_hadd_epi32(pix0, pix1);
+        pix0 = _mm_srli_epi32(pix0, 15);
+        pix0 = _mm_shuffle_epi8(pix0, _mm_set_epi8(
+            -1,12,12,12, -1,8,8,8, -1,4,4,4, -1,0,0,0));
+        pix0 = _mm_or_si128(pix0, alpha);
+        _mm_storeu_si128((__m128i*)out, pix0);
+    }
+    for (; x < xsize; x++, in += 4, out += 4) {
         /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
         out[0] = out[1] = out[2] = L24(in) >> 16;
         out[3] = in[3];
