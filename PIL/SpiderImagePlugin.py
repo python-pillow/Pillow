@@ -267,16 +267,10 @@ def _save(im, fp, filename):
         raise IOError("Error creating Spider header")
 
     # write the SPIDER header
-    try:
-        fp = open(filename, 'wb')
-    except:
-        raise IOError("Unable to open %s for writing" % filename)
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  # 32-bit native floating point
     ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 0, (rawmode, 0, 1))])
-
-    fp.close()
 
 
 def _save_spider(im, fp, filename):
