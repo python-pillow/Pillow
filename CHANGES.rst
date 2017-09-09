@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- EPS: Add showpage to force rendering of some EPS images #2636
+  [kaplun]
+
 - DOC: Fix type of palette parameter in Image.quantize. #2703
   [kkopachev]
 
