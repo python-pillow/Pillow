@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Faster filter operations for Kernel, Gaussian, and Unsharp Mask filters #2679
+  [homm]
+
 - EPS: Add showpage to force rendering of some EPS images #2636
   [kaplun]
 
