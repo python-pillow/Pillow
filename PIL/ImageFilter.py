@@ -22,7 +22,11 @@ class Filter(object):
     pass
 
 
-class Kernel(Filter):
+class MultibandFilter(Filter):
+    pass
+
+
+class Kernel(MultibandFilter):
     """
     Create a convolution kernel.  The current version only
     supports 3x3 and 5x5 integer and floating point kernels.
@@ -39,7 +43,6 @@ class Kernel(Filter):
     :param offset: Offset. If given, this value is added to the result,
                     after it has been divided by the scale factor.
     """
-    is_multiband = True
 
     def __init__(self, size, kernel, scale=None, offset=0):
         if scale is None:
@@ -143,13 +146,12 @@ class ModeFilter(Filter):
         return image.modefilter(self.size)
 
 
-class GaussianBlur(Filter):
+class GaussianBlur(MultibandFilter):
     """Gaussian blur filter.
 
     :param radius: Blur radius.
     """
     name = "GaussianBlur"
-    is_multiband = True
 
     def __init__(self, radius=2):
         self.radius = radius
@@ -158,7 +160,7 @@ class GaussianBlur(Filter):
         return image.gaussian_blur(self.radius)
 
 
-class UnsharpMask(Filter):
+class UnsharpMask(MultibandFilter):
     """Unsharp mask filter.
 
     See Wikipedia's entry on `digital unsharp masking`_ for an explanation of
@@ -173,7 +175,6 @@ class UnsharpMask(Filter):
 
     """
     name = "UnsharpMask"
-    is_multiband = True
 
     def __init__(self, radius=2, percent=150, threshold=3):
         self.radius = radius
