@@ -26,6 +26,23 @@
 
 #include "Imaging.h"
 
+
+#ifdef WORDS_BIGENDIAN
+    #define MAKE_UINT32(u0, u1, u2, u3) (u3 | (u2<<8) | (u1<<16) | (u0<<24))
+#else
+    #define MAKE_UINT32(u0, u1, u2, u3) (u0 | (u1<<8) | (u2<<16) | (u3<<24))
+#endif
+
+
+static inline UINT8 clip8(float in)
+{
+    if (in <= 0.0)
+        return 0;
+    if (in >= 255.0)
+        return 255;
+    return (UINT8) in;
+}
+
 Imaging
 ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
 {
@@ -36,9 +53,8 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
     if (xmargin < 0 && ymargin < 0)
         return (Imaging) ImagingError_ValueError("bad kernel size");
 
-    imOut = ImagingNew(
-        imIn->mode, imIn->xsize+2*xmargin, imIn->ysize+2*ymargin
-        );
+    imOut = ImagingNewDirty(
+        imIn->mode, imIn->xsize+2*xmargin, imIn->ysize+2*ymargin);
     if (!imOut)
         return NULL;
 
@@ -74,16 +90,259 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
     return imOut;
 }
 
+
+/* This is work around bug in GCC prior 4.9 in 64 bit mode.
+   GCC generates code with partial dependency which 3 times slower.
+   See: http://stackoverflow.com/a/26588074/253146 */
+#if defined(__x86_64__) && defined(__SSE__) &&  ! defined(__NO_INLINE__) && \
+    ! defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900)
+static float __attribute__((always_inline)) inline i2f(int v) {
+    float x;
+    __asm__("xorps %0, %0; cvtsi2ss %1, %0" : "=X"(x) : "r"(v) );
+    return x;
+}
+#else
+static float inline i2f(int v) { return (float) v; }
+#endif
+
+
+void
+ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
+                 float offset)
+{
+#define KERNEL1x3(in0, x, kernel, d) ( \
+    i2f((UINT8) in0[x-d])  * (kernel)[0] + \
+    i2f((UINT8) in0[x])    * (kernel)[1] + \
+    i2f((UINT8) in0[x+d])  * (kernel)[2])
+
+    int x = 0, y = 0;
+
+    memcpy(imOut->image[0], im->image[0], im->linesize);
+    if (im->bands == 1) {
+        // Add one time for rounding
+        offset += 0.5;
+        for (y = 1; y < im->ysize-1; y++) {
+            UINT8* in_1 = (UINT8*) im->image[y-1];
+            UINT8* in0 = (UINT8*) im->image[y];
+            UINT8* in1 = (UINT8*) im->image[y+1];
+            UINT8* out = (UINT8*) imOut->image[y];
+
+            out[0] = in0[0];
+            for (x = 1; x < im->xsize-1; x++) {
+                float ss = offset;
+                ss += KERNEL1x3(in1, x, &kernel[0], 1);
+                ss += KERNEL1x3(in0, x, &kernel[3], 1);
+                ss += KERNEL1x3(in_1, x, &kernel[6], 1);
+                out[x] = clip8(ss);
+             }
+            out[x] = in0[x];
+        }
+    } else {
+        // Add one time for rounding
+        offset += 0.5;
+        for (y = 1; y < im->ysize-1; y++) {
+            UINT8* in_1 = (UINT8*) im->image[y-1];
+            UINT8* in0 = (UINT8*) im->image[y];
+            UINT8* in1 = (UINT8*) im->image[y+1];
+            UINT32* out = (UINT32*) imOut->image[y];
+
+            out[0] = ((UINT32*) in0)[0];
+            if (im->bands == 2) {
+                for (x = 1; x < im->xsize-1; x++) {
+                    float ss0 = offset;
+                    float ss3 = offset;
+                    ss0 += KERNEL1x3(in1, x*4+0, &kernel[0], 4);
+                    ss3 += KERNEL1x3(in1, x*4+3, &kernel[0], 4);
+                    ss0 += KERNEL1x3(in0, x*4+0, &kernel[3], 4);
+                    ss3 += KERNEL1x3(in0, x*4+3, &kernel[3], 4);
+                    ss0 += KERNEL1x3(in_1, x*4+0, &kernel[6], 4);
+                    ss3 += KERNEL1x3(in_1, x*4+3, &kernel[6], 4);
+                    out[x] = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
+                }
+            } else if (im->bands == 3) {
+                for (x = 1; x < im->xsize-1; x++) {
+                    float ss0 = offset;
+                    float ss1 = offset;
+                    float ss2 = offset;
+                    ss0 += KERNEL1x3(in1, x*4+0, &kernel[0], 4);
+                    ss1 += KERNEL1x3(in1, x*4+1, &kernel[0], 4);
+                    ss2 += KERNEL1x3(in1, x*4+2, &kernel[0], 4);
+                    ss0 += KERNEL1x3(in0, x*4+0, &kernel[3], 4);
+                    ss1 += KERNEL1x3(in0, x*4+1, &kernel[3], 4);
+                    ss2 += KERNEL1x3(in0, x*4+2, &kernel[3], 4);
+                    ss0 += KERNEL1x3(in_1, x*4+0, &kernel[6], 4);
+                    ss1 += KERNEL1x3(in_1, x*4+1, &kernel[6], 4);
+                    ss2 += KERNEL1x3(in_1, x*4+2, &kernel[6], 4);
+                    out[x] = MAKE_UINT32(
+                        clip8(ss0), clip8(ss1), clip8(ss2), 0);
+                }
+            } else if (im->bands == 4) {
+                for (x = 1; x < im->xsize-1; x++) {
+                    float ss0 = offset;
+                    float ss1 = offset;
+                    float ss2 = offset;
+                    float ss3 = offset;
+                    ss0 += KERNEL1x3(in1, x*4+0, &kernel[0], 4);
+                    ss1 += KERNEL1x3(in1, x*4+1, &kernel[0], 4);
+                    ss2 += KERNEL1x3(in1, x*4+2, &kernel[0], 4);
+                    ss3 += KERNEL1x3(in1, x*4+3, &kernel[0], 4);
+                    ss0 += KERNEL1x3(in0, x*4+0, &kernel[3], 4);
+                    ss1 += KERNEL1x3(in0, x*4+1, &kernel[3], 4);
+                    ss2 += KERNEL1x3(in0, x*4+2, &kernel[3], 4);
+                    ss3 += KERNEL1x3(in0, x*4+3, &kernel[3], 4);
+                    ss0 += KERNEL1x3(in_1, x*4+0, &kernel[6], 4);
+                    ss1 += KERNEL1x3(in_1, x*4+1, &kernel[6], 4);
+                    ss2 += KERNEL1x3(in_1, x*4+2, &kernel[6], 4);
+                    ss3 += KERNEL1x3(in_1, x*4+3, &kernel[6], 4);
+                    out[x] = MAKE_UINT32(
+                        clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
+                }
+            }
+            out[x] = ((UINT32*) in0)[x];
+        }
+    }
+    memcpy(imOut->image[y], im->image[y], im->linesize);
+}
+
+
+void
+ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
+                 float offset)
+{
+#define KERNEL1x5(in0, x, kernel, d) ( \
+    i2f((UINT8) in0[x-d-d])   * (kernel)[0] + \
+    i2f((UINT8) in0[x-d])     * (kernel)[1] + \
+    i2f((UINT8) in0[x])       * (kernel)[2] + \
+    i2f((UINT8) in0[x+d])     * (kernel)[3] + \
+    i2f((UINT8) in0[x+d+d])   * (kernel)[4])
+
+    int x = 0, y = 0;
+
+    memcpy(imOut->image[0], im->image[0], im->linesize);
+    memcpy(imOut->image[1], im->image[1], im->linesize);
+    if (im->bands == 1) {
+        // Add one time for rounding
+        offset += 0.5;
+        for (y = 2; y < im->ysize-2; y++) {
+            UINT8* in_2 = (UINT8*) im->image[y-2];
+            UINT8* in_1 = (UINT8*) im->image[y-1];
+            UINT8* in0 = (UINT8*) im->image[y];
+            UINT8* in1 = (UINT8*) im->image[y+1];
+            UINT8* in2 = (UINT8*) im->image[y+2];
+            UINT8* out = (UINT8*) imOut->image[y];
+
+            out[0] = in0[0];
+            out[1] = in0[1];
+            for (x = 2; x < im->xsize-2; x++) {
+                float ss = offset;
+                ss += KERNEL1x5(in2, x, &kernel[0], 1);
+                ss += KERNEL1x5(in1, x, &kernel[5], 1);
+                ss += KERNEL1x5(in0, x, &kernel[10], 1);
+                ss += KERNEL1x5(in_1, x, &kernel[15], 1);
+                ss += KERNEL1x5(in_2, x, &kernel[20], 1);
+                out[x] = clip8(ss);
+            }
+            out[x+0] = in0[x+0];
+            out[x+1] = in0[x+1];
+        }
+    } else {
+        // Add one time for rounding
+        offset += 0.5;
+        for (y = 2; y < im->ysize-2; y++) {
+            UINT8* in_2 = (UINT8*) im->image[y-2];
+            UINT8* in_1 = (UINT8*) im->image[y-1];
+            UINT8* in0 = (UINT8*) im->image[y];
+            UINT8* in1 = (UINT8*) im->image[y+1];
+            UINT8* in2 = (UINT8*) im->image[y+2];
+            UINT32* out = (UINT32*) imOut->image[y];
+
+            out[0] = ((UINT32*) in0)[0];
+            out[1] = ((UINT32*) in0)[1];
+            if (im->bands == 2) {
+                for (x = 2; x < im->xsize-2; x++) {
+                    float ss0 = offset;
+                    float ss3 = offset;
+                    ss0 += KERNEL1x5(in2, x*4+0, &kernel[0], 4);
+                    ss3 += KERNEL1x5(in2, x*4+3, &kernel[0], 4);
+                    ss0 += KERNEL1x5(in1, x*4+0, &kernel[5], 4);
+                    ss3 += KERNEL1x5(in1, x*4+3, &kernel[5], 4);
+                    ss0 += KERNEL1x5(in0, x*4+0, &kernel[10], 4);
+                    ss3 += KERNEL1x5(in0, x*4+3, &kernel[10], 4);
+                    ss0 += KERNEL1x5(in_1, x*4+0, &kernel[15], 4);
+                    ss3 += KERNEL1x5(in_1, x*4+3, &kernel[15], 4);
+                    ss0 += KERNEL1x5(in_2, x*4+0, &kernel[20], 4);
+                    ss3 += KERNEL1x5(in_2, x*4+3, &kernel[20], 4);
+                    out[x] = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
+                }
+            } else if (im->bands == 3) {
+                for (x = 2; x < im->xsize-2; x++) {
+                    float ss0 = offset;
+                    float ss1 = offset;
+                    float ss2 = offset;
+                    ss0 += KERNEL1x5(in2, x*4+0, &kernel[0], 4);
+                    ss1 += KERNEL1x5(in2, x*4+1, &kernel[0], 4);
+                    ss2 += KERNEL1x5(in2, x*4+2, &kernel[0], 4);
+                    ss0 += KERNEL1x5(in1, x*4+0, &kernel[5], 4);
+                    ss1 += KERNEL1x5(in1, x*4+1, &kernel[5], 4);
+                    ss2 += KERNEL1x5(in1, x*4+2, &kernel[5], 4);
+                    ss0 += KERNEL1x5(in0, x*4+0, &kernel[10], 4);
+                    ss1 += KERNEL1x5(in0, x*4+1, &kernel[10], 4);
+                    ss2 += KERNEL1x5(in0, x*4+2, &kernel[10], 4);
+                    ss0 += KERNEL1x5(in_1, x*4+0, &kernel[15], 4);
+                    ss1 += KERNEL1x5(in_1, x*4+1, &kernel[15], 4);
+                    ss2 += KERNEL1x5(in_1, x*4+2, &kernel[15], 4);
+                    ss0 += KERNEL1x5(in_2, x*4+0, &kernel[20], 4);
+                    ss1 += KERNEL1x5(in_2, x*4+1, &kernel[20], 4);
+                    ss2 += KERNEL1x5(in_2, x*4+2, &kernel[20], 4);
+                    out[x] = MAKE_UINT32(
+                        clip8(ss0), clip8(ss1), clip8(ss2), 0);
+                }
+            } else if (im->bands == 4) {
+                for (x = 2; x < im->xsize-2; x++) {
+                    float ss0 = offset;
+                    float ss1 = offset;
+                    float ss2 = offset;
+                    float ss3 = offset;
+                    ss0 += KERNEL1x5(in2, x*4+0, &kernel[0], 4);
+                    ss1 += KERNEL1x5(in2, x*4+1, &kernel[0], 4);
+                    ss2 += KERNEL1x5(in2, x*4+2, &kernel[0], 4);
+                    ss3 += KERNEL1x5(in2, x*4+3, &kernel[0], 4);
+                    ss0 += KERNEL1x5(in1, x*4+0, &kernel[5], 4);
+                    ss1 += KERNEL1x5(in1, x*4+1, &kernel[5], 4);
+                    ss2 += KERNEL1x5(in1, x*4+2, &kernel[5], 4);
+                    ss3 += KERNEL1x5(in1, x*4+3, &kernel[5], 4);
+                    ss0 += KERNEL1x5(in0, x*4+0, &kernel[10], 4);
+                    ss1 += KERNEL1x5(in0, x*4+1, &kernel[10], 4);
+                    ss2 += KERNEL1x5(in0, x*4+2, &kernel[10], 4);
+                    ss3 += KERNEL1x5(in0, x*4+3, &kernel[10], 4);
+                    ss0 += KERNEL1x5(in_1, x*4+0, &kernel[15], 4);
+                    ss1 += KERNEL1x5(in_1, x*4+1, &kernel[15], 4);
+                    ss2 += KERNEL1x5(in_1, x*4+2, &kernel[15], 4);
+                    ss3 += KERNEL1x5(in_1, x*4+3, &kernel[15], 4);
+                    ss0 += KERNEL1x5(in_2, x*4+0, &kernel[20], 4);
+                    ss1 += KERNEL1x5(in_2, x*4+1, &kernel[20], 4);
+                    ss2 += KERNEL1x5(in_2, x*4+2, &kernel[20], 4);
+                    ss3 += KERNEL1x5(in_2, x*4+3, &kernel[20], 4);
+                    out[x] = MAKE_UINT32(
+                        clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
+                }
+            }
+            out[x] = ((UINT32*) in0)[x];
+            out[x+1] = ((UINT32*) in0)[x+1];
+        }
+    }
+    memcpy(imOut->image[y], im->image[y], im->linesize);
+    memcpy(imOut->image[y+1], im->image[y+1], im->linesize);
+}
+
 Imaging
 ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
-              FLOAT32 offset, FLOAT32 divisor)
+              FLOAT32 offset)
 {
     Imaging imOut;
-    int x, y;
-    FLOAT32 sum;
     ImagingSectionCookie cookie;
 
-    if (!im || strcmp(im->mode, "L") != 0)
+    if ( ! im || im->type != IMAGING_TYPE_UINT8)
         return (Imaging) ImagingError_ModeError();
 
     if (im->xsize < xsize || im->ysize < ysize)
@@ -92,95 +351,17 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
     if ((xsize != 3 && xsize != 5) || xsize != ysize)
         return (Imaging) ImagingError_ValueError("bad kernel size");
 
-    imOut = ImagingNew(im->mode, im->xsize, im->ysize);
+    imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
     if (!imOut)
         return NULL;
-
-    // Add one time for rounding
-    offset += 0.5;
-
-    /* brute force kernel implementations */
-#define KERNEL3x3(image, kernel, d) ( \
-    (int) image[y+1][x-d] * kernel[0] + \
-    (int) image[y+1][x]   * kernel[1] + \
-    (int) image[y+1][x+d] * kernel[2] + \
-    (int) image[y][x-d]   * kernel[3] + \
-    (int) image[y][x]     * kernel[4] + \
-    (int) image[y][x+d]   * kernel[5] + \
-    (int) image[y-1][x-d] * kernel[6] + \
-    (int) image[y-1][x]   * kernel[7] + \
-    (int) image[y-1][x+d] * kernel[8])
-
-#define KERNEL5x5(image, kernel, d) ( \
-    (int) image[y+2][x-d-d] * kernel[0] + \
-    (int) image[y+2][x-d]   * kernel[1] + \
-    (int) image[y+2][x]     * kernel[2] + \
-    (int) image[y+2][x+d]   * kernel[3] + \
-    (int) image[y+2][x+d+d] * kernel[4] + \
-    (int) image[y+1][x-d-d] * kernel[5] + \
-    (int) image[y+1][x-d]   * kernel[6] + \
-    (int) image[y+1][x]     * kernel[7] + \
-    (int) image[y+1][x+d]   * kernel[8] + \
-    (int) image[y+1][x+d+d] * kernel[9] + \
-    (int) image[y][x-d-d]   * kernel[10] + \
-    (int) image[y][x-d]     * kernel[11] + \
-    (int) image[y][x]       * kernel[12] + \
-    (int) image[y][x+d]     * kernel[13] + \
-    (int) image[y][x+d+d]   * kernel[14] + \
-    (int) image[y-1][x-d-d] * kernel[15] + \
-    (int) image[y-1][x-d]   * kernel[16] + \
-    (int) image[y-1][x]     * kernel[17] + \
-    (int) image[y-1][x+d]   * kernel[18] + \
-    (int) image[y-1][x+d+d] * kernel[19] + \
-    (int) image[y-2][x-d-d] * kernel[20] + \
-    (int) image[y-2][x-d]   * kernel[21] + \
-    (int) image[y-2][x]     * kernel[22] + \
-    (int) image[y-2][x+d]   * kernel[23] + \
-    (int) image[y-2][x+d+d] * kernel[24])
 
     ImagingSectionEnter(&cookie);
     if (xsize == 3) {
         /* 3x3 kernel. */
-        for (x = 0; x < im->xsize; x++)
-            imOut->image[0][x] = im->image8[0][x];
-        for (y = 1; y < im->ysize-1; y++) {
-            imOut->image[y][0] = im->image8[y][0];
-            for (x = 1; x < im->xsize-1; x++) {
-                sum = KERNEL3x3(im->image8, kernel, 1) / divisor + offset;
-                if (sum <= 0)
-                    imOut->image8[y][x] = 0;
-                else if (sum >= 255)
-                    imOut->image8[y][x] = 255;
-                else
-                    imOut->image8[y][x] = (UINT8) sum;
-             }
-            imOut->image8[y][x] = im->image8[y][x];
-        }
-        for (x = 0; x < im->xsize; x++)
-            imOut->image8[y][x] = im->image8[y][x];
+        ImagingFilter3x3(imOut, im, kernel, offset);
     } else {
         /* 5x5 kernel. */
-        for (y = 0; y < 2; y++)
-            for (x = 0; x < im->xsize; x++)
-                imOut->image8[y][x] = im->image8[y][x];
-        for (; y < im->ysize-2; y++) {
-            for (x = 0; x < 2; x++)
-                imOut->image8[y][x] = im->image8[y][x];
-            for (; x < im->xsize-2; x++) {
-                sum = KERNEL5x5(im->image8, kernel, 1) / divisor + offset;
-                if (sum <= 0)
-                    imOut->image8[y][x] = 0;
-                else if (sum >= 255)
-                    imOut->image8[y][x] = 255;
-                else
-                    imOut->image8[y][x] = (UINT8) sum;
-            }
-            for (; x < im->xsize; x++)
-                imOut->image8[y][x] = im->image8[y][x];
-        }
-        for (; y < im->ysize; y++)
-            for (x = 0; x < im->xsize; x++)
-                imOut->image8[y][x] = im->image8[y][x];
+        ImagingFilter5x5(imOut, im, kernel, offset);
     }
     ImagingSectionLeave(&cookie);
     return imOut;

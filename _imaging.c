@@ -819,7 +819,7 @@ _filter(ImagingObject* self, PyObject* args)
     Py_ssize_t kernelsize;
     FLOAT32* kerneldata;
 
-    int xsize, ysize;
+    int xsize, ysize, i;
     float divisor, offset;
     PyObject* kernel = NULL;
     if (!PyArg_ParseTuple(args, "(ii)ffO", &xsize, &ysize,
@@ -835,8 +835,12 @@ _filter(ImagingObject* self, PyObject* args)
         return ImagingError_ValueError("bad kernel size");
     }
 
+    for (i = 0; i < kernelsize; ++i) {
+        kerneldata[i] /= divisor;
+    }
+
     imOut = PyImagingNew(
-        ImagingFilter(self->image, xsize, ysize, kerneldata, offset, divisor)
+        ImagingFilter(self->image, xsize, ysize, kerneldata, offset)
         );
 
     free(kerneldata);
