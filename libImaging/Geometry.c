@@ -5,7 +5,7 @@
    Rotating in chunks that fit in the cache can speed up rotation
    8x on a modern CPU. A chunk size of 128 requires only 65k and is large enough
    that the overhead from the extra loops are not apparent. */
-#define ROTATE_CHUNK 128
+#define ROTATE_CHUNK 16
 
 #define COORD(v) ((v) < 0.0 ? -1 : ((int)(v)))
 #define FLOOR(v) ((v) < 0.0 ? ((int)floor(v)) : ((int)(v)))
