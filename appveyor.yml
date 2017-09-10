@@ -19,9 +19,6 @@ environment:
   - PYTHON: C:/Python34
   - PYTHON: C:/Python27
   - PYTHON: C:/Python34-x64
-  - PYTHON: C:/Python33
-  - PYTHON: C:/Python33-x64
-
 
 install:
 - curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
