@@ -26,23 +26,29 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
-#define FLIP_HORIZ(image)\
-    for (y = 0; y < imIn->ysize; y++) {\
-        xr = imIn->xsize-1;\
-        for (x = 0; x < imIn->xsize; x++, xr--)\
-            imOut->image[y][x] = imIn->image[y][xr];\
-    }
-
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        FLIP_HORIZ(image8)
-    else
-        FLIP_HORIZ(image32)
+    if (imIn->image8) {
+        for (y = 0; y < imIn->ysize; y++) {
+            UINT8* in = (UINT8*) imIn->image8[y];
+            UINT8* out = (UINT8*) imOut->image8[y];
+            x = 0;
+            xr = imIn->xsize-1;
+            for (; x < imIn->xsize; x++, xr--)
+                out[xr] = in[x];
+        }
+    } else {
+        for (y = 0; y < imIn->ysize; y++) {
+            UINT32* in = (UINT32*) imIn->image32[y];
+            UINT32* out = (UINT32*) imOut->image32[y];
+            x = 0;
+            xr = imIn->xsize-1;
+            for (; x < imIn->xsize; x++, xr--)
+                out[xr] = in[x];
+        }
+    }
 
     ImagingSectionLeave(&cookie);
-
-#undef FLIP_HORIZ
 
     return imOut;
 }
