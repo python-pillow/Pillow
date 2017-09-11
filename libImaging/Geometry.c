@@ -178,7 +178,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 
 
 Imaging
-ImagingTransposeRotate180(Imaging imOut, Imaging imIn)
+ImagingTransverse(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
     int x, y, xr, yr, xx, yy, xxsize, yysize;
@@ -191,7 +191,7 @@ ImagingTransposeRotate180(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
-#define TRANSPOSE(INT, image) \
+#define TRANSVERSE(INT, image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
         for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) { \
             yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
@@ -216,13 +216,13 @@ ImagingTransposeRotate180(Imaging imOut, Imaging imIn)
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8)
-        TRANSPOSE(UINT8, image8)
+        TRANSVERSE(UINT8, image8)
     else
-        TRANSPOSE(INT32, image32)
+        TRANSVERSE(INT32, image32)
 
     ImagingSectionLeave(&cookie);
 
-#undef TRANSPOSE
+#undef TRANSVERSE
 
     return imOut;
 }
