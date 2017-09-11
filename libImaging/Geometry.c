@@ -5,7 +5,8 @@
    Rotating in chunks that fit in the cache can speed up rotation
    8x on a modern CPU. A chunk size of 128 requires only 65k and is large enough
    that the overhead from the extra loops are not apparent. */
-#define ROTATE_CHUNK 16
+#define ROTATE_CHUNK 512
+#define ROTATE_SMALL_CHUNK 8
 
 #define COORD(v) ((v) < 0.0 ? -1 : ((int)(v)))
 #define FLOOR(v) ((v) < 0.0 ? ((int)floor(v)) : ((int)(v)))
@@ -82,6 +83,7 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xr, xxsize, yysize;
+    int xxx, yyy, xxxsize, yyysize;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -90,15 +92,22 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
-#define ROTATE_90(image) \
+#define ROTATE_90(INT, image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
         for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) { \
             yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
             xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
-            for (yy = y; yy < yysize; yy++) { \
-                xr = imIn->xsize - 1 - x; \
-                for (xx = x; xx < xxsize; xx++, xr--) { \
-                    imOut->image[xr][yy] = imIn->image[yy][xx]; \
+            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) { \
+                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) { \
+                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize ? yy + ROTATE_SMALL_CHUNK : imIn->ysize; \
+                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
+                    for (yyy = yy; yyy < yyysize; yyy++) { \
+                        INT* in = imIn->image[yyy]; \
+                        xr = imIn->xsize - 1 - xx; \
+                        for (xxx = xx; xxx < xxxsize; xxx++, xr--) { \
+                            imOut->image[xr][yyy] = in[xxx]; \
+                        } \
+                    } \
                 } \
             } \
         } \
@@ -107,9 +116,9 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8)
-        ROTATE_90(image8)
+        ROTATE_90(UINT8, image8)
     else
-        ROTATE_90(image32)
+        ROTATE_90(INT32, image32)
 
     ImagingSectionLeave(&cookie);
 
@@ -124,6 +133,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xxsize, yysize;
+    int xxx, yyy, xxxsize, yyysize;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -132,14 +142,21 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
-#define TRANSPOSE(image) \
+#define TRANSPOSE(INT, image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
         for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) { \
             yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
             xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
-            for (yy = y; yy < yysize; yy++) { \
-                for (xx = x; xx < xxsize; xx++) { \
-                    imOut->image[xx][yy] = imIn->image[yy][xx]; \
+            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) { \
+                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) { \
+                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize ? yy + ROTATE_SMALL_CHUNK : imIn->ysize; \
+                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
+                    for (yyy = yy; yyy < yyysize; yyy++) { \
+                        INT* in = imIn->image[yyy]; \
+                        for (xxx = xx; xxx < xxxsize; xxx++) { \
+                            imOut->image[xxx][yyy] = in[xxx]; \
+                        } \
+                    } \
                 } \
             } \
         } \
@@ -148,9 +165,9 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8)
-        TRANSPOSE(image8)
+        TRANSPOSE(UINT8, image8)
     else
-        TRANSPOSE(image32)
+        TRANSPOSE(INT32, image32)
 
     ImagingSectionLeave(&cookie);
 
@@ -164,8 +181,8 @@ Imaging
 ImagingTransposeRotate180(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
-    int x, y, xx, yy, xxsize, yysize;
-    int xr, yr;
+    int x, y, xr, yr, xx, yy, xxsize, yysize;
+    int xxx, yyy, xxxsize, yyysize;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -174,16 +191,23 @@ ImagingTransposeRotate180(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
-#define TRANSPOSE(image) \
+#define TRANSPOSE(INT, image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
         for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) { \
             yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
             xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
-            for (yy = y; yy < yysize; yy++) { \
-                yr = imIn->ysize - 1 - yy; \
-                xr = imIn->xsize - 1 - x; \
-                for (xx = x; xx < xxsize; xx++, xr--) { \
-                    imOut->image[xr][yr] = imIn->image[yy][xx]; \
+            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) { \
+                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) { \
+                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize ? yy + ROTATE_SMALL_CHUNK : imIn->ysize; \
+                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
+                    yr = imIn->ysize - 1 - yy; \
+                    for (yyy = yy; yyy < yyysize; yyy++, yr--) { \
+                        INT* in = imIn->image[yyy]; \
+                        xr = imIn->xsize - 1 - xx; \
+                        for (xxx = xx; xxx < xxxsize; xxx++, xr--) { \
+                            imOut->image[xr][yr] = in[xxx]; \
+                        } \
+                    } \
                 } \
             } \
         } \
@@ -192,9 +216,9 @@ ImagingTransposeRotate180(Imaging imOut, Imaging imIn)
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8)
-        TRANSPOSE(image8)
+        TRANSPOSE(UINT8, image8)
     else
-        TRANSPOSE(image32)
+        TRANSPOSE(INT32, image32)
 
     ImagingSectionLeave(&cookie);
 
@@ -249,6 +273,7 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
 {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, yr, xxsize, yysize;
+    int xxx, yyy, xxxsize, yyysize;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
@@ -257,15 +282,22 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
-#define ROTATE_270(image) \
+#define ROTATE_270(INT, image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
         for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) { \
             yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
             xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
-            yr = imIn->ysize - 1 - y; \
-            for (yy = y; yy < yysize; yy++, yr--) { \
-                for (xx = x; xx < xxsize; xx++) { \
-                    imOut->image[xx][yr] = imIn->image[yy][xx]; \
+            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) { \
+                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) { \
+                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize ? yy + ROTATE_SMALL_CHUNK : imIn->ysize; \
+                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
+                    yr = imIn->ysize - 1 - yy; \
+                    for (yyy = yy; yyy < yyysize; yyy++, yr--) { \
+                        INT* in = imIn->image[yyy]; \
+                        for (xxx = xx; xxx < xxxsize; xxx++) { \
+                            imOut->image[xxx][yr] = in[xxx]; \
+                        } \
+                    } \
                 } \
             } \
         } \
@@ -274,9 +306,9 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8)
-        ROTATE_270(image8)
+        ROTATE_270(UINT8, image8)
     else
-        ROTATE_270(image32)
+        ROTATE_270(INT32, image32)
 
     ImagingSectionLeave(&cookie);
 
