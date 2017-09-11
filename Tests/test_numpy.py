@@ -60,7 +60,7 @@ class TestNumpy(PillowTestCase):
         # Check supported 1-bit integer formats
         self.assert_image(to_image(numpy.bool, 1, 1), '1', TEST_IMAGE_SIZE)
         self.assert_image(to_image(numpy.bool8, 1, 1), '1', TEST_IMAGE_SIZE)
-        
+
         # Check supported 8-bit integer formats
         self.assert_image(to_image(numpy.uint8), "L", TEST_IMAGE_SIZE)
         self.assert_image(to_image(numpy.uint8, 3), "RGB", TEST_IMAGE_SIZE)
@@ -86,12 +86,12 @@ class TestNumpy(PillowTestCase):
         self.assert_image(to_image(numpy.int32), "I", TEST_IMAGE_SIZE)
 
         # Check 64-bit integer formats
-        self.assertRaises(TypeError, lambda: to_image(numpy.uint64))
-        self.assertRaises(TypeError, lambda: to_image(numpy.int64))
+        self.assertRaises(TypeError, to_image, numpy.uint64)
+        self.assertRaises(TypeError, to_image, numpy.int64)
 
         # Check floating-point formats
         self.assert_image(to_image(numpy.float), "F", TEST_IMAGE_SIZE)
-        self.assertRaises(TypeError, lambda: to_image(numpy.float16))
+        self.assertRaises(TypeError, to_image, numpy.float16)
         self.assert_image(to_image(numpy.float32), "F", TEST_IMAGE_SIZE)
         self.assert_image(to_image(numpy.float64), "F", TEST_IMAGE_SIZE)
 
@@ -216,7 +216,7 @@ class TestNumpy(PillowTestCase):
     def test_bool(self):
         # https://github.com/python-pillow/Pillow/issues/2044
         a = numpy.zeros((10,2), dtype=numpy.bool)
-        a[0][0] = True 
+        a[0][0] = True
 
         im2 = Image.fromarray(a)
         self.assertEqual(im2.getdata()[0], 255)

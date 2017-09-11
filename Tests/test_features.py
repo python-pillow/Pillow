@@ -7,7 +7,7 @@ try:
     HAVE_WEBP = True
 except:
     HAVE_WEBP = False
-    
+
 
 class TestFeatures(PillowTestCase):
 
@@ -34,7 +34,7 @@ class TestFeatures(PillowTestCase):
     def check_webp_mux(self):
         self.assertEqual(features.check('webp_mux'),
                          _webp.HAVE_WEBPMUX)
-    
+
     def test_check_modules(self):
         for feature in features.modules:
             self.assertIn(features.check_module(feature), [True, False])
@@ -51,13 +51,13 @@ class TestFeatures(PillowTestCase):
         # Arrange
         codec = "unsupported_codec"
         # Act / Assert
-        self.assertRaises(ValueError, lambda: features.check_codec(codec))
+        self.assertRaises(ValueError, features.check_codec, codec)
 
     def test_unsupported_module(self):
         # Arrange
         module = "unsupported_module"
         # Act / Assert
-        self.assertRaises(ValueError, lambda: features.check_module(module))
+        self.assertRaises(ValueError, features.check_module, module)
 
 
 if __name__ == '__main__':

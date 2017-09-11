@@ -47,10 +47,9 @@ class TestImage(PillowTestCase):
         self.assertEqual(im2.getcolors(), [(10000, 0)])
         self.assertEqual(im3.getcolors(), [(10000, 0)])
 
-        self.assertRaises(ValueError, lambda: Image.new("X", (100, 100)))
-        self.assertRaises(ValueError, lambda: Image.new("", (100, 100)))
-        # self.assertRaises(
-        #     MemoryError, lambda: Image.new("L", (1000000, 1000000)))
+        self.assertRaises(ValueError, Image.new, "X", (100, 100))
+        self.assertRaises(ValueError, Image.new, "", (100, 100))
+        # self.assertRaises(MemoryError, Image.new, "L", (1000000, 1000000))
 
     def test_width_height(self):
         im = Image.new("RGB", (1, 2))
@@ -68,7 +67,10 @@ class TestImage(PillowTestCase):
         else:
             import io
             im = io.BytesIO(b'')
-        self.assertRaises(IOError, lambda: Image.open(im))
+        self.assertRaises(IOError, Image.open, im)
+
+    def test_bad_mode(self):
+        self.assertRaises(ValueError, Image.open, "filename", "bad mode")
 
     @unittest.skipIf(sys.version_info < (3, 4),
                      "pathlib only available in Python 3.4 or later")
@@ -109,7 +111,7 @@ class TestImage(PillowTestCase):
     def test_unknown_extension(self):
         im = hopper()
         temp_file = self.tempfile("temp.unknown")
-        self.assertRaises(ValueError, lambda: im.save(temp_file))
+        self.assertRaises(ValueError, im.save, temp_file)
 
     def test_internals(self):
 
@@ -273,6 +275,20 @@ class TestImage(PillowTestCase):
                                 target.crop((32, 32, 96, 96)))
         self.assertEqual(source.size, (128, 128))
 
+        # errors
+        self.assertRaises(ValueError,
+            source.alpha_composite, over, "invalid source")
+        self.assertRaises(ValueError,
+            source.alpha_composite, over, (0, 0), "invalid destination")
+        self.assertRaises(ValueError,
+            source.alpha_composite, over, (0))
+        self.assertRaises(ValueError,
+            source.alpha_composite, over, (0, 0), (0))
+        self.assertRaises(ValueError,
+            source.alpha_composite, over, (0, -1))
+        self.assertRaises(ValueError,
+            source.alpha_composite, over, (0, 0), (0, -1))
+
     def test_registered_extensions_uninitialized(self):
         # Arrange
         Image._initialized = 0
@@ -327,7 +343,7 @@ class TestImage(PillowTestCase):
         # Act/Assert
         self.assertRaises(
             ValueError,
-            lambda: Image.effect_mandelbrot(size, extent, quality))
+            Image.effect_mandelbrot, size, extent, quality)
 
     def test_effect_noise(self):
         # Arrange
@@ -388,7 +404,7 @@ class TestImage(PillowTestCase):
         im = hopper()
 
         # Act / Assert
-        self.assertRaises(NotImplementedError, lambda: im.offset(None))
+        self.assertRaises(NotImplementedError, im.offset, None)
 
     def test_fromstring(self):
         self.assertRaises(NotImplementedError, Image.fromstring)
@@ -399,8 +415,7 @@ class TestImage(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(ValueError,
-                          lambda: Image.linear_gradient(wrong_mode))
-        return
+                          Image.linear_gradient, wrong_mode)
 
     def test_linear_gradient(self):
 
@@ -425,8 +440,7 @@ class TestImage(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(ValueError,
-                          lambda: Image.radial_gradient(wrong_mode))
-        return
+                          Image.radial_gradient, wrong_mode)
 
     def test_radial_gradient(self):
 
@@ -444,6 +458,11 @@ class TestImage(PillowTestCase):
             self.assertEqual(im.getpixel((128, 128)), 0)
             target = Image.open(target_file).convert(mode)
             self.assert_image_equal(im, target)
+
+    def test_remap_palette(self):
+        # Test illegal image mode
+        im = hopper()
+        self.assertRaises(ValueError, im.remap_palette, None)
 
 
     def test__new(self):
@@ -496,10 +515,10 @@ class TestRegistry(PillowTestCase):
         self.assertEqual(enc.args, ('RGB', 'args', 'extra'))
 
     def test_encode_registry_fail(self):
-        self.assertRaises(IOError, lambda: Image._getencoder('RGB',
-                                                             'DoesNotExist',
-                                                             ('args',),
-                                                             extra=('extra',)))
+        self.assertRaises(IOError, Image._getencoder, 'RGB',
+                                                      'DoesNotExist',
+                                                      ('args',),
+                                                      extra=('extra',))
 
 if __name__ == '__main__':
     unittest.main()

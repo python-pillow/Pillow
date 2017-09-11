@@ -3,6 +3,46 @@ Changelog (Pillow)
 
 4.3.0 (unreleased)
 ------------------
+
+- Faster filter operations for Kernel, Gaussian, and Unsharp Mask filters #2679
+  [homm]
+
+- EPS: Add showpage to force rendering of some EPS images #2636
+  [kaplun]
+
+- DOC: Fix type of palette parameter in Image.quantize. #2703
+  [kkopachev]
+
+- DOC: Fix Ico docs to match code #2712
+  [hugovk]
+
+- Added file pointer save to SpiderImagePlugin #2647
+  [radarhere]
+  
+- Add targa version 2 footer #2713
+  [jhultgre]
+
+- Removed redundant lines #2714
+  [radarhere]
+
+- Travis CI: Use default pypy/pypy3 #2721
+  [hugovk]
+
+- Fix for SystemError when rendering an empty string, added in 4.2.0 #2706
+  [wiredfool]
+  
+- Fix for memory leaks in font handling added in 4.2.0 #2634
+  [wiredfool]
+
+- Tests:  cleanup, more tests. Fixed WMF save handler #2689
+  [radarhere]
+
+- Removed debugging interface for Image.core.grabclipboard #2708
+  [radarhere]
+
+- Doc syntax fix #2710
+  [radarhere]
+
 - Faster packing and unpacking for RGB, LA, and related storage modes #2693
   [homm]
   

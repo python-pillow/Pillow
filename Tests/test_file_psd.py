@@ -21,7 +21,7 @@ class TestImagePsd(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: PsdImagePlugin.PsdImageFile(invalid_file))
+                          PsdImagePlugin.PsdImageFile, invalid_file)
 
     def test_n_frames(self):
         im = Image.open("Tests/images/hopper_merged.psd")
@@ -66,7 +66,7 @@ class TestImagePsd(PillowTestCase):
     def test_seek_eoferror(self):
         im = Image.open(test_file)
 
-        self.assertRaises(EOFError, lambda: im.seek(-1))
+        self.assertRaises(EOFError, im.seek, -1)
 
     def test_icc_profile(self):
         im = Image.open(test_file)

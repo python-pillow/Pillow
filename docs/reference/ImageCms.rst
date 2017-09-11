@@ -265,7 +265,7 @@ can be easily displayed in a chromaticity diagram, for example).
         Calculates the white point temperature (see the LCMS documentation
         for more information).
 
-        :type: :py:class:`float` or `None`
+        :type: :py:class:`float` or ``None``
 
     .. py:attribute:: viewing_condition
 

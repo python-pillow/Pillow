@@ -139,15 +139,12 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename, check=0):
+def _save(im, fp, filename):
 
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError:
         raise IOError("cannot write mode %s as TGA" % im.mode)
-
-    if check:
-        return check
 
     if colormaptype:
         colormapfirst, colormaplength, colormapentry = 0, 256, 24
@@ -181,6 +178,9 @@ def _save(im, fp, filename, check=0):
 
     ImageFile._save(
         im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
+
+    # write targa version 2 footer
+    fp.write(b"\000" * 8 + b"TRUEVISION-XFILE." + b"\000")
 
 #
 # --------------------------------------------------------------------

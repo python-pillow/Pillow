@@ -55,7 +55,7 @@ class TestFileEps(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: EpsImagePlugin.EpsImageFile(invalid_file))
+                          EpsImagePlugin.EpsImageFile, invalid_file)
 
     def test_cmyk(self):
         cmyk_image = Image.open("Tests/images/pil_sample_cmyk.eps")
@@ -70,6 +70,16 @@ class TestFileEps(PillowTestCase):
         if 'jpeg_decoder' in dir(Image.core):
             target = Image.open('Tests/images/pil_sample_rgb.jpg')
             self.assert_image_similar(cmyk_image, target, 10)
+
+    def test_showpage(self):
+        # See https://github.com/python-pillow/Pillow/issues/2615
+        plot_image = Image.open("Tests/images/reqd_showpage.eps")
+        target = Image.open("Tests/images/reqd_showpage.png")
+
+        #should not crash/hang
+        plot_image.load()
+        #  fonts could be slightly different
+        self.assert_image_similar(plot_image, target, 2)
 
     def test_file_object(self):
         # issue 479
@@ -97,7 +107,7 @@ class TestFileEps(PillowTestCase):
     def test_image_mode_not_supported(self):
         im = hopper("RGBA")
         tmpfile = self.tempfile('temp.eps')
-        self.assertRaises(ValueError, lambda: im.save(tmpfile))
+        self.assertRaises(ValueError, im.save, tmpfile)
 
     def test_render_scale1(self):
         # We need png support for these render test

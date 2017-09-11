@@ -452,83 +452,8 @@ PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
     void* data;
     PyObject* result;
 
-    int verbose = 0; /* debugging; will be removed in future versions */
-    if (!PyArg_ParseTuple(args, "|i", &verbose))
-	return NULL;
-
-
     clip = OpenClipboard(NULL);
     /* FIXME: check error status */
-
-    if (verbose) {
-        UINT format = EnumClipboardFormats(0);
-        char buffer[200];
-        char* result;
-        while (format != 0) {
-            if (GetClipboardFormatName(format, buffer, sizeof buffer) > 0)
-                result = buffer;
-            else
-                switch (format) {
-                case CF_BITMAP:
-                    result = "CF_BITMAP";
-                    break;
-                case CF_DIB:
-                    result = "CF_DIB";
-                    break;
-                case CF_DIF:
-                    result = "CF_DIF";
-                    break;
-                case CF_ENHMETAFILE:
-                    result = "CF_ENHMETAFILE";
-                    break;
-                case CF_HDROP:
-                    result = "CF_HDROP";
-                    break;
-                case CF_LOCALE:
-                    result = "CF_LOCALE";
-                    break;
-                case CF_METAFILEPICT:
-                    result = "CF_METAFILEPICT";
-                    break;
-                case CF_OEMTEXT:
-                    result = "CF_OEMTEXT";
-                    break;
-                case CF_OWNERDISPLAY:
-                    result = "CF_OWNERDISPLAY";
-                    break;
-                case CF_PALETTE:
-                    result = "CF_PALETTE";
-                    break;
-                case CF_PENDATA:
-                    result = "CF_PENDATA";
-                    break;
-                case CF_RIFF:
-                    result = "CF_RIFF";
-                    break;
-                case CF_SYLK:
-                    result = "CF_SYLK";
-                    break;
-                case CF_TEXT:
-                    result = "CF_TEXT";
-                    break;
-                case CF_WAVE:
-                    result = "CF_WAVE";
-                    break;
-                case CF_TIFF:
-                    result = "CF_TIFF";
-                    break;
-                case CF_UNICODETEXT:
-                    result = "CF_UNICODETEXT";
-                    break;
-                default:
-                    sprintf(buffer, "[%d]", format);
-                    result = buffer;
-                    break;
-                }
-            printf("%s (%d)\n", result, format);
-            format = EnumClipboardFormats(format);
-        }
-    }
 
     handle = GetClipboardData(CF_DIB);
     if (!handle) {
@@ -541,14 +466,6 @@ PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
 
     size = GlobalSize(handle);
     data = GlobalLock(handle);
-
-#if 0
-    /* calculate proper size for string formats */
-    if (format == CF_TEXT || format == CF_OEMTEXT)
-        size = strlen(data);
-    else if (format == CF_UNICODETEXT)
-        size = wcslen(data) * 2;
-#endif
 
     result = PyBytes_FromStringAndSize(data, size);
 

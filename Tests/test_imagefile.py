@@ -69,7 +69,7 @@ class TestImageFile(PillowTestCase):
             im1, im2 = roundtrip("JPEG")  # lossy compression
             self.assert_image(im1, im2.mode, im2.size)
 
-        self.assertRaises(IOError, lambda: roundtrip("PDF"))
+        self.assertRaises(IOError, roundtrip, "PDF")
 
     def test_ico(self):
         with open('Tests/images/python.ico', 'rb') as f:
@@ -93,7 +93,7 @@ class TestImageFile(PillowTestCase):
         self.assert_image_equal(im1, im2)
 
     def test_raise_ioerror(self):
-        self.assertRaises(IOError, lambda: ImageFile.raise_ioerror(1))
+        self.assertRaises(IOError, ImageFile.raise_ioerror, 1)
 
     def test_raise_typeerror(self):
         with self.assertRaises(TypeError):
@@ -182,7 +182,7 @@ class TestPyDecoder(PillowTestCase):
         self.assertEqual(d.state.xsize, xsize)
         self.assertEqual(d.state.ysize, ysize)
 
-        self.assertRaises(ValueError, lambda: d.set_as_raw(b'\x00'))
+        self.assertRaises(ValueError, d.set_as_raw, b'\x00')
 
     def test_extents_none(self):
         buf = BytesIO(b'\x00'*255)

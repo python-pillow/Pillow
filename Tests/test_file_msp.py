@@ -26,7 +26,7 @@ class TestFileMsp(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: MspImagePlugin.MspImageFile(invalid_file))
+                          MspImagePlugin.MspImageFile, invalid_file)
 
     def test_bad_checksum(self):
         # Arrange
@@ -35,7 +35,7 @@ class TestFileMsp(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(SyntaxError,
-                          lambda: MspImagePlugin.MspImageFile(bad_checksum))
+                          MspImagePlugin.MspImageFile, bad_checksum)
 
     def test_open_windows_v1(self):
         # Arrange
@@ -77,7 +77,7 @@ class TestFileMsp(PillowTestCase):
         filename = self.tempfile("temp.msp")
 
         # Act/Assert
-        self.assertRaises(IOError, lambda: im.save(filename))
+        self.assertRaises(IOError, im.save, filename)
 
 
 if __name__ == '__main__':

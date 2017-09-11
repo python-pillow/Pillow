@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
 from PIL import Image, ImageFile, PngImagePlugin
 
 from io import BytesIO
@@ -7,9 +7,6 @@ import sys
 
 codecs = dir(Image.core)
 
-# For Truncated phng memory leak
-MEM_LIMIT = 2  # max increase in MB
-ITERATIONS = 100 # Leak is 56k/iteration, this will leak 5.6megs
 
 # sample png stream
 
@@ -87,14 +84,14 @@ class TestFilePng(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: PngImagePlugin.PngImageFile(invalid_file))
+                          PngImagePlugin.PngImageFile, invalid_file)
 
     def test_broken(self):
         # Check reading of totally broken files.  In this case, the test
         # file was checked into Subversion as a text file.
 
         test_file = "Tests/images/broken.png"
-        self.assertRaises(IOError, lambda: Image.open(test_file))
+        self.assertRaises(IOError, Image.open, test_file)
 
     def test_bad_text(self):
         # Make sure PIL can read malformed tEXt chunks (@PIL152)
@@ -424,7 +421,7 @@ class TestFilePng(PillowTestCase):
             data = b'\x89' + fd.read()
 
         pngfile = BytesIO(data)
-        self.assertRaises(IOError, lambda: Image.open(pngfile))
+        self.assertRaises(IOError, Image.open, pngfile)
 
     def test_trns_rgb(self):
         # Check writing and reading of tRNS chunks for RGB images.
@@ -505,17 +502,17 @@ class TestFilePng(PillowTestCase):
         im.convert("P").save(test_file, dpi=(100, 100))
 
         chunks = []
-        fp = open(test_file, "rb")
-        fp.read(8)
-        png = PngImagePlugin.PngStream(fp)
-        while True:
-            cid, pos, length = png.read()
-            chunks.append(cid)
-            try:
-                s = png.call(cid, pos, length)
-            except EOFError:
-                break
-            png.crc(cid, s)
+        with open(test_file, "rb") as fp:
+            fp.read(8)
+            png = PngImagePlugin.PngStream(fp)
+            while True:
+                cid, pos, length = png.read()
+                chunks.append(cid)
+                try:
+                    s = png.call(cid, pos, length)
+                except EOFError:
+                    break
+                png.crc(cid, s)
 
         # https://www.w3.org/TR/PNG/#5ChunkOrdering
         # IHDR - shall be first
@@ -531,27 +528,21 @@ class TestFilePng(PillowTestCase):
         # pHYs - before IDAT
         self.assertLess(chunks.index(b"pHYs"), chunks.index(b"IDAT"))
 
+    def test_getchunks(self):
+        im = hopper()
+
+        chunks = PngImagePlugin.getchunks(im)
+        self.assertEqual(len(chunks), 3)
+
 
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
-class TestTruncatedPngPLeaks(PillowTestCase):
+class TestTruncatedPngPLeaks(PillowLeakTestCase):
+    mem_limit = 2*1024  # max increase in K
+    iterations = 100 # Leak is 56k/iteration, this will leak 5.6megs
 
     def setUp(self):
         if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
             self.skipTest("zip/deflate support not available")
-
-    def _get_mem_usage(self):
-        from resource import getpagesize, getrusage, RUSAGE_SELF
-        mem = getrusage(RUSAGE_SELF).ru_maxrss
-        if sys.platform == 'darwin':
-            # man 2 getrusage:
-            #     ru_maxrss    the maximum resident set size utilized (in bytes).
-            return mem / 1024 / 1024 # megs
-        else:
-            # linux
-            # man 2 getrusage
-            #        ru_maxrss (since Linux 2.6.32)
-            #  This is the maximum resident set size used (in  kilobytes).
-            return mem / 1024 # megs
 
     def test_leak_load(self):
         with open('Tests/images/hopper.png', 'rb') as f:
@@ -560,13 +551,13 @@ class TestTruncatedPngPLeaks(PillowTestCase):
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         with Image.open(DATA) as im:
             im.load()
-        start_mem = self._get_mem_usage()
+
+        def core():
+            with Image.open(DATA) as im:
+                im.load()
+
         try:
-            for _ in range(ITERATIONS):
-                with Image.open(DATA) as im:
-                    im.load()
-                mem = (self._get_mem_usage() - start_mem)
-                self.assertLess(mem, MEM_LIMIT, msg='memory usage limit exceeded')
+            self._test_leak(core)
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 

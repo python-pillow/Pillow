@@ -44,6 +44,8 @@
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
 #define L(rgb)\
     ((INT32) (rgb)[0]*299 + (INT32) (rgb)[1]*587 + (INT32) (rgb)[2]*114)
+#define L24(rgb)\
+    ((rgb)[0]*19595 + (rgb)[1]*38470 + (rgb)[2]*7471)
 
 #ifndef round
 double round(double x) {
@@ -210,7 +212,7 @@ rgb2l(UINT8* out, const UINT8* in, int xsize)
     int x;
     for (x = 0; x < xsize; x++, in += 4)
         /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
-        *out++ = L(in) / 1000;
+        *out++ = L24(in) >> 16;
 }
 
 static void
@@ -219,7 +221,7 @@ rgb2la(UINT8* out, const UINT8* in, int xsize)
     int x;
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
         /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
-        out[0] = out[1] = out[2] = L(in) / 1000;
+        out[0] = out[1] = out[2] = L24(in) >> 16;
         out[3] = 255;
     }
 }
@@ -230,7 +232,7 @@ rgb2i(UINT8* out_, const UINT8* in, int xsize)
     int x;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++, in += 4)
-        *out++ = L(in) / 1000;
+        *out++ = L24(in) >> 16;
 }
 
 static void
@@ -419,7 +421,7 @@ rgba2la(UINT8* out, const UINT8* in, int xsize)
     int x;
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
         /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
-        out[0] = out[1] = out[2] = L(in) / 1000;
+        out[0] = out[1] = out[2] = L24(in) >> 16;
         out[3] = in[3];
     }
 }

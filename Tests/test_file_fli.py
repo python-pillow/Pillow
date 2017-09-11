@@ -41,7 +41,7 @@ class TestFileFli(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda: FliImagePlugin.FliImageFile(invalid_file))
+                          FliImagePlugin.FliImageFile, invalid_file)
 
     def test_n_frames(self):
         im = Image.open(static_test_file)
@@ -71,7 +71,7 @@ class TestFileFli(PillowTestCase):
         self.assertEqual(im.tell(), 0)
 
         # Test seek past end of file
-        self.assertRaises(EOFError, lambda: im.seek(2))
+        self.assertRaises(EOFError, im.seek, 2)
 
     def test_seek_tell(self):
         im = Image.open(animated_test_file)

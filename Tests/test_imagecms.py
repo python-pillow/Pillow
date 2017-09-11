@@ -144,20 +144,26 @@ class TestImageCms(PillowTestCase):
             'IEC 61966-2.1 Default RGB colour space - sRGB')
 
     def test_exceptions(self):
+        # Test mode mismatch
+        psRGB = ImageCms.createProfile("sRGB")
+        pLab = ImageCms.createProfile("LAB")
+        t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
+        self.assertRaises(ValueError, t.apply_in_place, hopper("RGBA"))
+
         # the procedural pyCMS API uses PyCMSError for all sorts of errors
         self.assertRaises(
             ImageCms.PyCMSError,
-            lambda: ImageCms.profileToProfile(hopper(), "foo", "bar"))
+            ImageCms.profileToProfile, hopper(), "foo", "bar")
         self.assertRaises(
             ImageCms.PyCMSError,
-            lambda: ImageCms.buildTransform("foo", "bar", "RGB", "RGB"))
+            ImageCms.buildTransform, "foo", "bar", "RGB", "RGB")
         self.assertRaises(
             ImageCms.PyCMSError,
-            lambda: ImageCms.getProfileName(None))
+            ImageCms.getProfileName, None)
         self.skip_missing()
         self.assertRaises(
             ImageCms.PyCMSError,
-            lambda: ImageCms.isIntentSupported(SRGB, None, None))
+            ImageCms.isIntentSupported, SRGB, None, None)
 
     def test_display_profile(self):
         # try fetching the profile for the current display device
@@ -166,6 +172,14 @@ class TestImageCms(PillowTestCase):
     def test_lab_color_profile(self):
         ImageCms.createProfile("LAB", 5000)
         ImageCms.createProfile("LAB", 6500)
+
+    def test_unsupported_color_space(self):
+        self.assertRaises(ImageCms.PyCMSError,
+            ImageCms.createProfile, "unsupported")
+
+    def test_invalid_color_temperature(self):
+        self.assertRaises(ImageCms.PyCMSError,
+            ImageCms.createProfile, "LAB", "invalid")
 
     def test_simple_lab(self):
         i = Image.new('RGB', (10, 10), (128, 128, 128))

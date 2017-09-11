@@ -25,8 +25,7 @@ class TestFileXVThumb(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(SyntaxError,
-                          lambda:
-                          XVThumbImagePlugin.XVThumbImageFile(bad_file))
+                          XVThumbImagePlugin.XVThumbImageFile, bad_file)
 
     def test_invalid_file(self):
         # Arrange
@@ -34,8 +33,7 @@ class TestFileXVThumb(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(SyntaxError,
-                          lambda:
-                          XVThumbImagePlugin.XVThumbImageFile(invalid_file))
+                          XVThumbImagePlugin.XVThumbImageFile, invalid_file)
 
 
 if __name__ == '__main__':

@@ -225,6 +225,11 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
     if (PyUnicode_Check(string)) {
         Py_UNICODE *text = PyUnicode_AS_UNICODE(string);
         Py_ssize_t size = PyUnicode_GET_SIZE(string);
+	if (! size) {
+	    /* return 0 and clean up, no glyphs==no size, 
+	       and raqm fails with empty strings */
+	    goto failed;
+	}
         if (!raqm_set_text(rq, (const uint32_t *)(text), size)) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
             goto failed;
@@ -234,6 +239,9 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
     else if (PyString_Check(string)) {
         char *text = PyString_AS_STRING(string);
         int size = PyString_GET_SIZE(string);
+	if (! size) {
+	    goto failed;
+	}
         if (!raqm_set_text_utf8(rq, text, size)) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text_utf8() failed");
             goto failed;
@@ -450,6 +458,10 @@ font_getsize(FontObject* self, PyObject* args)
     y_max = y_min = 0;
 
     count = text_layout(string, self, dir, features, &glyph_info, 0);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
 
     for (x = i = 0; i < count; i++) {
         int index, error;
@@ -497,6 +509,11 @@ font_getsize(FontObject* self, PyObject* args)
         FT_Done_Glyph(glyph);
     }
 
+    if (glyph_info) {
+        PyMem_Free(glyph_info);
+        glyph_info = NULL;
+    }
+            
     if (face) {
 
         /* left bearing */
@@ -584,8 +601,11 @@ font_render(FontObject* self, PyObject* args)
 
     glyph_info = NULL;
     count = text_layout(string, self, dir, features, &glyph_info, mask);
-    if (count == 0) {
+    if (PyErr_Occurred()) {
         return NULL;
+    }
+    if (count == 0) {
+        Py_RETURN_NONE;
     }
 
     im = (Imaging) id;

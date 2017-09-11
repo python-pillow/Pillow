@@ -10,13 +10,13 @@ class TestImage(PillowTestCase):
             GimpPaletteFile(fp)
 
         with open('Tests/images/hopper.jpg', 'rb') as fp:
-            self.assertRaises(SyntaxError, lambda: GimpPaletteFile(fp))
+            self.assertRaises(SyntaxError, GimpPaletteFile, fp)
 
         with open('Tests/images/bad_palette_file.gpl', 'rb') as fp:
-            self.assertRaises(SyntaxError, lambda: GimpPaletteFile(fp))
+            self.assertRaises(SyntaxError, GimpPaletteFile, fp)
 
         with open('Tests/images/bad_palette_entry.gpl', 'rb') as fp:
-            self.assertRaises(ValueError, lambda: GimpPaletteFile(fp))
+            self.assertRaises(ValueError, GimpPaletteFile, fp)
 
     def test_get_palette(self):
         # Arrange

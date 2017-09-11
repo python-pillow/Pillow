@@ -819,7 +819,7 @@ _filter(ImagingObject* self, PyObject* args)
     Py_ssize_t kernelsize;
     FLOAT32* kerneldata;
 
-    int xsize, ysize;
+    int xsize, ysize, i;
     float divisor, offset;
     PyObject* kernel = NULL;
     if (!PyArg_ParseTuple(args, "(ii)ffO", &xsize, &ysize,
@@ -835,8 +835,12 @@ _filter(ImagingObject* self, PyObject* args)
         return ImagingError_ValueError("bad kernel size");
     }
 
+    for (i = 0; i < kernelsize; ++i) {
+        kerneldata[i] /= divisor;
+    }
+
     imOut = PyImagingNew(
-        ImagingFilter(self->image, xsize, ysize, kerneldata, offset, divisor)
+        ImagingFilter(self->image, xsize, ysize, kerneldata, offset)
         );
 
     free(kerneldata);
@@ -2198,26 +2202,45 @@ textwidth(ImagingFontObject* self, const unsigned char* text)
 }
 
 void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
+    /* Allocates *text, returns a 'new reference'. Caller is required to free */
+
     PyObject* bytes = NULL;
+    Py_ssize_t len = 0;
+    char *buffer;
 
     *text = NULL;
 
     if (PyUnicode_CheckExact(encoded_string)){
         bytes = PyUnicode_AsLatin1String(encoded_string);
+        PyBytes_AsStringAndSize(bytes, &buffer, &len);
     } else if (PyBytes_Check(encoded_string)) {
-        bytes = encoded_string;
+        PyBytes_AsStringAndSize(encoded_string, &buffer, &len);
     }
-    if (bytes) {
-        *text = (unsigned char*)PyBytes_AsString(bytes);
+
+    if (len) {
+        *text = calloc(len,1);
+        if (*text) {
+            memcpy(*text, buffer, len);
+        }
+        if(bytes) {
+            Py_DECREF(bytes);
+        }
         return;
     }
+
 
 #if PY_VERSION_HEX < 0x03000000
     /* likely case here is py2.x with an ordinary string.
        but this isn't defined in Py3.x */
     if (PyString_Check(encoded_string)) {
-        *text = (unsigned char *)PyString_AsString(encoded_string);
+        PyString_AsStringAndSize(encoded_string, &buffer, &len);
+        *text = calloc(len,1);
+        if (*text) {
+            memcpy(*text, buffer, len);
+        }
+        return;
     }
+        
 #endif
 }
 
@@ -2248,6 +2271,7 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
 
     im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
     if (!im) {
+        free(text);
         return NULL;
     }
 
@@ -2273,9 +2297,11 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
         x = x + glyph->dx;
         b = b + glyph->dy;
     }
+    free(text);
     return PyImagingNew(im);
 
   failed:
+    free(text);
     ImagingDelete(im);
     return NULL;
 }
@@ -2285,6 +2311,7 @@ _font_getsize(ImagingFontObject* self, PyObject* args)
 {
     unsigned char* text;
     PyObject* encoded_string;
+    PyObject* val;
 
     if (!PyArg_ParseTuple(args, "O:getsize", &encoded_string))
         return NULL;
@@ -2294,7 +2321,9 @@ _font_getsize(ImagingFontObject* self, PyObject* args)
         return NULL;
     }
 
-    return Py_BuildValue("ii", textwidth(self, text), self->ysize);
+    val = Py_BuildValue("ii", textwidth(self, text), self->ysize);
+    free(text);
+    return val;
 }
 
 static struct PyMethodDef _font_methods[] = {

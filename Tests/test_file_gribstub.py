@@ -24,8 +24,7 @@ class TestFileGribStub(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(SyntaxError,
-                          lambda:
-                          GribStubImagePlugin.GribStubImageFile(invalid_file))
+                          GribStubImagePlugin.GribStubImageFile, invalid_file)
 
     def test_load(self):
         # Arrange
@@ -40,7 +39,7 @@ class TestFileGribStub(PillowTestCase):
         tmpfile = self.tempfile("temp.grib")
 
         # Act / Assert: stub cannot save without an implemented handler
-        self.assertRaises(IOError, lambda: im.save(tmpfile))
+        self.assertRaises(IOError, im.save, tmpfile)
 
 
 if __name__ == '__main__':

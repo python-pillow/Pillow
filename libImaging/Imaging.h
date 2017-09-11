@@ -260,7 +260,7 @@ extern Imaging ImagingFillLinearGradient(const char* mode);
 extern Imaging ImagingFillRadialGradient(const char* mode);
 extern Imaging ImagingFilter(
     Imaging im, int xsize, int ysize, const FLOAT32* kernel,
-    FLOAT32 offset, FLOAT32 divisor);
+    FLOAT32 offset);
 extern Imaging ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
 extern Imaging ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius,

@@ -992,7 +992,7 @@ class Image(object):
                        2 = fast octree
                        3 = libimagequant
         :param kmeans: Integer
-        :param palette: Quantize to the :py:class:`PIL.ImagingPalette` palette.
+        :param palette: Quantize to the palette of given :py:class:`PIL.Image.Image`.
         :returns: A new image
 
         """
@@ -1114,6 +1114,8 @@ class Image(object):
         :param filter: Filter kernel.
         :returns: An :py:class:`~PIL.Image.Image` object.  """
 
+        from . import ImageFilter
+
         self.load()
 
         if isinstance(filter, collections.Callable):
@@ -1122,9 +1124,10 @@ class Image(object):
             raise TypeError("filter argument should be ImageFilter.Filter " +
                             "instance or class")
 
-        if self.im.bands == 1:
+        multiband = isinstance(filter, ImageFilter.MultibandFilter)
+        if self.im.bands == 1 or multiband:
             return self._new(filter.filter(self.im))
-        # fix to handle multiband images since _imaging doesn't
+
         ims = []
         for c in range(self.im.bands):
             ims.append(self._new(filter.filter(self.im.getband(c))))
@@ -1494,14 +1497,13 @@ class Image(object):
                 mode = getmodebase(self.mode) + "A"
                 try:
                     self.im.setmode(mode)
-                    self.pyaccess = None
                 except (AttributeError, ValueError):
                     # do things the hard way
                     im = self.im.convert(mode)
                     if im.mode not in ("LA", "RGBA"):
                         raise ValueError  # sanity check
                     self.im = im
-                    self.pyaccess = None
+                self.pyaccess = None
                 self.mode = self.im.mode
             except (KeyError, ValueError):
                 raise ValueError("illegal image mode")
@@ -1602,7 +1604,6 @@ class Image(object):
         self.load()
         if self.readonly:
             self._copy()
-            self.pyaccess = None
             self.load()
 
         if self.pyaccess:
@@ -2448,7 +2449,7 @@ def fromqpixmap(im):
 _fromarray_typemap = {
     # (shape, typestr) => mode, rawmode
     # first two members of shape are set to one
-    ((1, 1), "|b1"): ("1", "1;8"), 
+    ((1, 1), "|b1"): ("1", "1;8"),
     ((1, 1), "|u1"): ("L", "L"),
     ((1, 1), "|i1"): ("I", "I;8"),
     ((1, 1), "<u2"): ("I", "I;16"),

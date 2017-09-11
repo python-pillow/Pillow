@@ -24,8 +24,7 @@ class TestFileBufrStub(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(SyntaxError,
-                          lambda:
-                          BufrStubImagePlugin.BufrStubImageFile(invalid_file))
+                          BufrStubImagePlugin.BufrStubImageFile, invalid_file)
 
     def test_load(self):
         # Arrange
@@ -40,7 +39,7 @@ class TestFileBufrStub(PillowTestCase):
         tmpfile = self.tempfile("temp.bufr")
 
         # Act / Assert: stub cannot save without an implemented handler
-        self.assertRaises(IOError, lambda: im.save(tmpfile))
+        self.assertRaises(IOError, im.save, tmpfile)
 
 
 if __name__ == '__main__':

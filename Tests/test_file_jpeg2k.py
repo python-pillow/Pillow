@@ -44,8 +44,7 @@ class TestFileJpeg2k(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         self.assertRaises(SyntaxError,
-                          lambda:
-                          Jpeg2KImagePlugin.Jpeg2KImageFile(invalid_file))
+                          Jpeg2KImagePlugin.Jpeg2KImageFile, invalid_file)
 
     def test_bytesio(self):
         with open('Tests/images/test-card-lossless.jp2', 'rb') as f:

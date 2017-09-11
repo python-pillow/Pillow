@@ -29,8 +29,8 @@ class TestLibImage(PillowTestCase):
         im.im.setmode("RGB")
         self.assertEqual(im.im.getpixel((0, 0)), (1, 2, 3))
 
-        self.assertRaises(ValueError, lambda: im.im.setmode("L"))
-        self.assertRaises(ValueError, lambda: im.im.setmode("RGBABCDE"))
+        self.assertRaises(ValueError, im.im.setmode, "L")
+        self.assertRaises(ValueError, im.im.setmode, "RGBABCDE")
 
 
 if __name__ == '__main__':
