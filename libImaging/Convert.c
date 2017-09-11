@@ -49,7 +49,7 @@
 
 #ifndef round
 double round(double x) {
-  return floor(x+0.5);
+    return floor(x+0.5);
 }
 #endif
 
@@ -731,7 +731,7 @@ I16S_I(UINT8* out_, const UINT8* in, int xsize)
     int x;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++, in += 2)
-      *out++ = (INT16)(in[0] + ((int) in[1] << 8));
+        *out++ = (INT16)(in[0] + ((int) in[1] << 8));
 }
 
 static void
@@ -820,9 +820,9 @@ I16S_L(UINT8* out, const UINT8* in, int xsize)
     int x;
     for (x = 0; x < xsize; x++, in += 2)
         if (in[1] & 0x80)
-	    *out++ = 0;  /* Negative -> 0 */
+            *out++ = 0;  /* Negative -> 0 */
         else if (in[1] != 0)
-	    *out++ = 255;  /* Greater than 255 -> 255 */
+            *out++ = 255;  /* Greater than 255 -> 255 */
         else
             *out++ = in[0];
 }
