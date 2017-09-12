@@ -7,25 +7,16 @@ ImagingFilter3x3i_4u8(Imaging imOut, Imaging im, const INT16* kernel,
     pix1##row = _mm_shuffle_epi8(_mm_loadu_si128((__m128i*) &in0[x]), shuffle); \
     pix2##row = _mm_shuffle_epi8(_mm_loadu_si128((__m128i*) &in_1[x]), shuffle);
 
-#define MM_KERNEL_SUM(ss, row, krow) \
+#define MM_KERNEL_SUM(ss, row, krow, unpack_epi8, unpack_epi32) \
     ss = _mm_add_epi32(ss, _mm_madd_epi16( \
-        _mm_unpacklo_epi8(pix0##row, _mm_setzero_si128()), \
-        _mm_unpacklo_epi32(kernel0##krow, kernel0##krow))); \
+        unpack_epi8(pix0##row, _mm_setzero_si128()), \
+        unpack_epi32(kernel0##krow, kernel0##krow))); \
     ss = _mm_add_epi32(ss, _mm_madd_epi16( \
-        _mm_unpacklo_epi8(pix1##row, _mm_setzero_si128()), \
-        _mm_unpacklo_epi32(kernel1##krow, kernel1##krow))); \
+        unpack_epi8(pix1##row, _mm_setzero_si128()), \
+        unpack_epi32(kernel1##krow, kernel1##krow))); \
     ss = _mm_add_epi32(ss, _mm_madd_epi16( \
-        _mm_unpacklo_epi8(pix2##row, _mm_setzero_si128()), \
-        _mm_unpacklo_epi32(kernel2##krow, kernel2##krow))); \
-    ss = _mm_add_epi32(ss, _mm_madd_epi16( \
-        _mm_unpackhi_epi8(pix0##row, _mm_setzero_si128()), \
-        _mm_unpackhi_epi32(kernel0##krow, kernel0##krow))); \
-    ss = _mm_add_epi32(ss, _mm_madd_epi16( \
-        _mm_unpackhi_epi8(pix1##row, _mm_setzero_si128()), \
-        _mm_unpackhi_epi32(kernel1##krow, kernel1##krow))); \
-    ss = _mm_add_epi32(ss, _mm_madd_epi16( \
-        _mm_unpackhi_epi8(pix2##row, _mm_setzero_si128()), \
-        _mm_unpackhi_epi32(kernel2##krow, kernel2##krow)));
+        unpack_epi8(pix2##row, _mm_setzero_si128()), \
+        unpack_epi32(kernel2##krow, kernel2##krow)));
 
     int x, y;
 
@@ -70,16 +61,20 @@ ImagingFilter3x3i_4u8(Imaging imOut, Imaging im, const INT16* kernel,
             __m128i ss3 = _mm_set1_epi32(offset);
             
             MM_KERNEL_LOAD(0, x-1);
-            MM_KERNEL_SUM(ss0, 0, 0);
+            MM_KERNEL_SUM(ss0, 0, 0, _mm_unpacklo_epi8, _mm_unpacklo_epi32);
+            MM_KERNEL_SUM(ss0, 0, 0, _mm_unpackhi_epi8, _mm_unpackhi_epi32);
             ss0 = _mm_srai_epi32(ss0, PRECISION_BITS);
-            MM_KERNEL_SUM(ss1, 0, 1);
+            MM_KERNEL_SUM(ss1, 0, 1, _mm_unpacklo_epi8, _mm_unpacklo_epi32);
+            MM_KERNEL_SUM(ss1, 0, 1, _mm_unpackhi_epi8, _mm_unpackhi_epi32);
             ss1 = _mm_srai_epi32(ss1, PRECISION_BITS);
             ss0 = _mm_packs_epi32(ss0, ss1);
 
             MM_KERNEL_LOAD(0, x+1);
-            MM_KERNEL_SUM(ss2, 0, 0);
+            MM_KERNEL_SUM(ss2, 0, 0, _mm_unpacklo_epi8, _mm_unpacklo_epi32);
+            MM_KERNEL_SUM(ss2, 0, 0, _mm_unpackhi_epi8, _mm_unpackhi_epi32);
             ss2 = _mm_srai_epi32(ss2, PRECISION_BITS);
-            MM_KERNEL_SUM(ss3, 0, 1);
+            MM_KERNEL_SUM(ss3, 0, 1, _mm_unpacklo_epi8, _mm_unpacklo_epi32);
+            MM_KERNEL_SUM(ss3, 0, 1, _mm_unpackhi_epi8, _mm_unpackhi_epi32);
             ss3 = _mm_srai_epi32(ss3, PRECISION_BITS);
             ss2 = _mm_packs_epi32(ss2, ss3);
             
@@ -91,7 +86,8 @@ ImagingFilter3x3i_4u8(Imaging imOut, Imaging im, const INT16* kernel,
 
             MM_KERNEL_LOAD(0, x-1);
 
-            MM_KERNEL_SUM(ss, 0, 0);
+            MM_KERNEL_SUM(ss, 0, 0, _mm_unpacklo_epi8, _mm_unpacklo_epi32);
+            MM_KERNEL_SUM(ss, 0, 0, _mm_unpackhi_epi8, _mm_unpackhi_epi32);
             ss = _mm_srai_epi32(ss, PRECISION_BITS);
             
             ss = _mm_packs_epi32(ss, ss);
