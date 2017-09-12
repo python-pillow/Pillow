@@ -27,13 +27,6 @@
 #include "Imaging.h"
 
 
-#ifdef WORDS_BIGENDIAN
-    #define MAKE_UINT32(u0, u1, u2, u3) (u3 | (u2<<8) | (u1<<16) | (u0<<24))
-#else
-    #define MAKE_UINT32(u0, u1, u2, u3) (u0 | (u1<<8) | (u2<<16) | (u3<<24))
-#endif
-
-
 static inline UINT8 clip8(float in)
 {
     if (in <= 0.0)
@@ -91,29 +84,14 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
 }
 
 
-/* This is work around bug in GCC prior 4.9 in 64 bit mode.
-   GCC generates code with partial dependency which 3 times slower.
-   See: http://stackoverflow.com/a/26588074/253146 */
-#if defined(__x86_64__) && defined(__SSE__) &&  ! defined(__NO_INLINE__) && \
-    ! defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900)
-static float __attribute__((always_inline)) inline i2f(int v) {
-    float x;
-    __asm__("xorps %0, %0; cvtsi2ss %1, %0" : "=X"(x) : "r"(v) );
-    return x;
-}
-#else
-static float inline i2f(int v) { return (float) v; }
-#endif
-
-
 void
 ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
                  float offset)
 {
 #define KERNEL1x3(in0, x, kernel, d) ( \
-    i2f((UINT8) in0[x-d])  * (kernel)[0] + \
-    i2f((UINT8) in0[x])    * (kernel)[1] + \
-    i2f((UINT8) in0[x+d])  * (kernel)[2])
+    _i2f((UINT8) in0[x-d])  * (kernel)[0] + \
+    _i2f((UINT8) in0[x])    * (kernel)[1] + \
+    _i2f((UINT8) in0[x+d])  * (kernel)[2])
 
     int x = 0, y = 0;
 
@@ -210,11 +188,11 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
                  float offset)
 {
 #define KERNEL1x5(in0, x, kernel, d) ( \
-    i2f((UINT8) in0[x-d-d])   * (kernel)[0] + \
-    i2f((UINT8) in0[x-d])     * (kernel)[1] + \
-    i2f((UINT8) in0[x])       * (kernel)[2] + \
-    i2f((UINT8) in0[x+d])     * (kernel)[3] + \
-    i2f((UINT8) in0[x+d+d])   * (kernel)[4])
+    _i2f((UINT8) in0[x-d-d])   * (kernel)[0] + \
+    _i2f((UINT8) in0[x-d])     * (kernel)[1] + \
+    _i2f((UINT8) in0[x])       * (kernel)[2] + \
+    _i2f((UINT8) in0[x+d])     * (kernel)[3] + \
+    _i2f((UINT8) in0[x+d+d])   * (kernel)[4])
 
     int x = 0, y = 0;
 
