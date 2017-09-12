@@ -27,27 +27,26 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
+#define FLIP_LEFT_RIGHT(INT, image) \
+    for (y = 0; y < imIn->ysize; y++) { \
+        INT* in = imIn->image[y]; \
+        INT* out = imOut->image[y]; \
+        xr = imIn->xsize-1; \
+        for (x = 0; x < imIn->xsize; x++, xr--) \
+            out[xr] = in[x]; \
+    }
+
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        for (y = 0; y < imIn->ysize; y++) {
-            UINT8* in = (UINT8*) imIn->image8[y];
-            UINT8* out = (UINT8*) imOut->image8[y];
-            xr = imIn->xsize-1;
-            for (x = 0; x < imIn->xsize; x++, xr--)
-                out[xr] = in[x];
-        }
+        FLIP_LEFT_RIGHT(UINT8, image8)
     } else {
-        for (y = 0; y < imIn->ysize; y++) {
-            UINT32* in = (UINT32*) imIn->image32[y];
-            UINT32* out = (UINT32*) imOut->image32[y];
-            xr = imIn->xsize-1;
-            for (x = 0; x < imIn->xsize; x++, xr--)
-                out[xr] = in[x];
-        }
+        FLIP_LEFT_RIGHT(INT32, image32)
     }
 
     ImagingSectionLeave(&cookie);
+
+#undef FLIP_LEFT_RIGHT
 
     return imOut;
 }
@@ -241,28 +240,27 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
+#define ROTATE_180(INT, image) \
+    for (y = 0; y < imIn->ysize; y++, yr--) { \
+        INT* in = imIn->image[y]; \
+        INT* out = imOut->image[yr]; \
+        xr = imIn->xsize-1; \
+        for (x = 0; x < imIn->xsize; x++, xr--) \
+            out[xr] = in[x]; \
+    }
+
     ImagingSectionEnter(&cookie);
 
     yr = imIn->ysize-1;
     if (imIn->image8) {
-        for (y = 0; y < imIn->ysize; y++, yr--) {
-            UINT8* in = (UINT8*) imIn->image8[y];
-            UINT8* out = (UINT8*) imOut->image8[yr];
-            xr = imIn->xsize-1;
-            for (x = 0; x < imIn->xsize; x++, xr--)
-                out[xr] = in[x];
-        }
+        ROTATE_180(UINT8, image8)
     } else {
-        for (y = 0; y < imIn->ysize; y++, yr--) {
-            UINT32* in = (UINT32*) imIn->image32[y];
-            UINT32* out = (UINT32*) imOut->image32[yr];
-            xr = imIn->xsize-1;
-            for (x = 0; x < imIn->xsize; x++, xr--)
-                out[xr] = in[x];
-        }
+        ROTATE_180(INT32, image32)
     }
 
     ImagingSectionLeave(&cookie);
+
+#undef ROTATE_180
 
     return imOut;
 }
