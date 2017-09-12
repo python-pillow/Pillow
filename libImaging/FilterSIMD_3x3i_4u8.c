@@ -48,35 +48,33 @@ ImagingFilter3x3i_4u8(Imaging imOut, Imaging im, const INT16* kernel,
         __m128i kernel21 = _mm_set_epi16(
             kernel[8], kernel[7], kernel[8], kernel[7],
             kernel[6], 0, kernel[6], 0);
-        // __m128i source;
         __m128i pix00, pix10, pix20;
-        // __m128i pix01, pix11, pix21;
 
         out[0] = in0[0];
         x = 1;
+        MM_KERNEL_LOAD(0, 0);
         for (; x < im->xsize-1-3; x += 4) {
             __m128i ss0 = _mm_set1_epi32(offset);
             __m128i ss1 = _mm_set1_epi32(offset);
             __m128i ss2 = _mm_set1_epi32(offset);
             __m128i ss3 = _mm_set1_epi32(offset);
             
-            MM_KERNEL_LOAD(0, x-1);
             MM_KERNEL_SUM(ss0, 0, 0, _mm_unpacklo_epi8, _mm_unpacklo_epi32);
             MM_KERNEL_SUM(ss0, 0, 0, _mm_unpackhi_epi8, _mm_unpackhi_epi32);
-            ss0 = _mm_srai_epi32(ss0, PRECISION_BITS);
             MM_KERNEL_SUM(ss1, 0, 1, _mm_unpacklo_epi8, _mm_unpacklo_epi32);
             MM_KERNEL_SUM(ss1, 0, 1, _mm_unpackhi_epi8, _mm_unpackhi_epi32);
-            ss1 = _mm_srai_epi32(ss1, PRECISION_BITS);
-            ss0 = _mm_packs_epi32(ss0, ss1);
+            ss0 = _mm_packs_epi32(
+                _mm_srai_epi32(ss0, PRECISION_BITS),
+                _mm_srai_epi32(ss1, PRECISION_BITS));
 
-            MM_KERNEL_LOAD(0, x+1);
-            MM_KERNEL_SUM(ss2, 0, 0, _mm_unpacklo_epi8, _mm_unpacklo_epi32);
-            MM_KERNEL_SUM(ss2, 0, 0, _mm_unpackhi_epi8, _mm_unpackhi_epi32);
-            ss2 = _mm_srai_epi32(ss2, PRECISION_BITS);
-            MM_KERNEL_SUM(ss3, 0, 1, _mm_unpacklo_epi8, _mm_unpacklo_epi32);
-            MM_KERNEL_SUM(ss3, 0, 1, _mm_unpackhi_epi8, _mm_unpackhi_epi32);
-            ss3 = _mm_srai_epi32(ss3, PRECISION_BITS);
-            ss2 = _mm_packs_epi32(ss2, ss3);
+            MM_KERNEL_SUM(ss2, 0, 0, _mm_unpackhi_epi8, _mm_unpacklo_epi32);
+            MM_KERNEL_SUM(ss3, 0, 1, _mm_unpackhi_epi8, _mm_unpacklo_epi32);
+            MM_KERNEL_LOAD(0, x+3);
+            MM_KERNEL_SUM(ss2, 0, 0, _mm_unpacklo_epi8, _mm_unpackhi_epi32);
+            MM_KERNEL_SUM(ss3, 0, 1, _mm_unpacklo_epi8, _mm_unpackhi_epi32);
+            ss2 = _mm_packs_epi32(
+                _mm_srai_epi32(ss2, PRECISION_BITS),
+                _mm_srai_epi32(ss3, PRECISION_BITS));
             
             ss0 = _mm_packus_epi16(ss0, ss2);
             _mm_storeu_si128((__m128i*) &out[x], ss0);
