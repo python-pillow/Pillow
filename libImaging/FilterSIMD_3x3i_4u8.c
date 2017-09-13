@@ -66,9 +66,7 @@ ImagingFilter3x3i_4u8(Imaging imOut, Imaging im, const INT16* kernel,
 
             ss2 = _mm256_set1_epi32(offset);
             MM_KERNEL_SUM(ss2, 1, 0x00);
-
             MM_KERNEL_LOAD(x+3);
-
             MM_KERNEL_SUM(ss2, 0, 0x55);
             ss2 = _mm256_srai_epi32(ss2, PRECISION_BITS);
             
@@ -76,22 +74,22 @@ ImagingFilter3x3i_4u8(Imaging imOut, Imaging im, const INT16* kernel,
             ssout = _mm_packus_epi16(
                 _mm256_extracti128_si256(ss0, 0),
                 _mm256_extracti128_si256(ss0, 1));
-            ssout = _mm_shuffle_epi32(ssout, 216);
+            ssout = _mm_shuffle_epi32(ssout, 0xd8);
             _mm_storeu_si128((__m128i*) &out[x], ssout);
         }
-        // for (; x < im->xsize-1; x++) {
-        //     __m128i ss = _mm_set1_epi32(offset);
+        for (; x < im->xsize-1; x++) {
+            __m256i ss = _mm256_set1_epi32(offset);
 
-        //     MM_KERNEL_LOAD(x-1);
-        //     MM_KERNEL_SUM(ss, 0, 0x00);
-        //     MM_KERNEL_SUM(ss, 1, 0x55);
+            MM_KERNEL_LOAD(x-1);
+            MM_KERNEL_SUM(ss, 0, 0x00);
+            MM_KERNEL_SUM(ss, 1, 0x55);
 
-        //     ss = _mm_srai_epi32(ss, PRECISION_BITS);
+            ss = _mm256_srai_epi32(ss, PRECISION_BITS);
             
-        //     ss = _mm_packs_epi32(ss, ss);
-        //     ss = _mm_packus_epi16(ss, ss);
-        //     out[x] = _mm_cvtsi128_si32(ss);
-        // }
+            ss = _mm256_packs_epi32(ss, ss);
+            ss = _mm256_packus_epi16(ss, ss);
+            out[x] = _mm_cvtsi128_si32(_mm256_castsi256_si128(ss));
+        }
         out[x] = in0[x];
     #undef MM_KERNEL_LOAD
     #undef MM_KERNEL_SUM
