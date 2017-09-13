@@ -47,6 +47,7 @@
 #include "FilterSIMD_3x3i_4u8.c"
 #include "FilterSIMD_5x5f_u8.c"
 #include "FilterSIMD_5x5f_4u8.c"
+#include "FilterSIMD_5x5i_4u8.c"
 
 
 Imaging
@@ -169,7 +170,11 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
         if (im->image8) {
             ImagingFilter5x5f_u8(imOut, im, kernel, offset);
         } else {
-            ImagingFilter5x5f_4u8(imOut, im, kernel, offset);
+            if (fast_path) {
+                ImagingFilter5x5i_4u8(imOut, im, norm_kernel, norm_offset);
+            } else {
+                ImagingFilter5x5f_4u8(imOut, im, kernel, offset);
+            }
         }
     }
     ImagingSectionLeave(&cookie);
