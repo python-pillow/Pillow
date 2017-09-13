@@ -57,12 +57,11 @@ ImagingFilter3x3i_4u8(Imaging imOut, Imaging im, const INT16* kernel,
 
             MM_KERNEL_SUM(ss0, 0, 0x00);
             MM_KERNEL_SUM(ss0, 1, 0x55);
+            ss0 = _mm_srai_epi32(ss0, PRECISION_BITS);
+
             MM_KERNEL_SUM(ss1, 0, 0xaa);
             MM_KERNEL_SUM(ss1, 1, 0xff);
-            
-            ss0 = _mm_packs_epi32(
-                _mm_srai_epi32(ss0, PRECISION_BITS),
-                _mm_srai_epi32(ss1, PRECISION_BITS));
+            ss1 = _mm_srai_epi32(ss1, PRECISION_BITS);
 
             MM_KERNEL_SUM(ss2, 1, 0x00);
             MM_KERNEL_SUM(ss3, 1, 0xaa);
@@ -71,11 +70,11 @@ ImagingFilter3x3i_4u8(Imaging imOut, Imaging im, const INT16* kernel,
 
             MM_KERNEL_SUM(ss2, 0, 0x55);
             MM_KERNEL_SUM(ss3, 0, 0xff);
-
-            ss2 = _mm_packs_epi32(
-                _mm_srai_epi32(ss2, PRECISION_BITS),
-                _mm_srai_epi32(ss3, PRECISION_BITS));
+            ss2 = _mm_srai_epi32(ss2, PRECISION_BITS);
+            ss3 = _mm_srai_epi32(ss3, PRECISION_BITS);
             
+            ss0 = _mm_packs_epi32(ss0, ss1);
+            ss2 = _mm_packs_epi32(ss2, ss3);
             ss0 = _mm_packus_epi16(ss0, ss2);
             _mm_storeu_si128((__m128i*) &out[x], ss0);
         }
