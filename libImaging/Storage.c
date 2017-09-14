@@ -173,7 +173,6 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size)
         im->linesize = xsize * 4;
 
     } else if (strcmp(mode, "RGBa") == 0) {
-        /* EXPERIMENTAL */
         /* 32-bit true colour images with premultiplied alpha */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
@@ -422,6 +421,10 @@ Imaging
 ImagingNewBlock(const char* mode, int xsize, int ysize)
 {
     Imaging im;
+
+    if (xsize < 0 || ysize < 0) {
+        return (Imaging) ImagingError_ValueError("bad image size");
+    }
 
     im = ImagingNewPrologue(mode, xsize, ysize);
     if ( ! im)
