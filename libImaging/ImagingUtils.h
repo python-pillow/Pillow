@@ -30,8 +30,8 @@
     (MULDIV255(in1, (255 - mask), tmp1) + in2)
 
 
-/* This is work around bug in GCC prior 4.9 in 64 bit mode.
-   GCC generates code with partial dependency which 3 times slower.
+/* This is to work around a bug in GCC prior 4.9 in 64 bit mode.
+   GCC generates code with partial dependency which is 3 times slower.
    See: http://stackoverflow.com/a/26588074/253146 */
 #if defined(__x86_64__) && defined(__SSE__) &&  ! defined(__NO_INLINE__) && \
     ! defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900)
