@@ -1642,11 +1642,11 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
     ImagingSectionLeave(&cookie);
 
     if (result > 0) {
-        imOut = ImagingNew("P", im->xsize, im->ysize);
+        imOut = ImagingNewDirty("P", im->xsize, im->ysize);
         ImagingSectionEnter(&cookie);
 
         for (i = y = 0; y < im->ysize; y++)
-            for (x=0; x < im->xsize; x++)
+            for (x = 0; x < im->xsize; x++)
                 imOut->image8[y][x] = (unsigned char) newData[i++];
 
         free(newData);
