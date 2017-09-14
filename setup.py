@@ -35,8 +35,8 @@ _LIB_IMAGING = (
     "Negative", "Offset", "Pack", "PackDecode", "Palette", "Paste",
     "Quant", "QuantOctree", "QuantHash", "QuantHeap", "PcdDecode", "PcxDecode",
     "PcxEncode", "Point", "RankFilter", "RawDecode", "RawEncode", "Storage",
-    "SunRleDecode", "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask",
-    "XbmDecode", "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode",
+    "SgiRleDecode", "SunRleDecode", "TgaRleDecode", "Unpack", "UnpackYCC",
+    "UnsharpMask", "XbmDecode", "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode",
     "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur", "QuantPngQuant", "codec_fd")
 
 DEBUG = False

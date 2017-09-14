@@ -38,6 +38,7 @@
 #include "Lzw.h"
 #include "Raw.h"
 #include "Bit.h"
+#include "Sgi.h"
 
 
 /* -------------------------------------------------------------------- */
@@ -666,6 +667,39 @@ PyImaging_RawDecoderNew(PyObject* self, PyObject* args)
     decoder->state.ystep = ystep;
 
     ((RAWSTATE*)decoder->state.context)->stride = stride;
+
+    return (PyObject*) decoder;
+}
+
+
+/* -------------------------------------------------------------------- */
+/* SGI RLE                                                              */
+/* -------------------------------------------------------------------- */
+
+PyObject*
+PyImaging_SgiRleDecoderNew(PyObject* self, PyObject* args)
+{
+    ImagingDecoderObject* decoder;
+
+    char* mode;
+    char* rawmode;
+    int ystep = 1;
+    int bpc = 1;
+    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &ystep, &bpc))
+        return NULL;
+
+    decoder = PyImaging_DecoderNew(sizeof(SGISTATE));
+    if (decoder == NULL)
+        return NULL;
+
+    if (get_unpacker(decoder, mode, rawmode) < 0)
+        return NULL;
+
+    decoder->pulls_fd = 1;
+    decoder->decode = ImagingSgiRleDecode;
+    decoder->state.ystep = ystep;
+
+    ((SGISTATE*)decoder->state.context)->bpc = bpc;
 
     return (PyObject*) decoder;
 }
