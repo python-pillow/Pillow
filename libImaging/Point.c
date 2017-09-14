@@ -180,7 +180,7 @@ ImagingPoint(Imaging imIn, const char* mode, const void* table)
     } else
         point = im_point_32_8;
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPaletteInfo(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
 

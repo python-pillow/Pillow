@@ -144,7 +144,7 @@ ImagingEffectSpread(Imaging imIn, int distance)
         SPREAD(INT32, image32);
     }
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPaletteInfo(imOut, imIn);
 
     return imOut;
 }

@@ -32,7 +32,7 @@ _copy(Imaging imOut, Imaging imIn)
     if (!imOut)
         return NULL;
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPaletteInfo(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
     if (imIn->block != NULL && imOut->block != NULL)
