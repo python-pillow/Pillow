@@ -69,6 +69,16 @@ class TestFileTiffMetadata(PillowTestCase):
         loaded_double = loaded.tag[tag_ids['YawAngle']][0]
         self.assertAlmostEqual(loaded_double, doubledata)
 
+        # check with 2 element ImageJMetaDataByteCounts, issue #2006
+        
+        info[ImageJMetaDataByteCounts] = (8, len(bindata) - 8)
+        img.save(f, tiffinfo=info)
+        loaded = Image.open(f)
+
+        self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
+        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
+
+
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
 
