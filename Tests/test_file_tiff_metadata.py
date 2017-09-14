@@ -230,6 +230,14 @@ class TestFileTiffMetadata(PillowTestCase):
             self.fail("Should not be struct value error there.")
         self.assertIn(33432, info)
 
+    def test_PhotoshopInfo(self):
+        im = Image.open('Tests/images/issue_2278.tif')
+
+        self.assertIsInstance(im.tag_v2[34377], bytes)
+        out = self.tempfile('temp.tiff')
+        im.save(out)
+        reloaded = Image.open(out)
+        self.assertIsInstance(reloaded.tag_v2[34377], bytes)
 
 if __name__ == '__main__':
     unittest.main()
