@@ -46,8 +46,6 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
     if (!imOut)
         return NULL;
 
-    ImagingCopyInfo(imOut, imDst);
-
     for (y = 0; y < imDst->ysize; y++) {
 
         rgba8* dst = (rgba8*) imDst->image[y];

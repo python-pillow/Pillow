@@ -216,8 +216,6 @@ ImagingPointTransform(Imaging imIn, double scale, double offset)
     if (!imOut)
 	return NULL;
 
-    ImagingCopyInfo(imOut, imIn);
-
     switch (imIn->type) {
     case IMAGING_TYPE_INT32:
         ImagingSectionEnter(&cookie);

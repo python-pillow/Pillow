@@ -26,8 +26,11 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha)
     int x, y;
 
     /* Check arguments */
-    if (!imIn1 || !imIn2 || imIn1->type != IMAGING_TYPE_UINT8)
-	return ImagingError_ModeError();
+    if (!imIn1 || !imIn2 || imIn1->type != IMAGING_TYPE_UINT8
+        || imIn1->palette || strcmp(imIn1->mode, "1") == 0
+        || imIn2->palette || strcmp(imIn2->mode, "1") == 0)
+        return ImagingError_ModeError();
+
     if (imIn1->type  != imIn2->type  ||
 	imIn1->bands != imIn2->bands ||
 	imIn1->xsize != imIn2->xsize ||
@@ -43,8 +46,6 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha)
     imOut = ImagingNewDirty(imIn1->mode, imIn1->xsize, imIn1->ysize);
     if (!imOut)
 	return NULL;
-
-    ImagingCopyInfo(imOut, imIn1);
 
     if (alpha >= 0 && alpha <= 1.0) {
 	/* Interpolate between bands */
