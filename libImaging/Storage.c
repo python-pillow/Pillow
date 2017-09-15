@@ -377,17 +377,13 @@ ImagingDestroyBlock(Imaging im)
 }
 
 Imaging
-ImagingAllocateBlock(Imaging im, int dirty)
+ImagingAllocateBlock(Imaging im)
 {
     Py_ssize_t y, i;
 
-    /* We shouldn't overflow, since the threshold defined
-       below says that we're only going to allocate max 4M
-       here before going to the array allocator. Check anyway.
-    */
+    /* overflow check for malloc */
     if (im->linesize &&
         im->ysize > INT_MAX / im->linesize) {
-        /* punt if we're going to overflow */
         return (Imaging) ImagingError_MemoryError();
     }
 
@@ -397,13 +393,8 @@ ImagingAllocateBlock(Imaging im, int dirty)
            platforms */
         im->block = (char *) malloc(1);
     } else {
-        if (dirty) {
-            /* malloc check ok, overflow check above */
-            im->block = (char *) malloc(im->ysize * im->linesize);
-        } else {
-            /* malloc check ok, overflow check above */
-            im->block = (char *) calloc(im->ysize, im->linesize);
-        }
+        /* malloc check ok, overflow check above */
+        im->block = (char *) calloc(im->ysize, im->linesize);
     }
 
     if ( ! im->block) {
@@ -423,11 +414,6 @@ ImagingAllocateBlock(Imaging im, int dirty)
 /* --------------------------------------------------------------------
  * Create a new, internally allocated, image.
  */
-#if defined(IMAGING_SMALL_MODEL)
-#define THRESHOLD       16384L
-#else
-#define THRESHOLD       (2048*2048*4L)
-#endif
 
 Imaging
 ImagingNewInternal(const char* mode, int xsize, int ysize, int dirty)
@@ -441,14 +427,6 @@ ImagingNewInternal(const char* mode, int xsize, int ysize, int dirty)
     im = ImagingNewPrologue(mode, xsize, ysize);
     if ( ! im)
         return NULL;
-
-    if (im->ysize && im->linesize <= THRESHOLD / im->ysize) {
-        if (ImagingAllocateBlock(im, dirty)) {
-            return im;
-        }
-        /* assume memory error; try allocating in array mode instead */
-        ImagingError_Clear();
-    }
 
     if (ImagingAllocateArray(im, dirty)) {
         return im;
@@ -483,7 +461,7 @@ ImagingNewBlock(const char* mode, int xsize, int ysize)
     if ( ! im)
         return NULL;
 
-    if (ImagingAllocateBlock(im, 0)) {
+    if (ImagingAllocateBlock(im)) {
         return im;
     }
 
