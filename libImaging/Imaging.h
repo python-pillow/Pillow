@@ -94,7 +94,8 @@ struct ImagingMemoryInstance {
 
     /* Internals */
     char **image;	/* Actual raster data. */
-    char *block;	/* Set if data is allocated in a single block. */
+    char *block;  /* Set if data is allocated in a single block. */
+    char **blocks;  /* Memory blocks for pixel storage */
 
     int pixelsize;	/* Size of a pixel, in bytes (1, 2 or 4) */
     int linesize;	/* Size of a line, in bytes (xsize * pixelsize) */

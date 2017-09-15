@@ -264,43 +264,91 @@ ImagingDelete(Imaging im)
 /* ------------------ */
 /* Allocate image as an array of line buffers. */
 
+#define MEMORY_BLOCK_SIZE (1024*1024)
+#define MEMORY_BLOCKS_COUNT 128
+
+void **_blocks = NULL;
+int _blocks_free = 0;
+
+void *
+_get_block(int dirty)
+{
+    void *block;
+    if ( ! _blocks) {
+        _blocks = calloc(sizeof(void*), MEMORY_BLOCKS_COUNT);
+    }
+    if (_blocks_free > 0) {
+        _blocks_free -= 1;
+        block = _blocks[_blocks_free];
+        if ( ! dirty) {
+            memset(block, 0, MEMORY_BLOCK_SIZE);
+        }
+    } else {
+        if (dirty) {
+            block = malloc(MEMORY_BLOCK_SIZE);
+        } else {
+            block = calloc(1, MEMORY_BLOCK_SIZE);
+        }
+    }
+    return block;
+}
+
+void
+_return_block(void *block)
+{
+    free(block);
+}
+
+
 static void
 ImagingDestroyArray(Imaging im)
 {
-    int y;
+    int y = 0;
 
-    if (im->image)
-        for (y = 0; y < im->ysize; y++)
-            if (im->image[y])
-                free(im->image[y]);
+    if (im->blocks) {
+        while (im->blocks[y]) {
+            _return_block(im->blocks[y]);
+            y ++;
+        }
+        free(im->blocks);
+    }
 }
 
 Imaging
 ImagingAllocateArray(Imaging im, int dirty)
 {
-    ImagingSectionCookie cookie;
-
-    int y;
+    int y, line_in_block, current_block;
     char* p;
+    int lines_pre_block, blocks_count;
 
-    ImagingSectionEnter(&cookie);
+    lines_pre_block = MEMORY_BLOCK_SIZE / im->linesize;
+    blocks_count = (im->ysize +  lines_pre_block - 1) / lines_pre_block;
 
-    /* Allocate image as an array of lines */
-    for (y = 0; y < im->ysize; y++) {
-        /* malloc check linesize checked in prologue */
-        if (dirty) {
-            p = (char *) malloc(im->linesize);
-        } else {
-            p = (char *) calloc(1, im->linesize);
-        }
-        if (!p) {
-            ImagingDestroyArray(im);
-            break;
-        }
-        im->image[y] = p;
+    /* One extra ponter is always NULL */
+    im->blocks = (char **)calloc(sizeof(char *), blocks_count + 1);
+    if ( ! im->blocks) {
+        return (Imaging) ImagingError_MemoryError();
     }
 
-    ImagingSectionLeave(&cookie);
+    /* Allocate image as an array of lines */
+    for (y = 0, line_in_block = 0, current_block = 0; y < im->ysize; y++) {
+        if (line_in_block == 0) {
+            p = (char *)_get_block(dirty);
+            if ( ! p) {
+                ImagingDestroyArray(im);
+                break;
+            }
+            im->blocks[current_block] = p;
+        }
+        im->image[y] = p + im->linesize * line_in_block;
+
+        line_in_block += 1;
+        if (line_in_block >= lines_pre_block) {
+            /* Reset counter and start new block */
+            line_in_block = 0;
+            current_block += 1;
+        }
+    }
 
     if (y != im->ysize) {
         return (Imaging) ImagingError_MemoryError();
