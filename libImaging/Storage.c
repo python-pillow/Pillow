@@ -265,7 +265,7 @@ ImagingDelete(Imaging im)
 /* Allocate image as an array of line buffers. */
 
 #define MEMORY_BLOCK_SIZE (1024*1024)
-#define MEMORY_BLOCKS_COUNT 128
+#define MEMORY_MAX_BLOCKS 128
 
 void **_blocks = NULL;
 int _blocks_free = 0;
@@ -275,7 +275,7 @@ _get_block(int dirty)
 {
     void *block;
     if ( ! _blocks) {
-        _blocks = calloc(sizeof(void*), MEMORY_BLOCKS_COUNT);
+        _blocks = calloc(sizeof(void*), MEMORY_MAX_BLOCKS);
     }
     if (_blocks_free > 0) {
         _blocks_free -= 1;
@@ -296,7 +296,12 @@ _get_block(int dirty)
 void
 _return_block(void *block)
 {
-    free(block);
+    if (_blocks_free < MEMORY_MAX_BLOCKS)  {
+        _blocks[_blocks_free] = block;
+        _blocks_free += 1;
+    } else {
+        free(block);
+    }
 }
 
 
@@ -308,7 +313,7 @@ ImagingDestroyArray(Imaging im)
     if (im->blocks) {
         while (im->blocks[y]) {
             _return_block(im->blocks[y]);
-            y ++;
+            y += 1;
         }
         free(im->blocks);
     }
