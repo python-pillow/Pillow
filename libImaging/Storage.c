@@ -265,7 +265,7 @@ ImagingDelete(Imaging im)
 /* Allocate image as an array of line buffers. */
 
 #define MEMORY_BLOCK_SIZE (1024*1024)
-#define MEMORY_MAX_BLOCKS 128
+#define MEMORY_MAX_BLOCKS 0
 
 void **_blocks = NULL;
 int _blocks_free = 0;
