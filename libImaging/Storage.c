@@ -266,6 +266,7 @@ ImagingDelete(Imaging im)
 
 #define MEMORY_BLOCK_SIZE (1024*1024)
 #define MEMORY_MAX_BLOCKS 0
+#define MEMORY_ALIGN_LINES 64
 
 void **_blocks = NULL;
 int _blocks_free = 0;
@@ -324,9 +325,10 @@ ImagingAllocateArray(Imaging im, int dirty)
 {
     int y, line_in_block, current_block;
     char* p;
-    int lines_pre_block, blocks_count;
+    int lines_pre_block, blocks_count, linesize;
 
-    lines_pre_block = MEMORY_BLOCK_SIZE / im->linesize;
+    linesize = ((im->linesize - 1) / MEMORY_ALIGN_LINES + 1) * MEMORY_ALIGN_LINES;
+    lines_pre_block = MEMORY_BLOCK_SIZE / linesize;
     blocks_count = (im->ysize +  lines_pre_block - 1) / lines_pre_block;
 
     /* One extra ponter is always NULL */
@@ -345,7 +347,7 @@ ImagingAllocateArray(Imaging im, int dirty)
             }
             im->blocks[current_block] = p;
         }
-        im->image[y] = p + im->linesize * line_in_block;
+        im->image[y] = p + linesize * line_in_block;
 
         line_in_block += 1;
         if (line_in_block >= lines_pre_block) {
