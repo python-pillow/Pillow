@@ -3138,21 +3138,10 @@ _getattr_ptr(ImagingObject* self, void* closure)
 static PyObject*
 _getattr_unsafe_ptrs(ImagingObject* self, void* closure)
 {
-    return Py_BuildValue("(ss)(si)(si)(si)(si)(si)(sn)(sn)(sn)(sn)(sn)(si)(si)(sn)",
-                         "mode", self->image->mode,
-                         "type", self->image->type,
-                         "depth", self->image->depth,
-                         "bands", self->image->bands,
-                         "xsize", self->image->xsize,
-                         "ysize", self->image->ysize,
-                         "palette", self->image->palette,
+    return Py_BuildValue("(sn)(sn)(sn)",
                          "image8", self->image->image8,
                          "image32", self->image->image32,
-                         "image", self->image->image,
-                         "block", self->image->block,
-                         "pixelsize", self->image->pixelsize,
-                         "linesize", self->image->linesize,
-                         "destroy", self->image->destroy
+                         "image", self->image->image
                         );
 };
 
