@@ -26,11 +26,11 @@ ImagingModeFilter(Imaging im, int size)
     int histogram[256];
 
     if (!im || im->bands != 1 || im->type != IMAGING_TYPE_UINT8)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
-    imOut = ImagingNew(im->mode, im->xsize, im->ysize);
+    imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
     if (!imOut)
-	return NULL;
+        return NULL;
 
     size = size / 2;
 
