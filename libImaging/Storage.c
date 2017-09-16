@@ -265,30 +265,34 @@ ImagingDelete(Imaging im)
 /* Allocate image as an array of line buffers. */
 
 #define MEMORY_BLOCK_SIZE (1024*1024)
-#define MEMORY_MAX_BLOCKS 0
-#define MEMORY_ALIGN_LINES 64
+#define MEMORY_CACHE_BLOCKS 0
+#define MEMORY_ALIGN_LINES 1
 
 void **_blocks = NULL;
 int _blocks_free = 0;
 
 void *
-_get_block(int dirty)
+_get_block(int requested_size, int dirty)
 {
     void *block;
     if ( ! _blocks) {
-        _blocks = calloc(sizeof(void*), MEMORY_MAX_BLOCKS);
+        _blocks = calloc(sizeof(void*), MEMORY_CACHE_BLOCKS);
     }
     if (_blocks_free > 0) {
         _blocks_free -= 1;
-        block = _blocks[_blocks_free];
+        block = realloc(_blocks[_blocks_free], requested_size);
+        if ( ! block) {
+            free(_blocks[_blocks_free]);
+            return NULL;
+        }
         if ( ! dirty) {
-            memset(block, 0, MEMORY_BLOCK_SIZE);
+            memset(block, 0, requested_size);
         }
     } else {
         if (dirty) {
-            block = malloc(MEMORY_BLOCK_SIZE);
+            block = malloc(requested_size);
         } else {
-            block = calloc(1, MEMORY_BLOCK_SIZE);
+            block = calloc(1, requested_size);
         }
     }
     return block;
@@ -297,7 +301,7 @@ _get_block(int dirty)
 void
 _return_block(void *block)
 {
-    if (_blocks_free < MEMORY_MAX_BLOCKS)  {
+    if (_blocks_free < MEMORY_CACHE_BLOCKS)  {
         _blocks[_blocks_free] = block;
         _blocks_free += 1;
     } else {
@@ -325,11 +329,14 @@ ImagingAllocateArray(Imaging im, int dirty)
 {
     int y, line_in_block, current_block;
     char* p;
-    int lines_pre_block, blocks_count, linesize;
+    int linesize, lines_per_block, blocks_count;
 
-    linesize = ((im->linesize - 1) / MEMORY_ALIGN_LINES + 1) * MEMORY_ALIGN_LINES;
-    lines_pre_block = MEMORY_BLOCK_SIZE / linesize;
-    blocks_count = (im->ysize +  lines_pre_block - 1) / lines_pre_block;
+    linesize = (im->linesize + MEMORY_ALIGN_LINES - 1) & -MEMORY_ALIGN_LINES;
+    lines_per_block = MEMORY_BLOCK_SIZE / linesize;
+    if (lines_per_block <= 0)
+        lines_per_block = 1;
+    blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
+
 
     /* One extra ponter is always NULL */
     im->blocks = (char **)calloc(sizeof(char *), blocks_count + 1);
@@ -340,17 +347,18 @@ ImagingAllocateArray(Imaging im, int dirty)
     /* Allocate image as an array of lines */
     for (y = 0, line_in_block = 0, current_block = 0; y < im->ysize; y++) {
         if (line_in_block == 0) {
-            p = (char *)_get_block(dirty);
+            p = (char *)_get_block(lines_per_block * linesize, dirty);
             if ( ! p) {
                 ImagingDestroyArray(im);
                 break;
             }
             im->blocks[current_block] = p;
         }
+
         im->image[y] = p + linesize * line_in_block;
 
         line_in_block += 1;
-        if (line_in_block >= lines_pre_block) {
+        if (line_in_block >= lines_per_block) {
             /* Reset counter and start new block */
             line_in_block = 0;
             current_block += 1;
