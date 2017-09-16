@@ -280,11 +280,16 @@ _get_block(int requested_size, int dirty)
     }
     if (_blocks_free > 0) {
         _blocks_free -= 1;
+        // printf("get block: %p %d; _blocks_free: %d\n",
+        //        _blocks[_blocks_free], requested_size, _blocks_free);
         block = realloc(_blocks[_blocks_free], requested_size);
         if ( ! block) {
             free(_blocks[_blocks_free]);
             return NULL;
         }
+        // if (block != _blocks[_blocks_free]) {
+        //     printf("reallocat: %p %p\n", block, _blocks[_blocks_free]);
+        // }
         if ( ! dirty) {
             memset(block, 0, requested_size);
         }
@@ -294,6 +299,8 @@ _get_block(int requested_size, int dirty)
         } else {
             block = calloc(1, requested_size);
         }
+        // printf("allocated: %p %d; _blocks_free: %d\n",
+        //        block, requested_size, _blocks_free);
     }
     return block;
 }
@@ -304,7 +311,9 @@ _return_block(void *block)
     if (_blocks_free < MEMORY_CACHE_BLOCKS)  {
         _blocks[_blocks_free] = block;
         _blocks_free += 1;
+        // printf("ret block: %p; _blocks_free: %d\n", block, _blocks_free);
     } else {
+        // printf("fre block: %p; _blocks_free: %d\n", block, _blocks_free);
         free(block);
     }
 }
@@ -336,6 +345,8 @@ ImagingAllocateArray(Imaging im, int dirty)
     if (lines_per_block <= 0)
         lines_per_block = 1;
     blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
+    // printf("NEW size: %dx%d, ls: %d, lpb: %d, blocks: %d\n",
+    //        im->xsize, im->ysize, linesize, lines_per_block, blocks_count);
 
     /* One extra ponter is always NULL */
     im->blocks = (char **)calloc(sizeof(char *), blocks_count + 1);
