@@ -337,7 +337,6 @@ ImagingAllocateArray(Imaging im, int dirty)
         lines_per_block = 1;
     blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
 
-
     /* One extra ponter is always NULL */
     im->blocks = (char **)calloc(sizeof(char *), blocks_count + 1);
     if ( ! im->blocks) {
@@ -347,7 +346,11 @@ ImagingAllocateArray(Imaging im, int dirty)
     /* Allocate image as an array of lines */
     for (y = 0, line_in_block = 0, current_block = 0; y < im->ysize; y++) {
         if (line_in_block == 0) {
-            p = (char *)_get_block(lines_per_block * linesize, dirty);
+            int lines_remained = lines_per_block;
+            if (lines_remained > im->ysize - y) {
+                lines_remained = im->ysize - y;
+            }
+            p = (char *)_get_block(lines_remained * linesize, dirty);
             if ( ! p) {
                 ImagingDestroyArray(im);
                 break;
