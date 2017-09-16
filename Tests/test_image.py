@@ -385,6 +385,12 @@ class TestImage(PillowTestCase):
         im = Image.new('L', (0, 0))
         self.assertEqual(im.size, (0, 0))
 
+        im = Image.new('L', (0, 100))
+        self.assertEqual(im.size, (0, 100))
+
+        im = Image.new('L', (100, 0))
+        self.assertEqual(im.size, (100, 0))
+
         self.assertTrue(Image.new('RGB', (1, 1)))
         # Should pass lists too
         i = Image.new('RGB', [1, 1])
