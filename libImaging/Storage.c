@@ -268,11 +268,23 @@ ImagingDelete(Imaging im)
 #define MEMORY_CACHE_BLOCKS 0
 #define MEMORY_ALIGN_LINES 1
 
-void **_blocks = NULL;
-int _blocks_free = 0;
+typedef struct {
+    int alignment = 1;
+    int block_size = 1024*1024;
+    int blocks_max = 0;
+    int blocks_free = 0;
+    void **blocks = NULL
+} *ImagingMemoryArean;
+
+
+void
+memory_set_blocks_max(ImagingMemoryArean arena, int blocks_max)
+{
+    arena->blocks_max = blocks_max;
+}
 
 void *
-_get_block(int requested_size, int dirty)
+memory_get_block(ImagingMemoryArean arena, int requested_size, int dirty)
 {
     void *block;
     if ( ! _blocks) {
@@ -306,7 +318,7 @@ _get_block(int requested_size, int dirty)
 }
 
 void
-_return_block(void *block)
+memory_return_block(ImagingMemoryArean arena, void *block)
 {
     if (_blocks_free < MEMORY_CACHE_BLOCKS)  {
         _blocks[_blocks_free] = block;
@@ -345,7 +357,7 @@ ImagingAllocateArray(Imaging im, int dirty)
         return im;
     }
 
-    linesize = (im->linesize + MEMORY_ALIGN_LINES - 1) & -MEMORY_ALIGN_LINES;
+    linesize = (im->linesize + arena->alignment - 1) & -arena->alignment;
     lines_per_block = MEMORY_BLOCK_SIZE / linesize;
     if (lines_per_block == 0)
         lines_per_block = 1;
@@ -370,7 +382,7 @@ ImagingAllocateArray(Imaging im, int dirty)
             if (lines_remained > im->ysize - y) {
                 lines_remained = im->ysize - y;
             }
-            p = (char *)_get_block(lines_remained * linesize, dirty);
+            p = (char *)memory_get_block(lines_remained * linesize, dirty);
             if ( ! p) {
                 return (Imaging) ImagingError_MemoryError();
             }
