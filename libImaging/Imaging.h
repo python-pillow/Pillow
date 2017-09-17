@@ -153,11 +153,24 @@ struct ImagingPaletteInstance {
 
 };
 
+typedef struct ImagingMemoryArena {
+    int alignment;
+    int block_size;
+    int blocks_max;
+    int blocks_free;
+    void **blocks;
+    int stats_new_count;
+    int stats_allocated_block;
+    int stats_reused_block;
+    int stats_reallocated_block;
+    int stats_freed_block;
+} *ImagingMemoryArena;
+
 
 /* Objects */
 /* ------- */
 
-extern int ImagingNewCount;
+extern struct ImagingMemoryArena ImagingDefaultArena;
 
 extern Imaging ImagingNew(const char* mode, int xsize, int ysize);
 extern Imaging ImagingNewDirty(const char* mode, int xsize, int ysize);

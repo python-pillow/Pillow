@@ -647,7 +647,7 @@ _getcount(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, ":getcount"))
         return NULL;
 
-    return PyInt_FromLong(ImagingNewCount);
+    return PyInt_FromLong(ImagingDefaultArena.stats_new_count);
 }
 
 static PyObject*

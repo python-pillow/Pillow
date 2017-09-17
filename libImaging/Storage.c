@@ -229,7 +229,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size)
         break;
     }
 
-    ImagingNewCount++;
+    ImagingDefaultArena.stats_new_count += 1;
 
     return im;
 }
@@ -264,48 +264,52 @@ ImagingDelete(Imaging im)
 /* ------------------ */
 /* Allocate image as an array of line buffers. */
 
-typedef struct ImagingMemoryArean {
-    int alignment;
-    int block_size;
-    int blocks_max;
-    int blocks_free;
-    void **blocks;
-} *ImagingMemoryArean;
-
-struct ImagingMemoryArean default_arena = {
+struct ImagingMemoryArena ImagingDefaultArena = {
     .alignment = 1,
     .block_size = 1024*1024,
     .blocks_max = 0,
     .blocks_free = 0,
-    .blocks = NULL
+    .blocks = NULL,
+    // Stats
+    0, 0, 0, 0, 0
 };
 
 void
-memory_set_blocks_max(ImagingMemoryArean arena, int blocks_max)
+memory_set_blocks_max(ImagingMemoryArena arena, int blocks_max)
 {
     /* Free already cached blocks */
     while (arena->blocks_free > blocks_max) {
         arena->blocks_free -= 1;
         free(arena->blocks[arena->blocks_free]);
+        arena->stats_freed_block += 1;
     }
+
     arena->blocks_max = blocks_max;
+    if (blocks_max == 0 && arena->blocks != NULL) {
+        free(arena->blocks);
+        arena->blocks = NULL;
+    } else if (arena->blocks != NULL) {
+        arena->blocks = realloc(arena->blocks, sizeof(void*) * blocks_max);
+    } else {
+        arena->blocks = calloc(sizeof(void*), blocks_max);
+    }
 }
 
 void *
-memory_get_block(ImagingMemoryArean arena, int requested_size, int dirty)
+memory_get_block(ImagingMemoryArena arena, int requested_size, int dirty)
 {
     void *block;
     if (arena->blocks_free > 0) {
         arena->blocks_free -= 1;
-        // printf("get block: %p %d; free: %d\n",
-        //        arena->blocks[arena->blocks_free], requested_size, arena->blocks_free);
         block = realloc(arena->blocks[arena->blocks_free], requested_size);
         if ( ! block) {
             free(arena->blocks[arena->blocks_free]);
+            arena->stats_freed_block += 1;
             return NULL;
         }
+        arena->stats_reused_block += 1;
         if (block != arena->blocks[arena->blocks_free]) {
-            // printf("reallocat: %p %p\n", block, arena->blocks[arena->blocks_free]);
+            arena->stats_reallocated_block += 1;
         }
         if ( ! dirty) {
             memset(block, 0, requested_size);
@@ -316,22 +320,20 @@ memory_get_block(ImagingMemoryArean arena, int requested_size, int dirty)
         } else {
             block = calloc(1, requested_size);
         }
-        // printf("allocated: %p %d; arena->blocks_free: %d\n",
-        //        block, requested_size, arena->blocks_free);
+        arena->stats_allocated_block += 1;
     }
     return block;
 }
 
 void
-memory_return_block(ImagingMemoryArean arena, void *block)
+memory_return_block(ImagingMemoryArena arena, void *block)
 {
     if (arena->blocks_free < arena->blocks_max)  {
         arena->blocks[arena->blocks_free] = block;
         arena->blocks_free += 1;
-        // printf("ret block: %p; free: %d\n", block, arena->blocks_free);
     } else {
-        // printf("fre block: %p; free: %d\n", block, arena->blocks_free);
         free(block);
+        arena->stats_freed_block += 1;
     }
 }
 
@@ -343,7 +345,7 @@ ImagingDestroyArray(Imaging im)
 
     if (im->blocks) {
         while (im->blocks[y]) {
-            memory_return_block(&default_arena,  im->blocks[y]);
+            memory_return_block(&ImagingDefaultArena,  im->blocks[y]);
             y += 1;
         }
         free(im->blocks);
@@ -354,7 +356,7 @@ Imaging
 ImagingAllocateArray(Imaging im, int dirty)
 {
     int y, line_in_block, current_block;
-    ImagingMemoryArean arena = &default_arena;
+    ImagingMemoryArena arena = &ImagingDefaultArena;
     char* p;
     int linesize, lines_per_block, blocks_count;
 
