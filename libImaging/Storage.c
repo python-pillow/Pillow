@@ -287,9 +287,9 @@ _get_block(int requested_size, int dirty)
             free(_blocks[_blocks_free]);
             return NULL;
         }
-        // if (block != _blocks[_blocks_free]) {
-        //     printf("reallocat: %p %p\n", block, _blocks[_blocks_free]);
-        // }
+        if (block != _blocks[_blocks_free]) {
+            // printf("reallocat: %p %p\n", block, _blocks[_blocks_free]);
+        }
         if ( ! dirty) {
             memset(block, 0, requested_size);
         }
@@ -361,7 +361,10 @@ ImagingAllocateArray(Imaging im, int dirty)
     }
 
     /* Allocate image as an array of lines */
-    for (y = 0, line_in_block = 0, current_block = 0; y < im->ysize; y++) {
+    line_in_block = 0;
+    /* Return blocks in reverse order to reduce reallocations */
+    current_block = blocks_count - 1;
+    for (y = 0; y < im->ysize; y++) {
         if (line_in_block == 0) {
             int lines_remained = lines_per_block;
             if (lines_remained > im->ysize - y) {
@@ -380,7 +383,7 @@ ImagingAllocateArray(Imaging im, int dirty)
         if (line_in_block >= lines_per_block) {
             /* Reset counter and start new block */
             line_in_block = 0;
-            current_block += 1;
+            current_block -= 1;
         }
     }
 
