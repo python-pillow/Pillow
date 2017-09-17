@@ -642,15 +642,6 @@ _new_block(PyObject* self, PyObject* args)
 }
 
 static PyObject*
-_getcount(PyObject* self, PyObject* args)
-{
-    if (!PyArg_ParseTuple(args, ":getcount"))
-        return NULL;
-
-    return PyInt_FromLong(ImagingDefaultArena.stats_new_count);
-}
-
-static PyObject*
 _linear_gradient(PyObject* self, PyObject* args)
 {
     char* mode;
@@ -3337,6 +3328,169 @@ static PyTypeObject PixelAccess_Type = {
 
 /* -------------------------------------------------------------------- */
 
+static PyObject*
+_get_stats(PyObject* self, PyObject* args)
+{
+    PyObject* d;
+    ImagingMemoryArena arena = &ImagingDefaultArena;
+
+    if (!PyArg_ParseTuple(args, ":get_stats"))
+        return NULL;
+
+    d = PyDict_New();
+    if ( ! d)
+        return NULL;
+    PyDict_SetItemString(d, "new_count",
+                         PyInt_FromLong(arena->stats_new_count));
+    PyDict_SetItemString(d, "allocated_blocks",
+                         PyInt_FromLong(arena->stats_allocated_blocks));
+    PyDict_SetItemString(d, "reused_blocks",
+                         PyInt_FromLong(arena->stats_reused_blocks));
+    PyDict_SetItemString(d, "reallocated_blocks",
+                         PyInt_FromLong(arena->stats_reallocated_blocks));
+    PyDict_SetItemString(d, "freed_blocks",
+                         PyInt_FromLong(arena->stats_freed_blocks));
+    return d;
+}
+
+static PyObject*
+_reset_stats(PyObject* self, PyObject* args)
+{
+    ImagingMemoryArena arena = &ImagingDefaultArena;
+
+    if (!PyArg_ParseTuple(args, ":reset_stats"))
+        return NULL;
+    
+    arena->stats_new_count = 0;
+    arena->stats_allocated_blocks = 0;
+    arena->stats_reused_blocks = 0;
+    arena->stats_reallocated_blocks = 0;
+    arena->stats_freed_blocks = 0;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject*
+_get_alignment(PyObject* self, PyObject* args)
+{
+    if (!PyArg_ParseTuple(args, ":get_alignment"))
+        return NULL;
+    
+    return PyInt_FromLong(ImagingDefaultArena.alignment);
+}
+
+static PyObject*
+_get_block_size(PyObject* self, PyObject* args)
+{
+    if (!PyArg_ParseTuple(args, ":get_block_size"))
+        return NULL;
+    
+    return PyInt_FromLong(ImagingDefaultArena.block_size);
+}
+
+static PyObject*
+_get_blocks_max(PyObject* self, PyObject* args)
+{
+    if (!PyArg_ParseTuple(args, ":get_blocks_max"))
+        return NULL;
+    
+    return PyInt_FromLong(ImagingDefaultArena.blocks_max);
+}
+
+static PyObject*
+_get_blocks_free(PyObject* self, PyObject* args)
+{
+    if (!PyArg_ParseTuple(args, ":get_blocks_free"))
+        return NULL;
+    
+    return PyInt_FromLong(ImagingDefaultArena.blocks_free);
+}
+
+static PyObject*
+_set_alignment(PyObject* self, PyObject* args)
+{
+    int alignment;
+    if (!PyArg_ParseTuple(args, "i:set_alignment", &alignment))
+        return NULL;
+    
+    if (alignment < 1 || alignment > 128) {
+        PyErr_SetString(PyExc_ValueError, "alignment should be from 1 to 128");
+        return NULL;
+    }
+    /* Is power of two */
+    if (alignment & (alignment - 1)) {
+        PyErr_SetString(PyExc_ValueError, "alignment should be power of two");
+        return NULL;
+    }
+
+    ImagingDefaultArena.alignment = alignment;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject*
+_set_block_size(PyObject* self, PyObject* args)
+{
+    int block_size;
+    if (!PyArg_ParseTuple(args, "i:set_block_size", &block_size))
+        return NULL;
+    
+    if (block_size < 0) {
+        PyErr_SetString(PyExc_ValueError,
+            "block_size should be greater than 0");
+        return NULL;
+    }
+
+    if (block_size & 0xfff) {
+        PyErr_SetString(PyExc_ValueError,
+            "block_size should be multiple of 4096");
+        return NULL;
+    }
+
+    ImagingDefaultArena.block_size = block_size;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject*
+_set_blocks_max(PyObject* self, PyObject* args)
+{
+    int blocks_max;
+    if (!PyArg_ParseTuple(args, "i:set_blocks_max", &blocks_max))
+        return NULL;
+    
+    if (blocks_max < 0) {
+        PyErr_SetString(PyExc_ValueError,
+            "blocks_max should be greater than 0");
+        return NULL;
+    }
+
+    if ( ! ImagingMemorySetBlocksMax(&ImagingDefaultArena, blocks_max)) {
+        ImagingError_MemoryError();
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject*
+_clear_cache(PyObject* self, PyObject* args)
+{
+    if (!PyArg_ParseTuple(args, ":_clear_cache"))
+        return NULL;
+    
+    ImagingMemoryClearCache(&ImagingDefaultArena);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/* -------------------------------------------------------------------- */
+
 /* FIXME: this is something of a mess.  Should replace this with
    pluggable codecs, but not before PIL 1.2 */
 
@@ -3399,8 +3553,6 @@ static PyMethodDef functions[] = {
     {"fill", (PyCFunction)_fill, 1},
     {"new", (PyCFunction)_new, 1},
     {"merge", (PyCFunction)_merge, 1},
-
-    {"getcount", (PyCFunction)_getcount, 1},
 
     /* Functions */
     {"convert", (PyCFunction)_convert2, 1},
@@ -3490,6 +3642,18 @@ static PyMethodDef functions[] = {
 #ifdef WITH_ARROW
     {"outline", (PyCFunction)PyOutline_Create, 1},
 #endif
+
+    /* Resource management */
+    {"get_stats", (PyCFunction)_get_stats, 1},
+    {"reset_stats", (PyCFunction)_reset_stats, 1},
+    {"get_alignment", (PyCFunction)_get_alignment, 1},
+    {"get_block_size", (PyCFunction)_get_block_size, 1},
+    {"get_blocks_max", (PyCFunction)_get_blocks_max, 1},
+    {"get_blocks_free", (PyCFunction)_get_blocks_free, 1},
+    {"set_alignment", (PyCFunction)_set_alignment, 1},
+    {"set_block_size", (PyCFunction)_set_block_size, 1},
+    {"set_blocks_max", (PyCFunction)_set_blocks_max, 1},
+    {"clear_cache", (PyCFunction)_clear_cache, 1},
 
     {NULL, NULL} /* sentinel */
 };

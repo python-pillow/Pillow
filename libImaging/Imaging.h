@@ -160,10 +160,10 @@ typedef struct ImagingMemoryArena {
     int blocks_free;
     void **blocks;
     int stats_new_count;
-    int stats_allocated_block;
-    int stats_reused_block;
-    int stats_reallocated_block;
-    int stats_freed_block;
+    int stats_allocated_blocks;
+    int stats_reused_blocks;
+    int stats_reallocated_blocks;
+    int stats_freed_blocks;
 } *ImagingMemoryArena;
 
 
@@ -171,6 +171,8 @@ typedef struct ImagingMemoryArena {
 /* ------- */
 
 extern struct ImagingMemoryArena ImagingDefaultArena;
+extern int ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max);
+extern void ImagingMemoryClearCache(ImagingMemoryArena arena);
 
 extern Imaging ImagingNew(const char* mode, int xsize, int ysize);
 extern Imaging ImagingNewDirty(const char* mode, int xsize, int ysize);

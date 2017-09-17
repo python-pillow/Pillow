@@ -273,24 +273,47 @@ struct ImagingMemoryArena ImagingDefaultArena = {
     0, 0, 0, 0, 0        // Stats
 };
 
-void
-memory_set_blocks_max(ImagingMemoryArena arena, int blocks_max)
+int
+ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max)
 {
+    void *p;
     /* Free already cached blocks */
     while (arena->blocks_free > blocks_max) {
         arena->blocks_free -= 1;
         free(arena->blocks[arena->blocks_free]);
-        arena->stats_freed_block += 1;
+        arena->stats_freed_blocks += 1;
     }
 
-    arena->blocks_max = blocks_max;
     if (blocks_max == 0 && arena->blocks != NULL) {
         free(arena->blocks);
         arena->blocks = NULL;
     } else if (arena->blocks != NULL) {
-        arena->blocks = realloc(arena->blocks, sizeof(void*) * blocks_max);
+        p = realloc(arena->blocks, sizeof(void*) * blocks_max);
+        if ( ! p) {
+            // Leave previous blocks_max value
+            return 0;
+        }
+        arena->blocks = p;
     } else {
         arena->blocks = calloc(sizeof(void*), blocks_max);
+        if ( ! arena->blocks) {
+            // Fallback to 0
+            arena->blocks_max = 0;
+            return 0;
+        }
+    }
+    arena->blocks_max = blocks_max;
+
+    return 1;
+}
+
+void
+ImagingMemoryClearCache(ImagingMemoryArena arena)
+{
+    while (arena->blocks_free > 0) {
+        arena->blocks_free -= 1;
+        free(arena->blocks[arena->blocks_free]);
+        arena->stats_freed_blocks += 1;
     }
 }
 
@@ -303,12 +326,12 @@ memory_get_block(ImagingMemoryArena arena, int requested_size, int dirty)
         block = realloc(arena->blocks[arena->blocks_free], requested_size);
         if ( ! block) {
             free(arena->blocks[arena->blocks_free]);
-            arena->stats_freed_block += 1;
+            arena->stats_freed_blocks += 1;
             return NULL;
         }
-        arena->stats_reused_block += 1;
+        arena->stats_reused_blocks += 1;
         if (block != arena->blocks[arena->blocks_free]) {
-            arena->stats_reallocated_block += 1;
+            arena->stats_reallocated_blocks += 1;
         }
         if ( ! dirty) {
             memset(block, 0, requested_size);
@@ -319,7 +342,7 @@ memory_get_block(ImagingMemoryArena arena, int requested_size, int dirty)
         } else {
             block = calloc(1, requested_size);
         }
-        arena->stats_allocated_block += 1;
+        arena->stats_allocated_blocks += 1;
     }
     return block;
 }
@@ -332,7 +355,7 @@ memory_return_block(ImagingMemoryArena arena, void *block)
         arena->blocks_free += 1;
     } else {
         free(block);
-        arena->stats_freed_block += 1;
+        arena->stats_freed_blocks += 1;
     }
 }
 

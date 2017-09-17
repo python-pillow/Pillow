@@ -52,3 +52,6 @@ identified the format of the clipboard data.
 
 The ``PIL.Image.core.copy`` and ``PIL.Image.Image.im.copy2`` methods
 have been removed.
+
+The ``PIL.Image.core.getcount`` methods have been removed, use
+``PIL.Image.core.get_stats()['new_count']`` property instead.
