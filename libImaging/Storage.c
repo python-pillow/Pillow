@@ -265,13 +265,12 @@ ImagingDelete(Imaging im)
 /* Allocate image as an array of line buffers. */
 
 struct ImagingMemoryArena ImagingDefaultArena = {
-    .alignment = 1,
-    .block_size = 1024*1024,
-    .blocks_max = 0,
-    .blocks_free = 0,
-    .blocks = NULL,
-    // Stats
-    0, 0, 0, 0, 0
+    1,                   // alignment
+    1*1024*1024,         // block_size
+    0,                   // blocks_max
+    0,                   // blocks_free
+    NULL,                // blocks
+    0, 0, 0, 0, 0        // Stats
 };
 
 void
