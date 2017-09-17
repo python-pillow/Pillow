@@ -24,7 +24,7 @@
 
 
 from . import ImageFile, ImagePalette
-from ._binary import i16be as i16
+from ._binary import i8, i16be as i16, i32be as i32
 
 __version__ = "0.1"
 
@@ -43,19 +43,25 @@ class GdImageFile(ImageFile.ImageFile):
     def _open(self):
 
         # Header
-        s = self.fp.read(775)
+        s = self.fp.read(1037)
+
+        if not i16(s[:2]) in [65534, 65535]:
+            raise SyntaxError("Not a valid GD 2.x .gd file")
 
         self.mode = "L"  # FIXME: "P"
-        self.size = i16(s[0:2]), i16(s[2:4])
+        self.size = i16(s[2:4]), i16(s[4:6])
+
+        trueColor = i8(s[6])
+        trueColorOffset = 2 if trueColor else 0
 
         # transparency index
-        tindex = i16(s[5:7])
+        tindex = i32(s[7+trueColorOffset:7+trueColorOffset+4])
         if tindex < 256:
             self.info["transparency"] = tindex
 
-        self.palette = ImagePalette.raw("RGB", s[7:])
+        self.palette = ImagePalette.raw("XBGR", s[7+trueColorOffset+4:7+trueColorOffset+4+256*4])
 
-        self.tile = [("raw", (0, 0)+self.size, 775, ("L", 0, -1))]
+        self.tile = [("raw", (0, 0)+self.size, 7+trueColorOffset+4+256*4, ("L", 0, 1))]
 
 
 def open(fp, mode="r"):
