@@ -278,9 +278,6 @@ _get_block(int requested_size, int dirty)
     if ( ! _blocks) {
         _blocks = calloc(sizeof(void*), MEMORY_CACHE_BLOCKS);
     }
-    if ( ! requested_size) {
-        requested_size = 1;
-    }
     if (_blocks_free > 0) {
         _blocks_free -= 1;
         // printf("get block: %p %d; _blocks_free: %d\n",
@@ -343,16 +340,20 @@ ImagingAllocateArray(Imaging im, int dirty)
     char* p;
     int linesize, lines_per_block, blocks_count;
 
-    linesize = (im->linesize + MEMORY_ALIGN_LINES - 1) & -MEMORY_ALIGN_LINES;
-    if ( ! linesize || linesize > MEMORY_BLOCK_SIZE) {
-        lines_per_block = 1;
-    } else {
-        lines_per_block = MEMORY_BLOCK_SIZE / linesize;
+    /* 0-width or 0-height image. No need to do anything */
+    if ( ! im->linesize || ! im->ysize) {
+        return im;
     }
+
+    linesize = (im->linesize + MEMORY_ALIGN_LINES - 1) & -MEMORY_ALIGN_LINES;
+    lines_per_block = MEMORY_BLOCK_SIZE / linesize;
+    if (lines_per_block == 0)
+        lines_per_block = 1;
     blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
     // printf("NEW size: %dx%d, ls: %d, lpb: %d, blocks: %d\n",
     //        im->xsize, im->ysize, linesize, lines_per_block, blocks_count);
 
+    im->destroy = ImagingDestroyArray;
     /* One extra ponter is always NULL */
     im->blocks = (char **)calloc(sizeof(char *), blocks_count + 1);
     if ( ! im->blocks) {
@@ -368,8 +369,7 @@ ImagingAllocateArray(Imaging im, int dirty)
             }
             p = (char *)_get_block(lines_remained * linesize, dirty);
             if ( ! p) {
-                ImagingDestroyArray(im);
-                break;
+                return (Imaging) ImagingError_MemoryError();
             }
             im->blocks[current_block] = p;
         }
@@ -383,12 +383,6 @@ ImagingAllocateArray(Imaging im, int dirty)
             current_block += 1;
         }
     }
-
-    if (y != im->ysize) {
-        return (Imaging) ImagingError_MemoryError();
-    }
-
-    im->destroy = ImagingDestroyArray;
 
     return im;
 }
