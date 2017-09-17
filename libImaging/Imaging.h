@@ -157,7 +157,7 @@ typedef struct ImagingMemoryArena {
     int alignment;
     int block_size;
     int blocks_max;
-    int blocks_free;
+    int blocks_cached;
     void **blocks;
     int stats_new_count;
     int stats_allocated_blocks;

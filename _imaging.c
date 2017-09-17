@@ -3350,6 +3350,8 @@ _get_stats(PyObject* self, PyObject* args)
                          PyInt_FromLong(arena->stats_reallocated_blocks));
     PyDict_SetItemString(d, "freed_blocks",
                          PyInt_FromLong(arena->stats_freed_blocks));
+    PyDict_SetItemString(d, "blocks_cached",
+                         PyInt_FromLong(arena->blocks_cached));
     return d;
 }
 
@@ -3399,15 +3401,6 @@ _get_blocks_max(PyObject* self, PyObject* args)
 }
 
 static PyObject*
-_get_blocks_free(PyObject* self, PyObject* args)
-{
-    if (!PyArg_ParseTuple(args, ":get_blocks_free"))
-        return NULL;
-    
-    return PyInt_FromLong(ImagingDefaultArena.blocks_free);
-}
-
-static PyObject*
 _set_alignment(PyObject* self, PyObject* args)
 {
     int alignment;
@@ -3437,7 +3430,7 @@ _set_block_size(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "i:set_block_size", &block_size))
         return NULL;
     
-    if (block_size < 0) {
+    if (block_size <= 0) {
         PyErr_SetString(PyExc_ValueError,
             "block_size should be greater than 0");
         return NULL;
@@ -3649,7 +3642,6 @@ static PyMethodDef functions[] = {
     {"get_alignment", (PyCFunction)_get_alignment, 1},
     {"get_block_size", (PyCFunction)_get_block_size, 1},
     {"get_blocks_max", (PyCFunction)_get_blocks_max, 1},
-    {"get_blocks_free", (PyCFunction)_get_blocks_free, 1},
     {"set_alignment", (PyCFunction)_set_alignment, 1},
     {"set_block_size", (PyCFunction)_set_block_size, 1},
     {"set_blocks_max", (PyCFunction)_set_blocks_max, 1},
