@@ -1,9 +1,12 @@
 from __future__ import division, print_function
 
-import gc
+import sys
 
 from helper import unittest, PillowTestCase
 from PIL import Image
+
+
+is_pypy = hasattr(sys, 'pypy_version_info')
 
 
 class TestCoreStats(PillowTestCase):
@@ -84,7 +87,8 @@ class TestCoreMemory(PillowTestCase):
         stats = Image.core.get_stats()
         self.assertGreaterEqual(stats['new_count'], 1)
         self.assertGreaterEqual(stats['allocated_blocks'], 64)
-        self.assertGreaterEqual(stats['freed_blocks'], 64)
+        if not is_pypy:
+            self.assertGreaterEqual(stats['freed_blocks'], 64)
 
     def test_get_blocks_max(self):
         blocks_max = Image.core.get_blocks_max()
@@ -102,13 +106,13 @@ class TestCoreMemory(PillowTestCase):
 
         self.assertRaises(ValueError, Image.core.set_blocks_max, -1)
 
+    @unittest.skipIf(is_pypy, "images are not collected")
     def test_set_blocks_max_stats(self):
         Image.core.reset_stats()
         Image.core.set_blocks_max(128)
         Image.core.set_block_size(4096)
         Image.new('RGB', (256, 256))
         Image.new('RGB', (256, 256))
-        gc.collect()
 
         stats = Image.core.get_stats()
         self.assertGreaterEqual(stats['new_count'], 2)
@@ -117,13 +121,13 @@ class TestCoreMemory(PillowTestCase):
         self.assertEqual(stats['freed_blocks'], 0)
         self.assertEqual(stats['blocks_cached'], 64)
 
+    @unittest.skipIf(is_pypy, "images are not collected")
     def test_clear_cache_stats(self):
         Image.core.reset_stats()
         Image.core.set_blocks_max(128)
         Image.core.set_block_size(4096)
         Image.new('RGB', (256, 256))
         Image.new('RGB', (256, 256))
-        gc.collect()
         Image.core.clear_cache()
 
         stats = Image.core.get_stats()
@@ -138,12 +142,12 @@ class TestCoreMemory(PillowTestCase):
         Image.core.set_blocks_max(0)
         Image.core.set_block_size(4096)
         Image.new('RGB', (2048, 16))
-        gc.collect()
         Image.core.clear_cache()
 
         stats = Image.core.get_stats()
         self.assertGreaterEqual(stats['new_count'], 1)
         self.assertGreaterEqual(stats['allocated_blocks'], 16)
         self.assertGreaterEqual(stats['reused_blocks'], 0)
-        self.assertGreaterEqual(stats['freed_blocks'], 16)
         self.assertEqual(stats['blocks_cached'], 0)
+        if not is_pypy:
+            self.assertGreaterEqual(stats['freed_blocks'], 16)
