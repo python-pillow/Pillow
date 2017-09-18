@@ -172,7 +172,7 @@ typedef struct ImagingMemoryArena {
 
 extern struct ImagingMemoryArena ImagingDefaultArena;
 extern int ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max);
-extern void ImagingMemoryClearCache(ImagingMemoryArena arena);
+extern void ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size);
 
 extern Imaging ImagingNew(const char* mode, int xsize, int ysize);
 extern Imaging ImagingNewDirty(const char* mode, int xsize, int ysize);

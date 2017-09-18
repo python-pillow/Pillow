@@ -3476,7 +3476,7 @@ _clear_cache(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, ":_clear_cache"))
         return NULL;
     
-    ImagingMemoryClearCache(&ImagingDefaultArena);
+    ImagingMemoryClearCache(&ImagingDefaultArena, 0);
 
     Py_INCREF(Py_None);
     return Py_None;

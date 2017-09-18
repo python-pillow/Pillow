@@ -278,11 +278,7 @@ ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max)
 {
     void *p;
     /* Free already cached blocks */
-    while (arena->blocks_cached > blocks_max) {
-        arena->blocks_cached -= 1;
-        free(arena->blocks[arena->blocks_cached]);
-        arena->stats_freed_blocks += 1;
-    }
+    ImagingMemoryClearCache(arena, blocks_max);
 
     if (blocks_max == 0 && arena->blocks != NULL) {
         free(arena->blocks);
@@ -297,8 +293,6 @@ ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max)
     } else {
         arena->blocks = calloc(sizeof(void*), blocks_max);
         if ( ! arena->blocks) {
-            // Fallback to 0
-            arena->blocks_max = 0;
             return 0;
         }
     }
@@ -308,9 +302,9 @@ ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max)
 }
 
 void
-ImagingMemoryClearCache(ImagingMemoryArena arena)
+ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size)
 {
-    while (arena->blocks_cached > 0) {
+    while (arena->blocks_cached > new_size) {
         arena->blocks_cached -= 1;
         free(arena->blocks[arena->blocks_cached]);
         arena->stats_freed_blocks += 1;
