@@ -132,7 +132,6 @@ class TestCoreMemory(PillowTestCase):
         Image.core.clear_cache()
 
         stats = Image.core.get_stats()
-        print(stats)
         self.assertGreaterEqual(stats['new_count'], 2)
         self.assertGreaterEqual(stats['allocated_blocks'], 64)
         self.assertGreaterEqual(stats['reused_blocks'], 64)
@@ -153,3 +152,29 @@ class TestCoreMemory(PillowTestCase):
         self.assertEqual(stats['blocks_cached'], 0)
         if not is_pypy:
             self.assertGreaterEqual(stats['freed_blocks'], 16)
+
+
+class TestEnvVars(PillowTestCase):
+    def tearDown(self):
+        # Restore default values
+        Image.core.set_alignment(1)
+        Image.core.set_block_size(1024*1024)
+        Image.core.set_blocks_max(0)
+        Image.core.clear_cache()
+
+    def test_units(self):
+        Image._apply_env_variables({'PILLOW_BLOCKS_MAX': '2K'})
+        self.assertEqual(Image.core.get_blocks_max(), 2*1024)
+        Image._apply_env_variables({'PILLOW_BLOCK_SIZE': '2m'})
+        self.assertEqual(Image.core.get_block_size(), 2*1024*1024)
+
+    def test_warnings(self):
+        self.assert_warning(
+            UserWarning, Image._apply_env_variables,
+            {'PILLOW_ALIGNMENT': '15'})
+        self.assert_warning(
+            UserWarning, Image._apply_env_variables,
+            {'PILLOW_BLOCK_SIZE': '1024'})
+        self.assert_warning(
+            UserWarning, Image._apply_env_variables,
+            {'PILLOW_BLOCKS_MAX': 'wat'})
