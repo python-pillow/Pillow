@@ -284,14 +284,14 @@ ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max)
         free(arena->blocks);
         arena->blocks = NULL;
     } else if (arena->blocks != NULL) {
-        p = realloc(arena->blocks, sizeof(void*) * blocks_max);
+        p = realloc(arena->blocks, sizeof(*arena->blocks) * blocks_max);
         if ( ! p) {
             // Leave previous blocks_max value
             return 0;
         }
         arena->blocks = p;
     } else {
-        arena->blocks = calloc(sizeof(void*), blocks_max);
+        arena->blocks = calloc(sizeof(*arena->blocks), blocks_max);
         if ( ! arena->blocks) {
             return 0;
         }
@@ -306,49 +306,57 @@ ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size)
 {
     while (arena->blocks_cached > new_size) {
         arena->blocks_cached -= 1;
-        free(arena->blocks[arena->blocks_cached]);
+        free(arena->blocks[arena->blocks_cached].ptr);
         arena->stats_freed_blocks += 1;
     }
 }
 
-void *
+ImagingMemoryBlock
 memory_get_block(ImagingMemoryArena arena, int requested_size, int dirty)
 {
-    void *block;
+    ImagingMemoryBlock block = {NULL, 0};
+
     if (arena->blocks_cached > 0) {
+        // Get block from cache
         arena->blocks_cached -= 1;
-        block = realloc(arena->blocks[arena->blocks_cached], requested_size);
-        if ( ! block) {
-            free(arena->blocks[arena->blocks_cached]);
-            arena->stats_freed_blocks += 1;
-            return NULL;
+        block = arena->blocks[arena->blocks_cached];
+        // Reallocate if needed
+        if (block.size != requested_size){
+            block.ptr = realloc(block.ptr, requested_size);
         }
-        arena->stats_reused_blocks += 1;
-        if (block != arena->blocks[arena->blocks_cached]) {
-            arena->stats_reallocated_blocks += 1;
+        if ( ! block.ptr) {
+            // Can't allocate, free prevous pointer (it is still valid)
+            free(arena->blocks[arena->blocks_cached].ptr);
+            arena->stats_freed_blocks += 1;
+            return block;
         }
         if ( ! dirty) {
-            memset(block, 0, requested_size);
+            memset(block.ptr, 0, requested_size);
+        }
+        arena->stats_reused_blocks += 1;
+        if (block.ptr != arena->blocks[arena->blocks_cached].ptr) {
+            arena->stats_reallocated_blocks += 1;
         }
     } else {
         if (dirty) {
-            block = malloc(requested_size);
+            block.ptr = malloc(requested_size);
         } else {
-            block = calloc(1, requested_size);
+            block.ptr = calloc(1, requested_size);
         }
         arena->stats_allocated_blocks += 1;
     }
+    block.size = requested_size;
     return block;
 }
 
 void
-memory_return_block(ImagingMemoryArena arena, void *block)
+memory_return_block(ImagingMemoryArena arena, ImagingMemoryBlock block)
 {
     if (arena->blocks_cached < arena->blocks_max)  {
         arena->blocks[arena->blocks_cached] = block;
         arena->blocks_cached += 1;
     } else {
-        free(block);
+        free(block.ptr);
         arena->stats_freed_blocks += 1;
     }
 }
@@ -360,7 +368,7 @@ ImagingDestroyArray(Imaging im)
     int y = 0;
 
     if (im->blocks) {
-        while (im->blocks[y]) {
+        while (im->blocks[y].ptr) {
             memory_return_block(&ImagingDefaultArena,  im->blocks[y]);
             y += 1;
         }
@@ -373,7 +381,7 @@ ImagingAllocateArray(Imaging im, int dirty)
 {
     int y, line_in_block, current_block;
     ImagingMemoryArena arena = &ImagingDefaultArena;
-    char* p = NULL;
+    ImagingMemoryBlock block = {NULL, 0};
     int linesize, lines_per_block, blocks_count;
 
     /* 0-width or 0-height image. No need to do anything */
@@ -391,7 +399,7 @@ ImagingAllocateArray(Imaging im, int dirty)
 
     im->destroy = ImagingDestroyArray;
     /* One extra ponter is always NULL */
-    im->blocks = (char **)calloc(sizeof(char *), blocks_count + 1);
+    im->blocks = calloc(sizeof(*im->blocks), blocks_count + 1);
     if ( ! im->blocks) {
         return (Imaging) ImagingError_MemoryError();
     }
@@ -406,14 +414,14 @@ ImagingAllocateArray(Imaging im, int dirty)
             if (lines_remained > im->ysize - y) {
                 lines_remained = im->ysize - y;
             }
-            p = memory_get_block(arena, lines_remained * linesize, dirty);
-            if ( ! p) {
+            block = memory_get_block(arena, lines_remained * linesize, dirty);
+            if ( ! block.ptr) {
                 return (Imaging) ImagingError_MemoryError();
             }
-            im->blocks[current_block] = p;
+            im->blocks[current_block] = block;
         }
 
-        im->image[y] = p + linesize * line_in_block;
+        im->image[y] = block.ptr + linesize * line_in_block;
 
         line_in_block += 1;
         if (line_in_block >= lines_per_block) {

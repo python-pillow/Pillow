@@ -124,6 +124,7 @@ class TestCoreMemory(PillowTestCase):
     @unittest.skipIf(is_pypy, "images are not collected")
     def test_clear_cache_stats(self):
         Image.core.reset_stats()
+        Image.core.clear_cache()
         Image.core.set_blocks_max(128)
         Image.core.set_block_size(4096)
         Image.new('RGB', (256, 256))
@@ -131,6 +132,7 @@ class TestCoreMemory(PillowTestCase):
         Image.core.clear_cache()
 
         stats = Image.core.get_stats()
+        print(stats)
         self.assertGreaterEqual(stats['new_count'], 2)
         self.assertGreaterEqual(stats['allocated_blocks'], 64)
         self.assertGreaterEqual(stats['reused_blocks'], 64)

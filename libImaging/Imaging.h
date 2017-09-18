@@ -75,6 +75,11 @@ typedef struct ImagingPaletteInstance* ImagingPalette;
 
 #define IMAGING_MODE_LENGTH 6+1 /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
 
+typedef struct {
+    char *ptr;
+    int size;
+} ImagingMemoryBlock;
+
 struct ImagingMemoryInstance {
 
     /* Format */
@@ -95,7 +100,7 @@ struct ImagingMemoryInstance {
     /* Internals */
     char **image;       /* Actual raster data. */
     char *block;        /* Set if data is allocated in a single block. */
-    char **blocks;      /* Memory blocks for pixel storage */
+    ImagingMemoryBlock *blocks;     /* Memory blocks for pixel storage */
 
     int pixelsize;      /* Size of a pixel, in bytes (1, 2 or 4) */
     int linesize;       /* Size of a line, in bytes (xsize * pixelsize) */
@@ -158,7 +163,7 @@ typedef struct ImagingMemoryArena {
     int block_size;
     int blocks_max;
     int blocks_cached;
-    void **blocks;
+    ImagingMemoryBlock *blocks;
     int stats_new_count;
     int stats_allocated_blocks;
     int stats_reused_blocks;
