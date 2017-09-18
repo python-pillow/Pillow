@@ -373,7 +373,7 @@ ImagingAllocateArray(Imaging im, int dirty)
 {
     int y, line_in_block, current_block;
     ImagingMemoryArena arena = &ImagingDefaultArena;
-    char* p;
+    char* p = NULL;
     int linesize, lines_per_block, blocks_count;
 
     /* 0-width or 0-height image. No need to do anything */
