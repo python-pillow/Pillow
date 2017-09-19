@@ -239,5 +239,18 @@ class TestFileTiffMetadata(PillowTestCase):
         reloaded = Image.open(out)
         self.assertIsInstance(reloaded.tag_v2[34377], bytes)
 
+    def test_too_many_entries(self):
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+
+        #    277: ("SamplesPerPixel", SHORT, 1),
+        ifd._tagdata[277] = struct.pack('hh', 4,4)
+        ifd.tagtype[277] = TiffTags.SHORT
+
+        try:
+            self.assert_warning(UserWarning, lambda: ifd[277])
+        except ValueError:
+            self.fail("Invalid Metadata count should not cause a Value Error.")
+
+
 if __name__ == '__main__':
     unittest.main()
