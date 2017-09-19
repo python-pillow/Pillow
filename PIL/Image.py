@@ -123,6 +123,16 @@ try:
 except ImportError:
     HAS_CFFI = False
 
+try:
+    from pathlib import Path
+    HAS_PATHLIB = True
+except ImportError:
+    try:
+        from pathlib2 import Path
+        HAS_PATHLIB = True
+    except ImportError:
+        HAS_PATHLIB = False
+
 
 def isImageType(t):
     """
@@ -150,6 +160,7 @@ ROTATE_90 = 2
 ROTATE_180 = 3
 ROTATE_270 = 4
 TRANSPOSE = 5
+TRANSVERSE = 6
 
 # transforms
 AFFINE = 0
@@ -1403,9 +1414,9 @@ class Image(object):
         Performance Note: Not currently implemented in-place in the core layer.
         """
 
-        if not isinstance(source, tuple):
+        if not isinstance(source, (list, tuple)):
             raise ValueError("Source must be a tuple")
-        if not isinstance(dest, tuple):
+        if not isinstance(dest, (list, tuple)):
             raise ValueError("Destination must be a tuple")
         if not len(source) in (2, 4):
             raise ValueError("Source must be a 2 or 4-tuple")
@@ -1429,7 +1440,7 @@ class Image(object):
         box = dest + (dest[0] + overlay.width, dest[1] + overlay.height)
 
         # destination image. don't copy if we're using the whole image.
-        if dest == (0,0) + self.size:
+        if box == (0,0) + self.size:
             background = self
         else:
             background = self.crop(box)
@@ -1874,11 +1885,9 @@ class Image(object):
         if isPath(fp):
             filename = fp
             open_fp = True
-        elif sys.version_info >= (3, 4):
-            from pathlib import Path
-            if isinstance(fp, Path):
-                filename = str(fp)
-                open_fp = True
+        elif HAS_PATHLIB and isinstance(fp, Path):
+            filename = str(fp)
+            open_fp = True
         if not filename and hasattr(fp, "name") and isPath(fp.name):
             # only set the name for metadata purposes
             filename = fp.name
@@ -2173,8 +2182,8 @@ class Image(object):
 
         :param method: One of :py:attr:`PIL.Image.FLIP_LEFT_RIGHT`,
           :py:attr:`PIL.Image.FLIP_TOP_BOTTOM`, :py:attr:`PIL.Image.ROTATE_90`,
-          :py:attr:`PIL.Image.ROTATE_180`, :py:attr:`PIL.Image.ROTATE_270` or
-          :py:attr:`PIL.Image.TRANSPOSE`.
+          :py:attr:`PIL.Image.ROTATE_180`, :py:attr:`PIL.Image.ROTATE_270`,
+          :py:attr:`PIL.Image.TRANSPOSE` or :py:attr:`PIL.Image.TRANSVERSE`.
         :returns: Returns a flipped or rotated copy of this image.
         """
 
@@ -2515,13 +2524,8 @@ def open(fp, mode="r"):
     filename = ""
     if isPath(fp):
         filename = fp
-    else:
-        try:
-            from pathlib import Path
-            if isinstance(fp, Path):
-                filename = str(fp.resolve())
-        except ImportError:
-            pass
+    elif HAS_PATHLIB and isinstance(fp, Path):
+        filename = str(fp.resolve())
 
     if filename:
         fp = builtins.open(filename, "rb")

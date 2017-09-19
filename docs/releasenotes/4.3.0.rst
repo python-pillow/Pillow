@@ -4,11 +4,17 @@
 Get One Channel From Image
 ==========================
 
-New method :py:meth:`PIL.Image.Image.getchannel` added.
+New method :py:meth:`PIL.Image.Image.getchannel` is added.
 It returns single channel by index or name. For example,
 ``image.getchannel("A")`` will return alpha channel as separate image.
 ``getchannel`` should work up to 6 times faster than ``image.split()[0]``
 in previous Pillow versions.
+
+
+Box Blur
+========
+
+New filter :py:class:`PIL.ImageFilter.BoxBlur` is added.
 
 
 Partial Resampling
@@ -38,6 +44,22 @@ This release contains several performance improvements:
 * Upscaling of multichannel images (such as RGB) is accelerated by 5-10%
 * JPEG loading is accelerated up to 15% and JPEG saving up to 20% when
   using a recent version of libjpeg-turbo.
+
+
+TIFF Metadata Changes
+=====================
+
+* TIFF tags with unknown type/quantity now default to being bare
+  values if they are 1 element, where previously they would be a
+  single element tuple. This is only with the new api, not the legacy
+  api. This normalizes the handling of fields, so that the metadata
+  with inferred or image specified counts are handled the same as
+  metadata with count specified in the TIFF spec. 
+* The ``PhotoshopInfo``, ``XMP``, and ``JPEGTables`` tags now have a
+  defined type (bytes) and a count of 1.
+* The ``ImageJMetaDataByteCounts`` tag now has an arbitrary number of
+  items, as there can be multiple items, one for UTF-8, and one for
+  UTF-16.
 
 
 Core Image API Changes

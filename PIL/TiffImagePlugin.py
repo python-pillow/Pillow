@@ -550,11 +550,28 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
         dest = self._tags_v1 if legacy_api else self._tags_v2
 
-        if info.length == 1:
-            if legacy_api and self.tagtype[tag] in [5, 10]:
+        # Three branches:
+        # Spec'd length == 1, Actual length 1, store as element
+        # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
+        # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
+        # Don't mess with the legacy api, since it's frozen.
+        if ((info.length == 1) or 
+            (info.length is None and len(values) == 1 and not legacy_api)): 
+            # Don't mess with the legacy api, since it's frozen.
+            if legacy_api and self.tagtype[tag] in [5, 10]: # rationals
                 values = values,
-            dest[tag], = values
+            try:
+                dest[tag], = values
+            except ValueError:
+                # We've got a builtin tag with 1 expected entry
+                warnings.warn(
+                    "Metadata Warning, tag %s had too many entries: %s, expected 1" % (
+                        tag, len(values)))
+                dest[tag] = values[0]
+
         else:
+            # Spec'd length > 1 or undefined
+            # Unspec'd, and length > 1
             dest[tag] = values
 
     def __delitem__(self, tag):
@@ -1011,8 +1028,10 @@ class TiffImageFile(ImageFile.ImageFile):
             args = rawmode, ""
             if JPEGTABLES in self.tag_v2:
                 # Hack to handle abbreviated JPEG headers
-                # FIXME This will fail with more than one value
-                self.tile_prefix, = self.tag_v2[JPEGTABLES]
+                # Definition of JPEGTABLES is that the count
+                # is the number of bytes in the tables datastream
+                # so, it should always be 1 in our tag info
+                self.tile_prefix = self.tag_v2[JPEGTABLES]
         elif compression == "packbits":
             args = rawmode
         elif compression == "tiff_lzw":

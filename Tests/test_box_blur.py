@@ -13,20 +13,6 @@ sample.putdata(sum([
 ], []))
 
 
-class ImageMock(object):
-    def __init__(self):
-        self.im = self
-
-    def load(self):
-        pass
-
-    def _new(self, im):
-        return im
-
-    def box_blur(self, radius, n):
-        return radius, n
-
-
 class TestBoxBlurApi(PillowTestCase):
 
     def test_imageops_box_blur(self):
