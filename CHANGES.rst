@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Use pathlib2 for Path objects on Python < 3.4 #2291
+  [asergi]
+
 - Export only required properties in unsafe_ptrs #2740
   [homm]
 
