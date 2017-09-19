@@ -41,7 +41,7 @@ ImagingCrop(Imaging imIn, int sx0, int sy0, int sx1, int sy1)
     if (!imOut)
 	return NULL;
 
-    ImagingCopyPaletteInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
     if (sx0 < 0 || sy0 < 0 || sx1 > imIn->xsize || sy1 > imIn->ysize)
 	(void) ImagingFill(imOut, &zero);

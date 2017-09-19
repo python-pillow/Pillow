@@ -173,7 +173,7 @@ extern Imaging ImagingNewPrologueSubtype(const char *mode,
                                   int xsize, int ysize,
                                   int structure_size);
 
-extern void ImagingCopyPaletteInfo(Imaging destination, Imaging source);
+extern void ImagingCopyPalette(Imaging destination, Imaging source);
 
 extern void ImagingHistogramDelete(ImagingHistogram histogram);
 
