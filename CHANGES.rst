@@ -4,6 +4,24 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Export only required properties in unsafe_ptrs #2740
+  [homm]
+
+- Alpha composite fixes #2709
+  [homm]
+  
+- Faster Transpose operations, added 'Transverse' option #2730
+  [homm]
+
+- Deprecate ImageOps undocumented functions gaussian_blur, gblur, unsharp_mask, usm and box_blur in favor of ImageFilter implementations #2735
+  [homm]
+  
+- Dependencies: Updated freetype to 2.8.1 #2741
+  [radarhere]
+
+- Bug: Player skipped first image #2742
+  [radarhere]
+
 - Faster filter operations for Kernel, Gaussian, and Unsharp Mask filters #2679
   [homm]
 
