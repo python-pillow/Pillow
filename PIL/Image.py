@@ -110,6 +110,7 @@ import os
 import sys
 import io
 import struct
+import atexit
 
 # type stuff
 import collections
@@ -2861,3 +2862,4 @@ def _apply_env_variables(env=None):
             warnings.warn("{0}: {1}".format(var_name, e))
 
 _apply_env_variables()
+atexit.register(core.clear_cache)
