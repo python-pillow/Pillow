@@ -78,7 +78,7 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
     }
     ImagingSectionLeave(&cookie);
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
     return imOut;
 }

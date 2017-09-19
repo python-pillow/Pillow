@@ -180,7 +180,7 @@ ImagingPoint(Imaging imIn, const char* mode, const void* table)
     } else
         point = im_point_32_8;
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
 
@@ -215,8 +215,6 @@ ImagingPointTransform(Imaging imIn, double scale, double offset)
     imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
     if (!imOut)
 	return NULL;
-
-    ImagingCopyInfo(imOut, imIn);
 
     switch (imIn->type) {
     case IMAGING_TYPE_INT32:
