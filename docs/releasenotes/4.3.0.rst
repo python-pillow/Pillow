@@ -4,11 +4,17 @@
 Get One Channel From Image
 ==========================
 
-New method :py:meth:`PIL.Image.Image.getchannel` added.
+New method :py:meth:`PIL.Image.Image.getchannel` is added.
 It returns single channel by index or name. For example,
 ``image.getchannel("A")`` will return alpha channel as separate image.
 ``getchannel`` should work up to 6 times faster than ``image.split()[0]``
 in previous Pillow versions.
+
+
+Box Blur
+========
+
+New filter :py:class:`PIL.ImageFilter.BoxBlur` is added.
 
 
 Partial Resampling

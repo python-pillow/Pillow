@@ -1,7 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
-from PIL import ImageFilter
+from PIL import Image, ImageFilter
 
 
 class TestImageFilter(PillowTestCase):
@@ -9,10 +8,11 @@ class TestImageFilter(PillowTestCase):
     def test_sanity(self):
 
         def filter(filter):
-            im = hopper("L")
-            out = im.filter(filter)
-            self.assertEqual(out.mode, im.mode)
-            self.assertEqual(out.size, im.size)
+            for mode in ["L", "RGB", "CMYK"]:
+                im = hopper(mode)
+                out = im.filter(filter)
+                self.assertEqual(out.mode, im.mode)
+                self.assertEqual(out.size, im.size)
 
         filter(ImageFilter.BLUR)
         filter(ImageFilter.CONTOUR)
@@ -28,9 +28,9 @@ class TestImageFilter(PillowTestCase):
         filter(ImageFilter.MedianFilter)
         filter(ImageFilter.MinFilter)
         filter(ImageFilter.ModeFilter)
-        filter(ImageFilter.Kernel((3, 3), list(range(9))))
         filter(ImageFilter.GaussianBlur)
         filter(ImageFilter.GaussianBlur(5))
+        filter(ImageFilter.BoxBlur(5))
         filter(ImageFilter.UnsharpMask)
         filter(ImageFilter.UnsharpMask(10))
 
