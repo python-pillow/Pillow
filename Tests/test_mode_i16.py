@@ -6,6 +6,7 @@ import struct
 HAS_PYACCESS = False
 try:
     from PIL import PyAccess
+    HAS_PYACCESS = True
 except: pass
 
 class TestModeI16(PillowTestCase):
@@ -135,7 +136,13 @@ class TestModeI16(PillowTestCase):
                 py_access = PyAccess.new(im, im.readonly)
             for ix, val in enumerate(pixels):
                 self.assertEqual(access[(ix, 0)], val)
+                access[(ix,0)] = 0
+                access[(ix,0)] = val
+                self.assertEqual(access[(ix, 0)], val)
                 if HAS_PYACCESS:
+                    self.assertEqual(py_access[(ix, 0)], val)
+                    py_access[(ix,0)] = 0
+                    py_access[(ix,0)] = val
                     self.assertEqual(py_access[(ix, 0)], val)
 
         _test_access(im, pixels)
