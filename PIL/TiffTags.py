@@ -23,7 +23,7 @@ from collections import namedtuple
 class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
     __slots__ = []
 
-    def __new__(cls, value=None, name="unknown", type=None, length=0, enum=None):
+    def __new__(cls, value=None, name="unknown", type=None, length=None, enum=None):
         return super(TagInfo, cls).__new__(
             cls, value, name, type, length, enum or {})
 
@@ -142,6 +142,8 @@ TAGS_V2 = {
     341: ("SMaxSampleValue", DOUBLE, 0),
     342: ("TransferRange", SHORT, 6),
 
+    347: ("JPEGTables", UNDEFINED, 1),
+    
     # obsolete JPEG tags
     512: ("JPEGProc", SHORT, 1),
     513: ("JPEGInterchangeFormat", LONG, 1),
@@ -158,7 +160,10 @@ TAGS_V2 = {
     531: ("YCbCrPositioning", SHORT, 1),
     532: ("ReferenceBlackWhite", LONG, 0),
 
+    700: ('XMP', BYTE, 1),
+    
     33432: ("Copyright", ASCII, 1),
+    34377: ('PhotoshopInfo', BYTE, 1),
 
     # FIXME add more tags here
     34665: ("ExifIFD", SHORT, 1),
@@ -188,8 +193,8 @@ TAGS_V2 = {
 
     50741: ("MakerNoteSafety", SHORT, 1, {"Unsafe": 0, "Safe": 1}),
     50780: ("BestQualityScale", RATIONAL, 1),
-    50838: ("ImageJMetaDataByteCounts", LONG, 1),
-    50839: ("ImageJMetaData", UNDEFINED, 1)
+    50838: ("ImageJMetaDataByteCounts", LONG, 0), # Can be more than one 
+    50839: ("ImageJMetaData", UNDEFINED, 1)       # see Issue #2006
 }
 
 # Legacy Tags structure

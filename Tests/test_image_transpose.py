@@ -2,7 +2,7 @@ import helper
 from helper import unittest, PillowTestCase
 
 from PIL.Image import (FLIP_LEFT_RIGHT, FLIP_TOP_BOTTOM, ROTATE_90, ROTATE_180,
-                       ROTATE_270, TRANSPOSE)
+                       ROTATE_270, TRANSPOSE, TRANSVERSE)
 
 
 class TestImageTranspose(PillowTestCase):
@@ -108,6 +108,22 @@ class TestImageTranspose(PillowTestCase):
         for mode in ("L", "RGB"):
             transpose(mode)
 
+    def test_tranverse(self):
+        def transpose(mode):
+            im = self.hopper[mode]
+            out = im.transpose(TRANSVERSE)
+            self.assertEqual(out.mode, mode)
+            self.assertEqual(out.size, im.size[::-1])
+
+            x, y = im.size
+            self.assertEqual(im.getpixel((1, 1)), out.getpixel((y-2, x-2)))
+            self.assertEqual(im.getpixel((x-2, 1)), out.getpixel((y-2, 1)))
+            self.assertEqual(im.getpixel((1, y-2)), out.getpixel((1, x-2)))
+            self.assertEqual(im.getpixel((x-2, y-2)), out.getpixel((1, 1)))
+
+        for mode in ("L", "RGB"):
+            transpose(mode)
+
     def test_roundtrip(self):
         im = self.hopper['L']
 
@@ -124,6 +140,12 @@ class TestImageTranspose(PillowTestCase):
             im.transpose(TRANSPOSE), transpose(ROTATE_90, FLIP_TOP_BOTTOM))
         self.assert_image_equal(
             im.transpose(TRANSPOSE), transpose(ROTATE_270, FLIP_LEFT_RIGHT))
+        self.assert_image_equal(
+            im.transpose(TRANSVERSE), transpose(ROTATE_90, FLIP_LEFT_RIGHT))
+        self.assert_image_equal(
+            im.transpose(TRANSVERSE), transpose(ROTATE_270, FLIP_TOP_BOTTOM))
+        self.assert_image_equal(
+            im.transpose(TRANSVERSE), transpose(ROTATE_180, TRANSPOSE))
 
 
 if __name__ == '__main__':

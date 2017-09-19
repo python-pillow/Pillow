@@ -11,6 +11,7 @@
 
 #include "Imaging.h"
 
+#define PRECISION_BITS 7
 
 typedef struct
 {
@@ -49,13 +50,11 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
     ImagingCopyInfo(imOut, imDst);
 
     for (y = 0; y < imDst->ysize; y++) {
-
         rgba8* dst = (rgba8*) imDst->image[y];
         rgba8* src = (rgba8*) imSrc->image[y];
         rgba8* out = (rgba8*) imOut->image[y];
 
         for (x = 0; x < imDst->xsize; x ++) {
-
             if (src->a == 0) {
                 // Copy 4 bytes at once.
                 *out = *dst;
@@ -64,25 +63,20 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
                 // Each variable has extra meaningful bits.
                 // Divisions are rounded.
 
-                // This code uses trick from Paste.c:
-                // (a + (2 << (n-1)) - 1) / ((2 << n)-1)
-                // almost equivalent to:
-                // tmp = a + (2 << (n-1)), ((tmp >> n) + tmp) >> n
-
                 UINT32 tmpr, tmpg, tmpb;
-                UINT16 blend = dst->a * (255 - src->a);
-                UINT16 outa255 = src->a * 255 + blend;
+                UINT32 blend = dst->a * (255 - src->a);
+                UINT32 outa255 = src->a * 255 + blend;
                 // There we use 7 bits for precision.
                 // We could use more, but we go beyond 32 bits.
-                UINT16 coef1 = src->a * 255 * 255 * 128 / outa255;
-                UINT16 coef2 = 255 * 128 - coef1;
+                UINT32 coef1 = src->a * 255 * 255 * (1<<PRECISION_BITS) / outa255;
+                UINT32 coef2 = 255 * (1<<PRECISION_BITS) - coef1;
 
-                tmpr = src->r * coef1 + dst->r * coef2 + (0x80 << 7);
-                out->r = SHIFTFORDIV255(tmpr) >> 7;
-                tmpg = src->g * coef1 + dst->g * coef2 + (0x80 << 7);
-                out->g = SHIFTFORDIV255(tmpg) >> 7;
-                tmpb = src->b * coef1 + dst->b * coef2 + (0x80 << 7);
-                out->b = SHIFTFORDIV255(tmpb) >> 7;
+                tmpr = src->r * coef1 + dst->r * coef2;
+                tmpg = src->g * coef1 + dst->g * coef2;
+                tmpb = src->b * coef1 + dst->b * coef2;
+                out->r = SHIFTFORDIV255(tmpr + (0x80<<PRECISION_BITS)) >> PRECISION_BITS;
+                out->g = SHIFTFORDIV255(tmpg + (0x80<<PRECISION_BITS)) >> PRECISION_BITS;
+                out->b = SHIFTFORDIV255(tmpb + (0x80<<PRECISION_BITS)) >> PRECISION_BITS;
                 out->a = SHIFTFORDIV255(outa255 + 0x80);
             }
 
