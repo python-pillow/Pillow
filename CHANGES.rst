@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Fix ValueError in Exif/Tiff IFD #2719
+  [wiredfool]
+
 - Use pathlib2 for Path objects on Python < 3.4 #2291
   [asergi]
 
