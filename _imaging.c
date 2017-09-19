@@ -440,10 +440,11 @@ static inline PyObject*
 getpixel(Imaging im, ImagingAccess access, int x, int y)
 {
     union {
-      UINT8 b[4];
-      UINT16 h;
-      INT32 i;
-      FLOAT32 f;
+        UINT8 b[4];
+        UINT16 H;
+        INT16 h;
+        INT32 i;
+        FLOAT32 f;
     } pixel;
 
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
@@ -471,8 +472,11 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
     case IMAGING_TYPE_FLOAT32:
         return PyFloat_FromDouble(pixel.f);
     case IMAGING_TYPE_SPECIAL:
-        if (strncmp(im->mode, "I;16", 4) == 0)
+        if (strncmp(im->mode, "I;16S", 5) == 0) {
             return PyInt_FromLong(pixel.h);
+        } else if (strncmp(im->mode, "I;16", 4) == 0) {
+            return PyInt_FromLong(pixel.H);
+        }
         break;
     }
 
