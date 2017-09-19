@@ -123,6 +123,16 @@ try:
 except ImportError:
     HAS_CFFI = False
 
+try:
+    from pathlib import Path
+    HAS_PATHLIB = True
+except ImportError:
+    try:
+        from pathlib2 import Path
+        HAS_PATHLIB = True
+    except ImportError:
+        HAS_PATHLIB = False
+
 
 def isImageType(t):
     """
@@ -1875,11 +1885,9 @@ class Image(object):
         if isPath(fp):
             filename = fp
             open_fp = True
-        elif sys.version_info >= (3, 4):
-            from pathlib import Path
-            if isinstance(fp, Path):
-                filename = str(fp)
-                open_fp = True
+        elif HAS_PATHLIB and isinstance(fp, Path):
+            filename = str(fp)
+            open_fp = True
         if not filename and hasattr(fp, "name") and isPath(fp.name):
             # only set the name for metadata purposes
             filename = fp.name
@@ -2516,13 +2524,8 @@ def open(fp, mode="r"):
     filename = ""
     if isPath(fp):
         filename = fp
-    else:
-        try:
-            from pathlib import Path
-            if isinstance(fp, Path):
-                filename = str(fp.resolve())
-        except ImportError:
-            pass
+    elif HAS_PATHLIB and isinstance(fp, Path):
+        filename = str(fp.resolve())
 
     if filename:
         fp = builtins.open(filename, "rb")
