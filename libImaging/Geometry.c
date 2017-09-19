@@ -188,7 +188,7 @@ ImagingTransverse(Imaging imOut, Imaging imIn)
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize)
         return (Imaging) ImagingError_Mismatch();
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
 #define TRANSVERSE(INT, image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
