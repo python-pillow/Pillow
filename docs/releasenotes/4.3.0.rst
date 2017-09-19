@@ -46,6 +46,22 @@ This release contains several performance improvements:
   using a recent version of libjpeg-turbo.
 
 
+TIFF Metadata Changes
+=====================
+
+* TIFF tags with unknown type/quantity now default to being bare
+  values if they are 1 element, where previously they would be a
+  single element tuple. This is only with the new api, not the legacy
+  api. This normalizes the handling of fields, so that the metadata
+  with inferred or image specified counts are handled the same as
+  metadata with count specified in the TIFF spec. 
+* The ``PhotoshopInfo``, ``XMP``, and ``JPEGTables`` tags now have a
+  defined type (bytes) and a count of 1.
+* The ``ImageJMetaDataByteCounts`` tag now has an arbitrary number of
+  items, as there can be multiple items, one for UTF-8, and one for
+  UTF-16.
+
+
 Core Image API Changes
 ======================
 

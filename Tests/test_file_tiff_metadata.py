@@ -56,7 +56,7 @@ class TestFileTiffMetadata(PillowTestCase):
         loaded = Image.open(f)
 
         self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (len(bindata),))
-        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], len(bindata))
+        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (len(bindata),))
 
         self.assertEqual(loaded.tag[ImageJMetaData], bindata)
         self.assertEqual(loaded.tag_v2[ImageJMetaData], bindata)
@@ -68,6 +68,16 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertAlmostEqual(loaded_float, floatdata, places=5)
         loaded_double = loaded.tag[tag_ids['YawAngle']][0]
         self.assertAlmostEqual(loaded_double, doubledata)
+
+        # check with 2 element ImageJMetaDataByteCounts, issue #2006
+        
+        info[ImageJMetaDataByteCounts] = (8, len(bindata) - 8)
+        img.save(f, tiffinfo=info)
+        loaded = Image.open(f)
+
+        self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
+        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
+
 
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
@@ -202,8 +212,8 @@ class TestFileTiffMetadata(PillowTestCase):
         im.save(out, tiffinfo=info, compression='raw')
 
         reloaded = Image.open(out)
-        self.assertEqual(0, reloaded.tag_v2[41988][0].numerator)
-        self.assertEqual(0, reloaded.tag_v2[41988][0].denominator)
+        self.assertEqual(0, reloaded.tag_v2[41988].numerator)
+        self.assertEqual(0, reloaded.tag_v2[41988].denominator)
 
     def test_expty_values(self):
         data = io.BytesIO(
@@ -219,6 +229,27 @@ class TestFileTiffMetadata(PillowTestCase):
         except ValueError:
             self.fail("Should not be struct value error there.")
         self.assertIn(33432, info)
+
+    def test_PhotoshopInfo(self):
+        im = Image.open('Tests/images/issue_2278.tif')
+
+        self.assertIsInstance(im.tag_v2[34377], bytes)
+        out = self.tempfile('temp.tiff')
+        im.save(out)
+        reloaded = Image.open(out)
+        self.assertIsInstance(reloaded.tag_v2[34377], bytes)
+
+    def test_too_many_entries(self):
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+
+        #    277: ("SamplesPerPixel", SHORT, 1),
+        ifd._tagdata[277] = struct.pack('hh', 4,4)
+        ifd.tagtype[277] = TiffTags.SHORT
+
+        try:
+            self.assert_warning(UserWarning, lambda: ifd[277])
+        except ValueError:
+            self.fail("Invalid Metadata count should not cause a Value Error.")
 
 
 if __name__ == '__main__':
