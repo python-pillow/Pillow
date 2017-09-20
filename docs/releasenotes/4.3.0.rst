@@ -72,7 +72,7 @@ New Transpose Operation
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``Image.TRANSVERSE`` operation has been added to
-:py:meth:`PIL.Image.Image.transpose`. This is equvalent to a transpose
+:py:meth:`PIL.Image.Image.transpose`. This is equivalent to a transpose
 operation about the opposite diagonal.
 
 Multiband Filters
