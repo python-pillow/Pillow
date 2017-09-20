@@ -1,53 +1,19 @@
 4.3.0
 -----
 
-Get One Channel From Image
-==========================
-
-New method :py:meth:`PIL.Image.Image.getchannel` is added.
-It returns single channel by index or name. For example,
-``image.getchannel("A")`` will return alpha channel as separate image.
-``getchannel`` should work up to 6 times faster than ``image.split()[0]``
-in previous Pillow versions.
-
-
-Box Blur
-========
-
-New filter :py:class:`PIL.ImageFilter.BoxBlur` is added.
-
-
-Partial Resampling
-==================
-
-Added new argument ``box`` for :py:meth:`PIL.Image.Image.resize`. This
-argument defines a source rectangle from within the source image to be
-resized.  This is very similar to the ``image.crop(box).resize(size)``
-sequence except that ``box`` can be specified with subpixel accuracy.
-
-
-Loading 16-bit TIFF Images
-==========================
-
-Pillow now can read 16-bit multichannel TIFF files including files
-with alpha transparency. The image data is truncated to 8-bit
-precision.
-
-
-Performance
+API Changes
 ===========
 
-This release contains several performance improvements:
+Deprecations
+^^^^^^^^^^^^
 
-* Many memory bandwidth-bounded operations such as crop, image allocation,
-  conversion, split into bands and merging from bands are up to 2x faster.
-* Upscaling of multichannel images (such as RGB) is accelerated by 5-10%
-* JPEG loading is accelerated up to 15% and JPEG saving up to 20% when
-  using a recent version of libjpeg-turbo.
-
+Several undocumented functions in ImageOps have been deprecated:
+``gaussian_blur``, ``gblur``, ``unsharp_mask``, ``usm`` and
+``box_blur``. Use the equivalent operations in ImageFilter
+instead. These functions will be removed in a future release.
 
 TIFF Metadata Changes
-=====================
+^^^^^^^^^^^^^^^^^^^^^
 
 * TIFF tags with unknown type/quantity now default to being bare
   values if they are 1 element, where previously they would be a
@@ -61,9 +27,8 @@ TIFF Metadata Changes
   items, as there can be multiple items, one for UTF-8, and one for
   UTF-16.
 
-
 Core Image API Changes
-======================
+^^^^^^^^^^^^^^^^^^^^^^
 
 These are internal functions that should not have been used by user
 code, but they were accessible from the python layer.
@@ -74,3 +39,71 @@ identified the format of the clipboard data.
 
 The ``PIL.Image.core.copy`` and ``PIL.Image.Image.im.copy2`` methods
 have been removed.
+
+
+API Additions
+=============
+
+Get One Channel From Image
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new method :py:meth:`PIL.Image.Image.getchannel` has been added to
+return a single channel by index or name. For example,
+``image.getchannel("A")`` will return alpha channel as separate image.
+``getchannel`` should work up to 6 times faster than
+``image.split()[0]`` in previous Pillow versions.
+
+Box Blur
+^^^^^^^^
+
+A new filter, :py:class:`PIL.ImageFilter.BoxBlur`, has been
+added. This is a filter with similar results to a Gaussian blur, but
+is much faster.
+
+Partial Resampling
+^^^^^^^^^^^^^^^^^^
+
+Added new argument ``box`` for :py:meth:`PIL.Image.Image.resize`. This
+argument defines a source rectangle from within the source image to be
+resized.  This is very similar to the ``image.crop(box).resize(size)``
+sequence except that ``box`` can be specified with subpixel accuracy.
+
+New Transpose Operation
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``Image.TRANSVERSE`` operation has been added to
+:py:meth:`PIL.Image.Image.transpose`. This is equivalent to a transpose
+operation about the opposite diagonal.
+
+Multiband Filters
+^^^^^^^^^^^^^^^^^
+
+There is a new :py:class:`PIL.ImageFilter.MultibandFilter` base class
+for image filters that can run on all channels of an image in one
+operation. The original :py:class:`PIL.ImageFilter.Filter` class
+remains for image filters that can process only single band images, or
+require splitting of channels prior to filtering. 
+
+
+Loading 16-bit TIFF Images
+==========================
+
+Pillow now can read 16-bit multichannel TIFF files including files
+with alpha transparency. The image data is truncated to 8-bit
+precision.
+
+Performance
+===========
+
+This release contains several performance improvements:
+
+* Many memory bandwidth-bounded operations such as crop, image allocation,
+  conversion, split into bands and merging from bands are up to 2x faster.
+* Upscaling of multichannel images (such as RGB) is accelerated by 5-10%
+* JPEG loading is accelerated up to 15% and JPEG saving up to 20% when
+  using a recent version of libjpeg-turbo.
+* ``Image.transpose`` has been accelerated 15% or more by using a cache
+  friendly algorithm.
+* ImageFilters based on Kernel convolution are significantly faster
+  due to the new MultibandFilter feature. 
+

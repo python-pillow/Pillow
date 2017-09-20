@@ -72,8 +72,7 @@ class ContainerIO(object):
         """
         Read data.
 
-        @def read(bytes=0)
-        :param bytes: Number of bytes to read. If omitted or zero,
+        :param n: Number of bytes to read. If omitted or zero,
             read until end of region.
         :returns: An 8-bit string.
         """

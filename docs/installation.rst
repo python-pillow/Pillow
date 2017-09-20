@@ -32,12 +32,6 @@ Install Pillow with :command:`pip`::
 
     $ pip install Pillow
 
-Or use :command:`easy_install` for installing `Python Eggs
-<http://peak.telecommunity.com/DevCenter/PythonEggs>`_ as
-:command:`pip` does not support them::
-
-    $ easy_install Pillow
-
 
 Windows Installation
 ^^^^^^^^^^^^^^^^^^^^
@@ -48,10 +42,6 @@ executable installers. These binaries have all of the optional
 libraries included::
 
   > pip install Pillow
-
-or::
-
-  > easy_install Pillow
 
 
 macOS Installation
@@ -339,6 +329,20 @@ Prerequisites are installed on **Fedora 23** with::
     $ sudo dnf install libtiff-devel libjpeg-devel zlib-devel freetype-devel \
         lcms2-devel libwebp-devel tcl-devel tk-devel libraqm-devel
 
+See also the ``Dockerfile``\s in the Test Infrastructure repo
+(https://github.com/python-pillow/docker-images) for a known working
+install process for other tested distros.
+
+Building on Android
+^^^^^^^^^^^^^^^^^^^
+
+Basic Android support has been added for compilation within the Termux
+environment. The dependencies can be installed by::
+  
+    $ pkg -y install python python-dev ndk-sysroot clang make \
+        libjpeg-turbo-dev
+
+This has been tested within the Termux app on ChromeOS, on x86.
 
 
 Platform Support
@@ -348,8 +352,7 @@ Current platform support for Pillow. Binary distributions are
 contributed for each release on a volunteer basis, but the source
 should compile and run everywhere platform support is listed. In
 general, we aim to support all current versions of Linux, macOS, and
-Windows. Note that Android is not currently supported, but there have
-been reports of success.
+Windows.
 
 Continuous Integration Targets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -369,6 +372,10 @@ These platforms are built and tested for every change.
 +----------------------------------+-------------------------------+-----------------------+
 | Debian Stretch                   | 2.7                           |x86                    |
 +----------------------------------+-------------------------------+-----------------------+
+| Fedora 24                        | 2.7                           |x86-64                 |
++----------------------------------+-------------------------------+-----------------------+
+| Fedora 26                        | 2.7                           |x86-64                 |
++----------------------------------+-------------------------------+-----------------------+
 | Mac OS X 10.10 Yosemite*         | 2.7, 3.3, 3.4, 3.5, 3.6       |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
 | Ubuntu Linux 16.04 LTS           | 2.7                           |x86-64                 |
@@ -380,7 +387,9 @@ These platforms are built and tested for every change.
 +----------------------------------+-------------------------------+-----------------------+
 | Ubuntu Linux 12.04 LTS           | 2.7                           |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Windows Server 2012 R2           | 2.7,3.3,3.4,pypy              |x86, x86-64            |
+| Windows Server 2012 R2           | 2.7,3.3,3.4                   |x86, x86-64            |
+|                                  |                               |                       |
+|                                  | pypy, 3.5/mingw               |x86                    |
 +----------------------------------+-------------------------------+-----------------------+
 
 \* Mac OS X CI is not run for every commit, but is run for every release.
