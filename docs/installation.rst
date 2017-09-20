@@ -32,12 +32,6 @@ Install Pillow with :command:`pip`::
 
     $ pip install Pillow
 
-Or use :command:`easy_install` for installing `Python Eggs
-<http://peak.telecommunity.com/DevCenter/PythonEggs>`_ as
-:command:`pip` does not support them::
-
-    $ easy_install Pillow
-
 
 Windows Installation
 ^^^^^^^^^^^^^^^^^^^^
@@ -48,10 +42,6 @@ executable installers. These binaries have all of the optional
 libraries included::
 
   > pip install Pillow
-
-or::
-
-  > easy_install Pillow
 
 
 macOS Installation
