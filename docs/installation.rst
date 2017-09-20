@@ -329,7 +329,7 @@ Prerequisites are installed on **Fedora 23** with::
     $ sudo dnf install libtiff-devel libjpeg-devel zlib-devel freetype-devel \
         lcms2-devel libwebp-devel tcl-devel tk-devel libraqm-devel
 
-See also the ``Dockerfile``s in the Test Infrastructure repo
+See also the ``Dockerfile``\s in the Test Infrastructure repo
 (https://github.com/python-pillow/docker-images) for a known working
 install process for other tested distros.
 
@@ -388,6 +388,7 @@ These platforms are built and tested for every change.
 | Ubuntu Linux 12.04 LTS           | 2.7                           |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
 | Windows Server 2012 R2           | 2.7,3.3,3.4                   |x86, x86-64            |
+|                                  |                               |                       |
 |                                  | pypy, 3.5/mingw               |x86                    |
 +----------------------------------+-------------------------------+-----------------------+
 
