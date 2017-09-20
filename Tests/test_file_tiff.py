@@ -201,7 +201,9 @@ class TestFileTiff(PillowTestCase):
     def test_16bit_s(self):
         im = Image.open('Tests/images/16bit.s.tif')
         im.load()
-        self.assertEqual(im.mode, 'I;16S')
+        self.assertEqual(im.mode, 'I')
+        self.assertEqual(im.getpixel((0,0)),32767)
+        self.assertEqual(im.getpixel((0,1)),0)
 
     def test_12bit_rawmode(self):
         """ Are we generating the same interpretation
