@@ -198,6 +198,11 @@ class TestFileTiff(PillowTestCase):
             self.assertEqual(b[0], b'\x01')
             self.assertEqual(b[1], b'\xe0')
 
+    def test_16bit_s(self):
+        im = Image.open('Tests/images/16bit.s.tif')
+        im.load()
+        self.assertEqual(im.mode, 'I;16S')
+
     def test_12bit_rawmode(self):
         """ Are we generating the same interpretation
         of the image as Imagemagick is? """
