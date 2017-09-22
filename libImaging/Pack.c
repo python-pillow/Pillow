@@ -402,6 +402,16 @@ packI16N_I16(UINT8* out, const UINT8* in, int pixels){
     }
 }
 
+static void
+packI16S_I16BS(UINT8* out, const UINT8* in, int pixels){
+    int i;
+    UINT8* tmp = (UINT8*) in;
+    for (i = 0; i < pixels; i++) {
+        C16S;
+        out += 2; tmp += 2;
+    }
+}
+
 
 static void
 packI32S(UINT8* out, const UINT8* in, int pixels)
@@ -614,6 +624,8 @@ static struct {
     {"I;16",    "I;16",         16,     copy2},
     {"I;16B",   "I;16B",        16,     copy2},
     {"I;16L",   "I;16L",        16,     copy2},
+    {"I;16S",   "I;16S",        16,     copy2},
+    {"I;16S",   "I;16BS",       16,     packI16S_I16BS},
     {"I;16",    "I;16N",        16,     packI16N_I16}, // LibTiff native->image endian.
     {"I;16L",   "I;16N",        16,     packI16N_I16},
     {"I;16B",   "I;16N",        16,     packI16N_I16B},

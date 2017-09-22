@@ -50,6 +50,7 @@ def getmode(mode):
         modes["I;16"] = ModeDescriptor("I;16", "I", "L", "L")
         modes["I;16L"] = ModeDescriptor("I;16L", "I", "L", "L")
         modes["I;16B"] = ModeDescriptor("I;16B", "I", "L", "L")
+        modes["I;16S"] = ModeDescriptor("I;16S", "I", "L", "L")
         # set global mode cache atomically
         _modes = modes
     return _modes[mode]

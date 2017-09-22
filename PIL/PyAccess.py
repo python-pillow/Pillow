@@ -187,6 +187,21 @@ class _PyAccessI16_N(PyAccess):
             self.pixels[y][x] = min(color[0], 65535)
 
 
+class _PyAccessI16_NS(PyAccess):
+    """ I;16S access, native bitendian without conversion """
+    def _post_init(self, *args, **kwargs):
+        self.pixels = ffi.cast('short **', self.image)
+
+    def get_pixel(self, x, y):
+        return self.pixels[y][x]
+
+    def set_pixel(self, x, y, color):
+        try:
+            self.pixels[y][x] = max(min(color, 2**15-1), -2**15)
+        except TypeError:
+            self.pixels[y][x] = max(min(color[0], 2**15-1), -2**15)
+
+
 class _PyAccessI16_L(PyAccess):
     """ I;16L access, with conversion """
     def _post_init(self, *args, **kwargs):
@@ -205,6 +220,34 @@ class _PyAccessI16_L(PyAccess):
 
         pixel.l = color & 0xFF
         pixel.r = color >> 8
+
+
+class _PyAccessI16_LS(PyAccess):
+    """ Littleendian I;16S access, with conversion """
+    def _post_init(self, *args, **kwargs):
+        self.pixels = ffi.cast('struct Pixel_I16 **', self.image)
+
+    def reverse(self, i):
+        orig = ffi.new('short *', i)
+        chars = ffi.cast('unsigned char *', orig)
+        chars[0], chars[1], = chars[1], chars[0]
+        return ffi.cast('short *', chars)[0]
+
+    def get_pixel(self, x, y):
+        return self.reverse(self.pixels[y][x])
+
+    def set_pixel(self, x, y, color):
+        pixel = self.pixels[y][x]
+
+        try:
+            color = max(min(color, 2**15-1), -2**15)
+        except TypeError:
+            color = max(min(color[0], 2**15-1), -2**15)
+
+        mask = color < 0 and 0x80 or 0x00
+
+        pixel.l = color & 0xFF
+        pixel.r = (color >> 8) | mask
 
 
 class _PyAccessI16_B(PyAccess):
@@ -297,6 +340,7 @@ if sys.byteorder == 'little':
     mode_map['I;16'] = _PyAccessI16_N
     mode_map['I;16L'] = _PyAccessI16_N
     mode_map['I;16B'] = _PyAccessI16_B
+    mode_map['I;16S'] = _PyAccessI16_NS
 
     mode_map['I;32L'] = _PyAccessI32_N
     mode_map['I;32B'] = _PyAccessI32_Swap
@@ -304,6 +348,7 @@ else:
     mode_map['I;16'] = _PyAccessI16_L
     mode_map['I;16L'] = _PyAccessI16_L
     mode_map['I;16B'] = _PyAccessI16_N
+    mode_map['I;16S'] = _PyAccessI16_LS
 
     mode_map['I;32L'] = _PyAccessI32_Swap
     mode_map['I;32B'] = _PyAccessI32_N

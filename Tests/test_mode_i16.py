@@ -1,7 +1,13 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
+import struct
 
+HAS_PYACCESS = False
+try:
+    from PIL import PyAccess
+    HAS_PYACCESS = True
+except: pass
 
 class TestModeI16(PillowTestCase):
 
@@ -79,6 +85,7 @@ class TestModeI16(PillowTestCase):
         basic("I;16")
         basic("I;16B")
         basic("I;16L")
+        basic("I;16S")
 
         basic("I")
 
@@ -92,6 +99,7 @@ class TestModeI16(PillowTestCase):
         self.assertEqual(tobytes("L"), b"\x01")
         self.assertEqual(tobytes("I;16"), b"\x01\x00")
         self.assertEqual(tobytes("I;16B"), b"\x00\x01")
+        self.assertEqual(tobytes("I;16S"), b"\x01\x00")
         self.assertEqual(tobytes("I"), b"\x01\x00\x00\x00"[::order])
 
     def test_convert(self):
@@ -106,6 +114,51 @@ class TestModeI16(PillowTestCase):
         self.verify(im.convert("I;16B").convert("L"))
         self.verify(im.convert("I;16B").convert("I"))
 
+        self.verify(im.convert("I;16S"))
+        self.verify(im.convert("I;16S").convert("L"))
+        self.verify(im.convert("I;16S").convert("I"))
 
+
+    def _test_i16s(self, pixels, data, rawmode):
+        ct = len(pixels)
+        im = Image.frombytes('I;16S',
+                             (ct,1),
+                             data, 
+                             'raw',
+                             rawmode) 
+
+        self.assertEqual(im.tobytes('raw', rawmode), data)
+
+
+        def _test_access(im, pixels):
+            access = im.load()
+            if HAS_PYACCESS:
+                py_access = PyAccess.new(im, im.readonly)
+            for ix, val in enumerate(pixels):
+                self.assertEqual(access[(ix, 0)], val)
+                access[(ix,0)] = 0
+                access[(ix,0)] = val
+                self.assertEqual(access[(ix, 0)], val)
+                if HAS_PYACCESS:
+                    self.assertEqual(py_access[(ix, 0)], val)
+                    py_access[(ix,0)] = 0
+                    py_access[(ix,0)] = val
+                    self.assertEqual(py_access[(ix, 0)], val)
+
+        _test_access(im, pixels)
+        _test_access(im.convert('I'), pixels) # lossless
+        _test_access(im.convert('F'), pixels) # lossless
+        _test_access(im.convert('L'), (0,0,0,0,1,128,255,255)) #lossy
+
+    def test_i16s(self):
+        # LE, base Rawmode:
+        pixels = (-2**15, -2**7, -1, 0, 1, 128, 255, 2**15-1)
+        ct = len(pixels)
+        data = struct.pack("<%dh"%ct, *pixels)
+        self._test_i16s(pixels, data, 'I;16S')
+        data = struct.pack(">%dh"%ct, *pixels)
+        self._test_i16s(pixels, data, 'I;16BS')
+        
+            
 if __name__ == '__main__':
     unittest.main()

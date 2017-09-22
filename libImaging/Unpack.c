@@ -967,6 +967,16 @@ unpackI16N_I16(UINT8* out, const UINT8* in, int pixels){
 }
 
 static void
+unpackI16BS_I16S(UINT8* out, const UINT8* in, int pixels){
+    int i;
+    UINT8* tmp = (UINT8*) out;
+    for (i = 0; i < pixels; i++) {
+        C16S;
+		in += 2; tmp += 2;
+    }
+}
+
+static void
 unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
     /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer greyscale tiffs.
 
@@ -1406,6 +1416,8 @@ static struct {
     {"I;16",    "I;16",         16,     copy2},
     {"I;16B",   "I;16B",        16,     copy2},
     {"I;16L",   "I;16L",        16,     copy2},
+    {"I;16S",   "I;16S",        16,     copy2},
+    {"I;16S",   "I;16BS",       16,     unpackI16BS_I16S},
 
     {"I;16", 	"I;16N",	    16,	    unpackI16N_I16}, // LibTiff native->image endian.
     {"I;16L", 	"I;16N",	    16,	    unpackI16N_I16}, // LibTiff native->image endian.
