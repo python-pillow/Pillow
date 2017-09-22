@@ -266,8 +266,7 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left",
-                                                 direction=None, features=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None)
 
     Draws the string at the given position.
 
@@ -297,8 +296,7 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None,
-                           features=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None)
 
     Return the size of the given string, in pixels.
 
@@ -327,8 +325,7 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None,
-                           features=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None)
 
     Return the size of the given string, in pixels.
 
