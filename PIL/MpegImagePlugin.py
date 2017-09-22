@@ -80,7 +80,6 @@ class MpegImageFile(ImageFile.ImageFile):
 
 Image.register_open(MpegImageFile.format, MpegImageFile)
 
-Image.register_extension(MpegImageFile.format, ".mpg")
-Image.register_extension(MpegImageFile.format, ".mpeg")
+Image.register_extensions(MpegImageFile.format, [".mpg", ".mpeg"])
 
 Image.register_mime(MpegImageFile.format, "video/mpeg")

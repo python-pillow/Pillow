@@ -69,5 +69,4 @@ def _save(im, fp, filename):
 Image.register_open(HDF5StubImageFile.format, HDF5StubImageFile, _accept)
 Image.register_save(HDF5StubImageFile.format, _save)
 
-Image.register_extension(HDF5StubImageFile.format, ".h5")
-Image.register_extension(HDF5StubImageFile.format, ".hdf")
+Image.register_extensions(HDF5StubImageFile.format, [".h5", ".hdf"])

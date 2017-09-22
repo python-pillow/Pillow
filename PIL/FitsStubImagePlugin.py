@@ -72,5 +72,4 @@ def _save(im, fp, filename):
 Image.register_open(FITSStubImageFile.format, FITSStubImageFile, _accept)
 Image.register_save(FITSStubImageFile.format, _save)
 
-Image.register_extension(FITSStubImageFile.format, ".fit")
-Image.register_extension(FITSStubImageFile.format, ".fits")
+Image.register_extensions(FITSStubImageFile.format, [".fit", ".fits"])
