@@ -28,6 +28,8 @@
 #define KEEP_PY_UNICODE
 #include "py3.h"
 
+#include <dlfcn.h>
+
 #if !defined(FT_LOAD_TARGET_MONO)
 #define FT_LOAD_TARGET_MONO  FT_LOAD_MONOCHROME
 #endif
@@ -41,9 +43,8 @@
 #define FT_ERRORDEF( e, v, s )  { e, s },
 #define FT_ERROR_START_LIST  {
 #define FT_ERROR_END_LIST    { 0, 0 } };
-#ifdef HAVE_RAQM
+
 #include <raqm.h>
-#endif
 
 #define LAYOUT_FALLBACK 0
 #define LAYOUT_RAQM 1
@@ -75,6 +76,32 @@ typedef struct {
 
 static PyTypeObject Font_Type;
 
+typedef struct {
+	void* raqm;
+	raqm_t* (*create)(void);
+	int (*set_text)(raqm_t         *rq,
+                    const uint32_t *text,
+                    size_t          len);
+	bool (*set_text_utf8) (raqm_t     *rq,
+                           const char *text,
+                           size_t      len);
+	bool (*set_par_direction) (raqm_t          *rq,
+							   raqm_direction_t dir);
+	bool (*add_font_feature)  (raqm_t     *rq,
+							   const char *feature,
+							   int         len);
+	bool (*set_freetype_face) (raqm_t *rq,
+							   FT_Face face);
+	bool (*layout) (raqm_t *rq);
+	raqm_glyph_t* (*get_glyphs) (raqm_t *rq,
+                                 size_t *length);
+    void (*destroy) (raqm_t *rq);
+
+} p_raqm_func;
+
+static p_raqm_func p_raqm;
+	
+
 /* round a 26.6 pixel coordinate to the nearest larger integer */
 #define PIXEL(x) ((((x)+63) & -64)>>6)
 
@@ -91,6 +118,35 @@ geterror(int code)
 
     PyErr_SetString(PyExc_IOError, "unknown freetype error");
     return NULL;
+}
+
+static int
+setraqm(void)
+{
+    /* set the static function pointers for dynamic raqm linking */
+    p_raqm.raqm = NULL;
+
+    p_raqm.raqm = dlopen("libraqm.so.0", RTLD_LAZY);
+    if (!p_raqm.raqm) {
+        return 1;
+    }
+
+    p_raqm.create = dlsym(p_raqm.raqm, "raqm_create");
+    p_raqm.set_text = dlsym(p_raqm.raqm, "raqm_set_text");
+    p_raqm.set_text_utf8 = dlsym(p_raqm.raqm, "raqm_set_text_utf8");
+    p_raqm.set_par_direction = dlsym(p_raqm.raqm, "raqm_set_par_direction");
+    p_raqm.add_font_feature = dlsym(p_raqm.raqm, "raqm_add_font_feature");
+    p_raqm.set_freetype_face = dlsym(p_raqm.raqm, "raqm_set_freetype_face");
+    p_raqm.layout = dlsym(p_raqm.raqm, "raqm_layout");
+    p_raqm.get_glyphs = dlsym(p_raqm.raqm, "raqm_get_glyphs");
+    p_raqm.destroy = dlsym(p_raqm.raqm, "raqm_destroy");
+    if (dlerror()) {
+        dlclose(p_raqm.raqm);
+        p_raqm.raqm = NULL;
+        return 2;
+    }
+
+    return 0;
 }
 
 static PyObject*
@@ -205,7 +261,6 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
     return 0;
 }
 
-#ifdef HAVE_RAQM
 static size_t
 text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
             PyObject *features ,GlyphInfo **glyph_info, int mask)
@@ -216,7 +271,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
     raqm_glyph_t *glyphs;
     raqm_direction_t direction;
 
-    rq = raqm_create();
+    rq = (*p_raqm.create)();
     if (rq == NULL) {
         PyErr_SetString(PyExc_ValueError, "raqm_create() failed.");
         goto failed;
@@ -230,7 +285,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
                and raqm fails with empty strings */
             goto failed;
         }
-        if (!raqm_set_text(rq, (const uint32_t *)(text), size)) {
+        if (!(*p_raqm.set_text)(rq, (const uint32_t *)(text), size)) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
             goto failed;
         }
@@ -242,7 +297,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
         if (! size) {
             goto failed;
         }
-        if (!raqm_set_text_utf8(rq, text, size)) {
+        if (!(*p_raqm.set_text_utf8)(rq, text, size)) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text_utf8() failed");
             goto failed;
         }
@@ -267,7 +322,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
         }
     }
 
-    if (!raqm_set_par_direction(rq, direction)) {
+    if (!(*p_raqm.set_par_direction)(rq, direction)) {
         PyErr_SetString(PyExc_ValueError, "raqm_set_par_direction() failed");
         goto failed;
     }
@@ -308,24 +363,24 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
                 size = PyString_GET_SIZE(item);
             }
 #endif
-            if (!raqm_add_font_feature(rq, feature, size)) {
+            if (!(*p_raqm.add_font_feature)(rq, feature, size)) {
                 PyErr_SetString(PyExc_ValueError, "raqm_add_font_feature() failed");
                 goto failed;
             }
         }
     }
 
-    if (!raqm_set_freetype_face(rq, self->face)) {
-      PyErr_SetString(PyExc_RuntimeError, "raqm_set_freetype_face() failed.");
-      goto failed;
+    if (!(*p_raqm.set_freetype_face)(rq, self->face)) {
+        PyErr_SetString(PyExc_RuntimeError, "raqm_set_freetype_face() failed.");
+        goto failed;
     }
 
-    if (!raqm_layout (rq)) {
-      PyErr_SetString(PyExc_RuntimeError, "raqm_layout() failed.");
-      goto failed;
+    if (!(*p_raqm.layout)(rq)) {
+        PyErr_SetString(PyExc_RuntimeError, "raqm_layout() failed.");
+        goto failed;
     }
 
-    glyphs = raqm_get_glyphs(rq, &count);
+    glyphs = (*p_raqm.get_glyphs)(rq, &count);
     if (glyphs == NULL) {
         PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
         count = 0;
@@ -348,10 +403,9 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
     }
 
 failed:
-    raqm_destroy (rq);
+    (*p_raqm.destroy)(rq);
     return count;
 }
-#endif
 
 static size_t
 text_layout_fallback(PyObject* string, FontObject* self, const char* dir,
@@ -424,15 +478,12 @@ text_layout(PyObject* string, FontObject* self, const char* dir,
             PyObject *features, GlyphInfo **glyph_info, int mask)
 {
     size_t count;
-#ifdef HAVE_RAQM
-    if (self->layout_engine == LAYOUT_RAQM) {
+
+    if (p_raqm.raqm && self->layout_engine == LAYOUT_RAQM) {
         count = text_layout_raqm(string, self, dir, features, glyph_info,  mask);
     } else {
         count = text_layout_fallback(string, self, dir, features, glyph_info, mask);
     }
-#else
-    count = text_layout_fallback(string, self, dir, features, glyph_info, mask);
-#endif
     return count;
 }
 
@@ -853,11 +904,8 @@ setup_module(PyObject* m) {
     PyDict_SetItemString(d, "freetype2_version", v);
 
 
-#ifdef HAVE_RAQM
-    v = PyBool_FromLong(1);
-#else
-    v = PyBool_FromLong(0);
-#endif
+	setraqm();
+    v = PyBool_FromLong(!!p_raqm.raqm);
     PyDict_SetItemString(d, "HAVE_RAQM", v);
 
     return 0;
