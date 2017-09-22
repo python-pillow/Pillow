@@ -28,7 +28,9 @@
 #define KEEP_PY_UNICODE
 #include "py3.h"
 
+#if !defined(_MSC_VER)
 #include <dlfcn.h>
+#endif
 
 #if !defined(FT_LOAD_TARGET_MONO)
 #define FT_LOAD_TARGET_MONO  FT_LOAD_MONOCHROME
@@ -126,11 +128,18 @@ setraqm(void)
     /* set the static function pointers for dynamic raqm linking */
     p_raqm.raqm = NULL;
 
+    /* Microsoft needs a totally different system */
+#if !defined(_MSC_VER)
     p_raqm.raqm = dlopen("libraqm.so.0", RTLD_LAZY);
+#else
+    p_raqm.raqm = LoadLibrary("libraqm");
+#endif
+
     if (!p_raqm.raqm) {
         return 1;
     }
 
+#if !defined(_MSC_VER)
     p_raqm.create = dlsym(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = dlsym(p_raqm.raqm, "raqm_set_text");
     p_raqm.set_text_utf8 = dlsym(p_raqm.raqm, "raqm_set_text_utf8");
@@ -140,11 +149,44 @@ setraqm(void)
     p_raqm.layout = dlsym(p_raqm.raqm, "raqm_layout");
     p_raqm.get_glyphs = dlsym(p_raqm.raqm, "raqm_get_glyphs");
     p_raqm.destroy = dlsym(p_raqm.raqm, "raqm_destroy");
-    if (dlerror()) {
+    if (dlerror() ||
+        !(p_raqm.create &&
+          p_raqm.set_text &&
+          p_raqm.set_text_utf8 &&
+          p_raqm.set_par_direction &&
+          p_raqm.add_font_feature &&
+          p_raqm.set_freetype_face &&
+          p_raqm.layout &&
+          p_raqm.get_glyphs &&
+          p_raqm.destroy)) {
         dlclose(p_raqm.raqm);
         p_raqm.raqm = NULL;
         return 2;
     }
+#else
+    p_raqm.create = GetProcAddress(p_raqm.raqm, "raqm_create");
+    p_raqm.set_text = GetProcAddress(p_raqm.raqm, "raqm_set_text");
+    p_raqm.set_text_utf8 = GetProcAddress(p_raqm.raqm, "raqm_set_text_utf8");
+    p_raqm.set_par_direction = GetProcAddress(p_raqm.raqm, "raqm_set_par_direction");
+    p_raqm.add_font_feature = GetProcAddress(p_raqm.raqm, "raqm_add_font_feature");
+    p_raqm.set_freetype_face = GetProcAddress(p_raqm.raqm, "raqm_set_freetype_face");
+    p_raqm.layout = GetProcAddress(p_raqm.raqm, "raqm_layout");
+    p_raqm.get_glyphs = GetProcAddress(p_raqm.raqm, "raqm_get_glyphs");
+    p_raqm.destroy = GetProcAddress(p_raqm.raqm, "raqm_destroy");
+    if (!(p_raqm.create &&
+          p_raqm.set_text &&
+          p_raqm.set_text_utf8 &&
+          p_raqm.set_par_direction &&
+          p_raqm.add_font_feature &&
+          p_raqm.set_freetype_face &&
+          p_raqm.layout &&
+          p_raqm.get_glyphs &&
+          p_raqm.destroy) {
+        FreeLibrary(p_raqm.raqm);
+        p_raqm.raqm = NULL;
+        return 2;
+    }
+#endif
 
     return 0;
 }
