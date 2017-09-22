@@ -4,6 +4,15 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Added register_extensions method #1860
+  [radarhere]
+
+- Fix TIFF support for I;16S, I;16BS, and I;32BS rawmodes #2748
+  [wiredfool]
+  
+- Fixed doc syntax in ImageDraw #2752
+  [radarhere]
+
 - Fixed support for building on Windows/msys2. Added Appveyor CI coverage for python3 on msys2 #2476
   [wiredfool]
 
