@@ -29,8 +29,12 @@
 #include "config.h"
 #endif
 
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef bool
+typedef int bool;
+#endif
+#ifndef uint32_t
+typedef UINT32 uint32_t;
+#endif
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
