@@ -79,30 +79,30 @@ typedef struct {
 static PyTypeObject Font_Type;
 
 typedef struct {
-	void* raqm;
-	raqm_t* (*create)(void);
-	int (*set_text)(raqm_t         *rq,
+    void* raqm;
+    raqm_t* (*create)(void);
+    int (*set_text)(raqm_t         *rq,
                     const uint32_t *text,
                     size_t          len);
-	bool (*set_text_utf8) (raqm_t     *rq,
+    bool (*set_text_utf8) (raqm_t     *rq,
                            const char *text,
                            size_t      len);
-	bool (*set_par_direction) (raqm_t          *rq,
-							   raqm_direction_t dir);
-	bool (*add_font_feature)  (raqm_t     *rq,
-							   const char *feature,
-							   int         len);
-	bool (*set_freetype_face) (raqm_t *rq,
-							   FT_Face face);
-	bool (*layout) (raqm_t *rq);
-	raqm_glyph_t* (*get_glyphs) (raqm_t *rq,
+    bool (*set_par_direction) (raqm_t          *rq,
+                               raqm_direction_t dir);
+    bool (*add_font_feature)  (raqm_t     *rq,
+                               const char *feature,
+                               int         len);
+    bool (*set_freetype_face) (raqm_t *rq,
+                               FT_Face face);
+    bool (*layout) (raqm_t *rq);
+    raqm_glyph_t* (*get_glyphs) (raqm_t *rq,
                                  size_t *length);
     void (*destroy) (raqm_t *rq);
 
 } p_raqm_func;
 
 static p_raqm_func p_raqm;
-	
+
 
 /* round a 26.6 pixel coordinate to the nearest larger integer */
 #define PIXEL(x) ((((x)+63) & -64)>>6)
