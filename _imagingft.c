@@ -131,6 +131,9 @@ setraqm(void)
     /* Microsoft needs a totally different system */
 #if !defined(_MSC_VER)
     p_raqm.raqm = dlopen("libraqm.so.0", RTLD_LAZY);
+    if (!p_raqm.raqm) {
+        p_raqm.raqm = dlopen("libraqm.dylib", RTLD_LAZY);
+    }
 #else
     p_raqm.raqm = LoadLibrary("libraqm");
 #endif
