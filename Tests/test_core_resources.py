@@ -129,14 +129,15 @@ class TestCoreMemory(PillowTestCase):
         Image.core.set_block_size(4096)
         Image.new('RGB', (256, 256))
         Image.new('RGB', (256, 256))
-        Image.core.clear_cache()
+        # Keep 16 blocks in cache
+        Image.core.clear_cache(16)
 
         stats = Image.core.get_stats()
         self.assertGreaterEqual(stats['new_count'], 2)
         self.assertGreaterEqual(stats['allocated_blocks'], 64)
         self.assertGreaterEqual(stats['reused_blocks'], 64)
-        self.assertGreaterEqual(stats['freed_blocks'], 64)
-        self.assertEqual(stats['blocks_cached'], 0)
+        self.assertGreaterEqual(stats['freed_blocks'], 48)
+        self.assertEqual(stats['blocks_cached'], 16)
 
     def test_large_images(self):
         Image.core.reset_stats()

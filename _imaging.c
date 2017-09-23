@@ -3466,10 +3466,12 @@ _set_blocks_max(PyObject* self, PyObject* args)
 static PyObject*
 _clear_cache(PyObject* self, PyObject* args)
 {
-    if (!PyArg_ParseTuple(args, ":clear_cache"))
+    int i = 0;
+
+    if (!PyArg_ParseTuple(args, "|i:clear_cache", &i))
         return NULL;
     
-    ImagingMemoryClearCache(&ImagingDefaultArena, 0);
+    ImagingMemoryClearCache(&ImagingDefaultArena, i);
 
     Py_INCREF(Py_None);
     return Py_None;
