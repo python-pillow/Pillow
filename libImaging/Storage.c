@@ -264,9 +264,11 @@ ImagingDelete(Imaging im)
 /* ------------------ */
 /* Allocate image as an array of line buffers. */
 
+#define IMAGING_PAGE_SIZE (4096)
+
 struct ImagingMemoryArena ImagingDefaultArena = {
     1,                   // alignment
-    1*1024*1024,         // block_size
+    16*1024*1024,        // block_size
     0,                   // blocks_max
     0,                   // blocks_cached
     NULL,                // blocks
@@ -382,7 +384,7 @@ ImagingDestroyArray(Imaging im)
 }
 
 Imaging
-ImagingAllocateArray(Imaging im, int dirty)
+ImagingAllocateArray(Imaging im, int dirty, int block_size)
 {
     int y, line_in_block, current_block;
     ImagingMemoryArena arena = &ImagingDefaultArena;
@@ -395,14 +397,13 @@ ImagingAllocateArray(Imaging im, int dirty)
     }
 
     linesize = (im->linesize + arena->alignment - 1) & -arena->alignment;
-    lines_per_block = arena->block_size / linesize;
+    lines_per_block = block_size / linesize;
     if (lines_per_block == 0)
         lines_per_block = 1;
     blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
     // printf("NEW size: %dx%d, ls: %d, lpb: %d, blocks: %d\n",
     //        im->xsize, im->ysize, linesize, lines_per_block, blocks_count);
 
-    im->destroy = ImagingDestroyArray;
     /* One extra ponter is always NULL */
     im->blocks = calloc(sizeof(*im->blocks), blocks_count + 1);
     if ( ! im->blocks) {
@@ -421,6 +422,7 @@ ImagingAllocateArray(Imaging im, int dirty)
             }
             block = memory_get_block(arena, lines_remained * linesize, dirty);
             if ( ! block.ptr) {
+                ImagingDestroyArray(im);
                 return (Imaging) ImagingError_MemoryError();
             }
             im->blocks[current_block] = block;
@@ -435,6 +437,8 @@ ImagingAllocateArray(Imaging im, int dirty)
             current_block -= 1;
         }
     }
+
+    im->destroy = ImagingDestroyArray;
 
     return im;
 }
@@ -503,7 +507,14 @@ ImagingNewInternal(const char* mode, int xsize, int ysize, int dirty)
     if ( ! im)
         return NULL;
 
-    if (ImagingAllocateArray(im, dirty)) {
+    if (ImagingAllocateArray(im, dirty, ImagingDefaultArena.block_size)) {
+        return im;
+    }
+
+    ImagingError_Clear();
+
+    // Try to allocate the image once more with smallest possible block size
+    if (ImagingAllocateArray(im, dirty, IMAGING_PAGE_SIZE)) {
         return im;
     }
 
