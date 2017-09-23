@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Fixed support for building on Windows/msys2. Added Appveyor CI coverage for python3 on msys2 #2476
+  [wiredfool]
+
 - Fix ValueError in Exif/Tiff IFD #2719
   [wiredfool]
 

@@ -17,7 +17,7 @@ import sys
 import subprocess
 
 from distutils.command.build_ext import build_ext
-from distutils import sysconfig
+from distutils import sysconfig, ccompiler
 from setuptools import Extension, setup, find_packages
 
 # monkey patch import hook. Even though flake8 says it's not used, it is.
@@ -43,6 +43,9 @@ DEBUG = False
 
 class DependencyException(Exception): pass
 class RequiredDependencyException(Exception): pass
+
+PLATFORM_MINGW = 'mingw' in ccompiler.get_default_compiler()
+PLATFORM_PYPY = hasattr(sys, 'pypy_version_info')
 
 def _dbg(s, tp=None):
     if DEBUG:
@@ -607,7 +610,7 @@ class pil_build_ext(build_ext):
         if struct.unpack("h", "\0\1".encode('ascii'))[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
 
-        if sys.platform == "win32" and not hasattr(sys, 'pypy_version_info'):
+        if sys.platform == "win32" and not (PLATFORM_PYPY or PLATFORM_MINGW):
             defs.append(("PILLOW_VERSION", '"\\"%s\\""'%PILLOW_VERSION))
         else:
             defs.append(("PILLOW_VERSION", '"%s"'%PILLOW_VERSION))
@@ -781,7 +784,7 @@ try:
           test_suite='nose.collector',
           keywords=["Imaging", ],
           license='Standard PIL License',
-          zip_safe=not debug_build(), )
+          zip_safe=not (debug_build() or PLATFORM_MINGW), )
 except RequiredDependencyException as err:
     msg = """
 

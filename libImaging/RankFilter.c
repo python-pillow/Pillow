@@ -103,7 +103,7 @@ ImagingRankFilter(Imaging im, int size, int rank)
         return (Imaging) ImagingError_ModeError();
     }
 
-    ImagingCopyInfo(imOut, im);
+    ImagingCopyPalette(imOut, im);
 
     return imOut;
 

@@ -24,7 +24,7 @@
  * 1998-10-26 fl   Added "I;16" and "I;16B" storage modes (experimental)
  * 1998-12-29 fl   Fixed allocation bug caused by previous fix
  * 1999-02-03 fl   Added "RGBa" and "BGR" modes (experimental)
- * 2001-04-22 fl   Fixed potential memory leak in ImagingCopyInfo
+ * 2001-04-22 fl   Fixed potential memory leak in ImagingCopyPalette
  * 2003-09-26 fl   Added "LA" and "PA" modes (experimental)
  * 2005-10-02 fl   Added image counter
  *
@@ -567,7 +567,7 @@ ImagingNew2Dirty(const char* mode, Imaging imOut, Imaging imIn)
 }
 
 void
-ImagingCopyInfo(Imaging destination, Imaging source)
+ImagingCopyPalette(Imaging destination, Imaging source)
 {
     if (source->palette) {
         if (destination->palette)

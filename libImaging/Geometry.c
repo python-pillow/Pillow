@@ -25,7 +25,7 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize)
         return (Imaging) ImagingError_Mismatch();
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
 #define FLIP_LEFT_RIGHT(INT, image) \
     for (y = 0; y < imIn->ysize; y++) { \
@@ -63,7 +63,7 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn)
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize)
         return (Imaging) ImagingError_Mismatch();
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
 
@@ -89,7 +89,7 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize)
         return (Imaging) ImagingError_Mismatch();
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
 #define ROTATE_90(INT, image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
@@ -139,7 +139,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize)
         return (Imaging) ImagingError_Mismatch();
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
 #define TRANSPOSE(INT, image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
@@ -188,7 +188,7 @@ ImagingTransverse(Imaging imOut, Imaging imIn)
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize)
         return (Imaging) ImagingError_Mismatch();
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
 #define TRANSVERSE(INT, image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
@@ -238,7 +238,7 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize)
         return (Imaging) ImagingError_Mismatch();
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
 #define ROTATE_180(INT, image) \
     for (y = 0; y < imIn->ysize; y++, yr--) { \
@@ -278,7 +278,7 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize)
         return (Imaging) ImagingError_Mismatch();
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
 #define ROTATE_270(INT, image) \
     for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) { \
@@ -717,7 +717,7 @@ ImagingGenericTransform(
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
 
@@ -764,7 +764,7 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
         return (Imaging) ImagingError_ModeError();
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
     if (x0 < 0)
         x0 = 0;
@@ -854,7 +854,7 @@ affine_fixed(Imaging imOut, Imaging imIn,
     int xx, yy;
     int a0, a1, a2, a3, a4, a5;
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
     xsize = (int) imIn->xsize;
     ysize = (int) imIn->ysize;
@@ -956,7 +956,7 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
        following code is used.  maybe we should fall back on the slow
        generic transform engine in this case? */
 
-    ImagingCopyInfo(imOut, imIn);
+    ImagingCopyPalette(imOut, imIn);
 
     xsize = (int) imIn->xsize;
     ysize = (int) imIn->ysize;

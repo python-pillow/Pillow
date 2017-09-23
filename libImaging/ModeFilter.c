@@ -72,7 +72,7 @@ ImagingModeFilter(Imaging im, int size)
 
     }
 
-    ImagingCopyInfo(imOut, im);
+    ImagingCopyPalette(imOut, im);
 
     return imOut;
 }
