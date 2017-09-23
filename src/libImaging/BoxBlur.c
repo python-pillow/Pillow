@@ -26,19 +26,23 @@ ImagingLineBoxBlur32(UINT32 *lineOut, UINT32 *lineIn, int lastx, int radius, int
     //     acc[0] += lineIn[add][0] - lineIn[subtract][0];
 
     #define MOVE_ACC(acc, subtract, add) \
+        { \
         __m128i tmp1 = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[add])); \
         __m128i tmp2 = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[subtract])); \
-        acc = _mm_sub_epi32(_mm_add_epi32(acc, tmp1), tmp2);
+        acc = _mm_sub_epi32(_mm_add_epi32(acc, tmp1), tmp2); \
+        }
 
     // #define ADD_FAR(bulk, acc, left, right)
     //     bulk[0] = (acc[0] * ww) + (lineIn[left][0] + lineIn[right][0]) * fw;
 
     #define ADD_FAR(bulk, acc, left, right) \
+        { \
         __m128i tmp3 = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[left])); \
         __m128i tmp4 = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(lineIn[right])); \
         __m128i tmp5 = _mm_mullo_epi32(_mm_add_epi32(tmp3, tmp4), fws); \
         __m128i tmp6 = _mm_mullo_epi32(acc, wws); \
-        bulk = _mm_add_epi32(tmp5, tmp6);
+        bulk = _mm_add_epi32(tmp5, tmp6); \
+        }
 
     // #define SAVE(x, bulk)
     //    lineOut[x][0] = (UINT8)((bulk[0] + (1 << 23)) >> 24);
