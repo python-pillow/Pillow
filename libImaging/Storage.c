@@ -398,7 +398,7 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
     }
 
     aligned_linesize = (im->linesize + arena->alignment - 1) & -arena->alignment;
-    lines_per_block = block_size / aligned_linesize;
+    lines_per_block = (block_size - (arena->alignment - 1)) / aligned_linesize;
     if (lines_per_block == 0)
         lines_per_block = 1;
     blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
@@ -413,23 +413,22 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
 
     /* Allocate image as an array of lines */
     line_in_block = 0;
-    /* Return blocks in reverse order to reduce reallocations */
-    current_block = blocks_count - 1;
+    current_block = 0;
     for (y = 0; y < im->ysize; y++) {
         if (line_in_block == 0) {
-            int block_size;
+            int required;
             int lines_remained = lines_per_block;
             if (lines_remained > im->ysize - y) {
                 lines_remained = im->ysize - y;
             }
-            block_size = lines_remained * aligned_linesize + arena->alignment - 1;
-            block = memory_get_block(arena, block_size, dirty);
+            required = lines_remained * aligned_linesize + arena->alignment - 1;
+            block = memory_get_block(arena, required, dirty);
             if ( ! block.ptr) {
                 ImagingDestroyArray(im);
                 return (Imaging) ImagingError_MemoryError();
             }
             im->blocks[current_block] = block;
-            /* This is copied from libc _int_memalign */
+            /* Bulletproof code from libc _int_memalign */
             aligned_ptr = (char *)(
                 ((unsigned long) (block.ptr + arena->alignment - 1)) &
                 -((signed long) arena->alignment));
@@ -441,7 +440,7 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
         if (line_in_block >= lines_per_block) {
             /* Reset counter and start new block */
             line_in_block = 0;
-            current_block -= 1;
+            current_block += 1;
         }
     }
 
