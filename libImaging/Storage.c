@@ -390,7 +390,7 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
     ImagingMemoryArena arena = &ImagingDefaultArena;
     ImagingMemoryBlock block = {NULL, 0};
     int aligned_linesize, lines_per_block, blocks_count;
-    void *aligned_ptr;
+    char *aligned_ptr;
 
     /* 0-width or 0-height image. No need to do anything */
     if ( ! im->linesize || ! im->ysize) {
@@ -430,7 +430,7 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
             }
             im->blocks[current_block] = block;
             /* This is copied from libc _int_memalign */
-            aligned_ptr = (void *)(
+            aligned_ptr = (char *)(
                 ((unsigned long) (block.ptr + arena->alignment - 1)) &
                 -((signed long) arena->alignment));
         }
