@@ -389,20 +389,21 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
     int y, line_in_block, current_block;
     ImagingMemoryArena arena = &ImagingDefaultArena;
     ImagingMemoryBlock block = {NULL, 0};
-    int linesize, lines_per_block, blocks_count;
+    int aligned_linesize, lines_per_block, blocks_count;
+    void *aligned_ptr;
 
     /* 0-width or 0-height image. No need to do anything */
     if ( ! im->linesize || ! im->ysize) {
         return im;
     }
 
-    linesize = (im->linesize + arena->alignment - 1) & -arena->alignment;
-    lines_per_block = block_size / linesize;
+    aligned_linesize = (im->linesize + arena->alignment - 1) & -arena->alignment;
+    lines_per_block = block_size / aligned_linesize;
     if (lines_per_block == 0)
         lines_per_block = 1;
     blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
     // printf("NEW size: %dx%d, ls: %d, lpb: %d, blocks: %d\n",
-    //        im->xsize, im->ysize, linesize, lines_per_block, blocks_count);
+    //        im->xsize, im->ysize, aligned_linesize, lines_per_block, blocks_count);
 
     /* One extra ponter is always NULL */
     im->blocks = calloc(sizeof(*im->blocks), blocks_count + 1);
@@ -416,19 +417,25 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
     current_block = blocks_count - 1;
     for (y = 0; y < im->ysize; y++) {
         if (line_in_block == 0) {
+            int block_size;
             int lines_remained = lines_per_block;
             if (lines_remained > im->ysize - y) {
                 lines_remained = im->ysize - y;
             }
-            block = memory_get_block(arena, lines_remained * linesize, dirty);
+            block_size = lines_remained * aligned_linesize + arena->alignment - 1;
+            block = memory_get_block(arena, block_size, dirty);
             if ( ! block.ptr) {
                 ImagingDestroyArray(im);
                 return (Imaging) ImagingError_MemoryError();
             }
             im->blocks[current_block] = block;
+            /* This is copied from libc _int_memalign */
+            aligned_ptr = (void *)(
+                ((unsigned long) (block.ptr + arena->alignment - 1)) &
+                -((signed long) arena->alignment));
         }
 
-        im->image[y] = block.ptr + linesize * line_in_block;
+        im->image[y] = aligned_ptr + aligned_linesize * line_in_block;
 
         line_in_block += 1;
         if (line_in_block >= lines_per_block) {
