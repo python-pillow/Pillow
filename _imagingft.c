@@ -193,7 +193,7 @@ setraqm(void)
           p_raqm.set_freetype_face &&
           p_raqm.layout &&
           p_raqm.get_glyphs &&
-          p_raqm.destroy) {
+          p_raqm.destroy)) {
         FreeLibrary(p_raqm.raqm);
         p_raqm.raqm = NULL;
         return 2;
