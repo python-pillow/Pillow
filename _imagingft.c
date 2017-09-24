@@ -78,27 +78,36 @@ typedef struct {
 
 static PyTypeObject Font_Type;
 
+typedef raqm_t* (*t_raqm_create)(void);
+typedef int (*t_raqm_set_text)(raqm_t         *rq,
+                             const uint32_t *text,
+                             size_t          len);
+typedef bool (*t_raqm_set_text_utf8) (raqm_t     *rq,
+                                    const char *text,
+                                    size_t      len);
+typedef bool (*t_raqm_set_par_direction) (raqm_t          *rq,
+                                        raqm_direction_t dir);
+typedef bool (*t_raqm_add_font_feature)  (raqm_t     *rq,
+                                        const char *feature,
+                                        int         len);
+typedef bool (*t_raqm_set_freetype_face) (raqm_t *rq,
+                                        FT_Face face);
+typedef bool (*t_raqm_layout) (raqm_t *rq);
+typedef raqm_glyph_t* (*t_raqm_get_glyphs) (raqm_t *rq,
+                                          size_t *length);
+typedef void (*t_raqm_destroy) (raqm_t *rq);
+
 typedef struct {
     void* raqm;
-    raqm_t* (*create)(void);
-    int (*set_text)(raqm_t         *rq,
-                    const uint32_t *text,
-                    size_t          len);
-    bool (*set_text_utf8) (raqm_t     *rq,
-                           const char *text,
-                           size_t      len);
-    bool (*set_par_direction) (raqm_t          *rq,
-                               raqm_direction_t dir);
-    bool (*add_font_feature)  (raqm_t     *rq,
-                               const char *feature,
-                               int         len);
-    bool (*set_freetype_face) (raqm_t *rq,
-                               FT_Face face);
-    bool (*layout) (raqm_t *rq);
-    raqm_glyph_t* (*get_glyphs) (raqm_t *rq,
-                                 size_t *length);
-    void (*destroy) (raqm_t *rq);
-
+    t_raqm_create create;
+    t_raqm_set_text set_text;
+    t_raqm_set_text_utf8 set_text_utf8;
+    t_raqm_set_par_direction set_par_direction;
+    t_raqm_add_font_feature add_font_feature;
+    t_raqm_set_freetype_face set_freetype_face;
+    t_raqm_layout layout; 
+    t_raqm_get_glyphs get_glyphs;
+    t_raqm_destroy destroy;
 } p_raqm_func;
 
 static p_raqm_func p_raqm;
@@ -143,15 +152,15 @@ setraqm(void)
     }
 
 #if !defined(_MSC_VER)
-    p_raqm.create = dlsym(p_raqm.raqm, "raqm_create");
-    p_raqm.set_text = dlsym(p_raqm.raqm, "raqm_set_text");
-    p_raqm.set_text_utf8 = dlsym(p_raqm.raqm, "raqm_set_text_utf8");
-    p_raqm.set_par_direction = dlsym(p_raqm.raqm, "raqm_set_par_direction");
-    p_raqm.add_font_feature = dlsym(p_raqm.raqm, "raqm_add_font_feature");
-    p_raqm.set_freetype_face = dlsym(p_raqm.raqm, "raqm_set_freetype_face");
-    p_raqm.layout = dlsym(p_raqm.raqm, "raqm_layout");
-    p_raqm.get_glyphs = dlsym(p_raqm.raqm, "raqm_get_glyphs");
-    p_raqm.destroy = dlsym(p_raqm.raqm, "raqm_destroy");
+    p_raqm.create = (t_raqm_create)dlsym(p_raqm.raqm, "raqm_create");
+    p_raqm.set_text = (t_raqm_set_text)dlsym(p_raqm.raqm, "raqm_set_text");
+    p_raqm.set_text_utf8 = (t_raqm_set_text_utf8)dlsym(p_raqm.raqm, "raqm_set_text_utf8");
+    p_raqm.set_par_direction = (t_raqm_set_par_direction)dlsym(p_raqm.raqm, "raqm_set_par_direction");
+    p_raqm.add_font_feature = (t_raqm_add_font_feature)dlsym(p_raqm.raqm, "raqm_add_font_feature");
+    p_raqm.set_freetype_face = (t_raqm_set_freetype_face)dlsym(p_raqm.raqm, "raqm_set_freetype_face");
+    p_raqm.layout = (t_raqm_layout)dlsym(p_raqm.raqm, "raqm_layout");
+    p_raqm.get_glyphs = (t_raqm_get_glyphs)dlsym(p_raqm.raqm, "raqm_get_glyphs");
+    p_raqm.destroy = (t_raqm_destroy)dlsym(p_raqm.raqm, "raqm_destroy");
     if (dlerror() ||
         !(p_raqm.create &&
           p_raqm.set_text &&
@@ -167,15 +176,15 @@ setraqm(void)
         return 2;
     }
 #else
-    p_raqm.create = GetProcAddress(p_raqm.raqm, "raqm_create");
-    p_raqm.set_text = GetProcAddress(p_raqm.raqm, "raqm_set_text");
-    p_raqm.set_text_utf8 = GetProcAddress(p_raqm.raqm, "raqm_set_text_utf8");
-    p_raqm.set_par_direction = GetProcAddress(p_raqm.raqm, "raqm_set_par_direction");
-    p_raqm.add_font_feature = GetProcAddress(p_raqm.raqm, "raqm_add_font_feature");
-    p_raqm.set_freetype_face = GetProcAddress(p_raqm.raqm, "raqm_set_freetype_face");
-    p_raqm.layout = GetProcAddress(p_raqm.raqm, "raqm_layout");
-    p_raqm.get_glyphs = GetProcAddress(p_raqm.raqm, "raqm_get_glyphs");
-    p_raqm.destroy = GetProcAddress(p_raqm.raqm, "raqm_destroy");
+    p_raqm.create = (t_raqm_create)GetProcAddress(p_raqm.raqm, "raqm_create");
+    p_raqm.set_text = (t_raqm_set_text)GetProcAddress(p_raqm.raqm, "raqm_set_text");
+    p_raqm.set_text_utf8 = (t_raqm_set_text_utf8)GetProcAddress(p_raqm.raqm, "raqm_set_text_utf8");
+    p_raqm.set_par_direction = (t_raqm_set_par_direction)GetProcAddress(p_raqm.raqm, "raqm_set_par_direction");
+    p_raqm.add_font_feature = (t_raqm_add_font_feature)GetProcAddress(p_raqm.raqm, "raqm_add_font_feature");
+    p_raqm.set_freetype_face = (t_raqm_set_freetype_face)GetProcAddress(p_raqm.raqm, "raqm_set_freetype_face");
+    p_raqm.layout = (t_raqm_layout)GetProcAddress(p_raqm.raqm, "raqm_layout");
+    p_raqm.get_glyphs = (t_raqm_get_glyphs)GetProcAddress(p_raqm.raqm, "raqm_get_glyphs");
+    p_raqm.destroy = (t_raqm_destroy)GetProcAddress(p_raqm.raqm, "raqm_destroy");
     if (!(p_raqm.create &&
           p_raqm.set_text &&
           p_raqm.set_text_utf8 &&
