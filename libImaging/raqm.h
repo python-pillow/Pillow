@@ -94,6 +94,19 @@ typedef struct raqm_glyph_t {
     FT_Face ftface;
 } raqm_glyph_t;
 
+/**
+ * version 0.1 of the raqm_glyph_t structure
+ */
+typedef struct raqm_glyph_t_01 {
+    unsigned int index;
+    int x_advance;
+    int y_advance;
+    int x_offset;
+    int y_offset;
+    uint32_t cluster;
+} raqm_glyph_t_01;
+
+
 raqm_t *
 raqm_create (void);
 
