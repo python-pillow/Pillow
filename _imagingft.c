@@ -194,7 +194,7 @@ setraqm(void)
     p_raqm.set_freetype_face = (t_raqm_set_freetype_face)GetProcAddress(p_raqm.raqm, "raqm_set_freetype_face");
     p_raqm.layout = (t_raqm_layout)GetProcAddress(p_raqm.raqm, "raqm_layout");
     p_raqm.destroy = (t_raqm_destroy)GetProcAddress(p_raqm.raqm, "raqm_destroy");
-    if(dlsym(p_raqm.raqm, "raqm_index_to_position")) {
+    if(GetProcAddress(p_raqm.raqm, "raqm_index_to_position")) {
         p_raqm.get_glyphs = (t_raqm_get_glyphs)GetProcAddress(p_raqm.raqm, "raqm_get_glyphs");
         p_raqm.version = 2;
     } else {
