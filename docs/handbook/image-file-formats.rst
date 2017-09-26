@@ -110,7 +110,7 @@ are available::
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
-    This is currently only supported for GIF, PDF and TIFF.
+    This is currently only supported for GIF, PDF, TIFF, and WebP.
 
 **duration**
     The display duration of each frame of the multiframe gif, in
@@ -661,8 +661,13 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If present and true, instructs the WEBP writer to use lossless compression.
 
 **quality**
-    Integer, 1-100, Defaults to 80. Sets the quality level for
-    lossy compression.
+    Integer, 1-100, Defaults to 80. For lossy, 0 gives the smallest
+    size and 100 the largest. For lossless, this parameter is the amount
+    of effort put into the compression: 0 is the fastest, but gives larger
+    files compared to the slowest, but best, 100.
+
+**method**
+    Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 0.
 
 **icc_procfile**
     The ICC Profile to include in the saved file. Only supported if
@@ -671,6 +676,51 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **exif**
     The exif data to include in the saved file. Only supported if
     the system webp library was built with webpmux support.
+
+Saving sequences
+~~~~~~~~~~~~~~~~~
+
+.. note::
+
+    Support for animated WebP files will only be enabled if the system webp
+    library was built with webpmux support. You can check webpmux support
+    at runtime by inspecting the `_webp.HAVE_WEBPMUX` module flag.
+
+When calling :py:meth:`~PIL.Image.Image.save`, the following options
+are available when the save_all argument is present and true.
+
+**append_images**
+    A list of images to append as additional frames. Each of the
+    images in the list can be single or multiframe images.
+
+**duration**
+    The display duration of each frame, in milliseconds. Pass a single
+    integer for a constant duration, or a list or tuple to set the
+    duration for each frame separately.
+
+**loop**
+    Number of times to repeat the animation. Defaults to [0 = infinite].
+
+**background**
+    Background color of the canvas, as an RGBA tuple with values in
+    the range of (0-255).
+
+**minimize_size**
+    If true, minimize the output size (slow). Implicitly disables
+    key-frame insertion.
+
+**kmin, kmax**
+    Minimum and maximum distance between consecutive key frames in
+    the output. The library may insert some key frames as needed
+    to satisfy this criteria. Note that these conditions should
+    hold: kmax > kmin and kmin >= kmax / 2 + 1. Also, if kmax <= 0,
+    then key-frame insertion is disabled; and if kmax == 1, then all
+    frames will be key-frames (kmin value does not matter for these
+    special cases).
+
+**allow_mixed**
+    If true, use mixed compression mode; the encoder heuristically
+    chooses between lossy and lossless for each frame.
 
 XBM
 ^^^

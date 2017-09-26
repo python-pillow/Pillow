@@ -10,6 +10,179 @@
 #include <webp/mux.h>
 #endif
 
+/* -------------------------------------------------------------------- */
+/* WebP Animation Support                                               */
+/* -------------------------------------------------------------------- */
+#ifdef HAVE_WEBPMUX
+
+typedef struct {
+    PyObject_HEAD
+    WebPAnimEncoder* enc;
+    WebPPicture frame;
+} WebPAnimEncoderObject;
+
+static PyTypeObject WebPAnimEncoder_Type;
+
+PyObject* _anim_encoder_new(PyObject* self, PyObject* args)
+{
+    int width, height;
+    uint32_t bgcolor;
+    int loop_count;
+    int minimize_size;
+    int kmin, kmax;
+    int allow_mixed;
+    int verbose;
+
+    if (!PyArg_ParseTuple(args, "iiIiiiiii",
+        &width, &height, &bgcolor, &loop_count, &minimize_size,
+        &kmin, &kmax, &allow_mixed, &verbose)) {
+        return NULL;
+    }
+
+    // Setup and configure the encoder's options (these are animation-specific)
+    WebPAnimEncoderOptions enc_options;
+    if (!WebPAnimEncoderOptionsInit(&enc_options)) {
+        fprintf(stderr, "Error! Failed to initialize encoder options\n");
+        Py_RETURN_NONE;
+    }
+    enc_options.anim_params.bgcolor = bgcolor;
+    enc_options.anim_params.loop_count = loop_count;
+    enc_options.minimize_size = minimize_size;
+    enc_options.kmin = kmin;
+    enc_options.kmax = kmax;
+    enc_options.allow_mixed = allow_mixed;
+    enc_options.verbose = verbose;
+
+    // Validate canvas dimensions
+    if (width <= 0 || height <= 0) {
+        fprintf(stderr, "Error! Invalid canvas dimensions: width=%d, height=%d\n", width, height);
+        Py_RETURN_NONE;
+    }
+
+    // Create a new animation encoder and picture frame
+    WebPAnimEncoderObject* encp;
+    encp = PyObject_New(WebPAnimEncoderObject, &WebPAnimEncoder_Type);
+    if (encp) {
+        if (WebPPictureInit(&(encp->frame))) {
+            WebPAnimEncoder* enc = WebPAnimEncoderNew(width, height, &enc_options);
+            if (enc) {
+                encp->enc = enc;
+                return (PyObject*) encp;
+            }
+        }
+        PyObject_Del(encp);
+    }
+    fprintf(stderr, "Error! Could not create encoder object.\n");
+    Py_RETURN_NONE;
+}
+
+PyObject* _anim_encoder_dealloc(PyObject* self)
+{
+    WebPAnimEncoderObject* encp = (WebPAnimEncoderObject *)self;
+    WebPPictureFree(&(encp->frame));
+    WebPAnimEncoderDelete(encp->enc);
+    Py_RETURN_NONE;
+}
+
+PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
+{
+    uint8_t *rgb;
+    Py_ssize_t size;
+    int timestamp;
+    int width;
+    int height;
+    char *mode;
+    int lossless;
+    float quality_factor;
+    int method;
+
+    if (!PyArg_ParseTuple(args, "z#iiisifi",
+        (char**)&rgb, &size, &timestamp, &width, &height, &mode,
+        &lossless, &quality_factor, &method)) {
+        return NULL;
+    }
+
+    WebPAnimEncoderObject* encp = (WebPAnimEncoderObject *)self;
+    WebPAnimEncoder* enc = encp->enc;
+    WebPPicture* frame = &(encp->frame);
+
+    // Check for NULL frame, which sets duration of final frame
+    if (!rgb) {
+        WebPAnimEncoderAdd(enc, NULL, timestamp, NULL);
+        Py_RETURN_NONE;
+    }
+
+    // Setup config for this frame
+    WebPConfig config;
+    if (!WebPConfigInit(&config)) {
+        fprintf(stderr, "Error! Failed to initialize config!\n");
+        Py_RETURN_NONE;
+    }
+    config.lossless = lossless;
+    config.quality = quality_factor;
+    config.method = method;
+
+    // Validate the config
+    if (!WebPValidateConfig(&config)) {
+        fprintf(stderr, "Error! Invalid configuration\n");
+        Py_RETURN_NONE;
+    }
+
+    // Populate the frame with raw bytes passed to us
+    frame->width = width;
+    frame->height = height;
+    frame->use_argb = 1; // Don't convert RGB pixels to YUV
+    if (strcmp(mode, "RGBA")==0) {
+        WebPPictureImportRGBA(frame, rgb, 4 * width);
+    } else if (strcmp(mode, "RGB")==0) {
+        WebPPictureImportRGB(frame, rgb, 3 * width);
+    }
+
+    // Add the frame to the encoder
+    if (!WebPAnimEncoderAdd(enc, frame, timestamp, &config)) {
+        fprintf(stderr, "Error! Could not add frame: %s\n", WebPAnimEncoderGetError(enc));
+        Py_RETURN_NONE;
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
+{
+    uint8_t *icc_bytes;
+    uint8_t *exif_bytes;
+    Py_ssize_t icc_size;
+    Py_ssize_t  exif_size;
+
+    if (!PyArg_ParseTuple(args, "s#s#",
+    &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
+        return NULL;
+    }
+
+    // Init the output buffer
+    WebPData webp_data;
+    WebPDataInit(&webp_data);
+
+    // Assemble everything into the output buffer
+    WebPAnimEncoderObject* encp = (WebPAnimEncoderObject *)self;
+    WebPAnimEncoder* enc = encp->enc;
+    if (!WebPAnimEncoderAssemble(enc, &webp_data)) {
+        fprintf(stderr, "%s\n", WebPAnimEncoderGetError(enc));
+        Py_RETURN_NONE;
+    }
+
+    // Convert to Python bytes and return
+    PyObject *ret = PyBytes_FromStringAndSize((char*)webp_data.bytes, webp_data.size);
+    WebPDataClear(&webp_data);
+    return ret;
+}
+
+#endif
+
+/* -------------------------------------------------------------------- */
+/* WebP Single-Frame Support                                            */
+/* -------------------------------------------------------------------- */
+
 PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 {
     int width;
@@ -255,8 +428,63 @@ PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
     return Py_BuildValue("i", WebPDecoderBuggyAlpha());
 }
 
+/* -------------------------------------------------------------------- */
+/* WebPAnimEncoder Type                                                 */
+/* -------------------------------------------------------------------- */
+#ifdef HAVE_WEBPMUX
+
+static struct PyMethodDef _anim_encoder_methods[] = {
+    {"add", (PyCFunction)_anim_encoder_add, 1},
+    {"assemble", (PyCFunction)_anim_encoder_assemble, 1},
+    {NULL, NULL} /* sentinel */
+};
+
+/* type description */
+static PyTypeObject WebPAnimEncoder_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "WebPAnimEncoder",          /*tp_name */
+    sizeof(WebPAnimEncoderObject),   /*tp_size */
+    0,                          /*tp_itemsize */
+    /* methods */
+    (destructor)_anim_encoder_dealloc, /*tp_dealloc*/
+    0,                          /*tp_print*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
+    0,                          /*tp_as_number */
+    0,                          /*tp_as_sequence */
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    _anim_encoder_methods,      /*tp_methods*/
+    0,                          /*tp_members*/
+    0,     /*tp_getset*/
+};
+
+#endif
+
+/* -------------------------------------------------------------------- */
+/* Module Setup                                                         */
+/* -------------------------------------------------------------------- */
+
 static PyMethodDef webpMethods[] =
 {
+#ifdef HAVE_WEBPMUX
+    {"WebPAnimEncoder", _anim_encoder_new, METH_VARARGS, "WebPAnimEncoder"},
+#endif
     {"WebPEncode", WebPEncode_wrapper, METH_VARARGS, "WebPEncode"},
     {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
     {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_VARARGS, "WebPVersion"},
@@ -277,6 +505,17 @@ void addTransparencyFlagToModule(PyObject* m) {
 		       PyBool_FromLong(!WebPDecoderBuggyAlpha()));
 }
 
+static int setup_module(PyObject* m) {
+    addMuxFlagToModule(m);
+    addTransparencyFlagToModule(m);
+
+#ifdef HAVE_WEBPMUX
+    /* Ready object types */
+    if (PyType_Ready(&WebPAnimEncoder_Type) < 0)
+        return -1;
+#endif
+    return 0;
+}
 
 #if PY_VERSION_HEX >= 0x03000000
 PyMODINIT_FUNC
@@ -292,8 +531,9 @@ PyInit__webp(void) {
     };
 
     m = PyModule_Create(&module_def);
-    addMuxFlagToModule(m);
-    addTransparencyFlagToModule(m);
+    if (setup_module(m) < 0)
+        return NULL;
+
     return m;
 }
 #else
@@ -301,7 +541,6 @@ PyMODINIT_FUNC
 init_webp(void)
 {
     PyObject* m = Py_InitModule("_webp", webpMethods);
-    addMuxFlagToModule(m);
-    addTransparencyFlagToModule(m);
+    setup_module(m);
 }
 #endif
