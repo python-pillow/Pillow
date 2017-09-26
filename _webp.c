@@ -8,13 +8,13 @@
 
 #ifdef HAVE_WEBPMUX
 #include <webp/mux.h>
-#endif
+#include <webp/demux.h>
 
 /* -------------------------------------------------------------------- */
 /* WebP Animation Support                                               */
 /* -------------------------------------------------------------------- */
-#ifdef HAVE_WEBPMUX
 
+// Encoder type
 typedef struct {
     PyObject_HEAD
     WebPAnimEncoder* enc;
@@ -23,6 +23,17 @@ typedef struct {
 
 static PyTypeObject WebPAnimEncoder_Type;
 
+// Decoder type
+typedef struct {
+    PyObject_HEAD
+    WebPAnimDecoder* dec;
+    WebPAnimInfo info;
+    WebPData data;
+} WebPAnimDecoderObject;
+
+static PyTypeObject WebPAnimDecoder_Type;
+
+// Encoder functions
 PyObject* _anim_encoder_new(PyObject* self, PyObject* args)
 {
     int width, height;
@@ -177,10 +188,207 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
     return ret;
 }
 
-#endif
+// Decoder functions
+PyObject* _anim_decoder_new(PyObject* self, PyObject* args)
+{
+    PyBytesObject *webp_string;
+    const uint8_t *webp;
+    Py_ssize_t size;
+
+    if (!PyArg_ParseTuple(args, "S", &webp_string)) {
+        return NULL;
+    }
+    PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
+    WebPData webp_src = {webp, size};
+
+    // Create the decoder (default mode is RGBA, if no options passed)
+    WebPAnimDecoderObject* decp;
+    decp = PyObject_New(WebPAnimDecoderObject, &WebPAnimDecoder_Type);
+    if (decp) {
+        if (WebPDataCopy(&webp_src, &(decp->data))) {
+            WebPAnimDecoder* dec = WebPAnimDecoderNew(&(decp->data), NULL);
+            if (dec) {
+                if (WebPAnimDecoderGetInfo(dec, &(decp->info))) {
+                    decp->dec = dec;
+                    return (PyObject*) decp;
+                }
+            }
+        }
+        PyObject_Del(decp);
+    }
+    fprintf(stderr, "Error! Could not create decoder object.\n");
+    Py_RETURN_NONE;
+}
+
+PyObject* _anim_decoder_dealloc(PyObject* self)
+{
+    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
+    WebPDataClear(&(decp->data));
+    WebPAnimDecoderDelete(decp->dec);
+    Py_RETURN_NONE;
+}
+
+PyObject* _anim_decoder_get_info(PyObject* self, PyObject* args)
+{
+    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
+    WebPAnimInfo* info = &(decp->info);
+    return Py_BuildValue("IIIIIs",
+        info->canvas_width, info->canvas_height,
+        info->loop_count,
+        info->bgcolor,
+        info->frame_count,
+        "RGBA" // WebPAnimDecoder defaults to RGBA if no mode is specified
+    );
+}
+
+PyObject* _anim_decoder_get_chunk(PyObject* self, PyObject* args)
+{
+    char *mode;
+    PyObject *ret;
+    WebPChunkIterator iter;
+
+    if (!PyArg_ParseTuple(args, "s", &mode)) {
+        return NULL;
+    }
+
+    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
+    const WebPDemuxer* demux = WebPAnimDecoderGetDemuxer(decp->dec);
+    if (!WebPDemuxGetChunk(demux, mode, 1, &iter)) {
+        Py_RETURN_NONE;
+    }
+
+    ret = PyBytes_FromStringAndSize((const char*)iter.chunk.bytes, iter.chunk.size);
+    WebPDemuxReleaseChunkIterator(&iter);
+
+    return ret;
+}
+
+PyObject* _anim_decoder_get_next(PyObject* self, PyObject* args)
+{
+    uint8_t* buf;
+    int timestamp;
+    PyObject *bytes;
+
+    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
+    if (!WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp)) {
+        fprintf(stderr, "Error! Failed to read next frame.\n");
+        Py_RETURN_NONE;
+    }
+
+    bytes = PyBytes_FromStringAndSize((char *)buf,
+        decp->info.canvas_width * 4 * decp->info.canvas_height);
+    return Py_BuildValue("Si", bytes, timestamp);
+}
+
+PyObject* _anim_decoder_has_more_frames(PyObject* self, PyObject* args)
+{
+    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
+    return Py_BuildValue("i", WebPAnimDecoderHasMoreFrames(decp->dec));
+}
+
+PyObject* _anim_decoder_reset(PyObject* self, PyObject* args)
+{
+    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
+    WebPAnimDecoderReset(decp->dec);
+    Py_RETURN_NONE;
+}
 
 /* -------------------------------------------------------------------- */
-/* WebP Single-Frame Support                                            */
+/* Type Definitions                                                     */
+/* -------------------------------------------------------------------- */
+
+// WebPAnimEncoder methods
+static struct PyMethodDef _anim_encoder_methods[] = {
+    {"add", (PyCFunction)_anim_encoder_add, METH_VARARGS, "add"},
+    {"assemble", (PyCFunction)_anim_encoder_assemble, METH_VARARGS, "assemble"},
+    {NULL, NULL} /* sentinel */
+};
+
+// WebPAnimDecoder type definition
+static PyTypeObject WebPAnimEncoder_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "WebPAnimEncoder",          /*tp_name */
+    sizeof(WebPAnimEncoderObject),   /*tp_size */
+    0,                          /*tp_itemsize */
+    /* methods */
+    (destructor)_anim_encoder_dealloc, /*tp_dealloc*/
+    0,                          /*tp_print*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
+    0,                          /*tp_as_number */
+    0,                          /*tp_as_sequence */
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    _anim_encoder_methods,      /*tp_methods*/
+    0,                          /*tp_members*/
+    0,     /*tp_getset*/
+};
+
+// WebPAnimDecoder methods
+static struct PyMethodDef _anim_decoder_methods[] = {
+    {"get_info", (PyCFunction)_anim_decoder_get_info, METH_VARARGS, "get_info"},
+    {"get_chunk", (PyCFunction)_anim_decoder_get_chunk, METH_VARARGS, "get_chunk"},
+    {"get_next", (PyCFunction)_anim_decoder_get_next, METH_VARARGS, "get_next"},
+    {"has_more_frames", (PyCFunction)_anim_decoder_has_more_frames, METH_VARARGS, "has_more_frames"},
+    {"reset", (PyCFunction)_anim_decoder_reset, METH_VARARGS, "reset"},
+    {NULL, NULL} /* sentinel */
+};
+
+// WebPAnimDecoder type definition
+static PyTypeObject WebPAnimDecoder_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "WebPAnimDecoder",          /*tp_name */
+    sizeof(WebPAnimDecoderObject),   /*tp_size */
+    0,                          /*tp_itemsize */
+    /* methods */
+    (destructor)_anim_decoder_dealloc, /*tp_dealloc*/
+    0,                          /*tp_print*/
+    0,                          /*tp_getattr*/
+    0,                          /*tp_setattr*/
+    0,                          /*tp_compare*/
+    0,                          /*tp_repr*/
+    0,                          /*tp_as_number */
+    0,                          /*tp_as_sequence */
+    0,                          /*tp_as_mapping */
+    0,                          /*tp_hash*/
+    0,                          /*tp_call*/
+    0,                          /*tp_str*/
+    0,                          /*tp_getattro*/
+    0,                          /*tp_setattro*/
+    0,                          /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
+    0,                          /*tp_doc*/
+    0,                          /*tp_traverse*/
+    0,                          /*tp_clear*/
+    0,                          /*tp_richcompare*/
+    0,                          /*tp_weaklistoffset*/
+    0,                          /*tp_iter*/
+    0,                          /*tp_iternext*/
+    _anim_decoder_methods,      /*tp_methods*/
+    0,                          /*tp_members*/
+    0,     /*tp_getset*/
+};
+
+#endif
+
+#ifdef HAVE_WEBPMUX
+/* -------------------------------------------------------------------- */
+/* Legacy WebP Support                                                  */
 /* -------------------------------------------------------------------- */
 
 PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
@@ -410,6 +618,8 @@ end:
     return ret;
 }
 
+#endif
+
 // Return the decoder's version number, packed in hexadecimal using 8bits for
 // each of major/minor/revision. E.g: v2.5.7 is 0x020507.
 PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
@@ -429,64 +639,18 @@ PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
 }
 
 /* -------------------------------------------------------------------- */
-/* WebPAnimEncoder Type                                                 */
-/* -------------------------------------------------------------------- */
-#ifdef HAVE_WEBPMUX
-
-static struct PyMethodDef _anim_encoder_methods[] = {
-    {"add", (PyCFunction)_anim_encoder_add, 1},
-    {"assemble", (PyCFunction)_anim_encoder_assemble, 1},
-    {NULL, NULL} /* sentinel */
-};
-
-/* type description */
-static PyTypeObject WebPAnimEncoder_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "WebPAnimEncoder",          /*tp_name */
-    sizeof(WebPAnimEncoderObject),   /*tp_size */
-    0,                          /*tp_itemsize */
-    /* methods */
-    (destructor)_anim_encoder_dealloc, /*tp_dealloc*/
-    0,                          /*tp_print*/
-    0,                          /*tp_getattr*/
-    0,                          /*tp_setattr*/
-    0,                          /*tp_compare*/
-    0,                          /*tp_repr*/
-    0,                          /*tp_as_number */
-    0,                          /*tp_as_sequence */
-    0,                          /*tp_as_mapping */
-    0,                          /*tp_hash*/
-    0,                          /*tp_call*/
-    0,                          /*tp_str*/
-    0,                          /*tp_getattro*/
-    0,                          /*tp_setattro*/
-    0,                          /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
-    0,                          /*tp_doc*/
-    0,                          /*tp_traverse*/
-    0,                          /*tp_clear*/
-    0,                          /*tp_richcompare*/
-    0,                          /*tp_weaklistoffset*/
-    0,                          /*tp_iter*/
-    0,                          /*tp_iternext*/
-    _anim_encoder_methods,      /*tp_methods*/
-    0,                          /*tp_members*/
-    0,     /*tp_getset*/
-};
-
-#endif
-
-/* -------------------------------------------------------------------- */
 /* Module Setup                                                         */
 /* -------------------------------------------------------------------- */
 
 static PyMethodDef webpMethods[] =
 {
 #ifdef HAVE_WEBPMUX
+    {"WebPAnimDecoder", _anim_decoder_new, METH_VARARGS, "WebPAnimDecoder"},
     {"WebPAnimEncoder", _anim_encoder_new, METH_VARARGS, "WebPAnimEncoder"},
-#endif
+#else
     {"WebPEncode", WebPEncode_wrapper, METH_VARARGS, "WebPEncode"},
     {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
+#endif
     {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_VARARGS, "WebPVersion"},
     {"WebPDecoderBuggyAlpha", WebPDecoderBuggyAlpha_wrapper, METH_VARARGS, "WebPDecoderBuggyAlpha"},
     {NULL, NULL}
@@ -511,7 +675,8 @@ static int setup_module(PyObject* m) {
 
 #ifdef HAVE_WEBPMUX
     /* Ready object types */
-    if (PyType_Ready(&WebPAnimEncoder_Type) < 0)
+    if (PyType_Ready(&WebPAnimDecoder_Type) < 0 ||
+        PyType_Ready(&WebPAnimEncoder_Type) < 0)
         return -1;
 #endif
     return 0;
