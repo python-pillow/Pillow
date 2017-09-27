@@ -368,7 +368,8 @@ PyObject* _anim_decoder_get_next(PyObject* self, PyObject* args)
         uint32_t pixel_count = size / 4;
         uint8_t* src = buf;
         uint8_t* dst = buf;
-        for (uint32_t idx = 0; idx < pixel_count; ++idx) {
+        uint32_t idx;
+        for (idx = 0; idx < pixel_count; ++idx) {
             dst[0] = src[0];
             dst[1] = src[1];
             dst[2] = src[2];
