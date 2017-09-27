@@ -108,9 +108,9 @@ class TestFileWebpMetadata(PillowTestCase):
         self.assertFalse(webp_image._getexif())
 
     def test_write_animated_metadata(self):
-        iccp_data = "<iccp_data>"
-        exif_data = "<exif_data>"
-        xmp_data = "<xmp_data>"
+        iccp_data = '<iccp_data>'.encode('utf-8')
+        exif_data = '<exif_data>'.encode('utf-8')
+        xmp_data = '<xmp_data>'.encode('utf-8')
 
         temp_file = self.tempfile("temp.webp")
         frame1 = Image.open('Tests/images/anim_frame1.webp')
