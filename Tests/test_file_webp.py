@@ -22,6 +22,10 @@ class TestFileWebp(PillowTestCase):
         _webp.WebPDecoderBuggyAlpha()
 
     def test_read_rgb(self):
+        """
+        Can we read a RGB mode webp file without error.
+        Does it have the bits we expect?
+        """
 
         file_path = "Tests/images/hopper.webp"
         image = Image.open(file_path)
@@ -46,9 +50,7 @@ class TestFileWebp(PillowTestCase):
         temp_file = self.tempfile("temp.webp")
 
         hopper("RGB").save(temp_file)
-
         image = Image.open(temp_file)
-        image.load()
 
         self.assertEqual(image.mode, "RGB")
         self.assertEqual(image.size, (128, 128))
@@ -70,19 +72,66 @@ class TestFileWebp(PillowTestCase):
         # the image. The old lena images for WebP are showing ~16 on
         # Ubuntu, the jpegs are showing ~18.
         target = hopper("RGB")
-        self.assert_image_similar(image, target, 12)
+        self.assert_image_similar(image, target, 12.0)
 
-    def test_write_unsupported_mode(self):
+    def test_write_unsupported_mode_L(self):
+        """
+        Saving a black-and-white file to webp format should work, and be
+        similar to the original file.
+        """
+
         temp_file = self.tempfile("temp.webp")
+        hopper("L").save(temp_file)
+        image = Image.open(temp_file)
 
-        im = hopper("L")
-        self.assertRaises(IOError, im.save, temp_file)
+        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.size, (128, 128))
+        self.assertEqual(image.format, "WEBP")
+
+        image.load()
+        image.getdata()
+        target = hopper("L").convert("RGB")
+
+        self.assert_image_similar(image, target, 10.0)
+
+    def test_write_unsupported_mode_P(self):
+        """
+        Saving a palette-based file to webp format should work, and be
+        similar to the original file.
+        """
+
+        temp_file = self.tempfile("temp.webp")
+        hopper("P").save(temp_file)
+        image = Image.open(temp_file)
+
+        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.size, (128, 128))
+        self.assertEqual(image.format, "WEBP")
+
+        image.load()
+        image.getdata()
+        target = hopper("P").convert("RGB")
+
+        self.assert_image_similar(image, target, 50.0)
 
     def test_WebPEncode_with_invalid_args(self):
+        """
+        Calling encoder functions with no arguments should result in an error.
+        """
+
+        if _webp.HAVE_WEBPMUX:
+            self.assertRaises(TypeError, _webp.WebPAnimEncoder)
         self.assertRaises(TypeError, _webp.WebPEncode)
 
     def test_WebPDecode_with_invalid_args(self):
+        """
+        Calling decoder functions with no arguments should result in an error.
+        """
+
+        if _webp.HAVE_WEBPMUX:
+            self.assertRaises(TypeError, _webp.WebPAnimDecoder)
         self.assertRaises(TypeError, _webp.WebPDecode)
+
 
 if __name__ == '__main__':
     unittest.main()

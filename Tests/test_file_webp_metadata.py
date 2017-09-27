@@ -107,6 +107,26 @@ class TestFileWebpMetadata(PillowTestCase):
 
         self.assertFalse(webp_image._getexif())
 
+    def test_write_animated_metadata(self):
+        iccp_data = "<iccp_data>"
+        exif_data = "<exif_data>"
+        xmp_data = "<xmp_data>"
+
+        temp_file = self.tempfile("temp.webp")
+        frame1 = Image.open('Tests/images/anim_frame1.webp')
+        frame2 = Image.open('Tests/images/anim_frame2.webp')
+        frame1.save(temp_file, save_all=True,
+                    append_images=[frame2, frame1, frame2],
+                    icc_profile=iccp_data, exif=exif_data, xmp=xmp_data)
+
+        image = Image.open(temp_file)
+        self.assertIn('icc_profile', image.info)
+        self.assertIn('exif', image.info)
+        self.assertIn('xmp', image.info)
+        self.assertEqual(iccp_data, image.info.get('icc_profile', None))
+        self.assertEqual(exif_data, image.info.get('exif', None))
+        self.assertEqual(xmp_data, image.info.get('xmp', None))
+
 
 if __name__ == '__main__':
     unittest.main()

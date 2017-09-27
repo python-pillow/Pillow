@@ -11,6 +11,20 @@
 #include <webp/demux.h>
 
 /* -------------------------------------------------------------------- */
+/* WebP Muxer Error Codes                                               */
+/* -------------------------------------------------------------------- */
+
+static const char* const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
+    "WEBP_MUX_NOT_FOUND", "WEBP_MUX_INVALID_ARGUMENT", "WEBP_MUX_BAD_DATA",
+    "WEBP_MUX_MEMORY_ERROR", "WEBP_MUX_NOT_ENOUGH_DATA"
+  };
+
+  static const char* ErrorString(WebPMuxError err) {
+    assert(err <= WEBP_MUX_NOT_FOUND && err >= WEBP_MUX_NOT_ENOUGH_DATA);
+    return kErrorMessages[-err];
+  }
+
+/* -------------------------------------------------------------------- */
 /* WebP Animation Support                                               */
 /* -------------------------------------------------------------------- */
 
@@ -29,6 +43,7 @@ typedef struct {
     WebPAnimDecoder* dec;
     WebPAnimInfo info;
     WebPData data;
+    char *mode;
 } WebPAnimDecoderObject;
 
 static PyTypeObject WebPAnimDecoder_Type;
@@ -80,6 +95,7 @@ PyObject* _anim_encoder_new(PyObject* self, PyObject* args)
                 encp->enc = enc;
                 return (PyObject*) encp;
             }
+            WebPPictureFree(&(encp->frame));
         }
         PyObject_Del(encp);
     }
@@ -162,11 +178,13 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
 {
     uint8_t *icc_bytes;
     uint8_t *exif_bytes;
+    uint8_t *xmp_bytes;
     Py_ssize_t icc_size;
-    Py_ssize_t  exif_size;
+    Py_ssize_t exif_size;
+    Py_ssize_t xmp_size;
 
-    if (!PyArg_ParseTuple(args, "s#s#",
-    &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
+    if (!PyArg_ParseTuple(args, "s#s#s#",
+    &icc_bytes, &icc_size, &exif_bytes, &exif_size, &xmp_bytes, &xmp_size)) {
         return NULL;
     }
 
@@ -182,9 +200,67 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
         Py_RETURN_NONE;
     }
 
-    // Convert to Python bytes and return
+    // Re-mux to add metadata as needed
+    WebPMux* mux = NULL;
+    if (icc_size > 0 || exif_size > 0 || xmp_size > 0) {
+        WebPMuxError err = WEBP_MUX_OK;
+        int i_icc_size = (int)icc_size;
+        int i_exif_size = (int)exif_size;
+        int i_xmp_size = (int)xmp_size;
+        WebPData icc_profile = { icc_bytes, i_icc_size };
+        WebPData exif = { exif_bytes, i_exif_size };
+        WebPData xmp = { xmp_bytes, i_xmp_size };
+
+        mux = WebPMuxCreate(&webp_data, 1);
+        if (mux == NULL) {
+            fprintf(stderr, "ERROR: Could not re-mux to add metadata.\n");
+            Py_RETURN_NONE;
+        }
+        WebPDataClear(&webp_data);
+
+        // Add ICCP chunk
+        if (i_icc_size > 0) {
+            err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, 1);
+            if (err != WEBP_MUX_OK) {
+                fprintf(stderr, "ERROR (%s): Could not set ICC chunk.\n", ErrorString(err));
+                Py_RETURN_NONE;
+            }
+        }
+
+        // Add EXIF chunk
+        if (i_exif_size > 0) {
+            err = WebPMuxSetChunk(mux, "EXIF", &exif, 1);
+            if (err != WEBP_MUX_OK) {
+                fprintf(stderr, "ERROR (%s): Could not set EXIF chunk.\n", ErrorString(err));
+                Py_RETURN_NONE;
+            }
+        }
+
+        // Add XMP chunk
+        if (i_xmp_size > 0) {
+            err = WebPMuxSetChunk(mux, "XMP ", &xmp, 1);
+            if (err != WEBP_MUX_OK) {
+                fprintf(stderr, "ERROR (%s): Could not set XMP chunk.\n", ErrorString(err));
+                Py_RETURN_NONE;
+            }
+        }
+
+        err = WebPMuxAssemble(mux, &webp_data);
+        if (err != WEBP_MUX_OK) {
+            fprintf(stderr, "ERROR (%s): Could not assemble when re-muxing to add metadata.\n", ErrorString(err));
+            Py_RETURN_NONE;
+        }
+    }
+
+    // Convert to Python bytes
     PyObject *ret = PyBytes_FromStringAndSize((char*)webp_data.bytes, webp_data.size);
     WebPDataClear(&webp_data);
+
+    // If we had to re-mux, we should free it now that we're done with it
+    if (mux != NULL) {
+        WebPMuxDelete(mux);
+    }
+
     return ret;
 }
 
@@ -201,10 +277,20 @@ PyObject* _anim_decoder_new(PyObject* self, PyObject* args)
     PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
     WebPData webp_src = {webp, size};
 
+    // Sniff the mode, since the decoder API doesn't tell us
+    WebPDecoderConfig config;
+    char* mode = "RGBA";
+    if (WebPGetFeatures(webp, size, &config.input) == VP8_STATUS_OK) {
+        if (!config.input.has_alpha) {
+            mode = "RGB";
+        }
+    }
+
     // Create the decoder (default mode is RGBA, if no options passed)
     WebPAnimDecoderObject* decp;
     decp = PyObject_New(WebPAnimDecoderObject, &WebPAnimDecoder_Type);
     if (decp) {
+        decp->mode = mode;
         if (WebPDataCopy(&webp_src, &(decp->data))) {
             WebPAnimDecoder* dec = WebPAnimDecoderNew(&(decp->data), NULL);
             if (dec) {
@@ -237,7 +323,7 @@ PyObject* _anim_decoder_get_info(PyObject* self, PyObject* args)
         info->loop_count,
         info->bgcolor,
         info->frame_count,
-        "RGBA" // WebPAnimDecoder defaults to RGBA if no mode is specified
+        decp->mode
     );
 }
 
@@ -275,8 +361,24 @@ PyObject* _anim_decoder_get_next(PyObject* self, PyObject* args)
         Py_RETURN_NONE;
     }
 
-    bytes = PyBytes_FromStringAndSize((char *)buf,
-        decp->info.canvas_width * 4 * decp->info.canvas_height);
+    // HACK: If original mode was RGB, we need to strip alpha before passing back, this
+    // is needed because internally WebPAnimDecoder doesn't suppor ta non-alpha mode
+    uint32_t size = decp->info.canvas_width * 4 * decp->info.canvas_height;
+    if (strcmp(decp->mode, "RGB")==0 && buf != NULL) {
+        uint32_t pixel_count = size / 4;
+        uint8_t* src = buf;
+        uint8_t* dst = buf;
+        for (uint32_t idx = 0; idx < pixel_count; ++idx) {
+            dst[0] = src[0];
+            dst[1] = src[1];
+            dst[2] = src[2];
+            dst += 3;
+            src += 4;
+        }
+        size = pixel_count * 3;
+    }
+
+    bytes = PyBytes_FromStringAndSize((char *)buf, size);
     return Py_BuildValue("Si", bytes, timestamp);
 }
 
@@ -386,7 +488,6 @@ static PyTypeObject WebPAnimDecoder_Type = {
 
 #endif
 
-#ifdef HAVE_WEBPMUX
 /* -------------------------------------------------------------------- */
 /* Legacy WebP Support                                                  */
 /* -------------------------------------------------------------------- */
@@ -400,16 +501,18 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     uint8_t *rgb;
     uint8_t *icc_bytes;
     uint8_t *exif_bytes;
+    uint8_t *xmp_bytes;
     uint8_t *output;
     char *mode;
     Py_ssize_t size;
     Py_ssize_t icc_size;
-    Py_ssize_t  exif_size;
+    Py_ssize_t exif_size;
+    Py_ssize_t xmp_size;
     size_t ret_size;
 
-    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH"iiifss#s#",
+    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH"iiifss#s#s#",
                 (char**)&rgb, &size, &width, &height, &lossless, &quality_factor, &mode,
-                &icc_bytes, &icc_size, &exif_bytes, &exif_size)) {
+                &icc_bytes, &icc_size, &exif_bytes, &exif_size, &xmp_bytes, &xmp_size)) {
         return NULL;
     }
     if (strcmp(mode, "RGBA")==0){
@@ -454,10 +557,12 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     */
     int i_icc_size = (int)icc_size;
     int i_exif_size = (int)exif_size;
+    int i_xmp_size = (int)xmp_size;
     WebPData output_data = {0};
     WebPData image = { output, ret_size };
     WebPData icc_profile = { icc_bytes, i_icc_size };
     WebPData exif = { exif_bytes, i_exif_size };
+    WebPData xmp = { xmp_bytes, i_xmp_size };
     WebPMuxError err;
     int dbg = 0;
 
@@ -499,6 +604,21 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         }
     }
 
+    if (dbg) {
+        fprintf(stderr, "xmp size %d \n", i_xmp_size);
+    }
+    if (i_xmp_size > 0) {
+        if (dbg){
+            fprintf (stderr, "Adding XMP Data\n");
+        }
+        err = WebPMuxSetChunk(mux, "XMP ", &xmp, copy_data);
+        if (dbg && err == WEBP_MUX_INVALID_ARGUMENT) {
+            fprintf(stderr, "Invalid XMP Argument\n");
+        } else if (dbg && err == WEBP_MUX_MEMORY_ERROR) {
+            fprintf(stderr, "XMP Memory Error\n");
+        }
+    }
+
     WebPMuxAssemble(mux, &output_data);
     WebPMuxDelete(mux);
     free(output);
@@ -520,7 +640,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
     PyBytesObject *webp_string;
     const uint8_t *webp;
     Py_ssize_t size;
-    PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL, *icc_profile = NULL, *exif = NULL;
+    PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL;
     WebPDecoderConfig config;
     VP8StatusCode vp8_status_code = VP8_STATUS_OK;
     char* mode = "RGB";
@@ -544,41 +664,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
             mode = "RGBA";
         }
 
-#ifndef HAVE_WEBPMUX
         vp8_status_code = WebPDecode(webp, size, &config);
-#else
-       {
-        int copy_data = 0;
-        WebPData data = { webp, size };
-        WebPMuxFrameInfo image;
-        WebPData icc_profile_data = {0};
-        WebPData exif_data = {0};
-
-        WebPMux* mux = WebPMuxCreate(&data, copy_data);
-        if (NULL == mux)
-            goto end;
-
-        if (WEBP_MUX_OK != WebPMuxGetFrame(mux, 1, &image))
-        {
-            WebPMuxDelete(mux);
-            goto end;
-        }
-
-        webp = image.bitstream.bytes;
-        size = image.bitstream.size;
-
-        vp8_status_code = WebPDecode(webp, size, &config);
-
-        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "ICCP", &icc_profile_data))
-            icc_profile = PyBytes_FromStringAndSize((const char*)icc_profile_data.bytes, icc_profile_data.size);
-
-        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "EXIF", &exif_data))
-            exif = PyBytes_FromStringAndSize((const char*)exif_data.bytes, exif_data.size);
-
-        WebPDataClear(&image.bitstream);
-        WebPMuxDelete(mux);
-        }
-#endif
     }
 
     if (vp8_status_code != VP8_STATUS_OK)
@@ -599,26 +685,20 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 #else
     pymode = PyString_FromString(mode);
 #endif
-    ret = Py_BuildValue("SiiSSS", bytes, config.output.width,
-                        config.output.height, pymode,
-                        NULL == icc_profile ? Py_None : icc_profile,
-                        NULL == exif ? Py_None : exif);
+    ret = Py_BuildValue("SiiS", bytes, config.output.width,
+                        config.output.height, pymode);
 
 end:
     WebPFreeDecBuffer(&config.output);
 
     Py_XDECREF(bytes);
     Py_XDECREF(pymode);
-    Py_XDECREF(icc_profile);
-    Py_XDECREF(exif);
 
     if (Py_None == ret)
         Py_RETURN_NONE;
 
     return ret;
 }
-
-#endif
 
 // Return the decoder's version number, packed in hexadecimal using 8bits for
 // each of major/minor/revision. E.g: v2.5.7 is 0x020507.
@@ -647,10 +727,9 @@ static PyMethodDef webpMethods[] =
 #ifdef HAVE_WEBPMUX
     {"WebPAnimDecoder", _anim_decoder_new, METH_VARARGS, "WebPAnimDecoder"},
     {"WebPAnimEncoder", _anim_encoder_new, METH_VARARGS, "WebPAnimEncoder"},
-#else
+#endif
     {"WebPEncode", WebPEncode_wrapper, METH_VARARGS, "WebPEncode"},
     {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
-#endif
     {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_VARARGS, "WebPVersion"},
     {"WebPDecoderBuggyAlpha", WebPDecoderBuggyAlpha_wrapper, METH_VARARGS, "WebPDecoderBuggyAlpha"},
     {NULL, NULL}

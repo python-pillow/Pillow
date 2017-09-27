@@ -86,6 +86,9 @@ class WebPImageFile(ImageFile.ImageFile):
         return self._n_frames > 1
 
     def seek(self, frame):
+        if not _webp.HAVE_WEBPMUX:
+            return super(WebPImageFile, self).seek(frame)
+
         # Perform some simple checks first
         if frame >= self._n_frames:
             raise EOFError("attempted to seek beyond end of sequence")
@@ -133,31 +136,41 @@ class WebPImageFile(ImageFile.ImageFile):
             self._get_next()
 
     def load(self):
-        if self.__loaded != self.__logical_frame:
-            self._seek(self.__logical_frame)
+        if _webp.HAVE_WEBPMUX:
+            if self.__loaded != self.__logical_frame:
+                self._seek(self.__logical_frame)
 
-            # We need to load the image data for this frame
-            data, timestamp, duration = self._get_next()
-            self.info["timestamp"] = timestamp
-            self.info["duration"] = duration
-            self.__loaded = self.__logical_frame
+                # We need to load the image data for this frame
+                data, timestamp, duration = self._get_next()
+                self.info["timestamp"] = timestamp
+                self.info["duration"] = duration
+                self.__loaded = self.__logical_frame
 
-            # Set tile
-            self.fp = BytesIO(data)
-            self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
+                # Set tile
+                self.fp = BytesIO(data)
+                self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
 
         return super(WebPImageFile, self).load()
 
     def tell(self):
+        if not _webp.HAVE_WEBPMUX:
+            return super(WebPImageFile, self).tell()
+
         return self.__logical_frame
 
 def _save_all(im, fp, filename):
-    if not _webp.HAVE_WEBPMUX:
+    encoderinfo = im.encoderinfo.copy()
+    append_images = encoderinfo.get("append_images", [])
+
+    # If total frame count is 1, then save using the legacy API, which
+    # will preserve non-alpha modes
+    total = 0
+    for ims in [im]+append_images:
+        total += 1 if not hasattr(ims, "n_frames") else ims.n_frames
+    if total == 1:
         _save(im, fp, filename)
         return
 
-    encoderinfo = im.encoderinfo.copy()
-    append_images = encoderinfo.get("append_images", [])
     background = encoderinfo.get("background", (0, 0, 0, 0))
     duration = im.encoderinfo.get("duration", 0)
     loop = im.encoderinfo.get("loop", 0)
@@ -171,6 +184,7 @@ def _save_all(im, fp, filename):
     method = im.encoderinfo.get("method", 0)
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
+    xmp = im.encoderinfo.get("xmp", "")
     if allow_mixed:
         lossless = False
 
@@ -217,8 +231,8 @@ def _save_all(im, fp, filename):
                 # Make sure image mode is supported
                 frame = ims
                 if not ims.mode in _VALID_WEBP_MODES:
-                    alpha = 'A' in ims.im.getpalettemode()
-                    frame = image.convert('RGBA' if alpha else 'RGB')
+                    alpha = ims.mode == 'P' and 'A' in ims.im.getpalettemode()
+                    frame = ims.convert('RGBA' if alpha else 'RGB')
 
                 # Append the frame to the animation encoder
                 enc.add(
@@ -246,26 +260,22 @@ def _save_all(im, fp, filename):
     )
 
     # Get the final output from the encoder
-    data = enc.assemble(icc_profile, exif)
+    data = enc.assemble(icc_profile, exif, xmp)
     if data is None:
         raise IOError("cannot write file as WEBP (encoder returned None)")
 
     fp.write(data)
 
 def _save(im, fp, filename):
-    if _webp.HAVE_WEBPMUX:
-        _save_all(im, fp, filename)
-        return
-
-    image_mode = im.mode
-    if im.mode not in _VALID_WEBP_MODES:
-        alpha = 'A' in im.im.getpalettemode()
-        im = im.convert('RGBA' if alpha else 'RGB')
-
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
+    xmp = im.encoderinfo.get("xmp", "")
+
+    if im.mode not in _VALID_WEBP_MODES:
+        alpha = im.mode == 'P' and 'A' in im.im.getpalettemode()
+        im = im.convert('RGBA' if alpha else 'RGB')
 
     data = _webp.WebPEncode(
         im.tobytes(),
@@ -275,7 +285,8 @@ def _save(im, fp, filename):
         float(quality),
         im.mode,
         icc_profile,
-        exif
+        exif,
+        xmp
     )
     if data is None:
         raise IOError("cannot write file as WEBP (encoder returned None)")
@@ -285,6 +296,7 @@ def _save(im, fp, filename):
 
 Image.register_open(WebPImageFile.format, WebPImageFile, _accept)
 Image.register_save(WebPImageFile.format, _save)
-Image.register_save_all(WebPImageFile.format, _save_all)
+if _webp.HAVE_WEBPMUX:
+    Image.register_save_all(WebPImageFile.format, _save_all)
 Image.register_extension(WebPImageFile.format, ".webp")
 Image.register_mime(WebPImageFile.format, "image/webp")
