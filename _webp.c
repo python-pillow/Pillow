@@ -19,13 +19,14 @@
 #if WEBP_MUX_ABI_VERSION >= 0x0104 && WEBP_DEMUX_ABI_VERSION >= 0x0105
 #define HAVE_WEBPANIM
 #endif
-#endif
 
-#ifdef HAVE_WEBPANIM
+#endif
 
 /* -------------------------------------------------------------------- */
 /* WebP Muxer Error Handling                                            */
 /* -------------------------------------------------------------------- */
+
+#ifdef HAVE_WEBPMUX
 
 static const char* const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
     "WEBP_MUX_NOT_FOUND", "WEBP_MUX_INVALID_ARGUMENT", "WEBP_MUX_BAD_DATA",
@@ -67,9 +68,13 @@ PyObject* HandleMuxError(WebPMuxError err, char* chunk) {
     return NULL;
 }
 
+#endif
+
 /* -------------------------------------------------------------------- */
 /* WebP Animation Support                                               */
 /* -------------------------------------------------------------------- */
+
+#ifdef HAVE_WEBPANIM
 
 // Encoder type
 typedef struct {
