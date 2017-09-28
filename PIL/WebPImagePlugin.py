@@ -33,7 +33,7 @@ class WebPImageFile(ImageFile.ImageFile):
     format_description = "WebP image"
 
     def _open(self):
-        if not _webp.HAVE_WEBPMUX:
+        if not _webp.HAVE_WEBPANIM:
             # Legacy mode
             data, width, height, self.mode = _webp.WebPDecode(self.fp.read())
             self.size = width, height
@@ -80,18 +80,18 @@ class WebPImageFile(ImageFile.ImageFile):
 
     @property
     def n_frames(self):
-        if not _webp.HAVE_WEBPMUX:
+        if not _webp.HAVE_WEBPANIM:
             return 1
         return self._n_frames
 
     @property
     def is_animated(self):
-        if not _webp.HAVE_WEBPMUX:
+        if not _webp.HAVE_WEBPANIM:
             return False
         return self._n_frames > 1
 
     def seek(self, frame):
-        if not _webp.HAVE_WEBPMUX:
+        if not _webp.HAVE_WEBPANIM:
             return super(WebPImageFile, self).seek(frame)
 
         # Perform some simple checks first
@@ -141,7 +141,7 @@ class WebPImageFile(ImageFile.ImageFile):
             self._get_next()
 
     def load(self):
-        if _webp.HAVE_WEBPMUX:
+        if _webp.HAVE_WEBPANIM:
             if self.__loaded != self.__logical_frame:
                 self._seek(self.__logical_frame)
 
@@ -158,7 +158,7 @@ class WebPImageFile(ImageFile.ImageFile):
         return super(WebPImageFile, self).load()
 
     def tell(self):
-        if not _webp.HAVE_WEBPMUX:
+        if not _webp.HAVE_WEBPANIM:
             return super(WebPImageFile, self).tell()
 
         return self.__logical_frame
@@ -301,7 +301,7 @@ def _save(im, fp, filename):
 
 Image.register_open(WebPImageFile.format, WebPImageFile, _accept)
 Image.register_save(WebPImageFile.format, _save)
-if _webp.HAVE_WEBPMUX:
+if _webp.HAVE_WEBPANIM:
     Image.register_save_all(WebPImageFile.format, _save_all)
 Image.register_extension(WebPImageFile.format, ".webp")
 Image.register_mime(WebPImageFile.format, "image/webp")

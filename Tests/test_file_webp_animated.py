@@ -17,8 +17,8 @@ class TestFileWebpAnimation(PillowTestCase):
         except ImportError:
             self.skipTest('WebP support not installed')
 
-        if not _webp.HAVE_WEBPMUX:
-            self.skipTest("WebP not compiled with mux support, "
+        if not _webp.HAVE_WEBPANIM:
+            self.skipTest("WebP library does not contain animation support, "
                           "not testing animation")
 
     def test_n_frames(self):

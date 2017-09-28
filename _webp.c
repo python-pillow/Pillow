@@ -10,6 +10,19 @@
 #include <webp/mux.h>
 #include <webp/demux.h>
 
+/*
+ * Check the versions from mux.h and demux.h, to ensure the WebPAnimEncoder and
+ * WebPAnimDecoder API's are present (initial support was added in 0.5.0). The
+ * very early versions added had some significant differences, so we require
+ * later versions, before enabling animation support.
+ */
+#if WEBP_MUX_ABI_VERSION >= 0x0104 && WEBP_DEMUX_ABI_VERSION >= 0x0105
+#define HAVE_WEBPANIM
+#endif
+#endif
+
+#ifdef HAVE_WEBPANIM
+
 /* -------------------------------------------------------------------- */
 /* WebP Muxer Error Codes                                               */
 /* -------------------------------------------------------------------- */
@@ -624,13 +637,12 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
-
 PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 {
     PyBytesObject* webp_string;
     const uint8_t* webp;
     Py_ssize_t size;
-    PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL;
+    PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL, *icc_profile = NULL, *exif = NULL;
     WebPDecoderConfig config;
     VP8StatusCode vp8_status_code = VP8_STATUS_OK;
     char* mode = "RGB";
@@ -654,7 +666,41 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
             mode = "RGBA";
         }
 
+#ifndef HAVE_WEBPMUX
         vp8_status_code = WebPDecode(webp, size, &config);
+#else
+       {
+        int copy_data = 0;
+        WebPData data = { webp, size };
+        WebPMuxFrameInfo image;
+        WebPData icc_profile_data = {0};
+        WebPData exif_data = {0};
+
+        WebPMux* mux = WebPMuxCreate(&data, copy_data);
+        if (NULL == mux)
+            goto end;
+
+        if (WEBP_MUX_OK != WebPMuxGetFrame(mux, 1, &image))
+        {
+            WebPMuxDelete(mux);
+            goto end;
+        }
+
+        webp = image.bitstream.bytes;
+        size = image.bitstream.size;
+
+        vp8_status_code = WebPDecode(webp, size, &config);
+
+        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "ICCP", &icc_profile_data))
+            icc_profile = PyBytes_FromStringAndSize((const char*)icc_profile_data.bytes, icc_profile_data.size);
+
+        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "EXIF", &exif_data))
+            exif = PyBytes_FromStringAndSize((const char*)exif_data.bytes, exif_data.size);
+
+        WebPDataClear(&image.bitstream);
+        WebPMuxDelete(mux);
+        }
+#endif
     }
 
     if (vp8_status_code != VP8_STATUS_OK)
@@ -675,14 +721,18 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 #else
     pymode = PyString_FromString(mode);
 #endif
-    ret = Py_BuildValue("SiiS", bytes, config.output.width,
-                        config.output.height, pymode);
+    ret = Py_BuildValue("SiiSSS", bytes, config.output.width,
+                        config.output.height, pymode,
+                        NULL == icc_profile ? Py_None : icc_profile,
+                        NULL == exif ? Py_None : exif);
 
 end:
     WebPFreeDecBuffer(&config.output);
 
     Py_XDECREF(bytes);
     Py_XDECREF(pymode);
+    Py_XDECREF(icc_profile);
+    Py_XDECREF(exif);
 
     if (Py_None == ret)
         Py_RETURN_NONE;
@@ -714,7 +764,7 @@ PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
 
 static PyMethodDef webpMethods[] =
 {
-#ifdef HAVE_WEBPMUX
+#ifdef HAVE_WEBPANIM
     {"WebPAnimDecoder", _anim_decoder_new, METH_VARARGS, "WebPAnimDecoder"},
     {"WebPAnimEncoder", _anim_encoder_new, METH_VARARGS, "WebPAnimEncoder"},
 #endif
@@ -733,6 +783,14 @@ void addMuxFlagToModule(PyObject* m) {
 #endif
 }
 
+void addAnimFlagToModule(PyObject* m) {
+#ifdef HAVE_WEBPANIM
+    PyModule_AddObject(m, "HAVE_WEBPANIM", Py_True);
+#else
+    PyModule_AddObject(m, "HAVE_WEBPANIM", Py_False);
+#endif
+}
+
 void addTransparencyFlagToModule(PyObject* m) {
     PyModule_AddObject(m, "HAVE_TRANSPARENCY",
 		       PyBool_FromLong(!WebPDecoderBuggyAlpha()));
@@ -740,9 +798,10 @@ void addTransparencyFlagToModule(PyObject* m) {
 
 static int setup_module(PyObject* m) {
     addMuxFlagToModule(m);
+    addAnimFlagToModule(m);
     addTransparencyFlagToModule(m);
 
-#ifdef HAVE_WEBPMUX
+#ifdef HAVE_WEBPANIM
     /* Ready object types */
     if (PyType_Ready(&WebPAnimDecoder_Type) < 0 ||
         PyType_Ready(&WebPAnimEncoder_Type) < 0)

@@ -683,8 +683,8 @@ Saving sequences
 .. note::
 
     Support for animated WebP files will only be enabled if the system webp
-    library was built with webpmux support. You can check webpmux support
-    at runtime by inspecting the `_webp.HAVE_WEBPMUX` module flag.
+    library is v0.5.0 or later. You can check webp animation support at
+    runtime by inspecting the `_webp.HAVE_WEBPANIM` module flag.
 
 When calling :py:meth:`~PIL.Image.Image.save`, the following options
 are available when the save_all argument is present and true.
