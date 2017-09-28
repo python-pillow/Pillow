@@ -32,7 +32,7 @@ static const char* const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
     "WEBP_MUX_MEMORY_ERROR", "WEBP_MUX_NOT_ENOUGH_DATA"
 };
 
-static PyObject* HandleMuxError(WebPMuxError err, char* chunk) {
+PyObject* HandleMuxError(WebPMuxError err, char* chunk) {
     assert(err <= WEBP_MUX_NOT_FOUND && err >= WEBP_MUX_NOT_ENOUGH_DATA);
 
     // Check for a memory error first
