@@ -35,7 +35,12 @@ class WebPImageFile(ImageFile.ImageFile):
     def _open(self):
         if not _webp.HAVE_WEBPANIM:
             # Legacy mode
-            data, width, height, self.mode = _webp.WebPDecode(self.fp.read())
+            data, width, height, self.mode, icc_profile, exif = \
+                _webp.WebPDecode(self.fp.read())
+            if icc_profile:
+                self.info["icc_profile"] = icc_profile
+            if exif:
+                self.info["exif"] = exif
             self.size = width, height
             self.fp = BytesIO(data)
             self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]

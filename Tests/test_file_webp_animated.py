@@ -4,18 +4,16 @@ from PIL import Image
 
 try:
     from PIL import _webp
+    HAVE_WEBP = True
 except ImportError:
-    pass
-    # Skip in setUp()
-
+    HAVE_WEBP = False
 
 class TestFileWebpAnimation(PillowTestCase):
 
     def setUp(self):
-        try:
-            from PIL import _webp
-        except ImportError:
+        if not HAVE_WEBP:
             self.skipTest('WebP support not installed')
+            return
 
         if not _webp.HAVE_WEBPANIM:
             self.skipTest("WebP library does not contain animation support, "

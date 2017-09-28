@@ -4,37 +4,38 @@ from PIL import Image
 
 try:
     from PIL import _webp
+    HAVE_WEBP = True
 except ImportError:
-    pass
-    # Skip in setUp()
-
+    HAVE_WEBP = False
 
 class TestFileWebpLossless(PillowTestCase):
 
     def setUp(self):
-        try:
-            from PIL import _webp
-        except:
+        if not HAVE_WEBP:
             self.skipTest('WebP support not installed')
+            return
 
         if (_webp.WebPDecoderVersion() < 0x0200):
             self.skipTest('lossless not included')
 
+        # WebPAnimDecoder only retuns RGBA or RGBX, never RGB
+        self.rgb_mode = "RGBX" if _webp.HAVE_WEBPANIM else "RGB"
+
     def test_write_lossless_rgb(self):
         temp_file = self.tempfile("temp.webp")
 
-        hopper("RGBX").save(temp_file, lossless=True)
+        hopper(self.rgb_mode).save(temp_file, lossless=True)
 
         image = Image.open(temp_file)
         image.load()
 
-        self.assertEqual(image.mode, "RGBX")
+        self.assertEqual(image.mode, self.rgb_mode)
         self.assertEqual(image.size, (128, 128))
         self.assertEqual(image.format, "WEBP")
         image.load()
         image.getdata()
 
-        self.assert_image_equal(image, hopper("RGBX"))
+        self.assert_image_equal(image, hopper(self.rgb_mode))
 
 
 if __name__ == '__main__':
