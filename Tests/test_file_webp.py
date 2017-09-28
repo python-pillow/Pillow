@@ -120,7 +120,7 @@ class TestFileWebp(PillowTestCase):
         Calling encoder functions with no arguments should result in an error.
         """
 
-        if _webp.HAVE_WEBPMUX:
+        if _webp.HAVE_WEBPANIM:
             self.assertRaises(TypeError, _webp.WebPAnimEncoder)
         self.assertRaises(TypeError, _webp.WebPEncode)
 
@@ -129,7 +129,7 @@ class TestFileWebp(PillowTestCase):
         Calling decoder functions with no arguments should result in an error.
         """
 
-        if _webp.HAVE_WEBPMUX:
+        if _webp.HAVE_WEBPANIM:
             self.assertRaises(TypeError, _webp.WebPAnimDecoder)
         self.assertRaises(TypeError, _webp.WebPDecode)
 
