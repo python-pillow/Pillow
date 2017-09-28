@@ -205,7 +205,7 @@ PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
     if (strcmp(mode, "RGBA")==0) {
         WebPPictureImportRGBA(frame, rgb, 4 * width);
     } else if (strcmp(mode, "RGBX")==0) {
-        WebPPictureImportRGBX(frame, rgb, 3 * width);
+        WebPPictureImportRGBX(frame, rgb, 4 * width);
     }
 
     // Add the frame to the encoder

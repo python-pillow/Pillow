@@ -33,7 +33,7 @@ class TestFileWebpAnimation(PillowTestCase):
         self.assertEqual(im.n_frames, 42)
         self.assertTrue(im.is_animated)
 
-    def test_write_animation(self):
+    def test_write_animation_L(self):
         """
         Convert an animated GIF to animated WebP, then compare the
         frame count, and first and last frames to ensure they're
@@ -57,6 +57,33 @@ class TestFileWebpAnimation(PillowTestCase):
         orig.load()
         im.load()
         self.assert_image_similar(im, orig.convert("RGBA"), 25.0)
+
+    def test_write_animation_RGB(self):
+        """
+        Write an animated WebP from RGB frames, and ensure the frames
+        are visually similar to the originals.
+        """
+
+        temp_file = self.tempfile("temp.webp")
+        temp_file2 = self.tempfile("temp.png")
+        frame1 = Image.open('Tests/images/anim_frame1.webp')
+        frame2 = Image.open('Tests/images/anim_frame2.webp')
+        frame1.save(temp_file, save_all=True, append_images=[frame2], lossless=True)
+
+        im = Image.open(temp_file)
+        self.assertEqual(im.n_frames, 2)
+        print("Test File: " + temp_file)
+
+        # Compare first frame to original
+        im.load()
+        im.save(temp_file2)
+        print("Frame 1: " + temp_file2)
+        self.assert_image_equal(im, frame1.convert("RGBA"))
+
+        # Compare second frame to original
+        im.seek(1)
+        im.load()
+        self.assert_image_equal(im, frame2.convert("RGBA"))
 
     def test_timestamp_and_duration(self):
         """
