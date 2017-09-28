@@ -5,10 +5,8 @@ from PIL import Image
 try:
     from PIL import _webp
     HAVE_WEBP = True
-    HAVE_WEBPANIM = True
 except ImportError:
     HAVE_WEBP = False
-    HAVE_WEBPANIM = False
 
 class TestFileWebpMetadata(PillowTestCase):
 
@@ -112,8 +110,10 @@ class TestFileWebpMetadata(PillowTestCase):
 
         self.assertFalse(webp_image._getexif())
 
-    @unittest.skipUnless(HAVE_WEBPANIM, 'WebP animation support not available')
     def test_write_animated_metadata(self):
+        if not _webp.HAVE_WEBPANIM:
+            self.skipTest('WebP animation support not available')
+
         iccp_data = '<iccp_data>'.encode('utf-8')
         exif_data = '<exif_data>'.encode('utf-8')
         xmp_data = '<xmp_data>'.encode('utf-8')
