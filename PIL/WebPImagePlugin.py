@@ -3,6 +3,11 @@ from io import BytesIO
 
 
 _VALID_WEBP_MODES = {
+    "RGBX": True,
+    "RGBA": True,
+    }
+
+_VALID_WEBP_LEGACY_MODES = {
     "RGB": True,
     "RGBA": True,
     }
@@ -232,7 +237,7 @@ def _save_all(im, fp, filename):
                 frame = ims
                 if not ims.mode in _VALID_WEBP_MODES:
                     alpha = ims.mode == 'P' and 'A' in ims.im.getpalettemode()
-                    frame = ims.convert('RGBA' if alpha else 'RGB')
+                    frame = ims.convert('RGBA' if alpha else 'RGBX')
 
                 # Append the frame to the animation encoder
                 enc.add(
@@ -273,7 +278,7 @@ def _save(im, fp, filename):
     exif = im.encoderinfo.get("exif", "")
     xmp = im.encoderinfo.get("xmp", "")
 
-    if im.mode not in _VALID_WEBP_MODES:
+    if im.mode not in _VALID_WEBP_LEGACY_MODES:
         alpha = im.mode == 'P' and 'A' in im.im.getpalettemode()
         im = im.convert('RGBA' if alpha else 'RGB')
 

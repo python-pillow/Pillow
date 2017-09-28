@@ -23,18 +23,18 @@ class TestFileWebpLossless(PillowTestCase):
     def test_write_lossless_rgb(self):
         temp_file = self.tempfile("temp.webp")
 
-        hopper("RGB").save(temp_file, lossless=True)
+        hopper("RGBX").save(temp_file, lossless=True)
 
         image = Image.open(temp_file)
         image.load()
 
-        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.mode, "RGBX")
         self.assertEqual(image.size, (128, 128))
         self.assertEqual(image.format, "WEBP")
         image.load()
         image.getdata()
 
-        self.assert_image_equal(image, hopper("RGB"))
+        self.assert_image_equal(image, hopper("RGBX"))
 
 
 if __name__ == '__main__':

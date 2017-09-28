@@ -30,7 +30,7 @@ class TestFileWebp(PillowTestCase):
         file_path = "Tests/images/hopper.webp"
         image = Image.open(file_path)
 
-        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.mode, "RGBX")
         self.assertEqual(image.size, (128, 128))
         self.assertEqual(image.format, "WEBP")
         image.load()
@@ -38,7 +38,7 @@ class TestFileWebp(PillowTestCase):
 
         # generated with:
         # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
-        target = Image.open('Tests/images/hopper_webp_bits.ppm')
+        target = Image.open('Tests/images/hopper_webp_bits.ppm').convert("RGBX")
         self.assert_image_similar(image, target, 20.0)
 
     def test_write_rgb(self):
@@ -49,10 +49,10 @@ class TestFileWebp(PillowTestCase):
 
         temp_file = self.tempfile("temp.webp")
 
-        hopper("RGB").save(temp_file)
+        hopper("RGBX").save(temp_file)
         image = Image.open(temp_file)
 
-        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.mode, "RGBX")
         self.assertEqual(image.size, (128, 128))
         self.assertEqual(image.format, "WEBP")
         image.load()
@@ -71,7 +71,7 @@ class TestFileWebp(PillowTestCase):
         # then we're going to accept that it's a reasonable lossy version of
         # the image. The old lena images for WebP are showing ~16 on
         # Ubuntu, the jpegs are showing ~18.
-        target = hopper("RGB")
+        target = hopper("RGBX")
         self.assert_image_similar(image, target, 12.0)
 
     def test_write_unsupported_mode_L(self):
@@ -84,13 +84,13 @@ class TestFileWebp(PillowTestCase):
         hopper("L").save(temp_file)
         image = Image.open(temp_file)
 
-        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.mode, "RGBX")
         self.assertEqual(image.size, (128, 128))
         self.assertEqual(image.format, "WEBP")
 
         image.load()
         image.getdata()
-        target = hopper("L").convert("RGB")
+        target = hopper("L").convert("RGBX")
 
         self.assert_image_similar(image, target, 10.0)
 
@@ -104,13 +104,13 @@ class TestFileWebp(PillowTestCase):
         hopper("P").save(temp_file)
         image = Image.open(temp_file)
 
-        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.mode, "RGBX")
         self.assertEqual(image.size, (128, 128))
         self.assertEqual(image.format, "WEBP")
 
         image.load()
         image.getdata()
-        target = hopper("P").convert("RGB")
+        target = hopper("P").convert("RGBX")
 
         self.assert_image_similar(image, target, 50.0)
 

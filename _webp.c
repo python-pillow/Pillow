@@ -43,7 +43,7 @@ typedef struct {
     WebPAnimDecoder* dec;
     WebPAnimInfo info;
     WebPData data;
-    char *mode;
+    char* mode;
 } WebPAnimDecoderObject;
 
 static PyTypeObject WebPAnimDecoder_Type;
@@ -58,6 +58,9 @@ PyObject* _anim_encoder_new(PyObject* self, PyObject* args)
     int kmin, kmax;
     int allow_mixed;
     int verbose;
+    WebPAnimEncoderOptions enc_options;
+    WebPAnimEncoderObject* encp = NULL;
+    WebPAnimEncoder* enc = NULL;
 
     if (!PyArg_ParseTuple(args, "iiIiiiiii",
         &width, &height, &bgcolor, &loop_count, &minimize_size,
@@ -66,7 +69,6 @@ PyObject* _anim_encoder_new(PyObject* self, PyObject* args)
     }
 
     // Setup and configure the encoder's options (these are animation-specific)
-    WebPAnimEncoderOptions enc_options;
     if (!WebPAnimEncoderOptionsInit(&enc_options)) {
         fprintf(stderr, "Error! Failed to initialize encoder options\n");
         Py_RETURN_NONE;
@@ -86,11 +88,10 @@ PyObject* _anim_encoder_new(PyObject* self, PyObject* args)
     }
 
     // Create a new animation encoder and picture frame
-    WebPAnimEncoderObject* encp;
     encp = PyObject_New(WebPAnimEncoderObject, &WebPAnimEncoder_Type);
     if (encp) {
         if (WebPPictureInit(&(encp->frame))) {
-            WebPAnimEncoder* enc = WebPAnimEncoderNew(width, height, &enc_options);
+            enc = WebPAnimEncoderNew(width, height, &enc_options);
             if (enc) {
                 encp->enc = enc;
                 return (PyObject*) encp;
@@ -105,7 +106,7 @@ PyObject* _anim_encoder_new(PyObject* self, PyObject* args)
 
 PyObject* _anim_encoder_dealloc(PyObject* self)
 {
-    WebPAnimEncoderObject* encp = (WebPAnimEncoderObject *)self;
+    WebPAnimEncoderObject* encp = (WebPAnimEncoderObject*)self;
     WebPPictureFree(&(encp->frame));
     WebPAnimEncoderDelete(encp->enc);
     Py_RETURN_NONE;
@@ -113,25 +114,24 @@ PyObject* _anim_encoder_dealloc(PyObject* self)
 
 PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
 {
-    uint8_t *rgb;
+    uint8_t* rgb;
     Py_ssize_t size;
     int timestamp;
     int width;
     int height;
-    char *mode;
+    char* mode;
     int lossless;
     float quality_factor;
     int method;
+    WebPAnimEncoderObject* encp = (WebPAnimEncoderObject*)self;
+    WebPAnimEncoder* enc = encp->enc;
+    WebPPicture* frame = &(encp->frame);
 
     if (!PyArg_ParseTuple(args, "z#iiisifi",
         (char**)&rgb, &size, &timestamp, &width, &height, &mode,
         &lossless, &quality_factor, &method)) {
         return NULL;
     }
-
-    WebPAnimEncoderObject* encp = (WebPAnimEncoderObject *)self;
-    WebPAnimEncoder* enc = encp->enc;
-    WebPPicture* frame = &(encp->frame);
 
     // Check for NULL frame, which sets duration of final frame
     if (!rgb) {
@@ -161,8 +161,8 @@ PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
     frame->use_argb = 1; // Don't convert RGB pixels to YUV
     if (strcmp(mode, "RGBA")==0) {
         WebPPictureImportRGBA(frame, rgb, 4 * width);
-    } else if (strcmp(mode, "RGB")==0) {
-        WebPPictureImportRGB(frame, rgb, 3 * width);
+    } else if (strcmp(mode, "RGBX")==0) {
+        WebPPictureImportRGBX(frame, rgb, 3 * width);
     }
 
     // Add the frame to the encoder
@@ -176,12 +176,16 @@ PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
 
 PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
 {
-    uint8_t *icc_bytes;
-    uint8_t *exif_bytes;
-    uint8_t *xmp_bytes;
+    uint8_t* icc_bytes;
+    uint8_t* exif_bytes;
+    uint8_t* xmp_bytes;
     Py_ssize_t icc_size;
     Py_ssize_t exif_size;
     Py_ssize_t xmp_size;
+    WebPAnimEncoderObject* encp = (WebPAnimEncoderObject*)self;
+    WebPAnimEncoder* enc = encp->enc;
+    WebPMux* mux = NULL;
+    PyObject* ret = NULL;
 
     if (!PyArg_ParseTuple(args, "s#s#s#",
     &icc_bytes, &icc_size, &exif_bytes, &exif_size, &xmp_bytes, &xmp_size)) {
@@ -193,15 +197,12 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
     WebPDataInit(&webp_data);
 
     // Assemble everything into the output buffer
-    WebPAnimEncoderObject* encp = (WebPAnimEncoderObject *)self;
-    WebPAnimEncoder* enc = encp->enc;
     if (!WebPAnimEncoderAssemble(enc, &webp_data)) {
         fprintf(stderr, "%s\n", WebPAnimEncoderGetError(enc));
         Py_RETURN_NONE;
     }
 
     // Re-mux to add metadata as needed
-    WebPMux* mux = NULL;
     if (icc_size > 0 || exif_size > 0 || xmp_size > 0) {
         WebPMuxError err = WEBP_MUX_OK;
         int i_icc_size = (int)icc_size;
@@ -253,7 +254,7 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
     }
 
     // Convert to Python bytes
-    PyObject *ret = PyBytes_FromStringAndSize((char*)webp_data.bytes, webp_data.size);
+    ret = PyBytes_FromStringAndSize((char*)webp_data.bytes, webp_data.size);
     WebPDataClear(&webp_data);
 
     // If we had to re-mux, we should free it now that we're done with it
@@ -270,33 +271,36 @@ PyObject* _anim_decoder_new(PyObject* self, PyObject* args)
     PyBytesObject *webp_string;
     const uint8_t *webp;
     Py_ssize_t size;
+    WebPData webp_src;
+    WebPDecoderConfig config;
+    WebPAnimDecoderObject* decp = NULL;
+    WebPAnimDecoder* dec = NULL;
 
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
         return NULL;
     }
     PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
-    WebPData webp_src = {webp, size};
+    webp_src.bytes = webp;
+    webp_src.size = size;
 
     // Sniff the mode, since the decoder API doesn't tell us
-    WebPDecoderConfig config;
     char* mode = "RGBA";
     if (WebPGetFeatures(webp, size, &config.input) == VP8_STATUS_OK) {
         if (!config.input.has_alpha) {
-            mode = "RGB";
+            mode = "RGBX";
         }
     }
 
     // Create the decoder (default mode is RGBA, if no options passed)
-    WebPAnimDecoderObject* decp;
     decp = PyObject_New(WebPAnimDecoderObject, &WebPAnimDecoder_Type);
     if (decp) {
         decp->mode = mode;
         if (WebPDataCopy(&webp_src, &(decp->data))) {
-            WebPAnimDecoder* dec = WebPAnimDecoderNew(&(decp->data), NULL);
+            dec = WebPAnimDecoderNew(&(decp->data), NULL);
             if (dec) {
                 if (WebPAnimDecoderGetInfo(dec, &(decp->info))) {
                     decp->dec = dec;
-                    return (PyObject*) decp;
+                    return (PyObject*)decp;
                 }
             }
         }
@@ -318,6 +322,7 @@ PyObject* _anim_decoder_get_info(PyObject* self, PyObject* args)
 {
     WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
     WebPAnimInfo* info = &(decp->info);
+
     return Py_BuildValue("IIIIIs",
         info->canvas_width, info->canvas_height,
         info->loop_count,
@@ -329,16 +334,17 @@ PyObject* _anim_decoder_get_info(PyObject* self, PyObject* args)
 
 PyObject* _anim_decoder_get_chunk(PyObject* self, PyObject* args)
 {
-    char *mode;
-    PyObject *ret;
+    char* mode;
+    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
+    const WebPDemuxer* demux;
     WebPChunkIterator iter;
+    PyObject *ret;
 
     if (!PyArg_ParseTuple(args, "s", &mode)) {
         return NULL;
     }
 
-    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
-    const WebPDemuxer* demux = WebPAnimDecoderGetDemuxer(decp->dec);
+    demux = WebPAnimDecoderGetDemuxer(decp->dec);
     if (!WebPDemuxGetChunk(demux, mode, 1, &iter)) {
         Py_RETURN_NONE;
     }
@@ -353,39 +359,22 @@ PyObject* _anim_decoder_get_next(PyObject* self, PyObject* args)
 {
     uint8_t* buf;
     int timestamp;
-    PyObject *bytes;
+    PyObject* bytes;
+    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject*)self;
 
-    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
     if (!WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp)) {
         fprintf(stderr, "Error! Failed to read next frame.\n");
         Py_RETURN_NONE;
     }
 
-    // HACK: If original mode was RGB, we need to strip alpha before passing back, this
-    // is needed because internally WebPAnimDecoder doesn't suppor ta non-alpha mode
-    uint32_t size = decp->info.canvas_width * 4 * decp->info.canvas_height;
-    if (strcmp(decp->mode, "RGB")==0 && buf != NULL) {
-        uint32_t pixel_count = size / 4;
-        uint8_t* src = buf;
-        uint8_t* dst = buf;
-        uint32_t idx;
-        for (idx = 0; idx < pixel_count; ++idx) {
-            dst[0] = src[0];
-            dst[1] = src[1];
-            dst[2] = src[2];
-            dst += 3;
-            src += 4;
-        }
-        size = pixel_count * 3;
-    }
-
-    bytes = PyBytes_FromStringAndSize((char *)buf, size);
+    bytes = PyBytes_FromStringAndSize((char *)buf,
+        decp->info.canvas_width * 4 * decp->info.canvas_height);
     return Py_BuildValue("Si", bytes, timestamp);
 }
 
 PyObject* _anim_decoder_has_more_frames(PyObject* self, PyObject* args)
 {
-    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
+    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject*)self;
     return Py_BuildValue("i", WebPAnimDecoderHasMoreFrames(decp->dec));
 }
 
@@ -499,12 +488,12 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     int height;
     int lossless;
     float quality_factor;
-    uint8_t *rgb;
-    uint8_t *icc_bytes;
-    uint8_t *exif_bytes;
-    uint8_t *xmp_bytes;
-    uint8_t *output;
-    char *mode;
+    uint8_t* rgb;
+    uint8_t* icc_bytes;
+    uint8_t* exif_bytes;
+    uint8_t* xmp_bytes;
+    uint8_t* output;
+    char* mode;
     Py_ssize_t size;
     Py_ssize_t icc_size;
     Py_ssize_t exif_size;
@@ -522,11 +511,11 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         }
         #if WEBP_ENCODER_ABI_VERSION >= 0x0100
         if (lossless) {
-            ret_size = WebPEncodeLosslessRGBA(rgb, width, height, 4* width, &output);
+            ret_size = WebPEncodeLosslessRGBA(rgb, width, height, 4 * width, &output);
         } else
         #endif
         {
-            ret_size = WebPEncodeRGBA(rgb, width, height, 4* width, quality_factor, &output);
+            ret_size = WebPEncodeRGBA(rgb, width, height, 4 * width, quality_factor, &output);
         }
     } else if (strcmp(mode, "RGB")==0){
         if (size < width * height * 3){
@@ -534,11 +523,11 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         }
         #if WEBP_ENCODER_ABI_VERSION >= 0x0100
         if (lossless) {
-            ret_size = WebPEncodeLosslessRGB(rgb, width, height, 3* width, &output);
+            ret_size = WebPEncodeLosslessRGB(rgb, width, height, 3 * width, &output);
         } else
         #endif
         {
-            ret_size = WebPEncodeRGB(rgb, width, height, 3* width, quality_factor, &output);
+            ret_size = WebPEncodeRGB(rgb, width, height, 3 * width, quality_factor, &output);
         }
     } else {
         Py_RETURN_NONE;
@@ -551,7 +540,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         return ret;
     }
 #else
-   {
+    {
     /* I want to truncate the *_size items that get passed into webp
        data. Pypy2.1.0 had some issues where the Py_ssize_t items had
        data in the upper byte. (Not sure why, it shouldn't have been there)
@@ -638,8 +627,8 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 
 PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 {
-    PyBytesObject *webp_string;
-    const uint8_t *webp;
+    PyBytesObject* webp_string;
+    const uint8_t* webp;
     Py_ssize_t size;
     PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL;
     WebPDecoderConfig config;
@@ -654,7 +643,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
         Py_RETURN_NONE;
     }
 
-    PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
+    PyBytes_AsStringAndSize((PyObject*) webp_string, (char**)&webp, &size);
 
     vp8_status_code = WebPGetFeatures(webp, size, &config.input);
     if (vp8_status_code == VP8_STATUS_OK) {
@@ -672,12 +661,12 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
         goto end;
 
     if (config.output.colorspace < MODE_YUV) {
-        bytes = PyBytes_FromStringAndSize((char *)config.output.u.RGBA.rgba,
+        bytes = PyBytes_FromStringAndSize((char*)config.output.u.RGBA.rgba,
                                           config.output.u.RGBA.size);
     } else {
         // Skipping YUV for now. Need Test Images.
         // UNDONE -- unclear if we'll ever get here if we set mode_rgb*
-        bytes = PyBytes_FromStringAndSize((char *)config.output.u.YUVA.y,
+        bytes = PyBytes_FromStringAndSize((char*)config.output.u.YUVA.y,
                                           config.output.u.YUVA.y_size);
     }
 
