@@ -24,18 +24,48 @@
 #ifdef HAVE_WEBPANIM
 
 /* -------------------------------------------------------------------- */
-/* WebP Muxer Error Codes                                               */
+/* WebP Muxer Error Handling                                            */
 /* -------------------------------------------------------------------- */
 
 static const char* const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
     "WEBP_MUX_NOT_FOUND", "WEBP_MUX_INVALID_ARGUMENT", "WEBP_MUX_BAD_DATA",
     "WEBP_MUX_MEMORY_ERROR", "WEBP_MUX_NOT_ENOUGH_DATA"
-  };
+};
 
-  static const char* ErrorString(WebPMuxError err) {
+static PyObject* HandleMuxError(WebPMuxError err, char* chunk) {
     assert(err <= WEBP_MUX_NOT_FOUND && err >= WEBP_MUX_NOT_ENOUGH_DATA);
-    return kErrorMessages[-err];
-  }
+
+    // Check for a memory error first
+    if (err == WEBP_MUX_MEMORY_ERROR) {
+        return PyErr_NoMemory();
+    }
+
+    // Create the error message
+    char message[100];
+    if (chunk == NULL) {
+        sprintf(message, "could not assemble chunks: %s", kErrorMessages[-err]);
+    } else {
+        sprintf(message, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]);
+    }
+
+    // Set the proper error type
+    switch (err) {
+        case WEBP_MUX_NOT_FOUND:
+        case WEBP_MUX_INVALID_ARGUMENT:
+            PyErr_SetString(PyExc_ValueError, message);
+            break;
+
+        case WEBP_MUX_BAD_DATA:
+        case WEBP_MUX_NOT_ENOUGH_DATA:
+            PyErr_SetString(PyExc_IOError, message);
+            break;
+
+        default:
+            PyErr_SetString(PyExc_RuntimeError, message);
+            break;
+    }
+    return NULL;
+}
 
 /* -------------------------------------------------------------------- */
 /* WebP Animation Support                                               */
@@ -83,8 +113,8 @@ PyObject* _anim_encoder_new(PyObject* self, PyObject* args)
 
     // Setup and configure the encoder's options (these are animation-specific)
     if (!WebPAnimEncoderOptionsInit(&enc_options)) {
-        fprintf(stderr, "Error! Failed to initialize encoder options\n");
-        Py_RETURN_NONE;
+        PyErr_SetString(PyExc_RuntimeError, "failed to initialize encoder options");
+        return NULL;
     }
     enc_options.anim_params.bgcolor = bgcolor;
     enc_options.anim_params.loop_count = loop_count;
@@ -96,8 +126,8 @@ PyObject* _anim_encoder_new(PyObject* self, PyObject* args)
 
     // Validate canvas dimensions
     if (width <= 0 || height <= 0) {
-        fprintf(stderr, "Error! Invalid canvas dimensions: width=%d, height=%d\n", width, height);
-        Py_RETURN_NONE;
+        PyErr_SetString(PyExc_ValueError, "invalid canvas dimensions");
+        return NULL;
     }
 
     // Create a new animation encoder and picture frame
@@ -113,8 +143,8 @@ PyObject* _anim_encoder_new(PyObject* self, PyObject* args)
         }
         PyObject_Del(encp);
     }
-    fprintf(stderr, "Error! Could not create encoder object.\n");
-    Py_RETURN_NONE;
+    PyErr_SetString(PyExc_RuntimeError, "could not create encoder object");
+    return NULL;
 }
 
 PyObject* _anim_encoder_dealloc(PyObject* self)
@@ -155,8 +185,8 @@ PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
     // Setup config for this frame
     WebPConfig config;
     if (!WebPConfigInit(&config)) {
-        fprintf(stderr, "Error! Failed to initialize config!\n");
-        Py_RETURN_NONE;
+        PyErr_SetString(PyExc_RuntimeError, "failed to initialize config!");
+        return NULL;
     }
     config.lossless = lossless;
     config.quality = quality_factor;
@@ -164,8 +194,8 @@ PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
 
     // Validate the config
     if (!WebPValidateConfig(&config)) {
-        fprintf(stderr, "Error! Invalid configuration\n");
-        Py_RETURN_NONE;
+        PyErr_SetString(PyExc_ValueError, "invalid configuration");
+        return NULL;
     }
 
     // Populate the frame with raw bytes passed to us
@@ -180,8 +210,8 @@ PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
 
     // Add the frame to the encoder
     if (!WebPAnimEncoderAdd(enc, frame, timestamp, &config)) {
-        fprintf(stderr, "Error! Could not add frame: %s\n", WebPAnimEncoderGetError(enc));
-        Py_RETURN_NONE;
+        PyErr_SetString(PyExc_RuntimeError, WebPAnimEncoderGetError(enc));
+        return NULL;
     }
 
     Py_RETURN_NONE;
@@ -211,8 +241,8 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
 
     // Assemble everything into the output buffer
     if (!WebPAnimEncoderAssemble(enc, &webp_data)) {
-        fprintf(stderr, "%s\n", WebPAnimEncoderGetError(enc));
-        Py_RETURN_NONE;
+        PyErr_SetString(PyExc_RuntimeError, WebPAnimEncoderGetError(enc));
+        return NULL;
     }
 
     // Re-mux to add metadata as needed
@@ -227,8 +257,8 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
 
         mux = WebPMuxCreate(&webp_data, 1);
         if (mux == NULL) {
-            fprintf(stderr, "ERROR: Could not re-mux to add metadata.\n");
-            Py_RETURN_NONE;
+            PyErr_SetString(PyExc_RuntimeError, "could not re-mux to add metadata");
+            return NULL;
         }
         WebPDataClear(&webp_data);
 
@@ -236,8 +266,7 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
         if (i_icc_size > 0) {
             err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, 1);
             if (err != WEBP_MUX_OK) {
-                fprintf(stderr, "ERROR (%s): Could not set ICC chunk.\n", ErrorString(err));
-                Py_RETURN_NONE;
+                return HandleMuxError(err, "ICCP");
             }
         }
 
@@ -245,8 +274,7 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
         if (i_exif_size > 0) {
             err = WebPMuxSetChunk(mux, "EXIF", &exif, 1);
             if (err != WEBP_MUX_OK) {
-                fprintf(stderr, "ERROR (%s): Could not set EXIF chunk.\n", ErrorString(err));
-                Py_RETURN_NONE;
+                return HandleMuxError(err, "EXIF");
             }
         }
 
@@ -254,15 +282,13 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
         if (i_xmp_size > 0) {
             err = WebPMuxSetChunk(mux, "XMP ", &xmp, 1);
             if (err != WEBP_MUX_OK) {
-                fprintf(stderr, "ERROR (%s): Could not set XMP chunk.\n", ErrorString(err));
-                Py_RETURN_NONE;
+                return HandleMuxError(err, "XMP");
             }
         }
 
         err = WebPMuxAssemble(mux, &webp_data);
         if (err != WEBP_MUX_OK) {
-            fprintf(stderr, "ERROR (%s): Could not assemble when re-muxing to add metadata.\n", ErrorString(err));
-            Py_RETURN_NONE;
+            return HandleMuxError(err, NULL);
         }
     }
 
@@ -319,8 +345,8 @@ PyObject* _anim_decoder_new(PyObject* self, PyObject* args)
         }
         PyObject_Del(decp);
     }
-    fprintf(stderr, "Error! Could not create decoder object.\n");
-    Py_RETURN_NONE;
+    PyErr_SetString(PyExc_RuntimeError, "could not create decoder object");
+    return NULL;
 }
 
 PyObject* _anim_decoder_dealloc(PyObject* self)
@@ -376,8 +402,8 @@ PyObject* _anim_decoder_get_next(PyObject* self, PyObject* args)
     WebPAnimDecoderObject* decp = (WebPAnimDecoderObject*)self;
 
     if (!WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp)) {
-        fprintf(stderr, "Error! Failed to read next frame.\n");
-        Py_RETURN_NONE;
+        PyErr_SetString(PyExc_IOError, "failed to read next frame");
+        return NULL;
     }
 
     bytes = PyBytes_FromStringAndSize((char *)buf,
@@ -582,13 +608,11 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
 
     if (i_icc_size > 0) {
         if (dbg) {
-            fprintf (stderr, "Adding ICC Profile\n");
+            fprintf(stderr, "Adding ICC Profile\n");
         }
         err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, copy_data);
-        if (dbg && err == WEBP_MUX_INVALID_ARGUMENT) {
-            fprintf(stderr, "Invalid ICC Argument\n");
-        } else if (dbg && err == WEBP_MUX_MEMORY_ERROR) {
-            fprintf(stderr, "ICC Memory Error\n");
+        if (err != WEBP_MUX_OK) {
+            return HandleMuxError(err, "ICCP");
         }
     }
 
@@ -596,14 +620,12 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         fprintf(stderr, "exif size %d \n", i_exif_size);
     }
     if (i_exif_size > 0) {
-        if (dbg){
-            fprintf (stderr, "Adding Exif Data\n");
+        if (dbg) {
+            fprintf(stderr, "Adding Exif Data\n");
         }
         err = WebPMuxSetChunk(mux, "EXIF", &exif, copy_data);
-        if (dbg && err == WEBP_MUX_INVALID_ARGUMENT) {
-            fprintf(stderr, "Invalid Exif Argument\n");
-        } else if (dbg && err == WEBP_MUX_MEMORY_ERROR) {
-            fprintf(stderr, "Exif Memory Error\n");
+        if (err != WEBP_MUX_OK) {
+            return HandleMuxError(err, "EXIF");
         }
     }
 
@@ -612,13 +634,11 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     }
     if (i_xmp_size > 0) {
         if (dbg){
-            fprintf (stderr, "Adding XMP Data\n");
+            fprintf(stderr, "Adding XMP Data\n");
         }
         err = WebPMuxSetChunk(mux, "XMP ", &xmp, copy_data);
-        if (dbg && err == WEBP_MUX_INVALID_ARGUMENT) {
-            fprintf(stderr, "Invalid XMP Argument\n");
-        } else if (dbg && err == WEBP_MUX_MEMORY_ERROR) {
-            fprintf(stderr, "XMP Memory Error\n");
+        if (err != WEBP_MUX_OK) {
+            return HandleMuxError(err, "XMP ");
         }
     }
 
