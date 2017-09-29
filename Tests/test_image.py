@@ -478,7 +478,6 @@ class TestImage(PillowTestCase):
         im = hopper()
         self.assertRaises(ValueError, im.remap_palette, None)
 
-
     def test__new(self):
         from PIL import ImagePalette
 
@@ -496,7 +495,8 @@ class TestImage(PillowTestCase):
             self.assertEqual(new_im.size, im.size)
             self.assertEqual(new_im.info, base_image.info)
             if palette_result is not None:
-                self.assertEqual(new_im.palette.tobytes(), palette_result.tobytes())
+                self.assertEqual(new_im.palette.tobytes(),
+                                 palette_result.tobytes())
             else:
                 self.assertEqual(new_im.palette, None)
 
@@ -504,6 +504,15 @@ class TestImage(PillowTestCase):
         _make_new(im_p, im, None)
         _make_new(im, blank_p, ImagePalette.ImagePalette())
         _make_new(im, blank_pa, ImagePalette.ImagePalette())
+
+    def test_no_resource_warning_on_save(self):
+        # https://github.com/python-pillow/Pillow/issues/835
+        # Arrange
+        test_file = 'Tests/images/hopper.png'
+
+        # Act/Assert
+        with Image.open(test_file) as im:
+            self.assert_warning(None, lambda: im.save('test_img.jpg'))
 
 
 class MockEncoder(object):
@@ -533,6 +542,7 @@ class TestRegistry(PillowTestCase):
                                                       'DoesNotExist',
                                                       ('args',),
                                                       extra=('extra',))
+
 
 if __name__ == '__main__':
     unittest.main()
