@@ -94,6 +94,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
 {
     UINT8 *ptr;
     SGISTATE *c;
+    int err = 0;
 
     /* Get all data from File descriptor */    
     c = (SGISTATE*)state->context;
@@ -101,6 +102,9 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     c->bufsize = _imaging_tell_pyFd(state->fd);
     c->bufsize -= SGI_HEADER_SIZE;
     ptr = malloc(sizeof(UINT8) * c->bufsize);
+    if (!ptr) {
+        return IMAGING_CODEC_MEMORY;
+    }
     _imaging_seek_pyFd(state->fd, SGI_HEADER_SIZE, SEEK_SET);
     _imaging_read_pyFd(state->fd, (char*)ptr, c->bufsize);
 
@@ -108,18 +112,32 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     /* decoder initialization */
     state->count = 0;
     state->y = 0;
-    if (state->ystep < 0)
+    if (state->ystep < 0) {
         state->y = im->ysize - 1;
-    else
+    } else {
         state->ystep = 1;
+    }
+
+    if (im->xsize > INT_MAX / im->bands ||
+        im->ysize > INT_MAX / im->bands) {
+        err = IMAGING_CODEC_MEMORY;
+        goto sgi_finish_decode;
+    }
 
     /* Allocate memory for RLE tables and rows */
     free(state->buffer);
-    state->buffer = malloc(sizeof(UINT8) * 2 * im->xsize * im->bands);
+    state->buffer = NULL;
+    /* malloc overflow check above */
+    state->buffer = calloc(im->xsize * im->bands, sizeof(UINT8) * 2);
     c->tablen = im->bands * im->ysize;
     c->starttab = calloc(c->tablen, sizeof(UINT32));
     c->lengthtab = calloc(c->tablen, sizeof(UINT32));
-
+    if (!state->buffer ||
+        !c->starttab ||
+        !c->lengthtab) {
+        err = IMAGING_CODEC_MEMORY;
+        goto sgi_finish_decode;
+    }
     /* populate offsets table */
     for (c->tabindex = 0, c->bufindex = 0; c->tabindex < c->tablen; c->tabindex++, c->bufindex+=4)
         read4B(&c->starttab[c->tabindex], &ptr[c->bufindex]);
@@ -163,6 +181,8 @@ sgi_finish_decode: ;
     free(c->starttab);
     free(c->lengthtab);
     free(ptr);
-   
+    if (err != 0){
+        return err;
+    }
     return state->count - c->bufsize;
 }
