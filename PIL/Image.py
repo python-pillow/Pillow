@@ -592,7 +592,7 @@ class Image(object):
         self.pyaccess = None
         self.readonly = 0
 
-    def _mutable(self):
+    def _ensure_mutable(self):
         if self.readonly:
             self._copy()
         else:
@@ -1394,7 +1394,7 @@ class Image(object):
                     im = im.convert(self.mode)
             im = im.im
 
-        self._mutable()
+        self._ensure_mutable()
 
         if mask:
             mask.load()
@@ -1500,7 +1500,7 @@ class Image(object):
            other color value.
         """
 
-        self._mutable()
+        self._ensure_mutable()
 
         if self.mode not in ("LA", "RGBA"):
             # attempt to promote self to a matching alpha mode
@@ -1556,7 +1556,7 @@ class Image(object):
         :param offset: An optional offset value.  The default is 0.0.
         """
 
-        self._mutable()
+        self._ensure_mutable()
 
         self.im.putdata(data, scale, offset)
 
