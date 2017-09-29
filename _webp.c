@@ -34,6 +34,7 @@ static const char* const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
 };
 
 PyObject* HandleMuxError(WebPMuxError err, char* chunk) {
+    char message[100];
     assert(err <= WEBP_MUX_NOT_FOUND && err >= WEBP_MUX_NOT_ENOUGH_DATA);
 
     // Check for a memory error first
@@ -42,7 +43,6 @@ PyObject* HandleMuxError(WebPMuxError err, char* chunk) {
     }
 
     // Create the error message
-    char message[100];
     if (chunk == NULL) {
         sprintf(message, "could not assemble chunks: %s", kErrorMessages[-err]);
     } else {
