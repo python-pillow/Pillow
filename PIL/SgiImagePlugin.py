@@ -131,11 +131,11 @@ def _save(im, fp, filename):
     # Byte-per-pixel precision, 1 = 8bits per pixel
     bpc = info.get("bpc", 1)
 
-    if bpc != 1 and bpc != 2:
+    if bpc not in (1, 2):
         raise ValueError("Unsupported number of bytes per pixel")
 
     # Flip the image, since the origin of SGI file is the bottom-left corner
-    im = im.transpose(Image.FLIP_TOP_BOTTOM)
+    orientation = -1
     # Define the file as SGI File Format
     magicNumber = 474
     # Run-Length Encoding Compression - Unsupported at this time
@@ -185,16 +185,14 @@ def _save(im, fp, filename):
     fp.write(struct.pack('>l', colormap))
     fp.write(struct.pack('404s', b''))  # dummy
 
+    rawmode = 'L'
+    if bpc == 2:
+        rawmode = 'L;16B'
+
     for channel in im.split():
-        rawchannel = channel.tobytes()
-        if bpc == 1:
-            fp.write(rawchannel)
-        else:
-            for pixel in rawchannel:
-                fp.write(o16(i8(pixel) * 256))
+        fp.write(channel.tobytes('raw', rawmode, 0, orientation))
 
     fp.close()
-
 
 class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
@@ -203,27 +201,14 @@ class SGI16Decoder(ImageFile.PyDecoder):
         rawmode, stride, orientation = self.args
         pagesize = self.state.xsize * self.state.ysize
         zsize = len(self.mode)
-        data = bytearray(pagesize * zsize)
         self.fd.seek(512)
-        s = self.fd.read(2 * pagesize * zsize)
-        i = 0
-        y = 0
-        if orientation < 0:
-            y = self.state.ysize - 1
-        while y >= 0 and y < self.state.ysize:
-            for x in range(self.state.xsize):
-                for z in range(zsize):
-                    bi = (x + y * self.state.xsize +
-                          y * stride + z * pagesize) * 2
-                    pixel = i16(s, o=bi)
-                    pixel = int(pixel // 256)
-                    if sys.version_info.major == 3:
-                        data[i] = pixel
-                    else:
-                        data[i] = o8(pixel)
-                    i += 1
-            y += orientation
-        self.set_as_raw(bytes(data))
+
+        for band in range(zsize):
+            channel = Image.new('L', (self.state.xsize, self.state.ysize))
+            channel.frombytes(self.fd.read(2 * pagesize), 'raw',
+                              'L;16B', stride, orientation)
+            self.im.putband(channel.im, band)
+
         return -1, 0
 
 #
