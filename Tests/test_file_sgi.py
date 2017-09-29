@@ -71,6 +71,16 @@ class TestFileSgi(PillowTestCase):
         # Test 1 dimension for an L mode image
         roundtrip(Image.new('L', (10, 1)))
 
+    def test_write16(self):
+        test_file = "Tests/images/hopper16.rgb"
+
+        im = Image.open(test_file)
+        out = self.tempfile('temp.sgi')
+        im.save(out, format='sgi', bpc=2)
+
+        reloaded = Image.open(out)
+        self.assert_image_equal(im, reloaded)
+       
     def test_unsupported_mode(self):
         im = hopper('LA')
         out = self.tempfile('temp.sgi')
