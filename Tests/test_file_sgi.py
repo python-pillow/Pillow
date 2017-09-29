@@ -87,13 +87,6 @@ class TestFileSgi(PillowTestCase):
 
         self.assertRaises(ValueError, im.save, out, format='sgi')
 
-    def test_incorrect_number_of_bands(self):
-        im = hopper('YCbCr')
-        im.mode = 'RGB'
-        out = self.tempfile('temp.sgi')
-
-        self.assertRaises(ValueError, im.save, out, format='sgi')
-
 
 if __name__ == '__main__':
     unittest.main()
