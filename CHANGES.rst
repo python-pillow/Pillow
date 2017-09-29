@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Avoid unnecessary Image operations #1891
+  [radarhere]
+  
 - Added register_extensions method #1860
   [radarhere]
 
