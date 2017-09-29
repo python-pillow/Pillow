@@ -206,7 +206,6 @@ class SGI16Decoder(ImageFile.PyDecoder):
         data = bytearray(pagesize * zsize)
         self.fd.seek(512)
         s = self.fd.read(2 * pagesize * zsize)
-        print(len(s))
         i = 0
         y = 0
         if orientation < 0:
