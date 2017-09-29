@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Unfreeze requirements.txt #2766
+  [hugovk]
+  
+- Test: ResourceWarning tests #2756
+  [hugovk]
+
 - Use n_frames to determine is_animated if possible #2315
   [radarhere]
 
