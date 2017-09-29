@@ -152,12 +152,9 @@ def _save(im, fp, filename):
     # Z Dimension: Number of channels
     z = len(im.mode)
 
-    # assert we've got the right number of bands.
-    if len(im.getbands()) != z:
-        raise ValueError("incorrect number of bands in SGI write: %s vs %s" %
-                         (z, len(im.getbands())))
     if dim == 1 or dim == 2:
         z = 1
+
     # assert we've got the right number of bands.
     if len(im.getbands()) != z:
         raise ValueError("incorrect number of bands in SGI write: %s vs %s" %
