@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Corrected parameters in documentation #2768
+  [radarhere]
+
 - Avoid unnecessary Image operations #1891
   [radarhere]
   
