@@ -185,6 +185,7 @@ def scale(image, factor, resample=Image.NEAREST):
     A factor greater than 1 expands the image, between 0 and 1 contracts the
     image.
 
+    :param image: The image to rescale.
     :param factor: The expansion factor, as a float.
     :param resample: An optional resampling filter. Same values possible as
        in the PIL.Image.resize function.
@@ -271,6 +272,7 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
 
     This function was contributed by Kevin Cazabon.
 
+    :param image: The image to size and crop.
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: What resampling method to use. Default is

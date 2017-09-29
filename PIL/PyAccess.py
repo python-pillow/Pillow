@@ -69,7 +69,7 @@ class PyAccess(object):
         multi-band images
 
         :param xy: The pixel coordinate, given as (x, y).
-        :param value: The pixel value.
+        :param color: The pixel value.
         """
         if self.readonly:
             raise ValueError('Attempt to putpixel a read only image')

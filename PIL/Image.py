@@ -1570,6 +1570,7 @@ class Image(object):
         string.
 
         :param data: A palette sequence (either a list or a string).
+        :param rawmode: The raw mode of the palette.
         """
         from . import ImagePalette
 
