@@ -185,7 +185,8 @@ class iTXt(str):
     @staticmethod
     def __new__(cls, text, lang, tkey):
         """
-        :param value: value for this key
+        :param cls: the class to use when creating the instance
+        :param text: value for this key
         :param lang: language code
         :param tkey: UTF-8 version of the key name
         """
