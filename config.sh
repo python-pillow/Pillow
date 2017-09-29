@@ -2,7 +2,7 @@
 # Test for OSX with [ -n "$IS_OSX" ]
 
 # Package versions for fresh source builds
-FREETYPE_VERSION=2.8
+FREETYPE_VERSION=2.8.1
 LIBPNG_VERSION=1.6.25
 ZLIB_VERSION=1.2.11
 JPEG_VERSION=9b
@@ -18,7 +18,7 @@ function pre_build {
         # Update to latest zlib for OSX build
         build_new_zlib
     else  # Linux tests may depend on specific versions
-        FREETYPE_VERSION=2.8
+        FREETYPE_VERSION=2.8.1
     fi
     build_jpeg
     build_tiff
