@@ -4,7 +4,10 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
-- Corrected parameters in documentation #2768
+- Use n_frames to determine is_animated if possible #2315
+  [radarhere]
+
+- Doc: Corrected parameters in documentation #2768
   [radarhere]
 
 - Avoid unnecessary Image operations #1891
