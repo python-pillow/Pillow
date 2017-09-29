@@ -38,6 +38,8 @@ class TestLibPack(PillowTestCase):
 
     def test_L(self):
         self.assert_pack("L", "L", 1, 1,2,3,4)
+        self.assert_pack("L", "L;16", b'\x00\xc6\x00\xaf', 198, 175)
+        self.assert_pack("L", "L;16B", b'\xc6\x00\xaf\x00', 198, 175)
 
     def test_LA(self):
         self.assert_pack("LA", "LA", 2, (1,2), (3,4), (5,6))
@@ -221,6 +223,9 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("L", "L;R", 1, 128, 64, 192, 32)
         self.assert_unpack("L", "L;16", 2, 2, 4, 6, 8)
         self.assert_unpack("L", "L;16B", 2, 1, 3, 5, 7)
+        self.assert_unpack("L", "L;16", b'\x00\xc6\x00\xaf', 198, 175) 
+        self.assert_unpack("L", "L;16B", b'\xc6\x00\xaf\x00', 198, 175)
+
 
     def test_LA(self):
         self.assert_unpack("LA", "LA", 2, (1, 2), (3, 4), (5, 6))

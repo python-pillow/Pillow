@@ -198,6 +198,31 @@ packP2(UINT8* out, const UINT8* in, int pixels)
 }
 
 static void
+packL16(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* L -> L;16, e.g: \xff77 -> \x00\xff\x00\x77 */
+    for (i = 0; i < pixels; i++) {
+        out[0] = 0;
+        out[1] = in[i];
+        out += 2;
+    }
+}
+
+static void
+packL16B(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* L -> L;16B, e.g: \xff77 -> \xff\x00\x77\x00 */
+    for (i = 0; i < pixels; i++) {
+        out[0] = in[i];
+        out[1] = 0;
+        out += 2;
+    }
+}
+
+
+static void
 packLA(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
@@ -512,6 +537,8 @@ static struct {
 
     /* greyscale */
     {"L",       "L",            8,      copy1},
+    {"L",       "L;16",         16,     packL16},
+    {"L",       "L;16B",        16,     packL16B},
 
     /* greyscale w. alpha */
     {"LA",      "LA",           16,     packLA},
