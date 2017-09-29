@@ -35,6 +35,7 @@ static const char* const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
 
 PyObject* HandleMuxError(WebPMuxError err, char* chunk) {
     char message[100];
+    int message_len;
     assert(err <= WEBP_MUX_NOT_FOUND && err >= WEBP_MUX_NOT_ENOUGH_DATA);
 
     // Check for a memory error first
@@ -44,9 +45,13 @@ PyObject* HandleMuxError(WebPMuxError err, char* chunk) {
 
     // Create the error message
     if (chunk == NULL) {
-        sprintf(message, "could not assemble chunks: %s", kErrorMessages[-err]);
+        message_len = sprintf_s(message, 100, "could not assemble chunks: %s", kErrorMessages[-err]);
     } else {
-        sprintf(message, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]);
+        message_len = sprintf_s(message, 100, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]);
+    }
+    if (message_len < 0) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to construct error message");
+        return NULL;
     }
 
     // Set the proper error type
@@ -171,6 +176,7 @@ PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
     int lossless;
     float quality_factor;
     int method;
+    WebPConfig config;
     WebPAnimEncoderObject* encp = (WebPAnimEncoderObject*)self;
     WebPAnimEncoder* enc = encp->enc;
     WebPPicture* frame = &(encp->frame);
@@ -188,7 +194,6 @@ PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
     }
 
     // Setup config for this frame
-    WebPConfig config;
     if (!WebPConfigInit(&config)) {
         PyErr_SetString(PyExc_RuntimeError, "failed to initialize config!");
         return NULL;
@@ -230,6 +235,7 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
     Py_ssize_t icc_size;
     Py_ssize_t exif_size;
     Py_ssize_t xmp_size;
+    WebPData webp_data;
     WebPAnimEncoderObject* encp = (WebPAnimEncoderObject*)self;
     WebPAnimEncoder* enc = encp->enc;
     WebPMux* mux = NULL;
@@ -241,7 +247,6 @@ PyObject* _anim_encoder_assemble(PyObject* self, PyObject* args)
     }
 
     // Init the output buffer
-    WebPData webp_data;
     WebPDataInit(&webp_data);
 
     // Assemble everything into the output buffer
@@ -316,6 +321,7 @@ PyObject* _anim_decoder_new(PyObject* self, PyObject* args)
     const uint8_t *webp;
     Py_ssize_t size;
     WebPData webp_src;
+    char* mode;
     WebPDecoderConfig config;
     WebPAnimDecoderObject* decp = NULL;
     WebPAnimDecoder* dec = NULL;
@@ -323,12 +329,12 @@ PyObject* _anim_decoder_new(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "S", &webp_string)) {
         return NULL;
     }
-    PyBytes_AsStringAndSize((PyObject *) webp_string, (char**)&webp, &size);
+    PyBytes_AsStringAndSize((PyObject *)webp_string, (char**)&webp, &size);
     webp_src.bytes = webp;
     webp_src.size = size;
 
     // Sniff the mode, since the decoder API doesn't tell us
-    char* mode = "RGBA";
+    mode = "RGBA";
     if (WebPGetFeatures(webp, size, &config.input) == VP8_STATUS_OK) {
         if (!config.input.has_alpha) {
             mode = "RGBX";
