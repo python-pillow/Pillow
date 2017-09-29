@@ -592,6 +592,12 @@ class Image(object):
         self.pyaccess = None
         self.readonly = 0
 
+    def _ensure_mutable(self):
+        if self.readonly:
+            self._copy()
+        else:
+            self.load()
+
     def _dump(self, file=None, format=None, **options):
         import tempfile
 
@@ -865,18 +871,16 @@ class Image(object):
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if not mode:
-            # determine default mode
-            if self.mode == "P":
-                self.load()
-                if self.palette:
-                    mode = self.palette.mode
-                else:
-                    mode = "RGB"
-            else:
-                return self.copy()
-
         self.load()
+
+        if not mode and self.mode == "P":
+            # determine default mode
+            if self.palette:
+                mode = self.palette.mode
+            else:
+                mode = "RGB"
+        if not mode or (mode == self.mode and not matrix):
+            return self.copy()
 
         if matrix:
             # matrix conversion
@@ -1062,10 +1066,10 @@ class Image(object):
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        self.load()
         if box is None:
             return self.copy()
 
+        self.load()
         return self._new(self._crop(self.im, box))
 
     def _crop(self, im, box):
@@ -1390,9 +1394,7 @@ class Image(object):
                     im = im.convert(self.mode)
             im = im.im
 
-        self.load()
-        if self.readonly:
-            self._copy()
+        self._ensure_mutable()
 
         if mask:
             mask.load()
@@ -1498,9 +1500,7 @@ class Image(object):
            other color value.
         """
 
-        self.load()
-        if self.readonly:
-            self._copy()
+        self._ensure_mutable()
 
         if self.mode not in ("LA", "RGBA"):
             # attempt to promote self to a matching alpha mode
@@ -1556,9 +1556,7 @@ class Image(object):
         :param offset: An optional offset value.  The default is 0.0.
         """
 
-        self.load()
-        if self.readonly:
-            self._copy()
+        self._ensure_mutable()
 
         self.im.putdata(data, scale, offset)
 
@@ -1612,10 +1610,9 @@ class Image(object):
         :param value: The pixel value.
         """
 
-        self.load()
         if self.readonly:
             self._copy()
-            self.load()
+        self.load()
 
         if self.pyaccess:
             return self.pyaccess.putpixel(xy, value)
