@@ -160,14 +160,14 @@ struct ImagingPaletteInstance {
 
 typedef struct ImagingMemoryArena {
     int alignment;        /* Alignment in memory of each line of an image */
-    int block_size;       /* Preferred block size */
+    int block_size;       /* Preferred block size, bytes */
     int blocks_max;       /* Maximum number of cached blocks */
-    int blocks_cached;    /* Current number of block not accociated with images */
-    ImagingMemoryBlock *blocks;
+    int blocks_cached;    /* Current number of blocks not associated with images */
+    ImagingMemoryBlock *blocks_pool;
     int stats_new_count;           /* Number of new allocated images */
     int stats_allocated_blocks;    /* Number of allocated blocks */
-    int stats_reused_blocks;       /* Number of blocks which was retrieved from pool */
-    int stats_reallocated_blocks;  /* Number of blocks which was actually reallocated after retrieving */
+    int stats_reused_blocks;       /* Number of blocks which were retrieved from a pool */
+    int stats_reallocated_blocks;  /* Number of blocks which were actually reallocated after retrieving */
     int stats_freed_blocks;        /* Number of freed blocks */
 } *ImagingMemoryArena;
 
