@@ -417,11 +417,11 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
     for (y = 0; y < im->ysize; y++) {
         if (line_in_block == 0) {
             int required;
-            int lines_remained = lines_per_block;
-            if (lines_remained > im->ysize - y) {
-                lines_remained = im->ysize - y;
+            int lines_remaining = lines_per_block;
+            if (lines_remaining > im->ysize - y) {
+                lines_remaining = im->ysize - y;
             }
-            required = lines_remained * aligned_linesize + arena->alignment - 1;
+            required = lines_remaining * aligned_linesize + arena->alignment - 1;
             block = memory_get_block(arena, required, dirty);
             if ( ! block.ptr) {
                 ImagingDestroyArray(im);
