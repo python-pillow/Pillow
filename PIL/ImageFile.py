@@ -275,6 +275,16 @@ class ImageFile(Image.Image):
     # def load_read(self, bytes):
     #     pass
 
+    def _seek_check(self, frame):
+        if (frame < 0 or
+            # Only check upper limit on frames if additional seek operations
+            # are not required to do so
+            (not (hasattr(self, "_n_frames") and self._n_frames is None) and
+             frame >= self.n_frames)):
+            raise EOFError("attempt to seek outside sequence")
+
+        return self.tell() != frame
+
 
 class StubImageFile(ImageFile):
     """

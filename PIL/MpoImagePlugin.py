@@ -72,14 +72,13 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         return self.__framecount > 1
 
     def seek(self, frame):
-        if frame < 0 or frame >= self.__framecount:
-            raise EOFError("no more images in MPO file")
-        else:
-            self.fp = self.__fp
-            self.offset = self.__mpoffsets[frame]
-            self.tile = [
-                ("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))
-            ]
+        if not self._seek_check(frame):
+            return
+        self.fp = self.__fp
+        self.offset = self.__mpoffsets[frame]
+        self.tile = [
+            ("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))
+        ]
         self.__frame = frame
 
     def tell(self):

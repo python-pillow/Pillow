@@ -135,11 +135,12 @@ class PsdImageFile(ImageFile.ImageFile):
         return len(self.layers) > 1
 
     def seek(self, layer):
-        # seek to given layer (1..max)
-        if layer == self.frame:
+        if not self._seek_check(layer):
             return
+
+        # seek to given layer (1..max)
         try:
-            if layer <= 0:
+            if layer == 0:
                 raise IndexError
             name, mode, bbox, tile = self.layers[layer-1]
             self.mode = mode

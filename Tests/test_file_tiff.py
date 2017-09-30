@@ -349,13 +349,14 @@ class TestFileTiff(PillowTestCase):
     def test_seek(self):
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
-        im.seek(-1)
+        im.seek(0)
         self.assertEqual(im.tell(), 0)
 
     def test_seek_eof(self):
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
         self.assertEqual(im.tell(), 0)
+        self.assertRaises(EOFError, im.seek, -1)
         self.assertRaises(EOFError, im.seek, 1)
 
     def test__limit_rational_int(self):

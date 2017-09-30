@@ -48,7 +48,7 @@ class GifImageFile(ImageFile.ImageFile):
     format = "GIF"
     format_description = "Compuserve GIF"
     _close_exclusive_fp_after_loading = False
-    
+
     global_palette = None
 
     def data(self):
@@ -117,7 +117,7 @@ class GifImageFile(ImageFile.ImageFile):
         return self._is_animated
 
     def seek(self, frame):
-        if frame == self.__frame:
+        if not self._seek_check(frame):
             return
         if frame < self.__frame:
             self._seek(0)
