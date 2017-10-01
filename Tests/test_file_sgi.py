@@ -13,6 +13,12 @@ class TestFileSgi(PillowTestCase):
         im = Image.open(test_file)
         self.assert_image_equal(im, hopper())
 
+    def test_rgb16(self):
+        test_file = "Tests/images/hopper16.rgb"
+
+        im = Image.open(test_file)
+        self.assert_image_equal(im, hopper())
+
     def test_l(self):
         # Created with ImageMagick
         # convert hopper.ppm -monochrome -compress None sgi:hopper.bw
@@ -31,12 +37,20 @@ class TestFileSgi(PillowTestCase):
         self.assert_image_equal(im, target)
 
     def test_rle(self):
+        # Created with ImageMagick:
         # convert hopper.ppm  hopper.sgi
-        # We don't support RLE compression, this should throw a value error
         test_file = "Tests/images/hopper.sgi"
 
-        with self.assertRaises(ValueError):
-            Image.open(test_file)
+        im = Image.open(test_file)
+        target = Image.open('Tests/images/hopper.rgb')
+        self.assert_image_equal(im, target)
+
+    def test_rle16(self):
+        test_file = "Tests/images/tv16.sgi"
+
+        im = Image.open(test_file)
+        target = Image.open('Tests/images/tv.rgb')
+        self.assert_image_equal(im, target)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -57,15 +71,18 @@ class TestFileSgi(PillowTestCase):
         # Test 1 dimension for an L mode image
         roundtrip(Image.new('L', (10, 1)))
 
+    def test_write16(self):
+        test_file = "Tests/images/hopper16.rgb"
+
+        im = Image.open(test_file)
+        out = self.tempfile('temp.sgi')
+        im.save(out, format='sgi', bpc=2)
+
+        reloaded = Image.open(out)
+        self.assert_image_equal(im, reloaded)
+       
     def test_unsupported_mode(self):
         im = hopper('LA')
-        out = self.tempfile('temp.sgi')
-
-        self.assertRaises(ValueError, im.save, out, format='sgi')
-
-    def test_incorrect_number_of_bands(self):
-        im = hopper('YCbCr')
-        im.mode = 'RGB'
         out = self.tempfile('temp.sgi')
 
         self.assertRaises(ValueError, im.save, out, format='sgi')
