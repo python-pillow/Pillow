@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Common seek frame position check #1849
+  [radarhere]
+
 - Doc: Add note about aspect ratio to Image thumbnail script #2281
   [wilsonge]
   
