@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Fix ValueError: invalid version number '1.0.0rc1' in scipy release candidate #2771
+  [cgohlke]
+  
 - Unfreeze requirements.txt #2766
   [hugovk]
   
