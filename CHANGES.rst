@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Doc: Add note about aspect ratio to Image thumbnail script #2281
+  [wilsonge]
+  
 - Fix ValueError: invalid version number '1.0.0rc1' in scipy release candidate #2771
   [cgohlke]
   
