@@ -78,6 +78,8 @@ class ImageFile(Image.Image):
     def __init__(self, fp=None, filename=None):
         Image.Image.__init__(self)
 
+        self._min_frame = 0
+
         self.tile = None
         self.readonly = 1  # until we know better
 
@@ -274,6 +276,16 @@ class ImageFile(Image.Image):
     # may be defined for blocked formats (e.g. PNG)
     # def load_read(self, bytes):
     #     pass
+
+    def _seek_check(self, frame):
+        if (frame < self._min_frame or
+            # Only check upper limit on frames if additional seek operations
+            # are not required to do so
+            (not (hasattr(self, "_n_frames") and self._n_frames is None) and
+             frame >= self.n_frames+self._min_frame)):
+            raise EOFError("attempt to seek outside sequence")
+
+        return self.tell() != frame
 
 
 class StubImageFile(ImageFile):

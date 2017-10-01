@@ -174,8 +174,8 @@ class SpiderImageFile(ImageFile.ImageFile):
     def seek(self, frame):
         if self.istack == 0:
             raise EOFError("attempt to seek in a non-stack file")
-        if frame >= self._nimages:
-            raise EOFError("attempt to seek past end of file")
+        if not self._seek_check(frame):
+            return
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
         self.fp = self.__fp
         self.fp.seek(self.stkoffset)

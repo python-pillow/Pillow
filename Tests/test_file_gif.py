@@ -223,15 +223,14 @@ class TestFileGif(PillowTestCase):
 
     def test_eoferror(self):
         im = Image.open(TEST_GIF)
-
         n_frames = im.n_frames
-        while True:
-            n_frames -= 1
-            try:
-                im.seek(n_frames)
-                break
-            except EOFError:
-                self.assertLess(im.tell(), n_frames)
+
+        # Test seeking past the last frame
+        self.assertRaises(EOFError, im.seek, n_frames)
+        self.assertLess(im.tell(), n_frames)
+
+        # Test that seeking to the last frame does not raise an error
+        im.seek(n_frames-1)
 
     def test_dispose_none(self):
         img = Image.open("Tests/images/dispose_none.gif")

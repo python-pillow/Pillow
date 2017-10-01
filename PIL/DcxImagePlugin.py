@@ -59,6 +59,7 @@ class DcxImageFile(PcxImageFile):
             self._offset.append(offset)
 
         self.__fp = self.fp
+        self.frame = None
         self.seek(0)
 
     @property
@@ -70,8 +71,8 @@ class DcxImageFile(PcxImageFile):
         return len(self._offset) > 1
 
     def seek(self, frame):
-        if frame >= len(self._offset):
-            raise EOFError("attempt to seek outside DCX directory")
+        if not self._seek_check(frame):
+            return
         self.frame = frame
         self.fp = self.__fp
         self.fp.seek(self._offset[frame])

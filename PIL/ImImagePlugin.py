@@ -270,11 +270,7 @@ class ImImageFile(ImageFile.ImageFile):
         return self.info[FRAMES] > 1
 
     def seek(self, frame):
-
-        if frame < 0 or frame >= self.info[FRAMES]:
-            raise EOFError("seek outside sequence")
-
-        if self.frame == frame:
+        if not self._seek_check(frame):
             return
 
         self.frame = frame
@@ -292,7 +288,6 @@ class ImImageFile(ImageFile.ImageFile):
         self.tile = [("raw", (0, 0)+self.size, offs, (self.rawmode, 0, -1))]
 
     def tell(self):
-
         return self.frame
 
 #

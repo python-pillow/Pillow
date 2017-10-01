@@ -250,15 +250,14 @@ class TestFileTiff(PillowTestCase):
 
     def test_eoferror(self):
         im = Image.open('Tests/images/multipage-lastframe.tif')
-
         n_frames = im.n_frames
-        while True:
-            n_frames -= 1
-            try:
-                im.seek(n_frames)
-                break
-            except EOFError:
-                self.assertLess(im.tell(), n_frames)
+
+        # Test seeking past the last frame
+        self.assertRaises(EOFError, im.seek, n_frames)
+        self.assertLess(im.tell(), n_frames)
+
+        # Test that seeking to the last frame does not raise an error
+        im.seek(n_frames-1)
 
     def test_multipage(self):
         # issue #862
@@ -349,13 +348,14 @@ class TestFileTiff(PillowTestCase):
     def test_seek(self):
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
-        im.seek(-1)
+        im.seek(0)
         self.assertEqual(im.tell(), 0)
 
     def test_seek_eof(self):
         filename = "Tests/images/pil136.tiff"
         im = Image.open(filename)
         self.assertEqual(im.tell(), 0)
+        self.assertRaises(EOFError, im.seek, -1)
         self.assertRaises(EOFError, im.seek, 1)
 
     def test__limit_rational_int(self):

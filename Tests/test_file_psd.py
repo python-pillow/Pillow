@@ -34,26 +34,23 @@ class TestImagePsd(PillowTestCase):
 
     def test_eoferror(self):
         im = Image.open(test_file)
+        # PSD seek index starts at 1 rather than 0
+        n_frames = im.n_frames+1
 
-        n_frames = im.n_frames
-        while True:
-            n_frames -= 1
-            try:
-                # PSD seek index starts at 1 rather than 0
-                im.seek(n_frames+1)
-                break
-            except EOFError:
-                self.assertLess(im.tell(), n_frames)
+        # Test seeking past the last frame
+        self.assertRaises(EOFError, im.seek, n_frames)
+        self.assertLess(im.tell(), n_frames)
+
+        # Test that seeking to the last frame does not raise an error
+        im.seek(n_frames-1)
 
     def test_seek_tell(self):
         im = Image.open(test_file)
 
         layer_number = im.tell()
-        self.assertEqual(layer_number, 0)
+        self.assertEqual(layer_number, 1)
 
-        im.seek(0)
-        layer_number = im.tell()
-        self.assertEqual(layer_number, 0)
+        self.assertRaises(EOFError, im.seek, 0)
 
         im.seek(1)
         layer_number = im.tell()

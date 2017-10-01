@@ -65,7 +65,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
             raise SyntaxError("not an MIC file; no image entries")
 
         self.__fp = self.fp
-        self.frame = 0
+        self.frame = None
 
         if len(self.images) > 1:
             self.category = Image.CONTAINER
@@ -81,7 +81,8 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         return len(self.images) > 1
 
     def seek(self, frame):
-
+        if not self._seek_check(frame):
+            return
         try:
             filename = self.images[frame]
         except IndexError:

@@ -54,24 +54,14 @@ class TestFileFli(PillowTestCase):
 
     def test_eoferror(self):
         im = Image.open(animated_test_file)
-
         n_frames = im.n_frames
-        while True:
-            n_frames -= 1
-            try:
-                im.seek(n_frames)
-                break
-            except EOFError:
-                self.assertLess(im.tell(), n_frames)
 
-    def test_seek_outside(self):
-        # Test negative seek
-        im = Image.open(static_test_file)
-        im.seek(-1)
-        self.assertEqual(im.tell(), 0)
+        # Test seeking past the last frame
+        self.assertRaises(EOFError, im.seek, n_frames)
+        self.assertLess(im.tell(), n_frames)
 
-        # Test seek past end of file
-        self.assertRaises(EOFError, im.seek, 2)
+        # Test that seeking to the last frame does not raise an error
+        im.seek(n_frames-1)
 
     def test_seek_tell(self):
         im = Image.open(animated_test_file)
@@ -90,6 +80,10 @@ class TestFileFli(PillowTestCase):
         im.seek(2)
         layer_number = im.tell()
         self.assertEqual(layer_number, 2)
+
+        im.seek(1)
+        layer_number = im.tell()
+        self.assertEqual(layer_number, 1)
 
 
 if __name__ == '__main__':
