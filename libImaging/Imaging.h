@@ -75,6 +75,11 @@ typedef struct ImagingPaletteInstance* ImagingPalette;
 
 #define IMAGING_MODE_LENGTH 6+1 /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
 
+typedef struct {
+    char *ptr;
+    int size;
+} ImagingMemoryBlock;
+
 struct ImagingMemoryInstance {
 
     /* Format */
@@ -95,6 +100,7 @@ struct ImagingMemoryInstance {
     /* Internals */
     char **image;       /* Actual raster data. */
     char *block;        /* Set if data is allocated in a single block. */
+    ImagingMemoryBlock *blocks;     /* Memory blocks for pixel storage */
 
     int pixelsize;      /* Size of a pixel, in bytes (1, 2 or 4) */
     int linesize;       /* Size of a line, in bytes (xsize * pixelsize) */
@@ -152,11 +158,26 @@ struct ImagingPaletteInstance {
 
 };
 
+typedef struct ImagingMemoryArena {
+    int alignment;        /* Alignment in memory of each line of an image */
+    int block_size;       /* Preferred block size, bytes */
+    int blocks_max;       /* Maximum number of cached blocks */
+    int blocks_cached;    /* Current number of blocks not associated with images */
+    ImagingMemoryBlock *blocks_pool;
+    int stats_new_count;           /* Number of new allocated images */
+    int stats_allocated_blocks;    /* Number of allocated blocks */
+    int stats_reused_blocks;       /* Number of blocks which were retrieved from a pool */
+    int stats_reallocated_blocks;  /* Number of blocks which were actually reallocated after retrieving */
+    int stats_freed_blocks;        /* Number of freed blocks */
+} *ImagingMemoryArena;
+
 
 /* Objects */
 /* ------- */
 
-extern int ImagingNewCount;
+extern struct ImagingMemoryArena ImagingDefaultArena;
+extern int ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max);
+extern void ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size);
 
 extern Imaging ImagingNew(const char* mode, int xsize, int ysize);
 extern Imaging ImagingNewDirty(const char* mode, int xsize, int ysize);

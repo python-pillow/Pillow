@@ -110,6 +110,7 @@ import os
 import sys
 import io
 import struct
+import atexit
 
 # type stuff
 import collections
@@ -2836,3 +2837,41 @@ def radial_gradient(mode):
     :param mode: Input mode.
     """
     return Image()._new(core.radial_gradient(mode))
+
+
+# --------------------------------------------------------------------
+# Resources
+
+def _apply_env_variables(env=None):
+    if env is None:
+        env = os.environ
+
+    for var_name, setter in [
+        ('PILLOW_ALIGNMENT', core.set_alignment),
+        ('PILLOW_BLOCK_SIZE', core.set_block_size),
+        ('PILLOW_BLOCKS_MAX', core.set_blocks_max),
+    ]:
+        if var_name not in env:
+            continue
+
+        var = env[var_name].lower()
+
+        units = 1
+        for postfix, mul in [('k', 1024), ('m', 1024*1024)]:
+            if var.endswith(postfix):
+                units = mul
+                var = var[:-len(postfix)]
+
+        try:
+            var = int(var) * units
+        except ValueError:
+            warnings.warn("{0} is not int".format(var_name))
+            continue
+
+        try:
+            setter(var)
+        except ValueError as e:
+            warnings.warn("{0}: {1}".format(var_name, e))
+
+_apply_env_variables()
+atexit.register(core.clear_cache)

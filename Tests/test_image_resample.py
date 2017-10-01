@@ -305,9 +305,9 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
 class CoreResamplePassesTest(PillowTestCase):
     @contextmanager
     def count(self, diff):
-        count = Image.core.getcount()
+        count = Image.core.get_stats()['new_count']
         yield
-        self.assertEqual(Image.core.getcount() - count, diff)
+        self.assertEqual(Image.core.get_stats()['new_count'] - count, diff)
 
     def test_horizontal(self):
         im = hopper('L')
