@@ -45,9 +45,9 @@ PyObject* HandleMuxError(WebPMuxError err, char* chunk) {
 
     // Create the error message
     if (chunk == NULL) {
-        message_len = sprintf_s(message, 100, "could not assemble chunks: %s", kErrorMessages[-err]);
+        message_len = sprintf(message, "could not assemble chunks: %s", kErrorMessages[-err]);
     } else {
-        message_len = sprintf_s(message, 100, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]);
+        message_len = sprintf(message, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]);
     }
     if (message_len < 0) {
         PyErr_SetString(PyExc_RuntimeError, "failed to construct error message");
