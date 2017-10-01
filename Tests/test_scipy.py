@@ -1,5 +1,5 @@
 from helper import unittest, PillowTestCase
-from distutils.version import StrictVersion
+from distutils.version import LooseVersion
 try:
     import numpy as np
     from numpy.testing import assert_equal
@@ -31,7 +31,7 @@ class Test_scipy_resize(PillowTestCase):
     # this test fails prior to scipy 0.14.0b1
     # https://github.com/scipy/scipy/commit/855ff1fff805fb91840cf36b7082d18565fc8352
     @unittest.skipIf(HAS_SCIPY and
-					 (StrictVersion(scipy.__version__) < StrictVersion('0.14.0')),
+					 (LooseVersion(scipy.__version__) < LooseVersion('0.14.0')),
                      "Test fails on scipy < 0.14.0")
     def test_imresize4(self):
         im = np.array([[1, 2],
