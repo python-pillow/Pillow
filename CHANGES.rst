@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Block & array hybrid storage #2738
+  [radarhere]
+
 - Common seek frame position check #1849
   [radarhere]
 
