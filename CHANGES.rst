@@ -8,20 +8,20 @@ Changelog (Pillow)
   [jbltx, wiredfool]
 
 - Block & array hybrid storage #2738
-  [radarhere]
+  [homm]
 
 - Common seek frame position check #1849
   [radarhere]
 
 - Doc: Add note about aspect ratio to Image thumbnail script #2281
   [wilsonge]
-  
+
 - Fix ValueError: invalid version number '1.0.0rc1' in scipy release candidate #2771
   [cgohlke]
-  
+
 - Unfreeze requirements.txt #2766
   [hugovk]
-  
+
 - Test: ResourceWarning tests #2756
   [hugovk]
 
@@ -33,13 +33,13 @@ Changelog (Pillow)
 
 - Avoid unnecessary Image operations #1891
   [radarhere]
-  
+
 - Added register_extensions method #1860
   [radarhere]
 
 - Fix TIFF support for I;16S, I;16BS, and I;32BS rawmodes #2748
   [wiredfool]
-  
+
 - Fixed doc syntax in ImageDraw #2752
   [radarhere]
 
@@ -57,13 +57,13 @@ Changelog (Pillow)
 
 - Alpha composite fixes #2709
   [homm]
-  
+
 - Faster Transpose operations, added 'Transverse' option #2730
   [homm]
 
 - Deprecate ImageOps undocumented functions gaussian_blur, gblur, unsharp_mask, usm and box_blur in favor of ImageFilter implementations #2735
   [homm]
-  
+
 - Dependencies: Updated freetype to 2.8.1 #2741
   [radarhere]
 
@@ -84,7 +84,7 @@ Changelog (Pillow)
 
 - Added file pointer save to SpiderImagePlugin #2647
   [radarhere]
-  
+
 - Add targa version 2 footer #2713
   [jhultgre]
 
@@ -96,7 +96,7 @@ Changelog (Pillow)
 
 - Fix for SystemError when rendering an empty string, added in 4.2.0 #2706
   [wiredfool]
-  
+
 - Fix for memory leaks in font handling added in 4.2.0 #2634
   [wiredfool]
 
@@ -111,8 +111,8 @@ Changelog (Pillow)
 
 - Faster packing and unpacking for RGB, LA, and related storage modes #2693
   [homm]
-  
-- Use RGBX rawmode for RGB JPEG images where possible #1989 
+
+- Use RGBX rawmode for RGB JPEG images where possible #1989
   [homm]
 
 - Remove palettes from non-palette modes in _new #2702
@@ -168,7 +168,7 @@ Changelog (Pillow)
 
 - Fast Image.merge() #2677
   [homm]
-  
+
 - Fast Image.split() #2676
   [homm]
 
