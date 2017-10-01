@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Update to #2638, add 16bit/rle support to SgiImageFile #2769
+  [jbltx, wiredfool]
+
 - Block & array hybrid storage #2738
   [radarhere]
 
