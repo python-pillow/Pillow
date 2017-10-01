@@ -25,8 +25,8 @@ Open, rotate, and display an image (using the default viewer)
     im = Image.open("bride.jpg")
     im.rotate(45).show()
 
-The following script creates nice 128x128 thumbnails of all JPEG images in the
-current directory.
+The following script creates nice thumbnails of all JPEG images in the
+current directory preserving aspect ratios with 128x128 max resolution.
 
 Create thumbnails
 ^^^^^^^^^^^^^^^^^
