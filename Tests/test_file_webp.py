@@ -8,6 +8,7 @@ try:
 except ImportError:
     HAVE_WEBP = False
 
+
 class TestFileWebp(PillowTestCase):
 
     def setUp(self):
@@ -24,7 +25,7 @@ class TestFileWebp(PillowTestCase):
 
     def test_read_rgb(self):
         """
-        Can we read a RGB mode webp file without error.
+        Can we read a RGB mode WebP file without error?
         Does it have the bits we expect?
         """
 
@@ -39,7 +40,8 @@ class TestFileWebp(PillowTestCase):
 
         # generated with:
         # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
-        target = Image.open('Tests/images/hopper_webp_bits.ppm').convert(self.rgb_mode)
+        target = Image.open('Tests/images/hopper_webp_bits.ppm')
+        target = target.convert(self.rgb_mode)
         self.assert_image_similar(image, target, 20.0)
 
     def test_write_rgb(self):
@@ -77,7 +79,7 @@ class TestFileWebp(PillowTestCase):
 
     def test_write_unsupported_mode_L(self):
         """
-        Saving a black-and-white file to webp format should work, and be
+        Saving a black-and-white file to WebP format should work, and be
         similar to the original file.
         """
 
@@ -97,7 +99,7 @@ class TestFileWebp(PillowTestCase):
 
     def test_write_unsupported_mode_P(self):
         """
-        Saving a palette-based file to webp format should work, and be
+        Saving a palette-based file to WebP format should work, and be
         similar to the original file.
         """
 

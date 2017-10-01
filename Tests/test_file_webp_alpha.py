@@ -23,7 +23,7 @@ class TestFileWebpAlpha(PillowTestCase):
 
     def test_read_rgba(self):
         """
-        Can we read a RGBA mode file without error.
+        Can we read an RGBA mode file without error?
         Does it have the bits we expect?
         """
 
@@ -44,8 +44,8 @@ class TestFileWebpAlpha(PillowTestCase):
 
     def test_write_lossless_rgb(self):
         """
-        Can we write a RGBA mode file with lossless compression without error.
-        Does it have the bits we expect?
+        Can we write an RGBA mode file with lossless compression without
+        error? Does it have the bits we expect?
         """
 
         temp_file = self.tempfile("temp.webp")
@@ -102,7 +102,7 @@ class TestFileWebpAlpha(PillowTestCase):
 
     def test_write_unsupported_mode_PA(self):
         """
-        Saving a palette-based file with transparency to webp format
+        Saving a palette-based file with transparency to WebP format
         should work, and be similar to the original file.
         """
 

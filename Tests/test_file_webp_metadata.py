@@ -8,6 +8,7 @@ try:
 except ImportError:
     HAVE_WEBP = False
 
+
 class TestFileWebpMetadata(PillowTestCase):
 
     def setUp(self):

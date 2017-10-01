@@ -658,7 +658,7 @@ format are currently undocumented.
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **lossless**
-    If present and true, instructs the WEBP writer to use lossless compression.
+    If present and true, instructs the WebP writer to use lossless compression.
 
 **quality**
     Integer, 1-100, Defaults to 80. For lossy, 0 gives the smallest
@@ -671,23 +671,23 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **icc_procfile**
     The ICC Profile to include in the saved file. Only supported if
-    the system webp library was built with webpmux support.
+    the system WebP library was built with webpmux support.
 
 **exif**
     The exif data to include in the saved file. Only supported if
-    the system webp library was built with webpmux support.
+    the system WebP library was built with webpmux support.
 
 Saving sequences
 ~~~~~~~~~~~~~~~~~
 
 .. note::
 
-    Support for animated WebP files will only be enabled if the system webp
+    Support for animated WebP files will only be enabled if the system WebP
     library is v0.5.0 or later. You can check webp animation support at
-    runtime by inspecting the `_webp.HAVE_WEBPANIM` module flag.
+    runtime by calling `features.check("webp_anim")`.
 
 When calling :py:meth:`~PIL.Image.Image.save`, the following options
-are available when the save_all argument is present and true.
+are available when the `save_all` argument is present and true.
 
 **append_images**
     A list of images to append as additional frames. Each of the

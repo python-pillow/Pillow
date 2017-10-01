@@ -12,7 +12,7 @@
 
 /*
  * Check the versions from mux.h and demux.h, to ensure the WebPAnimEncoder and
- * WebPAnimDecoder API's are present (initial support was added in 0.5.0). The
+ * WebPAnimDecoder APIs are present (initial support was added in 0.5.0). The
  * very early versions added had some significant differences, so we require
  * later versions, before enabling animation support.
  */
@@ -591,7 +591,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     }
 #else
     {
-    /* I want to truncate the *_size items that get passed into webp
+    /* I want to truncate the *_size items that get passed into WebP
        data. Pypy2.1.0 had some issues where the Py_ssize_t items had
        data in the upper byte. (Not sure why, it shouldn't have been there)
     */

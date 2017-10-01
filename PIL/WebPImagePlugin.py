@@ -44,6 +44,7 @@ class WebPImageFile(ImageFile.ImageFile):
             self.size = width, height
             self.fp = BytesIO(data)
             self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
+            self._n_frames = 1
             return
 
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
@@ -51,7 +52,8 @@ class WebPImageFile(ImageFile.ImageFile):
         self._decoder = _webp.WebPAnimDecoder(self.fp.read())
 
         # Get info from decoder
-        width, height, loop_count, bgcolor, frame_count, mode = self._decoder.get_info()
+        width, height, loop_count, bgcolor, frame_count, mode = \
+            self._decoder.get_info()
         self.size = width, height
         self.info["loop"] = loop_count
         bg_a, bg_r, bg_g, bg_b = \
@@ -85,14 +87,10 @@ class WebPImageFile(ImageFile.ImageFile):
 
     @property
     def n_frames(self):
-        if not _webp.HAVE_WEBPANIM:
-            return 1
         return self._n_frames
 
     @property
     def is_animated(self):
-        if not _webp.HAVE_WEBPANIM:
-            return False
         return self._n_frames > 1
 
     def seek(self, frame):
@@ -122,7 +120,7 @@ class WebPImageFile(ImageFile.ImageFile):
 
         # Check if an error occurred
         if ret is None:
-            self._reset() # Reset just to be safe
+            self._reset()   # Reset just to be safe
             self.seek(0)
             raise EOFError("failed to decode next frame in WebP file")
 
@@ -130,20 +128,18 @@ class WebPImageFile(ImageFile.ImageFile):
         data, timestamp = ret
         duration = timestamp - self.__timestamp
         self.__timestamp = timestamp
-        timestamp -= duration # libwebp gives frame end, adjust to start of frame
+
+        # libwebp gives frame end, adjust to start of frame
+        timestamp -= duration
         return data, timestamp, duration
 
     def _seek(self, frame):
         if self.__physical_frame == frame:
-            return # Nothing to do
-
+            return              # Nothing to do
         if frame < self.__physical_frame:
-            # Rewind to beginning
-            self._reset()
-
-        # Advance to the requested frame
+            self._reset()       # Rewind to beginning
         while self.__physical_frame < frame:
-            self._get_next()
+            self._get_next()    # Advance to the requested frame
 
     def load(self):
         if _webp.HAVE_WEBPANIM:
@@ -167,6 +163,7 @@ class WebPImageFile(ImageFile.ImageFile):
             return super(WebPImageFile, self).tell()
 
         return self.__logical_frame
+
 
 def _save_all(im, fp, filename):
     encoderinfo = im.encoderinfo.copy()
@@ -207,9 +204,12 @@ def _save_all(im, fp, filename):
     # Validate background color
     if (not isinstance(background, (list, tuple)) or len(background) != 4 or
             not all(v >= 0 and v < 256 for v in background)):
-        raise IOError("Background color is not an RGBA tuple clamped to (0-255): %s" % str(background))
+        raise IOError("Background color is not an RGBA tuple clamped "
+                      "to (0-255): %s" % str(background))
+
+    # Convert to packed uint
     bg_r, bg_g, bg_b, bg_a = background
-    background = (bg_a << 24) | (bg_r << 16) | (bg_g << 8) | (bg_b << 0) # Convert to packed uint
+    background = (bg_a << 24) | (bg_r << 16) | (bg_g << 8) | (bg_b << 0)
 
     # Setup the WebP animation encoder
     enc = _webp.WebPAnimEncoder(
@@ -240,7 +240,7 @@ def _save_all(im, fp, filename):
 
                 # Make sure image mode is supported
                 frame = ims
-                if not ims.mode in _VALID_WEBP_MODES:
+                if ims.mode not in _VALID_WEBP_MODES:
                     alpha = ims.mode == 'P' and 'A' in ims.im.getpalettemode()
                     frame = ims.convert('RGBA' if alpha else 'RGBX')
 
@@ -256,7 +256,10 @@ def _save_all(im, fp, filename):
                 )
 
                 # Update timestamp and frame index
-                timestamp += duration[frame_idx] if isinstance(duration, (list, tuple)) else duration
+                if isinstance(duration, (list, tuple)):
+                    timestamp += duration[frame_idx]
+                else:
+                    timestamp += duration
                 frame_idx += 1
 
     finally:
@@ -272,9 +275,10 @@ def _save_all(im, fp, filename):
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)
     if data is None:
-        raise IOError("cannot write file as WEBP (encoder returned None)")
+        raise IOError("cannot write file as WebP (encoder returned None)")
 
     fp.write(data)
+
 
 def _save(im, fp, filename):
     lossless = im.encoderinfo.get("lossless", False)
@@ -299,7 +303,7 @@ def _save(im, fp, filename):
         xmp
     )
     if data is None:
-        raise IOError("cannot write file as WEBP (encoder returned None)")
+        raise IOError("cannot write file as WebP (encoder returned None)")
 
     fp.write(data)
 

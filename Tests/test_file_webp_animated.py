@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from helper import unittest, PillowTestCase
 
 from PIL import Image
 
@@ -7,6 +7,7 @@ try:
     HAVE_WEBP = True
 except ImportError:
     HAVE_WEBP = False
+
 
 class TestFileWebpAnimation(PillowTestCase):
 
@@ -21,7 +22,7 @@ class TestFileWebpAnimation(PillowTestCase):
 
     def test_n_frames(self):
         """
-        Ensure that webp format sets n_frames and is_animated
+        Ensure that WebP format sets n_frames and is_animated
         attributes correctly.
         """
 
@@ -68,16 +69,15 @@ class TestFileWebpAnimation(PillowTestCase):
         temp_file2 = self.tempfile("temp.png")
         frame1 = Image.open('Tests/images/anim_frame1.webp')
         frame2 = Image.open('Tests/images/anim_frame2.webp')
-        frame1.save(temp_file, save_all=True, append_images=[frame2], lossless=True)
+        frame1.save(temp_file,
+            save_all=True, append_images=[frame2], lossless=True)
 
         im = Image.open(temp_file)
         self.assertEqual(im.n_frames, 2)
-        print("Test File: " + temp_file)
 
         # Compare first frame to original
         im.load()
         im.save(temp_file2)
-        print("Frame 1: " + temp_file2)
         self.assert_image_equal(im, frame1.convert("RGBA"))
 
         # Compare second frame to original
@@ -103,7 +103,7 @@ class TestFileWebpAnimation(PillowTestCase):
         self.assertEqual(im.n_frames, 5)
         self.assertTrue(im.is_animated)
 
-        # Double-check that timestamps and durations match original values specified
+        # Check that timestamps and durations match original values specified
         ts = 0
         for frame in range(im.n_frames):
             im.seek(frame)
@@ -114,7 +114,7 @@ class TestFileWebpAnimation(PillowTestCase):
 
     def test_seeking(self):
         """
-        Create an animated webp file, and then try seeking through
+        Create an animated WebP file, and then try seeking through
         frames in reverse-order, verifying the timestamps and durations
         are correct.
         """
@@ -131,7 +131,7 @@ class TestFileWebpAnimation(PillowTestCase):
         self.assertEqual(im.n_frames, 5)
         self.assertTrue(im.is_animated)
 
-        # Traverse frames in reverse order, double-check timestamps and duration
+        # Traverse frames in reverse, checking timestamps and durations
         ts = dur * (im.n_frames-1)
         for frame in reversed(range(im.n_frames)):
             im.seek(frame)

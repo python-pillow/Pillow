@@ -8,6 +8,7 @@ try:
 except ImportError:
     HAVE_WEBP = False
 
+
 class TestFileWebpLossless(PillowTestCase):
 
     def setUp(self):
