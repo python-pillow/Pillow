@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Fix warning on pointer cast in isblock #2775, #2778
+  [cgohlke]
+
 - Doc: Added macOS High Sierra tested Pillow version #2777
   [radarhere]
 
