@@ -431,7 +431,7 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
             /* Bulletproof code from libc _int_memalign */
             aligned_ptr = (char *)(
                 ((size_t) (block.ptr + arena->alignment - 1)) &
-                -((ssize_t) arena->alignment));
+                -((Py_ssize_t) arena->alignment));
         }
 
         im->image[y] = aligned_ptr + aligned_linesize * line_in_block;
