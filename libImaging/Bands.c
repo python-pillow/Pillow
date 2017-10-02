@@ -73,7 +73,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4])
 
     /* Check arguments */
     if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
-        (Imaging) ImagingError_ModeError();
+        (void) ImagingError_ModeError();
         return 0;
     }
 
