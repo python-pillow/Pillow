@@ -430,8 +430,8 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
             im->blocks[current_block] = block;
             /* Bulletproof code from libc _int_memalign */
             aligned_ptr = (char *)(
-                ((unsigned long) (block.ptr + arena->alignment - 1)) &
-                -((signed long) arena->alignment));
+                ((size_t) (block.ptr + arena->alignment - 1)) &
+                -((ssize_t) arena->alignment));
         }
 
         im->image[y] = aligned_ptr + aligned_linesize * line_in_block;
