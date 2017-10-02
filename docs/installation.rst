@@ -338,7 +338,7 @@ Building on Android
 
 Basic Android support has been added for compilation within the Termux
 environment. The dependencies can be installed by::
-  
+
     $ pkg -y install python python-dev ndk-sysroot clang make \
         libjpeg-turbo-dev
 
@@ -406,6 +406,8 @@ These platforms have been reported to work at the versions mentioned.
 
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
++----------------------------------+------------------------------+--------------------------------+-----------------------+
+| macOS 10.13 High Sierra          | 2.7, 3.4, 3.5, 3.6           | 4.2.1                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | macOS 10.12 Sierra               | 2.7, 3.4, 3.5, 3.6           | 4.1.1                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
