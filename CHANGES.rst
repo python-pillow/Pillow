@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
+- Doc: Added macOS High Sierra tested Pillow version #2777
+  [radarhere]
+
 - Use correct Windows handle type on 64 bit in imagingcms  #2774
   [cgohlke]
   
