@@ -6,7 +6,7 @@ Previous Design
 
 Historically there have been two image allocators in Pillow:
 ``ImagingAllocateBlock`` and ``ImagingAllocateArray``. The first works
-for images smaller than 16MB of data and allocates one large chank of
+for images smaller than 16MB of data and allocates one large chunk of
 memory of ``im->linesize * im->ysize`` bytes. The second works for
 large images and make one allocation for each scan line of size
 ``im->linesize`` bytes.  This makes for a very sharp transition
@@ -34,7 +34,7 @@ fresh allocation. This caching of free blocks is currently disabled by
 default, but can be enabled and tweaked using three environment
 variables:
 
-  * ``PILLOW_ALIGNMENT``, in bytes. Specfies the alignment of memory
+  * ``PILLOW_ALIGNMENT``, in bytes. Specifies the alignment of memory
     allocations. Valid values are powers of 2 between 1 and
     128, inclusive. Defaults to 1.
 
