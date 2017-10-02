@@ -595,6 +595,13 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args)
 }
 
 #ifdef _WIN32
+
+#ifdef _WIN64
+#define F_HANDLE "K"
+#else
+#define F_HANDLE "k"
+#endif
+
 static PyObject *
 cms_get_display_profile_win32(PyObject* self, PyObject* args)
 {
@@ -602,9 +609,9 @@ cms_get_display_profile_win32(PyObject* self, PyObject* args)
     cmsUInt32Number filename_size;
     BOOL ok;
 
-    int handle = 0;
+    HANDLE handle = 0;
     int is_dc = 0;
-    if (!PyArg_ParseTuple(args, "|ii:get_display_profile", &handle, &is_dc))
+    if (!PyArg_ParseTuple(args, "|" F_HANDLE "i:get_display_profile", &handle, &is_dc))
         return NULL;
 
     filename_size = sizeof(filename);
