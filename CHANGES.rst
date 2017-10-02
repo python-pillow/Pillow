@@ -4,7 +4,16 @@ Changelog (Pillow)
 4.3.0 (unreleased)
 ------------------
 
-- Update to #2638, add 16bit/rle support to SgiImageFile #2769
+- Use correct Windows handle type on 64 bit in imagingcms  #2774
+  [cgohlke]
+  
+- 64 Bit Windows fix for block storage #2773
+  [cgohlke]
+
+- Fix "expression result unused" warning #2764
+  [radarhere]
+
+- Add 16bit Read/Write and RLE read support to SgiImageFile #2769
   [jbltx, wiredfool]
 
 - Block & array hybrid storage #2738
