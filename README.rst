@@ -27,7 +27,7 @@ Check minimum NumPy versions to build against in ``.travis.yml`` file. Build aga
 Wheels
 ------
 
-Wheels are uploaded to a `rackspace container <http://cdf58691c5cf45771290-6a3b6a0f5f6ab91aadc447b2a897dd9a.r50.cf2.rackcdn.com/>`_. Credentials for this container are encrypted to this specific repo in the ``.travis.yml`` file, so the upload won't work from another repository.
+Wheels are uploaded to a `rackspace container <http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com/>`_. Credentials for this container are encrypted to this specific repo in the ``.travis.yml`` file, so the upload won't work from another repository.
 
 PyPI
 ~~~~
@@ -35,9 +35,9 @@ PyPI
 Download wheels from Rackspace::
 
     wget -m -A 'Pillow-<VERSION>*' \
-    http://cdf58691c5cf45771290-6a3b6a0f5f6ab91aadc447b2a897dd9a.r50.cf2.rackcdn.com
+    http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com
 
 Upload wheels to PyPI::
 
-    cd cdf58691c5cf45771290-6a3b6a0f5f6ab91aadc447b2a897dd9a.r50.cf2.rackcdn.com
+    cd http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com
     twine upload Pillow-<VERSION>*
