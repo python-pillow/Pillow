@@ -1756,7 +1756,7 @@ _box_blur(ImagingObject* self, PyObject* args)
 static PyObject*
 _isblock(ImagingObject* self, PyObject* args)
 {
-    return PyInt_FromLong((long) self->image->block);
+    return PyBool_FromLong(self->image->block != NULL);
 }
 
 static PyObject*
