@@ -101,6 +101,16 @@ Pillow now can read 16-bit signed integer single channel TIFF
 files. The image data is promoted to 32-bit for storage and
 processing.
 
+SGI Images
+^^^^^^^^^^
+
+Pillow can now read and write uncompressed 16-bit multichannel SGI
+images to and from RGB and RGBA formats. The image data is truncated
+to 8-bit precision.
+
+Pillow can now read RLE encoded SGI images in both 8 and 16-bit
+precision. 
+
 Performance
 ^^^^^^^^^^^
 
