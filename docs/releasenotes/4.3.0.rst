@@ -87,16 +87,22 @@ operation. The original :py:class:`PIL.ImageFilter.Filter` class
 remains for image filters that can process only single band images, or
 require splitting of channels prior to filtering. 
 
+Other Changes
+=============
 
 Loading 16-bit TIFF Images
-==========================
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow now can read 16-bit multichannel TIFF files including files
 with alpha transparency. The image data is truncated to 8-bit
 precision.
 
+Pillow now can read 16-bit signed integer single channel TIFF
+files. The image data is promoted to 32-bit for storage and
+processing.
+
 Performance
-===========
+^^^^^^^^^^^
 
 This release contains several performance improvements:
 
@@ -109,3 +115,14 @@ This release contains several performance improvements:
   friendly algorithm.
 * ImageFilters based on Kernel convolution are significantly faster
   due to the new MultibandFilter feature. 
+* All memory allocation for images is now done in blocks, rather than
+  falling back to an allocation for each scan line for images larger
+  than the block size.
+
+CMYK Conversion
+^^^^^^^^^^^^^^^
+
+The basic CMYK->RGB conversion has been tweaked to match the formula
+from Google Chrome. This produces an image that is generally lighter
+than the previous formula, and more in line with what color managed
+applications produce.
