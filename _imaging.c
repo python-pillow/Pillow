@@ -2260,12 +2260,14 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
 
     _font_text_asBytes(encoded_string, &text);
     if (!text) {
+        ImagingError_MemoryError();
         return NULL;
     }
 
     im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
     if (!im) {
         free(text);
+        ImagingError_MemoryError();
         return NULL;
     }
 
@@ -2297,7 +2299,7 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
   failed:
     free(text);
     ImagingDelete(im);
-    return NULL;
+    Py_RETURN_NONE;
 }
 
 static PyObject*
@@ -2312,6 +2314,7 @@ _font_getsize(ImagingFontObject* self, PyObject* args)
 
     _font_text_asBytes(encoded_string, &text);
     if (!text) {
+        ImagingError_MemoryError();
         return NULL;
     }
 
