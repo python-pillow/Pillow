@@ -1,8 +1,14 @@
 from helper import unittest, PillowTestCase
 
-from PIL import FpxImagePlugin
+try:
+    from PIL import FpxImagePlugin
+except ImportError:
+    olefile_installed = False
+else:
+    olefile_installed = True
 
 
+@unittest.skipUnless(olefile_installed, "olefile package not installed")
 class TestFileFpx(PillowTestCase):
 
     def test_invalid_file(self):

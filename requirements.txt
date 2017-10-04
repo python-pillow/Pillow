@@ -15,6 +15,7 @@ docutils
 jarn.viewdoc
 nose-cov
 nose
+olefile
 pep8
 pyflakes
 pyroma
