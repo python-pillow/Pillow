@@ -1,6 +1,12 @@
 Changelog (Pillow)
 ==================
 
+4.4.0 (unreleased)
+------------------
+
+- ImageDraw.textsize: fix zero length error #2788
+  [wiredfool, hugovk]
+
 4.3.0 (2017-10-02)
 ------------------
 
