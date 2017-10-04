@@ -380,7 +380,6 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_equal(
             im, Image.open("Tests/images/imagedraw_floodfill2.png"))
 
-
     def test_floodfill_thresh(self):
         # floodfill() is experimental
 
@@ -559,6 +558,19 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_textsize_empty_string(self):
+        # https://github.com/python-pillow/Pillow/issues/2783
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+
+        # Act
+        # Should not cause 'SystemError: <built-in method getsize of
+        # ImagingFont object at 0x...> returned NULL without setting an error'
+        draw.textsize("")
+        draw.textsize("\n")
+        draw.textsize("test\n")
 
 
 if __name__ == '__main__':

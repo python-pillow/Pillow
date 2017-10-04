@@ -225,11 +225,11 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
     if (PyUnicode_Check(string)) {
         Py_UNICODE *text = PyUnicode_AS_UNICODE(string);
         Py_ssize_t size = PyUnicode_GET_SIZE(string);
-	if (! size) {
-	    /* return 0 and clean up, no glyphs==no size, 
-	       and raqm fails with empty strings */
-	    goto failed;
-	}
+        if (! size) {
+            /* return 0 and clean up, no glyphs==no size,
+               and raqm fails with empty strings */
+            goto failed;
+        }
         if (!raqm_set_text(rq, (const uint32_t *)(text), size)) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
             goto failed;
@@ -239,9 +239,9 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
     else if (PyString_Check(string)) {
         char *text = PyString_AS_STRING(string);
         int size = PyString_GET_SIZE(string);
-	if (! size) {
-	    goto failed;
-	}
+        if (! size) {
+            goto failed;
+        }
         if (!raqm_set_text_utf8(rq, text, size)) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text_utf8() failed");
             goto failed;

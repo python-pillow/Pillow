@@ -2212,16 +2212,15 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
         PyBytes_AsStringAndSize(encoded_string, &buffer, &len);
     }
 
-    if (len) {
-        *text = calloc(len,1);
-        if (*text) {
-            memcpy(*text, buffer, len);
-        }
-        if(bytes) {
-            Py_DECREF(bytes);
-        }
-        return;
+    *text = calloc(len,1);
+    if (*text) {
+        memcpy(*text, buffer, len);
     }
+    if(bytes) {
+        Py_DECREF(bytes);
+    }
+
+    return;
 
 
 #if PY_VERSION_HEX < 0x03000000
@@ -2261,12 +2260,14 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
 
     _font_text_asBytes(encoded_string, &text);
     if (!text) {
+        ImagingError_MemoryError();
         return NULL;
     }
 
     im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
     if (!im) {
         free(text);
+        ImagingError_MemoryError();
         return NULL;
     }
 
@@ -2298,7 +2299,7 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
   failed:
     free(text);
     ImagingDelete(im);
-    return NULL;
+    Py_RETURN_NONE;
 }
 
 static PyObject*
@@ -2313,6 +2314,7 @@ _font_getsize(ImagingFontObject* self, PyObject* args)
 
     _font_text_asBytes(encoded_string, &text);
     if (!text) {
+        ImagingError_MemoryError();
         return NULL;
     }
 
