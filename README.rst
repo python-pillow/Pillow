@@ -1,5 +1,5 @@
-Pillow OS X Wheel Builder
-=========================
+Pillow Wheel Builder
+====================
 
 This repository creates wheels for tagged versions of Pillow::
 
@@ -12,9 +12,9 @@ This repository creates wheels for tagged versions of Pillow::
     git commit -a -m "<VERSION> wheels"
     git push
 
-.. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg?label=OS%20X%20build
+.. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg
    :target: https://travis-ci.org/python-pillow/pillow-wheels
-   :alt: Travis CI build status (OS X)
+   :alt: Travis CI build status (wheels)
 
 Dependencies
 ------------
