@@ -1,6 +1,34 @@
 Changelog (Pillow-SIMD)
 =======================
 
+7.0.0.post0
+-----------
+
+- Reduce: SSE4
+
+6.0.0.post1
+-----------
+
+- GCC 9.0+: fixed unaligned read for ``_**_cvtepu8_epi32`` functions.
+
+6.0.0.post0 and 5.3.0.post1
+---------------------------
+
+- Resampling: Correct max coefficient calculation. Some rare combinations of
+  initial and requested sizes lead to black lines.
+
+4.3.0.post0
+-----------
+
+- Float-based filters, single-band: 3x3 SSE4, 5x5 SSE4
+- Float-based filters, multi-band: 3x3 SSE4 & AVX2, 5x5 SSE4
+- Int-based filters, multi-band: 3x3 SSE4 & AVX2, 5x5 SSE4 & AVX2
+- Box blur: fast path for radius < 1
+- Alpha composite: fast div approximation
+- Color conversion: RGB to L SSE4, fast div in RGBa to RGBA
+- Resampling: optimized coefficients loading
+- Split and get_channel: SSE4
+
 3.4.1.post1
 -----------
 
@@ -21,7 +49,7 @@ Changelog (Pillow-SIMD)
 3.3.0.post2
 -----------
 
-- Fixed error in RGBa -> RGBA convertion
+- Fixed error in RGBa -> RGBA conversion
 
 3.3.0.post1
 -----------
@@ -41,7 +69,7 @@ Resampling
 - SSE4 and AVX2 fixed-point full loading horizontal pass.
 - SSE4 and AVX2 fixed-point full loading vertical pass.
 
-Convertion
+Conversion
 ~~~~~~~~~~
 
 - RGBA -> RGBa SSE4 and AVX2 fixed-point full loading implementations.
