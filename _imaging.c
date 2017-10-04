@@ -2212,16 +2212,15 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
         PyBytes_AsStringAndSize(encoded_string, &buffer, &len);
     }
 
-    if (len) {
-        *text = calloc(len,1);
-        if (*text) {
-            memcpy(*text, buffer, len);
-        }
-        if(bytes) {
-            Py_DECREF(bytes);
-        }
-        return;
+    *text = calloc(len,1);
+    if (*text) {
+        memcpy(*text, buffer, len);
     }
+    if(bytes) {
+        Py_DECREF(bytes);
+    }
+
+    return;
 
 
 #if PY_VERSION_HEX < 0x03000000
