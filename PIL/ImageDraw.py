@@ -217,7 +217,8 @@ class ImageDraw(object):
             ink = fill
         if ink is not None:
             try:
-                mask, offset = font.getmask2(text, self.fontmode, *args, **kwargs)
+                mask, offset = font.getmask2(text, self.fontmode,
+                                             *args, **kwargs)
                 xy = xy[0] + offset[0], xy[1] + offset[1]
             except AttributeError:
                 try:
@@ -254,6 +255,8 @@ class ImageDraw(object):
     def textsize(self, text, font=None, spacing=4, direction=None,
                  features=None):
         """Get the size of a given string, in pixels."""
+        if len(text) == 0:
+            return (0, 0)
         if self._multiline_check(text):
             return self.multiline_textsize(text, font, spacing,
                                            direction, features)
@@ -383,4 +386,4 @@ def _color_diff(rgb1, rgb2):
     """
     Uses 1-norm distance to calculate difference between two rgb values.
     """
-    return abs(rgb1[0]-rgb2[0]) +  abs(rgb1[1]-rgb2[1]) +  abs(rgb1[2]-rgb2[2])
+    return abs(rgb1[0]-rgb2[0]) + abs(rgb1[1]-rgb2[1]) + abs(rgb1[2]-rgb2[2])
