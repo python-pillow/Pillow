@@ -1,5 +1,5 @@
-Pillow OS X Wheel Builder
-=========================
+Pillow Wheel Builder
+====================
 
 This repository creates wheels for tagged versions of Pillow::
 
