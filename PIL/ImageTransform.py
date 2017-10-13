@@ -79,7 +79,7 @@ class QuadTransform(Transform):
 
     See :py:meth:`~PIL.Image.Image.transform`
 
-    :param xy: An 8-tuple (x0, y0, x1, y1, x2, y2, y3, y3) which contain the
+    :param xy: An 8-tuple (x0, y0, x1, y1, x2, y2, x3, y3) which contain the
         upper left, lower left, lower right, and upper right corner of the
         source quadrilateral.
     """
