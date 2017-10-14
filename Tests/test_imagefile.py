@@ -74,9 +74,9 @@ class TestImageFile(PillowTestCase):
     def test_ico(self):
         with open('Tests/images/python.ico', 'rb') as f:
             data = f.read()
-        p = ImageFile.Parser()
-        p.feed(data)
-        self.assertEqual((48, 48), p.image.size)
+        with ImageFile.Parser() as p:
+            p.feed(data)
+            self.assertEqual((48, 48), p.image.size)
 
     def test_safeblock(self):
         if "zip_encoder" not in codecs:
