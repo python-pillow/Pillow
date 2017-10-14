@@ -37,19 +37,20 @@ docserve:
 
 help:
 	@echo "Welcome to Pillow development. Please use \`make <target>\` where <target> is one of"
-	@echo "  clean          remove build products"
-	@echo "  coverage       run coverage test (in progress)"
-	@echo "  doc            make html docs"
-	@echo "  docserve       run an http server on the docs directory"
-	@echo "  html           to make standalone HTML files"
-	@echo "  inplace        make inplace extension"
-	@echo "  install        make and install"
-	@echo "  install-req    install documentation and test dependencies"
-	@echo "  install-venv   install in virtualenv"
-	@echo "  release-test   run code and package tests before release"
-	@echo "  test           run tests on installed pillow"
-	@echo "  upload         build and upload sdists to PyPI"
-	@echo "  upload-test    build and upload sdists to test.pythonpackages.com"
+	@echo "  clean              remove build products"
+	@echo "  coverage           run coverage test (in progress)"
+	@echo "  doc                make html docs"
+	@echo "  docserve           run an http server on the docs directory"
+	@echo "  html               to make standalone HTML files"
+	@echo "  inplace            make inplace extension"
+	@echo "  install            make and install"
+	@echo "  install-coverage   make and install with C coverage"
+	@echo "  install-req        install documentation and test dependencies"
+	@echo "  install-venv       install in virtualenv"
+	@echo "  release-test       run code and package tests before release"
+	@echo "  test               run tests on installed pillow"
+	@echo "  upload             build and upload sdists to PyPI"
+	@echo "  upload-test        build and upload sdists to test.pythonpackages.com"
 
 inplace: clean
 	python setup.py build_ext --inplace
@@ -58,9 +59,13 @@ install:
 	python setup.py install
 	python selftest.py --installed
 
+install-coverage:
+	CFLAGS="-coverage" python setup.py build_ext install
+	python selftest.py --installed
+
 debug:
 # make a debug version if we don't have a -dbg python. Leaves in symbols
-# for our stuff, kills optimization, and redirects to dev null so we 
+# for our stuff, kills optimization, and redirects to dev null so we
 # see any build failures.
 	make clean > /dev/null
 	CFLAGS='-g -O0' python setup.py build_ext install > /dev/null
