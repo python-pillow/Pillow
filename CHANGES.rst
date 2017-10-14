@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Add option to Makefile to build and install with C coverage #2781
+  [hugovk]
+  
+- Added context manager support to ImageFile.Parser and PngImagePlugin.ChunkStream #2793
+  [radarhere] 
+  
 - ImageDraw.textsize: fix zero length error #2788
   [wiredfool, hugovk]
 
