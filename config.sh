@@ -17,8 +17,6 @@ function pre_build {
     if [ -n "$IS_OSX" ]; then
         # Update to latest zlib for OSX build
         build_new_zlib
-    else  # Linux tests may depend on specific versions
-        FREETYPE_VERSION=2.8.1
     fi
     build_jpeg
     build_tiff
