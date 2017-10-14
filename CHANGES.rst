@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Depends: Update openjpeg to 2.3.0 #2791
+  [radarhere]
+
 - Add option to Makefile to build and install with C coverage #2781
   [hugovk]
   
