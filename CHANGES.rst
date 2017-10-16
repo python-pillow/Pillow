@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Include license file in the generated wheel packages #2801
+  [jdufresne]
+
 - Depends: Update openjpeg to 2.3.0 #2791
   [radarhere]
 
