@@ -11,7 +11,7 @@ fly for web use.
 
 For a more advanced drawing library for PIL, see the `aggdraw module`_.
 
-.. _aggdraw module: http://effbot.org/zone/aggdraw-index.htm
+.. _aggdraw module: https://github.com/pytroll/aggdraw
 
 Example: Draw a gray cross over an image
 ----------------------------------------
