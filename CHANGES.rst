@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Docs: Link to maintained version of aggdraw #2809
+  [hugovk]
+
 - Include license file in the generated wheel packages #2801
   [jdufresne]
 
