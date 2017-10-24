@@ -22,7 +22,7 @@ Released quarterly on the first day of January, April, July, October.
 ```
     $ make sdist
 ```
-* [ ] Create binary distributions [binary distributions](#binary-distributions)
+* [ ] Create [binary distributions](#binary-distributions)
 * [ ] Upload all binaries and source distributions with ``twine upload dist/Pillow-4.1.0-*``
 * [ ] Manually hide old versions on PyPI such that only the latest major release is visible when viewing https://pypi.python.org/pypi/Pillow (https://pypi.python.org/pypi?:action=pkg_edit&name=Pillow)
 
@@ -92,7 +92,7 @@ Released as needed privately to individual vendors for critical security-related
     $ git checkout [[release tag]]
     $ cd ..
     $ git commit -m "Pillow -> 2.9.0" Pillow
-    $ git push 
+    $ git push
 ```
 * [ ] Download distributions from the [Pillow Wheel Builder container](http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com/).
 
