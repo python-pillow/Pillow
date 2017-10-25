@@ -71,7 +71,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int bytes)
     if (!state->state) {
 
 	/* Initialise state */
-	if (context->bits < 0 || context->bits > 8) {
+	if (context->bits < 0 || context->bits > 12) {
 	    state->errcode = IMAGING_CODEC_CONFIG;
 	    return -1;
 	}
