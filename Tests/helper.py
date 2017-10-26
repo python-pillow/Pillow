@@ -64,8 +64,9 @@ class PillowTestCase(unittest.TestCase):
         try:
             ok = self.currentResult.wasSuccessful()
         except AttributeError:  # for nosetests
-            proxy = self.currentResult
-            ok = (len(proxy.errors) + len(proxy.failures) == 0)
+            # proxy = self.currentResult
+            # ok = (len(proxy.errors) + len(proxy.failures) == 0)
+            ok = True  # TODO pytest
 
         if ok:
             # only clean out tempfiles if test passed
@@ -256,8 +257,8 @@ class PillowLeakTestCase(PillowTestCase):
             # linux
             # man 2 getrusage
             #        ru_maxrss (since Linux 2.6.32)
-            #  This is the maximum resident set size used (in  kilobytes).
-            return mem # Kb
+            #  This is the maximum resident set size used (in kilobytes).
+            return mem  # Kb
 
     def _test_leak(self, core):
         start_mem = self._get_mem_usage()
