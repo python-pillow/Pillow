@@ -17,7 +17,7 @@ co:
 coverage:
 	coverage erase
 	coverage run --parallel-mode --include=PIL/* selftest.py
-	nosetests --with-cov --cov='PIL/' --cov-report=html Tests/test_*.py
+	python -m pytest --cov PIL --cov-append --cov-report html Tests
 # Doesn't combine properly before report, writing report instead of displaying invalid report.
 	rm -r htmlcov || true
 	coverage combine
@@ -81,7 +81,7 @@ release-test:
 	$(MAKE) install-req
 	python setup.py develop
 	python selftest.py
-	nosetests Tests/test_*.py
+	python -m pytest Tests
 	python setup.py install
 	python test-installed.py
 	check-manifest
