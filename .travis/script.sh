@@ -6,9 +6,9 @@ coverage erase
 python setup.py clean
 CFLAGS="-coverage" python setup.py build_ext --inplace
 
-coverage run --append --include=PIL/* selftest.py
-# coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py TODO remove
-py.test -v --cov PIL --cov-report term Tests
+coverage run --append --include="PIL/*" selftest.py
+# coverage run --append --include="PIL/*" -m nose -vx Tests/test_*.py TODO remove
+py.test -v --cov PIL --cov-append --cov-report term Tests
 pushd /tmp/check-manifest && check-manifest --ignore ".coveragerc,.editorconfig,*.yml,*.yaml,tox.ini" && popd
 
 # Docs
