@@ -7,14 +7,13 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk\
 			 python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick\
              libharfbuzz-dev libfribidi-dev
 
+pip install check-manifest
 pip install cffi
-pip install nose  # TODO remove
+pip install coverage
+pip install olefile
 pip install pytest
 pip install pytest-cov
-pip install check-manifest
-pip install olefile
 pip install pyroma
-pip install coverage
 pip install test-image-results
 
 # docs only on Python 2.7
