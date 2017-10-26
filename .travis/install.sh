@@ -8,7 +8,9 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk\
              libharfbuzz-dev libfribidi-dev
 
 pip install cffi
-pip install nose
+pip install nose  # TODO remove
+pip install pytest
+pip install pytest-cov
 pip install check-manifest
 pip install olefile
 pip install pyroma
