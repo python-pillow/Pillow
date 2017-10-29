@@ -7,12 +7,12 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk\
 			 python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick\
              libharfbuzz-dev libfribidi-dev
 
-pip install check-manifest
 pip install cffi
+pip install check-manifest
 pip install coverage
 pip install olefile
-pip install pytest
-pip install pytest-cov
+pip install -U pytest
+pip install -U pytest-cov
 pip install pyroma
 pip install test-image-results
 
