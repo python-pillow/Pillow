@@ -15,12 +15,9 @@ co:
     done
 
 coverage:
-	coverage erase
-	coverage run --parallel-mode --include=PIL/* selftest.py
-	python -m pytest --cov PIL --cov-append --cov-report html Tests
-# Doesn't combine properly before report, writing report instead of displaying invalid report.
+	python selftest.py
+	python setup.py test
 	rm -r htmlcov || true
-	coverage combine
 	coverage report
 
 doc:

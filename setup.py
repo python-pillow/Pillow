@@ -751,6 +751,9 @@ def debug_build():
     return hasattr(sys, 'gettotalrefcount')
 
 
+needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
+pytest_runner = ['pytest-runner'] if needs_pytest else []
+
 try:
     setup(name=NAME,
           version=PILLOW_VERSION,
@@ -782,7 +785,8 @@ try:
           ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
           include_package_data=True,
           packages=find_packages(),
-          test_suite='nose.collector',
+          setup_requires=pytest_runner,
+          tests_require=['pytest'],
           keywords=["Imaging", ],
           license='Standard PIL License',
           zip_safe=not (debug_build() or PLATFORM_MINGW), )
