@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Depends: Update libimagequant to 2.11.0
+  [radarhere]
+
 - Docs: Link to maintained version of aggdraw #2809
   [hugovk]
 
