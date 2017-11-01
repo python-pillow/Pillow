@@ -42,7 +42,7 @@ Results in the following::
         multi-band images
 
         :param xy: The pixel coordinate, given as (x, y).
-        :param value: The pixel value.
+        :param color: The pixel value according to its mode. e.g. tuple (r, g, b) for RGB mode)
 
   .. method:: __getitem__(self, xy):
 
