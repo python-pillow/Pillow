@@ -8,7 +8,7 @@ Dependencies
 
 Install::
 
-    pip install coverage nose
+    pip install pytest pytest-cov
 
 Execution
 ---------
@@ -21,12 +21,11 @@ To run an individual test::
 
 Run all the tests from the root of the Pillow source distribution::
 
-    nosetests -vx Tests/test_*.py
+    pytest -vx Tests
 
 Or with coverage::
 
-    coverage run --append --include=PIL/* -m nose -vx Tests/test_*.py
-    coverage report
+    pytest -vx --cov PIL --cov-report term Tests
     coverage html
     open htmlcov/index.html
 
@@ -39,6 +38,3 @@ To run an individual test::
 Run all the tests from the root of the Pillow source distribution::
 
     ./test-installed.py
-
-
-
