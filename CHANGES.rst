@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Depends: Updated raqm to 0.3.0 #2822
+  [radarhere]
+
 - Depends: Update libimagequant to 2.11.0
   [radarhere]
 
