@@ -5,7 +5,7 @@ from PIL import ImageFont, ImageDraw
 
 codecs = dir(Image.core)
 
-fontname = "Tests/fonts/helvO18.pcf"
+fontname = "Tests/fonts/10x20-ISO8859-1.pcf"
 
 message = "hello, world"
 
@@ -20,7 +20,8 @@ class TestFontPcf(PillowTestCase):
         with open(fontname, "rb") as test_file:
             font = PcfFontFile.PcfFontFile(test_file)
         self.assertIsInstance(font, FontFile.FontFile)
-        self.assertEqual(len([_f for _f in font.glyph if _f]), 192)
+        #check the number of characters in the font
+        self.assertEqual(len([_f for _f in font.glyph if _f]), 223)
 
         tempname = self.tempfile("temp.pil")
         self.addCleanup(self.delete_tempfile, tempname[:-4]+'.pbm')
@@ -34,25 +35,26 @@ class TestFontPcf(PillowTestCase):
         with open("Tests/images/flower.jpg", "rb") as fp:
             self.assertRaises(SyntaxError, PcfFontFile.PcfFontFile, fp)
 
-    def xtest_draw(self):
-
+    def test_draw(self):
         tempname = self.save_font()
         font = ImageFont.load(tempname)
-        image = Image.new("L", font.getsize(message), "white")
-        draw = ImageDraw.Draw(image)
-        draw.text((0, 0), message, font=font)
-        # assert_signature(image, "7216c60f988dea43a46bb68321e3c1b03ec62aee")
+        im = Image.new("L", (130,30), "white")
+        draw = ImageDraw.Draw(im)
+        draw.text((0, 0), message, 'black', font=font)
+        with Image.open('Tests/images/test_draw_pbm_target.png') as target:
+            self.assert_image_similar(im, target, 0)
+            
 
     def _test_high_characters(self, message):
 
         tempname = self.save_font()
         font = ImageFont.load(tempname)
-        image = Image.new("L", font.getsize(message), "white")
-        draw = ImageDraw.Draw(image)
-        draw.text((0, 0), message, font=font)
+        im = Image.new("L", (750,30) , "white")
+        draw = ImageDraw.Draw(im)
+        draw.text((0, 0), message, "black", font=font)
+        with Image.open('Tests/images/high_ascii_chars.png') as target:
+            self.assert_image_similar(im, target, 0)
 
-        compare = Image.open('Tests/images/high_ascii_chars.png')
-        self.assert_image_equal(image, compare)
 
     def test_high_characters(self):
         message = "".join(chr(i+1) for i in range(140, 232))
