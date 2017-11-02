@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Doc: Corrected PixelAccess.rst #2824
+  [hasahmed]
+  
 - Depends: Updated raqm to 0.3.0 #2822
   [radarhere]
 
