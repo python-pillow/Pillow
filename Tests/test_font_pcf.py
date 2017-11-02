@@ -59,7 +59,9 @@ class TestFontPcf(PillowTestCase):
             (dx,dy) = font.getsize(chr(i))
             self.assertEqual(dy, 20)
             self.assertIn(dx, (0,10))
-        self.assertEqual(font.getsize(message), (len(message)*10,20))
+        for l in range(len(message)):
+            msg = message[:l+1]
+            self.assertEqual(font.getsize(msg), (len(msg)*10,20))
 
     def _test_high_characters(self, message):
         tempname = self.save_font()
