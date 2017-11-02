@@ -2207,6 +2207,9 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
 
     if (PyUnicode_CheckExact(encoded_string)){
         bytes = PyUnicode_AsLatin1String(encoded_string);
+        if (!bytes) {
+            return;
+        }
         PyBytes_AsStringAndSize(bytes, &buffer, &len);
     } else if (PyBytes_Check(encoded_string)) {
         PyBytes_AsStringAndSize(encoded_string, &buffer, &len);
@@ -2215,13 +2218,15 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
     *text = calloc(len+1,1);
     if (*text) {
         memcpy(*text, buffer, len);
+    } else {
+        ImagingError_MemoryError();
     }
-    if(bytes) {
+    if (bytes) {
         Py_DECREF(bytes);
     }
 
     return;
-
+    /* UNDONE not reachable code */
 
 #if PY_VERSION_HEX < 0x03000000
     /* likely case here is py2.x with an ordinary string.
@@ -2231,6 +2236,8 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
         *text = calloc(len,1);
         if (*text) {
             memcpy(*text, buffer, len+1);
+        } else {
+            ImagingError_MemoryError();
         }
         return;
     }
@@ -2260,7 +2267,6 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
 
     _font_text_asBytes(encoded_string, &text);
     if (!text) {
-        ImagingError_MemoryError();
         return NULL;
     }
 
@@ -2314,7 +2320,6 @@ _font_getsize(ImagingFontObject* self, PyObject* args)
 
     _font_text_asBytes(encoded_string, &text);
     if (!text) {
-        ImagingError_MemoryError();
         return NULL;
     }
 

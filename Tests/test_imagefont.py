@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from helper import unittest, PillowTestCase
 
 from PIL import Image, ImageDraw, ImageFont, features
@@ -409,8 +410,13 @@ class TestImageFont(PillowTestCase):
         draw.text((10, 10), '', font=font)
         self.assert_image_equal(im, target)
         
-       
-        
+    def test_unicode_pilfont(self):
+        # should not segfault, should return UnicodeDecodeError
+        # issue #2826
+        font = ImageFont.load_default()
+        with self.assertRaises(UnicodeEncodeError):
+            font.getsize(u"’")
+
 
     def _test_fake_loading_font(self, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
