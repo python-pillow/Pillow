@@ -2212,7 +2212,7 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
         PyBytes_AsStringAndSize(encoded_string, &buffer, &len);
     }
 
-    *text = calloc(len,1);
+    *text = calloc(len+1,1);
     if (*text) {
         memcpy(*text, buffer, len);
     }
@@ -2230,7 +2230,7 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
         PyString_AsStringAndSize(encoded_string, &buffer, &len);
         *text = calloc(len,1);
         if (*text) {
-            memcpy(*text, buffer, len);
+            memcpy(*text, buffer, len+1);
         }
         return;
     }
