@@ -26,6 +26,14 @@ class TestFontPcf(PillowTestCase):
         tempname = self.tempfile("temp.pil")
         self.addCleanup(self.delete_tempfile, tempname[:-4]+'.pbm')
         font.save(tempname)
+
+        with Image.open(tempname.replace('.pil', '.pbm')) as loaded:
+            with Image.open('Tests/fonts/10x20.pbm') as target:
+                self.assert_image_equal(loaded, target)
+
+        with open(tempname, 'rb') as f_loaded:
+            with open('Tests/fonts/10x20.pil', 'rb') as f_target:
+                self.assertEqual(f_loaded.read(), f_target.read())
         return tempname
 
     def test_sanity(self):
