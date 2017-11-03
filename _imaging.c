@@ -2226,23 +2226,6 @@ void _font_text_asBytes(PyObject* encoded_string, unsigned char** text){
     }
 
     return;
-    /* UNDONE not reachable code */
-
-#if PY_VERSION_HEX < 0x03000000
-    /* likely case here is py2.x with an ordinary string.
-       but this isn't defined in Py3.x */
-    if (PyString_Check(encoded_string)) {
-        PyString_AsStringAndSize(encoded_string, &buffer, &len);
-        *text = calloc(len,1);
-        if (*text) {
-            memcpy(*text, buffer, len+1);
-        } else {
-            ImagingError_MemoryError();
-        }
-        return;
-    }
-        
-#endif
 }
 
 
