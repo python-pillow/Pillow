@@ -75,7 +75,17 @@ class TestFilePdf(PillowTestCase):
         self.assertGreater(os.path.getsize(outfile), 0)
 
         # Append images
-        im.save(outfile, save_all=True, append_images=[hopper()])
+        ims = [hopper()]
+        im.copy().save(outfile, save_all=True, append_images=ims)
+
+        self.assertTrue(os.path.isfile(outfile))
+        self.assertGreater(os.path.getsize(outfile), 0)
+
+        # Test appending using a generator
+        def imGenerator(ims):
+            for im in ims:
+                yield im
+        im.save(outfile, save_all=True, append_images=imGenerator(ims))
 
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)

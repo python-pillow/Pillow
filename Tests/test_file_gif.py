@@ -410,8 +410,18 @@ class TestFileGif(PillowTestCase):
 
         # Test appending single frame images
         im = Image.new('RGB', (100, 100), '#f00')
-        ims = [Image.new('RGB', (100, 100), color) for color in ['#0f0', '#00f']]
-        im.save(out, save_all=True, append_images=ims)
+        ims = [Image.new('RGB', (100, 100), color) for color
+               in ['#0f0', '#00f']]
+        im.copy().save(out, save_all=True, append_images=ims)
+
+        reread = Image.open(out)
+        self.assertEqual(reread.n_frames, 3)
+
+        # Tests appending using a generator
+        def imGenerator(ims):
+            for im in ims:
+                yield im
+        im.save(out, save_all=True, append_images=imGenerator(ims))
 
         reread = Image.open(out)
         self.assertEqual(reread.n_frames, 3)
