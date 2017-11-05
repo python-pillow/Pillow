@@ -1,10 +1,18 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image, ImagePalette, MicImagePlugin
+from PIL import Image, ImagePalette
+
+try:
+    from PIL import MicImagePlugin
+except ImportError:
+    olefile_installed = False
+else:
+    olefile_installed = True
 
 TEST_FILE = "Tests/images/hopper.mic"
 
 
+@unittest.skipUnless(olefile_installed, "olefile package not installed")
 class TestFileMic(PillowTestCase):
 
     def test_sanity(self):

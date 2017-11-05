@@ -780,7 +780,6 @@ try:
           include_package_data=True,
           packages=find_packages(),
           scripts=glob.glob("Scripts/*.py"),
-          install_requires=['olefile'],
           test_suite='nose.collector',
           keywords=["Imaging", ],
           license='Standard PIL License',
@@ -806,4 +805,3 @@ which was requested by the option flag --enable-%s
 """ % (str(err), str(err))
     sys.stderr.write(msg)
     raise DependencyException(msg)
-
