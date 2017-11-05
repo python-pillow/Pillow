@@ -4,6 +4,21 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Allow the olefile dependency to be optional #2789
+  [jdufresne]
+  
+- GIF: Permit LZW code lengths up to 12 bits in GIF decode #2813
+  [wiredfool]
+  
+- Fix unterminiated string and unchecked exception in _font_text_asBytes. #2825
+  [wiredfool]
+
+- PPM: Use fixed list of whitespace, rather relying on locale, fixes #272. #2831
+  [markmiscavage]
+
+- Added support for generators when using append_images #2829
+  [radarhere]
+  
 - Doc: Corrected PixelAccess.rst #2824
   [hasahmed]
   
