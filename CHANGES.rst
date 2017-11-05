@@ -10,7 +10,7 @@ Changelog (Pillow)
 - Depends: Updated raqm to 0.3.0 #2822
   [radarhere]
 
-- Depends: Update libimagequant to 2.11.0
+- Depends: Update libimagequant to 2.11.2 #2830
   [radarhere]
 
 - Docs: Link to maintained version of aggdraw #2809
