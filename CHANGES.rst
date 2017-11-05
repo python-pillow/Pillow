@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- WebP: Add support for animated WebP files #2761
+  [jd20]
+
 - PDF: Set encoderinfo for images when saving multi-page PDF. Fixes #2804. #2805
   [ixio]
 
