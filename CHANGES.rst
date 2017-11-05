@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- PDF: Set encoderinfo for images when saving multi-page PDF. Fixes #2804. #2805
+  [ixio]
+
 - Allow the olefile dependency to be optional #2789
   [jdufresne]
   
