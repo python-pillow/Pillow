@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Replace PIL.OleFileIO deprecation warning with descriptive ImportError #2833
+  [hugovk]
+  
 - WebP: Add support for animated WebP files #2761
   [jd20]
 
