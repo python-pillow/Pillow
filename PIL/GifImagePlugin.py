@@ -395,7 +395,7 @@ def _write_multiple_frames(im, fp, palette):
 
     im_frames = []
     frame_count = 0
-    for imSequence in [im]+im.encoderinfo.get("append_images", []):
+    for imSequence in itertools.chain([im], im.encoderinfo.get("append_images", [])):
         for im_frame in ImageSequence.Iterator(imSequence):
             # a copy is required here since seek can still mutate the image
             im_frame = _normalize_mode(im_frame.copy())

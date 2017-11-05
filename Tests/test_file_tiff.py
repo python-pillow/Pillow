@@ -470,7 +470,18 @@ class TestFileTiff(PillowTestCase):
         im = Image.new('RGB', (100, 100), '#f00')
         ims = [Image.new('RGB', (100, 100), color) for color
                in ['#0f0', '#00f']]
-        im.save(mp, format="TIFF", save_all=True, append_images=ims)
+        im.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
+
+        mp.seek(0, os.SEEK_SET)
+        reread = Image.open(mp)
+        self.assertEqual(reread.n_frames, 3)
+
+        # Test appending using a generator
+        def imGenerator(ims):
+            for im in ims:
+                yield im
+        mp = io.BytesIO()
+        im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))
 
         mp.seek(0, os.SEEK_SET)
         reread = Image.open(mp)
