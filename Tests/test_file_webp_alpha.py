@@ -22,6 +22,11 @@ class TestFileWebpAlpha(PillowTestCase):
                           "not testing transparency")
 
     def test_read_rgba(self):
+        """
+        Can we read an RGBA mode file without error?
+        Does it have the bits we expect?
+        """
+
         # Generated with `cwebp transparent.png -o transparent.webp`
         file_path = "Tests/images/transparent.webp"
         image = Image.open(file_path)
@@ -38,6 +43,11 @@ class TestFileWebpAlpha(PillowTestCase):
         self.assert_image_similar(image, target, 20.0)
 
     def test_write_lossless_rgb(self):
+        """
+        Can we write an RGBA mode file with lossless compression without
+        error? Does it have the bits we expect?
+        """
+
         temp_file = self.tempfile("temp.webp")
         # temp_file = "temp.webp"
 
@@ -89,6 +99,27 @@ class TestFileWebpAlpha(PillowTestCase):
             self.assert_image_similar(image, pil_image, 3.0)
         else:
             self.assert_image_similar(image, pil_image, 1.0)
+
+    def test_write_unsupported_mode_PA(self):
+        """
+        Saving a palette-based file with transparency to WebP format
+        should work, and be similar to the original file.
+        """
+
+        temp_file = self.tempfile("temp.webp")
+        file_path = "Tests/images/transparent.gif"
+        Image.open(file_path).save(temp_file)
+        image = Image.open(temp_file)
+
+        self.assertEqual(image.mode, "RGBA")
+        self.assertEqual(image.size, (200, 150))
+        self.assertEqual(image.format, "WEBP")
+
+        image.load()
+        image.getdata()
+        target = Image.open(file_path).convert("RGBA")
+
+        self.assert_image_similar(image, target, 10.0)
 
 
 if __name__ == '__main__':

@@ -43,6 +43,7 @@ def get_supported_codecs():
     return [f for f in codecs if check_codec(f)]
 
 features = {
+    "webp_anim": ("PIL._webp", 'HAVE_WEBPANIM'),
     "webp_mux": ("PIL._webp", 'HAVE_WEBPMUX'),
     "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY"),
     "raqm": ("PIL._imagingft", "HAVE_RAQM")
@@ -53,7 +54,7 @@ def check_feature(feature):
         raise ValueError("Unknown feature %s" % feature)
 
     module, flag = features[feature]
-    
+
     try:
         imported_module = __import__(module, fromlist=['PIL'])
         return getattr(imported_module, flag)
@@ -75,4 +76,4 @@ def get_supported():
     ret.extend(get_supported_features())
     ret.extend(get_supported_codecs())
     return ret
-        
+

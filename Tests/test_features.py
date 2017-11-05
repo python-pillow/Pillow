@@ -35,6 +35,11 @@ class TestFeatures(PillowTestCase):
         self.assertEqual(features.check('webp_mux'),
                          _webp.HAVE_WEBPMUX)
 
+    @unittest.skipUnless(HAVE_WEBP, True)
+    def check_webp_anim(self):
+        self.assertEqual(features.check('webp_anim'),
+                         _webp.HAVE_WEBPANIM)
+
     def test_check_modules(self):
         for feature in features.modules:
             self.assertIn(features.check_module(feature), [True, False])
