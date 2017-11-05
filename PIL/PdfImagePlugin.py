@@ -139,7 +139,7 @@ def _save(im, fp, filename, save_all=False):
         for append_im in append_images:
             if append_im.mode != im.mode:
                 append_im = append_im.convert(im.mode)
-                append_im.encoderinfo = im.encoderinfo.copy()
+            append_im.encoderinfo = im.encoderinfo.copy()
             ims.append(append_im)
     numberOfPages = 0
     for im in ims:
