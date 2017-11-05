@@ -24,7 +24,7 @@ __version__ = "0.2"
 #
 # --------------------------------------------------------------------
 
-b_whitespace = string.whitespace
+b_whitespace = string.whitespace.strip()
 try:
     import locale
     locale_lang, locale_enc = locale.getlocale()
