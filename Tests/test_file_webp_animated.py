@@ -66,7 +66,6 @@ class TestFileWebpAnimation(PillowTestCase):
         """
 
         temp_file = self.tempfile("temp.webp")
-        temp_file2 = self.tempfile("temp.png")
         frame1 = Image.open('Tests/images/anim_frame1.webp')
         frame2 = Image.open('Tests/images/anim_frame2.webp')
         frame1.save(temp_file,
@@ -77,7 +76,6 @@ class TestFileWebpAnimation(PillowTestCase):
 
         # Compare first frame to original
         im.load()
-        im.save(temp_file2)
         self.assert_image_equal(im, frame1.convert("RGBA"))
 
         # Compare second frame to original
