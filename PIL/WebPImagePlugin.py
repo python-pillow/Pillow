@@ -167,7 +167,7 @@ class WebPImageFile(ImageFile.ImageFile):
 
 def _save_all(im, fp, filename):
     encoderinfo = im.encoderinfo.copy()
-    append_images = encoderinfo.get("append_images", [])
+    append_images = list(encoderinfo.get("append_images", []))
 
     # If total frame count is 1, then save using the legacy API, which
     # will preserve non-alpha modes

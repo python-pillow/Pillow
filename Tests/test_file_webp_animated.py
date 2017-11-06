@@ -65,23 +65,35 @@ class TestFileWebpAnimation(PillowTestCase):
         are visually similar to the originals.
         """
 
-        temp_file = self.tempfile("temp.webp")
+        def check(temp_file):
+            im = Image.open(temp_file)
+            self.assertEqual(im.n_frames, 2)
+
+            # Compare first frame to original
+            im.load()
+            self.assert_image_equal(im, frame1.convert("RGBA"))
+
+            # Compare second frame to original
+            im.seek(1)
+            im.load()
+            self.assert_image_equal(im, frame2.convert("RGBA"))
+
         frame1 = Image.open('Tests/images/anim_frame1.webp')
         frame2 = Image.open('Tests/images/anim_frame2.webp')
-        frame1.save(temp_file,
+
+        temp_file1 = self.tempfile("temp.webp")
+        frame1.copy().save(temp_file1,
             save_all=True, append_images=[frame2], lossless=True)
+        check(temp_file1)
 
-        im = Image.open(temp_file)
-        self.assertEqual(im.n_frames, 2)
-
-        # Compare first frame to original
-        im.load()
-        self.assert_image_equal(im, frame1.convert("RGBA"))
-
-        # Compare second frame to original
-        im.seek(1)
-        im.load()
-        self.assert_image_equal(im, frame2.convert("RGBA"))
+        # Tests appending using a generator
+        def imGenerator(ims):
+            for im in ims:
+                yield im
+        temp_file2 = self.tempfile("temp_generator.webp")
+        frame1.copy().save(temp_file2,
+            save_all=True, append_images=imGenerator([frame2]), lossless=True)
+        check(temp_file2)
 
     def test_timestamp_and_duration(self):
         """
