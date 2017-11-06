@@ -1,0 +1,29 @@
+4.4.0
+-----
+
+API Changes
+===========
+
+OleFileIO.py
+^^^^^^^^^^^^
+
+The olefile module is no longer a required dependency when installing Pillow.
+Support for plugins requiring olefile will not be loaded if it is not
+installed. This allows library consumers to avoid installing this dependency
+if they choose. Some library consumers have little interest in the format
+support and would like to keep dependencies to a minimum.
+
+Further, the vendored version was removed in Pillow 4.0.0 and replaced with a
+deprecation warning that PIL.OleFileIO would be removed in a future version.
+This warning has been upgraded to an import error pending future removal.
+
+
+API Additions
+=============
+
+TODO
+
+Other Changes
+=============
+
+TODO
