@@ -327,7 +327,7 @@ Then see ``depends/install_raqm.sh`` to install libraqm.
 Prerequisites can be installed on **RedHat/CentOS 7.4** with::
 
     $ sudo yum install libjpeg-devel libwebp-devel freetype-devel openjpeg2-devel \
-        libtiff-devel libimagequant lcms2-devel
+        libtiff-devel libimagequant-devel lcms2-devel
 
 Prerequisites can be installed on **Fedora 23** with::
 
