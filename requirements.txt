@@ -1,11 +1,7 @@
 # Development, documentation & testing requirements.
 -e .
-Babel
-Jinja2
-MarkupSafe
-Pygments
-Sphinx
 alabaster
+Babel
 check-manifest
 cov-core
 coverage
@@ -13,14 +9,18 @@ coveralls
 docopt
 docutils
 jarn.viewdoc
-nose-cov
+Jinja2
+MarkupSafe
 nose
+nose-cov
 olefile
 pep8
 pyflakes
+Pygments
 pyroma
 pytz
 requests
 six
 snowballstemmer
+Sphinx
 sphinx-rtd-theme
