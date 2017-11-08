@@ -515,10 +515,11 @@ class TestImage(PillowTestCase):
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
         test_file = 'Tests/images/hopper.png'
+        temp_file = self.tempfile("temp.jpg")
 
         # Act/Assert
         with Image.open(test_file) as im:
-            self.assert_warning(None, lambda: im.save('test_img.jpg'))
+            self.assert_warning(None, im.save, temp_file)
 
 
 class MockEncoder(object):
