@@ -28,14 +28,22 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
+.eggs
 .tox/
 .coverage
 .cache
 nosetests.xml
 coverage.xml
+coverage.c.json
+coverage.filtered.info
+coverage.info
 
 # Test files
 test_images
+Tests/images/msp
+Tests/images/picins
+Tests/images/README.md
+Tests/images/sunraster
 
 # Translations
 *.mo
@@ -58,14 +66,16 @@ docs/_build/
 # Vim cruft
 .*.swp
 
-#emacs
+# emacs
 *~
 \#*#
 .#*
 
-#Komodo
+# Komodo
 *.komodoproject
 
-#OS
+# OS
 .DS_Store
 
+# IDE
+.idea
