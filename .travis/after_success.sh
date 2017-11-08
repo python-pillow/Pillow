@@ -9,9 +9,10 @@ lcov --remove coverage.info '/usr/*' -o coverage.filtered.info
 gem install coveralls-lcov
 coveralls-lcov -v -n coverage.filtered.info > coverage.c.json
 
-coverage report
+pip install coverage
 pip install codecov
 pip install coveralls-merge
+coverage report
 coveralls-merge coverage.c.json
 codecov
 
