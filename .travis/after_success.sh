@@ -16,12 +16,12 @@ coveralls-merge coverage.c.json
 codecov
 
 if [ "$DOCKER" == "" ]; then
-    pip install pep8 pyflakes
-    pep8 --statistics --count PIL/*.py
-    pep8 --statistics --count Tests/*.py
+    pip install pyflakes pycodestyle
     pyflakes *.py       | tee >(wc -l)
     pyflakes PIL/*.py   | tee >(wc -l)
     pyflakes Tests/*.py | tee >(wc -l)
+    pycodestyle --statistics --count PIL/*.py
+    pycodestyle --statistics --count Tests/*.py
 fi
 
 if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ] && [ "$DOCKER" == "" ]; then

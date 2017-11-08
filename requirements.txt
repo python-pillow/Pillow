@@ -14,7 +14,7 @@ MarkupSafe
 nose
 nose-cov
 olefile
-pep8
+pycodestyle
 pyflakes
 Pygments
 pyroma
