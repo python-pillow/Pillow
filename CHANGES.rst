@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Test: Fixed test_image.py to use tempfile #2841
+  [radarhere]
+  
 - Replace PIL.OleFileIO deprecation warning with descriptive ImportError #2833
   [hugovk]
   
