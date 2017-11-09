@@ -1,6 +1,10 @@
 Pillow
 ======
 
+.. image:: https://badges.gitter.im/python-pillow/Pillow.svg
+   :alt: Join the chat at https://gitter.im/python-pillow/Pillow
+   :target: https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 Python Imaging Library (Fork)
 -----------------------------
 
