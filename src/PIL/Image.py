@@ -544,8 +544,8 @@ class Image(object):
     * :py:func:`~PIL.Image.new`
     * :py:func:`~PIL.Image.frombytes`
     """
-    format = None
-    format_description = None
+    format = None             # type: Optional[Text]
+    format_description = None # type: Optional[Text]
     _close_exclusive_fp_after_loading = True
 
     def __init__(self):
@@ -559,7 +559,7 @@ class Image(object):
         self.info = {}       # type: Dict[Text, Any]
         self.category = NORMAL
         self.readonly = 0    # type: int
-        self.pyaccess = None
+        self.pyaccess = None # type: Optional[PyAccess.PyAccess]
 
     @property
     def width(self):
@@ -2623,7 +2623,7 @@ def _decompression_bomb_check(size):
 
 
 def open(fp, mode="r"):
-    # type: (Union[Text, pathlib.Path, BinaryIO], Text) -> Image
+    # type: (Union[Text, pathlib.Path, BinaryIO], Text) -> ImageFile.ImageFile
     """
     Opens and identifies the given image file.
 
@@ -2668,7 +2668,7 @@ def open(fp, mode="r"):
     preinit()
 
     def _open_core(fp, filename, prefix):
-        # type: (BinaryIO, Text, Text) -> Optional[Image]
+        # type: (BinaryIO, Text, Text) -> Optional[ImageFile.ImageFile]
         for i in ID:
             try:
                 factory, accept = OPEN[i]
