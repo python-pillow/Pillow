@@ -22,7 +22,6 @@ matrix:
     - env: DOCKER="arch" # contains PyQt5
     - env: DOCKER="ubuntu-trusty-x86"
     - env: DOCKER="ubuntu-xenial-amd64"
-    - env: DOCKER="ubuntu-precise-amd64"
     - env: DOCKER="debian-stretch-x86"
     - env: DOCKER="centos-6-amd64"
     - env: DOCKER="amazon-amd64"
