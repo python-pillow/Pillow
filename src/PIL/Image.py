@@ -607,27 +607,10 @@ class Image(object):
         had their file read and closed by the
         :py:meth:`~PIL.Image.Image.load` method.
         """
-        try:
-            self.fp.close()
-            self.fp = None
-        except Exception as msg:
-            logger.debug("Error closing: %s", msg)
-
-        if getattr(self, 'map', None):
-            self.map = None
-
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
         self.im = deferred_error(ValueError("Operation on closed image"))
-
-    if sys.version_info >= (3, 4, 0):
-        def __del__(self):
-            # type: () -> None
-            if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp')
-               and self.fp and self._exclusive_fp):
-                self.fp.close()
-            self.fp = None
 
     def _copy(self):
         # type: () -> None

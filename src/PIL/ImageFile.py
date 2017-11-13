@@ -33,6 +33,9 @@ import io
 import os
 import sys
 import struct
+import logging
+
+logger = logging.getLogger(__name__)
 
 MAXBLOCK = 65536
 
@@ -85,7 +88,8 @@ class ImageFile(Image.Image):
 
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
-
+        self.fp = None # type: Optional[file]
+        
         if isPath(fp):
             # filename
             self.fp = open(fp, "rb")
@@ -113,6 +117,36 @@ class ImageFile(Image.Image):
         if not self.mode or self.size[0] <= 0:
             raise SyntaxError("not identified by this driver")
 
+    if sys.version_info >= (3, 4, 0):
+        def __del__(self):
+            # type: () -> None
+            if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp')
+                and self.fp and self._exclusive_fp):
+                self.fp.close()
+            self.fp = None
+
+    def close(self):
+        """
+        Closes the file pointer, if possible.
+
+        This operation will destroy the image core and release its memory.
+        The image data will be unusable afterward.
+
+        This function is only required to close images that have not
+        had their file read and closed by the
+        :py:meth:`~PIL.Image.Image.load` method.
+        """
+        try:
+            self.fp.close()
+            self.fp = None
+        except Exception as msg:
+            logger.debug("Error closing: %s", msg)
+        
+        if getattr(self, 'map', None):
+            self.map = None
+
+        Image.Image.close(self)
+        
     def draft(self, mode, size):
         "Set draft mode"
 
