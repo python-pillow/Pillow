@@ -267,16 +267,5 @@ class TestImageTransformPerspective(TestImageTransformAffine):
     # Repeat all tests for AFFINE transformations with PERSPECTIVE
     transform = Image.PERSPECTIVE
 
-class TestFill(unittest.TestCase):
-    def test_fill(self):
-        im = hopper('RGB')
-        (w, h) = im.size
-        transformed = im.transform(im.size, Image.EXTENT,
-                                   (0, 0,
-                                    w*2, h*2),
-                                   Image.BILINEAR,
-                                   fill = 'red')
-        transformed.show()
-        self.assertEqual(transformed.getpixel((w-1,h-1)), (255,0,0))
 if __name__ == '__main__':
     unittest.main()
