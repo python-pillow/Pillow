@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Dependencies: Updated libimagequant to 2.11.3
+  [radarhere]
+
 - Test: Fixed test_image.py to use tempfile #2841
   [radarhere]
   
@@ -28,7 +31,7 @@ Changelog (Pillow)
 - PPM: Use fixed list of whitespace, rather relying on locale, fixes #272. #2831
   [markmiscavage]
 
-- Added support for generators when using append_images #2829
+- Added support for generators when using append_images #2829, #2835
   [radarhere]
   
 - Doc: Corrected PixelAccess.rst #2824
