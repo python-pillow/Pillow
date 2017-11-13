@@ -59,7 +59,7 @@ class TestImageTransform(PillowTestCase):
                                    (0, 0,
                                     w*2, h*2),
                                    Image.BILINEAR,
-                                   fill = 'red')
+                                   fillcolor = 'red')
 
         self.assertEqual(transformed.getpixel((w-1,h-1)), (255,0,0))
 
