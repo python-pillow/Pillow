@@ -312,7 +312,15 @@ class pil_build_ext(build_ext):
 
         elif sys.platform.startswith("linux"):
             arch_tp = (plat.processor(), plat.architecture()[0])
-            if arch_tp == ("x86_64", "32bit"):
+            # This should be correct on debian derivatives.
+            if plat.dist()[0].lower() in ('debian', 'ubuntu'):
+                # If this doesn't work, don't just silently patch
+                # downstream because it's going to break when people
+                # try to build pillow from source instead of
+                # installing from the system packages.
+                self.add_multiarch_paths()
+
+            elif arch_tp == ("x86_64", "32bit"):
                 # 32-bit build on 64-bit machine.
                 _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
             else:
@@ -362,11 +370,6 @@ class pil_build_ext(build_ext):
                 else:
                     raise ValueError(
                         "Unable to identify Linux platform: `%s`" % platform_)
-
-                # XXX Kludge. Above /\ we brute force support multiarch. Here we
-                # try Barry's more general approach. Afterward, something should
-                # work ;-)
-                self.add_multiarch_paths()
 
                 # termux support for android.
                 # system libraries (zlib) are installed in /system/lib
