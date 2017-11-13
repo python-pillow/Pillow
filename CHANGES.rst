@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Test: Drop Ubuntu Precise, Fedora 24, add Fedora 25, Centos 7 CI Support #2854, #2843
+  [wiredfool]
+
 - Dependencies: Updated libimagequant to 2.11.3
   [radarhere]
 
