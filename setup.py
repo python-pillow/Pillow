@@ -8,21 +8,33 @@
 # Your cheese is so fresh most people think it's a cream: Mascarpone
 # ------------------------------
 from __future__ import print_function
+
 import glob
 import os
 import platform as plat
 import re
 import struct
-import sys
 import subprocess
-
+import sys
+import warnings
+from distutils import ccompiler, sysconfig
 from distutils.command.build_ext import build_ext
-from distutils import sysconfig, ccompiler
-from setuptools import Extension, setup, find_packages
+
+from setuptools import Extension, find_packages, setup
 
 # monkey patch import hook. Even though flake8 says it's not used, it is.
 # comment this out to disable multi threaded builds.
 import mp_compile
+
+
+if sys.platform == "win32" and sys.version_info >= (3, 7):
+    warnings.warn(
+        "Pillow does not yet support Python {}.{} and does not yet provide "
+        "prebuilt Windows binaries. We do not recommend building from "
+        "source on Windows.".format(sys.version_info.major,
+                                    sys.version_info.minor),
+        RuntimeWarning)
+
 
 _IMAGING = ("decode", "encode", "map", "display", "outline", "path")
 
@@ -749,6 +761,7 @@ class pil_build_ext(build_ext):
 
 def debug_build():
     return hasattr(sys, 'gettotalrefcount')
+
 
 try:
     setup(name=NAME,
