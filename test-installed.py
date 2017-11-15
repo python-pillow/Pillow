@@ -14,19 +14,18 @@ sys.path.insert(0, os.path.abspath('./Tests'))
 # Something is required, because if we import the tests from the local
 # directory, once again, we've got the non-installed PIL in the way
 for i, arg in enumerate(sys.argv[1:]):
-    print(i, arg)
     if arg.startswith('Tests/test_') and arg.endswith('.py'):
-        print("bingo")
         sys.argv.insert(i+1, '-k')
         break
 else:
     sys.argv.append('Tests')
 
-# for arg in sys.argv:
-#     if '-n' in arg or '--numprocesses' in arg:
-#         break
-# else:  # for
-#     sys.argv.extend(['--numprocesses' ,'auto'])  # auto-detect number of CPUs
+for arg in sys.argv:
+    if '-n' in arg or '--numprocesses' in arg:
+        break
+else:  # for
+    sys.argv.extend(['--numprocesses', 'auto'])  # auto-detect number of CPUs
+
 
 if __name__ == '__main__':
     pytest.main()
