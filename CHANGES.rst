@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Docs: Correct error in ImageDraw documentation #2858
+  [meribold]
+ 
 - Test: Drop Ubuntu Precise, Fedora 24, add Fedora 25, Centos 7 CI Support #2854, #2843
   [wiredfool]
 
