@@ -132,7 +132,7 @@ Methods
     Draws an arc (a portion of a circle outline) between the start and end
     angles, inside the given bounding box.
 
-    :param xy: Four points to define the bounding box. Sequence of
+    :param xy: Two points to define the bounding box. Sequence of
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
     :param start: Starting angle, in degrees. Angles are measured from
             3 o'clock, increasing clockwise.
@@ -155,7 +155,7 @@ Methods
     Same as :py:meth:`~PIL.ImageDraw.ImageDraw.arc`, but connects the end points
     with a straight line.
 
-    :param xy: Four points to define the bounding box. Sequence of
+    :param xy: Two points to define the bounding box. Sequence of
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
@@ -164,7 +164,7 @@ Methods
 
     Draws an ellipse inside the given bounding box.
 
-    :param xy: Four points to define the bounding box. Sequence of either
+    :param xy: Two points to define the bounding box. Sequence of either
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
@@ -188,7 +188,7 @@ Methods
     Same as arc, but also draws straight lines between the end points and the
     center of the bounding box.
 
-    :param xy: Four points to define the bounding box. Sequence of
+    :param xy: Two points to define the bounding box. Sequence of
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
     :param start: Starting angle, in degrees. Angles are measured from
             3 o'clock, increasing clockwise.
@@ -221,7 +221,7 @@ Methods
 
     Draws a rectangle.
 
-    :param xy: Four points to define the bounding box. Sequence of either
+    :param xy: Two points to define the bounding box. Sequence of either
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The second point
             is just outside the drawn rectangle.
     :param outline: Color to use for the outline.
