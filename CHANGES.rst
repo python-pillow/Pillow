@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Build: Fix setup.py on Debian #2853
+  [wiredfool]
+
 - Docs: Correct error in ImageDraw documentation #2858
   [meribold]
  
