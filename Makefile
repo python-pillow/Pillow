@@ -89,7 +89,7 @@ sdist:
 	python setup.py sdist --format=gztar
 
 test:
-	python test-installed.py
+	pytest -qq
 
 # https://docs.python.org/2/distutils/packageindex.html#the-pypirc-file
 upload-test:
