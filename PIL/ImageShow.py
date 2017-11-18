@@ -167,7 +167,7 @@ else:
             return command, executable
 
     if which("display"):
-        register
+        register(DisplayViewer)
     elif which("eog"):
         register(EogViewer)
 
