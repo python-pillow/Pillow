@@ -156,17 +156,20 @@ else:
 
     # implementations
 
-    # The default Image Viewer of Ubuntu using the command "eog" in the terminal.
-    # Reference: https://help.gnome.org/users/eog/stable/commandline.html.en
-
     class DisplayViewer(UnixViewer):
         def get_command_ex(self, file, **options):
-            command = executable = "display" or "eog"
+            command = executable = "display"
             return command, executable
 
+    class EogViewer(UnixViewer):
+        def get_command_ex(self, file, **options):
+            command = executable = "eog"
+            return command, executable
 
-    if which("display" or "eog"):
-        register(DisplayViewer)
+    if which("display"):
+        register
+    elif which("eog"):
+        register(EogViewer)
 
     class XVViewer(UnixViewer):
         def get_command_ex(self, file, title=None, **options):
