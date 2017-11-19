@@ -52,21 +52,21 @@ install:
       {
         c:\python34\python.exe c:\pillow\winbuild\build_dep.py
         c:\pillow\winbuild\build_deps.cmd
-        $host.SetShouldExit(0)  
+        $host.SetShouldExit(0)
       }
-      
+
 build_script:
 - ps: |
       if ($env:PYTHON -eq "c:/msys64/mingw32")
       {
         c:\msys64\usr\bin\bash -l -c c:\\pillow\\winbuild\\appveyor_build_msys2.sh
         Write-Host "through install"
-        $host.SetShouldExit(0)  
+        $host.SetShouldExit(0)
       }
       else
       {
         & $env:PYTHON/$env:EXECUTABLE c:\pillow\winbuild\build.py
-        $host.SetShouldExit(0)  
+        $host.SetShouldExit(0)
       }
 - cd c:\pillow
 - mv PIL PIL.temp
@@ -107,9 +107,9 @@ deploy:
   on:
     branch: master
     deploy: YES
-    
 
-# Uncomment the following line to get RDP access after the build/test and block for
+
+# Uncomment the following lines to get RDP access after the build/test and block for
 # up to the timeout limit (~1hr)
 #
 #on_finish:
