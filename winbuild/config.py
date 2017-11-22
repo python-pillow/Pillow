@@ -29,9 +29,9 @@ libs = {
         'dir': 'jpeg-9b',
     },
     'tiff': {
-        'url': 'ftp://download.osgeo.org/libtiff/tiff-4.0.8.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'tiff-4.0.8.zip',
-        'dir': 'tiff-4.0.8',
+        'url': 'ftp://download.osgeo.org/libtiff/tiff-4.0.9.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'tiff-4.0.9.zip',
+        'dir': 'tiff-4.0.9',
     },
     'freetype': {
         'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.8.1.tar.gz',
