@@ -101,6 +101,7 @@ class Viewer(object):
 
 # --------------------------------------------------------------------
 
+
 if sys.platform == "win32":
 
     class WindowsViewer(Viewer):
@@ -161,14 +162,15 @@ else:
             command = executable = "display"
             return command, executable
 
+    if which("display"):
+        register(DisplayViewer)
+
     class EogViewer(UnixViewer):
         def get_command_ex(self, file, **options):
             command = executable = "eog"
             return command, executable
 
-    if which("display"):
-        register(DisplayViewer)
-    elif which("eog"):
+    if which("eog"):
         register(EogViewer)
 
     class XVViewer(UnixViewer):
