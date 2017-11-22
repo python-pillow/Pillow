@@ -313,7 +313,7 @@ class pil_build_ext(build_ext):
         elif sys.platform.startswith("linux"):
             arch_tp = (plat.processor(), plat.architecture()[0])
             # This should be correct on debian derivatives.
-            if plat.dist()[0].lower() in ('debian', 'ubuntu'):
+            if os.path.exists('/etc/debian_version'):
                 # If this doesn't work, don't just silently patch
                 # downstream because it's going to break when people
                 # try to build pillow from source instead of
