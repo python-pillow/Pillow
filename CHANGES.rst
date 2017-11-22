@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Setup: Replace deprecated platform.dist with file existence check #2869
+  [wiredfool]
+
 - Build: Fix setup.py on Debian #2853
   [wiredfool]
 
