@@ -15,19 +15,19 @@ Changelog (Pillow)
 
 - Docs: Correct error in ImageDraw documentation #2858
   [meribold]
- 
+
 - Test: Drop Ubuntu Precise, Fedora 24, add Fedora 25, Centos 7 CI Support #2854, #2843
   [wiredfool]
 
-- Dependencies: Updated libimagequant to 2.11.3
+- Dependencies: Updated libimagequant to 2.11.3 #2849
   [radarhere]
 
 - Test: Fix test_image.py to use tempfile #2841
   [radarhere]
-  
+
 - Replace PIL.OleFileIO deprecation warning with descriptive ImportError #2833
   [hugovk]
-  
+
 - WebP: Add support for animated WebP files #2761
   [jd20]
 
@@ -36,10 +36,10 @@ Changelog (Pillow)
 
 - Allow the olefile dependency to be optional #2789
   [jdufresne]
-  
+
 - GIF: Permit LZW code lengths up to 12 bits in GIF decode #2813
   [wiredfool]
-  
+
 - Fix unterminiated string and unchecked exception in _font_text_asBytes. #2825
   [wiredfool]
 
@@ -48,10 +48,10 @@ Changelog (Pillow)
 
 - Added support for generators when using append_images #2829, #2835
   [radarhere]
-  
+
 - Doc: Correct PixelAccess.rst #2824
   [hasahmed]
-  
+
 - Depends: Update raqm to 0.3.0 #2822
   [radarhere]
 
@@ -66,10 +66,10 @@ Changelog (Pillow)
 
 - Add option to Makefile to build and install with C coverage #2781
   [hugovk]
-  
+
 - Add context manager support to ImageFile.Parser and PngImagePlugin.ChunkStream #2793
-  [radarhere] 
-  
+  [radarhere]
+
 - ImageDraw.textsize: fix zero length error #2788
   [wiredfool, hugovk]
 
@@ -84,7 +84,7 @@ Changelog (Pillow)
 
 - Use correct Windows handle type on 64 bit in imagingcms  #2774
   [cgohlke]
-  
+
 - 64 Bit Windows fix for block storage #2773
   [cgohlke]
 
