@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Dependencies: Update libtiff to 4.0.9 #2871
+  [radarhere]
+
 - Setup: Replace deprecated platform.dist with file existence check #2869
   [wiredfool]
 
@@ -19,7 +22,7 @@ Changelog (Pillow)
 - Dependencies: Updated libimagequant to 2.11.3
   [radarhere]
 
-- Test: Fixed test_image.py to use tempfile #2841
+- Test: Fix test_image.py to use tempfile #2841
   [radarhere]
   
 - Replace PIL.OleFileIO deprecation warning with descriptive ImportError #2833
@@ -46,13 +49,10 @@ Changelog (Pillow)
 - Added support for generators when using append_images #2829, #2835
   [radarhere]
   
-- Doc: Corrected PixelAccess.rst #2824
+- Doc: Correct PixelAccess.rst #2824
   [hasahmed]
   
-- Depends: Updated raqm to 0.3.0 #2822
-  [radarhere]
-
-- Depends: Update libimagequant to 2.11.2 #2830
+- Depends: Update raqm to 0.3.0 #2822
   [radarhere]
 
 - Docs: Link to maintained version of aggdraw #2809
@@ -67,7 +67,7 @@ Changelog (Pillow)
 - Add option to Makefile to build and install with C coverage #2781
   [hugovk]
   
-- Added context manager support to ImageFile.Parser and PngImagePlugin.ChunkStream #2793
+- Add context manager support to ImageFile.Parser and PngImagePlugin.ChunkStream #2793
   [radarhere] 
   
 - ImageDraw.textsize: fix zero length error #2788
