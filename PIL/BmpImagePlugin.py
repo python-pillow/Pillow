@@ -225,14 +225,11 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename, check=0):
+def _save(im, fp, filename):
     try:
         rawmode, bits, colors = SAVE[im.mode]
     except KeyError:
         raise IOError("cannot write mode %s as BMP" % im.mode)
-
-    if check:
-        return check
 
     info = im.encoderinfo
 

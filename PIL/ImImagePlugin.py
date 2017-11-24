@@ -314,7 +314,7 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename, check=0):
+def _save(im, fp, filename):
 
     try:
         image_type, rawmode = SAVE[im.mode]
@@ -322,9 +322,6 @@ def _save(im, fp, filename, check=0):
         raise ValueError("Cannot save %s images as IM" % im.mode)
 
     frames = im.encoderinfo.get("frames", 1)
-
-    if check:
-        return check
 
     fp.write(("Image type: %s image\r\n" % image_type).encode('ascii'))
     if filename:

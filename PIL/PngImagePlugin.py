@@ -664,7 +664,7 @@ class _idat(object):
         self.chunk(self.fp, b"IDAT", data)
 
 
-def _save(im, fp, filename, chunk=putchunk, check=0):
+def _save(im, fp, filename, chunk=putchunk):
     # save an image to disk (called by the save method)
 
     mode = im.mode
@@ -705,9 +705,6 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
         rawmode, mode = _OUTMODES[mode]
     except KeyError:
         raise IOError("cannot write mode %s as PNG" % mode)
-
-    if check:
-        return check
 
     #
     # write minimal PNG file
