@@ -13,7 +13,6 @@ Jinja2
 MarkupSafe
 nose
 nose-cov
-olefile
 pycodestyle
 pyflakes
 Pygments
