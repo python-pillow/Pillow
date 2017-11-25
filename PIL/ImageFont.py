@@ -233,15 +233,16 @@ def load(filename):
 def truetype(font=None, size=10, index=0, encoding="",
              layout_engine=None):
     """
-    Load a TrueType or OpenType font file, and create a font object.
-    This function loads a font object from the given file, and creates
-    a font object for a font of the given size.
+    Load a TrueType or OpenType font from a file or file-like object,
+    and create a font object.
+    This function loads a font object from the given file or file-like
+    object, and creates a font object for a font of the given size.
 
     This function requires the _imagingft service.
 
-    :param font: A truetype font file. Under Windows, if the file
-                     is not found in this filename, the loader also looks in
-                     Windows :file:`fonts/` directory.
+    :param font: A filename or file-like object containing a TrueType font.
+                     Under Windows, if the file is not found in this filename,
+                     the loader also looks in Windows :file:`fonts/` directory.
     :param size: The requested size, in points.
     :param index: Which font face to load (default is first available face).
     :param encoding: Which font encoding to use (default is Unicode). Common
