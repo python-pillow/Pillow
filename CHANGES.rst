@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Setup: Warn if trying to install for Py3.7 on Windows #2855
+  [hugovk]
+  
 - Doc: Fonts can be loaded from a file-like object, not just filename #2861
   [robin-norwood]
 
