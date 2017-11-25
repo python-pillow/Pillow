@@ -18,6 +18,7 @@ matrix:
     - python: '3.5'
     - python: '3.4'
     - python: '3.3'
+    - python: '3.7-dev'
     - env: DOCKER="alpine"
     - env: DOCKER="arch" # contains PyQt5
     - env: DOCKER="ubuntu-trusty-x86"
