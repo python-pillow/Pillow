@@ -4,6 +4,12 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Doc: Fonts can be loaded from a file-like object, not just filename #2861
+  [robin-norwood]
+
+- Add eog support for Ubuntu Image Viewer #2864
+  [NafisFaysal]
+  
 - Test: Test on 3.7-dev on Travis.ci #2870
   [hugovk]
 
