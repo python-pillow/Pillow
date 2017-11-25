@@ -4,6 +4,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Test: Test on 3.7-dev on Travis.ci #2870
+  [hugovk]
+
 - Dependencies: Update libtiff to 4.0.9 #2871
   [radarhere]
 
