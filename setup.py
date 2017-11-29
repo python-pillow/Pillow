@@ -352,7 +352,7 @@ class pil_build_ext(build_ext):
                     's390x':   ["/usr/lib64", "/usr/lib/s390x-linux-gnu"],
                     's390':    ["/usr/lib/s390-linux-gnu"],
                     }
-                    
+
                 for platform_ in arch_tp:
                     dirs = libdirs.get(platform_, None)
                     if not platform_:
@@ -360,7 +360,7 @@ class pil_build_ext(build_ext):
                     for path in dirs:
                         _add_directory(library_dirs, path)
                     break
-                
+
                 else:
                     raise ValueError(
                         "Unable to identify Linux platform: `%s`" % platform_)
@@ -763,6 +763,7 @@ try:
               "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
               "Topic :: Multimedia :: Graphics :: Graphics Conversion",
               "Topic :: Multimedia :: Graphics :: Viewers",
+              "License :: Other/Proprietary License",
               "Programming Language :: Python :: 2",
               "Programming Language :: Python :: 2.7",
               "Programming Language :: Python :: 3",
