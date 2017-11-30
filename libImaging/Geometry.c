@@ -165,10 +165,10 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8){
-#pragma omp parallel for private(x,y,xx,yy,yysize,xxsize) shared(imIn,imOut) default(none) collapse(2)
+#pragma omp parallel for private(x,y,xx,yy,xxx,yyy,yysize,xxsize,xxxsize,yyysize) shared(imIn,imOut) default(none) collapse(2)
         TRANSPOSE(UINT8, image8)
     } else {
-#pragma omp parallel for private(x,y,xx,yy,yysize,xxsize) shared(imIn,imOut) default(none) collapse(2)
+#pragma omp parallel for private(x,y,xx,yy,xxx,yyy,yysize,xxsize,xxxsize,yyysize) shared(imIn,imOut) default(none) collapse(2)
         TRANSPOSE(INT32, image32)
     }
     ImagingSectionLeave(&cookie);

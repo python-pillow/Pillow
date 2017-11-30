@@ -622,7 +622,8 @@ class pil_build_ext(build_ext):
         exts = [(Extension("PIL._imaging",
                            files,
                            libraries=libs,
-                           define_macros=defs))]
+                           define_macros=defs,
+                           extra_compile_args=extra_compile_args))]
 
         #
         # additional libraries
