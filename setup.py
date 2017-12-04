@@ -40,24 +40,32 @@ _IMAGING = ("decode", "encode", "map", "display", "outline", "path")
 
 _LIB_IMAGING = (
     "Access", "AlphaComposite", "Resample", "Bands", "BcnDecode", "BitDecode",
-    "Blend", "Chops", "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop", "Dib",
-    "Draw", "Effects", "EpsEncode", "File", "Fill", "Filter", "FliDecode",
-    "Geometry", "GetBBox", "GifDecode", "GifEncode", "HexDecode", "Histo",
-    "JpegDecode", "JpegEncode", "LzwDecode", "Matrix", "ModeFilter",
-    "Negative", "Offset", "Pack", "PackDecode", "Palette", "Paste",
-    "Quant", "QuantOctree", "QuantHash", "QuantHeap", "PcdDecode", "PcxDecode",
+    "Blend", "Chops", "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop",
+    "Dib", "Draw", "Effects", "EpsEncode", "File", "Fill", "Filter",
+    "FliDecode", "Geometry", "GetBBox", "GifDecode", "GifEncode", "HexDecode",
+    "Histo", "JpegDecode", "JpegEncode", "LzwDecode", "Matrix", "ModeFilter",
+    "Negative", "Offset", "Pack", "PackDecode", "Palette", "Paste", "Quant",
+    "QuantOctree", "QuantHash", "QuantHeap", "PcdDecode", "PcxDecode",
     "PcxEncode", "Point", "RankFilter", "RawDecode", "RawEncode", "Storage",
     "SgiRleDecode", "SunRleDecode", "TgaRleDecode", "Unpack", "UnpackYCC",
-    "UnsharpMask", "XbmDecode", "XbmEncode", "ZipDecode", "ZipEncode", "TiffDecode",
-    "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur", "QuantPngQuant", "codec_fd")
+    "UnsharpMask", "XbmDecode", "XbmEncode", "ZipDecode", "ZipEncode",
+    "TiffDecode", "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur", "QuantPngQuant",
+    "codec_fd")
 
 DEBUG = False
 
-class DependencyException(Exception): pass
-class RequiredDependencyException(Exception): pass
+
+class DependencyException(Exception):
+    pass
+
+
+class RequiredDependencyException(Exception):
+    pass
+
 
 PLATFORM_MINGW = 'mingw' in ccompiler.get_default_compiler()
 PLATFORM_PYPY = hasattr(sys, 'pypy_version_info')
+
 
 def _dbg(s, tp=None):
     if DEBUG:
@@ -108,6 +116,7 @@ def _cmd_exists(cmd):
         for path in os.environ["PATH"].split(os.pathsep)
     )
 
+
 def _read(file):
     with open(file, 'rb') as fp:
         return fp.read()
@@ -118,6 +127,7 @@ def get_version():
     with open(version_file, 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
+
 
 try:
     import _tkinter
@@ -136,6 +146,7 @@ FREETYPE_ROOT = None
 LCMS_ROOT = None
 RAQM_ROOT = None
 
+
 def _pkg_config(name):
     try:
         command = [
@@ -147,8 +158,9 @@ def _pkg_config(name):
             command.append('--silence-errors')
         libs = subprocess.check_output(command).decode('utf8').split(' ')
         return libs[1][2:].strip(), libs[0][2:].strip()
-    except:
+    except Exception:
         pass
+
 
 class pil_build_ext(build_ext):
     class feature:
@@ -178,7 +190,8 @@ class pil_build_ext(build_ext):
     ] + [
         ('enable-%s' % x, None, 'Enable support for %s' % x) for x in feature
     ] + [
-        ('disable-platform-guessing', None, 'Disable platform guessing on Linux'),
+        ('disable-platform-guessing', None,
+         'Disable platform guessing on Linux'),
         ('debug', None, 'Debug logging')
     ]
 
@@ -299,7 +312,7 @@ class pil_build_ext(build_ext):
             try:
                 prefix = subprocess.check_output(['brew', '--prefix']).strip(
                 ).decode('latin1')
-            except:
+            except Exception:
                 # Homebrew not installed
                 prefix = None
 
@@ -337,8 +350,10 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
             else:
                 libdirs = {
-                    'x86_64':  ["/lib64", "/usr/lib64", "/usr/lib/x86_64-linux-gnu"],
-                    '64bit':   ["/lib64", "/usr/lib64", "/usr/lib/x86_64-linux-gnu"],
+                    'x86_64':  ["/lib64", "/usr/lib64",
+                                "/usr/lib/x86_64-linux-gnu"],
+                    '64bit':   ["/lib64", "/usr/lib64",
+                                "/usr/lib/x86_64-linux-gnu"],
                     'i386':    ["/usr/lib/i386-linux-gnu"],
                     'i686':    ["/usr/lib/i386-linux-gnu"],
                     '32bit':   ["/usr/lib/i386-linux-gnu"],
@@ -371,7 +386,8 @@ class pil_build_ext(build_ext):
                 # user libs are at $PREFIX/lib
                 if os.environ.get('ANDROID_ROOT', None):
                     _add_directory(library_dirs,
-                                  os.path.join(os.environ['ANDROID_ROOT'],'lib'))
+                                   os.path.join(os.environ['ANDROID_ROOT'],
+                                                'lib'))
 
         elif sys.platform.startswith("gnu"):
             self.add_multiarch_paths()
@@ -608,9 +624,9 @@ class pil_build_ext(build_ext):
             defs.append(("WORDS_BIGENDIAN", None))
 
         if sys.platform == "win32" and not (PLATFORM_PYPY or PLATFORM_MINGW):
-            defs.append(("PILLOW_VERSION", '"\\"%s\\""'%PILLOW_VERSION))
+            defs.append(("PILLOW_VERSION", '"\\"%s\\""' % PILLOW_VERSION))
         else:
-            defs.append(("PILLOW_VERSION", '"%s"'%PILLOW_VERSION))
+            defs.append(("PILLOW_VERSION", '"%s"' % PILLOW_VERSION))
 
         exts = [(Extension("PIL._imaging",
                            files,
@@ -712,7 +728,8 @@ class pil_build_ext(build_ext):
         if not all:
             print("To add a missing option, make sure you have the required")
             print("library and headers.")
-            print("See https://pillow.readthedocs.io/en/latest/installation.html#building-from-source")
+            print("See https://pillow.readthedocs.io/en/latest/installation."
+                  "html#building-from-source")
             print("")
 
         print("To check the build, run the selftest.py script.")
@@ -730,7 +747,7 @@ class pil_build_ext(build_ext):
             try:
                 ret = subprocess.call(['dpkg-architecture',
                                        '-qDEB_HOST_MULTIARCH'], stdout=fp)
-            except:
+            except Exception:
                 return
         try:
             if ret >> 8 == 0:
