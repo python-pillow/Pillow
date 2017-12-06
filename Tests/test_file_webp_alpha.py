@@ -119,7 +119,7 @@ class TestFileWebpAlpha(PillowTestCase):
         image.getdata()
         target = Image.open(file_path).convert("RGBA")
 
-        self.assert_image_similar(image, target, 10.0)
+        self.assert_image_similar(image, target, 25.0)
 
 
 if __name__ == '__main__':
