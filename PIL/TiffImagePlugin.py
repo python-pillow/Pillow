@@ -1240,7 +1240,8 @@ class TiffImageFile(ImageFile.ImageFile):
                                                      "tiff_deflate",
                                                      "tiff_sgilog",
                                                      "tiff_sgilog24",
-                                                     "tiff_raw_16"]:
+                                                     "tiff_raw_16",
+                                                     "jpeg"]:
                 # if DEBUG:
                 #     print("Activating g4 compression for whole file")
 
