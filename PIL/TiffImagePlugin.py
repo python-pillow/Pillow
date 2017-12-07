@@ -1186,12 +1186,23 @@ class TiffImageFile(ImageFile.ImageFile):
             # for more exotic images.
             sampleFormat = (1,)
 
+        bps_tuple = self.tag_v2.get(BITSPERSAMPLE, (1,))
+        extra_tuple = self.tag_v2.get(EXTRASAMPLES, ())
+        if photo in (2, 6, 8): # RGB, YCbCr, LAB
+            bps_count = 3
+        elif photo == 5:
+            bps_count = 4
+        else:
+            bps_count = 1
+        bps_count += len(extra_tuple)
+        # Some files have only one value in bps_tuple,
+        # while should have more. Fix it
+        if bps_count > len(bps_tuple) and len(bps_tuple) == 1:
+            bps_tuple = bps_tuple * bps_count
+
         # mode: check photometric interpretation and bits per pixel
-        key = (
-            self.tag_v2.prefix, photo, sampleFormat, fillorder,
-            self.tag_v2.get(BITSPERSAMPLE, (1,)),
-            self.tag_v2.get(EXTRASAMPLES, ())
-            )
+        key = (self.tag_v2.prefix, photo, sampleFormat, fillorder,
+               bps_tuple, extra_tuple)
         if DEBUG:
             print("format key:", key)
         try:
