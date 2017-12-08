@@ -59,6 +59,14 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.tile, [('tiff_lzw', (0, 0, 100, 40), 50, 'RGBa;16B')])
         im.load()
 
+    def test_wrong_bits_per_sample(self):
+        im = Image.open("Tests/images/tiff_wrong_bits_per_sample.tiff")
+
+        self.assertEqual(im.mode, "RGBA")
+        self.assertEqual(im.size, (52, 53))
+        self.assertEqual(im.tile, [('raw', (0, 0, 52, 53), 160, ('RGBA', 0, 1))])
+        im.load()
+
     def test_gimp_tiff(self):
         # Read TIFF JPEG images from GIMP [@PIL168]
 
