@@ -1188,9 +1188,9 @@ class TiffImageFile(ImageFile.ImageFile):
 
         bps_tuple = self.tag_v2.get(BITSPERSAMPLE, (1,))
         extra_tuple = self.tag_v2.get(EXTRASAMPLES, ())
-        if photo in (2, 6, 8): # RGB, YCbCr, LAB
+        if photo in (2, 6, 8):  # RGB, YCbCr, LAB
             bps_count = 3
-        elif photo == 5:
+        elif photo == 5:  # CMYK
             bps_count = 4
         else:
             bps_count = 1
