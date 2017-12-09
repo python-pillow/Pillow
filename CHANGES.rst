@@ -1,8 +1,12 @@
+
 Changelog (Pillow)
 ==================
 
 4.4.0 (unreleased)
 ------------------
+
+- Fix count of BITSPERSAMPLE items in broken TIFF files #2883
+  [homm]
 
 - Fillcolor parameter for Image.Transform #2852
   [wiredfool]
@@ -4229,102 +4233,4 @@ Pre-fork
             rather large (typically 2-5 times the compressed
             sizes).
 
-      "image2py"	(NEW) Convert a single image to a python module.  See
-            comments in this script for details.
-
-      "player"	If multiple images are given on the command line,
-            they are interpreted as frames in a sequence.  The
-            script assumes that they all have the same size.
-            Also note that this script now can play FLI/FLC
-            and GIF animations.
-
-            This player can also execute embedded Python
-            animation applets (ARG format only).
-
-      "viewer"	Transparent images ("P" with transparency property,
-            and "RGBA") are superimposed on the standard Tk back-
-            ground.
-
-    + Fixed colour argument to "new".  For multilayer images, pass a
-      tuple: (Red, Green, Blue), (Red, Green, Blue, Alpha), or (Cyan,
-      Magenta, Yellow, Black).
-
-    + Added XPM (X pixmap) read support.
-
-    (0.2b3 released)
-
-    + Added MNG (multi-image network graphics) read support.  "Ming"
-      is a proposed animation standard, based on the PNG file format.
-
-      You can use the "player" sample script to display some flavours
-      of this format.  The MNG standard is still under development,
-      as is this driver.  More information, including sample files,
-      can be found at <ftp://swrinde.nde.swri.edu/pub/mng>
-
-    + Added a "verify" method to images loaded from file.  This method
-      scans the file for errors, without actually decoding the image
-      data, and raises a suitable exception if it finds any problems.
-      Currently implemented for PNG and MNG files only.
-
-    + Added support for interlaced GIF images.
-
-    + Added PNG read support -- if linked with the ZLIB compression library,
-      PIL reads all kinds of PNG images, except interlaced files.
-
-    + Improved PNG identification support -- doesn't mess up on unknown
-      chunks, identifies all possible PNG modes, and verifies checksum
-      on PNG header chunks.
-
-    + Added an experimental reader for placable Windows Meta Files (WMF).
-      This reader is still very incomplete, but it illustrates how PIL's
-      drawing capabilities can be used to render vector and metafile
-      formats.
-
-    + Added restricted drivers for images from Image Tools (greyscale
-      only) and LabEye/IFUNC (common interchange modes only).
-
-    + Some minor improvements to the sample scripts provided in the
-      "Scripts" directory.
-
-    + The test images have been moved to the "Images" directory.
-
-    (0.2b2 released)
-    (0.2b1 released; Windows only)
-
-    + Fixed filling of complex polygons.  The ImageDraw "line" and
-      "polygon" methods also accept Path objects.
-
-    + The ImageTk "PhotoImage" object can now be constructed directly
-      from an image.  You can also pass the object itself to Tkinter,
-      instead of using the "image" attribute.  Finally, using "paste"
-      on a displayed image automatically updates the display.
-
-    + The ImageTk "BitmapImage" object allows you to create transparent
-      overlays from 1-bit images.  You can pass the object itself to
-      Tkinter.  The constructor takes the same arguments as the Tkinter
-      BitmapImage class; use the "foreground" option to set the colour
-      of the overlay.
-
-    + Added a "putdata" method to the Image class.  This can be used to
-      load a 1-layer image with data from a sequence object or a string.
-      An optional floating point scale and offset can be used to adjust
-      the data to fit into the 8-bit pixel range.  Also see the "getdata"
-      method.
-
-    + Added the EXTENT method to the Image "transform" method.  This can
-      be used to quickly crop, stretch, shrink, or mirror a subregion
-      from another image.
-
-    + Adapted to Python 1.4.
-
-    + Added a project makefile for Visual C++ 4.x.  This allows you to
-      easily build a dynamically linked version of PIL for Windows 95
-      and NT.
-
-    + A Tk "booster" patch for Windows is available.  It gives dramatic
-      performance improvements for some displays.  Has been tested with
-      Tk 4.2 only, but is likely to work with Tk 4.1 as well.  See the Tk
-      subdirectory for details.
-
-    + You can now save 1-bit images in the XBM format.  In addition, the
-      Image class
+      "image2py"	(NEW) Convert a single image to a py
