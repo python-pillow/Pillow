@@ -4,6 +4,21 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Fillcolor parameter for Image.Transform #2852
+  [wiredfool]
+
+- Test: Display differences for test failures #2862
+  [wiredfool]
+  
+- Added executable flag to file with shebang line #2884
+  [radarhere]
+
+- Setup: Specify compatible Python versions for pip #2877
+  [hugovk]
+  
+- Dependencies: Updated libimagequant to 2.11.4 #2878
+  [radarhere]
+
 - Setup: Warn if trying to install for Py3.7 on Windows #2855
   [hugovk]
   
@@ -4312,156 +4327,4 @@ Pre-fork
       subdirectory for details.
 
     + You can now save 1-bit images in the XBM format.  In addition, the
-      Image class now provides a "tobitmap" method which returns a string
-      containing an XBM representation of the image.  Quite handy to use
-      with Tk.
-
-    + More conversions, including "RGB" to "1" and more.
-
-    (0.2a1 released)
-
-    + Where earlier versions accepted lists, this version accepts arbitrary
-      Python sequences (including strings, in some cases).  A few resource
-      leaks were plugged in the process.
-
-    + The Image "paste" method now allows the box to extend outside
-      the target image.  The size of the box, the image to be pasted,
-      and the optional mask must still match.
-
-    + The ImageDraw module now supports filled polygons, outlined and
-      filled ellipses, and text.  Font support is rudimentary, though.
-
-    + The Image "point" method now takes an optional mode argument,
-      allowing you to convert the image while translating it.  Currently,
-      this can only be used to convert "L" or "P" images to "1" images
-      (creating thresholded images or "matte" masks).
-
-    + An Image "getpixel" method has been added.  For single band images,
-      it returns the pixel value at a given position as an integer.
-      For n-band images, it returns an n-tuple of integers.
-
-    + An Image "getdata" method has been added.  It returns a sequence
-      object representing the image as a 1-dimensional array.  Only len()
-      and [] can be used with this sequence.  This method returns a
-      reference to the existing image data, so changes in the image
-      will be immediately reflected in the sequence object.
-
-    + Fixed alignment problems in the Windows BMP writer.
-
-    + If converting an "RGB" image to "RGB" or "L", you can give a second
-      argument containing a colour conversion matrix.
-
-    + An Image "getbbox" method has been added.  It returns the bounding
-      box of data in an image, considering the value 0 as background.
-
-    + An Image "offset" method has been added.  It returns a new image
-      where the contents of the image have been offset the given distance
-      in X and/or Y direction.  Data wraps between edges.
-
-    + Saves PDF images.  The driver creates a binary PDF 1.1 files, using
-      JPEG compression for "L", "RGB", and "CMYK" images, and hex encoding
-      (same as for PostScript) for other formats.
-
-    + The "paste" method now accepts "1" masks.  Zero means transparent,
-      any other pixel value means opaque.  This is faster than using an
-      "L" transparency mask.
-
-    + Properly writes EPS files (and properly prints images to postscript
-      printers as well).
-
-    + Reads 4-bit BMP files, as well as 4 and 8-bit Windows ICO and CUR
-      files.  Cursor animations are not supported.
-
-    + Fixed alignment problems in the Sun raster loader.
-
-    + Added "draft" and "thumbnail" methods.  The draft method is used
-      to optimize loading of JPEG and PCD files, the thumbnail method is
-      used to create a thumbnail representation of an image.
-
-    + Added Windows display support, via the ImageWin class (see the
-      handbook for details).
-
-    + Added raster conversion for EPS files.  This requires GNU or Aladdin
-      Ghostscript, and probably works on UNIX only.
-
-    + Reads PhotoCD (PCD) images.  The base resolution (768x512) can be
-      read from a PhotoCD file.
-
-    + Eliminated some compiler warnings.  Bindings now compile cleanly in C++
-      mode.  Note that the Imaging library itself must be compiled in C mode.
-
-    + Added "bdf2pil.py", which converts BDF fonts into images with associated
-      metrics.  This is definitely work in progress.  For info, see description
-      in script for details.
-
-    + Fixed a bug in the "ImageEnhance.py" module.
-
-    + Fixed a bug in the netpbm save hack in "GifImagePlugin.py"
-
-    + Fixed 90 and 270 degree rotation of rectangular images.
-
-    + Properly reads 8-bit TIFF palette-color images.
-
-    + Reads plane separated RGB and CMYK TIFF images.
-
-    + Added driver debug mode.  This is enabled by setting Image.DEBUG
-      to a non-zero value.  Try the -D option to "pilfile.py" and see what
-      happens.
-
-    + Don't crash on "atend" constructs in PostScript files.
-
-    + Only the Image module imports _imaging directly.  Other modules
-      should refer to the binding module as "Image.core".
-
-    *** Changes from release 0.0 to 0.1 (b1) ***
-
-    + A handbook is available (distributed separately).
-
-    + The coordinate system is changed so that (0,0) is now located
-      in the upper left corner.  This is in compliancy with ISO 12087
-      and 90% of all other image processing and graphics libraries.
-
-    + Modes "1" (bilevel) and "P" (palette) have been introduced.  Note
-      that bilevel images are stored with one byte per pixel.
-
-    + The Image "crop" and "paste" methods now accepts None as the
-      box argument, to refer to the full image (self, that is).
-
-    + The Image "crop" method now works properly.
-
-    + The Image "point" method is now available.  You can use either a
-      lookup table or a function taking one argument.
-
-    + The Image join function has been renamed to "merge".
-
-    + An Image "composite" function has been added.  It is identical
-      to copy() followed by paste(mask).
-
-    + An Image "eval" function has been added.  It is currently identical
-      to point(function); that is, only a single image can be processed.
-
-    + A set of channel operations has been added.  See the "ImageChops"
-      module, test_chops.py, and the handbook for details.
-
-    + Added the "pilconvert" utility, which converts image files.  Note
-      that the number of output formats are still quite restricted.
-
-    + Added the "pilfile" utility, which quickly identifies image files
-      (without loading them, in most cases).
-
-    + Added the "pilprint" utility, which prints image files to Postscript
-      printers.
-
-    + Added a rudimentary version of the "pilview" utility, which is
-      simple image viewer based on Tk.  Only File/Exit and Image/Next
-      works properly.
-
-    + An interface to Tk has been added.  See "Lib/ImageTk.py" and README
-      for details.
-
-    + An interface to Jack Jansen's Img library has been added (thanks to
-      Jack).  This allows you to read images through the Img extensions file
-      format handlers.  See the file "Lib/ImgExtImagePlugin.py" for details.
-
-    + Postscript printing is provided through the PSDraw module.  See the
-      handbook for details.
+      Image class
