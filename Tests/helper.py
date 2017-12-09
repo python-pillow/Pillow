@@ -9,6 +9,16 @@ import unittest
 
 from PIL import Image, ImageMath
 
+import logging
+logger = logging.getLogger(__name__)
+
+
+HAS_UPLOADER = False
+try:
+    import test_image_results
+    HAS_UPLOADER = True
+except ImportError:
+    pass
 
 def convert_to_comparable(a, b):
     new_a, new_b = a, b
@@ -84,6 +94,13 @@ class PillowTestCase(unittest.TestCase):
             a.size, b.size,
             msg or "got size %r, expected %r" % (a.size, b.size))
         if a.tobytes() != b.tobytes():
+            if HAS_UPLOADER:
+                try:
+                    url = test_image_results.upload(a, b)
+                    logger.error("Url for test images: %s" %url)
+                except:
+                    pass
+                    
             self.fail(msg or "got different content")
 
     def assert_image_similar(self, a, b, epsilon, msg=None):
@@ -103,11 +120,20 @@ class PillowTestCase(unittest.TestCase):
             diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
 
         ave_diff = float(diff)/(a.size[0]*a.size[1])
-        self.assertGreaterEqual(
-            epsilon, ave_diff,
-            (msg or '') +
-            " average pixel value difference %.4f > epsilon %.4f" % (
-                ave_diff, epsilon))
+        try:
+            self.assertGreaterEqual(
+                epsilon, ave_diff,
+                (msg or '') +
+                " average pixel value difference %.4f > epsilon %.4f" % (
+                    ave_diff, epsilon))
+        except Exception as e:
+            if HAS_UPLOADER:
+                try:
+                    url = test_image_results.upload(a, b)
+                    logger.error("Url for test images: %s" %url)
+                except:
+                    pass
+            raise e
 
     def assert_warning(self, warn_class, func, *args, **kwargs):
         import warnings
