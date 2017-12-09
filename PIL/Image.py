@@ -2074,7 +2074,8 @@ class Image(object):
 
     # FIXME: the different transform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
-    def transform(self, size, method, data=None, resample=NEAREST, fill=1):
+    def transform(self, size, method, data=None, resample=NEAREST,
+                  fill=1, fillcolor=None):
         """
         Transforms this image.  This method creates a new image with the
         given size, and the same mode as the original, and copies data
@@ -2095,9 +2096,11 @@ class Image(object):
            environment), or :py:attr:`PIL.Image.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image
            has mode "1" or "P", it is set to :py:attr:`PIL.Image.NEAREST`.
+        :param fillcolor: Optional fill color for the area outside the transform
+           in the output image.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
-
+        
         if self.mode == 'LA':
             return self.convert('La').transform(
                 size, method, data, resample, fill).convert('LA')
@@ -2116,13 +2119,15 @@ class Image(object):
         if data is None:
             raise ValueError("missing method data")
 
-        im = new(self.mode, size, None)
+        im = new(self.mode, size, fillcolor)
         if method == MESH:
             # list of quads
             for box, quad in data:
-                im.__transformer(box, self, QUAD, quad, resample, fill)
+                im.__transformer(box, self, QUAD, quad, resample,
+                                 fillcolor is None)
         else:
-            im.__transformer((0, 0)+size, self, method, data, resample, fill)
+            im.__transformer((0, 0)+size, self, method, data,
+                             resample, fillcolor is None)
 
         return im
 

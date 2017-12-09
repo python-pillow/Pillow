@@ -52,6 +52,17 @@ class TestImageTransform(PillowTestCase):
 
         self.assert_image_equal(transformed, scaled)
 
+    def test_fill(self):
+        im = hopper('RGB')
+        (w, h) = im.size
+        transformed = im.transform(im.size, Image.EXTENT,
+                                   (0, 0,
+                                    w*2, h*2),
+                                   Image.BILINEAR,
+                                   fillcolor = 'red')
+
+        self.assertEqual(transformed.getpixel((w-1,h-1)), (255,0,0))
+
     def test_mesh(self):
         # this should be a checkerboard of halfsized hoppers in ul, lr
         im = hopper('RGBA')
@@ -255,7 +266,6 @@ class TestImageTransformAffine(PillowTestCase):
 class TestImageTransformPerspective(TestImageTransformAffine):
     # Repeat all tests for AFFINE transformations with PERSPECTIVE
     transform = Image.PERSPECTIVE
-
 
 if __name__ == '__main__':
     unittest.main()

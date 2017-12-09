@@ -1612,7 +1612,7 @@ _transform2(ImagingObject* self, PyObject* args)
     int fill = 1;
     if (!PyArg_ParseTuple(args, "(iiii)O!iO|ii",
                           &x0, &y0, &x1, &y1,
-              &Imaging_Type, &imagep,
+                          &Imaging_Type, &imagep,
                           &method, &data,
                           &filter, &fill))
     return NULL;
@@ -1637,7 +1637,7 @@ _transform2(ImagingObject* self, PyObject* args)
 
     imOut = ImagingTransform(
         self->image, imagep->image, method,
-        x0, y0, x1, y1, a, filter, 1);
+        x0, y0, x1, y1, a, filter, fill);
 
     free(a);
 
