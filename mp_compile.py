@@ -54,19 +54,12 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
 
 def install():
 
-    fl_pypy3 = (hasattr(sys, 'pypy_version_info') and
-                (3, 0) < sys.version_info < (3, 3))
     fl_win = sys.platform.startswith('win')
     fl_cygwin = sys.platform.startswith('cygwin')
 
-    if fl_pypy3:
-        # see https://github.com/travis-ci/travis-ci/issues/3587
-        print("Single threaded build for pypy3")
-        return
-
     if fl_win or fl_cygwin:
-        # windows barfs on multiprocessing installs
-        print("Single threaded build for windows")
+        # Windows barfs on multiprocessing installs
+        print("Single threaded build for Windows")
         return
 
     if MAX_PROCS != 1:
