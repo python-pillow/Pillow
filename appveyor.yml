@@ -21,8 +21,6 @@ environment:
   - PYTHON: C:/Python34
   - PYTHON: C:/Python27
   - PYTHON: C:/Python34-x64
-  - PYTHON: C:/Python33
-  - PYTHON: C:/Python33-x64
   - PYTHON: C:/msys64/mingw32
     EXECUTABLE: bin/python3
     PIP_DIR: bin
