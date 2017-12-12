@@ -80,12 +80,8 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (256, 256))
         self.assertEqual(
-            im.tile, [
-                ('jpeg', (0, 0, 256, 64), 8, ('RGB', '')),
-                ('jpeg', (0, 64, 256, 128), 1215, ('RGB', '')),
-                ('jpeg', (0, 128, 256, 192), 2550, ('RGB', '')),
-                ('jpeg', (0, 192, 256, 256), 3890, ('RGB', '')),
-                ])
+            im.tile, [('jpeg', (0, 0, 256, 256), 0, ('RGB', 'jpeg', False))]
+        )
         im.load()
 
     def test_sampleformat(self):
