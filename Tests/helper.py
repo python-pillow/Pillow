@@ -63,10 +63,8 @@ class PillowTestCase(unittest.TestCase):
     def delete_tempfile(self, path):
         try:
             ok = self.currentResult.wasSuccessful()
-        except AttributeError:  # for nosetests
-            # proxy = self.currentResult
-            # ok = (len(proxy.errors) + len(proxy.failures) == 0)
-            ok = True  # TODO pytest
+        except AttributeError:  # for pytest
+            ok = True
 
         if ok:
             # only clean out tempfiles if test passed
@@ -210,10 +208,6 @@ class PillowTestCase(unittest.TestCase):
                              hasattr(sys, 'pypy_version_info'))
         if skip:
             self.skipTest(msg or "Known Bad Test")
-
-    def shortDescription(self):
-        # Prevents `nose -v` printing docstrings
-        return None
 
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")
