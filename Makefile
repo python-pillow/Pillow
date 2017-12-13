@@ -80,7 +80,7 @@ release-test:
 	python selftest.py
 	python -m pytest Tests
 	python setup.py install
-	python test-installed.py
+	python -m pytest -qq
 	check-manifest
 	pyroma .
 	viewdoc
