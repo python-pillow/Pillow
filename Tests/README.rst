@@ -33,8 +33,8 @@ Or with coverage::
 
 To run an individual test::
 
-    ./test-installed.py Tests/test_image.py
+    pytest Tests/test_image.py
 
 Run all the tests from the root of the Pillow source distribution::
 
-    ./test-installed.py
+    pytest
