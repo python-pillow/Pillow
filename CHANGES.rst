@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-4.4.0 (unreleased)
+5.0.0 (unreleased)
 ------------------
 
 - Removed scripts directory #2901
