@@ -41,7 +41,7 @@ class TestPngDos(PillowTestCase):
         info = PngImagePlugin.PngInfo()
 
         for x in range(64):
-            info.add_text('t%s' % x, compressed_data, 1)
+            info.add_text('t%s' % x, compressed_data, zip=True)
             info.add_itxt('i%s' % x, compressed_data, zip=True)
 
         b = BytesIO()
