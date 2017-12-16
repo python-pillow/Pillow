@@ -312,4 +312,3 @@ int ImagingJpegDecodeCleanup(ImagingCodecState state){
 }
 
 #endif
-

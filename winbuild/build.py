@@ -76,7 +76,7 @@ def build_one(py_ver, compiler):
     args['executable'] = "python.exe"
     if 'EXECUTABLE' in os.environ:
         args['executable'] = "%EXECUTABLE%"
-        
+
     args['py_ver'] = py_ver
     if '34' in py_ver:
         args['tcl_ver'] = '86'

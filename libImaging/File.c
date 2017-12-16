@@ -80,4 +80,3 @@ ImagingSavePPM(Imaging im, const char* outfile)
 
     return 1;
 }
-

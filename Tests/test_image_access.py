@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
 
         compiler = ccompiler.new_compiler()
         compiler.add_include_dir(sysconfig.get_python_inc())
-        
+
         libdir = sysconfig.get_config_var('LIBDIR') or sysconfig.get_python_inc().replace('include', 'libs')
         print (libdir)
         compiler.add_library_dir(libdir)
@@ -302,10 +302,10 @@ int main(int argc, char* argv[])
 
         env = os.environ.copy()
         env["PATH"] = sys.prefix + ';' + env["PATH"]
-        
+
         # do not display the Windows Error Reporting dialog
         ctypes.windll.kernel32.SetErrorMode(0x0002)
-        
+
         process = subprocess.Popen(['embed_pil.exe'], env=env)
         process.communicate()
         self.assertEqual(process.returncode, 0)

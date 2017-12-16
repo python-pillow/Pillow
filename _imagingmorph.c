@@ -301,4 +301,3 @@ init_imagingmorph(void)
     setup_module(m);
 }
 #endif
-

@@ -76,4 +76,3 @@ def get_supported():
     ret.extend(get_supported_features())
     ret.extend(get_supported_codecs())
     return ret
-

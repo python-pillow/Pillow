@@ -188,4 +188,3 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         }
     }
 }
-

@@ -301,4 +301,3 @@ init_imagingmath(void)
     setup_module(m);
 }
 #endif
-

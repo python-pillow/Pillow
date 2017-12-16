@@ -413,5 +413,3 @@ Python-based file decoder:
    called with a buffer of data to be interpreted.
 
 3. Cleanup: The decoder instance's ``cleanup`` method is called.
-
-

@@ -89,7 +89,7 @@ class TestImageConvert(PillowTestCase):
         self.assertNotIn('transparency', rgba.info)
         # https://github.com/python-pillow/Pillow/issues/2702
         self.assertEqual(rgba.palette, None)
-        
+
 
     def test_trns_l(self):
         im = hopper('L')

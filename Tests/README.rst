@@ -39,6 +39,3 @@ To run an individual test::
 Run all the tests from the root of the Pillow source distribution::
 
     ./test-installed.py
-
-
-

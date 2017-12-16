@@ -39,4 +39,3 @@ ImagingNegative(Imaging im)
 
     return imOut;
 }
-

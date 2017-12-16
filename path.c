@@ -625,4 +625,3 @@ static PyTypeObject PyPathType = {
     0,                          /*tp_members*/
     getsetters,                 /*tp_getset*/
 };
-

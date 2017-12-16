@@ -40,8 +40,8 @@ variables:
 
   * ``PILLOW_BLOCK_SIZE``, in bytes, K, or M.  Specifies the maximum
     block size for ``ImagingAllocateArray``. Valid values are
-    integers, with an optional `k` or `m` suffix. Defaults to 16M.  
+    integers, with an optional `k` or `m` suffix. Defaults to 16M.
 
   * ``PILLOW_BLOCKS_MAX`` Specifies the number of freed blocks to
     retain to fill future memory requests. Any freed blocks over this
-    threshold will be returned to the OS immediately. Defaults to 0. 
+    threshold will be returned to the OS immediately. Defaults to 0.

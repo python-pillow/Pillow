@@ -490,7 +490,7 @@ ImagingAllocateBlock(Imaging im)
         im->image[y] = im->block + i;
         i += im->linesize;
     }
-    
+
     im->destroy = ImagingDestroyBlock;
 
     return im;

@@ -91,4 +91,3 @@ Testing Pillow
 
 Build and install Pillow, then run `python test.py` from the
 `winbuild` directory.
-

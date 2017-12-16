@@ -86,4 +86,3 @@ init_imagingtk(void)
     load_tkinter_funcs();
 }
 #endif
-

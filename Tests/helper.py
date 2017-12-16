@@ -100,7 +100,7 @@ class PillowTestCase(unittest.TestCase):
                     logger.error("Url for test images: %s" %url)
                 except:
                     pass
-                    
+
             self.fail(msg or "got different content")
 
     def assert_image_similar(self, a, b, epsilon, msg=None):
@@ -206,7 +206,7 @@ class PillowLeakTestCase(PillowTestCase):
     # requires unix/osx
     iterations = 100 # count
     mem_limit = 512 # k
-    
+
     def _get_mem_usage(self):
         """
         Gets the RUSAGE memory usage, returns in K. Encapsulates the difference
@@ -214,7 +214,7 @@ class PillowLeakTestCase(PillowTestCase):
 
         :returns; memory usage in kilobytes
         """
-        
+
         from resource import getpagesize, getrusage, RUSAGE_SELF
         mem = getrusage(RUSAGE_SELF).ru_maxrss
         if sys.platform == 'darwin':
@@ -225,7 +225,7 @@ class PillowLeakTestCase(PillowTestCase):
             # linux
             # man 2 getrusage
             #        ru_maxrss (since Linux 2.6.32)
-            #  This is the maximum resident set size used (in  kilobytes). 
+            #  This is the maximum resident set size used (in  kilobytes).
             return mem # Kb
 
     def _test_leak(self, core):
