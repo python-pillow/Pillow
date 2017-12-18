@@ -165,7 +165,7 @@ class PillowTestCase(unittest.TestCase):
                          travis=None, interpreter=None):
         # Skip if platform/travis matches, and
         # PILLOW_RUN_KNOWN_BAD is not true in the environment.
-        if bool(os.environ.get('PILLOW_RUN_KNOWN_BAD', False)):
+        if os.environ.get('PILLOW_RUN_KNOWN_BAD', False):
             print(os.environ.get('PILLOW_RUN_KNOWN_BAD', False))
             return
 

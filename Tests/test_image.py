@@ -312,7 +312,7 @@ class TestImage(PillowTestCase):
         extensions = Image.registered_extensions()
 
         # Assert
-        self.assertTrue(bool(extensions))
+        self.assertTrue(extensions)
         for ext in ['.cur', '.icns', '.tif', '.tiff']:
             self.assertIn(ext, extensions)
 
