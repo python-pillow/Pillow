@@ -5,6 +5,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Remove unnecessary bool() calls in Image.registered_extensions and skipKnownBadTests #2891
+  [jdufresne]
+
 - Fix count of BITSPERSAMPLE items in broken TIFF files #2883
   [homm]
 
