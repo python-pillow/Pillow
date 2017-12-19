@@ -32,4 +32,3 @@ pushd depends && ./install_imagequant.sh && popd
 
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd
-

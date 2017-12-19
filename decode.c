@@ -942,4 +942,3 @@ PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)
     return (PyObject*) decoder;
 }
 #endif /* HAVE_OPENJPEG */
-

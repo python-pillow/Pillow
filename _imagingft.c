@@ -121,7 +121,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         return NULL;
     }
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is"PY_ARG_BYTES_LENGTH"i", 
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is"PY_ARG_BYTES_LENGTH"i",
                                      kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
                                      &size, &index, &encoding, &font_bytes,
@@ -513,7 +513,7 @@ font_getsize(FontObject* self, PyObject* args)
         PyMem_Free(glyph_info);
         glyph_info = NULL;
     }
-            
+
     if (face) {
 
         /* left bearing */
@@ -891,4 +891,3 @@ init_imagingft(void)
     setup_module(m);
 }
 #endif
-

@@ -385,4 +385,3 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
 
     return PyImagingNew(im);
 }
-

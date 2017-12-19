@@ -80,7 +80,7 @@ class TestFileSgi(PillowTestCase):
 
         reloaded = Image.open(out)
         self.assert_image_equal(im, reloaded)
-       
+
     def test_unsupported_mode(self):
         im = hopper('LA')
         out = self.tempfile('temp.sgi')

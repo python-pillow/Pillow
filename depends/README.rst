@@ -24,4 +24,3 @@ e.g.::
   $ source ~/vpy27/bin/activate
   $ make install
   $ make test
-

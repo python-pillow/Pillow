@@ -11,4 +11,3 @@ pushd $archive
 ./configure --prefix=/usr && make -j4 && sudo make -j4 install
 
 popd
-

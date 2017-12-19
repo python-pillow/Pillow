@@ -1499,11 +1499,11 @@ _resize(ImagingObject* self, PyObject* args)
     int xsize, ysize;
     int filter = IMAGING_TRANSFORM_NEAREST;
     float box[4] = {0, 0, 0, 0};
-    
+
     imIn = self->image;
     box[2] = imIn->xsize;
     box[3] = imIn->ysize;
-    
+
     if (!PyArg_ParseTuple(args, "(ii)|i(ffff)", &xsize, &ysize, &filter,
                           &box[0], &box[1], &box[2], &box[3]))
         return NULL;
@@ -3345,7 +3345,7 @@ _reset_stats(PyObject* self, PyObject* args)
 
     if (!PyArg_ParseTuple(args, ":reset_stats"))
         return NULL;
-    
+
     arena->stats_new_count = 0;
     arena->stats_allocated_blocks = 0;
     arena->stats_reused_blocks = 0;
@@ -3361,7 +3361,7 @@ _get_alignment(PyObject* self, PyObject* args)
 {
     if (!PyArg_ParseTuple(args, ":get_alignment"))
         return NULL;
-    
+
     return PyInt_FromLong(ImagingDefaultArena.alignment);
 }
 
@@ -3370,7 +3370,7 @@ _get_block_size(PyObject* self, PyObject* args)
 {
     if (!PyArg_ParseTuple(args, ":get_block_size"))
         return NULL;
-    
+
     return PyInt_FromLong(ImagingDefaultArena.block_size);
 }
 
@@ -3379,7 +3379,7 @@ _get_blocks_max(PyObject* self, PyObject* args)
 {
     if (!PyArg_ParseTuple(args, ":get_blocks_max"))
         return NULL;
-    
+
     return PyInt_FromLong(ImagingDefaultArena.blocks_max);
 }
 
@@ -3389,7 +3389,7 @@ _set_alignment(PyObject* self, PyObject* args)
     int alignment;
     if (!PyArg_ParseTuple(args, "i:set_alignment", &alignment))
         return NULL;
-    
+
     if (alignment < 1 || alignment > 128) {
         PyErr_SetString(PyExc_ValueError, "alignment should be from 1 to 128");
         return NULL;
@@ -3412,7 +3412,7 @@ _set_block_size(PyObject* self, PyObject* args)
     int block_size;
     if (!PyArg_ParseTuple(args, "i:set_block_size", &block_size))
         return NULL;
-    
+
     if (block_size <= 0) {
         PyErr_SetString(PyExc_ValueError,
             "block_size should be greater than 0");
@@ -3437,7 +3437,7 @@ _set_blocks_max(PyObject* self, PyObject* args)
     int blocks_max;
     if (!PyArg_ParseTuple(args, "i:set_blocks_max", &blocks_max))
         return NULL;
-    
+
     if (blocks_max < 0) {
         PyErr_SetString(PyExc_ValueError,
             "blocks_max should be greater than 0");
@@ -3460,7 +3460,7 @@ _clear_cache(PyObject* self, PyObject* args)
 
     if (!PyArg_ParseTuple(args, "|i:clear_cache", &i))
         return NULL;
-    
+
     ImagingMemoryClearCache(&ImagingDefaultArena, i);
 
     Py_INCREF(Py_None);
@@ -3718,4 +3718,3 @@ init_imaging(void)
     setup_module(m);
 }
 #endif
-

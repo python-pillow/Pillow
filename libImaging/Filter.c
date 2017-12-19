@@ -344,4 +344,3 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,
     ImagingSectionLeave(&cookie);
     return imOut;
 }
-

@@ -40,7 +40,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     format = "MPO"
     format_description = "MPO (CIPA DC-007)"
     _close_exclusive_fp_after_loading = False
-    
+
     def _open(self):
         self.fp.seek(0)  # prep the fp in order to pass the JPEG test
         JpegImagePlugin.JpegImageFile._open(self)

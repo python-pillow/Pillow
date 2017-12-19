@@ -51,7 +51,7 @@ class TestFontPcf(PillowTestCase):
         draw.text((0, 0), message, 'black', font=font)
         with Image.open('Tests/images/test_draw_pbm_target.png') as target:
             self.assert_image_similar(im, target, 0)
-            
+
     def test_textsize(self):
         tempname = self.save_font()
         font = ImageFont.load(tempname)

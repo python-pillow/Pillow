@@ -20,7 +20,7 @@ TIFF Metadata Changes
   single element tuple. This is only with the new api, not the legacy
   api. This normalizes the handling of fields, so that the metadata
   with inferred or image specified counts are handled the same as
-  metadata with count specified in the TIFF spec. 
+  metadata with count specified in the TIFF spec.
 * The ``PhotoshopInfo``, ``XMP``, and ``JPEGTables`` tags now have a
   defined type (bytes) and a count of 1.
 * The ``ImageJMetaDataByteCounts`` tag now has an arbitrary number of
@@ -85,7 +85,7 @@ There is a new :py:class:`PIL.ImageFilter.MultibandFilter` base class
 for image filters that can run on all channels of an image in one
 operation. The original :py:class:`PIL.ImageFilter.Filter` class
 remains for image filters that can process only single band images, or
-require splitting of channels prior to filtering. 
+require splitting of channels prior to filtering.
 
 Other Changes
 =============
@@ -109,7 +109,7 @@ images to and from RGB and RGBA formats. The image data is truncated
 to 8-bit precision.
 
 Pillow can now read RLE encoded SGI images in both 8 and 16-bit
-precision. 
+precision.
 
 Performance
 ^^^^^^^^^^^
@@ -124,7 +124,7 @@ This release contains several performance improvements:
 * ``Image.transpose`` has been accelerated 15% or more by using a cache
   friendly algorithm.
 * ImageFilters based on Kernel convolution are significantly faster
-  due to the new MultibandFilter feature. 
+  due to the new MultibandFilter feature.
 * All memory allocation for images is now done in blocks, rather than
   falling back to an allocation for each scan line for images larger
   than the block size.
