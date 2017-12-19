@@ -5,6 +5,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Increased epsilon for test_file_eps.py:test_showpage due to Arch update. #2896
+  [wiredfool]
+
 - Removed check parameter from _save in BmpImagePlugin, PngImagePlugin, ImImagePlugin, PalmImagePlugin, and PcxImagePlugin. #2873
   [radarhere]
 
