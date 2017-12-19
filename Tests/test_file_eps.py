@@ -79,7 +79,7 @@ class TestFileEps(PillowTestCase):
         #should not crash/hang
         plot_image.load()
         #  fonts could be slightly different
-        self.assert_image_similar(plot_image, target, 5)
+        self.assert_image_similar(plot_image, target, 6)
 
     def test_file_object(self):
         # issue 479
