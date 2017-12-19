@@ -116,7 +116,7 @@ _COMPRESSION_TYPES = {
 ##
 # (Internal) Image save plugin for the Palm format.
 
-def _save(im, fp, filename, check=0):
+def _save(im, fp, filename):
 
     if im.mode == "P":
 
@@ -164,9 +164,6 @@ def _save(im, fp, filename, check=0):
     else:
 
         raise IOError("cannot write mode %s as Palm" % im.mode)
-
-    if check:
-        return check
 
     #
     # make sure image data is available
