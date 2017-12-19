@@ -360,7 +360,7 @@ class TestFilePng(PillowTestCase):
 
         info = PngImagePlugin.PngInfo()
         info.add_text("TXT", "VALUE")
-        info.add_text("ZIP", "VALUE", 1)
+        info.add_text("ZIP", "VALUE", zip=True)
 
         im = roundtrip(im, pnginfo=info)
         self.assertEqual(im.info, {'TXT': 'VALUE', 'ZIP': 'VALUE'})

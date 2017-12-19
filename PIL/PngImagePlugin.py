@@ -249,7 +249,7 @@ class PngInfo(object):
             self.add(b"iTXt", key + b"\0\0\0" + lang + b"\0" + tkey + b"\0" +
                      value)
 
-    def add_text(self, key, value, zip=0):
+    def add_text(self, key, value, zip=False):
         """Appends a text chunk.
 
         :param key: latin-1 encodable text key name
@@ -259,14 +259,14 @@ class PngInfo(object):
 
         """
         if isinstance(value, iTXt):
-            return self.add_itxt(key, value, value.lang, value.tkey, bool(zip))
+            return self.add_itxt(key, value, value.lang, value.tkey, zip=zip)
 
         # The tEXt chunk stores latin-1 text
         if not isinstance(value, bytes):
             try:
                 value = value.encode('latin-1', 'strict')
             except UnicodeError:
-                return self.add_itxt(key, value, zip=bool(zip))
+                return self.add_itxt(key, value, zip=zip)
 
         if not isinstance(key, bytes):
             key = key.encode('latin-1', 'strict')
