@@ -5,6 +5,15 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Removed check parameter from _save in BmpImagePlugin, PngImagePlugin, ImImagePlugin, PalmImagePlugin, and PcxImagePlugin. #2873
+  [radarhere]
+
+- Make PngImagePlugin.add_text() zip argument type bool #2890
+  [jdufresne]
+
+- Depends: Updated libwebp to 0.6.1 #2880
+  [radarhere]
+
 - Remove unnecessary bool() calls in Image.registered_extensions and skipKnownBadTests #2891
   [jdufresne]
 
