@@ -348,24 +348,19 @@ class TestImage(PillowTestCase):
         # Arrange
         size = (100, 100)
         sigma = 128
-        # To reduce chance of randomly having the same value twice
-        attempts = 5
 
         # Act
-        while attempts > 0:
-            im = Image.effect_noise(size, sigma)
+        im = Image.effect_noise(size, sigma)
 
-            # Assert
-            self.assertEqual(im.size, (100, 100))
-            self.assertEqual(im.mode, "L")
-            p0 = im.getpixel((0, 0))
-            p1 = im.getpixel((0, 1))
-            if p0 == p1:
-                # Let's roll again
-                attempts -= 1
-            else:
-                break
-        self.assertNotEqual(p0, p1)
+        # Assert
+        self.assertEqual(im.size, (100, 100))
+        self.assertEqual(im.mode, "L")
+        p0 = im.getpixel((0, 0))
+        p1 = im.getpixel((0, 1))
+        p2 = im.getpixel((0, 2))
+        p3 = im.getpixel((0, 3))
+        p4 = im.getpixel((0, 4))
+        self.assert_not_all_same([p0, p1, p2, p3, p4])
 
     def test_effect_spread(self):
         # Arrange
