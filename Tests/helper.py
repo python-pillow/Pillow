@@ -20,6 +20,7 @@ try:
 except ImportError:
     pass
 
+
 def convert_to_comparable(a, b):
     new_a, new_b = a, b
     if a.mode == 'P':
@@ -97,7 +98,7 @@ class PillowTestCase(unittest.TestCase):
             if HAS_UPLOADER:
                 try:
                     url = test_image_results.upload(a, b)
-                    logger.error("Url for test images: %s" %url)
+                    logger.error("Url for test images: %s" % url)
                 except:
                     pass
 
@@ -130,7 +131,7 @@ class PillowTestCase(unittest.TestCase):
             if HAS_UPLOADER:
                 try:
                     url = test_image_results.upload(a, b)
-                    logger.error("Url for test images: %s" %url)
+                    logger.error("Url for test images: %s" % url)
                 except:
                     pass
             raise e
@@ -207,11 +208,12 @@ class PillowTestCase(unittest.TestCase):
             return Image.open(outfile)
         raise IOError()
 
+
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
 class PillowLeakTestCase(PillowTestCase):
     # requires unix/osx
-    iterations = 100 # count
-    mem_limit = 512 # k
+    iterations = 100  # count
+    mem_limit = 512  # k
 
     def _get_mem_usage(self):
         """
@@ -221,7 +223,7 @@ class PillowLeakTestCase(PillowTestCase):
         :returns; memory usage in kilobytes
         """
 
-        from resource import getpagesize, getrusage, RUSAGE_SELF
+        from resource import getrusage, RUSAGE_SELF
         mem = getrusage(RUSAGE_SELF).ru_maxrss
         if sys.platform == 'darwin':
             # man 2 getrusage:
@@ -314,6 +316,7 @@ def imagemagick_available():
 
 def on_appveyor():
     return 'APPVEYOR' in os.environ
+
 
 if sys.platform == 'win32':
     IMCONVERT = os.environ.get('MAGICK_HOME', '')
