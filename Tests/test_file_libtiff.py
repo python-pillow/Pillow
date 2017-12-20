@@ -1,5 +1,6 @@
 from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper, py3
+from PIL import features
 
 from ctypes import c_float
 import io
@@ -15,9 +16,7 @@ logger = logging.getLogger(__name__)
 class LibTiffTestCase(PillowTestCase):
 
     def setUp(self):
-        codecs = dir(Image.core)
-
-        if "libtiff_encoder" not in codecs or "libtiff_decoder" not in codecs:
+        if not features.check('libtiff'):
             self.skipTest("tiff support not available")
 
     def _assert_noerr(self, im):
