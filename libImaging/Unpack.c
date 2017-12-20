@@ -1301,6 +1301,19 @@ static struct {
     {"RGBA",    "B",            8,      band2},
     {"RGBA",    "A",            8,      band3},
 
+#ifdef WORDS_BIGENDIAN
+    {"RGB",     "RGB;16N",      64,     unpackRGB16B},
+    {"RGBA",    "RGBa;16N",     64,     unpackRGBa16B},
+    {"RGBA",    "RGBA;16N",     64,     unpackRGBA16B},
+    {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
+#else
+    {"RGB",     "RGB;16N",      64,     unpackRGB16L},
+    {"RGBA",    "RGBa;16N",     64,     unpackRGBa16L},
+    {"RGBA",    "RGBA;16N",     64,     unpackRGBA16L},
+    {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
+#endif
+   
+
     /* true colour w. alpha premultiplied */
     {"RGBa",    "RGBa",         32,     copy4},
     {"RGBa",    "BGRa",         32,     unpackBGRA},

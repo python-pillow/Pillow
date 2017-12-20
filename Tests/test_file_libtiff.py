@@ -577,7 +577,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (100, 40))
-        self.assertEqual(im.tile, [('tiff_lzw', (0, 0, 100, 40), 0, ('RGBa;16B', 'tiff_lzw', False))])
+        self.assertEqual(im.tile, [('tiff_lzw', (0, 0, 100, 40), 0, ('RGBa;16N', 'tiff_lzw', False))])
         im.load()
 
         self.assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
