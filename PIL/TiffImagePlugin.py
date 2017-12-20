@@ -1031,11 +1031,6 @@ class TiffImageFile(ImageFile.ImageFile):
             args = (rawmode, 0, 1)
         elif compression == "packbits":
             args = rawmode
-        elif compression == "tiff_lzw":
-            args = rawmode
-            if PREDICTOR in self.tag_v2:
-                # Section 14: Differencing Predictor
-                self.decoderconfig = (self.tag_v2[PREDICTOR],)
 
         return args
 
