@@ -393,7 +393,7 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_cHRM(self, pos, length):
-        # chromaticity, 8 unsigned ints, actual value is scaled by 100000
+        # chromaticity, 8 unsigned ints, actual value is scaled by 100,000
         # WP x,y, Red x,y, Green x,y Blue x,y
 
         s = ImageFile._safe_read(self.fp, length)
@@ -752,7 +752,7 @@ def _save(im, fp, filename, chunk=putchunk):
         chunk(fp, b"iCCP", data)
         
         # You must either have sRGB or iCCP.
-        # Disallow sRGB chunks when a iCCP-chunk has been emitted.
+        # Disallow sRGB chunks when an iCCP-chunk has been emitted.
         chunks.remove(b"sRGB")
 
     info = im.encoderinfo.get("pnginfo")

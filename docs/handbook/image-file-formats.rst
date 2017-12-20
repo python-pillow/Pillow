@@ -417,7 +417,7 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     Gamma, given as a floating point number.
 
 **srgb**
-    The sRGB rendering intent as a integer.
+    The sRGB rendering intent as an integer.
 
       * 0 Perceptual
       * 1 Relative Colorimetric
