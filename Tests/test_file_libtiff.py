@@ -126,6 +126,8 @@ class TestFileLibTiff(LibTiffTestCase):
             im.tile[0][:3], ('tiff_adobe_deflate', (0, 0, 278, 374), 0))
         im.load()
 
+        self.assert_image_equal_tofile(im, 'Tests/images/tiff_adobe_deflate.png')
+
     def test_write_metadata(self):
         """ Test metadata writing through libtiff """
         for legacy_api in [False, True]:
@@ -310,12 +312,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
         # so we need to unshift so that the integer values are the same.
 
-        im2 = Image.open('Tests/images/12in16bit.tif')
-
-        logger.debug("%s", [img.getpixel((0, idx))
-                            for img in [im, im2] for idx in range(3)])
-
-        self.assert_image_equal(im, im2)
+        self.assert_image_equal_tofile(im, 'Tests/images/12in16bit.tif')
 
     def test_blur(self):
         # test case from irc, how to do blur on b/w image
