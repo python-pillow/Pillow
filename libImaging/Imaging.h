@@ -440,8 +440,6 @@ extern int ImagingJpeg2KEncode(Imaging im, ImagingCodecState state,
                                UINT8* buffer, int bytes);
 extern int ImagingJpeg2KEncodeCleanup(ImagingCodecState state);
 #endif
-extern int ImagingLzwDecode(Imaging im, ImagingCodecState state,
-                            UINT8* buffer, int bytes);
 #ifdef  HAVE_LIBTIFF
 extern int ImagingLibTiffDecode(Imaging im, ImagingCodecState state,
                                 UINT8* buffer, int bytes);

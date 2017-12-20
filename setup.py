@@ -43,7 +43,7 @@ _LIB_IMAGING = (
     "Blend", "Chops", "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop",
     "Dib", "Draw", "Effects", "EpsEncode", "File", "Fill", "Filter",
     "FliDecode", "Geometry", "GetBBox", "GifDecode", "GifEncode", "HexDecode",
-    "Histo", "JpegDecode", "JpegEncode", "LzwDecode", "Matrix", "ModeFilter",
+    "Histo", "JpegDecode", "JpegEncode", "Matrix", "ModeFilter",
     "Negative", "Offset", "Pack", "PackDecode", "Palette", "Paste", "Quant",
     "QuantOctree", "QuantHash", "QuantHeap", "PcdDecode", "PcxDecode",
     "PcxEncode", "Point", "RankFilter", "RawDecode", "RawEncode", "Storage",
