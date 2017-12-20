@@ -1244,15 +1244,7 @@ class TiffImageFile(ImageFile.ImageFile):
             offsets = self.tag_v2[STRIPOFFSETS]
             h = self.tag_v2.get(ROWSPERSTRIP, ysize)
             w = self.size[0]
-            if READ_LIBTIFF or self._compression in ["tiff_ccitt", "group3",
-                                                     "group4", "tiff_jpeg",
-                                                     "tiff_adobe_deflate",
-                                                     "tiff_thunderscan",
-                                                     "tiff_deflate",
-                                                     "tiff_sgilog",
-                                                     "tiff_sgilog24",
-                                                     "tiff_raw_16",
-                                                     "jpeg"]:
+            if READ_LIBTIFF or self._compression != 'raw':
                 # if DEBUG:
                 #     print("Activating g4 compression for whole file")
 
