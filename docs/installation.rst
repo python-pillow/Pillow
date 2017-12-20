@@ -39,7 +39,7 @@ Windows Installation
 We provide Pillow binaries for Windows compiled for the matrix of
 supported Pythons in both 32 and 64-bit versions in wheel, egg, and
 executable installers. These binaries have all of the optional
-libraries included::
+libraries included except for raqm and libimagequant::
 
   > pip install Pillow
 
@@ -47,9 +47,10 @@ libraries included::
 macOS Installation
 ^^^^^^^^^^^^^^^^^^
 
-We provide binaries for macOS for each of the supported Python versions
-in the wheel format. These include support for all optional libraries
-except OpenJPEG::
+We provide binaries for macOS for each of the supported Python
+versions in the wheel format. These include support for all optional
+libraries except libimagequant.  Raqm support requires libraqm,
+fribidi, and harfbuzz to be installed separately::
 
   $ pip install Pillow
 
@@ -58,7 +59,8 @@ Linux Installation
 
 We provide binaries for Linux for each of the supported Python
 versions in the manylinux wheel format. These include support for all
-optional libraries except Raqm::
+optional libraries except libimagequant. Raqm support requires
+libraqm, fribidi, and harfbuzz to be installed separately::
 
   $ pip install Pillow
 
@@ -170,6 +172,8 @@ Many of Pillow's features require external libraries:
     if not available as package in your system.
   * setting text direction or font features is not supported without
     libraqm.
+  * libraqm is dynamically loaded in Pillow 4.4.0 and above, so support
+	is available if all the libraries are installed. 
   * Windows support: Raqm support is currently unsupported on Windows.
 
 Once you have installed the prerequisites, run::
@@ -204,7 +208,7 @@ Build Options
   ``--disable-tiff``, ``--disable-freetype``, ``--disable-tcl``,
   ``--disable-tk``, ``--disable-lcms``, ``--disable-webp``,
   ``--disable-webpmux``, ``--disable-jpeg2000``,
-  ``--disable-imagequant``, ``--disable-raqm``.
+  ``--disable-imagequant``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
@@ -212,7 +216,7 @@ Build Options
   ``--enable-tiff``, ``--enable-freetype``, ``--enable-tcl``,
   ``--enable-tk``, ``--enable-lcms``, ``--enable-webp``,
   ``--enable-webpmux``, ``--enable-jpeg2000``,
-  ``--enable-imagequant``,  ``--enable-raqm``.
+  ``--enable-imagequant``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
   relies on WebP support. Tcl and Tk also must be used together.
