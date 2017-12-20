@@ -5,6 +5,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Test: avoid random failure in test_effect_noise #2894
+  [hugovk]  
+
 - Increased epsilon for test_file_eps.py:test_showpage due to Arch update. #2896
   [wiredfool]
 
