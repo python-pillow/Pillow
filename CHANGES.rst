@@ -5,6 +5,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- CI: Add Amazon v2 and Fedora 27 to Docker tests
+  [wiredfool]
+
 - Increased epsilon for test_file_eps.py:test_showpage due to Arch update. #2896
   [wiredfool]
 
