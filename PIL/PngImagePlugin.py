@@ -404,7 +404,7 @@ class PngStream(ChunkStream):
     def chunk_sRGB(self, pos, length):
         # srgb rendering intent, 1 byte
         # 0 perceptual
-        # 1 relative folorimetric
+        # 1 relative colorimetric
         # 2 saturation
         # 3 absolute colorimetric
 
