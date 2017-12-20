@@ -20,6 +20,7 @@ try:
 except ImportError:
     pass
 
+
 def convert_to_comparable(a, b):
     new_a, new_b = a, b
     if a.mode == 'P':
@@ -97,10 +98,10 @@ class PillowTestCase(unittest.TestCase):
             if HAS_UPLOADER:
                 try:
                     url = test_image_results.upload(a, b)
-                    logger.error("Url for test images: %s" %url)
+                    logger.error("Url for test images: %s" % url)
                 except:
                     pass
-                    
+
             self.fail(msg or "got different content")
 
     def assert_image_similar(self, a, b, epsilon, msg=None):
@@ -130,7 +131,7 @@ class PillowTestCase(unittest.TestCase):
             if HAS_UPLOADER:
                 try:
                     url = test_image_results.upload(a, b)
-                    logger.error("Url for test images: %s" %url)
+                    logger.error("Url for test images: %s" % url)
                 except:
                     pass
             raise e
@@ -160,6 +161,12 @@ class PillowTestCase(unittest.TestCase):
                         break
                 self.assertTrue(found)
         return result
+
+    def assert_all_same(self, items, msg=None):
+        self.assertTrue(items.count(items[0]) == len(items), msg)
+
+    def assert_not_all_same(self, items, msg=None):
+        self.assertFalse(items.count(items[0]) == len(items), msg)
 
     def skipKnownBadTest(self, msg=None, platform=None,
                          travis=None, interpreter=None):
@@ -201,12 +208,13 @@ class PillowTestCase(unittest.TestCase):
             return Image.open(outfile)
         raise IOError()
 
+
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
 class PillowLeakTestCase(PillowTestCase):
     # requires unix/osx
-    iterations = 100 # count
-    mem_limit = 512 # k
-    
+    iterations = 100  # count
+    mem_limit = 512  # k
+
     def _get_mem_usage(self):
         """
         Gets the RUSAGE memory usage, returns in K. Encapsulates the difference
@@ -214,8 +222,8 @@ class PillowLeakTestCase(PillowTestCase):
 
         :returns; memory usage in kilobytes
         """
-        
-        from resource import getpagesize, getrusage, RUSAGE_SELF
+
+        from resource import getrusage, RUSAGE_SELF
         mem = getrusage(RUSAGE_SELF).ru_maxrss
         if sys.platform == 'darwin':
             # man 2 getrusage:
@@ -225,7 +233,7 @@ class PillowLeakTestCase(PillowTestCase):
             # linux
             # man 2 getrusage
             #        ru_maxrss (since Linux 2.6.32)
-            #  This is the maximum resident set size used (in  kilobytes). 
+            #  This is the maximum resident set size used (in  kilobytes).
             return mem # Kb
 
     def _test_leak(self, core):
@@ -308,6 +316,7 @@ def imagemagick_available():
 
 def on_appveyor():
     return 'APPVEYOR' in os.environ
+
 
 if sys.platform == 'win32':
     IMCONVERT = os.environ.get('MAGICK_HOME', '')

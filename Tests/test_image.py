@@ -22,7 +22,7 @@ class TestImage(PillowTestCase):
             'BGR;15', 'BGR;16', 'BGR;24', 'BGR;32'
         ]:
             with self.assertRaises(ValueError) as e:
-                Image.new(mode, (1, 1));
+                Image.new(mode, (1, 1))
             self.assertEqual(str(e.exception), 'unrecognized image mode')
 
     def test_sanity(self):
@@ -236,9 +236,9 @@ class TestImage(PillowTestCase):
         self.assertEqual(img_colors, expected_colors)
 
     def test_alpha_inplace(self):
-        src = Image.new('RGBA', (128,128), 'blue')
+        src = Image.new('RGBA', (128, 128), 'blue')
 
-        over = Image.new('RGBA', (128,128), 'red')
+        over = Image.new('RGBA', (128, 128), 'red')
         mask = hopper('L')
         over.putalpha(mask)
 
@@ -275,17 +275,18 @@ class TestImage(PillowTestCase):
 
         # errors
         self.assertRaises(ValueError,
-            source.alpha_composite, over, "invalid source")
+                          source.alpha_composite, over, "invalid source")
         self.assertRaises(ValueError,
-            source.alpha_composite, over, (0, 0), "invalid destination")
+                          source.alpha_composite, over, (0, 0),
+                          "invalid destination")
         self.assertRaises(ValueError,
-            source.alpha_composite, over, (0))
+                          source.alpha_composite, over, (0))
         self.assertRaises(ValueError,
-            source.alpha_composite, over, (0, 0), (0))
+                          source.alpha_composite, over, (0, 0), (0))
         self.assertRaises(ValueError,
-            source.alpha_composite, over, (0, -1))
+                          source.alpha_composite, over, (0, -1))
         self.assertRaises(ValueError,
-            source.alpha_composite, over, (0, 0), (0, -1))
+                          source.alpha_composite, over, (0, 0), (0, -1))
 
     def test_registered_extensions_uninitialized(self):
         # Arrange
@@ -354,7 +355,12 @@ class TestImage(PillowTestCase):
         # Assert
         self.assertEqual(im.size, (100, 100))
         self.assertEqual(im.mode, "L")
-        self.assertNotEqual(im.getpixel((0, 0)), im.getpixel((0, 1)))
+        p0 = im.getpixel((0, 0))
+        p1 = im.getpixel((0, 1))
+        p2 = im.getpixel((0, 2))
+        p3 = im.getpixel((0, 3))
+        p4 = im.getpixel((0, 4))
+        self.assert_not_all_same([p0, p1, p2, p3, p4])
 
     def test_effect_spread(self):
         # Arrange
@@ -490,8 +496,8 @@ class TestImage(PillowTestCase):
         im = hopper('RGB')
         im_p = hopper('P')
 
-        blank_p = Image.new('P', (10,10))
-        blank_pa = Image.new('PA', (10,10))
+        blank_p = Image.new('P', (10, 10))
+        blank_pa = Image.new('PA', (10, 10))
         blank_p.palette = None
         blank_pa.palette = None
 
