@@ -53,14 +53,15 @@ class TestFilePng(PillowTestCase):
         chunks = []
         with open(filename, "rb") as fp:
             fp.read(8)
-            while PngImagePlugin.PngStream(fp) as png:
-                cid, pos, length = png.read()
-                chunks.append(cid)
-                try:
-                    s = png.call(cid, pos, length)
-                except EOFError:
-                    break
-                png.crc(cid, s)
+            with PngImagePlugin.PngStream(fp) as png:
+                while True:
+                    cid, pos, length = png.read()
+                    chunks.append(cid)
+                    try:
+                        s = png.call(cid, pos, length)
+                    except EOFError:
+                        break
+                    png.crc(cid, s)
         return chunks
 
     def test_sanity(self):
