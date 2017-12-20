@@ -1029,14 +1029,6 @@ class TiffImageFile(ImageFile.ImageFile):
         compression = self._compression
         if compression == "raw":
             args = (rawmode, 0, 1)
-        elif compression == "jpeg":
-            args = rawmode, ""
-            if JPEGTABLES in self.tag_v2:
-                # Hack to handle abbreviated JPEG headers
-                # Definition of JPEGTABLES is that the count
-                # is the number of bytes in the tables datastream
-                # so, it should always be 1 in our tag info
-                self.tile_prefix = self.tag_v2[JPEGTABLES]
         elif compression == "packbits":
             args = rawmode
         elif compression == "tiff_lzw":
