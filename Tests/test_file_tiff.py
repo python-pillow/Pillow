@@ -53,16 +53,6 @@ class TestFileTiff(PillowTestCase):
 
         self.assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
-    def test_16bit_RGBa_tiff(self):
-        im = Image.open("Tests/images/tiff_16bit_RGBa.tiff")
-
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (100, 40))
-        self.assertEqual(im.tile, [('tiff_lzw', (0, 0, 100, 40), 0, ('RGBa;16B', 'tiff_lzw', False))])
-        im.load()
-
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
-
     def test_wrong_bits_per_sample(self):
         im = Image.open("Tests/images/tiff_wrong_bits_per_sample.tiff")
 
@@ -70,32 +60,6 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.size, (52, 53))
         self.assertEqual(im.tile, [('raw', (0, 0, 52, 53), 160, ('RGBA', 0, 1))])
         im.load()
-
-    def test_gimp_tiff(self):
-        # Read TIFF JPEG images from GIMP [@PIL168]
-
-        codecs = dir(Image.core)
-        if "jpeg_decoder" not in codecs:
-            self.skipTest("jpeg support not available")
-
-        filename = "Tests/images/pil168.tif"
-        im = Image.open(filename)
-
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (256, 256))
-        self.assertEqual(
-            im.tile, [('jpeg', (0, 0, 256, 256), 0, ('RGB', 'jpeg', False))]
-        )
-        im.load()
-
-        self.assert_image_equal_tofile(im, "Tests/images/pil168.png")
-        
-    def test_sampleformat(self):
-        # https://github.com/python-pillow/Pillow/issues/1466
-        im = Image.open("Tests/images/copyleft.tiff")
-        self.assertEqual(im.mode, 'RGB')
-
-        self.assert_image_equal_tofile(im, "Tests/images/copyleft.png", mode='RGB')
 
     def test_set_legacy_api(self):
         with self.assertRaises(Exception):
@@ -435,16 +399,6 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.tag_v2[X_RESOLUTION], 72)
         self.assertEqual(im.tag_v2[Y_RESOLUTION], 36)
 
-    def test_lzw(self):
-        # Act
-        im = Image.open("Tests/images/hopper_lzw.tif")
-
-        # Assert
-        self.assertEqual(im.mode, 'RGB')
-        self.assertEqual(im.size, (128, 128))
-        self.assertEqual(im.format, "TIFF")
-        im2 = hopper()
-        self.assert_image_similar(im, im2, 5)
 
     def test_roundtrip_tiff_uint16(self):
         # Test an image of all '0' values
