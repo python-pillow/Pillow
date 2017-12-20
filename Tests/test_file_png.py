@@ -49,6 +49,21 @@ class TestFilePng(PillowTestCase):
         if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
             self.skipTest("zip/deflate support not available")
 
+    def get_chunks(self, filename):
+        chunks = []
+        with open(filename, "rb") as fp:
+            fp.read(8)
+            png = PngImagePlugin.PngStream(fp)
+            while True:
+                cid, pos, length = png.read()
+                chunks.append(cid)
+                try:
+                    s = png.call(cid, pos, length)
+                except EOFError:
+                    break
+                png.crc(cid, s)
+        return chunks
+
     def test_sanity(self):
 
         # internal version number
@@ -501,6 +516,7 @@ class TestFilePng(PillowTestCase):
         test_file = self.tempfile("temp.png")
         im.convert("P").save(test_file, dpi=(100, 100))
 
+<<<<<<< 1cf2deba3bdb3ea93fdd859c0f052dfcea898c52
         chunks = []
         with open(test_file, "rb") as fp:
             fp.read(8)
@@ -513,6 +529,9 @@ class TestFilePng(PillowTestCase):
                     except EOFError:
                         break
                     png.crc(cid, s)
+=======
+        chunks = self.get_chunks(test_file)
+>>>>>>> refactor out get_chunks
 
         # https://www.w3.org/TR/PNG/#5ChunkOrdering
         # IHDR - shall be first
