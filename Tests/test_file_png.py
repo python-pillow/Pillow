@@ -53,8 +53,7 @@ class TestFilePng(PillowTestCase):
         chunks = []
         with open(filename, "rb") as fp:
             fp.read(8)
-            png = PngImagePlugin.PngStream(fp)
-            while True:
+            while PngImagePlugin.PngStream(fp) as png:
                 cid, pos, length = png.read()
                 chunks.append(cid)
                 try:
@@ -516,22 +515,7 @@ class TestFilePng(PillowTestCase):
         test_file = self.tempfile("temp.png")
         im.convert("P").save(test_file, dpi=(100, 100))
 
-<<<<<<< 1cf2deba3bdb3ea93fdd859c0f052dfcea898c52
-        chunks = []
-        with open(test_file, "rb") as fp:
-            fp.read(8)
-            with PngImagePlugin.PngStream(fp) as png:
-                while True:
-                    cid, pos, length = png.read()
-                    chunks.append(cid)
-                    try:
-                        s = png.call(cid, pos, length)
-                    except EOFError:
-                        break
-                    png.crc(cid, s)
-=======
         chunks = self.get_chunks(test_file)
->>>>>>> refactor out get_chunks
 
         # https://www.w3.org/TR/PNG/#5ChunkOrdering
         # IHDR - shall be first

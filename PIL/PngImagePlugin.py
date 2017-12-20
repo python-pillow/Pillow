@@ -387,10 +387,29 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_gAMA(self, pos, length):
-
         # gamma setting
         s = ImageFile._safe_read(self.fp, length)
         self.im_info["gamma"] = i32(s) / 100000.0
+        return s
+
+    def chunk_cHRM(self, pos, length):
+        # chromaticity, 8 unsigned ints, actual value is scaled by 100000
+        # WP x,y, Red x,y, Green x,y Blue x,y
+
+        s = ImageFile._safe_read(self.fp, length)
+        raw_vals = struct.unpack('>%dI' % (len(s) // 4), s)
+        self.im_info['chromaticity'] = tuple(elt/100000.0 for elt in raw_vals)
+        return s
+
+    def chunk_sRGB(self, pos, length):
+        # srgb rendering intent, 1 byte
+        # 0 perceptual
+        # 1 relative folorimetric
+        # 2 saturation
+        # 3 absolute colorimetric
+
+        s = ImageFile._safe_read(self.fp, length)
+        self.im_info['srgb'] = i8(s)
         return s
 
     def chunk_pHYs(self, pos, length):
