@@ -36,6 +36,8 @@ logger = logging.getLogger(__name__)
 class DecompressionBombWarning(RuntimeWarning):
     pass
 
+class DecompressionBombError(Exception):
+    pass
 
 class _imaging_not_installed(object):
     # module placeholder
@@ -2492,6 +2494,12 @@ def _decompression_bomb_check(size):
         return
 
     pixels = size[0] * size[1]
+
+    if pixels > 2 * MAX_IMAGE_PIXELS:
+        raise DecompressionBombError(
+            "Image size (%d pixels) exceeds limit of %d pixels, "
+            "could be decompression bomb DOS attack." %
+            (pixels, 2* MAX_IMAGE_PIXELS))
 
     if pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
