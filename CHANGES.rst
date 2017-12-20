@@ -5,6 +5,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Decompression bomb error now raised for images 2x larger than a decompression bomb warning #2583
+  [wiredfool]
+
 - Test: avoid random failure in test_effect_noise #2894
   [hugovk]  
 
