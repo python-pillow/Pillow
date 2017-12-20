@@ -408,8 +408,21 @@ PIL identifies, reads, and writes PNG files containing ``1``, ``L``, ``P``,
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
 
+**chromaticity**
+    The chromaticity points, as an 8 tuple of floats. (``White Point
+    X``, ``White Point Y``, ``Red X``, ``Red Y``, ``Green X``, ``Green
+    Y``, ``Blue X``, ``Blue Y``)
+
 **gamma**
     Gamma, given as a floating point number.
+
+**srgb**
+    The sRGB rendering intent as a integer.
+
+      * 0 Perceptual
+      * 1 Relative Colorimetric
+      * 2 Saturation
+      * 3 Absolute Colorimetric
 
 **transparency**
     For ``P`` images: Either the palette index for full transparent pixels,
