@@ -140,6 +140,9 @@ are available::
     * 2 - Restore to background color.
     * 3 - Restore to previous content.
 
+     Pass a single integer for a constant disposal, or a list or tuple
+     to set the disposal for each frame separately. 
+
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~
 
