@@ -284,7 +284,7 @@ class TestFileGif(PillowTestCase):
             out,
             save_all=True,
             append_images=im_list[1:],
-            disposal=range(len(im_list))
+            disposal=tuple(range(len(im_list)))
             )
 
         img = Image.open(out)
