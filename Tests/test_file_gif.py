@@ -274,12 +274,24 @@ class TestFileGif(PillowTestCase):
                 disposal=method
             )
             img = Image.open(out)
-            try:
-                while True:
-                    img.seek(img.tell() + 1)
-                    self.assertEqual(img.disposal_method, method)
-            except EOFError:
-                pass
+            for _ in range(2):
+                img.seek(img.tell() + 1)
+                self.assertEqual(img.disposal_method, method)
+
+
+        # check per frame disposal
+        im_list[0].save(
+            out,
+            save_all=True,
+            append_images=im_list[1:],
+            disposal=range(len(im_list))
+            )
+
+        img = Image.open(out)
+
+        for i in range(2):
+            img.seek(img.tell() + 1)
+            self.assertEqual(img.disposal_method, i+1)
 
     def test_iss634(self):
         img = Image.open("Tests/images/iss634.gif")
