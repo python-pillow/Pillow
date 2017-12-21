@@ -9,7 +9,6 @@
 # ------------------------------
 from __future__ import print_function
 
-import glob
 import os
 import platform as plat
 import re
@@ -796,7 +795,6 @@ try:
           ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
           include_package_data=True,
           packages=find_packages(),
-          scripts=glob.glob("Scripts/*.py"),
           test_suite='nose.collector',
           keywords=["Imaging", ],
           license='Standard PIL License',
