@@ -278,6 +278,16 @@ class TestFileEps(PillowTestCase):
         # Assert
         self.assertEqual(img.mode, "RGB")
 
+    def test_emptyline(self):
+        # Test file includes an empty line in the header data
+        emptyline_file = "Tests/images/zero_bb_emptyline.eps"
+
+        image = Image.open(emptyline_file)
+        image.load()
+        self.assertEqual(image.mode, "RGB")
+        self.assertEqual(image.size, (460, 352))
+        self.assertEqual(image.format, "EPS")
+
 
 if __name__ == '__main__':
     unittest.main()
