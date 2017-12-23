@@ -5,6 +5,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Dependencies: Update Tk Tcl to 8.6.8 #2905
+  [radarhere]
+
 - Decompression bomb error now raised for images 2x larger than a decompression bomb warning #2583
   [wiredfool]
 
