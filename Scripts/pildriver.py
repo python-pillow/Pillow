@@ -122,6 +122,17 @@ class PILDriver(object):
         color = int(self.do_pop())
         self.push(Image.new("L", (xsize, ysize), color))
 
+    def do_new2(self):
+        """usage: new2 <string:mode> <int:xsize> <int:ysize> <int:color>:
+
+        Create and push a image of given mode, size and color.
+        """
+        mode = int(self.do_pop())
+        xsize = int(self.do_pop())
+        ysize = int(self.do_pop())
+        color = int(self.do_pop())
+        self.push(Image.new(mode, (xsize, ysize), color))
+
     def do_open(self):
         """usage: open <string:filename>
 
