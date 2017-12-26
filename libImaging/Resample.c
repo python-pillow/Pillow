@@ -241,9 +241,10 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
 
     ImagingSectionEnter(&cookie);
     if (imIn->image8) {
+#pragma omp parallel for private(k,x,xx,yy,xmin,xmax,ss0,ss1,ss2,ss3) shared(imIn,imOut,kk,ksize,bounds,offset) default(none) collapse(2)
         for (yy = 0; yy < imOut->ysize; yy++) {
             for (xx = 0; xx < imOut->xsize; xx++) {
-                xmin = bounds[xx * 2 + 0];
+	        xmin = bounds[xx * 2 + 0];
                 xmax = bounds[xx * 2 + 1];
                 k = &kk[xx * ksize];
                 ss0 = 1 << (PRECISION_BITS -1);
@@ -254,7 +255,8 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
         }
     } else if (imIn->type == IMAGING_TYPE_UINT8) {
         if (imIn->bands == 2) {
-            for (yy = 0; yy < imOut->ysize; yy++) {
+#pragma omp parallel for private(k,x,xx,yy,xmin,xmax,ss0,ss1,ss2,ss3) shared(imIn,imOut,kk,ksize,bounds,offset) default(none) collapse(2)
+	    for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < imOut->xsize; xx++) {
                     xmin = bounds[xx * 2 + 0];
                     xmax = bounds[xx * 2 + 1];
@@ -269,7 +271,8 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
                 }
             }
         } else if (imIn->bands == 3) {
-            for (yy = 0; yy < imOut->ysize; yy++) {
+#pragma omp parallel for private(k,x,xx,yy,xmin,xmax,ss0,ss1,ss2,ss3) shared(imIn,imOut,kk,ksize,bounds,offset) default(none) collapse(2)
+	    for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < imOut->xsize; xx++) {
                     xmin = bounds[xx * 2 + 0];
                     xmax = bounds[xx * 2 + 1];
@@ -285,6 +288,7 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
                 }
             }
         } else {
+#pragma omp parallel for private(k,x,xx,yy,xmin,xmax,ss0,ss1,ss2,ss3) shared(imIn,imOut,kk,ksize,bounds,offset) default(none) collapse(2)
             for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < imOut->xsize; xx++) {
                     xmin = bounds[xx * 2 + 0];
@@ -322,7 +326,8 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, int offset,
 
     ImagingSectionEnter(&cookie);
     if (imIn->image8) {
-        for (yy = 0; yy < imOut->ysize; yy++) {
+#pragma omp parallel for private(k,y,xx,yy,ymin,ymax,ss0,ss1,ss2,ss3) shared(imIn,imOut,kk,ksize,bounds) default(none) 
+      for (yy = 0; yy < imOut->ysize; yy++) {
             k = &kk[yy * ksize];
             ymin = bounds[yy * 2 + 0];
             ymax = bounds[yy * 2 + 1];
@@ -335,6 +340,7 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, int offset,
         }
     } else if (imIn->type == IMAGING_TYPE_UINT8) {
         if (imIn->bands == 2) {
+#pragma omp parallel for private(k,y,xx,yy,ymin,ymax,ss0,ss1,ss2,ss3) shared(imIn,imOut,kk,ksize,bounds) default(none) 
             for (yy = 0; yy < imOut->ysize; yy++) {
                 k = &kk[yy * ksize];
                 ymin = bounds[yy * 2 + 0];
@@ -350,6 +356,7 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, int offset,
                 }
             }
         } else if (imIn->bands == 3) {
+#pragma omp parallel for private(k,y,xx,yy,ymin,ymax,ss0,ss1,ss2,ss3) shared(imIn,imOut,kk,ksize,bounds) default(none) 
             for (yy = 0; yy < imOut->ysize; yy++) {
                 k = &kk[yy * ksize];
                 ymin = bounds[yy * 2 + 0];
@@ -366,6 +373,7 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, int offset,
                 }
             }
         } else {
+#pragma omp parallel for private(k,y,xx,yy,ymin,ymax,ss0,ss1,ss2,ss3) shared(imIn,imOut,kk,ksize,bounds) default(none) 
             for (yy = 0; yy < imOut->ysize; yy++) {
                 k = &kk[yy * ksize];
                 ymin = bounds[yy * 2 + 0];

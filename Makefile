@@ -63,6 +63,10 @@ install-coverage:
 	CFLAGS="-coverage" python setup.py build_ext install
 	python selftest.py --installed
 
+install-openmp:
+	python setup.py build_ext --enable-openmp install
+	python selftest.py --installed
+
 debug:
 # make a debug version if we don't have a -dbg python. Leaves in symbols
 # for our stuff, kills optimization, and redirects to dev null so we
