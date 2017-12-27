@@ -5,6 +5,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Removed scripts directory #2901
+  [wiredfool]
+  
 - TIFF: Run all compressed tiffs through libtiff decoder #2899
   [wiredfool]
   
