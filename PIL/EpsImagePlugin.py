@@ -227,53 +227,56 @@ class EpsImageFile(ImageFile.ImageFile):
         #
         # Load EPS header
 
-        s = fp.readline().strip('\r\n')
+        s_raw = fp.readline()
+        s = s_raw.strip('\r\n')
 
-        while s:
-            if len(s) > 255:
-                raise SyntaxError("not an EPS file")
+        while s_raw:
+            if s:
+                if len(s) > 255:
+                    raise SyntaxError("not an EPS file")
 
-            try:
-                m = split.match(s)
-            except re.error as v:
-                raise SyntaxError("not an EPS file")
+                try:
+                    m = split.match(s)
+                except re.error as v:
+                    raise SyntaxError("not an EPS file")
 
-            if m:
-                k, v = m.group(1, 2)
-                self.info[k] = v
-                if k == "BoundingBox":
-                    try:
-                        # Note: The DSC spec says that BoundingBox
-                        # fields should be integers, but some drivers
-                        # put floating point values there anyway.
-                        box = [int(float(i)) for i in v.split()]
-                        self.size = box[2] - box[0], box[3] - box[1]
-                        self.tile = [("eps", (0, 0) + self.size, offset,
-                                      (length, box))]
-                    except:
-                        pass
-
-            else:
-                m = field.match(s)
                 if m:
-                    k = m.group(1)
+                    k, v = m.group(1, 2)
+                    self.info[k] = v
+                    if k == "BoundingBox":
+                        try:
+                            # Note: The DSC spec says that BoundingBox
+                            # fields should be integers, but some drivers
+                            # put floating point values there anyway.
+                            box = [int(float(i)) for i in v.split()]
+                            self.size = box[2] - box[0], box[3] - box[1]
+                            self.tile = [("eps", (0, 0) + self.size, offset,
+                                          (length, box))]
+                        except:
+                            pass
 
-                    if k == "EndComments":
-                        break
-                    if k[:8] == "PS-Adobe":
-                        self.info[k[:8]] = k[9:]
-                    else:
-                        self.info[k] = ""
-                elif s[0] == '%':
-                    # handle non-DSC Postscript comments that some
-                    # tools mistakenly put in the Comments section
-                    pass
                 else:
-                    raise IOError("bad EPS header")
+                    m = field.match(s)
+                    if m:
+                        k = m.group(1)
 
-            s = fp.readline().strip('\r\n')
+                        if k == "EndComments":
+                            break
+                        if k[:8] == "PS-Adobe":
+                            self.info[k[:8]] = k[9:]
+                        else:
+                            self.info[k] = ""
+                    elif s[0] == '%':
+                        # handle non-DSC Postscript comments that some
+                        # tools mistakenly put in the Comments section
+                        pass
+                    else:
+                        raise IOError("bad EPS header")
 
-            if s[:1] != "%":
+            s_raw = fp.readline()
+            s = s_raw.strip('\r\n')
+
+            if s and s[:1] != "%":
                 break
 
         #
