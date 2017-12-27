@@ -132,6 +132,17 @@ are available::
     the palette can be passed in as an
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
+**disposal**
+    Indicates the way in which the graphic is to be treated after being displayed.
+
+    * 0 - No disposal specified.
+    * 1 - Do not dispose.
+    * 2 - Restore to background color.
+    * 3 - Restore to previous content.
+
+     Pass a single integer for a constant disposal, or a list or tuple
+     to set the disposal for each frame separately. 
+
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~
 

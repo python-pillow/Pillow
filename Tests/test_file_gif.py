@@ -259,6 +259,40 @@ class TestFileGif(PillowTestCase):
         except EOFError:
             pass
 
+    def test_save_dispose(self):
+        out = self.tempfile('temp.gif')
+        im_list = [
+            Image.new('L', (100, 100), '#000'),
+            Image.new('L', (100, 100), '#111'),
+            Image.new('L', (100, 100), '#222'),
+        ]
+        for method in range(0,4):
+            im_list[0].save(
+                out,
+                save_all=True,
+                append_images=im_list[1:],
+                disposal=method
+            )
+            img = Image.open(out)
+            for _ in range(2):
+                img.seek(img.tell() + 1)
+                self.assertEqual(img.disposal_method, method)
+
+
+        # check per frame disposal
+        im_list[0].save(
+            out,
+            save_all=True,
+            append_images=im_list[1:],
+            disposal=tuple(range(len(im_list)))
+            )
+
+        img = Image.open(out)
+
+        for i in range(2):
+            img.seek(img.tell() + 1)
+            self.assertEqual(img.disposal_method, i+1)
+
     def test_iss634(self):
         img = Image.open("Tests/images/iss634.gif")
         # seek to the second frame
