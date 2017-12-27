@@ -19,7 +19,7 @@ import warnings
 from distutils import ccompiler, sysconfig
 from distutils.command.build_ext import build_ext
 
-from setuptools import Extension, find_packages, setup
+from setuptools import Extension, setup
 
 # monkey patch import hook. Even though flake8 says it's not used, it is.
 # comment this out to disable multi threaded builds.
@@ -122,7 +122,7 @@ def _read(file):
 
 
 def get_version():
-    version_file = 'PIL/version.py'
+    version_file = 'src/PIL/version.py'
     with open(version_file, 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
@@ -223,7 +223,7 @@ class pil_build_ext(build_ext):
         library_dirs = []
         include_dirs = []
 
-        _add_directory(include_dirs, "libImaging")
+        _add_directory(include_dirs, "src/libImaging")
 
         pkg_config = None
         if _cmd_exists('pkg-config'):
@@ -583,11 +583,11 @@ class pil_build_ext(build_ext):
         #
         # core library
 
-        files = ["_imaging.c"]
+        files = ["src/_imaging.c"]
         for src_file in _IMAGING:
-            files.append(src_file + ".c")
+            files.append("src/" + src_file + ".c")
         for src_file in _LIB_IMAGING:
-            files.append(os.path.join("libImaging", src_file + ".c"))
+            files.append(os.path.join("src/libImaging", src_file + ".c"))
 
         libs = []
         defs = []
@@ -630,7 +630,7 @@ class pil_build_ext(build_ext):
             libs = ["freetype"]
             defs = []
             exts.append(Extension(
-                "PIL._imagingft", ["_imagingft.c"], libraries=libs,
+                "PIL._imagingft", ["src/_imagingft.c"], libraries=libs,
                 define_macros=defs))
 
         if feature.lcms:
@@ -638,7 +638,7 @@ class pil_build_ext(build_ext):
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
             exts.append(Extension("PIL._imagingcms",
-                                  ["_imagingcms.c"],
+                                  ["src/_imagingcms.c"],
                                   libraries=[feature.lcms] + extra))
 
         if feature.webp:
@@ -651,18 +651,18 @@ class pil_build_ext(build_ext):
                 libs.append(feature.webpmux.replace('pmux', 'pdemux'))
 
             exts.append(Extension("PIL._webp",
-                                  ["_webp.c"],
+                                  ["src/_webp.c"],
                                   libraries=libs,
                                   define_macros=defs))
 
         tk_libs = ['psapi'] if sys.platform == 'win32' else []
         exts.append(Extension("PIL._imagingtk",
-                              ["_imagingtk.c", "Tk/tkImaging.c"],
+                              ["src/_imagingtk.c", "Tk/tkImaging.c"],
                               include_dirs=['Tk'],
                               libraries=tk_libs))
 
-        exts.append(Extension("PIL._imagingmath", ["_imagingmath.c"]))
-        exts.append(Extension("PIL._imagingmorph", ["_imagingmorph.c"]))
+        exts.append(Extension("PIL._imagingmath", ["src/_imagingmath.c"]))
+        exts.append(Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]))
 
         self.extensions[:] = exts
 
@@ -783,9 +783,10 @@ try:
           cmdclass={"build_ext": pil_build_ext},
           ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
           include_package_data=True,
-          packages=find_packages(),
           setup_requires=pytest_runner,
           tests_require=['pytest'],
+          packages=["PIL"],
+          package_dir={'':'src'},
           keywords=["Imaging", ],
           license='Standard PIL License',
           zip_safe=not (debug_build() or PLATFORM_MINGW), )
