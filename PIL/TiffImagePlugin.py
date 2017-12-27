@@ -1267,10 +1267,10 @@ class TiffImageFile(ImageFile.ImageFile):
                 # byte order.
                 if rawmode == 'I;16':
                     rawmode = 'I;16N'
-                if '16B' in rawmode:
-                    rawmode = rawmode.replace('16B', '16N')
-                if '16L' in rawmode:
-                    rawmode = rawmode.replace('16L', '16N')
+                if ';16B' in rawmode:
+                    rawmode = rawmode.replace(';16B', ';16N')
+                if ';16L' in rawmode:
+                    rawmode = rawmode.replace(';16L', ';16N')
 
 
                 # Offset in the tile tuple is 0, we go from 0,0 to
