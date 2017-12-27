@@ -5,6 +5,15 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- GIF: Add disposal option when saving GIFs #2902
+  [linnil1, wiredfool]
+
+- EPS: Allow for an empty line in EPS header data #2903
+  [radarhere]
+
+- PNG: Add support for sRGB and cHRM chunks, permit sRGB when no iCCP chunk present #2898
+  [wiredfool]
+
 - Dependencies: Update Tk Tcl to 8.6.8 #2905
   [radarhere]
 
