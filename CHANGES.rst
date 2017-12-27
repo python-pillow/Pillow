@@ -5,6 +5,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- TIFF: Run all compressed tiffs through libtiff decoder #2899
+  [wiredfool]
+  
 - GIF: Add disposal option when saving GIFs #2902
   [linnil1, wiredfool]
 
