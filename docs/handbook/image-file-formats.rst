@@ -549,13 +549,18 @@ For more information about the SPIDER image processing package, see the
 TIFF
 ^^^^
 
-PIL reads and writes TIFF files. It can read both striped and tiled images,
-pixel and plane interleaved multi-band images, and either uncompressed, or
-Packbits, LZW, or JPEG compressed images.
+Pillow reads and writes TIFF files. It can read both striped and tiled
+images, pixel and plane interleaved multi-band images. If you have
+libtiff and its headers installed, PIL can read and write many kinds
+of compressed TIFF files. If not, PIL will only read and write
+uncompressed files.
 
-If you have libtiff and its headers installed, PIL can read and write many more
-kinds of compressed TIFF files. If not, PIL will always write uncompressed
-files.
+.. note::
+
+    Beginning in version 4.4.0, Pillow requires libtiff to read or
+    write compressed files. Prior to that release, Pillow had buggy
+    support for reading Packbits, LZW and JPEG compressed TIFFs
+    without using libtiff.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:

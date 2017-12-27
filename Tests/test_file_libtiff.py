@@ -1,5 +1,6 @@
 from __future__ import print_function
 from helper import unittest, PillowTestCase, hopper, py3
+from PIL import features
 
 from ctypes import c_float
 import io
@@ -15,9 +16,7 @@ logger = logging.getLogger(__name__)
 class LibTiffTestCase(PillowTestCase):
 
     def setUp(self):
-        codecs = dir(Image.core)
-
-        if "libtiff_encoder" not in codecs or "libtiff_decoder" not in codecs:
+        if not features.check('libtiff'):
             self.skipTest("tiff support not available")
 
     def _assert_noerr(self, im):
@@ -125,6 +124,8 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertEqual(
             im.tile[0][:3], ('tiff_adobe_deflate', (0, 0, 278, 374), 0))
         im.load()
+
+        self.assert_image_equal_tofile(im, 'Tests/images/tiff_adobe_deflate.png')
 
     def test_write_metadata(self):
         """ Test metadata writing through libtiff """
@@ -310,12 +311,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
         # so we need to unshift so that the integer values are the same.
 
-        im2 = Image.open('Tests/images/12in16bit.tif')
-
-        logger.debug("%s", [img.getpixel((0, idx))
-                            for img in [im, im2] for idx in range(3)])
-
-        self.assert_image_equal(im, im2)
+        self.assert_image_equal_tofile(im, 'Tests/images/12in16bit.tif')
 
     def test_blur(self):
         # test case from irc, how to do blur on b/w image
@@ -575,6 +571,51 @@ class TestFileLibTiff(LibTiffTestCase):
         # Act / Assert
         # Should not raise UnicodeDecodeError or anything else
         im.save(outfile)
+
+    def test_16bit_RGBa_tiff(self):
+        im = Image.open("Tests/images/tiff_16bit_RGBa.tiff")
+
+        self.assertEqual(im.mode, "RGBA")
+        self.assertEqual(im.size, (100, 40))
+        self.assertEqual(im.tile, [('tiff_lzw', (0, 0, 100, 40), 0, ('RGBa;16N', 'tiff_lzw', False))])
+        im.load()
+
+        self.assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
+
+    def test_gimp_tiff(self):
+        # Read TIFF JPEG images from GIMP [@PIL168]
+
+        codecs = dir(Image.core)
+        if "jpeg_decoder" not in codecs:
+            self.skipTest("jpeg support not available")
+
+        filename = "Tests/images/pil168.tif"
+        im = Image.open(filename)
+
+        self.assertEqual(im.mode, "RGB")
+        self.assertEqual(im.size, (256, 256))
+        self.assertEqual(
+            im.tile, [('jpeg', (0, 0, 256, 256), 0, ('RGB', 'jpeg', False))]
+        )
+        im.load()
+
+        self.assert_image_equal_tofile(im, "Tests/images/pil168.png")
+
+    def test_sampleformat(self):
+        # https://github.com/python-pillow/Pillow/issues/1466
+        im = Image.open("Tests/images/copyleft.tiff")
+        self.assertEqual(im.mode, 'RGB')
+
+        self.assert_image_equal_tofile(im, "Tests/images/copyleft.png", mode='RGB')
+
+    def test_lzw(self):
+        im = Image.open("Tests/images/hopper_lzw.tif")
+
+        self.assertEqual(im.mode, 'RGB')
+        self.assertEqual(im.size, (128, 128))
+        self.assertEqual(im.format, "TIFF")
+        im2 = hopper()
+        self.assert_image_similar(im, im2, 5)
 
 
 if __name__ == '__main__':

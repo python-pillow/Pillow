@@ -1029,21 +1029,8 @@ class TiffImageFile(ImageFile.ImageFile):
         compression = self._compression
         if compression == "raw":
             args = (rawmode, 0, 1)
-        elif compression == "jpeg":
-            args = rawmode, ""
-            if JPEGTABLES in self.tag_v2:
-                # Hack to handle abbreviated JPEG headers
-                # Definition of JPEGTABLES is that the count
-                # is the number of bytes in the tables datastream
-                # so, it should always be 1 in our tag info
-                self.tile_prefix = self.tag_v2[JPEGTABLES]
         elif compression == "packbits":
             args = rawmode
-        elif compression == "tiff_lzw":
-            args = rawmode
-            if PREDICTOR in self.tag_v2:
-                # Section 14: Differencing Predictor
-                self.decoderconfig = (self.tag_v2[PREDICTOR],)
 
         return args
 
@@ -1244,14 +1231,7 @@ class TiffImageFile(ImageFile.ImageFile):
             offsets = self.tag_v2[STRIPOFFSETS]
             h = self.tag_v2.get(ROWSPERSTRIP, ysize)
             w = self.size[0]
-            if READ_LIBTIFF or self._compression in ["tiff_ccitt", "group3",
-                                                     "group4", "tiff_jpeg",
-                                                     "tiff_adobe_deflate",
-                                                     "tiff_thunderscan",
-                                                     "tiff_deflate",
-                                                     "tiff_sgilog",
-                                                     "tiff_sgilog24",
-                                                     "tiff_raw_16"]:
+            if READ_LIBTIFF or self._compression != 'raw':
                 # if DEBUG:
                 #     print("Activating g4 compression for whole file")
 
@@ -1285,8 +1265,13 @@ class TiffImageFile(ImageFile.ImageFile):
                 # we're expecting image byte order. So, if the rawmode
                 # contains I;16, we need to convert from native to image
                 # byte order.
-                if self.mode in ('I;16B', 'I;16') and 'I;16' in rawmode:
+                if rawmode == 'I;16':
                     rawmode = 'I;16N'
+                if ';16B' in rawmode:
+                    rawmode = rawmode.replace(';16B', ';16N')
+                if ';16L' in rawmode:
+                    rawmode = rawmode.replace(';16L', ';16N')
+
 
                 # Offset in the tile tuple is 0, we go from 0,0 to
                 # w,h, and we only do this once -- eds

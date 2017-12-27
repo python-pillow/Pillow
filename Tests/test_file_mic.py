@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image, ImagePalette
+from PIL import Image, ImagePalette, features
 
 try:
     from PIL import MicImagePlugin
@@ -13,6 +13,7 @@ TEST_FILE = "Tests/images/hopper.mic"
 
 
 @unittest.skipUnless(olefile_installed, "olefile package not installed")
+@unittest.skipUnless(features.check('libtiff'), "libtiff not installed")
 class TestFileMic(PillowTestCase):
 
     def test_sanity(self):
