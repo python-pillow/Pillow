@@ -17,10 +17,10 @@ codecov
 
 if [ "$DOCKER" == "" ]; then
     pip install pyflakes pycodestyle
-    pyflakes *.py       | tee >(wc -l)
-    pyflakes PIL/*.py   | tee >(wc -l)
+    pyflakes *.py | tee >(wc -l)
+    pyflakes src/PIL/*.py | tee >(wc -l)
     pyflakes Tests/*.py | tee >(wc -l)
-    pycodestyle --statistics --count PIL/*.py
+    pycodestyle --statistics --count src/PIL/*.py
     pycodestyle --statistics --count Tests/*.py
 fi
 
