@@ -30,6 +30,8 @@ from ._util import isDirectory, isPath
 import os
 import sys
 
+LAYOUT_BASIC = 0
+LAYOUT_RAQM = 1
 
 class _imagingft_not_installed(object):
     # module placeholder
@@ -42,8 +44,6 @@ try:
 except ImportError:
     core = _imagingft_not_installed()
 
-LAYOUT_BASIC = 0
-LAYOUT_RAQM = 1
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
 
