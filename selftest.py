@@ -5,14 +5,8 @@ from __future__ import print_function
 import sys
 import os
 
-if "--installed" in sys.argv:
-    sys_path_0 = sys.path.pop(0)
-
 from PIL import Image, ImageDraw, ImageFilter, ImageMath
 from PIL import features
-
-if "--installed" in sys.argv:
-    sys.path.insert(0, sys_path_0)
 
 try:
     Image.core.ping
