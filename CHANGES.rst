@@ -5,6 +5,9 @@ Changelog (Pillow)
 4.4.0 (unreleased)
 ------------------
 
+- Dynamically link libraqm #2753
+  [wiredfool]
+  
 - Removed scripts directory #2901
   [wiredfool]
   
