@@ -9,7 +9,6 @@ include *.sh
 include *.txt
 include LICENSE
 include Makefile
-graft Scripts
 graft Tests
 graft PIL
 graft Tk
