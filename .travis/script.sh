@@ -7,7 +7,8 @@ python setup.py clean
 CFLAGS="-coverage" python setup.py build_ext --inplace
 
 python selftest.py
-python setup.py test
+python -m pytest -vx --cov PIL --cov-report term Tests
+
 pushd /tmp/check-manifest && check-manifest --ignore ".coveragerc,.editorconfig,*.yml,*.yaml,tox.ini" && popd
 
 # Docs

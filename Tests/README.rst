@@ -33,7 +33,7 @@ Or with coverage::
 
 To run an individual test::
 
-    pytest Tests/test_image.py
+    pytest -k Tests/test_image.py
 
 Run all the tests from the root of the Pillow source distribution::
 
