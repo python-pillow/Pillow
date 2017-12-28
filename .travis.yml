@@ -17,7 +17,6 @@ matrix:
     - python:  "2.7_with_system_site_packages" # For PyQt4
     - python: '3.5'
     - python: '3.4'
-    - python: '3.3'
     - python: '3.7-dev'
     - env: DOCKER="alpine"
     - env: DOCKER="arch" # contains PyQt5

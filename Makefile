@@ -15,12 +15,9 @@ co:
     done
 
 coverage:
-	coverage erase
-	coverage run --parallel-mode --include=PIL/* selftest.py
-	nosetests --with-cov --cov='PIL/' --cov-report=html Tests/test_*.py
-# Doesn't combine properly before report, writing report instead of displaying invalid report.
+	python selftest.py
+	python setup.py test
 	rm -r htmlcov || true
-	coverage combine
 	coverage report
 
 doc:
@@ -81,9 +78,9 @@ release-test:
 	$(MAKE) install-req
 	python setup.py develop
 	python selftest.py
-	nosetests Tests/test_*.py
+	python -m pytest Tests
 	python setup.py install
-	python test-installed.py
+	python -m pytest -qq
 	check-manifest
 	pyroma .
 	viewdoc
@@ -92,7 +89,7 @@ sdist:
 	python setup.py sdist --format=gztar
 
 test:
-	python test-installed.py
+	pytest -qq
 
 # https://docs.python.org/2/distutils/packageindex.html#the-pypirc-file
 upload-test:

@@ -8,11 +8,12 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk\
              libharfbuzz-dev libfribidi-dev
 
 pip install cffi
-pip install nose
 pip install check-manifest
-pip install olefile
-pip install pyroma
 pip install coverage
+pip install olefile
+pip install -U pytest
+pip install -U pytest-cov
+pip install pyroma
 pip install test-image-results
 
 # docs only on Python 2.7

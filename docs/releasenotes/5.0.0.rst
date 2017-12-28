@@ -1,5 +1,16 @@
-4.4.0
+5.0.0
 -----
+
+Backwards Incompatible Changes
+==============================
+
+Python 3.3 Dropped
+^^^^^^^^^^^^^^^^^^
+
+Python 3.3 is EOL and no longer supported due to moving testing from nose,
+which is deprecated, to pytest, which doesn't support Python 3.3. We will not
+be creating binaries, testing, or retaining compatibility with this version.
+The final version of Pillow for Python 3.3 is 4.3.0.
 
 API Changes
 ===========
@@ -16,7 +27,6 @@ support and would like to keep dependencies to a minimum.
 Further, the vendored version was removed in Pillow 4.0.0 and replaced with a
 deprecation warning that PIL.OleFileIO would be removed in a future version.
 This warning has been upgraded to an import error pending future removal.
-
 
 API Additions
 =============
