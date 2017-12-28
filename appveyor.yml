@@ -67,7 +67,6 @@ build_script:
         $host.SetShouldExit(0)
       }
 - cd c:\pillow
-- mv PIL PIL.temp
 - '%PYTHON%\%EXECUTABLE% selftest.py --installed'
 
 test_script:
@@ -91,7 +90,6 @@ artifacts:
 
 before_deploy:
   - cd c:\pillow
-  - mv PIL.temp PIL
   - '%PYTHON%\%PIP_DIR%\pip.exe install wheel'
   - cd c:\pillow\winbuild\
   - '%PYTHON%\%EXECUTABLE% c:\pillow\winbuild\build.py --wheel'
