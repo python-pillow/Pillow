@@ -6,6 +6,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.eggs/
 .Python
 env/
 bin/
@@ -69,3 +70,11 @@ docs/_build/
 #OS
 .DS_Store
 
+# JetBrains
+.idea
+
+# Extra test images installed from pillow-depends/test_images
+Tests/images/README.md
+Tests/images/msp
+Tests/images/picins
+Tests/images/sunraster

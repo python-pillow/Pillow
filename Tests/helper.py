@@ -63,9 +63,8 @@ class PillowTestCase(unittest.TestCase):
     def delete_tempfile(self, path):
         try:
             ok = self.currentResult.wasSuccessful()
-        except AttributeError:  # for nosetests
-            proxy = self.currentResult
-            ok = (len(proxy.errors) + len(proxy.failures) == 0)
+        except AttributeError:  # for pytest
+            ok = True
 
         if ok:
             # only clean out tempfiles if test passed
@@ -210,10 +209,6 @@ class PillowTestCase(unittest.TestCase):
         if skip:
             self.skipTest(msg or "Known Bad Test")
 
-    def shortDescription(self):
-        # Prevents `nose -v` printing docstrings
-        return None
-
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")
         fd, path = tempfile.mkstemp(template[4:], template[:4])
@@ -256,8 +251,8 @@ class PillowLeakTestCase(PillowTestCase):
             # linux
             # man 2 getrusage
             #        ru_maxrss (since Linux 2.6.32)
-            #  This is the maximum resident set size used (in  kilobytes).
-            return mem # Kb
+            #  This is the maximum resident set size used (in kilobytes).
+            return mem  # Kb
 
     def _test_leak(self, core):
         start_mem = self._get_mem_usage()

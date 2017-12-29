@@ -21,8 +21,6 @@ environment:
   - PYTHON: C:/Python34
   - PYTHON: C:/Python27
   - PYTHON: C:/Python34-x64
-  - PYTHON: C:/Python33
-  - PYTHON: C:/Python33-x64
   - PYTHON: C:/msys64/mingw32
     EXECUTABLE: bin/python3
     PIP_DIR: bin
@@ -69,13 +67,17 @@ build_script:
         $host.SetShouldExit(0)
       }
 - cd c:\pillow
-- mv PIL PIL.temp
 - '%PYTHON%\%EXECUTABLE% selftest.py --installed'
 
 test_script:
 - cd c:\pillow
-- '%PYTHON%\%PIP_DIR%\pip.exe install nose'
-- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%'
+- '%PYTHON%\%PIP_DIR%\pip.exe install pytest pytest-cov'
+- '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov-report term --cov-report xml Tests'
+#- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%' TODO TEST_OPTIONS with pytest?
+
+after_test:
+- pip install codecov
+- codecov --file coverage.xml --name %PYTHON%
 
 matrix:
   fast_finish: true
@@ -88,7 +90,6 @@ artifacts:
 
 before_deploy:
   - cd c:\pillow
-  - mv PIL.temp PIL
   - '%PYTHON%\%PIP_DIR%\pip.exe install wheel'
   - cd c:\pillow\winbuild\
   - '%PYTHON%\%EXECUTABLE% c:\pillow\winbuild\build.py --wheel'

@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-4.4.0 (unreleased)
+5.0.0 (unreleased)
 ------------------
 
 - Dynamically link libraqm #2753

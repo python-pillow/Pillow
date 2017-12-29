@@ -11,10 +11,10 @@ docutils
 jarn.viewdoc
 Jinja2
 MarkupSafe
-nose
-nose-cov
 olefile
 pycodestyle
+pytest
+pytest-cov
 pyflakes
 Pygments
 pyroma

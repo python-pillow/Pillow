@@ -16,7 +16,7 @@ def setup_vms():
         for arch in ('', X64_EXT):
             ret.append("virtualenv -p c:/Python%s%s/python.exe --clear %s%s%s"
                        % (py, arch, VIRT_BASE, py, arch))
-            ret.append(r"%s%s%s\Scripts\pip.exe install nose" %
+            ret.append(r"%s%s%s\Scripts\pip.exe install pytest pytest-cov" %
                        (VIRT_BASE, py, arch))
     return "\n".join(ret)
 
@@ -76,7 +76,7 @@ def build_one(py_ver, compiler):
     args['executable'] = "python.exe"
     if 'EXECUTABLE' in os.environ:
         args['executable'] = "%EXECUTABLE%"
-        
+
     args['py_ver'] = py_ver
     if '34' in py_ver:
         args['tcl_ver'] = '86'
