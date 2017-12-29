@@ -5,6 +5,12 @@ Changelog (Pillow)
 5.0.0 (unreleased)
 ------------------
 
+- Test: Switch from nose to pytest #2815
+  [hugovk]
+
+- Rework Source directory layout, preventing accidental import of PIL. #2911
+  [wiredfool]
+
 - Dynamically link libraqm #2753
   [wiredfool]
   
