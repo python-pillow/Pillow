@@ -5,7 +5,7 @@ env:
       - PLAT=x86_64
       - UNICODE_WIDTH=32
       - BUILD_DEPENDS=""
-      - TEST_DEPENDS="nose numpy scipy"
+      - TEST_DEPENDS="pytest pytest-cov numpy scipy"
       - WHEELHOUSE_UPLOADER_USERNAME=travis-worker
       # Following generated with
       # travis encrypt -r python-pillow/pillow-wheels WHEELHOUSE_UPLOADER_SECRET=<the api key>
@@ -32,9 +32,7 @@ matrix:
     - os: osx
       language: generic
       env:
-        - MB_PYTHON_VERSION=3.3
-        # Last numpy / scipy version built for Python 3.3
-        - TEST_DEPENDS="nose numpy==1.11.0 scipy==0.17.1"
+        - MB_PYTHON_VERSION=3.4
 
     - os: linux
       env:
@@ -59,11 +57,11 @@ matrix:
     - os: osx
       language: generic
       env:
-        - MB_PYTHON_VERSION=3.4
+        - MB_PYTHON_VERSION=3.5
     - os: osx
       language: generic
       env:
-        - MB_PYTHON_VERSION=3.5
+        - MB_PYTHON_VERSION=3.6
 
     - os: linux
       env:
@@ -84,10 +82,6 @@ matrix:
         - MB_PYTHON_VERSION=3.6
         - PLAT=i686
 
-    - os: osx
-      language: generic
-      env:
-        - MB_PYTHON_VERSION=3.6
 
 before_install:
     - source multibuild/common_utils.sh

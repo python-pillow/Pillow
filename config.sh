@@ -43,11 +43,7 @@ function pre_build {
 
 function run_tests_in_repo {
     # Run Pillow tests from within source repo
-    if [ -f test-installed.py ]; then
-        python test-installed.py -s -v Tests/test_*.py
-    else
-        python Tests/run.py --installed
-    fi
+    pytest
 }
 
 EXP_CODECS="jpg jpg_2000 libtiff zlib"
@@ -55,8 +51,6 @@ EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
 
 function run_tests {
     # Runs tests on installed distribution from an empty directory
-    export NOSE_PROCESS_TIMEOUT=600
-    export NOSE_PROCESSES=0
     (cd ../Pillow && run_tests_in_repo)
     # Show supported codecs and modules
     local codecs=$(python -c 'from PIL.features import *; print(" ".join(sorted(get_supported_codecs())))')
