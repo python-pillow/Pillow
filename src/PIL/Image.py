@@ -2158,7 +2158,7 @@ class Image(object):
     # instead of bloating the method docs, add a separate chapter.
     def transform(self, size, method, data=None, resample=NEAREST,
                   fill=1, fillcolor=None):
-        # type: (Size, int, Optional[List[float]], int, int, Optional[Union[int, float, Tuple, Text]]) -> Image
+        # type: (Size, int, Optional[List[float]], int, int, Optional[Color]) -> Image
         """
         Transforms this image.  This method creates a new image with the
         given size, and the same mode as the original, and copies data
