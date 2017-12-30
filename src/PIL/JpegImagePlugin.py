@@ -776,14 +776,14 @@ def _save_cjpeg(im, fp, filename):
 
 ##
 # Factory for making JPEG and MPO instances
-def jpeg_factory(fp=None, filename=None):
-    im = JpegImageFile(fp, filename)
+def jpeg_factory(fp=None, filename=None, format_args=None):
+    im = JpegImageFile(fp, filename, format_args)
     try:
         mpheader = im._getmp()
         if mpheader[45057] > 1:
             # It's actually an MPO
             from .MpoImagePlugin import MpoImageFile
-            im = MpoImageFile(fp, filename)
+            im = MpoImageFile(fp, filename, format_args)
     except (TypeError, IndexError):
         # It is really a JPEG
         pass

@@ -2557,7 +2557,7 @@ def _decompression_bomb_check(size):
             DecompressionBombWarning)
 
 
-def open(fp, mode="r"):
+def open(fp, mode="r", format_args=None):
     """
     Opens and identifies the given image file.
 
@@ -2601,13 +2601,13 @@ def open(fp, mode="r"):
 
     preinit()
 
-    def _open_core(fp, filename, prefix):
+    def _open_core(fp, filename, prefix, format_args):
         for i in ID:
             try:
                 factory, accept = OPEN[i]
                 if not accept or accept(prefix):
                     fp.seek(0)
-                    im = factory(fp, filename)
+                    im = factory(fp, filename, format_args)
                     _decompression_bomb_check(im.size)
                     return im
             except (SyntaxError, IndexError, TypeError, struct.error):
@@ -2617,11 +2617,11 @@ def open(fp, mode="r"):
                 continue
         return None
 
-    im = _open_core(fp, filename, prefix)
+    im = _open_core(fp, filename, prefix, format_args)
 
     if im is None:
         if init():
-            im = _open_core(fp, filename, prefix)
+            im = _open_core(fp, filename, prefix, format_args)
 
     if im:
         im._exclusive_fp = exclusive_fp
