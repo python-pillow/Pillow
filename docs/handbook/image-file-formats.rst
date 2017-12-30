@@ -141,7 +141,7 @@ are available::
     * 3 - Restore to previous content.
 
      Pass a single integer for a constant disposal, or a list or tuple
-     to set the disposal for each frame separately. 
+     to set the disposal for each frame separately.
 
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~
@@ -557,7 +557,7 @@ uncompressed files.
 
 .. note::
 
-    Beginning in version 4.4.0, Pillow requires libtiff to read or
+    Beginning in version 5.0.0, Pillow requires libtiff to read or
     write compressed files. Prior to that release, Pillow had buggy
     support for reading Packbits, LZW and JPEG compressed TIFFs
     without using libtiff.

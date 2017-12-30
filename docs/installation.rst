@@ -174,8 +174,8 @@ Many of Pillow's features require external libraries:
     if not available as package in your system.
   * setting text direction or font features is not supported without
     libraqm.
-  * libraqm is dynamically loaded in Pillow 4.4.0 and above, so support
-	is available if all the libraries are installed. 
+  * libraqm is dynamically loaded in Pillow 5.0.0 and above, so support
+	is available if all the libraries are installed.
   * Windows support: Raqm support is currently unsupported on Windows.
 
 Once you have installed the prerequisites, run::
