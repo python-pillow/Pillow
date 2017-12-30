@@ -17,9 +17,9 @@ Decompression Bombs now raise Exceptions
 
 Pillow has previously emitted warnings for images that are
 unexpectedly large and may be a denial of service. These warnings are
-now upgraded to DecompressionBombErrors for images that are twice
-the size of images that trigger the DecompressionBombWarning. The
-default threshold is .5Gb for a 4bpp image. This can be disabled by
+now upgraded to ``DecompressionBombError``s for images that are twice
+the size of images that trigger the ``DecompressionBombWarning``. The
+default threshold is .5GB for a 4Bpp image. This can be disabled by
 setting ``Image.MAX_IMAGE_PIXELS = None``.
 
 Scripts
@@ -50,7 +50,7 @@ Check parameter on _save
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Several image plugins supported a named ``check`` parameter on their
-nominally private _save method to preflight if the image could be
+nominally private ``_save`` method to preflight if the image could be
 saved in that format. That parameter has been removed.
 
 API Additions
@@ -59,10 +59,10 @@ API Additions
 Image.transform
 ^^^^^^^^^^^^^^^
 
-A new named parameter, fillcolor, has been added to
-Image.transform. This color specifies the background color to use in
+A new named parameter, ``fillcolor``, has been added to
+``Image.transform``. This color specifies the background color to use in
 the area outside the transformed area in the output image. This
-parameter takes the same color specifications as used in Image.new.
+parameter takes the same color specifications as used in ``Image.new``.
 
 GIF Disposal
 ^^^^^^^^^^^^
@@ -77,7 +77,7 @@ Compressed TIFF Images
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Previously, there were some compression modes (JPEG, Packbits, and
-LZW) that were supported with Pillow's internal tiff decoder. All
+LZW) that were supported with Pillow's internal TIFF decoder. All
 compressed TIFFs are now read using the ``libtiff`` decoder, as it
 implements the compression schemes more correctly.
 
@@ -94,12 +94,12 @@ Source Layout Changes
 
 The Pillow source is now stored within the ``src`` directory of the
 distribution. This prevents accidental imports of the PIL directory
-when running python from the project directory.
+when running Python from the project directory.
 
 Setup.py Changes
 ^^^^^^^^^^^^^^^^
 
-Multiarch support on linux should be more robust, especially on Debian
+Multiarch support on Linux should be more robust, especially on Debian
 derivatives on ARM platforms. Debian's multiarch platform
 configuration is run in preference to the sniffing of machine platform
 and architecture.
