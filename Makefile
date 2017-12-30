@@ -4,7 +4,7 @@
 
 clean:
 	python setup.py clean
-	rm PIL/*.so || true
+	rm src/PIL/*.so || true
 	rm -r build || true
 	find . -name __pycache__ | xargs rm -r || true
 
