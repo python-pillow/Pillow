@@ -35,7 +35,12 @@ operations in this module).
 .. autofunction:: PIL.ImageChops.logical_and
 .. autofunction:: PIL.ImageChops.logical_or
 .. autofunction:: PIL.ImageChops.multiply
-.. autofunction:: PIL.ImageChops.offset
+.. py:method:: PIL.ImageChops.offset(image, xoffset, yoffset=None)
+
+    Returns a copy of the image where data has been offset by the given
+    distances. Data wraps around the edges. If **yoffset** is omitted, it
+    is assumed to be equal to **xoffset**.
+
 .. autofunction:: PIL.ImageChops.screen
 .. autofunction:: PIL.ImageChops.subtract
 .. autofunction:: PIL.ImageChops.subtract_modulo
