@@ -12,6 +12,25 @@ which is deprecated, to pytest, which doesn't support Python 3.3. We will not
 be creating binaries, testing, or retaining compatibility with this version.
 The final version of Pillow for Python 3.3 is 4.3.0.
 
+Decompression Bombs now raise Exceptions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow has previously emitted warnings for images that are
+unexpectedly large and may be a denial of service. These warnings are
+now upgraded to ``DecompressionBombError``s for images that are twice
+the size of images that trigger the ``DecompressionBombWarning``. The
+default threshold is 128Mpx, or 0.5GB for an ``RGB`` or ``RGBA``
+image. This can be disabled or changed by setting
+``Image.MAX_IMAGE_PIXELS = None``.
+
+Scripts
+^^^^^^^
+
+The scripts formerly installed by Pillow have been split into a
+separate package, pillow-scripts, living at
+https://github.com/python-pillow/pillow-scripts .
+
+
 API Changes
 ===========
 
@@ -28,12 +47,60 @@ Further, the vendored version was removed in Pillow 4.0.0 and replaced with a
 deprecation warning that PIL.OleFileIO would be removed in a future version.
 This warning has been upgraded to an import error pending future removal.
 
+Check parameter on _save
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Several image plugins supported a named ``check`` parameter on their
+nominally private ``_save`` method to preflight if the image could be
+saved in that format. That parameter has been removed.
+
 API Additions
 =============
 
-TODO
+Image.transform
+^^^^^^^^^^^^^^^
+
+A new named parameter, ``fillcolor``, has been added to
+``Image.transform``. This color specifies the background color to use in
+the area outside the transformed area in the output image. This
+parameter takes the same color specifications as used in ``Image.new``.
+
+GIF Disposal
+^^^^^^^^^^^^
+
+Multiframe GIF images now take an optional disposal parameter to
+specify the disposal option for changed pixels. 
 
 Other Changes
 =============
 
-TODO
+Compressed TIFF Images
+^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, there were some compression modes (JPEG, Packbits, and
+LZW) that were supported with Pillow's internal TIFF decoder. All
+compressed TIFFs are now read using the ``libtiff`` decoder, as it
+implements the compression schemes more correctly.
+
+Libraqm is now Dynamically Linked
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The libraqm dependency for complex text scripts is now linked
+dynamically at runtime rather than at packaging time. This allows us
+to release binaries with support for libraqm if it is installed on the
+user's machine. 
+
+Source Layout Changes
+^^^^^^^^^^^^^^^^^^^^^
+
+The Pillow source is now stored within the ``src`` directory of the
+distribution. This prevents accidental imports of the PIL directory
+when running Python from the project directory.
+
+Setup.py Changes
+^^^^^^^^^^^^^^^^
+
+Multiarch support on Linux should be more robust, especially on Debian
+derivatives on ARM platforms. Debian's multiarch platform
+configuration is run in preference to the sniffing of machine platform
+and architecture.
