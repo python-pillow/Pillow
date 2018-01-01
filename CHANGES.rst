@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.0.0 (unreleased)
 ------------------
 
+- Docs: Added docstrings from documentation #2914
+  [radarhere]
+
 - Test: Switch from nose to pytest #2815
   [hugovk]
 
