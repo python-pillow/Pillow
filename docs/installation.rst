@@ -316,7 +316,7 @@ Or for Python 3::
 
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-Prerequisites can be installed on **Ubuntu 14.04 LTS** with::
+Prerequisites are installed on **Ubuntu 14.04 LTS** with::
 
     $ sudo apt-get install libtiff5-dev libjpeg8-dev zlib1g-dev \
         libfreetype6-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev \
@@ -324,15 +324,14 @@ Prerequisites can be installed on **Ubuntu 14.04 LTS** with::
 
 Then see ``depends/install_raqm.sh`` to install libraqm.
 
-Prerequisites can be installed on **RedHat/CentOS 7.4** with::
-
-    $ sudo yum install libjpeg-devel libwebp-devel freetype-devel openjpeg2-devel \
-        libtiff-devel libimagequant-devel lcms2-devel
-
-Prerequisites can be installed on **Fedora 23** with::
+Prerequisites are installed on recent **RedHat** **Centos** or **Fedora** with::
 
     $ sudo dnf install libtiff-devel libjpeg-devel zlib-devel freetype-devel \
-        lcms2-devel libwebp-devel tcl-devel tk-devel libraqm-devel
+        lcms2-devel libwebp-devel tcl-devel tk-devel libraqm-devel \
+        libimagequant-devel
+
+Note that the package manager may be yum or dnf, depending on the
+exact distribution.
 
 See also the ``Dockerfile``\s in the Test Infrastructure repo
 (https://github.com/python-pillow/docker-images) for a known working
