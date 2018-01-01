@@ -19,8 +19,9 @@ Pillow has previously emitted warnings for images that are
 unexpectedly large and may be a denial of service. These warnings are
 now upgraded to ``DecompressionBombError``s for images that are twice
 the size of images that trigger the ``DecompressionBombWarning``. The
-default threshold is .5GB for a 4Bpp image. This can be disabled by
-setting ``Image.MAX_IMAGE_PIXELS = None``.
+default threshold is 128Mpx, or 0.5GB for an ``RGB`` or ``RGBA``
+image. This can be disabled or changed by setting
+``Image.MAX_IMAGE_PIXELS = None``.
 
 Scripts
 ^^^^^^^
