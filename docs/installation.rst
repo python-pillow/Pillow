@@ -330,10 +330,14 @@ Prerequisites are installed on **Ubuntu 14.04 LTS** with::
 
 Then see ``depends/install_raqm.sh`` to install libraqm.
 
-Prerequisites are installed on **Fedora 23** with::
+Prerequisites are installed on recent **RedHat** **Centos** or **Fedora** with::
 
     $ sudo dnf install libtiff-devel libjpeg-devel zlib-devel freetype-devel \
-        lcms2-devel libwebp-devel tcl-devel tk-devel libraqm-devel
+        lcms2-devel libwebp-devel tcl-devel tk-devel libraqm-devel \
+        libimagequant-devel
+
+Note that the package manager may be yum or dnf, depending on the
+exact distribution.
 
 See also the ``Dockerfile``\s in the Test Infrastructure repo
 (https://github.com/python-pillow/docker-images) for a known working
