@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-5.0.0 (unreleased)
+5.0.0 (2018-01-01)
 ------------------
 
 - Docs: Added docstrings from documentation #2914
