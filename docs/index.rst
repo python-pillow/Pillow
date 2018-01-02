@@ -40,12 +40,6 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    about.rst
    releasenotes/index.rst
 
-.. raw:: html
-
-    <a href="https://gratipay.com/pillow/">
-      <img alt="Support via Gratipay" src="https://cdn.rawgit.com/gratipay/gratipay-badge/2.3.0/dist/gratipay.png"/>
-    </a>
-
 Indices and tables
 ==================
 
