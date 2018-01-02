@@ -367,7 +367,7 @@ class pil_build_ext(build_ext):
                     }
 
                 for platform_ in arch_tp:
-                    dirs = libdirs.get(platform_, None)
+                    dirs = libdirs.get(platform_, libdirs)
                     if not platform_:
                         continue
                     for path in dirs:
