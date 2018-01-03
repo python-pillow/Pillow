@@ -435,7 +435,8 @@ def init():
         _initialized = 2
         return 1
 
-    # FIXME TYPING: mypy suggests a default return may be necessary here?
+    logger.debug("Image: init failed to load any plugins")
+    return 0
 
 
 # --------------------------------------------------------------------
