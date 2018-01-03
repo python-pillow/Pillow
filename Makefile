@@ -91,6 +91,9 @@ sdist:
 test:
 	pytest -qq
 
+typecheck:
+	mypy --ignore-missing-imports -2 src/PIL/Image.py
+
 # https://docs.python.org/2/distutils/packageindex.html#the-pypirc-file
 upload-test:
 #       [test]
