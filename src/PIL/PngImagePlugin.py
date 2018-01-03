@@ -121,7 +121,7 @@ class ChunkStream(object):
         self.close()
 
     def close(self):
-        self.queue = self.crc = self.fp = None
+        self.queue = self.fp = None
 
     def push(self, cid, pos, length):
 
