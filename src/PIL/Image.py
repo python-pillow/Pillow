@@ -631,7 +631,7 @@ class Image(object):
         # type: (Optional[Text], Optional[Text], **Any) -> Text
         import tempfile
 
-        suffix = ''
+        suffix = '' # type: Text
         if format:
             suffix = '.'+format
 
@@ -690,9 +690,9 @@ class Image(object):
 
     @property
     def __array_interface__(self):
-        # type: () -> Dict[Text, Any]
+        # type: () -> Dict[unicode, Any]
         # numpy array interface support
-        new = {}
+        new = {} # type: Dict[unicode, Any]
         shape, typestr = _conv_type_shape(self)
         new['shape'] = shape
         new['typestr'] = typestr
