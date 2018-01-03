@@ -19,8 +19,8 @@ import functools
 
 
 class Filter(object):
-    pass
-
+    def filter(self, image):
+        return image.im
 
 class MultibandFilter(Filter):
     pass

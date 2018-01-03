@@ -1176,7 +1176,7 @@ class Image(object):
         self.load()
         return self._new(self.im.expand(xmargin, ymargin, 0))
 
-    def filter(self, filter):
+    def filter(self, kernel):
         # type: (Union[Filter, Callable[[], Filter]]) -> Image
         """
         Filters this image using the given filter.  For a list of
@@ -1189,19 +1189,21 @@ class Image(object):
 
         self.load()
 
-        if isinstance(filter, collections.Callable):
-            filter = filter()
-        if not hasattr(filter, "filter"):
+        if callable(kernel):
+            image_filter = kernel() # type: Filter
+        else:
+            image_filter = kernel
+        if not hasattr(image_filter, "filter"):
             raise TypeError("filter argument should be ImageFilter.Filter " +
                             "instance or class")
 
-        multiband = isinstance(filter, ImageFilter.MultibandFilter)
+        multiband = isinstance(image_filter, ImageFilter.MultibandFilter)
         if self.im.bands == 1 or multiband:
-            return self._new(filter.filter(self.im))
+            return self._new(image_filter.filter(self.im))
 
         ims = []
         for c in range(self.im.bands):
-            ims.append(self._new(filter.filter(self.im.getband(c))))
+            ims.append(self._new(image_filter.filter(self.im.getband(c))))
         return merge(self.mode, ims)
 
     def getbands(self):
