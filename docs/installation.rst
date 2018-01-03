@@ -88,7 +88,7 @@ Pillow can be installed on FreeBSD via the official Ports or Packages systems:
     The `Pillow FreeBSD port
     <https://www.freshports.org/graphics/py-pillow/>`_ and packages
     are tested by the ports team with all supported FreeBSD versions
-    and against Python 2.x and 3.x.
+    and against Python 2.7 and 3.x.
 
 
 Building From Source
