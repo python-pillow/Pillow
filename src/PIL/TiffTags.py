@@ -19,9 +19,11 @@
 
 from collections import namedtuple
 
+if False:
+    from typing import Dict, List, Text
 
 class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
-    __slots__ = []
+    __slots__ = [] # type: List[Text]
 
     def __new__(cls, value=None, name="unknown", type=None, length=None, enum=None):
         return super(TagInfo, cls).__new__(
@@ -359,7 +361,7 @@ _populate()
 ##
 # Map type numbers to type names -- defined in ImageFileDirectory.
 
-TYPES = {}
+TYPES = {} # type: Dict[int, Text] 
 
 # was:
 # TYPES = {
