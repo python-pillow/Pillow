@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+5.1.0 (unreleased)
+------------------
+
+- Docs: Changed documentation references to 2.x to 2.7 #2921
+  [radarhere]
+
 5.0.0 (2018-01-01)
 ------------------
 
