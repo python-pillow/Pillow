@@ -31,7 +31,6 @@ if False:
 
     # Just required for typing, or gradual module inclusion while adding annotation?
     import pathlib
-#    from . import ImagingPalette  ## FIXME TYPING This will need a stub?
     from . import ImagePalette
     from .ImageFilter import Filter
     from .ImageFile import PyDecoder
@@ -1046,7 +1045,7 @@ class Image(object):
         return new_im
 
     def quantize(self, colors=256, method=None, kmeans=0, palette=None):
-        # type: (int, Optional[int], int, Optional[ImagingPalette]) -> Image
+        # type: (int, Optional[int], int, Optional[Image]) -> Image
         """
         Convert the image to 'P' mode with the specified number
         of colors.
