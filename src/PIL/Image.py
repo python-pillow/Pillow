@@ -1246,7 +1246,7 @@ class Image(object):
         self.load()
         if self.mode in ("1", "L", "P"):
             h = self.im.histogram()
-            out = []
+            out = [] # type: List[Tuple[int, Color]]
             for i in range(256):
                 if h[i]:
                     out.append((h[i], i))
