@@ -443,7 +443,7 @@ def init():
 # Codec factories (used by tobytes/frombytes and ImageFile.load)
 
 def _getdecoder(mode, decoder_name, args, extra=()):
-    # type: (Mode, Text, Optional[Tuple], Tuple) -> PyDecoder
+    # type: (Mode, Text, Optional[Union[str, Tuple, List]], Tuple) -> PyDecoder
 
     # tweak arguments
     if args is None:
@@ -466,7 +466,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
 
 
 def _getencoder(mode, encoder_name, args, extra=()):
-    # type: (Mode, Text, Optional[Tuple], Tuple) -> PyEncoder
+    # type: (Mode, Text, Optional[Union[str, Tuple, List]], Tuple) -> PyEncoder
 
     # tweak arguments
     if args is None:
@@ -742,21 +742,23 @@ class Image(object):
 
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
-        :param args: Extra arguments to the encoder.
+        :param *args: Extra arguments to the encoder. May be one tuple, 
+                      or individual arguments
         :rtype: A bytes object.
         """
+        encoder_args = args # type: Union[str, Tuple[Any,...], List[Any]]
 
         # may pass tuple instead of argument list
         if len(args) == 1 and isinstance(args[0], tuple):
-            args = args[0]
+            encoder_args = args[0]
 
         if encoder_name == "raw" and args == ():
-            args = self.mode
+            encoder_args = self.mode
 
         self.load()
 
         # unpack data
-        e = _getencoder(self.mode, encoder_name, args)
+        e = _getencoder(self.mode, encoder_name, encoder_args)
         e.setimage(self.im)
 
         bufsize = max(65536, self.size[0] * 4)  # see RawEncode.c
@@ -808,16 +810,17 @@ class Image(object):
         but loads data into this image instead of creating a new image object.
         """
 
+        decoder_args = args # type: Union[str, Tuple[Any,...], List[Any]]
         # may pass tuple instead of argument list
         if len(args) == 1 and isinstance(args[0], tuple):
-            args = args[0]
+            decoder_args = args[0]
 
         # default format
         if decoder_name == "raw" and args == ():
-            args = self.mode
+            decoder_args = self.mode
 
         # unpack data
-        d = _getdecoder(self.mode, decoder_name, args)
+        d = _getdecoder(self.mode, decoder_name, decoder_args)
         d.setimage(self.im)
         s = d.decode(data)
 
