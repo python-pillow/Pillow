@@ -1292,9 +1292,16 @@ class Image(object):
 
         self.load()
         if self.im.bands > 1:
-            extrema = []
+            extrema = [] # type: List[Tuple[int,int]]
+            # UNDONE typing:
+            # We know that the extrema here is List[Tuple[int,int]]
+            # but the method sig of getextrema mentions a float, but
+            # we know that if it's a multiband image, it's got to be
+            # int. Single band images could be either.
+            # We could cast, but that's not going to work with py27 or
+            # py34
             for i in range(self.im.bands):
-                extrema.append(self.im.getband(i).getextrema())
+                extrema.append(self.im.getband(i).getextrema()) # type: ignore
             return tuple(extrema)
         return self.im.getextrema()
 
