@@ -1393,7 +1393,8 @@ class Image(object):
 
     def paste(self, im, box=None, mask=None):
         # type: (Union[Image, Color, Text], Optional[Union[LURD, Coord]], Optional[Image]) -> None
-        ## FIXME TYPING: Check this ^
+        # Alternate (frowned upon) positional type signaure
+        ## type: (Union[Image, Color, Text], Image) -> None
         """
         Pastes another image into this image. The box argument is either
         a 2-tuple giving the upper left corner, a 4-tuple defining the
@@ -1433,46 +1434,65 @@ class Image(object):
         :param mask: An optional mask image.
         """
 
+        mask_img = None # type: Optional[Image]
+        box_lurd = None # type: Optional[LURD]
+        box_coord = None # type: Optional[Coord]
+        paste_color = None # type: Optional[Color]
+        paste_imcore = None # type: Optional[ImagingCore]
+        paste_im = None # type: Optional[Image]
+
         if isImageType(box) and mask is None:
             # abbreviated paste(im, mask) syntax
-            mask = box
+            mask_img = box # type: ignore
             box = None
 
         if box is None:
             box = (0, 0)
 
-        if len(box) == 2:
+        if isImageType(mask):
+            mask_img = mask
+
+        if isinstance(im, Image):
+            paste_im = im
+            paste_im.load()
+            if self.mode != paste_im.mode:
+                if self.mode != "RGB" or paste_im.mode not in ("RGBA", "RGBa"):
+                    # should use an adapter for this!
+                    paste_im = paste_im.convert(self.mode)
+            paste_imcore = paste_im.im
+        elif isStringType(im):
+            from . import ImageColor
+            paste_color = ImageColor.getcolor(im, self.mode)
+        elif isinstance(im, (int, float, tuple)):
+            paste_color = im
+        else:
+            raise ValueError("Incorrect Paste specification")
+
+        if len(box) == 4:
+            box_lurd = box
+        elif len(box) == 2:
             # upper left corner given; get size from image or mask
-            if isImageType(im):
-                size = im.size
-            elif isImageType(mask):
-                size = mask.size
+            box_coord = box
+            if paste_im:
+                size = paste_im.size
+            elif mask_img:
+                size = mask_img.size
             else:
                 # FIXME: use self.size here?
                 raise ValueError(
                     "cannot determine region size; use 4-item box"
                     )
-            box += (box[0]+size[0], box[1]+size[1])
-
-        if isStringType(im):
-            from . import ImageColor
-            im = ImageColor.getcolor(im, self.mode)
-
-        elif isImageType(im):
-            im.load()
-            if self.mode != im.mode:
-                if self.mode != "RGB" or im.mode not in ("RGBA", "RGBa"):
-                    # should use an adapter for this!
-                    im = im.convert(self.mode)
-            im = im.im
+            box_lurd = box_coord + (box_coord[0]+size[0], box_coord[1]+size[1])
+        else:
+            raise ValueError("Incorrect Box specification")
 
         self._ensure_mutable()
 
-        if mask:
-            mask.load()
-            self.im.paste(im, box, mask.im)
+        if mask_img:
+            mask_img.load()
+            self.im.paste(paste_imcore or paste_color, box_lurd, mask_img.im)
         else:
-            self.im.paste(im, box)
+            self.im.paste(paste_imcore or paste_color, box_lurd)
 
     def alpha_composite(self, im, dest=(0,0), source=(0,0)):
         # type: (Image, Coord, Union[Coord, LURD]) -> None
