@@ -138,7 +138,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_chord(xy, start, end, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_chord(xy, start, end, ink, 0)
 
     def ellipse(self, xy, fill=None, outline=None):
@@ -146,7 +146,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_ellipse(xy, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_ellipse(xy, ink, 0)
 
     def line(self, xy, fill=None, width=0):
@@ -161,7 +161,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_outline(shape, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_outline(shape, ink, 0)
 
     def pieslice(self, xy, start, end, fill=None, outline=None):
@@ -169,7 +169,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_pieslice(xy, start, end, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_pieslice(xy, start, end, ink, 0)
 
     def point(self, xy, fill=None):
@@ -183,7 +183,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_polygon(xy, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_polygon(xy, ink, 0)
 
     def rectangle(self, xy, fill=None, outline=None):
@@ -191,7 +191,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_rectangle(xy, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_rectangle(xy, ink, 0)
 
     def _multiline_check(self, text):
