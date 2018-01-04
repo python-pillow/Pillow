@@ -1382,7 +1382,7 @@ class Image(object):
             return self.im.histogram((0, 0), mask.im)
         if self.mode in ("I", "F"):
             if extrema is None:
-                extrema = self.getextrema()
+                extrema = self.im.getextrema()
             return self.im.histogram(extrema)
         return self.im.histogram()
 
