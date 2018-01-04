@@ -576,7 +576,6 @@ class TestFileCloseW32(PillowTestCase):
 
     def test_fd_leak(self):
         tmpfile = self.tempfile("temp.jpg")
-        import os
 
         with Image.open("Tests/images/hopper.jpg") as im:
             im.save(tmpfile)

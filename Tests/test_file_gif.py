@@ -475,8 +475,6 @@ class TestFileGif(PillowTestCase):
         # that's > 128 items where the transparent color is actually
         # the top palette entry to trigger the bug.
 
-        from PIL import ImagePalette
-
         data = bytes(bytearray(range(1, 254)))
         palette = ImagePalette.ImagePalette("RGB", list(range(256))*3)
 

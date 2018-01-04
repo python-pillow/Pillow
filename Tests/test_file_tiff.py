@@ -388,7 +388,6 @@ class TestFileTiff(PillowTestCase):
                   'y_resolution': 36}
         filename = self.tempfile("temp.tif")
         hopper("RGB").save(filename, **kwargs)
-        from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION
         im = Image.open(filename)
 
         # legacy interface
