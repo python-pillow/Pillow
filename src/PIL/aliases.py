@@ -8,5 +8,9 @@ Size = XY  # NOTE: All XY aliases will be interchangeable
 Matrix4 = Tuple[float, float, float, float]
 Matrix12 = Tuple[float, float, float, float, float, float, float, float, float, float, float, float]
 Mode = str
-Extrema = Union[Tuple[float, float], Tuple[int, int], Tuple[Tuple[int, int], ...]]
+
+SingleChannelExtrema = Union[Tuple[float, float], Tuple[int, int]]
+MultiChannelExtrema = Tuple[int, int]
+Extrema = Union[SingleChannelExtrema, Tuple[MultiChannelExtrema, ...]]
+
 Color = Union[int, float, Tuple[int, int], Tuple[int, int, int], Tuple[int, int, int, int]]

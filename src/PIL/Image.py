@@ -1292,16 +1292,10 @@ class Image(object):
 
         self.load()
         if self.im.bands > 1:
-            extrema = [] # type: List[Tuple[int,int]]
-            # UNDONE typing:
-            # We know that the extrema here is List[Tuple[int,int]]
-            # but the method sig of getextrema mentions a float, but
-            # we know that if it's a multiband image, it's got to be
-            # int. Single band images could be either.
-            # We could cast, but that's not going to work with py27 or
-            # py34
+            extrema = [] # type: Extrema
             for i in range(self.im.bands):
-                extrema.append(self.im.getband(i).getextrema()) # type: ignore
+                ex = self.im.getband(i).getextrema() # type: MultiChannelExtrema
+                extrema.append(ex)
             return tuple(extrema)
         return self.im.getextrema()
 
@@ -1363,7 +1357,7 @@ class Image(object):
         return [i8(c) for c in x], [i8(c) for c in y]
 
     def histogram(self, mask=None, extrema=None):
-        # type: (Optional[Image], Optional[Extrema]) -> List[int]
+        # type: (Optional[Image], Optional[SingleChannelExtrema]) -> List[int]
         """
         Returns a histogram for the image. The histogram is returned as
         a list of pixel counts, one for each pixel value in the source
