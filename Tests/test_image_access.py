@@ -258,7 +258,6 @@ class TestEmbeddable(unittest.TestCase):
     def test_embeddable(self):
         import subprocess
         import ctypes
-        import setuptools
         from distutils import ccompiler, sysconfig
 
         with open('embed_pil.c', 'w') as fh:

@@ -23,10 +23,9 @@
 
 
 from . import Image, ImageFile
-from ._binary import i8, o8, i16be as i16, o16be as o16
+from ._binary import i8, o8, i16be as i16
 import struct
 import os
-import sys
 
 
 __version__ = "0.3"

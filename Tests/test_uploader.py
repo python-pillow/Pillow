@@ -1,7 +1,5 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
-
 
 class TestUploader(PillowTestCase):
     def check_upload_equal(self):
