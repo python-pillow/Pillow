@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Remove unused and duplicate imports #2927
+  [radarhere]
+
 - Docs: Changed documentation references to 2.x to 2.7 #2921
   [radarhere]
 
