@@ -1292,7 +1292,7 @@ class Image(object):
 
         self.load()
         if self.im.bands > 1:
-            extrema = [] # type: Extrema
+            extrema = []
             for i in range(self.im.bands):
                 ex = self.im.getband(i).getextrema() # type: MultiChannelExtrema
                 extrema.append(ex)

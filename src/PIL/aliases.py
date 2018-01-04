@@ -10,7 +10,7 @@ Matrix12 = Tuple[float, float, float, float, float, float, float, float, float, 
 Mode = str
 
 SingleChannelExtrema = Union[Tuple[float, float], Tuple[int, int]]
-MultiChannelExtrema = Tuple[int, int]
+MultiChannelExtrema = SingleChannelExtrema # Note: currently only a Tuple[int,int]
 Extrema = Union[SingleChannelExtrema, Tuple[MultiChannelExtrema, ...]]
 
 Color = Union[int, float, Tuple[int, int], Tuple[int, int, int], Tuple[int, int, int, int]]
