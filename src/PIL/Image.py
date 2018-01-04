@@ -1469,10 +1469,10 @@ class Image(object):
             raise ValueError("Incorrect Paste specification")
 
         if len(box) == 4:
-            box_lurd = box
+            box_lurd = box # type: ignore
         elif len(box) == 2:
             # upper left corner given; get size from image or mask
-            box_coord = box
+            box_coord = box # type: ignore
             if paste_im:
                 size = paste_im.size
             elif mask_img:
@@ -1482,7 +1482,7 @@ class Image(object):
                 raise ValueError(
                     "cannot determine region size; use 4-item box"
                     )
-            box_lurd = box_coord + (box_coord[0]+size[0], box_coord[1]+size[1])
+            box_lurd = box_coord + (box_coord[0]+size[0], box_coord[1]+size[1]) # type: ignore
         else:
             raise ValueError("Incorrect Box specification")
 
