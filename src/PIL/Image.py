@@ -1324,7 +1324,7 @@ class Image(object):
             if bytes is str:
                 return [i8(c) for c in self.im.getpalette()]
             else:
-                return list(self.im.getpalette())
+                return list(self.im.getpalette()) # type: ignore
         except ValueError:
             return None  # no palette
 
@@ -1688,7 +1688,7 @@ class Image(object):
         else:
             if not isinstance(data, bytes):
                 if bytes is str:
-                    data = "".join(chr(x) for x in data)
+                    data = "".join(chr(x) for x in data) # type: ignore
                 else:
                     data = bytes(data)
             palette = ImagePalette.raw(rawmode, data)
