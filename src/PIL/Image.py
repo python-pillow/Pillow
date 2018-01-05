@@ -741,7 +741,7 @@ class Image(object):
 
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
-        :param *args: Extra arguments to the encoder. May be one tuple, 
+        :param *args: Extra arguments to the encoder. May be one tuple,
                       or individual arguments
         :rtype: A bytes object.
         """
@@ -2002,7 +2002,7 @@ class Image(object):
             open_fp = True
         else:
             _fp = fp # type: ignore
-            
+
         if not filename and hasattr(_fp, "name") and isPath(_fp.name):
                 # only set the name for metadata purposes
                 filename = _fp.name
@@ -2202,7 +2202,7 @@ class Image(object):
     # instead of bloating the method docs, add a separate chapter.
     def transform(self, size, method, data=None, resample=NEAREST,
                   fill=1, fillcolor=None):
-        # type: (Size, int, Optional[List[float]], int, int, Optional[Color]) -> Image
+        # type: (Size, int, Optional[Union[List[float], List[Tuple[LURD,LURD]]]], int, int, Optional[Color]) -> Image
         """
         Transforms this image.  This method creates a new image with the
         given size, and the same mode as the original, and copies data
@@ -2227,7 +2227,7 @@ class Image(object):
            in the output image.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
-        
+
         if self.mode == 'LA':
             return self.convert('La').transform(
                 size, method, data, resample, fill).convert('LA')
@@ -2241,7 +2241,8 @@ class Image(object):
 
         if hasattr(method, "getdata"):
             # compatibility w. old-style transform objects
-            method, data = method.getdata()
+            # ignoring for typing, this is old compatibility
+            method, data = method.getdata() # type: ignore
 
         if data is None:
             raise ValueError("missing method data")
@@ -2249,11 +2250,15 @@ class Image(object):
         im = new(self.mode, size, fillcolor)
         if method == MESH:
             # list of quads
-            for box, quad in data:
+            data_mesh = None # type: List[Tuple[LURD,LURD]]
+            data_mesh = data # type: ignore
+            for box, quad in data_mesh:
                 im.__transformer(box, self, QUAD, quad, resample,
                                  fillcolor is None)
         else:
-            im.__transformer((0, 0)+size, self, method, data,
+            box_lurd = None # type: LURD
+            box_lurd = (0, 0)+size # type: ignore
+            im.__transformer(box_lurd, self, method, data,
                              resample, fillcolor is None)
 
         return im
