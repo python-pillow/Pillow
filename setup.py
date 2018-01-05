@@ -657,8 +657,8 @@ class pil_build_ext(build_ext):
 
         tk_libs = ['psapi'] if sys.platform == 'win32' else []
         exts.append(Extension("PIL._imagingtk",
-                              ["src/_imagingtk.c", "Tk/tkImaging.c"],
-                              include_dirs=['Tk'],
+                              ["src/_imagingtk.c", "src/Tk/tkImaging.c"],
+                              include_dirs=['src/Tk'],
                               libraries=tk_libs))
 
         exts.append(Extension("PIL._imagingmath", ["src/_imagingmath.c"]))
