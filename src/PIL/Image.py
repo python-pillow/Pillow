@@ -2535,9 +2535,11 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
             args = mode, 0, -1  # may change to (mode, 0, 1) post-1.1.6
         if args[0] in _MAPMODES:
             im = new(mode, (1, 1))
+            # typing -- Getting this to cleanly realize that args is a
+            # correctly formatted tuple is harder than it's worth
             im = im._new(
                 core.map_buffer(data, size, decoder_name, None, 0, args)
-                )
+                ) # type: ignore
             im.readonly = 1
             return im
 
