@@ -691,9 +691,9 @@ class Image(object):
 
     @property
     def __array_interface__(self):
-        # type: () -> Dict[unicode, Any]
+        # type: () -> ArrayInterfaceStruct
         # numpy array interface support
-        new = {} # type: Dict[unicode, Any]
+        new = {} # type: ArrayInterfaceStruct
         shape, typestr = _conv_type_shape(self)
         new['shape'] = shape
         new['typestr'] = typestr
@@ -2538,8 +2538,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
             # typing -- Getting this to cleanly realize that args is a
             # correctly formatted tuple is harder than it's worth
             im = im._new(
-                core.map_buffer(data, size, decoder_name, None, 0, args)
-                ) # type: ignore
+                core.map_buffer(data, size, decoder_name, None, 0, args)) # type: ignore
             im.readonly = 1
             return im
 
@@ -2547,7 +2546,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
 
 def fromarray(obj, mode=None):
-    # type: (object, Optional[Mode]) -> Image
+    # type: (SupportsArrayInterface, Optional[Mode]) -> Image
     """
     Creates an image memory from an object exporting the array interface
     (using the buffer protocol).
@@ -2585,13 +2584,16 @@ def fromarray(obj, mode=None):
         raise ValueError("Too many dimensions: %d > %d." % (ndim, ndmax))
 
     size = shape[1], shape[0]
+
+    obj_bytes = None # type: bytes
     if strides is not None:
         if hasattr(obj, 'tobytes'):
-            obj = obj.tobytes()
+            obj_bytes = obj.tobytes()
         else:
-            obj = obj.tostring()
+            obj_bytes = obj.tostring()
 
-    return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
+    # UNDONE typing: can from buffer et al take an array_interface exporting object?
+    return frombuffer(mode, size, obj_bytes or obj, "raw", rawmode, 0, 1)
 
 
 def fromqimage(im):

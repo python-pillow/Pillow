@@ -1,4 +1,5 @@
-from typing import Tuple, Union
+from typing import Dict, Tuple, Union, Any, Protocol
+from abc import abstractmethod, abstractproperty
 
 # Type aliases; names subject to change
 LURD = Tuple[int, int, int, int]  # left, up(per), right, down = x0, y0, x1, y1
@@ -14,3 +15,21 @@ MultiChannelExtrema = SingleChannelExtrema # Note: currently only a Tuple[int,in
 Extrema = Union[SingleChannelExtrema, Tuple[MultiChannelExtrema, ...]]
 
 Color = Union[int, float, Tuple[int, int], Tuple[int, int, int], Tuple[int, int, int, int]]
+
+ArrayInterfaceStruct = Dict[unicode, Any]
+
+class SupportsArrayInterface(Protocol):
+    @abstractproperty
+    def __array_interface__(self):
+        # type: () -> ArrayInterfaceStruct
+        pass
+
+    @abstractmethod
+    def tostring(self):
+        # type: () -> str
+        pass
+
+    @abstractmethod
+    def tobytes(self):
+        # type: () -> bytes
+        pass
