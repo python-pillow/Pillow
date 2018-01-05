@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Enable pip cache in Travis CI #2933
+  [jdufresne]
+
 - Remove unused and duplicate imports #2927
   [radarhere]
 
