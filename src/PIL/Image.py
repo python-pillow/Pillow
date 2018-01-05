@@ -1522,17 +1522,22 @@ class Image(object):
         if min(dest) < 0:
             raise ValueError("Destination must be non-negative")
 
+        source_lurd = None # type: LURD
+
         if len(source) == 2:
-            source = source + im.size
+            source_lurd = source + im.size # type: ignore
+        else:
+            source_lurd = source # type: ignore
 
         # over image, crop if it's not the whole thing.
-        if source == (0,0) + im.size:
+        if source_lurd == (0,0) + im.size:
             overlay = im
         else:
-            overlay = im.crop(source)
+            overlay = im.crop(source_lurd)
 
         # target for the paste
-        box = dest + (dest[0] + overlay.width, dest[1] + overlay.height)
+        box = None # type: LURD
+        box = dest + (dest[0] + overlay.width, dest[1] + overlay.height) # type: ignore
 
         # destination image. don't copy if we're using the whole image.
         if box == (0,0) + self.size:
@@ -2338,8 +2343,9 @@ class Image(object):
 
 class ImagePointHandler(object):
     # used as a mixin by point transforms (for use with im.point)
-    pass
-
+    def point(self, s):
+        # type (T) -> T
+        return s
 
 class ImageTransformHandler(object):
     # used as a mixin by geometry transforms (for use with im.transform)
