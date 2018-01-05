@@ -2592,8 +2592,11 @@ def fromarray(obj, mode=None):
         else:
             obj_bytes = obj.tostring()
 
-    # UNDONE typing: can from buffer et al take an array_interface exporting object?
-    return frombuffer(mode, size, obj_bytes or obj, "raw", rawmode, 0, 1)
+    # Typing: At this point, obj should be an item exporting a buffer interface
+    # and obj_bytes, if it exists, is a bytes exporting a buffer interface.
+    # Unfortunately at this point, there's no protocol for the buffer interface
+    # and due to it's c-level implementation, I don't see how to make one.
+    return frombuffer(mode, size, obj_bytes or obj, "raw", rawmode, 0, 1) # type: ignore
 
 
 def fromqimage(im):
