@@ -1589,15 +1589,15 @@ class Image(object):
         return self._new(self.im.point(lut, mode))
 
     def putalpha(self, alpha):
-        # type: (Union[Image, Color]) -> None  ## FIXME TYPING: Check this
+        # type: (Union[Image, int]) -> None
         """
         Adds or replaces the alpha layer in this image.  If the image
         does not have an alpha layer, it's converted to "LA" or "RGBA".
         The new layer must be either "L" or "1".
 
         :param alpha: The new alpha layer.  This can either be an "L" or "1"
-           image having the same size as this image, or an integer or
-           other color value.
+           image having the same size as this image, or an integer
+           representing the alpha value.
         """
 
         self._ensure_mutable()
@@ -1624,24 +1624,28 @@ class Image(object):
         else:
             band = 3
 
+        alpha_img = None # type: Image
         if isImageType(alpha):
             # alpha layer
-            if alpha.mode not in ("1", "L"):
+            alpha_img = alpha # type: ignore
+            if alpha_img.mode not in ("1", "L"):
                 raise ValueError("illegal image mode")
-            alpha.load()
-            if alpha.mode == "1":
-                alpha = alpha.convert("L")
+            alpha_img.load()
+            if alpha_img.mode == "1":
+                alpha_img = alpha_img.convert("L")
         else:
             # constant alpha
             try:
-                self.im.fillband(band, alpha)
+                alpha_int = None # type: int
+                alpha_int = alpha # type: ignore
+                self.im.fillband(band, alpha_int)
             except (AttributeError, ValueError):
                 # do things the hard way
-                alpha = new("L", self.size, alpha)
+                alpha_img = new("L", self.size, alpha_int)
             else:
                 return
 
-        self.im.putband(alpha.im, band)
+        self.im.putband(alpha_img.im, band)
 
     def putdata(self, data, scale=1.0, offset=0.0):
         # type: (Sequence[Union[bytes, int, float]], float, float) -> None
