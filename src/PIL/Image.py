@@ -1830,12 +1830,15 @@ class Image(object):
         ):
             raise ValueError("unknown resampling filter")
 
-        size = tuple(size)
+        size = tuple(size) # type: ignore
+        # Typing note -- historically we've allowed Iterables of
+        # len==2 as sizes, but technically they're supposed to be
+        # 2-tuples.
 
         if box is None:
-            box = (0, 0) + self.size
+            box = (0, 0) + self.size # type: ignore
         else:
-            box = tuple(box)
+            box = tuple(box) # type: ignore
 
         if self.size == size and box == (0, 0) + self.size:
             return self.copy()
