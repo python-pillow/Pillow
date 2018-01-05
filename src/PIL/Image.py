@@ -1996,15 +1996,16 @@ class Image(object):
 
         filename = ""
         open_fp = False
-        if isPath(fp):
-            filename = fp
-            open_fp = True
-        elif HAS_PATHLIB and isinstance(fp, Path):
+        _fp = None # type: BinaryIO
+        if isPath(fp) or (HAS_PATHLIB and isinstance(fp, Path)):
             filename = str(fp)
             open_fp = True
-        if not filename and hasattr(fp, "name") and isPath(fp.name):
-            # only set the name for metadata purposes
-            filename = fp.name
+        else:
+            _fp = fp # type: ignore
+            
+        if not filename and hasattr(_fp, "name") and isPath(_fp.name):
+                # only set the name for metadata purposes
+                filename = _fp.name
 
         # may mutate self!
         self.load()
@@ -2037,14 +2038,14 @@ class Image(object):
         if open_fp:
             # Open also for reading ("+"), because TIFF save_all
             # writer needs to go back and edit the written data.
-            fp = builtins.open(filename, "w+b")
+            _fp = builtins.open(filename, "w+b")
 
         try:
-            save_handler(self, fp, filename)
+            save_handler(self, _fp, filename)
         finally:
             # do what we can to clean up
             if open_fp:
-                fp.close()
+                _fp.close()
 
     def seek(self, frame):
         # type: (int) -> None
