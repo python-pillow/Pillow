@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Move Tk directory to src directory #2928
+  [hugovk]
+  
 - Enable pip cache in Travis CI #2933
   [jdufresne]
 
