@@ -2920,26 +2920,6 @@ _effect_spread(ImagingObject* self, PyObject* args)
 /* UTILITIES                                */
 /* -------------------------------------------------------------------- */
 
-static PyObject*
-_crc32(PyObject* self, PyObject* args)
-{
-    unsigned char* buffer;
-    int bytes;
-    int hi, lo;
-    UINT32 crc;
-
-    hi = lo = 0;
-
-    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH"|(ii)",
-                          &buffer, &bytes, &hi, &lo))
-        return NULL;
-
-    crc = ((UINT32) (hi & 0xFFFF) << 16) + (lo & 0xFFFF);
-
-    crc = ImagingCRC32(crc, (unsigned char *)buffer, bytes);
-
-    return Py_BuildValue("ii", (crc >> 16) & 0xFFFF, crc & 0xFFFF);
-}
 
 static PyObject*
 _getcodecstatus(PyObject* self, PyObject* args)
@@ -3593,7 +3573,6 @@ static PyMethodDef functions[] = {
 #endif
 
     /* Utilities */
-    {"crc32", (PyCFunction)_crc32, 1},
     {"getcodecstatus", (PyCFunction)_getcodecstatus, 1},
 
     /* Special effects (experimental) */

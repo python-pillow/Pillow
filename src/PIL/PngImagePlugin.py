@@ -85,6 +85,9 @@ def _safe_zlib_decompress(s):
         raise ValueError("Decompressed Data Too Large")
     return plaintext
 
+def _crc32(data, seed=0):
+    return zlib.crc32(data, seed) & 0xffffffff
+
 
 # --------------------------------------------------------------------
 # Support classes.  Suitable for PNG and related formats like MNG etc.
@@ -95,9 +98,6 @@ class ChunkStream(object):
 
         self.fp = fp
         self.queue = []
-
-        if not hasattr(Image.core, "crc32"):
-            self.crc = self.crc_skip
 
     def read(self):
         "Fetch a new chunk. Returns header information."
@@ -147,8 +147,8 @@ class ChunkStream(object):
             return
 
         try:
-            crc1 = Image.core.crc32(data, Image.core.crc32(cid))
-            crc2 = i16(self.fp.read(2)), i16(self.fp.read(2))
+            crc1 = _crc32(data, _crc32(cid))
+            crc2 = i32(self.fp.read(4))
             if crc1 != crc2:
                 raise SyntaxError("broken PNG file (bad header checksum in %r)"
                                   % cid)
@@ -668,8 +668,8 @@ def putchunk(fp, cid, *data):
 
     fp.write(o32(len(data)) + cid)
     fp.write(data)
-    hi, lo = Image.core.crc32(data, Image.core.crc32(cid))
-    fp.write(o16(hi) + o16(lo))
+    crc = _crc32(data, _crc32(cid))
+    fp.write(o32(crc))
 
 
 class _idat(object):
@@ -843,8 +843,7 @@ def getchunks(im, **params):
 
     def append(fp, cid, *data):
         data = b"".join(data)
-        hi, lo = Image.core.crc32(data, Image.core.crc32(cid))
-        crc = o16(hi) + o16(lo)
+        crc = o32(_crc32(data, _crc32(cid)))
         fp.append((cid, data, crc))
 
     fp = collector()
