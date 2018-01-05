@@ -2687,35 +2687,38 @@ def open(fp, mode="r"):
     if mode != "r":
         raise ValueError("bad mode %r" % mode)
 
-    exclusive_fp = False  # type: bool
+    exclusive_fp = False
     filename = ""
+    _fp = None # type: BinaryIO
     if isPath(fp):
-        filename = fp
+        filename = str(fp)
     elif HAS_PATHLIB and isinstance(fp, Path):
         filename = str(fp.resolve())
 
     if filename:
-        fp = builtins.open(filename, "rb")
+        _fp = builtins.open(filename, "rb")
         exclusive_fp = True
+    else:
+        _fp = fp # type: ignore
 
     try:
-        fp.seek(0)
+        _fp.seek(0)
     except (AttributeError, io.UnsupportedOperation):
-        fp = io.BytesIO(fp.read())
+        _fp = io.BytesIO(_fp.read())
         exclusive_fp = True
 
-    prefix = fp.read(16)
+    prefix = _fp.read(16)
 
     preinit()
 
-    def _open_core(fp, filename, prefix):
+    def _open_core(_fp, filename, prefix):
         # type: (BinaryIO, Text, Text) -> Optional[ImageFile.ImageFile]
         for i in ID:
             try:
                 factory, accept = OPEN[i]
                 if not accept or accept(prefix):
-                    fp.seek(0)
-                    im = factory(fp, filename)
+                    _fp.seek(0)
+                    im = factory(_fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
             except (SyntaxError, IndexError, TypeError, struct.error):
@@ -2725,18 +2728,18 @@ def open(fp, mode="r"):
                 continue
         return None
 
-    im = _open_core(fp, filename, prefix)
+    im = _open_core(_fp, filename, prefix)
 
     if im is None:
         if init():
-            im = _open_core(fp, filename, prefix)
+            im = _open_core(_fp, filename, prefix)
 
     if im:
         im._exclusive_fp = exclusive_fp
         return im
 
     if exclusive_fp:
-        fp.close()
+        _fp.close()
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
 
