@@ -36,7 +36,9 @@ if False:
     from .ImageFile import PyDecoder
     PyEncoder = Any  ## FIXME TYPING: PyEncoder is not defined anywhere? Needs stub/class?
     from ._imaging import ImagingCore
-    from . import PyAccess
+    from . import PyAccess, ImageFile
+
+    from PyQt5.QtGui import QImage, QPixmap
 
 from . import VERSION, PILLOW_VERSION, _plugins
 
