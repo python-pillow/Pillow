@@ -82,7 +82,7 @@ try:
                            PILLOW_VERSION))
 
 except ImportError as v:
-    core = _imaging_not_installed()
+    core = _imaging_not_installed() # type: ignore
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -613,7 +613,7 @@ class Image(object):
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
-        self.im = deferred_error(ValueError("Operation on closed image"))
+        self.im = deferred_error(ValueError("Operation on closed image")) # type: ignore
 
     def _copy(self):
         # type: () -> None
