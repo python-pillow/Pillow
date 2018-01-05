@@ -2436,7 +2436,7 @@ def new(mode, size, color=0):
 
 
 def frombytes(mode, size, data, decoder_name="raw", *args):
-    # type: (Mode, Size, Sequence[bytes], Text, *Any) -> Image
+    # type: (Mode, Size, bytes, Text, *Any) -> Image
     """
     Creates a copy of an image memory from pixel data in a buffer.
 
@@ -2462,15 +2462,17 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
     _check_size(size)
 
+    decoder_args = args # type: Union[str, Tuple[Any,...], List[Any]]
     # may pass tuple instead of argument list
     if len(args) == 1 and isinstance(args[0], tuple):
-        args = args[0]
+        decoder_args = args[0]
 
+    # default format
     if decoder_name == "raw" and args == ():
-        args = mode
+        decoder_args = mode
 
     im = new(mode, size)
-    im.frombytes(data, decoder_name, args)
+    im.frombytes(data, decoder_name, decoder_args)
     return im
 
 
@@ -2481,7 +2483,7 @@ def fromstring(*args, **kw):
 
 
 def frombuffer(mode, size, data, decoder_name="raw", *args):
-    # type: (Mode, Size, Sequence[bytes], Text, *Any) -> Image
+    # type: (Mode, Size, bytes, Text, *Any) -> Image
     """
     Creates an image memory referencing pixel data in a byte buffer.
 
