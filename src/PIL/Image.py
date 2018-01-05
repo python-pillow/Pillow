@@ -1947,9 +1947,9 @@ class Image(object):
             xx = []
             yy = []
             for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
-                x, y = transform(x, y, matrix)
-                xx.append(x)
-                yy.append(y)
+                x_f, y_f = transform(x, y, matrix)
+                xx.append(x_f)
+                yy.append(y_f)
             nw = int(math.ceil(max(xx)) - math.floor(min(xx)))
             nh = int(math.ceil(max(yy)) - math.floor(min(yy)))
 
