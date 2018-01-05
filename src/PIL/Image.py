@@ -741,7 +741,7 @@ class Image(object):
 
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
-        :param *args: Extra arguments to the encoder. May be one tuple, 
+        :param *args: Extra arguments to the encoder. May be one tuple,
                       or individual arguments
         :rtype: A bytes object.
         """
@@ -2002,7 +2002,7 @@ class Image(object):
             open_fp = True
         else:
             _fp = fp # type: ignore
-            
+
         if not filename and hasattr(_fp, "name") and isPath(_fp.name):
                 # only set the name for metadata purposes
                 filename = _fp.name
@@ -2128,14 +2128,18 @@ class Image(object):
         """
         self.load()
 
+        channel_int = 0
+
         if isStringType(channel):
             try:
-                channel = self.getbands().index(channel)
+                channel_int = self.getbands().index(channel)
             except ValueError:
                 raise ValueError(
                     'The image has no channel "{}"'.format(channel))
+        else:
+            channel_int = channel # type: ignore
 
-        return self._new(self.im.getband(channel))
+        return self._new(self.im.getband(channel_int))
 
     def tell(self):
         # type: () -> int
@@ -2223,7 +2227,7 @@ class Image(object):
            in the output image.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
-        
+
         if self.mode == 'LA':
             return self.convert('La').transform(
                 size, method, data, resample, fill).convert('LA')
