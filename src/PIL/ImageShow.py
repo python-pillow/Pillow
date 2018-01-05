@@ -18,6 +18,9 @@ from PIL import Image
 import os
 import sys
 
+if False:
+    from typing import Dict, Any
+
 if sys.version_info >= (3, 3):
     from shlex import quote
 else:
@@ -76,8 +79,8 @@ class Viewer(object):
 
     # hook methods
 
-    format = None
-    options = {}
+    format = None # type: str
+    options = {} # type: Dict[Any, Any]
 
     def get_format(self, image):
         """Return format name, or None to save as PGM/PPM"""
