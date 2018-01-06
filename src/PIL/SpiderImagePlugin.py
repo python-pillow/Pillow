@@ -286,7 +286,7 @@ Image.register_save(SpiderImageFile.format, _save_spider)
 
 if __name__ == "__main__":
 
-    if not sys.argv[1:]:
+    if len(sys.argv) < 2:
         print("Syntax: python SpiderImagePlugin.py [infile] [outfile]")
         sys.exit()
 
@@ -294,10 +294,6 @@ if __name__ == "__main__":
     if not isSpiderImage(filename):
         print("input image must be in Spider format")
         sys.exit()
-
-    outfile = ""
-    if len(sys.argv[1:]) > 1:
-        outfile = sys.argv[2]
 
     im = Image.open(filename)
     print("image: " + str(im))
@@ -307,7 +303,9 @@ if __name__ == "__main__":
     print("max, min: ", end=' ')
     print(im.getextrema())
 
-    if outfile != "":
+    if len(sys.argv) > 2:
+        outfile = sys.argv[2]
+
         # perform some image operation
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
         print(
