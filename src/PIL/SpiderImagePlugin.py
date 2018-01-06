@@ -48,9 +48,7 @@ def isInt(f):
             return 1
         else:
             return 0
-    except ValueError:
-        return 0
-    except OverflowError:
+    except (ValueError, OverflowError):
         return 0
 
 iforms = [1, 3, -11, -12, -21, -22]
