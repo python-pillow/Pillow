@@ -186,5 +186,9 @@ else:
         register(XVViewer)
 
 if __name__ == "__main__":
-    # usage: python ImageShow.py imagefile [title]
+
+    if len(sys.argv) < 2:
+        print("Syntax: python ImageShow.py imagefile [title]")
+        sys.exit()
+
     print(show(Image.open(sys.argv[1]), *sys.argv[2:]))

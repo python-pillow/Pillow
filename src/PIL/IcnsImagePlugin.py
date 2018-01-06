@@ -353,6 +353,11 @@ if sys.platform == 'darwin':
 
 
 if __name__ == '__main__':
+
+    if len(sys.argv) < 2:
+        print("Syntax: python IcnsImagePlugin.py [file]")
+        sys.exit()
+
     imf = IcnsImageFile(open(sys.argv[1], 'rb'))
     for size in imf.info['sizes']:
         imf.size = size
