@@ -1041,6 +1041,28 @@ copy4(UINT8* out, const UINT8* in, int pixels)
     memcpy(out, in, 4 * pixels);
 }
 
+static void
+copy4skip1(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
+    for (i = 0; i < pixels; i++) {
+        out[i] = *(UINT32*)&in[0];
+        in += 5;
+    }
+}
+
+static void
+copy4skip2(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
+    for (i = 0; i < pixels; i++) {
+        out[i] = *(UINT32*)&in[0];
+        in += 6;
+    }
+}
+
 
 /* Unpack to "I" and "F" images */
 
@@ -1344,6 +1366,8 @@ static struct {
 
     /* colour separation */
     {"CMYK",    "CMYK",         32,     copy4},
+    {"CMYK",    "CMYKX",        40,     copy4skip1},
+    {"CMYK",    "CMYKXX",       48,     copy4skip2},
     {"CMYK",    "CMYK;I",       32,     unpackCMYKI},
     {"CMYK",    "CMYK;L",       32,     unpackRGBAL},
     {"CMYK",    "C",            8,      band0},
