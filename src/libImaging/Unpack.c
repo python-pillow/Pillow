@@ -1352,6 +1352,8 @@ static struct {
     {"RGBX",    "RGB;4B",       16,     ImagingUnpackRGB4B},
     {"RGBX",    "BGR;5",        16,     ImagingUnpackBGR15}, /* compat */
     {"RGBX",    "RGBX",         32,     copy4},
+    {"RGBX",    "RGBXX",        40,     copy4skip1},
+    {"RGBX",    "RGBXXX",       48,     copy4skip2},
     {"RGBX",    "RGBX;L",       32,     unpackRGBAL},
     {"RGBX",    "RGBX;16L",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16B",     64,     unpackRGBA16B},
@@ -1383,6 +1385,8 @@ static struct {
     {"YCbCr",   "YCbCr",        24,     ImagingUnpackRGB},
     {"YCbCr",   "YCbCr;L",      24,     unpackRGBL},
     {"YCbCr",   "YCbCrX",       32,     copy4},
+    {"YCbCr",   "YCbCrXX",      40,     copy4skip1},
+    {"YCbCr",   "YCbCrXXX",     48,     copy4skip2},
     {"YCbCr",   "YCbCrK",       32,     copy4},
 
     /* LAB Color */

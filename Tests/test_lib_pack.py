@@ -223,7 +223,7 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("L", "L;R", 1, 128, 64, 192, 32)
         self.assert_unpack("L", "L;16", 2, 2, 4, 6, 8)
         self.assert_unpack("L", "L;16B", 2, 1, 3, 5, 7)
-        self.assert_unpack("L", "L;16", b'\x00\xc6\x00\xaf', 198, 175) 
+        self.assert_unpack("L", "L;16", b'\x00\xc6\x00\xaf', 198, 175)
         self.assert_unpack("L", "L;16B", b'\xc6\x00\xaf\x00', 198, 175)
 
 
@@ -339,6 +339,10 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("RGBX", "RGB;4B", 2, (17,0,34,X), (51,0,68,X))
         self.assert_unpack("RGBX", "RGBX", 4,
             (1,2,3,4), (5,6,7,8), (9,10,11,12))
+        self.assert_unpack("RGBX", "RGBXX", 5,
+            (1,2,3,4), (6,7,8,9), (11,12,13,14))
+        self.assert_unpack("RGBX", "RGBXXX", 6,
+            (1,2,3,4), (7,8,9,10), (13,14,15,16))
         self.assert_unpack("RGBX", "RGBX;L", 4,
             (1,4,7,10), (2,5,8,11), (3,6,9,12))
         self.assert_unpack("RGBX", "RGBX;16L", 8, (2,4,6,8), (10,12,14,16))
@@ -355,7 +359,12 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("RGBX", "X", 1, (0,0,0,1), (0,0,0,2), (0,0,0,3))
 
     def test_CMYK(self):
-        self.assert_unpack("CMYK", "CMYK", 4, (1,2,3,4), (5,6,7,8), (9,10,11,12))
+        self.assert_unpack("CMYK", "CMYK", 4,
+            (1,2,3,4), (5,6,7,8), (9,10,11,12))
+        self.assert_unpack("CMYK", "CMYKX", 5,
+            (1,2,3,4), (6,7,8,9), (11,12,13,14))
+        self.assert_unpack("CMYK", "CMYKXX", 6,
+            (1,2,3,4), (7,8,9,10), (13,14,15,16))
         self.assert_unpack("CMYK", "CMYK;I", 4,
             (254,253,252,251), (250,249,248,247), (246,245,244,243))
         self.assert_unpack("CMYK", "CMYK;L", 4,
@@ -376,8 +385,10 @@ class TestLibUnpack(PillowTestCase):
     def test_YCbCr(self):
         self.assert_unpack("YCbCr", "YCbCr", 3, (1,2,3), (4,5,6), (7,8,9))
         self.assert_unpack("YCbCr", "YCbCr;L", 3, (1,4,7), (2,5,8), (3,6,9))
-        self.assert_unpack("YCbCr", "YCbCrX", 4, (1,2,3), (5,6,7), (9,10,11))
         self.assert_unpack("YCbCr", "YCbCrK", 4, (1,2,3), (5,6,7), (9,10,11))
+        self.assert_unpack("YCbCr", "YCbCrX", 4, (1,2,3), (5,6,7), (9,10,11))
+        self.assert_unpack("YCbCr", "YCbCrXX", 5, (1,2,3), (6,7,8), (11,12,13))
+        self.assert_unpack("YCbCr", "YCbCrXXX", 6, (1,2,3), (7,8,9), (13,14,15))
 
     def test_LAB(self):
         self.assert_unpack("LAB", "LAB", 3,
