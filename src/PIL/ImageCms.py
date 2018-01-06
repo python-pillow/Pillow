@@ -960,10 +960,11 @@ if __name__ == "__main__":
 
     print(__doc__)
 
-    for f in dir(sys.modules[__name__]):
+    module = sys.modules[__name__]
+    for f in dir(module):
         doc = None
         try:
-            exec("doc = %s.__doc__" % (f))
+            doc = getattr(module, f).__doc__
             if "pyCMS" in doc:
                 # so we don't get the __doc__ string for imported modules
                 print("=" * 80)
