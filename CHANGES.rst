@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Remove _imaging.crc32 in favor or builtin Python crc32 implementation #2935
+  [wiredfool]
+
 - Move Tk directory to src directory #2928
   [hugovk]
   
