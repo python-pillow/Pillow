@@ -5,12 +5,12 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
-- Remove _imaging.crc32 in favor or builtin Python crc32 implementation #2935
+- Remove _imaging.crc32 in favor of builtin Python crc32 implementation #2935
   [wiredfool]
 
 - Move Tk directory to src directory #2928
   [hugovk]
-  
+
 - Enable pip cache in Travis CI #2933
   [jdufresne]
 
@@ -34,13 +34,13 @@ Changelog (Pillow)
 
 - Dynamically link libraqm #2753
   [wiredfool]
-  
+
 - Removed scripts directory #2901
   [wiredfool]
-  
+
 - TIFF: Run all compressed tiffs through libtiff decoder #2899
   [wiredfool]
-  
+
 - GIF: Add disposal option when saving GIFs #2902
   [linnil1, wiredfool]
 
@@ -57,7 +57,7 @@ Changelog (Pillow)
   [wiredfool]
 
 - Test: avoid random failure in test_effect_noise #2894
-  [hugovk]  
+  [hugovk]
 
 - Increased epsilon for test_file_eps.py:test_showpage due to Arch update. #2896
   [wiredfool]
