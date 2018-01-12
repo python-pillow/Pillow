@@ -77,4 +77,5 @@ def install():
               "%s processes" % MAX_PROCS)
 
 
-install()
+if __name__ == "__main__":
+    install()
