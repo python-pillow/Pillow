@@ -175,8 +175,7 @@ Rolling an image
 ::
 
     def roll(image, delta):
-        "Roll an image sideways"
-
+        """Roll an image sideways."""
         xsize, ysize = image.size
 
         delta = delta % xsize
