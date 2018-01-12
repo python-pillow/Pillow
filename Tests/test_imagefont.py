@@ -58,6 +58,9 @@ class TestImageFont(PillowTestCase):
                 ('2', '8'): {'multiline': 6.2,
                              'textsize': 2.5,
                              'getters': (12, 16)},
+                ('2', '9'): {'multiline': 6.2,
+                             'textsize': 2.5,
+                             'getters': (12, 16)},
                 'Default': {'multiline': 0.5,
                             'textsize': 0.5,
                             'getters': (12, 16)},
@@ -406,10 +409,10 @@ class TestImageFont(PillowTestCase):
         im = Image.new(mode='RGB', size=(300, 100))
         target = im.copy()
         draw = ImageDraw.Draw(im)
-        #should not crash here. 
+        #should not crash here.
         draw.text((10, 10), '', font=font)
         self.assert_image_equal(im, target)
-        
+
     def test_unicode_pilfont(self):
         # should not segfault, should return UnicodeDecodeError
         # issue #2826
