@@ -724,7 +724,7 @@ def _save(im, fp, filename):
         )
 
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
-    # in a shot. Guessing on the size, at im.size bytes. (raw pizel size is
+    # in a shot. Guessing on the size, at im.size bytes. (raw pixel size is
     # channels*size, this is a value that's been used in a django patch.
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     bufsize = 0

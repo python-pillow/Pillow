@@ -327,7 +327,7 @@ memory_get_block(ImagingMemoryArena arena, int requested_size, int dirty)
             block.ptr = realloc(block.ptr, requested_size);
         }
         if ( ! block.ptr) {
-            // Can't allocate, free prevous pointer (it is still valid)
+            // Can't allocate, free previous pointer (it is still valid)
             free(arena->blocks_pool[arena->blocks_cached].ptr);
             arena->stats_freed_blocks += 1;
             return block;
@@ -490,7 +490,7 @@ ImagingAllocateBlock(Imaging im)
         im->image[y] = im->block + i;
         i += im->linesize;
     }
-    
+
     im->destroy = ImagingDestroyBlock;
 
     return im;
