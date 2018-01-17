@@ -119,7 +119,7 @@ class TestFileJpeg(PillowTestCase):
             # using a 4-byte test code should allow us to detect out of
             # order issues.
             icc_profile = (b"Test"*int(n/4+1))[:n]
-            assert len(icc_profile) == n  # sanity
+            self.assertEqual(len(icc_profile), n)  # sanity
             im1 = self.roundtrip(hopper(), icc_profile=icc_profile)
             self.assertEqual(im1.info.get("icc_profile"), icc_profile or None)
         test(0)

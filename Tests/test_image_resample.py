@@ -422,7 +422,7 @@ class CoreResampleBoxTest(PillowTestCase):
 
     def test_tiles(self):
         im = Image.open("Tests/images/flower.jpg")
-        assert im.size == (480, 360)
+        self.assertEqual(im.size, (480, 360))
         dst_size = (251, 188)
         reference = im.resize(dst_size, Image.BICUBIC)
 
@@ -434,7 +434,7 @@ class CoreResampleBoxTest(PillowTestCase):
         # This test shows advantages of the subpixel resizing
         # after supersampling (e.g. during JPEG decoding).
         im = Image.open("Tests/images/flower.jpg")
-        assert im.size == (480, 360)
+        self.assertEqual(im.size, (480, 360))
         dst_size = (48, 36)
         # Reference is cropped image resized to destination
         reference = im.crop((0, 0, 473, 353)).resize(dst_size, Image.BICUBIC)
