@@ -20,11 +20,11 @@
 # Image plugin for PDF images (output only).
 ##
 
-from . import Image, ImageFile, ImageSequence
+from . import Image, ImageFile, ImageSequence, pdfParser
 from ._binary import i8
 import io
 
-__version__ = "0.4"
+__version__ = "0.5"
 
 
 #
@@ -37,19 +37,6 @@ __version__ = "0.4"
 #  4. page
 #  5. page contents
 
-def _obj(fp, obj, **dictionary):
-    fp.write("%d 0 obj\n" % obj)
-    if dictionary:
-        fp.write("<<\n")
-        for k, v in dictionary.items():
-            if v is not None:
-                fp.write("/%s %s\n" % (k, v))
-        fp.write(">>\n")
-
-
-def _endobj(fp):
-    fp.write("endobj\n")
-
 
 def _save_all(im, fp, filename):
     _save(im, fp, filename, save_all=True)
@@ -60,12 +47,16 @@ def _save_all(im, fp, filename):
 
 def _save(im, fp, filename, save_all=False):
     resolution = im.encoderinfo.get("resolution", 72.0)
+    is_appending = im.encoderinfo.get("append", False)
+    if is_appending:
+        existing_pdf = pdfParser.PdfParser(f=fp, filename=filename)
+        fp.seek(0, io.SEEK_END)
+    else:
+        existing_pdf = pdfParser.PdfParser()
 
     #
     # make sure image data is available
     im.load()
-
-    xref = [0]
 
     class TextWriter(object):
         def __init__(self, fp):
@@ -77,59 +68,19 @@ def _save(im, fp, filename, save_all=False):
         def write(self, value):
             self.fp.write(value.encode('latin-1'))
 
-    fp = TextWriter(fp)
+    #fp = TextWriter(fp)
 
-    fp.write("%PDF-1.2\n")
-    fp.write("% created by PIL PDF driver " + __version__ + "\n")
-
-    # FIXME: Should replace ASCIIHexDecode with RunLengthDecode (packbits)
-    # or LZWDecode (tiff/lzw compression).  Note that PDF 1.2 also supports
-    # Flatedecode (zip compression).
-
-    bits = 8
-    params = None
-
-    if im.mode == "1":
-        filter = "/ASCIIHexDecode"
-        colorspace = "/DeviceGray"
-        procset = "/ImageB"  # grayscale
-        bits = 1
-    elif im.mode == "L":
-        filter = "/DCTDecode"
-        # params = "<< /Predictor 15 /Columns %d >>" % (width-2)
-        colorspace = "/DeviceGray"
-        procset = "/ImageB"  # grayscale
-    elif im.mode == "P":
-        filter = "/ASCIIHexDecode"
-        colorspace = "[ /Indexed /DeviceRGB 255 <"
-        palette = im.im.getpalette("RGB")
-        for i in range(256):
-            r = i8(palette[i*3])
-            g = i8(palette[i*3+1])
-            b = i8(palette[i*3+2])
-            colorspace += "%02x%02x%02x " % (r, g, b)
-        colorspace += "> ]"
-        procset = "/ImageI"  # indexed color
-    elif im.mode == "RGB":
-        filter = "/DCTDecode"
-        colorspace = "/DeviceRGB"
-        procset = "/ImageC"  # color images
-    elif im.mode == "CMYK":
-        filter = "/DCTDecode"
-        colorspace = "/DeviceCMYK"
-        procset = "/ImageC"  # color images
-    else:
-        raise ValueError("cannot save mode %s" % im.mode)
+    fp.write(b"%PDF-1.2\n")
+    fp.write(b"% created by PIL PDF driver " + __version__.encode("us-ascii") + b"\n")
 
     #
     # catalogue
 
-    xref.append(fp.tell())
-    _obj(
-        fp, 1,
-        Type="/Catalog",
-        Pages="2 0 R")
-    _endobj(fp)
+    catalog_ref = existing_pdf.next_object_id(fp.tell())
+    pages_ref = existing_pdf.next_object_id(0)
+    existing_pdf.write_obj(fp, catalog_ref,
+        Type=pdfParser.PdfName(b"Catalog"),
+        Pages=pages_ref)
 
     #
     # pages
@@ -137,11 +88,12 @@ def _save(im, fp, filename, save_all=False):
     if save_all:
         append_images = im.encoderinfo.get("append_images", [])
         for append_im in append_images:
-            if append_im.mode != im.mode:
-                append_im = append_im.convert(im.mode)
             append_im.encoderinfo = im.encoderinfo.copy()
             ims.append(append_im)
     numberOfPages = 0
+    image_refs = []
+    page_refs = []
+    contents_refs = []
     for im in ims:
         im_numberOfPages = 1
         if save_all:
@@ -151,26 +103,59 @@ def _save(im, fp, filename, save_all=False):
                 # Image format does not have n_frames. It is a single frame image
                 pass
         numberOfPages += im_numberOfPages
-    pages = [str(pageNumber*3+4)+" 0 R"
-             for pageNumber in range(0, numberOfPages)]
+        for i in range(im_numberOfPages):
+            image_refs.append(existing_pdf.next_object_id(0))
+            page_refs.append(existing_pdf.next_object_id(0))
+            contents_refs.append(existing_pdf.next_object_id(0))
+            existing_pdf.pages.append(page_refs[-1])
 
-    xref.append(fp.tell())
-    _obj(
-        fp, 2,
-        Type="/Pages",
-        Count=len(pages),
-        Kids="["+"\n".join(pages)+"]")
-    _endobj(fp)
+    existing_pdf.write_obj(fp, pages_ref,
+        Type=pdfParser.PdfName("Pages"),
+        Count=len(existing_pdf.pages),
+        Kids=existing_pdf.pages)
 
     pageNumber = 0
     for imSequence in ims:
         for im in ImageSequence.Iterator(imSequence):
+            # FIXME: Should replace ASCIIHexDecode with RunLengthDecode (packbits)
+            # or LZWDecode (tiff/lzw compression).  Note that PDF 1.2 also supports
+            # Flatedecode (zip compression).
+
+            bits = 8
+            params = None
+
+            if im.mode == "1":
+                filter = "ASCIIHexDecode"
+                colorspace = pdfParser.PdfName("DeviceGray")
+                procset = "ImageB"  # grayscale
+                bits = 1
+            elif im.mode == "L":
+                filter = "DCTDecode"
+                # params = "<< /Predictor 15 /Columns %d >>" % (width-2)
+                colorspace = pdfParser.PdfName("DeviceGray")
+                procset = "ImageB"  # grayscale
+            elif im.mode == "P":
+                filter = "ASCIIHexDecode"
+                palette = im.im.getpalette("RGB")
+                colorspace = [pdfParser.PdfName("Indexed"), pdfParser.PdfName("DeviceRGB"), 255, pdfParser.PdfBinary(palette)]
+                procset = "ImageI"  # indexed color
+            elif im.mode == "RGB":
+                filter = "DCTDecode"
+                colorspace = pdfParser.PdfName("DeviceRGB")
+                procset = "ImageC"  # color images
+            elif im.mode == "CMYK":
+                filter = "DCTDecode"
+                colorspace = pdfParser.PdfName("DeviceCMYK")
+                procset = "ImageC"  # color images
+            else:
+                raise ValueError("cannot save mode %s" % im.mode)
+
             #
             # image
 
             op = io.BytesIO()
 
-            if filter == "/ASCIIHexDecode":
+            if filter == "ASCIIHexDecode":
                 if bits == 1:
                     # FIXME: the hex encoder doesn't support packed 1-bit
                     # images; do things the hard way...
@@ -178,11 +163,11 @@ def _save(im, fp, filename, save_all=False):
                     im = Image.new("L", (len(data), 1), None)
                     im.putdata(data)
                 ImageFile._save(im, op, [("hex", (0, 0)+im.size, 0, im.mode)])
-            elif filter == "/DCTDecode":
+            elif filter == "DCTDecode":
                 Image.SAVE["JPEG"](im, op, filename)
-            elif filter == "/FlateDecode":
+            elif filter == "FlateDecode":
                 ImageFile._save(im, op, [("zip", (0, 0)+im.size, 0, im.mode)])
-            elif filter == "/RunLengthDecode":
+            elif filter == "RunLengthDecode":
                 ImageFile._save(im, op, [("packbits", (0, 0)+im.size, 0, im.mode)])
             else:
                 raise ValueError("unsupported PDF filter (%s)" % filter)
@@ -192,41 +177,28 @@ def _save(im, fp, filename, save_all=False):
 
             width, height = im.size
 
-            xref.append(fp.tell())
-            _obj(
-                fp, pageNumber*3+3,
-                Type="/XObject",
-                Subtype="/Image",
+            existing_pdf.write_obj(fp, image_refs[pageNumber], stream=op.getvalue(),
+                Type=pdfParser.PdfName("XObject"),
+                Subtype=pdfParser.PdfName("Image"),
                 Width=width,  # * 72.0 / resolution,
                 Height=height,  # * 72.0 / resolution,
-                Length=len(op.getvalue()),
-                Filter=filter,
+                Filter=pdfParser.PdfName(filter),
                 BitsPerComponent=bits,
                 DecodeParams=params,
                 ColorSpace=colorspace)
 
-            fp.write("stream\n")
-            fp.fp.write(op.getvalue())
-            fp.write("\nendstream\n")
-
-            _endobj(fp)
-
             #
             # page
 
-            xref.append(fp.tell())
-            _obj(fp, pageNumber*3+4)
-            fp.write(
-                "<<\n/Type /Page\n/Parent 2 0 R\n"
-                "/Resources <<\n/ProcSet [ /PDF %s ]\n"
-                "/XObject << /image %d 0 R >>\n>>\n"
-                "/MediaBox [ 0 0 %d %d ]\n/Contents %d 0 R\n>>\n" % (
-                    procset,
-                    pageNumber*3+3,
-                    int(width * 72.0 / resolution),
-                    int(height * 72.0 / resolution),
-                    pageNumber*3+5))
-            _endobj(fp)
+            existing_pdf.write_obj(fp, page_refs[pageNumber],
+                Type=pdfParser.PdfName("Page"),
+                Parent=pages_ref,
+                Resources=pdfParser.PdfDict(
+                    ProcSet=[pdfParser.PdfName("PDF"), pdfParser.PdfName(procset)],
+                    XObject=pdfParser.PdfDict(image=image_refs[pageNumber])),
+                MediaBox=[0, 0, int(width * 72.0 / resolution), int(height * 72.0 / resolution)],
+                Contents=contents_refs[pageNumber]
+                )
 
             #
             # page contents
@@ -238,25 +210,13 @@ def _save(im, fp, filename, save_all=False):
                     int(width * 72.0 / resolution),
                     int(height * 72.0 / resolution)))
 
-            xref.append(fp.tell())
-            _obj(fp, pageNumber*3+5, Length=len(op.fp.getvalue()))
-
-            fp.write("stream\n")
-            fp.fp.write(op.fp.getvalue())
-            fp.write("\nendstream\n")
-
-            _endobj(fp)
+            existing_pdf.write_obj(fp, contents_refs[pageNumber], stream=op.fp.getvalue())
 
             pageNumber += 1
 
     #
     # trailer
-    startxref = fp.tell()
-    fp.write("xref\n0 %d\n0000000000 65535 f \n" % len(xref))
-    for x in xref[1:]:
-        fp.write("%010d 00000 n \n" % x)
-    fp.write("trailer\n<<\n/Size %d\n/Root 1 0 R\n>>\n" % len(xref))
-    fp.write("startxref\n%d\n%%%%EOF\n" % startxref)
+    existing_pdf.write_xref_and_trailer(fp, catalog_ref)
     if hasattr(fp, "flush"):
         fp.flush()
 
