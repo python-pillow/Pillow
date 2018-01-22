@@ -1,5 +1,5 @@
 from helper import unittest, PillowTestCase, hopper
-from PIL import Image
+from PIL import Image, pdfParser
 import os.path
 
 
@@ -96,6 +96,9 @@ class TestFilePdf(PillowTestCase):
 
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
+
+    def test_pdf_parser(self):
+        pdfParser.selftest()
 
 
 if __name__ == '__main__':
