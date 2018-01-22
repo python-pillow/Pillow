@@ -10,6 +10,13 @@ except ImportError:
     UserDict = collections.UserDict
 
 
+if sys.version_info.major >= 3:
+    def make_bytes(s):
+        return s.encode("us-ascii")
+else:
+    make_bytes = lambda s: s
+
+
 class PdfFormatError(RuntimeError):
     pass
 
@@ -99,10 +106,10 @@ class XrefTable:
             else:
                 contiguous_keys = keys
                 keys = None
-            f.write(b"%d %d\n" % (contiguous_keys[0], len(contiguous_keys)))
+            f.write(make_bytes("%d %d\n" % (contiguous_keys[0], len(contiguous_keys))))
             for object_id in contiguous_keys:
                 if object_id in self.new_entries:
-                    f.write(b"%010d %05d n \n" % self.new_entries[object_id])
+                    f.write(make_bytes("%010d %05d n \n" % self.new_entries[object_id]))
                 else:
                     this_deleted_object_id = deleted_keys.pop(0)
                     assert object_id == this_deleted_object_id
@@ -110,7 +117,7 @@ class XrefTable:
                         next_in_linked_list = deleted_keys[0]
                     except IndexError:
                         next_in_linked_list = 0
-                    f.write(b"%010d %05d f \n" % (next_in_linked_list, self.deleted_entries[object_id]))
+                    f.write(make_bytes("%010d %05d f \n" % (next_in_linked_list, self.deleted_entries[object_id])))
         return startxref
 
 
@@ -135,7 +142,7 @@ class PdfName():
                 if b in self.allowed_chars:
                     result.append(b)
                 else:
-                    result.extend(b"#%02X" % b)
+                    result.extend(make_bytes("#%02X" % b))
         else:
             result = bytearray(b"/")
             for b in self.name:
@@ -150,7 +157,7 @@ class PdfName():
 
 class PdfArray(list):
     def __bytes__(self):
-        return b"[ %s ]" % b" ".join(pdf_repr(x) for x in self)
+        return b"[ " + b" ".join(pdf_repr(x) for x in self) + b" ]"
 
     __str__ = __bytes__
 
@@ -174,13 +181,19 @@ class PdfDict(UserDict):
         #            del self.pdf.xref_table[self.orig_ref.object_id]
         #    else:
         #        return bytes(self.orig_ref)
-        out = b"<<"
+        out = bytearray(b"<<")
         for key, value in self.items():
             if value is None:
                 continue
             value = pdf_repr(value)
-            out += b"\n%s %s" % (PdfName(key), value)
-        return out + b"\n>>"
+            out.extend(b"\n")
+            out.extend(bytes(PdfName(key)))
+            out.extend(b" ")
+            out.extend(value)
+            #out += b"\n%s %s" % (PdfName(key), value)
+        out.extend(b"\n>>")
+        return bytes(out)
+        #return out + b"\n>>"
 
     __str__ = __bytes__
 
@@ -196,7 +209,7 @@ class PdfBinary:
 
     if sys.version_info.major >= 3:
         def __bytes__(self):
-            return b"<%s>" % b"".join(b"%02X" % b for b in self.data)
+            return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
 
         def __str__(self):
             return bytes(self).decode("us-ascii")
@@ -224,7 +237,7 @@ def pdf_repr(x):
     elif isinstance(x, str) and sys.version_info.major >= 3:
         return pdf_repr(x.encode("utf-8"))
     elif isinstance(x, bytes):
-        return b"(%s)" % x.replace(b"\\", b"\\\\").replace(b"(", b"\\(").replace(b")", b"\\)")  # XXX escape more chars? handle binary garbage
+        return b"(" + x.replace(b"\\", b"\\\\").replace(b"(", b"\\(").replace(b")", b"\\)") + b")"  # XXX escape more chars? handle binary garbage
     else:
         return bytes(x)
 
@@ -270,7 +283,7 @@ class PdfParser:
         if self.info:
             trailer_dict[b"Info"] = self.info_ref
         self.last_xref_section_offset = start_xref
-        f.write(b"trailer\n%s\nstartxref\n%d\n%%%%EOF" % (PdfDict(trailer_dict), start_xref))
+        f.write(b"trailer\n" + bytes(PdfDict(trailer_dict)) + make_bytes("\nstartxref\n%d\n%%%%EOF" % start_xref))
 
     def write_obj(self, f, ref, *objs, **dict_obj):
         if ref is None:
