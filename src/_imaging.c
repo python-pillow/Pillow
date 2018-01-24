@@ -3391,6 +3391,11 @@ _getattr_unsafe_ptrs(ImagingObject* self, void* closure)
                         );
 };
 
+static PyObject*
+_getattr_readonly(ImagingObject* self, void* closure)
+{
+    return PyInt_FromLong(self->image->readonly);
+}
 
 static struct PyGetSetDef getsetters[] = {
     { "mode",   (getter) _getattr_mode },
@@ -3399,6 +3404,7 @@ static struct PyGetSetDef getsetters[] = {
     { "id",     (getter) _getattr_id },
     { "ptr",    (getter) _getattr_ptr },
     { "unsafe_ptrs", (getter) _getattr_unsafe_ptrs },
+    { "readonly", (getter) _getattr_readonly },
     { NULL }
 };
 

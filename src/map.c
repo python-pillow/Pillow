@@ -217,6 +217,7 @@ mapping_readimage(ImagingMapperObject* mapper, PyObject* args)
     if (!im)
         return NULL;
 
+    im->readonly = 1;
     /* setup file pointers */
     if (orientation > 0)
         for (y = 0; y < ysize; y++)
@@ -366,6 +367,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     if (!im)
         return NULL;
 
+    im->readonly = view.readonly;
     /* setup file pointers */
     if (ystep > 0)
         for (y = 0; y < ysize; y++)

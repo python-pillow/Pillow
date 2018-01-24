@@ -2639,7 +2639,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
         if args[0] in _MAPMODES:
             im = new(mode, (1, 1))
             im = im._new(core.map_buffer(data, size, decoder_name, 0, args))
-            im.readonly = 1
+            im.readonly = im.im.readonly
             return im
 
     return frombytes(mode, size, data, decoder_name, args)
