@@ -5,6 +5,15 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Removed __main__ code from ImageCms #2942
+  [radarhere]
+
+- Test: Changed assert statements to unittest calls #2961
+  [radarhere]
+
+- Depends: Updated libimagequant to 2.11.7, raqm to 0.4.0, freetype to 2.9 #2967, #2969, #2957
+  [radarhere]
+  
 - Remove _imaging.crc32 in favor of builtin Python crc32 implementation #2935
   [wiredfool]
 
@@ -19,6 +28,16 @@ Changelog (Pillow)
 
 - Docs: Changed documentation references to 2.x to 2.7 #2921
   [radarhere]
+  
+
+5.0.1 (unreleased)
+------------------
+
+- Setup: Fix "TypeError: 'NoneType' object is not iterable" for PPC and CRUX #2951
+  [hugovk]
+
+- Setup: Add libdirs for ppc64le and armv7l #2968
+  [nehaljwani]
 
 5.0.0 (2018-01-01)
 ------------------
@@ -140,7 +159,7 @@ Changelog (Pillow)
 - GIF: Permit LZW code lengths up to 12 bits in GIF decode #2813
   [wiredfool]
 
-- Fix unterminated string and unchecked exception in _font_text_asBytes. #2825
+- Fix unterminiated string and unchecked exception in _font_text_asBytes. #2825
   [wiredfool]
 
 - PPM: Use fixed list of whitespace, rather relying on locale, fixes #272. #2831
