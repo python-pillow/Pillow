@@ -128,7 +128,7 @@ class TestFilePdf(PillowTestCase):
         im = hopper("RGB")
         temp_dir = tempfile.mkdtemp()
         try:
-            self.assertRaises(OSError, im.save, os.path.join(temp_dir, "nonexistent.pdf"), append=True)
+            self.assertRaises(IOError, im.save, os.path.join(temp_dir, "nonexistent.pdf"), append=True)
         finally:
             os.rmdir(temp_dir)
 
