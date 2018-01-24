@@ -368,7 +368,7 @@ class pil_build_ext(build_ext):
 
                 for platform_ in arch_tp:
                     dirs = libdirs.get(platform_, None)
-                    if not platform_:
+                    if not dirs:
                         continue
                     for path in dirs:
                         _add_directory(library_dirs, path)
