@@ -1,5 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 from PIL import Image, pdfParser
+import io
 import os
 import os.path
 import tempfile
@@ -161,6 +162,17 @@ class TestFilePdf(PillowTestCase):
         self.assertEqual(len(pdf.info), 6)
         self.assertEqual(pdfParser.decode_text(pdf.info[b"Title"]), "abc")
         self.assertEqual(pdfParser.decode_text(pdf.info[b"Producer"]), "pdfParser")
+
+    def test_pdf_append_to_bytesio(self):
+        im = hopper("RGB")
+        f = io.BytesIO()
+        im.save(f, format="PDF")
+        initial_size = len(f.getvalue())
+        self.assertGreater(initial_size, 0)
+        im = hopper("P")
+        f = io.BytesIO(f.getvalue())
+        im.save(f, format="PDF", append=True)
+        self.assertGreater(len(f.getvalue()), initial_size)
 
     def test_pdf_parser(self):
         pdfParser.selftest()

@@ -399,11 +399,20 @@ class PdfParser:
         # XXX TODO delete Pages tree recursively
 
     def read_pdf_info_from_file(self, f):
-        self.buf = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        if hasattr(f, "getbuffer"):
+            self.buf = f.getbuffer()
+            need_close = False
+        elif hasattr(f, "getvalue"):
+            self.buf = f.getvalue()
+            need_close = False
+        else:
+            self.buf = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+            need_close = True
         try:
             self.read_pdf_info()
         finally:
-            self.buf.close()
+            if need_close:
+                self.buf.close()
             self.buf = None
 
     def read_pdf_info(self):
