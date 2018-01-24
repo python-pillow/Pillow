@@ -952,22 +952,3 @@ def versions():
         VERSION, core.littlecms_version,
         sys.version.split()[0], Image.VERSION
     )
-
-# --------------------------------------------------------------------
-
-if __name__ == "__main__":
-    # create a cheap manual from the __doc__ strings for the functions above
-
-    print(__doc__)
-
-    for f in dir(sys.modules[__name__]):
-        doc = None
-        try:
-            exec("doc = %s.__doc__" % (f))
-            if "pyCMS" in doc:
-                # so we don't get the __doc__ string for imported modules
-                print("=" * 80)
-                print("%s" % f)
-                print(doc)
-        except (AttributeError, TypeError):
-            pass
