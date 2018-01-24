@@ -27,14 +27,14 @@ class TestImageQuantize(PillowTestCase):
                 raise
         self.assert_image(converted, 'P', converted.size)
         self.assert_image_similar(converted.convert('RGB'), image, 15)
-        assert len(converted.getcolors()) == 100
+        self.assertEqual(len(converted.getcolors()), 100)
 
     def test_octree_quantize(self):
         image = hopper()
         converted = image.quantize(100, Image.FASTOCTREE)
         self.assert_image(converted, 'P', converted.size)
         self.assert_image_similar(converted.convert('RGB'), image, 20)
-        assert len(converted.getcolors()) == 100
+        self.assertEqual(len(converted.getcolors()), 100)
 
     def test_rgba_quantize(self):
         image = hopper('RGBA')
