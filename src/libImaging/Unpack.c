@@ -1041,6 +1041,28 @@ copy4(UINT8* out, const UINT8* in, int pixels)
     memcpy(out, in, 4 * pixels);
 }
 
+static void
+copy4skip1(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
+    for (i = 0; i < pixels; i++) {
+        out[i] = *(UINT32*)&in[0];
+        in += 5;
+    }
+}
+
+static void
+copy4skip2(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
+    for (i = 0; i < pixels; i++) {
+        out[i] = *(UINT32*)&in[0];
+        in += 6;
+    }
+}
+
 
 /* Unpack to "I" and "F" images */
 
@@ -1330,6 +1352,8 @@ static struct {
     {"RGBX",    "RGB;4B",       16,     ImagingUnpackRGB4B},
     {"RGBX",    "BGR;5",        16,     ImagingUnpackBGR15}, /* compat */
     {"RGBX",    "RGBX",         32,     copy4},
+    {"RGBX",    "RGBXX",        40,     copy4skip1},
+    {"RGBX",    "RGBXXX",       48,     copy4skip2},
     {"RGBX",    "RGBX;L",       32,     unpackRGBAL},
     {"RGBX",    "RGBX;16L",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16B",     64,     unpackRGBA16B},
@@ -1344,6 +1368,8 @@ static struct {
 
     /* colour separation */
     {"CMYK",    "CMYK",         32,     copy4},
+    {"CMYK",    "CMYKX",        40,     copy4skip1},
+    {"CMYK",    "CMYKXX",       48,     copy4skip2},
     {"CMYK",    "CMYK;I",       32,     unpackCMYKI},
     {"CMYK",    "CMYK;L",       32,     unpackRGBAL},
     {"CMYK",    "C",            8,      band0},
@@ -1359,6 +1385,8 @@ static struct {
     {"YCbCr",   "YCbCr",        24,     ImagingUnpackRGB},
     {"YCbCr",   "YCbCr;L",      24,     unpackRGBL},
     {"YCbCr",   "YCbCrX",       32,     copy4},
+    {"YCbCr",   "YCbCrXX",      40,     copy4skip1},
+    {"YCbCr",   "YCbCrXXX",     48,     copy4skip2},
     {"YCbCr",   "YCbCrK",       32,     copy4},
 
     /* LAB Color */
