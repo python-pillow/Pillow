@@ -1,3 +1,4 @@
+import codecs
 import collections
 import io
 import mmap
@@ -14,7 +15,11 @@ if sys.version_info.major >= 3:
     def make_bytes(s):
         return s.encode("us-ascii")
 else:
-    make_bytes = lambda s: s
+    make_bytes = lambda s: s  # pragma: no cover
+
+
+def encode_text(s):
+    return codecs.BOM_UTF16_BE + s.encode("utf_16_be")
 
 
 class PdfFormatError(RuntimeError):
@@ -34,15 +39,15 @@ class IndirectReference(collections.namedtuple("IndirectReferenceTuple", ["objec
         return self.__str__().encode("us-ascii")
 
     def __eq__(self, other):
-        return isinstance(other, IndirectReference) and other.object_id == self.object_id and other.generation == self.generation
+        return other.__class__ is self.__class__ and other.object_id == self.object_id and other.generation == self.generation
+
+    def __ne__(self, other):
+        return not (self == other)
 
 
 class IndirectObjectDef(IndirectReference):
     def __str__(self):
         return "%s %s obj" % self
-
-    def __eq__(self, other):
-        return isinstance(other, IndirectObjectDef) and other.object_id == self.object_id and other.generation == self.generation
 
 
 class XrefTable:
@@ -251,11 +256,11 @@ class PdfParser:
         self.filename = filename
         self.buf = buf
         self.start_offset = start_offset
-        if buf:
+        if buf is not None:
             self.read_pdf_info()
-        elif f:
+        elif f is not None:
             self.read_pdf_info_from_file(f)
-        elif filename:
+        elif filename is not None:
             with open(filename, "rb") as f:
                 self.read_pdf_info_from_file(f)
         else:
@@ -266,24 +271,55 @@ class PdfParser:
             self.info_ref = None
             self.page_tree_root = {}
             self.pages = []
+            self.pages_ref = None
             self.last_xref_section_offset = None
             self.trailer_dict = {}
             self.xref_table = XrefTable()
         self.xref_table.reading_finished = True
 
-    def write_xref_and_trailer(self, f, new_root_ref):
+    def write_header(self, f):
+        f.write(b"%PDF-1.4\n")
+
+    def write_comment(self, f, s):
+        f.write(("%% %s\n" % (s,)).encode("utf-8"))
+
+    def write_catalog(self, f):
         self.del_root()
+        self.root_ref = self.next_object_id(f.tell())
+        self.pages_ref = self.next_object_id(0)
+        self.write_obj(f, self.root_ref,
+            Type=PdfName(b"Catalog"),
+            Pages=self.pages_ref)
+        self.write_obj(f, self.pages_ref,
+            Type=PdfName("Pages"),
+            Count=len(self.pages),
+            Kids=self.pages)
+        return self.root_ref
+
+    def write_xref_and_trailer(self, f, new_root_ref=None):
+        if new_root_ref:
+            self.del_root()
+            self.root_ref = new_root_ref
         if self.info:
             self.info_ref = self.write_obj(f, None, self.info)
         start_xref = self.xref_table.write(f)
         num_entries = len(self.xref_table)
-        trailer_dict = {b"Root": new_root_ref, b"Size": num_entries}
+        trailer_dict = {b"Root": self.root_ref, b"Size": num_entries}
         if self.last_xref_section_offset is not None:
             trailer_dict[b"Prev"] = self.last_xref_section_offset
         if self.info:
             trailer_dict[b"Info"] = self.info_ref
         self.last_xref_section_offset = start_xref
         f.write(b"trailer\n" + bytes(PdfDict(trailer_dict)) + make_bytes("\nstartxref\n%d\n%%%%EOF" % start_xref))
+
+    def write_page(self, f, ref, *objs, **dict_obj):
+        if isinstance(ref, int):
+            ref = self.pages[ref]
+        if "Type" not in dict_obj:
+            dict_obj["Type"] = PdfName("Page")
+        if "Parent" not in dict_obj:
+            dict_obj["Parent"] = self.pages_ref
+        return self.write_obj(f, ref, *objs, **dict_obj)
 
     def write_obj(self, f, ref, *objs, **dict_obj):
         if ref is None:
@@ -336,7 +372,8 @@ class PdfParser:
         check_format_condition(self.root[b"Type"] == b"Catalog", "/Type in Root is not /Catalog")
         check_format_condition(b"Pages" in self.root, "/Pages missing in Root")
         check_format_condition(isinstance(self.root[b"Pages"], IndirectReference), "/Pages in Root is not an indirect reference")
-        self.page_tree_root = self.read_indirect(self.root[b"Pages"])
+        self.pages_ref = self.root[b"Pages"]
+        self.page_tree_root = self.read_indirect(self.pages_ref)
         #print("page_tree_root: " + str(self.page_tree_root))
         self.pages = self.linearize_page_tree(self.page_tree_root)
         #print("pages: " + str(self.pages))
@@ -361,15 +398,23 @@ class PdfParser:
     newline = whitespace_optional + newline_only + whitespace_optional
     re_trailer_end = re.compile(whitespace_mandatory + br"trailer" + whitespace_mandatory + br"\<\<(.*\>\>)" + newline \
         + br"startxref" + newline + br"([0-9]+)" + newline + br"%%EOF" + whitespace_optional + br"$", re.DOTALL)
-    re_trailer_prev = re.compile(whitespace_optional + br"trailer" + whitespace_mandatory + br"\<\<(.*\>\>)" + newline \
+    re_trailer_prev = re.compile(whitespace_optional + br"trailer" + whitespace_mandatory + br"\<\<(.*?\>\>)" + newline \
         + br"startxref" + newline + br"([0-9]+)" + newline + br"%%EOF" + whitespace_optional, re.DOTALL)
     def read_trailer(self):
         search_start_offset = len(self.buf) - 16384
         if search_start_offset < self.start_offset:
             search_start_offset = self.start_offset
-        data_at_end = self.buf[search_start_offset:]
-        m = self.re_trailer_end.search(data_at_end)
+        #data_at_end = self.buf[search_start_offset:]
+        #m = self.re_trailer_end.search(data_at_end)
+        m = self.re_trailer_end.search(self.buf, search_start_offset)
         check_format_condition(m, "trailer end not found")
+        # make sure we found the LAST trailer
+        last_match = m
+        while m:
+            last_match = m
+            m = self.re_trailer_end.search(self.buf, m.start()+16)
+        if not m:
+            m = last_match
         trailer_data = m.group(1)
         #print(trailer_data)
         self.last_xref_section_offset = int(m.group(2))
@@ -627,6 +672,14 @@ class PdfParser:
 def selftest():
     assert PdfParser.interpret_name(b"Name#23Hash") == b"Name#Hash"
     assert PdfParser.interpret_name(b"Name#23Hash", as_text=True) == "Name#Hash"
+    assert IndirectReference(1,2) == IndirectReference(1,2)
+    assert IndirectReference(1,2) != IndirectReference(1,3)
+    assert IndirectReference(1,2) != IndirectObjectDef(1,2)
+    assert IndirectReference(1,2) != (1,2)
+    assert IndirectObjectDef(1,2) == IndirectObjectDef(1,2)
+    assert IndirectObjectDef(1,2) != IndirectObjectDef(1,3)
+    assert IndirectObjectDef(1,2) != IndirectReference(1,2)
+    assert IndirectObjectDef(1,2) != (1,2)
     assert bytes(IndirectReference(1,2)) == b"1 2 R"
     assert bytes(IndirectObjectDef(*IndirectReference(1,2))) == b"1 2 obj"
     assert bytes(PdfName(b"Name#Hash")) == b"/Name#23Hash"

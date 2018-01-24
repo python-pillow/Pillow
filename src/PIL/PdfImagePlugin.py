@@ -58,29 +58,8 @@ def _save(im, fp, filename, save_all=False):
     # make sure image data is available
     im.load()
 
-    class TextWriter(object):
-        def __init__(self, fp):
-            self.fp = fp
-
-        def __getattr__(self, name):
-            return getattr(self.fp, name)
-
-        def write(self, value):
-            self.fp.write(value.encode('latin-1'))
-
-    #fp = TextWriter(fp)
-
-    fp.write(b"%PDF-1.2\n")
-    fp.write(b"% created by PIL PDF driver " + __version__.encode("us-ascii") + b"\n")
-
-    #
-    # catalogue
-
-    catalog_ref = existing_pdf.next_object_id(fp.tell())
-    pages_ref = existing_pdf.next_object_id(0)
-    existing_pdf.write_obj(fp, catalog_ref,
-        Type=pdfParser.PdfName(b"Catalog"),
-        Pages=pages_ref)
+    existing_pdf.write_header(fp)
+    existing_pdf.write_comment(fp, "created by PIL PDF driver " + __version__)
 
     #
     # pages
@@ -109,10 +88,9 @@ def _save(im, fp, filename, save_all=False):
             contents_refs.append(existing_pdf.next_object_id(0))
             existing_pdf.pages.append(page_refs[-1])
 
-    existing_pdf.write_obj(fp, pages_ref,
-        Type=pdfParser.PdfName("Pages"),
-        Count=len(existing_pdf.pages),
-        Kids=existing_pdf.pages)
+    #
+    # catalog and list of pages
+    existing_pdf.write_catalog(fp)
 
     pageNumber = 0
     for imSequence in ims:
@@ -190,9 +168,7 @@ def _save(im, fp, filename, save_all=False):
             #
             # page
 
-            existing_pdf.write_obj(fp, page_refs[pageNumber],
-                Type=pdfParser.PdfName("Page"),
-                Parent=pages_ref,
+            existing_pdf.write_page(fp, page_refs[pageNumber],
                 Resources=pdfParser.PdfDict(
                     ProcSet=[pdfParser.PdfName("PDF"), pdfParser.PdfName(procset)],
                     XObject=pdfParser.PdfDict(image=image_refs[pageNumber])),
@@ -203,20 +179,18 @@ def _save(im, fp, filename, save_all=False):
             #
             # page contents
 
-            op = TextWriter(io.BytesIO())
-
-            op.write(
+            page_contents = pdfParser.make_bytes(
                 "q %d 0 0 %d 0 0 cm /image Do Q\n" % (
                     int(width * 72.0 / resolution),
                     int(height * 72.0 / resolution)))
 
-            existing_pdf.write_obj(fp, contents_refs[pageNumber], stream=op.fp.getvalue())
+            existing_pdf.write_obj(fp, contents_refs[pageNumber], stream=page_contents)
 
             pageNumber += 1
 
     #
     # trailer
-    existing_pdf.write_xref_and_trailer(fp, catalog_ref)
+    existing_pdf.write_xref_and_trailer(fp)
     if hasattr(fp, "flush"):
         fp.flush()
 
