@@ -5,6 +5,12 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Tiff: Open 8 bit Tiffs with 5 or 6 channels, discarding extra channels #2938
+  [homm]
+
+- Readme: Added Twitter badge #2930
+  [hugovk]
+  
 - Removed __main__ code from ImageCms #2942
   [radarhere]
 
