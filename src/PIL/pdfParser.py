@@ -11,11 +11,11 @@ except ImportError:
     UserDict = collections.UserDict
 
 
-if sys.version_info.major >= 3:
+if str == bytes:  # Python 2.x
+    make_bytes = lambda s: s  # pragma: no cover
+else:  # Python 3.x
     def make_bytes(s):
         return s.encode("us-ascii")
-else:
-    make_bytes = lambda s: s  # pragma: no cover
 
 
 def encode_text(s):
@@ -141,20 +141,20 @@ class PdfName():
 
     allowed_chars = set(range(33,127)) - set((ord(c) for c in "#%/()<>[]{}"))
     def __bytes__(self):
-        if sys.version_info.major >= 3:
-            result = bytearray(b"/")
-            for b in self.name:
-                if b in self.allowed_chars:
-                    result.append(b)
-                else:
-                    result.extend(make_bytes("#%02X" % b))
-        else:
+        if str == bytes:  # Python 2.x
             result = bytearray(b"/")
             for b in self.name:
                 if ord(b) in self.allowed_chars:
                     result.append(b)
                 else:
                     result.extend(b"#%02X" % ord(b))
+        else:  # Python 3.x
+            result = bytearray(b"/")
+            for b in self.name:
+                if b in self.allowed_chars:
+                    result.append(b)
+                else:
+                    result.extend(make_bytes("#%02X" % b))
         return bytes(result)
 
     __str__ = __bytes__
@@ -212,16 +212,13 @@ class PdfBinary:
     def __init__(self, data):
         self.data = data
 
-    if sys.version_info.major >= 3:
-        def __bytes__(self):
-            return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
-
-        def __str__(self):
-            return bytes(self).decode("us-ascii")
-
-    else:
+    if str == bytes:  # Python 2.x
         def __str__(self):
             return "<%s>" % "".join("%02X" % ord(b) for b in self.data)
+
+    else:  # Python 3.x
+        def __bytes__(self):
+            return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
 
 
 def pdf_repr(x):
@@ -239,7 +236,7 @@ def pdf_repr(x):
         return bytes(PdfDict(x))
     elif isinstance(x, list):
         return bytes(PdfArray(x))
-    elif isinstance(x, str) and sys.version_info.major >= 3:
+    elif isinstance(x, str) and str != bytes:
         return pdf_repr(x.encode("utf-8"))
     elif isinstance(x, bytes):
         return b"(" + x.replace(b"\\", b"\\\\").replace(b"(", b"\\(").replace(b")", b"\\)") + b")"  # XXX escape more chars? handle binary garbage
@@ -396,9 +393,9 @@ class PdfParser:
     whitespace_mandatory = whitespace + b"+"
     newline_only = br"[\r\n]+"
     newline = whitespace_optional + newline_only + whitespace_optional
-    re_trailer_end = re.compile(whitespace_mandatory + br"trailer" + whitespace_mandatory + br"\<\<(.*\>\>)" + newline \
+    re_trailer_end = re.compile(whitespace_mandatory + br"trailer" + whitespace_optional + br"\<\<(.*\>\>)" + newline \
         + br"startxref" + newline + br"([0-9]+)" + newline + br"%%EOF" + whitespace_optional + br"$", re.DOTALL)
-    re_trailer_prev = re.compile(whitespace_optional + br"trailer" + whitespace_mandatory + br"\<\<(.*?\>\>)" + newline \
+    re_trailer_prev = re.compile(whitespace_optional + br"trailer" + whitespace_optional + br"\<\<(.*?\>\>)" + newline \
         + br"startxref" + newline + br"([0-9]+)" + newline + br"%%EOF" + whitespace_optional, re.DOTALL)
     def read_trailer(self):
         search_start_offset = len(self.buf) - 16384
