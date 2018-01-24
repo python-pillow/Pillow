@@ -7,16 +7,13 @@ import tempfile
 
 class TestFilePdf(PillowTestCase):
 
-    def helper_save_as_pdf(self, mode, save_all=False):
+    def helper_save_as_pdf(self, mode, **kwargs):
         # Arrange
         im = hopper(mode)
         outfile = self.tempfile("temp_" + mode + ".pdf")
 
         # Act
-        if save_all:
-            im.save(outfile, save_all=True)
-        else:
-            im.save(outfile)
+        im.save(outfile, **kwargs)
 
         # Assert
         self.assertTrue(os.path.isfile(outfile))
@@ -134,18 +131,18 @@ class TestFilePdf(PillowTestCase):
 
     def test_pdf_append(self):
         # make a PDF file
-        pdf_filename = self.helper_save_as_pdf("RGB")
+        pdf_filename = self.helper_save_as_pdf("RGB", producer="pdfParser")
         # open it, check pages and info
         pdf = pdfParser.PdfParser(pdf_filename)
         self.assertEqual(len(pdf.pages), 1)
-        self.assertEqual(len(pdf.info), 0)
+        self.assertEqual(len(pdf.info), 1)
+        self.assertEqual(pdfParser.decode_text(pdf.info[b"Producer"]), "pdfParser")
         # append some info
-        pdf.info[b"Title"] = b"abc"
-        pdf.info[b"Author"] = b"def"
+        pdf.info[b"Title"] = pdfParser.encode_text("abc")
+        pdf.info[b"Author"] = pdfParser.encode_text("def")
         pdf.info[b"Subject"] = pdfParser.encode_text("ghi")
-        pdf.info[b"Keywords"] = b"jkl"
-        pdf.info[b"Creator"] = b"hopper()"
-        pdf.info[b"Producer"] = b"pdfParser"
+        pdf.info[b"Keywords"] = pdfParser.encode_text("jkl")
+        pdf.info[b"Creator"] = pdfParser.encode_text("hopper()")
         with open(pdf_filename, "r+b") as f:
             f.seek(0, os.SEEK_END)
             pdf.write_xref_and_trailer(f)
@@ -153,7 +150,7 @@ class TestFilePdf(PillowTestCase):
         pdf = pdfParser.PdfParser(pdf_filename)
         self.assertEqual(len(pdf.pages), 1)
         self.assertEqual(len(pdf.info), 6)
-        self.assertEqual(pdf.info[b"Title"], b"abc")
+        self.assertEqual(pdfParser.decode_text(pdf.info[b"Title"]), "abc")
         # append two images
         mode_CMYK = hopper("CMYK")
         mode_P = hopper("P")
@@ -162,7 +159,8 @@ class TestFilePdf(PillowTestCase):
         pdf = pdfParser.PdfParser(pdf_filename)
         self.assertEqual(len(pdf.pages), 3)
         self.assertEqual(len(pdf.info), 6)
-        self.assertEqual(pdf.info[b"Title"], b"abc")
+        self.assertEqual(pdfParser.decode_text(pdf.info[b"Title"]), "abc")
+        self.assertEqual(pdfParser.decode_text(pdf.info[b"Producer"]), "pdfParser")
 
     def test_pdf_parser(self):
         pdfParser.selftest()

@@ -18,8 +18,61 @@ else:  # Python 3.x
         return s.encode("us-ascii")
 
 
+# see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set on page 656
 def encode_text(s):
     return codecs.BOM_UTF16_BE + s.encode("utf_16_be")
+
+
+PDFDocEncoding = {
+    0x16: u"\u0017",
+    0x18: u"\u02D8",
+    0x19: u"\u02C7",
+    0x1A: u"\u02C6",
+    0x1B: u"\u02D9",
+    0x1C: u"\u02DD",
+    0x1D: u"\u02DB",
+    0x1E: u"\u02DA",
+    0x1F: u"\u02DC",
+    0x80: u"\u2022",
+    0x81: u"\u2020",
+    0x82: u"\u2021",
+    0x83: u"\u2026",
+    0x84: u"\u2014",
+    0x85: u"\u2013",
+    0x86: u"\u0192",
+    0x87: u"\u2044",
+    0x88: u"\u2039",
+    0x89: u"\u203A",
+    0x8A: u"\u2212",
+    0x8B: u"\u2030",
+    0x8C: u"\u201E",
+    0x8D: u"\u201C",
+    0x8E: u"\u201D",
+    0x8F: u"\u2018",
+    0x90: u"\u2019",
+    0x91: u"\u201A",
+    0x92: u"\u2122",
+    0x93: u"\uFB01",
+    0x94: u"\uFB02",
+    0x95: u"\u0141",
+    0x96: u"\u0152",
+    0x97: u"\u0160",
+    0x98: u"\u0178",
+    0x99: u"\u017D",
+    0x9A: u"\u0131",
+    0x9B: u"\u0142",
+    0x9C: u"\u0153",
+    0x9D: u"\u0161",
+    0x9E: u"\u017E",
+    0xA0: u"\u20AC",
+    }
+def decode_text(b):
+    if b[:len(codecs.BOM_UTF16_BE)] == codecs.BOM_UTF16_BE:
+        return b[len(codecs.BOM_UTF16_BE):].decode("utf_16_be")
+    elif str == bytes:  # Python 2.x
+        return u"".join(PDFDocEncoding.get(ord(byte), byte) for byte in b)
+    else:
+        return "".join(PDFDocEncoding.get(byte, chr(byte)) for byte in b)
 
 
 class PdfFormatError(RuntimeError):
@@ -667,6 +720,10 @@ class PdfParser:
 
 
 def selftest():
+    assert encode_text("abc") == b"\xFE\xFF\x00a\x00b\x00c"
+    assert decode_text(b"\xFE\xFF\x00a\x00b\x00c") == "abc"
+    assert decode_text(b"abc") == "abc"
+    assert decode_text(b"\x1B a \x1C") == u"\u02D9 a \u02DD"
     assert PdfParser.interpret_name(b"Name#23Hash") == b"Name#Hash"
     assert PdfParser.interpret_name(b"Name#23Hash", as_text=True) == "Name#Hash"
     assert IndirectReference(1,2) == IndirectReference(1,2)

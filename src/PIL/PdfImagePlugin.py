@@ -48,11 +48,31 @@ def _save_all(im, fp, filename):
 def _save(im, fp, filename, save_all=False):
     resolution = im.encoderinfo.get("resolution", 72.0)
     is_appending = im.encoderinfo.get("append", False)
+    title = im.encoderinfo.get("title", None)
+    author = im.encoderinfo.get("author", None)
+    subject = im.encoderinfo.get("subject", None)
+    keywords = im.encoderinfo.get("keywords", None)
+    creator = im.encoderinfo.get("creator", None)
+    producer = im.encoderinfo.get("producer", None)
+
     if is_appending:
         existing_pdf = pdfParser.PdfParser(f=fp, filename=filename)
         fp.seek(0, io.SEEK_END)
     else:
         existing_pdf = pdfParser.PdfParser()
+
+    if title:
+        existing_pdf.info[b"Title"] = pdfParser.encode_text(title)
+    if author:
+        existing_pdf.info[b"Author"] = pdfParser.encode_text(author)
+    if subject:
+        existing_pdf.info[b"Subject"] = pdfParser.encode_text(subject)
+    if keywords:
+        existing_pdf.info[b"Keywords"] = pdfParser.encode_text(keywords)
+    if creator:
+        existing_pdf.info[b"Creator"] = pdfParser.encode_text(creator)
+    if producer:
+        existing_pdf.info[b"Producer"] = pdfParser.encode_text(producer)
 
     #
     # make sure image data is available
