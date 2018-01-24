@@ -612,6 +612,14 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     .. versionadded:: 3.4.0
 
+**append_images**
+    A list of images to append as additional frames. Each of the
+    images in the list can be single or multiframe images. Note however, that for
+    correct results, all the appended images should have the same
+    encoderinfo and encoderconfig properties.
+
+    .. versionadded:: 4.2.0
+
 **tiffinfo**
     A :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2` object or dict
     object containing tiff tags and values. The TIFF field type is
@@ -944,14 +952,68 @@ The format code is ``Palm``, the extension is ``.palm``.
 PDF
 ^^^
 
-PIL can write PDF (Acrobat) images. Such images are written as binary PDF 1.1
+PIL can write PDF (Acrobat) images. Such images are written as binary PDF 1.4
 files, using either JPEG or HEX encoding depending on the image mode (and
 whether JPEG support is available or not).
 
-When calling :py:meth:`~PIL.Image.Image.save`, if a multiframe image is used,
-by default, only the first image will be saved. To save all frames, each frame
-to a separate page of the PDF, the ``save_all`` parameter must be present and
-set to ``True``.
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**save_all**
+    If a multiframe image is used, by default, only the first image will be saved.
+    To save all frames, each frame to a separate page of the PDF, the ``save_all``
+    parameter must be present and set to ``True``.
+
+    .. versionadded:: 3.0.0
+
+**append_images**
+    A list of images to append as additional pages. Each of the
+    images in the list can be single or multiframe images.
+
+    .. versionadded:: 4.2.0
+
+**append**
+    Set to True to append pages to an existing PDF file. If the file doesn't
+    exist, an IOError will be raised.
+
+    .. versionadded:: 5.1.0
+
+**resolution**
+    Image resolution in DPI. This, together with the number of pixels in the
+    image, will determine the physical dimensions of the page that will be
+    saved in the PDF.
+
+**title**
+    The document’s title.
+
+    .. versionadded:: 5.1.0
+
+**author**
+    The name of the person who created the document.
+
+    .. versionadded:: 5.1.0
+
+**subject**
+    The subject of the document.
+
+    .. versionadded:: 5.1.0
+
+**keywords**
+    Keywords associated with the document.
+
+    .. versionadded:: 5.1.0
+
+**creator**
+    If the document was converted to PDF from another format, the name of the
+    conforming product that created the original document from which it was
+    converted.
+
+    .. versionadded:: 5.1.0
+
+**producer**
+    If the document was converted to PDF from another format, the name of the
+    conforming product that converted it to PDF.
+
+    .. versionadded:: 5.1.0
 
 XV Thumbnails
 ^^^^^^^^^^^^^
