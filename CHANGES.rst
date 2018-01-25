@@ -10,7 +10,7 @@ Changelog (Pillow)
 
 - Readme: Added Twitter badge #2930
   [hugovk]
-  
+
 - Removed __main__ code from ImageCms #2942
   [radarhere]
 
@@ -19,7 +19,7 @@ Changelog (Pillow)
 
 - Depends: Updated libimagequant to 2.11.7, raqm to 0.4.0, freetype to 2.9 #2967, #2969, #2957
   [radarhere]
-  
+
 - Remove _imaging.crc32 in favor of builtin Python crc32 implementation #2935
   [wiredfool]
 
@@ -34,7 +34,7 @@ Changelog (Pillow)
 
 - Docs: Changed documentation references to 2.x to 2.7 #2921
   [radarhere]
-  
+
 
 5.0.1 (unreleased)
 ------------------
@@ -168,7 +168,7 @@ Changelog (Pillow)
 - GIF: Permit LZW code lengths up to 12 bits in GIF decode #2813
   [wiredfool]
 
-- Fix unterminiated string and unchecked exception in _font_text_asBytes. #2825
+- Fix unterminated string and unchecked exception in _font_text_asBytes. #2825
   [wiredfool]
 
 - PPM: Use fixed list of whitespace, rather relying on locale, fixes #272. #2831
