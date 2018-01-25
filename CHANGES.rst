@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Fix memory leak when opening webp files #2974
+  [wiredfool]
+
 - Tiff: Open 8 bit Tiffs with 5 or 6 channels, discarding extra channels #2938
   [homm]
 
