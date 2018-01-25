@@ -174,9 +174,6 @@ class TestFilePdf(PillowTestCase):
         im.save(f, format="PDF", append=True)
         self.assertGreater(len(f.getvalue()), initial_size)
 
-    def test_pdf_parser(self):
-        pdfParser.selftest()
-
 
 if __name__ == '__main__':
     unittest.main()
