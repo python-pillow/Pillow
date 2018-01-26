@@ -19,6 +19,11 @@ class TestFilePdf(PillowTestCase):
         # Assert
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
+        with pdfParser.PdfParser(outfile) as pdf:
+            if kwargs.get("append_images", False) or kwargs.get("append", False):
+                self.assertGreater(len(pdf.pages), 1)
+            else:
+                self.assertGreater(len(pdf.pages), 0)
 
         return outfile
 
@@ -100,27 +105,34 @@ class TestFilePdf(PillowTestCase):
         self.assertGreater(os.path.getsize(outfile), 0)
 
     def test_pdf_open(self):
-        # fail on empty buffer
-        self.assertRaises(pdfParser.PdfFormatError, pdfParser.PdfParser, buf=bytearray())
         # fail on a buffer full of null bytes
         self.assertRaises(pdfParser.PdfFormatError, pdfParser.PdfParser, buf=bytearray(65536))
         # make an empty PDF object
-        empty_pdf = pdfParser.PdfParser()
-        self.assertEqual(len(empty_pdf.pages), 0)
+        with pdfParser.PdfParser() as empty_pdf:
+            self.assertEqual(len(empty_pdf.pages), 0)
+            self.assertEqual(len(empty_pdf.info), 0)
+            self.assertFalse(empty_pdf.should_close_buf)
+            self.assertFalse(empty_pdf.should_close_file)
         # make a PDF file
         pdf_filename = self.helper_save_as_pdf("RGB")
         # open the PDF file
-        hopper_pdf = pdfParser.PdfParser(filename=pdf_filename)
-        self.assertEqual(len(hopper_pdf.pages), 1)
+        with pdfParser.PdfParser(filename=pdf_filename) as hopper_pdf:
+            self.assertEqual(len(hopper_pdf.pages), 1)
+            self.assertTrue(hopper_pdf.should_close_buf)
+            self.assertTrue(hopper_pdf.should_close_file)
         # read a PDF file from a buffer with a non-zero offset
         with open(pdf_filename, "rb") as f:
             content = b"xyzzy" + f.read()
-        hopper_pdf = pdfParser.PdfParser(buf=content, start_offset=5)
-        self.assertEqual(len(hopper_pdf.pages), 1)
+        with pdfParser.PdfParser(buf=content, start_offset=5) as hopper_pdf:
+            self.assertEqual(len(hopper_pdf.pages), 1)
+            self.assertFalse(hopper_pdf.should_close_buf)
+            self.assertFalse(hopper_pdf.should_close_file)
         # read a PDF file from an already open file
         with open(pdf_filename, "rb") as f:
-            hopper_pdf = pdfParser.PdfParser(f=f)
-        self.assertEqual(len(hopper_pdf.pages), 1)
+            with pdfParser.PdfParser(f=f) as hopper_pdf:
+                self.assertEqual(len(hopper_pdf.pages), 1)
+                self.assertTrue(hopper_pdf.should_close_buf)
+                self.assertFalse(hopper_pdf.should_close_file)
 
     def test_pdf_append_fails_on_nonexistent_file(self):
         im = hopper("RGB")
@@ -134,50 +146,49 @@ class TestFilePdf(PillowTestCase):
         # make a PDF file
         pdf_filename = self.helper_save_as_pdf("RGB", producer="pdfParser")
         # open it, check pages and info
-        pdf = pdfParser.PdfParser(pdf_filename)
-        self.assertEqual(len(pdf.pages), 1)
-        self.assertEqual(len(pdf.info), 1)
-        self.assertEqual(pdf.info.Producer, "pdfParser")
-        # append some info
-        pdf.info.Title = "abc"
-        pdf.info.Author = "def"
-        pdf.info.Subject = u"ghi\uABCD"
-        pdf.info.Keywords = "qw)e\\r(ty"
-        pdf.info.Creator = "hopper()"
-        with open(pdf_filename, "r+b") as f:
-            f.seek(0, os.SEEK_END)
+        with pdfParser.PdfParser(pdf_filename, mode="r+b") as pdf:
+            self.assertEqual(len(pdf.pages), 1)
+            self.assertEqual(len(pdf.info), 1)
+            self.assertEqual(pdf.info.Producer, "pdfParser")
+            # append some info
+            pdf.info.Title = "abc"
+            pdf.info.Author = "def"
+            pdf.info.Subject = u"ghi\uABCD"
+            pdf.info.Keywords = "qw)e\\r(ty"
+            pdf.info.Creator = "hopper()"
+            pdf.start_writing()
             pdf.write_xref_and_trailer(f)
         # open it again, check pages and info again
-        pdf = pdfParser.PdfParser(pdf_filename)
-        self.assertEqual(len(pdf.pages), 1)
-        self.assertEqual(len(pdf.info), 6)
-        self.assertEqual(pdf.info.Title, "abc")
+        with pdfParser.PdfParser(pdf_filename) as pdf:
+            self.assertEqual(len(pdf.pages), 1)
+            self.assertEqual(len(pdf.info), 6)
+            self.assertEqual(pdf.info.Title, "abc")
         # append two images
         mode_CMYK = hopper("CMYK")
         mode_P = hopper("P")
         mode_CMYK.save(pdf_filename, append=True, save_all=True, append_images=[mode_P])
         # open the PDF again, check pages and info again
-        pdf = pdfParser.PdfParser(pdf_filename)
-        self.assertEqual(len(pdf.pages), 3)
-        self.assertEqual(len(pdf.info), 6)
-        self.assertEqual(pdfParser.decode_text(pdf.info[b"Title"]), "abc")
-        self.assertEqual(pdf.info.Title, "abc")
-        self.assertEqual(pdf.info.Producer, "pdfParser")
-        self.assertEqual(pdf.info.Keywords, "qw)e\\r(ty")
-        self.assertEqual(pdf.info.Subject, u"ghi\uABCD")
+        with pdfParser.PdfParser(pdf_filename) as pdf:
+            self.assertEqual(len(pdf.pages), 3)
+            self.assertEqual(len(pdf.info), 6)
+            self.assertEqual(pdfParser.decode_text(pdf.info[b"Title"]), "abc")
+            self.assertEqual(pdf.info.Title, "abc")
+            self.assertEqual(pdf.info.Producer, "pdfParser")
+            self.assertEqual(pdf.info.Keywords, "qw)e\\r(ty")
+            self.assertEqual(pdf.info.Subject, u"ghi\uABCD")
 
     def test_pdf_append(self):
         # make a PDF file
         pdf_filename = self.helper_save_as_pdf("RGB", title="title", author="author", subject="subject", keywords="keywords", creator="creator", producer="producer")
         # open it, check pages and info
-        pdf = pdfParser.PdfParser(pdf_filename)
-        self.assertEqual(len(pdf.info), 6)
-        self.assertEqual(pdf.info.Title, "title")
-        self.assertEqual(pdf.info.Author, "author")
-        self.assertEqual(pdf.info.Subject, "subject")
-        self.assertEqual(pdf.info.Keywords, "keywords")
-        self.assertEqual(pdf.info.Creator, "creator")
-        self.assertEqual(pdf.info.Producer, "producer")
+        with pdfParser.PdfParser(pdf_filename) as pdf:
+            self.assertEqual(len(pdf.info), 6)
+            self.assertEqual(pdf.info.Title, "title")
+            self.assertEqual(pdf.info.Author, "author")
+            self.assertEqual(pdf.info.Subject, "subject")
+            self.assertEqual(pdf.info.Keywords, "keywords")
+            self.assertEqual(pdf.info.Creator, "creator")
+            self.assertEqual(pdf.info.Producer, "producer")
 
     def test_pdf_append_to_bytesio(self):
         im = hopper("RGB")

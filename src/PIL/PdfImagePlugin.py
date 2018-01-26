@@ -56,10 +56,9 @@ def _save(im, fp, filename, save_all=False):
     producer = im.encoderinfo.get("producer", None)
 
     if is_appending:
-        existing_pdf = pdfParser.PdfParser(f=fp, filename=filename)
-        fp.seek(0, io.SEEK_END)
+        existing_pdf = pdfParser.PdfParser(f=fp, filename=filename, mode="r+b")
     else:
-        existing_pdf = pdfParser.PdfParser()
+        existing_pdf = pdfParser.PdfParser(f=fp, filename=filename, mode="w+b")
 
     if title:
         existing_pdf.info.Title = title
@@ -78,8 +77,9 @@ def _save(im, fp, filename, save_all=False):
     # make sure image data is available
     im.load()
 
-    existing_pdf.write_header(fp)
-    existing_pdf.write_comment(fp, "created by PIL PDF driver " + __version__)
+    existing_pdf.start_writing()
+    existing_pdf.write_header()
+    existing_pdf.write_comment("created by PIL PDF driver " + __version__)
 
     #
     # pages
@@ -110,7 +110,7 @@ def _save(im, fp, filename, save_all=False):
 
     #
     # catalog and list of pages
-    existing_pdf.write_catalog(fp)
+    existing_pdf.write_catalog()
 
     pageNumber = 0
     for imSequence in ims:
@@ -175,7 +175,7 @@ def _save(im, fp, filename, save_all=False):
 
             width, height = im.size
 
-            existing_pdf.write_obj(fp, image_refs[pageNumber], stream=op.getvalue(),
+            existing_pdf.write_obj(image_refs[pageNumber], stream=op.getvalue(),
                 Type=pdfParser.PdfName("XObject"),
                 Subtype=pdfParser.PdfName("Image"),
                 Width=width,  # * 72.0 / resolution,
@@ -188,7 +188,7 @@ def _save(im, fp, filename, save_all=False):
             #
             # page
 
-            existing_pdf.write_page(fp, page_refs[pageNumber],
+            existing_pdf.write_page(page_refs[pageNumber],
                 Resources=pdfParser.PdfDict(
                     ProcSet=[pdfParser.PdfName("PDF"), pdfParser.PdfName(procset)],
                     XObject=pdfParser.PdfDict(image=image_refs[pageNumber])),
@@ -204,15 +204,16 @@ def _save(im, fp, filename, save_all=False):
                     int(width * 72.0 / resolution),
                     int(height * 72.0 / resolution)))
 
-            existing_pdf.write_obj(fp, contents_refs[pageNumber], stream=page_contents)
+            existing_pdf.write_obj(contents_refs[pageNumber], stream=page_contents)
 
             pageNumber += 1
 
     #
     # trailer
-    existing_pdf.write_xref_and_trailer(fp)
+    existing_pdf.write_xref_and_trailer()
     if hasattr(fp, "flush"):
         fp.flush()
+    existing_pdf.close()
 
 #
 # --------------------------------------------------------------------

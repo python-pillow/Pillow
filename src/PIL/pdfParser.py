@@ -2,6 +2,7 @@ import codecs
 import collections
 import io
 import mmap
+import os
 import re
 import sys
 import zlib
@@ -336,17 +337,25 @@ class PdfParser:
     Supports PDF up to 1.4
     """
 
-    def __init__(self, filename=None, f=None, buf=None, start_offset=0):
+    def __init__(self, filename=None, f=None, buf=None, start_offset=0, mode="rb"):
+        # type: (PdfParser, str, file, Union[bytes, bytearray], int, str) -> None
+        assert not (buf and f)
         self.filename = filename
         self.buf = buf
+        self.f = f
         self.start_offset = start_offset
-        if buf is not None:
+        self.should_close_buf = False
+        self.should_close_file = False
+        if filename is not None and f is None:
+            self.f = f = open(filename, mode)
+            self.should_close_file = True
+        if f is not None:
+            self.buf = buf = self.get_buf_from_file(f)
+            self.should_close_buf = True
+            if not filename and hasattr(f, "name"):
+                self.filename = f.name
+        if buf:
             self.read_pdf_info()
-        elif f is not None:
-            self.read_pdf_info_from_file(f)
-        elif filename is not None:
-            with open(filename, "rb") as f:
-                self.read_pdf_info_from_file(f)
         else:
             self.file_size_total = self.file_size_this = 0
             self.root = PdfDict()
@@ -360,33 +369,63 @@ class PdfParser:
             self.trailer_dict = {}
             self.xref_table = XrefTable()
         self.xref_table.reading_finished = True
+        if f:
+            self.seek_end()
 
-    def write_header(self, f):
-        f.write(b"%PDF-1.4\n")
+    def __enter__(self):
+        return self
 
-    def write_comment(self, f, s):
-        f.write(("%% %s\n" % (s,)).encode("utf-8"))
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+        return False  # do not suppress exceptions
 
-    def write_catalog(self, f):
+    def start_writing(self):
+        self.close_buf()
+        self.seek_end()
+
+    def close_buf(self):
+        try:
+            self.buf.close()
+        except AttributeError:
+            pass
+        self.buf = None
+
+    def close(self):
+        if self.should_close_buf:
+            self.close_buf()
+        if self.f is not None and self.should_close_file:
+            self.f.close()
+            self.f = None
+
+    def seek_end(self):
+        self.f.seek(0, os.SEEK_END)
+
+    def write_header(self):
+        self.f.write(b"%PDF-1.4\n")
+
+    def write_comment(self, s):
+        self.f.write(("%% %s\n" % (s,)).encode("utf-8"))
+
+    def write_catalog(self):
         self.del_root()
-        self.root_ref = self.next_object_id(f.tell())
+        self.root_ref = self.next_object_id(self.f.tell())
         self.pages_ref = self.next_object_id(0)
-        self.write_obj(f, self.root_ref,
+        self.write_obj(self.root_ref,
             Type=PdfName(b"Catalog"),
             Pages=self.pages_ref)
-        self.write_obj(f, self.pages_ref,
+        self.write_obj(self.pages_ref,
             Type=PdfName("Pages"),
             Count=len(self.pages),
             Kids=self.pages)
         return self.root_ref
 
-    def write_xref_and_trailer(self, f, new_root_ref=None):
+    def write_xref_and_trailer(self, new_root_ref=None):
         if new_root_ref:
             self.del_root()
             self.root_ref = new_root_ref
         if self.info:
-            self.info_ref = self.write_obj(f, None, self.info)
-        start_xref = self.xref_table.write(f)
+            self.info_ref = self.write_obj(None, self.info)
+        start_xref = self.xref_table.write(self.f)
         num_entries = len(self.xref_table)
         trailer_dict = {b"Root": self.root_ref, b"Size": num_entries}
         if self.last_xref_section_offset is not None:
@@ -394,18 +433,19 @@ class PdfParser:
         if self.info:
             trailer_dict[b"Info"] = self.info_ref
         self.last_xref_section_offset = start_xref
-        f.write(b"trailer\n" + bytes(PdfDict(trailer_dict)) + make_bytes("\nstartxref\n%d\n%%%%EOF" % start_xref))
+        self.f.write(b"trailer\n" + bytes(PdfDict(trailer_dict)) + make_bytes("\nstartxref\n%d\n%%%%EOF" % start_xref))
 
-    def write_page(self, f, ref, *objs, **dict_obj):
+    def write_page(self, ref, *objs, **dict_obj):
         if isinstance(ref, int):
             ref = self.pages[ref]
         if "Type" not in dict_obj:
             dict_obj["Type"] = PdfName("Page")
         if "Parent" not in dict_obj:
             dict_obj["Parent"] = self.pages_ref
-        return self.write_obj(f, ref, *objs, **dict_obj)
+        return self.write_obj(ref, *objs, **dict_obj)
 
-    def write_obj(self, f, ref, *objs, **dict_obj):
+    def write_obj(self, ref, *objs, **dict_obj):
+        f = self.f
         if ref is None:
             ref = self.next_object_id(f.tell())
         else:
@@ -432,22 +472,17 @@ class PdfParser:
         del self.xref_table[self.root[b"Pages"].object_id]
         # XXX TODO delete Pages tree recursively
 
-    def read_pdf_info_from_file(self, f):
+    @staticmethod
+    def get_buf_from_file(f):
         if hasattr(f, "getbuffer"):
-            self.buf = f.getbuffer()
-            need_close = False
+            return f.getbuffer()
         elif hasattr(f, "getvalue"):
-            self.buf = f.getvalue()
-            need_close = False
+            return f.getvalue()
         else:
-            self.buf = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-            need_close = True
-        try:
-            self.read_pdf_info()
-        finally:
-            if need_close:
-                self.buf.close()
-            self.buf = None
+            try:
+                return mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+            except ValueError:  # cannot mmap an empty file
+                return b""
 
     def read_pdf_info(self):
         self.file_size_total = len(self.buf)
