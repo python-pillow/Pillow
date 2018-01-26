@@ -221,24 +221,10 @@ class PdfArray(list):
 
 
 class PdfDict(UserDict):
-    #def __init__(self, *args, orig_ref=None, pdf=None, **kwargs):
     def __init__(self, *args, **kwargs):
         UserDict.__init__(self, *args, **kwargs)
-        #self.orig_ref = kwargs.pop("orig_ref", None)
-        #self.pdf = kwargs.pop("pdf", None)
-        #self.is_changed = False
-
-    def __setitem__(self, key, value):
-        self.is_changed = True
-        UserDict.__setitem__(self, key, value)
 
     def __bytes__(self):
-        #if self.orig_ref is not None:
-        #    if self.is_changed:
-        #        if self.pdf is not None:
-        #            del self.pdf.xref_table[self.orig_ref.object_id]
-        #    else:
-        #        return bytes(self.orig_ref)
         out = bytearray(b"<<")
         for key, value in self.items():
             if value is None:
@@ -248,17 +234,12 @@ class PdfDict(UserDict):
             out.extend(bytes(PdfName(key)))
             out.extend(b" ")
             out.extend(value)
-            #out += b"\n%s %s" % (PdfName(key), value)
         out.extend(b"\n>>")
         return bytes(out)
         #return out + b"\n>>"
 
-    __str__ = __bytes__
-
-    #def write(self, f, orig_ref=None, pdf=None):
-    #    self.orig_ref = orig_ref
-    #    self.pdf = pdf
-    #    f.write(bytes(self))
+    if str == bytes:
+        __str__ = __bytes__
 
 
 class PdfBinary:
@@ -290,7 +271,7 @@ def pdf_repr(x):
     elif isinstance(x, list):
         return bytes(PdfArray(x))
     elif isinstance(x, str) and str != bytes:
-        return pdf_repr(x.encode("utf-8"))
+        return pdf_repr(encode_text(x))
     elif isinstance(x, bytes):
         return b"(" + x.replace(b"\\", b"\\\\").replace(b"(", b"\\(").replace(b")", b"\\)") + b")"  # XXX escape more chars? handle binary garbage
     else:

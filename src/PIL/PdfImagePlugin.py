@@ -62,17 +62,17 @@ def _save(im, fp, filename, save_all=False):
         existing_pdf = pdfParser.PdfParser()
 
     if title:
-        existing_pdf.info[b"Title"] = pdfParser.encode_text(title)
+        existing_pdf.info["Title"] = title
     if author:
-        existing_pdf.info[b"Author"] = pdfParser.encode_text(author)
+        existing_pdf.info["Author"] = author
     if subject:
-        existing_pdf.info[b"Subject"] = pdfParser.encode_text(subject)
+        existing_pdf.info["Subject"] = subject
     if keywords:
-        existing_pdf.info[b"Keywords"] = pdfParser.encode_text(keywords)
+        existing_pdf.info["Keywords"] = keywords
     if creator:
-        existing_pdf.info[b"Creator"] = pdfParser.encode_text(creator)
+        existing_pdf.info["Creator"] = creator
     if producer:
-        existing_pdf.info[b"Producer"] = pdfParser.encode_text(producer)
+        existing_pdf.info["Producer"] = producer
 
     #
     # make sure image data is available
