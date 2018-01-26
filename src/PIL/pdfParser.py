@@ -239,7 +239,10 @@ class PdfDict(UserDict):
         try:
             value = self[key]
         except KeyError:
-            value = self[key.encode("us-ascii")]
+            try:
+                value = self[key.encode("us-ascii")]
+            except KeyError:
+                raise AttributeError(key)
         if isinstance(value, bytes):
             return decode_text(value)
         else:
