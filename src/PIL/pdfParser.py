@@ -226,7 +226,10 @@ class PdfDict(UserDict):
 
     def __setattr__(self, key, value):
         if key == "data":
-            UserDict.__setattr__(self, key, value)
+            if hasattr(UserDict, "__setattr__"):
+                UserDict.__setattr__(self, key, value)
+            else:
+                self.__dict__[key] = value
         else:
             if isinstance(key, str):
                 key = key.encode("us-ascii")
