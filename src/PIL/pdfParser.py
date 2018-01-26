@@ -294,7 +294,7 @@ def pdf_repr(x):
         return bytes(PdfDict(x))
     elif isinstance(x, list):
         return bytes(PdfArray(x))
-    elif isinstance(x, str) and str != bytes:
+    elif (str == bytes and isinstance(x, unicode)) or (str != bytes and isinstance(x, str)):
         return pdf_repr(encode_text(x))
     elif isinstance(x, bytes):
         return b"(" + x.replace(b"\\", b"\\\\").replace(b"(", b"\\(").replace(b")", b"\\)") + b")"  # XXX escape more chars? handle binary garbage
