@@ -363,7 +363,7 @@ def getOpenProfile(profileFilename):
     The PyCMSProfile object can be passed back into pyCMS for use in creating
     transforms and such (as in ImageCms.buildTransformFromOpenProfiles()).
 
-    If profileFilename is not a vaild filename for an ICC profile, a PyCMSError
+    If profileFilename is not a valid filename for an ICC profile, a PyCMSError
     will be raised.
 
     :param profileFilename: String, as a valid filename path to the ICC profile
