@@ -186,7 +186,7 @@ class PdfName():
         elif isinstance(name, bytes):
             self.name = name
         else:
-            self.name = name.encode("utf-8")
+            self.name = name.encode("us-ascii")
 
     @classmethod
     def from_pdf_stream(klass, data):
@@ -223,6 +223,24 @@ class PdfArray(list):
 class PdfDict(UserDict):
     def __init__(self, *args, **kwargs):
         UserDict.__init__(self, *args, **kwargs)
+
+    def __setattr__(self, key, value):
+        if key == "data":
+            UserDict.__setattr__(self, key, value)
+        else:
+            if isinstance(key, str):
+                key = key.encode("us-ascii")
+            self[key] = value
+
+    def __getattr__(self, key):
+        try:
+            value = self[key]
+        except KeyError:
+            value = self[key.encode("us-ascii")]
+        if isinstance(value, bytes):
+            return decode_text(value)
+        else:
+            return value
 
     def __bytes__(self):
         out = bytearray(b"<<")
@@ -624,6 +642,7 @@ class PdfParser:
         b"f": b"\f",
         b"(": b"(",
         b")": b")",
+        b"\\": b"\\",
         ord(b"n"): b"\n",
         ord(b"r"): b"\r",
         ord(b"t"): b"\t",
@@ -631,6 +650,7 @@ class PdfParser:
         ord(b"f"): b"\f",
         ord(b"("): b"(",
         ord(b")"): b")",
+        ord(b"\\"): b"\\",
         }
     @classmethod
     def get_literal_string(klass, data, offset):

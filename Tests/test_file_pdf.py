@@ -137,13 +137,13 @@ class TestFilePdf(PillowTestCase):
         pdf = pdfParser.PdfParser(pdf_filename)
         self.assertEqual(len(pdf.pages), 1)
         self.assertEqual(len(pdf.info), 1)
-        self.assertEqual(pdfParser.decode_text(pdf.info["Producer"]), "pdfParser")
+        self.assertEqual(pdf.info.Producer, "pdfParser")
         # append some info
-        pdf.info["Title"] = "abc"
-        pdf.info["Author"] = "def"
-        pdf.info["Subject"] = "ghi"
-        pdf.info["Keywords"] = "jkl"
-        pdf.info["Creator"] = "hopper()"
+        pdf.info.Title = "abc"
+        pdf.info.Author = "def"
+        pdf.info.Subject = u"ghi\uABCD"
+        pdf.info.Keywords = "qw)e\\r(ty"
+        pdf.info.Creator = "hopper()"
         with open(pdf_filename, "r+b") as f:
             f.seek(0, os.SEEK_END)
             pdf.write_xref_and_trailer(f)
@@ -151,7 +151,7 @@ class TestFilePdf(PillowTestCase):
         pdf = pdfParser.PdfParser(pdf_filename)
         self.assertEqual(len(pdf.pages), 1)
         self.assertEqual(len(pdf.info), 6)
-        self.assertEqual(pdfParser.decode_text(pdf.info["Title"]), "abc")
+        self.assertEqual(pdf.info.Title, "abc")
         # append two images
         mode_CMYK = hopper("CMYK")
         mode_P = hopper("P")
@@ -160,8 +160,11 @@ class TestFilePdf(PillowTestCase):
         pdf = pdfParser.PdfParser(pdf_filename)
         self.assertEqual(len(pdf.pages), 3)
         self.assertEqual(len(pdf.info), 6)
-        self.assertEqual(pdfParser.decode_text(pdf.info["Title"]), "abc")
-        self.assertEqual(pdfParser.decode_text(pdf.info["Producer"]), "pdfParser")
+        self.assertEqual(pdfParser.decode_text(pdf.info[b"Title"]), "abc")
+        self.assertEqual(pdf.info.Title, "abc")
+        self.assertEqual(pdf.info.Producer, "pdfParser")
+        self.assertEqual(pdf.info.Keywords, "qw)e\\r(ty")
+        self.assertEqual(pdf.info.Subject, u"ghi\uABCD")
 
     def test_pdf_append_to_bytesio(self):
         im = hopper("RGB")
