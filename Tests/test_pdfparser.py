@@ -44,6 +44,24 @@ class TestPdfParser(PillowTestCase):
         self.assertEqual(PdfParser.get_value(b"(\\53)", 0), (b"\x2B", 5))
         self.assertEqual(PdfParser.get_value(b"(\\53a)", 0), (b"\x2Ba", 6))
         self.assertEqual(PdfParser.get_value(b"(\\1111)", 0), (b"\x491", 7))
+        self.assertEqual(PdfParser.get_value(b" 123 (", 0), (123, 4))
+        self.assertAlmostEqual(PdfParser.get_value(b" 123.4 %", 0)[0], 123.4)
+        self.assertEqual(PdfParser.get_value(b" 123.4 %", 0)[1], 6)
+        self.assertRaises(PdfFormatError, PdfParser.get_value, b"]", 0)
+        d = PdfParser.get_value(b"<</Name (value) /N /V>>", 0)[0]
+        self.assertIsInstance(d, PdfDict)
+        self.assertEqual(len(d), 2)
+        self.assertEqual(d.Name, "value")
+        self.assertEqual(d[b"Name"], b"value")
+        self.assertEqual(d.N, PdfName("V"))
+        a = PdfParser.get_value(b"[/Name (value) /N /V]", 0)[0]
+        self.assertIsInstance(a, list)
+        self.assertEqual(len(a), 4)
+        self.assertEqual(a[0], PdfName("Name"))
+        s = PdfParser.get_value(b"<</Name (value) /Length 5>>\nstream\nabcde\nendstream<<...", 0)[0]
+        self.assertIsInstance(s, PdfStream)
+        self.assertEqual(s.dictionary.Name, "value")
+        self.assertEqual(s.decode(), b"abcde")
 
     def test_pdf_repr(self):
         self.assertEqual(bytes(IndirectReference(1,2)), b"1 2 R")

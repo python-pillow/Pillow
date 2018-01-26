@@ -166,6 +166,19 @@ class TestFilePdf(PillowTestCase):
         self.assertEqual(pdf.info.Keywords, "qw)e\\r(ty")
         self.assertEqual(pdf.info.Subject, u"ghi\uABCD")
 
+    def test_pdf_append(self):
+        # make a PDF file
+        pdf_filename = self.helper_save_as_pdf("RGB", title="title", author="author", subject="subject", keywords="keywords", creator="creator", producer="producer")
+        # open it, check pages and info
+        pdf = pdfParser.PdfParser(pdf_filename)
+        self.assertEqual(len(pdf.info), 6)
+        self.assertEqual(pdf.info.Title, "title")
+        self.assertEqual(pdf.info.Author, "author")
+        self.assertEqual(pdf.info.Subject, "subject")
+        self.assertEqual(pdf.info.Keywords, "keywords")
+        self.assertEqual(pdf.info.Creator, "creator")
+        self.assertEqual(pdf.info.Producer, "producer")
+
     def test_pdf_append_to_bytesio(self):
         im = hopper("RGB")
         f = io.BytesIO()

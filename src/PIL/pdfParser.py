@@ -4,6 +4,7 @@ import io
 import mmap
 import re
 import sys
+import zlib
 
 try:
     from UserDict import UserDict
@@ -188,6 +189,15 @@ class PdfName():
         else:
             self.name = name.encode("us-ascii")
 
+    def __eq__(self, other):
+        return (isinstance(other, PdfName) and other.name == self.name) or other == self.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __repr__(self):
+        return "PdfName(%s)" % repr(self.name)
+
     @classmethod
     def from_pdf_stream(klass, data):
         return klass(PdfParser.interpret_name(data))
@@ -260,7 +270,6 @@ class PdfDict(UserDict):
             out.extend(value)
         out.extend(b"\n>>")
         return bytes(out)
-        #return out + b"\n>>"
 
     if str == bytes:
         __str__ = __bytes__
@@ -277,6 +286,26 @@ class PdfBinary:
     else:  # Python 3.x
         def __bytes__(self):
             return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
+
+
+class PdfStream:
+    def __init__(self, dictionary, buf):
+        self.dictionary = dictionary
+        self.buf = buf
+
+    def decode(self):
+        try:
+            filter = self.dictionary.Filter
+        except AttributeError:
+            return self.buf
+        if filter == b"FlateDecode":
+            try:
+                expected_length = self.dictionary.DL
+            except AttributeError:
+                expected_length = self.dictionary.Length
+            return zlib.decompress(self.buf, bufsize=int(expected_length))
+        else:
+            raise NotImplementedError("stream filter %s unknown/unsupported" % repr(self.dictionary.Filter))
 
 
 def pdf_repr(x):
@@ -550,6 +579,8 @@ class PdfParser:
     re_indirect_def_start = re.compile(whitespace_optional + br"([-+]?[0-9]+)" + whitespace_mandatory + br"([-+]?[0-9]+)" + whitespace_mandatory + br"obj(?=" + delimiter_or_ws + br")")
     re_indirect_def_end = re.compile(whitespace_optional + br"endobj(?=" + delimiter_or_ws + br")")
     re_comment = re.compile(br"(" + whitespace_optional + br"%[^\r\n]*" + newline + br")*")
+    re_stream_start = re.compile(whitespace_optional + br"stream\r?\n")
+    re_stream_end = re.compile(whitespace_optional + br"endstream(?=" + delimiter_or_ws + br")")
     @classmethod
     def get_value(klass, data, offset, expect_indirect=None, max_nesting=-1):
         #if max_nesting == 0:
@@ -593,7 +624,21 @@ class PdfParser:
                     return result, None
                 m = klass.re_dict_end.match(data, offset)
             #print(">>")
-            return result, m.end()
+            offset = m.end()
+            m = klass.re_stream_start.match(data, offset)
+            if m:
+                try:
+                    stream_len = int(result[b"Length"])
+                except:
+                    raise PdfFormatError("bad or missing Length in stream dict (%r)" % result.get(b"Length", None))
+                stream_data = data[m.end():m.end() + stream_len]
+                m = klass.re_stream_end.match(data, m.end() + stream_len)
+                check_format_condition(m, "stream end not found")
+                offset = m.end()
+                result = PdfStream(PdfDict(result), stream_data)
+            else:
+                result = PdfDict(result)
+            return result, offset
         m = klass.re_array_start.match(data, offset)
         if m:
             offset = m.end()
@@ -618,7 +663,7 @@ class PdfParser:
             return False, m.end()
         m = klass.re_name.match(data, offset)
         if m:
-            return klass.interpret_name(m.group(1)), m.end()
+            return PdfName(klass.interpret_name(m.group(1))), m.end()
         m = klass.re_int.match(data, offset)
         if m:
             return int(m.group(1)), m.end()
@@ -634,7 +679,6 @@ class PdfParser:
         m = klass.re_string_lit.match(data, offset)
         if m:
             return klass.get_literal_string(data, m.end())
-        # XXX TODO: stream
         #return None, offset  # fallback (only for debugging)
         raise PdfFormatError("unrecognized object: " + repr(data[offset:offset+32]))
 
