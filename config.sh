@@ -2,7 +2,7 @@
 # Test for OSX with [ -n "$IS_OSX" ]
 
 # Package versions for fresh source builds
-FREETYPE_VERSION=2.8.1
+FREETYPE_VERSION=2.9
 LIBPNG_VERSION=1.6.25
 ZLIB_VERSION=1.2.11
 JPEG_VERSION=9b
