@@ -69,7 +69,7 @@ GIF Disposal
 ^^^^^^^^^^^^
 
 Multiframe GIF images now take an optional disposal parameter to
-specify the disposal option for changed pixels. 
+specify the disposal option for changed pixels.
 
 Other Changes
 =============
@@ -88,7 +88,7 @@ Libraqm is now Dynamically Linked
 The libraqm dependency for complex text scripts is now linked
 dynamically at runtime rather than at packaging time. This allows us
 to release binaries with support for libraqm if it is installed on the
-user's machine. 
+user's machine.
 
 Source Layout Changes
 ^^^^^^^^^^^^^^^^^^^^^
