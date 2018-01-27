@@ -1457,7 +1457,7 @@ class Image(object):
         """
         Maps this image through a lookup table or function.
 
-        :param lut: A lookup table, containing 256 (or 65336 if
+        :param lut: A lookup table, containing 256 (or 65536 if
            self.mode=="I" and mode == "L") values per band in the
            image.  A function can be used instead, it should take a
            single argument. The function is called once for each
@@ -2102,7 +2102,7 @@ class Image(object):
            in the output image.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
-        
+
         if self.mode == 'LA':
             return self.convert('La').transform(
                 size, method, data, resample, fill).convert('LA')
