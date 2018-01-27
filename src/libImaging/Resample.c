@@ -226,7 +226,7 @@ normalize_coeffs_8bpc(int outSize, int ksize, double *prekk)
 
 
 
-void    
+void
 ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
                                int ksize, int *bounds, double *prekk)
 {

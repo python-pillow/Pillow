@@ -2102,7 +2102,7 @@ class Image(object):
            in the output image.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
-        
+
         if self.mode == 'LA':
             return self.convert('La').transform(
                 size, method, data, resample, fill).convert('LA')

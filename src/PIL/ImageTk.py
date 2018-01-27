@@ -278,7 +278,7 @@ class BitmapImage(object):
 
 def getimage(photo):
     """ This function is unimplemented """
-    
+
     """Copies the contents of a PhotoImage to a PIL image memory."""
     photo.tk.call("PyImagingPhotoGet", photo)
 
