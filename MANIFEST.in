@@ -19,7 +19,7 @@ prune docs/_static
 
 # build/src control detritus
 exclude .coveragerc
-exclude codecov.yml
+exclude .codecov.yml
 exclude .editorconfig
 exclude .landscape.yaml
 exclude .travis
