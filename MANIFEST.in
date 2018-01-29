@@ -11,7 +11,6 @@ include LICENSE
 include Makefile
 graft Tests
 graft src
-graft Tk
 graft depends
 graft winbuild
 graft docs
