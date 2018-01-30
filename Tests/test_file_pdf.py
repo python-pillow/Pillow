@@ -1,5 +1,5 @@
 from helper import unittest, PillowTestCase, hopper
-from PIL import Image, pdfParser
+from PIL import Image, PdfParser
 import io
 import os
 import os.path
@@ -19,7 +19,7 @@ class TestFilePdf(PillowTestCase):
         # Assert
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
-        with pdfParser.PdfParser(outfile) as pdf:
+        with PdfParser.PdfParser(outfile) as pdf:
             if kwargs.get("append_images", False) or kwargs.get("append", False):
                 self.assertGreater(len(pdf.pages), 1)
             else:
@@ -106,10 +106,10 @@ class TestFilePdf(PillowTestCase):
 
     def test_pdf_open(self):
         # fail on a buffer full of null bytes
-        self.assertRaises(pdfParser.PdfFormatError, pdfParser.PdfParser, buf=bytearray(65536))
+        self.assertRaises(PdfParser.PdfFormatError, PdfParser.PdfParser, buf=bytearray(65536))
 
         # make an empty PDF object
-        with pdfParser.PdfParser() as empty_pdf:
+        with PdfParser.PdfParser() as empty_pdf:
             self.assertEqual(len(empty_pdf.pages), 0)
             self.assertEqual(len(empty_pdf.info), 0)
             self.assertFalse(empty_pdf.should_close_buf)
@@ -119,7 +119,7 @@ class TestFilePdf(PillowTestCase):
         pdf_filename = self.helper_save_as_pdf("RGB")
 
         # open the PDF file
-        with pdfParser.PdfParser(filename=pdf_filename) as hopper_pdf:
+        with PdfParser.PdfParser(filename=pdf_filename) as hopper_pdf:
             self.assertEqual(len(hopper_pdf.pages), 1)
             self.assertTrue(hopper_pdf.should_close_buf)
             self.assertTrue(hopper_pdf.should_close_file)
@@ -127,14 +127,14 @@ class TestFilePdf(PillowTestCase):
         # read a PDF file from a buffer with a non-zero offset
         with open(pdf_filename, "rb") as f:
             content = b"xyzzy" + f.read()
-        with pdfParser.PdfParser(buf=content, start_offset=5) as hopper_pdf:
+        with PdfParser.PdfParser(buf=content, start_offset=5) as hopper_pdf:
             self.assertEqual(len(hopper_pdf.pages), 1)
             self.assertFalse(hopper_pdf.should_close_buf)
             self.assertFalse(hopper_pdf.should_close_file)
 
         # read a PDF file from an already open file
         with open(pdf_filename, "rb") as f:
-            with pdfParser.PdfParser(f=f) as hopper_pdf:
+            with PdfParser.PdfParser(f=f) as hopper_pdf:
                 self.assertEqual(len(hopper_pdf.pages), 1)
                 self.assertTrue(hopper_pdf.should_close_buf)
                 self.assertFalse(hopper_pdf.should_close_file)
@@ -149,13 +149,13 @@ class TestFilePdf(PillowTestCase):
 
     def test_pdf_append(self):
         # make a PDF file
-        pdf_filename = self.helper_save_as_pdf("RGB", producer="pdfParser")
+        pdf_filename = self.helper_save_as_pdf("RGB", producer="PdfParser")
 
         # open it, check pages and info
-        with pdfParser.PdfParser(pdf_filename, mode="r+b") as pdf:
+        with PdfParser.PdfParser(pdf_filename, mode="r+b") as pdf:
             self.assertEqual(len(pdf.pages), 1)
             self.assertEqual(len(pdf.info), 1)
-            self.assertEqual(pdf.info.Producer, "pdfParser")
+            self.assertEqual(pdf.info.Producer, "PdfParser")
 
             # append some info
             pdf.info.Title = "abc"
@@ -167,7 +167,7 @@ class TestFilePdf(PillowTestCase):
             pdf.write_xref_and_trailer()
 
         # open it again, check pages and info again
-        with pdfParser.PdfParser(pdf_filename) as pdf:
+        with PdfParser.PdfParser(pdf_filename) as pdf:
             self.assertEqual(len(pdf.pages), 1)
             self.assertEqual(len(pdf.info), 6)
             self.assertEqual(pdf.info.Title, "abc")
@@ -178,12 +178,12 @@ class TestFilePdf(PillowTestCase):
         mode_CMYK.save(pdf_filename, append=True, save_all=True, append_images=[mode_P])
 
         # open the PDF again, check pages and info again
-        with pdfParser.PdfParser(pdf_filename) as pdf:
+        with PdfParser.PdfParser(pdf_filename) as pdf:
             self.assertEqual(len(pdf.pages), 3)
             self.assertEqual(len(pdf.info), 6)
-            self.assertEqual(pdfParser.decode_text(pdf.info[b"Title"]), "abc")
+            self.assertEqual(PdfParser.decode_text(pdf.info[b"Title"]), "abc")
             self.assertEqual(pdf.info.Title, "abc")
-            self.assertEqual(pdf.info.Producer, "pdfParser")
+            self.assertEqual(pdf.info.Producer, "PdfParser")
             self.assertEqual(pdf.info.Keywords, "qw)e\\r(ty")
             self.assertEqual(pdf.info.Subject, u"ghi\uABCD")
 
@@ -192,7 +192,7 @@ class TestFilePdf(PillowTestCase):
         pdf_filename = self.helper_save_as_pdf("RGB", title="title", author="author", subject="subject", keywords="keywords", creator="creator", producer="producer")
 
         # open it, check pages and info
-        with pdfParser.PdfParser(pdf_filename) as pdf:
+        with PdfParser.PdfParser(pdf_filename) as pdf:
             self.assertEqual(len(pdf.info), 6)
             self.assertEqual(pdf.info.Title, "title")
             self.assertEqual(pdf.info.Author, "author")

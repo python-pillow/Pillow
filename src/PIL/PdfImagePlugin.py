@@ -20,7 +20,7 @@
 # Image plugin for PDF images (output only).
 ##
 
-from . import Image, ImageFile, ImageSequence, pdfParser
+from . import Image, ImageFile, ImageSequence, PdfParser
 import io
 
 __version__ = "0.5"
@@ -55,9 +55,9 @@ def _save(im, fp, filename, save_all=False):
     producer = im.encoderinfo.get("producer", None)
 
     if is_appending:
-        existing_pdf = pdfParser.PdfParser(f=fp, filename=filename, mode="r+b")
+        existing_pdf = PdfParser.PdfParser(f=fp, filename=filename, mode="r+b")
     else:
-        existing_pdf = pdfParser.PdfParser(f=fp, filename=filename, mode="w+b")
+        existing_pdf = PdfParser.PdfParser(f=fp, filename=filename, mode="w+b")
 
     if title:
         existing_pdf.info.Title = title
@@ -123,26 +123,26 @@ def _save(im, fp, filename, save_all=False):
 
             if im.mode == "1":
                 filter = "ASCIIHexDecode"
-                colorspace = pdfParser.PdfName("DeviceGray")
+                colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
                 bits = 1
             elif im.mode == "L":
                 filter = "DCTDecode"
                 # params = "<< /Predictor 15 /Columns %d >>" % (width-2)
-                colorspace = pdfParser.PdfName("DeviceGray")
+                colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
             elif im.mode == "P":
                 filter = "ASCIIHexDecode"
                 palette = im.im.getpalette("RGB")
-                colorspace = [pdfParser.PdfName("Indexed"), pdfParser.PdfName("DeviceRGB"), 255, pdfParser.PdfBinary(palette)]
+                colorspace = [PdfParser.PdfName("Indexed"), PdfParser.PdfName("DeviceRGB"), 255, PdfParser.PdfBinary(palette)]
                 procset = "ImageI"  # indexed color
             elif im.mode == "RGB":
                 filter = "DCTDecode"
-                colorspace = pdfParser.PdfName("DeviceRGB")
+                colorspace = PdfParser.PdfName("DeviceRGB")
                 procset = "ImageC"  # color images
             elif im.mode == "CMYK":
                 filter = "DCTDecode"
-                colorspace = pdfParser.PdfName("DeviceCMYK")
+                colorspace = PdfParser.PdfName("DeviceCMYK")
                 procset = "ImageC"  # color images
             else:
                 raise ValueError("cannot save mode %s" % im.mode)
@@ -175,11 +175,11 @@ def _save(im, fp, filename, save_all=False):
             width, height = im.size
 
             existing_pdf.write_obj(image_refs[pageNumber], stream=op.getvalue(),
-                Type=pdfParser.PdfName("XObject"),
-                Subtype=pdfParser.PdfName("Image"),
+                Type=PdfParser.PdfName("XObject"),
+                Subtype=PdfParser.PdfName("Image"),
                 Width=width,  # * 72.0 / resolution,
                 Height=height,  # * 72.0 / resolution,
-                Filter=pdfParser.PdfName(filter),
+                Filter=PdfParser.PdfName(filter),
                 BitsPerComponent=bits,
                 DecodeParams=params,
                 ColorSpace=colorspace)
@@ -188,9 +188,9 @@ def _save(im, fp, filename, save_all=False):
             # page
 
             existing_pdf.write_page(page_refs[pageNumber],
-                Resources=pdfParser.PdfDict(
-                    ProcSet=[pdfParser.PdfName("PDF"), pdfParser.PdfName(procset)],
-                    XObject=pdfParser.PdfDict(image=image_refs[pageNumber])),
+                Resources=PdfParser.PdfDict(
+                    ProcSet=[PdfParser.PdfName("PDF"), PdfParser.PdfName(procset)],
+                    XObject=PdfParser.PdfDict(image=image_refs[pageNumber])),
                 MediaBox=[0, 0, int(width * 72.0 / resolution), int(height * 72.0 / resolution)],
                 Contents=contents_refs[pageNumber]
                 )
@@ -198,7 +198,7 @@ def _save(im, fp, filename, save_all=False):
             #
             # page contents
 
-            page_contents = pdfParser.make_bytes(
+            page_contents = PdfParser.make_bytes(
                 "q %d 0 0 %d 0 0 cm /image Do Q\n" % (
                     int(width * 72.0 / resolution),
                     int(height * 72.0 / resolution)))
