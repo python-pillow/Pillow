@@ -1,20 +1,19 @@
 import codecs
 import collections
-import io
 import mmap
 import os
 import re
-import sys
 import zlib
 
 try:
-    from UserDict import UserDict
+    from UserDict import UserDict  # Python 2.x
 except ImportError:
-    UserDict = collections.UserDict
+    UserDict = collections.UserDict  # Python 3.x
 
 
 if str == bytes:  # Python 2.x
-    make_bytes = lambda s: s  # pragma: no cover
+    def make_bytes(s):  # pragma: no cover
+        return s        # pragma: no cover
 else:  # Python 3.x
     def make_bytes(s):
         return s.encode("us-ascii")
@@ -68,6 +67,8 @@ PDFDocEncoding = {
     0x9E: u"\u017E",
     0xA0: u"\u20AC",
     }
+
+
 def decode_text(b):
     if b[:len(codecs.BOM_UTF16_BE)] == codecs.BOM_UTF16_BE:
         return b[len(codecs.BOM_UTF16_BE):].decode("utf_16_be")
@@ -181,7 +182,7 @@ class XrefTable:
         return startxref
 
 
-class PdfName():
+class PdfName:
     def __init__(self, name):
         if isinstance(name, PdfName):
             self.name = name.name
@@ -203,7 +204,8 @@ class PdfName():
     def from_pdf_stream(klass, data):
         return klass(PdfParser.interpret_name(data))
 
-    allowed_chars = set(range(33,127)) - set((ord(c) for c in "#%/()<>[]{}"))
+    allowed_chars = set(range(33,127)) - set(ord(c) for c in "#%/()<>[]{}")
+
     def __bytes__(self):
         if str == bytes:  # Python 2.x
             result = bytearray(b"/")
@@ -495,16 +497,13 @@ class PdfParser:
             self.info = PdfDict()
         else:
             self.info = PdfDict(self.read_indirect(self.info_ref))
-        #print(repr(self.root))
         check_format_condition(b"Type" in self.root, "/Type missing in Root")
         check_format_condition(self.root[b"Type"] == b"Catalog", "/Type in Root is not /Catalog")
         check_format_condition(b"Pages" in self.root, "/Pages missing in Root")
         check_format_condition(isinstance(self.root[b"Pages"], IndirectReference), "/Pages in Root is not an indirect reference")
         self.pages_ref = self.root[b"Pages"]
         self.page_tree_root = self.read_indirect(self.pages_ref)
-        #print("page_tree_root: " + str(self.page_tree_root))
         self.pages = self.linearize_page_tree(self.page_tree_root)
-        #print("pages: " + str(self.pages))
 
     def next_object_id(self, offset=None):
         try:
@@ -524,16 +523,15 @@ class PdfParser:
     whitespace_mandatory = whitespace + b"+"
     newline_only = br"[\r\n]+"
     newline = whitespace_optional + newline_only + whitespace_optional
-    re_trailer_end = re.compile(whitespace_mandatory + br"trailer" + whitespace_optional + br"\<\<(.*\>\>)" + newline \
+    re_trailer_end = re.compile(whitespace_mandatory + br"trailer" + whitespace_optional + br"\<\<(.*\>\>)" + newline
         + br"startxref" + newline + br"([0-9]+)" + newline + br"%%EOF" + whitespace_optional + br"$", re.DOTALL)
-    re_trailer_prev = re.compile(whitespace_optional + br"trailer" + whitespace_optional + br"\<\<(.*?\>\>)" + newline \
+    re_trailer_prev = re.compile(whitespace_optional + br"trailer" + whitespace_optional + br"\<\<(.*?\>\>)" + newline
         + br"startxref" + newline + br"([0-9]+)" + newline + br"%%EOF" + whitespace_optional, re.DOTALL)
+
     def read_trailer(self):
         search_start_offset = len(self.buf) - 16384
         if search_start_offset < self.start_offset:
             search_start_offset = self.start_offset
-        #data_at_end = self.buf[search_start_offset:]
-        #m = self.re_trailer_end.search(data_at_end)
         m = self.re_trailer_end.search(self.buf, search_start_offset)
         check_format_condition(m, "trailer end not found")
         # make sure we found the LAST trailer
@@ -544,12 +542,10 @@ class PdfParser:
         if not m:
             m = last_match
         trailer_data = m.group(1)
-        #print(trailer_data)
         self.last_xref_section_offset = int(m.group(2))
         self.trailer_dict = self.interpret_trailer(trailer_data)
         self.xref_table = XrefTable()
         self.read_xref_table(xref_section_offset=self.last_xref_section_offset)
-        #print(self.xref_table)
         if b"Prev" in self.trailer_dict:
             self.read_prev_trailer(self.trailer_dict[b"Prev"])
 
@@ -558,7 +554,6 @@ class PdfParser:
         m = self.re_trailer_prev.search(self.buf[trailer_offset:trailer_offset+16384])
         check_format_condition(m, "previous trailer not found")
         trailer_data = m.group(1)
-        #print(trailer_data)
         check_format_condition(int(m.group(2)) == xref_section_offset, "xref section offset in previous trailer doesn't match what was expected")
         trailer_dict = self.interpret_trailer(trailer_data)
         if b"Prev" in trailer_dict:
@@ -568,6 +563,7 @@ class PdfParser:
     re_name = re.compile(whitespace_optional + br"/([!-$&'*-.0-;=?-Z\\^-z|~]+)(?=" + delimiter_or_ws + br")")
     re_dict_start = re.compile(whitespace_optional + br"\<\<")
     re_dict_end = re.compile(whitespace_optional + br"\>\>" + whitespace_optional)
+
     @classmethod
     def interpret_trailer(klass, trailer_data):
         trailer = {}
@@ -579,15 +575,14 @@ class PdfParser:
                 check_format_condition(m and m.end() == len(trailer_data), "name not found in trailer, remaining data: " + repr(trailer_data[offset:]))
                 break
             key = klass.interpret_name(m.group(1))
-            #print(key)
             value, offset = klass.get_value(trailer_data, m.end())
-            #print(value)
             trailer[key] = value
         check_format_condition(b"Size" in trailer and isinstance(trailer[b"Size"], int), "/Size not in trailer or not an integer")
         check_format_condition(b"Root" in trailer and isinstance(trailer[b"Root"], IndirectReference), "/Root not in trailer or not an indirect reference")
         return trailer
 
     re_hashes_in_name = re.compile(br"([^#]*)(#([0-9a-fA-F]{2}))?")
+
     @classmethod
     def interpret_name(klass, raw, as_text=False):
         name = b""
@@ -616,10 +611,11 @@ class PdfParser:
     re_comment = re.compile(br"(" + whitespace_optional + br"%[^\r\n]*" + newline + br")*")
     re_stream_start = re.compile(whitespace_optional + br"stream\r?\n")
     re_stream_end = re.compile(whitespace_optional + br"endstream(?=" + delimiter_or_ws + br")")
+
     @classmethod
     def get_value(klass, data, offset, expect_indirect=None, max_nesting=-1):
-        #if max_nesting == 0:
-        #    return None, None
+        if max_nesting == 0:
+            return None, None
         m = klass.re_comment.match(data, offset)
         if m:
             offset = m.end()
@@ -645,26 +641,22 @@ class PdfParser:
         if m:
             offset = m.end()
             result = {}
-            #print("<<")
             m = klass.re_dict_end.match(data, offset)
             while not m:
                 key, offset = klass.get_value(data, offset, max_nesting=max_nesting-1)
-                #print ("key " + str(key))
                 if offset is None:
                     return result, None
                 value, offset = klass.get_value(data, offset, max_nesting=max_nesting-1)
                 result[key] = value
-                #print ("value " + str(value))
                 if offset is None:
                     return result, None
                 m = klass.re_dict_end.match(data, offset)
-            #print(">>")
             offset = m.end()
             m = klass.re_stream_start.match(data, offset)
             if m:
                 try:
                     stream_len = int(result[b"Length"])
-                except:
+                except (TypeError, KeyError, ValueError):
                     raise PdfFormatError("bad or missing Length in stream dict (%r)" % result.get(b"Length", None))
                 stream_data = data[m.end():m.end() + stream_len]
                 m = klass.re_stream_end.match(data, m.end() + stream_len)
@@ -682,7 +674,6 @@ class PdfParser:
             while not m:
                 value, offset = klass.get_value(data, offset, max_nesting=max_nesting-1)
                 result.append(value)
-                #print ("item " + str(value))
                 if offset is None:
                     return result, None
                 m = klass.re_array_end.match(data, offset)
@@ -717,7 +708,6 @@ class PdfParser:
         #return None, offset  # fallback (only for debugging)
         raise PdfFormatError("unrecognized object: " + repr(data[offset:offset+32]))
 
-
     re_lit_str_token = re.compile(br"(\\[nrtbf()\\])|(\\[0-9]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))")
     escaped_chars = {
         b"n": b"\n",
@@ -737,6 +727,7 @@ class PdfParser:
         ord(b")"): b")",
         ord(b"\\"): b"\\",
         }
+
     @classmethod
     def get_literal_string(klass, data, offset):
         nesting_depth = 0
@@ -746,7 +737,6 @@ class PdfParser:
             if m.group(1):
                 result.extend(klass.escaped_chars[m.group(1)[1]])
             elif m.group(2):
-                #result.append(eval(m.group(1)))
                 result.append(int(m.group(2)[1:], 8))
             elif m.group(3):
                 pass
@@ -763,10 +753,10 @@ class PdfParser:
             offset = m.end()
         raise PdfFormatError("unfinished literal string")
 
-
     re_xref_section_start = re.compile(whitespace_optional + br"xref" + newline)
     re_xref_subsection_start = re.compile(whitespace_optional + br"([0-9]+)" + whitespace_mandatory + br"([0-9]+)" + whitespace_optional + newline_only)
     re_xref_entry = re.compile(br"([0-9]{10}) ([0-9]{5}) ([fn])( \r| \n|\r\n)")
+
     def read_xref_table(self, xref_section_offset):
         subsection_found = False
         m = self.re_xref_section_start.match(self.buf, xref_section_offset + self.start_offset)
@@ -793,12 +783,10 @@ class PdfParser:
                     self.xref_table[i] = new_entry
         return offset
 
-
     def read_indirect(self, ref, max_nesting=-1):
         offset, generation = self.xref_table[ref[0]]
         assert generation == ref[1]
         return self.get_value(self.buf, offset + self.start_offset, expect_indirect=IndirectReference(*ref), max_nesting=max_nesting)[0]
-
 
     def linearize_page_tree(self, node=None):
         if node is None:
@@ -806,7 +794,7 @@ class PdfParser:
         check_format_condition(node[b"Type"] == b"Pages", "/Type of page tree node is not /Pages")
         pages = []
         for kid in node[b"Kids"]:
-            kid_object = self.read_indirect(kid, max_nesting=3)
+            kid_object = self.read_indirect(kid)
             if kid_object[b"Type"] == b"Page":
                 pages.append(kid)
             else:

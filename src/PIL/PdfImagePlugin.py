@@ -21,7 +21,6 @@
 ##
 
 from . import Image, ImageFile, ImageSequence, pdfParser
-from ._binary import i8
 import io
 
 __version__ = "0.5"

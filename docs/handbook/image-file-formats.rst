@@ -616,7 +616,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images. Note however, that for
     correct results, all the appended images should have the same
-    encoderinfo and encoderconfig properties.
+    ``encoderinfo`` and ``encoderconfig`` properties.
 
     .. versionadded:: 4.2.0
 
@@ -973,7 +973,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 **append**
     Set to True to append pages to an existing PDF file. If the file doesn't
-    exist, an IOError will be raised.
+    exist, an :py:exc:`IOError` will be raised.
 
     .. versionadded:: 5.1.0
 

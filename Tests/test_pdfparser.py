@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL.pdfParser import *
+from PIL.pdfParser import IndirectObjectDef, IndirectReference, PdfBinary, PdfDict, PdfFormatError, PdfName, PdfParser, PdfStream, decode_text, encode_text, pdf_repr
 
 
 class TestPdfParser(PillowTestCase):
@@ -12,14 +12,14 @@ class TestPdfParser(PillowTestCase):
         self.assertEqual(decode_text(b"\x1B a \x1C"), u"\u02D9 a \u02DD")
 
     def test_indirect_refs(self):
-        self.assertEqual(IndirectReference(1,2), IndirectReference(1,2))
-        self.assertNotEqual(IndirectReference(1,2), IndirectReference(1,3))
-        self.assertNotEqual(IndirectReference(1,2), IndirectObjectDef(1,2))
-        self.assertNotEqual(IndirectReference(1,2), (1,2))
-        self.assertEqual(IndirectObjectDef(1,2), IndirectObjectDef(1,2))
-        self.assertNotEqual(IndirectObjectDef(1,2), IndirectObjectDef(1,3))
-        self.assertNotEqual(IndirectObjectDef(1,2), IndirectReference(1,2))
-        self.assertNotEqual(IndirectObjectDef(1,2), (1,2))
+        self.assertEqual(IndirectReference(1, 2), IndirectReference(1, 2))
+        self.assertNotEqual(IndirectReference(1, 2), IndirectReference(1, 3))
+        self.assertNotEqual(IndirectReference(1, 2), IndirectObjectDef(1, 2))
+        self.assertNotEqual(IndirectReference(1, 2), (1, 2))
+        self.assertEqual(IndirectObjectDef(1, 2), IndirectObjectDef(1, 2))
+        self.assertNotEqual(IndirectObjectDef(1, 2), IndirectObjectDef(1, 3))
+        self.assertNotEqual(IndirectObjectDef(1, 2), IndirectReference(1, 2))
+        self.assertNotEqual(IndirectObjectDef(1, 2), (1, 2))
 
     def test_parsing(self):
         self.assertEqual(PdfParser.interpret_name(b"Name#23Hash"), b"Name#Hash")
@@ -64,18 +64,18 @@ class TestPdfParser(PillowTestCase):
         self.assertEqual(s.decode(), b"abcde")
 
     def test_pdf_repr(self):
-        self.assertEqual(bytes(IndirectReference(1,2)), b"1 2 R")
-        self.assertEqual(bytes(IndirectObjectDef(*IndirectReference(1,2))), b"1 2 obj")
+        self.assertEqual(bytes(IndirectReference(1, 2)), b"1 2 R")
+        self.assertEqual(bytes(IndirectObjectDef(*IndirectReference(1, 2))), b"1 2 obj")
         self.assertEqual(bytes(PdfName(b"Name#Hash")), b"/Name#23Hash")
         self.assertEqual(bytes(PdfName("Name#Hash")), b"/Name#23Hash")
-        self.assertEqual(bytes(PdfDict({b"Name": IndirectReference(1,2)})), b"<<\n/Name 1 2 R\n>>")
-        self.assertEqual(bytes(PdfDict({"Name": IndirectReference(1,2)})), b"<<\n/Name 1 2 R\n>>")
-        self.assertEqual(pdf_repr(IndirectReference(1,2)), b"1 2 R")
-        self.assertEqual(pdf_repr(IndirectObjectDef(*IndirectReference(1,2))), b"1 2 obj")
+        self.assertEqual(bytes(PdfDict({b"Name": IndirectReference(1, 2)})), b"<<\n/Name 1 2 R\n>>")
+        self.assertEqual(bytes(PdfDict({"Name": IndirectReference(1, 2)})), b"<<\n/Name 1 2 R\n>>")
+        self.assertEqual(pdf_repr(IndirectReference(1, 2)), b"1 2 R")
+        self.assertEqual(pdf_repr(IndirectObjectDef(*IndirectReference(1, 2))), b"1 2 obj")
         self.assertEqual(pdf_repr(PdfName(b"Name#Hash")), b"/Name#23Hash")
         self.assertEqual(pdf_repr(PdfName("Name#Hash")), b"/Name#23Hash")
-        self.assertEqual(pdf_repr(PdfDict({b"Name": IndirectReference(1,2)})), b"<<\n/Name 1 2 R\n>>")
-        self.assertEqual(pdf_repr(PdfDict({"Name": IndirectReference(1,2)})), b"<<\n/Name 1 2 R\n>>")
+        self.assertEqual(pdf_repr(PdfDict({b"Name": IndirectReference(1, 2)})), b"<<\n/Name 1 2 R\n>>")
+        self.assertEqual(pdf_repr(PdfDict({"Name": IndirectReference(1, 2)})), b"<<\n/Name 1 2 R\n>>")
         self.assertEqual(pdf_repr(123), b"123")
         self.assertEqual(pdf_repr(True), b"true")
         self.assertEqual(pdf_repr(False), b"false")
