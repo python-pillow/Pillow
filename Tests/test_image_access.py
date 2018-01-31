@@ -250,7 +250,7 @@ class TestCffi(AccessTest):
 
 
 class TestEmbeddable(unittest.TestCase):
-    @unittest.skipIf(sys.platform.startswith('win32') or
+    @unittest.skipIf(not sys.platform.startswith('win32') or
                      sys.version_info[:2] == (3, 4) or
                      on_appveyor(),   # failing on appveyor when run from
                                       # subprocess, not from shell
