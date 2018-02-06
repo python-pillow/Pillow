@@ -265,7 +265,7 @@ class PillowLeakTestCase(PillowTestCase):
 
 # helpers
 
-py3 = (sys.version_info >= (3, 0))
+py3 = sys.version_info.major >= 3
 
 
 def fromstring(data):
