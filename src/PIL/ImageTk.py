@@ -27,7 +27,7 @@
 
 import sys
 
-if sys.version_info[0] > 2:
+if sys.version_info.major > 2:
     import tkinter
 else:
     import Tkinter as tkinter
