@@ -1,7 +1,7 @@
 Quick README
 ------------
 
-For more extensive info, see the Windows build instructions `docs/build.rst`.
+For more extensive info, see the [Windows build instructions](build.rst).
 
 * See https://github.com/python-pillow/Pillow/issues/553#issuecomment-37877416 and https://github.com/matplotlib/matplotlib/issues/1717#issuecomment-13343859
 

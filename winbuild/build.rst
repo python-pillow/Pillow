@@ -1,8 +1,9 @@
 Building Pillow on Windows
 ==========================
 
-.. note:: For most people, the :doc:`installation instructions
-          <installation>` should be sufficient
+.. note:: For most people, the `installation instructions
+          <../docs/installation.rst#windows-installation>`_ should
+          be sufficient.
 
 This page will describe a build setup to build Pillow against the
 supported Python versions in 32 and 64-bit modes, using freely
