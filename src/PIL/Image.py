@@ -1954,7 +1954,7 @@ class Image(object):
         if frame != 0:
             raise EOFError
 
-    def show(self, title=None, command=None):
+    def show(self, title=None):
         """
         Displays this image. This method is mainly intended for
         debugging purposes.
@@ -1971,10 +1971,9 @@ class Image(object):
 
         :param title: Optional title to use for the image window,
            where possible.
-        :param command: command used to show the image
         """
 
-        _show(self, title=title, command=command)
+        _show(self, title=title)
 
     def split(self):
         """
