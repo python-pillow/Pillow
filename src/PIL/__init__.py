@@ -14,11 +14,12 @@
 from . import version
 
 VERSION = '1.1.7'  # PIL Version
-PILLOW_VERSION =  version.__version__
+PILLOW_VERSION = version.__version__
 
 __version__ = PILLOW_VERSION
 
-_plugins = ['BmpImagePlugin',
+_plugins = ['BlpImagePlugin',
+            'BmpImagePlugin',
             'BufrStubImagePlugin',
             'CurImagePlugin',
             'DcxImagePlugin',
