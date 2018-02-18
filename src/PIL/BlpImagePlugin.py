@@ -46,28 +46,29 @@ BLP_ALPHA_ENCODING_DXT3 = 1
 BLP_ALPHA_ENCODING_DXT5 = 7
 
 
+def unpack_565(i):
+    return (
+        ((i >> 11) & 0x1f) << 3,
+        ((i >> 5) & 0x3f) << 2,
+        (i & 0x1f) << 3
+    )
+
+
 def decode_dxt1(data, alpha=False):
     """
     input: one "row" of data (i.e. will produce 4*width pixels)
     """
 
     blocks = len(data) // 8  # number of blocks in row
-    final = (bytearray(), bytearray(), bytearray(), bytearray())
+    ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
     for block in range(blocks):
         # Decode next 8-byte block.
         idx = block * 8
         color0, color1, bits = struct.unpack("<HHI", data[idx:idx + 8])
 
-        # color 0, packed 5-6-5
-        r0 = ((color0 >> 11) & 0x1f) << 3
-        g0 = ((color0 >> 5) & 0x3f) << 2
-        b0 = (color0 & 0x1f) << 3
-
-        # color 1, packed 5-6-5
-        r1 = ((color1 >> 11) & 0x1f) << 3
-        g1 = ((color1 >> 5) & 0x3f) << 2
-        b1 = (color1 & 0x1f) << 3
+        r0, g0, b0 = unpack_565(color0)
+        r1, g1, b1 = unpack_565(color1)
 
         # Decode this block into 4x4 pixels
         # Accumulate the results onto our 4 row accumulators
@@ -77,39 +78,35 @@ def decode_dxt1(data, alpha=False):
 
                 control = bits & 3
                 bits = bits >> 2
+
+                a = 0xFF
                 if control == 0:
-                    final[j].append(r0)
-                    final[j].append(g0)
-                    final[j].append(b0)
+                    r, g, b = r0, g0, b0
                 elif control == 1:
-                    final[j].append(r1)
-                    final[j].append(g1)
-                    final[j].append(b1)
+                    r, g, b = r1, g1, b1
                 elif control == 2:
                     if color0 > color1:
-                        final[j].append((2 * r0 + r1) // 3)
-                        final[j].append((2 * g0 + g1) // 3)
-                        final[j].append((2 * b0 + b1) // 3)
+                        r = (2 * r0 + r1) // 3
+                        g = (2 * g0 + g1) // 3
+                        b = (2 * b0 + b1) // 3
                     else:
-                        final[j].append((r0 + r1) // 2)
-                        final[j].append((g0 + g1) // 2)
-                        final[j].append((b0 + b1) // 2)
+                        r = (r0 + r1) // 2
+                        g = (g0 + g1) // 2
+                        b = (b0 + b1) // 2
                 elif control == 3:
                     if color0 > color1:
-                        final[j].append((2 * r1 + r0) // 3)
-                        final[j].append((2 * g1 + g0) // 3)
-                        final[j].append((2 * b1 + b0) // 3)
+                        r = (2 * r1 + r0) // 3
+                        g = (2 * g1 + g0) // 3
+                        b = (2 * b1 + b0) // 3
                     else:
-                        final[j].append(0)
-                        final[j].append(0)
-                        final[j].append(0)
-                        if alpha:
-                            final[j].append(0)
+                        r, g, b, a = 0, 0, 0, 0
 
                 if alpha:
-                    final[j].append(0xFF)
+                    ret[j].extend([r, g, b, a])
+                else:
+                    ret[j].extend([r, g, b])
 
-    return final
+    return ret
 
 
 def decode_dxt3(data):
@@ -118,7 +115,7 @@ def decode_dxt3(data):
     """
 
     blocks = len(data) // 16  # number of blocks in row
-    final = (bytearray(), bytearray(), bytearray(), bytearray())
+    ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
     for block in range(blocks):
         idx = block * 16
@@ -129,15 +126,8 @@ def decode_dxt3(data):
 
         code, = struct.unpack("<I", block[12:])
 
-        # color 0, packed 5-6-5
-        r0 = ((color0 >> 11) & 0x1f) << 3
-        g0 = ((color0 >> 5) & 0x3f) << 2
-        b0 = (color0 & 0x1f) << 3
-
-        # color 1, packed 5-6-5
-        r1 = ((color1 >> 11) & 0x1f) << 3
-        g1 = ((color1 >> 5) & 0x3f) << 2
-        b1 = (color1 & 0x1f) << 3
+        r0, g0, b0 = unpack_565(color0)
+        r1, g1, b1 = unpack_565(color1)
 
         for j in range(4):
             high = False  # Do we want the higher bits?
@@ -155,27 +145,21 @@ def decode_dxt3(data):
                 color_code = (code >> 2 * (4 * j + i)) & 0x03
 
                 if color_code == 0:
-                    final[j].append(r0)
-                    final[j].append(g0)
-                    final[j].append(b0)
-                    final[j].append(a)
+                    r, g, b = r0, g0, b0
                 elif color_code == 1:
-                    final[j].append(r1)
-                    final[j].append(g1)
-                    final[j].append(b1)
-                    final[j].append(a)
+                    r, g, b = r1, g1, b1
                 elif color_code == 2:
-                    final[j].append((2 * r0 + r1) // 3)
-                    final[j].append((2 * g0 + g1) // 3)
-                    final[j].append((2 * b0 + b1) // 3)
-                    final[j].append(a)
+                    r = (2 * r0 + r1) // 3
+                    g = (2 * g0 + g1) // 3
+                    b = (2 * b0 + b1) // 3
                 elif color_code == 3:
-                    final[j].append((2 * r1 + r0) // 3)
-                    final[j].append((2 * g1 + g0) // 3)
-                    final[j].append((2 * b1 + b0) // 3)
-                    final[j].append(a)
+                    r = (2 * r1 + r0) // 3
+                    g = (2 * g1 + g0) // 3
+                    b = (2 * b1 + b0) // 3
 
-    return final
+                ret[j].extend([r, g, b, a])
+
+    return ret
 
 
 def decode_dxt5(data):
@@ -184,7 +168,7 @@ def decode_dxt5(data):
     """
 
     blocks = len(data) // 16  # number of blocks in row
-    final = (bytearray(), bytearray(), bytearray(), bytearray())
+    ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
     for block in range(blocks):
         idx = block * 16
@@ -202,15 +186,8 @@ def decode_dxt5(data):
 
         code, = struct.unpack("<I", block[12:])
 
-        # color 0, packed 5-6-5
-        r0 = ((color0 >> 11) & 0x1f) << 3
-        g0 = ((color0 >> 5) & 0x3f) << 2
-        b0 = (color0 & 0x1f) << 3
-
-        # color 1, packed 5-6-5
-        r1 = ((color1 >> 11) & 0x1f) << 3
-        g1 = ((color1 >> 5) & 0x3f) << 2
-        b1 = (color1 & 0x1f) << 3
+        r0, g0, b0 = unpack_565(color0)
+        r1, g1, b1 = unpack_565(color1)
 
         for j in range(4):
             for i in range(4):
@@ -230,38 +207,31 @@ def decode_dxt5(data):
                     a = a1
                 elif a0 > a1:
                     a = ((8 - alphacode) * a0 + (alphacode - 1) * a1) // 7
+                elif alphacode == 6:
+                    a = 0
+                elif alphacode == 7:
+                    a = 255
                 else:
-                    if alphacode == 6:
-                        a = 0
-                    elif alphacode == 7:
-                        a = 255
-                    else:
-                        a = ((6 - alphacode) * a0 + (alphacode - 1) * a1) // 5
+                    a = ((6 - alphacode) * a0 + (alphacode - 1) * a1) // 5
 
                 color_code = (code >> 2 * (4 * j + i)) & 0x03
 
                 if color_code == 0:
-                    final[j].append(r0)
-                    final[j].append(g0)
-                    final[j].append(b0)
-                    final[j].append(a)
+                    r, g, b = r0, g0, b0
                 elif color_code == 1:
-                    final[j].append(r1)
-                    final[j].append(g1)
-                    final[j].append(b1)
-                    final[j].append(a)
+                    r, g, b = r1, g1, b1
                 elif color_code == 2:
-                    final[j].append((2 * r0 + r1) // 3)
-                    final[j].append((2 * g0 + g1) // 3)
-                    final[j].append((2 * b0 + b1) // 3)
-                    final[j].append(a)
+                    r = (2 * r0 + r1) // 3
+                    g = (2 * g0 + g1) // 3
+                    b = (2 * b0 + b1) // 3
                 elif color_code == 3:
-                    final[j].append((2 * r1 + r0) // 3)
-                    final[j].append((2 * g1 + g0) // 3)
-                    final[j].append((2 * b1 + b0) // 3)
-                    final[j].append(a)
+                    r = (2 * r1 + r0) // 3
+                    g = (2 * g1 + g0) // 3
+                    b = (2 * b1 + b0) // 3
 
-    return tuple(final)
+                ret[j].extend([r, g, b, a])
+
+    return ret
 
 
 def getpalette(data):
