@@ -82,6 +82,9 @@ after_test:
 matrix:
   fast_finish: true
 
+cache:
+- '%LOCALAPPDATA%\pip\Cache'
+
 artifacts:
 - path: pillow\dist\*.egg
   name: egg
