@@ -621,7 +621,7 @@ Changelog (Pillow)
 - Doc: Reordered operating systems in Compatibility Matrix #2436
   [radarhere]
 
-- Test: Additional tests for BurfStub, Eps, Container, GribStub, IPTC, Wmf, XVThumb, ImageDraw, ImageMorph ImageShow #2425
+- Test: Additional tests for BufrStub, Eps, Container, GribStub, IPTC, Wmf, XVThumb, ImageDraw, ImageMorph, ImageShow #2425
   [radarhere]
 
 - Health fixes #2437
