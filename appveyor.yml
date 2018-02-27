@@ -109,6 +109,7 @@ deploy:
   folder: win/$(APPVEYOR_BUILD_NUMBER)/
   artifact: /.*egg|wheel/
   on:
+    APPVEYOR_REPO_NAME: python-pillow/Pillow
     branch: master
     deploy: YES
 
