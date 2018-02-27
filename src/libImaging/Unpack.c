@@ -188,7 +188,7 @@ unpack1IR(UINT8* out, const UINT8* in, int pixels)
 static void
 unpack18(UINT8* out, const UINT8* in, int pixels)
 {
-    /* Unpack a '|b1' image, which is a numpy boolean. 
+    /* Unpack a '|b1' image, which is a numpy boolean.
        1 == true, 0==false, in bytes */
 
     int i;
@@ -1334,7 +1334,7 @@ static struct {
     {"RGBA",    "RGBA;16N",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
 #endif
-   
+
 
     /* true colour w. alpha premultiplied */
     {"RGBa",    "RGBa",         32,     copy4},

@@ -143,7 +143,7 @@ TAGS_V2 = {
     342: ("TransferRange", SHORT, 6),
 
     347: ("JPEGTables", UNDEFINED, 1),
-    
+
     # obsolete JPEG tags
     512: ("JPEGProc", SHORT, 1),
     513: ("JPEGInterchangeFormat", LONG, 1),
@@ -161,7 +161,7 @@ TAGS_V2 = {
     532: ("ReferenceBlackWhite", LONG, 0),
 
     700: ('XMP', BYTE, 1),
-    
+
     33432: ("Copyright", ASCII, 1),
     34377: ('PhotoshopInfo', BYTE, 1),
 
@@ -193,7 +193,7 @@ TAGS_V2 = {
 
     50741: ("MakerNoteSafety", SHORT, 1, {"Unsafe": 0, "Safe": 1}),
     50780: ("BestQualityScale", RATIONAL, 1),
-    50838: ("ImageJMetaDataByteCounts", LONG, 0), # Can be more than one 
+    50838: ("ImageJMetaDataByteCounts", LONG, 0), # Can be more than one
     50839: ("ImageJMetaData", UNDEFINED, 1)       # see Issue #2006
 }
 

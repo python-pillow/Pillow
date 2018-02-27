@@ -750,7 +750,7 @@ def _save(im, fp, filename, chunk=putchunk):
         name = b"ICC Profile"
         data = name + b"\0\0" + zlib.compress(icc)
         chunk(fp, b"iCCP", data)
-        
+
         # You must either have sRGB or iCCP.
         # Disallow sRGB chunks when an iCCP-chunk has been emitted.
         chunks.remove(b"sRGB")

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 HAS_UPLOADER = False
 
 if os.environ.get('SHOW_ERRORS', None):
-    # local img.show for errors. 
+    # local img.show for errors.
     HAS_UPLOADER=True
     class test_image_results:
         @classmethod
@@ -119,7 +119,7 @@ class PillowTestCase(unittest.TestCase):
             if mode:
                 img = img.convert(mode)
             self.assert_image_equal(a, img, msg)
-            
+
     def assert_image_similar(self, a, b, epsilon, msg=None):
         epsilon = float(epsilon)
         self.assertEqual(

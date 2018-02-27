@@ -70,7 +70,7 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertAlmostEqual(loaded_double, doubledata)
 
         # check with 2 element ImageJMetaDataByteCounts, issue #2006
-        
+
         info[ImageJMetaDataByteCounts] = (8, len(bindata) - 8)
         img.save(f, tiffinfo=info)
         loaded = Image.open(f)

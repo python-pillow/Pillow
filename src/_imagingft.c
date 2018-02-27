@@ -108,7 +108,7 @@ typedef struct {
     t_raqm_set_par_direction set_par_direction;
     t_raqm_add_font_feature add_font_feature;
     t_raqm_set_freetype_face set_freetype_face;
-    t_raqm_layout layout; 
+    t_raqm_layout layout;
     t_raqm_get_glyphs get_glyphs;
     t_raqm_get_glyphs_01 get_glyphs_01;
     t_raqm_destroy destroy;
@@ -247,7 +247,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         return NULL;
     }
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is"PY_ARG_BYTES_LENGTH"i", 
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is"PY_ARG_BYTES_LENGTH"i",
                                      kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
                                      &size, &index, &encoding, &font_bytes,
@@ -458,7 +458,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
             count = 0;
             goto failed;
         }
-    } else { /* version == 2 */ 
+    } else { /* version == 2 */
         glyphs = (*p_raqm.get_glyphs)(rq, &count);
         if (glyphs == NULL) {
             PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
@@ -654,7 +654,7 @@ font_getsize(FontObject* self, PyObject* args)
         PyMem_Free(glyph_info);
         glyph_info = NULL;
     }
-            
+
     if (face) {
 
         /* left bearing */
