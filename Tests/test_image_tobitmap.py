@@ -6,7 +6,6 @@ class TestImageToBitmap(PillowTestCase):
     def test_sanity(self):
 
         self.assertRaises(ValueError, lambda: hopper().tobitmap())
-        hopper().convert("1").tobitmap()
 
         im1 = hopper().convert("1")
 
