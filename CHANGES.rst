@@ -5,6 +5,18 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Correct reference to Image.new method #3000
+  [radarhere]
+
+- Rearrange ImageFilter classes into alphabetical order #2990
+  [radarhere]
+
+- Test: Remove duplicate line #2983
+  [radarhere]
+
+- Build: Update AppVeyor PyPy version #3003
+  [radarhere]
+
 - Tiff: Open 8 bit Tiffs with 5 or 6 channels, discarding extra channels #2938
   [homm]
 
@@ -17,7 +29,7 @@ Changelog (Pillow)
 - Test: Changed assert statements to unittest calls #2961
   [radarhere]
 
-- Depends: Updated libimagequant to 2.11.7, raqm to 0.4.0, freetype to 2.9 #2967, #2969, #2957
+- Depends: Updated libimagequant to 2.11.9, raqm to 0.5.0, freetype to 2.9 #2997, #3017, #2957
   [radarhere]
 
 - Remove _imaging.crc32 in favor of builtin Python crc32 implementation #2935
