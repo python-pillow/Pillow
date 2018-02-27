@@ -5,7 +5,13 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
-- Correct reference to Image.new method #3000
+- Build: Enable pip cache in AppVeyor build #3009
+  [thijstriemstra]
+
+- Trim trailing whitespace #2985
+  [Metallicow]
+
+- Docs: Correct reference to Image.new method #3000
   [radarhere]
 
 - Rearrange ImageFilter classes into alphabetical order #2990
