@@ -323,6 +323,7 @@ def _save(im, fp, filename):
 
         im_scaled = im.resize((w*2, w*2), Image.LANCZOS)
         im_scaled.save(os.path.join(iconset, prefix+'@2x.png'))
+        last_w = w*2
         last_im = im_scaled
 
     # iconutil -c icns -o {} {}
