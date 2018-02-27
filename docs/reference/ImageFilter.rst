@@ -33,9 +33,9 @@ image enhancement filters:
 * **EDGE_ENHANCE_MORE**
 * **EMBOSS**
 * **FIND_EDGES**
+* **SHARPEN**
 * **SMOOTH**
 * **SMOOTH_MORE**
-* **SHARPEN**
 
 .. autoclass:: PIL.ImageFilter.GaussianBlur
 .. autoclass:: PIL.ImageFilter.BoxBlur

@@ -270,6 +270,15 @@ class FIND_EDGES(BuiltinFilter):
         )
 
 
+class SHARPEN(BuiltinFilter):
+    name = "Sharpen"
+    filterargs = (3, 3), 16, 0, (
+        -2, -2, -2,
+        -2, 32, -2,
+        -2, -2, -2
+        )
+
+
 class SMOOTH(BuiltinFilter):
     name = "Smooth"
     filterargs = (3, 3), 13, 0, (
@@ -287,13 +296,4 @@ class SMOOTH_MORE(BuiltinFilter):
         1,  5, 44,  5,  1,
         1,  5,  5,  5,  1,
         1,  1,  1,  1,  1
-        )
-
-
-class SHARPEN(BuiltinFilter):
-    name = "Sharpen"
-    filterargs = (3, 3), 16, 0, (
-        -2, -2, -2,
-        -2, 32, -2,
-        -2, -2, -2
         )
