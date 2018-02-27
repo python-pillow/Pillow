@@ -44,7 +44,7 @@ Colors
 ^^^^^^
 
 To specify colors, you can use numbers or tuples just as you would use with
-:py:meth:`PIL.Image.Image.new` or :py:meth:`PIL.Image.Image.putpixel`. For “1”,
+:py:meth:`PIL.Image.new` or :py:meth:`PIL.Image.Image.putpixel`. For “1”,
 “L”, and “I” images, use integers. For “RGB” images, use a 3-tuple containing
 integer values. For “F” images, use integer or floating point values.
 

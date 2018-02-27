@@ -6,7 +6,7 @@
 
 The :py:mod:`ImageColor` module contains color tables and converters from
 CSS3-style color specifiers to RGB tuples. This module is used by
-:py:meth:`PIL.Image.Image.new` and the :py:mod:`~PIL.ImageDraw` module, among
+:py:meth:`PIL.Image.new` and the :py:mod:`~PIL.ImageDraw` module, among
 others.
 
 .. _color-names:
