@@ -202,44 +202,39 @@ class ImageFile(Image.Image):
             for decoder_name, extents, offset, args in self.tile:
                 decoder = Image._getdecoder(self.mode, decoder_name,
                                             args, self.decoderconfig)
-                seek(offset)
-                decoder.setimage(self.im, extents)
-                if decoder.pulls_fd:
-                    decoder.setfd(self.fp)
-                    status, err_code = decoder.decode(b"")
-                else:
-                    b = prefix
-                    while True:
-                        try:
-                            s = read(self.decodermaxblock)
-                        except (IndexError, struct.error):  # truncated png/gif
-                            if LOAD_TRUNCATED_IMAGES:
+                try:
+                    seek(offset)
+                    decoder.setimage(self.im, extents)
+                    if decoder.pulls_fd:
+                        decoder.setfd(self.fp)
+                        status, err_code = decoder.decode(b"")
+                    else:
+                        b = prefix
+                        while True:
+                            try:
+                                s = read(self.decodermaxblock)
+                            except (IndexError, struct.error):  # truncated png/gif
+                                if LOAD_TRUNCATED_IMAGES:
+                                    break
+                                else:
+                                    raise IOError("image file is truncated")
+
+                            if not s:  # truncated jpeg
+                                if LOAD_TRUNCATED_IMAGES:
+                                    s = b"\xFF\xD9"  # Pretend file is finished adding EOI marker
+                                else:
+                                    self.tile = []
+                                    raise IOError("image file is truncated "
+                                                  "(%d bytes not processed)" % len(b))
+
+                            b = b + s
+                            n, err_code = decoder.decode(b)
+                            if n < 0:
                                 break
-                            else:
-                                raise IOError("image file is truncated")
-
-                        if not s:  # truncated jpeg
-                            self.tile = []
-
-                            # JpegDecode needs to clean things up here either way
-                            # If we don't destroy the decompressor,
-                            # we have a memory leak.
-                            decoder.cleanup()
-
-                            if LOAD_TRUNCATED_IMAGES:
-                                break
-                            else:
-                                raise IOError("image file is truncated "
-                                              "(%d bytes not processed)" % len(b))
-
-                        b = b + s
-                        n, err_code = decoder.decode(b)
-                        if n < 0:
-                            break
-                        b = b[n:]
-
-                # Need to cleanup here to prevent leaks in PyPy
-                decoder.cleanup()
+                            b = b[n:]
+                finally:
+                    # Need to cleanup here to prevent leaks
+                    decoder.cleanup()
 
         self.tile = []
         self.readonly = readonly
