@@ -15,8 +15,6 @@
 #
 
 
-import string
-
 from . import Image, ImageFile
 
 __version__ = "0.2"
