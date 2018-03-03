@@ -15,7 +15,7 @@ def check_module(feature):
     module = modules[feature]
 
     try:
-        imported_module = __import__(module)
+        __import__(module)
         return True
     except ImportError:
         return False
