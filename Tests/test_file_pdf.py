@@ -220,6 +220,7 @@ class TestFilePdf(PillowTestCase):
             self.assertEqual(pdf.info.Keywords, "keywords")
             self.assertEqual(pdf.info.Creator, "creator")
             self.assertEqual(pdf.info.Producer, "producer")
+            self.check_pdf_pages_consistency(pdf)
 
     def test_pdf_append_to_bytesio(self):
         im = hopper("RGB")
