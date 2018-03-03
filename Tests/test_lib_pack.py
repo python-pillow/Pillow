@@ -226,7 +226,6 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("L", "L;16", b'\x00\xc6\x00\xaf', 198, 175)
         self.assert_unpack("L", "L;16B", b'\xc6\x00\xaf\x00', 198, 175)
 
-
     def test_LA(self):
         self.assert_unpack("LA", "LA", 2, (1, 2), (3, 4), (5, 6))
         self.assert_unpack("LA", "LA;L", 2, (1, 4), (2, 5), (3, 6))

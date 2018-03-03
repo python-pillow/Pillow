@@ -1286,7 +1286,6 @@ class TiffImageFile(ImageFile.ImageFile):
                 if ';16L' in rawmode:
                     rawmode = rawmode.replace(';16L', ';16N')
 
-
                 # Offset in the tile tuple is 0, we go from 0,0 to
                 # w,h, and we only do this once -- eds
                 a = (rawmode, self._compression, False)

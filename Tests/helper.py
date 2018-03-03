@@ -18,6 +18,7 @@ HAS_UPLOADER = False
 if os.environ.get('SHOW_ERRORS', None):
     # local img.show for errors.
     HAS_UPLOADER=True
+
     class test_image_results:
         @classmethod
         def upload(self, a, b):
@@ -29,7 +30,6 @@ else:
         HAS_UPLOADER = True
     except ImportError:
         pass
-
 
 
 def convert_to_comparable(a, b):

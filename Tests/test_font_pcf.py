@@ -72,7 +72,6 @@ class TestFontPcf(PillowTestCase):
         with Image.open('Tests/images/high_ascii_chars.png') as target:
             self.assert_image_similar(im, target, 0)
 
-
     def test_high_characters(self):
         message = "".join(chr(i+1) for i in range(140, 232))
         self._test_high_characters(message)

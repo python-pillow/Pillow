@@ -292,6 +292,7 @@ class GifImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # Write GIF files
 
+
 RAWMODE = {
     "1": "L",
     "L": "L",

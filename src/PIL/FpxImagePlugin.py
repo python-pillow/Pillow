@@ -223,6 +223,7 @@ class FpxImageFile(ImageFile.ImageFile):
 #
 # --------------------------------------------------------------------
 
+
 Image.register_open(FpxImageFile.format, FpxImageFile, _accept)
 
 Image.register_extension(FpxImageFile.format, ".fpx")

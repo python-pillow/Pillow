@@ -266,6 +266,7 @@ def _save(im, fp, filename):
 # ------------------------------------------------------------
 # Registry stuff
 
+
 Image.register_open(Jpeg2KImageFile.format, Jpeg2KImageFile, _accept)
 Image.register_save(Jpeg2KImageFile.format, _save)
 

@@ -3,6 +3,7 @@ from helper import unittest, PillowLeakTestCase
 import sys
 from PIL import Image, features, ImageDraw, ImageFont
 
+
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
 class TestTTypeFontLeak(PillowLeakTestCase):
     # fails at iteration 3 in master
@@ -19,6 +20,7 @@ class TestTTypeFontLeak(PillowLeakTestCase):
     def test_leak(self):
         ttype = ImageFont.truetype('Tests/fonts/FreeMono.ttf', 20)
         self._test_font(ttype)
+
 
 class TestDefaultFontLeak(TestTTypeFontLeak):
     # fails at iteration 37 in master

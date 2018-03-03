@@ -14,6 +14,7 @@ def bench(mode):
         get(xy)
     print(mode, timeit.default_timer() - t0, "us")
 
+
 bench("L")
 bench("I")
 bench("I;16")

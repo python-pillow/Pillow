@@ -278,7 +278,6 @@ class TestFileGif(PillowTestCase):
                 img.seek(img.tell() + 1)
                 self.assertEqual(img.disposal_method, method)
 
-
         # check per frame disposal
         im_list[0].save(
             out,
@@ -585,6 +584,7 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.tile[0][3][0], 11) # LZW bits
         # codec error prepatch
         im.load()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -267,5 +267,6 @@ class TestImageTransformPerspective(TestImageTransformAffine):
     # Repeat all tests for AFFINE transformations with PERSPECTIVE
     transform = Image.PERSPECTIVE
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -51,6 +51,7 @@ def isInt(f):
     except (ValueError, OverflowError):
         return 0
 
+
 iforms = [1, 3, -11, -12, -21, -22]
 
 
@@ -278,6 +279,7 @@ def _save_spider(im, fp, filename):
     _save(im, fp, filename)
 
 # --------------------------------------------------------------------
+
 
 Image.register_open(SpiderImageFile.format, SpiderImageFile)
 Image.register_save(SpiderImageFile.format, _save_spider)

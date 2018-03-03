@@ -398,7 +398,6 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.tag_v2[X_RESOLUTION], 72)
         self.assertEqual(im.tag_v2[Y_RESOLUTION], 36)
 
-
     def test_roundtrip_tiff_uint16(self):
         # Test an image of all '0' values
         pixel_value = 0x1234
@@ -447,7 +446,6 @@ class TestFileTiff(PillowTestCase):
         reread = Image.open(mp)
         self.assertEqual(reread.n_frames, 3)
 
-
     def test_saving_icc_profile(self):
         # Tests saving TIFF with icc_profile set.
         # At the time of writing this will only work for non-compressed tiffs
@@ -488,6 +486,7 @@ class TestFileTiff(PillowTestCase):
             self.assertFalse(fp.closed)
             im.load()
             self.assertFalse(fp.closed)
+
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileTiffW32(PillowTestCase):

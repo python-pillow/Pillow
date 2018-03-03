@@ -78,7 +78,6 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
         self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
 
-
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
 

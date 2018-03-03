@@ -36,8 +36,10 @@ logger = logging.getLogger(__name__)
 class DecompressionBombWarning(RuntimeWarning):
     pass
 
+
 class DecompressionBombError(Exception):
     pass
+
 
 class _imaging_not_installed(object):
     # module placeholder
@@ -2745,6 +2747,7 @@ def register_extension(id, extension):
     """
     EXTENSION[extension.lower()] = id.upper()
 
+
 def register_extensions(id, extensions):
     """
     Registers image extensions.  This function should not be
@@ -2755,6 +2758,7 @@ def register_extensions(id, extensions):
     """
     for extension in extensions:
         register_extension(id, extension)
+
 
 def registered_extensions():
     """
@@ -2885,6 +2889,7 @@ def _apply_env_variables(env=None):
             setter(var)
         except ValueError as e:
             warnings.warn("{0}: {1}".format(var_name, e))
+
 
 _apply_env_variables()
 atexit.register(core.clear_cache)

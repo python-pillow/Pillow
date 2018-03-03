@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw, ImageFont, features
 FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans.ttf"
 
+
 @unittest.skipUnless(features.check('raqm'), "Raqm Library is not installed.")
 class TestImagecomplextext(PillowTestCase):
 
@@ -15,7 +16,6 @@ class TestImagecomplextext(PillowTestCase):
         im = Image.new(mode='RGB', size=(300, 100))
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), 'TEST', font=ttf, fill=500, direction='ltr')
-
 
     def test_complex_text(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -126,6 +126,7 @@ class TestImagecomplextext(PillowTestCase):
         target_img = Image.open(target)
 
         self.assert_image_similar(im, target_img, .5)
+
 
 if __name__ == '__main__':
     unittest.main()

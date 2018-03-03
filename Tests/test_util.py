@@ -75,5 +75,6 @@ class TestUtil(PillowTestCase):
         # Assert
         self.assertRaises(ValueError, lambda: thing.some_attr)
 
+
 if __name__ == '__main__':
     unittest.main()

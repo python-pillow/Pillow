@@ -32,6 +32,7 @@ def check(size, i0):
         h[i] = m
     return h
 
+
 min_start = 0
 
 # 1) find the smallest table size with no collisions

@@ -153,6 +153,7 @@ class PSDraw(object):
 # Copyright (c) Fredrik Lundh 1994.
 #
 
+
 EDROFF_PS = """\
 /S { show } bind def
 /P { moveto show } bind def

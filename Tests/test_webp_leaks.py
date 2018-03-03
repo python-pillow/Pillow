@@ -4,6 +4,7 @@ from io import BytesIO
 
 test_file = "Tests/images/hopper.webp"
 
+
 @unittest.skipUnless(features.check('webp'), "WebP is not installed")
 class TestWebPLeaks(PillowLeakTestCase):
 

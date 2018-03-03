@@ -97,5 +97,6 @@ class TestImageOpsUsm(PillowTestCase):
         self.assertTrue(236 <= gp(8, 6)[2] <= 239)
         self.assertTrue(236 <= gp(8, 7)[1] <= 239)
 
+
 if __name__ == '__main__':
     unittest.main()

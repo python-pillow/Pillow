@@ -92,5 +92,6 @@ class TestPickle(PillowTestCase):
             self.helper_pickle_string(cPickle, protocol, mode="L")
             self.helper_pickle_file(cPickle, protocol, mode="L")
 
+
 if __name__ == '__main__':
     unittest.main()

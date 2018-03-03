@@ -7,6 +7,7 @@ def version(module, version):
     if v:
         print(version, v)
 
+
 version(Image, "jpeglib")
 version(Image, "zlib")
 

@@ -59,5 +59,6 @@ class Test_IFDRational(PillowTestCase):
             self.assertEqual(float(IFDRational(301, 1)),
                              float(reloaded.tag_v2[282]))
 
+
 if __name__ == '__main__':
     unittest.main()

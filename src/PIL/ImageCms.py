@@ -554,6 +554,7 @@ def buildProofTransform(
     except (IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
+
 buildTransformFromOpenProfiles = buildTransform
 buildProofTransformFromOpenProfiles = buildProofTransform
 

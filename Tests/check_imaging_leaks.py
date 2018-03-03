@@ -40,5 +40,6 @@ class TestImagingLeaks(PillowTestCase):
                         # Pass a new list at each iteration.
                         lambda: im.point(range(256)))
 
+
 if __name__ == '__main__':
     unittest.main()

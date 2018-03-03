@@ -7,5 +7,6 @@ class TestImageToBytes(PillowTestCase):
         data = hopper().tobytes()
         self.assertIsInstance(data, bytes)
 
+
 if __name__ == '__main__':
     unittest.main()

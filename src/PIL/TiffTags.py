@@ -355,6 +355,7 @@ def _populate():
 
         TAGS_V2[k] = TagInfo(k, *v)
 
+
 _populate()
 ##
 # Map type numbers to type names -- defined in ImageFileDirectory.

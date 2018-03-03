@@ -418,6 +418,7 @@ def _save(im, fp, filename, eps=1):
 #
 # --------------------------------------------------------------------
 
+
 Image.register_open(EpsImageFile.format, EpsImageFile, _accept)
 
 Image.register_save(EpsImageFile.format, _save)

@@ -44,6 +44,7 @@ class TestDecompressionBomb(PillowTestCase):
         self.assertRaises(Image.DecompressionBombError,
                           lambda: Image.open(TEST_FILE))
 
+
 class TestDecompressionCrop(PillowTestCase):
 
     def setUp(self):

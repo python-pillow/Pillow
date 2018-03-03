@@ -85,6 +85,7 @@ def _safe_zlib_decompress(s):
         raise ValueError("Decompressed Data Too Large")
     return plaintext
 
+
 def _crc32(data, seed=0):
     return zlib.crc32(data, seed) & 0xffffffff
 

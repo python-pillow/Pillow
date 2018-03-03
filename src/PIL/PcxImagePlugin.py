@@ -110,6 +110,7 @@ class PcxImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # save PCX files
 
+
 SAVE = {
     # mode: (version, bits, planes, raw mode)
     "1": (2, 1, 1, "1"),
@@ -170,6 +171,7 @@ def _save(im, fp, filename):
 
 # --------------------------------------------------------------------
 # registry
+
 
 Image.register_open(PcxImageFile.format, PcxImageFile, _accept)
 Image.register_save(PcxImageFile.format, _save)

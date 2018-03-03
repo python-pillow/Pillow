@@ -90,6 +90,7 @@ def build_prototype_image():
     image.putpalette(palettedata)
     return image
 
+
 Palm8BitColormapImage = build_prototype_image()
 
 # OK, we now have in Palm8BitColormapImage,

@@ -18,5 +18,6 @@ class TestFileGbr(PillowTestCase):
 
         self.assert_image_equal(target, im)
 
+
 if __name__ == '__main__':
     unittest.main()

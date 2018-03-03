@@ -22,6 +22,7 @@ def chunk(cid, *data):
     PngImagePlugin.putchunk(*(test_file, cid) + data)
     return test_file.getvalue()
 
+
 o32 = PngImagePlugin.o32
 
 IHDR = chunk(b"IHDR", o32(1), o32(1), b'\x08\x02', b'\0\0\0')

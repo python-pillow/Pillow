@@ -74,6 +74,7 @@ def open(filename):
         with builtins.open(filename, "rb") as fp:
             return imopen(fp)
 
+
 quake2palette = (
     # default palette taken from piffo 0.93 by Hans Häggström
     b"\x01\x01\x01\x0b\x0b\x0b\x12\x12\x12\x17\x17\x17\x1b\x1b\x1b\x1e"

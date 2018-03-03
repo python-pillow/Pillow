@@ -84,5 +84,6 @@ class TestImagePutData(PillowTestCase):
 
         self.assertEqual(len(im.getdata()), len(arr))
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -162,6 +162,7 @@ def _toqclass_helper(im):
         'data': __data, 'im': im, 'format': format, 'colortable': colortable
     }
 
+
 if qt_is_installed:
     class ImageQt(QImage):
 

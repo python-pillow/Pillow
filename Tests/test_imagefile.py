@@ -146,6 +146,7 @@ class MockPyDecoder(ImageFile.PyDecoder):
         # eof
         return (-1, 0)
 
+
 xoff, yoff, xsize, ysize = 10, 20, 100, 100
 
 
@@ -221,6 +222,7 @@ class TestPyDecoder(PillowTestCase):
 
         im.tile = [("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize + 100), 32, None)]
         self.assertRaises(ValueError, im.load)
+
 
 if __name__ == '__main__':
     unittest.main()

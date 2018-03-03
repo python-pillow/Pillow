@@ -437,5 +437,6 @@ class TestImageCms(PillowTestCase):
 
                     self.assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
+
 if __name__ == '__main__':
     unittest.main()
