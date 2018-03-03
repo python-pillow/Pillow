@@ -147,6 +147,23 @@ class TestFilePdf(PillowTestCase):
         finally:
             os.rmdir(temp_dir)
 
+    def check_pdf_pages_consistency(self, pdf):
+        pages_info = pdf.read_indirect(pdf.pages_ref)
+        self.assertNotIn(b"Parent", pages_info)
+        self.assertIn(b"Kids", pages_info)
+        kids_not_used = pages_info[b"Kids"]
+        for page_ref in pdf.pages:
+            while True:
+                if page_ref in kids_not_used:
+                    kids_not_used.remove(page_ref)
+                page_info = pdf.read_indirect(page_ref)
+                self.assertIn(b"Parent", page_info)
+                page_ref = page_info[b"Parent"]
+                if page_ref == pdf.pages_ref:
+                    break
+            self.assertEqual(pdf.pages_ref, page_info[b"Parent"])
+        self.assertEqual(kids_not_used, [])
+
     def test_pdf_append(self):
         # make a PDF file
         pdf_filename = self.helper_save_as_pdf("RGB", producer="PdfParser")
@@ -156,6 +173,7 @@ class TestFilePdf(PillowTestCase):
             self.assertEqual(len(pdf.pages), 1)
             self.assertEqual(len(pdf.info), 1)
             self.assertEqual(pdf.info.Producer, "PdfParser")
+            self.check_pdf_pages_consistency(pdf)
 
             # append some info
             pdf.info.Title = "abc"
@@ -171,6 +189,7 @@ class TestFilePdf(PillowTestCase):
             self.assertEqual(len(pdf.pages), 1)
             self.assertEqual(len(pdf.info), 6)
             self.assertEqual(pdf.info.Title, "abc")
+            self.check_pdf_pages_consistency(pdf)
 
         # append two images
         mode_CMYK = hopper("CMYK")
@@ -186,6 +205,7 @@ class TestFilePdf(PillowTestCase):
             self.assertEqual(pdf.info.Producer, "PdfParser")
             self.assertEqual(pdf.info.Keywords, "qw)e\\r(ty")
             self.assertEqual(pdf.info.Subject, u"ghi\uABCD")
+            self.check_pdf_pages_consistency(pdf)
 
     def test_pdf_info(self):
         # make a PDF file

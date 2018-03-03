@@ -101,6 +101,9 @@ class IndirectReference(collections.namedtuple("IndirectReferenceTuple", ["objec
     def __ne__(self, other):
         return not (self == other)
 
+    def __hash__(self):
+        return hash((self.object_id, self.generation))
+
 
 class IndirectObjectDef(IndirectReference):
     def __str__(self):
@@ -191,6 +194,9 @@ class PdfName:
             self.name = name
         else:
             self.name = name.encode("us-ascii")
+
+    def name_as_str(self):
+        return self.name.decode("us-ascii")
 
     def __eq__(self, other):
         return (isinstance(other, PdfName) and other.name == self.name) or other == self.name
@@ -358,6 +364,7 @@ class PdfParser:
             self.should_close_buf = True
             if not filename and hasattr(f, "name"):
                 self.filename = f.name
+        self.cached_objects = {}
         if buf:
             self.read_pdf_info()
         else:
@@ -368,6 +375,7 @@ class PdfParser:
             self.info_ref = None
             self.page_tree_root = {}
             self.pages = []
+            self.orig_pages = []
             self.pages_ref = None
             self.last_xref_section_offset = None
             self.trailer_dict = {}
@@ -414,14 +422,44 @@ class PdfParser:
         self.del_root()
         self.root_ref = self.next_object_id(self.f.tell())
         self.pages_ref = self.next_object_id(0)
+        self.rewrite_pages()
         self.write_obj(self.root_ref,
             Type=PdfName(b"Catalog"),
             Pages=self.pages_ref)
         self.write_obj(self.pages_ref,
-            Type=PdfName("Pages"),
+            Type=PdfName(b"Pages"),
             Count=len(self.pages),
             Kids=self.pages)
         return self.root_ref
+
+    def rewrite_pages(self):
+        pages_tree_nodes_to_delete = []
+        for i, page_ref in enumerate(self.orig_pages):
+            page_info = self.cached_objects[page_ref]
+            del self.xref_table[page_ref.object_id]
+            pages_tree_nodes_to_delete.append(page_info[PdfName(b"Parent")])
+            if page_ref not in self.pages:
+                # the page has been deleted
+                continue
+            # make dict keys into strings for passing to write_page
+            stringified_page_info = {}
+            for key, value in page_info.items():
+                # key should be a PdfName
+                stringified_page_info[key.name_as_str()] = value
+            stringified_page_info["Parent"] = self.pages_ref
+            new_page_ref = self.write_page(None, **stringified_page_info)
+            for j, cur_page_ref in enumerate(self.pages):
+                if cur_page_ref == page_ref:
+                    # replace the page reference with the new one
+                    self.pages[j] = new_page_ref
+        # delete redundant Pages tree nodes from xref table
+        for pages_tree_node_ref in pages_tree_nodes_to_delete:
+            while pages_tree_node_ref:
+                pages_tree_node = self.cached_objects[pages_tree_node_ref]
+                if pages_tree_node_ref.object_id in self.xref_table:
+                    del self.xref_table[pages_tree_node_ref.object_id]
+                pages_tree_node_ref = pages_tree_node.get(b"Parent", None)
+        self.orig_pages = []
 
     def write_xref_and_trailer(self, new_root_ref=None):
         if new_root_ref:
@@ -443,7 +481,7 @@ class PdfParser:
         if isinstance(ref, int):
             ref = self.pages[ref]
         if "Type" not in dict_obj:
-            dict_obj["Type"] = PdfName("Page")
+            dict_obj["Type"] = PdfName(b"Page")
         if "Parent" not in dict_obj:
             dict_obj["Parent"] = self.pages_ref
         return self.write_obj(ref, *objs, **dict_obj)
@@ -474,7 +512,6 @@ class PdfParser:
             return
         del self.xref_table[self.root_ref.object_id]
         del self.xref_table[self.root[b"Pages"].object_id]
-        # XXX TODO delete Pages tree recursively
 
     @staticmethod
     def get_buf_from_file(f):
@@ -506,6 +543,8 @@ class PdfParser:
         self.pages_ref = self.root[b"Pages"]
         self.page_tree_root = self.read_indirect(self.pages_ref)
         self.pages = self.linearize_page_tree(self.page_tree_root)
+        # save the original list of page references in case the user modifies, adds or deletes some pages and we need to rewrite the pages and their list
+        self.orig_pages = self.pages[:]
 
     def next_object_id(self, offset=None):
         try:
@@ -789,7 +828,9 @@ class PdfParser:
         offset, generation = self.xref_table[ref[0]]
         check_format_condition(generation == ref[1], "expected to find generation %s for object ID %s in xref table, instead found generation %s at offset %s" \
             % (ref[1], ref[0], generation, offset))
-        return self.get_value(self.buf, offset + self.start_offset, expect_indirect=IndirectReference(*ref), max_nesting=max_nesting)[0]
+        value = self.get_value(self.buf, offset + self.start_offset, expect_indirect=IndirectReference(*ref), max_nesting=max_nesting)[0]
+        self.cached_objects[ref] = value
+        return value
 
     def linearize_page_tree(self, node=None):
         if node is None:
