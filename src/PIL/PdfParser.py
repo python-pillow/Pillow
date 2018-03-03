@@ -79,6 +79,7 @@ def decode_text(b):
 
 
 class PdfFormatError(RuntimeError):
+    """An error that probably indicates a syntactic or semantic error in the PDF file structure"""
     pass
 
 
@@ -173,7 +174,7 @@ class XrefTable:
                     f.write(make_bytes("%010d %05d n \n" % self.new_entries[object_id]))
                 else:
                     this_deleted_object_id = deleted_keys.pop(0)
-                    assert object_id == this_deleted_object_id
+                    check_format_condition(object_id == this_deleted_object_id, "expected the next deleted object ID to be %s, instead found %s" % (object_id, this_deleted_object_id))
                     try:
                         next_in_linked_list = deleted_keys[0]
                     except IndexError:
@@ -341,7 +342,8 @@ class PdfParser:
 
     def __init__(self, filename=None, f=None, buf=None, start_offset=0, mode="rb"):
         # type: (PdfParser, str, file, Union[bytes, bytearray], int, str) -> None
-        assert not (buf and f)
+        if buf and f:
+            raise RuntimeError("specify buf or f or filename, but not both buf and f")
         self.filename = filename
         self.buf = buf
         self.f = f
@@ -621,8 +623,8 @@ class PdfParser:
             offset = m.end()
         m = klass.re_indirect_def_start.match(data, offset)
         if m:
-            assert int(m.group(1)) > 0
-            assert int(m.group(2)) >= 0
+            check_format_condition(int(m.group(1)) > 0, "indirect object definition: object ID must be greater than 0")
+            check_format_condition(int(m.group(2)) >= 0, "indirect object definition: generation must be non-negative")
             check_format_condition(expect_indirect is None or expect_indirect == IndirectReference(int(m.group(1)), int(m.group(2))),
                 "indirect object definition different than expected")
             object, offset = klass.get_value(data, m.end(), max_nesting=max_nesting-1)
@@ -634,8 +636,8 @@ class PdfParser:
         check_format_condition(not expect_indirect, "indirect object definition not found")
         m = klass.re_indirect_reference.match(data, offset)
         if m:
-            assert int(m.group(1)) > 0
-            assert int(m.group(2)) >= 0
+            check_format_condition(int(m.group(1)) > 0, "indirect object reference: object ID must be greater than 0")
+            check_format_condition(int(m.group(2)) >= 0, "indirect object reference: generation must be non-negative")
             return IndirectReference(int(m.group(1)), int(m.group(2))), m.end()
         m = klass.re_dict_start.match(data, offset)
         if m:
@@ -785,7 +787,8 @@ class PdfParser:
 
     def read_indirect(self, ref, max_nesting=-1):
         offset, generation = self.xref_table[ref[0]]
-        assert generation == ref[1]
+        check_format_condition(generation == ref[1], "expected to find generation %s for object ID %s in xref table, instead found generation %s at offset %s" \
+            % (ref[1], ref[0], generation, offset))
         return self.get_value(self.buf, offset + self.start_offset, expect_indirect=IndirectReference(*ref), max_nesting=max_nesting)[0]
 
     def linearize_page_tree(self, node=None):
