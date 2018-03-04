@@ -572,7 +572,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         if ((info.length == 1) or
             (info.length is None and len(values) == 1 and not legacy_api)):
             # Don't mess with the legacy api, since it's frozen.
-            if legacy_api and self.tagtype[tag] in [5, 10]: # rationals
+            if legacy_api and self.tagtype[tag] in [5, 10]:  # rationals
                 values = values,
             try:
                 dest[tag], = values

@@ -543,7 +543,7 @@ class TestFilePng(PillowTestCase):
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
 class TestTruncatedPngPLeaks(PillowLeakTestCase):
     mem_limit = 2*1024  # max increase in K
-    iterations = 100 # Leak is 56k/iteration, this will leak 5.6megs
+    iterations = 100  # Leak is 56k/iteration, this will leak 5.6megs
 
     def setUp(self):
         if "zip_encoder" not in codecs or "zip_decoder" not in codecs:

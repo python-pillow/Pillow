@@ -8,7 +8,7 @@ test_file = "Tests/images/hopper.webp"
 @unittest.skipUnless(features.check('webp'), "WebP is not installed")
 class TestWebPLeaks(PillowLeakTestCase):
 
-    mem_limit = 3 * 1024 # kb
+    mem_limit = 3 * 1024  # kb
     iterations = 100
 
     def test_leak_load(self):

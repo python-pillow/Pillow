@@ -581,7 +581,7 @@ class TestFileGif(PillowTestCase):
         # see https://github.com/python-pillow/Pillow/issues/2811
         im = Image.open('Tests/images/issue_2811.gif')
 
-        self.assertEqual(im.tile[0][3][0], 11) # LZW bits
+        self.assertEqual(im.tile[0][3][0], 11)  # LZW bits
         # codec error prepatch
         im.load()
 

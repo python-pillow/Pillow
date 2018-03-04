@@ -246,7 +246,7 @@ class PillowLeakTestCase(PillowTestCase):
         if sys.platform == 'darwin':
             # man 2 getrusage:
             #     ru_maxrss    the maximum resident set size utilized (in bytes).
-            return mem / 1024 # Kb
+            return mem / 1024  # Kb
         else:
             # linux
             # man 2 getrusage
