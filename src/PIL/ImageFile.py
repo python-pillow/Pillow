@@ -221,7 +221,7 @@ class ImageFile(Image.Image):
 
                             if not s:  # truncated jpeg
                                 if LOAD_TRUNCATED_IMAGES:
-                                    s = b"\xFF\xD9"  # Pretend file is finished adding EOI marker
+                                    break
                                 else:
                                     self.tile = []
                                     raise IOError("image file is truncated "
