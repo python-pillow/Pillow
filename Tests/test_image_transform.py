@@ -61,7 +61,7 @@ class TestImageTransform(PillowTestCase):
                                    Image.BILINEAR,
                                    fillcolor = 'red')
 
-        self.assertEqual(transformed.getpixel((w-1,h-1)), (255,0,0))
+        self.assertEqual(transformed.getpixel((w-1, h-1)), (255, 0, 0))
 
     def test_mesh(self):
         # this should be a checkerboard of halfsized hoppers in ul, lr

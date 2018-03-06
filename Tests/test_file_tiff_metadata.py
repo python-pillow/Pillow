@@ -242,7 +242,7 @@ class TestFileTiffMetadata(PillowTestCase):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
 
         #    277: ("SamplesPerPixel", SHORT, 1),
-        ifd._tagdata[277] = struct.pack('hh', 4,4)
+        ifd._tagdata[277] = struct.pack('hh', 4, 4)
         ifd.tagtype[277] = TiffTags.SHORT
 
         try:

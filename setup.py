@@ -788,7 +788,7 @@ try:
           setup_requires=pytest_runner,
           tests_require=['pytest'],
           packages=["PIL"],
-          package_dir={'':'src'},
+          package_dir={'': 'src'},
           keywords=["Imaging", ],
           license='Standard PIL License',
           zip_safe=not (debug_build() or PLATFORM_MINGW), )

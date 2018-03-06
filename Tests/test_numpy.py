@@ -214,7 +214,7 @@ class TestNumpy(PillowTestCase):
 
     def test_bool(self):
         # https://github.com/python-pillow/Pillow/issues/2044
-        a = numpy.zeros((10,2), dtype=numpy.bool)
+        a = numpy.zeros((10, 2), dtype=numpy.bool)
         a[0][0] = True
 
         im2 = Image.fromarray(a)

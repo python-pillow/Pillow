@@ -11,7 +11,7 @@ class TestTTypeFontLeak(PillowLeakTestCase):
     mem_limit = 4096  # k
 
     def _test_font(self, font):
-        im = Image.new('RGB', (255,255), 'white')
+        im = Image.new('RGB', (255, 255), 'white')
         draw = ImageDraw.ImageDraw(im)
         self._test_leak(lambda: draw.text((0, 0), "some text "*1024,  # ~10k
                                           font=font, fill="black"))

@@ -101,7 +101,7 @@ class TestImagecomplextext(PillowTestCase):
         self.assert_image_similar(im, target_img, .5)
 
         liga_size = ttf.getsize('fi', features=['-liga'])
-        self.assertEqual(liga_size,(13,19))
+        self.assertEqual(liga_size, (13, 19))
 
     def test_kerning_features(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -120,7 +120,7 @@ class TestImagecomplextext(PillowTestCase):
 
         im = Image.new(mode='RGB', size=(300, 100))
         draw = ImageDraw.Draw(im)
-        draw.text((0, 0), 'اللغة العربية', font=ttf, fill=500, features=['-fina','-init','-medi'])
+        draw.text((0, 0), 'اللغة العربية', font=ttf, fill=500, features=['-fina', '-init', '-medi'])
 
         target = 'Tests/images/test_arabictext_features.png'
         target_img = Image.open(target)

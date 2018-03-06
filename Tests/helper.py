@@ -17,7 +17,7 @@ HAS_UPLOADER = False
 
 if os.environ.get('SHOW_ERRORS', None):
     # local img.show for errors.
-    HAS_UPLOADER=True
+    HAS_UPLOADER = True
 
     class test_image_results:
         @classmethod

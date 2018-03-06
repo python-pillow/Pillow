@@ -266,7 +266,7 @@ class TestFileGif(PillowTestCase):
             Image.new('L', (100, 100), '#111'),
             Image.new('L', (100, 100), '#222'),
         ]
-        for method in range(0,4):
+        for method in range(0, 4):
             im_list[0].save(
                 out,
                 save_all=True,

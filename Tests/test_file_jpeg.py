@@ -141,7 +141,7 @@ class TestFileJpeg(PillowTestCase):
         f = self.tempfile("temp.jpg")
         icc_profile = im.info["icc_profile"]
         try:
-            im.save(f, format='JPEG', progressive=True,quality=95,
+            im.save(f, format='JPEG', progressive=True, quality=95,
                     icc_profile=icc_profile, optimize=True)
         except IOError:
             self.fail("Failed saving image with icc larger than image size")

@@ -1407,7 +1407,7 @@ class Image(object):
         else:
             self.im.paste(im, box)
 
-    def alpha_composite(self, im, dest=(0,0), source=(0,0)):
+    def alpha_composite(self, im, dest=(0, 0), source=(0, 0)):
         """ 'In-place' analog of Image.alpha_composite. Composites an image
         onto this image.
 
@@ -1438,7 +1438,7 @@ class Image(object):
             source = source + im.size
 
         # over image, crop if it's not the whole thing.
-        if source == (0,0) + im.size:
+        if source == (0, 0) + im.size:
             overlay = im
         else:
             overlay = im.crop(source)
@@ -1447,7 +1447,7 @@ class Image(object):
         box = dest + (dest[0] + overlay.width, dest[1] + overlay.height)
 
         # destination image. don't copy if we're using the whole image.
-        if box == (0,0) + self.size:
+        if box == (0, 0) + self.size:
             background = self
         else:
             background = self.crop(box)
@@ -2501,7 +2501,7 @@ def _decompression_bomb_check(size):
         raise DecompressionBombError(
             "Image size (%d pixels) exceeds limit of %d pixels, "
             "could be decompression bomb DOS attack." %
-            (pixels, 2* MAX_IMAGE_PIXELS))
+            (pixels, 2 * MAX_IMAGE_PIXELS))
 
     if pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
