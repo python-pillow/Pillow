@@ -348,6 +348,22 @@ class TestFileJpeg(PillowTestCase):
         filename = "Tests/images/jpeg_ff00_header.jpg"
         Image.open(filename)
 
+    def test_truncated_jpeg_should_read_all_the_data(self):
+        filename = "Tests/images/truncated_jpeg.jpg"
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        im = Image.open(filename)
+        im.load()
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
+        self.assertIsNotNone(im.getbbox())
+
+    def test_truncated_jpeg_throws_IOError(self):
+        filename = "Tests/images/truncated_jpeg.jpg"
+        im = Image.open(filename)
+
+        with self.assertRaises(IOError):
+            im.load()
+
+
     def _n_qtables_helper(self, n, test_file):
         im = Image.open(test_file)
         f = self.tempfile('temp.jpg')
