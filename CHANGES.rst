@@ -35,7 +35,7 @@ Changelog (Pillow)
 - Test: Changed assert statements to unittest calls #2961
   [radarhere]
 
-- Depends: Updated libimagequant to 2.11.9, raqm to 0.5.0, freetype to 2.9 #2997, #3017, #2957
+- Depends: Update libimagequant to 2.11.10, raqm to 0.5.0, freetype to 2.9 #3036, #3017, #2957
   [radarhere]
 
 - Remove _imaging.crc32 in favor of builtin Python crc32 implementation #2935
