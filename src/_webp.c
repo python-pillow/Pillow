@@ -13,8 +13,8 @@
 /*
  * Check the versions from mux.h and demux.h, to ensure the WebPAnimEncoder and
  * WebPAnimDecoder APIs are present (initial support was added in 0.5.0). The
- * very early versions added had some significant differences, so we require
- * later versions, before enabling animation support.
+ * very early versions had some significant differences, so we require later
+ * versions, before enabling animation support.
  */
 #if WEBP_MUX_ABI_VERSION >= 0x0104 && WEBP_DEMUX_ABI_VERSION >= 0x0105
 #define HAVE_WEBPANIM

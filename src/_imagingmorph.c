@@ -126,7 +126,7 @@ apply(PyObject *self, PyObject* args)
 }
 
 /* Match a morphologic LUT to a binary image and return a list
-   of the coordinates of all all matching pixels.
+   of the coordinates of all matching pixels.
 
    Expected parameters:
 
