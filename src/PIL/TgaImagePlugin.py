@@ -130,6 +130,7 @@ class TgaImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # Write TGA file
 
+
 SAVE = {
     "1": ("1", 1, 0, 3),
     "L": ("L", 8, 0, 3),
@@ -185,6 +186,7 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 # Registry
+
 
 Image.register_open(TgaImageFile.format, TgaImageFile)
 Image.register_save(TgaImageFile.format, _save)

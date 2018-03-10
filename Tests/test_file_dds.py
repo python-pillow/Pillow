@@ -111,5 +111,6 @@ class TestFileDds(PillowTestCase):
 
         self.assertRaises(IOError, short_file)
 
+
 if __name__ == '__main__':
     unittest.main()

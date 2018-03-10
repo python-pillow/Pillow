@@ -271,6 +271,7 @@ class DXT5Decoder(ImageFile.PyDecoder):
             raise IOError("Truncated DDS file")
         return 0, 0
 
+
 Image.register_decoder('DXT1', DXT1Decoder)
 Image.register_decoder('DXT5', DXT5Decoder)
 

@@ -263,6 +263,7 @@ def _save(im, fp, filename, save_all=False):
 #
 # --------------------------------------------------------------------
 
+
 Image.register_save("PDF", _save)
 Image.register_save_all("PDF", _save_all)
 

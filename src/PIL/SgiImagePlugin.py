@@ -193,6 +193,7 @@ def _save(im, fp, filename):
 
     fp.close()
 
+
 class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 

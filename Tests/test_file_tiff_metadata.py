@@ -78,7 +78,6 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
         self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
 
-
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
 
@@ -243,7 +242,7 @@ class TestFileTiffMetadata(PillowTestCase):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
 
         #    277: ("SamplesPerPixel", SHORT, 1),
-        ifd._tagdata[277] = struct.pack('hh', 4,4)
+        ifd._tagdata[277] = struct.pack('hh', 4, 4)
         ifd.tagtype[277] = TiffTags.SHORT
 
         try:

@@ -235,6 +235,7 @@ def imagemath_max(self, other):
 def imagemath_convert(self, mode):
     return _Operand(self.im.convert(mode))
 
+
 ops = {}
 for k, v in list(globals().items()):
     if k[:10] == "imagemath_":

@@ -46,7 +46,7 @@ class TestFontPcf(PillowTestCase):
     def test_draw(self):
         tempname = self.save_font()
         font = ImageFont.load(tempname)
-        im = Image.new("L", (130,30), "white")
+        im = Image.new("L", (130, 30), "white")
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), message, 'black', font=font)
         with Image.open('Tests/images/test_draw_pbm_target.png') as target:
@@ -56,22 +56,21 @@ class TestFontPcf(PillowTestCase):
         tempname = self.save_font()
         font = ImageFont.load(tempname)
         for i in range(255):
-            (dx,dy) = font.getsize(chr(i))
+            (dx, dy) = font.getsize(chr(i))
             self.assertEqual(dy, 20)
-            self.assertIn(dx, (0,10))
+            self.assertIn(dx, (0, 10))
         for l in range(len(message)):
             msg = message[:l+1]
-            self.assertEqual(font.getsize(msg), (len(msg)*10,20))
+            self.assertEqual(font.getsize(msg), (len(msg)*10, 20))
 
     def _test_high_characters(self, message):
         tempname = self.save_font()
         font = ImageFont.load(tempname)
-        im = Image.new("L", (750,30) , "white")
+        im = Image.new("L", (750, 30) , "white")
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), message, "black", font=font)
         with Image.open('Tests/images/high_ascii_chars.png') as target:
             self.assert_image_similar(im, target, 0)
-
 
     def test_high_characters(self):
         message = "".join(chr(i+1) for i in range(140, 232))

@@ -266,7 +266,7 @@ class TestFileGif(PillowTestCase):
             Image.new('L', (100, 100), '#111'),
             Image.new('L', (100, 100), '#222'),
         ]
-        for method in range(0,4):
+        for method in range(0, 4):
             im_list[0].save(
                 out,
                 save_all=True,
@@ -277,7 +277,6 @@ class TestFileGif(PillowTestCase):
             for _ in range(2):
                 img.seek(img.tell() + 1)
                 self.assertEqual(img.disposal_method, method)
-
 
         # check per frame disposal
         im_list[0].save(
@@ -582,9 +581,10 @@ class TestFileGif(PillowTestCase):
         # see https://github.com/python-pillow/Pillow/issues/2811
         im = Image.open('Tests/images/issue_2811.gif')
 
-        self.assertEqual(im.tile[0][3][0], 11) # LZW bits
+        self.assertEqual(im.tile[0][3][0], 11)  # LZW bits
         # codec error prepatch
         im.load()
+
 
 if __name__ == '__main__':
     unittest.main()

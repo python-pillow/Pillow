@@ -15,5 +15,6 @@ class TestFileFtex(PillowTestCase):
         target = Image.open('Tests/images/ftex_dxt1.png')
         self.assert_image_similar(im, target.convert('RGBA'), 15)
 
+
 if __name__ == '__main__':
     unittest.main()

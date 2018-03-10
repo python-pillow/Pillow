@@ -60,5 +60,6 @@ class TestPngDos(PillowTestCase):
         self.assertLess(total_len, 64*1024*1024,
                         "Total text chunks greater than 64M")
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -70,5 +70,6 @@ class TestImageSequence(PillowTestCase):
         color2 = im.getpalette()[0:3]
         self.assertEqual(color1, color2)
 
+
 if __name__ == '__main__':
     unittest.main()

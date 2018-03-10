@@ -10,5 +10,6 @@ class TestJ2kEncodeOverflow(PillowTestCase):
         with self.assertRaises(IOError):
             im.save(target)
 
+
 if __name__ == '__main__':
     unittest.main()

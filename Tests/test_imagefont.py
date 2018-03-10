@@ -420,7 +420,6 @@ class TestImageFont(PillowTestCase):
         with self.assertRaises(UnicodeEncodeError):
             font.getsize(u"’")
 
-
     def _test_fake_loading_font(self, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
         free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)

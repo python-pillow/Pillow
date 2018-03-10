@@ -46,5 +46,6 @@ class TestFileSun(PillowTestCase):
                 with Image.open(target_path) as target:
                     self.assert_image_equal(im, target)
 
+
 if __name__ == '__main__':
     unittest.main()

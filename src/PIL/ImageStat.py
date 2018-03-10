@@ -144,4 +144,5 @@ class Stat(object):
             v.append(math.sqrt(self.var[i]))
         return v
 
+
 Global = Stat  # compatibility

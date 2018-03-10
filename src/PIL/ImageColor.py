@@ -139,6 +139,7 @@ def getcolor(color, mode):
             return color + (alpha,)
     return color
 
+
 colormap = {
     # X11 colour table from https://drafts.csswg.org/css-color-4/, with
     # gray/grey spelling issues fixed.  This is a superset of HTML 4.0

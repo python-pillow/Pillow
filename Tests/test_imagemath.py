@@ -13,6 +13,7 @@ def pixel(im):
             return int(im)  # hack to deal with booleans
         print(im)
 
+
 A = Image.new("L", (1, 1), 1)
 B = Image.new("L", (1, 1), 2)
 Z = Image.new("L", (1, 1), 0)  # Z for zero

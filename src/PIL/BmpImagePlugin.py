@@ -216,6 +216,7 @@ class DibImageFile(BmpImageFile):
 # --------------------------------------------------------------------
 # Write BMP file
 
+
 SAVE = {
     "1": ("1", 1, 2),
     "L": ("L", 8, 256),
@@ -278,6 +279,7 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 # Registry
+
 
 Image.register_open(BmpImageFile.format, BmpImageFile, _accept)
 Image.register_save(BmpImageFile.format, _save)

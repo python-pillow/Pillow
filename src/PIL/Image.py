@@ -36,8 +36,10 @@ logger = logging.getLogger(__name__)
 class DecompressionBombWarning(RuntimeWarning):
     pass
 
+
 class DecompressionBombError(Exception):
     pass
+
 
 class _imaging_not_installed(object):
     # module placeholder
@@ -1405,7 +1407,7 @@ class Image(object):
         else:
             self.im.paste(im, box)
 
-    def alpha_composite(self, im, dest=(0,0), source=(0,0)):
+    def alpha_composite(self, im, dest=(0, 0), source=(0, 0)):
         """ 'In-place' analog of Image.alpha_composite. Composites an image
         onto this image.
 
@@ -1436,7 +1438,7 @@ class Image(object):
             source = source + im.size
 
         # over image, crop if it's not the whole thing.
-        if source == (0,0) + im.size:
+        if source == (0, 0) + im.size:
             overlay = im
         else:
             overlay = im.crop(source)
@@ -1445,7 +1447,7 @@ class Image(object):
         box = dest + (dest[0] + overlay.width, dest[1] + overlay.height)
 
         # destination image. don't copy if we're using the whole image.
-        if box == (0,0) + self.size:
+        if box == (0, 0) + self.size:
             background = self
         else:
             background = self.crop(box)
@@ -2499,7 +2501,7 @@ def _decompression_bomb_check(size):
         raise DecompressionBombError(
             "Image size (%d pixels) exceeds limit of %d pixels, "
             "could be decompression bomb DOS attack." %
-            (pixels, 2* MAX_IMAGE_PIXELS))
+            (pixels, 2 * MAX_IMAGE_PIXELS))
 
     if pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
@@ -2745,6 +2747,7 @@ def register_extension(id, extension):
     """
     EXTENSION[extension.lower()] = id.upper()
 
+
 def register_extensions(id, extensions):
     """
     Registers image extensions.  This function should not be
@@ -2755,6 +2758,7 @@ def register_extensions(id, extensions):
     """
     for extension in extensions:
         register_extension(id, extension)
+
 
 def registered_extensions():
     """
@@ -2885,6 +2889,7 @@ def _apply_env_variables(env=None):
             setter(var)
         except ValueError as e:
             warnings.warn("{0}: {1}".format(var_name, e))
+
 
 _apply_env_variables()
 atexit.register(core.clear_cache)

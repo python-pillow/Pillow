@@ -301,6 +301,7 @@ def _maketile(file, mode, bbox, channels):
 # --------------------------------------------------------------------
 # registry
 
+
 Image.register_open(PsdImageFile.format, PsdImageFile, _accept)
 
 Image.register_extension(PsdImageFile.format, ".psd")

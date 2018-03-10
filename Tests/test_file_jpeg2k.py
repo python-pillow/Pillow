@@ -176,5 +176,6 @@ class TestFileJpeg2k(PillowTestCase):
         with self.assertRaises(IOError):
             Image.open('Tests/images/unbound_variable.jp2')
 
+
 if __name__ == '__main__':
     unittest.main()

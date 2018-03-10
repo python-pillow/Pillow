@@ -42,6 +42,7 @@ def register_handler(handler):
     global _handler
     _handler = handler
 
+
 if hasattr(Image.core, "drawwmf"):
     # install default handler (windows only)
 
@@ -160,6 +161,7 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 # Registry stuff
+
 
 Image.register_open(WmfStubImageFile.format, WmfStubImageFile, _accept)
 Image.register_save(WmfStubImageFile.format, _save)

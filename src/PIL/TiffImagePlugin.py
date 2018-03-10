@@ -572,7 +572,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         if ((info.length == 1) or
             (info.length is None and len(values) == 1 and not legacy_api)):
             # Don't mess with the legacy api, since it's frozen.
-            if legacy_api and self.tagtype[tag] in [5, 10]: # rationals
+            if legacy_api and self.tagtype[tag] in [5, 10]:  # rationals
                 values = values,
             try:
                 dest[tag], = values
@@ -1285,7 +1285,6 @@ class TiffImageFile(ImageFile.ImageFile):
                     rawmode = rawmode.replace(';16B', ';16N')
                 if ';16L' in rawmode:
                     rawmode = rawmode.replace(';16L', ';16N')
-
 
                 # Offset in the tile tuple is 0, we go from 0,0 to
                 # w,h, and we only do this once -- eds

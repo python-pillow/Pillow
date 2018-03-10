@@ -121,6 +121,7 @@ class XpmImageFile(ImageFile.ImageFile):
 #
 # Registry
 
+
 Image.register_open(XpmImageFile.format, XpmImageFile, _accept)
 
 Image.register_extension(XpmImageFile.format, ".xpm")

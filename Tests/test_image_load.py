@@ -29,5 +29,6 @@ class TestImageLoad(PillowTestCase):
 
         self.assertRaises(OSError, os.fstat, fn)
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -10,6 +10,7 @@ from PIL import Image
 import sys
 import os
 
+
 class AccessTest(PillowTestCase):
     # initial value
     _init_cffi_access = Image.USE_CFFI_ACCESS
@@ -308,6 +309,7 @@ int main(int argc, char* argv[])
         process = subprocess.Popen(['embed_pil.exe'], env=env)
         process.communicate()
         self.assertEqual(process.returncode, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

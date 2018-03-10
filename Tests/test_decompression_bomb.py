@@ -30,7 +30,7 @@ class TestDecompressionBomb(PillowTestCase):
 
     def test_warning(self):
         # Set limit to trigger warning on the test file
-        Image.MAX_IMAGE_PIXELS = 128 * 128 -1
+        Image.MAX_IMAGE_PIXELS = 128 * 128 - 1
         self.assertEqual(Image.MAX_IMAGE_PIXELS, 128 * 128 - 1)
 
         self.assert_warning(Image.DecompressionBombWarning,
@@ -38,11 +38,12 @@ class TestDecompressionBomb(PillowTestCase):
 
     def test_exception(self):
         # Set limit to trigger exception on the test file
-        Image.MAX_IMAGE_PIXELS = 64 * 128 -1
+        Image.MAX_IMAGE_PIXELS = 64 * 128 - 1
         self.assertEqual(Image.MAX_IMAGE_PIXELS, 64 * 128 - 1)
 
         self.assertRaises(Image.DecompressionBombError,
                           lambda: Image.open(TEST_FILE))
+
 
 class TestDecompressionCrop(PillowTestCase):
 

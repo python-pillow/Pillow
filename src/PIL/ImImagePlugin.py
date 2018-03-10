@@ -294,6 +294,7 @@ class ImImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # Save IM files
 
+
 SAVE = {
     # mode: (im type, raw mode)
     "1": ("0 1", "1"),
@@ -338,6 +339,7 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 # Registry
+
 
 Image.register_open(ImImageFile.format, ImImageFile)
 Image.register_save(ImImageFile.format, _save)

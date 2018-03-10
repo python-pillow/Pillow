@@ -33,6 +33,7 @@ import sys
 LAYOUT_BASIC = 0
 LAYOUT_RAQM = 1
 
+
 class _imagingft_not_installed(object):
     # module placeholder
     def __getattr__(self, id):

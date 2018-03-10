@@ -70,5 +70,6 @@ class TestImageDraft(PillowTestCase):
         im.draft(None, (64, 64))
         im.load()
 
+
 if __name__ == '__main__':
     unittest.main()
