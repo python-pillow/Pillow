@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Fix and improve efficient saving of ICNS on macOS #3004
+  [radarhere]
+
 - Build: Enable pip cache in AppVeyor build #3009
   [thijstriemstra]
 
