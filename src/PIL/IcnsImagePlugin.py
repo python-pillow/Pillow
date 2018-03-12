@@ -311,19 +311,18 @@ def _save(im, fp, filename):
     # create the temporary set of pngs
     iconset = tempfile.mkdtemp('.iconset')
     last_w = None
-    last_im = None
     for w in [16, 32, 128, 256, 512]:
         prefix = 'icon_{}x{}'.format(w, w)
 
+        first_path = os.path.join(iconset, prefix+'.png')
         if last_w == w:
-            im_scaled = last_im
+            shutil.copyfile(second_path, first_path)
         else:
-            im_scaled = im.resize((w, w), Image.LANCZOS)
-        im_scaled.save(os.path.join(iconset, prefix+'.png'))
+            im.resize((w, w), Image.LANCZOS).save(first_path)
 
-        im_scaled = im.resize((w*2, w*2), Image.LANCZOS)
-        im_scaled.save(os.path.join(iconset, prefix+'@2x.png'))
-        last_im = im_scaled
+        second_path = os.path.join(iconset, prefix+'@2x.png')
+        im.resize((w*2, w*2), Image.LANCZOS).save(second_path)
+        last_w = w*2
 
     # iconutil -c icns -o {} {}
     from subprocess import Popen, PIPE, CalledProcessError
