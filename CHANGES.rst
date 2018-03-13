@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Support appending to existing PDFs #2965
+  [vashek]
+
 - Fix and improve efficient saving of ICNS on macOS #3004
   [radarhere]
 
