@@ -176,6 +176,19 @@ class TestFileJpeg2k(PillowTestCase):
         with self.assertRaises(IOError):
             Image.open('Tests/images/unbound_variable.jp2')
 
+    def test_parser_feed(self):
+        # Arrange
+        from PIL import ImageFile
+        with open('Tests/images/test-card-lossless.jp2', 'rb') as f:
+            data = f.read()
+
+        # Act
+        p = ImageFile.Parser()
+        p.feed(data)
+
+        # Assert
+        self.assertEqual(p.image.size, (640, 480))
+
 
 if __name__ == '__main__':
     unittest.main()
