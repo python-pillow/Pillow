@@ -18,7 +18,7 @@ test_filenames = (
 )
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class TestShellInjection(PillowTestCase):
 
     def assert_save_filename_check(self, src_img, save_func):

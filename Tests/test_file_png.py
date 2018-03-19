@@ -540,7 +540,7 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(len(chunks), 3)
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class TestTruncatedPngPLeaks(PillowLeakTestCase):
     mem_limit = 2*1024  # max increase in K
     iterations = 100  # Leak is 56k/iteration, this will leak 5.6megs

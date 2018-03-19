@@ -15,7 +15,7 @@ NOSE_PROCESSES=0 NOSE_TIMEOUT=600 valgrind --tool=massif \
 """
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class TestJpegLeaks(PillowTestCase):
 
     """

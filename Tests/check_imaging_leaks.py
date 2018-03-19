@@ -9,7 +9,7 @@ min_iterations = 100
 max_iterations = 10000
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class TestImagingLeaks(PillowTestCase):
 
     def _get_mem_usage(self):

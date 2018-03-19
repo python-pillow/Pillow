@@ -4,7 +4,7 @@ import sys
 from PIL import Image, features, ImageDraw, ImageFont
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class TestTTypeFontLeak(PillowLeakTestCase):
     # fails at iteration 3 in master
     iterations = 10

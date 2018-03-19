@@ -22,8 +22,7 @@ class TestFileIcns(PillowTestCase):
         self.assertEqual(im.size, (1024, 1024))
         self.assertEqual(im.format, "ICNS")
 
-    @unittest.skipIf(sys.platform != 'darwin',
-                     "requires MacOS")
+    @unittest.skipIf(sys.platform != 'darwin', "requires macOS")
     def test_save(self):
         im = Image.open(TEST_FILE)
 
@@ -35,6 +34,22 @@ class TestFileIcns(PillowTestCase):
         self.assertEqual(reread.mode, "RGBA")
         self.assertEqual(reread.size, (1024, 1024))
         self.assertEqual(reread.format, "ICNS")
+
+    @unittest.skipIf(sys.platform != 'darwin', "requires macOS")
+    def test_save_append_images(self):
+        im = Image.open(TEST_FILE)
+
+        temp_file = self.tempfile("temp.icns")
+        provided_im = Image.new('RGBA', (32, 32), (255, 0, 0, 0))
+        im.save(temp_file, append_images=[provided_im])
+
+        reread = Image.open(temp_file)
+        self.assert_image_equal(reread, im)
+
+        reread = Image.open(temp_file)
+        reread.size = (16, 16, 2)
+        reread.load()
+        self.assert_image_equal(reread, provided_im)
 
     def test_sizes(self):
         # Check that we can load all of the sizes, and that the final pixel

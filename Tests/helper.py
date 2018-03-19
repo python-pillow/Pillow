@@ -227,7 +227,7 @@ class PillowTestCase(unittest.TestCase):
         raise IOError()
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class PillowLeakTestCase(PillowTestCase):
     # requires unix/osx
     iterations = 100  # count

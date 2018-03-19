@@ -310,6 +310,8 @@ def _save(im, fp, filename):
 
     # create the temporary set of pngs
     iconset = tempfile.mkdtemp('.iconset')
+    provided_images = {im.width:im for im in
+                       im.encoderinfo.get("append_images", [])}
     last_w = None
     for w in [16, 32, 128, 256, 512]:
         prefix = 'icon_{}x{}'.format(w, w)
@@ -318,10 +320,12 @@ def _save(im, fp, filename):
         if last_w == w:
             shutil.copyfile(second_path, first_path)
         else:
-            im.resize((w, w), Image.LANCZOS).save(first_path)
+            im_w = provided_images.get(w, im.resize((w, w), Image.LANCZOS))
+            im_w.save(first_path)
 
         second_path = os.path.join(iconset, prefix+'@2x.png')
-        im.resize((w*2, w*2), Image.LANCZOS).save(second_path)
+        im_w2 = provided_images.get(w*2, im.resize((w*2, w*2), Image.LANCZOS))
+        im_w2.save(second_path)
         last_w = w*2
 
     # iconutil -c icns -o {} {}
