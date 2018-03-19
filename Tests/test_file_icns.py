@@ -22,7 +22,7 @@ class TestFileIcns(PillowTestCase):
         self.assertEqual(im.size, (1024, 1024))
         self.assertEqual(im.format, "ICNS")
 
-    @unittest.skipIf(sys.platform != 'darwin', "requires MacOS")
+    @unittest.skipIf(sys.platform != 'darwin', "requires macOS")
     def test_save(self):
         im = Image.open(TEST_FILE)
 
@@ -35,7 +35,7 @@ class TestFileIcns(PillowTestCase):
         self.assertEqual(reread.size, (1024, 1024))
         self.assertEqual(reread.format, "ICNS")
 
-    @unittest.skipIf(sys.platform != 'darwin', "requires MacOS")
+    @unittest.skipIf(sys.platform != 'darwin', "requires macOS")
     def test_save_append_images(self):
         im = Image.open(TEST_FILE)
 

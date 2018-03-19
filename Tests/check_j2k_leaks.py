@@ -11,7 +11,7 @@ codecs = dir(Image.core)
 test_file = "Tests/images/rgb_trns_ycbc.jp2"
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class TestJpegLeaks(PillowTestCase):
     def setUp(self):
         if "jpeg2k_encoder" not in codecs or "jpeg2k_decoder" not in codecs:

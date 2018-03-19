@@ -437,7 +437,7 @@ class TestImageFont(PillowTestCase):
                 self.assertEqual(('FreeMono', 'Regular'), name)
 
     @unittest.skipIf(sys.platform.startswith('win32'),
-                     "requires Unix or MacOS")
+                     "requires Unix or macOS")
     def test_find_linux_font(self):
         # A lot of mocking here - this is more for hitting code and
         # catching syntax like errors
@@ -471,7 +471,7 @@ class TestImageFont(PillowTestCase):
                         font_directory+'/Duplicate.ttf', 'Duplicate')
 
     @unittest.skipIf(sys.platform.startswith('win32'),
-                     "requires Unix or MacOS")
+                     "requires Unix or macOS")
     def test_find_macos_font(self):
         # Like the linux test, more cover hitting code rather than testing
         # correctness.
