@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Allow append_images to set .icns scaled images #3005
+  [radarhere]
+
 - Support appending to existing PDFs #2965
   [vashek]
 
