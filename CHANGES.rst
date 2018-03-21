@@ -5,6 +5,27 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Docs: Move intro text below its header #3021
+  [hugovk]
+
+- CI: Rename appveyor.yml as .appveyor.yml #2978
+  [hugovk]
+
+- Fix TypeError for JPEG2000 parser feed #3042
+  [hugovk]
+  
+- Certain corrupted jpegs can result in no data read #3023
+  [kkopachev]
+  
+- Add support for BLP file format #3007
+  [jleclanche] 
+
+- Simplify version checks #2998
+  [hugovk]
+
+- Fix "invalid escape sequence" warning on Python 3.6+ #2996
+  [timgraham]
+
 - Allow append_images to set .icns scaled images #3005
   [radarhere]
 
@@ -1198,7 +1219,7 @@ Changelog (Pillow)
 - Change function declaration to match Tcl_CmdProc type #1966
   [homm]
 
-- Integer overflow checks on all calls to \*alloc #1781
+- Integer overflow checks on all calls to *alloc #1781
   [wiredfool]
 
 - Change equals method on Image so it short circuits #1967
