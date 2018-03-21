@@ -18,7 +18,7 @@ from PIL import Image
 import os
 import sys
 
-if sys.version_info >= (3, 3):
+if sys.version_info.major >= 3:
     from shlex import quote
 else:
     from pipes import quote

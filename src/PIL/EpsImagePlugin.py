@@ -379,7 +379,7 @@ def _save(im, fp, filename, eps=1):
     base_fp = fp
     if fp != sys.stdout:
         fp = NoCloseStream(fp)
-        if sys.version_info[0] > 2:
+        if sys.version_info.major > 2:
             fp = io.TextIOWrapper(fp, encoding='latin-1')
 
     if eps:

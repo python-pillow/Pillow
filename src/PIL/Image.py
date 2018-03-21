@@ -584,7 +584,7 @@ class Image(object):
         # object is gone.
         self.im = deferred_error(ValueError("Operation on closed image"))
 
-    if sys.version_info >= (3, 4, 0):
+    if sys.version_info.major >= 3:
         def __del__(self):
             if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp')
                and self.fp and self._exclusive_fp):

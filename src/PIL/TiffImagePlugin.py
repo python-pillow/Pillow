@@ -653,7 +653,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     @_register_writer(2)
     def write_string(self, value):
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
-        if sys.version_info[0] == 2:
+        if sys.version_info.major == 2:
             value = value.decode('ascii', 'replace')
         return b"" + value.encode('ascii', 'replace') + b"\0"
 
