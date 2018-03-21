@@ -12,12 +12,12 @@ images.
 Examples
 --------
 
+Open, rotate, and display an image (using the default viewer)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The following script loads an image, rotates it 45 degrees, and displays it
 using an external viewer (usually xv on Unix, and the paint program on
 Windows).
-
-Open, rotate, and display an image (using the default viewer)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -25,11 +25,11 @@ Open, rotate, and display an image (using the default viewer)
     im = Image.open("bride.jpg")
     im.rotate(45).show()
 
-The following script creates nice thumbnails of all JPEG images in the
-current directory preserving aspect ratios with 128x128 max resolution.
-
 Create thumbnails
 ^^^^^^^^^^^^^^^^^
+
+The following script creates nice thumbnails of all JPEG images in the
+current directory preserving aspect ratios with 128x128 max resolution.
 
 .. code-block:: python
 
