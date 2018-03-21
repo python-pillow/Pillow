@@ -110,7 +110,10 @@ are available::
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
-    This is currently only supported for GIF, PDF, TIFF, and WebP.
+    This is currently supported for GIF, PDF, TIFF, and WebP.
+
+    It is also supported for ICNS. If images are passed in of relevant sizes,
+    they will be used instead of scaling down the main image.
 
 **duration**
     The display duration of each frame of the multiframe gif, in
@@ -178,6 +181,15 @@ sets the following :py:attr:`~PIL.Image.Image.info` property:
     will be reset to a 2-tuple containing pixel dimensions (so, e.g. if you
     ask for ``(512, 512, 2)``, the final value of
     :py:attr:`~PIL.Image.Image.size` will be ``(1024, 1024)``).
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**append_images**
+    A list of images to replace the scaled down versions of the image.
+    The order of the images does not matter, as their use is determined by
+    the size of each image.
+
+    .. versionadded:: 5.1.0
 
 ICO
 ^^^
