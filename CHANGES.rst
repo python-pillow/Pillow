@@ -1198,7 +1198,7 @@ Changelog (Pillow)
 - Change function declaration to match Tcl_CmdProc type #1966
   [homm]
 
-- Integer overflow checks on all calls to *alloc #1781
+- Integer overflow checks on all calls to \*alloc #1781
   [wiredfool]
 
 - Change equals method on Image so it short circuits #1967
