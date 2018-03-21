@@ -192,7 +192,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 length = -1
 
         self.tile = [('jpeg2k', (0, 0) + self.size, 0,
-                      (self.codec, self.reduce, self.layers, fd, length, self.fp))]
+                      (self.codec, self.reduce, self.layers, fd, length))]
 
     def load(self):
         if self.reduce:
