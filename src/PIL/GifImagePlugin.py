@@ -778,7 +778,7 @@ def getdata(im, offset=(0, 0), **params):
 
     :param im: Image object
     :param offset: Tuple of (x, y) pixels. Defaults to (0,0)
-    :param \**params: E.g. duration or other encoder info parameters
+    :param \\**params: E.g. duration or other encoder info parameters
     :returns: List of Bytes containing gif encoded frame data
 
     """
