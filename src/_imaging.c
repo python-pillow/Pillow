@@ -696,8 +696,122 @@ _blend(ImagingObject* self, PyObject* args)
 }
 
 /* -------------------------------------------------------------------- */
-/* METHODS                                */
+/* METHODS                                                              */
 /* -------------------------------------------------------------------- */
+
+
+static INT16*
+_prepare_lut_table(PyObject* table, Py_ssize_t table_size)
+{
+    int i;
+    FLOAT32* table_data;
+    INT16* prepared;
+
+    /* NOTE: This value should be the same as in ColorLUT.c */
+    #define PRECISION_BITS (16 - 8 - 2)
+
+    table_data = (FLOAT32*) getlist(table, &table_size,
+        "The table should have table_channels * "
+        "size1D * size2D * size3D float items.", TYPE_FLOAT32);
+    if ( ! table_data) {
+        return NULL;
+    }
+
+    /* malloc check ok, max is 2 * 4 * 65**3 = 2197000 */
+    prepared = (INT16*) malloc(sizeof(INT16) * table_size);
+    if ( ! prepared) {
+        free(table_data);
+        return (INT16*) PyErr_NoMemory();
+    }
+
+    for (i = 0; i < table_size; i++) {
+        /* Max value for INT16 */
+        if (table_data[i] >= (0x7fff - 0.5) / (255 << PRECISION_BITS)) {
+            prepared[i] = 0x7fff;
+            continue;
+        }
+        /* Min value for INT16 */
+        if (table_data[i] <= (-0x8000 + 0.5) / (255 << PRECISION_BITS)) {
+            prepared[i] = -0x8000;
+            continue;
+        }
+        if (table_data[i] < 0) {
+            prepared[i] = table_data[i] * (255 << PRECISION_BITS) - 0.5;
+        } else {
+            prepared[i] = table_data[i] * (255 << PRECISION_BITS) + 0.5;
+        }
+    }
+    
+    #undef PRECISION_BITS
+    free(table_data);
+    return prepared;
+}
+
+
+static PyObject*
+_color_lut_3d(ImagingObject* self, PyObject* args)
+{
+    char* mode;
+    int filter;
+    int table_channels;
+    int size1D, size2D, size3D;
+    PyObject* table;
+
+    INT16* prepared_table;
+    Imaging imOut;
+
+    if ( ! PyArg_ParseTuple(args, "siiiiiO:color_lut_3d", &mode, &filter,
+                            &table_channels, &size1D, &size2D, &size3D,
+                            &table)) {
+        return NULL;
+    }
+
+    /* actually, it is trilinear */
+    if (filter != IMAGING_TRANSFORM_BILINEAR) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Only LINEAR filter is supported.");
+        return NULL;
+    }
+
+    if (1 > table_channels || table_channels > 4) {
+        PyErr_SetString(PyExc_ValueError,
+                        "table_channels should be from 1 to 4");
+        return NULL;
+    }
+
+    if (2 > size1D || size1D > 65 ||
+        2 > size2D || size2D > 65 ||
+        2 > size3D || size3D > 65
+    ) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Table size in any dimension should be from 2 to 65");
+        return NULL;
+    }
+
+    prepared_table = _prepare_lut_table(
+        table, table_channels * size1D * size2D * size3D);
+    if ( ! prepared_table) {
+        return NULL;
+    }
+
+    imOut = ImagingNewDirty(mode, self->image->xsize, self->image->ysize);
+    if ( ! imOut) {
+        free(prepared_table);
+        return NULL;
+    }
+
+    if ( ! ImagingColorLUT3D_linear(imOut, self->image, 
+                                    table_channels, size1D, size2D, size3D,
+                                    prepared_table)) {
+        free(prepared_table);
+        ImagingDelete(imOut);
+        return NULL;
+    }
+
+    free(prepared_table);
+
+    return PyImagingNew(imOut);
+}
 
 static PyObject*
 _convert(ImagingObject* self, PyObject* args)
@@ -720,7 +834,10 @@ _convert(ImagingObject* self, PyObject* args)
         }
     }
 
-    return PyImagingNew(ImagingConvert(self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither));
+    return PyImagingNew(ImagingConvert(
+        self->image, mode,
+        paletteimage ? paletteimage->image->palette : NULL,
+        dither));
 }
 
 static PyObject*
@@ -2982,6 +3099,7 @@ static struct PyMethodDef methods[] = {
     {"pixel_access", (PyCFunction)pixel_access_new, 1},
 
     /* Standard processing methods (Image) */
+    {"color_lut_3d", (PyCFunction)_color_lut_3d, 1},
     {"convert", (PyCFunction)_convert, 1},
     {"convert2", (PyCFunction)_convert2, 1},
     {"convert_matrix", (PyCFunction)_convert_matrix, 1},

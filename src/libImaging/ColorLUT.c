@@ -6,25 +6,26 @@
 
 
 /* 8 bits for result. Table can overflow [0, 1.0] range,
-   so we need extra bits for overflow and negative values. */
+   so we need extra bits for overflow and negative values.
+   NOTE: This value should be the same as in _imaging/_prepare_lut_table() */
 #define PRECISION_BITS (16 - 8 - 2)
 
 
 static inline void
 interpolate3(INT16 out[3], const INT16 a[3], const INT16 b[3], float shift)
 {
-    out[0] = a[0] * (1-shift) + b[0] * shift;
-    out[1] = a[1] * (1-shift) + b[1] * shift;
-    out[2] = a[2] * (1-shift) + b[2] * shift;
+    out[0] = a[0] * (1-shift) + b[0] * shift + 0.5;
+    out[1] = a[1] * (1-shift) + b[1] * shift + 0.5;
+    out[2] = a[2] * (1-shift) + b[2] * shift + 0.5;
 }
 
 static inline void
 interpolate4(INT16 out[3], const INT16 a[3], const INT16 b[3], float shift)
 {
-    out[0] = a[0] * (1-shift) + b[0] * shift;
-    out[1] = a[1] * (1-shift) + b[1] * shift;
-    out[2] = a[2] * (1-shift) + b[2] * shift;
-    out[3] = a[3] * (1-shift) + b[3] * shift;
+    out[0] = a[0] * (1-shift) + b[0] * shift + 0.5;
+    out[1] = a[1] * (1-shift) + b[1] * shift + 0.5;
+    out[2] = a[2] * (1-shift) + b[2] * shift + 0.5;
+    out[3] = a[3] * (1-shift) + b[3] * shift + 0.5;
 }
 
 static inline int
@@ -61,10 +62,17 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
                          int size1D, int size2D, int size3D,
                          INT16* table)
 {
+    /* The fractions are a way to avoid overflow.
+       For every pixel, we interpolate 8 elements from the table:
+       current and +1 for every dimension and they combinations.
+       If we hit the upper cells from the table,
+       +1 cells will be outside of the table.
+       With this compensation we never hit the upper cells
+       but this also doesn't introduce any noticable difference. */
+    float scale1D = (size1D - 1) / (255.0002);
+    float scale2D = (size2D - 1) / (255.0002);
+    float scale3D = (size3D - 1) / (255.0002);
     int size1D_2D = size1D * size2D;
-    float scale1D = (size1D - 1) / 255.0;
-    float scale2D = (size2D - 1) / 255.0;
-    float scale3D = (size3D - 1) / 255.0;
     int x, y;
 
     if (table_channels < 3 || table_channels > 4) {
