@@ -170,21 +170,21 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
     for (y = 0; y < imOut->ysize; y++) {
         UINT8* rowIn = (UINT8 *)imIn->image[y];
         UINT8* rowOut = (UINT8 *)imOut->image[y];
-        if (table_channels == 3) {
-            for (x = 0; x < imOut->xsize; x++) {
-                float scaled1D = rowIn[x*4 + 0] * scale1D;
-                float scaled2D = rowIn[x*4 + 1] * scale2D;
-                float scaled3D = rowIn[x*4 + 2] * scale3D;
-                int index1D = (int) scaled1D;
-                int index2D = (int) scaled2D;
-                int index3D = (int) scaled3D;
-                INT16 shift1D = (scaled1D - index1D) * 0x1000 + 0.5;
-                INT16 shift2D = (scaled2D - index2D) * 0x1000 + 0.5;
-                INT16 shift3D = (scaled3D - index3D) * 0x1000 + 0.5;
-                int idx = table3D_index3(index1D, index2D, index3D, size1D, size1D_2D);
-                INT16 result[3], left[3], right[3];
-                INT16 leftleft[3], leftright[3], rightleft[3], rightright[3];
+        for (x = 0; x < imOut->xsize; x++) {
+            float scaled1D = rowIn[x*4 + 0] * scale1D;
+            float scaled2D = rowIn[x*4 + 1] * scale2D;
+            float scaled3D = rowIn[x*4 + 2] * scale3D;
+            int index1D = (int) scaled1D;
+            int index2D = (int) scaled2D;
+            int index3D = (int) scaled3D;
+            INT16 shift1D = (scaled1D - index1D) * 0x1000 + 0.5;
+            INT16 shift2D = (scaled2D - index2D) * 0x1000 + 0.5;
+            INT16 shift3D = (scaled3D - index3D) * 0x1000 + 0.5;
+            int idx = table3D_index3(index1D, index2D, index3D, size1D, size1D_2D);
+            INT16 result[4], left[4], right[4];
+            INT16 leftleft[4], leftright[4], rightleft[4], rightright[4];
 
+            if (table_channels == 3) {
                 interpolate3(leftleft, &table[idx + 0], &table[idx + 3], shift1D);
                 interpolate3(leftright, &table[idx + size1D*3],
                              &table[idx + size1D*3 + 3], shift1D);
@@ -202,10 +202,26 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
                 rowOut[x*4 + 1] = clip8(result[1]);
                 rowOut[x*4 + 2] = clip8(result[2]);
                 rowOut[x*4 + 3] = rowIn[x*4 + 3];
+            }
 
-                // printf("%d: %f -> %d, %f; idx: %d; (%d, %d, %d)\n",
-                //     rowIn[x*4 + 0], scaled1D, index1D, shift1D,
-                //     idx, nearest[0], nearest[1], nearest[2]);
+            if (table_channels == 4) {
+                interpolate4(leftleft, &table[idx + 0], &table[idx + 4], shift1D);
+                interpolate4(leftright, &table[idx + size1D*4],
+                             &table[idx + size1D*4 + 4], shift1D);
+                interpolate4(left, leftleft, leftright, shift2D);
+
+                interpolate4(rightleft, &table[idx + size1D_2D*4],
+                             &table[idx + size1D_2D*4 + 4], shift1D);
+                interpolate4(rightright, &table[idx + size1D_2D*4 + size1D*4],
+                             &table[idx + size1D_2D*4 + size1D*4 + 4], shift1D);
+                interpolate4(right, rightleft, rightright, shift2D);
+
+                interpolate4(result, left, right, shift3D);
+
+                rowOut[x*4 + 0] = clip8(result[0]);
+                rowOut[x*4 + 1] = clip8(result[1]);
+                rowOut[x*4 + 2] = clip8(result[2]);
+                rowOut[x*4 + 3] = clip8(result[3]);
             }
         }
     }
