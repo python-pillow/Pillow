@@ -111,7 +111,7 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
             INT16 shift1D = (SCALE_MASK & index1D) >> (SCALE_BITS - SHIFT_BITS);
             INT16 shift2D = (SCALE_MASK & index2D) >> (SCALE_BITS - SHIFT_BITS);
             INT16 shift3D = (SCALE_MASK & index3D) >> (SCALE_BITS - SHIFT_BITS);
-            int idx = 3 * table_index3D(
+            int idx = table_channels * table_index3D(
                 index1D >> SCALE_BITS, index2D >> SCALE_BITS,
                 index3D >> SCALE_BITS, size1D, size1D_2D);
             INT16 result[4], left[4], right[4];

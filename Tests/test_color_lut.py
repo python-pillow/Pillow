@@ -146,6 +146,27 @@ class TestColorLut3DCoreAPI(PillowTestCase):
             im.im.color_lut_3d('RGB', Image.LINEAR,
                 *self.generate_unit_table(3, (2, 2, 65)))))
 
+    def test_units_4channels(self):
+        g = Image.linear_gradient('L')
+        im = Image.merge('RGB', [g, g.transpose(Image.ROTATE_90),
+                                 g.transpose(Image.ROTATE_180)])
+
+        # Red channel copied to alpha
+        self.assert_image_equal(
+            Image.merge('RGBA', (im.split()*2)[:4]),
+            im._new(im.im.color_lut_3d('RGBA', Image.LINEAR,
+                *self.generate_unit_table(4, 17))))
+
+    def test_copy_alpha_channel(self):
+        g = Image.linear_gradient('L')
+        im = Image.merge('RGBA', [g, g.transpose(Image.ROTATE_90),
+                                  g.transpose(Image.ROTATE_180),
+                                  g.transpose(Image.ROTATE_270)])
+
+        self.assert_image_equal(im, im._new(
+            im.im.color_lut_3d('RGBA', Image.LINEAR,
+                *self.generate_unit_table(3, 17))))
+
     def test_channels_order(self):
         g = Image.linear_gradient('L')
         im = Image.merge('RGB', [g, g.transpose(Image.ROTATE_90),
