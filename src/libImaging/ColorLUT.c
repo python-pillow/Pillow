@@ -8,7 +8,7 @@
 #define PRECISION_BITS (16 - 8 - 2)
 #define PRECISION_ROUNDING (1<<(PRECISION_BITS-1))
 
-/* 8 — scales are multiplyed on byte.
+/* 8 — scales are multiplied on byte.
    6 — max index in the table (size is 65, but index 64 is not reachable) */
 #define SCALE_BITS (32 - 8 - 6)
 #define SCALE_MASK ((1 << SCALE_BITS) - 1)
@@ -72,11 +72,11 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
        1. As we don't hit the highest value,
           we can use one extra bit for precision.
        2. For every pixel, we interpolate 8 elements from the table:
-          current and +1 for every dimension and they combinations.
+          current and +1 for every dimension and their combinations.
           If we hit the upper cells from the table,
           +1 cells will be outside of the table.
           With this compensation we never hit the upper cells
-          but this also doesn't introduce any noticable difference. */
+          but this also doesn't introduce any noticeable difference. */
     UINT32 scale1D = (size1D - 1) / 255.0 * (1<<SCALE_BITS);
     UINT32 scale2D = (size2D - 1) / 255.0 * (1<<SCALE_BITS);
     UINT32 scale3D = (size3D - 1) / 255.0 * (1<<SCALE_BITS);

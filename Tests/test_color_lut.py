@@ -1,7 +1,6 @@
 from __future__ import division
 from helper import unittest, PillowTestCase
 
-import time
 from PIL import Image
 
 
