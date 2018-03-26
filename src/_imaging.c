@@ -740,6 +740,7 @@ _prepare_lut_table(PyObject* table, Py_ssize_t table_size)
         } else {
             prepared[i] = table_data[i] * (255 << PRECISION_BITS) + 0.5;
         }
+        // printf("%f, %d ", table_data[i], prepared[i]);
     }
     
     #undef PRECISION_BITS
