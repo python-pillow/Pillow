@@ -144,13 +144,16 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
                          int size1D, int size2D, int size3D,
                          INT16* table)
 {
-    /* The fractions are a way to avoid overflow.
-       For every pixel, we interpolate 8 elements from the table:
-       current and +1 for every dimension and they combinations.
-       If we hit the upper cells from the table,
-       +1 cells will be outside of the table.
-       With this compensation we never hit the upper cells
-       but this also doesn't introduce any noticable difference. */
+    /* This float to int conversion doesn't have rounding
+       error compensation (+ 0.5) for two reasons:
+       1. As we don't hit the highest value,
+          we can use one extra bit for precision.
+       2. For every pixel, we interpolate 8 elements from the table:
+          current and +1 for every dimension and they combinations.
+          If we hit the upper cells from the table,
+          +1 cells will be outside of the table.
+          With this compensation we never hit the upper cells
+          but this also doesn't introduce any noticable difference. */
     UINT32 scale1D = (size1D - 1) / 255.0 * (1<<SCALE_BITS);
     UINT32 scale2D = (size2D - 1) / 255.0 * (1<<SCALE_BITS);
     UINT32 scale3D = (size3D - 1) / 255.0 * (1<<SCALE_BITS);
