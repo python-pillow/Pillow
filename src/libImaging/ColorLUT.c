@@ -8,6 +8,14 @@
 #define PRECISION_BITS (16 - 8 - 2)
 #define PRECISION_ROUNDING (1<<(PRECISION_BITS-1))
 
+/* 8 — scales are multiplyed on byte.
+   6 — max index in the table (size is 65, but index 64 is not reachable) */
+#define SCALE_BITS (32 - 8 - 6)
+#define SCALE_MASK ((1 << SCALE_BITS) - 1)
+
+#define SHIFT_BITS (16 - 1)
+#define SHIFT_ROUNDING (1<<(SHIFT_BITS-1))
+
 
 UINT8 _lookups2[1024] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -88,18 +96,18 @@ static inline UINT8 clip8(int in)
 static inline void
 interpolate3(INT16 out[3], const INT16 a[3], const INT16 b[3], INT16 shift)
 {
-    out[0] = (a[0] * (0x1000-shift) + b[0] * shift + (1<<11)) >> 12;
-    out[1] = (a[1] * (0x1000-shift) + b[1] * shift + (1<<11)) >> 12;
-    out[2] = (a[2] * (0x1000-shift) + b[2] * shift + (1<<11)) >> 12;
+    out[0] = (a[0] * ((1<<SHIFT_BITS)-shift) + b[0] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
+    out[1] = (a[1] * ((1<<SHIFT_BITS)-shift) + b[1] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
+    out[2] = (a[2] * ((1<<SHIFT_BITS)-shift) + b[2] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
 }
 
 static inline void
 interpolate4(INT16 out[4], const INT16 a[4], const INT16 b[4], INT16 shift)
 {
-    out[0] = (a[0] * (0x1000-shift) + b[0] * shift + (1<<11)) >> 12;
-    out[1] = (a[1] * (0x1000-shift) + b[1] * shift + (1<<11)) >> 12;
-    out[2] = (a[2] * (0x1000-shift) + b[2] * shift + (1<<11)) >> 12;
-    out[3] = (a[3] * (0x1000-shift) + b[3] * shift + (1<<11)) >> 12;
+    out[0] = (a[0] * ((1<<SHIFT_BITS)-shift) + b[0] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
+    out[1] = (a[1] * ((1<<SHIFT_BITS)-shift) + b[1] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
+    out[2] = (a[2] * ((1<<SHIFT_BITS)-shift) + b[2] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
+    out[3] = (a[3] * ((1<<SHIFT_BITS)-shift) + b[3] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
 }
 
 static inline int
@@ -143,9 +151,9 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
        +1 cells will be outside of the table.
        With this compensation we never hit the upper cells
        but this also doesn't introduce any noticable difference. */
-    float scale1D = (size1D - 1) / (255.0002);
-    float scale2D = (size2D - 1) / (255.0002);
-    float scale3D = (size3D - 1) / (255.0002);
+    UINT32 scale1D = (size1D - 1) / 255.0 * (1<<SCALE_BITS);
+    UINT32 scale2D = (size2D - 1) / 255.0 * (1<<SCALE_BITS);
+    UINT32 scale3D = (size3D - 1) / 255.0 * (1<<SCALE_BITS);
     int size1D_2D = size1D * size2D;
     int x, y;
 
@@ -169,18 +177,19 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
 
     for (y = 0; y < imOut->ysize; y++) {
         UINT8* rowIn = (UINT8 *)imIn->image[y];
-        UINT8* rowOut = (UINT8 *)imOut->image[y];
+        UINT32* rowOut = (UINT32 *)imOut->image[y];
         for (x = 0; x < imOut->xsize; x++) {
-            float scaled1D = rowIn[x*4 + 0] * scale1D;
-            float scaled2D = rowIn[x*4 + 1] * scale2D;
-            float scaled3D = rowIn[x*4 + 2] * scale3D;
-            int index1D = (int) scaled1D;
-            int index2D = (int) scaled2D;
-            int index3D = (int) scaled3D;
-            INT16 shift1D = (scaled1D - index1D) * 0x1000 + 0.5;
-            INT16 shift2D = (scaled2D - index2D) * 0x1000 + 0.5;
-            INT16 shift3D = (scaled3D - index3D) * 0x1000 + 0.5;
-            int idx = table3D_index3(index1D, index2D, index3D, size1D, size1D_2D);
+            UINT32 index1D = rowIn[x*4 + 0] * scale1D;
+            UINT32 index2D = rowIn[x*4 + 1] * scale2D;
+            UINT32 index3D = rowIn[x*4 + 2] * scale3D;
+            INT16 shift1D = (SCALE_MASK & index1D) >> (SCALE_BITS - SHIFT_BITS);
+            INT16 shift2D = (SCALE_MASK & index2D) >> (SCALE_BITS - SHIFT_BITS);
+            INT16 shift3D = (SCALE_MASK & index3D) >> (SCALE_BITS - SHIFT_BITS);
+            int idx = table3D_index3(
+                index1D >> SCALE_BITS,
+                index2D >> SCALE_BITS,
+                index3D >> SCALE_BITS,
+                size1D, size1D_2D);
             INT16 result[4], left[4], right[4];
             INT16 leftleft[4], leftright[4], rightleft[4], rightright[4];
 
@@ -198,10 +207,9 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
 
                 interpolate3(result, left, right, shift3D);
 
-                rowOut[x*4 + 0] = clip8(result[0]);
-                rowOut[x*4 + 1] = clip8(result[1]);
-                rowOut[x*4 + 2] = clip8(result[2]);
-                rowOut[x*4 + 3] = rowIn[x*4 + 3];
+                rowOut[x] = MAKE_UINT32(
+                        clip8(result[0]), clip8(result[1]),
+                        clip8(result[2]), rowIn[x*4 + 3]);
             }
 
             if (table_channels == 4) {
@@ -218,10 +226,9 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
 
                 interpolate4(result, left, right, shift3D);
 
-                rowOut[x*4 + 0] = clip8(result[0]);
-                rowOut[x*4 + 1] = clip8(result[1]);
-                rowOut[x*4 + 2] = clip8(result[2]);
-                rowOut[x*4 + 3] = clip8(result[3]);
+                rowOut[x] = MAKE_UINT32(
+                        clip8(result[0]), clip8(result[1]),
+                        clip8(result[2]), clip8(result[3]));
             }
         }
     }
