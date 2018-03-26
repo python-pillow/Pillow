@@ -111,18 +111,12 @@ interpolate4(INT16 out[4], const INT16 a[4], const INT16 b[4], INT16 shift)
 }
 
 static inline int
-table3D_index3(int index1D, int index2D, int index3D,
+table_index3D(int index1D, int index2D, int index3D,
                int size1D, int size1D_2D)
 {
-    return (index1D + index2D * size1D + index3D * size1D_2D) * 3;
+    return index1D + index2D * size1D + index3D * size1D_2D;
 }
 
-static inline int
-table3D_index4(int index1D, int index2D, int index3D,
-               int size1D, int size1D_2D)
-{
-    return (index1D + index2D * size1D + index3D * size1D_2D) * 4;
-}
 
 /*
  Transforms colors of imIn using provided 3D look-up table
@@ -145,7 +139,7 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
                          INT16* table)
 {
     /* This float to int conversion doesn't have rounding
-       error compensation (+ 0.5) for two reasons:
+       error compensation (+0.5) for two reasons:
        1. As we don't hit the highest value,
           we can use one extra bit for precision.
        2. For every pixel, we interpolate 8 elements from the table:
@@ -188,11 +182,9 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
             INT16 shift1D = (SCALE_MASK & index1D) >> (SCALE_BITS - SHIFT_BITS);
             INT16 shift2D = (SCALE_MASK & index2D) >> (SCALE_BITS - SHIFT_BITS);
             INT16 shift3D = (SCALE_MASK & index3D) >> (SCALE_BITS - SHIFT_BITS);
-            int idx = table3D_index3(
-                index1D >> SCALE_BITS,
-                index2D >> SCALE_BITS,
-                index3D >> SCALE_BITS,
-                size1D, size1D_2D);
+            int idx = 3 * table_index3D(
+                index1D >> SCALE_BITS, index2D >> SCALE_BITS,
+                index3D >> SCALE_BITS, size1D, size1D_2D);
             INT16 result[4], left[4], right[4];
             INT16 leftleft[4], leftright[4], rightleft[4], rightright[4];
 
