@@ -536,6 +536,8 @@ extern Py_ssize_t _imaging_tell_pyFd(PyObject *fd);
 
 
 #include "ImagingUtils.h"
+extern UINT8 *clip8_lookups;
+
 
 #if defined(__cplusplus)
 }
