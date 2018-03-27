@@ -96,6 +96,11 @@ class TestImageRotate(PillowTestCase):
         self.rotate(im, im.mode, 45, center=(0, 0))
         self.rotate(im, im.mode, 45, translate=(im.size[0]/2, 0))
         self.rotate(im, im.mode, 45, center=(0, 0), translate=(im.size[0]/2, 0))
+        
+    def test_rotate_with_fill(self):
+        im = hopper()
+        target = Image.open('Tests/images/hopper45withfill.png')
+        self.assert_image_equal(im.rotate(45, fillcolor='white'), target)
 
 
 if __name__ == '__main__':
