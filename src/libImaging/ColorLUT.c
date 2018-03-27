@@ -13,7 +13,8 @@
 #define SCALE_BITS (32 - 8 - 6)
 #define SCALE_MASK ((1 << SCALE_BITS) - 1)
 
-#define SHIFT_BITS (16 - 1)
+#define SHIFT_BITS (16 - 2)
+#define SHIFT_ROUNDING (1<<(SHIFT_BITS-1))
 
 static inline UINT8
 clip8(int in) {
@@ -74,10 +75,17 @@ ImagingColorLUT3D_linear(
           +1 cells will be outside of the table.
           With this compensation we never hit the upper cells
           but this also doesn't introduce any noticeable difference. */
-    UINT32 scale1D = (size1D - 1) / 255.0 * (1 << SCALE_BITS);
-    UINT32 scale2D = (size2D - 1) / 255.0 * (1 << SCALE_BITS);
-    UINT32 scale3D = (size3D - 1) / 255.0 * (1 << SCALE_BITS);
     int size1D_2D = size1D * size2D;
+    __m128i scale = _mm_set_epi32(0,
+        (size3D - 1) / 255.0 * (1<<SCALE_BITS),
+        (size2D - 1) / 255.0 * (1<<SCALE_BITS),
+        (size1D - 1) / 255.0 * (1<<SCALE_BITS));
+    __m128i scale_mask = _mm_set1_epi32(SCALE_MASK);
+    __m128i index_mul = _mm_set_epi32(0, size1D_2D, size1D, 1);
+    __m128i shift_rounding = _mm_set1_epi32(SHIFT_ROUNDING);
+    __m128i shuffle_source = _mm_set_epi8(-1,-1, -1,-1, 11,10, 5,4, 9,8, 3,2, 7,6, 1,0);
+    __m128i left_mask = _mm_set1_epi32(0x0000ffff);
+    __m128i right_mask = _mm_set1_epi32(0xffff0000);
     int x, y;
     ImagingSectionCookie cookie;
 
@@ -101,84 +109,85 @@ ImagingColorLUT3D_linear(
         UINT8 *rowIn = (UINT8 *)imIn->image[y];
         char *rowOut = (char *)imOut->image[y];
         for (x = 0; x < imOut->xsize; x++) {
-            UINT32 index1D = rowIn[x * 4 + 0] * scale1D;
-            UINT32 index2D = rowIn[x * 4 + 1] * scale2D;
-            UINT32 index3D = rowIn[x * 4 + 2] * scale3D;
-            INT16 shift1D = (SCALE_MASK & index1D) >> (SCALE_BITS - SHIFT_BITS);
-            INT16 shift2D = (SCALE_MASK & index2D) >> (SCALE_BITS - SHIFT_BITS);
-            INT16 shift3D = (SCALE_MASK & index3D) >> (SCALE_BITS - SHIFT_BITS);
-            int idx = table_channels * table_index3D(
-                                           index1D >> SCALE_BITS,
-                                           index2D >> SCALE_BITS,
-                                           index3D >> SCALE_BITS,
-                                           size1D,
-                                           size1D_2D);
-            INT16 result[4], left[4], right[4];
-            INT16 leftleft[4], leftright[4], rightleft[4], rightright[4];
+            __m128i index = _mm_mullo_epi32(scale,
+                _mm_cvtepu8_epi32(*(__m128i *) &rowIn[x*4]));
+            __m128i shift = _mm_srli_epi32(
+                _mm_and_si128(scale_mask, index), (SCALE_BITS - SHIFT_BITS));
+            int idx = table_channels * _mm_extract_epi32(
+                _mm_hadd_epi32(_mm_hadd_epi32(
+                    _mm_madd_epi16(index_mul, _mm_srli_epi32(index, SCALE_BITS)),
+                    _mm_setzero_si128()), _mm_setzero_si128()), 0);
+            __m128i shift1D, shift2D, shift3D;
+            __m128i source, left, right, result;
+            __m128i leftleft, leftright, rightleft, rightright;
+
+            shift = _mm_or_si128(
+                _mm_sub_epi32(_mm_set1_epi32(1<<SHIFT_BITS), shift),
+                _mm_slli_epi32(shift, 16));
+
+            shift1D = _mm_shuffle_epi32(shift, 0x00);
+            shift2D = _mm_shuffle_epi32(shift, 0x55);
+            shift3D = _mm_shuffle_epi32(shift, 0xaa);
 
             if (table_channels == 3) {
-                UINT32 v;
-                interpolate3(leftleft, &table[idx + 0], &table[idx + 3], shift1D);
-                interpolate3(
-                    leftright,
-                    &table[idx + size1D * 3],
-                    &table[idx + size1D * 3 + 3],
-                    shift1D);
-                interpolate3(left, leftleft, leftright, shift2D);
+                source = _mm_shuffle_epi8(
+                    _mm_loadu_si128((__m128i *) &table[idx + 0]), shuffle_source);
+                leftleft = _mm_and_si128(_mm_srai_epi32(_mm_add_epi32(_mm_madd_epi16(
+                    source, shift1D), shift_rounding), SHIFT_BITS), left_mask);
 
-                interpolate3(
-                    rightleft,
-                    &table[idx + size1D_2D * 3],
-                    &table[idx + size1D_2D * 3 + 3],
-                    shift1D);
-                interpolate3(
-                    rightright,
-                    &table[idx + size1D_2D * 3 + size1D * 3],
-                    &table[idx + size1D_2D * 3 + size1D * 3 + 3],
-                    shift1D);
-                interpolate3(right, rightleft, rightright, shift2D);
+                source = _mm_shuffle_epi8(
+                    _mm_loadu_si128((__m128i *) &table[idx + size1D*3]), shuffle_source);
+                leftright = _mm_and_si128(_mm_slli_epi32(_mm_add_epi32(_mm_madd_epi16(
+                    source, shift1D), shift_rounding), 16 - SHIFT_BITS), right_mask);
 
-                interpolate3(result, left, right, shift3D);
+                source = _mm_shuffle_epi8(
+                    _mm_loadu_si128((__m128i *) &table[idx + size1D_2D*3]), shuffle_source);
+                rightleft = _mm_and_si128(_mm_srai_epi32(_mm_add_epi32(_mm_madd_epi16(
+                    source, shift1D), shift_rounding), SHIFT_BITS), left_mask);
+                
+                source = _mm_shuffle_epi8(
+                    _mm_loadu_si128((__m128i *) &table[idx + size1D_2D*3 + size1D*3]), shuffle_source);
+                rightright = _mm_and_si128(_mm_slli_epi32(_mm_add_epi32(_mm_madd_epi16(
+                    source, shift1D), shift_rounding), 16 - SHIFT_BITS), right_mask);
 
-                v = MAKE_UINT32(
-                    clip8(result[0]),
-                    clip8(result[1]),
-                    clip8(result[2]),
-                    rowIn[x * 4 + 3]);
-                memcpy(rowOut + x * sizeof(v), &v, sizeof(v));
+                left = _mm_and_si128(_mm_srai_epi32(_mm_add_epi32(_mm_madd_epi16(
+                    _mm_or_si128(leftleft, leftright), shift2D),
+                    shift_rounding), SHIFT_BITS), left_mask);
+
+                right = _mm_and_si128(_mm_slli_epi32(_mm_add_epi32(_mm_madd_epi16(
+                    _mm_or_si128(rightleft, rightright), shift2D),
+                    shift_rounding), 16 - SHIFT_BITS), right_mask);
+
+                result = _mm_srai_epi32(_mm_add_epi32(_mm_madd_epi16(
+                    _mm_or_si128(left, right), shift3D),
+                    shift_rounding), SHIFT_BITS);
+
+                result = _mm_srai_epi32(
+                    _mm_add_epi32(_mm_set1_epi32(PRECISION_ROUNDING), result),
+                    PRECISION_BITS);
+
+                result = _mm_packs_epi32(result, result);
+                rowOut[x] = _mm_cvtsi128_si32(_mm_packus_epi16(result, result));
             }
 
-            if (table_channels == 4) {
-                UINT32 v;
-                interpolate4(leftleft, &table[idx + 0], &table[idx + 4], shift1D);
-                interpolate4(
-                    leftright,
-                    &table[idx + size1D * 4],
-                    &table[idx + size1D * 4 + 4],
-                    shift1D);
-                interpolate4(left, leftleft, leftright, shift2D);
+            // if (table_channels == 4) {
+            //     interpolate4(leftleft, &table[idx + 0], &table[idx + 4], shift1D);
+            //     interpolate4(leftright, &table[idx + size1D*4],
+            //                  &table[idx + size1D*4 + 4], shift1D);
+            //     interpolate4(left, leftleft, leftright, shift2D);
 
-                interpolate4(
-                    rightleft,
-                    &table[idx + size1D_2D * 4],
-                    &table[idx + size1D_2D * 4 + 4],
-                    shift1D);
-                interpolate4(
-                    rightright,
-                    &table[idx + size1D_2D * 4 + size1D * 4],
-                    &table[idx + size1D_2D * 4 + size1D * 4 + 4],
-                    shift1D);
-                interpolate4(right, rightleft, rightright, shift2D);
+            //     interpolate4(rightleft, &table[idx + size1D_2D*4],
+            //                  &table[idx + size1D_2D*4 + 4], shift1D);
+            //     interpolate4(rightright, &table[idx + size1D_2D*4 + size1D*4],
+            //                  &table[idx + size1D_2D*4 + size1D*4 + 4], shift1D);
+            //     interpolate4(right, rightleft, rightright, shift2D);
 
-                interpolate4(result, left, right, shift3D);
+            //     interpolate4(result, left, right, shift3D);
 
-                v = MAKE_UINT32(
-                    clip8(result[0]),
-                    clip8(result[1]),
-                    clip8(result[2]),
-                    clip8(result[3]));
-                memcpy(rowOut + x * sizeof(v), &v, sizeof(v));
-            }
+            //     rowOut[x] = MAKE_UINT32(
+            //             clip8(result[0]), clip8(result[1]),
+            //             clip8(result[2]), clip8(result[3]));
+            // }
         }
     }
     ImagingSectionLeave(&cookie);
