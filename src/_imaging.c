@@ -834,10 +834,7 @@ _convert(ImagingObject* self, PyObject* args)
         }
     }
 
-    return PyImagingNew(ImagingConvert(
-        self->image, mode,
-        paletteimage ? paletteimage->image->palette : NULL,
-        dither));
+    return PyImagingNew(ImagingConvert(self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither));
 }
 
 static PyObject*

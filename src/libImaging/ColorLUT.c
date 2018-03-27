@@ -9,12 +9,12 @@
 #define PRECISION_ROUNDING (1<<(PRECISION_BITS-1))
 
 /* 8 — scales are multiplied on byte.
-   6 — max index in the table (size is 65, but index 64 is not reachable) */
+   6 — max index in the table
+       (max size is 65, but index 64 is not reachable) */
 #define SCALE_BITS (32 - 8 - 6)
-#define SCALE_MASK ((1 << SCALE_BITS) - 1)
+#define SCALE_MASK ((1<<SCALE_BITS) - 1)
 
 #define SHIFT_BITS (16 - 1)
-#define SHIFT_ROUNDING (1<<(SHIFT_BITS-1))
 
 
 static inline UINT8 clip8(int in)
@@ -25,18 +25,18 @@ static inline UINT8 clip8(int in)
 static inline void
 interpolate3(INT16 out[3], const INT16 a[3], const INT16 b[3], INT16 shift)
 {
-    out[0] = (a[0] * ((1<<SHIFT_BITS)-shift) + b[0] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
-    out[1] = (a[1] * ((1<<SHIFT_BITS)-shift) + b[1] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
-    out[2] = (a[2] * ((1<<SHIFT_BITS)-shift) + b[2] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
+    out[0] = (a[0] * ((1<<SHIFT_BITS)-shift) + b[0] * shift) >> SHIFT_BITS;
+    out[1] = (a[1] * ((1<<SHIFT_BITS)-shift) + b[1] * shift) >> SHIFT_BITS;
+    out[2] = (a[2] * ((1<<SHIFT_BITS)-shift) + b[2] * shift) >> SHIFT_BITS;
 }
 
 static inline void
 interpolate4(INT16 out[4], const INT16 a[4], const INT16 b[4], INT16 shift)
 {
-    out[0] = (a[0] * ((1<<SHIFT_BITS)-shift) + b[0] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
-    out[1] = (a[1] * ((1<<SHIFT_BITS)-shift) + b[1] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
-    out[2] = (a[2] * ((1<<SHIFT_BITS)-shift) + b[2] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
-    out[3] = (a[3] * ((1<<SHIFT_BITS)-shift) + b[3] * shift + SHIFT_ROUNDING) >> SHIFT_BITS;
+    out[0] = (a[0] * ((1<<SHIFT_BITS)-shift) + b[0] * shift) >> SHIFT_BITS;
+    out[1] = (a[1] * ((1<<SHIFT_BITS)-shift) + b[1] * shift) >> SHIFT_BITS;
+    out[2] = (a[2] * ((1<<SHIFT_BITS)-shift) + b[2] * shift) >> SHIFT_BITS;
+    out[3] = (a[3] * ((1<<SHIFT_BITS)-shift) + b[3] * shift) >> SHIFT_BITS;
 }
 
 static inline int
