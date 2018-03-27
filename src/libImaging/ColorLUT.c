@@ -58,8 +58,17 @@ ImagingColorLUT3D_linear(
     __m128i scale_mask = _mm_set1_epi32(SCALE_MASK);
     __m128i index_mul = _mm_set_epi32(0, size1D_2D*table_channels,
                                       size1D*table_channels, table_channels);
+#if defined(__AVX2__)
+    __m256i shuffle3 = _mm256_set_epi8(
+        -1,-1, -1,-1, 11,10, 5,4, 9,8, 3,2, 7,6, 1,0,
+        -1,-1, -1,-1, 11,10, 5,4, 9,8, 3,2, 7,6, 1,0);
+    __m256i shuffle4 = _mm256_set_epi8(
+        15,14, 7,6, 13,12, 5,4, 11,10, 3,2, 9,8, 1,0,
+        15,14, 7,6, 13,12, 5,4, 11,10, 3,2, 9,8, 1,0);
+#else
     __m128i shuffle3 = _mm_set_epi8(-1,-1, -1,-1, 11,10, 5,4, 9,8, 3,2, 7,6, 1,0);
     __m128i shuffle4 = _mm_set_epi8(15,14, 7,6, 13,12, 5,4, 11,10, 3,2, 9,8, 1,0);
+#endif
     int x, y;
     ImagingSectionCookie cookie;
 
@@ -97,19 +106,57 @@ ImagingColorLUT3D_linear(
                     _mm_setzero_si128()), _mm_setzero_si128()));
             __m128i shift = _mm_srli_epi32(
                 _mm_and_si128(scale_mask, index), (SCALE_BITS - SHIFT_BITS));
+
+        #if defined(__AVX2__)
+            __m256i shift1D, shift2D;
+            __m128i shift3D, result;
+            __m256i source, left, right;
+        #else
             __m128i shift1D, shift2D, shift3D;
             __m128i source, left, right, result;
             __m128i leftleft, leftright, rightleft, rightright;
+        #endif
 
             shift = _mm_or_si128(
                 _mm_sub_epi32(_mm_set1_epi32((1<<SHIFT_BITS)-1), shift),
                 _mm_slli_epi32(shift, 16));
 
+        #if defined(__AVX2__)
+            shift1D = _mm256_broadcastd_epi32(shift);
+            shift2D = _mm256_broadcastd_epi32(_mm_bsrli_si128(shift, 4));
+        #else
             shift1D = _mm_shuffle_epi32(shift, 0x00);
             shift2D = _mm_shuffle_epi32(shift, 0x55);
+        #endif
             shift3D = _mm_shuffle_epi32(shift, 0xaa);
 
             if (table_channels == 3) {
+            #if defined(__AVX2__)
+                source = _mm256_shuffle_epi8(
+                    _mm256_inserti128_si256(_mm256_castsi128_si256(
+                        _mm_loadu_si128((__m128i *) &table[idx + 0])),
+                        _mm_loadu_si128((__m128i *) &table[idx + size1D_2D*3]), 1),
+                    shuffle3);
+                left = _mm256_srai_epi32(_mm256_madd_epi16(
+                    source, shift1D), SHIFT_BITS);
+
+                source = _mm256_shuffle_epi8(
+                    _mm256_inserti128_si256(_mm256_castsi128_si256(
+                        _mm_loadu_si128((__m128i *) &table[idx + size1D*3])),
+                        _mm_loadu_si128((__m128i *) &table[idx + size1D*3 + size1D_2D*3]), 1),
+                    shuffle3);
+                right = _mm256_slli_epi32(_mm256_madd_epi16(
+                    source, shift1D), 16 - SHIFT_BITS);
+
+                left = _mm256_srai_epi32(_mm256_madd_epi16(
+                    _mm256_blend_epi16(left, right, 0xaa),
+                    shift2D), SHIFT_BITS);
+
+                result = _mm_madd_epi16(_mm_blend_epi16(
+                    _mm256_castsi256_si128(left),
+                    _mm_slli_epi32(_mm256_extracti128_si256(left, 1), 16),
+                    0xaa), shift3D);
+            #else
                 source = _mm_shuffle_epi8(
                     _mm_loadu_si128((__m128i *) &table[idx + 0]), shuffle3);
                 leftleft = _mm_srai_epi32(_mm_madd_epi16(
@@ -140,6 +187,7 @@ ImagingColorLUT3D_linear(
 
                 result = _mm_madd_epi16(
                     _mm_blend_epi16(left, right, 0xaa), shift3D);
+            #endif
 
                 result = _mm_srai_epi32(_mm_add_epi32(
                     _mm_set1_epi32(PRECISION_ROUNDING<<SHIFT_BITS), result),
@@ -150,6 +198,32 @@ ImagingColorLUT3D_linear(
             }
 
             if (table_channels == 4) {
+            #if defined(__AVX2__)
+                source = _mm256_shuffle_epi8(
+                    _mm256_inserti128_si256(_mm256_castsi128_si256(
+                        _mm_loadu_si128((__m128i *) &table[idx + 0])),
+                        _mm_loadu_si128((__m128i *) &table[idx + size1D_2D*4]), 1),
+                    shuffle4);
+                left = _mm256_srai_epi32(_mm256_madd_epi16(
+                    source, shift1D), SHIFT_BITS);
+
+                source = _mm256_shuffle_epi8(
+                    _mm256_inserti128_si256(_mm256_castsi128_si256(
+                        _mm_loadu_si128((__m128i *) &table[idx + size1D*4])),
+                        _mm_loadu_si128((__m128i *) &table[idx + size1D*4 + size1D_2D*4]), 1),
+                    shuffle4);
+                right = _mm256_slli_epi32(_mm256_madd_epi16(
+                    source, shift1D), 16 - SHIFT_BITS);
+
+                left = _mm256_srai_epi32(_mm256_madd_epi16(
+                    _mm256_blend_epi16(left, right, 0xaa),
+                    shift2D), SHIFT_BITS);
+
+                result = _mm_madd_epi16(_mm_blend_epi16(
+                    _mm256_castsi256_si128(left),
+                    _mm_slli_epi32(_mm256_extracti128_si256(left, 1), 16),
+                    0xaa), shift3D);
+            #else
                 source = _mm_shuffle_epi8(
                     _mm_loadu_si128((__m128i *) &table[idx + 0]), shuffle4);
                 leftleft = _mm_srai_epi32(_mm_madd_epi16(
@@ -180,6 +254,7 @@ ImagingColorLUT3D_linear(
 
                 result = _mm_madd_epi16(
                     _mm_blend_epi16(left, right, 0xaa), shift3D);
+            #endif
 
                 result = _mm_srai_epi32(_mm_add_epi32(
                     _mm_set1_epi32(PRECISION_ROUNDING<<SHIFT_BITS), result),
