@@ -60,8 +60,6 @@ ImagingColorLUT3D_linear(
                                       size1D*table_channels, table_channels);
     __m128i shuffle3 = _mm_set_epi8(-1,-1, -1,-1, 11,10, 5,4, 9,8, 3,2, 7,6, 1,0);
     __m128i shuffle4 = _mm_set_epi8(15,14, 7,6, 13,12, 5,4, 11,10, 3,2, 9,8, 1,0);
-    __m128i left_mask = _mm_set1_epi32(0x0000ffff);
-    __m128i right_mask = _mm_set1_epi32(0xffff0000);
     int x, y;
     ImagingSectionCookie cookie;
 
@@ -114,33 +112,34 @@ ImagingColorLUT3D_linear(
             if (table_channels == 3) {
                 source = _mm_shuffle_epi8(
                     _mm_loadu_si128((__m128i *) &table[idx + 0]), shuffle3);
-                leftleft = _mm_and_si128(_mm_srai_epi32(_mm_madd_epi16(
-                    source, shift1D), SHIFT_BITS), left_mask);
+                leftleft = _mm_srai_epi32(_mm_madd_epi16(
+                    source, shift1D), SHIFT_BITS);
 
                 source = _mm_shuffle_epi8(
                     _mm_loadu_si128((__m128i *) &table[idx + size1D*3]), shuffle3);
-                leftright = _mm_and_si128(_mm_slli_epi32(_mm_madd_epi16(
-                    source, shift1D), 16 - SHIFT_BITS), right_mask);
+                leftright = _mm_slli_epi32(_mm_madd_epi16(
+                    source, shift1D), 16 - SHIFT_BITS);
 
                 source = _mm_shuffle_epi8(
                     _mm_loadu_si128((__m128i *) &table[idx + size1D_2D*3]), shuffle3);
-                rightleft = _mm_and_si128(_mm_srai_epi32(_mm_madd_epi16(
-                    source, shift1D), SHIFT_BITS), left_mask);
+                rightleft = _mm_srai_epi32(_mm_madd_epi16(
+                    source, shift1D), SHIFT_BITS);
                 
                 source = _mm_shuffle_epi8(
                     _mm_loadu_si128((__m128i *) &table[idx + size1D_2D*3 + size1D*3]), shuffle3);
-                rightright = _mm_and_si128(_mm_slli_epi32(_mm_madd_epi16(
-                    source, shift1D), 16 - SHIFT_BITS), right_mask);
+                rightright = _mm_slli_epi32(_mm_madd_epi16(
+                    source, shift1D), 16 - SHIFT_BITS);
 
-                left = _mm_and_si128(_mm_srai_epi32(_mm_madd_epi16(
-                    _mm_or_si128(leftleft, leftright), shift2D),
-                    SHIFT_BITS), left_mask);
+                left = _mm_srai_epi32(_mm_madd_epi16(
+                    _mm_blend_epi16(leftleft, leftright, 0xaa), shift2D),
+                    SHIFT_BITS);
 
-                right = _mm_and_si128(_mm_slli_epi32(_mm_madd_epi16(
-                    _mm_or_si128(rightleft, rightright), shift2D),
-                    16 - SHIFT_BITS), right_mask);
+                right = _mm_slli_epi32(_mm_madd_epi16(
+                    _mm_blend_epi16(rightleft, rightright, 0xaa), shift2D),
+                    16 - SHIFT_BITS);
 
-                result = _mm_madd_epi16(_mm_or_si128(left, right), shift3D);
+                result = _mm_madd_epi16(
+                    _mm_blend_epi16(left, right, 0xaa), shift3D);
 
                 result = _mm_srai_epi32(_mm_add_epi32(
                     _mm_set1_epi32(PRECISION_ROUNDING<<SHIFT_BITS), result),
@@ -153,33 +152,34 @@ ImagingColorLUT3D_linear(
             if (table_channels == 4) {
                 source = _mm_shuffle_epi8(
                     _mm_loadu_si128((__m128i *) &table[idx + 0]), shuffle4);
-                leftleft = _mm_and_si128(_mm_srai_epi32(_mm_madd_epi16(
-                    source, shift1D), SHIFT_BITS), left_mask);
+                leftleft = _mm_srai_epi32(_mm_madd_epi16(
+                    source, shift1D), SHIFT_BITS);
 
                 source = _mm_shuffle_epi8(
                     _mm_loadu_si128((__m128i *) &table[idx + size1D*4]), shuffle4);
-                leftright = _mm_and_si128(_mm_slli_epi32(_mm_madd_epi16(
-                    source, shift1D), 16 - SHIFT_BITS), right_mask);
+                leftright = _mm_slli_epi32(_mm_madd_epi16(
+                    source, shift1D), 16 - SHIFT_BITS);
 
                 source = _mm_shuffle_epi8(
                     _mm_loadu_si128((__m128i *) &table[idx + size1D_2D*4]), shuffle4);
-                rightleft = _mm_and_si128(_mm_srai_epi32(_mm_madd_epi16(
-                    source, shift1D), SHIFT_BITS), left_mask);
+                rightleft = _mm_srai_epi32(_mm_madd_epi16(
+                    source, shift1D), SHIFT_BITS);
                 
                 source = _mm_shuffle_epi8(
                     _mm_loadu_si128((__m128i *) &table[idx + size1D_2D*4 + size1D*4]), shuffle4);
-                rightright = _mm_and_si128(_mm_slli_epi32(_mm_madd_epi16(
-                    source, shift1D), 16 - SHIFT_BITS), right_mask);
+                rightright = _mm_slli_epi32(_mm_madd_epi16(
+                    source, shift1D), 16 - SHIFT_BITS);
 
-                left = _mm_and_si128(_mm_srai_epi32(_mm_madd_epi16(
-                    _mm_or_si128(leftleft, leftright), shift2D),
-                    SHIFT_BITS), left_mask);
+                left = _mm_srai_epi32(_mm_madd_epi16(
+                    _mm_blend_epi16(leftleft, leftright, 0xaa), shift2D),
+                    SHIFT_BITS);
 
-                right = _mm_and_si128(_mm_slli_epi32(_mm_madd_epi16(
-                    _mm_or_si128(rightleft, rightright), shift2D),
-                    16 - SHIFT_BITS), right_mask);
+                right = _mm_slli_epi32(_mm_madd_epi16(
+                    _mm_blend_epi16(rightleft, rightright, 0xaa), shift2D),
+                    16 - SHIFT_BITS);
 
-                result = _mm_madd_epi16(_mm_or_si128(left, right), shift3D);
+                result = _mm_madd_epi16(
+                    _mm_blend_epi16(left, right, 0xaa), shift3D);
 
                 result = _mm_srai_epi32(_mm_add_epi32(
                     _mm_set1_epi32(PRECISION_ROUNDING<<SHIFT_BITS), result),
