@@ -1749,7 +1749,7 @@ class Image(object):
         return self._new(self.im.resize(size, resample, box))
 
     def rotate(self, angle, resample=NEAREST, expand=0, center=None,
-               translate=None, backgroundcolor=None):
+               translate=None, fillcolor=None):
         """
         Returns a rotated copy of this image.  This method returns a
         copy of this image, rotated the given number of degrees counter
@@ -1771,7 +1771,7 @@ class Image(object):
         :param center: Optional center of rotation (a 2-tuple).  Origin is
            the upper left corner.  Default is the center of the image.
         :param translate: An optional post-rotate translation (a 2-tuple).
-        :param backgroundcolor: An optional color for the color outside the transformed image
+        :param fillcolor: An optional color for the color outside the rotated image.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -1852,7 +1852,7 @@ class Image(object):
                                              matrix)
             w, h = nw, nh
 
-        return self.transform((w, h), AFFINE, matrix, resample, fillcolor=backgroundcolor)
+        return self.transform((w, h), AFFINE, matrix, resample, fillcolor=fillcolor)
 
     def save(self, fp, format=None, **params):
         """
