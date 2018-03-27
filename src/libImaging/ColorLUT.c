@@ -104,17 +104,23 @@ ImagingColorLUT3D_linear(
 
     ImagingSectionEnter(&cookie);
     for (y = 0; y < imOut->ysize; y++) {
-        UINT8 *rowIn = (UINT8 *)imIn->image[y];
-        char *rowOut = (char *)imOut->image[y];
+        UINT8* rowIn = (UINT8 *)imIn->image[y];
+        UINT32* rowOut = (UINT32 *)imOut->image[y];
+        __m128i index = _mm_mullo_epi32(scale,
+            _mm_cvtepu8_epi32(*(__m128i *) &rowIn[0]));
+        int idx = table_channels * _mm_extract_epi32(
+            _mm_hadd_epi32(_mm_hadd_epi32(
+                _mm_madd_epi16(index_mul, _mm_srli_epi32(index, SCALE_BITS)),
+                _mm_setzero_si128()), _mm_setzero_si128()), 0);
         for (x = 0; x < imOut->xsize; x++) {
-            __m128i index = _mm_mullo_epi32(scale,
-                _mm_cvtepu8_epi32(*(__m128i *) &rowIn[x*4]));
+            __m128i next_index = _mm_mullo_epi32(scale,
+                _mm_cvtepu8_epi32(*(__m128i *) &rowIn[x*4 + 4]));
+            int next_idx = table_channels * _mm_extract_epi32(
+                _mm_hadd_epi32(_mm_hadd_epi32(
+                    _mm_madd_epi16(index_mul, _mm_srli_epi32(next_index, SCALE_BITS)),
+                    _mm_setzero_si128()), _mm_setzero_si128()), 0);
             __m128i shift = _mm_srli_epi32(
                 _mm_and_si128(scale_mask, index), (SCALE_BITS - SHIFT_BITS));
-            int idx = table_channels * _mm_extract_epi32(
-                _mm_hadd_epi32(_mm_hadd_epi32(
-                    _mm_madd_epi16(index_mul, _mm_srli_epi32(index, SCALE_BITS)),
-                    _mm_setzero_si128()), _mm_setzero_si128()), 0);
             __m128i shift1D, shift2D, shift3D;
             __m128i source, left, right, result;
             __m128i leftleft, leftright, rightleft, rightright;
