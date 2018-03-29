@@ -130,7 +130,6 @@ class MaxFilter(RankFilter):
 
 class ModeFilter(Filter):
     """
-
     Create a mode filter. Picks the most frequent pixel value in a box with the
     given size.  Pixel values that occur only once or twice are ignored; if no
     pixel value occurs more than twice, the original pixel value is preserved.
@@ -297,3 +296,61 @@ class SMOOTH_MORE(BuiltinFilter):
         1,  5,  5,  5,  1,
         1,  1,  1,  1,  1
         )
+
+
+class Color3DLUT(MultibandFilter):
+    """Three-dimensional color lookup table.
+
+    Transforms 3-channel pixels using the values of the channels as coordinates
+    in the 3D lookup table and interpolating the nearest elements.
+
+    This method allows you to apply almost any color transformation
+    in constant time by using pre-calculated decimated tables.
+
+    :param size: Size of the table. One int or tuple of (int, int, int).
+                 Minimal size in any dimension is 2, maximum is 65.
+    :param table: Flat lookup table. A list of ``channels * size**3``
+                  float elements or a list of ``size**3`` channels-sized
+                  tuples with floats. Channels are changed first,
+                  then first dimension, then second, then third.
+                  Value 0.0 corresponds lowest value of output, 1.0 highest.
+    :param channels: Number of channels in the table. Could be 3 or 4.
+                     Default is 3.
+    :param target_mode: A mode for the result image. Should have not less
+                        than ``channels`` channels. Default is ``None``,
+                        which means that mode wouldn't be changed.
+    """
+    def __init__(self, size, table, channels=3, target_mode=None):
+        try:
+            _, _, _ = size
+        except ValueError:
+            raise ValueError("Size should be an integer either "
+                             "tuple of three integers.")
+        except TypeError:
+            size = (size, size, size)
+        self.size = size
+        self.channels = channels
+        self.mode = target_mode
+
+        table = list(table)
+        # Convert to a flat list
+        if isinstance(table[0], (list, tuple)):
+            table = [
+                pixel
+                for pixel in table
+                if len(pixel) == channels
+                    for color in pixel
+            ]
+
+        if len(table) != channels * size[0] * size[1] * size[2]:
+            raise ValueError(
+                "The table should have channels * size**3 float items "
+                "either size**3 items of channels-sized tuples with floats.")
+        self.table = table
+
+    def filter(self, image):
+        from . import Image
+
+        return image.color_lut_3d(
+            self.mode or image.mode, Image.LINEAR, self.channels,
+            self.size[0], self.size[1], self.size[2], self.table)
