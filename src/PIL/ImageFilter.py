@@ -355,7 +355,7 @@ class Color3DLUT(MultibandFilter):
                              "tuple of three integers.")
         except TypeError:
             size = (size, size, size)
-        size = map(int, size)
+        size = [int(x) for x in size]
         for size1D in size:
             if not 2 <= size1D <= 65:
                 raise ValueError("Size should be in [2, 65] range.")
