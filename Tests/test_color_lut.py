@@ -198,7 +198,24 @@ class TestColorLut3DCoreAPI(PillowTestCase):
                     -1, -1,  2,   2, -1,  2,
                     -1,  2,  2,   2,  2,  2,
                 ])).load()
+        self.assertEqual(transformed[0, 0], (0, 0, 255))
+        self.assertEqual(transformed[50, 50], (0, 0, 255))
+        self.assertEqual(transformed[255, 0], (0, 255, 255))
+        self.assertEqual(transformed[205, 50], (0, 255, 255))
+        self.assertEqual(transformed[0, 255], (255, 0, 0))
+        self.assertEqual(transformed[50, 205], (255, 0, 0))
+        self.assertEqual(transformed[255, 255], (255, 255, 0))
+        self.assertEqual(transformed[205, 205], (255, 255, 0))
 
+        transformed = im._new(im.im.color_lut_3d('RGB', Image.LINEAR,
+                3, 2, 2, 2,
+                [
+                    -3, -3, -3,   5, -3, -3,
+                    -3,  5, -3,   5,  5, -3,
+
+                    -3, -3,  5,   5, -3,  5,
+                    -3,  5,  5,   5,  5,  5,
+                ])).load()
         self.assertEqual(transformed[0, 0], (0, 0, 255))
         self.assertEqual(transformed[50, 50], (0, 0, 255))
         self.assertEqual(transformed[255, 0], (0, 255, 255))
@@ -256,6 +273,11 @@ class TestColorLut3DFilter(PillowTestCase):
         self.assertEqual(flt.table[:24], [
             0.0, 0.0, 0.0,  0.25, 0.0, 0.0,  0.5, 0.0, 0.0,  0.75, 0.0, 0.0,
             1.0, 0.0, 0.0,  0.0, 0.25, 0.0,  0.25, 0.25, 0.0,  0.5, 0.25, 0.0])
+
+        g = Image.linear_gradient('L')
+        im = Image.merge('RGB', [g, g.transpose(Image.ROTATE_90),
+                                 g.transpose(Image.ROTATE_180)])
+        self.assertEqual(im, im.filter(flt))
 
         flt = ImageFilter.Color3DLUT.generate(5, channels=4,
             callback=lambda r, g, b: (b, r, g, (r+g+b) / 2))
