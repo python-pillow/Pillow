@@ -43,6 +43,7 @@ class Kernel(MultibandFilter):
     :param offset: Offset. If given, this value is added to the result,
                     after it has been divided by the scale factor.
     """
+    name = "Kernel"
 
     def __init__(self, size, kernel, scale=None, offset=0):
         if scale is None:
@@ -320,6 +321,8 @@ class Color3DLUT(MultibandFilter):
                         than ``channels`` channels. Default is ``None``,
                         which means that mode wouldn't be changed.
     """
+    name = "Color 3D LUT"
+
     def __init__(self, size, table, channels=3, target_mode=None):
         try:
             _, _, _ = size
@@ -328,24 +331,31 @@ class Color3DLUT(MultibandFilter):
                              "tuple of three integers.")
         except TypeError:
             size = (size, size, size)
+        size = map(int, size)
+        for size1D in size:
+            if not 2 <= size1D <= 65:
+                raise ValueError("Size should be in [2, 65] range.")
+
         self.size = size
         self.channels = channels
         self.mode = target_mode
 
         table = list(table)
         # Convert to a flat list
-        if isinstance(table[0], (list, tuple)):
-            table = [
-                pixel
-                for pixel in table
-                if len(pixel) == channels
-                    for color in pixel
-            ]
+        if table and isinstance(table[0], (list, tuple)):
+            table, raw_table = [], table
+            for pixel in raw_table:
+                if len(pixel) != channels:
+                    raise ValueError("The elements of the table should have "
+                                     "a length of {}.".format(channels))
+                for color in pixel:
+                    table.append(color)
 
         if len(table) != channels * size[0] * size[1] * size[2]:
             raise ValueError(
                 "The table should have channels * size**3 float items "
-                "either size**3 items of channels-sized tuples with floats.")
+                "either size**3 items of channels-sized tuples with floats. "
+                "Table length: {}".format(len(table)))
         self.table = table
 
     def filter(self, image):

@@ -1,7 +1,7 @@
 from __future__ import division
 from helper import unittest, PillowTestCase
 
-from PIL import Image
+from PIL import Image, ImageFilter
 
 
 class TestColorLut3DCoreAPI(PillowTestCase):
@@ -27,7 +27,7 @@ class TestColorLut3DCoreAPI(PillowTestCase):
             channels, size1D, size2D, size3D,
             [item for sublist in table for item in sublist])
 
-    def test_wrong_arguments(self):
+    def test_wrong_args(self):
         im = Image.new('RGB', (10, 10), 0)
 
         with self.assertRaisesRegexp(ValueError, "filter"):
@@ -66,7 +66,7 @@ class TestColorLut3DCoreAPI(PillowTestCase):
             im.im.color_lut_3d('RGB', Image.LINEAR,
                 3, 2, 2, 2, [0, 0, 0] * 9)
 
-    def test_correct_arguments(self):
+    def test_correct_args(self):
         im = Image.new('RGB', (10, 10), 0)
 
         im.im.color_lut_3d('RGB', Image.LINEAR,
@@ -207,6 +207,47 @@ class TestColorLut3DCoreAPI(PillowTestCase):
         self.assertEqual(transformed[50, 205], (255, 0, 0))
         self.assertEqual(transformed[255, 255], (255, 255, 0))
         self.assertEqual(transformed[205, 205], (255, 255, 0))
+
+
+class TestColorLut3DFilter(PillowTestCase):
+    def test_wrong_args(self):
+        with self.assertRaisesRegexp(ValueError, "should be an integer"):
+            ImageFilter.Color3DLUT("small", [1])
+
+        with self.assertRaisesRegexp(ValueError, "should be an integer"):
+            ImageFilter.Color3DLUT((11, 11), [1])
+
+        with self.assertRaisesRegexp(ValueError, r"in \[2, 65\] range"):
+            ImageFilter.Color3DLUT((11, 11, 1), [1])
+
+        with self.assertRaisesRegexp(ValueError, r"in \[2, 65\] range"):
+            ImageFilter.Color3DLUT((11, 11, 66), [1])
+
+        with self.assertRaisesRegexp(ValueError, "table should have .+ items"):
+            ImageFilter.Color3DLUT((3, 3, 3), [1, 1, 1])
+
+        with self.assertRaisesRegexp(ValueError, "table should have .+ items"):
+            ImageFilter.Color3DLUT((3, 3, 3), [[1, 1, 1]] * 2)
+
+        with self.assertRaisesRegexp(ValueError, "should have a length of 4"):
+            ImageFilter.Color3DLUT((3, 3, 3), [[1, 1, 1]] * 27, channels=4)
+
+        with self.assertRaisesRegexp(ValueError, "should have a length of 3"):
+            ImageFilter.Color3DLUT((2, 2, 2), [[1, 1]] * 8)
+
+    def test_convert_table(self):
+        flt = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
+        self.assertEqual(tuple(flt.size), (2, 2, 2))
+        self.assertEqual(flt.name, "Color 3D LUT")
+
+        flt = ImageFilter.Color3DLUT((2, 2, 2), [
+            (0, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10, 11),
+            (12, 13, 14), (15, 16, 17), (18, 19, 20), (21, 22, 23)])
+        self.assertEqual(tuple(flt.size), (2, 2, 2))
+        self.assertEqual(flt.table, list(range(24)))
+
+        flt = ImageFilter.Color3DLUT((2, 2, 2), [(0, 1, 2, 3)] * 8,
+            channels=4)
 
 
 if __name__ == '__main__':
