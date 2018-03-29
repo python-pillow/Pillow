@@ -324,19 +324,7 @@ class Color3DLUT(MultibandFilter):
     name = "Color 3D LUT"
 
     def __init__(self, size, table, channels=3, target_mode=None):
-        try:
-            _, _, _ = size
-        except ValueError:
-            raise ValueError("Size should be an integer either "
-                             "tuple of three integers.")
-        except TypeError:
-            size = (size, size, size)
-        size = map(int, size)
-        for size1D in size:
-            if not 2 <= size1D <= 65:
-                raise ValueError("Size should be in [2, 65] range.")
-
-        self.size = size
+        self.size = size = self._check_size(size)
         self.channels = channels
         self.mode = target_mode
 
@@ -357,6 +345,45 @@ class Color3DLUT(MultibandFilter):
                 "either size**3 items of channels-sized tuples with floats. "
                 "Table length: {}".format(len(table)))
         self.table = table
+
+    @staticmethod
+    def _check_size(size):
+        try:
+            _, _, _ = size
+        except ValueError:
+            raise ValueError("Size should be an integer either "
+                             "tuple of three integers.")
+        except TypeError:
+            size = (size, size, size)
+        size = map(int, size)
+        for size1D in size:
+            if not 2 <= size1D <= 65:
+                raise ValueError("Size should be in [2, 65] range.")
+        return size
+
+    @classmethod
+    def generate(cls, size, callback, channels=3, target_mode=None):
+        """Generates new LUT using provided callback.
+
+        :param size: Size of the table. Passed to the constructor.
+        :param callback: Function with three parameters which correspond
+                         three color channels. Will be called ``size**3``
+                         times with values from 0.0 to 1.0 and should return
+                         a tuple with ``channels`` elements.
+        :param channels: Passed to the constructor.
+        :param target_mode: Passed to the constructor.
+        """
+        size1D, size2D, size3D = cls._check_size(size)
+        table = []
+        for b in range(size3D):
+            for g in range(size2D):
+                for r in range(size1D):
+                    table.append(callback(
+                        r / float(size1D-1),
+                        g / float(size2D-1),
+                        b / float(size3D-1)))
+
+        return cls((size1D, size2D, size3D), table, channels, target_mode)
 
     def filter(self, image):
         from . import Image
