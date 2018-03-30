@@ -343,8 +343,8 @@ class Color3DLUT(MultibandFilter):
 
         if len(table) != channels * size[0] * size[1] * size[2]:
             raise ValueError(
-                "The table should have channels * size**3 float items "
-                "either size**3 items of channels-sized tuples with floats. "
+                "The table should have either channels * size**3 float items "
+                "or size**3 items of channels-sized tuples with floats. "
                 "Table size: {}x{}x{}. Table length: {}".format(
                     size[0], size[1], size[2], len(table)))
         self.table = table
@@ -354,8 +354,8 @@ class Color3DLUT(MultibandFilter):
         try:
             _, _, _ = size
         except ValueError:
-            raise ValueError("Size should be an integer either "
-                             "tuple of three integers.")
+            raise ValueError("Size should be either an integer or "
+                             "a tuple of three integers.")
         except TypeError:
             size = (size, size, size)
         size = [int(x) for x in size]

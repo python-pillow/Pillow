@@ -1,4 +1,5 @@
 from __future__ import division
+from tempfile import NamedTemporaryFile
 from helper import unittest, PillowTestCase
 
 from PIL import Image, ImageFilter
@@ -228,10 +229,10 @@ class TestColorLut3DCoreAPI(PillowTestCase):
 
 class TestColorLut3DFilter(PillowTestCase):
     def test_wrong_args(self):
-        with self.assertRaisesRegexp(ValueError, "should be an integer"):
+        with self.assertRaisesRegexp(ValueError, "should be either an integer"):
             ImageFilter.Color3DLUT("small", [1])
 
-        with self.assertRaisesRegexp(ValueError, "should be an integer"):
+        with self.assertRaisesRegexp(ValueError, "should be either an integer"):
             ImageFilter.Color3DLUT((11, 11), [1])
 
         with self.assertRaisesRegexp(ValueError, r"in \[2, 65\] range"):
@@ -316,7 +317,8 @@ class TestColorLut3DFilter(PillowTestCase):
         lut = ImageFilter.Color3DLUT.from_cube_file([
             " # Comment",
             'TITLE "LUT name from file"',
-            "LUT_3D_SIZE 2 3 4",
+            "  LUT_3D_SIZE 2 3 4",
+            " SKIP THIS",
             " # Comment",
             "CHANNELS 4",
             "",
@@ -334,6 +336,55 @@ class TestColorLut3DFilter(PillowTestCase):
         self.assertEqual(lut.mode, 'HSV')
         self.assertEqual(lut.table[:12], [
             0, 0, 0.031, 1,  0.96, 0, 0.031, 1,  0, 1, 0.031, 1])
+
+    def test_from_cube_file_errors(self):
+        with self.assertRaisesRegexp(ValueError, "No size found"):
+            lut = ImageFilter.Color3DLUT.from_cube_file([
+                'TITLE "LUT name from file"',
+                "",
+            ] + [
+                "0    0 0.031",
+                "0.96 0 0.031",
+            ] * 3)
+
+        with self.assertRaisesRegexp(ValueError, "number of colors on line 4"):
+            lut = ImageFilter.Color3DLUT.from_cube_file([
+                'LUT_3D_SIZE 2',
+                "",
+            ] + [
+                "0    0 0.031",
+                "0.96 0 0.031 1",
+            ] * 3)
+
+        with self.assertRaisesRegexp(ValueError, "Not a number on line 3"):
+            lut = ImageFilter.Color3DLUT.from_cube_file([
+                'LUT_3D_SIZE 2',
+                "",
+            ] + [
+                "0  green 0.031",
+                "0.96 0 0.031",
+            ] * 3)
+
+    def test_from_cube_file_filename(self):
+        with NamedTemporaryFile() as f:
+            f.write(
+                "LUT_3D_SIZE 2\n"
+                "\n"
+                "0    0 0.031\n"
+                "0.96 0 0.031\n"
+                "0    1 0.031\n"
+                "0.96 1 0.031\n"
+                "0    0 0.931\n"
+                "0.96 0 0.931\n"
+                "0    1 0.931\n"
+                "0.96 1 0.931\n"
+            )
+            f.flush()
+            lut = ImageFilter.Color3DLUT.from_cube_file(f.name)
+            self.assertEqual(tuple(lut.size), (2, 2, 2))
+            self.assertEqual(lut.name, "Color 3D LUT")
+            self.assertEqual(lut.table[:12], [
+                0, 0, 0.031,  0.96, 0, 0.031,  0, 1, 0.031,  0.96, 1, 0.031])
 
 
 if __name__ == '__main__':
