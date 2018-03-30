@@ -100,22 +100,23 @@ ImagingColorLUT3D_linear(
 
     ImagingSectionEnter(&cookie);
     for (y = 0; y < imOut->ysize; y++) {
-        UINT8* rowIn = (UINT8 *)imIn->image[y];
+        UINT32* rowIn = (UINT32 *)imIn->image[y];
         UINT32* rowOut = (UINT32 *)imOut->image[y];
+        UINT8* rowIn8 = (UINT8 *)imIn->image[y];
+        UINT8* rowOut8 = (UINT8 *)imOut->image[y];
         int x = 0;
 
     #if defined(__AVX2__)
     {
-        __m256i index = _mm256_mullo_epi32(scale256,
-            _mm256_cvtepu8_epi32(*(__m128i *) &rowIn[x*4]));
+        __m256i index = _mm256_mullo_epi32(scale256, mm256_cvtepu8_epi32(&rowIn[x]));
         __m256i idxs = _mm256_hadd_epi32(_mm256_hadd_epi32(
             _mm256_madd_epi16(index_mul256, _mm256_srli_epi32(index, SCALE_BITS)),
             _mm256_setzero_si256()), _mm256_setzero_si256());
         int idx1 = _mm_cvtsi128_si32(_mm256_castsi256_si128(idxs));
         int idx2 = _mm256_extract_epi32(idxs, 4);
+
         for (; x < imOut->xsize - 1; x += 2) {
-            __m256i next_index = _mm256_mullo_epi32(scale256,
-                _mm256_cvtepu8_epi32(*(__m128i *) &rowIn[x*4 + 8]));
+            __m256i next_index = _mm256_mullo_epi32(scale256, mm256_cvtepu8_epi32(&rowIn[x + 2]));
             __m256i next_idxs = _mm256_hadd_epi32(_mm256_hadd_epi32(
                 _mm256_madd_epi16(index_mul256, _mm256_srli_epi32(next_index, SCALE_BITS)),
                 _mm256_setzero_si256()), _mm256_setzero_si256());
@@ -187,8 +188,10 @@ ImagingColorLUT3D_linear(
 
                 result = _mm256_packs_epi32(result, result);
                 result = _mm256_packus_epi16(result, result);
-                rowOut[x+0] = _mm_cvtsi128_si32(_mm256_castsi256_si128(result));
-                rowOut[x+1] = _mm256_extract_epi32(result, 4);
+                rowOut[x + 0] = _mm_cvtsi128_si32(_mm256_castsi256_si128(result));
+                rowOut[x + 1] = _mm256_extract_epi32(result, 4);
+                rowOut8[x*4 + 3] = rowIn8[x*4 + 3];
+                rowOut8[x*4 + 7] = rowIn8[x*4 + 7];
             }
 
             if (table_channels == 4) {
@@ -251,15 +254,14 @@ ImagingColorLUT3D_linear(
     }
     #endif
 
-        __m128i index = _mm_mullo_epi32(scale,
-            _mm_cvtepu8_epi32(*(__m128i *) &rowIn[x*4]));
+        __m128i index = _mm_mullo_epi32(scale, mm_cvtepu8_epi32(&rowIn[x]));
         int idx = _mm_cvtsi128_si32(
             _mm_hadd_epi32(_mm_hadd_epi32(
                 _mm_madd_epi16(index_mul, _mm_srli_epi32(index, SCALE_BITS)),
                 _mm_setzero_si128()), _mm_setzero_si128()));
+
         for (; x < imOut->xsize; x++) {
-            __m128i next_index = _mm_mullo_epi32(scale,
-                _mm_cvtepu8_epi32(*(__m128i *) &rowIn[x*4 + 4]));
+            __m128i next_index = _mm_mullo_epi32(scale, mm_cvtepu8_epi32(&rowIn[x + 1]));
             int next_idx = _mm_cvtsi128_si32(
                 _mm_hadd_epi32(_mm_hadd_epi32(
                     _mm_madd_epi16(index_mul, _mm_srli_epi32(next_index, SCALE_BITS)),
@@ -318,6 +320,7 @@ ImagingColorLUT3D_linear(
 
                 result = _mm_packs_epi32(result, result);
                 rowOut[x] = _mm_cvtsi128_si32(_mm_packus_epi16(result, result));
+                rowOut8[x*4 + 3] = rowIn8[x*4 + 3];
             }
 
             if (table_channels == 4) {
