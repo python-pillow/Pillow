@@ -16,6 +16,7 @@
 #
 
 import functools
+from itertools import chain
 
 from ._util import isPath
 
@@ -402,8 +403,6 @@ class Color3DLUT(MultibandFilter):
 
             for i, line in enumerate(iterator, 1):
                 line = line.strip()
-                if not line:
-                    break
                 if line.startswith('TITLE "'):
                     name = line.split('"')[1]
                     continue
@@ -414,12 +413,22 @@ class Color3DLUT(MultibandFilter):
                     continue
                 if line.startswith('CHANNELS '):
                     channels = int(line.split()[1])
+                if line.startswith('LUT_1D_SIZE '):
+                    raise ValueError("1D LUT cube files aren't supported.")
+
+                try:
+                    float(line.partition(' ')[0])
+                except ValueError:
+                    pass
+                else:
+                    # Data starts
+                    break
 
             if size is None:
                 raise ValueError('No size found in the file')
 
             table = []
-            for i, line in enumerate(iterator, i + 1):
+            for i, line in enumerate(chain([line], iterator), i):
                 line = line.strip()
                 if not line or line.startswith('#'):
                     continue

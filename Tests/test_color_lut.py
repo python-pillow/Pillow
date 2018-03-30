@@ -300,7 +300,6 @@ class TestColorLut3DFilter(PillowTestCase):
     def test_from_cube_file_minimal(self):
         lut = ImageFilter.Color3DLUT.from_cube_file([
             "LUT_3D_SIZE 2",
-            "",
             "0    0 0.031",
             "0.96 0 0.031",
             "0    1 0.031",
@@ -321,6 +320,7 @@ class TestColorLut3DFilter(PillowTestCase):
             'TITLE "LUT name from file"',
             "  LUT_3D_SIZE 2 3 4",
             " SKIP THIS",
+            "",
             " # Comment",
             "CHANNELS 4",
             "",
@@ -343,25 +343,30 @@ class TestColorLut3DFilter(PillowTestCase):
         with self.assertRaisesRegexp(ValueError, "No size found"):
             lut = ImageFilter.Color3DLUT.from_cube_file([
                 'TITLE "LUT name from file"',
-                "",
             ] + [
                 "0    0 0.031",
                 "0.96 0 0.031",
             ] * 3)
 
-        with self.assertRaisesRegexp(ValueError, "number of colors on line 4"):
+        with self.assertRaisesRegexp(ValueError, "number of colors on line 3"):
             lut = ImageFilter.Color3DLUT.from_cube_file([
                 'LUT_3D_SIZE 2',
-                "",
             ] + [
                 "0    0 0.031",
                 "0.96 0 0.031 1",
             ] * 3)
 
-        with self.assertRaisesRegexp(ValueError, "Not a number on line 3"):
+        with self.assertRaisesRegexp(ValueError, "1D LUT cube files"):
+            lut = ImageFilter.Color3DLUT.from_cube_file([
+                'LUT_1D_SIZE 2',
+            ] + [
+                "0    0 0.031",
+                "0.96 0 0.031 1",
+            ])
+
+        with self.assertRaisesRegexp(ValueError, "Not a number on line 2"):
             lut = ImageFilter.Color3DLUT.from_cube_file([
                 'LUT_3D_SIZE 2',
-                "",
             ] + [
                 "0  green 0.031",
                 "0.96 0 0.031",
@@ -371,7 +376,6 @@ class TestColorLut3DFilter(PillowTestCase):
         with NamedTemporaryFile('w+t', delete=False) as f:
             f.write(
                 "LUT_3D_SIZE 2\n"
-                "\n"
                 "0    0 0.031\n"
                 "0.96 0 0.031\n"
                 "0    1 0.031\n"
