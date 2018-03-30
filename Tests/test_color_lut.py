@@ -1,8 +1,10 @@
 from __future__ import division
+
+import os
 from tempfile import NamedTemporaryFile
-from helper import unittest, PillowTestCase
 
 from PIL import Image, ImageFilter
+from helper import unittest, PillowTestCase
 
 
 class TestColorLut3DCoreAPI(PillowTestCase):
@@ -366,7 +368,7 @@ class TestColorLut3DFilter(PillowTestCase):
             ] * 3)
 
     def test_from_cube_file_filename(self):
-        with NamedTemporaryFile('w+t') as f:
+        with NamedTemporaryFile('w+t', delete=False) as f:
             f.write(
                 "LUT_3D_SIZE 2\n"
                 "\n"
@@ -379,12 +381,15 @@ class TestColorLut3DFilter(PillowTestCase):
                 "0    1 0.931\n"
                 "0.96 1 0.931\n"
             )
-            f.flush()
+
+        try:
             lut = ImageFilter.Color3DLUT.from_cube_file(f.name)
             self.assertEqual(tuple(lut.size), (2, 2, 2))
             self.assertEqual(lut.name, "Color 3D LUT")
             self.assertEqual(lut.table[:12], [
                 0, 0, 0.031,  0.96, 0, 0.031,  0, 1, 0.031,  0.96, 1, 0.031])
+        finally:
+            os.unlink(f.name)
 
 
 if __name__ == '__main__':
