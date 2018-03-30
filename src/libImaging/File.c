@@ -71,6 +71,7 @@ ImagingSavePPM(Imaging im, const char* outfile)
         fprintf(fp, "P6\n%d %d\n255\n", im->xsize, im->ysize);
     } else {
         (void) ImagingError_ModeError();
+        fclose(fp);
         return 0;
     }
 
