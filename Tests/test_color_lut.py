@@ -366,7 +366,7 @@ class TestColorLut3DFilter(PillowTestCase):
             ] * 3)
 
     def test_from_cube_file_filename(self):
-        with NamedTemporaryFile() as f:
+        with NamedTemporaryFile('w+t') as f:
             f.write(
                 "LUT_3D_SIZE 2\n"
                 "\n"
