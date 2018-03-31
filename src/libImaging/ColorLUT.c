@@ -82,6 +82,7 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
     UINT32 scale3D = (size3D - 1) / 255.0 * (1<<SCALE_BITS);
     int size1D_2D = size1D * size2D;
     int x, y;
+    ImagingSectionCookie cookie;
 
     if (table_channels < 3 || table_channels > 4) {
         PyErr_SetString(PyExc_ValueError, "table_channels could be 3 or 4");
@@ -101,6 +102,7 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
         return (Imaging) ImagingError_ModeError();
     }
 
+    ImagingSectionEnter(&cookie);
     for (y = 0; y < imOut->ysize; y++) {
         UINT8* rowIn = (UINT8 *)imIn->image[y];
         UINT32* rowOut = (UINT32 *)imOut->image[y];
@@ -156,6 +158,7 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
             }
         }
     }
+    ImagingSectionLeave(&cookie);
 
     return imOut;
 }
