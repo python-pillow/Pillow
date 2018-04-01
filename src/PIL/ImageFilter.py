@@ -16,9 +16,6 @@
 #
 
 import functools
-from itertools import chain
-
-from ._util import isPath
 
 
 class Filter(object):

@@ -1,8 +1,5 @@
 from __future__ import division
 
-import os
-from tempfile import NamedTemporaryFile
-
 from PIL import Image, ImageFilter
 from helper import unittest, PillowTestCase
 
