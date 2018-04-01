@@ -30,12 +30,12 @@ var/
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.cache
-nosetests.xml
-coverage.xml
+/htmlcov/
+/.tox/
+/.coverage
+/.cache
+/.pytest_cache
+/coverage.xml
 
 # Extra test images installed from pillow-depends/test_images
 /depends/test_images
