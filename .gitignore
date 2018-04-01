@@ -3,6 +3,8 @@ __pycache__/
 /*.py[cod]
 /src/PIL/*.py[cod]
 /Tests/*.py[cod]
+/docs/*.py[cod]
+/winbuild/*.py[cod]
 
 # C extensions
 /src/PIL/*.so
