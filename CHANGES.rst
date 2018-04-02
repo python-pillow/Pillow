@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-5.1.0 (unreleased)
+5.1.0 (2018-04-02)
 ------------------
 
 - Close fp before return in ImagingSavePPM #3061
