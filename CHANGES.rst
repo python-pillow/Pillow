@@ -5,6 +5,12 @@ Changelog (Pillow)
 5.1.0 (unreleased)
 ------------------
 
+- Close fp before return in ImagingSavePPM #3061
+  [kathryndavies]
+  
+- Added documentation for ICNS append_images #3051
+  [radarhere]
+
 - Docs: Move intro text below its header #3021
   [hugovk]
 
