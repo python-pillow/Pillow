@@ -7,7 +7,7 @@ Changelog (Pillow)
 
 - Close fp before return in ImagingSavePPM #3061
   [kathryndavies]
-  
+
 - Added documentation for ICNS append_images #3051
   [radarhere]
 
@@ -19,12 +19,12 @@ Changelog (Pillow)
 
 - Fix TypeError for JPEG2000 parser feed #3042
   [hugovk]
-  
+
 - Certain corrupted jpegs can result in no data read #3023
   [kkopachev]
-  
+
 - Add support for BLP file format #3007
-  [jleclanche] 
+  [jleclanche]
 
 - Simplify version checks #2998
   [hugovk]
@@ -88,10 +88,6 @@ Changelog (Pillow)
 
 - Docs: Changed documentation references to 2.x to 2.7 #2921
   [radarhere]
-
-
-5.0.1 (unreleased)
-------------------
 
 - Fix memory leak when opening webp files #2974
   [wiredfool]
