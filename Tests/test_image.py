@@ -112,7 +112,6 @@ class TestImage(PillowTestCase):
         self.assertRaises(ValueError, im.save, temp_file)
 
     def test_internals(self):
-
         im = Image.new("L", (100, 100))
         im.readonly = 1
         im._copy()
@@ -122,8 +121,15 @@ class TestImage(PillowTestCase):
         im.paste(0, (0, 0, 100, 100))
         self.assertFalse(im.readonly)
 
-        test_file = self.tempfile("temp.ppm")
-        im._dump(test_file)
+    def test_dump(self):
+        im = Image.new("L", (10, 10))
+        im._dump(self.tempfile("temp_L.ppm"))
+
+        im = Image.new("RGB", (10, 10))
+        im._dump(self.tempfile("temp_RGB.ppm"))
+
+        im = Image.new("HSV", (10, 10))
+        self.assertRaises(ValueError, im._dump, self.tempfile("temp_HSV.ppm"))
 
     def test_comparison_with_other_type(self):
         # Arrange
