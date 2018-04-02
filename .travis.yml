@@ -17,7 +17,7 @@ python: 3.5
 sudo: required
 dist: trusty
 services: docker
-osx_image: xcode8
+osx_image: xcode9.2
 
 matrix:
   exclude:
