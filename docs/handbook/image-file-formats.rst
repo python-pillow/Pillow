@@ -770,7 +770,7 @@ Read-only formats
 BLP
 ^^^
 
-BLP is the Blizzard Mipmap Format is a texture format used in World of
+BLP is the Blizzard Mipmap Format, a texture format used in World of
 Warcraft. Pillow supports reading ``JPEG`` Compressed or raw ``BLP1``
 images, and all types of ``BLP2`` images.
 
