@@ -872,8 +872,6 @@ ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
    semantics are ok, except that "curve" flattens the bezier curves by
    itself */
 
-#if 1 /* ARROW_GRAPHICS */
-
 struct ImagingOutlineInstance {
 
     float x0, y0;
@@ -1102,5 +1100,3 @@ ImagingDrawOutline(Imaging im, ImagingOutline outline, const void* ink_,
 
     return 0;
 }
-
-#endif
