@@ -763,7 +763,7 @@ try:
           long_description=_read('README.rst').decode('utf-8'),
           author='Alex Clark (Fork Author)',
           author_email='aclark@aclark.net',
-          url='https://python-pillow.org',
+          url='http://python-pillow.org',
           classifiers=[
               "Development Status :: 6 - Mature",
               "Topic :: Multimedia :: Graphics",
