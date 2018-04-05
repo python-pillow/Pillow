@@ -19,7 +19,9 @@ Notes
 
 .. note:: Pillow >= 4.0.0 < 5.0.0 supports Python versions 2.7, 3.3, 3.4, 3.5, 3.6
 
-.. note:: Pillow >= 5.0.0 supports Python versions 2.7, 3.4, 3.5, 3.6
+.. note:: Pillow >= 5.0.0 < 5.2.0 supports Python versions 2.7, 3.4, 3.5, 3.6
+
+.. note:: Pillow >= 5.2.0 supports Python versions 2.7, 3.4, 3.5, 3.6, 3.7
 
 Basic Installation
 ------------------
@@ -392,7 +394,7 @@ These platforms are built and tested for every change.
 +----------------------------------+-------------------------------+-----------------------+
 | Ubuntu Linux 16.04 LTS           | 2.7                           |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Ubuntu Linux 14.04 LTS           | 2.7, 3.4, 3.5, 3.6,           |x86-64                 |
+| Ubuntu Linux 14.04 LTS           | 2.7, 3.4, 3.5, 3.6, 3.7,      |x86-64                 |
 |                                  | pypy, pypy3                   |                       |
 |                                  +-------------------------------+-----------------------+
 |                                  | 2.7                           |x86                    |
