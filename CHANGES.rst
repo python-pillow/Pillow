@@ -2,6 +2,21 @@
 Changelog (Pillow)
 ==================
 
+5.2.0 (unreleased)
+------------------
+
+- Enabling background colour parameter on rotate #3057
+  [storesource]
+
+- Remove unnecessary `#if 1` directive #3072
+  [jdufresne]
+
+- Remove unused Python class, Path #3070
+  [jdufresne]
+
+- Fix dereferencing type-punned pointer will break strict-aliasing #3069
+  [jdufresne]
+
 5.1.0 (2018-04-02)
 ------------------
 
