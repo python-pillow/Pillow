@@ -109,18 +109,6 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
         return TCL_ERROR;
     }
 
-    /* Active region */
-#if 0
-    if (src_xoffset + xsize > im->xsize)
-        xsize = im->xsize - src_xoffset;
-    if (src_yoffset + ysize > im->ysize)
-        ysize = im->ysize - src_yoffset;
-    if (xsize < 0 || ysize < 0
-        || src_xoffset >= im->xsize
-        || src_yoffset >= im->ysize)
-        return TCL_OK;
-#endif
-
     /* Mode */
 
     if (strcmp(im->mode, "1") == 0 || strcmp(im->mode, "L") == 0) {
@@ -144,11 +132,6 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
     block.height = im->ysize;
     block.pitch = im->linesize;
     block.pixelPtr = (unsigned char*) im->block;
-#if 0
-    block.pixelPtr = (unsigned char*) im->block +
-                     src_yoffset * im->linesize +
-                     src_xoffset * im->pixelsize;
-#endif
 
     if (TK_LT_85) { /* Tk 8.4 */
         TK_PHOTO_PUT_BLOCK_84(photo, &block, 0, 0, block.width, block.height,
