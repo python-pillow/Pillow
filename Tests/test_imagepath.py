@@ -17,6 +17,11 @@ class TestImagePath(PillowTestCase):
         self.assertEqual(p[0], (0.0, 1.0))
         self.assertEqual(p[-1], (8.0, 9.0))
         self.assertEqual(list(p[:1]), [(0.0, 1.0)])
+        with self.assertRaises(TypeError) as cm:
+            p['foo']
+        self.assertEqual(
+            str(cm.exception),
+            "Path indices must be integers, not str")
         self.assertEqual(
             list(p),
             [(0.0, 1.0), (2.0, 3.0), (4.0, 5.0), (6.0, 7.0), (8.0, 9.0)])
