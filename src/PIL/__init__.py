@@ -13,6 +13,7 @@
 
 from . import version
 
+# PILLOW_VERSION and VERSION are deprecated and will be removed in Pillow 6.0.0. Use __version__ instead.
 PILLOW_VERSION = VERSION = __version__ = version.__version__
 
 _plugins = ['BlpImagePlugin',
