@@ -122,7 +122,7 @@ def _read(file):
 
 
 def get_version():
-    version_file = 'src/PIL/version.py'
+    version_file = 'src/PIL/_version.py'
     with open(version_file, 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
