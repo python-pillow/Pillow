@@ -211,7 +211,7 @@ class PdfName:
     def from_pdf_stream(klass, data):
         return klass(PdfParser.interpret_name(data))
 
-    allowed_chars = set(range(33,127)) - set(ord(c) for c in "#%/()<>[]{}")
+    allowed_chars = set(range(33, 127)) - set(ord(c) for c in "#%/()<>[]{}")
 
     def __bytes__(self):
         if str == bytes:  # Python 2.x

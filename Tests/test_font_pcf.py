@@ -66,7 +66,7 @@ class TestFontPcf(PillowTestCase):
     def _test_high_characters(self, message):
         tempname = self.save_font()
         font = ImageFont.load(tempname)
-        im = Image.new("L", (750, 30) , "white")
+        im = Image.new("L", (750, 30), "white")
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), message, "black", font=font)
         with Image.open('Tests/images/high_ascii_chars.png') as target:
