@@ -200,7 +200,7 @@ class SpiderImageFile(ImageFile.ImageFile):
 
 # given a list of filenames, return a list of images
 def loadImageSeries(filelist=None):
-    " create a list of Image.images for use in montage "
+    """create a list of Image.images for use in montage"""
     if filelist is None or len(filelist) < 1:
         return
 
