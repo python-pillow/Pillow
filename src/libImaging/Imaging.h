@@ -319,6 +319,8 @@ extern Imaging ImagingTransform(
 extern Imaging ImagingUnsharpMask(
     Imaging imOut, Imaging im, float radius, int percent, int threshold);
 extern Imaging ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n);
+extern Imaging ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn,
+    int table_channels, int size1D, int size2D, int size3D, INT16* table);
 
 extern Imaging ImagingCopy2(Imaging imOut, Imaging imIn);
 extern Imaging ImagingConvert2(Imaging imOut, Imaging imIn);
@@ -534,6 +536,8 @@ extern Py_ssize_t _imaging_tell_pyFd(PyObject *fd);
 
 
 #include "ImagingUtils.h"
+extern UINT8 *clip8_lookups;
+
 
 #if defined(__cplusplus)
 }
