@@ -305,9 +305,12 @@ class TestFileGif(PillowTestCase):
 
         out = self.tempfile('temp.gif')
         im = Image.new('L', (100, 100), '#000')
-        im.save(out, duration=duration)
-        reread = Image.open(out)
 
+        # Check that the argument has priority over the info settings
+        im.info['duration'] = 100
+        im.save(out, duration=duration)
+
+        reread = Image.open(out)
         self.assertEqual(reread.info['duration'], duration)
 
     def test_multiple_duration(self):

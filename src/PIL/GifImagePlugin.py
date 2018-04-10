@@ -457,7 +457,8 @@ def _save_all(im, fp, filename):
 
 
 def _save(im, fp, filename, save_all=False):
-    im.encoderinfo.update(im.info)
+    for k, v in im.info.items():
+        im.encoderinfo.setdefault(k, v)
     # header
     try:
         palette = im.encoderinfo["palette"]
