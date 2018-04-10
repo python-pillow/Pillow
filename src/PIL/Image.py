@@ -1725,8 +1725,6 @@ class Image(object):
         ):
             raise ValueError("unknown resampling filter")
 
-        size = tuple(size)
-
         if box is None:
             box = (0, 0) + self.size
         else:
