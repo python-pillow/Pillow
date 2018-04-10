@@ -18,6 +18,11 @@ class TestImageOpsUsm(PillowTestCase):
         self.assertEqual(i.size, (128, 128))
 
         i = self.assert_warning(DeprecationWarning,
+            ImageOps.box_blur, im, 1)
+        self.assertEqual(i.mode, "RGB")
+        self.assertEqual(i.size, (128, 128))
+
+        i = self.assert_warning(DeprecationWarning,
             ImageOps.gblur, im, 2.0)
         self.assertEqual(i.mode, "RGB")
         self.assertEqual(i.size, (128, 128))
