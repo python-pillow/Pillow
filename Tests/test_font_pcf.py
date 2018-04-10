@@ -20,7 +20,7 @@ class TestFontPcf(PillowTestCase):
         with open(fontname, "rb") as test_file:
             font = PcfFontFile.PcfFontFile(test_file)
         self.assertIsInstance(font, FontFile.FontFile)
-        #check the number of characters in the font
+        # check the number of characters in the font
         self.assertEqual(len([_f for _f in font.glyph if _f]), 223)
 
         tempname = self.tempfile("temp.pil")
