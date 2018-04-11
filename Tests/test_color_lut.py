@@ -315,7 +315,7 @@ class TestTransformColorLut3D(PillowTestCase):
         with self.assertRaisesRegexp(ValueError, "should have either channels"):
             source.transform(lambda r, g, b: (r, g, b, 1))
 
-        with self.assertRaisesRegexp(TypeError, "takes exactly 4 arguments"):
+        with self.assertRaises(TypeError):
             source.transform(lambda r, g, b, a: (r, g, b))
 
     def test_target_mode(self):
