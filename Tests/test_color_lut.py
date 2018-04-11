@@ -269,6 +269,10 @@ class TestColorLut3DFilter(PillowTestCase):
 
 class TestGenerateColorLut3D(PillowTestCase):
     def test_wrong_channels_count(self):
+        with self.assertRaisesRegexp(ValueError, "3 or 4 output channels"):
+            ImageFilter.Color3DLUT.generate(5, channels=2,
+                callback=lambda r, g, b: (r, g, b))
+
         with self.assertRaisesRegexp(ValueError, "should have either channels"):
             ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b, r))
 
