@@ -37,12 +37,13 @@ image enhancement filters:
 * **SMOOTH**
 * **SMOOTH_MORE**
 
-.. autoclass:: PIL.ImageFilter.GaussianBlur
+.. autoclass:: PIL.ImageFilter.Color3DLUT
 .. autoclass:: PIL.ImageFilter.BoxBlur
-.. autoclass:: PIL.ImageFilter.UnsharpMask
+.. autoclass:: PIL.ImageFilter.GaussianBlur
 .. autoclass:: PIL.ImageFilter.Kernel
-.. autoclass:: PIL.ImageFilter.RankFilter
 .. autoclass:: PIL.ImageFilter.MedianFilter
 .. autoclass:: PIL.ImageFilter.MinFilter
 .. autoclass:: PIL.ImageFilter.MaxFilter
 .. autoclass:: PIL.ImageFilter.ModeFilter
+.. autoclass:: PIL.ImageFilter.RankFilter
+.. autoclass:: PIL.ImageFilter.UnsharpMask
