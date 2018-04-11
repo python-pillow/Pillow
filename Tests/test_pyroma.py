@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase
 
-from PIL import PILLOW_VERSION
+from PIL import __version__
 
 try:
     import pyroma
@@ -26,7 +26,7 @@ class TestPyroma(PillowTestCase):
         rating = pyroma.ratings.rate(data)
 
         # Assert
-        if 'rc' in PILLOW_VERSION:
+        if 'rc' in __version__:
             # Pyroma needs to chill about RC versions
             # and not kill all our tests.
             self.assertEqual(rating, (9, [

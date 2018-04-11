@@ -161,7 +161,7 @@ if __name__ == "__main__":
     exit_status = 0
 
     print("-"*68)
-    print("Pillow", Image.PILLOW_VERSION, "TEST SUMMARY ")
+    print("Pillow", Image.__version__, "TEST SUMMARY ")
     print("-"*68)
     print("Python modules loaded from", os.path.dirname(Image.__file__))
     print("Binary modules loaded from", os.path.dirname(Image.core.__file__))
