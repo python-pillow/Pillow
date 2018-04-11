@@ -11,12 +11,12 @@
 
 # ;-)
 
-from . import version
+from . import _version
 
 VERSION = '1.1.7'  # PIL Version
-PILLOW_VERSION = version.__version__
+PILLOW_VERSION = __version__ = _version.__version__
 
-__version__ = PILLOW_VERSION
+del _version
 
 _plugins = ['BlpImagePlugin',
             'BmpImagePlugin',
