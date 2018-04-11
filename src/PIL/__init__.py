@@ -13,6 +13,7 @@
 
 from . import _version
 
+# PILLOW_VERSION and VERSION are deprecated and will be removed in Pillow 6.0.0. Use __version__ instead.
 VERSION = '1.1.7'  # PIL Version
 PILLOW_VERSION = __version__ = _version.__version__
 
