@@ -49,8 +49,8 @@ table_index3D(int index1D, int index2D, int index3D,
 
 /*
  Transforms colors of imIn using provided 3D lookup table
- and puts the result in imOut. Returns imOut on sucess or 0 on error.
- 
+ and puts the result in imOut. Returns imOut on success or 0 on error.
+
  imOut, imIn — images, should be the same size and may be the same image.
     Should have 3 or 4 channels.
  table_channels — number of channels in the lookup table, 3 or 4.
@@ -61,7 +61,7 @@ table_index3D(int index1D, int index2D, int index3D,
     where channels are changed first, then 1D, then​ 2D, then 3D.
     Each element is signed 16-bit int where 0 is lowest output value
     and 255 << PRECISION_BITS (16320) is highest value.
-*/ 
+*/
 Imaging
 ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
                          int size1D, int size2D, int size3D,
