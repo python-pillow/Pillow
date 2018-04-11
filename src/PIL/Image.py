@@ -24,7 +24,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import VERSION, PILLOW_VERSION, _plugins
+from . import __version__, _plugins
 
 import logging
 import warnings
@@ -58,13 +58,13 @@ try:
     # Also note that Image.core is not a publicly documented interface,
     # and should be considered private and subject to change.
     from . import _imaging as core
-    if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
+    if __version__ != getattr(core, 'PILLOW_VERSION', None):
         raise ImportError("The _imaging extension was built for another "
                           "version of Pillow or PIL:\n"
                           "Core version: %s\n"
                           "Pillow version: %s" %
                           (getattr(core, 'PILLOW_VERSION', None),
-                           PILLOW_VERSION))
+                           __version__))
 
 except ImportError as v:
     core = _imaging_not_installed()
