@@ -5,7 +5,13 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
-- Enabling background colour parameter on rotate #3057
+- Changed encoderinfo to have priority over info when saving GIF images #3086
+  [radarhere]
+
+- Rename PIL.version to PIL._version and remove it from module #3083
+  [homm]
+
+- Enable background colour parameter on rotate #3057
   [storesource]
 
 - Remove unnecessary `#if 1` directive #3072
@@ -194,7 +200,7 @@ Changelog (Pillow)
 - Add eog support for Ubuntu Image Viewer #2864
   [NafisFaysal]
 
-- Test: Test on 3.7-dev on Travis.ci #2870
+- Test: Test on 3.7-dev on Travis CI #2870
   [hugovk]
 
 - Dependencies: Update libtiff to 4.0.9 #2871
@@ -515,7 +521,7 @@ Changelog (Pillow)
 - Doc: Clarified Image.save:append_images documentation #2604
   [radarhere]
 
-- CI: Amazon Linux and Centos6 docker images added to TravisCI #2585
+- CI: Amazon Linux and Centos6 docker images added to Travis CI #2585
   [wiredfool]
 
 - Image.alpha_composite added #2595
@@ -584,7 +590,7 @@ Changelog (Pillow)
 - Update Feature Detection #2520
   [wiredfool]
 
-- CI: Update pypy on TravisCI #2573
+- CI: Update pypy on Travis CI #2573
   [hugovk]
 
 - ImageMorph: Fix wrong expected size of MRLs read from disk #2561
