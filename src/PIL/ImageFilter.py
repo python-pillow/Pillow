@@ -378,7 +378,8 @@ class Color3DLUT(MultibandFilter):
                          times with values from 0.0 to 1.0 and should return
                          a tuple with ``channels`` elements.
         :param channels: The number of channels which should return callback.
-        :param target_mode: Passed to the constructor.
+        :param target_mode: Passed to the constructor of the resulted
+                            lookup table.
         """
         size1D, size2D, size3D = cls._check_size(size)
         if channels not in (3, 4):
@@ -396,19 +397,43 @@ class Color3DLUT(MultibandFilter):
         return cls((size1D, size2D, size3D), table, channels=channels,
                    target_mode=target_mode, _copy_table=False)
 
-    def alter(self, callback, channels=None, target_mode=None):
+    def transform(self, callback, with_normals=False, channels=None,
+                  target_mode=None):
+        """Transforms the table values using provided callback and returns
+        a new LUT with altered values.
+
+        :param callback: A function which takes old lookup table values
+                         and returns a new. The number of arguments which
+                         function should take is ``self.channels`` or
+                         ``3 + self.channels`` if ``with_normals`` flag is set.
+                         Should return a tuple of ``self.channels`` or
+                         ``channels`` elements if it is set.
+        :param with_normals: If true, ``callback`` will be called with
+                             coordinates in the color cube as the first
+                             three arguments. Otherwise, ``callback``
+                             will be called only with actual values of colors.
+        :param channels: Number of colors in the resulted lookup table.
+        :param target_mode: Passed to the constructor of the resulted
+                            lookup table.
+        """
         if channels not in (None, 3, 4):
             raise ValueError("Only 3 or 4 output channels are supported")
         ch_in = self.channels
         ch_out = channels or ch_in
+        size1D, size2D, size3D = self.size
 
-        table = [0] * (self.size[0] * self.size[1] * self.size[2] * ch_out)
+        table = [0] * (size1D * size2D * size3D * ch_out)
         idx_in = 0
         idx_out = 0
-        for b in range(self.size[2]):
-            for g in range(self.size[1]):
-                for r in range(self.size[0]):
-                    values = callback(*self.table[idx_in:idx_in + ch_in])
+        for b in range(size3D):
+            for g in range(size2D):
+                for r in range(size1D):
+                    values = self.table[idx_in:idx_in + ch_in]
+                    if with_normals:
+                        values = callback(r / (size1D-1), g / (size2D-1),
+                                          b / (size3D-1), *values)
+                    else:
+                        values = callback(*values)
                     table[idx_out:idx_out + ch_out] = values
                     idx_in += ch_in
                     idx_out += ch_out

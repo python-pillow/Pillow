@@ -287,10 +287,10 @@ class TestColorLut3DFilter(PillowTestCase):
             0.0, 0.0, 0.0, 0.0,  0.0, 0.25, 0.0, 0.125,  0.0, 0.5, 0.0, 0.25,
             0.0, 0.75, 0.0, 0.375,  0.0, 1.0, 0.0, 0.5,  0.0, 0.0, 0.25, 0.125])
 
-        with self.assertRaisesRegexp(ValueError, "should have a length of 3"):
+        with self.assertRaisesRegexp(ValueError, "should have either channels"):
             ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b, r))
 
-        with self.assertRaisesRegexp(ValueError, "should have a length of 4"):
+        with self.assertRaisesRegexp(ValueError, "should have either channels"):
             ImageFilter.Color3DLUT.generate(5, channels=4,
                 callback=lambda r, g, b: (r, g, b))
 
