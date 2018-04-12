@@ -186,13 +186,13 @@ class ImageDraw(object):
         if ink is not None:
             self.draw.draw_polygon(xy, ink, 0)
 
-    def rectangle(self, xy, fill=None, outline=None):
+    def rectangle(self, xy, fill=None, outline=None, width=0):
         """Draw a rectangle."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_rectangle(xy, fill, 1)
         if ink is not None:
-            self.draw.draw_rectangle(xy, ink, 0)
+            self.draw.draw_rectangle(xy, ink, 0, width)
 
     def _multiline_check(self, text):
         """Draw text."""

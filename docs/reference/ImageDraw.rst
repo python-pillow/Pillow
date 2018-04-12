@@ -220,7 +220,7 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.rectangle(xy, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.rectangle(xy, fill=None, outline=None, width=0)
 
     Draws a rectangle.
 
@@ -229,6 +229,9 @@ Methods
             is just outside the drawn rectangle.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
+
+        .. versionadded:: 5.2.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.shape(shape, fill=None, outline=None)
 

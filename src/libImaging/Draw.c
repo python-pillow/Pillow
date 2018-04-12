@@ -634,8 +634,9 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
 
 int
 ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
-                     const void* ink_, int fill, int op)
+                     const void* ink_, int fill, int width, int op)
 {
+    int i;
     int y;
     int tmp;
     DRAW* draw;
@@ -662,13 +663,16 @@ ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
             draw->hline(im, x0, y, x1, ink);
 
     } else {
-
         /* outline */
-        draw->line(im, x0, y0, x1, y0, ink);
-        draw->line(im, x1, y0, x1, y1, ink);
-        draw->line(im, x1, y1, x0, y1, ink);
-        draw->line(im, x0, y1, x0, y0, ink);
-
+        if (width == 0) {
+            width = 1;
+        }
+        for (i = 0; i < width; i++) {
+            draw->hline(im, x0, y0+i, x1, ink);
+            draw->hline(im, x0, y1-i, x1, ink);
+            draw->line(im, x1-i, y0, x1-i, y1, ink);
+            draw->line(im, x0+i, y1, x0+i, y0, ink);
+        }
     }
 
     return 0;

@@ -343,6 +343,30 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
 
+    def test_rectangle_width(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_rectangle_width.png"
+
+        # Act
+        draw.rectangle(BBOX1, outline="green", width=5)
+
+        # Assert
+        self.assert_image_equal(im, Image.open(expected))
+
+    def test_rectangle_width_fill(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_rectangle_width_fill.png"
+
+        # Act
+        draw.rectangle(BBOX1, fill="blue", outline="green", width=5)
+
+        # Assert
+        self.assert_image_equal(im, Image.open(expected))
+
     def test_floodfill(self):
         # Arrange
         im = Image.new("RGB", (W, H))

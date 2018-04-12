@@ -368,7 +368,7 @@ extern int ImagingDrawPoint(Imaging im, int x, int y, const void* ink, int op);
 extern int ImagingDrawPolygon(Imaging im, int points, int *xy,
                               const void* ink, int fill, int op);
 extern int ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
-                                const void* ink, int fill, int op);
+                                const void* ink, int fill, int width, int op);
 
 /* Level 2 graphics (WORK IN PROGRESS) */
 extern ImagingOutline ImagingOutlineNew(void);
