@@ -413,8 +413,8 @@ class Color3DLUT(MultibandFilter):
         :param with_normals: If true, ``callback`` will be called with
                              coordinates in the color cube as the first
                              three arguments. Otherwise, ``callback``
-                             will be called only with actual values of colors.
-        :param channels: Number of colors in the resulted lookup table.
+                             will be called only with actual color values.
+        :param channels: Number of channels in the resulted lookup table.
         :param target_mode: Passed to the constructor of the resulted
                             lookup table.
         """
