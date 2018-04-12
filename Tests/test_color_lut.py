@@ -1,5 +1,7 @@
 from __future__ import division
 
+from array import array
+
 from PIL import Image, ImageFilter
 from helper import unittest, PillowTestCase
 
@@ -264,8 +266,18 @@ class TestColorLut3DFilter(PillowTestCase):
         self.assertEqual(lut.table, list(range(24)))
 
         lut = ImageFilter.Color3DLUT((2, 2, 2), [(0, 1, 2, 3)] * 8,
-            channels=4)
+                                     channels=4)
 
+    def test_repr(self):
+        lut = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
+        self.assertEqual(repr(lut),
+                         "<Color3DLUT from list size=2x2x2 channels=3>")
+
+        lut = ImageFilter.Color3DLUT(
+            (3, 4, 5), array('f', [0, 0, 0, 0] * (3 * 4 * 5)),
+            channels=4, target_mode='YCbCr', _copy_table=False)
+        self.assertEqual(repr(lut),
+            "<Color3DLUT from array size=3x4x5 channels=4 target_mode=YCbCr>")
 
 class TestGenerateColorLut3D(PillowTestCase):
     def test_wrong_channels_count(self):
