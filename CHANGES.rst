@@ -2,6 +2,15 @@
 Changelog (Pillow)
 ==================
 
+5.1.1 (2018-04-12)
+------------------
+
+- Fix _i2f compilation on some GCC versions #3067
+  [homm]
+
+- Build macOS wheels with Xcode 6.4, supporting older macOS versions #3068
+  [wiredfool]
+
 5.1.0 (2018-04-02)
 ------------------
 
