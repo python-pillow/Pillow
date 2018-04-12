@@ -5,6 +5,12 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
+- Build macOS wheels with Xcode 6.4, supporting older macOS versions #3068
+  [wiredfool]
+
+- Fix _i2f compilation on some GCC versions #3067
+  [homm]
+
 - Changed encoderinfo to have priority over info when saving GIF images #3086
   [radarhere]
 
@@ -22,7 +28,7 @@ Changelog (Pillow)
 
 - Fix dereferencing type-punned pointer will break strict-aliasing #3069
   [jdufresne]
-
+  
 5.1.0 (2018-04-02)
 ------------------
 
