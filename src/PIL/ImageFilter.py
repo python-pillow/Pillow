@@ -326,6 +326,8 @@ class Color3DLUT(MultibandFilter):
     name = "Color 3D LUT"
 
     def __init__(self, size, table, channels=3, target_mode=None, **kwargs):
+        if channels not in (3, 4):
+            raise ValueError("Only 3 or 4 output channels are supported")
         self.size = size = self._check_size(size)
         self.channels = channels
         self.mode = target_mode

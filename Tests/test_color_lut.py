@@ -254,6 +254,9 @@ class TestColorLut3DFilter(PillowTestCase):
         with self.assertRaisesRegexp(ValueError, "should have a length of 3"):
             ImageFilter.Color3DLUT((2, 2, 2), [[1, 1]] * 8)
 
+        with self.assertRaisesRegexp(ValueError, "Only 3 or 4 output"):
+            ImageFilter.Color3DLUT((2, 2, 2), [[1, 1]] * 8, channels=2)
+
     def test_convert_table(self):
         lut = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
         self.assertEqual(tuple(lut.size), (2, 2, 2))
