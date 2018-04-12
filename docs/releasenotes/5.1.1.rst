@@ -1,0 +1,18 @@
+5.1.1
+-----
+
+Build macOS wheels with Xcode 6.4, supporting older macOS versions
+==================================================================
+
+The macOS wheels for Pillow 5.1.0 were built with Xcode 9.2, meaning 10.12
+Sierra was the lowest supported version.
+
+Prior to Pillow 5.1.0, Xcode 8 was used, supporting El Capitan 10.11.
+
+Instead, Pillow 5.1.1 is built with the oldest available Xcode 6.4 to support
+at least 10.10 Yosemite.
+
+Fix _i2f compilation on some GCC versions
+=========================================
+
+For example, this allows compilation on GCC 4.8.
