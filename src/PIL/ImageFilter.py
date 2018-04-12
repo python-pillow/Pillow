@@ -443,12 +443,14 @@ class Color3DLUT(MultibandFilter):
                           _copy_table=False)
 
     def __repr__(self):
-        r = ["{0} from {1}".format(self.__class__.__name__,
-                                   self.table.__class__.__name__)]
-        r.append("size={0}x{1}x{2}".format(*self.size))
-        r.append("channels={0}".format(self.channels))
+        r = [
+            "{} from {}".format(self.__class__.__name__,
+                                  self.table.__class__.__name__),
+            "size={:d}x{:d}x{:d}".format(*self.size),
+            "channels={:d}".format(self.channels),
+        ]
         if self.mode:
-            r.append("target_mode={0}".format(self.mode))
+            r.append("target_mode={}".format(self.mode))
         return "<{}>".format(" ".join(r))
 
     def filter(self, image):
