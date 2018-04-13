@@ -380,7 +380,7 @@ class Color3DLUT(MultibandFilter):
                          times with values from 0.0 to 1.0 and should return
                          a tuple with ``channels`` elements.
         :param channels: The number of channels which should return callback.
-        :param target_mode: Passed to the constructor of the resulted
+        :param target_mode: Passed to the constructor of the resulting
                             lookup table.
         """
         size1D, size2D, size3D = cls._check_size(size)
@@ -414,8 +414,8 @@ class Color3DLUT(MultibandFilter):
                              coordinates in the color cube as the first
                              three arguments. Otherwise, ``callback``
                              will be called only with actual color values.
-        :param channels: Number of channels in the resulted lookup table.
-        :param target_mode: Passed to the constructor of the resulted
+        :param channels: The number of channels in the resulting lookup table.
+        :param target_mode: Passed to the constructor of the resulting
                             lookup table.
         """
         if channels not in (None, 3, 4):
