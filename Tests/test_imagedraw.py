@@ -102,6 +102,30 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_similar(
             im, Image.open("Tests/images/imagedraw_arc_no_loops.png"), 1)
 
+    def test_arc_width(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_arc_width.png"
+
+        # Act
+        draw.arc(BBOX1, 10, 260, width=5)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_arc_width_fill(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_arc_width_fill.png"
+
+        # Act
+        draw.arc(BBOX1, 10, 260, fill="yellow", width=5)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
+
     def test_bitmap(self):
         # Arrange
         small = Image.open("Tests/images/pil123rgba.png").resize((50, 50))
@@ -136,6 +160,30 @@ class TestImageDraw(PillowTestCase):
         for mode in ["RGB", "L"]:
             self.helper_chord(mode, BBOX2, 0, 180)
             self.helper_chord(mode, BBOX2, 0.5, 180.4)
+
+    def test_chord_width(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_chord_width.png"
+
+        # Act
+        draw.chord(BBOX1, 10, 260, outline="yellow", width=5)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_chord_width_fill(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_chord_width_fill.png"
+
+        # Act
+        draw.chord(BBOX1, 10, 260, fill="red", outline="yellow", width=5)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
 
     def helper_ellipse(self, mode, bbox):
         # Arrange
@@ -178,6 +226,30 @@ class TestImageDraw(PillowTestCase):
             draw = ImageDraw.Draw(im)
             draw.ellipse(bbox, fill="green", outline="blue")
             self.assert_image_equal(im, im.transpose(Image.FLIP_LEFT_RIGHT))
+
+    def test_ellipse_width(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_ellipse_width.png"
+
+        # Act
+        draw.ellipse(BBOX1, outline="blue", width=5)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_ellipse_width_fill(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_ellipse_width_fill.png"
+
+        # Act
+        draw.ellipse(BBOX1, fill="green", outline="blue", width=5)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
 
     def helper_line(self, points):
         # Arrange
@@ -258,6 +330,30 @@ class TestImageDraw(PillowTestCase):
     def test_pieslice2(self):
         self.helper_pieslice(BBOX2, -90, 45)
         self.helper_pieslice(BBOX2, -90.5, 45.4)
+
+    def test_pieslice_width(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_pieslice_width.png"
+
+        # Act
+        draw.pieslice(BBOX1, 10, 260, outline="blue", width=5)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_pieslice_width_fill(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_pieslice_width_fill.png"
+
+        # Act
+        draw.pieslice(BBOX1, 10, 260, fill="white", outline="blue", width=5)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
 
     def helper_point(self, points):
         # Arrange
