@@ -405,9 +405,10 @@ class Color3DLUT(MultibandFilter):
         a new LUT with altered values.
 
         :param callback: A function which takes old lookup table values
-                         and returns a new. The number of arguments which
-                         function should take is ``self.channels`` or
-                         ``3 + self.channels`` if ``with_normals`` flag is set.
+                         and returns a new set of values. The number
+                         of arguments which function should take is
+                         ``self.channels`` or ``3 + self.channels``
+                         if ``with_normals`` flag is set.
                          Should return a tuple of ``self.channels`` or
                          ``channels`` elements if it is set.
         :param with_normals: If true, ``callback`` will be called with
