@@ -66,6 +66,14 @@ class TestColorLut3DCoreAPI(PillowTestCase):
             im.im.color_lut_3d('RGB', Image.LINEAR,
                 3, 2, 2, 2, [0, 0, 0] * 9)
 
+        with self.assertRaises(TypeError):
+            im.im.color_lut_3d('RGB', Image.LINEAR,
+                3, 2, 2, 2, [0, 0, "0"] * 8)
+
+        with self.assertRaises(TypeError):
+            im.im.color_lut_3d('RGB', Image.LINEAR,
+                3, 2, 2, 2, 16)
+
     def test_correct_args(self):
         im = Image.new('RGB', (10, 10), 0)
 
