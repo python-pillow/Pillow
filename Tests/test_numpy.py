@@ -5,13 +5,10 @@ from helper import unittest, PillowTestCase, hopper
 from PIL import Image
 
 try:
-    import site
     import numpy
-    assert site  # silence warning
-    assert numpy  # silence warning
 except ImportError:
-    # Skip via setUp()
-    pass
+    numpy = None
+
 
 TEST_IMAGE_SIZE = (10, 10)
 
@@ -23,17 +20,8 @@ SKIP_NUMPY_ON_PYPY = hasattr(sys, 'pypy_version_info') and (
     sys.pypy_version_info <= (5, 3, 1, 'final', 0))
 
 
+@unittest.skipIf(numpy is None, "Numpy is not installed")
 class TestNumpy(PillowTestCase):
-
-    def setUp(self):
-        try:
-            import site
-            import numpy
-            assert site  # silence warning
-            assert numpy  # silence warning
-        except ImportError:
-            self.skipTest("ImportError")
-
     def test_numpy_to_image(self):
 
         def to_image(dtype, bands=1, boolean=0):
