@@ -315,6 +315,8 @@ class Color3DLUT(MultibandFilter):
     This method allows you to apply almost any color transformation
     in constant time by using pre-calculated decimated tables.
 
+    .. versionadded:: 5.2.0
+
     :param size: Size of the table. One int or tuple of (int, int, int).
                  Minimal size in any dimension is 2, maximum is 65.
     :param table: Flat lookup table. A list of ``channels * size**3``
