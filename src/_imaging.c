@@ -379,12 +379,12 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
     PyObject* seq;
     PyObject* op;
 
-    if (!PySequence_Check(arg)) {
+    if ( ! PySequence_Check(arg)) {
         PyErr_SetString(PyExc_TypeError, must_be_sequence);
         return NULL;
     }
 
-    n = PyObject_Length(arg);
+    n = PySequence_Size(arg);
     if (length && wrong_length && n != *length) {
         PyErr_SetString(PyExc_ValueError, wrong_length);
         return NULL;
@@ -393,13 +393,12 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
     /* malloc check ok, type & ff is just a sizeof(something)
        calloc checks for overflow */
     list = calloc(n, type & 0xff);
-    if (!list)
+    if ( ! list)
         return PyErr_NoMemory();
 
     seq = PySequence_Fast(arg, must_be_sequence);
-    if (!seq) {
+    if ( ! seq) {
         free(list);
-        PyErr_SetString(PyExc_TypeError, must_be_sequence);
         return NULL;
     }
 
@@ -427,11 +426,15 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
         }
     }
 
+    Py_DECREF(seq);
+
+    if (PyErr_Occurred()) {
+        free(list);
+        return NULL;
+    }
+
     if (length)
         *length = n;
-
-    PyErr_Clear();
-    Py_DECREF(seq);
 
     return list;
 }
