@@ -445,6 +445,7 @@ float16tofloat32(const FLOAT16 in) {
     UINT32 t1;
     UINT32 t2;
     UINT32 t3;
+    FLOAT32 out[1] = {0};
 
     t1 = in & 0x7fff;                       // Non-sign bits
     t2 = in & 0x8000;                       // Sign bit
@@ -459,7 +460,8 @@ float16tofloat32(const FLOAT16 in) {
 
     t1 |= t2;                               // Re-insert sign bit
 
-    return *(FLOAT32 *)&t1;
+    memcpy(&t1, out, 4);
+    return out[0];
 }
 
 static inline PyObject*
