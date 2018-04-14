@@ -460,7 +460,7 @@ float16tofloat32(const FLOAT16 in) {
 
     t1 |= t2;                               // Re-insert sign bit
 
-    memcpy(&t1, out, 4);
+    memcpy(out, &t1, 4);
     return out[0];
 }
 
