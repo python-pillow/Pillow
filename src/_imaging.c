@@ -356,6 +356,7 @@ getbands(const char* mode)
 
 #define TYPE_UINT8 (0x100|sizeof(UINT8))
 #define TYPE_INT32 (0x200|sizeof(INT32))
+#define TYPE_FLOAT16 (0x500|sizeof(FLOAT16))
 #define TYPE_FLOAT32 (0x300|sizeof(FLOAT32))
 #define TYPE_DOUBLE (0x400|sizeof(double))
 
@@ -437,6 +438,28 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
         *length = n;
 
     return list;
+}
+
+FLOAT32
+float16tofloat32(const FLOAT16 in) {
+    UINT32 t1;
+    UINT32 t2;
+    UINT32 t3;
+
+    t1 = in & 0x7fff;                       // Non-sign bits
+    t2 = in & 0x8000;                       // Sign bit
+    t3 = in & 0x7c00;                       // Exponent
+    
+    t1 <<= 13;                              // Align mantissa on MSB
+    t2 <<= 16;                              // Shift sign bit into position
+
+    t1 += 0x38000000;                       // Adjust bias
+
+    t1 = (t3 == 0 ? 0 : t1);                // Denormals-as-zero
+
+    t1 |= t2;                               // Re-insert sign bit
+
+    return *(FLOAT32 *)&t1;
 }
 
 static inline PyObject*
@@ -702,18 +725,19 @@ _blend(ImagingObject* self, PyObject* args)
 /* METHODS                                                              */
 /* -------------------------------------------------------------------- */
 
-
 static INT16*
 _prepare_lut_table(PyObject* table, Py_ssize_t table_size)
 {
     int i;
-    FLOAT32* table_data;
+    float item;
+    INT32 data_type = TYPE_FLOAT32;
+    void* table_data;
     INT16* prepared;
 
     /* NOTE: This value should be the same as in ColorLUT.c */
     #define PRECISION_BITS (16 - 8 - 2)
 
-    table_data = (FLOAT32*) getlist(table, &table_size,
+    table_data = getlist(table, &table_size,
         "The table should have table_channels * "
         "size1D * size2D * size3D float items.", TYPE_FLOAT32);
     if ( ! table_data) {
@@ -728,20 +752,31 @@ _prepare_lut_table(PyObject* table, Py_ssize_t table_size)
     }
 
     for (i = 0; i < table_size; i++) {
+        switch (data_type) {
+            case TYPE_FLOAT16:
+                item = float16tofloat32(((FLOAT16*) table_data)[i]);
+                break;
+            case TYPE_FLOAT32:
+                item = ((FLOAT32*) table_data)[i];
+                break;
+            case TYPE_DOUBLE:
+                item = ((double*) table_data)[i];
+                break;
+        }
         /* Max value for INT16 */
-        if (table_data[i] >= (0x7fff - 0.5) / (255 << PRECISION_BITS)) {
+        if (item >= (0x7fff - 0.5) / (255 << PRECISION_BITS)) {
             prepared[i] = 0x7fff;
             continue;
         }
         /* Min value for INT16 */
-        if (table_data[i] <= (-0x8000 + 0.5) / (255 << PRECISION_BITS)) {
+        if (item <= (-0x8000 + 0.5) / (255 << PRECISION_BITS)) {
             prepared[i] = -0x8000;
             continue;
         }
-        if (table_data[i] < 0) {
-            prepared[i] = table_data[i] * (255 << PRECISION_BITS) - 0.5;
+        if (item < 0) {
+            prepared[i] = item * (255 << PRECISION_BITS) - 0.5;
         } else {
-            prepared[i] = table_data[i] * (255 << PRECISION_BITS) + 0.5;
+            prepared[i] = item * (255 << PRECISION_BITS) + 0.5;
         }
     }
     
