@@ -729,19 +729,50 @@ static INT16*
 _prepare_lut_table(PyObject* table, Py_ssize_t table_size)
 {
     int i;
-    float item;
+    Py_buffer buffer_info;
     INT32 data_type = TYPE_FLOAT32;
-    void* table_data;
+    float item = 0;
+    void* table_data = NULL;
+    int   free_table_data = 0;
     INT16* prepared;
 
     /* NOTE: This value should be the same as in ColorLUT.c */
     #define PRECISION_BITS (16 - 8 - 2)
 
-    table_data = getlist(table, &table_size,
-        "The table should have table_channels * "
-        "size1D * size2D * size3D float items.", TYPE_FLOAT32);
+    const char* wrong_size = ("The table should have table_channels * "
+                              "size1D * size2D * size3D float items.");
+
+    if (PyObject_CheckBuffer(table)) {
+        if ( ! PyObject_GetBuffer(table, &buffer_info,
+                                  PyBUF_CONTIG_RO | PyBUF_FORMAT)) {
+            if (buffer_info.ndim == 1 && buffer_info.shape[0] == table_size) {
+                if (strlen(buffer_info.format) == 1) {
+                    switch (buffer_info.format[0]) {
+                        case 'e':
+                            data_type = TYPE_FLOAT16;
+                            table_data = buffer_info.buf;
+                            break;
+                        case 'f':
+                            data_type = TYPE_FLOAT32;
+                            table_data = buffer_info.buf;
+                            break;
+                        case 'd':
+                            data_type = TYPE_DOUBLE;
+                            table_data = buffer_info.buf;
+                            break;
+                    }
+                }
+            }
+            PyBuffer_Release(&buffer_info);
+        }
+    }
+
     if ( ! table_data) {
-        return NULL;
+        free_table_data = 1;
+        table_data = getlist(table, &table_size, wrong_size, TYPE_FLOAT32);
+        if ( ! table_data) {
+            return NULL;
+        }
     }
 
     /* malloc check ok, max is 2 * 4 * 65**3 = 2197000 */
@@ -781,7 +812,9 @@ _prepare_lut_table(PyObject* table, Py_ssize_t table_size)
     }
     
     #undef PRECISION_BITS
-    free(table_data);
+    if (free_table_data) {
+        free(table_data);
+    }
     return prepared;
 }
 

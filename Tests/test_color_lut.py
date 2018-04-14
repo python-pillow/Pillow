@@ -317,6 +317,47 @@ class TestColorLut3DFilter(PillowTestCase):
         table[0] = 33
         self.assertEqual(lut.table[0], 33)
 
+    @unittest.skipIf(numpy is None, "Numpy is not installed")
+    def test_numpy_formats(self):
+        g = Image.linear_gradient('L')
+        im = Image.merge('RGB', [g, g.transpose(Image.ROTATE_90),
+                                 g.transpose(Image.ROTATE_180)])
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = numpy.array(lut.table, dtype=numpy.float32)[:-1]
+        with self.assertRaisesRegexp(ValueError, "should have table_channels"):
+            im.filter(lut)
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = (numpy.array(lut.table, dtype=numpy.float32)
+                     .reshape((7 * 9 * 11), 3))
+        with self.assertRaisesRegexp(ValueError, "should have table_channels"):
+            im.filter(lut)
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = numpy.array(lut.table, dtype=numpy.float16)
+        self.assert_image_equal(im, im.filter(lut))
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = numpy.array(lut.table, dtype=numpy.float32)
+        self.assert_image_equal(im, im.filter(lut))
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = numpy.array(lut.table, dtype=numpy.float64)
+        self.assert_image_equal(im, im.filter(lut))
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = numpy.array(lut.table, dtype=numpy.int32)
+        im.filter(lut)
+        lut.table = numpy.array(lut.table, dtype=numpy.int8)
+        im.filter(lut)
+
     def test_repr(self):
         lut = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
         self.assertEqual(repr(lut),
