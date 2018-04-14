@@ -15,6 +15,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import division
+
 import functools
 
 
@@ -323,12 +325,18 @@ class Color3DLUT(MultibandFilter):
     """
     name = "Color 3D LUT"
 
-    def __init__(self, size, table, channels=3, target_mode=None):
+    def __init__(self, size, table, channels=3, target_mode=None, **kwargs):
+        if channels not in (3, 4):
+            raise ValueError("Only 3 or 4 output channels are supported")
         self.size = size = self._check_size(size)
         self.channels = channels
         self.mode = target_mode
 
-        table = list(table)
+        # Hidden flag `_copy_table=False` could be used to avoid extra copying
+        # of the table if the table is specially made for the constructor.
+        if kwargs.get('_copy_table', True):
+            table = list(table)
+
         # Convert to a flat list
         if table and isinstance(table[0], (list, tuple)):
             table, raw_table = [], table
@@ -371,20 +379,82 @@ class Color3DLUT(MultibandFilter):
                          three color channels. Will be called ``size**3``
                          times with values from 0.0 to 1.0 and should return
                          a tuple with ``channels`` elements.
-        :param channels: Passed to the constructor.
-        :param target_mode: Passed to the constructor.
+        :param channels: The number of channels which should return callback.
+        :param target_mode: Passed to the constructor of the resulting
+                            lookup table.
         """
         size1D, size2D, size3D = cls._check_size(size)
-        table = []
+        if channels not in (3, 4):
+            raise ValueError("Only 3 or 4 output channels are supported")
+
+        table = [0] * (size1D * size2D * size3D * channels)
+        idx_out = 0
         for b in range(size3D):
             for g in range(size2D):
                 for r in range(size1D):
-                    table.append(callback(
-                        r / float(size1D-1),
-                        g / float(size2D-1),
-                        b / float(size3D-1)))
+                    table[idx_out:idx_out + channels] = callback(
+                        r / (size1D-1), g / (size2D-1), b / (size3D-1))
+                    idx_out += channels
 
-        return cls((size1D, size2D, size3D), table, channels, target_mode)
+        return cls((size1D, size2D, size3D), table, channels=channels,
+                   target_mode=target_mode, _copy_table=False)
+
+    def transform(self, callback, with_normals=False, channels=None,
+                  target_mode=None):
+        """Transforms the table values using provided callback and returns
+        a new LUT with altered values.
+
+        :param callback: A function which takes old lookup table values
+                         and returns a new set of values. The number
+                         of arguments which function should take is
+                         ``self.channels`` or ``3 + self.channels``
+                         if ``with_normals`` flag is set.
+                         Should return a tuple of ``self.channels`` or
+                         ``channels`` elements if it is set.
+        :param with_normals: If true, ``callback`` will be called with
+                             coordinates in the color cube as the first
+                             three arguments. Otherwise, ``callback``
+                             will be called only with actual color values.
+        :param channels: The number of channels in the resulting lookup table.
+        :param target_mode: Passed to the constructor of the resulting
+                            lookup table.
+        """
+        if channels not in (None, 3, 4):
+            raise ValueError("Only 3 or 4 output channels are supported")
+        ch_in = self.channels
+        ch_out = channels or ch_in
+        size1D, size2D, size3D = self.size
+
+        table = [0] * (size1D * size2D * size3D * ch_out)
+        idx_in = 0
+        idx_out = 0
+        for b in range(size3D):
+            for g in range(size2D):
+                for r in range(size1D):
+                    values = self.table[idx_in:idx_in + ch_in]
+                    if with_normals:
+                        values = callback(r / (size1D-1), g / (size2D-1),
+                                          b / (size3D-1), *values)
+                    else:
+                        values = callback(*values)
+                    table[idx_out:idx_out + ch_out] = values
+                    idx_in += ch_in
+                    idx_out += ch_out
+
+        return type(self)(self.size, table, channels=ch_out,
+                          target_mode=target_mode or self.mode,
+                          _copy_table=False)
+
+    def __repr__(self):
+        r = [
+            "{} from {}".format(self.__class__.__name__,
+                                  self.table.__class__.__name__),
+            "size={:d}x{:d}x{:d}".format(*self.size),
+            "channels={:d}".format(self.channels),
+        ]
+        if self.mode:
+            r.append("target_mode={}".format(self.mode))
+        return "<{}>".format(" ".join(r))
 
     def filter(self, image):
         from . import Image
