@@ -15,7 +15,7 @@ major release:
 * ``PIL.Image.VERSION``
 * ``PIL.Image.PILLOW_VERSION``
 
-Use ``__version__`` instead.
+Use ``PIL.__version__`` instead.
 
 
 API Additions
