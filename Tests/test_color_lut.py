@@ -287,7 +287,7 @@ class TestColorLut3DFilter(PillowTestCase):
     @unittest.skipIf(numpy is None, "Numpy is not installed")
     def test_numpy_sources(self):
         table = numpy.ones((5, 6, 7, 3), dtype=numpy.float16)
-        with self.assertRaisesRegexp(ValueError, "should have either channels"):
+        with self.assertRaisesRegex(ValueError, "should have either channels"):
             lut = ImageFilter.Color3DLUT((5, 6, 7), table)
 
         table = numpy.ones((7, 6, 5, 3), dtype=numpy.float16)
@@ -326,14 +326,14 @@ class TestColorLut3DFilter(PillowTestCase):
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
             lambda r, g, b: (r, g, b))
         lut.table = numpy.array(lut.table, dtype=numpy.float32)[:-1]
-        with self.assertRaisesRegexp(ValueError, "should have table_channels"):
+        with self.assertRaisesRegex(ValueError, "should have table_channels"):
             im.filter(lut)
 
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
             lambda r, g, b: (r, g, b))
         lut.table = (numpy.array(lut.table, dtype=numpy.float32)
                      .reshape((7 * 9 * 11), 3))
-        with self.assertRaisesRegexp(ValueError, "should have table_channels"):
+        with self.assertRaisesRegex(ValueError, "should have table_channels"):
             im.filter(lut)
 
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
