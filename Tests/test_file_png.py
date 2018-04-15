@@ -68,8 +68,7 @@ class TestFilePng(PillowTestCase):
     def test_sanity(self):
 
         # internal version number
-        self.assertRegexpMatches(
-            Image.core.zlib_version, r"\d+\.\d+\.\d+(\.\d+)?$")
+        self.assertRegex(Image.core.zlib_version, r"\d+\.\d+\.\d+(\.\d+)?$")
 
         test_file = self.tempfile("temp.png")
 

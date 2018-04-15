@@ -43,7 +43,7 @@ class TestImageCms(PillowTestCase):
         self.assertEqual(list(map(type, v)), [str, str, str, str])
 
         # internal version number
-        self.assertRegexpMatches(ImageCms.core.littlecms_version, r"\d+\.\d+$")
+        self.assertRegex(ImageCms.core.littlecms_version, r"\d+\.\d+$")
 
         self.skip_missing()
         i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)

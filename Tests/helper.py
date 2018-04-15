@@ -267,6 +267,11 @@ class PillowLeakTestCase(PillowTestCase):
 
 py3 = sys.version_info.major >= 3
 
+if not py3:
+    # Remove DeprecationWarning in Python 3
+    PillowTestCase.assertRaisesRegex = PillowTestCase.assertRaisesRegexp
+    PillowTestCase.assertRegex = PillowTestCase.assertRegexpMatches
+
 
 def fromstring(data):
     from io import BytesIO
