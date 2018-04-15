@@ -383,24 +383,24 @@ class CoreResampleBoxTest(PillowTestCase):
             im.resize((32, 32), resample, (20, 20, 20, 100))
             im.resize((32, 32), resample, (20, 20, 100, 20))
 
-            with self.assertRaisesRegexp(TypeError, "must be sequence of length 4"):
+            with self.assertRaisesRegex(TypeError, "must be sequence of length 4"):
                 im.resize((32, 32), resample, (im.width, im.height))
 
-            with self.assertRaisesRegexp(ValueError, "can't be negative"):
+            with self.assertRaisesRegex(ValueError, "can't be negative"):
                 im.resize((32, 32), resample, (-20, 20, 100, 100))
-            with self.assertRaisesRegexp(ValueError, "can't be negative"):
+            with self.assertRaisesRegex(ValueError, "can't be negative"):
                 im.resize((32, 32), resample, (20, -20, 100, 100))
 
-            with self.assertRaisesRegexp(ValueError, "can't be empty"):
+            with self.assertRaisesRegex(ValueError, "can't be empty"):
                 im.resize((32, 32), resample, (20.1, 20, 20, 100))
-            with self.assertRaisesRegexp(ValueError, "can't be empty"):
+            with self.assertRaisesRegex(ValueError, "can't be empty"):
                 im.resize((32, 32), resample, (20, 20.1, 100, 20))
-            with self.assertRaisesRegexp(ValueError, "can't be empty"):
+            with self.assertRaisesRegex(ValueError, "can't be empty"):
                 im.resize((32, 32), resample, (20.1, 20.1, 20, 20))
 
-            with self.assertRaisesRegexp(ValueError, "can't exceed"):
+            with self.assertRaisesRegex(ValueError, "can't exceed"):
                 im.resize((32, 32), resample, (0, 0, im.width + 1, im.height))
-            with self.assertRaisesRegexp(ValueError, "can't exceed"):
+            with self.assertRaisesRegex(ValueError, "can't exceed"):
                 im.resize((32, 32), resample, (0, 0, im.width, im.height + 1))
 
     def resize_tiled(self, im, dst_size, xtiles, ytiles):
@@ -447,7 +447,7 @@ class CoreResampleBoxTest(PillowTestCase):
 
         # error with box should be much smaller than without
         self.assert_image_similar(reference, with_box, 6)
-        with self.assertRaisesRegexp(AssertionError, "difference 29\."):
+        with self.assertRaisesRegex(AssertionError, "difference 29\."):
             self.assert_image_similar(reference, without_box, 5)
 
     def test_formats(self):
@@ -490,7 +490,7 @@ class CoreResampleBoxTest(PillowTestCase):
             try:
                 res = im.resize(size, Image.LANCZOS, box)
                 self.assertEqual(res.size, size)
-                with self.assertRaisesRegexp(AssertionError, "difference \d"):
+                with self.assertRaisesRegex(AssertionError, "difference \d"):
                     # check that the difference at least that much
                     self.assert_image_similar(res, im.crop(box), 20)
             except AssertionError:

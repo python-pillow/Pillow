@@ -31,7 +31,7 @@ class TestFileJpeg2k(PillowTestCase):
 
     def test_sanity(self):
         # Internal version number
-        self.assertRegexpMatches(Image.core.jp2klib_version, r'\d+\.\d+\.\d+$')
+        self.assertRegex(Image.core.jp2klib_version, r'\d+\.\d+\.\d+$')
 
         im = Image.open('Tests/images/test-card-lossless.jp2')
         px = im.load()

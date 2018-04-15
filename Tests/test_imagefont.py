@@ -75,8 +75,7 @@ class TestImageFont(PillowTestCase):
                                   layout_engine=self.LAYOUT_ENGINE)
 
     def test_sanity(self):
-        self.assertRegexpMatches(
-            ImageFont.core.freetype2_version, r"\d+\.\d+\.\d+$")
+        self.assertRegex(ImageFont.core.freetype2_version, r"\d+\.\d+\.\d+$")
 
     def test_font_properties(self):
         ttf = self.get_font()
