@@ -49,7 +49,7 @@ The following image operations are currently SIMD-accelerated:
 - Alpha composition: SSE4, AVX2
 - RGBA → RGBa (alpha premultiplication): SSE4, AVX2
 - RGBa → RGBA (division by alpha): SSE4, AVX2
-— RGB → L (grayscale): SSE4
+- RGB → L (grayscale): SSE4
 - 3x3 and 5x5 kernel filters: SSE4, AVX2
 - Split and get_channel: SSE4
 
