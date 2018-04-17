@@ -24,7 +24,7 @@ Released quarterly on the first day of January, April, July, October.
 ```
 * [ ] Create [binary distributions](#binary-distributions)
 * [ ] Upload all binaries and source distributions with ``twine upload dist/Pillow-4.1.0-*``
-* [ ] Manually hide old versions on PyPI such that only the latest major release is visible when viewing https://pypi.python.org/pypi/Pillow (https://pypi.python.org/pypi?:action=pkg_edit&name=Pillow)
+* [ ] Manually hide old versions on PyPI such that only the latest major release is visible when viewing https://pypi.org/project/Pillow/ (https://pypi.org/manage/project/Pillow/releases/)
 
 ## Point Release
 
