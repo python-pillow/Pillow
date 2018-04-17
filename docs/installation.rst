@@ -96,7 +96,7 @@ Building From Source
 
 Download and extract the `compressed archive from PyPI`_.
 
-.. _compressed archive from PyPI: https://pypi.python.org/pypi/Pillow
+.. _compressed archive from PyPI: https://pypi.org/project/Pillow/
 
 .. _external-libraries:
 
@@ -467,7 +467,7 @@ Old Versions
 ------------
 
 You can download old distributions from `PyPI
-<https://pypi.python.org/pypi/Pillow>`_. Only the latest major
+<https://pypi.org/project/Pillow/>`_. Only the latest major
 releases for Python 2.x and 3.x are visible, but all releases are
 available by direct URL access
-e.g. https://pypi.python.org/pypi/Pillow/1.0.
+e.g. https://pypi.org/project/Pillow/1.0/.

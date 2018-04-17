@@ -44,7 +44,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
 
 .. |version| image:: https://img.shields.io/pypi/v/pillow.svg
-   :target: https://pypi.python.org/pypi/Pillow/
+   :target: https://pypi.org/project/Pillow/
    :alt: Latest PyPI version
 
 .. |gitter| image:: https://badges.gitter.im/python-pillow/Pillow.svg
