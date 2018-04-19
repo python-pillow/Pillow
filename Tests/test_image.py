@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from helper import unittest, PillowTestCase, hopper, py3
 
 from PIL import Image
 import os
@@ -60,12 +60,12 @@ class TestImage(PillowTestCase):
         self.assertEqual(im.height, 4)
 
     def test_invalid_image(self):
-        if str is bytes:
-            import StringIO
-            im = StringIO.StringIO('')
-        else:
+        if py3:
             import io
             im = io.BytesIO(b'')
+        else:
+            import StringIO
+            im = StringIO.StringIO('')
         self.assertRaises(IOError, Image.open, im)
 
     def test_bad_mode(self):

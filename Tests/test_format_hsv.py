@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from helper import unittest, PillowTestCase, hopper, py3
 
 from PIL import Image
 
@@ -57,10 +57,10 @@ class TestFormatHSV(PillowTestCase):
 
         (r, g, b) = im.split()
 
-        if bytes is str:
-            conv_func = self.str_to_float
-        else:
+        if py3:
             conv_func = self.int_to_float
+        else:
+            conv_func = self.str_to_float
 
         if hasattr(itertools, 'izip'):
             iter_helper = itertools.izip
@@ -72,11 +72,11 @@ class TestFormatHSV(PillowTestCase):
                      for (_r, _g, _b) in iter_helper(r.tobytes(), g.tobytes(),
                                                      b.tobytes())]
 
-        if str is bytes:
-            new_bytes = b''.join(chr(h)+chr(s)+chr(v) for (
+        if py3:
+            new_bytes = b''.join(bytes(chr(h)+chr(s)+chr(v), 'latin-1') for (
                 h, s, v) in converted)
         else:
-            new_bytes = b''.join(bytes(chr(h)+chr(s)+chr(v), 'latin-1') for (
+            new_bytes = b''.join(chr(h)+chr(s)+chr(v) for (
                 h, s, v) in converted)
 
         hsv = Image.frombytes(mode, r.size, new_bytes)

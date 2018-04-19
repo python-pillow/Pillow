@@ -2,6 +2,7 @@ from helper import unittest, PillowTestCase
 
 from PIL import Image, FontFile, PcfFontFile
 from PIL import ImageFont, ImageDraw
+from helper import py3
 
 codecs = dir(Image.core)
 
@@ -76,7 +77,7 @@ class TestFontPcf(PillowTestCase):
         message = "".join(chr(i+1) for i in range(140, 232))
         self._test_high_characters(message)
         # accept bytes instances in Py3.
-        if bytes is not str:
+        if py3:
             self._test_high_characters(message.encode('latin1'))
 
 
