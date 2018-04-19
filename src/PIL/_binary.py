@@ -12,19 +12,20 @@
 #
 
 from struct import unpack, pack
+from ._util import py3
 
-if bytes is str:
-    def i8(c):
-        return ord(c)
-
-    def o8(i):
-        return chr(i & 255)
-else:
+if py3:
     def i8(c):
         return c if c.__class__ is int else c[0]
 
     def o8(i):
         return bytes((i & 255,))
+else:
+    def i8(c):
+        return ord(c)
+
+    def o8(i):
+        return chr(i & 255)
 
 
 # Input, le = little endian, be = big endian

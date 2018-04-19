@@ -1,5 +1,6 @@
-from helper import unittest, PillowTestCase, PillowLeakTestCase, hopper, py3
+from helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
 from PIL import Image, ImageFile, PngImagePlugin
+from PIL._util import py3
 
 from io import BytesIO
 import zlib

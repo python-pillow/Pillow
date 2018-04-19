@@ -1,17 +1,19 @@
-import os
+import os, sys
 
-if bytes is str:
-    def isStringType(t):
-        return isinstance(t, basestring)
+py3 = sys.version_info.major >= 3
 
-    def isPath(f):
-        return isinstance(f, basestring)
-else:
+if py3:
     def isStringType(t):
         return isinstance(t, str)
 
     def isPath(f):
         return isinstance(f, (bytes, str))
+else:
+    def isStringType(t):
+        return isinstance(t, basestring)
+
+    def isPath(f):
+        return isinstance(f, basestring)
 
 
 # Checks if an object is a string, and that it points to a directory.

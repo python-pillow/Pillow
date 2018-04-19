@@ -38,6 +38,7 @@ import struct
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16be as i16, i32be as i32, o16be as o16, o32be as o32
+from ._util import py3
 
 __version__ = "0.9"
 
@@ -437,7 +438,7 @@ class PngStream(ChunkStream):
             k = s
             v = b""
         if k:
-            if bytes is not str:
+            if py3:
                 k = k.decode('latin-1', 'strict')
                 v = v.decode('latin-1', 'replace')
 
@@ -473,7 +474,7 @@ class PngStream(ChunkStream):
             v = b""
 
         if k:
-            if bytes is not str:
+            if py3:
                 k = k.decode('latin-1', 'strict')
                 v = v.decode('latin-1', 'replace')
 
@@ -510,7 +511,7 @@ class PngStream(ChunkStream):
                     return s
             else:
                 return s
-        if bytes is not str:
+        if py3:
             try:
                 k = k.decode("latin-1", "strict")
                 lang = lang.decode("utf-8", "strict")

@@ -8,6 +8,7 @@ import os
 import unittest
 
 from PIL import Image, ImageMath
+from PIL._util import py3
 
 import logging
 logger = logging.getLogger(__name__)
@@ -264,8 +265,6 @@ class PillowLeakTestCase(PillowTestCase):
 
 
 # helpers
-
-py3 = sys.version_info.major >= 3
 
 if not py3:
     # Remove DeprecationWarning in Python 3

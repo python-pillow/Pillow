@@ -25,6 +25,7 @@
 #
 
 from . import VERSION, PILLOW_VERSION, _plugins
+from ._util import py3
 
 import logging
 import warnings
@@ -1260,10 +1261,10 @@ class Image(object):
 
         self.load()
         try:
-            if bytes is str:
-                return [i8(c) for c in self.im.getpalette()]
-            else:
+            if py3:
                 return list(self.im.getpalette())
+            else:
+                return [i8(c) for c in self.im.getpalette()]
         except ValueError:
             return None  # no palette
 
@@ -1586,10 +1587,10 @@ class Image(object):
             palette = ImagePalette.raw(data.rawmode, data.palette)
         else:
             if not isinstance(data, bytes):
-                if bytes is str:
-                    data = "".join(chr(x) for x in data)
-                else:
+                if py3:
                     data = bytes(data)
+                else:
+                    data = "".join(chr(x) for x in data)
             palette = ImagePalette.raw(rawmode, data)
         self.mode = "P"
         self.palette = palette

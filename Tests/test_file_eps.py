@@ -1,6 +1,7 @@
-from helper import unittest, PillowTestCase, hopper, py3
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, EpsImagePlugin
+from PIL._util import py3
 import io
 
 # Our two EPS test files (they are identical except for their bounding boxes)

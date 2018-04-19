@@ -2,7 +2,7 @@ from helper import unittest, PillowTestCase
 
 from PIL import Image, FontFile, PcfFontFile
 from PIL import ImageFont, ImageDraw
-from helper import py3
+from PIL._util import py3
 
 codecs = dir(Image.core)
 

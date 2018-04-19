@@ -2,7 +2,7 @@
 # Run from anywhere that PIL is importable.
 
 from PIL import Image
-from helper import py3
+from PIL._util import py3
 from io import BytesIO
 
 if py3:
