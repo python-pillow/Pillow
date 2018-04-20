@@ -310,8 +310,8 @@ def _save(im, fp, filename):
 
     # create the temporary set of pngs
     iconset = tempfile.mkdtemp('.iconset')
-    provided_images = {im.width:im for im in
-                       im.encoderinfo.get("append_images", [])}
+    provided_images = {im.width: im
+                       for im in im.encoderinfo.get("append_images", [])}
     last_w = None
     for w in [16, 32, 128, 256, 512]:
         prefix = 'icon_{}x{}'.format(w, w)

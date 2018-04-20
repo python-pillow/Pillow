@@ -20,7 +20,7 @@ class TestFontPcf(PillowTestCase):
         with open(fontname, "rb") as test_file:
             font = PcfFontFile.PcfFontFile(test_file)
         self.assertIsInstance(font, FontFile.FontFile)
-        #check the number of characters in the font
+        # check the number of characters in the font
         self.assertEqual(len([_f for _f in font.glyph if _f]), 223)
 
         tempname = self.tempfile("temp.pil")
@@ -66,7 +66,7 @@ class TestFontPcf(PillowTestCase):
     def _test_high_characters(self, message):
         tempname = self.save_font()
         font = ImageFont.load(tempname)
-        im = Image.new("L", (750, 30) , "white")
+        im = Image.new("L", (750, 30), "white")
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), message, "black", font=font)
         with Image.open('Tests/images/high_ascii_chars.png') as target:

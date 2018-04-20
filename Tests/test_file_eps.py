@@ -76,7 +76,7 @@ class TestFileEps(PillowTestCase):
         plot_image = Image.open("Tests/images/reqd_showpage.eps")
         target = Image.open("Tests/images/reqd_showpage.png")
 
-        #should not crash/hang
+        # should not crash/hang
         plot_image.load()
         #  fonts could be slightly different
         self.assert_image_similar(plot_image, target, 6)

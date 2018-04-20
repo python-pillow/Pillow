@@ -663,7 +663,7 @@ _OUTMODES = {
 
 
 def putchunk(fp, cid, *data):
-    "Write a PNG chunk (including CRC field)"
+    """Write a PNG chunk (including CRC field)"""
 
     data = b"".join(data)
 

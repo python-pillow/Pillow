@@ -358,7 +358,7 @@ _initialized = 0
 
 
 def preinit():
-    "Explicitly load standard file format drivers."
+    """Explicitly load standard file format drivers."""
 
     global _initialized
     if _initialized >= 1:
@@ -2246,7 +2246,7 @@ class ImageTransformHandler(object):
 # Debugging
 
 def _wedge():
-    "Create greyscale wedge (for debugging only)"
+    """Create greyscale wedge (for debugging only)"""
 
     return Image()._new(core.wedge("L"))
 

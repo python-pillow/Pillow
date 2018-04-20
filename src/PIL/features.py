@@ -73,8 +73,8 @@ def get_supported_features():
 
 
 def check(feature):
-    return (feature in modules and check_module(feature) or \
-            feature in codecs and check_codec(feature) or \
+    return (feature in modules and check_module(feature) or
+            feature in codecs and check_codec(feature) or
             feature in features and check_feature(feature))
 
 
