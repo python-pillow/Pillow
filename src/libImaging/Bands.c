@@ -211,7 +211,7 @@ ImagingFillBand(Imaging imOut, int band, int color)
     if (imOut->bands == 2 && band == 1)
         band = 3;
 
-    color = CLIP(color);
+    color = CLIP8(color);
 
     /* Insert color into image */
     for (y = 0; y < imOut->ysize; y++) {

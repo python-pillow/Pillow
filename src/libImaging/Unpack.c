@@ -747,9 +747,9 @@ unpackRGBa16L(UINT8* _out, const UINT8* in, int pixels)
         } else if (a == 255) {
             out[i] = MAKE_UINT32(in[1], in[3], in[5], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP(in[1] * 255 / a),
-                                 CLIP(in[3] * 255 / a),
-                                 CLIP(in[5] * 255 / a), a);
+            out[i] = MAKE_UINT32(CLIP8(in[1] * 255 / a),
+                                 CLIP8(in[3] * 255 / a),
+                                 CLIP8(in[5] * 255 / a), a);
         }
         in += 8;
     }
@@ -768,9 +768,9 @@ unpackRGBa16B(UINT8* _out, const UINT8* in, int pixels)
         } else if (a == 255) {
             out[i] = MAKE_UINT32(in[0], in[2], in[4], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP(in[0] * 255 / a),
-                                 CLIP(in[2] * 255 / a),
-                                 CLIP(in[4] * 255 / a), a);
+            out[i] = MAKE_UINT32(CLIP8(in[0] * 255 / a),
+                                 CLIP8(in[2] * 255 / a),
+                                 CLIP8(in[4] * 255 / a), a);
         }
         in += 8;
     }
@@ -789,9 +789,9 @@ unpackRGBa(UINT8* _out, const UINT8* in, int pixels)
         } else if (a == 255) {
             out[i] = MAKE_UINT32(in[0], in[1], in[2], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP(in[0] * 255 / a),
-                                 CLIP(in[1] * 255 / a),
-                                 CLIP(in[2] * 255 / a), a);
+            out[i] = MAKE_UINT32(CLIP8(in[0] * 255 / a),
+                                 CLIP8(in[1] * 255 / a),
+                                 CLIP8(in[2] * 255 / a), a);
         }
         in += 4;
     }
@@ -810,9 +810,9 @@ unpackBGRa(UINT8* _out, const UINT8* in, int pixels)
         } else if (a == 255) {
             out[i] = MAKE_UINT32(in[2], in[1], in[0], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP(in[2] * 255 / a),
-                                 CLIP(in[1] * 255 / a),
-                                 CLIP(in[0] * 255 / a), a);
+            out[i] = MAKE_UINT32(CLIP8(in[2] * 255 / a),
+                                 CLIP8(in[1] * 255 / a),
+                                 CLIP8(in[0] * 255 / a), a);
         }
         in += 4;
     }
