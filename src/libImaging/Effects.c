@@ -79,6 +79,7 @@ ImagingEffectNoise(int xsize, int ysize, float sigma)
     Imaging imOut;
     int x, y;
     int nextok;
+    int d;
     double this, next;
 
     imOut = ImagingNewDirty("L", xsize, ysize);
@@ -106,7 +107,8 @@ ImagingEffectNoise(int xsize, int ysize, float sigma)
                 this = factor * v1;
                 next = factor * v2;
             }
-            out[x] = (unsigned char) (128 + sigma * this);
+            d = 128 + sigma * this;
+            out[x] = d<0 ? 0 : (d>UCHAR_MAX ? UCHAR_MAX : d);
         }
     }
 
