@@ -45,8 +45,6 @@
 #define Y 2
 #define K 3
 
-#define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
-
 /* byte-swapping macros */
 
 #define C16N\

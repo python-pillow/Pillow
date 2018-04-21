@@ -38,7 +38,6 @@
 #define MAX(a, b) (a)>(b) ? (a) : (b)
 #define MIN(a, b) (a)<(b) ? (a) : (b)
 
-#define CLIP(v) ((v) <= 0 ? 0 : (v) >= 255 ? 255 : (v))
 #define CLIP16(v) ((v) <= -32768 ? -32768 : (v) >= 32767 ? 32767 : (v))
 
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */

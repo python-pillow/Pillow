@@ -19,9 +19,6 @@
 #include "Imaging.h"
 
 
-#define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
-
-
 Imaging
 ImagingGetBand(Imaging imIn, int band)
 {

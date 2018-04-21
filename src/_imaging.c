@@ -96,8 +96,6 @@
 
 #undef    VERBOSE
 
-#define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
-
 #define B16(p, i) ((((int)p[(i)]) << 8) + p[(i)+1])
 #define L16(p, i) ((((int)p[(i)+1]) << 8) + p[(i)])
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
@@ -744,7 +742,7 @@ _prepare_lut_table(PyObject* table, Py_ssize_t table_size)
             prepared[i] = table_data[i] * (255 << PRECISION_BITS) + 0.5;
         }
     }
-    
+
     #undef PRECISION_BITS
     free(table_data);
     return prepared;
@@ -803,7 +801,7 @@ _color_lut_3d(ImagingObject* self, PyObject* args)
         return NULL;
     }
 
-    if ( ! ImagingColorLUT3D_linear(imOut, self->image, 
+    if ( ! ImagingColorLUT3D_linear(imOut, self->image,
                                     table_channels, size1D, size2D, size3D,
                                     prepared_table)) {
         free(prepared_table);
