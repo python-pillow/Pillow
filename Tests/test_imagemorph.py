@@ -288,13 +288,13 @@ class MorphTests(PillowTestCase):
         imrgb = Image.new('RGB', (10, 10))
         iml = Image.new('L', (10, 10))
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             _imagingmorph.apply(bytes(lut), imrgb.im.id, iml.im.id)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             _imagingmorph.apply(bytes(lut), iml.im.id, imrgb.im.id)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             _imagingmorph.match(bytes(lut), imrgb.im.id)
 
         # Should not raise
