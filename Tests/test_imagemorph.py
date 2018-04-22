@@ -1,8 +1,7 @@
 # Test the ImageMorphology functionality
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
-from PIL import ImageMorph
+from PIL import Image, ImageMorph, _imagingmorph
 
 
 class MorphTests(PillowTestCase):
@@ -283,6 +282,23 @@ class MorphTests(PillowTestCase):
 
         # Assert
         self.assertEqual(mop.lut, lut)
+
+    def test_wrong_mode(self):
+        lut = ImageMorph.LutBuilder(op_name='corner').build_lut()
+        imrgb = Image.new('RGB', (10, 10))
+        iml = Image.new('L', (10, 10))
+
+        with self.assertRaises(ValueError):
+            _imagingmorph.apply(bytes(lut), imrgb.im.id, iml.im.id)
+
+        with self.assertRaises(ValueError):
+            _imagingmorph.apply(bytes(lut), iml.im.id, imrgb.im.id)
+
+        with self.assertRaises(ValueError):
+            _imagingmorph.match(bytes(lut), imrgb.im.id)
+
+        # Should not raise
+        _imagingmorph.match(bytes(lut), iml.im.id)
 
 
 if __name__ == '__main__':
