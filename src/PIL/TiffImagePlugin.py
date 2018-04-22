@@ -43,6 +43,7 @@ from __future__ import division, print_function
 
 from . import Image, ImageFile, ImagePalette, TiffTags
 from ._binary import i8, o8
+from ._util import py3
 
 import collections
 from fractions import Fraction
@@ -519,7 +520,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     def __contains__(self, tag):
         return tag in self._tags_v2 or tag in self._tagdata
 
-    if bytes is str:
+    if not py3:
         def has_key(self, tag):
             return tag in self
 
@@ -528,7 +529,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
     def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
-        if bytes is str:
+        if not py3:
             basetypes += unicode,
 
         info = TiffTags.lookup(tag)
@@ -549,14 +550,14 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                 elif all(isinstance(v, float) for v in values):
                     self.tagtype[tag] = 12
                 else:
-                    if bytes is str:
-                        # Never treat data as binary by default on Python 2.
-                        self.tagtype[tag] = 2
-                    else:
+                    if py3:
                         if all(isinstance(v, str) for v in values):
                             self.tagtype[tag] = 2
+                    else:
+                        # Never treat data as binary by default on Python 2.
+                        self.tagtype[tag] = 2
 
-        if self.tagtype[tag] == 7 and bytes is not str:
+        if self.tagtype[tag] == 7 and py3:
             values = [value.encode("ascii", 'replace') if isinstance(
                       value, str) else value]
 
@@ -1503,7 +1504,7 @@ def _save(im, fp, filename):
             if tag not in TiffTags.LIBTIFF_CORE:
                 continue
             if tag not in atts and tag not in blocklist:
-                if isinstance(value, unicode if bytes is str else str):
+                if isinstance(value, str if py3 else unicode):
                     atts[tag] = value.encode('ascii', 'replace') + b"\0"
                 elif isinstance(value, IFDRational):
                     atts[tag] = float(value)

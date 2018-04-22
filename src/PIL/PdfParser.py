@@ -4,6 +4,7 @@ import mmap
 import os
 import re
 import zlib
+from ._util import py3
 
 try:
     from UserDict import UserDict  # Python 2.x
@@ -11,12 +12,12 @@ except ImportError:
     UserDict = collections.UserDict  # Python 3.x
 
 
-if str == bytes:  # Python 2.x
-    def make_bytes(s):  # pragma: no cover
-        return s        # pragma: no cover
-else:  # Python 3.x
+if py3:  # Python 3.x
     def make_bytes(s):
         return s.encode("us-ascii")
+else:  # Python 2.x
+    def make_bytes(s):  # pragma: no cover
+        return s        # pragma: no cover
 
 
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set on page 656
@@ -72,10 +73,10 @@ PDFDocEncoding = {
 def decode_text(b):
     if b[:len(codecs.BOM_UTF16_BE)] == codecs.BOM_UTF16_BE:
         return b[len(codecs.BOM_UTF16_BE):].decode("utf_16_be")
-    elif str == bytes:  # Python 2.x
-        return u"".join(PDFDocEncoding.get(ord(byte), byte) for byte in b)
-    else:
+    elif py3:  # Python 3.x
         return "".join(PDFDocEncoding.get(byte, chr(byte)) for byte in b)
+    else:  # Python 2.x
+        return u"".join(PDFDocEncoding.get(ord(byte), byte) for byte in b)
 
 
 class PdfFormatError(RuntimeError):
@@ -214,20 +215,18 @@ class PdfName:
     allowed_chars = set(range(33, 127)) - set(ord(c) for c in "#%/()<>[]{}")
 
     def __bytes__(self):
-        if str == bytes:  # Python 2.x
-            result = bytearray(b"/")
-            for b in self.name:
-                if ord(b) in self.allowed_chars:
-                    result.append(b)
-                else:
-                    result.extend(b"#%02X" % ord(b))
-        else:  # Python 3.x
-            result = bytearray(b"/")
-            for b in self.name:
+        result = bytearray(b"/")
+        for b in self.name:
+            if py3:  # Python 3.x
                 if b in self.allowed_chars:
                     result.append(b)
                 else:
                     result.extend(make_bytes("#%02X" % b))
+            else:  # Python 2.x
+                if ord(b) in self.allowed_chars:
+                    result.append(b)
+                else:
+                    result.extend(b"#%02X" % ord(b))
         return bytes(result)
 
     __str__ = __bytes__
@@ -281,7 +280,7 @@ class PdfDict(UserDict):
         out.extend(b"\n>>")
         return bytes(out)
 
-    if str == bytes:
+    if not py3:
         __str__ = __bytes__
 
 
@@ -289,13 +288,13 @@ class PdfBinary:
     def __init__(self, data):
         self.data = data
 
-    if str == bytes:  # Python 2.x
+    if py3:  # Python 3.x
+        def __bytes__(self):
+            return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
+    else:  # Python 2.x
         def __str__(self):
             return "<%s>" % "".join("%02X" % ord(b) for b in self.data)
 
-    else:  # Python 3.x
-        def __bytes__(self):
-            return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
 
 
 class PdfStream:
@@ -333,7 +332,7 @@ def pdf_repr(x):
         return bytes(PdfDict(x))
     elif isinstance(x, list):
         return bytes(PdfArray(x))
-    elif (str == bytes and isinstance(x, unicode)) or (str != bytes and isinstance(x, str)):
+    elif (py3 and isinstance(x, str)) or (not py3 and isinstance(x, unicode)):
         return pdf_repr(encode_text(x))
     elif isinstance(x, bytes):
         return b"(" + x.replace(b"\\", b"\\\\").replace(b"(", b"\\(").replace(b")", b"\\)") + b")"  # XXX escape more chars? handle binary garbage

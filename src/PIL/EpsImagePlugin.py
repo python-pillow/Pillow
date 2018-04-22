@@ -26,6 +26,7 @@ import os
 import sys
 from . import Image, ImageFile
 from ._binary import i32le as i32
+from ._util import py3
 
 __version__ = "0.5"
 
@@ -206,12 +207,12 @@ class EpsImageFile(ImageFile.ImageFile):
         # Rewrap the open file pointer in something that will
         # convert line endings and decode to latin-1.
         try:
-            if bytes is str:
-                # Python2, no encoding conversion necessary
-                fp = open(self.fp.name, "Ur")
-            else:
+            if py3:
                 # Python3, can use bare open command.
                 fp = open(self.fp.name, "Ur", encoding='latin-1')
+            else:
+                # Python2, no encoding conversion necessary
+                fp = open(self.fp.name, "Ur")
         except:
             # Expect this for bytesio/stringio
             fp = PSFile(self.fp)

@@ -16,6 +16,7 @@
 #
 
 from . import EpsImagePlugin
+from ._util import py3
 import sys
 
 ##
@@ -34,7 +35,7 @@ class PSDraw(object):
         self.fp = fp
 
     def _fp_write(self, to_write):
-        if bytes is str or self.fp == sys.stdout:
+        if not py3 or self.fp == sys.stdout:
             self.fp.write(to_write)
         else:
             self.fp.write(bytes(to_write, 'UTF-8'))

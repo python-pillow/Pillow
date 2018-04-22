@@ -1,5 +1,6 @@
-from helper import unittest, PillowTestCase, hopper, py3
+from helper import unittest, PillowTestCase, hopper
 from PIL import Image
+from PIL._util import py3
 
 
 try:

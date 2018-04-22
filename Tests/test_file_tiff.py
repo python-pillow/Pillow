@@ -3,9 +3,10 @@ from io import BytesIO
 import struct
 import sys
 
-from helper import unittest, PillowTestCase, hopper, py3
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin
+from PIL._util import py3
 from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION, RESOLUTION_UNIT
 
 logger = logging.getLogger(__name__)

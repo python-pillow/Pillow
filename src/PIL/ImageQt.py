@@ -17,7 +17,7 @@
 #
 
 from . import Image
-from ._util import isPath
+from ._util import isPath, py3
 from io import BytesIO
 
 qt_is_installed = True
@@ -123,10 +123,10 @@ def _toqclass_helper(im):
     # handle filename, if given instead of image name
     if hasattr(im, "toUtf8"):
         # FIXME - is this really the best way to do this?
-        if str is bytes:
-            im = unicode(im.toUtf8(), "utf-8")
-        else:
+        if py3:
             im = str(im.toUtf8(), "utf-8")
+        else:
+            im = unicode(im.toUtf8(), "utf-8")
     if isPath(im):
         im = Image.open(im)
 

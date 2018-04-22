@@ -24,6 +24,7 @@
 
 from . import Image, ImageFile
 from ._binary import i8, o8, i16be as i16
+from ._util import py3
 import struct
 import os
 
@@ -165,7 +166,7 @@ def _save(im, fp, filename):
     pinmax = 255
     # Image name (79 characters max, truncated below in write)
     imgName = os.path.splitext(os.path.basename(filename))[0]
-    if str is not bytes:
+    if py3:
         imgName = imgName.encode('ascii', 'ignore')
     # Standard representation of pixel in the file
     colormap = 0

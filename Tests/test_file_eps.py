@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, EpsImagePlugin
+from PIL._util import py3
 import io
 
 # Our two EPS test files (they are identical except for their bounding boxes)
@@ -206,19 +207,19 @@ class TestFileEps(PillowTestCase):
         self._test_readline(t, ending)
 
     def _test_readline_io(self, test_string, ending):
-        if str is bytes:
-            t = io.StringIO(unicode(test_string))
-        else:
+        if py3:
             t = io.StringIO(test_string)
+        else:
+            t = io.StringIO(unicode(test_string))
         self._test_readline(t, ending)
 
     def _test_readline_file_universal(self, test_string, ending):
         f = self.tempfile('temp.txt')
         with open(f, 'wb') as w:
-            if str is bytes:
-                w.write(test_string)
-            else:
+            if py3:
                 w.write(test_string.encode('UTF-8'))
+            else:
+                w.write(test_string)
 
         with open(f, 'rU') as t:
             self._test_readline(t, ending)
@@ -226,10 +227,10 @@ class TestFileEps(PillowTestCase):
     def _test_readline_file_psfile(self, test_string, ending):
         f = self.tempfile('temp.txt')
         with open(f, 'wb') as w:
-            if str is bytes:
-                w.write(test_string)
-            else:
+            if py3:
                 w.write(test_string.encode('UTF-8'))
+            else:
+                w.write(test_string)
 
         with open(f, 'rb') as r:
             t = EpsImagePlugin.PSFile(r)

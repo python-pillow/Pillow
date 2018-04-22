@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase
 
 from PIL import ImagePath, Image
+from PIL._util import py3
 
 import array
 import struct
@@ -77,10 +78,10 @@ class TestImagePath(PillowTestCase):
             # This fails due to the invalid malloc above,
             # and segfaults
             for i in range(200000):
-                if str is bytes:
-                    x[i] = "0"*16
-                else:
+                if py3:
                     x[i] = b'0'*16
+                else:
+                    x[i] = "0"*16
 
 
 class evil:

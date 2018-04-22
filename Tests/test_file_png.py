@@ -1,5 +1,6 @@
 from helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
 from PIL import Image, ImageFile, PngImagePlugin
+from PIL._util import py3
 
 from io import BytesIO
 import zlib
@@ -419,7 +420,7 @@ class TestFilePng(PillowTestCase):
             im = roundtrip(im, pnginfo=info)
             self.assertEqual(im.info, {"Text": value})
 
-        if str is not bytes:
+        if py3:
             rt_text(" Aa" + chr(0xa0) + chr(0xc4) + chr(0xff))  # Latin1
             rt_text(chr(0x400) + chr(0x472) + chr(0x4ff))       # Cyrillic
             rt_text(chr(0x4e00) + chr(0x66f0) +                 # CJK
