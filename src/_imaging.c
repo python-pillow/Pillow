@@ -96,8 +96,6 @@
 
 #undef    VERBOSE
 
-#define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
-
 #define B16(p, i) ((((int)p[(i)]) << 8) + p[(i)+1])
 #define L16(p, i) ((((int)p[(i)+1]) << 8) + p[(i)])
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
@@ -409,7 +407,7 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
         switch (type) {
         case TYPE_UINT8:
             itemp = PyInt_AsLong(op);
-            ((UINT8*)list)[i] = CLIP(itemp);
+            ((UINT8*)list)[i] = CLIP8(itemp);
             break;
         case TYPE_INT32:
             itemp = PyInt_AsLong(op);
@@ -529,7 +527,7 @@ getink(PyObject* color, Imaging im, char* ink)
                     return NULL;
                 }
             }
-            ink[0] = CLIP(r);
+            ink[0] = CLIP8(r);
             ink[1] = ink[2] = ink[3] = 0;
         } else {
             a = 255;
@@ -549,10 +547,10 @@ getink(PyObject* color, Imaging im, char* ink)
                         return NULL;
                 }
             }
-            ink[0] = CLIP(r);
-            ink[1] = CLIP(g);
-            ink[2] = CLIP(b);
-            ink[3] = CLIP(a);
+            ink[0] = CLIP8(r);
+            ink[1] = CLIP8(g);
+            ink[2] = CLIP8(b);
+            ink[3] = CLIP8(a);
         }
         return ink;
     case IMAGING_TYPE_INT32:
@@ -744,7 +742,7 @@ _prepare_lut_table(PyObject* table, Py_ssize_t table_size)
             prepared[i] = table_data[i] * (255 << PRECISION_BITS) + 0.5;
         }
     }
-    
+
     #undef PRECISION_BITS
     free(table_data);
     return prepared;
@@ -803,7 +801,7 @@ _color_lut_3d(ImagingObject* self, PyObject* args)
         return NULL;
     }
 
-    if ( ! ImagingColorLUT3D_linear(imOut, self->image, 
+    if ( ! ImagingColorLUT3D_linear(imOut, self->image,
                                     table_channels, size1D, size2D, size3D,
                                     prepared_table)) {
         free(prepared_table);
@@ -1284,17 +1282,17 @@ _point(ImagingObject* self, PyObject* args)
             im = ImagingPoint(self->image, mode, (void*) data);
         else if (mode && bands > 1) {
             for (i = 0; i < 256; i++) {
-                lut[i*4] = CLIP(data[i]);
-                lut[i*4+1] = CLIP(data[i+256]);
-                lut[i*4+2] = CLIP(data[i+512]);
+                lut[i*4] = CLIP8(data[i]);
+                lut[i*4+1] = CLIP8(data[i+256]);
+                lut[i*4+2] = CLIP8(data[i+512]);
                 if (n > 768)
-                    lut[i*4+3] = CLIP(data[i+768]);
+                    lut[i*4+3] = CLIP8(data[i+768]);
             }
             im = ImagingPoint(self->image, mode, (void*) lut);
         } else {
             /* map individual bands */
             for (i = 0; i < n; i++)
-                lut[i] = CLIP(data[i]);
+                lut[i] = CLIP8(data[i]);
             im = ImagingPoint(self->image, mode, (void*) lut);
         }
         free(data);
@@ -1358,7 +1356,7 @@ _putdata(ImagingObject* self, PyObject* args)
             else
                 /* Scaled and clipped string data */
                 for (i = x = y = 0; i < n; i++) {
-                    image->image8[y][x] = CLIP((int) (p[i] * scale + offset));
+                    image->image8[y][x] = CLIP8((int) (p[i] * scale + offset));
                     if (++x >= (int) image->xsize)
                         x = 0, y++;
                 }
@@ -1372,7 +1370,7 @@ _putdata(ImagingObject* self, PyObject* args)
                /* Clipped data */
                for (i = x = y = 0; i < n; i++) {
                    op = PySequence_Fast_GET_ITEM(seq, i);
-                   image->image8[y][x] = (UINT8) CLIP(PyInt_AsLong(op));
+                   image->image8[y][x] = (UINT8) CLIP8(PyInt_AsLong(op));
                    if (++x >= (int) image->xsize){
                        x = 0, y++;
                    }
@@ -1382,7 +1380,7 @@ _putdata(ImagingObject* self, PyObject* args)
                /* Scaled and clipped data */
                for (i = x = y = 0; i < n; i++) {
                    PyObject *op = PySequence_Fast_GET_ITEM(seq, i);
-                   image->image8[y][x] = CLIP(
+                   image->image8[y][x] = CLIP8(
                        (int) (PyFloat_AsDouble(op) * scale + offset));
                    if (++x >= (int) image->xsize){
                        x = 0, y++;

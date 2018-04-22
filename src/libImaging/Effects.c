@@ -106,7 +106,7 @@ ImagingEffectNoise(int xsize, int ysize, float sigma)
                 this = factor * v1;
                 next = factor * v2;
             }
-            out[x] = (unsigned char) (128 + sigma * this);
+            out[x] = CLIP8(128 + sigma * this);
         }
     }
 
