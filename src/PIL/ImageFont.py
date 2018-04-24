@@ -147,6 +147,10 @@ class FreeTypeFont(object):
             self.font = core.getfont(
                 "", size, index, encoding, self.font_bytes, layout_engine)
 
+    def _multiline_split(self, text):
+        split_character = "\n" if isinstance(text, str) else b"\n"
+        return text.split(split_character)
+
     def getname(self):
         return self.font.family, self.font.style
 
@@ -156,6 +160,16 @@ class FreeTypeFont(object):
     def getsize(self, text, direction=None, features=None):
         size, offset = self.font.getsize(text, direction, features)
         return (size[0] + offset[0], size[1] + offset[1])
+
+    def getsize_multiline(self, text, direction=None, spacing=4, features=None):
+        max_width = 0
+        lines = self._multiline_split(text)
+        line_spacing = self.getsize('A')[1] + spacing
+        for line in lines:
+            line_width, line_height = self.getsize(line, direction, features)
+            max_width = max(max_width, line_width)
+
+        return max_width, len(lines)*line_spacing - spacing
 
     def getoffset(self, text):
         return self.font.getsize(text)[1]
