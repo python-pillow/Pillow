@@ -51,6 +51,10 @@ Methods
 
     :return: (width, height)
 
+.. py:method:: PIL.ImageFont.ImageFont.getsize_multiline(text)
+
+    :return: (width, height)
+
 .. py:method:: PIL.ImageFont.ImageFont.getmask(text, mode='', direction=None, features=[])
 
     Create a bitmap for the text.
