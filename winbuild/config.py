@@ -66,9 +66,9 @@ libs = {
         'version': '8.6.8',
     },
     'webp': {
-        'url': 'http://downloads.webmproject.org/releases/webp/libwebp-0.6.1.tar.gz',
-        'filename': PILLOW_DEPENDS_DIR + 'libwebp-0.6.1.tar.gz',
-        'dir': 'libwebp-0.6.1',
+        'url': 'http://downloads.webmproject.org/releases/webp/libwebp-1.0.0.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'libwebp-1.0.0.tar.gz',
+        'dir': 'libwebp-1.0.0',
     },
     'openjpeg': {
         'url': SF_MIRROR+'/project/openjpeg/openjpeg/2.3.0/openjpeg-2.3.0.tar.gz',
