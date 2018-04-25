@@ -1,6 +1,23 @@
 5.2.0
 -----
 
+API Changes
+===========
+
+Deprecations
+^^^^^^^^^^^^
+
+These version constants have been deprecated. ``VERSION`` will be removed in
+Pillow 6.0.0, and ``PILLOW_VERSION`` will be removed after that.
+
+* ``PIL.VERSION`` (old PIL version 1.1.7)
+* ``PIL.PILLOW_VERSION``
+* ``PIL.Image.VERSION``
+* ``PIL.Image.PILLOW_VERSION``
+
+Use ``PIL.__version__`` instead.
+
+
 API Additions
 =============
 
