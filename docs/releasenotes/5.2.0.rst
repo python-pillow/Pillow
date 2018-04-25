@@ -1,0 +1,21 @@
+5.2.0
+-----
+
+API Additions
+=============
+
+Image.rotate
+^^^^^^^^^^^^
+
+A new named parameter, ``fillcolor``, has been added to ``Image.rotate``. This
+color specifies the background color to use in the area outside the rotated
+image. This parameter takes the same color specifications as used in
+``Image.new``.
+
+Other Changes
+=============
+
+Support added for Python 3.7
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow 5.2 supports Python 3.7.
