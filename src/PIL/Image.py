@@ -25,7 +25,7 @@
 #
 
 # VERSION is deprecated and will be removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed in a future release.
+# PILLOW_VERSION is deprecated and will be removed after that.
 # Use __version__ instead.
 from . import VERSION, PILLOW_VERSION, __version__, _plugins
 from ._util import py3

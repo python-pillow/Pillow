@@ -14,7 +14,7 @@
 from . import _version
 
 # VERSION is deprecated and will be removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed in a future release.
+# PILLOW_VERSION is deprecated and will be removed after that.
 # Use __version__ instead.
 VERSION = '1.1.7'  # PIL Version
 PILLOW_VERSION = __version__ = _version.__version__
