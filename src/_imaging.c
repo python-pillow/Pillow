@@ -406,11 +406,11 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
         // on this switch. And 3 fewer loops to copy/paste.
         switch (type) {
         case TYPE_UINT8:
-            itemp = PyInt_AsLong(op);
+            itemp = (int)PyInt_AsLong(op);
             ((UINT8*)list)[i] = CLIP8(itemp);
             break;
         case TYPE_INT32:
-            itemp = PyInt_AsLong(op);
+            itemp = (int)PyInt_AsLong(op);
             ((INT32*)list)[i] = itemp;
             break;
         case TYPE_FLOAT32:
@@ -506,7 +506,7 @@ getink(PyObject* color, Imaging im, char* ink)
 #else
                 if (PyInt_Check(color) || PyLong_Check(color)) {
                         if (PyInt_Check(color))
-                                r = PyInt_AS_LONG(color);
+                                r = (int)PyInt_AS_LONG(color);
                         else
                                 r = PyLong_AsLongLong(color);
 #endif
@@ -1033,17 +1033,17 @@ _getxy(PyObject* xy, int* x, int *y)
 
     value = PyTuple_GET_ITEM(xy, 0);
     if (PyInt_Check(value))
-        *x = PyInt_AS_LONG(value);
+        *x = (int)PyInt_AS_LONG(value);
     else if (PyFloat_Check(value))
-        *x = (int) PyFloat_AS_DOUBLE(value);
+        *x = (int)PyFloat_AS_DOUBLE(value);
     else
         goto badval;
 
     value = PyTuple_GET_ITEM(xy, 1);
     if (PyInt_Check(value))
-        *y = PyInt_AS_LONG(value);
+        *y = (int)PyInt_AS_LONG(value);
     else if (PyFloat_Check(value))
-        *y = (int) PyFloat_AS_DOUBLE(value);
+        *y = (int)PyFloat_AS_DOUBLE(value);
     else
         goto badval;
 
