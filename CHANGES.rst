@@ -5,6 +5,12 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
+- Deprecate PILLOW_VERSION and VERSION #3090
+  [hugovk]
+
+- Support Python 3.7 #3076
+  [hugovk]
+
 - Update libwebp to 1.0.0 #3108
   [radarhere]
 
