@@ -4,7 +4,7 @@
  * decoder for DXTn-compressed data
  *
  * Format documentation:
- *   http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
+ *   https://web.archive.org/web/20170802060935/http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
  *
  * The contents of this file are in the public domain (CC0)
  * Full text of the CC0 license:
