@@ -341,7 +341,7 @@ def pdf_repr(x):
 
 
 class PdfParser:
-    """Based on http://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf
+    """Based on https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf
     Supports PDF up to 1.4
     """
 

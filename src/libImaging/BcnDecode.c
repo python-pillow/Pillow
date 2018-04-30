@@ -4,7 +4,7 @@
  * decoder for DXTn-compressed data
  *
  * Format documentation:
- *   http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
+ *   https://web.archive.org/web/20170802060935/http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
  *
  * The contents of this file are in the public domain (CC0)
  * Full text of the CC0 license:
@@ -178,7 +178,7 @@ static void decode_bc5_block(rgba *col, const UINT8* src) {
 }
 
 /* BC6 and BC7 are described here:
-   https://www.opengl.org/registry/specs/ARB/texture_compression_bptc.txt */
+   https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_compression_bptc.txt */
 
 static UINT8 get_bit(const UINT8* src, int bit) {
 	int by = bit >> 3;
