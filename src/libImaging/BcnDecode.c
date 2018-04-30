@@ -178,7 +178,7 @@ static void decode_bc5_block(rgba *col, const UINT8* src) {
 }
 
 /* BC6 and BC7 are described here:
-   https://www.opengl.org/registry/specs/ARB/texture_compression_bptc.txt */
+   https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_compression_bptc.txt */
 
 static UINT8 get_bit(const UINT8* src, int bit) {
 	int by = bit >> 3;
