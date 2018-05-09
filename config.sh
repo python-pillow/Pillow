@@ -2,14 +2,14 @@
 # Test for OSX with [ -n "$IS_OSX" ]
 
 # Package versions for fresh source builds
-FREETYPE_VERSION=2.9
+FREETYPE_VERSION=2.9.1
 LIBPNG_VERSION=1.6.32
 ZLIB_VERSION=1.2.11
 JPEG_VERSION=9b
 OPENJPEG_VERSION=2.1
 TIFF_VERSION=4.0.9
 LCMS2_VERSION=2.9
-LIBWEBP_VERSION=0.6.1
+LIBWEBP_VERSION=1.0.0
 
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
