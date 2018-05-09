@@ -80,6 +80,8 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             ("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))
         ]
         self.__frame = frame
+        self.fp.seek(0)
+        JpegImagePlugin.JpegImageFile._open(self)
 
     def tell(self):
         return self.__frame
