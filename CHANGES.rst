@@ -11,7 +11,7 @@ Changelog (Pillow)
 - Support Python 3.7 #3076
   [hugovk]
 
-- Update libwebp to 1.0.0 #3108
+- Depends: Update freetype to 2.9.1, libwebp to 1.0.0 #3121, #3108
   [radarhere]
 
 - Build macOS wheels with Xcode 6.4, supporting older macOS versions #3068
