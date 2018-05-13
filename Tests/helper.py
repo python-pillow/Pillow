@@ -239,7 +239,7 @@ class PillowLeakTestCase(PillowTestCase):
         Gets the RUSAGE memory usage, returns in K. Encapsulates the difference
         between OSX and Linux rss reporting
 
-        :returns; memory usage in kilobytes
+        :returns: memory usage in kilobytes
         """
 
         from resource import getrusage, RUSAGE_SELF
