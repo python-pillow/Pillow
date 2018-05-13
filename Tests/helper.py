@@ -230,14 +230,14 @@ class PillowTestCase(unittest.TestCase):
 
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class PillowLeakTestCase(PillowTestCase):
-    # requires unix/osx
+    # requires unix/macOS
     iterations = 100  # count
     mem_limit = 512  # k
 
     def _get_mem_usage(self):
         """
         Gets the RUSAGE memory usage, returns in K. Encapsulates the difference
-        between OSX and Linux rss reporting
+        between macOS and Linux rss reporting
 
         :returns: memory usage in kilobytes
         """
