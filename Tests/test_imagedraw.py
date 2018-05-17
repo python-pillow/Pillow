@@ -360,8 +360,6 @@ class TestImageDraw(PillowTestCase):
         ImageDraw.floodfill(im, (W, H), red)
         self.assert_image_equal(im, im_floodfill)
 
-    @unittest.skipIf(hasattr(sys, 'pypy_version_info'),
-                     "Causes fatal RPython error on PyPy")
     def test_floodfill_border(self):
         # floodfill() is experimental
 
