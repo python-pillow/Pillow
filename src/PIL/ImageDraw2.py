@@ -98,9 +98,6 @@ class Draw(object):
     def rectangle(self, xy, *options):
         self.render("rectangle", xy, *options)
 
-    def symbol(self, xy, symbol, *options):
-        raise NotImplementedError("not in this version")
-
     def text(self, xy, text, font):
         if self.transform:
             xy = ImagePath.Path(xy)
