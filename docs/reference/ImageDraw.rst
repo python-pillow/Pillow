@@ -132,7 +132,8 @@ Methods
     angles, inside the given bounding box.
 
     :param xy: Two points to define the bounding box. Sequence of
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
+             where ``x1 >= x0`` and ``y1 >= y0``.
     :param start: Starting angle, in degrees. Angles are measured from
             3 o'clock, increasing clockwise.
     :param end: Ending angle, in degrees.
@@ -155,7 +156,8 @@ Methods
     with a straight line.
 
     :param xy: Two points to define the bounding box. Sequence of
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
+             where ``x1 >= x0`` and ``y1 >= y0``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
@@ -164,7 +166,8 @@ Methods
     Draws an ellipse inside the given bounding box.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
+             where ``x1 >= x0`` and ``y1 >= y0``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
@@ -188,7 +191,8 @@ Methods
     center of the bounding box.
 
     :param xy: Two points to define the bounding box. Sequence of
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
+             where ``x1 >= x0`` and ``y1 >= y0``.
     :param start: Starting angle, in degrees. Angles are measured from
             3 o'clock, increasing clockwise.
     :param end: Ending angle, in degrees.
