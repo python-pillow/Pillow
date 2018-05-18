@@ -24,9 +24,9 @@ libs = {
         'dir': 'zlib-1.2.11',
     },
     'jpeg': {
-        'url': 'http://www.ijg.org/files/jpegsr9b.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'jpegsr9b.zip',
-        'dir': 'jpeg-9b',
+        'url': 'http://www.ijg.org/files/jpegsr9c.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'jpegsr9c.zip',
+        'dir': 'jpeg-9c',
     },
     'tiff': {
         'url': 'ftp://download.osgeo.org/libtiff/tiff-4.0.9.zip',
