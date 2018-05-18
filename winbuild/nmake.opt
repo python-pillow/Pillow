@@ -55,7 +55,7 @@ LOGLUV_SUPPORT	= 1
 # Uncomment and edit following lines to enable JPEG support.
 #
 JPEG_SUPPORT	= 1
-JPEGDIR 	= $(BUILD)\jpeg-9b
+JPEGDIR 	= $(BUILD)\jpeg-9c
 JPEG_INCLUDE	= -I$(JPEGDIR)
 JPEG_LIB 	= $(JPEGDIR)/libjpeg.lib
 
