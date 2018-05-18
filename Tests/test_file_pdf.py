@@ -104,6 +104,16 @@ class TestFilePdf(PillowTestCase):
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
 
+    def test_multiframe_normal_save(self):
+        # Test saving a multiframe image without save_all
+        im = Image.open("Tests/images/dispose_bgnd.gif")
+
+        outfile = self.tempfile('temp.pdf')
+        im.save(outfile)
+
+        self.assertTrue(os.path.isfile(outfile))
+        self.assertGreater(os.path.getsize(outfile), 0)
+
     def test_pdf_open(self):
         # fail on a buffer full of null bytes
         self.assertRaises(PdfParser.PdfFormatError, PdfParser.PdfParser, buf=bytearray(65536))
