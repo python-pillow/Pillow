@@ -42,7 +42,7 @@ class SimplePatcher(object):
             delattr(self._parent_obj, self._attr_name)
 
 
-@unittest.skipUnless(HAS_FREETYPE, "ImageFont not Available")
+@unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
 class TestImageFont(PillowTestCase):
     LAYOUT_ENGINE = ImageFont.LAYOUT_BASIC
 

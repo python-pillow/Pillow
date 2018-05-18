@@ -1,7 +1,7 @@
 import os.path
 
 from helper import PillowTestCase, hopper, unittest
-from PIL import Image, ImageDraw2
+from PIL import Image, ImageDraw2, features
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -28,6 +28,7 @@ POINTS2 = [10, 10, 20, 40, 30, 30]
 
 KITE_POINTS = [(10, 50), (70, 10), (90, 50), (70, 90), (10, 50)]
 
+HAS_FREETYPE = features.check("freetype2")
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 
 
@@ -135,6 +136,7 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
 
+    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
     def test_text(self):
         # Arrange
         im = Image.new("RGB", (W, H))
@@ -148,6 +150,7 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assert_image_similar(im, Image.open(expected), 13)
 
+    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
     def test_textsize(self):
         # Arrange
         im = Image.new("RGB", (W, H))
@@ -160,6 +163,7 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assertEqual(size[1], 12)
 
+    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
     def test_textsize_empty_string(self):
         # Arrange
         im = Image.new("RGB", (W, H))
@@ -173,6 +177,7 @@ class TestImageDraw(PillowTestCase):
         draw.textsize("\n", font)
         draw.textsize("test\n", font)
 
+    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
     def test_flush(self):
         # Arrange
         im = Image.new("RGB", (W, H))
