@@ -47,6 +47,39 @@ class TestImageDraw(PillowTestCase):
         pen = ImageDraw2.Pen("blue", width=7)
         draw.line(list(range(10)), pen)
 
+    def helper_ellipse(self, mode, bbox):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw2.Draw(im)
+        pen = ImageDraw2.Pen("blue", width=2)
+        brush = ImageDraw2.Brush("green")
+        expected = "Tests/images/imagedraw_ellipse_{}.png".format(mode)
+
+        # Act
+        draw.ellipse(bbox, pen, brush)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_ellipse1(self):
+        self.helper_ellipse("RGB", BBOX1)
+
+    def test_ellipse2(self):
+        self.helper_ellipse("RGB", BBOX2)
+
+    def test_ellipse_edge(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw2.Draw(im)
+        brush = ImageDraw2.Brush("white")
+
+        # Act
+        draw.ellipse(((0, 0), (W-1, H)), brush)
+
+        # Assert
+        self.assert_image_similar(
+            im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
+
     def helper_line(self, points):
         # Arrange
         im = Image.new("RGB", (W, H))
