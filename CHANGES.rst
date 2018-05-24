@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
+- AppVeyor: upgrade to PyPy 6.0.0 #3133
+  [hugovk]
+
 - Deprecate PILLOW_VERSION and VERSION #3090
   [hugovk]
 
