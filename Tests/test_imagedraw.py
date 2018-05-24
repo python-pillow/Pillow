@@ -1,11 +1,7 @@
-from helper import unittest, PillowTestCase, hopper
-
-from PIL import Image
-from PIL import ImageColor
-from PIL import ImageDraw
 import os.path
 
-import sys
+from helper import PillowTestCase, hopper, unittest
+from PIL import Image, ImageColor, ImageDraw
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -360,8 +356,6 @@ class TestImageDraw(PillowTestCase):
         ImageDraw.floodfill(im, (W, H), red)
         self.assert_image_equal(im, im_floodfill)
 
-    @unittest.skipIf(hasattr(sys, 'pypy_version_info'),
-                     "Causes fatal RPython error on PyPy")
     def test_floodfill_border(self):
         # floodfill() is experimental
 
