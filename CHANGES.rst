@@ -5,7 +5,7 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
-- AppVeyor: Upgrade to Python 2.7.15 and 3.4.4 #3133
+- AppVeyor: Upgrade to Python 2.7.15 and 3.4.4 #3141
   [radarhere]
 
 - AppVeyor: Upgrade to PyPy 6.0.0 #3133
@@ -43,7 +43,7 @@ Changelog (Pillow)
 
 - Fix dereferencing type-punned pointer will break strict-aliasing #3069
   [jdufresne]
-  
+
 5.1.0 (2018-04-02)
 ------------------
 
