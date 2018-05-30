@@ -78,6 +78,10 @@ class TestImageColor(PillowTestCase):
         self.assertEqual((255, 0, 0), ImageColor.getrgb("hsl(360,100%,50%)"))
         self.assertEqual((0, 255, 255), ImageColor.getrgb("hsl(180,100%,50%)"))
 
+        # floats
+        self.assertEqual((254, 3, 3), ImageColor.getrgb("hsl(0.1,99.2%,50.3%)"))
+        self.assertEqual((255, 0, 0), ImageColor.getrgb("hsl(360.,100.0%,50%)"))
+
         # case insensitivity
         self.assertEqual(ImageColor.getrgb("RGB(255,0,0)"),
                          ImageColor.getrgb("rgb(255,0,0)"))
