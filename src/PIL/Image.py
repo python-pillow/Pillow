@@ -2115,11 +2115,11 @@ class Image(object):
 
         if self.mode == 'LA':
             return self.convert('La').transform(
-                size, method, data, resample, fill).convert('LA')
+                size, method, data, resample, fill, fillcolor).convert('LA')
 
         if self.mode == 'RGBA':
             return self.convert('RGBa').transform(
-                size, method, data, resample, fill).convert('RGBA')
+                size, method, data, resample, fill, fillcolor).convert('RGBA')
 
         if isinstance(method, ImageTransformHandler):
             return method.transform(size, self, resample=resample, fill=fill)
