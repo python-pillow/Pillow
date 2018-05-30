@@ -101,7 +101,7 @@ def getrgb(color):
             int(rgb[2] * 255 + 0.5)
             )
 
-    m = re.match(r"hsv\(\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)%\s*,\s*(\d+\.?\d*)%\s*\)$", color)
+    m = re.match(r"hs[bv]\(\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)%\s*,\s*(\d+\.?\d*)%\s*\)$", color)
     if m:
         from colorsys import hsv_to_rgb
         rgb = hsv_to_rgb(

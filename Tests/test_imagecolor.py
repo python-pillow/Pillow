@@ -82,6 +82,10 @@ class TestImageColor(PillowTestCase):
         self.assertEqual((255, 0, 0), ImageColor.getrgb("hsv(360,100%,100%)"))
         self.assertEqual((0, 255, 255), ImageColor.getrgb("hsv(180,100%,100%)"))
 
+        # alternate format
+        self.assertEqual(ImageColor.getrgb("hsb(0,100%,50%)"),
+                         ImageColor.getrgb("hsv(0,100%,50%)"))
+
         # floats
         self.assertEqual((254, 3, 3), ImageColor.getrgb("hsl(0.1,99.2%,50.3%)"))
         self.assertEqual((255, 0, 0), ImageColor.getrgb("hsl(360.,100.0%,50%)"))
@@ -100,6 +104,8 @@ class TestImageColor(PillowTestCase):
                          ImageColor.getrgb("hsl(0,100%,50%)"))
         self.assertEqual(ImageColor.getrgb("HSV(0,100%,50%)"),
                          ImageColor.getrgb("hsv(0,100%,50%)"))
+        self.assertEqual(ImageColor.getrgb("HSB(0,100%,50%)"),
+                         ImageColor.getrgb("hsb(0,100%,50%)"))
 
         # space agnosticism
         self.assertEqual((255, 0, 0),
