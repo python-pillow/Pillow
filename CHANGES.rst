@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
+- Allow float values in getrgb HSL color string #3146
+  [radarhere]
+
 - AppVeyor: Upgrade to Python 2.7.15 and 3.4.4 #3140
   [radarhere]
 
