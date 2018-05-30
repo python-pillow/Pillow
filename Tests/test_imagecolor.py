@@ -78,9 +78,16 @@ class TestImageColor(PillowTestCase):
         self.assertEqual((255, 0, 0), ImageColor.getrgb("hsl(360,100%,50%)"))
         self.assertEqual((0, 255, 255), ImageColor.getrgb("hsl(180,100%,50%)"))
 
+        self.assertEqual((255, 0, 0), ImageColor.getrgb("hsv(0,100%,100%)"))
+        self.assertEqual((255, 0, 0), ImageColor.getrgb("hsv(360,100%,100%)"))
+        self.assertEqual((0, 255, 255), ImageColor.getrgb("hsv(180,100%,100%)"))
+
         # floats
         self.assertEqual((254, 3, 3), ImageColor.getrgb("hsl(0.1,99.2%,50.3%)"))
         self.assertEqual((255, 0, 0), ImageColor.getrgb("hsl(360.,100.0%,50%)"))
+
+        self.assertEqual((253, 2, 2), ImageColor.getrgb("hsv(0.1,99.2%,99.3%)"))
+        self.assertEqual((255, 0, 0), ImageColor.getrgb("hsv(360.,100.0%,100%)"))
 
         # case insensitivity
         self.assertEqual(ImageColor.getrgb("RGB(255,0,0)"),
@@ -91,6 +98,8 @@ class TestImageColor(PillowTestCase):
                          ImageColor.getrgb("rgba(255,0,0,0)"))
         self.assertEqual(ImageColor.getrgb("HSL(0,100%,50%)"),
                          ImageColor.getrgb("hsl(0,100%,50%)"))
+        self.assertEqual(ImageColor.getrgb("HSV(0,100%,50%)"),
+                         ImageColor.getrgb("hsv(0,100%,50%)"))
 
         # space agnosticism
         self.assertEqual((255, 0, 0),
@@ -101,6 +110,8 @@ class TestImageColor(PillowTestCase):
                          ImageColor.getrgb("rgba(  255  ,  0  ,  0  ,  0  )"))
         self.assertEqual((255, 0, 0),
                          ImageColor.getrgb("hsl(  0  ,  100%  ,  50%  )"))
+        self.assertEqual((255, 0, 0),
+                         ImageColor.getrgb("hsv(  0  ,  100%  ,  100%  )"))
 
         # wrong number of components
         self.assertRaises(ValueError, ImageColor.getrgb, "rgb(255,0)")
@@ -119,6 +130,12 @@ class TestImageColor(PillowTestCase):
         self.assertRaises(ValueError, ImageColor.getrgb, "hsl(0%,100%,50%)")
         self.assertRaises(ValueError, ImageColor.getrgb, "hsl(0,100,50%)")
         self.assertRaises(ValueError, ImageColor.getrgb, "hsl(0,100%,50)")
+
+        self.assertRaises(ValueError, ImageColor.getrgb, "hsv(0,100%)")
+        self.assertRaises(ValueError, ImageColor.getrgb, "hsv(0,100%,0%,0%)")
+        self.assertRaises(ValueError, ImageColor.getrgb, "hsv(0%,100%,50%)")
+        self.assertRaises(ValueError, ImageColor.getrgb, "hsv(0,100,50%)")
+        self.assertRaises(ValueError, ImageColor.getrgb, "hsv(0,100%,50)")
 
     # look for rounding errors (based on code by Tim Hatch)
     def test_rounding_errors(self):
