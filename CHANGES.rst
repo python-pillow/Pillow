@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
+- Add getrgb HSB/HSV color strings #3148
+  [radarhere]
+
 - Allow float values in getrgb HSL color string #3146
   [radarhere]
 
