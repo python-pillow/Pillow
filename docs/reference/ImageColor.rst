@@ -31,6 +31,13 @@ The ImageColor module supports the following string formats:
   (black=0%, normal=50%, white=100%). For example, ``hsl(0,100%,50%)`` is pure
   red.
 
+* Hue-Saturation-Value (HSV) functions, given as ``hsv(hue, saturation%,
+  value%)`` where hue and saturation are the same as HSL, and value is between
+  0% and 100% (black=0%, normal=100%). For example, ``hsv(0,100%,100%)`` is
+  pure red. This format is also known as Hue-Saturation-Brightness (HSB), and
+  can be given as ``hsb(hue, saturation%, brightness%)``, where each of the
+  values are used as they are in HSV.
+
 * Common HTML color names. The :py:mod:`~PIL.ImageColor` module provides some
   140 standard color names, based on the colors supported by the X Window
   system and most web browsers. color names are case insensitive. For example,
