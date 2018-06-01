@@ -25,7 +25,7 @@ import sys
 
 class PSDraw(object):
     """
-    Sets up printing to the given file. If **file** is omitted,
+    Sets up printing to the given file. If **fp** is omitted,
     :py:attr:`sys.stdout` is assumed.
     """
 
