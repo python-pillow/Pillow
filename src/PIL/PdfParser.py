@@ -240,9 +240,6 @@ class PdfArray(list):
 
 
 class PdfDict(UserDict):
-    def __init__(self, *args, **kwargs):
-        UserDict.__init__(self, *args, **kwargs)
-
     def __setattr__(self, key, value):
         if key == "data":
             if hasattr(UserDict, "__setattr__"):
