@@ -63,8 +63,11 @@ class TestFileTiff(PillowTestCase):
         im.load()
 
     def test_set_legacy_api(self):
-        with self.assertRaises(Exception):
-            ImageFileDirectory_v2.legacy_api = None
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        with self.assertRaises(Exception) as e:
+            ifd.legacy_api = None
+        self.assertEqual(str(e.exception),
+                         "Not allowing setting of legacy api")
 
     def test_xyres_tiff(self):
         filename = "Tests/images/pil168.tif"
