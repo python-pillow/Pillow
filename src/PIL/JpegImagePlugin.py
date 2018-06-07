@@ -683,7 +683,7 @@ def _save(im, fp, filename):
             for idx, table in enumerate(qtables):
                 try:
                     if len(table) != 64:
-                        raise
+                        raise TypeError
                     table = array.array('B', table)
                 except TypeError:
                     raise ValueError("Invalid quantization table")
