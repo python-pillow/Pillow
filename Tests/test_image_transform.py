@@ -53,15 +53,20 @@ class TestImageTransform(PillowTestCase):
         self.assert_image_equal(transformed, scaled)
 
     def test_fill(self):
-        im = hopper('RGB')
-        (w, h) = im.size
-        transformed = im.transform(im.size, Image.EXTENT,
-                                   (0, 0,
-                                    w*2, h*2),
-                                   Image.BILINEAR,
-                                   fillcolor='red')
+        for mode, pixel in [
+            ['RGB', (255, 0, 0)],
+            ['RGBA', (255, 0, 0, 255)],
+            ['LA', (76, 0)]
+        ]:
+            im = hopper(mode)
+            (w, h) = im.size
+            transformed = im.transform(im.size, Image.EXTENT,
+                                       (0, 0,
+                                        w*2, h*2),
+                                       Image.BILINEAR,
+                                       fillcolor='red')
 
-        self.assertEqual(transformed.getpixel((w-1, h-1)), (255, 0, 0))
+            self.assertEqual(transformed.getpixel((w-1, h-1)), pixel)
 
     def test_mesh(self):
         # this should be a checkerboard of halfsized hoppers in ul, lr
