@@ -356,7 +356,7 @@ Changelog (Pillow)
 - Fixed doc syntax in ImageDraw #2752
   [radarhere]
 
-- Fixed support for building on Windows/msys2. Added Appveyor CI coverage for python3 on msys2 #2476
+- Fixed support for building on Windows/msys2. Added Appveyor CI coverage for python3 on msys2 #2746
   [wiredfool]
 
 - Fix ValueError in Exif/Tiff IFD #2719
