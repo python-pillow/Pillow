@@ -58,7 +58,8 @@ Download and install:
 * `Microsoft Windows SDK for Windows 7 and .NET Framework
   4 <https://www.microsoft.com/en-us/download/details.aspx?id=8279>`_
 
-* `CMake-2.8.10.2-win32-x86.exe <https://cmake.org/download/>`_
+* `CMake-2.8.10.2-win32-x86.exe
+  <https://cmake.org/files/v2.8/cmake-2.8.10.2-win32-x86.exe>`_
 
 The samples and the .NET SDK portions aren't required, just the
 compilers and other tools. UNDONE -- check exact wording.
