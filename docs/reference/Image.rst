@@ -59,7 +59,7 @@ Functions
         documentation`_ to have warnings output to the logging facility instead of stderr.
 
 	.. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
-	.. _the logging documentation: https://docs.python.org/2/library/logging.html?highlight=logging#integration-with-the-warnings-module
+	.. _the logging documentation: https://docs.python.org/3/library/logging.html#integration-with-the-warnings-module
 
 Image processing
 ^^^^^^^^^^^^^^^^

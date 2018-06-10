@@ -91,7 +91,7 @@ sdist:
 test:
 	pytest -qq
 
-# https://docs.python.org/2/distutils/packageindex.html#the-pypirc-file
+# https://docs.python.org/3/distutils/packageindex.html#the-pypirc-file
 upload-test:
 #       [test]
 #       username:
