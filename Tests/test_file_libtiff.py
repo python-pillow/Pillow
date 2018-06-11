@@ -31,7 +31,7 @@ class LibTiffTestCase(PillowTestCase):
 
         try:
             self.assertEqual(im._compression, 'group4')
-        except:
+        except AttributeError:
             print("No _compression")
             print(dir(im))
 
@@ -194,7 +194,7 @@ class TestFileLibTiff(LibTiffTestCase):
         for tag in im.tag_v2:
             try:
                 del(core_items[tag])
-            except:
+            except KeyError:
                 pass
 
         # Type codes:
