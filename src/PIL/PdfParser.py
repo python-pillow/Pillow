@@ -824,7 +824,7 @@ class PdfParser:
 
     def read_indirect(self, ref, max_nesting=-1):
         offset, generation = self.xref_table[ref[0]]
-        check_format_condition(generation == ref[1], "expected to find generation %s for object ID %s in xref table, instead found generation %s at offset %s" \
+        check_format_condition(generation == ref[1], "expected to find generation %s for object ID %s in xref table, instead found generation %s at offset %s"
             % (ref[1], ref[0], generation, offset))
         value = self.get_value(self.buf, offset + self.start_offset, expect_indirect=IndirectReference(*ref), max_nesting=max_nesting)[0]
         self.cached_objects[ref] = value
