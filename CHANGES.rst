@@ -5,6 +5,21 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
+- Docs: Correct argument name #3171
+  [radarhere]
+
+- Docs: Update CMake download URL #3166
+  [radarhere]
+
+- Docs: Improve Image.transform documentation #3164
+  [radarhere]
+
+- Fix transform fillcolor argument when image mode is RGBA or LA #3163
+  [radarhere]
+
+- Tests: More specific Exception testing #3158
+  [radarhere]
+
 - Add getrgb HSB/HSV color strings #3148
   [radarhere]
 
