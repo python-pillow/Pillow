@@ -505,7 +505,7 @@ class TestFileTiffW32(PillowTestCase):
         im = Image.open(tmpfile)
         fp = im.fp
         self.assertFalse(fp.closed)
-        self.assertRaises(Exception, os.remove, tmpfile)
+        self.assertRaises(WindowsError, os.remove, tmpfile)
         im.load()
         self.assertTrue(fp.closed)
 

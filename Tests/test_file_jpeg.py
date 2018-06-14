@@ -439,17 +439,17 @@ class TestFileJpeg(PillowTestCase):
         self._n_qtables_helper(4, "Tests/images/pil_sample_cmyk.jpg")
 
         # not a sequence
-        self.assertRaises(Exception, self.roundtrip, im, qtables='a')
+        self.assertRaises(ValueError, self.roundtrip, im, qtables='a')
         # sequence wrong length
-        self.assertRaises(Exception, self.roundtrip, im, qtables=[])
+        self.assertRaises(ValueError, self.roundtrip, im, qtables=[])
         # sequence wrong length
-        self.assertRaises(Exception,
+        self.assertRaises(ValueError,
                           self.roundtrip, im, qtables=[1, 2, 3, 4, 5])
 
         # qtable entry not a sequence
-        self.assertRaises(Exception, self.roundtrip, im, qtables=[1])
+        self.assertRaises(ValueError, self.roundtrip, im, qtables=[1])
         # qtable entry has wrong number of items
-        self.assertRaises(Exception,
+        self.assertRaises(ValueError,
                           self.roundtrip, im, qtables=[[1, 2, 3, 4]])
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
@@ -599,7 +599,7 @@ class TestFileCloseW32(PillowTestCase):
         im = Image.open(tmpfile)
         fp = im.fp
         self.assertFalse(fp.closed)
-        self.assertRaises(Exception, os.remove, tmpfile)
+        self.assertRaises(WindowsError, os.remove, tmpfile)
         im.load()
         self.assertTrue(fp.closed)
         # this should not fail, as load should have closed the file.

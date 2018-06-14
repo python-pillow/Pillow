@@ -80,9 +80,15 @@ class MorphTests(PillowTestCase):
 
     def test_no_operator_loaded(self):
         mop = ImageMorph.MorphOp()
-        self.assertRaises(Exception, mop.apply, None)
-        self.assertRaises(Exception, mop.match, None)
-        self.assertRaises(Exception, mop.save_lut, None)
+        with self.assertRaises(Exception) as e:
+            mop.apply(None)
+        self.assertEqual(str(e.exception), 'No operator loaded')
+        with self.assertRaises(Exception) as e:
+            mop.match(None)
+        self.assertEqual(str(e.exception), 'No operator loaded')
+        with self.assertRaises(Exception) as e:
+            mop.save_lut(None)
+        self.assertEqual(str(e.exception), 'No operator loaded')
 
     # Test the named patterns
     def test_erosion8(self):
@@ -213,9 +219,18 @@ class MorphTests(PillowTestCase):
         im = hopper('RGB')
         mop = ImageMorph.MorphOp(op_name="erosion8")
 
-        self.assertRaises(Exception, mop.apply, im)
-        self.assertRaises(Exception, mop.match, im)
-        self.assertRaises(Exception, mop.get_on_pixels, im)
+        with self.assertRaises(Exception) as e:
+            mop.apply(im)
+        self.assertEqual(str(e.exception),
+                         'Image must be binary, meaning it must use mode L')
+        with self.assertRaises(Exception) as e:
+            mop.match(im)
+        self.assertEqual(str(e.exception),
+                         'Image must be binary, meaning it must use mode L')
+        with self.assertRaises(Exception) as e:
+            mop.get_on_pixels(im)
+        self.assertEqual(str(e.exception),
+                         'Image must be binary, meaning it must use mode L')
 
     def test_add_patterns(self):
         # Arrange
@@ -248,7 +263,10 @@ class MorphTests(PillowTestCase):
         lb.add_patterns(new_patterns)
 
         # Act / Assert
-        self.assertRaises(Exception, lb.build_lut)
+        with self.assertRaises(Exception) as e:
+            lb.build_lut()
+        self.assertEqual(str(e.exception),
+                         'Syntax error in pattern "a pattern with a syntax error"')
 
     def test_load_invalid_mrl(self):
         # Arrange
@@ -256,7 +274,10 @@ class MorphTests(PillowTestCase):
         mop = ImageMorph.MorphOp()
 
         # Act / Assert
-        self.assertRaises(Exception, mop.load_lut, invalid_mrl)
+        with self.assertRaises(Exception) as e:
+            mop.load_lut(invalid_mrl)
+        self.assertEqual(str(e.exception),
+                         'Wrong size operator file!')
 
     def test_roundtrip_mrl(self):
         # Arrange
