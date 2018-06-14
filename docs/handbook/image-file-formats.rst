@@ -558,6 +558,13 @@ For more information about the SPIDER image processing package, see the
 .. _SPIDER homepage: https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
 .. _Wadsworth Center: https://www.wadsworth.org/
 
+TGA
+^^^
+
+PIL reads and writes TGA images containing ``L``, ``LA``, ``P``,
+``RGB``, and ``RGBA`` data. PIL can read both uncompressed and
+run-length encoded TGAs, but writes only uncompressed data.
+
 TIFF
 ^^^^
 
@@ -926,11 +933,6 @@ PSD
 
 PIL identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
-
-TGA
-^^^
-
-PIL reads 24- and 32-bit uncompressed and run-length encoded TGA files.
 
 WAL
 ^^^

@@ -41,9 +41,6 @@ class TestFileTga(PillowTestCase):
         test_im = Image.open(test_file)
         self.assertEqual(test_im.size, (100, 100))
 
-        # Unsupported mode save
-        self.assertRaises(IOError, lambda: im.convert("LA").save(test_file))
-
     def test_save_rle(self):
         test_file = "Tests/images/rgb32rle.tga"
         im = Image.open(test_file)
@@ -60,8 +57,25 @@ class TestFileTga(PillowTestCase):
         test_im = Image.open(test_file)
         self.assertEqual(test_im.size, (199, 199))
 
-        # Unsupported mode save
-        self.assertRaises(IOError, lambda: im.convert("LA").save(test_file))
+    def test_save_l_transparency(self):
+        # There are 559 transparent pixels in la.tga.
+        num_transparent = 559
+
+        in_file = "Tests/images/la.tga"
+        im = Image.open(in_file)
+        self.assertEqual(im.mode, "LA")
+        self.assertEqual(
+            im.getchannel("A").getcolors()[0][0], num_transparent)
+
+        test_file = self.tempfile("temp.tga")
+        im.save(test_file)
+
+        test_im = Image.open(test_file)
+        self.assertEqual(test_im.mode, "LA")
+        self.assertEqual(
+            test_im.getchannel("A").getcolors()[0][0], num_transparent)
+
+        self.assert_image_equal(im, test_im)
 
 
 if __name__ == '__main__':
