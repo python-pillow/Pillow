@@ -292,15 +292,29 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.getcolors(), [(100, (0, 0, 0, 0))])
 
     def test_save_l_transparency(self):
+        # There are 559 transparent pixels in l_trns.png.
+        num_transparent = 559
+
         in_file = "Tests/images/l_trns.png"
         im = Image.open(in_file)
+        self.assertEqual(im.mode, "L")
+        self.assertEqual(im.info["transparency"], 255)
+
+        im_rgba = im.convert('RGBA')
+        self.assertEqual(
+            im_rgba.getchannel("A").getcolors()[0][0], num_transparent)
 
         test_file = self.tempfile("temp.png")
         im.save(test_file)
 
-        # There are 559 transparent pixels.
-        im = im.convert('RGBA')
-        self.assertEqual(im.getchannel('A').getcolors()[0][0], 559)
+        test_im = Image.open(test_file)
+        self.assertEqual(test_im.mode, "L")
+        self.assertEqual(test_im.info["transparency"], 255)
+        self.assert_image_equal(im, test_im)
+
+        test_im_rgba = test_im.convert('RGBA')
+        self.assertEqual(
+            test_im_rgba.getchannel('A').getcolors()[0][0], num_transparent)
 
     def test_save_rgb_single_transparency(self):
         in_file = "Tests/images/caption_6_33_22.png"
