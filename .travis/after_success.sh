@@ -30,20 +30,3 @@ if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ] && [ "$DOCKER" == "" ]; then
     depends/diffcover-install.sh
     depends/diffcover-run.sh
 fi
-
-# after_all
-
-if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-    curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
-    python travis_after_all.py
-    export $(cat .to_export_back)
-    if [ "$BUILD_LEADER" = "YES" ]; then
-        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-            echo "All jobs succeeded! Triggering macOS build..."
-            # Trigger a macOS build at the pillow-wheels repo
-            ./build_children.sh
-        else
-            echo "Some jobs failed"
-        fi
-    fi
-fi
