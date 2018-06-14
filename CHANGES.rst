@@ -356,7 +356,7 @@ Changelog (Pillow)
 - Fixed doc syntax in ImageDraw #2752
   [radarhere]
 
-- Fixed support for building on Windows/msys2. Added Appveyor CI coverage for python3 on msys2 #2476
+- Fixed support for building on Windows/msys2. Added Appveyor CI coverage for python3 on msys2 #2746
   [wiredfool]
 
 - Fix ValueError in Exif/Tiff IFD #2719
@@ -428,7 +428,7 @@ Changelog (Pillow)
 - Use RGBX rawmode for RGB JPEG images where possible #1989
   [homm]
 
-- Remove palettes from non-palette modes in _new #2702
+- Remove palettes from non-palette modes in _new #2704
   [wiredfool]
 
 - Delete transparency info when convert'ing RGB/L to RGBA #2633
@@ -851,10 +851,10 @@ Changelog (Pillow)
 - Add center and translate option to Image.rotate. #2328
   [lambdafu]
 
-- Test: Relax WMF test condition, fixes #2323
+- Test: Relax WMF test condition, fixes #2323.  #2327
   [wiredfool]
 
-- Allow 0 size images, Fixes #2259, Reverts to pre-3.4 behavior.
+- Allow 0 size images, Fixes #2259, Reverts to pre-3.4 behavior.  #2262
   [wiredfool]
 
 - SGI: Save uncompressed SGI/BW/RGB/RGBA files #2325
@@ -1185,10 +1185,10 @@ Changelog (Pillow)
 3.3.2 (2016-10-03)
 ------------------
 
-- Fix negative image sizes in Storage.c #2105
+- Fix negative image sizes in Storage.c #2146
   [wiredfool]
 
-- Fix integer overflow in map.c #2105
+- Fix integer overflow in map.c #2146
   [wiredfool]
 
 3.3.1 (2016-08-18)
@@ -1326,7 +1326,7 @@ Changelog (Pillow)
 - Skip tests that require libtiff if it is not installed #1893 (fixes #1866)
   [wiredfool]
 
-- Skip test when icc profile is not available, fixes #1887
+- Skip test when icc profile is not available, fixes #1887.  #1892
   [doko42]
 
 - Make deprecated functions raise NotImplementedError instead of Exception. #1862, #1890
@@ -1931,7 +1931,7 @@ Changelog (Pillow)
 2.8.1 (2015-04-02)
 ------------------
 
-- Bug fix: Catch struct.error on invalid JPEG, fixes #1163
+- Bug fix: Catch struct.error on invalid JPEG, fixes #1163.  #1165
   [wiredfool, hugovk]
 
 2.8.0 (2015-04-01)
@@ -2066,7 +2066,7 @@ Changelog (Pillow)
 - Updated manifest #957
   [wiredfool]
 
-- Fix PyPy 2.4 regression #952
+- Fix PyPy 2.4 regression #958
   [wiredfool]
 
 - Webp Metadata Skip Test comments #954
@@ -2108,7 +2108,7 @@ Changelog (Pillow)
 - Use redistributable ICC profiles for testing, skip if not available #923
   [wiredfool]
 
-- Additional documentation for JPEG info and save options #890
+- Additional documentation for JPEG info and save options #922
   [wiredfool]
 
 - Fix JPEG Encoding memory leak when exif or qtables were specified #921
