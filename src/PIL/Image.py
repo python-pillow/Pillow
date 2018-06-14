@@ -1880,7 +1880,7 @@ class Image(object):
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
            parameter should always be used.
-        :param options: Extra parameters to the image writer.
+        :param params: Extra parameters to the image writer.
         :returns: None
         :exception KeyError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
