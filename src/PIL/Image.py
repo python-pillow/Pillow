@@ -2101,6 +2101,20 @@ class Image(object):
           :py:attr:`PIL.Image.QUAD` (map a quadrilateral to a rectangle), or
           :py:attr:`PIL.Image.MESH` (map a number of source quadrilaterals
           in one operation).
+
+          It may also be an :py:class:`~PIL.Image.ImageTransformHandler`
+          object::
+            class Example(Image.ImageTransformHandler):
+                def transform(size, method, data, resample, fill=1):
+                    # Return result
+
+          It may also be an object with a :py:meth:`~method.getdata` method
+          that returns a tuple supplying new **method** and **data** values::
+            class Example(object):
+                def getdata(self):
+                    method = Image.EXTENT
+                    data = (0, 0, 100, 100)
+                    return method, data
         :param data: Extra data to the transformation method.
         :param resample: Optional resampling filter.  It can be one of
            :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
@@ -2108,6 +2122,9 @@ class Image(object):
            environment), or :py:attr:`PIL.Image.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image
            has mode "1" or "P", it is set to :py:attr:`PIL.Image.NEAREST`.
+        :param fill: If **method** is an
+          :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
+          the arguments passed to it. Otherwise, it is unused.
         :param fillcolor: Optional fill color for the area outside the transform
            in the output image.
         :returns: An :py:class:`~PIL.Image.Image` object.
