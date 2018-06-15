@@ -27,8 +27,8 @@ class TestColorLut3DCoreAPI(PillowTestCase):
                 g / float(size2D-1) if size2D != 1 else 0,
             ][:channels]
             for b in range(size3D)
-                for g in range(size2D)
-                    for r in range(size1D)
+            for g in range(size2D)
+            for r in range(size1D)
         ]
         return (
             channels, size1D, size2D, size3D,
