@@ -196,13 +196,13 @@ class TestImageCms(PillowTestCase):
         # not a linear luminance map. so L != 128:
         self.assertEqual(k, (137, 128, 128))
 
-        l = i_lab.getdata(0)
-        a = i_lab.getdata(1)
-        b = i_lab.getdata(2)
+        l_data = i_lab.getdata(0)
+        a_data = i_lab.getdata(1)
+        b_data = i_lab.getdata(2)
 
-        self.assertEqual(list(l), [137] * 100)
-        self.assertEqual(list(a), [128] * 100)
-        self.assertEqual(list(b), [128] * 100)
+        self.assertEqual(list(l_data), [137] * 100)
+        self.assertEqual(list(a_data), [128] * 100)
+        self.assertEqual(list(b_data), [128] * 100)
 
     def test_lab_color(self):
         psRGB = ImageCms.createProfile("sRGB")

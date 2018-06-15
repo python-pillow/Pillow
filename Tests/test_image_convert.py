@@ -67,13 +67,13 @@ class TestImageConvert(PillowTestCase):
 
         f = self.tempfile('temp.png')
 
-        l = im.convert('L')
-        self.assertEqual(l.info['transparency'], 0)  # undone
-        l.save(f)
+        im_l = im.convert('L')
+        self.assertEqual(im_l.info['transparency'], 0)  # undone
+        im_l.save(f)
 
-        rgb = im.convert('RGB')
-        self.assertEqual(rgb.info['transparency'], (0, 0, 0))  # undone
-        rgb.save(f)
+        im_rgb = im.convert('RGB')
+        self.assertEqual(im_rgb.info['transparency'], (0, 0, 0))  # undone
+        im_rgb.save(f)
 
     # ref https://github.com/python-pillow/Pillow/issues/664
 
@@ -83,12 +83,12 @@ class TestImageConvert(PillowTestCase):
         im.info['transparency'] = 128
 
         # Act
-        rgba = im.convert('RGBA')
+        im_rgba = im.convert('RGBA')
 
         # Assert
-        self.assertNotIn('transparency', rgba.info)
+        self.assertNotIn('transparency', im_rgba.info)
         # https://github.com/python-pillow/Pillow/issues/2702
-        self.assertEqual(rgba.palette, None)
+        self.assertEqual(im_rgba.palette, None)
 
     def test_trns_l(self):
         im = hopper('L')
@@ -96,19 +96,20 @@ class TestImageConvert(PillowTestCase):
 
         f = self.tempfile('temp.png')
 
-        rgb = im.convert('RGB')
-        self.assertEqual(rgb.info['transparency'], (128, 128, 128))  # undone
-        rgb.save(f)
+        im_rgb = im.convert('RGB')
+        self.assertEqual(im_rgb.info['transparency'],
+                         (128, 128, 128))  # undone
+        im_rgb.save(f)
 
-        p = im.convert('P')
-        self.assertIn('transparency', p.info)
-        p.save(f)
+        im_p = im.convert('P')
+        self.assertIn('transparency', im_p.info)
+        im_p.save(f)
 
-        p = self.assert_warning(
+        im_p = self.assert_warning(
             UserWarning,
             im.convert, 'P', palette=Image.ADAPTIVE)
-        self.assertNotIn('transparency', p.info)
-        p.save(f)
+        self.assertNotIn('transparency', im_p.info)
+        im_p.save(f)
 
     def test_trns_RGB(self):
         im = hopper('RGB')
@@ -116,23 +117,24 @@ class TestImageConvert(PillowTestCase):
 
         f = self.tempfile('temp.png')
 
-        l = im.convert('L')
-        self.assertEqual(l.info['transparency'], l.getpixel((0, 0)))  # undone
-        l.save(f)
+        im_l = im.convert('L')
+        self.assertEqual(im_l.info['transparency'],
+                         im_l.getpixel((0, 0)))  # undone
+        im_l.save(f)
 
-        p = im.convert('P')
-        self.assertIn('transparency', p.info)
-        p.save(f)
+        im_p = im.convert('P')
+        self.assertIn('transparency', im_p.info)
+        im_p.save(f)
 
-        p = im.convert('RGBA')
-        self.assertNotIn('transparency', p.info)
-        p.save(f)
+        im_rgba = im.convert('RGBA')
+        self.assertNotIn('transparency', im_rgba.info)
+        im_rgba.save(f)
 
-        p = self.assert_warning(
+        im_p = self.assert_warning(
             UserWarning,
             im.convert, 'P', palette=Image.ADAPTIVE)
-        self.assertNotIn('transparency', p.info)
-        p.save(f)
+        self.assertNotIn('transparency', im_p.info)
+        im_p.save(f)
 
     def test_p_la(self):
         im = hopper('RGBA')

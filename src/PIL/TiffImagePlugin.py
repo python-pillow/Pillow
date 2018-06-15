@@ -1245,7 +1245,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.info["resolution"] = xres, yres
 
         # build tile descriptors
-        x = y = l = 0
+        x = y = layer = 0
         self.tile = []
         self.use_load_libtiff = False
         if STRIPOFFSETS in self.tag_v2:
@@ -1305,7 +1305,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
             else:
                 for i, offset in enumerate(offsets):
-                    a = self._decoder(rawmode, l, i)
+                    a = self._decoder(rawmode, layer, i)
                     self.tile.append(
                         (self._compression,
                             (0, min(y, ysize), w, min(y+h, ysize)),
@@ -1315,7 +1315,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     y = y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l += 1
+                        layer += 1
                     a = None
         elif TILEOFFSETS in self.tag_v2:
             # tiled image
@@ -1324,7 +1324,7 @@ class TiffImageFile(ImageFile.ImageFile):
             a = None
             for o in self.tag_v2[TILEOFFSETS]:
                 if not a:
-                    a = self._decoder(rawmode, l)
+                    a = self._decoder(rawmode, layer)
                 # FIXME: this doesn't work if the image size
                 # is not a multiple of the tile size...
                 self.tile.append(
@@ -1336,7 +1336,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     x, y = 0, y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l += 1
+                        layer += 1
                         a = None
         else:
             if DEBUG:
