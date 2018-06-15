@@ -413,7 +413,7 @@ class TestImageFont(PillowTestCase):
         im = Image.new(mode='RGB', size=(300, 100))
         target = im.copy()
         draw = ImageDraw.Draw(im)
-        #should not crash here.
+        # should not crash here.
         draw.text((10, 10), '', font=font)
         self.assert_image_equal(im, target)
 

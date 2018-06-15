@@ -744,7 +744,7 @@ class PdfParser:
         m = cls.re_string_lit.match(data, offset)
         if m:
             return cls.get_literal_string(data, m.end())
-        #return None, offset  # fallback (only for debugging)
+        # return None, offset  # fallback (only for debugging)
         raise PdfFormatError("unrecognized object: " + repr(data[offset:offset+32]))
 
     re_lit_str_token = re.compile(br"(\\[nrtbf()\\])|(\\[0-9]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))")

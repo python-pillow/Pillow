@@ -11,7 +11,7 @@ FONT_PATH = "Tests/fonts/DejaVuSans.ttf"
 class TestImagecomplextext(PillowTestCase):
 
     def test_english(self):
-        #smoke test, this should not fail
+        # smoke test, this should not fail
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
         im = Image.new(mode='RGB', size=(300, 100))
         draw = ImageDraw.Draw(im)
