@@ -3594,6 +3594,7 @@ extern PyObject* PyImaging_JpegEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_Jpeg2KEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_PcxEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_RawEncoderNew(PyObject* self, PyObject* args);
+extern PyObject* PyImaging_TgaRleEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_XbmEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_ZipEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args);
@@ -3661,6 +3662,7 @@ static PyMethodDef functions[] = {
     {"sgi_rle_decoder", (PyCFunction)PyImaging_SgiRleDecoderNew, 1},
     {"sun_rle_decoder", (PyCFunction)PyImaging_SunRleDecoderNew, 1},
     {"tga_rle_decoder", (PyCFunction)PyImaging_TgaRleDecoderNew, 1},
+    {"tga_rle_encoder", (PyCFunction)PyImaging_TgaRleEncoderNew, 1},
     {"xbm_decoder", (PyCFunction)PyImaging_XbmDecoderNew, 1},
     {"xbm_encoder", (PyCFunction)PyImaging_XbmEncoderNew, 1},
 #ifdef HAVE_LIBZ
