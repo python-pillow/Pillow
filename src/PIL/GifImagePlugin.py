@@ -543,7 +543,6 @@ def _write_local_header(fp, im, offset, flags):
                  o8(0))
     include_color_table = im.encoderinfo.get('include_color_table')
     if include_color_table:
-        palette = im.encoderinfo.get("palette", None)
         palette_bytes = _get_palette_bytes(im)
         color_table_size = _get_color_table_size(palette_bytes)
         if color_table_size:

@@ -525,7 +525,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 f.write(src.read())
 
         im = Image.open(tmpfile)
-        count = im.n_frames
+        im.n_frames
         im.close()
         try:
             os.remove(tmpfile)  # Windows PermissionError here!
