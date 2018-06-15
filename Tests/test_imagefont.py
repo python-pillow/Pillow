@@ -210,10 +210,9 @@ class TestImageFont(PillowTestCase):
         ttf = self.get_font()
 
         # Act/Assert
-        self.assertRaises(AssertionError,
-                          draw.multiline_text, (0, 0), TEST_TEXT,
-                                                       font=ttf,
-                                                       align="unknown")
+        self.assertRaises(
+            AssertionError,
+            draw.multiline_text, (0, 0), TEST_TEXT, font=ttf, align="unknown")
 
     def test_draw_align(self):
         im = Image.new('RGB', (300, 100), 'white')
