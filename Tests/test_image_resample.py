@@ -245,8 +245,8 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         for y in range(i.size[1]):
             used_colors = {px[x, y][0] for x in range(i.size[0])}
             self.assertEqual(256, len(used_colors),
-                            'All colors should present in resized image. '
-                            'Only {} on {} line.'.format(len(used_colors), y))
+                             'All colors should present in resized image. '
+                             'Only {} on {} line.'.format(len(used_colors), y))
 
     @unittest.skip("current implementation isn't precise enough")
     def test_levels_rgba(self):
