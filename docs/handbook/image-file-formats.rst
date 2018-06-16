@@ -141,7 +141,7 @@ are available::
     * 3 - Restore to previous content.
 
      Pass a single integer for a constant disposal, or a list or tuple
-     to set the disposal for each frame separately. 
+     to set the disposal for each frame separately.
 
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~
@@ -836,9 +836,8 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 GD
 ^^
 
-PIL reads uncompressed GD files. Note that this file format cannot be
-automatically identified, so you must use :py:func:`PIL.GdImageFile.open` to
-read such a file.
+PIL reads uncompressed GD2 files. Note that you must use
+:py:func:`PIL.GdImageFile.open` to read such a file.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
