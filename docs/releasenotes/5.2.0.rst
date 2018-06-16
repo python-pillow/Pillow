@@ -36,3 +36,19 @@ Support added for Python 3.7
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow 5.2 supports Python 3.7.
+
+Build macOS wheels with Xcode 6.4, supporting older macOS versions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The macOS wheels for Pillow 5.1.0 were built with Xcode 9.2, meaning 10.12
+Sierra was the lowest supported version.
+
+Prior to Pillow 5.1.0, Xcode 8 was used, supporting El Capitan 10.11.
+
+Instead, Pillow 5.2.0 is built with the oldest available Xcode 6.4 to support
+at least 10.10 Yosemite.
+
+Fix _i2f compilation with some GCC versions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For example, this allows compilation with GCC 4.8 on NetBSD.
