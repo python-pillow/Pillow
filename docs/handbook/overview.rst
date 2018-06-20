@@ -27,7 +27,7 @@ presentation formats.
 Image Display
 -------------
 
-The current release includes Tk :py:class:`~PIL.ImageTk.PhotoImage` and
+The current release includes :py:class:`~PIL.ImageTk.PhotoImage` and
 :py:class:`~PIL.ImageTk.BitmapImage` interfaces, as well as a :py:mod:`Windows
 DIB interface <PIL.ImageWin>` that can be used with PythonWin and other
 Windows-based toolkits. Many other GUI toolkits come with some kind of PIL
