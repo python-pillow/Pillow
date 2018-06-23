@@ -264,7 +264,7 @@ Methods
                      example '-liga' to disable ligatures or '-kern'
                      to disable kerning.  To get all supported
                      features, see
-                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -294,7 +294,7 @@ Methods
                      example '-liga' to disable ligatures or '-kern'
                      to disable kerning.  To get all supported
                      features, see
-                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -323,7 +323,7 @@ Methods
                      example '-liga' to disable ligatures or '-kern'
                      to disable kerning.  To get all supported
                      features, see
-                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -350,7 +350,7 @@ Methods
                      example '-liga' to disable ligatures or '-kern'
                      to disable kerning.  To get all supported
                      features, see
-                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
