@@ -83,7 +83,8 @@ class TestFileWebpAnimation(PillowTestCase):
 
         temp_file1 = self.tempfile("temp.webp")
         frame1.copy().save(temp_file1,
-            save_all=True, append_images=[frame2], lossless=True)
+                           save_all=True, append_images=[frame2],
+                           lossless=True)
         check(temp_file1)
 
         # Tests appending using a generator
@@ -92,7 +93,8 @@ class TestFileWebpAnimation(PillowTestCase):
                 yield im
         temp_file2 = self.tempfile("temp_generator.webp")
         frame1.copy().save(temp_file2,
-            save_all=True, append_images=imGenerator([frame2]), lossless=True)
+                           save_all=True, append_images=imGenerator([frame2]),
+                           lossless=True)
         check(temp_file2)
 
     def test_timestamp_and_duration(self):
