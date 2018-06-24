@@ -211,7 +211,7 @@ class MorphOp(object):
         an image.
 
         Returns a list of tuples of (x,y) coordinates
-        of all matching pixels."""
+        of all matching pixels. See :ref:`coordinate-system`."""
         if self.lut is None:
             raise Exception('No operator loaded')
 
@@ -223,7 +223,7 @@ class MorphOp(object):
         """Get a list of all turned on pixels in a binary image
 
         Returns a list of tuples of (x,y) coordinates
-        of all matching pixels."""
+        of all matching pixels. See :ref:`coordinate-system`."""
 
         if image.mode != 'L':
             raise Exception('Image must be binary, meaning it must use mode L')

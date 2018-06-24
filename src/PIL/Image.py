@@ -1066,7 +1066,7 @@ class Image(object):
         """
         Returns a rectangular region from this image. The box is a
         4-tuple defining the left, upper, right, and lower pixel
-        coordinate.
+        coordinate. See :ref:`coordinate-system`.
 
         Note: Prior to Pillow 3.4.0, this was a lazy operation.
 
@@ -1173,8 +1173,9 @@ class Image(object):
         image.
 
         :returns: The bounding box is returned as a 4-tuple defining the
-           left, upper, right, and lower pixel coordinate. If the image
-           is completely empty, this method returns None.
+           left, upper, right, and lower pixel coordinate. See
+           :ref:`coordinate-system`. If the image is completely empty, this
+           method returns None.
 
         """
 
@@ -1275,7 +1276,8 @@ class Image(object):
         """
         Returns the pixel value at a given position.
 
-        :param xy: The coordinate, given as (x, y).
+        :param xy: The coordinate, given as (x, y). See
+           :ref:`coordinate-system`.
         :returns: The pixel value.  If the image is a multi-layer image,
            this method returns a tuple.
         """
@@ -1335,8 +1337,8 @@ class Image(object):
         Pastes another image into this image. The box argument is either
         a 2-tuple giving the upper left corner, a 4-tuple defining the
         left, upper, right, and lower pixel coordinate, or None (same as
-        (0, 0)).  If a 4-tuple is given, the size of the pasted image
-        must match the size of the region.
+        (0, 0)). See :ref:`coordinate-system`. If a 4-tuple is given, the size
+        of the pasted image must match the size of the region.
 
         If the modes don't match, the pasted image is converted to the mode of
         this image (see the :py:meth:`~PIL.Image.Image.convert` method for
@@ -1616,7 +1618,8 @@ class Image(object):
         * :py:meth:`~PIL.Image.Image.putdata`
         * :py:mod:`~PIL.ImageDraw`
 
-        :param xy: The pixel coordinate, given as (x, y).
+        :param xy: The pixel coordinate, given as (x, y). See
+           :ref:`coordinate-system`.
         :param value: The pixel value.
         """
 
