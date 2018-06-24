@@ -327,7 +327,8 @@ def floodfill(image, xy, value, border=None, thresh=0):
     (experimental) Fills a bounded region with a given color.
 
     :param image: Target image.
-    :param xy: Seed position (a 2-item coordinate tuple).
+    :param xy: Seed position (a 2-item coordinate tuple). See
+        :ref:`coordinate-system`.
     :param value: Fill color.
     :param border: Optional border value.  If given, the region consists of
         pixels with a color different from the border color.  If not given,

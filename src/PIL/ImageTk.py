@@ -169,8 +169,8 @@ class PhotoImage(object):
                    mode does not match, the image is converted to the mode of
                    the bitmap image.
         :param box: A 4-tuple defining the left, upper, right, and lower pixel
-                    coordinate.  If None is given instead of a tuple, all of
-                    the image is assumed.
+                    coordinate. See :ref:`coordinate-system`. If None is given
+                    instead of a tuple, all of the image is assumed.
         """
 
         # convert to blittable
