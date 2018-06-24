@@ -29,13 +29,13 @@ def _parse_codestream(fp):
     siz = hdr + fp.read(lsiz - 2)
     lsiz, rsiz, xsiz, ysiz, xosiz, yosiz, xtsiz, ytsiz, \
         xtosiz, ytosiz, csiz \
-        = struct.unpack('>HHIIIIIIIIH', siz[:38])
+        = struct.unpack_from('>HHIIIIIIIIH', siz)
     ssiz = [None]*csiz
     xrsiz = [None]*csiz
     yrsiz = [None]*csiz
     for i in range(csiz):
         ssiz[i], xrsiz[i], yrsiz[i] \
-            = struct.unpack('>BBB', siz[36 + 3 * i:39 + 3 * i])
+            = struct.unpack_from('>BBB', siz, 36 + 3 * i)
 
     size = (xsiz - xosiz, ysiz - yosiz)
     if csiz == 1:
@@ -114,9 +114,9 @@ def _parse_jp2_header(fp):
                     mode = 'RGBA'
                 break
         elif tbox == b'colr':
-            meth, prec, approx = struct.unpack('>BBB', content[:3])
+            meth, prec, approx = struct.unpack_from('>BBB', content)
             if meth == 1:
-                cs = struct.unpack('>I', content[3:7])[0]
+                cs = struct.unpack_from('>I', content, 3)[0]
                 if cs == 16:   # sRGB
                     if nc == 1 and (bpc & 0x7f) > 8:
                         mode = 'I;16'
