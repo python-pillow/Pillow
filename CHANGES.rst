@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
+- Docs: Add coordinate system links in documentation #3204
+  [radarhere]
+
 - Tests: TestFilePng: Fix test_save_l_transparency() #3182
   [danpla]
 
