@@ -402,7 +402,8 @@ class TestFileGif(PillowTestCase):
 
     def test_comment(self):
         im = Image.open(TEST_GIF)
-        self.assertEqual(im.info['comment'], b"File written by Adobe Photoshop\xa8 4.0")
+        self.assertEqual(im.info['comment'],
+                         b"File written by Adobe Photoshop\xa8 4.0")
 
         out = self.tempfile('temp.gif')
         im = Image.new('L', (100, 100), '#000')

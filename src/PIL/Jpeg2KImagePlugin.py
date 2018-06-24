@@ -270,7 +270,8 @@ def _save(im, fp, filename):
 Image.register_open(Jpeg2KImageFile.format, Jpeg2KImageFile, _accept)
 Image.register_save(Jpeg2KImageFile.format, _save)
 
-Image.register_extensions(Jpeg2KImageFile.format, [".jp2", ".j2k", ".jpc", ".jpf", ".jpx", ".j2c"])
+Image.register_extensions(Jpeg2KImageFile.format,
+                          [".jp2", ".j2k", ".jpc", ".jpf", ".jpx", ".j2c"])
 
 Image.register_mime(Jpeg2KImageFile.format, 'image/jp2')
 Image.register_mime(Jpeg2KImageFile.format, 'image/jpx')

@@ -94,7 +94,8 @@ class SunImageFile(ImageFile.ImageFile):
                 raise SyntaxError("Unsupported Palette Type")
 
             offset = offset + palette_length
-            self.palette = ImagePalette.raw("RGB;L", self.fp.read(palette_length))
+            self.palette = ImagePalette.raw("RGB;L",
+                                            self.fp.read(palette_length))
             if self.mode == "L":
                 self.mode = "P"
                 rawmode = rawmode.replace('L', 'P')

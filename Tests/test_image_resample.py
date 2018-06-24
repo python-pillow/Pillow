@@ -288,10 +288,14 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
     def test_dirty_pixels_rgba(self):
         case = self.make_dirty_case('RGBA', (255, 255, 0, 128), (0, 0, 255, 0))
         self.run_dirty_case(case.resize((20, 20), Image.BOX), (255, 255, 0))
-        self.run_dirty_case(case.resize((20, 20), Image.BILINEAR), (255, 255, 0))
-        self.run_dirty_case(case.resize((20, 20), Image.HAMMING), (255, 255, 0))
-        self.run_dirty_case(case.resize((20, 20), Image.BICUBIC), (255, 255, 0))
-        self.run_dirty_case(case.resize((20, 20), Image.LANCZOS), (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BILINEAR),
+                            (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.HAMMING),
+                            (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BICUBIC),
+                            (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.LANCZOS),
+                            (255, 255, 0))
 
     def test_dirty_pixels_la(self):
         case = self.make_dirty_case('LA', (255, 128), (0, 0))
@@ -367,23 +371,28 @@ class CoreResampleCoefficientsTest(PillowTestCase):
         im = Image.new('RGBA', (1280, 1280), (0x20, 0x40, 0x60, 0xff))
         histogram = im.resize((256, 256), Image.BICUBIC).histogram()
 
-        self.assertEqual(histogram[0x100 * 0 + 0x20], 0x10000)  # first channel
-        self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000)  # second channel
-        self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000)  # third channel
-        self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000)  # fourth channel
+        # first channel
+        self.assertEqual(histogram[0x100 * 0 + 0x20], 0x10000)
+        # second channel
+        self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000)
+        # third channel
+        self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000)
+        # fourth channel
+        self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000)
 
 
 class CoreResampleBoxTest(PillowTestCase):
     def test_wrong_arguments(self):
         im = hopper()
-        for resample in (Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
-                Image.BICUBIC, Image.LANCZOS):
+        for resample in (Image.NEAREST, Image.BOX, Image.BILINEAR,
+                         Image.HAMMING, Image.BICUBIC, Image.LANCZOS):
             im.resize((32, 32), resample, (0, 0, im.width, im.height))
             im.resize((32, 32), resample, (20, 20, im.width, im.height))
             im.resize((32, 32), resample, (20, 20, 20, 100))
             im.resize((32, 32), resample, (20, 20, 100, 20))
 
-            with self.assertRaisesRegex(TypeError, "must be sequence of length 4"):
+            with self.assertRaisesRegex(TypeError,
+                                        "must be sequence of length 4"):
                 im.resize((32, 32), resample, (im.width, im.height))
 
             with self.assertRaisesRegex(ValueError, "can't be negative"):

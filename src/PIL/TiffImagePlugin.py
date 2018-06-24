@@ -431,7 +431,8 @@ class ImageFileDirectory_v2(MutableMapping):
         * self.tagtype = {}
 
           * Key: numerical tiff tag number
-          * Value: integer corresponding to the data type from `~PIL.TiffTags.TYPES`
+          * Value: integer corresponding to the data type from
+                   ~PIL.TiffTags.TYPES`
 
     .. versionadded:: 3.0.0
     """

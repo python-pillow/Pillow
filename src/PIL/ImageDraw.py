@@ -217,7 +217,8 @@ class ImageDraw(object):
             ink = fill
         if ink is not None:
             try:
-                mask, offset = font.getmask2(text, self.fontmode, *args, **kwargs)
+                mask, offset = font.getmask2(text, self.fontmode,
+                                             *args, **kwargs)
                 xy = xy[0] + offset[0], xy[1] + offset[1]
             except AttributeError:
                 try:

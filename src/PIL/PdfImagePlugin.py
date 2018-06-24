@@ -98,7 +98,8 @@ def _save(im, fp, filename, save_all=False):
             try:
                 im_numberOfPages = im.n_frames
             except AttributeError:
-                # Image format does not have n_frames. It is a single frame image
+                # Image format does not have n_frames.
+                # It is a single frame image
                 pass
         numberOfPages += im_numberOfPages
         for i in range(im_numberOfPages):
@@ -115,9 +116,9 @@ def _save(im, fp, filename, save_all=False):
     for imSequence in ims:
         im_pages = ImageSequence.Iterator(imSequence) if save_all else [imSequence]
         for im in im_pages:
-            # FIXME: Should replace ASCIIHexDecode with RunLengthDecode (packbits)
-            # or LZWDecode (tiff/lzw compression).  Note that PDF 1.2 also supports
-            # Flatedecode (zip compression).
+            # FIXME: Should replace ASCIIHexDecode with RunLengthDecode
+            # (packbits) or LZWDecode (tiff/lzw compression).  Note that
+            # PDF 1.2 also supports Flatedecode (zip compression).
 
             bits = 8
             params = None
@@ -135,7 +136,12 @@ def _save(im, fp, filename, save_all=False):
             elif im.mode == "P":
                 filter = "ASCIIHexDecode"
                 palette = im.im.getpalette("RGB")
-                colorspace = [PdfParser.PdfName("Indexed"), PdfParser.PdfName("DeviceRGB"), 255, PdfParser.PdfBinary(palette)]
+                colorspace = [
+                    PdfParser.PdfName("Indexed"),
+                    PdfParser.PdfName("DeviceRGB"),
+                    255,
+                    PdfParser.PdfBinary(palette)
+                ]
                 procset = "ImageI"  # indexed color
             elif im.mode == "RGB":
                 filter = "DCTDecode"
@@ -166,7 +172,8 @@ def _save(im, fp, filename, save_all=False):
             elif filter == "FlateDecode":
                 ImageFile._save(im, op, [("zip", (0, 0)+im.size, 0, im.mode)])
             elif filter == "RunLengthDecode":
-                ImageFile._save(im, op, [("packbits", (0, 0)+im.size, 0, im.mode)])
+                ImageFile._save(im, op,
+                                [("packbits", (0, 0)+im.size, 0, im.mode)])
             else:
                 raise ValueError("unsupported PDF filter (%s)" % filter)
 
@@ -175,26 +182,37 @@ def _save(im, fp, filename, save_all=False):
 
             width, height = im.size
 
-            existing_pdf.write_obj(image_refs[pageNumber], stream=op.getvalue(),
-                Type=PdfParser.PdfName("XObject"),
-                Subtype=PdfParser.PdfName("Image"),
-                Width=width,  # * 72.0 / resolution,
-                Height=height,  # * 72.0 / resolution,
-                Filter=PdfParser.PdfName(filter),
-                BitsPerComponent=bits,
-                DecodeParams=params,
-                ColorSpace=colorspace)
+            existing_pdf.write_obj(image_refs[pageNumber],
+                                   stream=op.getvalue(),
+                                   Type=PdfParser.PdfName("XObject"),
+                                   Subtype=PdfParser.PdfName("Image"),
+                                   Width=width,  # * 72.0 / resolution,
+                                   Height=height,  # * 72.0 / resolution,
+                                   Filter=PdfParser.PdfName(filter),
+                                   BitsPerComponent=bits,
+                                   DecodeParams=params,
+                                   ColorSpace=colorspace)
 
             #
             # page
 
             existing_pdf.write_page(page_refs[pageNumber],
-                Resources=PdfParser.PdfDict(
-                    ProcSet=[PdfParser.PdfName("PDF"), PdfParser.PdfName(procset)],
-                    XObject=PdfParser.PdfDict(image=image_refs[pageNumber])),
-                MediaBox=[0, 0, int(width * 72.0 / resolution), int(height * 72.0 / resolution)],
-                Contents=contents_refs[pageNumber]
-                )
+                                    Resources=PdfParser.PdfDict(
+                                        ProcSet=[
+                                            PdfParser.PdfName("PDF"),
+                                            PdfParser.PdfName(procset)
+                                        ],
+                                        XObject=PdfParser.PdfDict(
+                                            image=image_refs[pageNumber]
+                                        )
+                                    ),
+                                    MediaBox=[
+                                        0,
+                                        0,
+                                        int(width * 72.0 / resolution),
+                                        int(height * 72.0 / resolution)
+                                    ],
+                                    Contents=contents_refs[pageNumber])
 
             #
             # page contents
@@ -204,7 +222,8 @@ def _save(im, fp, filename, save_all=False):
                     int(width * 72.0 / resolution),
                     int(height * 72.0 / resolution)))
 
-            existing_pdf.write_obj(contents_refs[pageNumber], stream=page_contents)
+            existing_pdf.write_obj(contents_refs[pageNumber],
+                                   stream=page_contents)
 
             pageNumber += 1
 

@@ -265,8 +265,9 @@ class MorphTests(PillowTestCase):
         # Act / Assert
         with self.assertRaises(Exception) as e:
             lb.build_lut()
-        self.assertEqual(str(e.exception),
-                         'Syntax error in pattern "a pattern with a syntax error"')
+        self.assertEqual(
+            str(e.exception),
+            'Syntax error in pattern "a pattern with a syntax error"')
 
     def test_load_invalid_mrl(self):
         # Arrange

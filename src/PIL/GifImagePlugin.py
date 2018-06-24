@@ -397,7 +397,8 @@ def _write_multiple_frames(im, fp, palette):
 
     im_frames = []
     frame_count = 0
-    for imSequence in itertools.chain([im], im.encoderinfo.get("append_images", [])):
+    for imSequence in itertools.chain([im],
+                                      im.encoderinfo.get("append_images", [])):
         for im_frame in ImageSequence.Iterator(imSequence):
             # a copy is required here since seek can still mutate the image
             im_frame = _normalize_mode(im_frame.copy())
@@ -413,17 +414,19 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
-                if _get_palette_bytes(im_frame) == _get_palette_bytes(previous['im']):
+                if _get_palette_bytes(im_frame) == \
+                   _get_palette_bytes(previous['im']):
                     delta = ImageChops.subtract_modulo(im_frame,
                                                        previous['im'])
                 else:
-                    delta = ImageChops.subtract_modulo(im_frame.convert('RGB'),
-                                                       previous['im'].convert('RGB'))
+                    delta = ImageChops.subtract_modulo(
+                        im_frame.convert('RGB'), previous['im'].convert('RGB'))
                 bbox = delta.getbbox()
                 if not bbox:
                     # This frame is identical to the previous frame
                     if duration:
-                        previous['encoderinfo']['duration'] += encoderinfo['duration']
+                        previous['encoderinfo']['duration'] += \
+                            encoderinfo['duration']
                     continue
             else:
                 bbox = None
@@ -525,7 +528,8 @@ def _write_local_header(fp, im, offset, flags):
                  o8(transparency) +       # transparency index
                  o8(0))
 
-    if "comment" in im.encoderinfo and 1 <= len(im.encoderinfo["comment"]) <= 255:
+    if "comment" in im.encoderinfo and \
+       1 <= len(im.encoderinfo["comment"]) <= 255:
         fp.write(b"!" +
                  o8(254) +                # extension intro
                  o8(len(im.encoderinfo["comment"])) +
@@ -691,7 +695,8 @@ def _get_global_header(im, info):
     for extensionKey in ["transparency", "duration", "loop", "comment"]:
         if info and extensionKey in info:
             if ((extensionKey == "duration" and info[extensionKey] == 0) or
-               (extensionKey == "comment" and not (1 <= len(info[extensionKey]) <= 255))):
+                (extensionKey == "comment" and
+                 not (1 <= len(info[extensionKey]) <= 255))):
                 continue
             version = b"89a"
             break

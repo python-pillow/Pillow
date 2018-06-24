@@ -222,6 +222,7 @@ Image.register_save(SgiImageFile.format, _save)
 Image.register_mime(SgiImageFile.format, "image/sgi")
 Image.register_mime(SgiImageFile.format, "image/rgb")
 
-Image.register_extensions(SgiImageFile.format, [".bw", ".rgb", ".rgba", ".sgi"])
+Image.register_extensions(SgiImageFile.format,
+                          [".bw", ".rgb", ".rgba", ".sgi"])
 
 # End of file

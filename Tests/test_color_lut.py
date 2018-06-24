@@ -410,7 +410,8 @@ class TestGenerateColorLut3D(PillowTestCase):
         self.assertEqual(lut.name, "Color 3D LUT")
         self.assertEqual(lut.table[:24], [
             0.0, 0.0, 0.0, 0.0,  0.0, 0.25, 0.0, 0.125,  0.0, 0.5, 0.0, 0.25,
-            0.0, 0.75, 0.0, 0.375,  0.0, 1.0, 0.0, 0.5,  0.0, 0.0, 0.25, 0.125])
+            0.0, 0.75, 0.0, 0.375,  0.0, 1.0, 0.0, 0.5,  0.0, 0.0, 0.25, 0.125
+        ])
 
     def test_apply(self):
         lut = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))

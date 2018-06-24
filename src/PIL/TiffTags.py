@@ -23,7 +23,8 @@ from collections import namedtuple
 class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
     __slots__ = []
 
-    def __new__(cls, value=None, name="unknown", type=None, length=None, enum=None):
+    def __new__(cls, value=None, name="unknown",
+                type=None, length=None, enum=None):
         return super(TagInfo, cls).__new__(
             cls, value, name, type, length, enum or {})
 
@@ -72,8 +73,8 @@ TAGS_V2 = {
     257: ("ImageLength", LONG, 1),
     258: ("BitsPerSample", SHORT, 0),
     259: ("Compression", SHORT, 1,
-          {"Uncompressed": 1, "CCITT 1d": 2, "Group 3 Fax": 3, "Group 4 Fax": 4,
-           "LZW": 5, "JPEG": 6, "PackBits": 32773}),
+          {"Uncompressed": 1, "CCITT 1d": 2, "Group 3 Fax": 3,
+           "Group 4 Fax": 4, "LZW": 5, "JPEG": 6, "PackBits": 32773}),
 
     262: ("PhotometricInterpretation", SHORT, 1,
           {"WhiteIsZero": 0, "BlackIsZero": 1, "RGB": 2, "RGB Palette": 3,
