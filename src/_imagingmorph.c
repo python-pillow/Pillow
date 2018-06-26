@@ -219,7 +219,7 @@ match(PyObject *self, PyObject* args)
 }
 
 /* Return a list of the coordinates of all turned on pixels in an image.
-   May be used to extract features after a sequence of MorphOp's were applied.
+   May be used to extract features after a sequence of MorphOps were applied.
    This is faster than match as only 1x1 lookup is made.
 */
 static PyObject*
