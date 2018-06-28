@@ -31,7 +31,7 @@ matrix:
     - env: DOCKER="fedora-26-amd64" DOCKER_TAG="pytest"
     - env: DOCKER="fedora-27-amd64" DOCKER_TAG="pytest"
 
-dist: trusty
+dist: xenial
 
 sudo: required
 
