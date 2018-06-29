@@ -995,7 +995,7 @@ unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
 #ifdef WORDS_BIGENDIAN
         out[0] = tmp[1];  out[1] = tmp[0];
 #else
-        out16[0] = pixel;
+        memcpy(out, &pixel, sizeof(pixel));
 #endif
 
         pixel = (((UINT16) (in[1] & 0x0F)) << 8) + in[2];
@@ -1012,7 +1012,7 @@ unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
 #ifdef WORDS_BIGENDIAN
         out[0] = tmp[1];  out[1] = tmp[0];
 #else
-        out16[0] = pixel;
+        memcpy(out, &pixel, sizeof(pixel));
 #endif
     }
 }
