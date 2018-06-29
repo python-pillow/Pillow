@@ -124,7 +124,7 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
             UINT8* in1 = (UINT8*) im->image[y+1];
             UINT32* out = (UINT32*) imOut->image[y];
 
-            out[0] = ((UINT32*) in0)[0];
+            memcpy(out, in0, sizeof(UINT32));
             if (im->bands == 2) {
                 for (x = 1; x < im->xsize-1; x++) {
                     float ss0 = offset;
@@ -234,8 +234,7 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
             UINT8* in2 = (UINT8*) im->image[y+2];
             UINT32* out = (UINT32*) imOut->image[y];
 
-            out[0] = ((UINT32*) in0)[0];
-            out[1] = ((UINT32*) in0)[1];
+            memcpy(out, in0, sizeof(UINT32) * 2);
             if (im->bands == 2) {
                 for (x = 2; x < im->xsize-2; x++) {
                     float ss0 = offset;

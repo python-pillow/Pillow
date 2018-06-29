@@ -439,7 +439,7 @@ nearest_filter32(void* out, Imaging im, double xin, double yin)
     int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
-    ((INT32*)out)[0] = im->image32[y][x];
+    memcpy(out, &im->image32[y][x], sizeof(INT32));
     return 1;
 }
 

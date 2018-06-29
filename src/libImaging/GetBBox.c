@@ -146,7 +146,7 @@ ImagingGetExtrema(Imaging im, void *extrema)
                     imax = in[x];
             }
         }
-        ((INT32*) extrema)[0] = imin;
+        memcpy(extrema, &imin, sizeof(imin));
         ((INT32*) extrema)[1] = imax;
         break;
     case IMAGING_TYPE_FLOAT32:
@@ -160,7 +160,7 @@ ImagingGetExtrema(Imaging im, void *extrema)
                     fmax = in[x];
             }
         }
-        ((FLOAT32*) extrema)[0] = fmin;
+        memcpy(extrema, &fmin, sizeof(fmin));
         ((FLOAT32*) extrema)[1] = fmax;
         break;
     case IMAGING_TYPE_SPECIAL:
