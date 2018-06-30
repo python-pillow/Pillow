@@ -572,7 +572,8 @@ class Image(object):
 
         This function is only required to close images that have not
         had their file read and closed by the
-        :py:meth:`~PIL.Image.Image.load` method.
+        :py:meth:`~PIL.Image.Image.load` method. See
+        :ref:`file-handling` for more information.
         """
         try:
             self.fp.close()
@@ -802,8 +803,10 @@ class Image(object):
         Allocates storage for the image and loads the pixel data.  In
         normal cases, you don't need to call this method, since the
         Image class automatically loads an opened image when it is
-        accessed for the first time. This method will close the file
-        associated with the image.
+        accessed for the first time.
+
+        This method will close the file associated with the image. See
+        :ref:`file-handling` for more information.
 
         :returns: An image access object.
         :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess`
@@ -2547,7 +2550,7 @@ def open(fp, mode="r"):
     the file remains open and the actual image data is not read from
     the file until you try to process the data (or call the
     :py:meth:`~PIL.Image.Image.load` method).  See
-    :py:func:`~PIL.Image.new`.
+    :py:func:`~PIL.Image.new`. See :ref:`file-handling`.
 
     :param fp: A filename (string), pathlib.Path object or a file object.
        The file object must implement :py:meth:`~file.read`,
