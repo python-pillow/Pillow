@@ -46,7 +46,7 @@ class PillowQPixmapTestCase(PillowQtTestCase):
 class TestImageQt(PillowQtTestCase, PillowTestCase):
 
     def test_rgb(self):
-        # from https://doc.qt.io/qt-4.8/qcolor.html
+        # from https://doc.qt.io/archives/qt-4.8/qcolor.html
         # typedef QRgb
         # An ARGB quadruplet on the format #AARRGGBB,
         # equivalent to an unsigned int.
