@@ -52,9 +52,6 @@ Compilers
 
 Download and install:
 
-* `Microsoft Windows SDK for Windows 7 and .NET Framework 3.5
-  SP1 <https://www.microsoft.com/en-us/download/details.aspx?id=3138>`_
-
 * `Microsoft Windows SDK for Windows 7 and .NET Framework
   4 <https://www.microsoft.com/en-us/download/details.aspx?id=8279>`_
 
