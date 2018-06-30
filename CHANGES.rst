@@ -47,12 +47,6 @@ Changelog (Pillow)
 - Depends: Update freetype to 2.9.1, libjpeg to 9c, libwebp to 1.0.0 #3121, #3136, #3108
   [radarhere]
 
-- Build macOS wheels with Xcode 6.4, supporting older macOS versions #3068
-  [wiredfool]
-
-- Fix _i2f compilation on some GCC versions #3067
-  [homm]
-
 - Changed encoderinfo to have priority over info when saving GIF images #3086
   [radarhere]
 
@@ -70,6 +64,15 @@ Changelog (Pillow)
 
 - Fix dereferencing type-punned pointer will break strict-aliasing #3069
   [jdufresne]
+
+5.1.1 (2018-04-12)
+------------------
+
+- Fix _i2f compilation on some GCC versions #3067
+  [homm]
+
+- Build macOS wheels with Xcode 6.4, supporting older macOS versions #3068
+  [wiredfool]
 
 5.1.0 (2018-04-02)
 ------------------
