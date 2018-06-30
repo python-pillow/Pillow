@@ -13,6 +13,7 @@ class TestFilePixar(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "PIXAR")
+        self.assertIsNone(im.get_format_mimetype())
 
         im2 = hopper()
         self.assert_image_similar(im, im2, 4.8)

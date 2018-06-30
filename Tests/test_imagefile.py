@@ -223,6 +223,13 @@ class TestPyDecoder(PillowTestCase):
         im.tile = [("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize + 100), 32, None)]
         self.assertRaises(ValueError, im.load)
 
+    def test_no_format(self):
+        buf = BytesIO(b'\x00'*255)
+
+        im = MockImageFile(buf)
+        self.assertIsNone(im.format)
+        self.assertIsNone(im.get_format_mimetype())
+
 
 if __name__ == '__main__':
     unittest.main()

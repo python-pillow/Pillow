@@ -48,6 +48,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "JPEG")
+        self.assertEqual(im.get_format_mimetype(), "image/jpeg")
 
     def test_app(self):
         # Test APP/COM reader (@PIL135)

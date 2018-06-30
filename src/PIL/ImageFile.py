@@ -118,6 +118,11 @@ class ImageFile(Image.Image):
 
         pass
 
+    def get_format_mimetype(self):
+        if self.format is None:
+            return
+        return Image.MIME.get(self.format.upper())
+
     def verify(self):
         "Check file integrity"
 
