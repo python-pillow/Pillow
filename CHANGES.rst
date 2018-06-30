@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
+- unpack_from is faster than unpack of slice #3201
+  [landfillbaby]
+
 - Docs: Add coordinate system links and file handling links in documentation #3204, #3214
   [radarhere]
 
