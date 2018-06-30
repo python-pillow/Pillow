@@ -58,6 +58,13 @@ import warnings
 
 from .TiffTags import TYPES
 
+try:
+    # Python 3
+    from collections.abc import MutableMapping
+except ImportError:
+    # Python 2.7
+    from collections import MutableMapping
+
 
 __version__ = "1.3.5"
 DEBUG = False  # Needs to be merged with the new logging approach.
@@ -398,7 +405,7 @@ class IFDRational(Rational):
     __round__ = _delegate('__round__')
 
 
-class ImageFileDirectory_v2(collections.MutableMapping):
+class ImageFileDirectory_v2(MutableMapping):
     """This class represents a TIFF tag directory.  To speed things up, we
     don't decode tags unless they're asked for.
 

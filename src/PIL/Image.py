@@ -121,8 +121,14 @@ import struct
 import atexit
 
 # type stuff
-import collections
 import numbers
+try:
+    # Python 3
+    from collections.abc import Callable
+except ImportError:
+    # Python 2.7
+    from collections import Callable
+
 
 # works everywhere, win for pypy, not cpython
 USE_CFFI_ACCESS = hasattr(sys, 'pypy_version_info')
@@ -1145,7 +1151,7 @@ class Image(object):
 
         self.load()
 
-        if isinstance(filter, collections.Callable):
+        if isinstance(filter, Callable):
             filter = filter()
         if not hasattr(filter, "filter"):
             raise TypeError("filter argument should be ImageFilter.Filter " +
