@@ -67,7 +67,7 @@ PDFDocEncoding = {
     0x9D: u"\u0161",
     0x9E: u"\u017E",
     0xA0: u"\u20AC",
-    }
+}
 
 
 def decode_text(b):
@@ -178,7 +178,10 @@ class XrefTable:
                     f.write(make_bytes("%010d %05d n \n" % self.new_entries[object_id]))
                 else:
                     this_deleted_object_id = deleted_keys.pop(0)
-                    check_format_condition(object_id == this_deleted_object_id, "expected the next deleted object ID to be %s, instead found %s" % (object_id, this_deleted_object_id))
+                    check_format_condition(object_id == this_deleted_object_id,
+                                           "expected the next deleted object "
+                                           "ID to be %s, instead found %s" %
+                                           (object_id, this_deleted_object_id))
                     try:
                         next_in_linked_list = deleted_keys[0]
                     except IndexError:
@@ -209,8 +212,8 @@ class PdfName:
         return "PdfName(%s)" % repr(self.name)
 
     @classmethod
-    def from_pdf_stream(klass, data):
-        return klass(PdfParser.interpret_name(data))
+    def from_pdf_stream(cls, data):
+        return cls(PdfParser.interpret_name(data))
 
     allowed_chars = set(range(33, 127)) - set(ord(c) for c in "#%/()<>[]{}")
 
@@ -291,7 +294,6 @@ class PdfBinary:
     else:  # Python 2.x
         def __str__(self):
             return "<%s>" % "".join("%02X" % ord(b) for b in self.data)
-
 
 
 class PdfStream:
@@ -602,17 +604,17 @@ class PdfParser:
     re_dict_end = re.compile(whitespace_optional + br"\>\>" + whitespace_optional)
 
     @classmethod
-    def interpret_trailer(klass, trailer_data):
+    def interpret_trailer(cls, trailer_data):
         trailer = {}
         offset = 0
         while True:
-            m = klass.re_name.match(trailer_data, offset)
+            m = cls.re_name.match(trailer_data, offset)
             if not m:
-                m = klass.re_dict_end.match(trailer_data, offset)
+                m = cls.re_dict_end.match(trailer_data, offset)
                 check_format_condition(m and m.end() == len(trailer_data), "name not found in trailer, remaining data: " + repr(trailer_data[offset:]))
                 break
-            key = klass.interpret_name(m.group(1))
-            value, offset = klass.get_value(trailer_data, m.end())
+            key = cls.interpret_name(m.group(1))
+            value, offset = cls.get_value(trailer_data, m.end())
             trailer[key] = value
         check_format_condition(b"Size" in trailer and isinstance(trailer[b"Size"], int), "/Size not in trailer or not an integer")
         check_format_condition(b"Root" in trailer and isinstance(trailer[b"Root"], IndirectReference), "/Root not in trailer or not an indirect reference")
@@ -621,9 +623,9 @@ class PdfParser:
     re_hashes_in_name = re.compile(br"([^#]*)(#([0-9a-fA-F]{2}))?")
 
     @classmethod
-    def interpret_name(klass, raw, as_text=False):
+    def interpret_name(cls, raw, as_text=False):
         name = b""
-        for m in klass.re_hashes_in_name.finditer(raw):
+        for m in cls.re_hashes_in_name.finditer(raw):
             if m.group(3):
                 name += m.group(1) + bytearray.fromhex(m.group(3).decode("us-ascii"))
             else:
@@ -650,98 +652,98 @@ class PdfParser:
     re_stream_end = re.compile(whitespace_optional + br"endstream(?=" + delimiter_or_ws + br")")
 
     @classmethod
-    def get_value(klass, data, offset, expect_indirect=None, max_nesting=-1):
+    def get_value(cls, data, offset, expect_indirect=None, max_nesting=-1):
         if max_nesting == 0:
             return None, None
-        m = klass.re_comment.match(data, offset)
+        m = cls.re_comment.match(data, offset)
         if m:
             offset = m.end()
-        m = klass.re_indirect_def_start.match(data, offset)
+        m = cls.re_indirect_def_start.match(data, offset)
         if m:
             check_format_condition(int(m.group(1)) > 0, "indirect object definition: object ID must be greater than 0")
             check_format_condition(int(m.group(2)) >= 0, "indirect object definition: generation must be non-negative")
             check_format_condition(expect_indirect is None or expect_indirect == IndirectReference(int(m.group(1)), int(m.group(2))),
                 "indirect object definition different than expected")
-            object, offset = klass.get_value(data, m.end(), max_nesting=max_nesting-1)
+            object, offset = cls.get_value(data, m.end(), max_nesting=max_nesting-1)
             if offset is None:
                 return object, None
-            m = klass.re_indirect_def_end.match(data, offset)
+            m = cls.re_indirect_def_end.match(data, offset)
             check_format_condition(m, "indirect object definition end not found")
             return object, m.end()
         check_format_condition(not expect_indirect, "indirect object definition not found")
-        m = klass.re_indirect_reference.match(data, offset)
+        m = cls.re_indirect_reference.match(data, offset)
         if m:
             check_format_condition(int(m.group(1)) > 0, "indirect object reference: object ID must be greater than 0")
             check_format_condition(int(m.group(2)) >= 0, "indirect object reference: generation must be non-negative")
             return IndirectReference(int(m.group(1)), int(m.group(2))), m.end()
-        m = klass.re_dict_start.match(data, offset)
+        m = cls.re_dict_start.match(data, offset)
         if m:
             offset = m.end()
             result = {}
-            m = klass.re_dict_end.match(data, offset)
+            m = cls.re_dict_end.match(data, offset)
             while not m:
-                key, offset = klass.get_value(data, offset, max_nesting=max_nesting-1)
+                key, offset = cls.get_value(data, offset, max_nesting=max_nesting-1)
                 if offset is None:
                     return result, None
-                value, offset = klass.get_value(data, offset, max_nesting=max_nesting-1)
+                value, offset = cls.get_value(data, offset, max_nesting=max_nesting-1)
                 result[key] = value
                 if offset is None:
                     return result, None
-                m = klass.re_dict_end.match(data, offset)
+                m = cls.re_dict_end.match(data, offset)
             offset = m.end()
-            m = klass.re_stream_start.match(data, offset)
+            m = cls.re_stream_start.match(data, offset)
             if m:
                 try:
                     stream_len = int(result[b"Length"])
                 except (TypeError, KeyError, ValueError):
                     raise PdfFormatError("bad or missing Length in stream dict (%r)" % result.get(b"Length", None))
                 stream_data = data[m.end():m.end() + stream_len]
-                m = klass.re_stream_end.match(data, m.end() + stream_len)
+                m = cls.re_stream_end.match(data, m.end() + stream_len)
                 check_format_condition(m, "stream end not found")
                 offset = m.end()
                 result = PdfStream(PdfDict(result), stream_data)
             else:
                 result = PdfDict(result)
             return result, offset
-        m = klass.re_array_start.match(data, offset)
+        m = cls.re_array_start.match(data, offset)
         if m:
             offset = m.end()
             result = []
-            m = klass.re_array_end.match(data, offset)
+            m = cls.re_array_end.match(data, offset)
             while not m:
-                value, offset = klass.get_value(data, offset, max_nesting=max_nesting-1)
+                value, offset = cls.get_value(data, offset, max_nesting=max_nesting-1)
                 result.append(value)
                 if offset is None:
                     return result, None
-                m = klass.re_array_end.match(data, offset)
+                m = cls.re_array_end.match(data, offset)
             return result, m.end()
-        m = klass.re_null.match(data, offset)
+        m = cls.re_null.match(data, offset)
         if m:
             return None, m.end()
-        m = klass.re_true.match(data, offset)
+        m = cls.re_true.match(data, offset)
         if m:
             return True, m.end()
-        m = klass.re_false.match(data, offset)
+        m = cls.re_false.match(data, offset)
         if m:
             return False, m.end()
-        m = klass.re_name.match(data, offset)
+        m = cls.re_name.match(data, offset)
         if m:
-            return PdfName(klass.interpret_name(m.group(1))), m.end()
-        m = klass.re_int.match(data, offset)
+            return PdfName(cls.interpret_name(m.group(1))), m.end()
+        m = cls.re_int.match(data, offset)
         if m:
             return int(m.group(1)), m.end()
-        m = klass.re_real.match(data, offset)
+        m = cls.re_real.match(data, offset)
         if m:
             return float(m.group(1)), m.end()  # XXX Decimal instead of float???
-        m = klass.re_string_hex.match(data, offset)
+        m = cls.re_string_hex.match(data, offset)
         if m:
             hex_string = bytearray([b for b in m.group(1) if b in b"0123456789abcdefABCDEF"])  # filter out whitespace
             if len(hex_string) % 2 == 1:
                 hex_string.append(ord(b"0"))  # append a 0 if the length is not even - yes, at the end
             return bytearray.fromhex(hex_string.decode("us-ascii")), m.end()
-        m = klass.re_string_lit.match(data, offset)
+        m = cls.re_string_lit.match(data, offset)
         if m:
-            return klass.get_literal_string(data, m.end())
+            return cls.get_literal_string(data, m.end())
         #return None, offset  # fallback (only for debugging)
         raise PdfFormatError("unrecognized object: " + repr(data[offset:offset+32]))
 
@@ -766,13 +768,13 @@ class PdfParser:
         }
 
     @classmethod
-    def get_literal_string(klass, data, offset):
+    def get_literal_string(cls, data, offset):
         nesting_depth = 0
         result = bytearray()
-        for m in klass.re_lit_str_token.finditer(data, offset):
+        for m in cls.re_lit_str_token.finditer(data, offset):
             result.extend(data[offset:m.start()])
             if m.group(1):
-                result.extend(klass.escaped_chars[m.group(1)[1]])
+                result.extend(cls.escaped_chars[m.group(1)[1]])
             elif m.group(2):
                 result.append(int(m.group(2)[1:], 8))
             elif m.group(3):
