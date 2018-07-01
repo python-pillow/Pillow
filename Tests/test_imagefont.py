@@ -509,12 +509,12 @@ class TestImageFont(PillowTestCase):
         self.assertEqual(t.getsize('M'), self.metrics['getters'])
         self.assertEqual(t.getsize('y'), (12, 20))
         self.assertEqual(t.getsize('a'), (12, 16))
-        self.assertEqual(t.getsize_multiline('A'),(12,16))
-        self.assertEqual(t.getsize_multiline('AB'),(24,16))
-        self.assertEqual(t.getsize_multiline('a'),(12,16))
-        self.assertEqual(t.getsize_multiline('ABC\n'),(36,36))
-        self.assertEqual(t.getsize_multiline('ABC\nA'),(36,36))
-        self.assertEqual(t.getsize_multiline('ABC\nAaaa'),(48,36))
+        self.assertEqual(t.getsize_multiline('A'), (12, 16))
+        self.assertEqual(t.getsize_multiline('AB'), (24, 16))
+        self.assertEqual(t.getsize_multiline('a'), (12, 16))
+        self.assertEqual(t.getsize_multiline('ABC\n'), (36, 36))
+        self.assertEqual(t.getsize_multiline('ABC\nA'), (36, 36))
+        self.assertEqual(t.getsize_multiline('ABC\nAaaa'), (48, 36))
 
 
 @unittest.skipUnless(HAS_RAQM, "Raqm not Available")
