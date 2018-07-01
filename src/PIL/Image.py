@@ -1915,9 +1915,7 @@ class Image(object):
         # may mutate self!
         self.load()
 
-        save_all = False
-        if 'save_all' in params:
-            save_all = params.pop('save_all')
+        save_all = params.pop('save_all', False)
         self.encoderinfo = params
         self.encoderconfig = ()
 
