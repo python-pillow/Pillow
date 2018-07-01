@@ -83,7 +83,7 @@ Released as needed privately to individual vendors for critical security-related
 ### Mac and Linux
 * [ ] Use the [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels):
 ```
-    $ git checkout https://github.com/python-pillow/pillow-wheels
+    $ git clone https://github.com/python-pillow/pillow-wheels
     $ cd pillow-wheels
     $ git submodule init
     $ git submodule update
