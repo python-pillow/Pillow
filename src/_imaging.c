@@ -448,7 +448,7 @@ float16tofloat32(const FLOAT16 in) {
     t1 = in & 0x7fff;                       // Non-sign bits
     t2 = in & 0x8000;                       // Sign bit
     t3 = in & 0x7c00;                       // Exponent
-    
+
     t1 <<= 13;                              // Align mantissa on MSB
     t2 <<= 16;                              // Shift sign bit into position
 
@@ -778,7 +778,8 @@ _prepare_lut_table(PyObject* table, Py_ssize_t table_size)
     /* malloc check ok, max is 2 * 4 * 65**3 = 2197000 */
     prepared = (INT16*) malloc(sizeof(INT16) * table_size);
     if ( ! prepared) {
-        free(table_data);
+        if (free_table_data)
+            free(table_data);
         return (INT16*) PyErr_NoMemory();
     }
 
