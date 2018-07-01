@@ -113,7 +113,8 @@ def _save(im, fp, filename, save_all=False):
 
     pageNumber = 0
     for imSequence in ims:
-        for im in ImageSequence.Iterator(imSequence):
+        im_pages = ImageSequence.Iterator(imSequence) if save_all else [imSequence]
+        for im in im_pages:
             # FIXME: Should replace ASCIIHexDecode with RunLengthDecode (packbits)
             # or LZWDecode (tiff/lzw compression).  Note that PDF 1.2 also supports
             # Flatedecode (zip compression).
