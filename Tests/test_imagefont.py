@@ -231,6 +231,11 @@ class TestImageFont(PillowTestCase):
         self.assertEqual(draw.textsize(TEST_TEXT, font=ttf),
                          draw.multiline_textsize(TEST_TEXT, font=ttf))
 
+        # Test that multiline_textsize corresponds to ImageFont.textsize()
+        # for single line text
+        self.assertEqual(ttf.getsize('A'),
+                         draw.multiline_textsize('A', font=ttf))
+
         # Test that textsize() can pass on additional arguments
         # to multiline_textsize()
         draw.textsize(TEST_TEXT, font=ttf, spacing=4)

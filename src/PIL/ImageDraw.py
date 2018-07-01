@@ -271,7 +271,7 @@ class ImageDraw(object):
             line_width, line_height = self.textsize(line, font, spacing,
                                                     direction, features)
             max_width = max(max_width, line_width)
-        return max_width, len(lines)*line_spacing
+        return max_width, len(lines)*line_spacing - spacing
 
 
 def Draw(im, mode=None):
