@@ -5,6 +5,11 @@ from array import array
 from PIL import Image, ImageFilter
 from helper import unittest, PillowTestCase
 
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
 
 class TestColorLut3DCoreAPI(PillowTestCase):
     def generate_identity_table(self, channels, size):
@@ -278,6 +283,80 @@ class TestColorLut3DFilter(PillowTestCase):
 
         lut = ImageFilter.Color3DLUT((2, 2, 2), [(0, 1, 2, 3)] * 8,
                                      channels=4)
+
+    @unittest.skipIf(numpy is None, "Numpy is not installed")
+    def test_numpy_sources(self):
+        table = numpy.ones((5, 6, 7, 3), dtype=numpy.float16)
+        with self.assertRaisesRegex(ValueError, "should have either channels"):
+            lut = ImageFilter.Color3DLUT((5, 6, 7), table)
+
+        table = numpy.ones((7, 6, 5, 3), dtype=numpy.float16)
+        lut = ImageFilter.Color3DLUT((5, 6, 7), table)
+        self.assertIsInstance(lut.table, numpy.ndarray)
+        self.assertEqual(lut.table.dtype, table.dtype)
+        self.assertEqual(lut.table.shape, (table.size,))
+
+        table = numpy.ones((7 * 6 * 5, 3), dtype=numpy.float16)
+        lut = ImageFilter.Color3DLUT((5, 6, 7), table)
+        self.assertEqual(lut.table.shape, (table.size,))
+
+        table = numpy.ones((7 * 6 * 5 * 3), dtype=numpy.float16)
+        lut = ImageFilter.Color3DLUT((5, 6, 7), table)
+        self.assertEqual(lut.table.shape, (table.size,))
+
+        # Check application
+        Image.new('RGB', (10, 10), 0).filter(lut)
+
+        # Check copy
+        table[0] = 33
+        self.assertEqual(lut.table[0], 1)
+
+        # Check not copy
+        table = numpy.ones((7 * 6 * 5 * 3), dtype=numpy.float16)
+        lut = ImageFilter.Color3DLUT((5, 6, 7), table, _copy_table=False)
+        table[0] = 33
+        self.assertEqual(lut.table[0], 33)
+
+    @unittest.skipIf(numpy is None, "Numpy is not installed")
+    def test_numpy_formats(self):
+        g = Image.linear_gradient('L')
+        im = Image.merge('RGB', [g, g.transpose(Image.ROTATE_90),
+                                 g.transpose(Image.ROTATE_180)])
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = numpy.array(lut.table, dtype=numpy.float32)[:-1]
+        with self.assertRaisesRegex(ValueError, "should have table_channels"):
+            im.filter(lut)
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = (numpy.array(lut.table, dtype=numpy.float32)
+                     .reshape((7 * 9 * 11), 3))
+        with self.assertRaisesRegex(ValueError, "should have table_channels"):
+            im.filter(lut)
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = numpy.array(lut.table, dtype=numpy.float16)
+        self.assert_image_equal(im, im.filter(lut))
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = numpy.array(lut.table, dtype=numpy.float32)
+        self.assert_image_equal(im, im.filter(lut))
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = numpy.array(lut.table, dtype=numpy.float64)
+        self.assert_image_equal(im, im.filter(lut))
+
+        lut = ImageFilter.Color3DLUT.generate((7, 9, 11),
+            lambda r, g, b: (r, g, b))
+        lut.table = numpy.array(lut.table, dtype=numpy.int32)
+        im.filter(lut)
+        lut.table = numpy.array(lut.table, dtype=numpy.int8)
+        im.filter(lut)
 
     def test_repr(self):
         lut = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
