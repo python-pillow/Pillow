@@ -83,8 +83,9 @@ def APP(self, marker):
             self.info["jfif_unit"] = jfif_unit
             self.info["jfif_density"] = jfif_density
     elif marker == 0xFFE1 and s[:5] == b"Exif\0":
-        # extract Exif information (incomplete)
-        self.info["exif"] = s  # FIXME: value will change
+        if "exif" not in self.info:
+            # extract Exif information (incomplete)
+            self.info["exif"] = s  # FIXME: value will change
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
