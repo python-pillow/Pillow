@@ -19,25 +19,33 @@
 from . import Image
 from ._util import isPath, py3
 from io import BytesIO
+import sys
 
-qt_is_installed = True
-qt_version = None
-try:
-    from PyQt5.QtGui import QImage, qRgba, QPixmap
-    from PyQt5.QtCore import QBuffer, QIODevice
-    qt_version = '5'
-except (ImportError, RuntimeError):
+qt_versions = [
+    ['5', 'PyQt5'],
+    ['4', 'PyQt4'],
+    ['side', 'PySide']
+]
+# If a version has already been imported, attempt it first
+qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=True)
+for qt_version, qt_module in qt_versions:
     try:
-        from PyQt4.QtGui import QImage, qRgba, QPixmap
-        from PyQt4.QtCore import QBuffer, QIODevice
-        qt_version = '4'
-    except (ImportError, RuntimeError):
-        try:
+        if qt_module == 'PyQt5':
+            from PyQt5.QtGui import QImage, qRgba, QPixmap
+            from PyQt5.QtCore import QBuffer, QIODevice
+        elif qt_module == 'PyQt4':
+            from PyQt4.QtGui import QImage, qRgba, QPixmap
+            from PyQt4.QtCore import QBuffer, QIODevice
+        elif qt_module == 'PySide':
             from PySide.QtGui import QImage, qRgba, QPixmap
             from PySide.QtCore import QBuffer, QIODevice
-            qt_version = 'side'
-        except ImportError:
-            qt_is_installed = False
+    except (ImportError, RuntimeError):
+        continue
+    qt_is_installed = True
+    break
+else:
+    qt_is_installed = False
+    qt_version = None
 
 
 def rgb(r, g, b, a=255):
