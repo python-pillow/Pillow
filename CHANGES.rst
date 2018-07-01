@@ -5,6 +5,24 @@ Changelog (Pillow)
 5.2.0 (unreleased)
 ------------------
 
+- Changed ellipse point calculations to be more evenly distributed #3142
+  [radarhere]
+
+- Only extract first Exif segment #2946
+  [hugovk]
+
+- Tests: Test ImageDraw2, WalImageFile #3135, #2989
+  [hugovk]
+
+- Remove unnecessary '#if 0' code #3075
+  [hugovk]
+
+- Tests: Added GD tests #1817
+  [radarhere]
+
+- Fix collections ABCs DeprecationWarning in Python 3.7 #3123
+  [hugovk]
+
 - unpack_from is faster than unpack of slice #3201
   [landfillbaby]
 
