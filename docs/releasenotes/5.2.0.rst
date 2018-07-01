@@ -61,8 +61,6 @@ Re: "version constants deprecated" listed above, as user gnbl notes in #3082:
 - there does not seem to be documentation on this version number (why this, will it ever change, ..) e.g. at https://pillow.readthedocs.io/en/5.1.x/about.html#why-a-fork
 - it's confusing that PIL.version is a module and does not return the version information directly or hints on how to get it
 - the package information header is essentially useless (placeholder, does not even mention Pillow, nor the version)
-- PIL.version module documentation comment could explain how to access the version information
+- PIL._version module documentation comment could explain how to access the version information
 
-We have attempted to resolve these issues: 
-
-- https://github.com/python-pillow/Pillow/pull/3218
+We have attempted to resolve these issues in #3083, #3090 and #3218.
