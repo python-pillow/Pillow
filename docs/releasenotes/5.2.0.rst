@@ -20,6 +20,46 @@ Use ``PIL.__version__`` instead.
 API Additions
 =============
 
+3D color lookup tables
+^^^^^^^^^^^^^^^^^^^^^^
+
+Support for 3D color lookup table transformations has been added.
+
+* https://en.wikipedia.org/wiki/3D_lookup_table
+
+``Color3DLUT.generate`` transforms 3-channel pixels using the values of the
+channels as coordinates in the 3D lookup table and interpolating the nearest
+elements.
+
+It allows you to apply almost any color transformation in constant time by
+using pre-calculated decimated tables.
+
+``Color3DLUT.transform()`` allows altering table values with a callback.
+
+If NumPy is installed, the performance of argument conversion is dramatically
+improved when a source table supports buffer interface (NumPy && arrays in
+Python >= 3).
+
+ImageColor.getrgb
+^^^^^^^^^^^^^^^^^
+
+Previously ``Image.rotate`` only supported HSL color strings. Now HSB and HSV
+strings are also supported, as well as float values. For example,
+``ImageColor.getrgb("hsv(180,100%,99.5%)")``.
+
+ImageFile.get_format_mimetype
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageFile.get_format_mimetype`` has been added to return the MIME type of an
+image file, where available. For example,
+``Image.open("hopper.jpg").get_format_mimetype()`` returns ``"image/jpeg"``.
+
+ImageFont.getsize_multiline
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new method to return the size of multiline text, for example
+``font.getsize_multiline("ABC\nAaaa")``
+
 Image.rotate
 ^^^^^^^^^^^^
 
@@ -27,6 +67,13 @@ A new named parameter, ``fillcolor``, has been added to ``Image.rotate``. This
 color specifies the background color to use in the area outside the rotated
 image. This parameter takes the same color specifications as used in
 ``Image.new``.
+
+
+TGA file format
+^^^^^^^^^^^^^^^
+
+Pillow can now read and write LA data (in addition to L, P, RGB and RGBA), and
+write RLE data (in addition to uncompressed).
 
 Other Changes
 =============

@@ -2,8 +2,41 @@
 Changelog (Pillow)
 ==================
 
-5.2.0 (unreleased)
+5.2.0 (2018-07-01)
 ------------------
+
+- Fixed saving a multiframe image as a single frame PDF #3137
+  [radarhere]
+
+- If a Qt version is already imported, attempt to use it first #3143
+  [radarhere]
+
+- Fix transform fill color for alpha images #3147
+  [fozcode]
+
+- TGA: Add support for writing RLE data #3186
+  [danpla]
+
+- TGA: Read and write LA data #3178
+  [danpla]
+
+- QuantOctree.c: Remove erroneous attempt to average over an empty range #3196
+  [tkoeppe]
+
+- Changed ICNS format tests to pass on OS X 10.11 #3202
+  [radarhere]
+
+- Fixed bug in ImageDraw.multiline_textsize() #3114
+  [tianyu139]
+
+- Added getsize_multiline support for PIL.ImageFont #3113
+  [tianyu139]
+
+- Added ImageFile get_format_mimetype method #3190
+  [radarhere]
+
+- Changed mmap file pointer to use context manager #3216
+  [radarhere]
 
 - Changed ellipse point calculations to be more evenly distributed #3142
   [radarhere]

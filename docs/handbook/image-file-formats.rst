@@ -562,8 +562,8 @@ TGA
 ^^^
 
 PIL reads and writes TGA images containing ``L``, ``LA``, ``P``,
-``RGB``, and ``RGBA`` data. PIL can read both uncompressed and
-run-length encoded TGAs, but writes only uncompressed data.
+``RGB``, and ``RGBA`` data. PIL can read and write both uncompressed and
+run-length encoded TGAs.
 
 TIFF
 ^^^^
