@@ -17,7 +17,6 @@ Pillow 6.0.0, and ``PILLOW_VERSION`` will be removed after that.
 
 Use ``PIL.__version__`` instead.
 
-
 API Additions
 =============
 
