@@ -40,11 +40,11 @@ class TestFileIcns(PillowTestCase):
         im = Image.open(TEST_FILE)
 
         temp_file = self.tempfile("temp.icns")
-        provided_im = Image.new('RGBA', (32, 32), (255, 0, 0, 0))
+        provided_im = Image.new('RGBA', (32, 32), (255, 0, 0, 128))
         im.save(temp_file, append_images=[provided_im])
 
         reread = Image.open(temp_file)
-        self.assert_image_equal(reread, im)
+        self.assert_image_similar(reread, im, 1)
 
         reread = Image.open(temp_file)
         reread.size = (16, 16, 2)
