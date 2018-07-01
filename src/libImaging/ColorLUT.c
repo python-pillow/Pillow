@@ -105,7 +105,7 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
     ImagingSectionEnter(&cookie);
     for (y = 0; y < imOut->ysize; y++) {
         UINT8* rowIn = (UINT8 *)imIn->image[y];
-        UINT32* rowOut = (UINT32 *)imOut->image[y];
+        char* rowOut = (char *)imOut->image[y];
         for (x = 0; x < imOut->xsize; x++) {
             UINT32 index1D = rowIn[x*4 + 0] * scale1D;
             UINT32 index2D = rowIn[x*4 + 1] * scale2D;
@@ -120,6 +120,7 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
             INT16 leftleft[4], leftright[4], rightleft[4], rightright[4];
 
             if (table_channels == 3) {
+                UINT32 v;
                 interpolate3(leftleft, &table[idx + 0], &table[idx + 3], shift1D);
                 interpolate3(leftright, &table[idx + size1D*3],
                              &table[idx + size1D*3 + 3], shift1D);
@@ -133,12 +134,14 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
 
                 interpolate3(result, left, right, shift3D);
 
-                rowOut[x] = MAKE_UINT32(
+                v = MAKE_UINT32(
                         clip8(result[0]), clip8(result[1]),
                         clip8(result[2]), rowIn[x*4 + 3]);
+                memcpy(rowOut + x * sizeof(v), &v, sizeof(v));
             }
 
             if (table_channels == 4) {
+                UINT32 v;
                 interpolate4(leftleft, &table[idx + 0], &table[idx + 4], shift1D);
                 interpolate4(leftright, &table[idx + size1D*4],
                              &table[idx + size1D*4 + 4], shift1D);
@@ -152,9 +155,10 @@ ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn, int table_channels,
 
                 interpolate4(result, left, right, shift3D);
 
-                rowOut[x] = MAKE_UINT32(
+                v = MAKE_UINT32(
                         clip8(result[0]), clip8(result[1]),
                         clip8(result[2]), clip8(result[3]));
+                memcpy(rowOut + x * sizeof(v), &v, sizeof(v));
             }
         }
     }

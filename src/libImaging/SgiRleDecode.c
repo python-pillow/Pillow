@@ -56,15 +56,15 @@ static int expandrow(UINT8* dest, UINT8* src, int n, int z)
     return 0;
 }
 
-static int expandrow2(UINT16* dest, UINT16* src, int n, int z)
+static int expandrow2(UINT8* dest, const UINT8* src, int n, int z)
 {
     UINT8 pixel, count;
 
 
     for (;n > 0; n--)
     {
-        pixel = ((UINT8*)src)[1];
-        ++src;
+        pixel = src[1];
+        src+=2;
         if (n == 1 && pixel != 0)
             return n;
         count = pixel & RLE_MAX_RUN;
@@ -72,16 +72,17 @@ static int expandrow2(UINT16* dest, UINT16* src, int n, int z)
             return count;
         if (pixel & RLE_COPY_FLAG) {
             while(count--) {
-                *dest = *src++;
-                dest += z;
+                memcpy(dest, src, 2);
+                src += 2;
+                dest += z * 2;
             }
         }
         else {
             while (count--) {
-                *dest = *src;
-                dest += z;
+                memcpy(dest, src, 2);
+                dest += z * 2;
             }
-            ++src;
+            src+=2;
         }
     }
     return 0;
@@ -162,7 +163,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
                     goto sgi_finish_decode;
             }
             else {
-                if(expandrow2((UINT16*)&state->buffer[c->channo * 2], (UINT16*)&ptr[c->rleoffset], c->rlelength, im->bands))
+                if(expandrow2(&state->buffer[c->channo * 2], &ptr[c->rleoffset], c->rlelength, im->bands))
                     goto sgi_finish_decode;
             }
 

@@ -99,12 +99,12 @@ im_point_8_32(Imaging imOut, Imaging imIn, im_point_context* context)
 {
     int x, y;
     /* 8-bit source, 32-bit destination */
-    INT32* table = (INT32*) context->table;
+    char* table = (char*) context->table;
     for (y = 0; y < imIn->ysize; y++) {
         UINT8* in = imIn->image8[y];
         INT32* out = imOut->image32[y];
         for (x = 0; x < imIn->xsize; x++)
-            out[x] = table[in[x]];
+            memcpy(out + x, table + in[x] * sizeof(INT32), sizeof(INT32));
     }
 }
 
@@ -242,11 +242,15 @@ ImagingPointTransform(Imaging imIn, double scale, double offset)
         if (strcmp(imIn->mode,"I;16") == 0) {
             ImagingSectionEnter(&cookie);
             for (y = 0; y < imIn->ysize; y++) {
-                UINT16* in  = (UINT16 *)imIn->image[y];
-                UINT16* out = (UINT16 *)imOut->image[y];
+                char* in  = (char*)imIn->image[y];
+                char* out = (char*)imOut->image[y];
                 /* FIXME: add clipping? */
-                for (x = 0; x < imIn->xsize; x++)
-                    out[x] = in[x] * scale + offset;
+                for (x = 0; x < imIn->xsize; x++) {
+                    UINT16 v;
+                    memcpy(&v, in + x * sizeof(v), sizeof(v));
+                    v = v * scale + offset;
+                    memcpy(out + x * sizeof(UINT16), &v, sizeof(v));
+                }
             }
             ImagingSectionLeave(&cookie);
             break;

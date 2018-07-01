@@ -95,8 +95,8 @@ get_pixel_16L(Imaging im, int x, int y, void* color)
 {
     UINT8* in = (UINT8*) &im->image[y][x+x];
 #ifdef WORDS_BIGENDIAN
-    UINT16* out = color;
-    out[0] = in[0] + (in[1]<<8);
+    UINT16 out = in[0] + (in[1]<<8);
+    memcpy(color, &out, sizeof(out));
 #else
     memcpy(color, in, sizeof(UINT16));
 #endif
@@ -109,8 +109,8 @@ get_pixel_16B(Imaging im, int x, int y, void* color)
 #ifdef WORDS_BIGENDIAN
     memcpy(color, in, sizeof(UINT16));
 #else
-    UINT16* out = color;
-    out[0] = in[1] + (in[0]<<8);
+    UINT16 out = in[1] + (in[0]<<8);
+    memcpy(color, &out, sizeof(out));
 #endif
 }
 
@@ -125,8 +125,8 @@ get_pixel_32L(Imaging im, int x, int y, void* color)
 {
     UINT8* in = (UINT8*) &im->image[y][x*4];
 #ifdef WORDS_BIGENDIAN
-    INT32* out = color;
-    out[0] = in[0] + (in[1]<<8) + (in[2]<<16) + (in[3]<<24);
+    INT32 out = in[0] + (in[1]<<8) + (in[2]<<16) + (in[3]<<24);
+    memcpy(color, &out, sizeof(out));
 #else
     memcpy(color, in, sizeof(INT32));
 #endif
@@ -139,8 +139,8 @@ get_pixel_32B(Imaging im, int x, int y, void* color)
 #ifdef WORDS_BIGENDIAN
     memcpy(color, in, sizeof(INT32));
 #else
-    INT32* out = color;
-    out[0] = in[3] + (in[2]<<8) + (in[1]<<16) + (in[0]<<24);
+    INT32 out = in[3] + (in[2]<<8) + (in[1]<<16) + (in[0]<<24);
+    memcpy(color, &out, sizeof(out));
 #endif
 }
 
