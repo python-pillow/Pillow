@@ -175,8 +175,7 @@ class ImageFile(Image.Image):
                         # use mmap, if possible
                         import mmap
                         fp = open(self.filename, "r")
-                        size = os.path.getsize(self.filename)
-                        self.map = mmap.mmap(fp.fileno(), size, access=mmap.ACCESS_READ)
+                        self.map = mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ)
                         self.im = Image.core.map_buffer(
                             self.map, self.size, decoder_name, extents, offset, args
                             )
