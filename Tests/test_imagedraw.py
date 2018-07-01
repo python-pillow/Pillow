@@ -169,6 +169,16 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_similar(
             im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
 
+    def test_ellipse_symmetric(self):
+        for bbox in [
+            (25, 25, 76, 76),
+            (25, 25, 75, 75)
+        ]:
+            im = Image.new("RGB", (101, 101))
+            draw = ImageDraw.Draw(im)
+            draw.ellipse(bbox, fill="green", outline="blue")
+            self.assert_image_equal(im, im.transpose(Image.FLIP_LEFT_RIGHT))
+
     def helper_line(self, points):
         # Arrange
         im = Image.new("RGB", (W, H))
