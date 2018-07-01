@@ -33,6 +33,7 @@ MODES = {
     (1, 8):  "P",
     (3, 1):  "1",
     (3, 8):  "L",
+    (3, 16): "LA",
     (2, 16): "BGR;5",
     (2, 24): "BGR",
     (2, 32): "BGRA",
@@ -74,6 +75,8 @@ class TgaImageFile(ImageFile.ImageFile):
             self.mode = "L"
             if depth == 1:
                 self.mode = "1"  # ???
+            elif depth == 16:
+                self.mode = "LA"
         elif imagetype in (1, 9):
             self.mode = "P"
         elif imagetype in (2, 10):
@@ -134,6 +137,7 @@ class TgaImageFile(ImageFile.ImageFile):
 SAVE = {
     "1": ("1", 1, 0, 3),
     "L": ("L", 8, 0, 3),
+    "LA": ("LA", 16, 0, 3),
     "P": ("P", 8, 1, 1),
     "RGB": ("BGR", 24, 0, 2),
     "RGBA": ("BGRA", 32, 0, 2),
@@ -152,7 +156,7 @@ def _save(im, fp, filename):
     else:
         colormapfirst, colormaplength, colormapentry = 0, 0, 0
 
-    if im.mode == "RGBA":
+    if im.mode in ("LA", "RGBA"):
         flags = 8
     else:
         flags = 0
