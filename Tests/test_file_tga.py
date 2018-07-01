@@ -1,9 +1,75 @@
+import os
+from glob import glob
+from itertools import product
+
 from helper import unittest, PillowTestCase
 
 from PIL import Image
 
 
+_TGA_DIR = os.path.join("Tests", "images", "tga")
+_TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")
+
+
 class TestFileTga(PillowTestCase):
+
+    _MODES = ("L", "P", "RGB", "RGBA")
+    _ORIGINS = ("tl", "bl")
+
+    _ORIGIN_TO_ORIENTATION = {
+        "tl": 1,
+        "bl": -1
+    }
+
+    def test_sanity(self):
+        for mode in self._MODES:
+            png_paths = glob(
+                os.path.join(
+                    _TGA_DIR_COMMON, "*x*_{}.png".format(mode.lower())))
+
+            for png_path in png_paths:
+                reference_im = Image.open(png_path)
+                self.assertEqual(reference_im.mode, mode)
+
+                path_no_ext = os.path.splitext(png_path)[0]
+                for origin, rle in product(self._ORIGINS, (True, False)):
+                    tga_path = "{}_{}_{}.tga".format(
+                        path_no_ext, origin, "rle" if rle else "raw")
+
+                    original_im = Image.open(tga_path)
+                    if rle:
+                        self.assertEqual(
+                            original_im.info["compression"], "tga_rle")
+                    self.assertEqual(
+                        original_im.info["orientation"],
+                        self._ORIGIN_TO_ORIENTATION[origin])
+                    if mode == "P":
+                        self.assertEqual(
+                            original_im.getpalette(),
+                            reference_im.getpalette())
+
+                    self.assert_image_equal(original_im, reference_im)
+
+                    # Generate a new test name every time so the
+                    # test will not fail with permission error
+                    # on Windows.
+                    test_file = self.tempfile("temp.tga")
+
+                    original_im.save(test_file, rle=rle)
+                    saved_im = Image.open(test_file)
+                    if rle:
+                        self.assertEqual(
+                            saved_im.info["compression"],
+                            original_im.info["compression"])
+                    self.assertEqual(
+                        saved_im.info["orientation"],
+                        original_im.info["orientation"])
+                    if mode == "P":
+                        self.assertEqual(
+                            saved_im.getpalette(),
+                            original_im.getpalette())
+
+                    self.assert_image_equal(saved_im, original_im)
 
     def test_id_field(self):
         # tga file with id field

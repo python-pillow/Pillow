@@ -151,6 +151,11 @@ def _save(im, fp, filename):
     except KeyError:
         raise IOError("cannot write mode %s as TGA" % im.mode)
 
+    rle = im.encoderinfo.get("rle", False)
+
+    if rle:
+        imagetype += 8
+
     if colormaptype:
         colormapfirst, colormaplength, colormapentry = 0, 256, 24
     else:
@@ -181,8 +186,14 @@ def _save(im, fp, filename):
     if colormaptype:
         fp.write(im.im.getpalette("RGB", "BGR"))
 
-    ImageFile._save(
-        im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
+    if rle:
+        ImageFile._save(
+            im,
+            fp,
+            [("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))])
+    else:
+        ImageFile._save(
+            im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
 
     # write targa version 2 footer
     fp.write(b"\000" * 8 + b"TRUEVISION-XFILE." + b"\000")
