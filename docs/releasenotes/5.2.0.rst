@@ -55,7 +55,7 @@ For example, this allows compilation with GCC 4.8 on NetBSD.
 Resolve confusion getting PIL / Pillow version string
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As user gnbl notes in #3082:
+Re: "version constants deprecated" listed above, as user gnbl notes in #3082:
 
 - it's confusing that PIL.VERSION returns the version string of the former PIL instead of Pillow's
 - there does not seem to be documentation on this version number (why this, will it ever change, ..) e.g. at https://pillow.readthedocs.io/en/5.1.x/about.html#why-a-fork
@@ -63,6 +63,6 @@ As user gnbl notes in #3082:
 - the package information header is essentially useless (placeholder, does not even mention Pillow, nor the version)
 - PIL.version module documentation comment could explain how to access the version information
 
-We have attempted to resolve these issues here:
+We have attempted to resolve these issues: 
 
-- https://github.com/python-pillow/Pillow/pull/3218 
+- https://github.com/python-pillow/Pillow/pull/3218
