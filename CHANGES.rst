@@ -2,6 +2,21 @@
 Changelog (Pillow)
 ==================
 
+5.3.0 (unreleased)
+------------------
+
+- Tests: Add LA to TGA test modes #3222
+  [danpla]
+
+- Skip outline if the draw operation fills with the same colour #2922
+  [radarhere]
+
+- Flake8 fixes #3173
+  [radarhere]
+
+- Avoid deprecated 'U' mode when opening files #2187
+  [jdufresne]
+
 5.2.0 (2018-07-01)
 ------------------
 
