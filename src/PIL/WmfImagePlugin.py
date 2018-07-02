@@ -22,7 +22,8 @@
 from __future__ import print_function
 
 from . import Image, ImageFile
-from ._binary import i16le as word, si16le as short, i32le as dword, si32le as _long
+from ._binary import i16le as word, si16le as short, \
+                     i32le as dword, si32le as _long
 from ._util import py3
 
 

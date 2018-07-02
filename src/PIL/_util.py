@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 
 py3 = sys.version_info.major >= 3
 

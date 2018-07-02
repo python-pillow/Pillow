@@ -9,7 +9,7 @@ class TestImagePalette(PillowTestCase):
 
         ImagePalette.ImagePalette("RGB", list(range(256))*3)
         self.assertRaises(ValueError,
-            ImagePalette.ImagePalette, "RGB", list(range(256))*2)
+                          ImagePalette.ImagePalette, "RGB", list(range(256))*2)
 
     def test_getcolor(self):
 
@@ -66,7 +66,7 @@ class TestImagePalette(PillowTestCase):
 
         # Act
         self.assertRaises(NotImplementedError,
-            ImagePalette.make_linear_lut, black, white)
+                          ImagePalette.make_linear_lut, black, white)
 
     def test_make_gamma_lut(self):
         # Arrange
@@ -133,7 +133,7 @@ class TestImagePalette(PillowTestCase):
 
     def test_invalid_palette(self):
         self.assertRaises(IOError,
-            ImagePalette.load, "Tests/images/hopper.jpg")
+                          ImagePalette.load, "Tests/images/hopper.jpg")
 
 
 if __name__ == '__main__':

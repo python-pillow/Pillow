@@ -424,7 +424,8 @@ class pil_build_ext(build_ext):
             best_path = None
             for name in os.listdir(program_files):
                 if name.startswith('OpenJPEG '):
-                    version = tuple(int(x) for x in name[9:].strip().split('.'))
+                    version = tuple(int(x) for x in
+                                    name[9:].strip().split('.'))
                     if version > best_version:
                         best_version = version
                         best_path = os.path.join(program_files, name)
@@ -501,7 +502,8 @@ class pil_build_ext(build_ext):
                 # possible.
                 _add_directory(self.compiler.include_dirs, best_path, 0)
                 feature.jpeg2000 = 'openjp2'
-                feature.openjpeg_version = '.'.join(str(x) for x in best_version)
+                feature.openjpeg_version = '.'.join(str(x) for x in
+                                                    best_version)
 
         if feature.want('imagequant'):
             _dbg('Looking for imagequant')
@@ -516,7 +518,8 @@ class pil_build_ext(build_ext):
             if _find_include_file(self, 'tiff.h'):
                 if _find_library_file(self, "tiff"):
                     feature.tiff = "tiff"
-                if sys.platform == "win32" and _find_library_file(self, "libtiff"):
+                if (sys.platform == "win32" and
+                        _find_library_file(self, "libtiff")):
                     feature.tiff = "libtiff"
                 if (sys.platform == "darwin" and
                         _find_library_file(self, "libtiff")):
@@ -528,14 +531,16 @@ class pil_build_ext(build_ext):
                 # look for freetype2 include files
                 freetype_version = 0
                 for subdir in self.compiler.include_dirs:
-                    _dbg('Checking for include file %s in %s', ("ft2build.h", subdir))
+                    _dbg('Checking for include file %s in %s',
+                         ("ft2build.h", subdir))
                     if os.path.isfile(os.path.join(subdir, "ft2build.h")):
                         _dbg('Found %s in %s', ("ft2build.h", subdir))
                         freetype_version = 21
                         subdir = os.path.join(subdir, "freetype2")
                         break
                     subdir = os.path.join(subdir, "freetype2")
-                    _dbg('Checking for include file %s in %s', ("ft2build.h", subdir))
+                    _dbg('Checking for include file %s in %s',
+                         ("ft2build.h", subdir))
                     if os.path.isfile(os.path.join(subdir, "ft2build.h")):
                         _dbg('Found %s in %s', ("ft2build.h", subdir))
                         freetype_version = 21

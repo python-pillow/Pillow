@@ -67,8 +67,11 @@ class TestImageFont(PillowTestCase):
                 }
 
     def setUp(self):
-        freetype_version = tuple(ImageFont.core.freetype2_version.split('.'))[:2]
-        self.metrics = self.METRICS.get(freetype_version, self.METRICS['Default'])
+        freetype_version = tuple(
+            ImageFont.core.freetype2_version.split('.')
+        )[:2]
+        self.metrics = self.METRICS.get(freetype_version,
+                                        self.METRICS['Default'])
 
     def get_font(self):
         return ImageFont.truetype(FONT_PATH, FONT_SIZE,
@@ -202,7 +205,8 @@ class TestImageFont(PillowTestCase):
             target_img = Image.open(target)
 
             # Epsilon ~.5 fails with FreeType 2.7
-            self.assert_image_similar(im, target_img, self.metrics['multiline'])
+            self.assert_image_similar(im, target_img,
+                                      self.metrics['multiline'])
 
     def test_unknown_align(self):
         im = Image.new(mode='RGB', size=(300, 100))
@@ -210,10 +214,9 @@ class TestImageFont(PillowTestCase):
         ttf = self.get_font()
 
         # Act/Assert
-        self.assertRaises(AssertionError,
-                          draw.multiline_text, (0, 0), TEST_TEXT,
-                                                       font=ttf,
-                                                       align="unknown")
+        self.assertRaises(
+            AssertionError,
+            draw.multiline_text, (0, 0), TEST_TEXT, font=ttf, align="unknown")
 
     def test_draw_align(self):
         im = Image.new('RGB', (300, 100), 'white')
@@ -413,7 +416,7 @@ class TestImageFont(PillowTestCase):
         im = Image.new(mode='RGB', size=(300, 100))
         target = im.copy()
         draw = ImageDraw.Draw(im)
-        #should not crash here.
+        # should not crash here.
         draw.text((10, 10), '', font=font)
         self.assert_image_equal(im, target)
 
@@ -428,7 +431,8 @@ class TestImageFont(PillowTestCase):
         # Make a copy of FreeTypeFont so we can patch the original
         free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)
         with SimplePatcher(ImageFont, '_FreeTypeFont', free_type_font):
-            def loadable_font(filepath, size, index, encoding, *args, **kwargs):
+            def loadable_font(filepath, size, index, encoding,
+                              *args, **kwargs):
                 if filepath == path_to_fake:
                     return ImageFont._FreeTypeFont(FONT_PATH, size, index,
                                                    encoding, *args, **kwargs)
