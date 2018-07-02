@@ -45,7 +45,6 @@ from . import Image, ImageFile, ImagePalette, TiffTags
 from ._binary import i8, o8
 from ._util import py3
 
-import collections
 from fractions import Fraction
 from numbers import Number, Rational
 
