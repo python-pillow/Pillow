@@ -1,6 +1,8 @@
 # Define custom utilities
 # Test for OSX with [ -n "$IS_OSX" ]
 
+ARCHIVE_SDIR=pillow-depends-master
+
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.9.1
 LIBPNG_VERSION=1.6.32
@@ -14,6 +16,8 @@ LIBWEBP_VERSION=1.0.0
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
     # Runs in the root directory of this repository.
+    curl -fsSL -o pillow-depends-master.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
+    untar pillow-depends-master.zip
     if [ -n "$IS_OSX" ]; then
         # Update to latest zlib for OSX build
         build_new_zlib
