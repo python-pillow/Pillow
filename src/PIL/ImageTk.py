@@ -32,13 +32,6 @@ if sys.version_info.major > 2:
 else:
     import Tkinter as tkinter
 
-# required for pypy, which always has cffi installed
-try:
-    from cffi import FFI
-    ffi = FFI()
-except ImportError:
-    pass
-
 from . import Image
 from io import BytesIO
 
@@ -192,7 +185,11 @@ class PhotoImage(object):
                 from . import _imagingtk
                 try:
                     if hasattr(tk, 'interp'):
-                        # Pypy is using a ffi cdata element
+                        # Required for PyPy, which always has CFFI installed
+                        from cffi import FFI
+                        ffi = FFI()
+
+                        # Pypy is using an FFI cdata element
                         # (Pdb) self.tk.interp
                         #  <cdata 'Tcl_Interp *' 0x3061b50>
                         _imagingtk.tkinit(
