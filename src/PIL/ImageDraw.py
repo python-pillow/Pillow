@@ -246,7 +246,7 @@ class ImageDraw(object):
             elif align == "right":
                 left += (max_width - widths[idx])
             else:
-                assert False, 'align must be "left", "center" or "right"'
+                raise ValueError('align must be "left", "center" or "right"')
             self.text((left, top), line, fill, font, anchor,
                       direction=direction, features=features)
             top += line_spacing
