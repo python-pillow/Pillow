@@ -1,15 +1,20 @@
 from helper import unittest, PillowTestCase, hopper, on_appveyor
 
-try:
-    from PIL import PyAccess
-    import cffi
-except ImportError:
-    cffi = None
-    pass
-
 from PIL import Image
 import sys
 import os
+
+# CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
+# https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
+if os.environ.get("PYTHONOPTIMIZE") == "2":
+    cffi = None
+else:
+    try:
+        from PIL import PyAccess
+        import cffi
+    except ImportError:
+        cffi = None
+        pass
 
 
 class AccessTest(PillowTestCase):
