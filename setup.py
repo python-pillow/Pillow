@@ -336,7 +336,7 @@ class pil_build_ext(build_ext):
         elif sys.platform.startswith("linux"):
             arch_tp = (plat.processor(), plat.architecture()[0])
             # This should be correct on debian derivatives.
-            if os.path.exists('/etc/debian_version'):
+            if os.path.exists('/etc/debian_version') and _cmd_exists('dpkg-architecture'):
                 # If this doesn't work, don't just silently patch
                 # downstream because it's going to break when people
                 # try to build pillow from source instead of
@@ -389,7 +389,7 @@ class pil_build_ext(build_ext):
                                    os.path.join(os.environ['ANDROID_ROOT'],
                                                 'lib'))
 
-        elif sys.platform.startswith("gnu"):
+        elif sys.platform.startswith("gnu") and _cmd_exists('dpkg-architecture'):
             self.add_multiarch_paths()
 
         elif sys.platform.startswith("freebsd"):
