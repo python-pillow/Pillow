@@ -136,7 +136,7 @@ def autocontrast(image, cutoff=0, ignore=None):
     return _lut(image, lut)
 
 
-def colorize(image, black, white, mid=None, midpoint=128):
+def colorize(image, black, white, mid=None, midpoint=127):
     """
     Colorize grayscale image.
     This function calculates a color wedge mapping all
@@ -176,14 +176,16 @@ def colorize(image, black, white, mid=None, midpoint=128):
             green.append(black[1] + i * (white[1] - black[1]) // 255)
             blue.append(black[2] + i * (white[2] - black[2]) // 255)
     else:
-        for i in range(0, midpoint):
-            red.append(black[0] + i * (mid[0] - black[0]) // 255)
-            green.append(black[1] + i * (mid[1] - black[1]) // 255)
-            blue.append(black[2] + i * (mid[2] - black[2]) // 255)
-        for i in range(0, 256 - midpoint):
-            red.append(mid[0] + i * (white[0] - mid[0]) // 255)
-            green.append(mid[1] + i * (white[1] - mid[1]) // 255)
-            blue.append(mid[2] + i * (white[2] - mid[2]) // 255)
+        range1 = range(0, midpoint)
+        range2 = range(0, 256 - midpoint)
+        for i in range1:
+            red.append(black[0] + i * (mid[0] - black[0]) // len(range1))
+            green.append(black[1] + i * (mid[1] - black[1]) // len(range1))
+            blue.append(black[2] + i * (mid[2] - black[2]) // len(range1))
+        for i in range2:
+            red.append(mid[0] + i * (white[0] - mid[0]) // len(range2))
+            green.append(mid[1] + i * (white[1] - mid[1]) // len(range2))
+            blue.append(mid[2] + i * (white[2] - mid[2]) // len(range2))
 
     image = image.convert("RGB")
     return _lut(image, red + green + blue)
