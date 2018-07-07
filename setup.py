@@ -154,8 +154,8 @@ def _pkg_config(name):
         ]
         if not DEBUG:
             command.append('--silence-errors')
-        libs = subprocess.check_output(command).decode('utf8').split(' ')
-        return libs[1][2:].strip(), libs[0][2:].strip()
+        libs = subprocess.check_output(command).decode('utf8')
+        return re.match(r'(?:-L([^\s]+))?\s*(?:-I([^\s]+))?', libs).groups()
     except Exception:
         pass
 
