@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import ImageOps
+from PIL import Image
 
 
 class TestImageOps(PillowTestCase):
@@ -97,18 +98,23 @@ class TestImageOps(PillowTestCase):
     def test_colorize(self):
         # Test the colorizing function
 
-        # Grab test image
-        i = hopper("L").resize((15, 16))
+        # Grab test image (10px black, 256px gradient, 10px white)
+        im = Image.open("Tests/images/bw_gradient.png")
+        im = im.convert("L")
 
         # Test original 2-color functionality
-        ImageOps.colorize(i, 'green', 'red')
+        out_2color = ImageOps.colorize(im, 'red', 'green')
 
-        # Test new three color functionality (cyanotype colors)
-        ImageOps.colorize(i,
-                          (32, 37, 79),
-                          (255, 255, 255),
-                          (35, 52, 121),
-                          40)
+        # Test new three color functionality, with midpoint offset
+        out_3color = ImageOps.colorize(im, 'red', 'green', 'yellow', 100)
+
+        # Assert 2-color
+        ref_2color = Image.open("Tests/images/bw_gradient_2color.png")
+        self.assert_image_equal(out_2color, ref_2color)
+
+        # Assert 3-color
+        ref_3color = Image.open("Tests/images/bw_gradient_3color.png")
+        self.assert_image_equal(out_3color, ref_3color)
 
 
 if __name__ == '__main__':
