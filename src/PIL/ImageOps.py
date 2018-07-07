@@ -154,10 +154,11 @@ def colorize(image, black, white, mid=None, midpoint=128):
     :param black: The color to use for black input pixels.
     :param white: The color to use for white input pixels.
     :param mid: The color to use for midtone input pixels.
-    :param midpoint: the int value [0, 255] for the mid color.
+    :param midpoint: the int value in [1, 254] for the mid color.
     :return: An image.
     """
     assert image.mode == "L"
+    assert 1 <= midpoint <= 254
 
     # Define colors from arguments
     black = _color(black, "RGB")
