@@ -94,6 +94,22 @@ class TestImageOps(PillowTestCase):
         newimg = ImageOps.scale(i, 0.5)
         self.assertEqual(newimg.size, (25, 25))
 
+    def test_colorize(self):
+        # Test the colorizing function
+
+        # Grab test image
+        i = hopper("L").resize((15, 16))
+
+        # Test original 2-color functionality
+        ImageOps.colorize(i, 'green', 'red')
+
+        # Test new three color functionality (cyanotype colors)
+        ImageOps.colorize(i,
+                          (32, 37, 79),
+                          (255, 255, 255),
+                          (35, 52, 121),
+                          40)
+
 
 if __name__ == '__main__':
     unittest.main()

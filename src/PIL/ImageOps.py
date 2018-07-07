@@ -147,8 +147,8 @@ def colorize(image, black, white, mid=None, midpoint=128):
     arguments should be RGB tuples; optionally you can use
     three color mapping by also specifying **mid**, and
     optionally, **midpoint** (which is the integer value
-    in [0, 255] corresponding to the midpoint color,
-    default 128).
+    in [1, 254] corresponding to where the midpoint color
+    should be mapped (0 being black and 255 being white).
 
     :param image: The image to colorize.
     :param black: The color to use for black input pixels.
@@ -158,10 +158,14 @@ def colorize(image, black, white, mid=None, midpoint=128):
     :return: An image.
     """
     assert image.mode == "L"
+
+    # Define colors from arguments
     black = _color(black, "RGB")
     if mid is not None:
         mid = _color(mid, "RGB")
     white = _color(white, "RGB")
+
+    # Create the mapping
     red = []
     green = []
     blue = []
