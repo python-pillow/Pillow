@@ -136,28 +136,50 @@ def autocontrast(image, cutoff=0, ignore=None):
     return _lut(image, lut)
 
 
-def colorize(image, black, white):
+def colorize(image, black, white, mid=None, midpoint=128):
     """
-    Colorize grayscale image.  The **black** and **white**
-    arguments should be RGB tuples; this function calculates a color
-    wedge mapping all black pixels in the source image to the first
-    color, and all white pixels to the second color.
+    Colorize grayscale image.
+    This function calculates a color wedge mapping all
+    black pixels in the source image to the first
+    color, and all white pixels to the second color. If
+    mid is specified, it uses three color mapping.
+    The **black** and **white**
+    arguments should be RGB tuples; optionally you can use
+    three color mapping by also specifying **mid**, and
+    optionally, **midpoint** (which is the integer value
+    in [0, 255] corresponding to the midpoint color,
+    default 128).
 
     :param image: The image to colorize.
     :param black: The color to use for black input pixels.
     :param white: The color to use for white input pixels.
+    :param mid: The color to use for midtone input pixels.
+    :param midpoint: the int value [0, 255] for the mid color.
     :return: An image.
     """
     assert image.mode == "L"
     black = _color(black, "RGB")
+    if mid is not None:
+        mid = _color(mid, "RGB")
     white = _color(white, "RGB")
     red = []
     green = []
     blue = []
-    for i in range(256):
-        red.append(black[0]+i*(white[0]-black[0])//255)
-        green.append(black[1]+i*(white[1]-black[1])//255)
-        blue.append(black[2]+i*(white[2]-black[2])//255)
+    if mid is None:
+        for i in range(256):
+            red.append(black[0] + i * (white[0] - black[0]) // 255)
+            green.append(black[1] + i * (white[1] - black[1]) // 255)
+            blue.append(black[2] + i * (white[2] - black[2]) // 255)
+    else:
+        for i in range(0, midpoint):
+            red.append(black[0] + i * (mid[0] - black[0]) // 255)
+            green.append(black[1] + i * (mid[1] - black[1]) // 255)
+            blue.append(black[2] + i * (mid[2] - black[2]) // 255)
+        for i in range(0, 256 - midpoint):
+            red.append(mid[0] + i * (white[0] - mid[0]) // 255)
+            green.append(mid[1] + i * (white[1] - mid[1]) // 255)
+            blue.append(mid[2] + i * (white[2] - mid[2]) // 255)
+
     image = image.convert("RGB")
     return _lut(image, red + green + blue)
 
