@@ -136,57 +136,101 @@ def autocontrast(image, cutoff=0, ignore=None):
     return _lut(image, lut)
 
 
-def colorize(image, black, white, mid=None, midpoint=127):
+def colorize(image, black, white, mid=None, blackpoint=0,
+             whitepoint=255, midpoint=127):
     """
     Colorize grayscale image.
-    This function calculates a color wedge mapping all
-    black pixels in the source image to the first
-    color, and all white pixels to the second color. If
-    mid is specified, it uses three color mapping.
-    The **black** and **white**
-    arguments should be RGB tuples; optionally you can use
-    three color mapping by also specifying **mid**, and
-    optionally, **midpoint** (which is the integer value
-    in [1, 254] corresponding to where the midpoint color
-    should be mapped (0 being black and 255 being white).
+    This function calculates a color wedge which maps all black pixels in
+    the source image to the first color and all white pixels to the
+    second color. If **mid** is specified, it uses three-color mapping.
+    The **black** and **white** arguments should be RGB tuples or color names;
+    optionally you can use three-color mapping by also specifying **mid**.
+    Mapping positions for any of the colors can be specified
+    (e.g. **blackpoint**), where these parameters are the integer
+    value in [0, 255] corresponding to where the corresponding color
+    should be mapped.
 
     :param image: The image to colorize.
     :param black: The color to use for black input pixels.
     :param white: The color to use for white input pixels.
     :param mid: The color to use for midtone input pixels.
-    :param midpoint: the int value in [1, 254] for the mid color.
+    :param blackpoint: an int value [0, 255] for the black mapping.
+    :param whitepoint: an int value [0, 255] for the white mapping.
+    :param midpoint: an int value [0, 255] for the midtone mapping.
     :return: An image.
     """
+
+    # Initial asserts
     assert image.mode == "L"
-    assert 1 <= midpoint <= 254
+    assert 0 <= whitepoint <= 255
+    assert 0 <= blackpoint <= 255
+    assert 0 <= midpoint <= 255
+    assert blackpoint <= whitepoint
+    if mid is not None:
+        assert blackpoint <= midpoint
+        assert whitepoint >= midpoint
 
     # Define colors from arguments
     black = _color(black, "RGB")
+    white = _color(white, "RGB")
     if mid is not None:
         mid = _color(mid, "RGB")
-    white = _color(white, "RGB")
 
-    # Create the mapping
+    # Empty lists for the mapping
     red = []
     green = []
     blue = []
-    if mid is None:
-        for i in range(256):
-            red.append(black[0] + i * (white[0] - black[0]) // 255)
-            green.append(black[1] + i * (white[1] - black[1]) // 255)
-            blue.append(black[2] + i * (white[2] - black[2]) // 255)
-    else:
-        range1 = range(0, midpoint)
-        range2 = range(0, 256 - midpoint)
-        for i in range1:
-            red.append(black[0] + i * (mid[0] - black[0]) // len(range1))
-            green.append(black[1] + i * (mid[1] - black[1]) // len(range1))
-            blue.append(black[2] + i * (mid[2] - black[2]) // len(range1))
-        for i in range2:
-            red.append(mid[0] + i * (white[0] - mid[0]) // len(range2))
-            green.append(mid[1] + i * (white[1] - mid[1]) // len(range2))
-            blue.append(mid[2] + i * (white[2] - mid[2]) // len(range2))
 
+    # Create the mapping (2-color)
+    if mid is None:
+
+        # Define ranges
+        range_low = range(0, blackpoint)
+        range_map = range(0, whitepoint - blackpoint)
+        range_high = range(0, 256 - whitepoint)
+
+        # Map
+        for i in range_low:
+            red.append(black[0])
+            green.append(black[1])
+            blue.append(black[2])
+        for i in range_map:
+            red.append(black[0] + i * (white[0] - black[0]) // len(range_map))
+            green.append(black[1] + i * (white[1] - black[1]) // len(range_map))
+            blue.append(black[2] + i * (white[2] - black[2]) // len(range_map))
+        for i in range_high:
+            red.append(white[0])
+            green.append(white[1])
+            blue.append(white[2])
+
+    # Create the mapping (3-color)
+    else:
+
+        # Define ranges
+        range_low = range(0, blackpoint)
+        range_map1 = range(0, midpoint - blackpoint)
+        range_map2 = range(0, whitepoint - midpoint)
+        range_high = range(0, 256 - whitepoint)
+
+        # Map
+        for i in range_low:
+            red.append(black[0])
+            green.append(black[1])
+            blue.append(black[2])
+        for i in range_map1:
+            red.append(black[0] + i * (mid[0] - black[0]) // len(range_map1))
+            green.append(black[1] + i * (mid[1] - black[1]) // len(range_map1))
+            blue.append(black[2] + i * (mid[2] - black[2]) // len(range_map1))
+        for i in range_map2:
+            red.append(mid[0] + i * (white[0] - mid[0]) // len(range_map2))
+            green.append(mid[1] + i * (white[1] - mid[1]) // len(range_map2))
+            blue.append(mid[2] + i * (white[2] - mid[2]) // len(range_map2))
+        for i in range_high:
+            red.append(white[0])
+            green.append(white[1])
+            blue.append(white[2])
+
+    # Return converted image
     image = image.convert("RGB")
     return _lut(image, red + green + blue)
 

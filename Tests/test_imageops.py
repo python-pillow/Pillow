@@ -98,23 +98,85 @@ class TestImageOps(PillowTestCase):
     def test_colorize(self):
         # Test the colorizing function
 
-        # Grab test image (10px black, 256px gradient, 10px white)
+        # Open test image (256px by 10px, black to white)
         im = Image.open("Tests/images/bw_gradient.png")
         im = im.convert("L")
 
-        # Test original 2-color functionality
-        out_2color = ImageOps.colorize(im, 'red', 'green')
+        # Create image with original 2-color functionality
+        im_2c = ImageOps.colorize(im, 'red', 'green')
 
-        # Test new three color functionality, with midpoint offset
-        out_3color = ImageOps.colorize(im, 'red', 'green', 'yellow', 100)
+        # Create image with original 2-color functionality with offsets
+        im_2c_offset = ImageOps.colorize(im,
+                                         black='red',
+                                         white='green',
+                                         blackpoint=50,
+                                         whitepoint=200)
 
-        # Assert 2-color
-        ref_2color = Image.open("Tests/images/bw_gradient_2color.png")
-        self.assert_image_equal(out_2color, ref_2color)
+        # Create image with new three color functionality with offsets
+        im_3c_offset = ImageOps.colorize(im,
+                                         black='red',
+                                         white='green',
+                                         mid='blue',
+                                         blackpoint=50,
+                                         whitepoint=200,
+                                         midpoint=100)
 
-        # Assert 3-color
-        ref_3color = Image.open("Tests/images/bw_gradient_3color.png")
-        self.assert_image_equal(out_3color, ref_3color)
+        # Define function for approximate equality of tuples
+        def tuple_approx_equal(actual, target, thresh):
+            value = True
+            for i, target in enumerate(target):
+                value *= (target - thresh <= actual[i] <= target + thresh)
+            return value
+
+        # Test output image (2-color)
+        left = (0, 1)
+        middle = (127, 1)
+        right = (255, 1)
+        self.assertTrue(tuple_approx_equal(im_2c.getpixel(left),
+                                           (255, 0, 0), thresh=1),
+                        '2-color image black incorrect')
+        self.assertTrue(tuple_approx_equal(im_2c.getpixel(middle),
+                                           (127, 63, 0), thresh=1),
+                        '2-color image mid incorrect')
+        self.assertTrue(tuple_approx_equal(im_2c.getpixel(right),
+                                           (0, 127, 0), thresh=1),
+                        '2-color image white incorrect')
+
+        # Test output image (2-color) with offsets
+        left = (25, 1)
+        middle = (125, 1)
+        right = (225, 1)
+        self.assertTrue(tuple_approx_equal(im_2c_offset.getpixel(left),
+                                           (255, 0, 0), thresh=1),
+                        '2-color image (with offset) black incorrect')
+        self.assertTrue(tuple_approx_equal(im_2c_offset.getpixel(middle),
+                                           (127, 63, 0), thresh=1),
+                        '2-color image (with offset) mid incorrect')
+        self.assertTrue(tuple_approx_equal(im_2c_offset.getpixel(right),
+                                           (0, 127, 0), thresh=1),
+                        '2-color image (with offset) white incorrect')
+
+        # Test output image (3-color) with offsets
+        left = (25, 1)
+        left_middle = (75, 1)
+        middle = (100, 1)
+        right_middle = (150, 1)
+        right = (225, 1)
+        self.assertTrue(tuple_approx_equal(im_3c_offset.getpixel(left),
+                                           (255, 0, 0), thresh=1),
+                        '3-color image (with offset) black incorrect')
+        self.assertTrue(tuple_approx_equal(im_3c_offset.getpixel(left_middle),
+                                           (127, 0, 127), thresh=1),
+                        '3-color image (with offset) low-mid incorrect')
+        self.assertTrue(tuple_approx_equal(im_3c_offset.getpixel(middle),
+                                           (0, 0, 255), thresh=1),
+                        '3-color image (with offset) mid incorrect')
+        self.assertTrue(tuple_approx_equal(im_3c_offset.getpixel(right_middle),
+                                           (0, 63, 127), thresh=1),
+                        '3-color image (with offset) high-mid incorrect')
+        self.assertTrue(tuple_approx_equal(im_3c_offset.getpixel(right),
+                                           (0, 127, 0), thresh=1),
+                        '3-color image (with offset) white incorrect')
 
 
 if __name__ == '__main__':
