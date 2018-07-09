@@ -307,6 +307,15 @@ def hopper(mode=None, cache={}):
     return im.copy()
 
 
+def tuple_approx_equal(actual, target, threshold):
+    """Tests if tuple actual has values within threshold from tuple target"""
+
+    value = True
+    for i, target in enumerate(target):
+        value *= (target - threshold <= actual[i] <= target + threshold)
+    return value
+
+
 def command_succeeds(cmd):
     """
     Runs the command, which must be a list of strings. Returns True if the
