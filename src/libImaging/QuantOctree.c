@@ -296,6 +296,7 @@ void add_lookup_buckets(ColorCube cube, ColorBucket palette, long nColors, long 
    long i;
    Pixel p;
    for (i=offset; i<offset+nColors; i++) {
+      if (palette[i].count == 0) continue;
       avg_color_from_color_bucket(&palette[i], &p);
       set_lookup_value(cube, &p, i);
    }
@@ -328,6 +329,7 @@ create_palette_array(const ColorBucket palette, unsigned int paletteLength) {
    if (!paletteArray) return NULL;
 
    for (i=0; i<paletteLength; i++) {
+      if (palette[i].count == 0) continue;
       avg_color_from_color_bucket(&palette[i], &paletteArray[i]);
    }
    return paletteArray;
