@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, tuple_approx_equal
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import ImageOps
 from PIL import Image
@@ -109,15 +109,18 @@ class TestImageOps(PillowTestCase):
         left = (0, 1)
         middle = (127, 1)
         right = (255, 1)
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(left),
-                                           (255, 0, 0), threshold=1),
-                        '2-color image black incorrect')
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(middle),
-                                           (127, 63, 0), threshold=1),
-                        '2-color image mid incorrect')
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(right),
-                                           (0, 127, 0), threshold=1),
-                        '2-color image white incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(left),
+                                       (255, 0, 0),
+                                       threshold=1,
+                                       msg='black test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(middle),
+                                       (127, 63, 0),
+                                       threshold=1,
+                                       msg='mid test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(right),
+                                       (0, 127, 0),
+                                       threshold=1,
+                                       msg='white test pixel incorrect')
 
     def test_colorize_2color_offset(self):
         # Test the colorizing function with 2-color functionality and offset
@@ -137,15 +140,18 @@ class TestImageOps(PillowTestCase):
         left = (25, 1)
         middle = (75, 1)
         right = (125, 1)
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(left),
-                                           (255, 0, 0), threshold=1),
-                        '2-color image (with offset) black incorrect')
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(middle),
-                                           (127, 63, 0), threshold=1),
-                        '2-color image (with offset) mid incorrect')
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(right),
-                                           (0, 127, 0), threshold=1),
-                        '2-color image (with offset) white incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(left),
+                                       (255, 0, 0),
+                                       threshold=1,
+                                       msg='black test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(middle),
+                                       (127, 63, 0),
+                                       threshold=1,
+                                       msg='mid test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(right),
+                                       (0, 127, 0),
+                                       threshold=1,
+                                       msg='white test pixel incorrect')
 
     def test_colorize_3color_offset(self):
         # Test the colorizing function with 3-color functionality and offset
@@ -169,21 +175,26 @@ class TestImageOps(PillowTestCase):
         middle = (100, 1)
         right_middle = (150, 1)
         right = (225, 1)
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(left),
-                                           (255, 0, 0), threshold=1),
-                        '3-color image (with offset) black incorrect')
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(left_middle),
-                                           (127, 0, 127), threshold=1),
-                        '3-color image (with offset) low-mid incorrect')
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(middle),
-                                           (0, 0, 255), threshold=1),
-                        '3-color image (with offset) mid incorrect')
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(right_middle),
-                                           (0, 63, 127), threshold=1),
-                        '3-color image (with offset) high-mid incorrect')
-        self.assertTrue(tuple_approx_equal(im_test.getpixel(right),
-                                           (0, 127, 0), threshold=1),
-                        '3-color image (with offset) white incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(left),
+                                       (255, 0, 0),
+                                       threshold=1,
+                                       msg='black test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(left_middle),
+                                       (127, 0, 127),
+                                       threshold=1,
+                                       msg='low-mid test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(middle),
+                                       (0, 0, 255),
+                                       threshold=1,
+                                       msg='mid incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(right_middle),
+                                       (0, 63, 127),
+                                       threshold=1,
+                                       msg='high-mid test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(right),
+                                       (0, 127, 0),
+                                       threshold=1,
+                                       msg='white test pixel incorrect')
 
 
 if __name__ == '__main__':

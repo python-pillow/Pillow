@@ -147,8 +147,9 @@ def colorize(image, black, white, mid=None, blackpoint=0,
     optionally you can use three-color mapping by also specifying **mid**.
     Mapping positions for any of the colors can be specified
     (e.g. **blackpoint**), where these parameters are the integer
-    value in [0, 255] corresponding to where the corresponding color
-    should be mapped.
+    value corresponding to where the corresponding color should be mapped.
+    These parameters must have logical order, such that
+    **blackpoint** <= **midpoint** <= **whitepoint** (if **mid** is specified).
 
     :param image: The image to colorize.
     :param black: The color to use for black input pixels.
