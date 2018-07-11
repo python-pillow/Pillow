@@ -192,6 +192,16 @@ class PillowTestCase(unittest.TestCase):
     def assert_not_all_same(self, items, msg=None):
         self.assertFalse(items.count(items[0]) == len(items), msg)
 
+    def assert_tuple_approx_equal(self, actuals, targets, threshold, msg):
+        """Tests if actuals has values within threshold from targets"""
+
+        value = True
+        for i, target in enumerate(targets):
+            value *= (target - threshold <= actuals[i] <= target + threshold)
+
+        self.assertTrue(value,
+                        msg + ': ' + repr(actuals) + ' != ' + repr(targets))
+
     def skipKnownBadTest(self, msg=None, platform=None,
                          travis=None, interpreter=None):
         # Skip if platform/travis matches, and

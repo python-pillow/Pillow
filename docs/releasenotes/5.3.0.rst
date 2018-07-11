@@ -1,0 +1,39 @@
+5.3.0
+-----
+
+API Changes
+===========
+
+Deprecations
+^^^^^^^^^^^^
+
+These version constants have been deprecated. ``VERSION`` will be removed in
+Pillow 6.0.0, and ``PILLOW_VERSION`` will be removed after that.
+
+* ``PIL.VERSION`` (old PIL version 1.1.7)
+* ``PIL.PILLOW_VERSION``
+* ``PIL.Image.VERSION``
+* ``PIL.Image.PILLOW_VERSION``
+
+Use ``PIL.__version__`` instead.
+
+API Additions
+=============
+
+ImageOps.colorize
+^^^^^^^^^^^^^^^^^
+
+Previously ``ImageOps.colorize`` only supported two-color mapping with 
+``black`` and ``white`` arguments being mapped to 0 and 255 respectively. 
+Now it supports three-color mapping with the optional ``mid`` parameter, and 
+the positions for all three color arguments can each be optionally specified 
+(``blackpoint``, ``whitepoint`` and ``midpoint``). 
+For example, with all optional arguments::
+	ImageOps.colorize(im, black=(32, 37, 79), white='white', mid=(59, 101, 175),
+                          blackpoint=15, whitepoint=240, midpoint=100)
+
+
+
+Other Changes
+=============
+
