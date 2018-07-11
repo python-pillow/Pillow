@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Add three-color support to ImageOps.colorize #3242
+  [tsennott]
+
 - Tests: Add LA to TGA test modes #3222
   [danpla]
 
