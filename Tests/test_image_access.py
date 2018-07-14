@@ -14,7 +14,6 @@ else:
         import cffi
     except ImportError:
         cffi = None
-        pass
 
 
 class AccessTest(PillowTestCase):
