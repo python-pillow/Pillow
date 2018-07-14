@@ -153,7 +153,8 @@ class PillowTestCase(unittest.TestCase):
                     pass
             raise e
 
-    def assert_image_similar_tofile(self, a, filename, epsilon, msg=None, mode=None):
+    def assert_image_similar_tofile(self, a, filename, epsilon, msg=None,
+                                    mode=None):
         with Image.open(filename) as img:
             if mode:
                 img = img.convert(mode)
@@ -190,6 +191,16 @@ class PillowTestCase(unittest.TestCase):
 
     def assert_not_all_same(self, items, msg=None):
         self.assertFalse(items.count(items[0]) == len(items), msg)
+
+    def assert_tuple_approx_equal(self, actuals, targets, threshold, msg):
+        """Tests if actuals has values within threshold from targets"""
+
+        value = True
+        for i, target in enumerate(targets):
+            value *= (target - threshold <= actuals[i] <= target + threshold)
+
+        self.assertTrue(value,
+                        msg + ': ' + repr(actuals) + ' != ' + repr(targets))
 
     def skipKnownBadTest(self, msg=None, platform=None,
                          travis=None, interpreter=None):
@@ -246,7 +257,8 @@ class PillowLeakTestCase(PillowTestCase):
         mem = getrusage(RUSAGE_SELF).ru_maxrss
         if sys.platform == 'darwin':
             # man 2 getrusage:
-            #     ru_maxrss    the maximum resident set size utilized (in bytes).
+            #     ru_maxrss
+            # This is the maximum resident set size utilized (in bytes).
             return mem / 1024  # Kb
         else:
             # linux

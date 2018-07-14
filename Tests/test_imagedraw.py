@@ -576,6 +576,47 @@ class TestImageDraw(PillowTestCase):
         draw.textsize("\n")
         draw.textsize("test\n")
 
+    def test_same_color_outline(self):
+        # Prepare shape
+        x0, y0 = 5, 5
+        x1, y1 = 5, 50
+        x2, y2 = 95, 50
+        x3, y3 = 95, 5
+
+        s = ImageDraw.Outline()
+        s.move(x0, y0)
+        s.curve(x1, y1, x2, y2, x3, y3)
+        s.line(x0, y0)
+
+        # Begin
+        for mode in ["RGB", "L"]:
+            for fill, outline in [
+                ["red", None],
+                ["red", "red"],
+                ["red", "#f00"]
+            ]:
+                for operation, args in {
+                    'chord':[BBOX1, 0, 180],
+                    'ellipse':[BBOX1],
+                    'shape':[s],
+                    'pieslice':[BBOX1, -90, 45],
+                    'polygon':[[(18, 30), (85, 30), (60, 72)]],
+                    'rectangle':[BBOX1]
+                }.items():
+                    # Arrange
+                    im = Image.new(mode, (W, H))
+                    draw = ImageDraw.Draw(im)
+
+                    # Act
+                    draw_method = getattr(draw, operation)
+                    args += [fill, outline]
+                    draw_method(*args)
+
+                    # Assert
+                    expected = ("Tests/images/imagedraw_outline"
+                                "_{}_{}.png".format(operation, mode))
+                    self.assert_image_similar(im, Image.open(expected), 1)
+
 
 if __name__ == '__main__':
     unittest.main()

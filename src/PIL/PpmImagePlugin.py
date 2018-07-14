@@ -83,7 +83,8 @@ class PpmImageFile(ImageFile.ImageFile):
                     if s not in b_whitespace:
                         break
                     if s == b"":
-                        raise ValueError("File does not extend beyond magic number")
+                        raise ValueError(
+                            "File does not extend beyond magic number")
                 if s != b"#":
                     break
                 s = self.fp.readline()

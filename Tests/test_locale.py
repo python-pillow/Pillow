@@ -29,7 +29,7 @@ class TestLocale(PillowTestCase):
         Image.open(path)
         try:
             locale.setlocale(locale.LC_ALL, "polish")
-        except:
+        except locale.Error:
             unittest.skip('Polish locale not available')
         Image.open(path)
 

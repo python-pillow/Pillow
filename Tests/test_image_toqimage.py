@@ -43,8 +43,9 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
             if mode == '1':
                 # BW appears to not save correctly on QT4 and QT5
                 # kicks out errors on console:
-                # libpng warning: Invalid color type/bit depth combination in IHDR
-                # libpng error: Invalid IHDR data
+                #     libpng warning: Invalid color type/bit depth combination
+                #                     in IHDR
+                #     libpng error: Invalid IHDR data
                 continue
 
             # Test saving the file

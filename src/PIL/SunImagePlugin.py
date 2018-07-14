@@ -62,7 +62,7 @@ class SunImageFile(ImageFile.ImageFile):
         self.size = i32(s[4:8]), i32(s[8:12])
 
         depth = i32(s[12:16])
-        data_length = i32(s[16:20])   # unreliable, ignore.
+        # data_length = i32(s[16:20])   # unreliable, ignore.
         file_type = i32(s[20:24])
         palette_type = i32(s[24:28])  # 0: None, 1: RGB, 2: Raw/arbitrary
         palette_length = i32(s[28:32])
@@ -94,7 +94,8 @@ class SunImageFile(ImageFile.ImageFile):
                 raise SyntaxError("Unsupported Palette Type")
 
             offset = offset + palette_length
-            self.palette = ImagePalette.raw("RGB;L", self.fp.read(palette_length))
+            self.palette = ImagePalette.raw("RGB;L",
+                                            self.fp.read(palette_length))
             if self.mode == "L":
                 self.mode = "P"
                 rawmode = rawmode.replace('L', 'P')
