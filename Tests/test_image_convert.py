@@ -136,6 +136,17 @@ class TestImageConvert(PillowTestCase):
         self.assertNotIn('transparency', im_p.info)
         im_p.save(f)
 
+    def test_gif_with_rgba_palette_to_p(self):
+        # See https://github.com/python-pillow/Pillow/issues/2433
+        im = Image.open('Tests/images/hopper.gif')
+        im.info['transparency'] = 255
+        im.load()
+        self.assertEqual(im.palette.mode, 'RGBA')
+        im_p = im.convert('P')
+
+        # Should not raise ValueError: unrecognized raw mode
+        im_p.load()
+
     def test_p_la(self):
         im = hopper('RGBA')
         alpha = hopper('L')
