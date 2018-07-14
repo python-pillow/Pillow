@@ -851,6 +851,41 @@ class Image(object):
         """
         pass
 
+    def average_difference(self, im):
+        """
+        Returns the average pixel value difference between this and another
+        image
+
+        :param im: Comparison image
+        """
+        from . import ImageMath
+
+        a, b = self, im
+        if a.mode == 'I;16':
+            a = a.convert('I')
+        if b.mode != a.mode:
+            b = b.convert(a.mode)
+
+        if a.mode == 'P':
+            a_data = a.getdata()
+            b_data = b.getdata()
+            a = new('L', a.size)
+            b = new('L', b.size)
+            a.putdata(a_data)
+            b.putdata(b_data)
+
+        if (a.width * a.height) < (b.width * b.height):
+            b = b.resize(a.size)
+        elif (b.width * b.height) < (a.width * a.height):
+            a = a.resize(b.size)
+
+        diff = 0
+        for ach, bch in zip(a.split(), b.split()):
+            chdiff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert('L')
+            diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
+
+        return float(diff) / (a.size[0] * a.size[1])
+
     def convert(self, mode=None, matrix=None, dither=None,
                 palette=WEB, colors=256):
         """

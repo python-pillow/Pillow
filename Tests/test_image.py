@@ -1,6 +1,6 @@
 from helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
+from PIL import Image, ImageFilter
 from PIL._util import py3
 import os
 
@@ -491,6 +491,27 @@ class TestImage(PillowTestCase):
             del Image.EXTENSION[ext]
 
         self.assertEqual(ext_individual, ext_multiple)
+
+    def test_average_difference(self):
+        for mode_a, mode_b in [
+            ("RGB", "RGBA"),
+            ("P", "RGB"),
+            ("I;16", "RGB")
+        ]:
+            im_a = hopper(mode_a)
+            im_b = hopper(mode_b)
+            self.assertEqual(im_a.average_difference(im_b), 0)
+
+        im = hopper()
+        im_resized = im.resize((im.width * 2, im.height * 2))
+        diff = im.average_difference(im_resized)
+        self.assertEqual(diff, 0)
+        self.assertEqual(im_resized.average_difference(im), diff)
+
+        im_blur = im.filter(ImageFilter.BLUR)
+        diff = im.average_difference(im_blur)
+        self.assertNotEqual(diff, 0)
+        self.assertEqual(im_blur.average_difference(im), diff)
 
     def test_remap_palette(self):
         # Test illegal image mode

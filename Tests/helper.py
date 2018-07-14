@@ -33,19 +33,6 @@ else:
         pass
 
 
-def convert_to_comparable(a, b):
-    new_a, new_b = a, b
-    if a.mode == 'P':
-        new_a = Image.new('L', a.size)
-        new_b = Image.new('L', b.size)
-        new_a.putdata(a.getdata())
-        new_b.putdata(b.getdata())
-    elif a.mode == 'I;16':
-        new_a = a.convert('I')
-        new_b = b.convert('I')
-    return new_a, new_b
-
-
 class PillowTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
@@ -130,14 +117,7 @@ class PillowTestCase(unittest.TestCase):
             a.size, b.size,
             msg or "got size %r, expected %r" % (a.size, b.size))
 
-        a, b = convert_to_comparable(a, b)
-
-        diff = 0
-        for ach, bch in zip(a.split(), b.split()):
-            chdiff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert('L')
-            diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
-
-        ave_diff = float(diff)/(a.size[0]*a.size[1])
+        ave_diff = a.average_difference(b)
         try:
             self.assertGreaterEqual(
                 epsilon, ave_diff,
