@@ -305,10 +305,10 @@ def profileToProfile(
     :param renderingIntent: Integer (0-3) specifying the rendering intent you
         wish to use for the transform
 
-            INTENT_PERCEPTUAL            = 0 (DEFAULT) (ImageCms.INTENT_PERCEPTUAL)
-            INTENT_RELATIVE_COLORIMETRIC = 1 (ImageCms.INTENT_RELATIVE_COLORIMETRIC)
-            INTENT_SATURATION            = 2 (ImageCms.INTENT_SATURATION)
-            INTENT_ABSOLUTE_COLORIMETRIC = 3 (ImageCms.INTENT_ABSOLUTE_COLORIMETRIC)
+            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
+            ImageCms.INTENT_SATURATION            = 2
+            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
         they do.
@@ -424,10 +424,10 @@ def buildTransform(
     :param renderingIntent: Integer (0-3) specifying the rendering intent you
         wish to use for the transform
 
-            INTENT_PERCEPTUAL            = 0 (DEFAULT) (ImageCms.INTENT_PERCEPTUAL)
-            INTENT_RELATIVE_COLORIMETRIC = 1 (ImageCms.INTENT_RELATIVE_COLORIMETRIC)
-            INTENT_SATURATION            = 2 (ImageCms.INTENT_SATURATION)
-            INTENT_ABSOLUTE_COLORIMETRIC = 3 (ImageCms.INTENT_ABSOLUTE_COLORIMETRIC)
+            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
+            ImageCms.INTENT_SATURATION            = 2
+            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
         they do.
@@ -512,20 +512,20 @@ def buildProofTransform(
     :param renderingIntent: Integer (0-3) specifying the rendering intent you
         wish to use for the input->proof (simulated) transform
 
-            INTENT_PERCEPTUAL            = 0 (DEFAULT) (ImageCms.INTENT_PERCEPTUAL)
-            INTENT_RELATIVE_COLORIMETRIC = 1 (ImageCms.INTENT_RELATIVE_COLORIMETRIC)
-            INTENT_SATURATION            = 2 (ImageCms.INTENT_SATURATION)
-            INTENT_ABSOLUTE_COLORIMETRIC = 3 (ImageCms.INTENT_ABSOLUTE_COLORIMETRIC)
+            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
+            ImageCms.INTENT_SATURATION            = 2
+            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
         they do.
-    :param proofRenderingIntent: Integer (0-3) specifying the rendering intent you
-        wish to use for proof->output transform
+    :param proofRenderingIntent: Integer (0-3) specifying the rendering intent
+        you wish to use for proof->output transform
 
-            INTENT_PERCEPTUAL            = 0 (DEFAULT) (ImageCms.INTENT_PERCEPTUAL)
-            INTENT_RELATIVE_COLORIMETRIC = 1 (ImageCms.INTENT_RELATIVE_COLORIMETRIC)
-            INTENT_SATURATION            = 2 (ImageCms.INTENT_SATURATION)
-            INTENT_ABSOLUTE_COLORIMETRIC = 3 (ImageCms.INTENT_ABSOLUTE_COLORIMETRIC)
+            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
+            ImageCms.INTENT_SATURATION            = 2
+            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
         they do.
@@ -875,10 +875,10 @@ def getDefaultIntent(profile):
     :returns: Integer 0-3 specifying the default rendering intent for this
         profile.
 
-            INTENT_PERCEPTUAL            = 0 (DEFAULT) (ImageCms.INTENT_PERCEPTUAL)
-            INTENT_RELATIVE_COLORIMETRIC = 1 (ImageCms.INTENT_RELATIVE_COLORIMETRIC)
-            INTENT_SATURATION            = 2 (ImageCms.INTENT_SATURATION)
-            INTENT_ABSOLUTE_COLORIMETRIC = 3 (ImageCms.INTENT_ABSOLUTE_COLORIMETRIC)
+            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
+            ImageCms.INTENT_SATURATION            = 2
+            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
             they do.
@@ -913,15 +913,15 @@ def isIntentSupported(profile, intent, direction):
     :param intent: Integer (0-3) specifying the rendering intent you wish to
         use with this profile
 
-            INTENT_PERCEPTUAL            = 0 (DEFAULT) (ImageCms.INTENT_PERCEPTUAL)
-            INTENT_RELATIVE_COLORIMETRIC = 1 (ImageCms.INTENT_RELATIVE_COLORIMETRIC)
-            INTENT_SATURATION            = 2 (ImageCms.INTENT_SATURATION)
-            INTENT_ABSOLUTE_COLORIMETRIC = 3 (ImageCms.INTENT_ABSOLUTE_COLORIMETRIC)
+            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
+            ImageCms.INTENT_SATURATION            = 2
+            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
             they do.
-    :param direction: Integer specifying if the profile is to be used for input,
-        output, or proof
+    :param direction: Integer specifying if the profile is to be used for
+        input, output, or proof
 
             INPUT  = 0 (or use ImageCms.DIRECTION_INPUT)
             OUTPUT = 1 (or use ImageCms.DIRECTION_OUTPUT)

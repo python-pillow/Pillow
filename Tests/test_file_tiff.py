@@ -444,7 +444,8 @@ class TestFileTiff(PillowTestCase):
             for im in ims:
                 yield im
         mp = io.BytesIO()
-        im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))
+        im.save(mp, format="TIFF", save_all=True,
+                append_images=imGenerator(ims))
 
         mp.seek(0, os.SEEK_SET)
         reread = Image.open(mp)

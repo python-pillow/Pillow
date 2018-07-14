@@ -141,7 +141,8 @@ class FreeTypeFont(object):
         self.layout_engine = layout_engine
 
         if isPath(font):
-            self.font = core.getfont(font, size, index, encoding, layout_engine=layout_engine)
+            self.font = core.getfont(font, size, index, encoding,
+                                     layout_engine=layout_engine)
         else:
             self.font_bytes = font.read()
             self.font = core.getfont(
@@ -175,9 +176,11 @@ class FreeTypeFont(object):
         return self.font.getsize(text)[1]
 
     def getmask(self, text, mode="", direction=None, features=None):
-        return self.getmask2(text, mode, direction=direction, features=features)[0]
+        return self.getmask2(text, mode, direction=direction,
+                             features=features)[0]
 
-    def getmask2(self, text, mode="", fill=Image.core.fill, direction=None, features=None, *args, **kwargs):
+    def getmask2(self, text, mode="", fill=Image.core.fill, direction=None,
+                 features=None, *args, **kwargs):
         size, offset = self.font.getsize(text, direction, features)
         im = fill("L", size, 0)
         self.font.render(text, im.id, mode == "1", direction, features)
@@ -194,12 +197,13 @@ class FreeTypeFont(object):
 
         :return: A FreeTypeFont object.
         """
-        return FreeTypeFont(font=self.path if font is None else font,
-                            size=self.size if size is None else size,
-                            index=self.index if index is None else index,
-                            encoding=self.encoding if encoding is None else encoding,
-                            layout_engine=self.layout_engine if layout_engine is None else layout_engine
-                            )
+        return FreeTypeFont(
+            font=self.path if font is None else font,
+            size=self.size if size is None else size,
+            index=self.index if index is None else index,
+            encoding=self.encoding if encoding is None else encoding,
+            layout_engine=self.layout_engine if layout_engine is None else layout_engine
+        )
 
 
 class TransposedFont(object):
@@ -303,12 +307,16 @@ def truetype(font=None, size=10, index=0, encoding="",
                 for walkfilename in walkfilenames:
                     if ext and walkfilename == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
-                        return FreeTypeFont(fontpath, size, index, encoding, layout_engine)
-                    elif not ext and os.path.splitext(walkfilename)[0] == ttf_filename:
+                        return FreeTypeFont(fontpath, size, index,
+                                            encoding, layout_engine)
+                    elif (not ext and
+                          os.path.splitext(walkfilename)[0] == ttf_filename):
                         fontpath = os.path.join(walkroot, walkfilename)
                         if os.path.splitext(fontpath)[1] == '.ttf':
-                            return FreeTypeFont(fontpath, size, index, encoding, layout_engine)
-                        if not ext and first_font_with_a_different_extension is None:
+                            return FreeTypeFont(fontpath, size, index,
+                                                encoding, layout_engine)
+                        if not ext \
+                           and first_font_with_a_different_extension is None:
                             first_font_with_a_different_extension = fontpath
         if first_font_with_a_different_extension:
             return FreeTypeFont(first_font_with_a_different_extension, size,

@@ -124,7 +124,9 @@ class TestNumpy(PillowTestCase):
     def test_save_tiff_uint16(self):
         # Tests that we're getting the pixel value in the right byte order.
         pixel_value = 0x1234
-        a = numpy.array([pixel_value] * TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1], dtype=numpy.uint16)
+        a = numpy.array(
+            [pixel_value] * TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1],
+            dtype=numpy.uint16)
         a.shape = TEST_IMAGE_SIZE
         img = Image.fromarray(a)
 

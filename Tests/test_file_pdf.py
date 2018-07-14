@@ -20,7 +20,8 @@ class TestFilePdf(PillowTestCase):
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
         with PdfParser.PdfParser(outfile) as pdf:
-            if kwargs.get("append_images", False) or kwargs.get("append", False):
+            if kwargs.get("append_images", False) or \
+               kwargs.get("append", False):
                 self.assertGreater(len(pdf.pages), 1)
             else:
                 self.assertGreater(len(pdf.pages), 0)
@@ -116,7 +117,9 @@ class TestFilePdf(PillowTestCase):
 
     def test_pdf_open(self):
         # fail on a buffer full of null bytes
-        self.assertRaises(PdfParser.PdfFormatError, PdfParser.PdfParser, buf=bytearray(65536))
+        self.assertRaises(
+            PdfParser.PdfFormatError,
+            PdfParser.PdfParser, buf=bytearray(65536))
 
         # make an empty PDF object
         with PdfParser.PdfParser() as empty_pdf:
@@ -153,7 +156,10 @@ class TestFilePdf(PillowTestCase):
         im = hopper("RGB")
         temp_dir = tempfile.mkdtemp()
         try:
-            self.assertRaises(IOError, im.save, os.path.join(temp_dir, "nonexistent.pdf"), append=True)
+            self.assertRaises(IOError,
+                              im.save,
+                              os.path.join(temp_dir, "nonexistent.pdf"),
+                              append=True)
         finally:
             os.rmdir(temp_dir)
 
@@ -204,7 +210,8 @@ class TestFilePdf(PillowTestCase):
         # append two images
         mode_CMYK = hopper("CMYK")
         mode_P = hopper("P")
-        mode_CMYK.save(pdf_filename, append=True, save_all=True, append_images=[mode_P])
+        mode_CMYK.save(pdf_filename,
+                       append=True, save_all=True, append_images=[mode_P])
 
         # open the PDF again, check pages and info again
         with PdfParser.PdfParser(pdf_filename) as pdf:
@@ -219,7 +226,9 @@ class TestFilePdf(PillowTestCase):
 
     def test_pdf_info(self):
         # make a PDF file
-        pdf_filename = self.helper_save_as_pdf("RGB", title="title", author="author", subject="subject", keywords="keywords", creator="creator", producer="producer")
+        pdf_filename = self.helper_save_as_pdf(
+            "RGB", title="title", author="author", subject="subject",
+            keywords="keywords", creator="creator", producer="producer")
 
         # open it, check pages and info
         with PdfParser.PdfParser(pdf_filename) as pdf:

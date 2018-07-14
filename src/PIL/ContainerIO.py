@@ -107,10 +107,10 @@ class ContainerIO(object):
 
         :returns: A list of 8-bit strings.
         """
-        l = []
+        lines = []
         while True:
             s = self.readline()
             if not s:
                 break
-            l.append(s)
-        return l
+            lines.append(s)
+        return lines

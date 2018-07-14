@@ -196,13 +196,13 @@ class TestImageCms(PillowTestCase):
         # not a linear luminance map. so L != 128:
         self.assertEqual(k, (137, 128, 128))
 
-        l = i_lab.getdata(0)
-        a = i_lab.getdata(1)
-        b = i_lab.getdata(2)
+        l_data = i_lab.getdata(0)
+        a_data = i_lab.getdata(1)
+        b_data = i_lab.getdata(2)
 
-        self.assertEqual(list(l), [137] * 100)
-        self.assertEqual(list(a), [128] * 100)
-        self.assertEqual(list(b), [128] * 100)
+        self.assertEqual(list(l_data), [137] * 100)
+        self.assertEqual(list(a_data), [128] * 100)
+        self.assertEqual(list(b_data), [128] * 100)
 
     def test_lab_color(self):
         psRGB = ImageCms.createProfile("sRGB")
@@ -286,53 +286,104 @@ class TestImageCms(PillowTestCase):
             self.assertEqual(truncate_tuple(tup1), truncate_tuple(tup2))
 
         self.assertEqual(p.attributes, 4294967296)
-        assert_truncated_tuple_equal(p.blue_colorant, ((0.14306640625, 0.06060791015625, 0.7140960693359375), (0.1558847490315394, 0.06603820639433387, 0.06060791015625)))
-        assert_truncated_tuple_equal(p.blue_primary, ((0.14306641366715667, 0.06060790921083026, 0.7140960805782015), (0.15588475410450106, 0.06603820408959558, 0.06060790921083026)))
+        assert_truncated_tuple_equal(
+            p.blue_colorant,
+            ((0.14306640625, 0.06060791015625, 0.7140960693359375),
+             (0.1558847490315394, 0.06603820639433387, 0.06060791015625)))
+        assert_truncated_tuple_equal(
+            p.blue_primary,
+            ((0.14306641366715667, 0.06060790921083026, 0.7140960805782015),
+             (0.15588475410450106, 0.06603820408959558, 0.06060790921083026)))
         assert_truncated_tuple_equal(p.chromatic_adaptation, (((1.04791259765625, 0.0229339599609375, -0.050201416015625), (0.02960205078125, 0.9904632568359375, -0.0170745849609375), (-0.009246826171875, 0.0150604248046875, 0.7517852783203125)), ((1.0267159024652783, 0.022470062342089134, 0.0229339599609375), (0.02951378324103937, 0.9875098886387147, 0.9904632568359375), (-0.012205438066465256, 0.01987915407854985, 0.0150604248046875))))
         self.assertIsNone(p.chromaticity)
-        self.assertEqual(p.clut, {0: (False, False, True), 1: (False, False, True), 2: (False, False, True), 3: (False, False, True)})
+        self.assertEqual(p.clut, {
+            0: (False, False, True),
+            1: (False, False, True),
+            2: (False, False, True),
+            3: (False, False, True)
+        })
         self.assertEqual(p.color_space, 'RGB')
         self.assertIsNone(p.colorant_table)
         self.assertIsNone(p.colorant_table_out)
         self.assertIsNone(p.colorimetric_intent)
         self.assertEqual(p.connection_space, 'XYZ ')
-        self.assertEqual(p.copyright, 'Copyright International Color Consortium, 2009')
-        self.assertEqual(p.creation_date, datetime.datetime(2009, 2, 27, 21, 36, 31))
+        self.assertEqual(p.copyright,
+                         'Copyright International Color Consortium, 2009')
+        self.assertEqual(p.creation_date,
+                         datetime.datetime(2009, 2, 27, 21, 36, 31))
         self.assertEqual(p.device_class, 'mntr')
-        assert_truncated_tuple_equal(p.green_colorant, ((0.3851470947265625, 0.7168731689453125, 0.097076416015625), (0.32119769927720654, 0.5978443449048152, 0.7168731689453125)))
-        assert_truncated_tuple_equal(p.green_primary, ((0.3851470888162112, 0.7168731974161346, 0.09707641738998518), (0.32119768793686687, 0.5978443567149709, 0.7168731974161346)))
+        assert_truncated_tuple_equal(
+            p.green_colorant,
+            ((0.3851470947265625, 0.7168731689453125, 0.097076416015625),
+             (0.32119769927720654, 0.5978443449048152, 0.7168731689453125)))
+        assert_truncated_tuple_equal(
+            p.green_primary,
+            ((0.3851470888162112, 0.7168731974161346, 0.09707641738998518),
+             (0.32119768793686687, 0.5978443567149709, 0.7168731974161346)))
         self.assertEqual(p.header_flags, 0)
         self.assertEqual(p.header_manufacturer, '\x00\x00\x00\x00')
         self.assertEqual(p.header_model, '\x00\x00\x00\x00')
-        self.assertEqual(p.icc_measurement_condition, {'backing': (0.0, 0.0, 0.0), 'flare': 0.0, 'geo': 'unknown', 'observer': 1, 'illuminant_type': 'D65'})
+        self.assertEqual(p.icc_measurement_condition, {
+            'backing': (0.0, 0.0, 0.0),
+            'flare': 0.0,
+            'geo': 'unknown',
+            'observer': 1,
+            'illuminant_type': 'D65'
+        })
         self.assertEqual(p.icc_version, 33554432)
         self.assertIsNone(p.icc_viewing_condition)
-        self.assertEqual(p.intent_supported, {0: (True, True, True), 1: (True, True, True), 2: (True, True, True), 3: (True, True, True)})
+        self.assertEqual(p.intent_supported, {
+            0: (True, True, True),
+            1: (True, True, True),
+            2: (True, True, True),
+            3: (True, True, True)
+        })
         self.assertTrue(p.is_matrix_shaper)
         self.assertEqual(p.luminance, ((0.0, 80.0, 0.0), (0.0, 1.0, 80.0)))
         self.assertIsNone(p.manufacturer)
-        assert_truncated_tuple_equal(p.media_black_point, ((0.012054443359375, 0.0124969482421875, 0.01031494140625), (0.34573304157549234, 0.35842450765864337, 0.0124969482421875)))
-        assert_truncated_tuple_equal(p.media_white_point, ((0.964202880859375, 1.0, 0.8249053955078125), (0.3457029219802284, 0.3585375327567059, 1.0)))
-        assert_truncated_tuple_equal((p.media_white_point_temperature,), (5000.722328847392,))
-        self.assertEqual(p.model, 'IEC 61966-2-1 Default RGB Colour Space - sRGB')
+        assert_truncated_tuple_equal(
+            p.media_black_point,
+            ((0.012054443359375, 0.0124969482421875, 0.01031494140625),
+             (0.34573304157549234, 0.35842450765864337, 0.0124969482421875)))
+        assert_truncated_tuple_equal(
+            p.media_white_point,
+            ((0.964202880859375, 1.0, 0.8249053955078125),
+             (0.3457029219802284, 0.3585375327567059, 1.0)))
+        assert_truncated_tuple_equal(
+            (p.media_white_point_temperature,),
+            (5000.722328847392,))
+        self.assertEqual(p.model,
+                         'IEC 61966-2-1 Default RGB Colour Space - sRGB')
         self.assertEqual(p.pcs, 'XYZ')
         self.assertIsNone(p.perceptual_rendering_intent_gamut)
-        self.assertEqual(p.product_copyright, 'Copyright International Color Consortium, 2009')
+        self.assertEqual(p.product_copyright,
+                         'Copyright International Color Consortium, 2009')
         self.assertEqual(p.product_desc, 'sRGB IEC61966-2-1 black scaled')
-        self.assertEqual(p.product_description, 'sRGB IEC61966-2-1 black scaled')
+        self.assertEqual(p.product_description,
+                         'sRGB IEC61966-2-1 black scaled')
         self.assertEqual(p.product_manufacturer, '')
-        self.assertEqual(p.product_model, 'IEC 61966-2-1 Default RGB Colour Space - sRGB')
-        self.assertEqual(p.profile_description, 'sRGB IEC61966-2-1 black scaled')
-        self.assertEqual(p.profile_id, b')\xf8=\xde\xaf\xf2U\xaexB\xfa\xe4\xca\x839\r')
-        assert_truncated_tuple_equal(p.red_colorant, ((0.436065673828125, 0.2224884033203125, 0.013916015625), (0.6484536316398539, 0.3308524880306778, 0.2224884033203125)))
-        assert_truncated_tuple_equal(p.red_primary, ((0.43606566581047446, 0.22248840582960838, 0.013916015621759925), (0.6484536250319214, 0.3308524944738204, 0.22248840582960838)))
+        self.assertEqual(
+            p.product_model, 'IEC 61966-2-1 Default RGB Colour Space - sRGB')
+        self.assertEqual(
+            p.profile_description, 'sRGB IEC61966-2-1 black scaled')
+        self.assertEqual(
+            p.profile_id, b')\xf8=\xde\xaf\xf2U\xaexB\xfa\xe4\xca\x839\r')
+        assert_truncated_tuple_equal(
+            p.red_colorant,
+            ((0.436065673828125, 0.2224884033203125, 0.013916015625),
+             (0.6484536316398539, 0.3308524880306778, 0.2224884033203125)))
+        assert_truncated_tuple_equal(
+            p.red_primary,
+            ((0.43606566581047446, 0.22248840582960838, 0.013916015621759925),
+             (0.6484536250319214, 0.3308524944738204, 0.22248840582960838)))
         self.assertEqual(p.rendering_intent, 0)
         self.assertIsNone(p.saturation_rendering_intent_gamut)
         self.assertIsNone(p.screening_description)
         self.assertIsNone(p.target)
         self.assertEqual(p.technology, 'CRT ')
         self.assertEqual(p.version, 2.0)
-        self.assertEqual(p.viewing_condition, 'Reference Viewing Condition in IEC 61966-2-1')
+        self.assertEqual(p.viewing_condition,
+                         'Reference Viewing Condition in IEC 61966-2-1')
         self.assertEqual(p.xcolor_space, 'RGB ')
 
     def test_profile_typesafety(self):
@@ -346,7 +397,8 @@ class TestImageCms(PillowTestCase):
         with self.assertRaises(TypeError):
             ImageCms.ImageCmsProfile(1).tobytes()
 
-    def assert_aux_channel_preserved(self, mode, transform_in_place, preserved_channel):
+    def assert_aux_channel_preserved(self, mode,
+                                     transform_in_place, preserved_channel):
         def create_test_image():
             # set up test image with something interesting in the tested aux
             # channel.
@@ -379,29 +431,35 @@ class TestImageCms(PillowTestCase):
         # create some transform, it doesn't matter which one
         source_profile = ImageCms.createProfile("sRGB")
         destination_profile = ImageCms.createProfile("sRGB")
-        t = ImageCms.buildTransform(source_profile, destination_profile, inMode=mode, outMode=mode)
+        t = ImageCms.buildTransform(
+            source_profile, destination_profile, inMode=mode, outMode=mode)
 
         # apply transform
         if transform_in_place:
             ImageCms.applyTransform(source_image, t, inPlace=True)
             result_image = source_image
         else:
-            result_image = ImageCms.applyTransform(source_image, t, inPlace=False)
+            result_image = ImageCms.applyTransform(
+                source_image, t, inPlace=False)
         result_image_aux = result_image.getchannel(preserved_channel)
 
         self.assert_image_equal(source_image_aux, result_image_aux)
 
     def test_preserve_auxiliary_channels_rgba(self):
-        self.assert_aux_channel_preserved(mode='RGBA', transform_in_place=False, preserved_channel='A')
+        self.assert_aux_channel_preserved(mode='RGBA',
+            transform_in_place=False, preserved_channel='A')
 
     def test_preserve_auxiliary_channels_rgba_in_place(self):
-        self.assert_aux_channel_preserved(mode='RGBA', transform_in_place=True, preserved_channel='A')
+        self.assert_aux_channel_preserved(mode='RGBA',
+            transform_in_place=True, preserved_channel='A')
 
     def test_preserve_auxiliary_channels_rgbx(self):
-        self.assert_aux_channel_preserved(mode='RGBX', transform_in_place=False, preserved_channel='X')
+        self.assert_aux_channel_preserved(mode='RGBX',
+            transform_in_place=False, preserved_channel='X')
 
     def test_preserve_auxiliary_channels_rgbx_in_place(self):
-        self.assert_aux_channel_preserved(mode='RGBX', transform_in_place=True, preserved_channel='X')
+        self.assert_aux_channel_preserved(mode='RGBX',
+            transform_in_place=True, preserved_channel='X')
 
     def test_auxiliary_channels_isolated(self):
         # test data in aux channels does not affect non-aux channels
@@ -422,20 +480,29 @@ class TestImageCms(PillowTestCase):
                     source_profile = ImageCms.createProfile(src_format[1])
                     destination_profile = ImageCms.createProfile(dst_format[1])
                     source_image = src_format[3]
-                    test_transform = ImageCms.buildTransform(source_profile, destination_profile, inMode=src_format[0], outMode=dst_format[0])
+                    test_transform = ImageCms.buildTransform(
+                        source_profile, destination_profile,
+                        inMode=src_format[0], outMode=dst_format[0])
 
                     # test conversion from aux-ful source
                     if transform_in_place:
                         test_image = source_image.copy()
-                        ImageCms.applyTransform(test_image, test_transform, inPlace=True)
+                        ImageCms.applyTransform(
+                            test_image, test_transform, inPlace=True)
                     else:
-                        test_image = ImageCms.applyTransform(source_image, test_transform, inPlace=False)
+                        test_image = ImageCms.applyTransform(
+                            source_image, test_transform, inPlace=False)
 
                     # reference conversion from aux-less source
-                    reference_transform = ImageCms.buildTransform(source_profile, destination_profile, inMode=src_format[2], outMode=dst_format[2])
-                    reference_image = ImageCms.applyTransform(source_image.convert(src_format[2]), reference_transform)
+                    reference_transform = ImageCms.buildTransform(
+                        source_profile, destination_profile,
+                        inMode=src_format[2], outMode=dst_format[2])
+                    reference_image = ImageCms.applyTransform(
+                        source_image.convert(src_format[2]),
+                        reference_transform)
 
-                    self.assert_image_equal(test_image.convert(dst_format[2]), reference_image)
+                    self.assert_image_equal(test_image.convert(dst_format[2]),
+                                            reference_image)
 
 
 if __name__ == '__main__':

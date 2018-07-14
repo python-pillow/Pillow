@@ -27,8 +27,8 @@ class TestColorLut3DCoreAPI(PillowTestCase):
                 g / float(size2D-1) if size2D != 1 else 0,
             ][:channels]
             for b in range(size3D)
-                for g in range(size2D)
-                    for r in range(size1D)
+            for g in range(size2D)
+            for r in range(size1D)
         ]
         return (
             channels, size1D, size2D, size3D,
@@ -38,112 +38,123 @@ class TestColorLut3DCoreAPI(PillowTestCase):
         im = Image.new('RGB', (10, 10), 0)
 
         with self.assertRaisesRegex(ValueError, "filter"):
-            im.im.color_lut_3d('RGB', Image.CUBIC,
-                *self.generate_identity_table(3, 3))
+            im.im.color_lut_3d('RGB',
+                               Image.CUBIC,
+                               *self.generate_identity_table(3, 3))
 
         with self.assertRaisesRegex(ValueError, "image mode"):
-            im.im.color_lut_3d('wrong', Image.LINEAR,
-                *self.generate_identity_table(3, 3))
+            im.im.color_lut_3d('wrong',
+                               Image.LINEAR,
+                               *self.generate_identity_table(3, 3))
 
         with self.assertRaisesRegex(ValueError, "table_channels"):
-            im.im.color_lut_3d('RGB', Image.LINEAR,
-                *self.generate_identity_table(5, 3))
+            im.im.color_lut_3d('RGB',
+                               Image.LINEAR,
+                               *self.generate_identity_table(5, 3))
 
         with self.assertRaisesRegex(ValueError, "table_channels"):
-            im.im.color_lut_3d('RGB', Image.LINEAR,
-                *self.generate_identity_table(1, 3))
+            im.im.color_lut_3d('RGB',
+                               Image.LINEAR,
+                               *self.generate_identity_table(1, 3))
 
         with self.assertRaisesRegex(ValueError, "table_channels"):
-            im.im.color_lut_3d('RGB', Image.LINEAR,
-                *self.generate_identity_table(2, 3))
+            im.im.color_lut_3d('RGB',
+                               Image.LINEAR,
+                               *self.generate_identity_table(2, 3))
 
         with self.assertRaisesRegex(ValueError, "Table size"):
-            im.im.color_lut_3d('RGB', Image.LINEAR,
-                *self.generate_identity_table(3, (1, 3, 3)))
+            im.im.color_lut_3d('RGB',
+                               Image.LINEAR,
+                               *self.generate_identity_table(3, (1, 3, 3)))
 
         with self.assertRaisesRegex(ValueError, "Table size"):
-            im.im.color_lut_3d('RGB', Image.LINEAR,
-                *self.generate_identity_table(3, (66, 3, 3)))
+            im.im.color_lut_3d('RGB',
+                               Image.LINEAR,
+                               *self.generate_identity_table(3, (66, 3, 3)))
 
         with self.assertRaisesRegex(ValueError, r"size1D \* size2D \* size3D"):
-            im.im.color_lut_3d('RGB', Image.LINEAR,
-                3, 2, 2, 2, [0, 0, 0] * 7)
+            im.im.color_lut_3d('RGB',
+                               Image.LINEAR,
+                               3, 2, 2, 2, [0, 0, 0] * 7)
 
         with self.assertRaisesRegex(ValueError, r"size1D \* size2D \* size3D"):
-            im.im.color_lut_3d('RGB', Image.LINEAR,
-                3, 2, 2, 2, [0, 0, 0] * 9)
+            im.im.color_lut_3d('RGB',
+                               Image.LINEAR,
+                               3, 2, 2, 2, [0, 0, 0] * 9)
 
         with self.assertRaises(TypeError):
-            im.im.color_lut_3d('RGB', Image.LINEAR,
-                3, 2, 2, 2, [0, 0, "0"] * 8)
+            im.im.color_lut_3d('RGB',
+                               Image.LINEAR,
+                               3, 2, 2, 2, [0, 0, "0"] * 8)
 
         with self.assertRaises(TypeError):
-            im.im.color_lut_3d('RGB', Image.LINEAR,
-                3, 2, 2, 2, 16)
+            im.im.color_lut_3d('RGB',
+                               Image.LINEAR,
+                               3, 2, 2, 2, 16)
 
     def test_correct_args(self):
         im = Image.new('RGB', (10, 10), 0)
 
         im.im.color_lut_3d('RGB', Image.LINEAR,
-            *self.generate_identity_table(3, 3))
+                           *self.generate_identity_table(3, 3))
 
         im.im.color_lut_3d('CMYK', Image.LINEAR,
-            *self.generate_identity_table(4, 3))
+                           *self.generate_identity_table(4, 3))
 
         im.im.color_lut_3d('RGB', Image.LINEAR,
-            *self.generate_identity_table(3, (2, 3, 3)))
+                           *self.generate_identity_table(3, (2, 3, 3)))
 
         im.im.color_lut_3d('RGB', Image.LINEAR,
-            *self.generate_identity_table(3, (65, 3, 3)))
+                           *self.generate_identity_table(3, (65, 3, 3)))
 
         im.im.color_lut_3d('RGB', Image.LINEAR,
-            *self.generate_identity_table(3, (3, 65, 3)))
+                           *self.generate_identity_table(3, (3, 65, 3)))
 
         im.im.color_lut_3d('RGB', Image.LINEAR,
-            *self.generate_identity_table(3, (3, 3, 65)))
+                           *self.generate_identity_table(3, (3, 3, 65)))
 
     def test_wrong_mode(self):
         with self.assertRaisesRegex(ValueError, "wrong mode"):
             im = Image.new('L', (10, 10), 0)
             im.im.color_lut_3d('RGB', Image.LINEAR,
-                *self.generate_identity_table(3, 3))
+                               *self.generate_identity_table(3, 3))
 
         with self.assertRaisesRegex(ValueError, "wrong mode"):
             im = Image.new('RGB', (10, 10), 0)
             im.im.color_lut_3d('L', Image.LINEAR,
-                *self.generate_identity_table(3, 3))
+                               *self.generate_identity_table(3, 3))
 
         with self.assertRaisesRegex(ValueError, "wrong mode"):
             im = Image.new('L', (10, 10), 0)
             im.im.color_lut_3d('L', Image.LINEAR,
-                *self.generate_identity_table(3, 3))
+                               *self.generate_identity_table(3, 3))
 
         with self.assertRaisesRegex(ValueError, "wrong mode"):
             im = Image.new('RGB', (10, 10), 0)
             im.im.color_lut_3d('RGBA', Image.LINEAR,
-                *self.generate_identity_table(3, 3))
+                               *self.generate_identity_table(3, 3))
 
         with self.assertRaisesRegex(ValueError, "wrong mode"):
             im = Image.new('RGB', (10, 10), 0)
             im.im.color_lut_3d('RGB', Image.LINEAR,
-                *self.generate_identity_table(4, 3))
+                               *self.generate_identity_table(4, 3))
 
     def test_correct_mode(self):
         im = Image.new('RGBA', (10, 10), 0)
         im.im.color_lut_3d('RGBA', Image.LINEAR,
-            *self.generate_identity_table(3, 3))
+                           *self.generate_identity_table(3, 3))
 
         im = Image.new('RGBA', (10, 10), 0)
         im.im.color_lut_3d('RGBA', Image.LINEAR,
-            *self.generate_identity_table(4, 3))
+                           *self.generate_identity_table(4, 3))
 
         im = Image.new('RGB', (10, 10), 0)
         im.im.color_lut_3d('HSV', Image.LINEAR,
-            *self.generate_identity_table(3, 3))
+                           *self.generate_identity_table(3, 3))
 
         im = Image.new('RGB', (10, 10), 0)
         im.im.color_lut_3d('RGBA', Image.LINEAR,
-            *self.generate_identity_table(4, 3))
+                           *self.generate_identity_table(4, 3))
 
     def test_identities(self):
         g = Image.linear_gradient('L')
@@ -154,12 +165,12 @@ class TestColorLut3DCoreAPI(PillowTestCase):
         for size in [2, 3, 5, 7, 11, 16, 17]:
             self.assert_image_equal(im, im._new(
                 im.im.color_lut_3d('RGB', Image.LINEAR,
-                    *self.generate_identity_table(3, size))))
+                                   *self.generate_identity_table(3, size))))
 
         # Not so fast
         self.assert_image_equal(im, im._new(
             im.im.color_lut_3d('RGB', Image.LINEAR,
-                *self.generate_identity_table(3, (2, 2, 65)))))
+                               *self.generate_identity_table(3, (2, 2, 65)))))
 
     def test_identities_4_channels(self):
         g = Image.linear_gradient('L')
@@ -170,7 +181,7 @@ class TestColorLut3DCoreAPI(PillowTestCase):
         self.assert_image_equal(
             Image.merge('RGBA', (im.split()*2)[:4]),
             im._new(im.im.color_lut_3d('RGBA', Image.LINEAR,
-                *self.generate_identity_table(4, 17))))
+                                       *self.generate_identity_table(4, 17))))
 
     def test_copy_alpha_channel(self):
         g = Image.linear_gradient('L')
@@ -180,7 +191,7 @@ class TestColorLut3DCoreAPI(PillowTestCase):
 
         self.assert_image_equal(im, im._new(
             im.im.color_lut_3d('RGBA', Image.LINEAR,
-                *self.generate_identity_table(3, 17))))
+                               *self.generate_identity_table(3, 17))))
 
     def test_channels_order(self):
         g = Image.linear_gradient('L')
@@ -191,13 +202,13 @@ class TestColorLut3DCoreAPI(PillowTestCase):
         self.assert_image_equal(
             Image.merge('RGB', im.split()[::-1]),
             im._new(im.im.color_lut_3d('RGB', Image.LINEAR,
-                3, 2, 2, 2, [
-                    0, 0, 0,  0, 0, 1,
-                    0, 1, 0,  0, 1, 1,
+                    3, 2, 2, 2, [
+                        0, 0, 0,  0, 0, 1,
+                        0, 1, 0,  0, 1, 1,
 
-                    1, 0, 0,  1, 0, 1,
-                    1, 1, 0,  1, 1, 1,
-                ])))
+                        1, 0, 0,  1, 0, 1,
+                        1, 1, 0,  1, 1, 1,
+                    ])))
 
     def test_overflow(self):
         g = Image.linear_gradient('L')
@@ -205,14 +216,14 @@ class TestColorLut3DCoreAPI(PillowTestCase):
                                  g.transpose(Image.ROTATE_180)])
 
         transformed = im._new(im.im.color_lut_3d('RGB', Image.LINEAR,
-                3, 2, 2, 2,
-                [
-                    -1, -1, -1,   2, -1, -1,
-                    -1,  2, -1,   2,  2, -1,
+                              3, 2, 2, 2,
+                              [
+                                  -1, -1, -1,   2, -1, -1,
+                                  -1,  2, -1,   2,  2, -1,
 
-                    -1, -1,  2,   2, -1,  2,
-                    -1,  2,  2,   2,  2,  2,
-                ])).load()
+                                  -1, -1,  2,   2, -1,  2,
+                                  -1,  2,  2,   2,  2,  2,
+                              ])).load()
         self.assertEqual(transformed[0, 0], (0, 0, 255))
         self.assertEqual(transformed[50, 50], (0, 0, 255))
         self.assertEqual(transformed[255, 0], (0, 255, 255))
@@ -223,14 +234,14 @@ class TestColorLut3DCoreAPI(PillowTestCase):
         self.assertEqual(transformed[205, 205], (255, 255, 0))
 
         transformed = im._new(im.im.color_lut_3d('RGB', Image.LINEAR,
-                3, 2, 2, 2,
-                [
-                    -3, -3, -3,   5, -3, -3,
-                    -3,  5, -3,   5,  5, -3,
+                              3, 2, 2, 2,
+                              [
+                                  -3, -3, -3,   5, -3, -3,
+                                  -3,  5, -3,   5,  5, -3,
 
-                    -3, -3,  5,   5, -3,  5,
-                    -3,  5,  5,   5,  5,  5,
-                ])).load()
+                                  -3, -3,  5,   5, -3,  5,
+                                  -3,  5,  5,   5,  5,  5,
+                              ])).load()
         self.assertEqual(transformed[0, 0], (0, 0, 255))
         self.assertEqual(transformed[50, 50], (0, 0, 255))
         self.assertEqual(transformed[255, 0], (0, 255, 255))
@@ -366,22 +377,23 @@ class TestColorLut3DFilter(PillowTestCase):
         lut = ImageFilter.Color3DLUT(
             (3, 4, 5), array('f', [0, 0, 0, 0] * (3 * 4 * 5)),
             channels=4, target_mode='YCbCr', _copy_table=False)
-        self.assertEqual(repr(lut),
+        self.assertEqual(
+            repr(lut),
             "<Color3DLUT from array size=3x4x5 channels=4 target_mode=YCbCr>")
 
 
 class TestGenerateColorLut3D(PillowTestCase):
     def test_wrong_channels_count(self):
         with self.assertRaisesRegex(ValueError, "3 or 4 output channels"):
-            ImageFilter.Color3DLUT.generate(5, channels=2,
-                callback=lambda r, g, b: (r, g, b))
+            ImageFilter.Color3DLUT.generate(
+                5, channels=2, callback=lambda r, g, b: (r, g, b))
 
         with self.assertRaisesRegex(ValueError, "should have either channels"):
             ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b, r))
 
         with self.assertRaisesRegex(ValueError, "should have either channels"):
-            ImageFilter.Color3DLUT.generate(5, channels=4,
-                callback=lambda r, g, b: (r, g, b))
+            ImageFilter.Color3DLUT.generate(
+                5, channels=4, callback=lambda r, g, b: (r, g, b))
 
     def test_3_channels(self):
         lut = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))
@@ -392,13 +404,14 @@ class TestGenerateColorLut3D(PillowTestCase):
             1.0, 0.0, 0.0,  0.0, 0.25, 0.0,  0.25, 0.25, 0.0,  0.5, 0.25, 0.0])
 
     def test_4_channels(self):
-        lut = ImageFilter.Color3DLUT.generate(5, channels=4,
-            callback=lambda r, g, b: (b, r, g, (r+g+b) / 2))
+        lut = ImageFilter.Color3DLUT.generate(
+            5, channels=4, callback=lambda r, g, b: (b, r, g, (r+g+b) / 2))
         self.assertEqual(tuple(lut.size), (5, 5, 5))
         self.assertEqual(lut.name, "Color 3D LUT")
         self.assertEqual(lut.table[:24], [
             0.0, 0.0, 0.0, 0.0,  0.0, 0.25, 0.0, 0.125,  0.0, 0.5, 0.0, 0.25,
-            0.0, 0.75, 0.0, 0.375,  0.0, 1.0, 0.0, 0.5,  0.0, 0.0, 0.25, 0.125])
+            0.0, 0.75, 0.0, 0.375,  0.0, 1.0, 0.0, 0.5,  0.0, 0.0, 0.25, 0.125
+        ])
 
     def test_apply(self):
         lut = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))

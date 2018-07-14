@@ -51,7 +51,8 @@ class Color(_Enhance):
         if 'A' in image.getbands():
             self.intermediate_mode = 'LA'
 
-        self.degenerate = image.convert(self.intermediate_mode).convert(image.mode)
+        self.degenerate = image.convert(
+            self.intermediate_mode).convert(image.mode)
 
 
 class Contrast(_Enhance):

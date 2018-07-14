@@ -16,7 +16,8 @@ class TestTTypeFontLeak(PillowLeakTestCase):
         self._test_leak(lambda: draw.text((0, 0), "some text "*1024,  # ~10k
                                           font=font, fill="black"))
 
-    @unittest.skipIf(not features.check('freetype2'), "Test requires freetype2")
+    @unittest.skipIf(not features.check('freetype2'),
+                     "Test requires freetype2")
     def test_leak(self):
         ttype = ImageFont.truetype('Tests/fonts/FreeMono.ttf', 20)
         self._test_font(ttype)

@@ -434,7 +434,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     }
 
     for (i = 0; i < n; i++) {
-        /* This causes that the pixels of horizontal edges are drawn twice :(
+        /* This causes the pixels of horizontal edges to be drawn twice :(
          * but without it there are inconsistencies in ellipses */
         if (e[i].ymin == e[i].ymax) {
             (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink);

@@ -45,7 +45,6 @@ from . import Image, ImageFile, ImagePalette, TiffTags
 from ._binary import i8, o8
 from ._util import py3
 
-import collections
 from fractions import Fraction
 from numbers import Number, Rational
 
@@ -431,7 +430,8 @@ class ImageFileDirectory_v2(MutableMapping):
         * self.tagtype = {}
 
           * Key: numerical tiff tag number
-          * Value: integer corresponding to the data type from `~PIL.TiffTags.TYPES`
+          * Value: integer corresponding to the data type from
+                   ~PIL.TiffTags.TYPES`
 
     .. versionadded:: 3.0.0
     """
@@ -577,8 +577,8 @@ class ImageFileDirectory_v2(MutableMapping):
         # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
         # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
         # Don't mess with the legacy api, since it's frozen.
-        if ((info.length == 1) or
-            (info.length is None and len(values) == 1 and not legacy_api)):
+        if (info.length == 1) or \
+           (info.length is None and len(values) == 1 and not legacy_api):
             # Don't mess with the legacy api, since it's frozen.
             if legacy_api and self.tagtype[tag] in [5, 10]:  # rationals
                 values = values,
@@ -1245,7 +1245,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.info["resolution"] = xres, yres
 
         # build tile descriptors
-        x = y = l = 0
+        x = y = layer = 0
         self.tile = []
         self.use_load_libtiff = False
         if STRIPOFFSETS in self.tag_v2:
@@ -1305,7 +1305,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
             else:
                 for i, offset in enumerate(offsets):
-                    a = self._decoder(rawmode, l, i)
+                    a = self._decoder(rawmode, layer, i)
                     self.tile.append(
                         (self._compression,
                             (0, min(y, ysize), w, min(y+h, ysize)),
@@ -1315,7 +1315,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     y = y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l += 1
+                        layer += 1
                     a = None
         elif TILEOFFSETS in self.tag_v2:
             # tiled image
@@ -1324,7 +1324,7 @@ class TiffImageFile(ImageFile.ImageFile):
             a = None
             for o in self.tag_v2[TILEOFFSETS]:
                 if not a:
-                    a = self._decoder(rawmode, l)
+                    a = self._decoder(rawmode, layer)
                 # FIXME: this doesn't work if the image size
                 # is not a multiple of the tile size...
                 self.tile.append(
@@ -1336,7 +1336,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     x, y = 0, y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l += 1
+                        layer += 1
                         a = None
         else:
             if DEBUG:

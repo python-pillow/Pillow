@@ -364,7 +364,6 @@ class TestFileJpeg(PillowTestCase):
         with self.assertRaises(IOError):
             im.load()
 
-
     def _n_qtables_helper(self, n, test_file):
         im = Image.open(test_file)
         f = self.tempfile('temp.jpg')
