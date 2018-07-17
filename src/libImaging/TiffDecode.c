@@ -55,7 +55,7 @@ tsize_t _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
 
 	to_write = min(size, state->size - (tsize_t)state->loc);
 	if (state->flrealloc && size>to_write) {
-		tdata_t new;
+		tdata_t new_data;
 		tsize_t newsize=state->size;
 		while (newsize < (size + state->size)) {
             if (newsize > INT_MAX - 64*1024){
@@ -66,12 +66,12 @@ tsize_t _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
 		}
 		TRACE(("Reallocing in write to %d bytes\n", (int)newsize));
         /* malloc check ok, overflow checked above */
-		new = realloc(state->data, newsize);
-		if (!new) {
+		new_data = realloc(state->data, newsize);
+		if (!new_data) {
 			// fail out
 			return 0;
 		}
-		state->data = new;
+		state->data = new_data;
 		state->size = newsize;
 		to_write = size;
 	}
@@ -237,6 +237,10 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
     TIFFSetField(tiff, TIFFTAG_JPEGCOLORMODE, JPEGCOLORMODE_RGB);
 
 	if (TIFFIsTiled(tiff)) {
+	    uint32 x, y, tile_y;
+        uint32 tileWidth, tileLength;
+        UINT8 *new_data;
+
 	    state->bytes = TIFFTileSize(tiff);
 
 	    /* overflow check for malloc */
@@ -247,19 +251,16 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
         }
 
         /* realloc to fit whole tile */
-        UINT8 *new = realloc (state->buffer, state->bytes);
-        if (!new) {
+        new_data = realloc (state->buffer, state->bytes);
+        if (!new_data) {
             state->errcode = IMAGING_CODEC_MEMORY;
             TIFFClose(tiff);
             return -1;
         }
 
-        state->buffer = new;
+        state->buffer = new_data;
 
         TRACE(("TIFFTileSize: %d\n", state->bytes));
-
-        uint32 x, y, tile_y;
-        uint32 tileWidth, tileLength;
 
         TIFFGetField(tiff, TIFFTAG_TILEWIDTH, &tileWidth);
         TIFFGetField(tiff, TIFFTAG_TILELENGTH, &tileLength);
