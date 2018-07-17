@@ -259,12 +259,12 @@ OPEN_INFO = {
 
     (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
     (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
-    (II, 6, (1,), 1, (8, 8, 8, 8), (0,)): ("RGB", "RGBX"),
-    (MM, 6, (1,), 1, (8, 8, 8, 8), (0,)): ("RGB", "RGBX"),
-    (II, 6, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("RGB", "RGBXX"),
-    (MM, 6, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("RGB", "RGBXX"),
-    (II, 6, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGB", "RGBXXX"),
-    (MM, 6, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGB", "RGBXXX"),
+    (II, 6, (1,), 1, (8, 8, 8, 8), (0,)): ("RGBX", "RGBX"),
+    (MM, 6, (1,), 1, (8, 8, 8, 8), (0,)): ("RGBX", "RGBX"),
+    (II, 6, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("RGBX", "RGBXX"),
+    (MM, 6, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("RGBX", "RGBXX"),
+    (II, 6, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGBX", "RGBXXX"),
+    (MM, 6, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGBX", "RGBXXX"),
 
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
@@ -1053,23 +1053,6 @@ class TiffImageFile(ImageFile.ImageFile):
         "Return the current frame number"
         return self.__frame
 
-    def _decoder(self, rawmode, layer, stride):
-        "Setup decoder contexts"
-
-        args = None
-        if rawmode == "RGB" and self._planar_configuration == 2:
-            rawmode = rawmode[layer]
-            stride /= 3
-        compression = self._compression
-        if compression == "raw":
-            args = (rawmode, int(stride), 1)
-        if compression == "jpeg":
-            args = ("RGB", "")
-        elif compression == "packbits":
-            args = rawmode
-
-        return args
-
     def load(self):
         if self.use_load_libtiff:
             return self._load_libtiff()
@@ -1325,7 +1308,14 @@ class TiffImageFile(ImageFile.ImageFile):
                 else:
                     stride = 0
 
-                a = self._decoder(rawmode, layer, stride)
+                tile_rawmode = rawmode
+                if self._planar_configuration == 2:
+                    # each band on it's own layer
+                    tile_rawmode = rawmode[layer]
+                    # adjust stride width accordingly
+                    stride /= bps_count
+
+                a = (tile_rawmode, int(stride), 1)
                 self.tile.append(
                     (self._compression,
                      (x, y, min(x+w, xsize), min(y+h, ysize)),
@@ -1336,7 +1326,6 @@ class TiffImageFile(ImageFile.ImageFile):
                     if y >= self.size[1]:
                         x = y = 0
                         layer += 1
-            self.tile_prefix = self.tag_v2.get(JPEGTABLES, b"")
         else:
             if DEBUG:
                 print("- unsupported data organization")
