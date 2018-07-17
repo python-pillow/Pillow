@@ -1053,15 +1053,16 @@ class TiffImageFile(ImageFile.ImageFile):
         "Return the current frame number"
         return self.__frame
 
-    def _decoder(self, rawmode, layer, tile=None):
+    def _decoder(self, rawmode, layer, stride):
         "Setup decoder contexts"
 
         args = None
         if rawmode == "RGB" and self._planar_configuration == 2:
             rawmode = rawmode[layer]
+            stride /= 3
         compression = self._compression
         if compression == "raw":
-            args = (rawmode, 0, 1)
+            args = (rawmode, int(stride), 1)
         if compression == "jpeg":
             args = ("RGB", "")
         elif compression == "packbits":
@@ -1261,7 +1262,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # build tile descriptors
         x = y = layer = 0
         self.tile = []
-        self.use_load_libtiff = self._compression != 'raw'
+        self.use_load_libtiff = READ_LIBTIFF or self._compression != 'raw'
         if self.use_load_libtiff:
             # Decoder expects entire file as one tile.
             # There's a buffer size limit in load (64k)
@@ -1318,13 +1319,16 @@ class TiffImageFile(ImageFile.ImageFile):
                 w = self.tag_v2.get(322)
                 h = self.tag_v2.get(323)
 
-            a = None
             for offset in offsets:
-                if not a:
-                    a = self._decoder(rawmode, layer)
+                if x + w > xsize:
+                    stride = w * sum(bps_tuple) / 8  # bytes per line
+                else:
+                    stride = 0
+
+                a = self._decoder(rawmode, layer, stride)
                 self.tile.append(
                     (self._compression,
-                     (min(x, xsize),  min(y, ysize), min(x+w, xsize), min(y+h, ysize)),
+                     (x, y, min(x+w, xsize), min(y+h, ysize)),
                         offset, a))
                 x = x + w
                 if x >= self.size[0]:
@@ -1332,7 +1336,6 @@ class TiffImageFile(ImageFile.ImageFile):
                     if y >= self.size[1]:
                         x = y = 0
                         layer += 1
-                        a = None
             self.tile_prefix = self.tag_v2.get(JPEGTABLES, b"")
         else:
             if DEBUG:
