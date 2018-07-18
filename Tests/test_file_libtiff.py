@@ -639,37 +639,37 @@ class TestFileLibTiff(LibTiffTestCase):
         infile = "Tests/images/tiff_strip_cmyk_jpeg.tif"
         im = Image.open(infile)
 
-        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 3, mode='CMYK')
+        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
     def test_strip_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         im = Image.open(infile)
 
-        self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 2)
+        self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
     def test_strip_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
         im = Image.open(infile)
 
-        self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 5)
+        self.assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
 
     def test_tiled_cmyk_jpeg(self):
         infile = "Tests/images/tiff_tiled_cmyk_jpeg.tif"
         im = Image.open(infile)
 
-        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 3.5, mode='CMYK')
+        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
     def test_tiled_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         im = Image.open(infile)
 
-        self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 5)
+        self.assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
 
     def test_tiled_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         im = Image.open(infile)
 
-        self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 1)
+        self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
 
 
