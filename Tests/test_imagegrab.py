@@ -12,11 +12,6 @@ try:
             im = ImageGrab.grab()
             self.assert_image(im, im.mode, im.size)
 
-        @unittest.skipIf(on_appveyor(), "Test fails on appveyor")
-        def test_grab2(self):
-            im = ImageGrab.grab()
-            self.assert_image(im, im.mode, im.size)
-
 except ImportError:
     class TestImageGrab(PillowTestCase):
         def test_skip(self):
