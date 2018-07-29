@@ -1,8 +1,10 @@
+import calendar
 import codecs
 import collections
 import mmap
 import os
 import re
+import time
 import zlib
 from ._util import py3
 
@@ -280,9 +282,26 @@ class PdfDict(UserDict):
             except KeyError:
                 raise AttributeError(key)
         if isinstance(value, bytes):
-            return decode_text(value)
-        else:
-            return value
+            value = decode_text(value)
+        if key.endswith("Date"):
+            if value.startswith("D:"):
+                value = value[2:]
+
+            relationship = 'Z'
+            if len(value) > 17:
+                relationship = value[14]
+                offset = int(value[15:17]) * 60
+                if len(value) > 20:
+                    offset += int(value[18:20])
+
+            format = '%Y%m%d%H%M%S'[:len(value) - 2]
+            value = time.strptime(value[:len(format)+2], format)
+            if relationship in ['+', '-']:
+                offset *= 60
+                if relationship == '+':
+                    offset *= -1
+                value = time.gmtime(calendar.timegm(value) + offset)
+        return value
 
     def __bytes__(self):
         out = bytearray(b"<<")
@@ -347,6 +366,8 @@ def pdf_repr(x):
         return bytes(x)
     elif isinstance(x, int):
         return str(x).encode("us-ascii")
+    elif isinstance(x, time.struct_time):
+        return b'(D:'+time.strftime('%Y%m%d%H%M%SZ', x).encode("us-ascii")+b')'
     elif isinstance(x, dict):
         return bytes(PdfDict(x))
     elif isinstance(x, list):

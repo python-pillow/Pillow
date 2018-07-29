@@ -4,6 +4,7 @@ import io
 import os
 import os.path
 import tempfile
+import time
 
 
 class TestFilePdf(PillowTestCase):
@@ -187,8 +188,13 @@ class TestFilePdf(PillowTestCase):
         # open it, check pages and info
         with PdfParser.PdfParser(pdf_filename, mode="r+b") as pdf:
             self.assertEqual(len(pdf.pages), 1)
-            self.assertEqual(len(pdf.info), 1)
+            self.assertEqual(len(pdf.info), 4)
+            self.assertEqual(pdf.info.Title, os.path.splitext(
+                                                os.path.basename(pdf_filename)
+                                             )[0])
             self.assertEqual(pdf.info.Producer, "PdfParser")
+            self.assertIn(b"CreationDate", pdf.info)
+            self.assertIn(b"ModDate", pdf.info)
             self.check_pdf_pages_consistency(pdf)
 
             # append some info
@@ -203,8 +209,10 @@ class TestFilePdf(PillowTestCase):
         # open it again, check pages and info again
         with PdfParser.PdfParser(pdf_filename) as pdf:
             self.assertEqual(len(pdf.pages), 1)
-            self.assertEqual(len(pdf.info), 6)
+            self.assertEqual(len(pdf.info), 8)
             self.assertEqual(pdf.info.Title, "abc")
+            self.assertIn(b"CreationDate", pdf.info)
+            self.assertIn(b"ModDate", pdf.info)
             self.check_pdf_pages_consistency(pdf)
 
         # append two images
@@ -216,29 +224,36 @@ class TestFilePdf(PillowTestCase):
         # open the PDF again, check pages and info again
         with PdfParser.PdfParser(pdf_filename) as pdf:
             self.assertEqual(len(pdf.pages), 3)
-            self.assertEqual(len(pdf.info), 6)
+            self.assertEqual(len(pdf.info), 8)
             self.assertEqual(PdfParser.decode_text(pdf.info[b"Title"]), "abc")
             self.assertEqual(pdf.info.Title, "abc")
             self.assertEqual(pdf.info.Producer, "PdfParser")
             self.assertEqual(pdf.info.Keywords, "qw)e\\r(ty")
             self.assertEqual(pdf.info.Subject, u"ghi\uABCD")
+            self.assertIn(b"CreationDate", pdf.info)
+            self.assertIn(b"ModDate", pdf.info)
             self.check_pdf_pages_consistency(pdf)
 
     def test_pdf_info(self):
         # make a PDF file
         pdf_filename = self.helper_save_as_pdf(
             "RGB", title="title", author="author", subject="subject",
-            keywords="keywords", creator="creator", producer="producer")
+            keywords="keywords", creator="creator", producer="producer",
+            creationDate=time.strptime("2000", "%Y"),
+            modDate=time.strptime("2001", "%Y"))
 
         # open it, check pages and info
         with PdfParser.PdfParser(pdf_filename) as pdf:
-            self.assertEqual(len(pdf.info), 6)
+            self.assertEqual(len(pdf.info), 8)
             self.assertEqual(pdf.info.Title, "title")
             self.assertEqual(pdf.info.Author, "author")
             self.assertEqual(pdf.info.Subject, "subject")
             self.assertEqual(pdf.info.Keywords, "keywords")
             self.assertEqual(pdf.info.Creator, "creator")
             self.assertEqual(pdf.info.Producer, "producer")
+            self.assertEqual(pdf.info.CreationDate,
+                             time.strptime("2000", "%Y"))
+            self.assertEqual(pdf.info.ModDate, time.strptime("2001", "%Y"))
             self.check_pdf_pages_consistency(pdf)
 
     def test_pdf_append_to_bytesio(self):
