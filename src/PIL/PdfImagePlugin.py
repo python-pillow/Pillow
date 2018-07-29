@@ -22,6 +22,7 @@
 
 from . import Image, ImageFile, ImageSequence, PdfParser
 import io
+import os
 
 __version__ = "0.5"
 
@@ -47,7 +48,7 @@ def _save_all(im, fp, filename):
 def _save(im, fp, filename, save_all=False):
     resolution = im.encoderinfo.get("resolution", 72.0)
     is_appending = im.encoderinfo.get("append", False)
-    title = im.encoderinfo.get("title", None)
+    title = None if is_appending else im.encoderinfo.get("title", os.path.splitext(filename)[0])
     author = im.encoderinfo.get("author", None)
     subject = im.encoderinfo.get("subject", None)
     keywords = im.encoderinfo.get("keywords", None)
