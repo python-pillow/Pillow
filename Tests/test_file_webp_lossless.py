@@ -19,8 +19,7 @@ class TestFileWebpLossless(PillowTestCase):
         if (_webp.WebPDecoderVersion() < 0x0200):
             self.skipTest('lossless not included')
 
-        # WebPAnimDecoder only returns RGBA or RGBX, never RGB
-        self.rgb_mode = "RGBX" if _webp.HAVE_WEBPANIM else "RGB"
+        self.rgb_mode = "RGB"
 
     def test_write_lossless_rgb(self):
         temp_file = self.tempfile("temp.webp")
