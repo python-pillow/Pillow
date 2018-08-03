@@ -13,13 +13,21 @@ if ImageQt.qt_is_installed:
         QT_VERSION = 5
     except (ImportError, RuntimeError):
         try:
-            from PyQt4 import QtGui
-            from PyQt4.QtGui import QWidget, QHBoxLayout, QLabel, QApplication
-            QT_VERSION = 4
+            from PySide2 import QtGui
+            from PySide2.QtWidgets import QWidget, QHBoxLayout, QLabel, \
+                QApplication
+            QT_VERSION = 5
         except (ImportError, RuntimeError):
-            from PySide import QtGui
-            from PySide.QtGui import QWidget, QHBoxLayout, QLabel, QApplication
-            QT_VERSION = 4
+            try:
+                from PyQt4 import QtGui
+                from PyQt4.QtGui import QWidget, QHBoxLayout, QLabel, \
+                    QApplication
+                QT_VERSION = 4
+            except (ImportError, RuntimeError):
+                from PySide import QtGui
+                from PySide.QtGui import QWidget, QHBoxLayout, QLabel, \
+                    QApplication
+                QT_VERSION = 4
 
 
 class TestToQImage(PillowQtTestCase, PillowTestCase):
