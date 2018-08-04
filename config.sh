@@ -35,11 +35,7 @@ function pre_build {
     build_libwebp
     if [ -n "$IS_OSX" ]; then
         # Custom freetype build
-        local ft_name_ver=freetype-${FREETYPE_VERSION}
-        fetch_unpack http://download.savannah.gnu.org/releases/freetype/${ft_name_ver}.tar.gz
-        (cd $ft_name_ver \
-            && ./configure --prefix=$BUILD_PREFIX "--with-harfbuzz=no" \
-            && make && make install)
+        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
     else
         build_freetype
     fi
