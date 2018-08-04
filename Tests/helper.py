@@ -187,10 +187,10 @@ class PillowTestCase(unittest.TestCase):
         return result
 
     def assert_all_same(self, items, msg=None):
-        self.assertTrue(items.count(items[0]) == len(items), msg)
+        self.assertEqual(items.count(items[0]), len(items), msg)
 
     def assert_not_all_same(self, items, msg=None):
-        self.assertFalse(items.count(items[0]) == len(items), msg)
+        self.assertNotEqual(items.count(items[0]), len(items), msg)
 
     def assert_tuple_approx_equal(self, actuals, targets, threshold, msg):
         """Tests if actuals has values within threshold from targets"""

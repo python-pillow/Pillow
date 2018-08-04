@@ -516,7 +516,7 @@ class TestImage(PillowTestCase):
                 self.assertEqual(new_im.palette.tobytes(),
                                  palette_result.tobytes())
             else:
-                self.assertEqual(new_im.palette, None)
+                self.assertIsNone(new_im.palette)
 
         _make_new(im, im_p, im_p.palette)
         _make_new(im_p, im, None)
