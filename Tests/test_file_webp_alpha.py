@@ -5,18 +5,13 @@ from PIL import Image
 try:
     from PIL import _webp
 except ImportError:
-    pass
-    # Skip in setUp()
+    _webp = None
 
 
+@unittest.skipIf(_webp is None, "WebP support not installed")
 class TestFileWebpAlpha(PillowTestCase):
 
     def setUp(self):
-        try:
-            from PIL import _webp
-        except ImportError:
-            self.skipTest('WebP support not installed')
-
         if _webp.WebPDecoderBuggyAlpha(self):
             self.skipTest("Buggy early version of WebP installed, "
                           "not testing transparency")

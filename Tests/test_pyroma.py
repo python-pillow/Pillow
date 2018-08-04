@@ -8,9 +8,9 @@ except ImportError:
     pyroma = None
 
 
+@unittest.skipIf(pyroma is None, "Pyroma is not installed")
 class TestPyroma(PillowTestCase):
 
-    @unittest.skipUnless(pyroma, "Pyroma is not installed")
     def test_pyroma(self):
         # Arrange
         data = pyroma.projectdata.get_data(".")

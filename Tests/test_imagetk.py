@@ -18,11 +18,10 @@ except (OSError, ImportError) as v:
 TK_MODES = ('1', 'L', 'P', 'RGB', 'RGBA')
 
 
+@unittest.skipIf(not HAS_TK, "Tk not installed")
 class TestImageTk(PillowTestCase):
 
     def setUp(self):
-        if not HAS_TK:
-            self.skipTest("Tk not installed")
         try:
             # setup tk
             tk.Frame()
