@@ -7,9 +7,11 @@ from PIL import ImageQt
 class TestFromQPixmap(PillowQPixmapTestCase, PillowTestCase):
 
     def roundtrip(self, expected):
-        result = ImageQt.fromqpixmap(ImageQt.toqpixmap(expected))
-        # Qt saves all pixmaps as rgb
-        self.assert_image_equal(result, expected.convert('RGB'))
+        def test():
+            result = ImageQt.fromqpixmap(ImageQt.toqpixmap(expected))
+            # Qt saves all pixmaps as rgb
+            self.assert_image_equal(result, expected.convert('RGB'))
+        self.executeInSeparateProcess(test)
 
     def test_sanity_1(self):
         self.roundtrip(hopper('1'))
