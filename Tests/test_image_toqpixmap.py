@@ -1,5 +1,5 @@
 from helper import unittest, PillowTestCase, hopper
-from test_imageqt import PillowQtTestCase, PillowQPixmapTestCase
+from test_imageqt import PillowQPixmapTestCase
 
 from PIL import ImageQt
 
@@ -10,17 +10,17 @@ if ImageQt.qt_is_installed:
 class TestToQPixmap(PillowQPixmapTestCase, PillowTestCase):
 
     def test_sanity(self):
-        PillowQtTestCase.setUp(self)
+        def test():
+            for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
+                data = ImageQt.toqpixmap(hopper(mode))
 
-        for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
-            data = ImageQt.toqpixmap(hopper(mode))
+                self.assertIsInstance(data, QPixmap)
+                self.assertFalse(data.isNull())
 
-            self.assertIsInstance(data, QPixmap)
-            self.assertFalse(data.isNull())
-
-            # Test saving the file
-            tempfile = self.tempfile('temp_{}.png'.format(mode))
-            data.save(tempfile)
+                # Test saving the file
+                tempfile = self.tempfile('temp_{}.png'.format(mode))
+                data.save(tempfile)
+        self.executeInSeparateProcess(test)
 
 
 if __name__ == '__main__':

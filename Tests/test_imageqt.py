@@ -2,6 +2,7 @@ from helper import unittest, PillowTestCase, hopper
 
 from PIL import ImageQt
 
+import multiprocessing
 
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import qRgba
@@ -17,6 +18,21 @@ class PillowQtTestCase(object):
 
     def setUp(self):
         skip_if_qt_is_not_installed(self)
+
+    def executeInSeparateProcess(self, test):
+        def target():
+            if ImageQt.qt_version == '5':
+                from PyQt5.QtGui import QGuiApplication
+            elif ImageQt.qt_version == '4':
+                from PyQt4.QtGui import QGuiApplication
+            elif ImageQt.qt_version == 'side':
+                from PySide.QtGui import QGuiApplication
+            app = QGuiApplication([])
+            test()
+            app.quit()
+        p = multiprocessing.Process(target=target)
+        p.start()
+        p.join()
 
     def tearDown(self):
         pass
@@ -35,12 +51,6 @@ class PillowQPixmapTestCase(PillowQtTestCase):
                 from PySide.QtGui import QGuiApplication
         except ImportError:
             self.skipTest('QGuiApplication not installed')
-
-        self.app = QGuiApplication([])
-
-    def tearDown(self):
-        PillowQtTestCase.tearDown(self)
-        self.app.quit()
 
 
 class TestImageQt(PillowQtTestCase, PillowTestCase):
