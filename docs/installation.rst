@@ -128,8 +128,8 @@ Many of Pillow's features require external libraries:
 
 * **libjpeg** provides JPEG functionality.
 
-  * Pillow has been tested with libjpeg versions **6b**, **8**, **9**, **9a**,
-    and **9b** and libjpeg-turbo version **8**.
+  * Pillow has been tested with libjpeg versions **6b**, **8**, **9-9c** and
+    libjpeg-turbo version **8**.
   * Starting with Pillow 3.0.0, libjpeg is required by default, but
     may be disabled with the ``--disable-jpeg`` flag.
 
@@ -394,7 +394,7 @@ These platforms are built and tested for every change.
 +----------------------------------+-------------------------------+-----------------------+
 | Fedora 26                        | 2.7                           |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Mac OS X 10.10 Yosemite*         | 2.7, 3.4, 3.5, 3.6            |x86-64                 |
+| Mac OS X 10.10 Yosemite*         | 2.7, 3.4, 3.5, 3.6, 3.7       |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
 | Ubuntu Linux 16.04 LTS           | 2.7                           |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
