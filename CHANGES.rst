@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Depends: Update libimagequant to 2.12.1 #3281
+  [radarhere]
+
 - Add three-color support to ImageOps.colorize #3242
   [tsennott]
 
