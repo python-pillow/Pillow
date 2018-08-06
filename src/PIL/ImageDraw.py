@@ -325,21 +325,21 @@ def getdraw(im=None, hints=None):
 
 def floodfill(image, xy, value, border=None, thresh=0):
     """
-        (experimental) Fills a bounded region with a given color.
+    (experimental) Fills a bounded region with a given color.
 
-        :param image: Target image.
-        :param xy: Seed position (a 2-item coordinate tuple). See
-            :ref:`coordinate-system`.
-        :param value: Fill color.
-        :param border: Optional border value.  If given, the region consists of
-            pixels with a color different from the border color.  If not given,
-            the region consists of pixels having the same color as the seed
-            pixel.
-        :param thresh: Optional threshold value which specifies a maximum
-            tolerable difference of a pixel value from the 'background' in
-            order for it to be replaced. Useful for filling regions of non-
-            homogeneous, but similar, colors.
-        """
+    :param image: Target image.
+    :param xy: Seed position (a 2-item coordinate tuple). See
+        :ref:`coordinate-system`.
+    :param value: Fill color.
+    :param border: Optional border value.  If given, the region consists of
+        pixels with a color different from the border color.  If not given,
+        the region consists of pixels having the same color as the seed
+        pixel.
+    :param thresh: Optional threshold value which specifies a maximum
+        tolerable difference of a pixel value from the 'background' in
+        order for it to be replaced. Useful for filling regions of non-
+        homogeneous, but similar, colors.
+    """
     # based on an implementation by Eric S. Raymond
     # amended by yo1995 @20180806
     pixel = image.load()
