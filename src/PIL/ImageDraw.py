@@ -388,7 +388,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
                             new_edge.add((s, t))
                             full_edge.add((s, t))
             full_edge = edge
-            edge = newedge
+            edge = new_edge
 
 
 def _color_diff(rgb1, rgb2):
