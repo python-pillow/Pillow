@@ -146,13 +146,13 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertEqual(j2k.mode, 'I;16')
         self.assertEqual(jp2.mode, 'I;16')
 
-    def test_16bit_monchrome_jp2_like_tiff(self):
+    def test_16bit_monochrome_jp2_like_tiff(self):
 
         tiff_16bit = Image.open('Tests/images/16bit.cropped.tif')
         jp2 = Image.open('Tests/images/16bit.cropped.jp2')
         self.assert_image_similar(jp2, tiff_16bit, 1e-3)
 
-    def test_16bit_monchrome_j2k_like_tiff(self):
+    def test_16bit_monochrome_j2k_like_tiff(self):
 
         tiff_16bit = Image.open('Tests/images/16bit.cropped.tif')
         j2k = Image.open('Tests/images/16bit.cropped.j2k')
