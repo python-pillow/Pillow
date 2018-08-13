@@ -245,7 +245,7 @@ def _save_all(im, fp, filename):
                 rawmode = ims.mode
                 if ims.mode not in _VALID_WEBP_MODES:
                     alpha = 'A' in ims.mode or 'a' in ims.mode \
-                            or ims.mode == 'P' and 'A' in ims.im.getpalettemode()
+                            or (ims.mode == 'P' and 'A' in ims.im.getpalettemode())
                     rawmode = 'RGBA' if alpha else 'RGBX'
                     frame = ims.convert(rawmode)
 
@@ -298,7 +298,7 @@ def _save(im, fp, filename):
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:
         alpha = 'A' in im.mode or 'a' in im.mode \
-                or im.mode == 'P' and 'A' in im.im.getpalettemode()
+                or (im.mode == 'P' and 'A' in im.im.getpalettemode())
         im = im.convert('RGBA' if alpha else 'RGB')
 
     data = _webp.WebPEncode(
