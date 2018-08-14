@@ -189,7 +189,7 @@ class PhotoImage(object):
                         from cffi import FFI
                         ffi = FFI()
 
-                        # Pypy is using an FFI cdata element
+                        # PyPy is using an FFI CDATA element
                         # (Pdb) self.tk.interp
                         #  <cdata 'Tcl_Interp *' 0x3061b50>
                         _imagingtk.tkinit(
