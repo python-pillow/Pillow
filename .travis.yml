@@ -1,3 +1,5 @@
+dist: xenial
+sudo: required
 language: python
 cache: pip
 
@@ -12,13 +14,24 @@ matrix:
   fast_finish: true
   include:
     - python: "pypy"
+      dist: trusty
     - python: "pypy3"
-    - python: '3.7-dev'
+      dist: trusty
+    - python: '3.7'
     - python: '2.7'
+    - python: '2.7'
+      dist: trusty
     - python:  "2.7_with_system_site_packages" # For PyQt4
+    - python:  "2.7_with_system_site_packages" # For PyQt4
+      dist: trusty
     - python: '3.6'
+    - python: '3.6'
+      dist: trusty
     - python: '3.5'
+    - python: '3.5'
+      dist: trusty
     - python: '3.4'
+      dist: trusty
     - env: DOCKER="alpine" DOCKER_TAG="pytest"
     - env: DOCKER="arch" DOCKER_TAG="pytest" # contains PyQt5
     - env: DOCKER="ubuntu-trusty-x86" DOCKER_TAG="pytest"
@@ -30,10 +43,6 @@ matrix:
     - env: DOCKER="amazon-2-amd64" DOCKER_TAG="pytest"
     - env: DOCKER="fedora-26-amd64" DOCKER_TAG="pytest"
     - env: DOCKER="fedora-27-amd64" DOCKER_TAG="pytest"
-
-dist: trusty
-
-sudo: required
 
 services:
   - docker
