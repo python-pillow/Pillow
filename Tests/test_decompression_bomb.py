@@ -6,6 +6,7 @@ TEST_FILE = "Tests/images/hopper.ppm"
 
 ORIGINAL_LIMIT = Image.MAX_IMAGE_PIXELS
 
+from PIL.Image import DecompressionBombWarning, DecompressionBombError
 
 class TestDecompressionBomb(PillowTestCase):
 
@@ -61,6 +62,28 @@ class TestDecompressionCrop(PillowTestCase):
         self.assert_warning(Image.DecompressionBombWarning,
                             self.src.crop, box)
 
+    def test_crop_decompression_checks(self):
+
+        im = Image.new("RGB", (100, 100))
+
+        good_values = ((-9999, -9999, -9990, -9990),
+                        (-999, -999, -990, -990))
+
+        warning_values = ((-160, -160, 99, 99),
+                          (160, 160, -99, -99))
+
+        error_values = ((-99909, -99990, 99999, 99999),
+                        (99909, 99990, -99999, -99999))
+
+        for value in good_values:
+            self.assertEqual(im.crop(value).size, (9,9))
+
+        for value in warning_values:
+            self.assert_warning(DecompressionBombWarning, im.crop, value)
+
+        for value in error_values:
+            with self.assertRaises(DecompressionBombError):
+                im.crop(value)
 
 if __name__ == '__main__':
     unittest.main()

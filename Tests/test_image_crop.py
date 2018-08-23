@@ -2,7 +2,6 @@ from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
-
 class TestImageCrop(PillowTestCase):
 
     def test_crop(self):
