@@ -2592,13 +2592,6 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     if decoder_name == "raw":
         if args == ():
-            warnings.warn(
-                "the frombuffer defaults will change in Pillow 7.0.0; "
-                "for portability, change the call to read:\n"
-                "  frombuffer(mode, size, data, 'raw', mode, 0, 1)",
-                RuntimeWarning,
-                stacklevel=2,
-            )
             args = mode, 0, 1
         if args[0] in _MAPMODES:
             im = new(mode, (1, 1))
