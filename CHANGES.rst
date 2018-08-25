@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Tests: Added ImageFilter tests #3295
+  [radarhere]
+
 - Tests: Added ImageChops tests #3230
   [hugovk, radarhere]
 
