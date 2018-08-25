@@ -5,6 +5,18 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Tests: Added ImageChops tests #3230
+  [hugovk, radarhere]
+
+- AppVeyor: Download lib if not present in pillow-depends #3316
+  [radarhere]
+
+- Travis CI: Add Python 3.7 and Xenial #3234
+  [hugovk]
+
+- Docs: Added documentation for NumPy conversion #3301
+  [radarhere]
+
 - Depends: Update libimagequant to 2.12.1 #3281
   [radarhere]
 
